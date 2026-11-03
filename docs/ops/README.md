@@ -1,7 +1,55 @@
 # Operations Runbooks Index (`docs/ops/`)
 
-**Current cut — [follow-up 35](../handover/follow-up-35.md) (2026-11-03 EST):** Through #421: F27-02’s fixed-test reading holds; F23-01 fixed in fixtures; #417 count corrected to 15. Hitless guard design awaits the owner; production keeps the current guard. r23 returned to agent-core 40, none confirmed. F30-01 and r20 H-1 open. Ten owner requests.
-**Previous cut — [follow-up 34](../handover/follow-up-34.md):** #416–#418 at cc0ed4ae; 14 subtests, three rows, ten frozen inputs, 312 payload hashes and lengths (19 gzip originals), two dated documents, three PR excerpts, 81 findings, 47 decisions and nine requests.
+**Current cut — [follow-up 37](../handover/follow-up-37.md) (2026-11-03 EST):** #424–#426: isolation readiness fixed locally; first scheduled exercise pending. Netlab 33 corrects L-1 and B1 citations additively. C1 remains documents only; no hitless hand-over. r24 H-1/H-3, F30-01 and r20 H-1 stay open on main. Ten owner requests.
+**Previous cut — [follow-up 36](../handover/follow-up-36.md):** #422–#423 at d7867928; 16 subtests, two final rows, ten frozen inputs, exact r24, 174 netlab files (12 gzip originals), two PR excerpts and separate source audit; 96 findings, 47 decisions, ten requests.
+
+## Follow-up 37 acceptance snapshot (2026-11-03 EST)
+
+Cut **#424–#426**, main **792e3e41**; no unbriefed PR inside the range.
+[Evidence and ten owner requests](../handover/follow-up-37.md).
+
+| Lane / PR | Result and boundary |
+|---|---|
+| Isolation 18 (#424) | Scheduled 41640196805 failed correctly: two listed and two unlisted blocks. One harness defect, restart without readiness; fixed. Local 9f1bc0ff: AT10 9/0/0, AT11 2/1/0, AT12 10/0/0, AT13 6/1/0; short whole-node expiry qualifies under D-142. Only operator rows block. Previous night's 41456092596 AT10 pass used inherited readiness and is not qualified. First scheduled exercise of the fix is pending. |
+| Handover 36 (#425) | #422–#423 at d7867928; 16 subtests, two rows, ten frozen inputs, exact r24, 174 netlab files / 12 gzip originals, two PR excerpts, separate audit; 96 findings / 47 decisions / ten requests. Lock citation corrected in three documents and one pin; approved refresh changed 53 digest values only. |
+| Netlab 33 (#426) | One additive corrections.md; netlab 32 trees unchanged. L-1 confirmed in part: lock claim rejected, empty eligibility retained. M-3's B1 transport characterization unsourced; no transport tuning in C1 remains required. 16 citation rows: 14 verified, two corrected. Four continuations recorded in the cut. |
+
+[97-row findings register](../handover/README.md#findings-register-at-the-follow-up-37-cutoff).
+Isolation F18-01 is fixed in the harness; its runner exercise is pending.
+AT11's native platform matrix, AT13's full fault matrix and Isolation F17-01
+remain carried. The raw r24 archive and 94 unaffected findings stay unchanged.
+Agent-core 37–41 were delivered and held; H-1/H-3 fixed on the unmerged branch,
+r25 running at 8cc27609 (status only). Netlab F32-01 goes to agent-core 42.
+r24 H-1 stays open known behaviour on main; F30-01 stays known behaviour and
+r20 H-1's restart gap stays open. Follow-up 36's reload guidance is unchanged:
+no hitless hand-over is implemented, no date or C1 benefit promised. Production
+keeps the current guard pending the owner's G5/G6 decision. All 47 decisions
+remain unchanged through D-144; every historical failure stays failed.
+
+## Follow-up 36 acceptance snapshot (2026-11-03 EST)
+
+Cut **#422–#423**, main **d7867928**; no unbriefed PR inside the range or later
+merge on main at task start. [Evidence and ten owner requests](../handover/follow-up-36.md).
+
+| Lane / PR | Result and boundary |
+|---|---|
+| Handover 35 (#422) | #419–#421 at dff6bdb0; 16 subtests, three final rows, ten frozen inputs, three documents, six design files, three PR excerpts, separate source audit, 87 findings, 47 decisions and ten owner requests. One codex gpt-6-astra session launched 08:19 EST, admission/suite waits 0 s. r23 L-1 code-trace clarification answered; no proof added. |
+| Netlab 32 (#423) | D-141 judgments precede fixes: H-4 rollback, H-2 tc order, M-2 post-shape rollback fixed. One full lab passes. First consumer gate fails seven fixture tests; test-only resume repairs simulator, unchanged gate passes, no production change in resume. C1 revision is documents only; production keeps the current guard. B1 stays FAIL/unexplained, netlab 30 host-unqualified. |
+
+[96-row findings register](../handover/README.md#findings-register-at-the-follow-up-36-cutoff).
+r24 archived exactly; H-1/H-3 returned to agent-core 41, not yet judged by that
+lane on main. Its recommendation to accept C1 is the reviewer's; the G5/G6
+owner decision remains open. Netlab F32-01 jitter is routed after 41. The
+revision's lock-path discrepancy is returned for an additive correction.
+F30-01 stays known behaviour; r20 H-1's restart gap stays open while agent-core
+37–41 are held. A serving node re-installs unchanged enforcement on each
+successful nominal ten-second poll. The 28.5 ms median / 94.7 ms maximum
+measured windows are outer command brackets, not exact outages. Netlab 32
+changed install order, not the guard; member TCP segments can still drop.
+No hitless hand-over is implemented and no date is promised for agent-core 41.
+This cut claims no scheduled-run result; isolation 18's nightly diagnosis is
+outside the cut. All 47 decisions and the other 86 finding rows are unchanged.
+Every historical failure stays failed.
 
 ## Follow-up 35 acceptance snapshot (2026-11-03 EST)
 

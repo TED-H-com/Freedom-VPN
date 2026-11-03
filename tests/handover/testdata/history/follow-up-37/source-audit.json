@@ -1,0 +1,201 @@
+{
+  "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+  "maximum_decision": 144,
+  "merged_prs": [
+    424,
+    425,
+    426
+  ],
+  "sources": [
+    {
+      "path": "tests/e2e/at/isolation/scheduled.go",
+      "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+      "sha256": "c46500b7352b2b4e1fc56ba2a19b884a53244150b7d20e99e910f79f2644f093",
+      "first_line": 42,
+      "last_line": 89,
+      "excerpt": "// SampleControlReadiness reports whether a post-restoration sample has a live\n// admin control plane, a drained node observation retry queue, and an accepted\n// current observation matching desiredGeneration with member forwarding on.\nfunc SampleControlReadiness(startedAt time.Time, desiredGeneration string, s ControlReadinessSample) bool {\n\treturn !startedAt.IsZero() &&\n\t\tdesiredGeneration != \"\" &&\n\t\ts.LoginOK &&\n\t\ts.FleetConfigStatus == 200 &&\n\t\ts.QueueAvailable &&\n\t\ts.QueuePending == 0 &&\n\t\ts.ObservedAt.After(startedAt) &&\n\t\ts.AppliedGeneration == desiredGeneration &&\n\t\ts.MemberForwardingEnabled\n}\n\n// ControlObservationReady checks whether dir/control-observation-readiness.json\n// proves readiness for runID at or after afterControlStart. When absent, stale,\n// or unready, it invokes wait (if non-nil) and re-reads the persisted record.\nfunc ControlObservationReady(dir, runID string, afterControlStart time.Time, wait func() bool) bool {\n\tcheck := func() bool {\n\t\traw, err := os.ReadFile(filepath.Join(dir, \"control-observation-readiness.json\"))\n\t\tif err != nil {\n\t\t\treturn false\n\t\t}\n\t\tvar v struct {\n\t\t\tRunID     string    `json:\"run_id\"`\n\t\t\tStartedAt time.Time `json:\"started_at\"`\n\t\t\tReady     bool      `json:\"ready\"`\n\t\t}\n\t\tif json.Unmarshal(raw, &v) != nil || !v.Ready {\n\t\t\treturn false\n\t\t}\n\t\tif runID != \"\" && v.RunID != \"\" && v.RunID != runID {\n\t\t\treturn false\n\t\t}\n\t\tif !afterControlStart.IsZero() && v.StartedAt.Before(afterControlStart) {\n\t\t\treturn false\n\t\t}\n\t\treturn true\n\t}\n\tif check() {\n\t\treturn true\n\t}\n\tif wait == nil || !wait() {\n\t\treturn false\n\t}\n\treturn check()\n}"
+    },
+    {
+      "path": "tests/e2e/at/isolation/driver.go.txt",
+      "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+      "sha256": "cd31ae7c07ced1011c051f1e2ef67c9cf304f6f9ba46c4a2ca17bc1ce59593cf",
+      "first_line": 1194,
+      "last_line": 1206,
+      "excerpt": "\t\t}\n\t}\n\te = exec.Command(\"docker\", \"stop\", \"--time\", \"2\", r.lab.control, r.lab.prefix+\"-worker\").Run()\n\tc.Observations = append(c.Observations, iso.Observation{Name: \"control_stopped_at\", Detail: time.Now().UTC().Format(time.RFC3339)})\n\tdefer func() {\n\t\tx.lastControlStart = time.Now().UTC()\n\t\t_ = exec.Command(\"docker\", \"start\", r.lab.control, r.lab.prefix+\"-worker\").Run()\n\t\t_ = x.waitControl()\n\t}()\n\tif e != nil || !time.Now().Before(end) {\n\t\tc.Status = iso.StatusBlocked\n\t\tc.Actual = \"control stop did not complete before the finite member deadline\"\n\t\tx.add(\"AT13\", c)"
+    },
+    {
+      "path": "tests/e2e/at/isolation/driver.go.txt",
+      "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+      "sha256": "cd31ae7c07ced1011c051f1e2ef67c9cf304f6f9ba46c4a2ca17bc1ce59593cf",
+      "first_line": 1262,
+      "last_line": 1290,
+      "excerpt": "\tvar stopped bool\n\tdefer func() {\n\t\tif stopped {\n\t\t\tx.lastControlStart = time.Now().UTC()\n\t\t\t_ = exec.Command(\"docker\", \"start\", x.r.lab.control, x.r.lab.prefix+\"-worker\").Run()\n\t\t}\n\t\tif (stopped || !iso.ControlObservationReady(x.dir, x.records[\"AT13\"].RunID, x.lastControlStart, nil)) && !x.waitControl() {\n\t\t\tc.Status = iso.StatusBlocked\n\t\t\tc.Actual += \"; control restart incomplete\"\n\t\t}\n\t\tif !x.fleetAudits(&c, x.fleetRequestID) {\n\t\t\tc.Status = iso.StatusBlocked\n\t\t\tc.Actual += \"; pre-enrollment fleet audit missing\"\n\t\t}\n\t\tx.add(\"AT13\", c)\n\t}()\n\tif !iso.ControlObservationReady(x.dir, x.records[\"AT13\"].RunID, x.lastControlStart, x.waitControl) {\n\t\tc.Actual = \"control restoration readiness unavailable before short lease\"\n\t\tc.Owner = \"w3-devstack-e2e\"\n\t\treturn\n\t}\n\tadmin, err := x.r.lab.login(x.ctx, \"e2e-admin\", \"admin\")\n\tif err != nil {\n\t\tc.Actual = \"admin login failed before fleet-config write\"\n\t\tc.Owner = \"w3-devstack-e2e\"\n\t\treturn\n\t}\n\tx.admin = admin\n\troute, _ := x.a1.lab.docker(x.a1.lab.member, \"ip\", \"route\", \"get\", x.a1.originIP())"
+    },
+    {
+      "path": "tests/e2e/at/isolation/review_followup8.py",
+      "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+      "sha256": "1ff498afc7eb40437a299c82330bccf32032015cf410212731cdc7a931752b0f",
+      "first_line": 82,
+      "last_line": 97,
+      "excerpt": "# Agent-core 32 identifies a rejected candidate separately from the installed\n# verifier. Only assertion 6 consumes this pre-install evidence; 1 and 3–4 keep\n# their original installed/read requirements above and below.\nfrom candidate_evidence import candidate_rejections\nfrom producer_timing import read_operations\ndirty_start = first('publish dirty newer generation').get('at') or injection.get('start')\ndirty_end = removal.get('start') or removal.get('end')\ndirty_tc = (candidate_rejections(transactions, read_operations(root), initial_gen, dirty_start, dirty_end)\n            if dirty_start and dirty_end else [])\nwrite('candidate-rejection-join.json', dict(run_id=trace.get('run_id'),\n    evidence_kind='pre-install only; no substitution for installed-verifier assertions',\n    accepted_candidates=dirty_tc))\nnegative_preserved = bool(negative) and all('flower' in current_tc(r) and 'mirred' in current_tc(r) and 'serving 0' in r.get('readback', '') and member_up(r) is False for r in negative)\nremoved = current_tc(first('fresh removal read'))\nfinal = first('final recovered state')\npositive = first('final counted control').get('positive', {})"
+    },
+    {
+      "path": "tests/e2e/at/isolation/review_followup8.py",
+      "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+      "sha256": "1ff498afc7eb40437a299c82330bccf32032015cf410212731cdc7a931752b0f",
+      "first_line": 120,
+      "last_line": 135,
+      "excerpt": "positive_packets=[line for line in packet_lines if positive_start<=float(line.split()[0])<=positive_end and '.443: Flags' in line]\npacket_control=bool(any('fvmb0 In ' in line for line in positive_packets) and any('fvup0 Out ' in line for line in positive_packets))\nchecks = [\n dict(number=1, name='retained rejected read and quarantine', passed=bool(initial.get('member_forwarding_enabled') and tc(initial).get('verified') and rejections and any('serving 0' in r.get('readback', '') and member_up(r) is False and 'quarantine_fvmb0' in r.get('kernel_ruleset','') for r in labelled('containment wait')))),\n dict(number=2, name='all injected foreign objects removed with fresh read', passed=removal.get('ok') is True and bool(removed) and 'clsact' not in removed and 'flower' not in removed and 'mirred' not in removed),\n dict(number=3, name='clean newer generation and matching lease reach Apply', passed=bool(state_apply and matching)),\n dict(number=4, name='fresh verified Apply and live tc_evidence with canonical digest and historical rejection', passed=bool(state_apply and live and history) and all(digest(tc(r['report'])) for r in clean)),\n dict(number=5, name='restored topology marker serving and counted packet control', passed=bool(matching and positive.get('counted') and int(positive.get('admission_bytes_after') or 0)>int(positive.get('admission_bytes_before') or 0) and 'serving 1' in final.get('readback', '') and 'quarantine_fvmb0' not in final.get('kernel_ruleset', 'missing')) and 'kernel_ruleset' in final and member_up(final) is True and capture_complete and packet_control),\n dict(number=6, name='dirty newer generation remains non-serving and preserves foreign objects', passed=bool(dirty_tc and negative_preserved)),\n]\nwrite('recovery-verdict.json', dict(run_id=trace.get('run_id'), passed=all(c['passed'] for c in checks), status='pass' if all(c['passed'] for c in checks) else 'blocked', assertions=checks, initial_generation=str(initial_gen), durable_apply_generation=state_gen, durable_apply_verified=state_apply, node_any_capture_complete=capture_complete, recovered_packet_control=packet_control, apply_evidence='read-only retained_applied + member_path + installed generation + matching signed lease; qos source=apply is superseded by mandatory fresh live read before reporting', rejected_report_ids=[r['report']['report_id'] for r in rejections], apply_report_ids=[r['report']['report_id'] for r in apply], live_report_ids=[r['report']['report_id'] for r in live], matching_report_ids=[r['report']['report_id'] for r in matching], historical_error_rows=history, injected_creator='isolation harness explicitly installed clsact/flower/mirred', unsolicited_creator='No creator inferred from object kinds; see every retained rejected row in tc-evidence-index.json.'))\nwrite('tc-evidence-index.json', dict(run_id=trace.get('run_id'), reads=[dict(report_id=r['report'].get('report_id'), observation_at=r['report'].get('observed_at'), status=r['status'], qos_detail=qos(r['report']), digest_matches=digest(tc(r['report'])), tc_evidence=tc(r['report'])) for r in reports if tc(r['report'])]))\n# D-087: only real qualifying reports count, never force a fake-control switch on central.\nqualifying=[]\nfor r in reports:\n    b=r['report'];errors=b.get('errors') or []"
+    },
+    {
+      "path": "tests/e2e/at/isolation/nightly_test.py",
+      "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+      "sha256": "e11c3cdde81a13f94f44d92718abb0e60ec6a58db0c7a5c3519802334d623b8f",
+      "first_line": 51,
+      "last_line": 59,
+      "excerpt": "    def test_unexecuted_foreign_redirect_writes_blocked_verdict_without_traceback(self):\n        with tempfile.TemporaryDirectory() as tmp:\n            root=Path(tmp)\n            (root/'receiver-capture.json').write_text(json.dumps(dict(run_id='775bc692-e6ef-4490-8056-ba6cfa818b69',transactions=[])))\n            result=subprocess.run(['python3','-B',str(Path(__file__).with_name('review_followup8.py')),tmp],text=True,capture_output=True)\n            self.assertEqual(result.returncode,0,result.stderr)\n            verdict=json.loads((root/'recovery-verdict.json').read_text())\n            self.assertFalse(verdict['passed'])\n            self.assertEqual(verdict['status'],'blocked')"
+    },
+    {
+      "path": "node/agent/config.go",
+      "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+      "sha256": "688b897f135cfe4e8e551dd1d965c3f872665c87c1628fd996aac0ba9de1ae69",
+      "first_line": 120,
+      "last_line": 145,
+      "excerpt": "\t}\n\tif c.UpdaterJournal == \"\" {\n\t\tc.UpdaterJournal = filepath.Join(updatejournal.DefaultDir, updatejournal.FileName)\n\t}\n\tif c.LockPath == \"\" {\n\t\tc.LockPath = \"/var/lib/vpn-node/update.lock\"\n\t}\n\tif c.DesiredStatePath == \"\" {\n\t\tc.DesiredStatePath = filepath.Join(c.StateDir, \"desired-state.json\")\n\t}\n\tif c.HeartbeatPath == \"\" {\n\t\tc.HeartbeatPath = \"/run/vpn-node/heartbeat\"\n\t}\n\tif c.RenewLeadSeconds <= 0 {\n\t\tc.RenewLeadSeconds = 120\n\t}\n\tif c.HeartbeatSeconds <= 0 {\n\t\tc.HeartbeatSeconds = 10\n\t}\n\tif c.WatchdogStaleSeconds <= 0 {\n\t\tc.WatchdogStaleSeconds = 30\n\t}\n\tif c.PollSeconds <= 0 {\n\t\tc.PollSeconds = 10\n\t}\n\tif c.ObservationSeconds <= 0 {"
+    },
+    {
+      "path": "node/nodelock/lock.go",
+      "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+      "sha256": "798da9ac7aeced6b51b289684399508103f940f9b72065eb142dcb51cec1e9cc",
+      "first_line": 20,
+      "last_line": 25,
+      "excerpt": ")\n\n// DefaultPath is the default lock file (§4 node paths).\nconst DefaultPath = \"/var/lib/vpn-node/update.lock\"\n\n// ErrBusy means another process holds the lock (UPDATE_BUSY, §13.11)."
+    },
+    {
+      "path": "node/internal/nodelock/lock.go",
+      "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+      "sha256": "01a3c27bd7baba6cabd2bc01dbfc58fffed842a7b732fc8b4b198f92e30946de",
+      "first_line": 10,
+      "last_line": 16,
+      "excerpt": "\treal \"github.com/TED-H-com/Freedom-VPN/node/nodelock\"\n)\n\n// DefaultPath is the default lock file (§4 node paths).\nconst DefaultPath = real.DefaultPath\n\n// ErrBusy means another process holds the lock (UPDATE_BUSY, §13.11)."
+    },
+    {
+      "path": "node/updater/layout.go",
+      "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+      "sha256": "a5dd94dc2366840ead0257e6f2e385ddff8e43f74df9b3fdb6b7b2ef4acea5fe",
+      "first_line": 26,
+      "last_line": 37,
+      "excerpt": "func DefaultLayout() Layout {\n\treturn Layout{\n\t\tReleases: \"/opt/vpn-node/releases\",\n\t\tCurrent:  \"/opt/vpn-node/current\",\n\t\tIdentity: \"/var/lib/vpn-node/identity\",\n\t\tState:    \"/var/lib/vpn-node/state\",\n\t\tJournal:  \"/var/lib/vpn-node/update-journal\",\n\t\tLock:     \"/var/lib/vpn-node/update.lock\",\n\t\tStaging:  \"/var/lib/vpn-node/update-staging\",\n\t\tTrust:    \"/etc/vpn-node/release-trust.json\",\n\t}\n}"
+    },
+    {
+      "path": "packaging/installer/layout.go",
+      "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+      "sha256": "110da37bcfeaf58419d6ff3b2de941be9f9b7473199c05ac86dc6006e73355b4",
+      "first_line": 44,
+      "last_line": 56,
+      "excerpt": "\t\tVarDir:        \"/var/lib/vpn-node\",\n\t\tIdentityDir:   \"/var/lib/vpn-node/identity\",\n\t\tStateDir:      \"/var/lib/vpn-node/state\",\n\t\tUpdateJournal: \"/var/lib/vpn-node/update-journal\",\n\t\tStagingDir:    \"/var/lib/vpn-node/update-staging\",\n\t\tInstallDir:    \"/var/lib/vpn-node/install\",\n\t\tRetiredDir:    \"/var/lib/vpn-node/identity.retired\",\n\t\tOptDir:        \"/opt/vpn-node\",\n\t\tReleasesDir:   \"/opt/vpn-node/releases\",\n\t\tCurrentLink:   \"/opt/vpn-node/current\",\n\t\tLockPath:      \"/var/lib/vpn-node/update.lock\",\n\t\tRunDir:        \"/run/vpn-node\",\n\t\tSystemdDir:    \"/etc/systemd/system\","
+    },
+    {
+      "path": "node/watchdog/watch.go",
+      "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+      "sha256": "8f9da067c6691c899ac115025d620c13fdccbfde0794bcb54b490f5bfdb987ab",
+      "first_line": 74,
+      "last_line": 80,
+      "excerpt": "\tif err := json.Unmarshal(b, &c); err != nil {\n\t\treturn Config{}, fmt.Errorf(\"watchdog: config: %w\", err)\n\t}\n\tif c.LockPath == \"\" {\n\t\tc.LockPath = nodelock.DefaultPath\n\t}\n\tif c.HeartbeatPath == \"\" {"
+    },
+    {
+      "path": "node/internal/updatejournal/journal.go",
+      "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+      "sha256": "6d8b3393444a2d77ca3889cf31d648f9276e3ff1446cdaaef0e98a99514432c5",
+      "first_line": 33,
+      "last_line": 39,
+      "excerpt": "\n// DefaultDir is the default journal directory (AGENTS.md §4).\nconst DefaultDir = \"/var/lib/vpn-node/update-journal\"\n\n// FileName is the database file inside the journal directory.\nconst FileName = \"journal.db\"\n"
+    },
+    {
+      "path": "node/agent/engine.go",
+      "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+      "sha256": "d3177df609bc773d27d7155a83611dfffe4138d00a59fb6017b6923064001e22",
+      "first_line": 619,
+      "last_line": 632,
+      "excerpt": "\t// A timed-out control pass did not authorize a new policy. Keep the\n\t// just-verified generation instead of re-installing the same expiring\n\t// allowset on each outage retry. No guard/timeout is reset by this path.\n\tretain := ioCtx.Err() != nil && e.serving && e.decision.Serve && e.applyError == nil &&\n\t\tpreviousDesired == e.desired && previousLease == e.lease && e.appliedModel != nil &&\n\t\te.appliedGen == e.decision.Model.Generation && e.policyExpires == e.decision.PolicyExpires &&\n\t\tlen(e.pendingRevoke) == 0 && !e.memberPathPending && !e.quarantinePending\n\tif retain {\n\t\te.checkMemberPath(ctx, *e.appliedModel)\n\t} else {\n\t\tif err := e.enforce(ctx, e.decision); err != nil && ctx.Err() != nil {\n\t\t\treturn err\n\t\t}\n\t}"
+    }
+  ],
+  "expected_blocked_unchanged": {
+    "path": "tests/e2e/at/isolation/expected-blocked.json",
+    "sha256": "b758e44d525ac53732119e4024fefadfb8471879ad9bcecc0561807a736e4b90"
+  },
+  "wrong_path_search": [
+    {
+      "commit": "e54700f9d2f8361b8905c44e51f3f32bb82e5bcf",
+      "matches": [
+        "e54700f9:docs/poc/G2-followup32-design/protocol.md:93:The shared lock path is **`/var/lib/vpn-node/update-journal/update.lock`**, from"
+      ]
+    },
+    {
+      "commit": "9f85c3fbee729f1ff0e825d06c41570dedc231c6",
+      "matches": [
+        "9f85c3fb:docs/handover/follow-up-36.md:95:claims `/var/lib/vpn-node/update-journal/update.lock`. The follow-up 31 line",
+        "9f85c3fb:docs/handover/follow-up-36.md:242:update-journal/update.lock, contradicts main's node/agent/config.go,",
+        "9f85c3fb:docs/poc/G2-followup32-design/protocol.md:93:The shared lock path is **`/var/lib/vpn-node/update-journal/update.lock`**, from",
+        "9f85c3fb:docs/reviews/README.md:458:  `/var/lib/vpn-node/update-journal/update.lock`. Main's",
+        "9f85c3fb:docs/reviews/r24-hitless-guard-review.md:178:  1. `current-guarantees.md:27` states that `enforce.Apply` runs after `/var/lib/vpn-node/update.lock` is held, whereas `Config.ApplyDefaults` (`node/agent/config.go:130`) and `node/updater/config.go:53` place the shared lock at `/var/lib/vpn-node/update-journal/update.lock`.",
+        "9f85c3fb:docs/reviews/r24-hitless-guard-review.md:181:  Update `current-guarantees.md:27` to cite `/var/lib/vpn-node/update-journal/update.lock`, and specify in `candidates.md` that whenever the eligible set is empty (including cold start, post-baseline, or unconditional fallback), `fv_eligible_g` and the two `return` rules are omitted from `fv_deadline_guard` (leaving only the two `iifname`/`oifname` `drop` rules and `fv_token_g`).",
+        "9f85c3fb:tests/handover/handover_test.go:11004:\t\t\t{reviews, []string{\"/var/lib/vpn-node/update.lock\", \"/var/lib/vpn-node/update-journal/update.lock\", \"node/updater/config.go does\\n  not exist\", \"additive\\n  correction\"}},",
+        "9f85c3fb:tests/handover/handover_test.go:11386:\t\tif a.Lock.Main != \"/var/lib/vpn-node/update.lock\" || a.Lock.Claim != \"/var/lib/vpn-node/update-journal/update.lock\" || a.Lock.Matches || a.Lock.Config {",
+        "9f85c3fb:tests/handover/testdata/history/follow-up-36/source-audit.json:141:    \"revision_claim\": \"/var/lib/vpn-node/update-journal/update.lock\","
+      ]
+    }
+  ],
+  "gzip_archives_searched": 411,
+  "gzip_wrong_path_hits": 0,
+  "reviewed_tree": "52a7e59be947422e5e7c39a52d3c227c84050718",
+  "absent_terms": [
+    "TCP_RTO_MIN",
+    "socket pacing"
+  ],
+  "updater_config_exists": false,
+  "go_proofs": [
+    {
+      "name": "TestAT13_F32_BaselineIndependentOfSnapshot",
+      "declaration": "792e3e4186d00db72aaaf0ee309e6716332b8dd3:node/enforce/followup32_test.go:215:func TestAT13_F32_BaselineIndependentOfSnapshot(t *testing.T) {"
+    },
+    {
+      "name": "TestAT13_F32_CanceledVerificationQuarantinesIndependently",
+      "declaration": "792e3e4186d00db72aaaf0ee309e6716332b8dd3:node/enforce/followup32_test.go:173:func TestAT13_F32_CanceledVerificationQuarantinesIndependently(t *testing.T) {"
+    },
+    {
+      "name": "TestAT13_F32_EachMutationFailureUsesBoundedCleanup",
+      "declaration": "792e3e4186d00db72aaaf0ee309e6716332b8dd3:node/enforce/followup32_test.go:240:func TestAT13_F32_EachMutationFailureUsesBoundedCleanup(t *testing.T) {"
+    },
+    {
+      "name": "TestAT13_F32_OrphanCrashCutRecovery",
+      "declaration": "792e3e4186d00db72aaaf0ee309e6716332b8dd3:node/enforce/followup32_test.go:48:func TestAT13_F32_OrphanCrashCutRecovery(t *testing.T) {"
+    },
+    {
+      "name": "TestAT13_F32_PostShapeClockReadFailureRollsBack",
+      "declaration": "792e3e4186d00db72aaaf0ee309e6716332b8dd3:node/enforce/followup32_test.go:13:func TestAT13_F32_PostShapeClockReadFailureRollsBack(t *testing.T) {"
+    },
+    {
+      "name": "TestR24_H2_OrphanMemberTCClassDeletedBeforeNftBatch",
+      "declaration": "792e3e4186d00db72aaaf0ee309e6716332b8dd3:node/enforce/review_r24_test.go:123:func TestR24_H2_OrphanMemberTCClassDeletedBeforeNftBatch(t *testing.T) {"
+    },
+    {
+      "name": "TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen",
+      "declaration": "792e3e4186d00db72aaaf0ee309e6716332b8dd3:node/enforce/review_r24_test.go:25:func TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen(t *testing.T) {"
+    },
+    {
+      "name": "TestR24_M2_FatalRevokeInputRejectedBeforeMutation",
+      "declaration": "792e3e4186d00db72aaaf0ee309e6716332b8dd3:node/enforce/followup32_test.go:33:func TestR24_M2_FatalRevokeInputRejectedBeforeMutation(t *testing.T) {"
+    },
+    {
+      "name": "TestR24_M2_PostShapeClockCheckSkipsBaselineInApply",
+      "declaration": "792e3e4186d00db72aaaf0ee309e6716332b8dd3:node/enforce/review_r24_test.go:188:func TestR24_M2_PostShapeClockCheckSkipsBaselineInApply(t *testing.T) {"
+    }
+  ],
+  "prior_claims_sha256": "f26d0401ac4c9c21040a1a2b23d614c73d9949e11062e87b655212c46c0007a5",
+  "brief_status": {
+    "agent_core": "37–41 delivered and held; H-1/H-3 fixed on unmerged 41",
+    "r25": "running at 8cc27609; status only; archive deferred"
+  },
+  "prior_night_pass_in_owned_documents": false
+}

@@ -1,7 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 35](follow-up-35.md) (2026-11-03 EST):** Through #421: F27-02’s fixed-test reading holds; F23-01 fixed in fixtures; #417 count corrected to 15. Hitless guard design awaits the owner; production keeps the current guard. r23 returned to agent-core 40, none confirmed. F30-01 and r20 H-1 open. Ten owner requests.
-**Previous cut — [follow-up 34](follow-up-34.md):** #416–#418 at cc0ed4ae; 14 subtests, three rows, ten frozen inputs, 312 payload hashes and lengths (19 gzip originals), two dated documents, three PR excerpts, 81 findings, 47 decisions and nine requests.
+**Current cut — [follow-up 37](follow-up-37.md) (2026-11-03 EST):** #424–#426: isolation readiness fixed locally; first scheduled exercise pending. Netlab 33 corrects L-1 and B1 citations additively. C1 remains documents only; no hitless hand-over. r24 H-1/H-3, F30-01 and r20 H-1 stay open on main. Ten owner requests.
+**Previous cut — [follow-up 36](follow-up-36.md):** #422–#423 at d7867928; 16 subtests, two final rows, ten frozen inputs, exact r24, 174 netlab files (12 gzip originals), two PR excerpts and separate source audit; 96 findings, 47 decisions, ten requests.
 
 ## Restart measurements at #412
 
@@ -373,22 +373,38 @@ usage. See the [archived r20 review](../reviews/r20-adoption-signal-review.md).
 Agent-core 37's fixes were held after r21 and go with reviewed agent-core 38;
 the finding remains open on main. No fix date is promised.
 
-**2026-11-03 — Reload and restart limits at #421.** During a ruleset reload,
+**2026-11-03 — Follow-up 37 at #426.** The at-isolation nightly harness
+readiness fix is merged in #424. Local run 9f1bc0ff passes both previously
+unlisted rows; the first scheduled run exercising the fix is still pending.
+AT11's native platform matrix and AT13's full fault matrix remain operator
+rows. The previous night's 41456092596 AT10 pass used inherited readiness
+and is not qualified. Netlab 33's additive citation corrections change no
+reload behavior. The follow-up 36 guidance below remains current at this cut;
+r24 H-1 and r20 H-1 remain open on main while agent-core 37–41 are held.
+See [follow-up 37](follow-up-37.md).
+
+**2026-11-03 — Reload and restart limits at #423.** During a ruleset reload,
 in-flight member TCP segments can be dropped while a generation installs.
 Netlab 30 matched seven missing node egresses to deadline-guard drops inside
 their install-command brackets. TCP recovered by retransmission in every
 observed read; the worst was 416.7 ms. B1's earlier 1,501.4 ms failed read has
 no packet trace and remains unexplained. The guard window and full suite
 were host-unqualified despite passing functional assertions. These samples
-provide no guaranteed recovery bound. Netlab 31 (#421) delivered a hitless
-guard hand-over design only. C1 awaits the owner's G5/G6 decision and review;
-production keeps the current guard. No hitless hand-over is implemented.
+provide no guaranteed recovery bound. Netlab 32 (#423) changed the install
+order, not the guard. C1 is revised as documents only; the owner's G5/G6 trade
+is still undecided and production keeps the current guard. No hitless hand-over
+is implemented and no C1 benefit is promised.
+
+**r24 H-1 remains open on main:** a serving node re-installs its unchanged
+enforcement after every successful nominal ten-second poll. Each install closes
+member forwarding for the guard window. Netlab 30's 28.5 ms median and 94.7 ms
+maximum are outer command brackets, not exact outages or future bounds.
+Agent-core 41's fix is not merged; no date is promised.
 
 r20 H-1's mapping-conflict usage gap stays open on main while agent-core
-37–39 are held; r23 is returned to agent-core 40 before the combined merge.
-F30-01 remains known behaviour with no merged fix. See
-[follow-up 35](follow-up-35.md) and
-[netlab 31's design](../poc/G2-followup31-design/hitless-guard-design.md).
+37–41 are held. Their judgments and fixes are outside this cut. F30-01 remains
+known behaviour with no merged fix. See [follow-up 36](follow-up-36.md) and
+[netlab 32's revision](../poc/G2-followup32-design/revision.md).
 
 **2026-11-03 — Restart warning at #415.** r20 H-1's mapping-conflict usage
 gap stays open on main while agent-core 37–39 are held. Review r22 returned

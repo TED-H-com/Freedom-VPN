@@ -1,7 +1,7 @@
 # Freedom VPN 會員使用手冊 / Member Guide (`docs/handover/member-guide.md`)
 
-**Current cut — [follow-up 35](follow-up-35.md) (2026-11-03 EST):** Through #421: F27-02’s fixed-test reading holds; F23-01 fixed in fixtures; #417 count corrected to 15. Hitless guard design awaits the owner; production keeps the current guard. r23 returned to agent-core 40, none confirmed. F30-01 and r20 H-1 open. Ten owner requests.
-**Previous cut — [follow-up 34](follow-up-34.md):** #416–#418 at cc0ed4ae; 14 subtests, three rows, ten frozen inputs, 312 payload hashes and lengths (19 gzip originals), two dated documents, three PR excerpts, 81 findings, 47 decisions and nine requests.
+**Current cut — [follow-up 37](follow-up-37.md) (2026-11-03 EST):** #424–#426: isolation readiness fixed locally; first scheduled exercise pending. Netlab 33 corrects L-1 and B1 citations additively. C1 remains documents only; no hitless hand-over. r24 H-1/H-3, F30-01 and r20 H-1 stay open on main. Ten owner requests.
+**Previous cut — [follow-up 36](follow-up-36.md):** #422–#423 at d7867928; 16 subtests, two final rows, ten frozen inputs, exact r24, 174 netlab files (12 gzip originals), two PR excerpts and separate source audit; 96 findings, 47 decisions, ten requests.
 
 **2026-10-31 服務通知（#351 截止）：** DNS 的 TTL 是快取最長有效時間，
 不保證期間內每次查詢答案相同；較早送出的上游請求若較晚完成，可能覆蓋較新的

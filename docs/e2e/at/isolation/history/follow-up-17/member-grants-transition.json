@@ -1,0 +1,2079 @@
+{
+  "after": {
+    "node": [
+      "registered",
+      "ready",
+      "passed",
+      "12",
+      "12"
+    ],
+    "frozen": false,
+    "bindings": [
+      {
+        "id": "01a1a00f-14fe-7be6-94c6-5e0d51db0342",
+        "peer_ref": "dbknpa78k4c000853jrg",
+        "device_id": "01a1a00f-14fe-7be5-a3e7-a4456b73e45b",
+        "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+        "overlay_ip": "100.108.185.217",
+        "valid_from": "2026-11-03T06:18:25.406779+00:00",
+        "valid_until": "2026-11-03T07:18:26.130651+00:00",
+        "overlay_scope": "e2e-overlay",
+        "binding_revision": 1
+      },
+      {
+        "id": "01a1a00f-5011-7478-a64d-03a3212841eb",
+        "peer_ref": "dbknpdv8k4c000853mog",
+        "device_id": "01a1a00f-5011-7477-9443-7ebfe43900ca",
+        "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+        "overlay_ip": "100.108.218.29",
+        "valid_from": "2026-11-03T06:18:40.529292+00:00",
+        "valid_until": "2026-11-03T07:18:26.130651+00:00",
+        "overlay_scope": "e2e-overlay",
+        "binding_revision": 1
+      },
+      {
+        "id": "01a1a00f-8b29-7427-a4e2-803c185a4f05",
+        "peer_ref": "dbknphv8k4c000853qa0",
+        "device_id": "01a1a00f-8b29-7426-afaf-8633570a1e21",
+        "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+        "overlay_ip": "100.108.109.85",
+        "valid_from": "2026-11-03T06:18:55.657272+00:00",
+        "valid_until": "2026-11-03T07:18:41.964478+00:00",
+        "overlay_scope": "e2e-overlay",
+        "binding_revision": 1
+      }
+    ],
+    "envelope": {
+      "id": "115bca5d-6c5d-43da-85b2-b6c79a5c22f4",
+      "etag": "\"ds-12-13ca573f7b07e8900f295874\"",
+      "node_id": "01a1a00e-b542-7930-bdc9-226a3f5d56ab",
+      "envelope": {
+        "signed": {
+          "dns": {
+            "resolver_ipv4": [
+              "192.0.6.53"
+            ],
+            "resolver_ipv6": [],
+            "resolver_document": {
+              "generation": "1",
+              "size_bytes": 521,
+              "document_id": "01a1a00e-b68b-7bab-9fc3-760155a16038",
+              "content_sha256": "59e58cee29f9b15f285353abfebb205405f62b9fde93af95ec13aceb18cd6d91",
+              "profile_revision_id": "01a1a00e-b500-7435-bf53-38d9accf9c48"
+            }
+          },
+          "update": null,
+          "node_id": "01a1a00e-b542-7930-bdc9-226a3f5d56ab",
+          "issued_at": "2026-11-03T06:19:02.073475856Z",
+          "expires_at": "2026-11-03T06:29:02.073475856Z",
+          "policy_refs": {
+            "dns_generation": "1",
+            "fup_generation": "1",
+            "authorization_generation": "1"
+          },
+          "egress_probe": null,
+          "node_capacity": {
+            "up_bps": 200000000,
+            "down_bps": 200000000,
+            "member_up_bps_cap": 100000000,
+            "member_down_bps_cap": 100000000
+          },
+          "safety_profile": "internet-only-v1",
+          "schema_version": 1,
+          "device_bindings": [
+            {
+              "peer_id": "dbknpa78k4c000853jrg",
+              "device_id": "01a1a00f-14fe-7be5-a3e7-a4456b73e45b",
+              "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+              "valid_from": "2026-11-03T06:18:25.406779Z",
+              "valid_until": "2026-11-03T07:18:26.130651Z",
+              "allowed_ipv4": [
+                "100.108.185.217"
+              ],
+              "allowed_ipv6": [],
+              "binding_revision": "1"
+            },
+            {
+              "peer_id": "dbknpdv8k4c000853mog",
+              "device_id": "01a1a00f-5011-7477-9443-7ebfe43900ca",
+              "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+              "valid_from": "2026-11-03T06:18:40.529292Z",
+              "valid_until": "2026-11-03T07:18:26.130651Z",
+              "allowed_ipv4": [
+                "100.108.218.29"
+              ],
+              "allowed_ipv6": [],
+              "binding_revision": "1"
+            },
+            {
+              "peer_id": "dbknphv8k4c000853qa0",
+              "device_id": "01a1a00f-8b29-7426-afaf-8633570a1e21",
+              "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+              "valid_from": "2026-11-03T06:18:55.657272Z",
+              "valid_until": "2026-11-03T07:18:41.964478Z",
+              "allowed_ipv4": [
+                "100.108.109.85"
+              ],
+              "allowed_ipv6": [],
+              "binding_revision": "1"
+            }
+          ],
+          "binding_revision": "1",
+          "accounting_period": {
+            "period_id": "2026-11",
+            "period_end": "2026-12-01T00:00:00Z",
+            "period_start": "2026-11-01T00:00:00Z"
+          },
+          "config_generation": "12",
+          "desired_release_id": null,
+          "publication_intent": "published",
+          "node_incarnation_id": "01a1a00e-b8c2-761e-a8dd-5f6dffb3183e",
+          "serving_release_ids": [
+            "01a1a00e-b04c-77a9-b278-54f0ca6e7884"
+          ],
+          "member_rate_policies": [
+            {
+              "mode": "shadow",
+              "reason": "normal",
+              "up_bps": 100000000,
+              "down_bps": 100000000,
+              "priority": 0,
+              "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+              "period_id": "2026-11",
+              "generation": "0",
+              "tier_index": 0,
+              "valid_from": "2026-11-03T06:18:10.329906Z",
+              "valid_until": "2026-11-03T07:18:26.130651Z"
+            },
+            {
+              "mode": "shadow",
+              "reason": "normal",
+              "up_bps": 100000000,
+              "down_bps": 100000000,
+              "priority": 0,
+              "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+              "period_id": "2026-11",
+              "generation": "1",
+              "tier_index": 0,
+              "valid_from": "2026-11-03T06:18:42.077357Z",
+              "valid_until": "2026-11-03T07:18:41.964478Z"
+            }
+          ],
+          "lease_renewal_endpoint": "/api/v1/agent/lease-renewals",
+          "supported_release_policy_id": "01a1a00e-b4c7-7068-b08b-f955a1207c5f"
+        },
+        "signatures": [
+          {
+            "key_id": "01a1a00e-2877-72d4-81bc-fb571cd2e53a",
+            "algorithm": "ed25519",
+            "signature_b64": "hEE7m1DUj0/kmWQhRt+6PuS8SoVNyffV6iMPHzLJXDdpLQVr/5ZI6Giq+DXOAyrayLggaOZnfjvSru0+pAxQAA=="
+          }
+        ]
+      },
+      "issued_at": "2026-11-03T06:19:02.073475+00:00",
+      "created_at": "2026-11-03T06:18:01.958989+00:00",
+      "expires_at": "2026-11-03T06:29:02.073475+00:00",
+      "generation": 12,
+      "updated_at": "2026-11-03T06:19:02.076396+00:00",
+      "incarnation_id": "01a1a00e-b8c2-761e-a8dd-5f6dffb3183e",
+      "desired_state_id": "7834f3dc-4b4a-4616-8597-3866f9daaaae"
+    },
+    "publication": [
+      "published",
+      "active"
+    ],
+    "entitlements": [
+      {
+        "id": "b4280d10-5335-471f-a819-58c3f7f45d98",
+        "state": "active",
+        "revision": 2,
+        "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+        "projection": {
+          "plan": {
+            "device_limit": 3,
+            "exit_group_ids": [
+              "01a1a00e-b50d-7ade-8ac9-fc6676735c65"
+            ],
+            "plan_revision_id": "01a1a00e-b51c-702f-b082-8f3ea7a100f5"
+          },
+          "state": "active",
+          "valid_from": "2026-11-03T06:18:10.329906Z",
+          "grace_until": null,
+          "source_refs": [
+            "01a1a00e-da1a-7522-844c-a88e06d9d699",
+            "01a1a00f-1819-709e-8447-4e2956328ea8"
+          ],
+          "device_limit": 3,
+          "paid_through": null,
+          "exit_group_ids": [
+            "01a1a00e-b50d-7ade-8ac9-fc6676735c65"
+          ],
+          "admin_suspended": false,
+          "member_group_ids": [],
+          "cancel_at_period_end": false,
+          "effective_service_end": "2026-11-03T07:18:26.130651Z"
+        },
+        "valid_from": "2026-11-03T06:18:10.329906+00:00",
+        "computed_at": "2026-11-03T06:18:26.20112+00:00",
+        "source_refs": [
+          "01a1a00e-da1a-7522-844c-a88e06d9d699",
+          "01a1a00f-1819-709e-8447-4e2956328ea8"
+        ],
+        "device_limit": 3,
+        "admin_suspended": false,
+        "plan_revision_id": "01a1a00e-b51c-702f-b082-8f3ea7a100f5",
+        "next_transition_at": "2026-11-03T07:18:10.201784+00:00",
+        "effective_service_end": "2026-11-03T07:18:26.130651+00:00"
+      },
+      {
+        "id": "893fa287-7f74-4617-ade7-a723f13f4cd8",
+        "state": "active",
+        "revision": 1,
+        "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+        "projection": {
+          "plan": {
+            "device_limit": 3,
+            "exit_group_ids": [
+              "01a1a00e-b52a-7d5e-b48d-f0f0f5ff047d"
+            ],
+            "plan_revision_id": "01a1a00e-b532-7b86-aeeb-20164f899d12"
+          },
+          "state": "active",
+          "valid_from": "2026-11-03T06:18:42.077357Z",
+          "grace_until": null,
+          "source_refs": [
+            "01a1a00f-561d-7ba9-90b4-dc2e3942b77f"
+          ],
+          "device_limit": 3,
+          "paid_through": null,
+          "exit_group_ids": [
+            "01a1a00e-b52a-7d5e-b48d-f0f0f5ff047d"
+          ],
+          "admin_suspended": false,
+          "member_group_ids": [],
+          "cancel_at_period_end": false,
+          "effective_service_end": "2026-11-03T07:18:41.964478Z"
+        },
+        "valid_from": "2026-11-03T06:18:42.077357+00:00",
+        "computed_at": "2026-11-03T06:18:42.077929+00:00",
+        "source_refs": [
+          "01a1a00f-561d-7ba9-90b4-dc2e3942b77f"
+        ],
+        "device_limit": 3,
+        "admin_suspended": false,
+        "plan_revision_id": "01a1a00e-b532-7b86-aeeb-20164f899d12",
+        "next_transition_at": "2026-11-03T07:18:41.964478+00:00",
+        "effective_service_end": "2026-11-03T07:18:41.964478+00:00"
+      }
+    ],
+    "offline_seconds": 60,
+    "device_projection": [
+      {
+        "id": "01a1a00f-14fe-7be5-a3e7-a4456b73e45b",
+        "status": "authorized",
+        "authorized_at": "2026-11-03T06:18:25.406779+00:00"
+      },
+      {
+        "id": "01a1a00f-5011-7477-9443-7ebfe43900ca",
+        "status": "authorized",
+        "authorized_at": "2026-11-03T06:18:40.529292+00:00"
+      },
+      {
+        "id": "01a1a00f-8b29-7426-afaf-8633570a1e21",
+        "status": "authorized",
+        "authorized_at": "2026-11-03T06:18:55.657272+00:00"
+      }
+    ]
+  },
+  "before": {
+    "node": [
+      "registered",
+      "ready",
+      "passed",
+      "12",
+      "12"
+    ],
+    "frozen": false,
+    "bindings": [
+      {
+        "id": "01a1a00f-14fe-7be6-94c6-5e0d51db0342",
+        "peer_ref": "dbknpa78k4c000853jrg",
+        "device_id": "01a1a00f-14fe-7be5-a3e7-a4456b73e45b",
+        "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+        "overlay_ip": "100.108.185.217",
+        "valid_from": "2026-11-03T06:18:25.406779+00:00",
+        "valid_until": "2026-11-03T07:18:26.130651+00:00",
+        "overlay_scope": "e2e-overlay",
+        "binding_revision": 1
+      },
+      {
+        "id": "01a1a00f-5011-7478-a64d-03a3212841eb",
+        "peer_ref": "dbknpdv8k4c000853mog",
+        "device_id": "01a1a00f-5011-7477-9443-7ebfe43900ca",
+        "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+        "overlay_ip": "100.108.218.29",
+        "valid_from": "2026-11-03T06:18:40.529292+00:00",
+        "valid_until": "2026-11-03T07:18:26.130651+00:00",
+        "overlay_scope": "e2e-overlay",
+        "binding_revision": 1
+      },
+      {
+        "id": "01a1a00f-8b29-7427-a4e2-803c185a4f05",
+        "peer_ref": "dbknphv8k4c000853qa0",
+        "device_id": "01a1a00f-8b29-7426-afaf-8633570a1e21",
+        "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+        "overlay_ip": "100.108.109.85",
+        "valid_from": "2026-11-03T06:18:55.657272+00:00",
+        "valid_until": "2026-11-03T07:18:41.964478+00:00",
+        "overlay_scope": "e2e-overlay",
+        "binding_revision": 1
+      }
+    ],
+    "envelope": {
+      "id": "115bca5d-6c5d-43da-85b2-b6c79a5c22f4",
+      "etag": "\"ds-12-13ca573f7b07e8900f295874\"",
+      "node_id": "01a1a00e-b542-7930-bdc9-226a3f5d56ab",
+      "envelope": {
+        "signed": {
+          "dns": {
+            "resolver_ipv4": [
+              "192.0.6.53"
+            ],
+            "resolver_ipv6": [],
+            "resolver_document": {
+              "generation": "1",
+              "size_bytes": 521,
+              "document_id": "01a1a00e-b68b-7bab-9fc3-760155a16038",
+              "content_sha256": "59e58cee29f9b15f285353abfebb205405f62b9fde93af95ec13aceb18cd6d91",
+              "profile_revision_id": "01a1a00e-b500-7435-bf53-38d9accf9c48"
+            }
+          },
+          "update": null,
+          "node_id": "01a1a00e-b542-7930-bdc9-226a3f5d56ab",
+          "issued_at": "2026-11-03T06:19:02.073475856Z",
+          "expires_at": "2026-11-03T06:29:02.073475856Z",
+          "policy_refs": {
+            "dns_generation": "1",
+            "fup_generation": "1",
+            "authorization_generation": "1"
+          },
+          "egress_probe": null,
+          "node_capacity": {
+            "up_bps": 200000000,
+            "down_bps": 200000000,
+            "member_up_bps_cap": 100000000,
+            "member_down_bps_cap": 100000000
+          },
+          "safety_profile": "internet-only-v1",
+          "schema_version": 1,
+          "device_bindings": [
+            {
+              "peer_id": "dbknpa78k4c000853jrg",
+              "device_id": "01a1a00f-14fe-7be5-a3e7-a4456b73e45b",
+              "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+              "valid_from": "2026-11-03T06:18:25.406779Z",
+              "valid_until": "2026-11-03T07:18:26.130651Z",
+              "allowed_ipv4": [
+                "100.108.185.217"
+              ],
+              "allowed_ipv6": [],
+              "binding_revision": "1"
+            },
+            {
+              "peer_id": "dbknpdv8k4c000853mog",
+              "device_id": "01a1a00f-5011-7477-9443-7ebfe43900ca",
+              "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+              "valid_from": "2026-11-03T06:18:40.529292Z",
+              "valid_until": "2026-11-03T07:18:26.130651Z",
+              "allowed_ipv4": [
+                "100.108.218.29"
+              ],
+              "allowed_ipv6": [],
+              "binding_revision": "1"
+            },
+            {
+              "peer_id": "dbknphv8k4c000853qa0",
+              "device_id": "01a1a00f-8b29-7426-afaf-8633570a1e21",
+              "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+              "valid_from": "2026-11-03T06:18:55.657272Z",
+              "valid_until": "2026-11-03T07:18:41.964478Z",
+              "allowed_ipv4": [
+                "100.108.109.85"
+              ],
+              "allowed_ipv6": [],
+              "binding_revision": "1"
+            }
+          ],
+          "binding_revision": "1",
+          "accounting_period": {
+            "period_id": "2026-11",
+            "period_end": "2026-12-01T00:00:00Z",
+            "period_start": "2026-11-01T00:00:00Z"
+          },
+          "config_generation": "12",
+          "desired_release_id": null,
+          "publication_intent": "published",
+          "node_incarnation_id": "01a1a00e-b8c2-761e-a8dd-5f6dffb3183e",
+          "serving_release_ids": [
+            "01a1a00e-b04c-77a9-b278-54f0ca6e7884"
+          ],
+          "member_rate_policies": [
+            {
+              "mode": "shadow",
+              "reason": "normal",
+              "up_bps": 100000000,
+              "down_bps": 100000000,
+              "priority": 0,
+              "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+              "period_id": "2026-11",
+              "generation": "0",
+              "tier_index": 0,
+              "valid_from": "2026-11-03T06:18:10.329906Z",
+              "valid_until": "2026-11-03T07:18:26.130651Z"
+            },
+            {
+              "mode": "shadow",
+              "reason": "normal",
+              "up_bps": 100000000,
+              "down_bps": 100000000,
+              "priority": 0,
+              "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+              "period_id": "2026-11",
+              "generation": "1",
+              "tier_index": 0,
+              "valid_from": "2026-11-03T06:18:42.077357Z",
+              "valid_until": "2026-11-03T07:18:41.964478Z"
+            }
+          ],
+          "lease_renewal_endpoint": "/api/v1/agent/lease-renewals",
+          "supported_release_policy_id": "01a1a00e-b4c7-7068-b08b-f955a1207c5f"
+        },
+        "signatures": [
+          {
+            "key_id": "01a1a00e-2877-72d4-81bc-fb571cd2e53a",
+            "algorithm": "ed25519",
+            "signature_b64": "hEE7m1DUj0/kmWQhRt+6PuS8SoVNyffV6iMPHzLJXDdpLQVr/5ZI6Giq+DXOAyrayLggaOZnfjvSru0+pAxQAA=="
+          }
+        ]
+      },
+      "issued_at": "2026-11-03T06:19:02.073475+00:00",
+      "created_at": "2026-11-03T06:18:01.958989+00:00",
+      "expires_at": "2026-11-03T06:29:02.073475+00:00",
+      "generation": 12,
+      "updated_at": "2026-11-03T06:19:02.076396+00:00",
+      "incarnation_id": "01a1a00e-b8c2-761e-a8dd-5f6dffb3183e",
+      "desired_state_id": "7834f3dc-4b4a-4616-8597-3866f9daaaae"
+    },
+    "publication": [
+      "published",
+      "active"
+    ],
+    "entitlements": [
+      {
+        "id": "b4280d10-5335-471f-a819-58c3f7f45d98",
+        "state": "active",
+        "revision": 2,
+        "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+        "projection": {
+          "plan": {
+            "device_limit": 3,
+            "exit_group_ids": [
+              "01a1a00e-b50d-7ade-8ac9-fc6676735c65"
+            ],
+            "plan_revision_id": "01a1a00e-b51c-702f-b082-8f3ea7a100f5"
+          },
+          "state": "active",
+          "valid_from": "2026-11-03T06:18:10.329906Z",
+          "grace_until": null,
+          "source_refs": [
+            "01a1a00e-da1a-7522-844c-a88e06d9d699",
+            "01a1a00f-1819-709e-8447-4e2956328ea8"
+          ],
+          "device_limit": 3,
+          "paid_through": null,
+          "exit_group_ids": [
+            "01a1a00e-b50d-7ade-8ac9-fc6676735c65"
+          ],
+          "admin_suspended": false,
+          "member_group_ids": [],
+          "cancel_at_period_end": false,
+          "effective_service_end": "2026-11-03T07:18:26.130651Z"
+        },
+        "valid_from": "2026-11-03T06:18:10.329906+00:00",
+        "computed_at": "2026-11-03T06:18:26.20112+00:00",
+        "source_refs": [
+          "01a1a00e-da1a-7522-844c-a88e06d9d699",
+          "01a1a00f-1819-709e-8447-4e2956328ea8"
+        ],
+        "device_limit": 3,
+        "admin_suspended": false,
+        "plan_revision_id": "01a1a00e-b51c-702f-b082-8f3ea7a100f5",
+        "next_transition_at": "2026-11-03T07:18:10.201784+00:00",
+        "effective_service_end": "2026-11-03T07:18:26.130651+00:00"
+      },
+      {
+        "id": "893fa287-7f74-4617-ade7-a723f13f4cd8",
+        "state": "active",
+        "revision": 1,
+        "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+        "projection": {
+          "plan": {
+            "device_limit": 3,
+            "exit_group_ids": [
+              "01a1a00e-b52a-7d5e-b48d-f0f0f5ff047d"
+            ],
+            "plan_revision_id": "01a1a00e-b532-7b86-aeeb-20164f899d12"
+          },
+          "state": "active",
+          "valid_from": "2026-11-03T06:18:42.077357Z",
+          "grace_until": null,
+          "source_refs": [
+            "01a1a00f-561d-7ba9-90b4-dc2e3942b77f"
+          ],
+          "device_limit": 3,
+          "paid_through": null,
+          "exit_group_ids": [
+            "01a1a00e-b52a-7d5e-b48d-f0f0f5ff047d"
+          ],
+          "admin_suspended": false,
+          "member_group_ids": [],
+          "cancel_at_period_end": false,
+          "effective_service_end": "2026-11-03T07:18:41.964478Z"
+        },
+        "valid_from": "2026-11-03T06:18:42.077357+00:00",
+        "computed_at": "2026-11-03T06:18:42.077929+00:00",
+        "source_refs": [
+          "01a1a00f-561d-7ba9-90b4-dc2e3942b77f"
+        ],
+        "device_limit": 3,
+        "admin_suspended": false,
+        "plan_revision_id": "01a1a00e-b532-7b86-aeeb-20164f899d12",
+        "next_transition_at": "2026-11-03T07:18:41.964478+00:00",
+        "effective_service_end": "2026-11-03T07:18:41.964478+00:00"
+      }
+    ],
+    "offline_seconds": 60,
+    "device_projection": [
+      {
+        "id": "01a1a00f-14fe-7be5-a3e7-a4456b73e45b",
+        "status": "authorized",
+        "authorized_at": "2026-11-03T06:18:25.406779+00:00"
+      },
+      {
+        "id": "01a1a00f-5011-7477-9443-7ebfe43900ca",
+        "status": "authorized",
+        "authorized_at": "2026-11-03T06:18:40.529292+00:00"
+      },
+      {
+        "id": "01a1a00f-8b29-7426-afaf-8633570a1e21",
+        "status": "authorized",
+        "authorized_at": "2026-11-03T06:18:55.657272+00:00"
+      }
+    ]
+  },
+  "counted_forwarding": {
+    "device_id": "01a1a00f-14fe-7be5-a3e7-a4456b73e45b",
+    "container": "fvpn-w4-isolation-member-a1",
+    "at": "2026-11-03T06:20:43Z",
+    "counted": true,
+    "admission_bytes_before": "2632",
+    "admission_bytes_after": "5304",
+    "observations": [
+      {
+        "name": "member_route_before_selection",
+        "detail": "192.0.6.10 dev fvnb0 table netbird src 100.108.185.217 uid 0 \n    cache"
+      },
+      {
+        "name": "netbird_networks_before_selection",
+        "detail": "Available Networks:\n\n  - ID: fvpn-exit-72ac8c24fdd44ad0ff96483d\n    Network: 0.0.0.0/0\n    Status: Selected"
+      },
+      {
+        "name": "exit_discovery_seconds",
+        "detail": "0.000"
+      },
+      {
+        "name": "exit_selection",
+        "detail": "Networks selected successfully."
+      },
+      {
+        "name": "netbird_networks_after_selection",
+        "detail": "Available Networks:\n\n  - ID: fvpn-exit-72ac8c24fdd44ad0ff96483d\n    Network: 0.0.0.0/0\n    Status: Selected"
+      },
+      {
+        "name": "before_member_route",
+        "detail": "192.0.6.10 dev fvnb0 table netbird src 100.108.185.217 uid 0 \n    cache"
+      },
+      {
+        "name": "before_member_tunnel_address",
+        "detail": "3: fvnb0    inet 100.108.185.217/16 brd 100.108.255.255 scope global fvnb0\\       valid_lft forever preferred_lft forever"
+      },
+      {
+        "name": "before_member_routes",
+        "detail": "default dev fvnb0 table netbird \ndefault via 172.28.33.1 dev eth0 \n100.108.0.0/16 dev fvnb0 proto kernel scope link src 100.108.185.217 \n172.28.33.0/24 dev eth0 proto kernel scope link src 172.28.33.128 \nlocal 100.108.185.217 dev fvnb0 table local proto kernel scope host src 100.108.185.217 \nbroadcast 100.108.255.255 dev fvnb0 table local proto kernel scope link src 100.108.185.217 \nlocal 127.0.0.0/8 dev lo table local proto kernel scope host src 127.0.0.1 \nlocal 127.0.0.1 dev lo table local proto kernel scope host src 127.0.0.1 \nbroadcast 127.255.255.255 dev lo table local proto kernel scope link src 127.0.0.1 \nlocal 172.28.33.128 dev eth0 table local proto kernel scope host src 172.28.33.128 \nbroadcast 172.28.33.255 dev eth0 table local proto kernel scope link src 172.28.33.128"
+      },
+      {
+        "name": "before_node_nft",
+        "detail": "[{\"counter\":{\"family\":\"inet\",\"name\":\"ctbase\",\"table\":\"fvpn\",\"handle\":1,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctv6\",\"table\":\"fvpn\",\"handle\":2,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctin\",\"table\":\"fvpn\",\"handle\":3,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctbadns\",\"table\":\"fvpn\",\"handle\":115,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctdeny\",\"table\":\"fvpn\",\"handle\":116,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctdenyd\",\"table\":\"fvpn\",\"handle\":117,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"cthost\",\"table\":\"fvpn\",\"handle\":118,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctinv\",\"table\":\"fvpn\",\"handle\":119,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctnodn\",\"table\":\"fvpn\",\"handle\":120,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctunkd\",\"table\":\"fvpn\",\"handle\":121,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctunku\",\"table\":\"fvpn\",\"handle\":122,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"d_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":700,\"packets\":8,\"bytes\":1519}},{\"counter\":{\"family\":\"inet\",\"name\":\"nd_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":701,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nu_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":702,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"u_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":703,\"packets\":8,\"bytes\":1113}},{\"counter\":{\"family\":\"inet\",\"name\":\"d_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1256,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nd_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1257,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nu_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1258,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"u_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1259,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"d_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1902,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nd_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1903,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nu_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1904,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"u_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1905,\"packets\":0,\"bytes\":0}},{\"set\":{\"family\":\"inet\",\"name\":\"allowed_v4\",\"table\":\"fvpn\",\"type\":\"ipv4_addr\",\"handle\":4,\"flags\":[\"timeout\"],\"elem\":[{\"elem\":{\"val\":\"100.108.109.85\",\"timeout\":59,\"expires\":59}},{\"elem\":{\"val\":\"100.108.185.217\",\"timeout\":59,\"expires\":59}},{\"elem\":{\"val\":\"100.108.218.29\",\"timeout\":59,\"expires\":59}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6771,\"comment\":\"fvpn_generation=12 fvpn_metering=forward_admission_v1\",\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"192.0.2.255\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"192.0.2.255\"}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6772,\"comment\":\"fvpn_class=01a1a00e-da13-7131-a262-128c389b552c:a4ef\",\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"192.0.2.255\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"192.0.2.255\"}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6773,\"comment\":\"fvpn_class=01a1a00f-5616-7a4a-81cc-a968dcf312db:6763\",\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"192.0.2.255\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"192.0.2.255\"}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6774,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"nfproto\"}},\"right\":\"ipv6\"}},{\"counter\":\"ctv6\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6775,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"nfproto\"}},\"right\":\"ipv6\"}},{\"counter\":\"ctv6\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6776,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"in\",\"left\":{\"ct\":{\"key\":\"state\"}},\"right\":\"invalid\"}},{\"counter\":\"ctinv\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6777,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"in\",\"left\":{\"ct\":{\"key\":\"state\"}},\"right\":\"invalid\"}},{\"counter\":\"ctinv\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6778,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"!=\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@allowed_v4\"}},{\"counter\":\"ctunku\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6779,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6780,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6781,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6782,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6783,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6784,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6785,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"counter\":\"ctbadns\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6786,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@denied_v4\"}},{\"counter\":\"ctdeny\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6787,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@host_v4\"}},{\"counter\":\"cthost\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6788,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.185.217\"}},{\"counter\":\"u_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6789,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.218.29\"}},{\"counter\":\"u_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6790,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.109.85\"}},{\"counter\":\"u_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6791,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"!=\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@allowed_v4\"}},{\"counter\":\"ctunkd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6793,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"!=\",\"left\":{\"ct\":{\"key\":\"state\"}},\"right\":{\"set\":[\"established\",\"related\"]}}},{\"counter\":\"ctnodn\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6794,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6795,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6796,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6797,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6798,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6799,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6800,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"counter\":\"ctdenyd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6801,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@denied_v4\"}},{\"counter\":\"ctdenyd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6802,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@host_v4\"}},{\"counter\":\"ctdenyd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6803,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.185.217\"}},{\"counter\":\"d_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6804,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.218.29\"}},{\"counter\":\"d_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":6805,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.109.85\"}},{\"counter\":\"d_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"postrouting\",\"handle\":6808,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@allowed_v4\"}},{\"snat\":{\"family\":\"ip\",\"addr\":\"192.0.6.20\"}}]}}]"
+      },
+      {
+        "name": "before_conntrack",
+        "detail": "conntrack v1.4.8 (conntrack-tools): 0 flow entries have been shown."
+      },
+      {
+        "name": "before_member_tunnel",
+        "detail": "rx_packets=14\nrx_bytes=2224\ntx_packets=15\ntx_bytes=1956"
+      },
+      {
+        "name": "before_node_tunnel",
+        "detail": "rx_packets=15\nrx_bytes=1956\ntx_packets=15\ntx_bytes=2316"
+      },
+      {
+        "name": "before_node_uplink",
+        "detail": "rx_packets=50\nrx_bytes=6009\ntx_packets=24\ntx_bytes=2849"
+      },
+      {
+        "name": "capture_member",
+        "detail": "tcpdump: verbose output suppressed, use -v[v]... for full protocol decode\nlistening on fvnb0, link-type RAW (Raw IP), snapshot length 96 bytes\n06:20:45.298929 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.299243 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 0\n06:20:45.299261 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.299383 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 418\n06:20:45.299440 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 0\n06:20:45.299883 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 930\n06:20:45.299887 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.300417 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 64\n06:20:45.340871 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 0\n06:20:45.340884 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 219\n06:20:45.341556 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 0\n06:20:45.341561 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 141\n06:20:45.342142 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.342515 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 24\n06:20:45.342530 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.342531 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 0\n06:20:45.342536 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 0\n\n17 packets captured\n17 packets received by filter\n0 packets dropped by kernel"
+      },
+      {
+        "name": "capture_node_ingress",
+        "detail": "tcpdump: verbose output suppressed, use -v[v]... for full protocol decode\nlistening on fvmb0, link-type RAW (Raw IP), snapshot length 96 bytes\n06:20:45.299160 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.299212 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 0\n06:20:45.299407 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.299407 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 418\n06:20:45.299427 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 0\n06:20:45.299867 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 930\n06:20:45.300567 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.300568 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 64\n06:20:45.340815 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 0\n06:20:45.341015 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 219\n06:20:45.341072 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 0\n06:20:45.341296 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 141\n06:20:45.342255 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.342494 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 24\n06:20:45.342511 IP 192.0.6.10.443 \u003e 100.108.185.217.37454: tcp 0\n06:20:45.342546 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.342555 IP 100.108.185.217.37454 \u003e 192.0.6.10.443: tcp 0\n\n17 packets captured\n17 packets received by filter\n0 packets dropped by kernel"
+      },
+      {
+        "name": "capture_node_uplink",
+        "detail": "tcpdump: verbose output suppressed, use -v[v]... for full protocol decode\nlistening on fvup0, link-type EN10MB (Ethernet), snapshot length 96 bytes\n06:20:45.299185 IP 192.0.6.20.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.299207 IP 192.0.6.10.443 \u003e 192.0.6.20.37454: tcp 0\n06:20:45.299410 IP 192.0.6.20.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.299411 IP 192.0.6.20.37454 \u003e 192.0.6.10.443: tcp 418\n06:20:45.299425 IP 192.0.6.10.443 \u003e 192.0.6.20.37454: tcp 0\n06:20:45.299858 IP 192.0.6.10.443 \u003e 192.0.6.20.37454: tcp 930\n06:20:45.300577 IP 192.0.6.20.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.300579 IP 192.0.6.20.37454 \u003e 192.0.6.10.443: tcp 64\n06:20:45.340767 IP 192.0.6.10.443 \u003e 192.0.6.20.37454: tcp 0\n06:20:45.341040 IP 192.0.6.20.37454 \u003e 192.0.6.10.443: tcp 219\n06:20:45.341064 IP 192.0.6.10.443 \u003e 192.0.6.20.37454: tcp 0\n06:20:45.341287 IP 192.0.6.10.443 \u003e 192.0.6.20.37454: tcp 141\n06:20:45.342265 IP 192.0.6.20.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.342484 IP 192.0.6.10.443 \u003e 192.0.6.20.37454: tcp 24\n06:20:45.342508 IP 192.0.6.10.443 \u003e 192.0.6.20.37454: tcp 0\n06:20:45.342548 IP 192.0.6.20.37454 \u003e 192.0.6.10.443: tcp 0\n06:20:45.342557 IP 192.0.6.20.37454 \u003e 192.0.6.10.443: tcp 0\n\n17 packets captured\n17 packets received by filter\n0 packets dropped by kernel"
+      },
+      {
+        "name": "after_member_route",
+        "detail": "192.0.6.10 dev fvnb0 table netbird src 100.108.185.217 uid 0 \n    cache"
+      },
+      {
+        "name": "after_member_tunnel_address",
+        "detail": "3: fvnb0    inet 100.108.185.217/16 brd 100.108.255.255 scope global fvnb0\\       valid_lft forever preferred_lft forever"
+      },
+      {
+        "name": "after_member_routes",
+        "detail": "default dev fvnb0 table netbird \ndefault via 172.28.33.1 dev eth0 \n100.108.0.0/16 dev fvnb0 proto kernel scope link src 100.108.185.217 \n172.28.33.0/24 dev eth0 proto kernel scope link src 172.28.33.128 \nlocal 100.108.185.217 dev fvnb0 table local proto kernel scope host src 100.108.185.217 \nbroadcast 100.108.255.255 dev fvnb0 table local proto kernel scope link src 100.108.185.217 \nlocal 127.0.0.0/8 dev lo table local proto kernel scope host src 127.0.0.1 \nlocal 127.0.0.1 dev lo table local proto kernel scope host src 127.0.0.1 \nbroadcast 127.255.255.255 dev lo table local proto kernel scope link src 127.0.0.1 \nlocal 172.28.33.128 dev eth0 table local proto kernel scope host src 172.28.33.128 \nbroadcast 172.28.33.255 dev eth0 table local proto kernel scope link src 172.28.33.128"
+      },
+      {
+        "name": "after_node_nft",
+        "detail": "[{\"counter\":{\"family\":\"inet\",\"name\":\"ctbase\",\"table\":\"fvpn\",\"handle\":1,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctv6\",\"table\":\"fvpn\",\"handle\":2,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctin\",\"table\":\"fvpn\",\"handle\":3,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctbadns\",\"table\":\"fvpn\",\"handle\":115,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctdeny\",\"table\":\"fvpn\",\"handle\":116,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctdenyd\",\"table\":\"fvpn\",\"handle\":117,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"cthost\",\"table\":\"fvpn\",\"handle\":118,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctinv\",\"table\":\"fvpn\",\"handle\":119,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctnodn\",\"table\":\"fvpn\",\"handle\":120,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctunkd\",\"table\":\"fvpn\",\"handle\":121,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctunku\",\"table\":\"fvpn\",\"handle\":122,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"d_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":700,\"packets\":16,\"bytes\":3038}},{\"counter\":{\"family\":\"inet\",\"name\":\"nd_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":701,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nu_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":702,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"u_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":703,\"packets\":17,\"bytes\":2266}},{\"counter\":{\"family\":\"inet\",\"name\":\"d_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1256,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nd_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1257,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nu_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1258,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"u_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1259,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"d_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1902,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nd_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1903,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nu_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1904,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"u_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1905,\"packets\":0,\"bytes\":0}},{\"set\":{\"family\":\"inet\",\"name\":\"allowed_v4\",\"table\":\"fvpn\",\"type\":\"ipv4_addr\",\"handle\":4,\"flags\":[\"timeout\"],\"elem\":[{\"elem\":{\"val\":\"100.108.109.85\",\"timeout\":50,\"expires\":50}},{\"elem\":{\"val\":\"100.108.185.217\",\"timeout\":50,\"expires\":50}},{\"elem\":{\"val\":\"100.108.218.29\",\"timeout\":50,\"expires\":50}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7176,\"comment\":\"fvpn_generation=12 fvpn_metering=forward_admission_v1\",\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"192.0.2.255\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"192.0.2.255\"}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7177,\"comment\":\"fvpn_class=01a1a00e-da13-7131-a262-128c389b552c:a4ef\",\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"192.0.2.255\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"192.0.2.255\"}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7178,\"comment\":\"fvpn_class=01a1a00f-5616-7a4a-81cc-a968dcf312db:6763\",\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"192.0.2.255\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"192.0.2.255\"}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7179,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"nfproto\"}},\"right\":\"ipv6\"}},{\"counter\":\"ctv6\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7180,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"nfproto\"}},\"right\":\"ipv6\"}},{\"counter\":\"ctv6\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7181,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"in\",\"left\":{\"ct\":{\"key\":\"state\"}},\"right\":\"invalid\"}},{\"counter\":\"ctinv\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7182,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"in\",\"left\":{\"ct\":{\"key\":\"state\"}},\"right\":\"invalid\"}},{\"counter\":\"ctinv\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7183,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"!=\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@allowed_v4\"}},{\"counter\":\"ctunku\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7184,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7185,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7186,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7187,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7188,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7189,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7190,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"counter\":\"ctbadns\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7191,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@denied_v4\"}},{\"counter\":\"ctdeny\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7192,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@host_v4\"}},{\"counter\":\"cthost\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7193,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.185.217\"}},{\"counter\":\"u_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7194,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.218.29\"}},{\"counter\":\"u_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7195,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.109.85\"}},{\"counter\":\"u_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7196,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"!=\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@allowed_v4\"}},{\"counter\":\"ctunkd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7198,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"!=\",\"left\":{\"ct\":{\"key\":\"state\"}},\"right\":{\"set\":[\"established\",\"related\"]}}},{\"counter\":\"ctnodn\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7199,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7200,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7201,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7202,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7203,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7204,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7205,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"counter\":\"ctdenyd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7206,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@denied_v4\"}},{\"counter\":\"ctdenyd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7207,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@host_v4\"}},{\"counter\":\"ctdenyd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7208,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.185.217\"}},{\"counter\":\"d_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7209,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.218.29\"}},{\"counter\":\"d_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":7210,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.109.85\"}},{\"counter\":\"d_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"postrouting\",\"handle\":7213,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@allowed_v4\"}},{\"snat\":{\"family\":\"ip\",\"addr\":\"192.0.6.20\"}}]}}]"
+      },
+      {
+        "name": "after_conntrack",
+        "detail": "conntrack v1.4.8 (conntrack-tools): 1 flow entries have been shown.\nipv4     2 tcp      6 2 CLOSE src=100.108.185.217 dst=192.0.6.10 sport=37454 dport=443 src=192.0.6.10 dst=192.0.6.20 sport=443 dport=37454 [ASSURED] mark=0 use=1"
+      },
+      {
+        "name": "after_member_tunnel",
+        "detail": "rx_packets=22\nrx_bytes=4080\ntx_packets=24\ntx_bytes=3476"
+      },
+      {
+        "name": "after_node_tunnel",
+        "detail": "rx_packets=24\nrx_bytes=3476\ntx_packets=23\ntx_bytes=4172"
+      },
+      {
+        "name": "after_node_uplink",
+        "detail": "rx_packets=60\nrx_bytes=7724\ntx_packets=35\ntx_bytes=4212"
+      },
+      {
+        "name": "origin_arrival",
+        "detail": "{\"probe_id\":\"3089946d-f7e0-4e99-baa3-6a8122ae7aea\",\"requests\":1,\"source_address\":\"192.0.6.20\"}"
+      },
+      {
+        "name": "snat_counter_limit",
+        "detail": "product postrouting SNAT rule has no counter expression; uplink capture, conntrack reply tuple and authenticated origin source provide translation evidence"
+      },
+      {
+        "name": "controlled_origin_http_200_and_counted",
+        "detail": "true"
+      },
+      {
+        "name": "admission_bytes_before",
+        "detail": "2632"
+      },
+      {
+        "name": "admission_bytes_after",
+        "detail": "5304"
+      },
+      {
+        "name": "first_stopped_hop",
+        "detail": "none after explicit NetBird exit selection"
+      },
+      {
+        "name": "heartbeat",
+        "detail": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 10294819536302\nwall_unix_ns 1793686852368159761\npolicy_expires_mono_ns 10345621018540\nbaseline_ok 1\nserving 1\ngeneration 12\nreason serving"
+      }
+    ]
+  },
+  "devstack_ms": [
+    3980,
+    4112
+  ],
+  "empty_lease": {
+    "request_wire": "{\"applied_config_generation\":\"12\",\"current_lease_id\":\"d335eae2-2c21-46d3-976b-0cbc5f252553\",\"node_id\":\"01a1a00e-b542-7930-bdc9-226a3f5d56ab\",\"node_incarnation_id\":\"01a1a00e-b8c2-761e-a8dd-5f6dffb3183e\",\"renewal_request_id\":\"01a1a011-2b1a-7362-a237-e175182cdc0a\"}",
+    "response_wire": "{\"signatures\":[{\"algorithm\":\"ed25519\",\"key_id\":\"01a1a00e-287d-7bbb-84a5-0adc10741b35\",\"signature_b64\":\"eCXQmmZrU3enwrUXTBOLZrJYIoHr4KMkfX7ZcM1CKCdG+dhct5S3g0OePsDhsR5Vg2B/UGIh6owRVZQZIv0tCQ==\"}],\"signed\":{\"authorization_generation\":\"1\",\"config_generation\":\"12\",\"expires_at\":\"2026-11-03T06:21:42.140828386Z\",\"issued_at\":\"2026-11-03T06:20:42.140828386Z\",\"lease_id\":\"951351a5-2563-4dd1-8742-b9f493a38e54\",\"max_offline_seconds\":60,\"members\":[],\"node_id\":\"01a1a00e-b542-7930-bdc9-226a3f5d56ab\",\"node_incarnation_id\":\"01a1a00e-b8c2-761e-a8dd-5f6dffb3183e\",\"schema_version\":1}}\n",
+    "request_sha256": "84192c71c93f38c758865bb8a66007ab71c1c3054342bc728527ab2a8c309901",
+    "response_sha256": "924d44596b2559cc8868eac9cb60609523e96991794411e295f93476aa65b2ad",
+    "started": "2026-11-03T06:20:42.139586656Z",
+    "completed": "2026-11-03T06:20:42.142137883Z",
+    "kind": "lease",
+    "http_status": 200,
+    "request": {
+      "applied_config_generation": "12",
+      "current_lease_id": "d335eae2-2c21-46d3-976b-0cbc5f252553",
+      "node_id": "01a1a00e-b542-7930-bdc9-226a3f5d56ab",
+      "node_incarnation_id": "01a1a00e-b8c2-761e-a8dd-5f6dffb3183e",
+      "renewal_request_id": "01a1a011-2b1a-7362-a237-e175182cdc0a"
+    },
+    "response": {
+      "signatures": [
+        {
+          "algorithm": "ed25519",
+          "key_id": "01a1a00e-287d-7bbb-84a5-0adc10741b35",
+          "signature_b64": "eCXQmmZrU3enwrUXTBOLZrJYIoHr4KMkfX7ZcM1CKCdG+dhct5S3g0OePsDhsR5Vg2B/UGIh6owRVZQZIv0tCQ=="
+        }
+      ],
+      "signed": {
+        "authorization_generation": "1",
+        "config_generation": "12",
+        "expires_at": "2026-11-03T06:21:42.140828386Z",
+        "issued_at": "2026-11-03T06:20:42.140828386Z",
+        "lease_id": "951351a5-2563-4dd1-8742-b9f493a38e54",
+        "max_offline_seconds": 60,
+        "members": [],
+        "node_id": "01a1a00e-b542-7930-bdc9-226a3f5d56ab",
+        "node_incarnation_id": "01a1a00e-b8c2-761e-a8dd-5f6dffb3183e",
+        "schema_version": 1
+      }
+    }
+  },
+  "false_flip": {
+    "started": "2026-11-03T06:20:12.895847767Z",
+    "completed": "2026-11-03T06:20:12.895848174Z",
+    "kind": "flip",
+    "ready": false
+  },
+  "historical_isolation_ms": [
+    4767,
+    5021,
+    5025
+  ],
+  "initial_counted_forwarding": {
+    "device_id": "01a1a00f-14fe-7be5-a3e7-a4456b73e45b",
+    "container": "fvpn-w4-isolation-member-a1",
+    "at": "2026-11-03T06:18:58Z",
+    "counted": true,
+    "admission_bytes_before": "0",
+    "admission_bytes_after": "2632",
+    "observations": [
+      {
+        "name": "member_route_before_selection",
+        "detail": "192.0.6.10 via 172.28.33.1 dev eth0 src 172.28.33.128 uid 0 \n    cache"
+      },
+      {
+        "name": "netbird_networks_before_selection",
+        "detail": "Available Networks:\n\n  - ID: fvpn-exit-72ac8c24fdd44ad0ff96483d\n    Network: 0.0.0.0/0\n    Status: Not Selected"
+      },
+      {
+        "name": "exit_discovery_seconds",
+        "detail": "0.000"
+      },
+      {
+        "name": "exit_selection",
+        "detail": "Networks selected successfully."
+      },
+      {
+        "name": "netbird_networks_after_selection",
+        "detail": "Available Networks:\n\n  - ID: fvpn-exit-72ac8c24fdd44ad0ff96483d\n    Network: 0.0.0.0/0\n    Status: Selected"
+      },
+      {
+        "name": "before_member_route",
+        "detail": "192.0.6.10 dev fvnb0 table netbird src 100.108.185.217 uid 0 \n    cache"
+      },
+      {
+        "name": "before_member_tunnel_address",
+        "detail": "3: fvnb0    inet 100.108.185.217/16 brd 100.108.255.255 scope global fvnb0\\       valid_lft forever preferred_lft forever"
+      },
+      {
+        "name": "before_member_routes",
+        "detail": "default dev fvnb0 table netbird \ndefault via 172.28.33.1 dev eth0 \n100.108.0.0/16 dev fvnb0 proto kernel scope link src 100.108.185.217 \n172.28.33.0/24 dev eth0 proto kernel scope link src 172.28.33.128 \nlocal 100.108.185.217 dev fvnb0 table local proto kernel scope host src 100.108.185.217 \nbroadcast 100.108.255.255 dev fvnb0 table local proto kernel scope link src 100.108.185.217 \nlocal 127.0.0.0/8 dev lo table local proto kernel scope host src 127.0.0.1 \nlocal 127.0.0.1 dev lo table local proto kernel scope host src 127.0.0.1 \nbroadcast 127.255.255.255 dev lo table local proto kernel scope link src 127.0.0.1 \nlocal 172.28.33.128 dev eth0 table local proto kernel scope host src 172.28.33.128 \nbroadcast 172.28.33.255 dev eth0 table local proto kernel scope link src 172.28.33.128"
+      },
+      {
+        "name": "before_node_nft",
+        "detail": "[{\"counter\":{\"family\":\"inet\",\"name\":\"ctbase\",\"table\":\"fvpn\",\"handle\":1,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctv6\",\"table\":\"fvpn\",\"handle\":2,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctin\",\"table\":\"fvpn\",\"handle\":3,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctbadns\",\"table\":\"fvpn\",\"handle\":115,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctdeny\",\"table\":\"fvpn\",\"handle\":116,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctdenyd\",\"table\":\"fvpn\",\"handle\":117,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"cthost\",\"table\":\"fvpn\",\"handle\":118,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctinv\",\"table\":\"fvpn\",\"handle\":119,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctnodn\",\"table\":\"fvpn\",\"handle\":120,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctunkd\",\"table\":\"fvpn\",\"handle\":121,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctunku\",\"table\":\"fvpn\",\"handle\":122,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"d_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":700,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nd_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":701,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nu_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":702,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"u_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":703,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"d_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1256,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nd_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1257,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nu_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1258,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"u_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1259,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"d_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1902,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nd_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1903,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nu_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1904,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"u_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1905,\"packets\":0,\"bytes\":0}},{\"set\":{\"family\":\"inet\",\"name\":\"allowed_v4\",\"table\":\"fvpn\",\"type\":\"ipv4_addr\",\"handle\":4,\"flags\":[\"timeout\"],\"elem\":[{\"elem\":{\"val\":\"100.108.109.85\",\"timeout\":57,\"expires\":57}},{\"elem\":{\"val\":\"100.108.185.217\",\"timeout\":57,\"expires\":57}},{\"elem\":{\"val\":\"100.108.218.29\",\"timeout\":57,\"expires\":57}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2000,\"comment\":\"fvpn_generation=11 fvpn_metering=forward_admission_v1\",\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"192.0.2.255\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"192.0.2.255\"}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2001,\"comment\":\"fvpn_class=01a1a00e-da13-7131-a262-128c389b552c:a4ef\",\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"192.0.2.255\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"192.0.2.255\"}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2002,\"comment\":\"fvpn_class=01a1a00f-5616-7a4a-81cc-a968dcf312db:6763\",\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"192.0.2.255\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"192.0.2.255\"}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2003,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"nfproto\"}},\"right\":\"ipv6\"}},{\"counter\":\"ctv6\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2004,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"nfproto\"}},\"right\":\"ipv6\"}},{\"counter\":\"ctv6\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2005,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"in\",\"left\":{\"ct\":{\"key\":\"state\"}},\"right\":\"invalid\"}},{\"counter\":\"ctinv\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2006,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"in\",\"left\":{\"ct\":{\"key\":\"state\"}},\"right\":\"invalid\"}},{\"counter\":\"ctinv\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2007,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"!=\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@allowed_v4\"}},{\"counter\":\"ctunku\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2008,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2009,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2010,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2011,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2012,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2013,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2014,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"counter\":\"ctbadns\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2015,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@denied_v4\"}},{\"counter\":\"ctdeny\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2016,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@host_v4\"}},{\"counter\":\"cthost\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2017,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.185.217\"}},{\"counter\":\"u_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2018,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.218.29\"}},{\"counter\":\"u_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2019,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.109.85\"}},{\"counter\":\"u_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2020,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"!=\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@allowed_v4\"}},{\"counter\":\"ctunkd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2022,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"!=\",\"left\":{\"ct\":{\"key\":\"state\"}},\"right\":{\"set\":[\"established\",\"related\"]}}},{\"counter\":\"ctnodn\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2023,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2024,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2025,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2026,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2027,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2028,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2029,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"counter\":\"ctdenyd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2030,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@denied_v4\"}},{\"counter\":\"ctdenyd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2031,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@host_v4\"}},{\"counter\":\"ctdenyd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2032,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.185.217\"}},{\"counter\":\"d_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2033,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.218.29\"}},{\"counter\":\"d_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2034,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.109.85\"}},{\"counter\":\"d_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"postrouting\",\"handle\":2037,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@allowed_v4\"}},{\"snat\":{\"family\":\"ip\",\"addr\":\"192.0.6.20\"}}]}}]"
+      },
+      {
+        "name": "before_conntrack",
+        "detail": "conntrack v1.4.8 (conntrack-tools): 0 flow entries have been shown."
+      },
+      {
+        "name": "before_member_tunnel",
+        "detail": "rx_packets=0\nrx_bytes=0\ntx_packets=0\ntx_bytes=0"
+      },
+      {
+        "name": "before_node_tunnel",
+        "detail": "rx_packets=0\nrx_bytes=0\ntx_packets=0\ntx_bytes=0"
+      },
+      {
+        "name": "before_node_uplink",
+        "detail": "rx_packets=35\nrx_bytes=3816\ntx_packets=14\ntx_bytes=1540"
+      },
+      {
+        "name": "capture_member",
+        "detail": "tcpdump: verbose output suppressed, use -v[v]... for full protocol decode\nlistening on fvnb0, link-type RAW (Raw IP), snapshot length 96 bytes\n16 packets captured\n16 packets received by filter\n0 packets dropped by kernel\n06:19:00.041086 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 0\n06:19:00.044842 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 0\n06:19:00.044853 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 0\n06:19:00.045047 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 418\n06:19:00.045504 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 0\n06:19:00.046224 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 930\n06:19:00.046229 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 0\n06:19:00.046818 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 64\n06:19:00.092806 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 0\n06:19:00.092817 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 219\n06:19:00.093347 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 0\n06:19:00.093524 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 141\n06:19:00.094138 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 0\n06:19:00.094748 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 24\n06:19:00.094748 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 0\n06:19:00.094766 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 0"
+      },
+      {
+        "name": "capture_node_ingress",
+        "detail": "tcpdump: verbose output suppressed, use -v[v]... for full protocol decode\nlistening on fvmb0, link-type RAW (Raw IP), snapshot length 96 bytes\n06:19:00.044623 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 0\n06:19:00.044701 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 0\n06:19:00.045012 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 0\n06:19:00.045374 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 418\n06:19:00.045389 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 0\n06:19:00.045660 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 930\n06:19:00.046328 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 0\n06:19:00.048638 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 64\n06:19:00.090667 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 0\n06:19:00.093178 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 219\n06:19:00.093213 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 0\n06:19:00.093333 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 141\n06:19:00.094514 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 0\n06:19:00.094576 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 24\n06:19:00.094593 IP 192.0.6.10.443 \u003e 100.108.185.217.56492: tcp 0\n06:19:00.095215 IP 100.108.185.217.56492 \u003e 192.0.6.10.443: tcp 0\n\n16 packets captured\n16 packets received by filter\n0 packets dropped by kernel"
+      },
+      {
+        "name": "capture_node_uplink",
+        "detail": "tcpdump: verbose output suppressed, use -v[v]... for full protocol decode\nlistening on fvup0, link-type EN10MB (Ethernet), snapshot length 96 bytes\n06:19:00.044681 IP 192.0.6.20.56492 \u003e 192.0.6.10.443: tcp 0\n06:19:00.044694 IP 192.0.6.10.443 \u003e 192.0.6.20.56492: tcp 0\n06:19:00.045018 IP 192.0.6.20.56492 \u003e 192.0.6.10.443: tcp 0\n06:19:00.045379 IP 192.0.6.20.56492 \u003e 192.0.6.10.443: tcp 418\n06:19:00.045385 IP 192.0.6.10.443 \u003e 192.0.6.20.56492: tcp 0\n06:19:00.045648 IP 192.0.6.10.443 \u003e 192.0.6.20.56492: tcp 930\n06:19:00.046332 IP 192.0.6.20.56492 \u003e 192.0.6.10.443: tcp 0\n06:19:00.048643 IP 192.0.6.20.56492 \u003e 192.0.6.10.443: tcp 64\n06:19:00.090641 IP 192.0.6.10.443 \u003e 192.0.6.20.56492: tcp 0\n06:19:00.093194 IP 192.0.6.20.56492 \u003e 192.0.6.10.443: tcp 219\n06:19:00.093208 IP 192.0.6.10.443 \u003e 192.0.6.20.56492: tcp 0\n06:19:00.093320 IP 192.0.6.10.443 \u003e 192.0.6.20.56492: tcp 141\n06:19:00.094524 IP 192.0.6.20.56492 \u003e 192.0.6.10.443: tcp 0\n06:19:00.094566 IP 192.0.6.10.443 \u003e 192.0.6.20.56492: tcp 24\n06:19:00.094589 IP 192.0.6.10.443 \u003e 192.0.6.20.56492: tcp 0\n06:19:00.095218 IP 192.0.6.20.56492 \u003e 192.0.6.10.443: tcp 0\n\n16 packets captured\n16 packets received by filter\n0 packets dropped by kernel"
+      },
+      {
+        "name": "after_member_route",
+        "detail": "192.0.6.10 dev fvnb0 table netbird src 100.108.185.217 uid 0 \n    cache"
+      },
+      {
+        "name": "after_member_tunnel_address",
+        "detail": "3: fvnb0    inet 100.108.185.217/16 brd 100.108.255.255 scope global fvnb0\\       valid_lft forever preferred_lft forever"
+      },
+      {
+        "name": "after_member_routes",
+        "detail": "default dev fvnb0 table netbird \ndefault via 172.28.33.1 dev eth0 \n100.108.0.0/16 dev fvnb0 proto kernel scope link src 100.108.185.217 \n172.28.33.0/24 dev eth0 proto kernel scope link src 172.28.33.128 \nlocal 100.108.185.217 dev fvnb0 table local proto kernel scope host src 100.108.185.217 \nbroadcast 100.108.255.255 dev fvnb0 table local proto kernel scope link src 100.108.185.217 \nlocal 127.0.0.0/8 dev lo table local proto kernel scope host src 127.0.0.1 \nlocal 127.0.0.1 dev lo table local proto kernel scope host src 127.0.0.1 \nbroadcast 127.255.255.255 dev lo table local proto kernel scope link src 127.0.0.1 \nlocal 172.28.33.128 dev eth0 table local proto kernel scope host src 172.28.33.128 \nbroadcast 172.28.33.255 dev eth0 table local proto kernel scope link src 172.28.33.128"
+      },
+      {
+        "name": "after_node_nft",
+        "detail": "[{\"counter\":{\"family\":\"inet\",\"name\":\"ctbase\",\"table\":\"fvpn\",\"handle\":1,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctv6\",\"table\":\"fvpn\",\"handle\":2,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctin\",\"table\":\"fvpn\",\"handle\":3,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctbadns\",\"table\":\"fvpn\",\"handle\":115,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctdeny\",\"table\":\"fvpn\",\"handle\":116,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctdenyd\",\"table\":\"fvpn\",\"handle\":117,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"cthost\",\"table\":\"fvpn\",\"handle\":118,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctinv\",\"table\":\"fvpn\",\"handle\":119,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctnodn\",\"table\":\"fvpn\",\"handle\":120,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctunkd\",\"table\":\"fvpn\",\"handle\":121,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"ctunku\",\"table\":\"fvpn\",\"handle\":122,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"d_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":700,\"packets\":8,\"bytes\":1519}},{\"counter\":{\"family\":\"inet\",\"name\":\"nd_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":701,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nu_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":702,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"u_01a1a00f14fe7be5a3e7a4456b73e45b\",\"table\":\"fvpn\",\"handle\":703,\"packets\":8,\"bytes\":1113}},{\"counter\":{\"family\":\"inet\",\"name\":\"d_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1256,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nd_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1257,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nu_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1258,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"u_01a1a00f5011747794437ebfe43900ca\",\"table\":\"fvpn\",\"handle\":1259,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"d_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1902,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nd_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1903,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"nu_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1904,\"packets\":0,\"bytes\":0}},{\"counter\":{\"family\":\"inet\",\"name\":\"u_01a1a00f8b297426afaf8633570a1e21\",\"table\":\"fvpn\",\"handle\":1905,\"packets\":0,\"bytes\":0}},{\"set\":{\"family\":\"inet\",\"name\":\"allowed_v4\",\"table\":\"fvpn\",\"type\":\"ipv4_addr\",\"handle\":4,\"flags\":[\"timeout\"],\"elem\":[{\"elem\":{\"val\":\"100.108.109.85\",\"timeout\":54,\"expires\":54}},{\"elem\":{\"val\":\"100.108.185.217\",\"timeout\":54,\"expires\":54}},{\"elem\":{\"val\":\"100.108.218.29\",\"timeout\":54,\"expires\":54}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2444,\"comment\":\"fvpn_generation=12 fvpn_metering=forward_admission_v1\",\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"192.0.2.255\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"192.0.2.255\"}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2445,\"comment\":\"fvpn_class=01a1a00e-da13-7131-a262-128c389b552c:a4ef\",\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"192.0.2.255\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"192.0.2.255\"}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2446,\"comment\":\"fvpn_class=01a1a00f-5616-7a4a-81cc-a968dcf312db:6763\",\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"192.0.2.255\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"192.0.2.255\"}}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2447,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"nfproto\"}},\"right\":\"ipv6\"}},{\"counter\":\"ctv6\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2448,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"nfproto\"}},\"right\":\"ipv6\"}},{\"counter\":\"ctv6\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2449,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"in\",\"left\":{\"ct\":{\"key\":\"state\"}},\"right\":\"invalid\"}},{\"counter\":\"ctinv\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2450,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"in\",\"left\":{\"ct\":{\"key\":\"state\"}},\"right\":\"invalid\"}},{\"counter\":\"ctinv\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2451,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"!=\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@allowed_v4\"}},{\"counter\":\"ctunku\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2452,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2453,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2454,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2455,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2456,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2457,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"dport\"}},\"right\":53}},{\"counter\":\"nu_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2458,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@resolver_v4\"}},{\"counter\":\"ctbadns\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2459,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@denied_v4\"}},{\"counter\":\"ctdeny\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2460,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@host_v4\"}},{\"counter\":\"cthost\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2461,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.185.217\"}},{\"counter\":\"u_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2462,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.218.29\"}},{\"counter\":\"u_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2463,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"100.108.109.85\"}},{\"counter\":\"u_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2464,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"!=\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"@allowed_v4\"}},{\"counter\":\"ctunkd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2466,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"!=\",\"left\":{\"ct\":{\"key\":\"state\"}},\"right\":{\"set\":[\"established\",\"related\"]}}},{\"counter\":\"ctnodn\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2467,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2468,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.185.217\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2469,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2470,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.218.29\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2471,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"tcp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2472,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.109.85\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"udp\",\"field\":\"sport\"}},\"right\":53}},{\"counter\":\"nd_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2473,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@resolver_v4\"}},{\"counter\":\"ctdenyd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2474,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@denied_v4\"}},{\"counter\":\"ctdenyd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2475,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@host_v4\"}},{\"counter\":\"ctdenyd\"},{\"drop\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2476,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.185.217\"}},{\"counter\":\"d_01a1a00f14fe7be5a3e7a4456b73e45b\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2477,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.218.29\"}},{\"counter\":\"d_01a1a00f5011747794437ebfe43900ca\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:a4ef\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"forward\",\"handle\":2478,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"iifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvmb0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"daddr\"}},\"right\":\"100.108.109.85\"}},{\"counter\":\"d_01a1a00f8b297426afaf8633570a1e21\"},{\"mangle\":{\"key\":{\"meta\":{\"key\":\"priority\"}},\"value\":\"1:6763\"}},{\"accept\":null}]}},{\"rule\":{\"family\":\"inet\",\"table\":\"fvpn\",\"chain\":\"postrouting\",\"handle\":2481,\"expr\":[{\"match\":{\"op\":\"==\",\"left\":{\"meta\":{\"key\":\"oifname\"}},\"right\":\"fvup0\"}},{\"match\":{\"op\":\"==\",\"left\":{\"payload\":{\"protocol\":\"ip\",\"field\":\"saddr\"}},\"right\":\"@allowed_v4\"}},{\"snat\":{\"family\":\"ip\",\"addr\":\"192.0.6.20\"}}]}}]"
+      },
+      {
+        "name": "after_conntrack",
+        "detail": "ipv4     2 tcp      6 2 CLOSE src=100.108.185.217 dst=192.0.6.10 sport=56492 dport=443 src=192.0.6.10 dst=192.0.6.20 sport=443 dport=56492 [ASSURED] mark=0 use=1\nconntrack v1.4.8 (conntrack-tools): 1 flow entries have been shown."
+      },
+      {
+        "name": "after_member_tunnel",
+        "detail": "rx_packets=10\nrx_bytes=2036\ntx_packets=10\ntx_bytes=1680"
+      },
+      {
+        "name": "after_node_tunnel",
+        "detail": "rx_packets=10\nrx_bytes=1680\ntx_packets=11\ntx_bytes=2128"
+      },
+      {
+        "name": "after_node_uplink",
+        "detail": "rx_packets=46\nrx_bytes=5638\ntx_packets=24\ntx_bytes=2849"
+      },
+      {
+        "name": "origin_arrival",
+        "detail": "{\"probe_id\":\"47111621-79e5-48a6-9578-f8368952b036\",\"requests\":1,\"source_address\":\"192.0.6.20\"}"
+      },
+      {
+        "name": "snat_counter_limit",
+        "detail": "product postrouting SNAT rule has no counter expression; uplink capture, conntrack reply tuple and authenticated origin source provide translation evidence"
+      },
+      {
+        "name": "controlled_origin_http_200_and_counted",
+        "detail": "true"
+      },
+      {
+        "name": "admission_bytes_before",
+        "detail": "0"
+      },
+      {
+        "name": "admission_bytes_after",
+        "detail": "2632"
+      },
+      {
+        "name": "first_stopped_hop",
+        "detail": "none after explicit NetBird exit selection"
+      },
+      {
+        "name": "heartbeat",
+        "detail": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 10189714187538\nwall_unix_ns 1793686747262811007\npolicy_expires_mono_ns 10244641103517\nbaseline_ok 1\nserving 1\ngeneration 12\nreason serving"
+      }
+    ]
+  },
+  "populated_lease": {
+    "request_wire": "{\"applied_config_generation\":\"12\",\"current_lease_id\":\"951351a5-2563-4dd1-8742-b9f493a38e54\",\"node_id\":\"01a1a00e-b542-7930-bdc9-226a3f5d56ab\",\"node_incarnation_id\":\"01a1a00e-b8c2-761e-a8dd-5f6dffb3183e\",\"renewal_request_id\":\"01a1a011-2f21-79d0-a6dc-c234e4e358e5\"}",
+    "response_wire": "{\"signatures\":[{\"algorithm\":\"ed25519\",\"key_id\":\"01a1a00e-287d-7bbb-84a5-0adc10741b35\",\"signature_b64\":\"hTk0FpimZhSx3IvqF1Arx4dg6M7zo2dHF3Io9etnfTVQI7d7PGKsdCmgbkFIGrrk340kTwxz1YiQSaHWOvs+CA==\"}],\"signed\":{\"authorization_generation\":\"2\",\"config_generation\":\"12\",\"expires_at\":\"2026-11-03T06:21:43.17224878Z\",\"issued_at\":\"2026-11-03T06:20:43.17224878Z\",\"lease_id\":\"b35b1a27-ca9e-49c5-ae2e-3c3435ff6aa2\",\"max_offline_seconds\":60,\"members\":[{\"effective_service_end\":\"2026-11-03T07:18:26.130651Z\",\"entitlement_revision\":\"2\",\"lease_end\":\"2026-11-03T06:21:43.17224878Z\",\"member_id\":\"01a1a00e-da13-7131-a262-128c389b552c\"},{\"effective_service_end\":\"2026-11-03T07:18:41.964478Z\",\"entitlement_revision\":\"1\",\"lease_end\":\"2026-11-03T06:21:43.17224878Z\",\"member_id\":\"01a1a00f-5616-7a4a-81cc-a968dcf312db\"}],\"node_id\":\"01a1a00e-b542-7930-bdc9-226a3f5d56ab\",\"node_incarnation_id\":\"01a1a00e-b8c2-761e-a8dd-5f6dffb3183e\",\"schema_version\":1}}\n",
+    "request_sha256": "fd8a1153fe0d606b140969eaa7a4be8f591b48d5fb0702addcb02042dcfc535a",
+    "response_sha256": "f05f067f4450405979ef6f09807a2ff2eb29e431daa619b188c655e0d0215009",
+    "started": "2026-11-03T06:20:43.170067392Z",
+    "completed": "2026-11-03T06:20:43.174871778Z",
+    "kind": "lease",
+    "http_status": 200,
+    "request": {
+      "applied_config_generation": "12",
+      "current_lease_id": "951351a5-2563-4dd1-8742-b9f493a38e54",
+      "node_id": "01a1a00e-b542-7930-bdc9-226a3f5d56ab",
+      "node_incarnation_id": "01a1a00e-b8c2-761e-a8dd-5f6dffb3183e",
+      "renewal_request_id": "01a1a011-2f21-79d0-a6dc-c234e4e358e5"
+    },
+    "response": {
+      "signatures": [
+        {
+          "algorithm": "ed25519",
+          "key_id": "01a1a00e-287d-7bbb-84a5-0adc10741b35",
+          "signature_b64": "hTk0FpimZhSx3IvqF1Arx4dg6M7zo2dHF3Io9etnfTVQI7d7PGKsdCmgbkFIGrrk340kTwxz1YiQSaHWOvs+CA=="
+        }
+      ],
+      "signed": {
+        "authorization_generation": "2",
+        "config_generation": "12",
+        "expires_at": "2026-11-03T06:21:43.17224878Z",
+        "issued_at": "2026-11-03T06:20:43.17224878Z",
+        "lease_id": "b35b1a27-ca9e-49c5-ae2e-3c3435ff6aa2",
+        "max_offline_seconds": 60,
+        "members": [
+          {
+            "effective_service_end": "2026-11-03T07:18:26.130651Z",
+            "entitlement_revision": "2",
+            "lease_end": "2026-11-03T06:21:43.17224878Z",
+            "member_id": "01a1a00e-da13-7131-a262-128c389b552c"
+          },
+          {
+            "effective_service_end": "2026-11-03T07:18:41.964478Z",
+            "entitlement_revision": "1",
+            "lease_end": "2026-11-03T06:21:43.17224878Z",
+            "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db"
+          }
+        ],
+        "node_id": "01a1a00e-b542-7930-bdc9-226a3f5d56ab",
+        "node_incarnation_id": "01a1a00e-b8c2-761e-a8dd-5f6dffb3183e",
+        "schema_version": 1
+      }
+    }
+  },
+  "proof": {
+    "distinct_reports_and_leases": true,
+    "empty_lease_report_join": true,
+    "generation": "12",
+    "invariants_byte_equal": true,
+    "populated_lease_report_join": true,
+    "true_to_serving_receipt_ms": 924,
+    "wire_hashes": 262,
+    "wire_hashes_valid": true
+  },
+  "provisional_invariants": {
+    "node": [
+      "registered",
+      "ready",
+      "passed",
+      "12",
+      "12"
+    ],
+    "frozen": false,
+    "bindings": [
+      {
+        "id": "01a1a00f-14fe-7be6-94c6-5e0d51db0342",
+        "peer_ref": "dbknpa78k4c000853jrg",
+        "device_id": "01a1a00f-14fe-7be5-a3e7-a4456b73e45b",
+        "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+        "overlay_ip": "100.108.185.217",
+        "valid_from": "2026-11-03T06:18:25.406779+00:00",
+        "valid_until": "2026-11-03T07:18:26.130651+00:00",
+        "overlay_scope": "e2e-overlay",
+        "binding_revision": 1
+      },
+      {
+        "id": "01a1a00f-5011-7478-a64d-03a3212841eb",
+        "peer_ref": "dbknpdv8k4c000853mog",
+        "device_id": "01a1a00f-5011-7477-9443-7ebfe43900ca",
+        "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+        "overlay_ip": "100.108.218.29",
+        "valid_from": "2026-11-03T06:18:40.529292+00:00",
+        "valid_until": "2026-11-03T07:18:26.130651+00:00",
+        "overlay_scope": "e2e-overlay",
+        "binding_revision": 1
+      },
+      {
+        "id": "01a1a00f-8b29-7427-a4e2-803c185a4f05",
+        "peer_ref": "dbknphv8k4c000853qa0",
+        "device_id": "01a1a00f-8b29-7426-afaf-8633570a1e21",
+        "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+        "overlay_ip": "100.108.109.85",
+        "valid_from": "2026-11-03T06:18:55.657272+00:00",
+        "valid_until": "2026-11-03T07:18:41.964478+00:00",
+        "overlay_scope": "e2e-overlay",
+        "binding_revision": 1
+      }
+    ],
+    "envelope": {
+      "id": "115bca5d-6c5d-43da-85b2-b6c79a5c22f4",
+      "etag": "\"ds-12-13ca573f7b07e8900f295874\"",
+      "node_id": "01a1a00e-b542-7930-bdc9-226a3f5d56ab",
+      "envelope": {
+        "signed": {
+          "dns": {
+            "resolver_ipv4": [
+              "192.0.6.53"
+            ],
+            "resolver_ipv6": [],
+            "resolver_document": {
+              "generation": "1",
+              "size_bytes": 521,
+              "document_id": "01a1a00e-b68b-7bab-9fc3-760155a16038",
+              "content_sha256": "59e58cee29f9b15f285353abfebb205405f62b9fde93af95ec13aceb18cd6d91",
+              "profile_revision_id": "01a1a00e-b500-7435-bf53-38d9accf9c48"
+            }
+          },
+          "update": null,
+          "node_id": "01a1a00e-b542-7930-bdc9-226a3f5d56ab",
+          "issued_at": "2026-11-03T06:19:02.073475856Z",
+          "expires_at": "2026-11-03T06:29:02.073475856Z",
+          "policy_refs": {
+            "dns_generation": "1",
+            "fup_generation": "1",
+            "authorization_generation": "1"
+          },
+          "egress_probe": null,
+          "node_capacity": {
+            "up_bps": 200000000,
+            "down_bps": 200000000,
+            "member_up_bps_cap": 100000000,
+            "member_down_bps_cap": 100000000
+          },
+          "safety_profile": "internet-only-v1",
+          "schema_version": 1,
+          "device_bindings": [
+            {
+              "peer_id": "dbknpa78k4c000853jrg",
+              "device_id": "01a1a00f-14fe-7be5-a3e7-a4456b73e45b",
+              "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+              "valid_from": "2026-11-03T06:18:25.406779Z",
+              "valid_until": "2026-11-03T07:18:26.130651Z",
+              "allowed_ipv4": [
+                "100.108.185.217"
+              ],
+              "allowed_ipv6": [],
+              "binding_revision": "1"
+            },
+            {
+              "peer_id": "dbknpdv8k4c000853mog",
+              "device_id": "01a1a00f-5011-7477-9443-7ebfe43900ca",
+              "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+              "valid_from": "2026-11-03T06:18:40.529292Z",
+              "valid_until": "2026-11-03T07:18:26.130651Z",
+              "allowed_ipv4": [
+                "100.108.218.29"
+              ],
+              "allowed_ipv6": [],
+              "binding_revision": "1"
+            },
+            {
+              "peer_id": "dbknphv8k4c000853qa0",
+              "device_id": "01a1a00f-8b29-7426-afaf-8633570a1e21",
+              "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+              "valid_from": "2026-11-03T06:18:55.657272Z",
+              "valid_until": "2026-11-03T07:18:41.964478Z",
+              "allowed_ipv4": [
+                "100.108.109.85"
+              ],
+              "allowed_ipv6": [],
+              "binding_revision": "1"
+            }
+          ],
+          "binding_revision": "1",
+          "accounting_period": {
+            "period_id": "2026-11",
+            "period_end": "2026-12-01T00:00:00Z",
+            "period_start": "2026-11-01T00:00:00Z"
+          },
+          "config_generation": "12",
+          "desired_release_id": null,
+          "publication_intent": "published",
+          "node_incarnation_id": "01a1a00e-b8c2-761e-a8dd-5f6dffb3183e",
+          "serving_release_ids": [
+            "01a1a00e-b04c-77a9-b278-54f0ca6e7884"
+          ],
+          "member_rate_policies": [
+            {
+              "mode": "shadow",
+              "reason": "normal",
+              "up_bps": 100000000,
+              "down_bps": 100000000,
+              "priority": 0,
+              "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+              "period_id": "2026-11",
+              "generation": "0",
+              "tier_index": 0,
+              "valid_from": "2026-11-03T06:18:10.329906Z",
+              "valid_until": "2026-11-03T07:18:26.130651Z"
+            },
+            {
+              "mode": "shadow",
+              "reason": "normal",
+              "up_bps": 100000000,
+              "down_bps": 100000000,
+              "priority": 0,
+              "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+              "period_id": "2026-11",
+              "generation": "1",
+              "tier_index": 0,
+              "valid_from": "2026-11-03T06:18:42.077357Z",
+              "valid_until": "2026-11-03T07:18:41.964478Z"
+            }
+          ],
+          "lease_renewal_endpoint": "/api/v1/agent/lease-renewals",
+          "supported_release_policy_id": "01a1a00e-b4c7-7068-b08b-f955a1207c5f"
+        },
+        "signatures": [
+          {
+            "key_id": "01a1a00e-2877-72d4-81bc-fb571cd2e53a",
+            "algorithm": "ed25519",
+            "signature_b64": "hEE7m1DUj0/kmWQhRt+6PuS8SoVNyffV6iMPHzLJXDdpLQVr/5ZI6Giq+DXOAyrayLggaOZnfjvSru0+pAxQAA=="
+          }
+        ]
+      },
+      "issued_at": "2026-11-03T06:19:02.073475+00:00",
+      "created_at": "2026-11-03T06:18:01.958989+00:00",
+      "expires_at": "2026-11-03T06:29:02.073475+00:00",
+      "generation": 12,
+      "updated_at": "2026-11-03T06:19:02.076396+00:00",
+      "incarnation_id": "01a1a00e-b8c2-761e-a8dd-5f6dffb3183e",
+      "desired_state_id": "7834f3dc-4b4a-4616-8597-3866f9daaaae"
+    },
+    "publication": [
+      "published",
+      "active"
+    ],
+    "entitlements": [
+      {
+        "id": "b4280d10-5335-471f-a819-58c3f7f45d98",
+        "state": "active",
+        "revision": 2,
+        "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+        "projection": {
+          "plan": {
+            "device_limit": 3,
+            "exit_group_ids": [
+              "01a1a00e-b50d-7ade-8ac9-fc6676735c65"
+            ],
+            "plan_revision_id": "01a1a00e-b51c-702f-b082-8f3ea7a100f5"
+          },
+          "state": "active",
+          "valid_from": "2026-11-03T06:18:10.329906Z",
+          "grace_until": null,
+          "source_refs": [
+            "01a1a00e-da1a-7522-844c-a88e06d9d699",
+            "01a1a00f-1819-709e-8447-4e2956328ea8"
+          ],
+          "device_limit": 3,
+          "paid_through": null,
+          "exit_group_ids": [
+            "01a1a00e-b50d-7ade-8ac9-fc6676735c65"
+          ],
+          "admin_suspended": false,
+          "member_group_ids": [],
+          "cancel_at_period_end": false,
+          "effective_service_end": "2026-11-03T07:18:26.130651Z"
+        },
+        "valid_from": "2026-11-03T06:18:10.329906+00:00",
+        "computed_at": "2026-11-03T06:18:26.20112+00:00",
+        "source_refs": [
+          "01a1a00e-da1a-7522-844c-a88e06d9d699",
+          "01a1a00f-1819-709e-8447-4e2956328ea8"
+        ],
+        "device_limit": 3,
+        "admin_suspended": false,
+        "plan_revision_id": "01a1a00e-b51c-702f-b082-8f3ea7a100f5",
+        "next_transition_at": "2026-11-03T07:18:10.201784+00:00",
+        "effective_service_end": "2026-11-03T07:18:26.130651+00:00"
+      },
+      {
+        "id": "893fa287-7f74-4617-ade7-a723f13f4cd8",
+        "state": "active",
+        "revision": 1,
+        "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+        "projection": {
+          "plan": {
+            "device_limit": 3,
+            "exit_group_ids": [
+              "01a1a00e-b52a-7d5e-b48d-f0f0f5ff047d"
+            ],
+            "plan_revision_id": "01a1a00e-b532-7b86-aeeb-20164f899d12"
+          },
+          "state": "active",
+          "valid_from": "2026-11-03T06:18:42.077357Z",
+          "grace_until": null,
+          "source_refs": [
+            "01a1a00f-561d-7ba9-90b4-dc2e3942b77f"
+          ],
+          "device_limit": 3,
+          "paid_through": null,
+          "exit_group_ids": [
+            "01a1a00e-b52a-7d5e-b48d-f0f0f5ff047d"
+          ],
+          "admin_suspended": false,
+          "member_group_ids": [],
+          "cancel_at_period_end": false,
+          "effective_service_end": "2026-11-03T07:18:41.964478Z"
+        },
+        "valid_from": "2026-11-03T06:18:42.077357+00:00",
+        "computed_at": "2026-11-03T06:18:42.077929+00:00",
+        "source_refs": [
+          "01a1a00f-561d-7ba9-90b4-dc2e3942b77f"
+        ],
+        "device_limit": 3,
+        "admin_suspended": false,
+        "plan_revision_id": "01a1a00e-b532-7b86-aeeb-20164f899d12",
+        "next_transition_at": "2026-11-03T07:18:41.964478+00:00",
+        "effective_service_end": "2026-11-03T07:18:41.964478+00:00"
+      }
+    ],
+    "offline_seconds": 60,
+    "device_projection": [
+      {
+        "id": "01a1a00f-14fe-7be5-a3e7-a4456b73e45b",
+        "status": "authorized",
+        "authorized_at": "2026-11-03T06:18:25.406779+00:00"
+      },
+      {
+        "id": "01a1a00f-5011-7477-9443-7ebfe43900ca",
+        "status": "authorized",
+        "authorized_at": "2026-11-03T06:18:40.529292+00:00"
+      },
+      {
+        "id": "01a1a00f-8b29-7426-afaf-8633570a1e21",
+        "status": "authorized",
+        "authorized_at": "2026-11-03T06:18:55.657272+00:00"
+      }
+    ]
+  },
+  "provisional_receipt": {
+    "request_wire": "{\"agent_version\":\"0.1.0\",\"applied_binding_revision\":\"1\",\"applied_config_generation\":\"12\",\"applied_policy_refs\":{\"authorization_generation\":\"1\",\"dns_generation\":\"1\",\"fup_generation\":\"1\"},\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-11-03T06:20:42.241583153Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-11-03T06:20:42.241583153Z\",\"status\":\"passed\"},{\"detail\":\"Serving lease has no member grants yet.\",\"error_code\":\"AWAITING_MEMBER_GRANTS\",\"name\":\"lease\",\"observed_at\":\"2026-11-03T06:20:42.241583153Z\",\"status\":\"failed\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-11-03T06:20:42.241583153Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-11-03T06:20:42.241583153Z\",\"status\":\"passed\"},{\"detail\":\"read_at=2026-11-03T06:20:42.129752305Z source=live candidate=12 verified=true {\\\"generation\\\":\\\"12\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":20,\\\"objects\\\":6,\\\"truncated\\\":true,\\\"sha256\\\":\\\"6234fb3dfc76c946b0623408ac68a97308854d3ba960233b2635e8102db7a3fc\\\"}\",\"error_code\":\"AWAITING_MEMBER_GRANTS\",\"name\":\"qos\",\"observed_at\":\"2026-11-03T06:20:42.241583153Z\",\"status\":\"failed\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-11-03T06:20:42.241583153Z\",\"status\":\"passed\"},{\"detail\":\"No member binding was admitted.\",\"error_code\":\"AWAITING_MEMBER_GRANTS\",\"name\":\"source_binding\",\"observed_at\":\"2026-11-03T06:20:42.241583153Z\",\"status\":\"failed\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-11-03T06:20:42.241583153Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-11-03T06:20:42.241583153Z\",\"status\":\"passed\"}],\"current_release_id\":\"01a1a00e-b04c-77a9-b278-54f0ca6e7884\",\"data_health\":\"healthy\",\"dns_policy_evidence\":{\"applied_at\":\"2026-11-03T06:20:42.238969323Z\",\"content_sha256\":\"59e58cee29f9b15f285353abfebb205405f62b9fde93af95ec13aceb18cd6d91\",\"document_id\":\"01a1a00e-b68b-7bab-9fc3-760155a16038\",\"error_code\":null,\"feeds\":[],\"generation\":\"1\",\"outcome\":\"applied\"},\"errors\":[{\"code\":\"AWAITING_MEMBER_GRANTS\",\"message\":\"Serving lease has no member grants yet.\",\"observed_at\":\"2026-11-03T06:20:42.241583153Z\",\"stage\":\"lease\"}],\"forwarding_block_reasons\":[\"awaiting_member_grants\"],\"last_good_release_id\":\"01a1a00e-b04c-77a9-b278-54f0ca6e7884\",\"lease\":{\"expires_at\":\"2026-11-03T06:21:42.140828386Z\",\"lease_id\":\"951351a5-2563-4dd1-8742-b9f493a38e54\"},\"member_forwarding_enabled\":false,\"netbird\":{\"backend\":\"kernel\",\"peer_id\":null,\"version\":null},\"node_id\":\"01a1a00e-b542-7930-bdc9-226a3f5d56ab\",\"node_incarnation_id\":\"01a1a00e-b8c2-761e-a8dd-5f6dffb3183e\",\"observed_at\":\"2026-11-03T06:20:42.26927964Z\",\"provisioning_state\":\"ready\",\"report_id\":\"01a1a011-2b9d-7473-8f51-df244a78e51d\",\"safety_status\":\"passed\",\"tc_evidence\":{\"attachments\":[{\"attachment\":\"qdisc\",\"interface\":\"fvmb0\",\"objects\":[{\"handle\":\"6763:\",\"kind\":\"fq_codel\",\"parent\":\"1:6763\"},{\"handle\":\"a4ef:\",\"kind\":\"fq_codel\",\"parent\":\"1:a4ef\"},{\"handle\":\"1:\",\"kind\":\"htb\",\"root\":true}]},{\"attachment\":\"qdisc\",\"interface\":\"fvup0\",\"objects\":[{\"handle\":\"6763:\",\"kind\":\"fq_codel\",\"parent\":\"1:6763\"},{\"handle\":\"a4ef:\",\"kind\":\"fq_codel\",\"parent\":\"1:a4ef\"},{\"handle\":\"1:\",\"kind\":\"htb\",\"root\":true}]},{\"attachment\":\"1:1\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"1:6763\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"1:a4ef\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"1:fffe\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"6763:\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"a4ef:\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"egress\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"ingress\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"root\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"1:1\",\"interface\":\"fvup0\",\"objects\":[]},{\"attachment\":\"1:6763\",\"interface\":\"fvup0\",\"objects\":[]},{\"attachment\":\"1:a4ef\",\"interface\":\"fvup0\",\"objects\":[]},{\"attachment\":\"1:fffe\",\"interface\":\"fvup0\",\"objects\":[]},{\"attachment\":\"6763:\",\"interface\":\"fvup0\",\"objects\":[]}],\"candidate_generation\":\"12\",\"error_code\":null,\"objects_total\":6,\"phase\":\"verify\",\"read_at\":\"2026-11-03T06:20:42.129615416Z\",\"reads_total\":20,\"rejected\":null,\"sha256\":\"6234fb3dfc76c946b0623408ac68a97308854d3ba960233b2635e8102db7a3fc\",\"truncated\":true,\"verified\":true},\"update\":{\"generation\":null,\"job_id\":null,\"stage\":null,\"state\":null},\"usage\":{\"acked_archive_bytes\":\"648\",\"blocked_seq\":null,\"central_acked_through\":\"1\",\"last_durable_event_seq\":\"1\",\"ledger_epoch\":\"5c8d10bc-44a0-4165-9555-9030f0351a85\",\"meter_epoch_id\":null,\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}",
+    "response_wire": "{\"accepted\":true,\"received_at\":\"2026-11-03T06:20:42.274707Z\",\"report_id\":\"01a1a011-2b9d-7473-8f51-df244a78e51d\"}\n",
+    "request_sha256": "24d5e86f8c1253caec606436914e3f464e38615f91a0d10dc42ebc144c2457f9",
+    "response_sha256": "b6060082904b988a98af3b06a923d426053018c294766c6782db21adf5eebc40",
+    "started": "2026-11-03T06:20:42.272654513Z",
+    "completed": "2026-11-03T06:20:42.277225018Z",
+    "kind": "observation",
+    "http_status": 202,
+    "request": {
+      "agent_version": "0.1.0",
+      "applied_binding_revision": "1",
+      "applied_config_generation": "12",
+      "applied_policy_refs": {
+        "authorization_generation": "1",
+        "dns_generation": "1",
+        "fup_generation": "1"
+      },
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "observed_at": "2026-11-03T06:20:42.241583153Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "observed_at": "2026-11-03T06:20:42.241583153Z",
+          "status": "passed"
+        },
+        {
+          "detail": "Serving lease has no member grants yet.",
+          "error_code": "AWAITING_MEMBER_GRANTS",
+          "name": "lease",
+          "observed_at": "2026-11-03T06:20:42.241583153Z",
+          "status": "failed"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "observed_at": "2026-11-03T06:20:42.241583153Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "observed_at": "2026-11-03T06:20:42.241583153Z",
+          "status": "passed"
+        },
+        {
+          "detail": "read_at=2026-11-03T06:20:42.129752305Z source=live candidate=12 verified=true {\"generation\":\"12\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"6234fb3dfc76c946b0623408ac68a97308854d3ba960233b2635e8102db7a3fc\"}",
+          "error_code": "AWAITING_MEMBER_GRANTS",
+          "name": "qos",
+          "observed_at": "2026-11-03T06:20:42.241583153Z",
+          "status": "failed"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "observed_at": "2026-11-03T06:20:42.241583153Z",
+          "status": "passed"
+        },
+        {
+          "detail": "No member binding was admitted.",
+          "error_code": "AWAITING_MEMBER_GRANTS",
+          "name": "source_binding",
+          "observed_at": "2026-11-03T06:20:42.241583153Z",
+          "status": "failed"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "observed_at": "2026-11-03T06:20:42.241583153Z",
+          "status": "passed"
+        },
+        {
+          "detail": "Egress probe used no extra target.",
+          "error_code": null,
+          "name": "tunnel_probe",
+          "observed_at": "2026-11-03T06:20:42.241583153Z",
+          "status": "passed"
+        }
+      ],
+      "current_release_id": "01a1a00e-b04c-77a9-b278-54f0ca6e7884",
+      "data_health": "healthy",
+      "dns_policy_evidence": {
+        "applied_at": "2026-11-03T06:20:42.238969323Z",
+        "content_sha256": "59e58cee29f9b15f285353abfebb205405f62b9fde93af95ec13aceb18cd6d91",
+        "document_id": "01a1a00e-b68b-7bab-9fc3-760155a16038",
+        "error_code": null,
+        "feeds": [],
+        "generation": "1",
+        "outcome": "applied"
+      },
+      "errors": [
+        {
+          "code": "AWAITING_MEMBER_GRANTS",
+          "message": "Serving lease has no member grants yet.",
+          "observed_at": "2026-11-03T06:20:42.241583153Z",
+          "stage": "lease"
+        }
+      ],
+      "forwarding_block_reasons": [
+        "awaiting_member_grants"
+      ],
+      "last_good_release_id": "01a1a00e-b04c-77a9-b278-54f0ca6e7884",
+      "lease": {
+        "expires_at": "2026-11-03T06:21:42.140828386Z",
+        "lease_id": "951351a5-2563-4dd1-8742-b9f493a38e54"
+      },
+      "member_forwarding_enabled": false,
+      "netbird": {
+        "backend": "kernel",
+        "peer_id": null,
+        "version": null
+      },
+      "node_id": "01a1a00e-b542-7930-bdc9-226a3f5d56ab",
+      "node_incarnation_id": "01a1a00e-b8c2-761e-a8dd-5f6dffb3183e",
+      "observed_at": "2026-11-03T06:20:42.26927964Z",
+      "provisioning_state": "ready",
+      "report_id": "01a1a011-2b9d-7473-8f51-df244a78e51d",
+      "safety_status": "passed",
+      "tc_evidence": {
+        "attachments": [
+          {
+            "attachment": "qdisc",
+            "interface": "fvmb0",
+            "objects": [
+              {
+                "handle": "6763:",
+                "kind": "fq_codel",
+                "parent": "1:6763"
+              },
+              {
+                "handle": "a4ef:",
+                "kind": "fq_codel",
+                "parent": "1:a4ef"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "qdisc",
+            "interface": "fvup0",
+            "objects": [
+              {
+                "handle": "6763:",
+                "kind": "fq_codel",
+                "parent": "1:6763"
+              },
+              {
+                "handle": "a4ef:",
+                "kind": "fq_codel",
+                "parent": "1:a4ef"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "1:6763",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "1:a4ef",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "6763:",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "a4ef:",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "egress",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "ingress",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "root",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fvup0",
+            "objects": []
+          },
+          {
+            "attachment": "1:6763",
+            "interface": "fvup0",
+            "objects": []
+          },
+          {
+            "attachment": "1:a4ef",
+            "interface": "fvup0",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fvup0",
+            "objects": []
+          },
+          {
+            "attachment": "6763:",
+            "interface": "fvup0",
+            "objects": []
+          }
+        ],
+        "candidate_generation": "12",
+        "error_code": null,
+        "objects_total": 6,
+        "phase": "verify",
+        "read_at": "2026-11-03T06:20:42.129615416Z",
+        "reads_total": 20,
+        "rejected": null,
+        "sha256": "6234fb3dfc76c946b0623408ac68a97308854d3ba960233b2635e8102db7a3fc",
+        "truncated": true,
+        "verified": true
+      },
+      "update": {
+        "generation": null,
+        "job_id": null,
+        "stage": null,
+        "state": null
+      },
+      "usage": {
+        "acked_archive_bytes": "648",
+        "blocked_seq": null,
+        "central_acked_through": "1",
+        "last_durable_event_seq": "1",
+        "ledger_epoch": "5c8d10bc-44a0-4165-9555-9030f0351a85",
+        "meter_epoch_id": null,
+        "oldest_unacked_at": null,
+        "unacked_event_count": 0,
+        "unacked_payload_bytes": "0"
+      }
+    },
+    "response": {
+      "accepted": true,
+      "received_at": "2026-11-03T06:20:42.274707Z",
+      "report_id": "01a1a011-2b9d-7473-8f51-df244a78e51d"
+    }
+  },
+  "recipe_executed": true,
+  "run_id": "0ec14b39-467e-4a37-a239-1a33ef12eb71",
+  "serving_receipt": {
+    "request_wire": "{\"agent_version\":\"0.1.0\",\"applied_binding_revision\":\"1\",\"applied_config_generation\":\"12\",\"applied_policy_refs\":{\"authorization_generation\":\"1\",\"dns_generation\":\"1\",\"fup_generation\":\"1\"},\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"checks\":[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-11-03T06:20:43.200139166Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-11-03T06:20:43.200139166Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-11-03T06:20:43.200139166Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-11-03T06:20:43.200139166Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-11-03T06:20:43.200139166Z\",\"status\":\"passed\"},{\"detail\":\"read_at=2026-11-03T06:20:43.299850906Z source=live candidate=12 verified=true {\\\"generation\\\":\\\"12\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":20,\\\"objects\\\":6,\\\"truncated\\\":true,\\\"sha256\\\":\\\"6234fb3dfc76c946b0623408ac68a97308854d3ba960233b2635e8102db7a3fc\\\"}\",\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-11-03T06:20:43.200139166Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-11-03T06:20:43.200139166Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-11-03T06:20:43.200139166Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-11-03T06:20:43.200139166Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-11-03T06:20:43.200139166Z\",\"status\":\"passed\"}],\"current_release_id\":\"01a1a00e-b04c-77a9-b278-54f0ca6e7884\",\"data_health\":\"healthy\",\"dns_policy_evidence\":{\"applied_at\":\"2026-11-03T06:20:43.197525696Z\",\"content_sha256\":\"59e58cee29f9b15f285353abfebb205405f62b9fde93af95ec13aceb18cd6d91\",\"document_id\":\"01a1a00e-b68b-7bab-9fc3-760155a16038\",\"error_code\":null,\"feeds\":[],\"generation\":\"1\",\"outcome\":\"applied\"},\"errors\":[],\"forwarding_block_reasons\":[],\"last_good_release_id\":\"01a1a00e-b04c-77a9-b278-54f0ca6e7884\",\"lease\":{\"expires_at\":\"2026-11-03T06:21:43.17224878Z\",\"lease_id\":\"b35b1a27-ca9e-49c5-ae2e-3c3435ff6aa2\"},\"member_forwarding_enabled\":true,\"netbird\":{\"backend\":\"kernel\",\"peer_id\":null,\"version\":null},\"node_id\":\"01a1a00e-b542-7930-bdc9-226a3f5d56ab\",\"node_incarnation_id\":\"01a1a00e-b8c2-761e-a8dd-5f6dffb3183e\",\"observed_at\":\"2026-11-03T06:20:43.313531266Z\",\"provisioning_state\":\"ready\",\"report_id\":\"01a1a011-2fb1-783e-8701-14d3686c00c4\",\"safety_status\":\"passed\",\"tc_evidence\":{\"attachments\":[{\"attachment\":\"qdisc\",\"interface\":\"fvmb0\",\"objects\":[{\"handle\":\"6763:\",\"kind\":\"fq_codel\",\"parent\":\"1:6763\"},{\"handle\":\"a4ef:\",\"kind\":\"fq_codel\",\"parent\":\"1:a4ef\"},{\"handle\":\"1:\",\"kind\":\"htb\",\"root\":true}]},{\"attachment\":\"qdisc\",\"interface\":\"fvup0\",\"objects\":[{\"handle\":\"6763:\",\"kind\":\"fq_codel\",\"parent\":\"1:6763\"},{\"handle\":\"a4ef:\",\"kind\":\"fq_codel\",\"parent\":\"1:a4ef\"},{\"handle\":\"1:\",\"kind\":\"htb\",\"root\":true}]},{\"attachment\":\"1:1\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"1:6763\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"1:a4ef\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"1:fffe\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"6763:\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"a4ef:\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"egress\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"ingress\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"root\",\"interface\":\"fvmb0\",\"objects\":[]},{\"attachment\":\"1:1\",\"interface\":\"fvup0\",\"objects\":[]},{\"attachment\":\"1:6763\",\"interface\":\"fvup0\",\"objects\":[]},{\"attachment\":\"1:a4ef\",\"interface\":\"fvup0\",\"objects\":[]},{\"attachment\":\"1:fffe\",\"interface\":\"fvup0\",\"objects\":[]},{\"attachment\":\"6763:\",\"interface\":\"fvup0\",\"objects\":[]}],\"candidate_generation\":\"12\",\"error_code\":null,\"objects_total\":6,\"phase\":\"verify\",\"read_at\":\"2026-11-03T06:20:43.299736919Z\",\"reads_total\":20,\"rejected\":null,\"sha256\":\"6234fb3dfc76c946b0623408ac68a97308854d3ba960233b2635e8102db7a3fc\",\"truncated\":true,\"verified\":true},\"update\":{\"generation\":null,\"job_id\":null,\"stage\":null,\"state\":null},\"usage\":{\"acked_archive_bytes\":\"648\",\"blocked_seq\":null,\"central_acked_through\":\"1\",\"last_durable_event_seq\":\"1\",\"ledger_epoch\":\"5c8d10bc-44a0-4165-9555-9030f0351a85\",\"meter_epoch_id\":\"01a1a011-2f41-70c0-8178-a4af102efe42\",\"oldest_unacked_at\":null,\"unacked_event_count\":0,\"unacked_payload_bytes\":\"0\"}}",
+    "response_wire": "{\"accepted\":true,\"received_at\":\"2026-11-03T06:20:43.319751Z\",\"report_id\":\"01a1a011-2fb1-783e-8701-14d3686c00c4\"}\n",
+    "request_sha256": "c1123789c9fdab60f226a7056f1ee22e1dfe915061bd829c87b1f3fe1262f04c",
+    "response_sha256": "bd897b1fa70d61e7dcb394c3802f0c7079744340138b3b4ede565baf5e704fed",
+    "started": "2026-11-03T06:20:43.317927429Z",
+    "completed": "2026-11-03T06:20:43.321893224Z",
+    "kind": "observation",
+    "http_status": 202,
+    "request": {
+      "agent_version": "0.1.0",
+      "applied_binding_revision": "1",
+      "applied_config_generation": "12",
+      "applied_policy_refs": {
+        "authorization_generation": "1",
+        "dns_generation": "1",
+        "fup_generation": "1"
+      },
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "observed_at": "2026-11-03T06:20:43.200139166Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "observed_at": "2026-11-03T06:20:43.200139166Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "observed_at": "2026-11-03T06:20:43.200139166Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "observed_at": "2026-11-03T06:20:43.200139166Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "observed_at": "2026-11-03T06:20:43.200139166Z",
+          "status": "passed"
+        },
+        {
+          "detail": "read_at=2026-11-03T06:20:43.299850906Z source=live candidate=12 verified=true {\"generation\":\"12\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"6234fb3dfc76c946b0623408ac68a97308854d3ba960233b2635e8102db7a3fc\"}",
+          "error_code": null,
+          "name": "qos",
+          "observed_at": "2026-11-03T06:20:43.200139166Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "observed_at": "2026-11-03T06:20:43.200139166Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "observed_at": "2026-11-03T06:20:43.200139166Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "observed_at": "2026-11-03T06:20:43.200139166Z",
+          "status": "passed"
+        },
+        {
+          "detail": "Egress probe used no extra target.",
+          "error_code": null,
+          "name": "tunnel_probe",
+          "observed_at": "2026-11-03T06:20:43.200139166Z",
+          "status": "passed"
+        }
+      ],
+      "current_release_id": "01a1a00e-b04c-77a9-b278-54f0ca6e7884",
+      "data_health": "healthy",
+      "dns_policy_evidence": {
+        "applied_at": "2026-11-03T06:20:43.197525696Z",
+        "content_sha256": "59e58cee29f9b15f285353abfebb205405f62b9fde93af95ec13aceb18cd6d91",
+        "document_id": "01a1a00e-b68b-7bab-9fc3-760155a16038",
+        "error_code": null,
+        "feeds": [],
+        "generation": "1",
+        "outcome": "applied"
+      },
+      "errors": [],
+      "forwarding_block_reasons": [],
+      "last_good_release_id": "01a1a00e-b04c-77a9-b278-54f0ca6e7884",
+      "lease": {
+        "expires_at": "2026-11-03T06:21:43.17224878Z",
+        "lease_id": "b35b1a27-ca9e-49c5-ae2e-3c3435ff6aa2"
+      },
+      "member_forwarding_enabled": true,
+      "netbird": {
+        "backend": "kernel",
+        "peer_id": null,
+        "version": null
+      },
+      "node_id": "01a1a00e-b542-7930-bdc9-226a3f5d56ab",
+      "node_incarnation_id": "01a1a00e-b8c2-761e-a8dd-5f6dffb3183e",
+      "observed_at": "2026-11-03T06:20:43.313531266Z",
+      "provisioning_state": "ready",
+      "report_id": "01a1a011-2fb1-783e-8701-14d3686c00c4",
+      "safety_status": "passed",
+      "tc_evidence": {
+        "attachments": [
+          {
+            "attachment": "qdisc",
+            "interface": "fvmb0",
+            "objects": [
+              {
+                "handle": "6763:",
+                "kind": "fq_codel",
+                "parent": "1:6763"
+              },
+              {
+                "handle": "a4ef:",
+                "kind": "fq_codel",
+                "parent": "1:a4ef"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "qdisc",
+            "interface": "fvup0",
+            "objects": [
+              {
+                "handle": "6763:",
+                "kind": "fq_codel",
+                "parent": "1:6763"
+              },
+              {
+                "handle": "a4ef:",
+                "kind": "fq_codel",
+                "parent": "1:a4ef"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "1:6763",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "1:a4ef",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "6763:",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "a4ef:",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "egress",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "ingress",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "root",
+            "interface": "fvmb0",
+            "objects": []
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fvup0",
+            "objects": []
+          },
+          {
+            "attachment": "1:6763",
+            "interface": "fvup0",
+            "objects": []
+          },
+          {
+            "attachment": "1:a4ef",
+            "interface": "fvup0",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fvup0",
+            "objects": []
+          },
+          {
+            "attachment": "6763:",
+            "interface": "fvup0",
+            "objects": []
+          }
+        ],
+        "candidate_generation": "12",
+        "error_code": null,
+        "objects_total": 6,
+        "phase": "verify",
+        "read_at": "2026-11-03T06:20:43.299736919Z",
+        "reads_total": 20,
+        "rejected": null,
+        "sha256": "6234fb3dfc76c946b0623408ac68a97308854d3ba960233b2635e8102db7a3fc",
+        "truncated": true,
+        "verified": true
+      },
+      "update": {
+        "generation": null,
+        "job_id": null,
+        "stage": null,
+        "state": null
+      },
+      "usage": {
+        "acked_archive_bytes": "648",
+        "blocked_seq": null,
+        "central_acked_through": "1",
+        "last_durable_event_seq": "1",
+        "ledger_epoch": "5c8d10bc-44a0-4165-9555-9030f0351a85",
+        "meter_epoch_id": "01a1a011-2f41-70c0-8178-a4af102efe42",
+        "oldest_unacked_at": null,
+        "unacked_event_count": 0,
+        "unacked_payload_bytes": "0"
+      }
+    },
+    "response": {
+      "accepted": true,
+      "received_at": "2026-11-03T06:20:43.319751Z",
+      "report_id": "01a1a011-2fb1-783e-8701-14d3686c00c4"
+    }
+  },
+  "settling": [
+    {
+      "at": "2026-11-03T06:19:07.403447777Z",
+      "snapshot": {
+        "node": [
+          "registered",
+          "ready",
+          "passed",
+          "12",
+          "12"
+        ],
+        "frozen": false,
+        "bindings": [
+          {
+            "id": "01a1a00f-14fe-7be6-94c6-5e0d51db0342",
+            "peer_ref": "dbknpa78k4c000853jrg",
+            "device_id": "01a1a00f-14fe-7be5-a3e7-a4456b73e45b",
+            "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+            "overlay_ip": "100.108.185.217",
+            "valid_from": "2026-11-03T06:18:25.406779+00:00",
+            "valid_until": "2026-11-03T07:18:26.130651+00:00",
+            "overlay_scope": "e2e-overlay",
+            "binding_revision": 1
+          },
+          {
+            "id": "01a1a00f-5011-7478-a64d-03a3212841eb",
+            "peer_ref": "dbknpdv8k4c000853mog",
+            "device_id": "01a1a00f-5011-7477-9443-7ebfe43900ca",
+            "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+            "overlay_ip": "100.108.218.29",
+            "valid_from": "2026-11-03T06:18:40.529292+00:00",
+            "valid_until": "2026-11-03T07:18:26.130651+00:00",
+            "overlay_scope": "e2e-overlay",
+            "binding_revision": 1
+          },
+          {
+            "id": "01a1a00f-8b29-7427-a4e2-803c185a4f05",
+            "peer_ref": "dbknphv8k4c000853qa0",
+            "device_id": "01a1a00f-8b29-7426-afaf-8633570a1e21",
+            "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+            "overlay_ip": "100.108.109.85",
+            "valid_from": "2026-11-03T06:18:55.657272+00:00",
+            "valid_until": "2026-11-03T07:18:41.964478+00:00",
+            "overlay_scope": "e2e-overlay",
+            "binding_revision": 1
+          }
+        ],
+        "envelope": {
+          "id": "115bca5d-6c5d-43da-85b2-b6c79a5c22f4",
+          "etag": "\"ds-12-13ca573f7b07e8900f295874\"",
+          "node_id": "01a1a00e-b542-7930-bdc9-226a3f5d56ab",
+          "envelope": {
+            "signed": {
+              "dns": {
+                "resolver_ipv4": [
+                  "192.0.6.53"
+                ],
+                "resolver_ipv6": [],
+                "resolver_document": {
+                  "generation": "1",
+                  "size_bytes": 521,
+                  "document_id": "01a1a00e-b68b-7bab-9fc3-760155a16038",
+                  "content_sha256": "59e58cee29f9b15f285353abfebb205405f62b9fde93af95ec13aceb18cd6d91",
+                  "profile_revision_id": "01a1a00e-b500-7435-bf53-38d9accf9c48"
+                }
+              },
+              "update": null,
+              "node_id": "01a1a00e-b542-7930-bdc9-226a3f5d56ab",
+              "issued_at": "2026-11-03T06:19:02.073475856Z",
+              "expires_at": "2026-11-03T06:29:02.073475856Z",
+              "policy_refs": {
+                "dns_generation": "1",
+                "fup_generation": "1",
+                "authorization_generation": "1"
+              },
+              "egress_probe": null,
+              "node_capacity": {
+                "up_bps": 200000000,
+                "down_bps": 200000000,
+                "member_up_bps_cap": 100000000,
+                "member_down_bps_cap": 100000000
+              },
+              "safety_profile": "internet-only-v1",
+              "schema_version": 1,
+              "device_bindings": [
+                {
+                  "peer_id": "dbknpa78k4c000853jrg",
+                  "device_id": "01a1a00f-14fe-7be5-a3e7-a4456b73e45b",
+                  "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+                  "valid_from": "2026-11-03T06:18:25.406779Z",
+                  "valid_until": "2026-11-03T07:18:26.130651Z",
+                  "allowed_ipv4": [
+                    "100.108.185.217"
+                  ],
+                  "allowed_ipv6": [],
+                  "binding_revision": "1"
+                },
+                {
+                  "peer_id": "dbknpdv8k4c000853mog",
+                  "device_id": "01a1a00f-5011-7477-9443-7ebfe43900ca",
+                  "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+                  "valid_from": "2026-11-03T06:18:40.529292Z",
+                  "valid_until": "2026-11-03T07:18:26.130651Z",
+                  "allowed_ipv4": [
+                    "100.108.218.29"
+                  ],
+                  "allowed_ipv6": [],
+                  "binding_revision": "1"
+                },
+                {
+                  "peer_id": "dbknphv8k4c000853qa0",
+                  "device_id": "01a1a00f-8b29-7426-afaf-8633570a1e21",
+                  "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+                  "valid_from": "2026-11-03T06:18:55.657272Z",
+                  "valid_until": "2026-11-03T07:18:41.964478Z",
+                  "allowed_ipv4": [
+                    "100.108.109.85"
+                  ],
+                  "allowed_ipv6": [],
+                  "binding_revision": "1"
+                }
+              ],
+              "binding_revision": "1",
+              "accounting_period": {
+                "period_id": "2026-11",
+                "period_end": "2026-12-01T00:00:00Z",
+                "period_start": "2026-11-01T00:00:00Z"
+              },
+              "config_generation": "12",
+              "desired_release_id": null,
+              "publication_intent": "published",
+              "node_incarnation_id": "01a1a00e-b8c2-761e-a8dd-5f6dffb3183e",
+              "serving_release_ids": [
+                "01a1a00e-b04c-77a9-b278-54f0ca6e7884"
+              ],
+              "member_rate_policies": [
+                {
+                  "mode": "shadow",
+                  "reason": "normal",
+                  "up_bps": 100000000,
+                  "down_bps": 100000000,
+                  "priority": 0,
+                  "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+                  "period_id": "2026-11",
+                  "generation": "0",
+                  "tier_index": 0,
+                  "valid_from": "2026-11-03T06:18:10.329906Z",
+                  "valid_until": "2026-11-03T07:18:26.130651Z"
+                },
+                {
+                  "mode": "shadow",
+                  "reason": "normal",
+                  "up_bps": 100000000,
+                  "down_bps": 100000000,
+                  "priority": 0,
+                  "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+                  "period_id": "2026-11",
+                  "generation": "1",
+                  "tier_index": 0,
+                  "valid_from": "2026-11-03T06:18:42.077357Z",
+                  "valid_until": "2026-11-03T07:18:41.964478Z"
+                }
+              ],
+              "lease_renewal_endpoint": "/api/v1/agent/lease-renewals",
+              "supported_release_policy_id": "01a1a00e-b4c7-7068-b08b-f955a1207c5f"
+            },
+            "signatures": [
+              {
+                "key_id": "01a1a00e-2877-72d4-81bc-fb571cd2e53a",
+                "algorithm": "ed25519",
+                "signature_b64": "hEE7m1DUj0/kmWQhRt+6PuS8SoVNyffV6iMPHzLJXDdpLQVr/5ZI6Giq+DXOAyrayLggaOZnfjvSru0+pAxQAA=="
+              }
+            ]
+          },
+          "issued_at": "2026-11-03T06:19:02.073475+00:00",
+          "created_at": "2026-11-03T06:18:01.958989+00:00",
+          "expires_at": "2026-11-03T06:29:02.073475+00:00",
+          "generation": 12,
+          "updated_at": "2026-11-03T06:19:02.076396+00:00",
+          "incarnation_id": "01a1a00e-b8c2-761e-a8dd-5f6dffb3183e",
+          "desired_state_id": "7834f3dc-4b4a-4616-8597-3866f9daaaae"
+        },
+        "publication": [
+          "published",
+          "active"
+        ],
+        "entitlements": [
+          {
+            "id": "b4280d10-5335-471f-a819-58c3f7f45d98",
+            "state": "active",
+            "revision": 2,
+            "member_id": "01a1a00e-da13-7131-a262-128c389b552c",
+            "projection": {
+              "plan": {
+                "device_limit": 3,
+                "exit_group_ids": [
+                  "01a1a00e-b50d-7ade-8ac9-fc6676735c65"
+                ],
+                "plan_revision_id": "01a1a00e-b51c-702f-b082-8f3ea7a100f5"
+              },
+              "state": "active",
+              "valid_from": "2026-11-03T06:18:10.329906Z",
+              "grace_until": null,
+              "source_refs": [
+                "01a1a00e-da1a-7522-844c-a88e06d9d699",
+                "01a1a00f-1819-709e-8447-4e2956328ea8"
+              ],
+              "device_limit": 3,
+              "paid_through": null,
+              "exit_group_ids": [
+                "01a1a00e-b50d-7ade-8ac9-fc6676735c65"
+              ],
+              "admin_suspended": false,
+              "member_group_ids": [],
+              "cancel_at_period_end": false,
+              "effective_service_end": "2026-11-03T07:18:26.130651Z"
+            },
+            "valid_from": "2026-11-03T06:18:10.329906+00:00",
+            "computed_at": "2026-11-03T06:18:26.20112+00:00",
+            "source_refs": [
+              "01a1a00e-da1a-7522-844c-a88e06d9d699",
+              "01a1a00f-1819-709e-8447-4e2956328ea8"
+            ],
+            "device_limit": 3,
+            "admin_suspended": false,
+            "plan_revision_id": "01a1a00e-b51c-702f-b082-8f3ea7a100f5",
+            "next_transition_at": "2026-11-03T07:18:10.201784+00:00",
+            "effective_service_end": "2026-11-03T07:18:26.130651+00:00"
+          },
+          {
+            "id": "893fa287-7f74-4617-ade7-a723f13f4cd8",
+            "state": "active",
+            "revision": 1,
+            "member_id": "01a1a00f-5616-7a4a-81cc-a968dcf312db",
+            "projection": {
+              "plan": {
+                "device_limit": 3,
+                "exit_group_ids": [
+                  "01a1a00e-b52a-7d5e-b48d-f0f0f5ff047d"
+                ],
+                "plan_revision_id": "01a1a00e-b532-7b86-aeeb-20164f899d12"
+              },
+              "state": "active",
+              "valid_from": "2026-11-03T06:18:42.077357Z",
+              "grace_until": null,
+              "source_refs": [
+                "01a1a00f-561d-7ba9-90b4-dc2e3942b77f"
+              ],
+              "device_limit": 3,
+              "paid_through": null,
+              "exit_group_ids": [
+                "01a1a00e-b52a-7d5e-b48d-f0f0f5ff047d"
+              ],
+              "admin_suspended": false,
+              "member_group_ids": [],
+              "cancel_at_period_end": false,
+              "effective_service_end": "2026-11-03T07:18:41.964478Z"
+            },
+            "valid_from": "2026-11-03T06:18:42.077357+00:00",
+            "computed_at": "2026-11-03T06:18:42.077929+00:00",
+            "source_refs": [
+              "01a1a00f-561d-7ba9-90b4-dc2e3942b77f"
+            ],
+            "device_limit": 3,
+            "admin_suspended": false,
+            "plan_revision_id": "01a1a00e-b532-7b86-aeeb-20164f899d12",
+            "next_transition_at": "2026-11-03T07:18:41.964478+00:00",
+            "effective_service_end": "2026-11-03T07:18:41.964478+00:00"
+          }
+        ],
+        "offline_seconds": 60,
+        "device_projection": [
+          {
+            "id": "01a1a00f-14fe-7be5-a3e7-a4456b73e45b",
+            "status": "authorized",
+            "authorized_at": "2026-11-03T06:18:25.406779+00:00"
+          },
+          {
+            "id": "01a1a00f-5011-7477-9443-7ebfe43900ca",
+            "status": "authorized",
+            "authorized_at": "2026-11-03T06:18:40.529292+00:00"
+          },
+          {
+            "id": "01a1a00f-8b29-7426-afaf-8633570a1e21",
+            "status": "authorized",
+            "authorized_at": "2026-11-03T06:18:55.657272+00:00"
+          }
+        ]
+      }
+    }
+  ],
+  "status": "pass",
+  "true_flip": {
+    "started": "2026-11-03T06:20:42.397565005Z",
+    "completed": "2026-11-03T06:20:42.397565633Z",
+    "kind": "flip",
+    "ready": true
+  }
+}

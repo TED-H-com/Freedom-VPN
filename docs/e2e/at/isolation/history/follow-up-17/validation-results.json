@@ -1,0 +1,136 @@
+{
+  "run_id": "0ec14b39-467e-4a37-a239-1a33ef12eb71",
+  "date": "2026-11-03",
+  "baseline": "b943941157ab6aeba6b04c79377de686c22bfbb4",
+  "measured_consumer": "de9682a96a296a3b79686db029b3e28f493f08f4",
+  "assembled": {
+    "baseline": "b943941157ab6aeba6b04c79377de686c22bfbb4",
+    "consumer": "de9682a96a296a3b79686db029b3e28f493f08f4",
+    "started_at": "2026-11-03T06:16:01.539081Z",
+    "gocache_before": "$HOME/.cache/go-build",
+    "ended_at": "2026-11-03T06:41:05.602278Z",
+    "duration_seconds": 1504.0631961670006,
+    "exit_code": 2,
+    "gocache_after": "$HOME/.cache/go-build"
+  },
+  "gates": [
+    {
+      "command": "make -f mk/at-isolation.mk at-isolation-lint at-isolation-test at-isolation-build",
+      "exit_code": 0,
+      "scope": "before run and again after final consumer edits; amd64/arm64 probe builds"
+    },
+    {
+      "command": "make -f mk/at-isolation.mk at-isolation",
+      "exit_code": 2,
+      "reason": "AT11 and AT13 operator matrices blocked; populated hold review remains incomplete for pure stale_generation"
+    },
+    {
+      "command": "go test -count=1 ./tests/handover/...",
+      "exit_code": 0
+    },
+    {
+      "command": "make go-lint",
+      "exit_code": 0,
+      "scope": "run.py disk temp; go-with-disk-tmp= bypasses only shell trap wrapper"
+    },
+    {
+      "command": "gofmt -l tracked Go files",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "TestCommittedEvidenceFiles_ValidAndHygieneClean",
+      "exit_code": 0
+    }
+  ],
+  "initial_offline_reviews": [
+    {
+      "name": "review_policy_missing",
+      "exit_code": 0,
+      "seconds": 2.114
+    },
+    {
+      "name": "review_reservations",
+      "exit_code": 0,
+      "seconds": 1.039
+    },
+    {
+      "name": "review_core32",
+      "exit_code": 0,
+      "seconds": 0.059
+    },
+    {
+      "name": "review_holds",
+      "exit_code": 1,
+      "seconds": 1.166
+    },
+    {
+      "name": "review_populated_holds",
+      "exit_code": 1,
+      "seconds": 0.096
+    },
+    {
+      "name": "review_commands",
+      "exit_code": 0,
+      "seconds": 2.01
+    },
+    {
+      "name": "review_stops",
+      "exit_code": 0,
+      "seconds": 0.051
+    }
+  ],
+  "corrected_general_hold_review": {
+    "exit_code": 0,
+    "status": "partial",
+    "join_problems": [],
+    "reason": "Counter reset applies only to its original planned incident; every third-incident join remains checked."
+  },
+  "published_populated_review": {
+    "exit_code": 1,
+    "status": "incomplete",
+    "reason": "pure stale_generation not exercised; all eight other categories pass"
+  },
+  "audit": {
+    "prior_archive_files_unchanged": 1378,
+    "followup16_files_verified": 129,
+    "lossless_streams_verified": 12,
+    "source_files_byte_identical": [
+      "tests/e2e/at/isolation/deadline_trace.go",
+      "tests/e2e/at/isolation/deadline_trace_test.go",
+      "tests/e2e/at/isolation/capture.go",
+      "tests/e2e/at/isolation/capture_review_test.go",
+      "tests/e2e/at/isolation/observer_main.go",
+      "tests/netlab/scripts/deadline.py",
+      "tests/netlab/scripts/deadline_precision.py"
+    ],
+    "all_paths_owned": true
+  },
+  "cleanup": {
+    "containers": [],
+    "images": [],
+    "networks": [],
+    "volumes": []
+  },
+  "nightly": {
+    "logs_read_only": [
+      "41304317016",
+      "41456092596"
+    ],
+    "artifact_counts": [
+      0,
+      0
+    ],
+    "workflows_triggered": 0,
+    "expected_blocked_rows": 2,
+    "short_expiry_cause": "unproven: actual reason omitted from historical logs; not allowlisted"
+  },
+  "limitations": [
+    "No retry or historical rejudgment.",
+    "Physical arm64 and full platform/fault matrices remain operator work.",
+    "Captured evaluator metadata says unavailable; final lookup fix has offline lint/build validation only."
+  ]
+}
