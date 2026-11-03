@@ -2044,7 +2044,7 @@ func (x *isolationRun) noteEvaluator() {
 	if x.records["AT13"] == nil {
 		return
 	}
-	root := filepath.Clean(filepath.Join(x.dir, "..", "..", "..", ".."))
+	root := moduleRoot()
 	sum := sha256.New()
 	for _, name := range []string{"capture.go", "capture_review_test.go"} {
 		body, err := os.ReadFile(filepath.Join(root, "tests/e2e/at/isolation", name))

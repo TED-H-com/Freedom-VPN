@@ -1,7 +1,7 @@
 """Retention needs an open incident, reset counters and the actual parent receipt."""
 import copy
 import unittest
-from review_populated_holds import retention
+from review_populated_holds import retention, central_age_fallback
 
 
 class Retention(unittest.TestCase):
@@ -28,3 +28,18 @@ class Retention(unittest.TestCase):
             if kind=='proxy':attempt['proxy_after_stop']['released_at']='2026-01-01T00:00:11Z'
             if kind=='receipt':attempt['stop']['output']='{}'
             with self.subTest(kind=kind):self.assertEqual(retention(attempt,samples)['status'],'fail')
+
+
+class CentralFallback(unittest.TestCase):
+    def test_original_age_audit_needs_no_alarm_and_one_audit(self):
+        incident=dict(first_seen_at='2026-01-01T00:00:00Z')
+        audit=dict(occurred_at='2026-01-01T00:00:30Z',evidence=dict(reported_alarm=False,alarm_report_id=None))
+        self.assertEqual(central_age_fallback(incident,[audit]),[audit])
+        for kind in ('early','reported_alarm','alarm_id','missing_alarm','duplicate'):
+            a=copy.deepcopy(audit)
+            if kind=='early':a['occurred_at']='2026-01-01T00:00:29.999999999Z'
+            if kind=='reported_alarm':a['evidence']['reported_alarm']=True
+            if kind=='alarm_id':a['evidence']['alarm_report_id']='report'
+            if kind=='missing_alarm':del a['evidence']['reported_alarm']
+            audits=[a,a] if kind=='duplicate' else [a]
+            with self.subTest(kind=kind):self.assertEqual(central_age_fallback(incident,audits),[])

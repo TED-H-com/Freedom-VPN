@@ -36,6 +36,14 @@ def retention(attempt, samples):
                 stop_receipt=receipt, stop_identity_matched=matched(stop, receipt), proxy_still_armed=bool(armed))
 
 
+def central_age_fallback(incident, audits):
+    if len(audits) != 1:
+        return []
+    return [a for a in audits if not a['evidence'].get('alarm_report_id') and
+            a['evidence'].get('reported_alarm') is False and
+            ns(a['occurred_at'])-ns(incident['first_seen_at']) >= 30000000000]
+
+
 def review(root):
     raw = read_json(root/'populated-holds.json')
     central = read_json(root/'generation-holds-central.json')
@@ -83,9 +91,7 @@ def review(root):
             coverage['active_stop_retention'] = row['retention']['status']
         if attempt.get('purpose') == 'central_age_fallback':
             coverage['alarm_single_escalation'] = 'not exercised'
-            fallback = [a for a in audits if not a['evidence'].get('alarm_report_id') and
-                        a['evidence'].get('reported_alarm') is False and
-                        ns(a['occurred_at'])-ns(h['first_seen_at']) >= 30000000000]
+            fallback = central_age_fallback(h, audits)
             coverage['central_30s_fallback'] = 'pass' if len(audits)==1 and fallback else 'not exercised'
             row['fallback_audits'] = fallback
         coverage['pure_stale_generation'] = 'pass' if any(v['classification']=='stale_generation' and not v['unrelated_failure'] and not v['problems'] for v in holds) else 'not exercised'

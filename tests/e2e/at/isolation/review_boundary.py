@@ -46,7 +46,6 @@ def qualify_scope(rows, interleavings):
 def review(root):
     read=lambda name:read_json(root/name)
     current=read('AT13.json')
-    expiry=next((c for c in current.get('checks',[]) if c['name']=='short whole-node lease expiry'),{})
     blocked = unexecuted_expiry(root, 'boundary-review.json', current)
     if blocked:
         return blocked

@@ -119,3 +119,24 @@ and return nonzero with one line before reading any old producer/packet file.
 No workflow is triggered by this task.
 
 AT11 native platforms and AT13's full fault matrix remain carried operator rows.
+
+## Recorded outcome
+
+One run **0ec14b39-467e-4a37-a239-1a33ef12eb71**, measured consumer
+**de9682a96a296a3b79686db029b3e28f493f08f4**, source dirty false. Started
+**2026-11-03T06:16:01.539081Z**, ended **06:41:05.602278Z**; full **1504.063 s**,
+driver **1338.92 s**, exit **2**. GOCACHE before and after:
+**`$HOME/.cache/go-build`**. Host quiet after **60.040 s**; one post-start
+conflicting tagged netlab test required **30.078 s** waiting. Inventory zero.
+
+The 103 calibration packets selected **2.4 ms**. All **285** probes are retained,
+with **zero overlaps**. D-142 qualification and unchanged evaluator pass;
+last positive **D−98.970225 ms**, first drop **D−95.769511 ms**. D-104 mechanism
+passes; all original seven hold categories and central-age fallback pass.
+Pure classification remains not exercised. AT11/AT13 remain operator-blocked.
+Six agent exits are 0; no install overrun. [Full result](summary.md).
+
+Final offline-only fixes scope counter-reset review to its planned incident and
+remove a fixed-depth assumption in evaluator metadata lookup. The measured
+metadata omission and original offline error remain in
+[consumer corrections](consumer-review-corrections.json). No second measurement.
