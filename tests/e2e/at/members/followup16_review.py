@@ -137,6 +137,8 @@ def reservation_review(cases, recovery, holds, data, pins):
 def hold_review(cases):
     rows=[]
     central_joins=load(ROOT/'F16-AT02-generation-holds.json')['joined']
+    supplemental=load(ROOT/'F16-AT02-member-patch-audits.json')['rows']
+    central_joins['revocations']=list({a['id']:a for a in central_joins['revocations']+supplemental}.values())
     for name in ['alarm-recovery','sibling-removal','sole-member','retained-safety']:
         v=load(ROOT/('F16-hold-'+name+'.json'))
         central=v.get('central') or {}

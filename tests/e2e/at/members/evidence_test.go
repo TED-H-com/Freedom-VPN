@@ -124,7 +124,14 @@ func verifyArchive(t *testing.T, followup, run string, count int) {
 		if hex.EncodeToString(digest[:]) != fields[0] {
 			t.Errorf("archive changed: %s", fields[1])
 		}
-		if strings.HasPrefix(fields[1], "AT") && filepath.Ext(fields[1]) == ".json" {
+		name := strings.TrimSuffix(fields[1], ".gz")
+		if strings.HasPrefix(name, "AT") && filepath.Ext(name) == ".json" && !strings.HasSuffix(name, ".sha256.json") {
+			// Sidecars pin bytes, not case provenance. Compressed case records
+			// still require both byte pins and the original run ID.
+			raw, err := readEvidence(filepath.Join(root, fields[1]))
+			if err != nil {
+				t.Fatal(err)
+			}
 			var rec struct {
 				RunID string `json:"run_id"`
 			}

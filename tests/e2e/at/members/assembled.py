@@ -18,7 +18,12 @@ def main():
     vmstat = subprocess.check_output(['vmstat', '5', '7'], text=True)
     processes = subprocess.run(['pgrep', '-af', 'gates.sh|mk/at-'], capture_output=True, text=True)
     (private/'f16-preflight-pgrep.txt').write_text(processes.stdout)
-    receipt = dict(at=before, baseline_commit=subprocess.check_output(['git','rev-parse','main'],text=True).strip(), harness_commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(), gocache=subprocess.check_output(['go','env','GOCACHE'],text=True).strip(), vmstat=vmstat, suite_wait=wait, commands=['vmstat 5 7', "pgrep -af 'gates.sh|mk/at-'", 'go env GOCACHE'], pgrep='Original output retained privately; admission inventory above is sanitized')
+    cache = subprocess.check_output(['go','env','GOCACHE'],text=True).strip()
+    (private/'f16-gocache.txt').write_text(cache+'\n')
+    (private/'f16-gocache.txt').chmod(0o600)
+    home_prefix = str(Path.home()) + '/'
+    cache_display = '${HOME}/' + cache[len(home_prefix):] if cache.startswith(home_prefix) else cache
+    receipt = dict(at=before, baseline_commit=subprocess.check_output(['git','merge-base','HEAD','main'],text=True).strip(), main_ref_at_preflight=subprocess.check_output(['git','rev-parse','main'],text=True).strip(), harness_commit=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(), gocache=cache_display, gocache_note='Home directory redacted for publication; exact output retained privately, no cache override', vmstat=vmstat, suite_wait=wait, commands=['vmstat 5 7', "pgrep -af 'gates.sh|mk/at-'", 'go env GOCACHE'], pgrep='Original output retained privately; admission inventory above is sanitized')
     Path('docs/e2e/at/members/F16-host-preflight.json').write_text(json.dumps(receipt,indent=2)+'\n')
     if check():
         return 75

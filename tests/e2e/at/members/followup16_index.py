@@ -61,8 +61,10 @@ def main():
     # supplementary; it cannot substitute for an incident/report/lease join.
     h = load(ROOT / 'F16-AT02-generation-holds.json')
     joined = h['joined']
+    supplemental = load(ROOT / 'F16-AT02-member-patch-audits.json')['rows']
+    joined['revocations'] = sorted({a['id']: a for a in joined['revocations'] + supplemental}.values(), key=lambda a: (stamp(a['occurred_at']), a['id']))
     save('F16-AT02-revocation-members.json', dict(provenance, rows=joined['revocations'],
-         method='Original audit resource UUID joined read-only to member_devices or entitlement_grants in the owned stack; member resources carry their exact member UUID. Null means no ID join, never inferred from timing.'))
+         method='Original audit resource UUID joined read-only to member_devices or entitlement_grants in the owned stack; member resources carry their exact member UUID. Null means no ID join, never inferred from timing. Member.patch rows come from the separate original F16-AT02-member-patch-audits.json export.'))
     incidents = []
     for incident in joined['incidents']:
         samples = [s for s in joined['samples'] if s['hold_id'] == incident['id']]

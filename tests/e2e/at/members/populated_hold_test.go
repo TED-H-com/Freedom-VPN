@@ -23,7 +23,7 @@ func (l *live) populatedHolds(r *record) {
 	restore := l.useSecond()
 	defer restore()
 	defer func() {
-		l.patchMember(r, l.b, map[string]any{"admin_suspended": false, "suspension_reason": "TEST ONLY hold cleanup"})
+		l.restoreHoldMember(r, "TEST ONLY hold cleanup")
 		l.publish(r, []uuid.UUID{l.groupA})
 	}()
 	for i, row := range []struct {
@@ -38,7 +38,7 @@ func (l *live) populatedHolds(r *record) {
 	} {
 		l.admin = l.login("e2e-admin", "admin")
 		if i > 0 {
-			l.patchMember(r, l.b, map[string]any{"admin_suspended": false, "suspension_reason": "TEST ONLY next independent hold"})
+			l.restoreHoldMember(r, "TEST ONLY next independent hold")
 		}
 		// Suspension can withdraw its devices. Restore the original binding
 		// through the real explicit authorization API before the next incident.
@@ -59,6 +59,19 @@ func (l *live) populatedHolds(r *record) {
 		case <-time.After(65 * time.Second):
 		}
 		l.populatedHold(r, row.name, row.count, 211000000+i*1000000)
+	}
+}
+
+// A restore is conditional: an already eligible member needs no mutation.
+// The original F16 run keeps its two 200-versus-202 no-op assertion failures.
+func (l *live) restoreHoldMember(r *record, reason string) {
+	var suspended bool
+	if err := l.pool.QueryRow(l.ctx, `SELECT admin_suspended FROM members WHERE id=$1`, l.b.member).Scan(&suspended); err != nil {
+		r.block("Hold cleanup member state unavailable; no mutation inferred")
+		return
+	}
+	if suspended {
+		l.patchMember(r, l.b, map[string]any{"admin_suspended": false, "suspension_reason": reason})
 	}
 }
 

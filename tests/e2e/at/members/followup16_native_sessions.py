@@ -37,6 +37,7 @@ def main():
     assert len(entries)>=4, 'missing original regrant or sibling capture'
     results=[]
     for case,step,cap in entries:
+        doc=cases[case]
         label=step['name'].removeprefix('native capture completeness ')
         name=case+'-'+label
         destination=base/'headers'/name
@@ -81,7 +82,16 @@ def main():
             match=next((p for p in syns['node'] if first and p['tcp']==first['tcp']),None)
             transit=dict(lower_ns=str(int(match['mono_lower_ns'])-int(first['mono_upper_ns'])),upper_ns=str(int(match['mono_upper_ns'])-int(first['mono_lower_ns']))) if match else None
             # Port belongs to one original transfer; don't borrow an earlier receipt.
-            requests.append(dict(source_port=port,before_sample=sample['label'],after_sample=after['label'],request_window_start_wall_ns=str(lo),request_window_end_wall_ns=str(hi),syns=syns,first_syn_transit=transit,scope='Window includes command/readback overhead. Late SYNs remain late; origin HTTP receipt is taken only from the original forwarding record, never inferred from TCP headers.'))
+            def matches_port(observation):
+                return any(p.get('filter')=='controlled-origin TCP/443, client port '+str(port) for p in observation.get('packet_observations',{}).values())
+            forwarding=[f for f in doc['forwarding'] if matches_port(f)]
+            retained=[]
+            for original_step in doc['steps']:
+                if original_step['name']!='F14-01 original re-grant attempt retained':continue
+                attempt=json.loads(original_step['actual'])
+                if any(matches_port(f) for f in attempt['forwarding_attempts']):
+                    retained.append(dict(step_name=original_step['name'],step_at=original_step['at'],step_status=original_step['status'],device_id=attempt['device_id'],cause_status=attempt['cause_status']))
+            requests.append(dict(source_port=port,before_sample=sample['label'],after_sample=after['label'],request_window_start_wall_ns=str(lo),request_window_end_wall_ns=str(hi),syns=syns,first_syn_transit=transit,original_forwarding_matches=forwarding,unique_original_filter_join=len(forwarding)==1,retained_regrant_attempts=retained,scope='Window includes command/readback overhead. Exact client-port AF_PACKET filter joins the original forwarding record and its authenticated origin receipt; TCP headers alone are not HTTP evidence. Setup/negative transfers remain distinct from the retained original regrant attempt.'))
         result['requests']=requests
         if label=='AT02-sibling':
             sender=json.loads(next(s for s in cases['AT02']['steps'] if s['name']=='D-135 continuous admitted sibling capture')['actual'])['sender']
