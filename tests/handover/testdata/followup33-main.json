@@ -1,0 +1,44 @@
+{
+  "commit": "339db17215db583330a2395f0484f2bdad9681e7",
+  "cutoff_pr": 415,
+  "rows": [
+    "| w2-updater follow-up 21 | F27-02's qualified comparison, in two reserved windows (the first use of the orchestrator's exclusive host reservation), declaration committed before any measured run. Inputs re-checked on main: the follow-up 20 overlay maps only the original test plus elapsed logging, node/updater unchanged since #408, and the deterministic meter-wait budget exact before and after (0 to 250 ms, 200 to 50 ms, 250 ms to 0, 1 s to 0, every sample). Quiet legs: baseline 200 / 1 (expired, 1443.3 ms) and 200 / 0; corrected 200 / 0 and 178 / 1 (stopped when another lane's go test appeared, 90 s after its failure); none qualified (one in-leg vmstat interval each at r 4 to 5 with only the test's own process, and the foreign go test). Bounded load legs: baseline 50 / 0 (qualified, 88.4 s of agent-suite load); corrected 50 / 0 twice (unqualified by a foreign gate wrapper, then qualified, 88.8 s). Verdict by the declared rule: the fixture-defect reading FAILED, because the corrected parent test failed once. Its mechanism is F21-01, a second wall-clock dependency: the replaced subcase's own setup (simulated crash, SQLite reopen, replacement checkpoint) took about 533 ms against the 250 ms persisted deadline, so Recover (15.1 ms) found it expired and failed closed with meter_checkpoint_timeout instead of meter_checkpoint_uncorrelated. Not a renewal. Whole-Recover stalls of 0.27 to 1.44 s occur both quiet and under load. Historical F27-02 and follow-up 20's runs stay as recorded. No source change. 2 requests (reservation enforcement and the quiet-leg rule; F21-01 fixture fix and re-measurement). Session on agy claude-opus-5-5-high. | done (#413) |",
+    "| w4-handover follow-up 32 | Cut #408–#412 at `b7449ec1` (updater 20, handover 31, members 17, netlab 28, devstack 31). `TestHandover_Followup32Claims`: 20 subtests, five final roadmap rows, nine frozen handover inputs, 301 archive payload checks (81 members, 220 netlab), seven dated or additive documents, 19 relative symlinks inside the repository (members' 18 plus the G1 checklist) and 14 archived navigation sources; follow-up 31's claims verified from its function and manifests and pinned by its normalized function hash, earlier assertions unchanged except frozen input redirects. Updater 20's F27-02 fixture diagnosis recorded as #408 states it (four 200-iteration runs unqualified, load leg never started, netlab 27's F27-02 still failed); updater 21 (#413, after this cut) found that reading failed by its declared rule. Members 17 recorded as D-102's first live survivor-continuation consumer, AT02 and AT09 still failed, source-address row not exercised. Netlab 28's publication mapping and main's manifest digest pinned additively, B1 unresolved. F28-01 routed to netlab 29 and F31-01 to agent-core (design first), neither judged. Findings register at 75 rows; 47 decisions byte-identical, nothing after D-144; 9 owner requests carried; no scheduled-run result claimed. Session on codex gpt-6-astra. | done (#414) |",
+    "| w1-netlab follow-up 29 | F28-01 attributed and fixed, TEST ONLY. The first reserved full-suite run on the original assertion and unchanged production enforcement failed AT12 by 97 upload bytes in two packets (15,533 to 15,630), both from AT10's earlier TCP connection to an admitted destination: a 57-byte retransmitted request and a 40-byte RST, matched at origin, node ingress, node egress and responder, strictly between the before and mid reads, so no read-boundary race. AT12 had entered with that socket still in FIN-WAIT-1 (Send-Q 26); flushing node conntrack did not clear the member namespace's retransmit state. The bytes were forwarded under a re-admitted binding, not refused packets billed. Fix: AT12 destroys and verifies prior connected IPv4 TCP sockets in its lab namespace before probes and baseline sampling; the deny assertion is byte-identical (no subtraction, reset, tolerance or settling sleep). Both corrected full suites found and destroyed a pending old socket and counted zero deny-phase bytes (16,669 and 14,349 unchanged). Follow-up 28's gate 2 stays FAIL; its original packets were not captured. F27-01 stays unresolved and B1 FAIL: the single guard diagnostic failed at capture startup (NFLOG rejected nanosecond timestamps), not retried; the microsecond parser fix is offline only. Follow-up 28's publication mapping recorded additively. D-098: 994 earlier payload files and four manifests byte-identical; new manifest d9f9e7d5 (512 payload files). No production change. Session on codex gpt-6-astra. | done (#415) |"
+  ],
+  "merged_after_cutoff": [],
+  "absent_at_start": [
+    "w2-agent-core follow-up 39 (carries 37 and 38)",
+    "w2-updater follow-up 22",
+    "w1-netlab follow-up 30"
+  ],
+  "pr_excerpts": [
+    {
+      "path": "tests/handover/testdata/history/follow-up-33/pr413-excerpt.txt",
+      "sha256": "a5d666e0591158c7e3cc624164acafddaf81ee769d85a5cb6bb91f6a37b03422",
+      "bytes": 778,
+      "pr": 413,
+      "source_commit": "f9a5ffd2ad220dc5d9f5567bd4f1a956da912485",
+      "offset": 2715,
+      "source_sha256": "ead5f1b23f0455c0be5eeb00c44d19cfc73675a4642e4485dd14913c715d76df"
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-33/pr414-excerpt.txt",
+      "sha256": "309dd9f00879fccd3aa4acad5a9d32e4aaf047558ce8af2ef5abee3325fa07c4",
+      "bytes": 574,
+      "pr": 414,
+      "source_commit": "f042159d603ed2eabb87d5f4f4d02d2b917652a3",
+      "offset": 231,
+      "source_sha256": "1edc7f7ad2aceeba0116484848d6960409ed092aa4b1806494b687e5d8383f6d"
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-33/pr415-excerpt.txt",
+      "sha256": "207f25011e251870d9b2596c71652ba6097a68ac6c71ac480ca7ae479ad15ba1",
+      "bytes": 421,
+      "pr": 415,
+      "source_commit": "527f7f532f5619aadefdb3fd9d5d263cc79b051f",
+      "offset": 3575,
+      "source_sha256": "2561a7e69c1120b992f14093bae7eb436d1a01d5ef9e022c769261bd93a183a7"
+    }
+  ]
+}
