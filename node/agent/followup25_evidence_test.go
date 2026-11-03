@@ -226,6 +226,7 @@ func TestISO_F6_RetainedErrorRenewsDesiredWithoutACK(t *testing.T) {
 	p := &revocationPlane{memPlane: r.plane}
 	r.eng.plane = p
 	p.ex.foreignTC = true
+	requireApplyChangeForTest(r)
 	stepOK(t, r)
 	r.srv.SetFixture(generationFixture(3, oneBinding(r.clock.Wall())))
 	if err := r.eng.syncDesired(t.Context()); err != nil {

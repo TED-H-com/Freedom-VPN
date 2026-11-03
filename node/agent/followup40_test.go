@@ -504,6 +504,7 @@ func TestR23_H1b_RepairApplySwitchEpochKeepsIntent(t *testing.T) {
 	}
 	p := &f40RepairPlane{memPlane: r.plane, fail: true, kernel: k, src: src}
 	r.eng.plane = p
+	requireApplyChangeForTest(r)
 	stepOK(t, r)
 	if r.eng.serving || r.eng.applyError == nil {
 		t.Fatal("Apply did not fail closed")

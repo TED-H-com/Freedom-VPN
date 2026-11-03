@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/controlclient"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
@@ -149,3 +150,30 @@ func TestAT13_F41_LeaseRenewalApplies(t *testing.T) {
 		t.Fatal("unchanged renewed model applied again")
 	}
 }
+
+// This control explicitly checks the HTTP 304 promised by the scenario. The
+// fake server otherwise re-signs desired state with a fresh expiry on each GET.
+func TestAT10_F41_Actual304RetainsFullModel(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	r.manualUsage(t)
+	signedAt := r.eng.desired.IssuedAt.Add(time.Minute)
+	r.srv.SetClock(func() time.Time { return signedAt })
+	before, desired, expiry := r.plane.applies, r.eng.desired, r.eng.policyExpires
+	for range 3 {
+		r.clock.Advance(10 * time.Second)
+		if _, _, err := r.eng.client.DesiredState(t.Context(), r.eng.desiredETag); !errors.Is(err, controlclient.ErrNotModified) {
+			t.Fatalf("fixture is not 304: %v", err)
+		}
+		stepOK(t, r)
+		if r.eng.desired != desired || r.plane.applies != before || r.eng.policyExpires != expiry || !mustBeat(t, r).Serving {
+			t.Fatal("304 changed the installed model")
+		}
+	}
+}
+
+// TEST ONLY: fault-injection tests that require an Apply must change an input.
+// A one-bit/s local host guarantee change keeps the signed lease and binding
+// identity intact while making the renderer's QoS model observably different.
+func requireApplyChangeForTest(r *rig) { r.eng.cfg.HostReserveBPS++ }

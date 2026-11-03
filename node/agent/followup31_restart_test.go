@@ -86,8 +86,12 @@ func TestF31_AT13_CancellationDuringLocalWorkKeepsRestartAuthorization(t *testin
 			ctx, cancel := context.WithCancel(t.Context())
 			defer cancel()
 			r.eng.plane = &cancelLocalWorkPlane{memPlane: r.plane, cancel: cancel, phase: phase}
+			requireApplyChangeForTest(r)
 			baselines, lease, deadline := r.plane.baselines, r.eng.lease.LeaseId, r.eng.policyExpires
 			_ = r.eng.Step(ctx)
+			if ctx.Err() == nil {
+				t.Fatal("cancellation callback did not run")
+			}
 			if !r.eng.storageOK || r.eng.usagePersist || !r.eng.serving || r.eng.applyError != nil {
 				t.Fatalf("cancellation interrupted local %s: storage=%v persist=%v serving=%v error=%v", phase, r.eng.storageOK, r.eng.usagePersist, r.eng.serving, r.eng.applyError)
 			}
@@ -107,6 +111,7 @@ func TestF31_AT13_CancellationDoesNotMaskRealApplyFailure(t *testing.T) {
 	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 	r.eng.plane = &cancelLocalWorkPlane{memPlane: r.plane, cancel: cancel, phase: "apply", fail: true}
+	requireApplyChangeForTest(r)
 	before := r.plane.baselines
 	_ = r.eng.Step(ctx)
 	if r.eng.serving || r.eng.applyError == nil || r.plane.baselines <= before || !r.eng.quarantinePending {

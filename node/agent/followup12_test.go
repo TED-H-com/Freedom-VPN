@@ -364,6 +364,7 @@ func TestReviewR15_TCForeignFilterWithdrawsServingOnApply(t *testing.T) {
 		t.Fatalf("clean serving control failed: %v", p.errors)
 	}
 	p.ex.foreignTC = true
+	requireApplyChangeForTest(r)
 	stepOK(t, r)
 	last := len(p.results) - 1
 	if r.eng.serving || p.results[last].Verified || p.errors[last] == nil || !strings.Contains(p.errors[last].Error(), "TC_FOREIGN_FILTER") || p.baselinesAfterApply == 0 {
@@ -1225,6 +1226,7 @@ func TestISO_F6_RetainedFailureBlocksNewGeneration(t *testing.T) {
 	r.eng.plane = p
 	stepOK(t, r)
 	p.ex.foreignTC = true
+	requireApplyChangeForTest(r)
 	stepOK(t, r)
 	if r.eng.applyError == nil || r.eng.applyError.Code != api.ErrorCodeTCFOREIGNFILTER {
 		t.Fatal("fixture did not reject tc")
