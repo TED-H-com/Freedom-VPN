@@ -91,3 +91,18 @@ node withdrawal and usage settlement, then redecides on that same Step. It does
 not defer surviving devices to the next poll. C1 or hitless boundary transitions
 are not implemented. End-of-Step verification, watchdog expiry and measurement
 records remain independent of whether Apply ran. No Apply record is fabricated.
+
+## Main merge compatibility — 2026-11-03
+
+Main advanced to `c98ea61c` (#423, netlab 32) during 41. The clean merge
+`6b6a26b0` retains its independent baseline rollback, post-shape clock check,
+and tc prepare / nft commit / tc retire ordering. The inventory above describes
+the original starting tip. For the merged tree, an unchanged verified model
+requires neither tc preparation nor retirement. A failed or interrupted Apply
+cannot enter retention: error/serving/pending gates and exact live tc verification
+still apply. No tc or nft installation was added to the retained path, and no
+C1 implementation or enforcement-owner file was changed by this lane.
+
+Netlab 32 also supplied the faithful atomic nft / incremental tc test simulator.
+Its changes were merged intact; this lane's two explicit Apply triggers remain
+in followup12_test.go. The existing tests' failure and safety assertions remain.
