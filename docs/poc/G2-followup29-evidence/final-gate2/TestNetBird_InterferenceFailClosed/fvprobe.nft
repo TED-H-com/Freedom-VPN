@@ -1,0 +1,11 @@
+table inet fvprobe {
+	chain pre {
+		type filter hook prerouting priority -180; policy accept;
+		iifname "fv-fh" meta mark set 0x0001bd11 ct mark set 0x0001bd22 counter packets 5 bytes 244
+	}
+
+	chain post {
+		type filter hook postrouting priority srcnat - 10; policy accept;
+		oifname "fv-ih" meta mark 0x0001bd11 ct mark 0x0001bd22 counter packets 5 bytes 244
+	}
+}
