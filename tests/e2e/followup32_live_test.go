@@ -102,22 +102,9 @@ func (r *runner) publisherReceipts32(ctx context.Context) {
 		}
 		commands++
 		key := trace.Attempts[0].IdempotencyKey
-		bodySHA256 := trace.Attempts[0].BodySHA256
-		for i, a := range trace.Attempts {
-			valid = valid && a.IdempotencyKey == key
-			valid = valid && len(bodySHA256) == 64 && a.BodySHA256 == bodySHA256
-			if a.Status == 412 && a.ErrorCode == "RESOURCE_VERSION_CONFLICT" {
-				conflicts++
-				valid = valid && a.Reread != nil && a.Reread.Status == 200 && a.CurrentVersion != ""
-				if i+1 < len(trace.Attempts) {
-					valid = valid && a.Reread != nil && trace.Attempts[i+1].IfMatch == a.Reread.ETag
-				}
-			}
-		}
-		valid = valid && trace.Outcome == "accepted" && trace.Attempts[len(trace.Attempts)-1].Status == 202
-		if forced {
-			valid = valid && len(trace.Attempts) >= 2 && trace.Attempts[0].IfMatch == `"0"` && trace.Attempts[0].Status == 412
-		}
+		traceConflicts, traceValid := publisherTrace32(trace, forced)
+		conflicts += traceConflicts
+		valid = valid && traceValid
 		// The same-key retry reached 202, so the 412 was not replay-cached.
 		// Read back the sole durable success reference for that key as well.
 		hash := sha256.Sum256([]byte(key))
