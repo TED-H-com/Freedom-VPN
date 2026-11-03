@@ -1,0 +1,140 @@
+{
+  "run_id": "83b457ef-ea16-490b-9923-1fea0df86b36",
+  "findings": [
+    {
+      "id": "F16-01",
+      "status": "failed",
+      "scope": "separate shared netlab D-104 precision-fixture prerequisite; not the product D-140 sweep",
+      "source": "tests/netlab/scripts/deadline.py:35",
+      "test": "TestD104_AT13_DeadlineContinuity",
+      "actual_timeout_expires_ms": [
+        [
+          1001,
+          699
+        ],
+        [
+          1002,
+          700
+        ],
+        [
+          1003,
+          701
+        ],
+        [
+          1004,
+          702
+        ],
+        [
+          1005,
+          703
+        ],
+        [
+          1006,
+          704
+        ],
+        [
+          1007,
+          706
+        ],
+        [
+          1008,
+          707
+        ]
+      ],
+      "expected": "all seven successive expiry differences equal 1 ms",
+      "actual": "sixth difference is 2 ms",
+      "packet_window": "not exercised: assertion precedes socket setup and deadline Apply; no fresh trace emitted",
+      "owner": "w1-netlab",
+      "cause_status": "unproven",
+      "retry": false,
+      "evidence": "mechanism-d104-failure.txt"
+    },
+    {
+      "id": "F16-02",
+      "status": "failed qualification",
+      "scope": "D-140 single whole-node sweep; unchanged EvaluateDeadline passes separately",
+      "owner": "orchestrator / next isolation sampling decision",
+      "calibration_count": 103,
+      "spacing_ns": "2200000",
+      "calibration_latency_max_ns": "1840658",
+      "interleavings": [
+        {
+          "positive_packet": 162,
+          "next_packet": 163,
+          "positive_egress_ns": "136709962527985",
+          "next_ingress_ns": "136709962524376"
+        }
+      ],
+      "packets": [
+        {
+          "packet_id": 162,
+          "phase": "dense_boundary",
+          "result": "ok",
+          "scheduled_mono_ns": "136709959291453",
+          "send_mono_ns": "136709959358409",
+          "ingress_mono_ns": "136709962508938",
+          "egress_mono_ns": "136709962527985",
+          "scheduled_offset_ns": "-109522673",
+          "send_offset_ns": "-109455717",
+          "ingress_offset_ns": "-106305188",
+          "egress_offset_ns": "-106286141",
+          "scheduling_lateness_ns": "66956",
+          "latency_ns": "3150529",
+          "transit_ns": "19047"
+        },
+        {
+          "packet_id": 163,
+          "phase": "dense_boundary",
+          "result": "ok",
+          "scheduled_mono_ns": "136709961491453",
+          "send_mono_ns": "136709961536686",
+          "ingress_mono_ns": "136709962524376",
+          "egress_mono_ns": "136709962535475",
+          "scheduled_offset_ns": "-107322673",
+          "send_offset_ns": "-107277440",
+          "ingress_offset_ns": "-106289750",
+          "egress_offset_ns": "-106278651",
+          "scheduling_lateness_ns": "45233",
+          "latency_ns": "987690",
+          "transit_ns": "11099"
+        },
+        {
+          "packet_id": 165,
+          "phase": "phased",
+          "result": "ok",
+          "scheduled_mono_ns": "136709967814126",
+          "send_mono_ns": "136709968208240",
+          "ingress_mono_ns": "136709968992773",
+          "egress_mono_ns": "136709969017508",
+          "scheduled_offset_ns": "-101000000",
+          "send_offset_ns": "-100605886",
+          "ingress_offset_ns": "-99821353",
+          "egress_offset_ns": "-99796618",
+          "scheduling_lateness_ns": "394114",
+          "latency_ns": "784533",
+          "transit_ns": "24735"
+        },
+        {
+          "packet_id": 166,
+          "phase": "dense_boundary",
+          "result": "timeout",
+          "scheduled_mono_ns": "136709970291453",
+          "send_mono_ns": "136709970327119",
+          "ingress_mono_ns": "136709971142658",
+          "egress_mono_ns": "0",
+          "scheduled_offset_ns": "-98522673",
+          "send_offset_ns": "-98487007",
+          "ingress_offset_ns": "-97671468",
+          "egress_offset_ns": null,
+          "scheduling_lateness_ns": "35666",
+          "latency_ns": "815539",
+          "transit_ns": null
+        }
+      ],
+      "unchanged_evaluator_passed": true,
+      "retry": false,
+      "cause_status": "The observed 3.150529ms latency exceeds this run calibration maximum; its network/host cause is unproven. No claim of a bound on future latency.",
+      "evidence": "boundary-review.json"
+    }
+  ]
+}

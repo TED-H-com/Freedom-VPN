@@ -1,0 +1,118 @@
+{
+  "run_id": "0ec14b39-467e-4a37-a239-1a33ef12eb71",
+  "findings": [
+    {
+      "id": "F17-01",
+      "status": "not exercised",
+      "row": "pure stale_generation classification",
+      "owner": "w3-wire-nodes / w2-agent-core",
+      "reason": "The unchanged seam yields genuine stale-lease reports, but their failed QoS check carries a read_at diagnostic. Central exempts only the exact dependent detail Rate policy could not be applied.; it conservatively returns check_failed. No report is rewritten.",
+      "report_id": "01a1a011-b492-797c-964b-a626658a75aa",
+      "classification": "check_failed",
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "observed_at": "2026-11-03T06:21:17.305278397Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "observed_at": "2026-11-03T06:21:17.305278397Z",
+          "status": "passed"
+        },
+        {
+          "detail": "Serving lease is not for the applied generation.",
+          "error_code": "STALE_GENERATION",
+          "name": "lease",
+          "observed_at": "2026-11-03T06:21:17.305278397Z",
+          "status": "failed"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "observed_at": "2026-11-03T06:21:17.305278397Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "observed_at": "2026-11-03T06:21:17.305278397Z",
+          "status": "passed"
+        },
+        {
+          "detail": "read_at=2026-11-03T06:21:17.20901269Z source=live candidate=12 verified=true {\"generation\":\"12\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"6234fb3dfc76c946b0623408ac68a97308854d3ba960233b2635e8102db7a3fc\"}",
+          "error_code": "VALIDATION_FAILED",
+          "name": "qos",
+          "observed_at": "2026-11-03T06:21:17.305278397Z",
+          "status": "failed"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "observed_at": "2026-11-03T06:21:17.305278397Z",
+          "status": "passed"
+        },
+        {
+          "detail": "No member binding was admitted.",
+          "error_code": "VALIDATION_FAILED",
+          "name": "source_binding",
+          "observed_at": "2026-11-03T06:21:17.305278397Z",
+          "status": "failed"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "observed_at": "2026-11-03T06:21:17.305278397Z",
+          "status": "passed"
+        },
+        {
+          "detail": "Egress probe used no extra target.",
+          "error_code": null,
+          "name": "tunnel_probe",
+          "observed_at": "2026-11-03T06:21:17.305278397Z",
+          "status": "passed"
+        }
+      ],
+      "errors": [
+        {
+          "code": "STALE_GENERATION",
+          "message": "Serving lease is not for the desired generation.",
+          "observed_at": "2026-11-03T06:21:17.305278397Z",
+          "stage": "lease"
+        },
+        {
+          "code": "STALE_GENERATION",
+          "message": "Serving lease generation hold: applied=13 lease=12 steps=1 elapsed_ms=4 alarm=false.",
+          "observed_at": "2026-11-03T06:21:17.33061086Z",
+          "stage": "lease"
+        }
+      ],
+      "sources": [
+        "node/agent/serving_evidence.go:attachServingRead",
+        "internal/nodes/generation_hold.go:generationHoldSafetyFailure",
+        "docs/e2e/RESPONSES.md:devstack follow-up 27"
+      ],
+      "needed": "Owner-reviewed diagnostic/classification contract or a genuine supported seam path that can produce the pure row without editing reports, bypassing checks or weakening independent-failure precedence.",
+      "retry": false,
+      "classification_counts": {
+        "check_failed": 12,
+        "isolation_unconfirmed": 4
+      },
+      "post_restart_safety": {
+        "status": "expired",
+        "classification": "isolation_unconfirmed",
+        "report_ids": [
+          "01a1a011-cebb-783e-bdce-33456102c8b0",
+          "01a1a013-727a-7f2e-8417-9b38d3f24ddb",
+          "01a1a013-7a1f-77f9-ae30-5448eab4b39d",
+          "01a1a013-7e1f-7c24-b045-1ffd29a7b8ba"
+        ],
+        "note": "Expected dependent QoS detail is present here; expired safety still prevents a pure stale_generation result. No safety check is bypassed."
+      }
+    }
+  ],
+  "d104": "pass on netlab 26 fixture; no new D-104 failure",
+  "d140": "qualified and unchanged evaluator passes; historical failures unchanged"
+}
