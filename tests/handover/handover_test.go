@@ -12207,5 +12207,45 @@ func TestHandover_Followup39Claims(t *testing.T) {
 	checkHash("tests/handover/testdata/followup39-main.json", "39b1d9b49433f3ff157a1ec5c671cebc9579b18a7f55262d7379f2e1dfd3539b")
 	checkHash("tests/handover/testdata/followup39-snapshots.json", "f00eb9ab2947f428b5e583c8a1764b0d4949177391afdeeb6023b44782667b84")
 	checkHash("tests/handover/testdata/history/follow-up-39/source-audit.json", "d74fb642043f9cce0d4c1a335f6bc68d1b6b48a4db1316695dafdf3d69ba5d76")
+	t.Run("53_decisions_eight_status_only_confirmations", func(t *testing.T) {
+		old := readOwnedDoc(t, root, frozen+"register38.md")
+		current := readOwnedDoc(t, root, "docs/handover/README.md")
+		re := regexp.MustCompile(`(?m)^\| D-[0-9]{3} \|.*$`)
+		before, after := re.FindAllString(old, -1), re.FindAllString(current, -1)
+		if len(before) != 47 || len(after) != 53 || !strings.HasPrefix(before[46], "| D-144 |") {
+			t.Fatal("decision inventory")
+		}
+		var confirmations []struct{ ID, Before, After string }
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, fixture+"followup39-confirmations.json")), &confirmations); err != nil {
+			t.Fatal(err)
+		}
+		if len(confirmations) != 8 {
+			t.Fatal("confirmation count")
+		}
+		for i, row := range before {
+			for _, c := range confirmations {
+				if strings.HasPrefix(row, "| "+c.ID+" |") {
+					row = strings.Replace(row, c.Before, c.After, 1)
+				}
+			}
+			if row != after[i] {
+				t.Errorf("decision substance changed: %s", before[i])
+			}
+		}
+		for i, tokens := range [][]string{
+			{"D-145", "Ted", "12:30 EST", "current guard", "C1 is not implemented", "field complaints", "measured member-visible impact", "as history"},
+			{"D-146", "Ted", "TCP MSS clamp", "no lower tunnel MTU", "value and placement", "receive-only MTU-1280", "UDP and QUIC", "without PTB", "F8-02 rows stay failed", "Netlab 34", "not on main"},
+			{"D-147", "Ted", "type 3, code 4", "RELATED", "allowed member connection", "Time-exceeded", "every other ICMP", "Netlab 34", "not on main"},
+			{"D-148", "Ted", "no product, pin, daemon or architecture change", "::1", "https://github.com/netbirdio/netbird/discussions/8473", "2026-11-03", "OPEN, upstream-dependent"},
+			{"D-149", "Ted", "minimatch < 11.0.1", "GHSA-g3hv-75wg-m249", "development scope", "tolerable risk", "#349", "eslint-plugin-jsx-a11y accepts minimatch ≥ 11.0.1"},
+			{"D-150", "orchestrator — provisional", "owner may overturn", "37–43 merge as #429", "failed live timing gate", "every delivery's full production node-test-netlab passed", "D087 / D104", "qualified no leg", "never pauses", "every-interval rule", "agent-core 44", "after the merge", "0.5 cores", "both arms", "D-138 is unchanged", "B shift or B-only failure"},
+		} {
+			for _, token := range tokens {
+				if !strings.Contains(after[47+i], token) {
+					t.Errorf("decision %d missing %q", 145+i, token)
+				}
+			}
+		}
+	})
 	// F39_MORE_CLAIMS
 }
