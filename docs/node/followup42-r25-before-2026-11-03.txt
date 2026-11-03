@@ -1,0 +1,37 @@
+Production: 8cc27609; unchanged proof import: bf68757f
+Command: go test -count=1 -run '^TestR25_' -v ./node/agent
+Admission: free; exit: 1
+
+=== RUN   TestR25_H1a_SiblingExpiryOnStepEntryTearsDownWholeNodeToBaselineBeforeControlPass
+=== RUN   TestR25_H1a_SiblingExpiryOnStepEntryTearsDownWholeNodeToBaselineBeforeControlPass/sibling_device_expiry
+    review_r25_test.go:122: TODO(review r25): H-1 (sibling_device_expiry): single-binding expiry while sibling remains valid tore down the entire node to Baseline before the control/probe pass (servingDuringControlPass=false bindingsDuringControlPass=0 baselines=7->9)
+=== RUN   TestR25_H1a_SiblingExpiryOnStepEntryTearsDownWholeNodeToBaselineBeforeControlPass/sibling_member_expiry
+    review_r25_test.go:122: TODO(review r25): H-1 (sibling_member_expiry): single-binding expiry while sibling remains valid tore down the entire node to Baseline before the control/probe pass (servingDuringControlPass=false bindingsDuringControlPass=0 baselines=7->9)
+--- FAIL: TestR25_H1a_SiblingExpiryOnStepEntryTearsDownWholeNodeToBaselineBeforeControlPass (2.83s)
+    --- FAIL: TestR25_H1a_SiblingExpiryOnStepEntryTearsDownWholeNodeToBaselineBeforeControlPass/sibling_device_expiry (2.62s)
+    --- FAIL: TestR25_H1a_SiblingExpiryOnStepEntryTearsDownWholeNodeToBaselineBeforeControlPass/sibling_member_expiry (0.21s)
+=== RUN   TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat
+=== RUN   TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat/during_verifyCurrentServing
+    review_r25_test.go:215: TODO(review r25): H-1 (during_verifyCurrentServing): surviving sibling left unserved in Baseline after expireServing early return: eng.serving=false bindings=0 heartbeat={Serving:false PolicyExpires:0s Reason:"-"} lastObs={MemberForwardingEnabled:false Reasons:[] DataHealth:healthy SafetyStatus:passed}
+=== RUN   TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat/during_enforce_canRetainServing
+    review_r25_test.go:215: TODO(review r25): H-1 (during_enforce_canRetainServing): surviving sibling left unserved in Baseline after expireServing early return: eng.serving=false bindings=0 heartbeat={Serving:false PolicyExpires:0s Reason:"-"} lastObs={MemberForwardingEnabled:false Reasons:[] DataHealth:healthy SafetyStatus:passed}
+--- FAIL: TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat (0.30s)
+    --- FAIL: TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat/during_verifyCurrentServing (0.15s)
+    --- FAIL: TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat/during_enforce_canRetainServing (0.15s)
+=== RUN   TestR25_M1_EpochSwitchDuringServingLeavesIntentEpochStaleAndForcesRedundantApplyOnNext304Tick
+=== RUN   TestR25_M1_EpochSwitchDuringServingLeavesIntentEpochStaleAndForcesRedundantApplyOnNext304Tick/post_apply_switchEpoch
+    review_r25_test.go:336: TODO(review r25): M-1 (post_apply_switchEpoch): stale restartIntent.Epoch=01a1a245-0318-78bd-bf9c-c6050983ad29 != Head.OpenEpoch=01a1a245-033b-7d1c-b64c-26f18511b531 (SameCountingInterval=true) forced a redundant Plane.Apply on a steady-state 304 tick (applies 3 -> 4, want 3)
+=== RUN   TestR25_M1_EpochSwitchDuringServingLeavesIntentEpochStaleAndForcesRedundantApplyOnNext304Tick/sample_counter_discontinuity
+    review_r25_test.go:336: TODO(review r25): M-1 (sample_counter_discontinuity): stale restartIntent.Epoch=01a1a245-03b8-75a8-9372-85e0b4a25449 != Head.OpenEpoch=01a1a245-03df-784c-b217-3283dabf00d6 (SameCountingInterval=true) forced a redundant Plane.Apply on a steady-state 304 tick (applies 3 -> 4, want 3)
+--- FAIL: TestR25_M1_EpochSwitchDuringServingLeavesIntentEpochStaleAndForcesRedundantApplyOnNext304Tick (0.32s)
+    --- FAIL: TestR25_M1_EpochSwitchDuringServingLeavesIntentEpochStaleAndForcesRedundantApplyOnNext304Tick/post_apply_switchEpoch (0.16s)
+    --- FAIL: TestR25_M1_EpochSwitchDuringServingLeavesIntentEpochStaleAndForcesRedundantApplyOnNext304Tick/sample_counter_discontinuity (0.16s)
+=== RUN   TestR25_Held_AQ1_RetainedTickVerifiesUnderLockAndBlocksOnAnyPendingGateOrClockSkew
+--- PASS: TestR25_Held_AQ1_RetainedTickVerifiesUnderLockAndBlocksOnAnyPendingGateOrClockSkew (0.16s)
+=== RUN   TestR25_Held_AQ2_PerDeviceDeadlinesAndEdgeCases
+--- PASS: TestR25_Held_AQ2_PerDeviceDeadlinesAndEdgeCases (0.00s)
+=== RUN   TestR25_Held_AQ3_SameCountingIntervalAndHandoffRecoveryInvariants
+--- PASS: TestR25_Held_AQ3_SameCountingIntervalAndHandoffRecoveryInvariants (0.26s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/node/agent	3.865s
+FAIL
