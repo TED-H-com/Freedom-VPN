@@ -1,0 +1,10 @@
+name                         ns       proto  dst                    port   expect   observed       ok
+lan10                        fv-a1    tcp    10.1.2.10              80     deny     timeout        true
+lan192                       fv-a1    tcp    192.168.10.10          80     deny     timeout        true
+lan172                       fv-a1    tcp    172.16.5.10            80     deny     timeout        true
+cgnat                        fv-a1    tcp    100.64.5.5             80     deny     timeout        true
+meta                         fv-a1    tcp    169.254.169.254        80     deny     timeout        true
+pub                          fv-a1    tcp    192.0.2.200            80     deny     timeout        true
+ssh                          fv-a1    tcp    192.0.2.33             2222   deny     timeout        true
+api                          fv-a1    tcp    192.0.2.37             8443   deny     timeout        true
+inet                         fv-a1    tcp    203.0.113.10           80     allow    connected      true

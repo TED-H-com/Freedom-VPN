@@ -1,9 +1,9 @@
-# Isolation follow-up 15 — 2026-11-01
+# Isolation follow-up 16 — 2026-11-01
 
-One assembled run **`0b9e4510-776f-4c51-9e66-500404ce9f7e`**, runtime consumer
-**`9031ebd4044059db25ea4ea7a397b87e6d6c6aa5`**, source dirty **false**.
-Baseline **`aa7f306c008d8021b3921d083b70e19db7c8f865`**, through #388, includes
-#383 and #386. Driver **1072.06 s**; full command **1210.552 s**, exit **2**.
+One assembled run **`83b457ef-ea16-490b-9923-1fea0df86b36`**, runtime consumer
+**`a8394027002771be64f023d062ea47b2da1447d8`**, source dirty **false**.
+Baseline **`9efe9773e67d35839649e9f21e1c3a9b680633b2`**, including #392 and
+#394. Driver **1272.20 s**; full command **1406.378 s**, exit **2**. No retry.
 
 | Case | Result: pass / blocked / fail |
 |---|---|
@@ -12,205 +12,241 @@ Baseline **`aa7f306c008d8021b3921d083b70e19db7c8f865`**, through #388, includes
 | [AT12](AT12.json) | **pass: 10 / 0 / 0** |
 | [AT13](AT13.json) | **blocked: 6 / 1 / 0**, carried full fault matrix |
 
-**D-140 qualification is not complete.** The unchanged D-104 evaluator passes
-this packet trace, but the added schedule has one ingress/egress interleaving.
-The raw case verdict and this separate qualification failure are both retained.
-No retry run or loss waiver. Historical **isolation F14-01** in run 56d20530
-stays failed and remains distinct from **members F14-01**.
+**D-140 remains unqualified:** one positive transit overlaps the next ingress
+by **3.609 µs**. The unchanged evaluator separately passes this trace.
+**F16-01** retains a separate shared D-104 fixture assertion before that
+mechanism's packet window. **F16-02** retains the D-140 qualification failure.
+The two populated seam incidents together pass all **seven** requested coverage
+categories. Missing per-incident rows remain explicitly not exercised.
+[Findings](follow-up-16-findings.json) retain both failures. Historical isolation
+F14-01 and follow-up 15's failed qualification stay failed, with no loss waiver.
 
 Requirements: §19 AT10–AT13; §8.2–8.3, §10.3, §16.3; ISO01–ISO04,
 ENT02, SEC01, DNS03. Central hold observations support §5.1–5.2 / AT29.
 
-## D-098 and host context
+## D-098, admission and publication
 
-First commit **`877ea4e3`** archived all **117** root files and subtrees from
-run 56d20530, byte-identically against baseline Git blobs, under
-[follow-up 14](history/follow-up-14/archive.json). SHA-256 pins include both gzip
-forms. `history/follow-up-14-stream/` and all earlier archives remain untouched.
-Handover claims already use immutable sources; root references are rejection
-inputs, so no D-132 one-file exception edit was needed. A historical replay
-link now points to that archive; current large JSON links point to lossless gzip.
+First commit **`3005c383`** archived all **123** root files and subtrees of
+run 0b9e4510 byte-identically against baseline Git blobs under
+[follow-up 15](history/follow-up-15/archive.json). SHA-256 pins include both gzip
+forms. Follow-up-15-stream and every earlier archive remain untouched.
+Handover claims already read immutable snapshots; living-root strings are
+rejection inputs, so no D-132 exception edit was needed. The inherited D-104
+trace was removed from the living tree because no fresh trace was emitted;
+its original bytes remain in the archive. The mechanism summary's inherited
+prefix was likewise removed, retaining this run's one appended row.
 
-[RUN.md](RUN.md) records the baseline and actual `go env GOCACHE` output.
-[Preflight](host-preflight.json): six 5-second interval rows r=0–4,
-id=83–90%; **not quiet**, because two samples have r=4. The since-boot first
-row has id=79%. Load averages: **4.68 / 5.56 / 7.41**. One updates suite was
-active at admission and after both stack startups; no two-other-suite wait was
-needed (**0 s**), and no third suite was started. Host state is recorded, not a
-criterion or causal attribution. [Cleanup](cleanup-inventory.json) is zero for
-owned containers, images, networks and volumes.
+[RUN.md](RUN.md) records baseline and the final queried GOCACHE. The final cache
+read differs from the pre-run note; no separate runtime cache receipt was
+retained, so the assembled cache path is unproven. [Host preflight](host-preflight.json)
+retains **52** vmstat windows. Admission became quiet after **1561.452 s**:
+six current rows r = **3,3,1,0,1,0**, id = **87,87,86,87,87,87%**;
+load averages **8.66 / 11.78 / 12.50**. The since-boot row was ignored.
+All four suite admission/startup checks saw zero other suite roots; waits were
+**0.084 / 0.088 / 0.092 / 0.129 s**, with no two-other-suite wait. Host state
+is context, not a pass criterion or an explanation of later latency.
+[Owned inventory](cleanup-inventory.json) is zero for containers, images,
+networks and volumes. Large JSON is lossless gzip; both-form pins name only
+[immutable follow-up 16 streams](history/follow-up-16-stream/archive.json).
 
-## D-140 measured boundary and qualification failure
+## D-140: predeclared trade-off and failed qualification
 
-[Schedule/calibration](boundary-schedule.json),
-[all 546 probe timelines and interleavings](boundary-review.json),
-[unchanged evaluator](deadline-verdict.json), and
-[retained qualification finding](follow-up-15-findings.json).
+[Schedule](boundary-schedule.json), [all 292 timelines](boundary-review.json),
+and [unchanged evaluator](deadline-verdict.json) retain the only sweep.
+Before running, [RUN.md](RUN.md) declared that one sweep cannot guarantee both
+noninterleaving and a deciding probe in the roughly 3 ms historical positive
+window. The driver has one whole-node boundary. We did not add another
+lifecycle, merge sweeps, alter the evaluator, or retry.
 
-Before the boundary, **103** original-cadence packets measured member-send →
-node ingress latency **0.103281–3.778979 ms**, spread **3.675698 ms**.
-Maximum ingress→egress transit was **0.221923 ms**. The measured recipe selected
-**0.6 ms** spacing: at least twice maximum transit plus 0.1 ms, rounded upward.
-It added **344** probes, using median latency to predict ingress from before
-D−101 ms through after D+100 ms, extended by spread plus three spacings.
-The original **101 phased + 101 arbitrary_37ms** scheduled sends remain exact.
-All planned added sends, actual sends, ingress, egress, latency and transit are
-retained individually. Observation adds no node nft table/rule or `nftrace`.
+Same-run calibration used **103** packets. Member-send→ingress minimum / median /
+maximum was **0.141740 / 0.722673 / 1.840658 ms**; spread **1.698918 ms**;
+maximum node transit **0.181849 ms**. The unchanged corrected formula
+`ceil_0.1ms(max(0.5ms, spread + 2*max_transit + 0.1ms))` selected **2.2 ms**.
+The added grid is anchored at predicted ingress D−100 ms, excludes sends too
+near either unchanged original cadence, and added **90** dense probes to
+**101 phased + 101 arbitrary_37ms**. No node observer rule was added.
 
-The evaluator records **173 positives / 373 drops**, last positive
-**D−98.630032 ms**, first drop **D−97.597715 ms**, no later positive and no
-post-D positive. Its predicate and existing tests are byte-identical.
+The original D−101 ms send predicted ingress at **D−100.277327 ms**, inside the
+historical positive window. Actual packet 165 entered at **D−99.821353 ms** and
+left at **D−99.796618 ms**. A deciding positive was present. The evaluator
+records **165 positives / 127 drops**, first drop **D−97.671468 ms**, no later
+positive and no post-D positive. Its predicate and tests are byte-identical.
+All **43** drops before the literal deadline remain counted; a tolerance pass
+is not a zero-pre-deadline-loss claim.
 
-However, original phased packet **171** left at **D−98.651615 ms**, while
-added packet **172** entered at **D−98.655436 ms**: **3.821 µs** of overlap.
-Both were positive, before the first drop. Packet 173 then supplied the last
-positive and packet 174 the first drop. This does not manufacture a later
-positive after a drop, but it violates the requested no-interleaving condition;
-the schedule is **unqualified**. Send spacing alone, even exceeding observed
-node transit, did not cover arrival-latency variation.
+Qualification nevertheless fails: dense packet 162 left at **D−106.286141 ms**,
+while dense packet 163 entered at **D−106.289750 ms**. The **3.609 µs** overlap
+violates D-140. Packet162's latency **3.150529 ms** exceeded calibration maximum
+by **1.309871 ms**; packet 163's was **0.987690 ms**. Their actual send gap was
+**2.178277 ms**, ingress gap **15.438 µs**, and packet 162 transit **19.047 µs**.
+The formula was applied correctly but calibration did not bound future latency.
+The network/host cause is unproven. Capture-read timestamps bound userspace
+observations, not exact kernel packet instants. No post-run schedule change,
+waiver or qualification promotion was made.
 
-The final source corrects the spacing formula to include measured latency
-spread: `ceil_0.1ms(max(0.5ms, spread + 2*max_transit + 0.1ms))`. Applied to this
-calibration it would choose **4.3 ms**, leaving a worst-case predicted ingress
-gap of **0.624302 ms** within the observed latency range. That is an **offline
-calculation**, not another run or an observed fix. Actual future captures still
-must qualify; no bound on unobserved latency is assumed. Only the boundary
-schedule changed, and the original sample stays unqualified.
+Run0b9e4510's **3.821 µs** overlap remains failed. Run56d20530 isolation F14-01
+remains failed (last positive D−162.220103 ms, first drop D−97.638039 ms);
+its four renewal losses15–18 outside guards in the 30→31 bracket stay counted.
+These are distinct from members F14-01.
 
-Run 56d20530 remains failed: last positive D−162.220103 ms, first drop
-D−97.638039 ms, closure straddling D−101 ms. Its renewal packets **15–18**
-remain four counted losses outside guards in the **30→31** baseline bracket.
+## Populated stale-lease incidents
 
-## D-102: four parent receipts, separate container outcomes
+[Full row/ID joins](populated-holds.md), [review](populated-holds-review.json),
+[original seam attempts](populated-holds.json.gz), [central originals](generation-holds-central.json.gz),
+and [general hold review](generation-holds-review.json) carry the evidence.
+Both incidents began with **two leased members**, fresh arm UUIDs, a genuine
+capacity PATCH/read-back and the unchanged devstack 27 TEST ONLY proxy.
+The owned observer forwards through that proxy. Signed bodies and reports were
+neither edited nor replayed; no seam implementation was changed.
 
-[Joined stops](stop-receipt-review.json), [ordinary restart](restart-lifecycle.json),
-[clone fixture](identity-freeze.json), [terminal samples](receiver-closure.json),
-and [container events](container-lifecycle-events.json).
+The **15→16** incident produced six accepted hold reports. Step 3 alarm elapsed
+**1905 ms**, and its single audit occurred at incident age **1.899726 s**,
+triggered by the reported alarm, not the 30-second fallback. Temporarily moving
+the conntrack executable inside the owned container produced a same-incident
+`ISOLATION_POLICY_INVALID` apply failure; central retained **check_failed**
+precedence over stale_generation. After restoring the executable, the supervised
+agent-only stop kept the proxy armed and the incident open. Local counters reset
+from **7 Steps / 5917 ms** to **1 Step / 0 ms**, with unchanged first_seen.
 
-| Original stop | Agent parent outcome | Observed interval |
+Release forwarded a fresh central-issued matching lease whose body digest
+matches the local read. The accepted generation 16 report ended the incident
+`generation_matched` at **16:59:18.323291Z**. That first matching report still
+had **forwarding=false**; it is not claimed as serving recovery. The separate
+later counted probe proves **7935→10566** bytes under a later genuine lease.
+
+Only after recovery, fresh arm **bd5cfd83-dc18-43c9-be15-e8fd551ef788** opened
+**16→17**, a distinct incident with four accepted hold reports. Step 3 alarm
+elapsed **1874 ms**; its one audit was at age **1.868719 s**, again alarm-triggered.
+Release/local digest/accepted matching report ended it at **17:00:00.461554Z**;
+counted recovery was **13199→15832** bytes. Independent probes in both holds
+captured ingress with no egress and timeout. Unrelated failure and active stop
+were deliberately exercised only in the first incident, not inferred in the second.
+
+All **784** accepted central report IDs exactly match lease-history receipts.
+The complete central export has **11** accepted hold reports across **three**
+incidents: the two explicit incidents plus a later brief unarmed incident
+`01a19813-2d0a-7ac4-b657-4a3c4917e181` (first/last **17:05:55.977801Z**,
+ended **17:05:56.831437Z**). The latter's one report had no valid alarm summary,
+no escalation, and is not substituted for either seam incident. All 11 join
+their own report, signed lease, sample and incident; all 11 applied generations
+match the latest delivered desired document (10 match the later central read).
+Reverse-array classification replay agrees. Seven publication completions are
+retained, six succeeded and one superseded; none credited a hold report or
+completed successfully during an open incident.
+
+Pure `stale_generation` classification, central's 30-second fallback, kernel
+reboot and the original opportunistic control-cut hold are **not exercised**.
+The general review remains partial for these gaps; its populated retention
+field now explicitly distinguishes the successful seam stop from the absent
+opportunistic stop. All **24** policy-missing windows remain, **19** populated,
+baseline→Apply **202.627285–6082.503527 ms**. The separate renewal/expiry streams
+do not sample those windows; denial evidence comes from the two incident probes.
+
+## Five parent stop receipts
+
+[Joined receipt review](stop-receipt-review.json) retains launch IDs, PIDs,
+start ticks, parent outcomes and separate container lifecycle observations.
+
+| Stop | Agent parent outcome | Observed interval |
 |---|---|---:|
-| Whole-container restart | exit **0**, no signal | container TERM→parent wait **201.515825 ms**; stop command **497.176989 ms** |
-| Clone-source fixture stop | exit **0**, no signal | container TERM→parent wait **172.452077 ms** |
-| Terminal source pidfd sample | **signal 15**, no exit code | signal→exit upper bound **71.529909 ms** |
-| Terminal clone pidfd sample | exit **0**, no signal | signal→exit upper bound **6.304797 ms** |
+| Whole-container restart | exit 0, no signal | TERM→parent wait **101.420032 ms** |
+| Clone-source fixture | exit 0, no signal | TERM→parent wait **110.234416 ms** |
+| Terminal source pidfd | exit 0, no signal | signal→exit upper **43.040857 ms** |
+| Terminal clone pidfd | exit 0, no signal | signal→exit upper **6.790853 ms** |
+| Populated-hold agent-only | exit 0, no signal | signal→exit upper **5.798490 ms** |
 
-All launch IDs, PIDs and start ticks match the pre-stop identities. Whole-node
-receipts were copied with `docker cp`, including while the container was stopped.
-The direct samples use the 15-second budget; whole-container/clone grace is
-25 seconds. Ordinary and clone-source PID1 exit 0 is recorded separately from
-the agent result. No escalation sidecar was retained; its presence would record
-an attempt, not the outcome. The source's signal-15 result is **not** relabelled
-cooperative because it was fast. The cause of signal termination is not proved.
-All four durable-lease checks pass. Step cancellation and exact kernel exit
-instants remain unavailable. Historical 10.087 s / 20.153 s exit-137 rows are
-unchanged; follow-up 14's separate 20.053570446 s clone row also stays recorded.
+All five parent identities match; no escalation attempt was retained. Original
+ordinary/clone PID1 outcomes are separately exit 0. The terminal source and clone
+retain durable-lease survival checks; original restart/clone durable-lease survival checks also pass. Direct budget 15 s and container grace 25 s are unchanged.
+Step cancellation at these stops and exact kernel exit instants remain unknown.
+Follow-up15's signal 15 terminal-source receipt stays as observed, cause unproven
+and assigned to agent-core 36; these new exit 0 receipts do not reclassify it.
+Historical exit 137 and slow-stop receipts remain unchanged.
 
-## Core 34 reservation: receipt-to-revocation and recovery
+## Core34 reservation, recovery and original rows
 
-[Full timelines](pre-apply-reservation-review.json) retain the
-`host.before_apply.end_ns` → `timing.start_ns` bracket for all **950** Applies.
-Original conntrack commands prove four nonempty batches:
+[Reservation timelines](pre-apply-reservation-review.json) retain every
+`host.before_apply.end_ns`→Apply entry bracket, including failures.
+Four original command batches prove pending conntrack reservations:
 
-| Producer sequence / generation | Pre-Apply bracket (ms) | Context |
-|---|---:|---|
-| 3804 / 18, first process | **1.511606** | populated policy-missing recovery; baseline→Apply **242.859786 ms** |
-| 4188 / 25, first process | **0.988798** | established-flow revoke; baseline→Apply **244.170002 ms** |
-| 1488 / 28, restarted process | **1.002519** | finite-member expiry; no intervening baseline since preceding successful Apply |
-| 2527 / 33, restarted process | **1.117402** | foreign-TC recovery; baseline→Apply **2137.465146 ms**, failed Apply2519 retained |
+| Producer sequence / generation | Pre-Apply ms | Baseline→Apply completion ms |
+|---|---:|---:|
+| 2796 / 21, post-hold-restart process | **0.973747** | **250.245008** |
+| 3191 / 29, established-flow revoke | **0.969850** | **951.648072** |
+| 1487 / 32, ordinary restarted process, finite-member expiry | **0.987099** | no intervening baseline since preceding successful Apply |
+| 2578 / 37, foreign-TC recovery | **1.178520** | **2065.514125**, failed Applies2561/2570 retained |
 
 These are reservation-plus-common-setup brackets, not isolated SQLite timings.
-They precede the restricting install and are included in the full intervals.
-The revoke's desired response completed at **15:01:50.758444418 UTC**;
-producer anchors place first baseline completion at **+52.818181…52.818352 ms**,
-Apply entry at **+165.927785…165.928184 ms**, install completion at
-**+196.659208…196.659607 ms**, and Apply completion at
-**+248.735465…248.735864 ms**. The initial baseline already restricts forwarding;
-the later **0.988798 ms** reservation is part of recovery, not omitted work.
-The request/response and established-stream failures remain in
-[revocation-request.json](revocation-request.json); route withdrawal and kernel
-revocation are separate observations, not assigned one causal instant.
+All remain inside full recovery intervals. The revoke's desired response finished
+**17:05:56.649067108Z**; Apply entry followed by **40.591652–40.591978 ms**,
+restricting install completion **76.086355–76.086681 ms**, and Apply completion
+**125.897038–125.897364 ms**. Its preceding baseline already restricted forwarding;
+no later baseline followed this receipt. The broader baseline→Apply interval and
+[original revocation request/stream](revocation-request.json) remain separate.
+No route-withdrawal instant is substituted for kernel revocation.
 
-The first two batches have later verified live and serving-heartbeat receipts.
-Generation33 has live2528 after Apply2527; no serving heartbeat was observed in
-that immediate baseline-free interval. The separate ISO-F6-01 final counted
-recovery still has all six original assertions. Every baseline cause, failed
-Apply and later recovery endpoint remains distinct. A desired receipt may
-precede a finite member expiry by minutes; it is not necessarily the deletion
-trigger. Proxy delivery completion is not an exact node parse timestamp.
+The first three batches have later verified live and serving heartbeat receipts.
+Generation37 has live 2579, but no serving heartbeat in the immediate baseline-free
+interval; ISO-F6-01's separate counted recovery passes all six assertions.
+The renewal window has **70** successful Applies, no revoke command and no failed
+Apply; whole-node expiry has **zero** Applies. A pure Step adds no reservation.
+Failed preparation elsewhere cannot prove an empty queue. Desired delivery may
+precede a finite-member expiry by minutes and is not its deletion trigger.
 
-The renewal packet window contains **69** successful Applies, and whole-node
-expiry overlaps **one** successful Apply; neither has revoke commands or a
-failed Apply. Those pure Steps add no reservation. Failed preparation elsewhere
-cannot prove an empty pending queue, so its entire pre-Apply bracket remains.
-Agent-core's mechanism benchmarks are not presented as an assembled pass.
+D-087 passes fixed generation **15**, byte-equal invariants, **281** original wire
+hashes, **33** desired responses, true→accepted serving **716 ms**, counted
+**2632→5304** bytes. No synthetic report/lease or forced generation supplies it.
+ISO-F6-01 passes **6/6**; readiness **8.953790903 s**, five samples, unchanged
+90-second/twelve-sample budgets. Accepted transactions **1710/1711**, candidate 36 /
+ACK 35, join desired 1708 and pre-install failed Apply 2570 (commands 0–36).
+Clean generation 37 recovery remains separate from pre-install rejection.
 
-## D-087, ISO-F6-01, renewal and completed guards
+Renewal: **1396** probes, **1370** positives, **26** losses, two renewals,
+**70** completed guards. Every lost ingress overlaps an outer guard; all losses
+stay counted. No unresolved attribution in this diagnostic. The separate D-120
+mechanism passes with **no UDP losses**. Shared D-104 fails its precision fixture:
+requested 1001…1008 ms produced remaining 699,700,701,702,703,704,706,707 ms;
+the sixth adjacent difference is2 ms. The assertion runs before sockets,
+deadline Apply or trace emission. Cause unproven; no product trace is invented.
+[Original failure](mechanism-d104-failure.txt) goes to w1-netlab, outside owned paths.
 
-D-087 passes at fixed generation **14**: byte-equal invariants, **269** original
-wire hashes, **32** desired responses, true→accepted serving **200 ms**, counted
-bytes **2632→5262**. No forced generation, synthetic report or lease, projector
-stop or transport fault supplies the seam result.
+## Producer timing and diagnostic install failure
 
-ISO-F6-01 passes **6/6**. Restored-control readiness **2.412609117 s**, three
-dirty samples, unchanged 90-second/twelve-sample budgets. Accepted transactions
-**1541/1542**, candidate32/ACK31, join desired1539 and failed Apply2519,
-commands0–36; clean recovery generation33. Pre-install rejection is separate
-from installed/live verifier evidence.
+**9164** contiguous producer records; **1082** Applies, **1079** completed guards,
+two foreign-TC pre-install failures and one install timeout. D-106 has **786/786**
+recomputed and matched producer digests. **60413** child command receipts,
+**60405** successful; all have exit/signal/CPU/switch evidence. Resource samples
+are omitted before 1080 installs and after 1079 bounded installs; the failed
+install's after-sample says context_deadline_exceeded. One cancellation callback
+is observed. Exact child starts and hidden host ancestors remain unavailable.
 
-Renewal: **1396** probes, **1387** positives, **9 losses**, two actual renewals,
-69 completed guards. All nine lost ingresses overlap an outer guard; all stay
-counted. No baseline window in this diagnostic has captured ingress coverage;
-unsampled intervals remain unavailable. The separate D-120 mechanism row passes
-with **101** Applies and one permitted boundary loss (datagram44, next succeeds,
-no TCP timeout). Mechanism D-104 also passes; neither substitutes for D-140.
+Producer run `956a6be4-5690-409f-8021-1656c7be624b`, Apply 1296 / generation 15,
+has **120.466876 ms** install duration against the 100 ms bound. It records
+install_ok=false and guard_released=false, no release command, nft context
+**deadline_exceeded**, cancel observation135850900739458 ns, wait return
+135850920959758 ns, child **signal 9**. Successful apply_rollback baseline1297
+and safety baselines1298/1299 follow. Live1300 fails and heartbeat 1301 is blocked;
+Apply 1302, live 1303 and serving heartbeat 1304 recover. This failure remains in
+all-command timing; it is excluded only from the explicitly completed-guard
+population. Delay cause is unproven; no host blame or fixed historical ceiling.
 
-Producer: **7879** contiguous records, **950** Applies, one pre-install failure,
-zero observed install overruns. Per-Apply command contexts **950/950**;
-**53520** commands, **53513** successful, seven conntrack exit-1 commands retained
-inside successful Applies. D-106 recomputation and producer joins **634/634**.
-The 949 install commands retain before/after `skip_reason=install_bound`;
-resource samples are unavailable there. Exact child starts, hidden host
-ancestors and cancellation callbacks remain unavailable.
-
-Nearest-rank milliseconds, **949** completed guards, the next independent sample:
+Nearest-rank milliseconds for **1079 completed guards**:
 
 | Measure | p50 | p90 | p99 | max |
 |---|---:|---:|---:|---:|
-| Outer | 31.412703 | 40.291449 | 48.674027 | 55.125778 |
-| Install | 16.080628 | 22.054019 | 26.999839 | 30.329121 |
-| Render→installed | 16.163952 | 22.167203 | 27.131280 | 30.411308 |
+| Outer | 32.859847 | 41.426615 | 48.262200 | 54.718584 |
+| Install | 16.887700 | 22.630281 | 28.030774 | 36.828926 |
+| Render→installed | 16.982410 | 22.733032 | 28.116746 | 36.924154 |
 
-[Follow-up 14](history/follow-up-14/summary.md), 979 guards: outer
-31.128482 / 40.689136 / 49.218688 / 52.588252; install
-15.849010 / 21.898948 / 27.440421 / 31.241963; render→installed
-15.953637 / 21.986037 / 27.534820 / 31.329338. The earlier 951-guard
-[follow-up 13](history/follow-up-13/summary.md) also remains unchanged.
-No A/B cause or historical ceiling is inferred.
+[Follow-up15](history/follow-up-15/summary.md), 949 guards: outer
+31.412703 / 40.291449 / 48.674027 / 55.125778; install
+16.080628 / 22.054019 / 26.999839 / 30.329121; render→installed
+16.163952 / 22.167203 / 27.131280 / 30.411308. Follow-ups14/13 remain unchanged.
+These are independent samples, not an A/B causal comparison.
 
-## Central holds and remaining scope
-
-[Central export](generation-holds-central.json.gz), [review](generation-holds-review.json)
-and [operation history](publication-operation-history.json) retain **634**
-accepted reports. No accepted hold report, sample, incident, escalation or
-matching-end event was produced. All accepted report IDs are compared with the
-lease history. Exact hold joining and classification are **not exercised**,
-not passed vacuously. Six publication completions remain recorded.
-
-All **21** policy-missing windows are retained; **17** are populated transitions,
-with baseline→Apply completion **198.673869–278.193183 ms**. None has a reported
-hold to join; none has ingress coverage in these packet streams. No incident or
-packet denial is invented from a baseline. The single existing-seam attempt
-found no accepted open hold, and was not repeated.
-
-Populated hold: **not exercised — devstack 27's fixture pending**. Alarm,
-escalation, active-stop retention, unrelated-failure precedence, local-counter
-reset and a later distinct incident remain unexercised. AT11 and AT13 operator
-matrices remain carried without renewed asks. F13-01 follows the unchanged
-[netlab23 decision](../../../poc/G2-followup23-evidence/decision.json): typed
-`duplicate_chain`, origin unproven, 0/3300 reproduced; failed reads never prove
-frozen counters or closed forwarding.
-
-[Requests](requests.md) contains two carried operator rows and one new D-140
-qualification follow-up. [Validation](validation-results.json) records the real
-gates; [immutable gzip pins](history/follow-up-15-stream/archive.json) preserve
-both forms. No push, PR or tag.
+AT11 native platforms and AT13's full fault matrix remain carried operator rows.
+F13-01 retains netlab23's typed duplicate_chain decision and unproven origin;
+no failed counter read proves frozen counters or closed forwarding.
+[Requests](requests.md) contains two carried assignments, continued D-140 sampling,
+and the shared D-104 fixture request. [Validation](validation-results.json) records
+actual gates and retained failures. No push, PR or tag.

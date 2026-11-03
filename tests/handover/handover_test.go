@@ -4,10 +4,16 @@
 package handover_test
 
 import (
+	"bytes"
+	"compress/gzip"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"go/ast"
+	"go/parser"
+	"go/token"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -46,6 +52,8 @@ var ownedDocs = []string{
 	"docs/handover/follow-up-25.md",
 	"docs/handover/follow-up-26.md",
 	"docs/handover/follow-up-27.md",
+	"docs/handover/follow-up-28.md",
+	"docs/handover/follow-up-29.md",
 	"docs/ops/README.md",
 	"docs/reviews/README.md",
 	"docs/reviews/r3-d055-review.md",
@@ -2473,6 +2481,9 @@ func claimTokenAllowed(path, token string) bool {
 		if strings.HasPrefix(path, prefix) {
 			return true
 		}
+	}
+	if path == "docs/node/followup35-diagnostic-and-restart-2026-11-01.md" || strings.HasPrefix(path, "docs/e2e/runs/2026-11-01/followup27/") || strings.HasPrefix(path, "docs/poc/G2-followup25-evidence/") {
+		return true
 	}
 	if strings.Contains(path, "/history/") {
 		return true
@@ -6040,7 +6051,7 @@ func TestHandover_Followup25Claims(t *testing.T) {
 			"docs/handover/member-guide.md":   "ca06333f288dcbeb51c300c1c91011dc53d08b8abaaf1faf4b75970bef3f8e18",
 			"docs/handover/restore-drill.md":  "cc30c854377f1183709e39251d7af9a7a8b48181fe49df201630772a01273db8",
 		} {
-			content := strings.ReplaceAll(strings.ReplaceAll(readOwnedDoc(t, root, path), followup28Diagnostics, ""), followup26InstallerNote+"\n\n", "")
+			content := strings.ReplaceAll(strings.ReplaceAll(readBeforeFollowup29Note(t, root, path), followup28Diagnostics, ""), followup26InstallerNote+"\n\n", "")
 			lines := strings.Split(content, "\n")
 			if len(lines) < 4 {
 				t.Fatalf("short entrypoint: %s", path)
@@ -6346,7 +6357,7 @@ func TestHandover_Followup26Claims(t *testing.T) {
 		if end < 0 {
 			t.Fatal("missing prior function end")
 		}
-		prior := source[start : start+end]
+		prior := restoreFollowup29Assertions(source[start : start+end])
 		prior = strings.ReplaceAll(prior, "strings.ReplaceAll(readOwnedDoc(t, root, path), followup28Diagnostics, \"\")", "readOwnedDoc(t, root, path)")
 		prior = strings.ReplaceAll(prior, "\tconst archive26 = fixture + \"history/follow-up-26/\"\n", "")
 		prior = strings.ReplaceAll(prior, "const register = archive26 + \"register25.md\"", "const register = \"docs/handover/README.md\"")
@@ -6679,7 +6690,7 @@ func TestHandover_Followup27Claims(t *testing.T) {
 		if end < 0 {
 			t.Fatal("missing prior function end")
 		}
-		prior := source[start : start+end]
+		prior := restoreFollowup29Assertions(source[start : start+end])
 		prior = strings.ReplaceAll(prior, followup28LegacyNormalization, "")
 		prior = strings.ReplaceAll(prior, "const register = fixture + \"history/follow-up-27/register26.md\"", "const register = \"docs/handover/README.md\"")
 		prior = strings.ReplaceAll(prior, "\n\t\t\t{register, []string{", "\n\t\t\t{\"docs/handover/README.md\", []string{")
@@ -6743,7 +6754,7 @@ func TestHandover_Followup27Claims(t *testing.T) {
 			"docs/handover/member-guide.md":   "ca06333f288dcbeb51c300c1c91011dc53d08b8abaaf1faf4b75970bef3f8e18",
 			"docs/handover/restore-drill.md":  "cc30c854377f1183709e39251d7af9a7a8b48181fe49df201630772a01273db8",
 		} {
-			lines := strings.Split(strings.ReplaceAll(readOwnedDoc(t, root, path), followup28Diagnostics, ""), "\n")
+			lines := strings.Split(strings.ReplaceAll(readBeforeFollowup29Note(t, root, path), followup28Diagnostics, ""), "\n")
 			if len(lines) < 4 {
 				t.Fatalf("short entrypoint: %s", path)
 			}
@@ -6794,7 +6805,7 @@ func TestHandover_Followup28Claims(t *testing.T) {
 	const fixture = "tests/handover/testdata/"
 	const frozen = fixture + "history/follow-up-28/"
 	const doc = "docs/handover/follow-up-28.md"
-	const register = "docs/handover/README.md"
+	const register = fixture + "history/follow-up-29/register28.md"
 	const rows = fixture + "followup28-main.json"
 	readJSON := func(t *testing.T, path string, dst any) {
 		t.Helper()
@@ -7060,7 +7071,7 @@ func TestHandover_Followup28Claims(t *testing.T) {
 		if end < 0 {
 			t.Fatal("missing prior function boundary")
 		}
-		prior := source[start : start+end]
+		prior := restoreFollowup29Assertions(source[start : start+end])
 		prior = strings.ReplaceAll(prior, "\t\tprior = strings.ReplaceAll(prior, followup28LegacyNormalization, \"\")\n", "")
 		prior = strings.ReplaceAll(prior, "const register = fixture + \"history/follow-up-28/register27.md\"", "const register = \"docs/handover/README.md\"")
 		prior = strings.ReplaceAll(prior, "\n\t\t\t{register, []string{", "\n\t\t\t{\"docs/handover/README.md\", []string{")
@@ -7102,7 +7113,7 @@ func TestHandover_Followup28Claims(t *testing.T) {
 	})
 	t.Run("seven_entrypoints_and_exact_operator_diagnostics", func(t *testing.T) {
 		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
-			lines := strings.Split(readOwnedDoc(t, root, path), "\n")
+			lines := strings.Split(readOwnedDoc(t, root, fixture+"history/follow-up-29/entrypoint-"+strings.ReplaceAll(path, "/", "_")+".txt"), "\n")
 			if len(lines) < 4 || !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-28.md") || !strings.Contains(lines[2], "#390") || !strings.Contains(lines[3], "follow-up-27.md") || !strings.Contains(lines[3], "#385") {
 				t.Errorf("stale entrypoint: %s", path)
 			}
@@ -7114,9 +7125,9 @@ func TestHandover_Followup28Claims(t *testing.T) {
 		}
 		requireHandoverClaimTokens(t, root, "docs/handover/operator-guide.md", followup28Diagnostics)
 		for pr := 386; pr <= 390; pr++ {
-			requireHandoverClaimTokens(t, root, "docs/ops/README.md", fmt.Sprintf("#%d", pr))
+			requireHandoverClaimTokens(t, root, fixture+"history/follow-up-29/entrypoint-docs_ops_README.md.txt", fmt.Sprintf("#%d", pr))
 		}
-		requireHandoverClaimTokens(t, root, "docs/ops/README.md", "Follow-up 28 acceptance snapshot", "RELATED ICMP question is open, not a defect or decision")
+		requireHandoverClaimTokens(t, root, fixture+"history/follow-up-29/entrypoint-docs_ops_README.md.txt", "Follow-up 28 acceptance snapshot", "RELATED ICMP question is open, not a defect or decision")
 	})
 	t.Log("follow-up 28: 19 subtests / 5 exact roadmap rows / 16 immutable snapshots / 1644 archive and run file checks")
 }
@@ -7133,6 +7144,438 @@ func TestHandover_Followup28LiveDocumentIntegrity(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(manifest.Followup.Documents) != 22 {
+		t.Fatalf("live document inventory %d", len(manifest.Followup.Documents))
+	}
+	for _, p := range manifest.Followup.Documents {
+		sum := sha256.Sum256([]byte(readOwnedDoc(t, root, p.Path)))
+		if hex.EncodeToString(sum[:]) != p.SHA256 {
+			t.Errorf("live document hash drift: %s", p.Path)
+		}
+	}
+}
+
+// Only this exact new operator note is excluded by older body-hash checks.
+const followup29Configuration = "**2026-11-01 — Known local configuration behaviour at #396.** After a restart\nwith changed `extra_denied_v4` or `host_v4`, same-boot adoption can keep the node\nserving on the previously installed `denied_v4` / `host_v4` until its first\nsuccessful Apply. A larger deny set can therefore leave the old, smaller set\nin force. A busy node lock or control timeout can delay Apply; the verifier\ndoes not read these sets' elements. SIGHUP does not reload these fields.\nThe [agent-core 35 dated hand-off](../node/followup35-diagnostic-and-restart-2026-11-01.md)\nprovides no safe procedure and no maximum adoption-to-Apply delay. The fix is\nrouted to agent-core 36 (refuse adoption on changed sets), then netlab 26\n(verifier content check); it is open at this cutoff. No workaround is promised.\n\n"
+
+func readBeforeFollowup29Note(t *testing.T, root, path string) string {
+	t.Helper()
+	return strings.ReplaceAll(readOwnedDoc(t, root, path), followup29Configuration, "")
+}
+
+// Reverse only this cut's input redirects / exact-note exclusion before checking
+// earlier whole-function hashes. Their expected hashes and assertions stay intact.
+func restoreFollowup29Assertions(source string) string {
+	return strings.NewReplacer(
+		"readBeforeFollowup29Note(t, root, path)", "readOwnedDoc(t, root, path)",
+		"restoreFollowup29Assertions(source[start : start+end])", "source[start : start+end]",
+		`const register = fixture + "history/follow-up-29/register28.md"`, `const register = "docs/handover/README.md"`,
+		`fixture+"history/follow-up-29/entrypoint-"+strings.ReplaceAll(path, "/", "_")+".txt"`, "path",
+		`fixture+"history/follow-up-29/entrypoint-docs_ops_README.md.txt"`, `"docs/ops/README.md"`,
+	).Replace(source)
+}
+
+// TestHandover_Followup29Claims pins #391–#396, never current AT root evidence.
+func TestHandover_Followup29Claims(t *testing.T) {
+	root := repoRoot(t)
+	const cut = "d640ce96d9145e57a60e04e5875e049070f30b96"
+	const fixture = "tests/handover/testdata/"
+	const frozen = fixture + "history/follow-up-29/"
+	const doc = "docs/handover/follow-up-29.md"
+	const register = "docs/handover/README.md"
+	const rows = fixture + "followup29-main.json"
+	const agent = "docs/node/followup35-diagnostic-and-restart-2026-11-01.md"
+	const dev = "docs/e2e/runs/2026-11-01/followup27/"
+	const netlab = "docs/poc/G2-followup25-evidence/"
+	readJSON := func(t *testing.T, path string, dst any) {
+		t.Helper()
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, path)), dst); err != nil {
+			t.Fatalf("decode %s: %v", path, err)
+		}
+	}
+	checkHash := func(t *testing.T, path, want string) {
+		t.Helper()
+		sum := sha256.Sum256([]byte(readOwnedDoc(t, root, path)))
+		if hex.EncodeToString(sum[:]) != want {
+			t.Errorf("immutable file drift: %s", path)
+		}
+	}
+	type claim struct {
+		path   string
+		tokens []string
+	}
+	for _, tc := range []struct {
+		name   string
+		claims []claim
+	}{
+		{"previous_cut_19_subtests_47_findings_seven_requests", []claim{
+			{rows, []string{"done (#395)", "19 subtests, five final rows, 16 immutable snapshots, 1,644 archived owner-file checks", "Findings register at 47 rows", "7 requests (owner decisions)"}},
+			{doc, []string{"#386–#390 at aae6763f", "19 subtests / 5 exact roadmap rows /\n16 immutable snapshots / 1,644 archive and run file checks", "47 rows", "seven requests are owner decisions"}},
+			{"tests/handover/handover_test.go", []string{"TestHandover_Followup28Claims"}},
+		}},
+		{"usage8_nonzero_diagnostic_and_complete_download_order", []claim{
+			{rows, []string{"done (#391)", "80 packets / 80,000 B", "identical samples with and without it, and none from it alone", "complete statements", "`nd_` replies", "`denied_v4`, `host_v4` and `resolver_v4` source guards", "`d_` admission", "no live run owed", "b8a6e9e1"}},
+			{doc, []string{"request 1 is closed as coverage", "no samples from it alone", "Complete rendered\nstatements", "There was no live run", "final #391 roadmap row (D-132)"}},
+			{"tests/e2e/at/usage/at14_16_node_test.go", []string{"TestAT14_ForwardAdmissionMetering_Mechanism"}},
+		}},
+		{"isolation14_archive_and_isolation15_run_boundary", []claim{
+			{rows, []string{"done (#392)", "archive of run 56d20530 (117 root files and subtrees)", "Run 0b9e4510", "AT10 PASS 9 / 0 / 0 (ISO-F6-01 6 / 6)", "AT12 PASS 10 / 0 / 0", "AT11 and AT13 blocked on operator rows"}},
+			{doc, []string{"0b9e4510 on #388's tree", "follow-up-14/archive.json", "follow-up-15-stream/archive.json", "final #392 roadmap row", "living until isolation 16 archives them (D-132)"}},
+			{"tests/e2e/at/isolation/producer_timing_test.go", []string{"TestD098_Followup14ArchivePins"}},
+		}},
+		{"D140_evaluator_pass_is_not_qualification", []claim{
+			{rows, []string{"byte-identical `EvaluateDeadline` passes", "last positive D−98.630 ms, first drop D−97.598 ms", "packet 171's egress followed packet 172's ingress by 3.821 µs", "row is not qualified", "Isolation F14-01 stays failed"}},
+			{doc, []string{"no-interleaving", "failed qualification", "whole-node row stays **unqualified**", "Isolation F14-01 (run 56d20530) stays failed", "next sample belongs to\nisolation 16"}},
+			{"tests/e2e/at/isolation/producer_timing_test.go", []string{"TestAT13_D140InterleavingQualification"}},
+			{"tests/e2e/at/isolation/deadline_trace_test.go", []string{"TestAT13_D104StrictBoundaryAndMissingEvidence"}},
+			{register, []string{"| Isolation 15 D-140 sample | UNQUALIFIED — failed qualification", "| Isolation F14-01 | FAIL"}},
+		}},
+		{"isolation15_parent_signal_receipt_and_no_hold", []claim{
+			{rows, []string{"three agent exits 0", "terminal source's agent ended by signal 15, cause unproven", "No stale-lease hold formed", "populated hold is not exercised"}},
+			{doc, []string{"signal 15, with no exit code", "cause is unproven and routed to agent-core 36", "not exercise the populated hold"}},
+			{register, []string{"| Isolation 15 signal-15 receipt | OPEN — cause unproven", "Not relabelled cooperative"}},
+		}},
+		{"agent35_all_diagnostic_consumers_without_production_change", []claim{
+			{rows, []string{"done (#393)", "meter selection, reset matcher, persisted readings, usage snapshot and observation consumers covered", "no production change"}},
+			{agent, []string{"Production code is unchanged", "Raw Apply persistence", "Usage persistence and reporting", "No path from `ctdenyd` to member usage was found"}},
+			{"node/internal/meter/followup35_test.go", []string{"TestAT14_F35_CtdenydUsageSelection", "TestAT16_F35_CtdenydDoesNotChangePersistedUsageOrEpoch"}},
+			{"node/agent/followup35_test.go", []string{"TestAT16_F35_CtdenydResetAndReportConsumers", "TestAT14_F35_CtdenydCounterSamples", "TestAT16_F35_CtdenydApplyPersistenceDoesNotBecomeUsage"}},
+			{doc, []string{"meter selection, the reset matcher", "usage snapshot and observation consumers", "No production change"}},
+		}},
+		{"agent35_same_boot_adoption_is_production_reachable", []claim{
+			{rows, []string{"never reads `denied_v4` / `host_v4` contents", "serving can resume on the old, smaller sets until that Apply", "busy lock or control timeout can delay", "TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth/same_boot_adoption"}},
+			{agent, []string{"first full Apply after restart renders the new sets", "no guarantee that serving waits for that Apply", "does **not compare denied/host set contents", "current unsafe pre-Apply serving behavior", "No new maximum adoption-to-Apply"}},
+			{"node/agent/followup35_restart_test.go", []string{"TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth"}},
+			{doc, []string{"New open, production-reachable finding", "first successful Apply", "first Apply's render proof", "no safe procedure"}},
+			{register, []string{"| Agent-core 35 same-boot adoption | OPEN — production-reachable, #393"}},
+		}},
+		{"two_step_route_and_unconfirmed_live_drift", []claim{
+			{rows, []string{"routed to agent-core 36 then netlab 26"}},
+			{doc, []string{"agent-core 36 refuses adoption on changed\nsets, then netlab 26 adds the verifier's content check", "open at\n#396", "New unconfirmed finding", "set changed\nlive under a serving agent go undetected", "netlab 26 is proving that reading"}},
+			{register, []string{"| Agent-core 35 live set drift | UNCONFIRMED", "No confirmed live-drift or traffic result"}},
+		}},
+		{"devstack27_bounded_matching_503_without_signed_mutation", []claim{
+			{rows, []string{"done (#394)", "ArmMatchingLeaseHold", "MatchingLeaseHold", "ReleaseMatchingLeaseHold", "GenerationHoldSnapshot", "LocalLeaseReadback", "never edits, replays or synthesizes a signed document"}},
+			{dev + "analysis.md", []string{"TEST ONLY proxy", "returning prompt 503s for successful renewal responses matching that generation", "No signed state, lease or\nreport is forged, replayed or synthesized"}},
+			{doc, []string{"503 only to successful matching lease-renewal responses", "For a bounded time", "TEST ONLY"}},
+			{"tests/e2e/cmd/fvpn-e2e-nodeconfig/lease_hold_test.go", []string{"TestAT13_MatchingLeaseTransportHold"}},
+		}},
+		{"devstack27_alarm_escalates_once_then_generation_matched", []claim{
+			{rows, []string{"13 / 0 / 0", "two members", "50.000298 s", "Step-3 alarm", "9.887 s (alarm-triggered)", "generation_matched"}},
+			{dev + "hold-fixture.md", []string{"13 pass / 0 blocked / 0 fail", "50.000298 s", "9.887144 s", "Step 3", "the reported alarm triggered escalation", "not the age fallback", "no second audit", "two original runners stay **11 / 0 / 1**"}},
+			{doc, []string{"Step-3 report carried the alarm", "not the 30 s fallback", "Central escalated **once**", "Recovery ended the incident **`generation_matched`**", "earlier fixture\nrunner failures stay failed"}},
+		}},
+		{"hold_fixture_does_not_pass_consumer_rows", []claim{
+			{dev + "hold-fixture.md", []string{"unrelated-failure precedence", "agent-stop retention", "distinct later incident", "sole-member `members_revoked` closure", "None of those rows is passed"}},
+			{doc, []string{"unrelated-failure precedence,\nactive-stop retention, recovery inside a full row, a distinct later incident,\nand sole-member `members_revoked` closure"}},
+			{register, []string{"| r18 M-3 | FIXED on both sides — #376 + #382; fixture proof #394", "Consumer rows remain open"}},
+		}},
+		{"serving_campaign_counts_anomalies_and_unproven_members_causes", []claim{
+			{rows, []string{"8 / 8 first selections", "58,619 sends with zero missing node ingress", "183 ingress-without-origin losses counted", "IPv6 `::1`-source type-4 data", "type-2 responses", "no historical F15-F11-01 / F15-AT02 / F14-01 cause assigned"}},
+			{dev + "analysis.md", []string{"Neither historical five-SYN failure nor the five-second\nmissing-ingress gap reproduced", "F15-F11-01, F15-AT02 and archived F14-01 remain byte-identical", "183 ingress-without-origin\nlosses are retained", "eight type-4 data messages", "another type-2 response"}},
+			{doc, []string{"request 2", "owner's **F11-01 evidence**", "their files are byte-identical and their rows are unchanged", "No cause is assigned"}},
+			{register, []string{"| Members 15 serving-node signature | OPEN", "cause unproven", "#394 request 2 adds IPv6 ::1-source"}},
+		}},
+		{"D120_measurement_end_guard_successor_and_watchdog", []claim{
+			{rows, []string{"done (#396)", "stream ends only after the final generation-1100 guard bracket closes", "at most one more TCP / UDP cycle", "15 s parent watchdog fails incomplete evidence"}},
+			{netlab + "overview.md", []string{"Only then does it request the stream boundary", "record exactly one more TCP/UDP cycle", "failed successor remains", "15-second watchdog", "Expiry fails the run and preserves incomplete evidence"}},
+			{doc, []string{"only after the final guard bracket closes", "at most\none successor cycle after a lost tail", "15 s parent watchdog fails an incomplete measurement"}},
+		}},
+		{"D120_unchanged_analyzer_and_every_historical_failure", []claim{
+			{rows, []string{"`classify_d120`, its tests", "byte-identical", "(iii): next datagram missing"}},
+			{netlab + "overview.md", []string{"entire existing test file, byte-identical", "generation 1087, sequence 57", "A2, the earlier branch attempt, and `gate2-replay` remain failed"}},
+			{netlab + "a2-after-verdict.txt", []string{"1087", "57", "(iii): next datagram missing"}},
+			{doc, []string{"classify_d120", "byte-identical", "A2, the earlier branch attempt and `gate2-replay` stay failed"}},
+			{register, []string{"| Netlab D-120 missing successor | MEASUREMENT END FIXED — #396; failed runs retained"}},
+		}},
+		{"D120_one_quiet_live_run_offline_only_lost_tail", []claim{
+			{rows, []string{"One predeclared live run on a quiet host", "100 reloads, 101 verified Applies", "zero losses, zero extra cycles"}},
+			{netlab + "overview.md", []string{"zero TCP timeouts", "no lost tail and used zero extra cycles", "offline stream-loop proofs", "13,646,265 original bytes", "720,796 compressed bytes", "Both hashes are in the manifest"}},
+			{doc, []string{"One live run on a quiet host", "zero UDP\nlosses, zero TCP timeouts and zero extra cycles", "proven offline only", "SHA-256 and length for both forms", "13,646,265 → 720,796 bytes"}},
+		}},
+		{"unchanged_decisions_and_seven_owner_requests", []claim{
+			{doc, []string{"No decision was added after D-141 on main", "D-135, D-136, D-137, D-138,\nD-140 and D-141 stay provisional", "### Requests to orchestrator", "Owner decision 1: D-135 + D-136 confirmation", "Owner decision 2: D-137 hardening option", "Owner decision 3: D-138 overturn option", "Owner decision 4: D-140 overturn option", "Owner decision 5: D-141 overturn option", "Owner decision 6: F11-01 repair direction and upstream report", "Owner question 7: RELATED ICMP", "Seven owner\nrequests", "No outside-owned pin needed changing"}},
+			{register, []string{"No new decision since D-141", "D-135, D-136, D-137, D-138, D-140 and D-141 stay\nprovisional", "Every other follow-up 28 finding is unchanged", "Every historical failure stays failed"}},
+		}},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, c := range tc.claims {
+				requireHandoverClaimTokens(t, root, c.path, c.tokens...)
+			}
+		})
+	}
+	t.Run("six_final_rows_fixed_cut_and_no_later_results", func(t *testing.T) {
+		var pin struct {
+			Commit string
+			Cutoff int `json:"cutoff_pr"`
+			Rows   []string
+			After  []int    `json:"merged_after_cutoff"`
+			Absent []string `json:"absent_at_start"`
+		}
+		readJSON(t, rows, &pin)
+		if pin.Commit != cut || pin.Cutoff != 396 || len(pin.Rows) != 6 || len(pin.After) != 0 || !slices.Equal(pin.Absent, []string{"w2-agent-core follow-up 36", "w4-at-isolation follow-up 16", "w4-at-members follow-up 16", "w3-devstack-e2e follow-up 28", "w1-netlab follow-up 26"}) {
+			t.Fatalf("wrong cutoff: %+v", pin)
+		}
+		for i, row := range pin.Rows {
+			if !strings.HasSuffix(row, fmt.Sprintf("| done (#%d) |", 391+i)) {
+				t.Fatalf("nonfinal or misordered row: %s", row)
+			}
+			requireHandoverClaimTokens(t, root, "docs/ROADMAP.md", row)
+		}
+		requireHandoverClaimTokens(t, root, doc, cut, "#391–#396", "Nothing was merged after the cutoff at task start", "their results are outside\nthis cut", "Handover ran no new live acceptance", "D-098 / D-109 / D-132")
+	})
+	t.Run("eight_snapshots_and_no_living_evidence_inputs", func(t *testing.T) {
+		checkHash(t, rows, "16ba19c231e1f05953d33004e144171a78a87b294ddf43ccc18a482d3307a166")
+		checkHash(t, fixture+"followup29-snapshots.json", "757f857fd1cd52b05283376d605abbd9c3bbed1710d2117ee5f09c0ad314fce3")
+		var pins []struct {
+			Path, Source, SHA256 string
+			Commit               string `json:"source_commit"`
+			SourceSHA            string `json:"source_sha256"`
+			Offset, Length       int
+		}
+		readJSON(t, fixture+"followup29-snapshots.json", &pins)
+		if len(pins) != 8 {
+			t.Fatalf("snapshot count %d", len(pins))
+		}
+		seen := map[string]bool{}
+		for _, p := range pins {
+			allowed := p.Source == "README.md" || strings.HasPrefix(p.Source, "docs/handover/") || p.Source == "docs/ops/README.md"
+			if !allowed || !filepath.IsLocal(p.Path) || !strings.HasPrefix(p.Path, frozen) || seen[p.Path] || p.Commit != cut || len(p.SourceSHA) != 64 || p.Offset < 0 || p.Length <= 0 {
+				t.Fatalf("invalid snapshot provenance: %+v", p)
+			}
+			seen[p.Path] = true
+			checkHash(t, p.Path, p.SHA256)
+			if len(readOwnedDoc(t, root, p.Path)) != p.Length {
+				t.Errorf("snapshot length: %s", p.Path)
+			}
+		}
+		for _, path := range []string{"docs/e2e/at/usage/AT14.json", "docs/e2e/at/usage/summary.md", "docs/e2e/at/isolation/summary.md", "docs/e2e/at/isolation/boundary-review.json", "docs/e2e/at/isolation/stop-receipt-review.json", "docs/e2e/at/isolation/AT13.json", "docs/e2e/RESPONSES.md"} {
+			if claimTokenAllowed(path, "living evidence") {
+				t.Errorf("D-132 living root allowed: %s", path)
+			}
+		}
+	})
+	t.Run("D098_731_archive_files_and_lossless_compressed_forms", func(t *testing.T) {
+		checkHash(t, fixture+"followup29-evidence.json", "c04ef7a1966dfd554ae76447bc256323fe4cbbc6dc17aaee9783877ee69aaa8b")
+		var inventory struct {
+			Commit    string `json:"source_commit"`
+			Documents []struct {
+				Path, SHA256 string
+				Bytes        int
+			}
+			Archives []struct {
+				Path, Prefix, Format, SHA256 string
+				Count                        int
+			}
+		}
+		readJSON(t, fixture+"followup29-evidence.json", &inventory)
+		if inventory.Commit != cut || len(inventory.Documents) != 4 || len(inventory.Archives) != 4 {
+			t.Fatal("wrong evidence inventory")
+		}
+		for _, d := range inventory.Documents {
+			if !claimTokenAllowed(d.Path, "immutable evidence") {
+				t.Fatalf("invalid dated evidence %s", d.Path)
+			}
+			checkHash(t, d.Path, d.SHA256)
+			if len(readOwnedDoc(t, root, d.Path)) != d.Bytes {
+				t.Errorf("dated evidence length: %s", d.Path)
+			}
+		}
+		total := 0
+		for _, a := range inventory.Archives {
+			checkHash(t, a.Path, a.SHA256)
+			type entry struct {
+				Path, SHA256       string
+				Bytes              *int64
+				CompressedBytes    *int64 `json:"compressed_bytes"`
+				UncompressedSHA256 string `json:"uncompressed_sha256"`
+				UncompressedBytes  *int64 `json:"uncompressed_bytes"`
+				DecompressedSHA256 string `json:"decompressed_sha256"`
+				DecompressedBytes  *int64 `json:"decompressed_bytes"`
+			}
+			var manifest struct{ Files []entry }
+			if a.Format == "sha256" {
+				for _, line := range strings.Split(strings.TrimSpace(readOwnedDoc(t, root, a.Path)), "\n") {
+					fields := strings.Fields(line)
+					if len(fields) != 2 || !strings.HasPrefix(fields[1], a.Prefix) {
+						t.Fatalf("bad manifest line: %s", line)
+					}
+					manifest.Files = append(manifest.Files, entry{Path: strings.TrimPrefix(fields[1], a.Prefix), SHA256: fields[0]})
+				}
+			} else if a.Format == "json" {
+				readJSON(t, a.Path, &manifest)
+			} else {
+				t.Fatalf("unknown manifest format %s", a.Format)
+			}
+			if len(manifest.Files) != a.Count {
+				t.Fatalf("archive count %s: %d", a.Path, len(manifest.Files))
+			}
+			seen := map[string]bool{}
+			for _, f := range manifest.Files {
+				if !filepath.IsLocal(f.Path) || seen[f.Path] || len(f.SHA256) != 64 {
+					t.Fatalf("bad archive entry: %+v", f)
+				}
+				seen[f.Path] = true
+				path := a.Prefix + f.Path
+				checkHash(t, path, f.SHA256)
+				b := []byte(readOwnedDoc(t, root, path))
+				for _, size := range []*int64{f.Bytes, f.CompressedBytes} {
+					if size != nil && int64(len(b)) != *size {
+						t.Errorf("archive length: %s", path)
+					}
+				}
+				want, size := f.UncompressedSHA256, f.UncompressedBytes
+				if f.DecompressedSHA256 != "" {
+					want, size = f.DecompressedSHA256, f.DecompressedBytes
+				}
+				if want != "" {
+					if size == nil || !strings.HasSuffix(path, ".gz") {
+						t.Fatalf("incomplete gzip pin: %s", path)
+					}
+					reader, err := gzip.NewReader(bytes.NewReader(b))
+					if err != nil {
+						t.Fatal(err)
+					}
+					h := sha256.New()
+					n, copyErr := io.Copy(h, reader)
+					closeErr := reader.Close()
+					if copyErr != nil || closeErr != nil || n != *size || hex.EncodeToString(h.Sum(nil)) != want {
+						t.Errorf("lossless gzip drift: %s (%v, %v)", path, copyErr, closeErr)
+					}
+				}
+				if path == netlab+"live-attempt1/TestAT10_AT13_ReloadRevokeBaseline/at10-apply.jsonl.gz" && (len(b) != 720796 || size == nil || *size != 13646265) {
+					t.Fatal("Apply JSONL both-form lengths changed")
+				}
+				total++
+			}
+		}
+		if total != 731 {
+			t.Fatalf("archive/run check count %d", total)
+		}
+	})
+	t.Run("hold_exports_are_Stack_methods_on_main", func(t *testing.T) {
+		// Structural identifier checks, not mutable implementation-text pins.
+		fset := token.NewFileSet()
+		file, err := parser.ParseFile(fset, filepath.Join(root, "tests/e2e/internal/labstack/labstack.go"), nil, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		alias := false
+		ast.Inspect(file, func(n ast.Node) bool {
+			if typ, ok := n.(*ast.TypeSpec); ok && typ.Name.Name == "Stack" && typ.Assign.IsValid() {
+				if sel, ok := typ.Type.(*ast.SelectorExpr); ok && sel.Sel.Name == "Stack" {
+					if pkg, ok := sel.X.(*ast.Ident); ok && pkg.Name == "e2e" {
+						alias = true
+					}
+				}
+			}
+			return true
+		})
+		if !alias {
+			t.Fatal("labstack.Stack alias missing")
+		}
+		found := map[string]bool{}
+		for _, path := range []string{"tests/e2e/stack_exports.go", "tests/e2e/generation_hold.go"} {
+			file, err := parser.ParseFile(fset, filepath.Join(root, path), nil, 0)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, decl := range file.Decls {
+				fn, ok := decl.(*ast.FuncDecl)
+				if !ok || fn.Recv == nil || len(fn.Recv.List) != 1 {
+					continue
+				}
+				star, ok := fn.Recv.List[0].Type.(*ast.StarExpr)
+				if !ok {
+					continue
+				}
+				typ, ok := star.X.(*ast.Ident)
+				if ok && typ.Name == "Stack" {
+					found[fn.Name.Name] = true
+				}
+			}
+		}
+		for _, name := range []string{"ArmMatchingLeaseHold", "MatchingLeaseHold", "ReleaseMatchingLeaseHold", "GenerationHoldSnapshot", "LocalLeaseReadback"} {
+			if !found[name] {
+				t.Errorf("missing Stack export %s", name)
+			}
+		}
+	})
+	t.Run("prior_assertions_47_to_51_findings_and_decisions_unchanged", func(t *testing.T) {
+		source := readOwnedDoc(t, root, "tests/handover/handover_test.go")
+		start := strings.Index(source, "func TestHandover_Followup28Claims(")
+		if start < 0 {
+			t.Fatal("missing prior function")
+		}
+		end := strings.Index(source[start:], "// Live integrity remains separate")
+		if end < 0 {
+			t.Fatal("missing prior function boundary")
+		}
+		prior := restoreFollowup29Assertions(source[start : start+end])
+		sum := sha256.Sum256([]byte(strings.TrimSpace(prior)))
+		if hex.EncodeToString(sum[:]) != "29dd7c2674a18577c527ccdd25ab23d1411557d19895f679b1329c30e717ba9f" {
+			t.Fatal("follow-up 28 assertions changed beyond frozen-input redirects / exact-note exclusion")
+		}
+		checkHash(t, "docs/handover/follow-up-28.md", "8f47177abd4cca06b38454b8c6a9fd5a8dfc791e7bafb532fc9b440365bdd2df")
+		old, current := readOwnedDoc(t, root, frozen+"register28.md"), readOwnedDoc(t, root, register)
+		decisions := regexp.MustCompile(`(?m)^\| D-[0-9]{3} \|.*$`)
+		before, after := decisions.FindAllString(old, -1), decisions.FindAllString(current, -1)
+		if len(after) != 44 || !slices.Equal(before, after) || !strings.HasPrefix(after[len(after)-1], "| D-141 |") {
+			t.Fatal("decisions changed or a decision added after D-141")
+		}
+		oldFindings := strings.Split(strings.Split(old, "## Findings register at the follow-up 28 cutoff")[1], "\nEvery historical failure")[0]
+		newFindings := strings.Split(strings.Split(current, "## Findings register at the follow-up 29 cutoff")[1], "\nEvery historical failure")[0]
+		changed := map[string]bool{"Members F11-01": true, "r18 M-3": true, "Isolation F14-01": true, "Members 15 serving-node signature": true, "Netlab D-120 missing successor": true}
+		count := 0
+		for _, row := range strings.Split(oldFindings, "\n") {
+			if !strings.HasPrefix(row, "| ") || strings.HasPrefix(row, "| Finding |") {
+				continue
+			}
+			count++
+			name := strings.TrimSpace(strings.Split(row, "|")[1])
+			if !changed[name] && !strings.Contains(newFindings, row) {
+				t.Errorf("unaffected finding changed: %s", row)
+			}
+		}
+		if count != 47 {
+			t.Fatalf("prior findings %d", count)
+		}
+		if got := len(regexp.MustCompile(`(?m)^\| [^|]+ \|`).FindAllString(newFindings, -1)) - 1; got != 51 {
+			t.Fatalf("current findings %d", got)
+		}
+	})
+	t.Run("seven_current_entrypoints_and_configuration_warning", func(t *testing.T) {
+		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
+			lines := strings.Split(readOwnedDoc(t, root, path), "\n")
+			if len(lines) < 4 || !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-29.md") || !strings.Contains(lines[2], "#396") || !strings.Contains(lines[3], "follow-up-28.md") || !strings.Contains(lines[3], "#390") {
+				t.Errorf("stale entrypoint: %s", path)
+			}
+		}
+		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		a, b, note := strings.Index(op, "### 3.2 "), strings.Index(op, "### 3.3 "), strings.Index(op, followup29Configuration)
+		if a < 0 || note <= a || b <= note || strings.Count(op, followup29Configuration) != 1 {
+			t.Fatal("configuration note absent, repeated or outside node configuration")
+		}
+		requireHandoverClaimTokens(t, root, "docs/handover/operator-guide.md", followup29Configuration)
+		for pr := 391; pr <= 396; pr++ {
+			requireHandoverClaimTokens(t, root, "docs/ops/README.md", fmt.Sprintf("#%d", pr))
+		}
+		requireHandoverClaimTokens(t, root, "docs/ops/README.md", "Follow-up 29 acceptance snapshot", "No later lane result is included")
+	})
+	t.Log("follow-up 29: 22 subtests / 6 exact roadmap rows / 8 immutable snapshots / 731 archive and run file checks / 51 findings")
+}
+
+// Live integrity is separate from frozen acceptance evidence.
+func TestHandover_Followup29LiveDocumentIntegrity(t *testing.T) {
+	root := repoRoot(t)
+	var manifest struct {
+		Followup struct {
+			Documents []struct{ Path, SHA256 string } `json:"reviewed_documents"`
+		} `json:"handover_follow_up_29"`
+	}
+	if err := json.Unmarshal([]byte(readOwnedDoc(t, root, "docs/e2e/at/secops/scope-review.json")), &manifest); err != nil {
+		t.Fatal(err)
+	}
+	if len(manifest.Followup.Documents) != 23 {
 		t.Fatalf("live document inventory %d", len(manifest.Followup.Documents))
 	}
 	for _, p := range manifest.Followup.Documents {

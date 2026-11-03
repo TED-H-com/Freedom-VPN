@@ -34,6 +34,20 @@ def review(root):
             parent_wait_receipt=receipt,parent_identity_matched=matched(s,receipt),attempted_escalation=s.get('attempted_escalation'),
             signal_start=s.get('signal_start'),signal_return=s.get('signal_return'),exit_sample=s.get('exit_sample'),signal_to_exit_upper_ns=s.get('signal_to_exit_upper_ns'),within_15s=s.get('within_15s'),
             agent_budget_seconds=15,stored_lease_survived=source['stored_lease_survived_stop'],step_cancel=s.get('step_cancel')))
+    populated_path=root/'populated-holds.json'
+    if populated_path.exists() or Path(str(populated_path)+'.gz').exists():
+        populated=read('populated-holds.json')
+        if populated['run_id']!=read('AT13.json')['run_id']:raise ValueError('populated stops from another run')
+        for attempt in populated['attempts']:
+            if not attempt.get('stop'):continue
+            try:s=json.loads(attempt['stop']['output'])
+            except ValueError:s={}
+            receipt=s.get('parent_wait_receipt') or {}
+            rows.append(dict(label='populated_hold_agent',source='populated-holds.json',incident_id=attempt['incident_id'],
+                identity={k:s.get(k) for k in ('launch_id','pid','start_ticks')},parent_wait_receipt=receipt,
+                parent_identity_matched=matched(s,receipt),attempted_escalation=s.get('attempted_escalation'),
+                signal_start=s.get('signal_start'),signal_return=s.get('signal_return'),exit_sample=s.get('exit_sample'),
+                signal_to_exit_upper_ns=s.get('signal_to_exit_upper_ns'),within_15s=s.get('within_15s'),agent_budget_seconds=15,step_cancel=s.get('step_cancel')))
     for row in rows:
         receipt=row['parent_wait_receipt'];row['agent_exit_code']=receipt.get('exit_code');row['agent_signal']=receipt.get('signal')
         row['cooperative_exit']=row['parent_identity_matched'] and receipt.get('exit_code')==0 and receipt.get('signal') is None
