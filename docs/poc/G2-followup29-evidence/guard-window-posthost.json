@@ -1,0 +1,15 @@
+{
+  "utc": "2026-11-03T10:39:40.077990+00:00",
+  "hold": {
+    "utc": "2026-11-03T10:39:40.110594+00:00",
+    "exit_code": 0,
+    "output": "free\n",
+    "free": true
+  },
+  "processes": {
+    "pgrep": "575427 /bin/bash -c export CGO_ENABLED=0 GOTOOLCHAIN=local TMPDIR=\"$PWD/.agent/tmp\" GOTMPDIR=\"$PWD/.agent/tmp\" export GOCACHE=\"$(go env GOCACHE)\" for attempt in $(seq 1 30); do   date -u +%FT%TZ >> .agent/f39/main-admission.log   if bash \"$FVPN_HOLD_SH\" >> .agent/f39/main-admission.log 2>&1; then     (cd .agent/f39/main-before && go test -count=1 -v ./node/agent -run '^TestR22_') > .agent/f39/before-main-r22.log 2>&1     rc=$?     tail -60 .agent/f39/before-main-r22.log     exit \"$rc\"   fi   sleep 60 done exit 125\n",
+    "pgrep_exit": 0,
+    "actual": [],
+    "suites": []
+  }
+}

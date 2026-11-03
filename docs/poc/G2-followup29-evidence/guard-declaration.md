@@ -1,0 +1,19 @@
+# F27-01 exact guard drop observation — predeclaration
+
+TEST ONLY, one reserved diagnostic window, no retry. Run the existing AT10 100-reload scenario once after F28-01's observed mechanism and correction. The full-suite gates are separate and cannot replace this diagnostic. Original B1 remains FAIL, F27-01 remains unresolved unless the original failure is explained, and every historical gate status is unchanged. D-120, its probe, 1.5-second timeout and analyzer are byte-identical.
+
+## Observation
+
+The opt-in `-guard-log` lab executor decorates exactly the two `fv_deadline_guard` drop rules: preserve each existing interface predicate and terminal drop, inserting only `log prefix "f29g<generation>-<iifname|oifname>" group 29 snaplen 128 queue-threshold 1` immediately before the verdict. Unexpected rule shapes fail rather than silently instrumenting a different rule. No production `node/enforce` source changes, and ordinary gates leave the flag disabled. This is an explicit change to the **diagnostic kernel ruleset**, not a production fix.
+
+NFLOG capture runs only inside the owned lab container. The [nftables manual](https://www.netfilter.org/projects/nftables/manpage.html) defines log as a nonterminal observation followed here by the unchanged drop. The parser follows the [libpcap NFLOG format](https://www.tcpdump.org/linktypes/LINKTYPE_NFLOG.html). Publish derived IP/TCP headers, rule identity, generation and available kernel timestamp only; discard link addresses, payload and other attributes. Raw pcap is deleted in the container before teardown. Receiver statistics and any missing kernel timestamp or sequence attribute remain explicit.
+
+A positive log identifies the exact guard direction and generation. Correlate every logged TCP segment with independent origin/node/responder captures using tuple, IP ID, sequence/ACK, flags and length. Associate each with its generation's install/release command bracket. Kernel log timestamp, when present, has microsecond resolution; a pcap delivery timestamp is not substituted for a kernel timestamp. If kernel time is absent, use the matched ingress timestamp and command enclosure, labeled as a bound. Keep missing, multiple and contradictory matches. Absence of a log alone never proves no drop.
+
+## Cost and limits (D-133)
+
+No production render/install change or performance improvement is proposed, so this does not claim a production D-133 A/B pass. The diagnostic adds two logging statements to each installed guard, netlink delivery per dropped packet, and a separate reader. It adds **no synchronous read between install and release**. Preserve executed scripts/hashes and existing producer/executor timing for all 101 Applies; report installed-guard/release duration distributions, added script bytes, log count/bytes, capture start/stop cost and kernel/receiver loss indications. These bound observed diagnostic cost; incremental overhead against an uninstrumented control is not isolated. Shipping any logging or guard optimization would require its own D-133 comparison. No rate limit, sampling, counter tolerance, guard exemption or production dependency change.
+
+## Admission and stopping
+
+One reservation, up to 20 minutes, acquired only immediately before this run; wait 60 seconds, then require no competing `gates.sh`, `mk/at-` or `go test` process and six current `vmstat 5 7` intervals with r ≤ 3 and id ≥ 80. Repeat after startup. Each quiet check refuses launch with fewer than eight reserved minutes remaining. Bound reservation acquisition to 30 checks with 60-second intervals; keep every check. Release after the run; never renew or retry. If no window is admitted, retain this declaration and report no measurement. Any failure is retained and spends the window. Final cleanup removes all task-owned Docker objects.

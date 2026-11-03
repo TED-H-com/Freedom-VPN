@@ -1,0 +1,93 @@
+docker build -t fvpn-w1-netlab-f29:lab <worktree>/tests/netlab
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 965B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 1.72kB done
+#4 DONE 0.0s
+
+#5 [1/4] FROM docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#5 resolve docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852 0.0s done
+#5 DONE 0.0s
+
+#6 [3/4] RUN cp -a /usr/bin/wg /usr/local/bin/wg
+#6 CACHED
+
+#7 [2/4] RUN apt-get update     && apt-get install -y --no-install-recommends         nftables         iproute2         wireguard-tools         conntrack         iperf3         tcpdump         ethtool         python3         iputils-ping         procps         ca-certificates     && rm -rf /var/lib/apt/lists/*
+#7 CACHED
+
+#8 [4/4] COPY scripts/ /opt/netlab/scripts/
+#8 CACHED
+
+#9 exporting to image
+#9 exporting layers done
+#9 exporting manifest sha256:e7d4c0189a64529a4fa7754b26bfb78cf2cab154f26886b51773df9fe88d8b42 done
+#9 exporting config sha256:a98f8bd1a2defcc5bd0fad620d94669aee7619cea301d8bde38978b5cf28c1c7 done
+#9 exporting attestation manifest sha256:c4b95259df473007ab73b1991d5c03129e9303a7501f43ae8cc8a81737aa40e8 done
+#9 exporting manifest list sha256:f36f1071c7451d9ea661d21b938f8e553a9b27d9fcb361c64382c3f87b4a7ecb done
+#9 naming to docker.io/library/fvpn-w1-netlab-f29:lab done
+#9 unpacking to docker.io/library/fvpn-w1-netlab-f29:lab 0.0s done
+#9 DONE 0.1s
+docker rm -f fvpn-w1-netlab-f29 >/dev/null 2>&1 || true
+make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w1-netlab-f29'
+make[1]: Entering directory '<worktree>'
+mkdir -p <worktree>/.agent/tmp/fvpn-w1-netlab-f29-scratch
+docker rm -f fvpn-w1-netlab-f29-wipe >/dev/null 2>&1 || true
+docker run --rm --name fvpn-w1-netlab-f29-wipe --network none \
+	-v <worktree>/.agent/tmp/fvpn-w1-netlab-f29-scratch:/scratch fvpn-w1-netlab-f29:lab \
+	find /scratch -mindepth 1 -delete
+make[1]: Leaving directory '<worktree>'
+docker network inspect fvpn-w1-netlab-f29-dns >/dev/null 2>&1 || docker network create fvpn-w1-netlab-f29-dns
+01a928e673a4f8c176ee373b06a8631a7e99eab04ef18f1fc1179e167f6e5eb0
+docker run -d --name fvpn-w1-netlab-f29 --privileged --network fvpn-w1-netlab-f29-dns \
+	--cap-add NET_ADMIN --cap-add SYS_TIME \
+	-v <worktree>:/work:ro \
+	-v <worktree>/.agent/tmp/fvpn-w1-netlab-f29-scratch:/scratch \
+	fvpn-w1-netlab-f29:lab
+67db92a0beaf6c854cb05f3b4e06d579178db0377730e2ad67ce50b0d0da06ec
+docker cp <worktree>/.agent/tmp/fvpn-w1-netlab-f29-fvpn-netlab fvpn-w1-netlab-f29:/usr/local/bin/fvpn-netlab
+docker exec fvpn-w1-netlab-f29 bash /work/tests/netlab/scripts/topology.sh
+topology: forwarding off before any path exists
+topology: underlay and transit links
+topology: routes
+topology: wireguard keys in /scratch (not the repo)
+topology: boot baseline before forwarding (§8.2)
+topology: listeners
+topology: wireguard handshakes
+topology: ready
+admission/guard-window-after-startup: wait=30.1s admitted=False actual=0 quiet=False
+admission/guard-window-after-startup: wait=120.3s admitted=True actual=0 quiet=True
+=== RUN   TestAT10_AT13_ReloadRevokeBaseline
+    scenario_at10_test.go:54: docker exec python3 /opt/netlab/scripts/guard_observe.py start /scratch/at10-guard: exit status 1
+        Traceback (most recent call last):
+          File "/opt/netlab/scripts/guard_observe.py", line 82, in <module>
+            {'start':start,'stop':stop}[sys.argv[1]](sys.argv[2])
+          File "/opt/netlab/scripts/guard_observe.py", line 61, in start
+            if proc.poll() is not None or time.monotonic()>until:raise RuntimeError('NFLOG capture not ready')
+                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        RuntimeError: NFLOG capture not ready
+--- FAIL: TestAT10_AT13_ReloadRevokeBaseline (2.13s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/netlab	2.131s
+FAIL
+docker rm -f fvpn-w1-netlab-f29 >/dev/null 2>&1 || true
+docker network rm fvpn-w1-netlab-f29-dns >/dev/null 2>&1 || true
+make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w1-netlab-f29'
+make[1]: Entering directory '<worktree>'
+mkdir -p <worktree>/.agent/tmp/fvpn-w1-netlab-f29-scratch
+docker rm -f fvpn-w1-netlab-f29-wipe >/dev/null 2>&1 || true
+docker run --rm --name fvpn-w1-netlab-f29-wipe --network none \
+	-v <worktree>/.agent/tmp/fvpn-w1-netlab-f29-scratch:/scratch fvpn-w1-netlab-f29:lab \
+	find /scratch -mindepth 1 -delete
+make[1]: Leaving directory '<worktree>'
+rmdir <worktree>/.agent/tmp/fvpn-w1-netlab-f29-scratch 2>/dev/null || true

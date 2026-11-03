@@ -1,0 +1,62 @@
+{
+  "test_only": true,
+  "wait_seconds": 30.15079542500098,
+  "admitted": true,
+  "ignore_first_since_boot_row": true,
+  "rows": [
+    {
+      "hold": {
+        "utc": "2026-11-03T10:24:13.251973+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "504057 /bin/sh -c set -eu; \\ status=0; \\ make -f mk/netlab.mk netlab-up FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || status=$?; \\ if [ $status -eq 0 ]; then \\ ?cd <worktree> && python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' \\ ??go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$?; \\ fi; \\ make -f mk/netlab.mk netlab-down FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || true; \\ exit $status\n505032 python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w1-netlab-f29 go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n505033 python3 <worktree>/.agent/tmp/fvpn-w1-netlab-f29-tools/go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n",
+        "pgrep_exit": 0,
+        "actual": [],
+        "suites": []
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  0 801648 5899468 2160708 168578148    2   36 72575 78567 25075   22  3  2 93  1  0  0\n 0  0 801648 5930632 2160716 168578148    0    0     0    43 2380 3460  0  0 99  0  0  0\n 0  0 801648 5943356 2160724 168578204    0    0     0    53 2573 3853  0  0 99  0  0  0\n 0  0 801648 5950932 2160732 168578208    0    0     0   150 2692 3474  0  1 98  1  0  0\n 1  0 801648 5968044 2160740 168578336    0    0     0    19 2582 3726  0  0 99  0  0  0\n 3  0 801648 5947908 2160748 168578404    0    0     0  4822 2748 3981  0  0 99  0  0  0\n 0  0 801648 5958260 2160756 168578452    0    0     0   177 2676 3815  1  0 99  0  0  0\n",
+      "current": [
+        {
+          "r": 0,
+          "idle": 99
+        },
+        {
+          "r": 0,
+          "idle": 99
+        },
+        {
+          "r": 0,
+          "idle": 98
+        },
+        {
+          "r": 1,
+          "idle": 99
+        },
+        {
+          "r": 3,
+          "idle": 99
+        },
+        {
+          "r": 0,
+          "idle": 99
+        }
+      ],
+      "quiet": true,
+      "after": {
+        "pgrep": "504057 /bin/sh -c set -eu; \\ status=0; \\ make -f mk/netlab.mk netlab-up FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || status=$?; \\ if [ $status -eq 0 ]; then \\ ?cd <worktree> && python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' \\ ??go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$?; \\ fi; \\ make -f mk/netlab.mk netlab-down FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || true; \\ exit $status\n505032 python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w1-netlab-f29 go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n505033 python3 <worktree>/.agent/tmp/fvpn-w1-netlab-f29-tools/go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n",
+        "pgrep_exit": 0,
+        "actual": [],
+        "suites": []
+      },
+      "hold_after": {
+        "utc": "2026-11-03T10:24:43.369221+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    }
+  ]
+}
