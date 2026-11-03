@@ -98,6 +98,7 @@ type Engine struct {
 	closeOnce       sync.Once
 	closeDone       chan struct{}
 	bootDone        chan struct{}
+	bootSafe        atomic.Bool
 	closeCtx        context.Context
 	closeErr        error
 
@@ -453,6 +454,7 @@ func (e *Engine) bootWithBudget(caller context.Context, timeout time.Duration) e
 	e.runCtx = caller
 	ctx, cancel := bootLocal(caller, timeout)
 	e.bootDone = make(chan struct{})
+	e.bootSafe.Store(false)
 	result := make(chan error, 1)
 	go func() {
 		defer close(e.bootDone)
@@ -467,6 +469,12 @@ func (e *Engine) bootWithBudget(caller context.Context, timeout time.Duration) e
 		case err := <-result:
 			return err
 		default:
+			// TERM after a completed baseline is a normal stop even if optional
+			// ledger work is still finishing. Return cancellation so Run never
+			// enters Step concurrently with that worker; Close waits for ownership.
+			if e.bootSafe.Load() && caller.Err() != nil {
+				return caller.Err()
+			}
 			return fmt.Errorf("%w: local deadline: %w", ErrBoot, ctx.Err())
 		}
 	}
@@ -524,6 +532,7 @@ func (e *Engine) boot(ctx context.Context) error {
 		e.applyError = nil
 	}
 	if e.baselineOK {
+		e.bootSafe.Store(true)
 		e.retainedPending = true
 		e.setMeterBindings(e.restartBindings)
 		e.ensureUsage(ctx)

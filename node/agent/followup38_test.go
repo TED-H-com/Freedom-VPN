@@ -222,7 +222,7 @@ func (p *r21BudgetPlane) block(ctx context.Context) {
 	}
 }
 func (p *r21BudgetPlane) Baseline(ctx context.Context, dp enforce.Datapath) error {
-	if p.stage == "baseline" || p.stage == "adoption_cleanup" {
+	if p.stage == "baseline" || p.stage == "adoption_cleanup" || p.stage == "adoption_verify" || p.stage == "adoption_probe" || p.stage == "adoption_lock" {
 		p.block(ctx)
 		return ctx.Err()
 	}
@@ -242,15 +242,36 @@ func (p *r21BudgetPlane) RestartGeneration(ctx context.Context) (uint64, error) 
 	return p.memPlane.RestartGeneration(ctx)
 }
 
+func (p *r21BudgetPlane) VerifyServing(ctx context.Context, m enforce.Model, a map[uuid.UUID]uint16) (enforce.ServingEvidence, error) {
+	if p.stage == "adoption_verify" {
+		p.block(ctx)
+		return enforce.ServingEvidence{}, ctx.Err()
+	}
+	return p.memPlane.VerifyServing(ctx, m, a)
+}
+
+type r21TermProber struct {
+	cancel  context.CancelFunc
+	called  bool
+	stopped bool
+}
+
+func (p *r21TermProber) Probe(ctx context.Context, _ ProbeRequest) ProbeResult {
+	p.called = true
+	p.cancel()
+	p.stopped = errors.Is(ctx.Err(), context.Canceled)
+	return ProbeResult{}
+}
+
 func TestR21_M2_OneBootBudgetAllStages(t *testing.T) {
 	if bootLocalBudget+closeLocalBudget != 13*time.Second {
 		t.Fatal("stop allowances changed")
 	}
-	for _, stage := range []string{"runtime", "recover", "generation", "baseline", "adoption_cleanup", "meter_open", "settlement", "uncooperative"} {
+	for _, stage := range []string{"runtime", "recover", "generation", "baseline", "adoption_cleanup", "adoption_verify", "adoption_probe", "adoption_lock", "meter_open", "settlement", "uncooperative"} {
 		t.Run(stage, func(t *testing.T) {
 			r, src, _ := r20ServedPendingDelta(t)
 			cfg := r.eng.cfg
-			if stage != "adoption_cleanup" {
+			if stage != "adoption_cleanup" && stage != "adoption_verify" && stage != "adoption_probe" && stage != "adoption_lock" {
 				cfg = r20ChangedSets(r)
 			}
 			plane := &r21BudgetPlane{memPlane: r.plane, stage: stage}
@@ -306,8 +327,22 @@ func TestR21_M2_OneBootBudgetAllStages(t *testing.T) {
 			ctx, cancel := context.WithCancel(t.Context())
 			cancel()
 			// Adoption cleanup needs a live caller until it enters member-path refusal.
-			if stage == "adoption_cleanup" {
-				ctx = t.Context()
+			var probe *r21TermProber
+			var lock *nodelock.Lock
+			if stage == "adoption_cleanup" || stage == "adoption_verify" || stage == "adoption_probe" || stage == "adoption_lock" {
+				ctx, cancel = context.WithCancel(t.Context())
+				defer cancel()
+				if stage == "adoption_probe" {
+					probe = &r21TermProber{cancel: cancel}
+					next.prober = probe
+				}
+				if stage == "adoption_lock" {
+					var err error
+					lock, err = nodelock.TryAcquire(cfg.LockPath)
+					if err != nil {
+						t.Fatal(err)
+					}
+				}
 			}
 			started := time.Now()
 			_ = next.bootWithBudget(ctx, 120*time.Millisecond)
@@ -323,6 +358,12 @@ func TestR21_M2_OneBootBudgetAllStages(t *testing.T) {
 				_ = db.Close()
 			}
 			<-next.bootDone
+			if lock != nil {
+				lock.Release()
+			}
+			if probe != nil && (!probe.called || !probe.stopped) {
+				t.Fatal("probe did not follow TERM")
+			}
 			for _, d := range plane.seen {
 				if d.After(started.Add(125 * time.Millisecond)) {
 					t.Errorf("cleanup extended Boot deadline: %s", d.Sub(started))
@@ -394,5 +435,20 @@ func TestR21_M2_UploadCancellationDuringAdoption(t *testing.T) {
 	time.Sleep(50 * time.Millisecond)
 	if after := r21ServerUsageEvents(r); after != before {
 		t.Fatalf("M-2: canceled adoption started %d post-TERM uploads", after-before)
+	}
+}
+
+func TestR21_M2_TermAfterBaselineKeepsNormalStopOnLedgerTimeout(t *testing.T) {
+	r, src, _ := r20ServedPendingDelta(t)
+	next := r20Successor(t, r, r20ChangedSets(r), src, r.plane)
+	release := make(chan struct{})
+	next.meterSource = r21ReadFunc(func(ctx context.Context) (meter.Observation, error) { <-release; return src.Read(ctx) })
+	caller, cancel := context.WithCancel(t.Context())
+	cancel()
+	err := next.bootWithBudget(caller, 100*time.Millisecond)
+	close(release)
+	<-next.bootDone
+	if !errors.Is(err, context.Canceled) || errors.Is(err, ErrBoot) || !next.baselineOK {
+		t.Fatalf("completed baseline lost normal TERM status: %v", err)
 	}
 }
