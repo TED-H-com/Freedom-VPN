@@ -1,0 +1,1913 @@
+{
+  "test_only": true,
+  "summary": {
+    "applies": 101,
+    "verified": 101,
+    "tcp_reads": 118,
+    "tcp_failures": 0,
+    "segments": 375,
+    "retransmissions": 11,
+    "repeat_acks": 0,
+    "node_guard_overlap_segments": 21,
+    "guard_boundary_crossing_segments": [
+      122,
+      156,
+      255
+    ],
+    "capture_packets": {
+      "origin": 375,
+      "node": 739,
+      "responder": 364
+    },
+    "unmatched_observations": 0,
+    "max_apply_wall_mono_drift_ns": 368
+  },
+  "missing_stage_segments": [
+    {
+      "segment": 122,
+      "direction": "request",
+      "kind": "data",
+      "absent": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ]
+    },
+    {
+      "segment": 123,
+      "direction": "request",
+      "kind": "data",
+      "absent": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ]
+    },
+    {
+      "segment": 124,
+      "direction": "request",
+      "kind": "data",
+      "absent": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ]
+    },
+    {
+      "segment": 224,
+      "direction": "request",
+      "kind": "data",
+      "absent": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ]
+    },
+    {
+      "segment": 255,
+      "direction": "request",
+      "kind": "data",
+      "absent": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ]
+    },
+    {
+      "segment": 256,
+      "direction": "request",
+      "kind": "data",
+      "absent": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ]
+    },
+    {
+      "segment": 284,
+      "direction": "request",
+      "kind": "data",
+      "absent": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ]
+    },
+    {
+      "segment": 309,
+      "direction": "request",
+      "kind": "data",
+      "absent": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ]
+    },
+    {
+      "segment": 334,
+      "direction": "request",
+      "kind": "data",
+      "absent": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ]
+    },
+    {
+      "segment": 335,
+      "direction": "request",
+      "kind": "data",
+      "absent": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ]
+    },
+    {
+      "segment": 360,
+      "direction": "request",
+      "kind": "data",
+      "absent": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ]
+    }
+  ],
+  "retransmissions": [
+    {
+      "segment": 123,
+      "cycle": 40,
+      "original": 122,
+      "direction": "request",
+      "kind": "data",
+      "seq": 3104351025,
+      "ack": 427154695,
+      "length": 4,
+      "after_original_ms": 210.037466,
+      "after_previous_ms": 210.037466,
+      "node_ingress": {
+        "packet": 244,
+        "wall_ns": "1793692518205028654",
+        "interface": "fv-fh",
+        "direction": "in",
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "source_port": 53702,
+        "destination_port": 9001,
+        "seq": 3104351025,
+        "ack": 427154695,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "ip_id": 16346,
+        "ip_length": 56,
+        "data_length": 4,
+        "window": 64,
+        "tsval": 2153935455,
+        "tsecr": 1586009532,
+        "role": "node",
+        "observation": "node:244",
+        "flow_direction": "request",
+        "guard_positions": [
+          {
+            "generation": "1032",
+            "phase": "install",
+            "delta_start_ns": 7320105,
+            "delta_end_ns": -4016329
+          }
+        ]
+      },
+      "missing_stages": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ],
+      "read_elapsed_ms": 827.017314
+    },
+    {
+      "segment": 124,
+      "cycle": 40,
+      "original": 122,
+      "direction": "request",
+      "kind": "data",
+      "seq": 3104351025,
+      "ack": 427154695,
+      "length": 4,
+      "after_original_ms": 417.157518,
+      "after_previous_ms": 207.120052,
+      "node_ingress": {
+        "packet": 245,
+        "wall_ns": "1793692518412084090",
+        "interface": "fv-fh",
+        "direction": "in",
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "source_port": 53702,
+        "destination_port": 9001,
+        "seq": 3104351025,
+        "ack": 427154695,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "ip_id": 16347,
+        "ip_length": 56,
+        "data_length": 4,
+        "window": 64,
+        "tsval": 2153935662,
+        "tsecr": 1586009532,
+        "role": "node",
+        "observation": "node:245",
+        "flow_direction": "request",
+        "guard_positions": [
+          {
+            "generation": "1033",
+            "phase": "install",
+            "delta_start_ns": 6303684,
+            "delta_end_ns": -15044405
+          }
+        ]
+      },
+      "missing_stages": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ],
+      "read_elapsed_ms": 827.017314
+    },
+    {
+      "segment": 125,
+      "cycle": 40,
+      "original": 122,
+      "direction": "request",
+      "kind": "data",
+      "seq": 3104351025,
+      "ack": 427154695,
+      "length": 4,
+      "after_original_ms": 826.029367,
+      "after_previous_ms": 408.871849,
+      "node_ingress": {
+        "packet": 246,
+        "wall_ns": "1793692518821160332",
+        "interface": "fv-fh",
+        "direction": "in",
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "source_port": 53702,
+        "destination_port": 9001,
+        "seq": 3104351025,
+        "ack": 427154695,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "ip_id": 16348,
+        "ip_length": 56,
+        "data_length": 4,
+        "window": 64,
+        "tsval": 2153936071,
+        "tsecr": 1586009532,
+        "role": "node",
+        "observation": "node:246",
+        "flow_direction": "request",
+        "guard_positions": []
+      },
+      "missing_stages": [],
+      "read_elapsed_ms": 827.017314
+    },
+    {
+      "segment": 225,
+      "cycle": 73,
+      "original": 224,
+      "direction": "request",
+      "kind": "data",
+      "seq": 3104351157,
+      "ack": 427154827,
+      "length": 4,
+      "after_original_ms": 202.391347,
+      "after_previous_ms": 202.391347,
+      "node_ingress": {
+        "packet": 445,
+        "wall_ns": "1793692525691974363",
+        "interface": "fv-fh",
+        "direction": "in",
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "source_port": 53702,
+        "destination_port": 9001,
+        "seq": 3104351157,
+        "ack": 427154827,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "ip_id": 16415,
+        "ip_length": 56,
+        "data_length": 4,
+        "window": 64,
+        "tsval": 2153942942,
+        "tsecr": 1586017026,
+        "role": "node",
+        "observation": "node:445",
+        "flow_direction": "request",
+        "guard_positions": []
+      },
+      "missing_stages": [],
+      "read_elapsed_ms": 203.51501
+    },
+    {
+      "segment": 256,
+      "cycle": 83,
+      "original": 255,
+      "direction": "request",
+      "kind": "data",
+      "seq": 3104351197,
+      "ack": 427154867,
+      "length": 4,
+      "after_original_ms": 202.866777,
+      "after_previous_ms": 202.866777,
+      "node_ingress": {
+        "packet": 506,
+        "wall_ns": "1793692527916049438",
+        "interface": "fv-fh",
+        "direction": "in",
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "source_port": 53702,
+        "destination_port": 9001,
+        "seq": 3104351197,
+        "ack": 427154867,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "ip_id": 16436,
+        "ip_length": 56,
+        "data_length": 4,
+        "window": 64,
+        "tsval": 2153945166,
+        "tsecr": 1586019251,
+        "role": "node",
+        "observation": "node:506",
+        "flow_direction": "request",
+        "guard_positions": [
+          {
+            "generation": "1064",
+            "phase": "install",
+            "delta_start_ns": 2731380,
+            "delta_end_ns": -9893451
+          }
+        ]
+      },
+      "missing_stages": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ],
+      "read_elapsed_ms": 411.696382
+    },
+    {
+      "segment": 257,
+      "cycle": 83,
+      "original": 255,
+      "direction": "request",
+      "kind": "data",
+      "seq": 3104351197,
+      "ack": 427154867,
+      "length": 4,
+      "after_original_ms": 410.837185,
+      "after_previous_ms": 207.970408,
+      "node_ingress": {
+        "packet": 507,
+        "wall_ns": "1793692528123962140",
+        "interface": "fv-fh",
+        "direction": "in",
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "source_port": 53702,
+        "destination_port": 9001,
+        "seq": 3104351197,
+        "ack": 427154867,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "ip_id": 16437,
+        "ip_length": 56,
+        "data_length": 4,
+        "window": 64,
+        "tsval": 2153945374,
+        "tsecr": 1586019251,
+        "role": "node",
+        "observation": "node:507",
+        "flow_direction": "request",
+        "guard_positions": []
+      },
+      "missing_stages": [],
+      "read_elapsed_ms": 411.696382
+    },
+    {
+      "segment": 285,
+      "cycle": 92,
+      "original": 284,
+      "direction": "request",
+      "kind": "data",
+      "seq": 3104351233,
+      "ack": 427154903,
+      "length": 4,
+      "after_original_ms": 208.004199,
+      "after_previous_ms": 208.004199,
+      "node_ingress": {
+        "packet": 562,
+        "wall_ns": "1793692530147987694",
+        "interface": "fv-fh",
+        "direction": "in",
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "source_port": 53702,
+        "destination_port": 9001,
+        "seq": 3104351233,
+        "ack": 427154903,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "ip_id": 16456,
+        "ip_length": 56,
+        "data_length": 4,
+        "window": 64,
+        "tsval": 2153947398,
+        "tsecr": 1586021477,
+        "role": "node",
+        "observation": "node:562",
+        "flow_direction": "request",
+        "guard_positions": []
+      },
+      "missing_stages": [],
+      "read_elapsed_ms": 208.984293
+    },
+    {
+      "segment": 310,
+      "cycle": 100,
+      "original": 309,
+      "direction": "request",
+      "kind": "data",
+      "seq": 3104351265,
+      "ack": 427154935,
+      "length": 5,
+      "after_original_ms": 207.349568,
+      "after_previous_ms": 207.349568,
+      "node_ingress": {
+        "packet": 611,
+        "wall_ns": "1793692531971945073",
+        "interface": "fv-fh",
+        "direction": "in",
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "source_port": 53702,
+        "destination_port": 9001,
+        "seq": 3104351265,
+        "ack": 427154935,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "ip_id": 16473,
+        "ip_length": 57,
+        "data_length": 5,
+        "window": 64,
+        "tsval": 2153949222,
+        "tsecr": 1586023302,
+        "role": "node",
+        "observation": "node:611",
+        "flow_direction": "request",
+        "guard_positions": []
+      },
+      "missing_stages": [],
+      "read_elapsed_ms": 208.073823
+    },
+    {
+      "segment": 335,
+      "cycle": 108,
+      "original": 334,
+      "direction": "request",
+      "kind": "data",
+      "seq": 3104351305,
+      "ack": 427154975,
+      "length": 5,
+      "after_original_ms": 209.090862,
+      "after_previous_ms": 209.090862,
+      "node_ingress": {
+        "packet": 660,
+        "wall_ns": "1793692533796832324",
+        "interface": "fv-fh",
+        "direction": "in",
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "source_port": 53702,
+        "destination_port": 9001,
+        "seq": 3104351305,
+        "ack": 427154975,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "ip_id": 16490,
+        "ip_length": 57,
+        "data_length": 5,
+        "window": 64,
+        "tsval": 2153951047,
+        "tsecr": 1586025125,
+        "role": "node",
+        "observation": "node:660",
+        "flow_direction": "request",
+        "guard_positions": [
+          {
+            "generation": "1090",
+            "phase": "install",
+            "delta_start_ns": 2760466,
+            "delta_end_ns": -14184214
+          }
+        ]
+      },
+      "missing_stages": [
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ],
+      "read_elapsed_ms": 417.123217
+    },
+    {
+      "segment": 336,
+      "cycle": 108,
+      "original": 334,
+      "direction": "request",
+      "kind": "data",
+      "seq": 3104351305,
+      "ack": 427154975,
+      "length": 5,
+      "after_original_ms": 416.166779,
+      "after_previous_ms": 207.075917,
+      "node_ingress": {
+        "packet": 661,
+        "wall_ns": "1793692534004066417",
+        "interface": "fv-fh",
+        "direction": "in",
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "source_port": 53702,
+        "destination_port": 9001,
+        "seq": 3104351305,
+        "ack": 427154975,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "ip_id": 16491,
+        "ip_length": 57,
+        "data_length": 5,
+        "window": 64,
+        "tsval": 2153951254,
+        "tsecr": 1586025125,
+        "role": "node",
+        "observation": "node:661",
+        "flow_direction": "request",
+        "guard_positions": []
+      },
+      "missing_stages": [],
+      "read_elapsed_ms": 417.123217
+    },
+    {
+      "segment": 361,
+      "cycle": 116,
+      "original": 360,
+      "direction": "request",
+      "kind": "data",
+      "seq": 3104351345,
+      "ack": 427155015,
+      "length": 5,
+      "after_original_ms": 208.456796,
+      "after_previous_ms": 208.456796,
+      "node_ingress": {
+        "packet": 710,
+        "wall_ns": "1793692535827882515",
+        "interface": "fv-fh",
+        "direction": "in",
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "source_port": 53702,
+        "destination_port": 9001,
+        "seq": 3104351345,
+        "ack": 427155015,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "ip_id": 16508,
+        "ip_length": 57,
+        "data_length": 5,
+        "window": 64,
+        "tsval": 2153953078,
+        "tsecr": 1586027156,
+        "role": "node",
+        "observation": "node:710",
+        "flow_direction": "request",
+        "guard_positions": []
+      },
+      "missing_stages": [],
+      "read_elapsed_ms": 209.156781
+    }
+  ],
+  "affected_reads": [
+    {
+      "cycle": 40,
+      "original": 122,
+      "retransmission_segments": [
+        123,
+        124,
+        125
+      ],
+      "read_elapsed_ms": 827.017314,
+      "recovered_ms": 826.029367
+    },
+    {
+      "cycle": 73,
+      "original": 224,
+      "retransmission_segments": [
+        225
+      ],
+      "read_elapsed_ms": 203.51501,
+      "recovered_ms": 202.391347
+    },
+    {
+      "cycle": 83,
+      "original": 255,
+      "retransmission_segments": [
+        256,
+        257
+      ],
+      "read_elapsed_ms": 411.696382,
+      "recovered_ms": 410.837185
+    },
+    {
+      "cycle": 92,
+      "original": 284,
+      "retransmission_segments": [
+        285
+      ],
+      "read_elapsed_ms": 208.984293,
+      "recovered_ms": 208.004199
+    },
+    {
+      "cycle": 100,
+      "original": 309,
+      "retransmission_segments": [
+        310
+      ],
+      "read_elapsed_ms": 208.073823,
+      "recovered_ms": 207.349568
+    },
+    {
+      "cycle": 108,
+      "original": 334,
+      "retransmission_segments": [
+        335,
+        336
+      ],
+      "read_elapsed_ms": 417.123217,
+      "recovered_ms": 416.166779
+    },
+    {
+      "cycle": 116,
+      "original": 360,
+      "retransmission_segments": [
+        361
+      ],
+      "read_elapsed_ms": 209.156781,
+      "recovered_ms": 208.456796
+    }
+  ],
+  "rto_samples": [
+    {
+      "generation": "1001",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1001",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1002",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1002",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1003",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1003",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1004",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1004",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1005",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1005",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1006",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1006",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1007",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1007",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1008",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1008",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1009",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1009",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1010",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1010",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1011",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1011",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1012",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1012",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1013",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1013",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1014",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1014",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1015",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1015",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1016",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1016",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1017",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1017",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1018",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1018",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1019",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1019",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1020",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1020",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1021",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1021",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1022",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1022",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1023",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1023",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1024",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1024",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1025",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1025",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1026",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1026",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1027",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1027",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1028",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1028",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1029",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1029",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1030",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1030",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1031",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1031",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1032",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1032",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1033",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1033",
+      "phase": "after_apply",
+      "rto_ms": 402.0,
+      "backoff": 1
+    },
+    {
+      "generation": "1034",
+      "phase": "before_apply",
+      "rto_ms": 402.0,
+      "backoff": 1
+    },
+    {
+      "generation": "1034",
+      "phase": "after_apply",
+      "rto_ms": 402.0,
+      "backoff": 1
+    },
+    {
+      "generation": "1035",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1035",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1036",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1036",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1037",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1037",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1038",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1038",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1039",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1039",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1040",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1040",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1041",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1041",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1042",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1042",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1043",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1043",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1044",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1044",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1045",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1045",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1046",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1046",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1047",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1047",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1048",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1048",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1049",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1049",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1050",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1050",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1051",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1051",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1052",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1052",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1053",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1053",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1054",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1054",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1055",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1055",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1056",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1056",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1057",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1057",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1058",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1058",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1059",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1059",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1060",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1060",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1061",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1061",
+      "phase": "after_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1062",
+      "phase": "before_apply",
+      "rto_ms": 202.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1062",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1063",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1063",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1064",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1064",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1065",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1065",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1066",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1066",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1067",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1067",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1068",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1068",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1069",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1069",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1070",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1070",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1071",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1071",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1072",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1072",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1073",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1073",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1074",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1074",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1075",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1075",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1076",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1076",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1077",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1077",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1078",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1078",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1079",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1079",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1080",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1080",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1081",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1081",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1082",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1082",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1083",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1083",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1084",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1084",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1085",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1085",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1086",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1086",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1087",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1087",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1088",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1088",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1089",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1089",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1090",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1090",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1091",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1091",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1092",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1092",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1093",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1093",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1094",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1094",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1095",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1095",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1096",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1096",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1097",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1097",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1098",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1098",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1099",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1099",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1100",
+      "phase": "before_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    },
+    {
+      "generation": "1100",
+      "phase": "after_apply",
+      "rto_ms": 201.0,
+      "backoff": 0
+    }
+  ],
+  "conntrack_states": [
+    "ESTABLISHED"
+  ],
+  "conntrack_ids": [
+    "3035614984"
+  ],
+  "empty_conntrack_snapshots": [
+    {
+      "generation": "1000",
+      "phase": "before_apply"
+    },
+    {
+      "generation": "1000",
+      "phase": "after_apply"
+    }
+  ],
+  "all_read_max_ms": 827.017314,
+  "snapshot_read_cost_ms": {
+    "total": 5780.167549,
+    "minimum": 21.36768,
+    "maximum": 455.002696
+  },
+  "guard_upper_max_ms": 51.504545
+}

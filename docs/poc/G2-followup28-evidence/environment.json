@@ -1,0 +1,11 @@
+{
+  "start_utc": "2026-11-03T08:05:07.501113+00:00",
+  "elapsed_seconds": 0.11687443399932818,
+  "command": [
+    "python3",
+    "-c",
+    "import hashlib,json,platform,subprocess; cache=subprocess.check_output([\"go\",\"env\",\"GOCACHE\"],text=True).strip(); print(json.dumps(dict(go_version=subprocess.check_output([\"go\",\"version\"],text=True).strip(),gocache_sha256=hashlib.sha256(cache.encode()).hexdigest(),go_env=json.loads(subprocess.check_output([\"go\",\"env\",\"-json\",\"GOOS\",\"GOARCH\",\"GOTOOLCHAIN\",\"CGO_ENABLED\"],text=True)),kernel=platform.release(),machine=platform.machine()),indent=2))"
+  ],
+  "exit_code": 0,
+  "output_sha256": "4ee8a5e76189a20fa5b9a25519fb887c922b1beed315a12f571281c45c70765a"
+}

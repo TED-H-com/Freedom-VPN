@@ -21,7 +21,7 @@ if name in ('make','docker') or (name=='go' and sys.argv[1:2]==['test']):
         with (host.DEST/'tool-admission.jsonl').open('a') as log:
             log.write(json.dumps(row)+'\n')
         if row['free']: break
-        print('Waiting 60 seconds for host admission: '+name,flush=True)
+        print('Waiting 60 seconds for host admission: '+name,file=sys.stderr,flush=True)
         time.sleep(60)
 if name=='go' and sys.argv[1:2]==['test'] and os.environ.get('FVPN_NETLAB')=='1' and os.environ.get('FVPN_F28_GATE2')=='1':
     host.admission('admission/gate2-after-startup')

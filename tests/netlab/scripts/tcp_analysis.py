@@ -135,6 +135,53 @@ def snapshots(applies):
     return result
 
 
+def failed_reads(events, segments, windows):
+    """Retain failed/malformed reads with their sends; never infer success."""
+    failures=[]
+    for e in events:
+        if e['event']!='tcp_read' or (not e.get('outcome') and e.get('size',0)>0): continue
+        send=[x for x in events if x['event']=='tcp_send' and x['sequence']==e['sequence']]
+        if len(send)!=1: raise ValueError('missing or duplicate TCP send')
+        lo,hi=int(send[0]['wall_ns']),int(e['wall_ns'])
+        failures.append(dict(sequence=e['sequence'],send=send[0],read=e,elapsed_ns=int(e['mono_ns'])-int(send[0]['mono_ns']),
+                             segments_during_read=[s['number'] for s in segments if lo<=int(s['wall_ns'])<=hi],
+                             guard_windows=[w['generation'] for w in windows if lo<=w['verify_end'] and w['install_start']<=hi]))
+    return failures
+
+
+def validate_read_coverage(events, segments):
+    """A successful read needs captured handshake and received byte coverage.
+
+    Capture counters alone cannot detect a wrong/empty capture filter. Merge
+    TCP sequence ranges so retransmitted bytes cannot fill a capture hole.
+    This checks observation completeness, not echo contents or D-120 verdicts.
+    """
+    reads=[e for e in events if e['event']=='tcp_read' and not e.get('outcome') and e.get('size',0)>0]
+    if not reads: return
+    paths={
+        'request': {'origin_out_fv-wg0','node_in_fv-fh','node_out_fv-ih','responder_in_fv-ii'},
+        'reply': {'responder_out_fv-ii','node_in_fv-ih','node_out_fv-fh','origin_in_fv-wg0'},
+    }
+    for direction,kind in (('request','SYN'),('reply','SYN-ACK')):
+        if not any(s['direction']==direction and s['kind']==kind and paths[direction]<=s['stages'].keys() for s in segments):
+            raise ValueError('successful read without fully captured handshake')
+    needed=0
+    for e in reads:
+        needed+=e['size']
+        ranges=[]
+        for s in segments:
+            arrival=s['stages'].get('origin_in_fv-wg0')
+            if s['direction']=='reply' and s['data_length'] and arrival and int(arrival['wall_ns'])<=int(e['wall_ns'])+2000:
+                lo=s['relative_seq']+int('SYN' in s['flags'])
+                ranges.append((lo,lo+s['data_length']))
+        cursor=1
+        for lo,hi in sorted(ranges):
+            if lo>cursor: break
+            cursor=max(cursor,hi)
+        if cursor<needed+1:
+            raise ValueError('TCP read bytes missing from origin return capture')
+
+
 def analyze(directory):
     applies=rows(directory/'at10-apply.jsonl'); events=rows(directory/'stream-a1.log.jsonl')
     windows=brackets(applies)
@@ -144,16 +191,9 @@ def analyze(directory):
         validate_stats(read(directory/('at10-tcp-'+role+'.err')),len(data))
         if meta['roles'][role]['stats']['captured']!=len(data): raise ValueError('metadata capture mismatch')
     segments,unmatched=correlate(captures,windows)
+    validate_read_coverage(events,segments)
     snaps=snapshots(applies)
-    failures=[]
-    for e in events:
-        if e['event']!='tcp_read' or (not e.get('outcome') and e.get('size',1)>0): continue
-        send=[x for x in events if x['event']=='tcp_send' and x['sequence']==e['sequence']]
-        if len(send)!=1: raise ValueError('missing TCP send')
-        lo,hi=int(send[0]['wall_ns']),int(e['wall_ns'])
-        failures.append(dict(sequence=e['sequence'],send=send[0],read=e,elapsed_ns=int(e['mono_ns'])-int(send[0]['mono_ns']),
-                             segments_during_read=[s['number'] for s in segments if lo<=int(s['wall_ns'])<=hi],
-                             guard_windows=[w['generation'] for w in windows if lo<=w['verify_end'] and w['install_start']<=hi]))
+    failures=failed_reads(events,segments,windows)
     guard_crossings=[s['number'] for s in segments if any(b['boundary'] in ('install_start','install_end','release_start','release_end') for b in s['crossed_boundaries'])]
     return dict(test_only=True,verdict_input=False,summary=dict(applies=len(applies),verified=sum(a['verified'] for a in applies),
         tcp_reads=sum(e['event']=='tcp_read' for e in events),tcp_failures=len(failures),segments=len(segments),
