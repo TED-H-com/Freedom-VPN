@@ -203,10 +203,16 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 	// local context or a Step's short HTTP budget.
 	if e.runCtx == nil || e.runCtx.Err() == nil {
 		e.startLoops()
-		uploadCtx, cancel := context.WithCancel(e.loopCtx)
+		parent := e.loopCtx
+		if e.runCtx != nil {
+			parent = e.runCtx
+		}
+		// Signal cancellation propagates synchronously to the request context.
+		// An AfterFunc on runCtx could otherwise race the first upload.
+		uploadCtx, cancel := context.WithCancel(parent)
 		stop := func() bool { return false }
 		if e.runCtx != nil {
-			stop = context.AfterFunc(e.runCtx, cancel)
+			stop = context.AfterFunc(e.loopCtx, cancel)
 		}
 		e.loops.Add(1)
 		go func() {
