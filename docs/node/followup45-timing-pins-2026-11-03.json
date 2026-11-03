@@ -1,0 +1,126 @@
+{
+  "sources": {
+    "A": {
+      "commit": "567080be1969bf22782617e78c7605c2c92a52a2",
+      "tree": "a75453f25ecdef31da6941dd08a4dc45c178156e",
+      "archive_sha256": "3b0c7791dcdd4a8e0c79819bc4c55c67963805f69e775ab04c38d41f690134b9",
+      "verified_blobs": 18889,
+      "mismatches": []
+    },
+    "B": {
+      "commit": "38420dadef6ae9d0236288eef533bc1ddee0da53",
+      "tree": "6cdb55b1ef780a290f6f1331912df0f16d5f0eb9",
+      "archive_sha256": "5933e9a86278143e841e5316fdf3a8c025c6f7a24ce0d27a9356f9e8226b74fe",
+      "verified_blobs": 18939,
+      "mismatches": []
+    }
+  },
+  "overlays": {
+    "A": {
+      "engine.go": "2da977908daf24ecddde341582251c9a33a3e61cc895202bc13484a780e35b1f",
+      "followup43_spans.go": "bea36a4ad8059002f6f16d2d11d9c04f80844c4a1016937a31f47bd52fedb22f",
+      "original_engine_sha256": "d3177df609bc773d27d7155a83611dfffe4138d00a59fb6017b6923064001e22"
+    },
+    "B": {
+      "engine.go": "e31a711a319ba2cf3c5dcafa1b6f43a20aadd89e7a85150cd2e363f89cd29667",
+      "followup43_spans.go": "bea36a4ad8059002f6f16d2d11d9c04f80844c4a1016937a31f47bd52fedb22f",
+      "original_engine_sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1"
+    }
+  },
+  "fixtures": {
+    "A": {
+      "mk/node.mk": "e8a99f332b1e41dc63dbe250173aa7af11a35b88499ebc1ba979bbd12e18217a",
+      "mk/netlab.mk": "3a63e7ce2c437fef7056a511b7a0cecaceab6543493ca0b330dd04022d22fb4e",
+      "tests/netlab/Dockerfile": "c24379d083ac57899a449c93a2dd7e27a1eea566389a0c862f70a91dd0348d1e",
+      "tests/netlab/agent/generation-analysis.py": "87b61ae869a2a5ced46312de10f697999badba28ce594c19d8c89c624e73640a",
+      "tests/netlab/agent/harness_test.go": "89bd28ccf57ad134cffdfcfbd8af65f72dca9d385baae3125ef4104417cd0347",
+      "tests/netlab/agent/restart-sets.py": "b9be8d5b9fb107d1d651ff890f9c942b22071fc60ef062651b94581f38e12c87",
+      "tests/netlab/agent/run-installer.py": "ee27ed4645c7dff7f4443fa31e2f0edd81e310b8bfdd271247270aed7e58a2e1",
+      "tests/netlab/agent/run-live.py": "a7c5cc5ca96d3895de370d030a90614e90a759cf926cebced8776343da114f69",
+      "tests/netlab/agent/run-live.sh": "84a3da8570516fcbf3a6e79696b8e101915d98559a12f21b7b96ba190e927508",
+      "tests/netlab/agent/scenario_ab_recovery_test.go": "014c1c17f8e9ed74544ec68953f0567db6b2e027496225032eabd4e1d6732b1d",
+      "tests/netlab/agent/scenario_ac_timing_test.go": "22f8fbdb3d82df972c1b732c6a4ea2e7076c28aa3733e911f9be96e140f30c59",
+      "tests/netlab/agent/scenario_at_usage_test.go": "8e235b57e9b46a296b8b838652532e2af28931baa9fd91292456f1cd3ac7b298",
+      "tests/netlab/agent/scenario_az_external_test.go": "4eb663c59154358fd0a0e70bf291081fa2494a3541e720f881f7ce9bb3c39283",
+      "tests/netlab/agent/scenario_d116_test.go": "17ba5f6f198c567405c59ec6a8447fe42d7121c98a53605f61a8e74df95cfd2c",
+      "tests/netlab/agent/scenario_f31_test.go": "f977624c1a729fd97bd712ffda46c08d4080d0116281b13fbc0dabccc6c84ad2",
+      "tests/netlab/agent/scenario_f36_test.go": "e81bd729cdfa3643dd2b99649bdff78b42dd40cfa42361b6beaa8d19adb61aeb",
+      "tests/netlab/agent/scenario_health_test.go": "dde6f6d889365038d12b50897012a3fb456071bb54d520c788d40fbf64b5b490",
+      "tests/netlab/agent/scenario_test.go": "6524d149352804dd8b99bfff5a9fb4c59dad9476cb192a26d465e50b60c69611",
+      "tests/netlab/agent/timing-analysis.py": "fa8f76049c3adcf085181d366560c887dfd25ee2aa66bcd1fe3e6d845d192576",
+      "tests/netlab/agent/timing-probes.py": "73e77bf9f1953525758b7520734f851fbfb1b422eca2b4f32e41307f371aa5e6",
+      "tests/netlab/agent/timing_analysis_test.py": "451e808ebd22c0125b1ee57da1021f9d6967971442e30ad57594b6cf87ba557c",
+      "tests/netlab/agent/topology-owner.py": "faf40342b82524e434ebcd784fb2e259a1088a148d82b35a2d0237b75b825f67"
+    },
+    "B": {
+      "mk/node.mk": "e8a99f332b1e41dc63dbe250173aa7af11a35b88499ebc1ba979bbd12e18217a",
+      "mk/netlab.mk": "3a63e7ce2c437fef7056a511b7a0cecaceab6543493ca0b330dd04022d22fb4e",
+      "tests/netlab/Dockerfile": "c24379d083ac57899a449c93a2dd7e27a1eea566389a0c862f70a91dd0348d1e",
+      "tests/netlab/agent/followup39_timing.py": "a9431ffee5be67e12f7fee4f97c7735127ae5818472e7d623d13f3df0e6468e7",
+      "tests/netlab/agent/followup39_timing_test.py": "0dba7531fd08c32c0fb4f5621568707b18466593bd4e4434c2b1e3fc07cc9b79",
+      "tests/netlab/agent/generation-analysis.py": "87b61ae869a2a5ced46312de10f697999badba28ce594c19d8c89c624e73640a",
+      "tests/netlab/agent/harness_test.go": "89bd28ccf57ad134cffdfcfbd8af65f72dca9d385baae3125ef4104417cd0347",
+      "tests/netlab/agent/restart-sets.py": "b9be8d5b9fb107d1d651ff890f9c942b22071fc60ef062651b94581f38e12c87",
+      "tests/netlab/agent/run-installer.py": "ee27ed4645c7dff7f4443fa31e2f0edd81e310b8bfdd271247270aed7e58a2e1",
+      "tests/netlab/agent/run-live.py": "a7c5cc5ca96d3895de370d030a90614e90a759cf926cebced8776343da114f69",
+      "tests/netlab/agent/run-live.sh": "84a3da8570516fcbf3a6e79696b8e101915d98559a12f21b7b96ba190e927508",
+      "tests/netlab/agent/scenario_ab_recovery_test.go": "014c1c17f8e9ed74544ec68953f0567db6b2e027496225032eabd4e1d6732b1d",
+      "tests/netlab/agent/scenario_ac_timing_test.go": "22f8fbdb3d82df972c1b732c6a4ea2e7076c28aa3733e911f9be96e140f30c59",
+      "tests/netlab/agent/scenario_at_usage_test.go": "b4570c679568349b05334dfb896448e8d99ae87578f16f4f9520f23ce019b95a",
+      "tests/netlab/agent/scenario_az_external_test.go": "4eb663c59154358fd0a0e70bf291081fa2494a3541e720f881f7ce9bb3c39283",
+      "tests/netlab/agent/scenario_d116_test.go": "17ba5f6f198c567405c59ec6a8447fe42d7121c98a53605f61a8e74df95cfd2c",
+      "tests/netlab/agent/scenario_f31_test.go": "f977624c1a729fd97bd712ffda46c08d4080d0116281b13fbc0dabccc6c84ad2",
+      "tests/netlab/agent/scenario_f36_test.go": "e81bd729cdfa3643dd2b99649bdff78b42dd40cfa42361b6beaa8d19adb61aeb",
+      "tests/netlab/agent/scenario_health_test.go": "dde6f6d889365038d12b50897012a3fb456071bb54d520c788d40fbf64b5b490",
+      "tests/netlab/agent/scenario_test.go": "6524d149352804dd8b99bfff5a9fb4c59dad9476cb192a26d465e50b60c69611",
+      "tests/netlab/agent/timing-analysis.py": "fa8f76049c3adcf085181d366560c887dfd25ee2aa66bcd1fe3e6d845d192576",
+      "tests/netlab/agent/timing-probes.py": "73e77bf9f1953525758b7520734f851fbfb1b422eca2b4f32e41307f371aa5e6",
+      "tests/netlab/agent/timing_analysis_test.py": "451e808ebd22c0125b1ee57da1021f9d6967971442e30ad57594b6cf87ba557c",
+      "tests/netlab/agent/topology-owner.py": "faf40342b82524e434ebcd784fb2e259a1088a148d82b35a2d0237b75b825f67"
+    }
+  },
+  "files": {
+    "tests/netlab/agent/followup43_overlay.py": "9bde91765a8c4fd8e34dec54aba930570a6a19869ed7f917f339fea6375a8799",
+    "tests/netlab/agent/followup43_results.py": "bc21a46fc0adce330576b216d9b7f2b25cb1eb0962dbe53f0704a81794ccd1d8",
+    "tests/netlab/agent/followup43_results_test.py": "c259036a3e862e0f5ee513a1414340b191f7e6f53b9ec82c496d89ce68b6314a",
+    "tests/netlab/agent/followup43_spans.go.txt": "bea36a4ad8059002f6f16d2d11d9c04f80844c4a1016937a31f47bd52fedb22f",
+    "tests/netlab/agent/followup43_timing.py": "c68ad5b9b7c0510b4d5d7c047c24505ea35eeb2c5b523ad7b0ffb31caa7d49a3",
+    "tests/netlab/agent/followup43_timing_test.py": "cbb9927534012b55082ee1c5bfbc3908696a1f15498448443cd73cfb3792a652",
+    "tests/netlab/agent/followup44_clock.go.txt": "c6b3c8f1798b4af92b21bd8fb9127a1d9b27057acff9992f7e5fb94f4452893d",
+    "tests/netlab/agent/followup44_results.py": "972fd9e37f9754748e22be4a6f1d20ae535c618daaf6e88797193407aca9fc30",
+    "tests/netlab/agent/followup44_timing.py": "4f5900d40a93ed1effff624d998e93a9311f8781c1626e858db2f81ca603a65a",
+    "tests/netlab/agent/followup44_timing_test.py": "be977a8f72f0836925a3a57b53ce6964fa8a48b282d80cc60515a5c4de2e03e4",
+    "tests/netlab/agent/followup45_results.py": "2e9806480d5d47573a5d43ce5db07499cac7ee666c45584d037695ed5b9252b7",
+    "tests/netlab/agent/followup45_timing.py": "d452a2e16757e6c3b2261dbf3b63c31affcd00e3b50d3565925c5617c72e79b9",
+    "tests/netlab/agent/followup45_timing_test.py": "55274301724d2d41b3be44f2558f5327a53b4880063731aae672cdbbfb8188b5"
+  },
+  "clock_binaries": {
+    "A": "f38b0adfe9e716a4d2192c12e73487bd155045a70f3610c2fb8a72409bbdd074",
+    "B": "f38b0adfe9e716a4d2192c12e73487bd155045a70f3610c2fb8a72409bbdd074"
+  },
+  "production_equality": {
+    "B": "38420dadef6ae9d0236288eef533bc1ddee0da53",
+    "merge": "28e9e41cdd92dc34afd460d80efbecd8b4e35ef3",
+    "command": "git diff 38420dadef6ae9d0236288eef533bc1ddee0da53 28e9e41c -- '*.go' ':!**/*_test.go' ':!tests/**' ':!docs/**'",
+    "stdout": "",
+    "exit": 0
+  },
+  "verification": {
+    "utc": "2026-11-03T22:45:12.152786+00:00",
+    "all_blobs_match": true,
+    "archives_match": true,
+    "overlays_match": true
+  },
+  "synthetic_tests": {
+    "root": 41,
+    "other_directory_followup45": 17,
+    "inherited_other_directory_errors": 4,
+    "inherited_unchanged": true
+  },
+  "dry_preflight": {
+    "passed": true,
+    "record": "docs/node/followup45-dry-preflight-2026-11-03.json",
+    "sha256": "3186e9ce56a15c8929ac82257fc6e348c8dcf4be8faca7deab9d3f1d04541fde"
+  },
+  "main_at_start": "3f7dbc254ba1ce001628af8151a4d81c6954412d"
+}

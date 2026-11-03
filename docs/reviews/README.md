@@ -694,6 +694,15 @@ recommendation:
   handover_test.go). No pre-existing node proof is changed by 42.
 
 
+**Follow-up 40 additive correction — 2026-11-03 EST (#430 request).**
+At **8dec4100ce9fba96ea8b0436c41ed8d2b0c75545**, the watchdog's
+`baselineDecision` spans **node/watchdog/watch.go:170–209**; `mono()` starts
+at **211**. The earlier erratum's **170–215** range includes the next function.
+Its function name and first line are correct. The archive and that erratum
+remain unchanged; this correction changes **no finding and no disposition**.
+The [frozen source audit](../../tests/handover/testdata/history/follow-up-40/source-audit.json)
+pins the source bytes and exact excerpt at that commit.
+
 ## r20 to r25 dispositions at the follow-up 39 cutoff (2026-11-03 EST)
 
 Agent-core 37–43 merged as **#429**. These are the delivered D-141 judgments,

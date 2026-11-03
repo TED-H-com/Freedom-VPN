@@ -1,0 +1,114 @@
+{
+  "utc": "2026-11-03T22:45:36.625619+00:00",
+  "prefix": "fvpn-w2-agent-core-f45",
+  "scenario_count": 0,
+  "timing_leg": false,
+  "admission_wrapper": {
+    "exit": 0,
+    "stdout": {
+      "after_ns": "69379661249105",
+      "before_ns": "69379661248306",
+      "mono_ns": "69379661248959",
+      "time_namespace": "time:[4026534098]",
+      "timens_offsets": "monotonic           0         0\nboottime            0         0\n"
+    },
+    "stderr": "free\n",
+    "passed": true
+  },
+  "clock": {
+    "clock": "CLOCK_MONOTONIC",
+    "matched": true,
+    "measurements": [
+      {
+        "utc": "2026-11-03T22:45:37.295561+00:00",
+        "host_before_ns": "69379662778083",
+        "host_after_ns": "69379746932625",
+        "host_time_namespace": "time:[4026531834]",
+        "host_timens_offsets": "monotonic           0         0\nboottime            0         0\n",
+        "probe": {
+          "after_ns": "69379745448104",
+          "before_ns": "69379745447317",
+          "mono_ns": "69379745447947",
+          "time_namespace": "time:[4026534098]",
+          "timens_offsets": "monotonic           0         0\nboottime            0         0\n"
+        },
+        "matched": true
+      },
+      {
+        "utc": "2026-11-03T22:45:37.379456+00:00",
+        "host_before_ns": "69379747061728",
+        "host_after_ns": "69379830828240",
+        "host_time_namespace": "time:[4026531834]",
+        "host_timens_offsets": "monotonic           0         0\nboottime            0         0\n",
+        "probe": {
+          "after_ns": "69379829680384",
+          "before_ns": "69379829679743",
+          "mono_ns": "69379829680235",
+          "time_namespace": "time:[4026534098]",
+          "timens_offsets": "monotonic           0         0\nboottime            0         0\n"
+        },
+        "matched": true
+      },
+      {
+        "utc": "2026-11-03T22:45:37.464408+00:00",
+        "host_before_ns": "69379830951990",
+        "host_after_ns": "69379915780953",
+        "host_time_namespace": "time:[4026531834]",
+        "host_timens_offsets": "monotonic           0         0\nboottime            0         0\n",
+        "probe": {
+          "after_ns": "69379914191214",
+          "before_ns": "69379914190507",
+          "mono_ns": "69379914191078",
+          "time_namespace": "time:[4026534098]",
+          "timens_offsets": "monotonic           0         0\nboottime            0         0\n"
+        },
+        "matched": true
+      }
+    ]
+  },
+  "fixture_image": "sha256:ea5aea6623f3b08d3ad4443e1bef3256ec23902d055826584e1253a3bb684dc6",
+  "passed": true,
+  "inventory": {
+    "containers": [],
+    "images": [],
+    "networks": [],
+    "volumes": []
+  },
+  "files": {
+    "tests/netlab/agent/followup45_results.py": "2e9806480d5d47573a5d43ce5db07499cac7ee666c45584d037695ed5b9252b7",
+    "tests/netlab/agent/followup45_timing.py": "d452a2e16757e6c3b2261dbf3b63c31affcd00e3b50d3565925c5617c72e79b9",
+    "tests/netlab/agent/followup45_timing_test.py": "55274301724d2d41b3be44f2558f5327a53b4880063731aae672cdbbfb8188b5"
+  },
+  "clock_probe_source": {
+    "path": "tests/netlab/agent/followup44_clock.go.txt",
+    "sha256": "c6b3c8f1798b4af92b21bd8fb9127a1d9b27057acff9992f7e5fb94f4452893d"
+  },
+  "clock_binaries": {
+    "A": "f38b0adfe9e716a4d2192c12e73487bd155045a70f3610c2fb8a72409bbdd074",
+    "B": "f38b0adfe9e716a4d2192c12e73487bd155045a70f3610c2fb8a72409bbdd074"
+  },
+  "synthetic_tests": {
+    "root": 41,
+    "other_directory_followup45": 17,
+    "inherited_other_directory_errors": 4,
+    "inherited_unchanged": true
+  },
+  "receipts": {
+    "synthetic-root.log": {
+      "sha256": "0f63a66f3c799e9e80443289f277229ff6fa897cbe44f4f8282088a539d204dd",
+      "bytes": 140
+    },
+    "synthetic-other-cwd.log": {
+      "sha256": "bffad4d866ceafb2d85e084d8270abc2d67a6fe6fe63583e3b6254673a601e45",
+      "bytes": 116
+    },
+    "inherited-other-cwd.log": {
+      "sha256": "607c5232db32fff0b4ca76dd8efbb7f8064a9c07a4d1fdf3110806ab070e15e4",
+      "bytes": 4047
+    },
+    "commands.log": {
+      "sha256": "ec66dd851425b8abfd028e4b12bdefdaae4f5abfc16cae82a824d040cf567ec1",
+      "bytes": 1782
+    }
+  }
+}
