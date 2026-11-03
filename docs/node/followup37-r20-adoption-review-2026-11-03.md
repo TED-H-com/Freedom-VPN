@@ -168,3 +168,62 @@ adoption), shutdown's withdrawal branch, and `loadRuntime`'s meter bindings.
 A same-host A,B,A,B comparison is therefore not owed; the full privileged
 netlab gate was rerun. Physical arm64 remains unmeasured; both architectures
 are cross-built.
+
+## Correction dated 2026-11-03 — follow-up 38, review r21
+
+The original text above remains the historical follow-up 37 record. The
+following claims were disproved; they must not be used as current guarantees.
+
+- **H-1 attribution rule and crash-window limit:** `retained_applied` can lag
+  an Apply already counting for a different member/revision. No sampler has to
+  run between Apply and persistence. Restoring only the retained bindings can
+  bill the old member for the new member's bytes. The claimed “next refusal
+  then records a gap” was false. Follow-up 38 uses the persisted desired
+  document captured before refresh, retained identities and a live installed
+  generation read. Only identities common to every plausible generation are
+  attributed; changed/unknown identities gap individually. Unchanged devices
+  retain their records, even in an event whose overall quality is `gap`.
+- **r21 H-2; H-1 failed-settlement limit:** a missing counter head or a nil-bound head
+  does not cause a mapping conflict. On a held settlement, the subsequent
+  Apply could bill old bytes to the new binding. This mechanism predates 37;
+  37 narrowed its restart window. Follow-up 38 blocks desired refresh and
+  Apply until a final settlement closes the pending epoch. A short clock hold
+  retries with forwarding off; a persistent read/write failure keeps it off.
+- **r21 M-1; H-1 mechanism and proof coverage:** the retained identities explain only
+  pending bytes. Leaving their epoch open caused an avoidable post-baseline
+  rebinding gap; restoring them into an already-closed epoch introduced a
+  regression. Follow-up 38 closes after settlement, clears retired identities,
+  and prepares a fresh unbound epoch before Apply. Its tests admit new traffic
+  inside Apply. The original `rebinding_first_apply` test observed only the
+  old bytes and could not prove attribution of the first new traffic.
+- **TERM control-I/O claim:** `ensureUsage` could start its uploader under a
+  background context after TERM, and its incarnation lock wait used the local
+  context. Follow-up 38 binds the uploader lifecycle and that lock wait to the
+  caller. Recovery uses the shared local budget; cancellation alone supplies
+  no evidence for `recovery_required`.
+- **TERM time bound:** 37 allocated two separate ten-second phases; adoption
+  cleanup could also allocate an independent allowance. The claimed 13-second
+  bound was false. Follow-up 38 owns one ten-second Boot deadline, including
+  recovery, adoption cleanup, ledger construction and settlement. A bounded
+  worker also handles an executor or filesystem call that ignores cancellation;
+  Close waits for its ownership to end within Close's separate three seconds.
+  An uncompleted worker retains its stores until completion or process exit.
+  Run also checks TERM after successful Boot before entering Step; the old
+  transition could start another audit budget after the completed baseline.
+  That transition predates 37 and has a portable before-fail regression.
+- **TERM success/exit claim:** the old command could return zero after failed
+  runtime load or baseline establishment, and load failure left the prior
+  heartbeat. Follow-up 38 writes a failure heartbeat when that local write can
+  run, returns a distinct Boot error and retains nonzero status under TERM.
+  A stop after successful baseline completion still returns zero. A blocked
+  Boot worker cannot safely publish a concurrent heartbeat; it returns failure
+  at its deadline, leaving watchdog staleness as the existing containment path.
+- **r21 L-1; M-3 diagnostic cleanup:** clearing the adoption error could leave
+  `memberPathPending` overriding an unrelated non-serving decision. Follow-up
+  38 retains the topology evidence for a later serving check and scopes the
+  heartbeat override to an actual current member-path error.
+- **Scope/timing:** 37's “no Step/Apply change” describes its source edits, not
+  proof that its startup changes had no later attribution effect. Follow-up
+  38 changes Step/Apply: pending settlement precedes refresh, and a fresh
+  post-final-sample baseline clears retired attribution before Apply. Its timing qualification
+  and remaining limits are recorded in the follow-up 38 design note.
