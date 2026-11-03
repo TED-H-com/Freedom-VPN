@@ -29,6 +29,7 @@
 | `r21-adoption-fixes-review` | [r21-adoption-fixes-review.md](r21-adoption-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `7b3d7bf8` | Agent-core 37 fixes for r20 H-1, M-1, M-2, M-3 and L-1; D-141 | 0 Critical / 2 High / 2 Medium / 1 Low; returned before merge, none confirmed | Proof branch `47f75c04`; none adopted on main at this cut |
 | `r22-attribution-fixes-review` | [r22-attribution-fixes-review.md](r22-attribution-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `31862b3a` | Agent-core 38 carrying 37: r20 fixes and r21 H-1, H-2, M-1, M-2, L-1 fixes; D-141 | 0 Critical / 2 High / 3 Medium / 0 Low; returned to agent-core 39 before merge, none confirmed | Proof branch `ef78b9b7`; none adopted on main at this cut |
 | `r23-intent-fixes-review` | [r23-intent-fixes-review.md](r23-intent-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `99f93112` | Agent-core 37–39, r20/r21/r22 fixes | 5 (0 Critical, 3 High, 1 Medium, 1 Low); returned to agent-core 40 before merge, none confirmed | None; proofs on `26ffc36c` for four findings, L-1 code trace; exact archive only. |
+| `r24-hitless-guard-review` | [`r24-hitless-guard-review.md`](r24-hitless-guard-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Netlab 31 design at 52a7e59b; review ba5d3004, 08:19:51 EST; G5/G6 owner trade | 8 (0 Critical, 4 High, 3 Medium, 1 Low); #423 enforcement fixes, C1 revision documents only, H-1/H-3 returned to agent-core 41 | [`node/enforce/review_r24_test.go`](../../node/enforce/review_r24_test.go) adopted by #423; copied M-3 dropped; agent/watchdog proofs review-branch only |
 
 ## What Held Across the Reviews
 
@@ -372,3 +373,93 @@ Every historical failure stays failed.
 - **Proof names:** several r20–r22 proof names cited in What held do not
   exist on reviewed tip 99f93112. No absent names are reproduced here.
   Passing proofs and owner judgments on held branches are not main's results.
+
+## r24 dispositions at the follow-up 36 cutoff (2026-11-03 EST)
+
+**agy `gemini-4-argon-high`** reviewed netlab 31's design as delivered at
+**52a7e59b**, the design tree #421 merged. Review branch
+**r24-hitless-guard-review**, commit **ba5d3004**, dated **08:19:51 EST**.
+The [raw archive](r24-hitless-guard-review.md) is byte-for-byte identical to
+the supplied review file and committed review: **46,001 bytes**, SHA-256
+**7ed69f029bb12b526130e26608474f1b1cb15ac6346c3bdab6a7cc875af437f8**.
+Inspection found no host path, username or secret; /var/lib/vpn-node paths are
+product paths. Findings: **0 Critical, 4 High, 3 Medium, 1 Low**.
+
+Evidence includes review_r24_test.go under node/agent, node/enforce and
+node/watchdog on the review branch. **M-1 is a counterexample trace; L-1 is a
+code inspection**. Several proofs cited under agent/watchdog are on the review
+branch only, not main; absent names are not reproduced here. #423 imported the
+enforcement proof file alone at **cdb384ed**, recorded failures before changes,
+and judged the findings under D-141. The copied M-3 proof was subsequently dropped.
+
+The review's recommendation is **“Implement C1 after named changes (`H-1`,
+`H-2`, `H-3`, `H-4`, `M-1`, `M-2`, `M-3`, `L-1`)”**. Its owner section says
+**“Accept the trade and implement C1 after fixing `H-1` through `M-3`”**.
+These are **the reviewer's recommendations**, not an owner decision. The trade
+belongs to the owner; the orchestrator does not decide it. Production keeps
+the current guard and no C1 implementation is approved by this handover.
+
+| Finding | Disposition at #423 |
+|---|---|
+| H-1 | OPEN on main — RETURNED, not yet judged; agent-core 41 before merge. Netlab 32 reads it as “confirmed by code”; this is not agent-core 41's D-141 judgment. |
+| H-2 | tc order confirmed and FIXED by #423. Eligibility confirmed in part, revised for rate-only fair-share changes with stable classes/non-tightening ceilings, documents only. |
+| H-3 | Agent-core part OPEN on main — RETURNED, not yet judged; agent-core 41 before merge. Netlab 32 confirms the outcome with a corrected explanation. Per-device deadlines and a separate verified-serving record remain prerequisites; the record waits for the owner. |
+| H-4 | Confirmed and FIXED by #423: state-independent baseline batch; cancellation-independent baseline/quarantine cleanup with five-second budget, counters retained. |
+| M-1 | Confirmed design correction in the C1 revision, documents only: old bank deleted at release, fallback installs fenced by lock and child reaping. |
+| M-2 | Confirmed in part: post-shape rollback FIXED by #423; fatal Verified:true return rejected as currently unreachable, with regression. |
+| M-3 | Confirmed by tooling inspection; copied proof dropped. Real classifier/decorator tests and attribution controls are C1 prerequisites, documents only; no tooling change. |
+| L-1 | Netlab 32 judges it confirmed, documents only. Empty eligibility specified; the claimed lock correction disagrees with main, as recorded below and returned for an additive correction. |
+
+Agent-core 37–41's judgments are not on main at this cut. r20–r23 register rows
+stay as follow-up 35 recorded them. The r23 L-1 proof-class request is answered
+in #422: a code trace is correct, the brief's all-findings-have-tests claim was
+wrong, no proof is added, and agent-core 40 judges L-1 with the other four.
+The older r23 section and register wording remain historical. Every historical
+failure stays failed. See [follow-up 36](../handover/follow-up-36.md).
+
+**Errata to r24 (archive unchanged), verified on main at #423:**
+
+- **H-3 explanation:** [memberTimeout](../../node/enforce/deadline.go) does cap
+  each binding by its own ValidUntil. The outcome stands: [Decide](../../node/agent/decide.go)
+  folds every binding's ValidUntil into the member's single DeadlineMono and
+  takes the member's service end and node window from the first binding.
+- **M-3 evidence:** the copied test reproduces the classifier logic of
+  [trace.go](../../tests/netlab/cmd/fvpn-netlab/trace.go); it does not call that
+  tooling. The finding rests on reading trace.go. Netlab 32 dropped the copy;
+  its revision requires real classifier and decorator tests before C1.
+- **Loss figures:** “22 UDP losses, 28 TCP retransmissions, and a 256.8 ms TCP
+  stall across 100 reloads” has no matching source in netlab 30's record.
+  Its [outcome](../poc/G2-followup30-evidence/guard-outcome.md), over **101
+  Applies**, records **one D-120 UDP boundary loss, seven matched TCP guard
+  drops, seven retransmissions, and a 416.739885 ms maximum read**. Historical
+  B1's failed read stays unexplained, and netlab 30 remains host-unqualified.
+- **Guard cost:** **28.5 ms median and 94.7 ms maximum** are netlab 30's outer
+  command brackets, not exact blackout durations. They give no future bound.
+- **Share of time:** at 28.5 ms per 10 s, the illustrative complement is
+  **99.715%, not 99.9%**. It is not a measured fleet availability fraction.
+- **Watchdog:** **30–40 s is a conditional expectation, not a bound**.
+  [Watch.Once](../../node/watchdog/watch.go) uses a try-lock and bounded context;
+  lock contention, scheduling, failure or watchdog death defeat a fixed bound.
+- **Renewal cadence:** “every ~23h58m” and “every 13m” are nominal
+  window-minus-lead illustrations. [leadJitter](../../node/agent/sync.go) takes
+  its modulus in nanoseconds with only two random bytes: default jitter is
+  −12 s .. −12 s + 65,535 ns. Time-triggered renewal starts at about **108 s
+  remaining**, not ~120 s. Non-time-triggered renewals use the full residual
+  old deadline. Netlab F32-01 is open and routed to agent-core after 41.
+- **Spec reference:** QoS and the host reserve are in **§11**, not §8.3
+  (IPv6/NAT).
+- **G labels:** r24's What held section uses its own numbering. The
+  [follow-up 31 G1–G10 ledger](../poc/G2-followup31-design/current-guarantees.md)
+  remains the numbering authority; the owner's trade stays **G5/G6**.
+- **Test names:** several agent/watchdog proofs cited in the archive are on
+  the review branch only, not main. Their names are not listed as main tests.
+- **Additional lock-path discrepancy:** L-1 and netlab 32's
+  [protocol](../poc/G2-followup32-design/protocol.md) claim
+  `/var/lib/vpn-node/update-journal/update.lock`. Main's
+  [agent config](../../node/agent/config.go), [shared lock](../../node/nodelock/lock.go),
+  [updater layout](../../node/updater/layout.go) and
+  [installer layout](../../packaging/installer/layout.go) instead default to
+  `/var/lib/vpn-node/update.lock`. The archive's node/updater/config.go does
+  not exist. The original follow-up 31 lock path matches main. An additive
+  correction to the netlab revision is requested; its immutable files and the
+  review archive stay unchanged. This does not undo the empty-set correction.

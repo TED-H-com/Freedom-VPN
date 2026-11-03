@@ -105,18 +105,19 @@ is frozen through #412, with its 75 findings and nine owner requests.
 The [follow-up 33 register](../../tests/handover/testdata/history/follow-up-34/register33.md)
 is frozen at #418, with its 81 findings and nine owner requests.
 
-## Follow-up 34 decisions register (2026-11-03 EST)
+<a id="follow-up-34-decisions-register-2026-11-03-est"></a>
 
-Verified against main **dff6bdb0ddcf6dfd8392a8db364c0120783a48f3**, through
-**#421**, covering **#419–#421**. [Evidence cut](follow-up-35.md) and
-[acceptance snapshot](../ops/README.md#follow-up-35-acceptance-snapshot-2026-11-03-est).
-`TestHandover_Followup35Claims` pins three final rows, ten frozen handover
-inputs, two dated updater documents, the exact r23 archive and all six netlab
-31 design files under D-098 / D-109 / D-132. Living AT roots remain excluded.
-**No decision was added after D-144 on main.** All 47 decision rows are unchanged.
-**D-135, D-136, D-137, D-138, D-140, D-141, D-142 and D-144 stay provisional.
-D-143 is Ted's decision.** F30-01 remains known behaviour, no merged fix.
-Main records no scheduled-run result.
+## Follow-up 36 decisions register (2026-11-03 EST)
+
+Verified against main **d7867928d48a7f75259f84abf1b29a9e37675fcb**, through
+**#423**, covering **#422–#423**. [Evidence cut](follow-up-36.md) and
+[acceptance snapshot](../ops/README.md#follow-up-36-acceptance-snapshot-2026-11-03-est).
+`TestHandover_Followup36Claims` pins two final rows, ten frozen #423 inputs,
+the exact r24 archive, every netlab 32 design/evidence file and two public PR
+excerpts under D-098 / D-109 / D-132. Living AT roots remain excluded.
+No decision was added after D-144 on main. All 47 rows remain unchanged.
+D-135, D-136, D-137, D-138, D-140, D-141, D-142 and D-144 stay provisional;
+D-143 is Ted's decision.
 
 | Decision | Operator meaning and delivery boundary |
 |---|---|
@@ -202,9 +203,14 @@ the SQL shortcut stays labelled.
 
 <a id="findings-register-at-the-follow-up-34-cutoff"></a>
 
-## Findings register at the follow-up 35 cutoff
+<a id="findings-register-at-the-follow-up-35-cutoff"></a>
 
-| Finding | Status at #421 | Evidence / next owner |
+The [follow-up 35 register](../../tests/handover/testdata/history/follow-up-36/register35.md)
+is frozen at #423, with 87 findings, 47 decisions and ten owner requests.
+
+## Findings register at the follow-up 36 cutoff
+
+| Finding | Status at #423 | Evidence / next owner |
 |---|---|---|
 | ENR-07 | CLOSED | D-130 #330/#331 plus enrollment #333: AT06 662/0/0, AT07 48/0/0, fresh gap ACK 1 then sequence 2 ACK 2, 908 bytes; planBaseline attribution corrected. |
 | Members F9-01 | CLOSED | #325 / #328 under D-126 / D-128; deliberate cumulative report accepted. Full AT09 fails in #348; provisional acceptance is a separate row. |
@@ -272,7 +278,7 @@ the SQL shortcut stays labelled.
 | r21 M-1 | ROUTED — not yet judged; agent-core 38 | Review reports false mapping-conflict gap on first traffic after rebinding Apply. Proof on review branch only. |
 | r21 M-2 | ROUTED — not yet judged; agent-core 38 | Review reports uncanceled upload, recovery latch, stacked boot budgets and exit 0 on canceled boot failure. Proofs on review branch only. |
 | r21 L-1 | ROUTED — not yet judged; agent-core 38 | Review reports orphan memberPathPending after refused adoption. Proof on review branch only. |
-| Netlab F27-01 / B1 | UNRESOLVED — #421 design delivered; owner trade open; B1 stays FAIL | #418 demonstrated seven deadline-guard drops inside install brackets; B1’s 1,501.4 ms failure stays unexplained without its packet trace, both live runs host-unqualified. #421 recommends C1 retained-deadline intersection for design review only: G5/G6 all-member closure versus unchanged old-deadline continuation, with G4/G8 difference. No fix; production keeps the current guard, no hitless hand-over implemented. r24 reviews first; implementation waits for the owner. |
+| Netlab F27-01 / B1 | UNRESOLVED — no fix; B1 FAIL and unexplained | #423 revises C1 after r24, documents only. Owner G5/G6 trade still open; production keeps the current guard and no hitless hand-over is implemented. Netlab 30's runs remain host-unqualified; historical B1 is not explained or upgraded. Agent-core's owed D-133 slot precedes any C1 comparison, which requires owner approval and implementation proofs. |
 | Netlab F27-02 | FIXED — fixture defect, #417; fixed-test reading HOLDS by #420 | F21-01’s mechanism: test setup consumed the persisted wall-clock budget, fixed by synctest. Updater 23 predeclared process-exit end rule: r1 20/0 unqualified at 0.996 foreign cores; r2 50/0 qualified (0.105 before exit, 0.385 after), pooled with updater 22’s quiet 200/0; all 352 logged parent Recover calls have exact budgets. Updater 21’s failed verdict, updater 22’s undecided verdict and netlab 27’s failed run stay recorded; every unqualified leg stays unqualified. |
 | Devstack F30-01 | OPEN — reported production defect; agent-core / updater | #406 lease-expiry remains blocked. Known behavior and its limits are stated once in [node update execution](operator-guide.md#f30-01); no fix date or operator procedure promised. |
 | Isolation F17-01 | ACCEPTANCE-COVERAGE GAP — agent-core / wire-nodes | #404 pure stale_generation not exercised: current agent and central classification cannot produce that report without rewriting one. Routed, not yet judged by owners; not classified as a defect. |
@@ -295,19 +301,27 @@ the SQL shortcut stays labelled.
 | r23 M-1 | RETURNED — not yet judged; agent-core 40 before merge | Review reports withdraw’s second baseline succeeding with an unsettled open epoch and retainedPending false. Proof branch only; none confirmed. |
 | r23 L-1 | RETURNED — not yet judged; agent-core 40 before merge | Review reports inaccurate documentation of checkpoint invalidation ordering. Archive supplies a code trace; no named L-1 proof test in 26ffc36c, clarification requested. None confirmed. |
 
-Every historical failure stays failed. Every other follow-up 34 finding row is unchanged.
-The register has 87 rows: F27-02, F21-01 and F27-01 / B1 updated; F23-01 and
-r23's five added. r22's five stay as follow-up 33 recorded them, none confirmed
-on main. Agent-core 37–39 remain held for the combined merge with 40 after
-its judgments and fixes; r20's five agent-core findings and r21's five remain
-open on main. Their older routing labels above remain historical.
-F30-01 remains known behaviour, no merged fix.
-Ten owner requests: the previous nine (D-135 + D-136 confirmation, D-137
-hardening, D-138 / D-140 / D-141 overturn options, F11-01 repair direction and
-upstream report, RELATED ICMP, D-142 / D-144 overturn options) plus netlab 31's
-G5/G6 all-member closure versus immutable old-deadline continuation question.
+| r24 H-1 | OPEN on main — RETURNED, not yet judged; agent-core 41 before merge | Unchanged enforcement re-installs on each successful nominal ten-second poll, closing member forwarding for the guard window. Netlab 32 reads this as confirmed by code; agent-core 41 must judge under D-141. No merged fix or date promised. |
+| r24 H-2 | tc order FIXED — #423; eligibility design correction, documents only | Confirmed tc defect: prepare before nft, retire after guarded commit and budget check before release; failed retirement attempts baseline, final extra/missing classes fail verification. Eligibility confirmed in part: stable class and non-tightening ceilings allow rate-only fair-share changes in the C1 revision, not implemented. |
+| r24 H-3 | OPEN on main — RETURNED, not yet judged; agent-core 41 before merge | Netlab 32 confirms the outcome with corrected explanation: memberTimeout caps each binding's ValidUntil, but Decide collapses member DeadlineMono and takes first-binding service/node ends. Per-device deadlines and a separate verified-serving record are C1 prerequisites; the record waits for the owner's decision. No agent-core judgment imported. |
+| r24 H-4 | FIXED — #423 | Confirmed: one self-contained baseline resets fixed candidate chains/sets without fresh state, retains counters and touches no foreign table. Baseline/quarantine cleanup independent of cancellation, five-second budget. Not a recovery bound or C1 bank cleanup. |
+| r24 M-1 | DESIGN CORRECTION — C1 revision, documents only | Counterexample trace; old bank deleted at release and delayed fallback installs fenced by lock plus child reaping. No C1 implementation. |
+| r24 M-2 | CONFIRMED IN PART — post-shape rollback FIXED by #423 | Both post-shape clock errors attempt independent rollback. Alleged fatal Verified:true return rejected as currently unreachable; invalid-address pre-mutation regression retained. |
+| r24 M-3 | TOOLING PREREQUISITE — C1 revision, documents only | Confirmed by trace.go inspection. Copied classifier proof dropped because it did not invoke tooling. Real classifier/decorator tests and ctunku/ctunkd deltas required; B1 transport changes excluded from C1 acceptance. No tooling change. |
+| r24 L-1 | DESIGN PREREQUISITE — netlab 32 judged confirmed, documents only | Empty eligible-set transaction specified. Its claimed lock-path correction contradicts main's /var/lib/vpn-node/update.lock default; additive netlab correction requested. Archive unchanged; no C1 implementation. |
+| Netlab F32-01 | OPEN on main — agent-core after 41 | Found in netlab 32's owner-decision.md cadence check. leadJitter uses a nanosecond modulus with two random bytes (at most 65,535 ns): default 120 s lead gives −12 s .. −12 s + 65,535 ns, effectively fixed −12 s instead of uniform ±12 s. Time-triggered renewal starts about 108 s remaining. No collision with existing IDs; no fix here. |
+
+Every historical failure stays failed. Every other follow-up 35 finding row is unchanged.
+The register has 96 rows: F27-01 / B1 updated; r24's eight and Netlab F32-01
+added. The other 86 rows, including every r20–r23 row, are byte-identical.
+Agent-core 37–40 were delivered and held and 41 running at briefing; their
+judgments are not on main. Older routing labels stay historical. F30-01
+remains known behaviour, no merged fix. r20 H-1's restart gap stays open.
+Ten owner requests remain ten, with the tenth G5/G6 trade quoted in plain
+language from netlab 32. Still undecided; production keeps the current guard.
+r24's recommendation to accept is the reviewer's, not an owner decision.
 AT11 / AT13 operator rows, AT29 / AT31 resources, physical arm64, power loss
-and QUIC remain open. Main records no scheduled-run result. Review r24 was
-delivered after the cutoff; its results are excluded. See the
-[full evidence and dated requests](follow-up-35.md), including r23's proof-class
-clarification. #419's control-count request is answered by #420.
+and QUIC remain open. This cut claims no scheduled-run result. See the
+[full evidence and dated requests](follow-up-36.md), including the outside-scope
+lock-path correction. #422 answered the r23 code-trace request; #423 completed
+the consumer fixture request in its resume.

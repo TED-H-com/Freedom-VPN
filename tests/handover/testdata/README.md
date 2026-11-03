@@ -379,3 +379,19 @@ budgets, verifies F23-01 controls across both sessions and the 15-case
 erratum, preserves follow-up 34's assertions, and verifies 87 findings,
 47 unchanged decisions and ten owner requests. Live document digests remain
 separate. Historical failures retain their recorded verdicts.
+
+## Follow-up 36 (#422–#423)
+
+`followup36-main.json` seals two final roadmap rows and two exact public PR
+message excerpts. #422 uses a reversible JSON string to preserve its original
+whitespace-only line without introducing trailing whitespace in the diff; its
+decoded bytes, digest and source length are retained. `followup36-snapshots.json` records ten exact #423 byte slices
+for earlier claims; source commit, source digest, offset and length are retained.
+`followup36-evidence.json` seals r24 (46,001 bytes), all three netlab 32 design
+files and all 171 evidence files, including 12 gzip originals. No living lane
+root is read. The separate frozen source audit records code verification at
+#423, the review-branch proof boundary, 1,830 unchanged historical artifacts,
+jitter arithmetic and the lock-path discrepancy returned to netlab. The raw
+archive and producer evidence are unchanged. Follow-up 35's assertions change
+only their rewritten-document inputs; their restored function hash stays exact.
+Live document integrity remains a separate check of the secops inventory.
