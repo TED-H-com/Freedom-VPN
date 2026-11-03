@@ -1,0 +1,42 @@
+{
+  "commit": "d7867928d48a7f75259f84abf1b29a9e37675fcb",
+  "cutoff_pr": 423,
+  "rows": [
+    "| w4-handover follow-up 35 | Cut #419–#421 at `dff6bdb0` (handover 34, updater 23, netlab 31). `TestHandover_Followup35Claims`: 16 subtests, three final roadmap rows, ten frozen #421 input snapshots, three documents (updater 23's dated hand-off and timing JSON, the exact r23 archive), all six netlab 31 design files, three public PR excerpts and a separate frozen source audit; follow-up 34's claims verified from its function and manifests, earlier assertions unchanged. Updater 23: F27-02 recorded as a fixture defect with F21-01's mechanism, fixed by #417, its fixed-test reading holding by #420's declared process-exit rule (reservation 2 qualified at 50/0, pooled with updater 22's quiet 200/0); F23-01 fixed in its fixture by a synctest bubble clock, no product change; #420's additive erratum gives #417's count as 15 failing cases. Netlab 31, design only: G1–G10 from the code, C1 recommended for review, C2 and C3 not; the G5/G6 trade is the owner's and production keeps the current guard; F27-01 unresolved, B1 FAIL. Review r23 archived byte for byte (41,791 bytes) and returned to agent-core 40 with its five findings unconfirmed; errata to its citations in the reviews index only. Seven entrypoints at follow-up 35, no hitless hand-over promised; F30-01 and r20 H-1 stay open. Findings register at 87 rows (3 updated, 6 added); 47 decisions, nothing after D-144; ten owner requests, netlab 31's G5/G6 trade the tenth. Session on codex gpt-6-astra. | done (#422) |",
+    "| w1-netlab follow-up 32 | r24's enforcement findings judged on `main` before any change (D-141), with its proof file committed alone first. H-4 fixed: rollback installs a self-contained baseline batch that resets the candidate's fixed chains and sets without a fresh state read, and baseline and quarantine cleanup run on a cancellation-independent five-second context. H-2's tc order fixed: classes are prepared before the nft install and retired only after the guarded commit, before release. M-2 confirmed in part: both post-shape clock errors now attempt rollback; its alleged fatal verified return is unreachable today and keeps a regression. The copied M-3 test is dropped, since it did not invoke the tooling. C1 revised, docs only (`docs/poc/G2-followup32-design/`): rate-only fair-share changes may keep eligibility; per-device deadlines and a verified-serving record are agent-core prerequisites; the old bank is deleted at release. r24's cadence and exposure figures are corrected: the renewal jitter is a fixed −12 s, the aggregate loss figures have no source, and the illustrative complement is 99.715%. The owner's G5/G6 question is restated in plain language, and production keeps the current guard. One full lab run passes. The agent fixture simulator (a test-only scope extension) now models idempotent nft adds, atomic batches and staged tc, and the unchanged node and installer gate passes. Follow-ups 25–31 are byte-identical (1,830 files). Sessions on codex gpt-6-astra. | done (#423) |"
+  ],
+  "merged_prs": [
+    422,
+    423
+  ],
+  "unbriefed_prs": [],
+  "merged_after_cutoff": [],
+  "briefed_status": [
+    "agent-core 37–40 delivered, held",
+    "agent-core 41 running",
+    "isolation 18 running"
+  ],
+  "pr_excerpts": [
+    {
+      "path": "tests/handover/testdata/history/follow-up-36/pr422-excerpt.json",
+      "sha256": "d49a7f7fbe9486dda387c9d580a31de6dbac87e31dc348df87b32fdefbd66cae",
+      "bytes": 3713,
+      "pr": 422,
+      "source_commit": "090bb97b88b4062073a487c82676d0e1faca4fac",
+      "offset": 255,
+      "source_sha256": "4ad895175099aff3892131ac4d50a735354c540495103017c7f04893a19bd7f1",
+      "encoding": "json-string",
+      "source_length": 3663,
+      "decoded_sha256": "e8ca208092834561608cb0a0821807549a26d0f2ba46a3ad0af3939dc6123ef8"
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-36/pr423-excerpt.txt",
+      "sha256": "7245bee0f7bdb739e08775fe703bfcdfc56fcd3e621972d118e9b98fb2f09436",
+      "bytes": 6161,
+      "pr": 423,
+      "source_commit": "c98ea61c1a860476c6570ca60ae29b5061296e6a",
+      "offset": 252,
+      "source_sha256": "9c33a664b171a28c6eee43a8b87e6ab0865ed1d23625ceb5c0c54374f0b5f307"
+    }
+  ]
+}

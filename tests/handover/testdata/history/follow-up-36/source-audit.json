@@ -1,0 +1,148 @@
+{
+  "source_commit": "d7867928d48a7f75259f84abf1b29a9e37675fcb",
+  "source_files": [
+    {
+      "path": "node/agent/engine.go",
+      "sha256": "d3177df609bc773d27d7155a83611dfffe4138d00a59fb6017b6923064001e22",
+      "bytes": 42494
+    },
+    {
+      "path": "node/agent/config.go",
+      "sha256": "688b897f135cfe4e8e551dd1d965c3f872665c87c1628fd996aac0ba9de1ae69",
+      "bytes": 9893
+    },
+    {
+      "path": "node/agent/sync.go",
+      "sha256": "7cb0465a0f53be5298072ab3475363f6417c62f744fdc3fcbf33921ffaa72918",
+      "bytes": 16740
+    },
+    {
+      "path": "node/agent/decide.go",
+      "sha256": "5eb288dbafe8211fc3197655d9212406f361f41fc6b6c49bd304e7a5ba0b7cbb",
+      "bytes": 30175
+    },
+    {
+      "path": "node/enforce/deadline.go",
+      "sha256": "5eb45aa470572833c7fc79f6de8e9000b9a9926d1e3961fef1ce6ebf5a790f92",
+      "bytes": 2830
+    },
+    {
+      "path": "node/enforce/apply.go",
+      "sha256": "7f7692e9cd76946b2461af267d2318e4d42c09e6b569ead9f4dad428bcf70ac5",
+      "bytes": 20244
+    },
+    {
+      "path": "node/enforce/render_nft.go",
+      "sha256": "318b8660769675ba05c780cc7d00ac756d0440f952e55b887498f581e0fe42a3",
+      "bytes": 25702
+    },
+    {
+      "path": "node/enforce/render_tc.go",
+      "sha256": "aeaa2ed40d7c49f6a35b44eb0e577c53bc4b1fcf7791d0c0b99860e05d49ed0d",
+      "bytes": 6684
+    },
+    {
+      "path": "node/enforce/verify.go",
+      "sha256": "02087949266c353becf10917dbab782e380953c88cce81a54af3615f50f83a03",
+      "bytes": 37754
+    },
+    {
+      "path": "node/watchdog/watch.go",
+      "sha256": "8f9da067c6691c899ac115025d620c13fdccbfde0794bcb54b490f5bfdb987ab",
+      "bytes": 7621
+    },
+    {
+      "path": "node/nodelock/lock.go",
+      "sha256": "798da9ac7aeced6b51b289684399508103f940f9b72065eb142dcb51cec1e9cc",
+      "bytes": 6754
+    },
+    {
+      "path": "node/internal/nodelock/lock.go",
+      "sha256": "01a3c27bd7baba6cabd2bc01dbfc58fffed842a7b732fc8b4b198f92e30946de",
+      "bytes": 955
+    },
+    {
+      "path": "node/updater/layout.go",
+      "sha256": "a5dd94dc2366840ead0257e6f2e385ddff8e43f74df9b3fdb6b7b2ef4acea5fe",
+      "bytes": 2834
+    },
+    {
+      "path": "packaging/installer/layout.go",
+      "sha256": "110da37bcfeaf58419d6ff3b2de941be9f9b7473199c05ac86dc6006e73355b4",
+      "bytes": 6529
+    },
+    {
+      "path": "tests/netlab/cmd/fvpn-netlab/trace.go",
+      "sha256": "5d750a7dd1084ec5193e0df195eec5db90be44aa60cf10f075eaf05fc9de1201",
+      "bytes": 9188
+    },
+    {
+      "path": "docs/spec/PROJECT_SPEC.zh-TW.md",
+      "sha256": "7136096d6eec758234dbb7ff5f22f7298b8a18b042ebf3cd5d729ba76844389a",
+      "bytes": 194340
+    }
+  ],
+  "merged_prs": [
+    422,
+    423
+  ],
+  "maximum_decision": 144,
+  "proof_import_alone": "cdb384edcd309df7873cb20693d1d27b3e420522",
+  "proof_import_byte_identical": true,
+  "fixture_resume_test_only": true,
+  "earlier_artifacts_identical": 1830,
+  "review": {
+    "commit": "ba5d30041e02d6f219c15b39494fe8b34f52997a",
+    "committed_at": "2026-11-03T08:19:51-05:00",
+    "reviewed_tip": "52a7e59be947422e5e7c39a52d3c227c84050718",
+    "proof_files": {
+      "node/agent/review_r24_test.go": {
+        "sha256": "24455e2edd2fa06a0c44881b7776bc5f1df807eb79bb6497805ddbe47d58a226",
+        "bytes": 11652,
+        "functions": 4,
+        "on_main": false
+      },
+      "node/enforce/review_r24_test.go": {
+        "sha256": "ac1f1c1ab8b9a4539420d49a39d9099f201174370484def67d41df59e9baa1d2",
+        "bytes": 18857,
+        "functions": 5,
+        "on_main": true
+      },
+      "node/watchdog/review_r24_test.go": {
+        "sha256": "9a0a2c373edb88159d7508806e0f64598746ab5ec4fe30f89504c8cf52e1484d",
+        "bytes": 1779,
+        "functions": 1,
+        "on_main": false
+      }
+    },
+    "M1_evidence": "counterexample trace",
+    "L1_evidence": "code inspection",
+    "M3_copies_classifier": true,
+    "M3_removed_on_main": true
+  },
+  "H1_successful_poll_reinstalls": true,
+  "H3_binding_valid_until_cap": true,
+  "H3_member_deadline_fold": true,
+  "H3_first_binding_service_and_node_window": true,
+  "cleanup_seconds": 5,
+  "jitter": {
+    "random_bytes": 2,
+    "max_random_ns": 65535,
+    "default_lead_ns": 120000000000,
+    "span_ns": 12000000000,
+    "minimum_ns": -12000000000,
+    "maximum_ns": -11999934465,
+    "renewal_remaining_max_ns": 108000065535,
+    "new_finding": "Netlab F32-01",
+    "collision": false
+  },
+  "lock_path": {
+    "main": "/var/lib/vpn-node/update.lock",
+    "revision_claim": "/var/lib/vpn-node/update-journal/update.lock",
+    "matches": false,
+    "updater_config_exists": false
+  },
+  "guard_complement_percent": 99.715,
+  "watchdog_seconds": "30–40 conditional, not a bound",
+  "qos_spec_chapter": 11
+}

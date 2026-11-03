@@ -1,0 +1,61 @@
+## Summary
+
+Netlab follow-up 32: session launched 08:32 EST on 2026-11-03 on #421's roadmap row `dff6bdb0`, and delivered at 08:59. One resume, on the same thread, ran from 09:03 to 09:37.
+- **Model:** codex `gpt-6-astra`.
+- **Size:** 6 commits and 187 owned files, +7,047/−117:
+  - four production files in `node/enforce/`, with its tests and two baseline goldens;
+  - one netlab scenario;
+  - two agent fixture files, test-only;
+  - 174 new documentation and evidence files under `docs/poc/G2-followup32-design/` and `G2-followup32-evidence/`.
+- **Checks:**
+  - merge-tree clean on current `main`; prepush-scan clean; owned-check passes with the scope extension below.
+  - The orchestrator reran the seven fixture tests that had failed, and the three new simulator tests. All pass.
+  - Merge-tree against agent-core's current branch tip is also clean.
+- **Scope:** no reservation, timing measurement or A,B,A,B. No dependency or tool pin changed.
+
+**The orchestrator's reading.**
+- **r24's enforcement findings were judged first, by D-141.** The review's proof file was imported and committed alone at `cdb384ed`, and its failures were recorded before any change.
+  - **H-4, confirmed and fixed.**
+    - Rollback no longer depends on a fresh state read or on the canceled Apply context.
+    - The baseline is one self-contained batch. It resets the candidate's fixed chains and sets and empties admission, keeps counters, and touches no foreign table.
+    - Baseline and quarantine cleanup run on a cancellation-independent context with a five-second budget.
+  - **H-2's tc order, confirmed and fixed.**
+    - Classes are prepared before the nft install, and retired only after the guarded commit and budget check, before release.
+    - A failed retirement keeps the guard closed and attempts the baseline. An extra or missing final class fails verification.
+  - **M-2, confirmed in part.**
+    - Both post-shape clock errors now attempt rollback.
+    - The alleged fatal `Verified:true` return is rejected as unreachable today. `Samples` cannot fail, and validation rejects the only non-command conntrack error, an invalid address, before mutation. A regression keeps that true.
+  - **M-3:** the copied classifier test is dropped, because it did not invoke the tooling. Real classifier and decorator tests become a C1 prerequisite.
+- **One full lab run passes** (suite 232.8 s). It includes the new baseline scenario on the lab's nft, which shows transaction abort atomicity and counter continuity.
+- **The node and installer consumer gate, in two steps.**
+  - **The first delivery stopped on it.** Seven agent tests failed. The agent fixture's nft simulator required braces on every chain add and did not keep existing chains and sets on an add, and its tc model had no two-phase change. The failure is kept in the evidence as history.
+  - **The orchestrator's brief caused the stop.** Its "consumers without edits" rule kept the lane out of `node/agent/followup12_test.go`, which its owned paths list by exception.
+  - **The resume** clarified that rule and extended the scope to `node/agent/revocation_executor_test.go`, test-only.
+    - The simulator now models create-if-missing adds, bare chain declarations and whole-batch rollback, and tc staged as prepare, nft commit, retire.
+    - No production file and no existing consumer assertion changed. The unchanged gate passes (`node/agent` 88.6 s), and so do gates 4–9.
+- **C1, revised as documents only** (`docs/poc/G2-followup32-design/`, entry `revision.md`). Nothing of C1 is implemented.
+  - **Eligibility:** rate-only fair-share changes may keep an identity eligible, if its class is stable and its ceiling does not tighten (H-2, confirmed in part).
+  - **Agent-core prerequisites:** per-device deadlines, and a separate verified-serving record (H-3: outcome confirmed, explanation corrected).
+  - **The old bank** is deleted at release. Delayed fallback installs are fenced by the lock and child reaping (M-1).
+  - **L-1:** the lock location and the empty eligible-set transaction are corrected.
+- **r24's figures are corrected.**
+  - **Renewal jitter:** `leadJitter` takes its modulus in nanoseconds, so the jitter is a fixed −12 s. Default renewals start about 108 s before expiry, not across a uniform ±12 s range.
+  - **Losses:** r24's aggregate loss figures (22 UDP losses, 28 TCP retransmissions, a 256.8 ms stall) have no matching source in its cited netlab 30 record. That record shows one UDP boundary loss, seven matched TCP guard drops and a 416.7 ms maximum read.
+  - **Uptime share:** the illustrative complement is 99.715%, not 99.9%.
+  - **Watchdog:** its 30–40 s close is a conditional expectation, not a bound.
+- **The owner's question is restated in plain language** (`owner-decision.md`). The G5/G6 trade is unchanged and still undecided. Production keeps the current guard.
+- **History stays:**
+  - follow-ups 25 to 31 are byte-identical (1,830 files);
+  - B1 stays FAIL and unexplained;
+  - netlab 30's runs stay host-unqualified.
+
+**Its requests, answered.**
+1. **The owner's G5/G6 decision:** relayed to the owner with netlab 32's paragraph. The orchestrator does not decide it. Until the owner accepts the trade, production keeps the current guard. Handover 36 carries the question.
+2. **Agent-core: H-1, H-3, the r24 agent and watchdog proofs, and the jitter units.**
+   - H-1 and H-3 are agent-core follow-up 41's work, now in progress, with r24's agent and watchdog proofs imported on its branch. That branch merges this `main` before its review.
+   - The jitter units are routed to agent-core after 41.
+   - The verified-serving record is C1 provenance, and waits for the owner's decision.
+3. **Bank readers, baseline writers and rollback paths in other lanes:** only after the owner accepts C1. Nothing is scheduled.
+4. **The quiet D-133 slot:** agent-core 37 to 41's owed A,B,A,B comes first. A C1 comparison comes only after approval and an implementation, re-frozen on the reviewed production fixes.
+5. **The fixture request:** completed in the resume, under the scope extension.
+- **Next:** handover 36 cuts #422 through this PR and archives review r24.
