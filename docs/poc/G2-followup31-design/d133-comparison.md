@@ -36,13 +36,24 @@ Run these predeclared populations in the same order in every leg:
 
 | Population | Fixed sample and instrumentation |
 |---|---|
-| Ordinary cost | One untimed warm Apply, then 30 Applies of the spec-shape model and 30 of the same expanded model used for comparison, interleaved by model size in identical order. Freeze exact identities, counts and models before implementation measurement; publish rule/element/script counts. Lifecycle resource sampling and NFLOG off. Retain every attempt and failure. |
+| Ordinary cost | Spec shape then expanded shape, each with one untimed warm Apply and 30 timed Applies. Within a shape only generation and freshly anchored times advance; do not alternate global policies and accidentally measure unconditional fallback throughout. Use the exact shape construction below. Publish rule/element/script counts. Lifecycle resource sampling and NFLOG off. Retain every attempt and failure. |
 | AT10 comparison | One original 100-reload AT10/AT13 scenario; 101 Apply records, original stream/analyzer; mandatory UDP sidecar and three-hop traces plus the same opt-in TCP header observer in every leg. No NFLOG in this acceptance population. |
 | Exact-rule diagnostic cost | One additional 100-reload scenario in each leg with **identical** NFLOG decorator on the two terminal guard drops, group/snaplen/queue/precision configuration and collector as follow-up 30. Keep this separate from ordinary/AT10 timing. Its failures count; it cannot replace the first AT10 run. |
 | Safety controls | Identical fixed deadline/revocation/late-commit/kill/verifier/rollback vectors from the proof plan, including arriving revocation during hand-over. Record injected-fault results separately, with expected closure versus actual evidence. |
 | Consumers | Full existing netlab and real-agent suites, plus assigned updater/installer/meter consumers, with the same observer settings across A/B. Cross-lane owners supply their frozen commands before the quartet. Missing consumer leg blocks the quartet. |
 
-Ordinary spec/expanded shapes and consumer commands must be frozen in a dated
+Use [follow-up 27's shape construction](../../../tests/netlab/scenario_f27_test.go)
+(`TestISO01_F27_VerifyCost`): `functionalModel`, nil DeniedV4/ExtraDeniedV4/HostV4
+for spec; for expanded, remove `203.0.113.0/24` from the spec deny set, then add
+128 even-address `/32` entries in that range to ExtraDeniedV4 and 128 even-address
+`/32` entries in `198.51.100.0/24` to HostV4. Preserve all its functional member,
+interface, resolver, rate and counter identities. Warm generations are 3000 and
+4000, followed by 3001–3030 and 4001–4030 respectively. Use the same relative
+deadline schedule in both binaries and record the distinct actual clock anchors;
+never reuse an expired wall-time JSON just to claim byte identity. The original
+100-verify-only follow-up 27 population is not mislabeled as these Apply samples.
+
+Concrete generated fixtures and consumer commands must be frozen in a dated
 execution annex before the first measurement, with no change to sample counts,
 ordering, criteria or original AT10 inputs here. Their source dependencies do
 not exist yet; filling in their hashes later is not permission to tune the
@@ -106,6 +117,13 @@ records for real commands. Missing/duplicate/ambiguous matches fail. No invented
 zero-duration guard, synthetic empty batch or renamed inactive interval may be
 fed to the analyzer. The adapter changes observation only and is part of both
 A and B's instrumentation, with costs disclosed.
+
+The existing NFLOG decorator also rejects C1's leading return rules. The common
+adapter must validate the complete approved A or C1 guard shape, leave C1's two
+return rules untouched, and decorate exactly the two terminal drops. Merely
+ignoring every non-drop rule would hide an accidental permissive mutation and
+is prohibited. Unit proofs must reject extra permits, malformed gates, duplicate
+drops and non-fenced release shapes in both modes.
 
 C1 still installs a real −151 guard and deletes it. In A it blocks all members;
 in B it blocks all except the narrowly capped eligible intersection. Thus the
