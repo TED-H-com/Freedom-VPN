@@ -533,3 +533,32 @@ func TestR23_H1b_RepairApplySwitchEpochKeepsIntent(t *testing.T) {
 		t.Fatalf("repair intent lost: %+v", u)
 	}
 }
+
+func TestR23_H3a_HealingFinalSampleKeepsWithdrawalReasonUntilNextPass(t *testing.T) {
+	r, src, _ := f40Live(t)
+	// The meter reports a real failed durable write. A later final sample may
+	// successfully persist, but this pass still withdrew because of that failure.
+	r.eng.usage.NotePersistFailure()
+	r.eng.readMeter(t.Context())
+	if !r.eng.usagePersist {
+		t.Fatal("failure was not observed")
+	}
+	stepOK(t, r)
+	f40AssertBlockedReport(t, r)
+	if r.plane.last.Generation != 0 {
+		t.Fatal("persistence failure did not withdraw")
+	}
+	stepOK(t, r)
+	if !r.eng.serving {
+		t.Fatal("healed usage did not recover on next pass")
+	}
+	r20Crash(r.eng)
+	next := r20Successor(t, r, r20ChangedSets(r), src, r.plane)
+	if err := next.Boot(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	u := r21ReadLedger(t, next.cfg, next.nodeID, next.incID)
+	if u.byRevision[1] != 8192 || len(u.gaps) != 0 {
+		t.Fatalf("healed sample: %+v", u)
+	}
+}

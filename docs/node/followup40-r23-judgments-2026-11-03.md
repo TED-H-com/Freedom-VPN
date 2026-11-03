@@ -127,3 +127,18 @@ one read-only epoch-history query. Failed hand-offs retain the existing retry
 and the pre-Apply failure path adds at most one Baseline retry inside the same
 local deadline. Blocked returns may enqueue/deliver a changed observation;
 normal observation deduplication still applies. No performance claim is made.
+
+### H-3 recovery reporting refinement
+
+The first broad node gate caught the existing R18 direct canceled-enforce guard:
+removing its cancellation diagnostic was too broad. Retain the original
+cancellation-specific rejectServing path; ordinary intent I/O errors remain
+usage failures. No R18 assertion is changed.
+
+A new before-fail (`.agent/f40/healing-before.log`) demonstrates a second
+reachable H-3a return: a reported usage persistence failure triggers withdrawal,
+but its successful final sample clears usagePersist before the non-serving
+receipt. It produces Reason="-" and no observation reasons. Preserve the usage
+failure that caused this pass's withdrawal until the next Step's health refresh;
+do not report that forwarding resumed merely because final persistence healed.
+This is the same reporting invariant, not an additional admission authority.
