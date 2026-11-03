@@ -3,6 +3,8 @@ package e2e
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -38,6 +40,7 @@ type nodeWriteAttempt struct {
 	Path           string         `json:"path"`
 	IfMatch        string         `json:"if_match"`
 	IdempotencyKey string         `json:"idempotency_key"`
+	BodySHA256     string         `json:"body_sha256"`
 	StartedAt      time.Time      `json:"started_at"`
 	FinishedAt     time.Time      `json:"finished_at"`
 	Status         int            `json:"status"`
@@ -121,7 +124,10 @@ func (s *httpSession) writeNode(ctx context.Context, method, writeURL, readURL s
 			return
 		}
 		row := nodeWriteAttempt{Method: method, Path: evidencePath(writeURL), IfMatch: etag, IdempotencyKey: key, StartedAt: time.Now().UTC()}
-		out.Reply, out.Err = once.call(bounded, method, writeURL, body, map[string]string{"If-Match": etag, "Idempotency-Key": key})
+		out.Reply, out.Err = once.callObserved(bounded, method, writeURL, body, map[string]string{"If-Match": etag, "Idempotency-Key": key}, func(payload []byte) {
+			digest := sha256.Sum256(payload)
+			row.BodySHA256 = hex.EncodeToString(digest[:])
+		})
 		row.FinishedAt, row.Status, row.ErrorCode = time.Now().UTC(), out.Reply.Status, out.Reply.Code
 		row.Transport = out.Err != nil
 		var env struct {

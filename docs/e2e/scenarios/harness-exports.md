@@ -763,3 +763,10 @@ creates a new retained run directory under `runs/2026-11-03/followup32/`, checks
 the real same-key 412→202 receipts, and checks populated serving independently.
 Never repeat an attempt to replace its result. See the
 [audit and AT hand-offs](../runs/2026-11-03/followup32/audit.md).
+
+2026-11-03 resume: each new `node_write.attempts[]` also contains
+`body_sha256`, calculated from the exact JSON bytes passed to the HTTP request.
+The forced-proof runner checks that the digest stays identical across attempts,
+along with the UUID key. Stub tests compare each digest with the bytes actually
+received by the server. No raw body or secret is added to the receipts; older
+records remain unchanged.

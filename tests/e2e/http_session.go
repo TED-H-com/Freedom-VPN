@@ -22,13 +22,24 @@ type reply struct {
 }
 
 func (s *httpSession) call(ctx context.Context, method, url string, body any, headers map[string]string) (reply, error) {
+	return s.callObserved(ctx, method, url, body, headers, nil)
+}
+
+// noteBody observes the exact serialized request bytes before they are sent.
+// Ordinary callers have no observer and retain the original call behavior.
+func (s *httpSession) callObserved(ctx context.Context, method, url string, body any, headers map[string]string, noteBody func([]byte)) (reply, error) {
 	var reader io.Reader
+	var payload []byte
 	if body != nil {
 		raw, err := json.Marshal(body)
 		if err != nil {
 			return reply{}, err
 		}
 		reader = bytes.NewReader(raw)
+		payload = raw
+	}
+	if noteBody != nil {
+		noteBody(payload)
 	}
 	req, err := http.NewRequestWithContext(ctx, method, url, reader)
 	if err != nil {

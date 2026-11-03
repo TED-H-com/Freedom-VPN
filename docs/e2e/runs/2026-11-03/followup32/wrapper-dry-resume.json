@@ -1,0 +1,57 @@
+{
+  "id": "wrapper-dry-resume",
+  "title": "Admission-isolated Docker stdout parses as JSON; stderr is empty",
+  "spec": [
+    "API01"
+  ],
+  "status": "pass",
+  "run_id": "5c31b55b-0f87-4fde-aa2b-cb0d299c06d5",
+  "source_commit": "193f34c1a399cf283e76dddbafd7a348366447aa",
+  "at": "2026-11-03T23:20:51.098110Z",
+  "observations": [
+    {
+      "name": "command",
+      "detail": "docker version --format '{{json .}}'"
+    },
+    {
+      "name": "started_at",
+      "detail": "2026-11-03T23:20:51.010299Z"
+    },
+    {
+      "name": "finished_at",
+      "detail": "2026-11-03T23:20:51.098110Z"
+    },
+    {
+      "name": "exit",
+      "detail": "0"
+    },
+    {
+      "name": "stdout_bytes",
+      "detail": "1149"
+    },
+    {
+      "name": "stdout_sha256",
+      "detail": "ff36f2344d68bd9f451f19241e4c731e16ee94ed70fdcca7ff6f9b1500ee735b"
+    },
+    {
+      "name": "complete_stdout_json_parse",
+      "detail": "true; top-level object with Client and Server; no extra text"
+    },
+    {
+      "name": "stderr_bytes",
+      "detail": "0"
+    },
+    {
+      "name": "client_version",
+      "detail": "29.9.2"
+    },
+    {
+      "name": "server_version",
+      "detail": "29.9.2"
+    },
+    {
+      "name": "admission_isolated",
+      "detail": "All admission stdout/stderr captured in a separate private admission.log; neither is forwarded to Docker streams, including denial/exit 125."
+    }
+  ]
+}

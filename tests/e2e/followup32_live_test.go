@@ -102,8 +102,10 @@ func (r *runner) publisherReceipts32(ctx context.Context) {
 		}
 		commands++
 		key := trace.Attempts[0].IdempotencyKey
+		bodySHA256 := trace.Attempts[0].BodySHA256
 		for i, a := range trace.Attempts {
 			valid = valid && a.IdempotencyKey == key
+			valid = valid && len(bodySHA256) == 64 && a.BodySHA256 == bodySHA256
 			if a.Status == 412 && a.ErrorCode == "RESOURCE_VERSION_CONFLICT" {
 				conflicts++
 				valid = valid && a.Reread != nil && a.Reread.Status == 200 && a.CurrentVersion != ""

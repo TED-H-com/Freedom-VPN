@@ -2,6 +2,7 @@ package e2e
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -119,6 +120,9 @@ func TestAPI01_NodeWriteConflict(t *testing.T) {
 					var expectedMethods []string
 					for i, row := range trace.Attempts {
 						expectedMethods = append(expectedMethods, command.method)
+						if row.BodySHA256 != fmt.Sprintf("%x", sha256.Sum256([]byte(bodies[i]))) {
+							t.Fatalf("attempt %d digest does not match bytes received by server: %+v", i, row)
+						}
 						if row.Method != command.method || row.Path != path+command.suffix || row.IfMatch != tags[i] || tags[i] != fmt.Sprintf(`"%d"`, i+1) || row.IdempotencyKey != keys[i] || keys[i] != keys[0] || bodies[i] != string(wantBody) {
 							t.Fatalf("attempt %d: %+v", i, row)
 						}
