@@ -5,8 +5,10 @@ package members
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
@@ -21,6 +23,8 @@ type nativeCaptureSession struct {
 	handle           *e2e.NativeCapture
 	label, directory string
 	result           json.RawMessage
+	mu               sync.Mutex
+	sampleErrors     []string
 }
 
 func (l *live) startNativeCapture(r *record, member, label string) *nativeCaptureSession {
@@ -38,17 +42,22 @@ func (l *live) startNativeCapture(r *record, member, label string) *nativeCaptur
 }
 
 func (l *live) captureSession(r *record, handle *e2e.NativeCapture, label string) *nativeCaptureSession {
-	c := &nativeCaptureSession{l: l, r: r, handle: handle, label: label, directory: filepath.Join(l.root, ".agent/tmp/f15-native", l.runID, label+"-"+uuid.NewString())}
+	c := &nativeCaptureSession{l: l, r: r, handle: handle, label: label, directory: filepath.Join(l.root, ".agent/tmp/f16-native", l.runID, label+"-"+uuid.NewString())}
 	l.t.Cleanup(func() { c.stop() })
 	return c
 }
 
 func (c *nativeCaptureSession) sample(label string) {
-	if c == nil || c.result != nil {
+	if c == nil {
+		return
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if c.result != nil {
 		return
 	}
 	if err := c.handle.Sample(c.l.ctx, label); err != nil {
-		c.r.block("Native capture readback unavailable: " + c.label + "/" + label)
+		c.sampleErrors = append(c.sampleErrors, label)
 	}
 }
 
@@ -56,8 +65,13 @@ func (c *nativeCaptureSession) stop() json.RawMessage {
 	if c == nil {
 		return nil
 	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
 	if c.result != nil {
 		return c.result
+	}
+	for _, label := range c.sampleErrors {
+		c.r.block("Native capture readback unavailable: " + c.label + "/" + label)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -97,4 +111,26 @@ func knownPMTURouteReadback(raw json.RawMessage) bool {
 		}
 	}
 	return seen["before-route-constraint"] && seen["before-bulk"] && seen["after-bulk"] && seen["after-route-removal"]
+}
+
+// Sampler serializes Sample/Stop and never writes a verdict from its goroutine.
+func (c *nativeCaptureSession) periodic() func() {
+	if c == nil {
+		return func() {}
+	}
+	stop, done := make(chan struct{}), make(chan struct{})
+	go func() {
+		defer close(done)
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+		for n := 0; ; n++ {
+			select {
+			case <-stop:
+				return
+			case <-ticker.C:
+				c.sample(fmt.Sprintf("periodic-%d", n))
+			}
+		}
+	}()
+	return func() { close(stop); <-done }
 }

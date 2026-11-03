@@ -1,0 +1,160 @@
+{
+  "run_id": "0ffb355a-945b-4198-a551-3794120a686c",
+  "source_commit": "3a8b61594b447d164bb7c9481545e207f8688ec2",
+  "cases": [
+    {
+      "case": "AT05",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 31
+      },
+      "failures": []
+    },
+    {
+      "case": "AT01",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 19
+      },
+      "failures": []
+    },
+    {
+      "case": "AT02",
+      "status": "fail",
+      "subchecks": {
+        "pass": 184,
+        "fail": 3
+      },
+      "failures": [
+        {
+          "name": "conditional suspension update",
+          "status": "fail",
+          "at": "2026-11-01T17:35:19Z",
+          "expected": "fresh If-Match; at most three attempts on 412 only; final 202",
+          "command": "GET member version; PATCH; a 412 cannot mutate and is reissued with a fresh ETag/key"
+        },
+        {
+          "name": "conditional suspension update",
+          "status": "fail",
+          "at": "2026-11-01T17:40:25Z",
+          "expected": "fresh If-Match; at most three attempts on 412 only; final 202",
+          "command": "GET member version; PATCH; a 412 cannot mutate and is reissued with a fresh ETag/key"
+        },
+        {
+          "name": "D-135 D-136 node-wide baseline transitions (provisional)",
+          "status": "fail",
+          "at": "2026-11-01T17:40:35Z",
+          "expected": "every baseline to next successful Apply retained; every sibling loss counted; recovery required; no guard or baseline exclusion waives loss",
+          "command": "original producer stream and continuous sibling capture; command bounds, not kernel commits"
+        }
+      ]
+    },
+    {
+      "case": "AT03",
+      "status": "pass",
+      "subchecks": {
+        "pass": 98
+      },
+      "failures": []
+    },
+    {
+      "case": "AT04",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 113
+      },
+      "failures": []
+    },
+    {
+      "case": "AT08",
+      "status": "pass",
+      "subchecks": {
+        "pass": 35
+      },
+      "failures": []
+    },
+    {
+      "case": "AT20",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 89
+      },
+      "failures": []
+    },
+    {
+      "case": "AT21",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 13
+      },
+      "failures": []
+    },
+    {
+      "case": "AT22",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 40
+      },
+      "failures": []
+    },
+    {
+      "case": "AT09",
+      "status": "fail",
+      "subchecks": {
+        "pass": 57,
+        "fail": 4,
+        "blocked": 6
+      },
+      "failures": [
+        {
+          "name": "member sees both published exits",
+          "status": "fail",
+          "at": "2026-11-01T18:03:32Z",
+          "expected": "200 and two exits",
+          "command": "GET /member/exits through member session"
+        },
+        {
+          "name": "D-067 revision 11 provisional lease observation",
+          "status": "fail",
+          "at": "2026-11-01T18:06:00Z",
+          "expected": "provisional observations report awaiting_member_grants (never lease_expired); each failed lease/qos/source_binding check carries AWAITING_MEMBER_GRANTS or, with safety_check_failed, its active enforcement safety code (D-126); exactly one stage=lease error retains the provisional cause",
+          "command": "inspect post-restart provisional api.ObservationReport rows and GET /admin/nodes/{node2}"
+        },
+        {
+          "name": "same-generation D-067 restart recovery and lease sequence",
+          "status": "fail",
+          "at": "2026-11-01T18:06:00Z",
+          "expected": "forwarding restored on unchanged desired generation within bounded schedule; provisional renewal yields populated lease and counted fvmb0 transfer",
+          "command": "GET /admin/nodes/{node2} before/during/after restart; SELECT serving_leases and contiguous node_observations; verify counted member transfer"
+        },
+        {
+          "name": "native dual MTU 1280 transfer",
+          "status": "fail",
+          "at": "2026-11-01T18:07:18Z",
+          "expected": "IPv4 overlay: 64064 TCP bytes and upload/download counters increase; selected underlay family recorded; D-123 IPv6Block, no IPv6 end-to-end MTU/PMTU claim",
+          "command": "native down/up; ObserveNativeUnderlay; fixture bulk; DeviceByteCounters"
+        }
+      ]
+    }
+  ],
+  "subchecks": {
+    "pass": 679,
+    "fail": 7,
+    "blocked": 6
+  },
+  "complete_cases": {
+    "blocked": 6,
+    "fail": 2,
+    "pass": 2
+  },
+  "contention_context": {
+    "classification": "contention-confounded for every observation overlapping the window",
+    "start": "2026-11-01T17:32:43Z",
+    "end": "2026-11-01T17:37:12Z",
+    "decision": "D-133",
+    "cause_status": "unproven",
+    "source": "Orchestrator resume instruction, 2026-11-02: handover 29 CPU-heavy gates",
+    "rule": "All timings, failures and anomalies inside or overlapping this window are contention-confounded. Values and verdicts stand; overlap assigns no cause. Cumulative snapshots may reference earlier events; evaluate the event time, not the later snapshot time.",
+    "index": "F16-contention.json"
+  }
+}

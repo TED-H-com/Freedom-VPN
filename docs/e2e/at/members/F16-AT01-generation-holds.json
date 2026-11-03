@@ -1,0 +1,286 @@
+{
+  "case": "AT01",
+  "checks": [
+    {
+      "forwarding": false,
+      "hold_id": "01a19824-b247-7199-9a99-5bf101cac1f1",
+      "lease_stage_stale_generation": true,
+      "policy_missing": true,
+      "publication_cause_replayed": "stale_generation",
+      "report_id": "01a19824-b23c-7ad7-b93a-2d1d5e2629f0",
+      "retained_safety_failure": false,
+      "valid": true
+    }
+  ],
+  "classification_scope": "Replay original accepted reports through PublicationDataPathFailure at their receipt time; current signed-lease identity lookup. This is not a captured operation transition.",
+  "control_io_after_cancel": "not observable here",
+  "interpretation": "Node-wide hold; the observation contract has no per-member hold field. Grant or device withdrawal while members remain eligible cannot prove members_revoked. Incident closure is not service recovery.",
+  "joined": {
+    "samples": [
+      {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "hold_id": "01a19824-b247-7199-9a99-5bf101cac1f1",
+        "node_id": "01a19824-7330-7bde-928c-2a72e0b781e5",
+        "lease_id": "6e6dbfe6-bda7-4950-92fd-19ab64ec2f2a",
+        "report_id": "01a19824-b23c-7ad7-b93a-2d1d5e2629f0",
+        "observation": {
+          "lease": {
+            "lease_id": "6e6dbfe6-bda7-4950-92fd-19ab64ec2f2a",
+            "expires_at": "2026-11-02T17:25:04.097277762Z"
+          },
+          "usage": {
+            "blocked_seq": null,
+            "ledger_epoch": "60bdfb1f-e00e-4511-b9e8-f286b63f0e27",
+            "meter_epoch_id": null,
+            "oldest_unacked_at": null,
+            "acked_archive_bytes": "0",
+            "unacked_event_count": 0,
+            "central_acked_through": "0",
+            "unacked_payload_bytes": "0",
+            "last_durable_event_seq": "0"
+          },
+          "checks": [
+            {
+              "name": "dns_policy",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-11-01T17:25:04.154975677Z"
+            },
+            {
+              "name": "internet_only",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-11-01T17:25:04.154975677Z"
+            },
+            {
+              "name": "lease",
+              "status": "not_run",
+              "error_code": null,
+              "observed_at": "2026-11-01T17:25:04.154975677Z"
+            },
+            {
+              "name": "meter_path",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-11-01T17:25:04.154975677Z"
+            },
+            {
+              "name": "policy_signature",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-11-01T17:25:04.154975677Z"
+            },
+            {
+              "name": "qos",
+              "status": "not_run",
+              "error_code": null,
+              "observed_at": "2026-11-01T17:25:04.154975677Z"
+            },
+            {
+              "name": "release_supported",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-11-01T17:25:04.154975677Z"
+            },
+            {
+              "name": "source_binding",
+              "status": "not_run",
+              "error_code": null,
+              "observed_at": "2026-11-01T17:25:04.154975677Z"
+            },
+            {
+              "name": "storage",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-11-01T17:25:04.154975677Z"
+            },
+            {
+              "name": "tunnel_probe",
+              "detail": "Egress probe used no extra target.",
+              "status": "passed",
+              "error_code": null,
+              "observed_at": "2026-11-01T17:25:04.154975677Z"
+            }
+          ],
+          "errors": [
+            {
+              "code": "STALE_GENERATION",
+              "stage": "lease",
+              "message": "Serving lease is not for the desired generation.",
+              "observed_at": "2026-11-01T17:25:04.154975677Z"
+            },
+            {
+              "code": "STALE_GENERATION",
+              "stage": "lease",
+              "message": "Serving lease generation hold: applied=3 lease=2 steps=1 elapsed_ms=0 alarm=false.",
+              "observed_at": "2026-11-01T17:25:04.188669519Z"
+            }
+          ],
+          "update": {
+            "stage": null,
+            "state": null,
+            "job_id": null,
+            "generation": null
+          },
+          "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+          "netbird": {
+            "backend": "kernel",
+            "peer_id": null,
+            "version": null
+          },
+          "node_id": "01a19824-7330-7bde-928c-2a72e0b781e5",
+          "report_id": "01a19824-b23c-7ad7-b93a-2d1d5e2629f0",
+          "data_health": "healthy",
+          "observed_at": "2026-11-01T17:25:04.188669519Z",
+          "tc_evidence": null,
+          "agent_version": "0.1.0",
+          "safety_status": "passed",
+          "current_release_id": "01a19824-4f45-78a0-acbc-5afcd10e2966",
+          "provisioning_state": "ready",
+          "applied_policy_refs": {
+            "dns_generation": "1",
+            "fup_generation": "1",
+            "authorization_generation": "1"
+          },
+          "dns_policy_evidence": {
+            "feeds": [],
+            "outcome": "applied",
+            "applied_at": "2026-11-01T17:25:04.150415815Z",
+            "error_code": null,
+            "generation": "1",
+            "document_id": "01a19824-6813-75da-8fb9-849c52756f1d",
+            "content_sha256": "a9b7cc97222fde0330c017adba1be8cd3f765b38f413e14122a61d040aaa00f8"
+          },
+          "node_incarnation_id": "01a19824-75e0-76ca-a711-a3a8639b44d7",
+          "last_good_release_id": "01a19824-4f45-78a0-acbc-5afcd10e2966",
+          "applied_binding_revision": "0",
+          "forwarding_block_reasons": [
+            "policy_missing"
+          ],
+          "applied_config_generation": "3",
+          "member_forwarding_enabled": false
+        },
+        "received_at": "2026-11-01T17:25:04.197048+00:00",
+        "summary_valid": true,
+        "incarnation_id": "01a19824-75e0-76ca-a711-a3a8639b44d7",
+        "reported_alarm": false,
+        "reported_steps": "1",
+        "lease_generation": "2",
+        "leased_member_ids": [],
+        "applied_generation": "3",
+        "reported_elapsed_ms": "0"
+      }
+    ],
+    "incidents": [
+      {
+        "id": "01a19824-b247-7199-9a99-5bf101cac1f1",
+        "node_id": "01a19824-7330-7bde-928c-2a72e0b781e5",
+        "ended_at": "2026-11-01T17:25:09.229345+00:00",
+        "end_reason": "generation_matched",
+        "escalated_at": null,
+        "last_seen_at": "2026-11-01T17:25:04.197048+00:00",
+        "first_seen_at": "2026-11-01T17:25:04.197048+00:00",
+        "incarnation_id": "01a19824-75e0-76ca-a711-a3a8639b44d7",
+        "latest_report_id": "01a19824-b23c-7ad7-b93a-2d1d5e2629f0",
+        "first_observed_at": "2026-11-01T17:25:04.188669+00:00"
+      }
+    ],
+    "escalations": [],
+    "revocations": []
+  },
+  "run_id": "0ffb355a-945b-4198-a551-3794120a686c",
+  "snapshots": [
+    {
+      "at": "2026-11-01T17:24:52.223822935Z",
+      "available": true,
+      "label": "AT01 start",
+      "snapshot": {
+        "members": [
+          {
+            "status": "pending_payment",
+            "member_id": "01a19824-1ed6-7d00-94d8-bbcbd84562c7",
+            "updated_at": "2026-11-01T17:24:30.148813+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "pending_payment",
+            "effective_service_end": null
+          },
+          {
+            "status": "pending_payment",
+            "member_id": "01a19824-21a0-758e-b551-5b99a7c32483",
+            "updated_at": "2026-11-01T17:24:30.155595+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "pending_payment",
+            "effective_service_end": null
+          },
+          {
+            "status": "pending_payment",
+            "member_id": "01a19824-2477-7d81-acbb-1b7fc29aef9a",
+            "updated_at": "2026-11-01T17:24:30.160475+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "pending_payment",
+            "effective_service_end": null
+          }
+        ],
+        "incidents": []
+      }
+    },
+    {
+      "at": "2026-11-01T17:25:50.371451568Z",
+      "available": true,
+      "label": "AT01 complete",
+      "snapshot": {
+        "members": [
+          {
+            "status": "active",
+            "member_id": "01a19824-1ed6-7d00-94d8-bbcbd84562c7",
+            "updated_at": "2026-11-01T17:25:11.0167+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "active",
+            "effective_service_end": "2026-11-01T18:25:10.408291+00:00"
+          },
+          {
+            "status": "pending_payment",
+            "member_id": "01a19824-21a0-758e-b551-5b99a7c32483",
+            "updated_at": "2026-11-01T17:24:30.155595+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "pending_payment",
+            "effective_service_end": null
+          },
+          {
+            "status": "pending_payment",
+            "member_id": "01a19824-2477-7d81-acbb-1b7fc29aef9a",
+            "updated_at": "2026-11-01T17:24:30.160475+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "pending_payment",
+            "effective_service_end": null
+          }
+        ],
+        "incidents": [
+          {
+            "id": "01a19824-b247-7199-9a99-5bf101cac1f1",
+            "node_id": "01a19824-7330-7bde-928c-2a72e0b781e5",
+            "ended_at": "2026-11-01T17:25:09.229345+00:00",
+            "end_reason": "generation_matched",
+            "escalated_at": null,
+            "last_seen_at": "2026-11-01T17:25:04.197048+00:00",
+            "first_seen_at": "2026-11-01T17:25:04.197048+00:00",
+            "incarnation_id": "01a19824-75e0-76ca-a711-a3a8639b44d7",
+            "latest_report_id": "01a19824-b23c-7ad7-b93a-2d1d5e2629f0",
+            "first_observed_at": "2026-11-01T17:25:04.188669+00:00"
+          }
+        ]
+      }
+    }
+  ],
+  "source_commit": "3a8b61594b447d164bb7c9481545e207f8688ec2",
+  "contention_context": {
+    "classification": "contention-confounded for every observation overlapping the window",
+    "start": "2026-11-01T17:32:43Z",
+    "end": "2026-11-01T17:37:12Z",
+    "decision": "D-133",
+    "cause_status": "unproven",
+    "source": "Orchestrator resume instruction, 2026-11-02: handover 29 CPU-heavy gates",
+    "rule": "All timings, failures and anomalies inside or overlapping this window are contention-confounded. Values and verdicts stand; overlap assigns no cause. Cumulative snapshots may reference earlier events; evaluate the event time, not the later snapshot time.",
+    "index": "F16-contention.json"
+  }
+}

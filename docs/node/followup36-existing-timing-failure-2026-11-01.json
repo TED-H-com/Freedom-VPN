@@ -1,0 +1,73 @@
+{
+  "test_only": true,
+  "scenario": "TestLabD087_D104_GrantRenewalExpiryCorrelation",
+  "passed": false,
+  "assertion": "Every positive send precedes the first drop, and every positive egress precedes D",
+  "deadline_ns": "133988976665819",
+  "first_drop_offset_ns": "-2900741565",
+  "last_positive_egress_offset_ns": "-100320190",
+  "positive_at_or_after_deadline": 0,
+  "early_drops": [
+    {
+      "packet_id": 40,
+      "phase": "phased",
+      "scheduled_ns": "133986075665819",
+      "sent_ns": "133986075924254",
+      "result": "timeout",
+      "read_completion_ns": "133986156187506",
+      "ingress_ns": "133986076217541"
+    },
+    {
+      "packet_id": 41,
+      "phase": "arbitrary_37ms",
+      "scheduled_ns": "133986112665819",
+      "sent_ns": "133986112896790",
+      "result": "timeout",
+      "read_completion_ns": "133986193108432",
+      "ingress_ns": "133986113082169"
+    }
+  ],
+  "restart": {
+    "start_ns": "133986007891753",
+    "stopped_ns": "133986337674261",
+    "started_ns": "133986338258849"
+  },
+  "old_process_apply": [
+    {
+      "run_id": "4f88dcf4-6e1f-4051-97e2-e301cd8ee3d8",
+      "sequence": "852",
+      "anchor": {
+        "mono_before_ns": "133986184943788",
+        "wall": "2026-11-01T16:27:28.668572662Z",
+        "mono_after_ns": "133986184944004"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "apply",
+        "candidate_generation": "3",
+        "start_ns": "133986017025914",
+        "end_ns": "133986184866744",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "1000000",
+          "install_bound_ns": "100000000",
+          "apply_start_ns": "133986017025914",
+          "render_start_ns": "133986043365047",
+          "install_start_ns": "133986043449505",
+          "installed_by_ns": "133986137893333",
+          "install_ok": true,
+          "release_start_ns": "133986137899820",
+          "release_end_ns": "133986154759508",
+          "guard_released": true
+        }
+      },
+      "timing_detail_omitted": [
+        "commands",
+        "verifications"
+      ]
+    }
+  ],
+  "scope": "The unchanged analyzer failed. Early dropped sends precede successor launch; retained/adopted serving is logged. No Step/Apply changes in follow-up 36. Raw artifacts retained in the lane report."
+}
