@@ -1,0 +1,4475 @@
+{
+  "test_only": true,
+  "date": "2026-11-03",
+  "base": "f50050f3",
+  "declaration_commit": "f770117d",
+  "measurement": "recover_wall: CLOCK_MONOTONIC around Recover and its ErrMembersBlocked check (the F20 recover_elapsed_ns key; real wall time, excludes setup). original_remaining and bubble_elapsed are on the synctest bubble clock.",
+  "units": "milliseconds",
+  "quantile_method": "nearest rank ceil(p*n), minimum for p=0",
+  "environment": "CGO_ENABLED=0 GOTOOLCHAIN=local GOMAXPROCS=4 GOFLAGS=-p=4; 24 logical CPUs; worktree disk scratch",
+  "rule": {
+    "foreign_cpu_limit_cores": 0.5,
+    "interval_s": 5,
+    "snapshot_step_s": 1,
+    "end_rule": "the leg ends when the measured updater go test process exits; 30 s of post-exit sampling recorded, never disqualifying",
+    "deciding_intervals": "every 5 s interval that starts before the measured process exits",
+    "foreign_cpu_excludes": "kernel threads (pid 2 and children) and dockerd, containerd, containerd-shim*, docker-proxy, runc; recorded apart",
+    "preflight": "admission free, no foreign suite, foreign CPU 30 s average <= 0.5 cores; vmstat recorded only",
+    "host_quiet_wait_cap_s": 3600
+  },
+  "host_quiet_wait_spent": {
+    "spent_s": 150.397,
+    "checks": 3
+  },
+  "tree_check": {
+    "f22_tip": "5eea3f02180adddf37c38bface5001eb12b216b1",
+    "head": "f770117da6422a08df8c2f4d6379134bfa336a43",
+    "files": [
+      {
+        "path": "node/updater/meter_barrier_test.go",
+        "blob_f22_tip": "e1d911ad96b206a217924801ee828607e5ca90eb",
+        "blob_worktree": "e1d911ad96b206a217924801ee828607e5ca90eb",
+        "sha256_f22_tip": "81a82b322b4d5188d787d8346e7184493aecc8bd8c175501563f12512525ead9",
+        "sha256_worktree": "81a82b322b4d5188d787d8346e7184493aecc8bd8c175501563f12512525ead9",
+        "identical": true
+      },
+      {
+        "path": "node/updater/followup17_test.go",
+        "blob_f22_tip": "98b300dd22b3a57c1e7ee921388872f191382901",
+        "blob_worktree": "98b300dd22b3a57c1e7ee921388872f191382901",
+        "sha256_f22_tip": "2d7d0ac93b20ac641d4c3793a4e4c72e8bd99d628c0fd498926e43b77972637f",
+        "sha256_worktree": "2d7d0ac93b20ac641d4c3793a4e4c72e8bd99d628c0fd498926e43b77972637f",
+        "identical": true
+      }
+    ],
+    "identical": true,
+    "diff_names_node_pkg_internal_gomod_since_tip": [],
+    "worktree_clean_node_updater": true,
+    "at": "2026-11-03T12:08:50.332157Z"
+  },
+  "pooled_quiet_leg_from_followup22": {
+    "source": "node-followup22-timing-2026-11-03.json windows.r1.legs.quiet",
+    "qualified": true,
+    "iterations": {
+      "completed": 200,
+      "passed": 200,
+      "failed": 0
+    },
+    "foreign_cpu_max_cores": 0.345
+  },
+  "verdict": {
+    "f27_02_fixture_reading_fixed_test": "HOLDS",
+    "basis": "r2 load leg qualified (50/0, foreign CPU max 0.105 cores before the measured process exited); pooled with follow-up 22's qualified quiet leg (200/0); deterministic budget exact before and after the window and in every parent sample; no failure of the fixed test in any run (r1 stopped at 20/0 by non-lane foreign CPU, recorded unqualified)",
+    "history": "follow-up 21's verdict (failed) and follow-up 22's verdict (undecided) stay as recorded"
+  },
+  "deterministic_budget": {
+    "inputs-deadline": {
+      "0s": {
+        "elapsed=250ms remaining=250ms": 50
+      },
+      "200ms": {
+        "elapsed=50ms remaining=50ms": 50
+      },
+      "250ms": {
+        "elapsed=0s remaining=0s": 50
+      },
+      "1s": {
+        "elapsed=0s remaining=0s": 50
+      }
+    },
+    "post-deadline": {
+      "0s": {
+        "elapsed=250ms remaining=250ms": 50
+      },
+      "200ms": {
+        "elapsed=50ms remaining=50ms": 50
+      },
+      "250ms": {
+        "elapsed=0s remaining=0s": 50
+      },
+      "1s": {
+        "elapsed=0s remaining=0s": 50
+      }
+    }
+  },
+  "windows": {
+    "r1": {
+      "tree_check": {
+        "at": "2026-11-03T12:10:43.300827Z",
+        "files": [
+          {
+            "path": "node/updater/meter_barrier_test.go",
+            "blob_f22_tip": "e1d911ad96b206a217924801ee828607e5ca90eb",
+            "blob_worktree": "e1d911ad96b206a217924801ee828607e5ca90eb",
+            "identical": true
+          },
+          {
+            "path": "node/updater/followup17_test.go",
+            "blob_f22_tip": "98b300dd22b3a57c1e7ee921388872f191382901",
+            "blob_worktree": "98b300dd22b3a57c1e7ee921388872f191382901",
+            "identical": true
+          }
+        ],
+        "identical": true
+      },
+      "wait_result": "quiet",
+      "wait_checks": [
+        {
+          "at": "2026-11-03T12:10:43.356259Z",
+          "hold": "free",
+          "foreign": [],
+          "non_suite_matches": [],
+          "hold_after": "free",
+          "foreign_after": [],
+          "ok": true,
+          "foreign_cpu_avg_cores": 0.129,
+          "foreign_cpu_intervals": [
+            {
+              "t_s": 5.054,
+              "wall_s": 5.042,
+              "foreign_cores": 0.067,
+              "own_cores": 0.008,
+              "host_minus_own_cores": 0.182,
+              "top_foreign": [
+                [
+                  0.028,
+                  "MainThread"
+                ],
+                [
+                  0.014,
+                  "agy"
+                ],
+                [
+                  0.008,
+                  "cloudflared"
+                ],
+                [
+                  0.004,
+                  "tailscaled"
+                ],
+                [
+                  0.004,
+                  "grafana"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.026,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.008,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  998572,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  2537,
+                  "tailscaled"
+                ],
+                [
+                  0.004,
+                  3192,
+                  "cloudflared tunnel"
+                ]
+              ],
+              "excluded_kernel_cores": 0.123,
+              "excluded_runtime_cores": 0.002
+            },
+            {
+              "t_s": 10.096,
+              "wall_s": 5.043,
+              "foreign_cores": 0.192,
+              "own_cores": 0.01,
+              "host_minus_own_cores": 0.22,
+              "top_foreign": [
+                [
+                  0.083,
+                  "python3"
+                ],
+                [
+                  0.061,
+                  "MainThread"
+                ],
+                [
+                  0.01,
+                  "cloudflared"
+                ],
+                [
+                  0.01,
+                  "agy"
+                ],
+                [
+                  0.008,
+                  "claude"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.077,
+                  1002870,
+                  "python3"
+                ],
+                [
+                  0.061,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.008,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.006,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  4344,
+                  "grafana server"
+                ]
+              ],
+              "excluded_kernel_cores": 0.002,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 15.14,
+              "wall_s": 5.044,
+              "foreign_cores": 0.28,
+              "own_cores": 0.006,
+              "host_minus_own_cores": 0.27,
+              "top_foreign": [
+                [
+                  0.184,
+                  "python3"
+                ],
+                [
+                  0.028,
+                  "agy"
+                ],
+                [
+                  0.02,
+                  "MainThread"
+                ],
+                [
+                  0.01,
+                  "claude"
+                ],
+                [
+                  0.008,
+                  "prometheus-node"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.178,
+                  2239763,
+                  "python3"
+                ],
+                [
+                  0.02,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.02,
+                  998572,
+                  "agy"
+                ],
+                [
+                  0.01,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.008,
+                  997013,
+                  "agy"
+                ]
+              ],
+              "excluded_kernel_cores": 0.004,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 20.183,
+              "wall_s": 5.042,
+              "foreign_cores": 0.063,
+              "own_cores": 0.01,
+              "host_minus_own_cores": 0.169,
+              "top_foreign": [
+                [
+                  0.026,
+                  "MainThread"
+                ],
+                [
+                  0.016,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  "grafana"
+                ],
+                [
+                  0.004,
+                  "claude"
+                ],
+                [
+                  0.004,
+                  "bat-server"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.026,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.01,
+                  998572,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  3474,
+                  "bat-server"
+                ],
+                [
+                  0.004,
+                  4344,
+                  "grafana server"
+                ]
+              ],
+              "excluded_kernel_cores": 0.117,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 25.227,
+              "wall_s": 5.044,
+              "foreign_cores": 0.079,
+              "own_cores": 0.008,
+              "host_minus_own_cores": 0.079,
+              "top_foreign": [
+                [
+                  0.022,
+                  "MainThread"
+                ],
+                [
+                  0.014,
+                  "agy"
+                ],
+                [
+                  0.01,
+                  "cloudflared"
+                ],
+                [
+                  0.008,
+                  "python3"
+                ],
+                [
+                  0.006,
+                  "gh"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.02,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.01,
+                  998572,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  1002952,
+                  "gh run"
+                ],
+                [
+                  0.004,
+                  3224,
+                  "cloudflared tunnel"
+                ],
+                [
+                  0.004,
+                  2537,
+                  "tailscaled"
+                ]
+              ],
+              "excluded_kernel_cores": 0.004,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 30.014,
+              "wall_s": 4.787,
+              "foreign_cores": 0.094,
+              "own_cores": 0.008,
+              "host_minus_own_cores": 0.073,
+              "top_foreign": [
+                [
+                  0.029,
+                  "MainThread"
+                ],
+                [
+                  0.019,
+                  "agy"
+                ],
+                [
+                  0.015,
+                  "cloudflared"
+                ],
+                [
+                  0.006,
+                  "claude"
+                ],
+                [
+                  0.004,
+                  "python3"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.029,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.01,
+                  998572,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.006,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  2984,
+                  "cloudflared config.yml"
+                ]
+              ],
+              "excluded_kernel_cores": 0.0,
+              "excluded_runtime_cores": 0.0
+            }
+          ],
+          "vmstat_recorded": {
+            "rows": [
+              {
+                "r": 0,
+                "id": 99
+              },
+              {
+                "r": 0,
+                "id": 99
+              },
+              {
+                "r": 0,
+                "id": 99
+              },
+              {
+                "r": 0,
+                "id": 99
+              },
+              {
+                "r": 0,
+                "id": 99
+              },
+              {
+                "r": 0,
+                "id": 99
+              }
+            ],
+            "ok": true
+          }
+        }
+      ],
+      "reserve": {
+        "at": "2026-11-03T12:11:13.465036Z",
+        "exit": 0,
+        "out": "reserved for w2-updater until 07:41:13",
+        "err": ""
+      },
+      "release": {
+        "at": "2026-11-03T12:12:53.774691Z",
+        "t_s": 100.31,
+        "exit": 0,
+        "out": "released w2-updater",
+        "err": ""
+      },
+      "legs": {
+        "load": {
+          "kind": "load",
+          "args": [
+            [
+              "go",
+              "test",
+              "-count=1",
+              "./node/agent/..."
+            ],
+            [
+              "go",
+              "test",
+              "-v",
+              "-run",
+              "^TestAT25_FileMeterWaitRestartRechecksCurrentFile$",
+              "-count=50",
+              "./node/updater"
+            ]
+          ],
+          "status": "stopped_foreign_cpu",
+          "qualified": false,
+          "watchdog_s": 300,
+          "post_exit_s": 30,
+          "preflight_wait_s": 30.135,
+          "started_at": "2026-11-03T12:12:43.600601Z",
+          "ended_at": "2026-11-03T12:12:53.740752Z",
+          "elapsed_s": 10.14,
+          "measured_end_s": 10.129,
+          "max_sample_gap_s": 5.064,
+          "foreign_cpu_ok": false,
+          "foreign_cpu_max_cores": 0.996,
+          "foreign_cpu_post_exit_max_cores": null,
+          "post_exit_breach_recorded_only": [],
+          "in_leg_vmstat_ok_recorded_only": true,
+          "agent_updater_overlap_s": 10.127,
+          "preflights": [
+            {
+              "at": "2026-11-03T12:12:13.522650Z",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [],
+              "hold_after": "free",
+              "foreign_after": [],
+              "ok": true,
+              "foreign_cpu_avg_cores": 0.076,
+              "foreign_cpu_intervals": [
+                {
+                  "t_s": 5.055,
+                  "wall_s": 5.044,
+                  "foreign_cores": 0.093,
+                  "own_cores": 0.008,
+                  "host_minus_own_cores": 0.079,
+                  "top_foreign": [
+                    [
+                      0.03,
+                      "agy"
+                    ],
+                    [
+                      0.028,
+                      "MainThread"
+                    ],
+                    [
+                      0.014,
+                      "cloudflared"
+                    ],
+                    [
+                      0.004,
+                      "tailscaled"
+                    ],
+                    [
+                      0.004,
+                      "claude"
+                    ]
+                  ],
+                  "top_foreign_processes": [
+                    [
+                      0.028,
+                      601179,
+                      "node index.js"
+                    ],
+                    [
+                      0.018,
+                      998572,
+                      "agy"
+                    ],
+                    [
+                      0.006,
+                      3192,
+                      "cloudflared tunnel"
+                    ],
+                    [
+                      0.006,
+                      997013,
+                      "agy"
+                    ],
+                    [
+                      0.006,
+                      696768,
+                      "agy stream-json"
+                    ]
+                  ],
+                  "excluded_kernel_cores": 0.0,
+                  "excluded_runtime_cores": 0.0
+                },
+                {
+                  "t_s": 10.098,
+                  "wall_s": 5.043,
+                  "foreign_cores": 0.061,
+                  "own_cores": 0.008,
+                  "host_minus_own_cores": 0.063,
+                  "top_foreign": [
+                    [
+                      0.022,
+                      "MainThread"
+                    ],
+                    [
+                      0.016,
+                      "agy"
+                    ],
+                    [
+                      0.008,
+                      "claude"
+                    ],
+                    [
+                      0.006,
+                      "grafana"
+                    ],
+                    [
+                      0.006,
+                      "cloudflared"
+                    ]
+                  ],
+                  "top_foreign_processes": [
+                    [
+                      0.02,
+                      601179,
+                      "node index.js"
+                    ],
+                    [
+                      0.008,
+                      997013,
+                      "agy"
+                    ],
+                    [
+                      0.008,
+                      998572,
+                      "agy"
+                    ],
+                    [
+                      0.008,
+                      34216,
+                      "claude stream-json"
+                    ],
+                    [
+                      0.006,
+                      4344,
+                      "grafana server"
+                    ]
+                  ],
+                  "excluded_kernel_cores": 0.004,
+                  "excluded_runtime_cores": 0.0
+                },
+                {
+                  "t_s": 15.14,
+                  "wall_s": 5.041,
+                  "foreign_cores": 0.085,
+                  "own_cores": 0.01,
+                  "host_minus_own_cores": 0.305,
+                  "top_foreign": [
+                    [
+                      0.026,
+                      "python3"
+                    ],
+                    [
+                      0.02,
+                      "agy"
+                    ],
+                    [
+                      0.018,
+                      "MainThread"
+                    ],
+                    [
+                      0.008,
+                      "cloudflared"
+                    ],
+                    [
+                      0.004,
+                      "codex"
+                    ]
+                  ],
+                  "top_foreign_processes": [
+                    [
+                      0.022,
+                      2239763,
+                      "python3"
+                    ],
+                    [
+                      0.016,
+                      601179,
+                      "node index.js"
+                    ],
+                    [
+                      0.014,
+                      998572,
+                      "agy"
+                    ],
+                    [
+                      0.006,
+                      997013,
+                      "agy"
+                    ],
+                    [
+                      0.002,
+                      610690,
+                      "codex cli_auth_credentials_store=\"ephemeral\""
+                    ]
+                  ],
+                  "excluded_kernel_cores": 0.228,
+                  "excluded_runtime_cores": 0.0
+                },
+                {
+                  "t_s": 20.183,
+                  "wall_s": 5.043,
+                  "foreign_cores": 0.083,
+                  "own_cores": 0.008,
+                  "host_minus_own_cores": 0.073,
+                  "top_foreign": [
+                    [
+                      0.024,
+                      "MainThread"
+                    ],
+                    [
+                      0.022,
+                      "hermes"
+                    ],
+                    [
+                      0.016,
+                      "agy"
+                    ],
+                    [
+                      0.006,
+                      "cloudflared"
+                    ],
+                    [
+                      0.004,
+                      "python3"
+                    ]
+                  ],
+                  "top_foreign_processes": [
+                    [
+                      0.022,
+                      601179,
+                      "node index.js"
+                    ],
+                    [
+                      0.022,
+                      3208,
+                      "python3"
+                    ],
+                    [
+                      0.008,
+                      997013,
+                      "agy"
+                    ],
+                    [
+                      0.008,
+                      998572,
+                      "agy"
+                    ],
+                    [
+                      0.004,
+                      34216,
+                      "claude stream-json"
+                    ]
+                  ],
+                  "excluded_kernel_cores": 0.002,
+                  "excluded_runtime_cores": 0.0
+                },
+                {
+                  "t_s": 25.225,
+                  "wall_s": 5.043,
+                  "foreign_cores": 0.067,
+                  "own_cores": 0.006,
+                  "host_minus_own_cores": 0.059,
+                  "top_foreign": [
+                    [
+                      0.018,
+                      "agy"
+                    ],
+                    [
+                      0.016,
+                      "MainThread"
+                    ],
+                    [
+                      0.006,
+                      "grafana"
+                    ],
+                    [
+                      0.004,
+                      "python3"
+                    ],
+                    [
+                      0.004,
+                      "cloudflared"
+                    ]
+                  ],
+                  "top_foreign_processes": [
+                    [
+                      0.016,
+                      601179,
+                      "node index.js"
+                    ],
+                    [
+                      0.01,
+                      998572,
+                      "agy"
+                    ],
+                    [
+                      0.008,
+                      997013,
+                      "agy"
+                    ],
+                    [
+                      0.006,
+                      4344,
+                      "grafana server"
+                    ],
+                    [
+                      0.004,
+                      3474,
+                      "bat-server"
+                    ]
+                  ],
+                  "excluded_kernel_cores": 0.004,
+                  "excluded_runtime_cores": 0.002
+                },
+                {
+                  "t_s": 30.014,
+                  "wall_s": 4.789,
+                  "foreign_cores": 0.069,
+                  "own_cores": 0.01,
+                  "host_minus_own_cores": 0.061,
+                  "top_foreign": [
+                    [
+                      0.019,
+                      "agy"
+                    ],
+                    [
+                      0.017,
+                      "MainThread"
+                    ],
+                    [
+                      0.01,
+                      "cloudflared"
+                    ],
+                    [
+                      0.006,
+                      "hermes"
+                    ],
+                    [
+                      0.004,
+                      "grafana"
+                    ]
+                  ],
+                  "top_foreign_processes": [
+                    [
+                      0.017,
+                      601179,
+                      "node index.js"
+                    ],
+                    [
+                      0.01,
+                      998572,
+                      "agy"
+                    ],
+                    [
+                      0.008,
+                      997013,
+                      "agy"
+                    ],
+                    [
+                      0.006,
+                      3192,
+                      "cloudflared tunnel"
+                    ],
+                    [
+                      0.006,
+                      3208,
+                      "python3"
+                    ]
+                  ],
+                  "excluded_kernel_cores": 0.002,
+                  "excluded_runtime_cores": 0.0
+                }
+              ],
+              "vmstat_recorded": {
+                "rows": [
+                  {
+                    "r": 1,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 100
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  }
+                ],
+                "ok": true
+              }
+            }
+          ],
+          "in_leg_samples": {
+            "count": 2,
+            "all_hold_free": true,
+            "foreign_suite_samples": 0,
+            "non_suite_matches": [],
+            "samples": [
+              {
+                "t_s": 5.064,
+                "phase": "in_leg",
+                "hold": "free",
+                "foreign": [],
+                "non_suite_matches": [],
+                "running": [
+                  "agent",
+                  "updater"
+                ],
+                "recover_samples": 49,
+                "foreign_cpu_max_so_far": 0.081
+              },
+              {
+                "t_s": 10.126,
+                "phase": "in_leg",
+                "hold": "free",
+                "foreign": [],
+                "non_suite_matches": [],
+                "running": [
+                  "agent",
+                  "updater"
+                ],
+                "recover_samples": 102,
+                "foreign_cpu_max_so_far": 0.996,
+                "foreign_cpu_breach": {
+                  "t_s": 10.089,
+                  "wall_s": 5.041,
+                  "foreign_cores": 0.996,
+                  "own_cores": 0.442,
+                  "host_minus_own_cores": 1.369,
+                  "top_foreign": [
+                    [
+                      0.885,
+                      "python3"
+                    ],
+                    [
+                      0.058,
+                      "MainThread"
+                    ],
+                    [
+                      0.024,
+                      "agy"
+                    ],
+                    [
+                      0.008,
+                      "cloudflared"
+                    ],
+                    [
+                      0.006,
+                      "claude"
+                    ]
+                  ],
+                  "top_foreign_processes": [
+                    [
+                      0.883,
+                      1003553,
+                      "python3"
+                    ],
+                    [
+                      0.056,
+                      601179,
+                      "node index.js"
+                    ],
+                    [
+                      0.016,
+                      998572,
+                      "agy"
+                    ],
+                    [
+                      0.006,
+                      34216,
+                      "claude stream-json"
+                    ],
+                    [
+                      0.006,
+                      997013,
+                      "agy"
+                    ]
+                  ],
+                  "excluded_kernel_cores": 0.26,
+                  "excluded_runtime_cores": 0.0
+                }
+              }
+            ]
+          },
+          "post_exit_samples": [],
+          "foreign_cpu_in_leg": [
+            {
+              "t_s": 5.047,
+              "wall_s": 5.04,
+              "foreign_cores": 0.081,
+              "own_cores": 0.425,
+              "host_minus_own_cores": 0.254,
+              "top_foreign": [
+                [
+                  0.034,
+                  "MainThread"
+                ],
+                [
+                  0.02,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  "cloudflared"
+                ],
+                [
+                  0.004,
+                  "claude"
+                ],
+                [
+                  0.002,
+                  "uvicorn"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.032,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.012,
+                  998572,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.002,
+                  3196,
+                  "python3"
+                ]
+              ],
+              "excluded_kernel_cores": 0.04,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 10.089,
+              "wall_s": 5.041,
+              "foreign_cores": 0.996,
+              "own_cores": 0.442,
+              "host_minus_own_cores": 1.369,
+              "top_foreign": [
+                [
+                  0.885,
+                  "python3"
+                ],
+                [
+                  0.058,
+                  "MainThread"
+                ],
+                [
+                  0.024,
+                  "agy"
+                ],
+                [
+                  0.008,
+                  "cloudflared"
+                ],
+                [
+                  0.006,
+                  "claude"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.883,
+                  1003553,
+                  "python3"
+                ],
+                [
+                  0.056,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.016,
+                  998572,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.006,
+                  997013,
+                  "agy"
+                ]
+              ],
+              "excluded_kernel_cores": 0.26,
+              "excluded_runtime_cores": 0.0
+            }
+          ],
+          "foreign_cpu_post_exit": [],
+          "excluded_cpu_max_cores": {
+            "kernel": 0.26,
+            "runtime": 0.0
+          },
+          "vmstat_recorded": {
+            "intervals": 2,
+            "max_r": 1,
+            "min_id": 88,
+            "rows": [
+              {
+                "t_s": 5.001,
+                "r": 0,
+                "id": 92
+              },
+              {
+                "t_s": 10.002,
+                "r": 1,
+                "id": 88
+              }
+            ]
+          },
+          "processes": [
+            {
+              "name": "agent",
+              "start_s": 0.001,
+              "end_s": 10.129,
+              "exit": -15
+            },
+            {
+              "name": "updater",
+              "start_s": 0.002,
+              "end_s": 10.129,
+              "exit": -15
+            }
+          ],
+          "iterations": {
+            "completed": 20,
+            "passed": 20,
+            "failed": 0
+          },
+          "recover_calls": 102,
+          "failures": [],
+          "cases": {
+            "missing": {
+              "recover_wall_ms": {
+                "n": 21,
+                "min": 16.703,
+                "median": 18.354,
+                "p99": 24.722,
+                "max": 24.722,
+                "mean": 18.69
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "250.0": 21
+              },
+              "bubble_elapsed_ms_distinct": {
+                "250.0": 21
+              }
+            },
+            "replaced": {
+              "recover_wall_ms": {
+                "n": 21,
+                "min": 11.94,
+                "median": 18.601,
+                "p99": 23.496,
+                "max": 23.496,
+                "mean": 18.521
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "250.0": 21
+              },
+              "bubble_elapsed_ms_distinct": {
+                "250.0": 21
+              }
+            },
+            "withdrawn": {
+              "recover_wall_ms": {
+                "n": 20,
+                "min": 18.654,
+                "median": 21.624,
+                "p99": 26.243,
+                "max": 26.243,
+                "mean": 22.151
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "250.0": 20
+              },
+              "bubble_elapsed_ms_distinct": {
+                "0.0": 20
+              }
+            },
+            "new_boot": {
+              "recover_wall_ms": {
+                "n": 20,
+                "min": 16.349,
+                "median": 18.655,
+                "p99": 21.752,
+                "max": 21.752,
+                "mean": 18.868
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "250.0": 20
+              },
+              "bubble_elapsed_ms_distinct": {
+                "0.0": 20
+              }
+            },
+            "expired": {
+              "recover_wall_ms": {
+                "n": 20,
+                "min": 14.841,
+                "median": 18.889,
+                "p99": 21.988,
+                "max": 21.988,
+                "mean": 18.987
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "-1.0": 20
+              },
+              "bubble_elapsed_ms_distinct": {
+                "0.0": 20
+              }
+            }
+          },
+          "go_test_tail": [
+            "=== RUN   TestAT25_FileMeterWaitRestartRechecksCurrentFile/replaced",
+            "    meter_barrier_test.go:333: F20 recover_elapsed_ns=18444044 original_remaining_ns=250000000 bubble_elapsed_ns=250000000",
+            "=== RUN   TestAT25_FileMeterWaitRestartRechecksCurrentFile/withdrawn"
+          ],
+          "under_agent_load": {
+            "recover_calls_lower_bound": 102,
+            "note": "first k Recover calls in log order completed while the agent suite was still running (5 s sample granularity)"
+          },
+          "agent_tail": []
+        }
+      }
+    },
+    "r2": {
+      "tree_check": {
+        "at": "2026-11-03T12:24:10.767807Z",
+        "files": [
+          {
+            "path": "node/updater/meter_barrier_test.go",
+            "blob_f22_tip": "e1d911ad96b206a217924801ee828607e5ca90eb",
+            "blob_worktree": "e1d911ad96b206a217924801ee828607e5ca90eb",
+            "identical": true
+          },
+          {
+            "path": "node/updater/followup17_test.go",
+            "blob_f22_tip": "98b300dd22b3a57c1e7ee921388872f191382901",
+            "blob_worktree": "98b300dd22b3a57c1e7ee921388872f191382901",
+            "identical": true
+          }
+        ],
+        "identical": true
+      },
+      "wait_result": "quiet",
+      "wait_checks": [
+        {
+          "at": "2026-11-03T12:24:10.825120Z",
+          "hold": "free",
+          "foreign": [],
+          "non_suite_matches": [
+            "1031737 bash -c cd <worktree> && pgrep -u \"$(id -u)\" -af \"go test\" | grep -v pgrep; git status --short; date -u +%T; export TMPDIR=$PWD/.agent/tmp GOTMPDIR=$PWD/.agent/tmp CGO_ENABLED=0 GOTOOLCHAIN=local "
+          ],
+          "hold_after": "free",
+          "foreign_after": [],
+          "ok": false,
+          "foreign_cpu_avg_cores": 0.848,
+          "foreign_cpu_intervals": [
+            {
+              "t_s": 5.054,
+              "wall_s": 5.043,
+              "foreign_cores": 4.487,
+              "own_cores": 0.008,
+              "host_minus_own_cores": 4.632,
+              "top_foreign": [
+                [
+                  2.608,
+                  "grok"
+                ],
+                [
+                  1.741,
+                  "run_l5_qwen.py"
+                ],
+                [
+                  0.04,
+                  "python3"
+                ],
+                [
+                  0.034,
+                  "MainThread"
+                ],
+                [
+                  0.016,
+                  "agy"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  2.608,
+                  1031475,
+                  "grok .grok-brief.txt"
+                ],
+                [
+                  0.561,
+                  1031808,
+                  "python run_l5_qwen.py"
+                ],
+                [
+                  0.523,
+                  1031836,
+                  "python run_l5_qwen.py"
+                ],
+                [
+                  0.456,
+                  1031781,
+                  "python run_l5_qwen.py"
+                ],
+                [
+                  0.2,
+                  1031711,
+                  "python run_l5_qwen.py"
+                ]
+              ],
+              "excluded_kernel_cores": 0.0,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 10.096,
+              "wall_s": 5.043,
+              "foreign_cores": 0.107,
+              "own_cores": 0.008,
+              "host_minus_own_cores": 0.216,
+              "top_foreign": [
+                [
+                  0.048,
+                  "MainThread"
+                ],
+                [
+                  0.016,
+                  "agy"
+                ],
+                [
+                  0.01,
+                  "cloudflared"
+                ],
+                [
+                  0.006,
+                  "python3"
+                ],
+                [
+                  0.006,
+                  "grafana"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.048,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.006,
+                  4344,
+                  "grafana server"
+                ],
+                [
+                  0.006,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  696768,
+                  "agy stream-json"
+                ],
+                [
+                  0.004,
+                  34216,
+                  "claude stream-json"
+                ]
+              ],
+              "excluded_kernel_cores": 0.006,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 15.139,
+              "wall_s": 5.042,
+              "foreign_cores": 0.222,
+              "own_cores": 0.01,
+              "host_minus_own_cores": 0.426,
+              "top_foreign": [
+                [
+                  0.159,
+                  "MainThread"
+                ],
+                [
+                  0.02,
+                  "grok"
+                ],
+                [
+                  0.018,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  "cloudflared"
+                ],
+                [
+                  0.004,
+                  "grafana"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.159,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.02,
+                  1031475,
+                  "grok .grok-brief.txt"
+                ],
+                [
+                  0.01,
+                  998572,
+                  "agy"
+                ],
+                [
+                  0.008,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  3192,
+                  "cloudflared tunnel"
+                ]
+              ],
+              "excluded_kernel_cores": 0.127,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 20.181,
+              "wall_s": 5.042,
+              "foreign_cores": 0.059,
+              "own_cores": 0.006,
+              "host_minus_own_cores": 0.054,
+              "top_foreign": [
+                [
+                  0.022,
+                  "MainThread"
+                ],
+                [
+                  0.01,
+                  "agy"
+                ],
+                [
+                  0.008,
+                  "cloudflared"
+                ],
+                [
+                  0.004,
+                  "python3"
+                ],
+                [
+                  0.004,
+                  "hermes"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.02,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.006,
+                  998572,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  3192,
+                  "cloudflared tunnel"
+                ],
+                [
+                  0.004,
+                  3208,
+                  "python3"
+                ],
+                [
+                  0.004,
+                  4344,
+                  "grafana server"
+                ]
+              ],
+              "excluded_kernel_cores": 0.008,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 25.225,
+              "wall_s": 5.044,
+              "foreign_cores": 0.083,
+              "own_cores": 0.01,
+              "host_minus_own_cores": 0.067,
+              "top_foreign": [
+                [
+                  0.022,
+                  "hermes"
+                ],
+                [
+                  0.022,
+                  "MainThread"
+                ],
+                [
+                  0.01,
+                  "agy"
+                ],
+                [
+                  0.008,
+                  "cloudflared"
+                ],
+                [
+                  0.004,
+                  "tailscaled"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.022,
+                  3208,
+                  "python3"
+                ],
+                [
+                  0.02,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.008,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  2537,
+                  "tailscaled"
+                ],
+                [
+                  0.004,
+                  4344,
+                  "grafana server"
+                ]
+              ],
+              "excluded_kernel_cores": 0.004,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 30.013,
+              "wall_s": 4.788,
+              "foreign_cores": 0.094,
+              "own_cores": 0.008,
+              "host_minus_own_cores": 0.077,
+              "top_foreign": [
+                [
+                  0.031,
+                  "MainThread"
+                ],
+                [
+                  0.015,
+                  "python3"
+                ],
+                [
+                  0.013,
+                  "agy"
+                ],
+                [
+                  0.01,
+                  "cloudflared"
+                ],
+                [
+                  0.008,
+                  "claude"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.031,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.01,
+                  2239763,
+                  "python3"
+                ],
+                [
+                  0.008,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.008,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  3192,
+                  "cloudflared tunnel"
+                ]
+              ],
+              "excluded_kernel_cores": 0.004,
+              "excluded_runtime_cores": 0.002
+            }
+          ],
+          "vmstat_recorded": {
+            "rows": [
+              {
+                "r": 2,
+                "id": 80
+              },
+              {
+                "r": 0,
+                "id": 99
+              },
+              {
+                "r": 0,
+                "id": 98
+              },
+              {
+                "r": 0,
+                "id": 100
+              },
+              {
+                "r": 0,
+                "id": 98
+              },
+              {
+                "r": 1,
+                "id": 99
+              }
+            ],
+            "ok": true
+          }
+        },
+        {
+          "at": "2026-11-03T12:25:40.958670Z",
+          "hold": "free",
+          "foreign": [],
+          "non_suite_matches": [
+            "1031737 bash -c cd <worktree> && pgrep -u \"$(id -u)\" -af \"go test\" | grep -v pgrep; git status --short; date -u +%T; export TMPDIR=$PWD/.agent/tmp GOTMPDIR=$PWD/.agent/tmp CGO_ENABLED=0 GOTOOLCHAIN=local "
+          ],
+          "hold_after": "free",
+          "foreign_after": [],
+          "ok": true,
+          "foreign_cpu_avg_cores": 0.114,
+          "foreign_cpu_intervals": [
+            {
+              "t_s": 5.055,
+              "wall_s": 5.044,
+              "foreign_cores": 0.097,
+              "own_cores": 0.008,
+              "host_minus_own_cores": 0.101,
+              "top_foreign": [
+                [
+                  0.03,
+                  "python3"
+                ],
+                [
+                  0.022,
+                  "MainThread"
+                ],
+                [
+                  0.012,
+                  "agy"
+                ],
+                [
+                  0.01,
+                  "cloudflared"
+                ],
+                [
+                  0.006,
+                  "hermes"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.028,
+                  2239763,
+                  "python3"
+                ],
+                [
+                  0.022,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.01,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  3192,
+                  "cloudflared tunnel"
+                ],
+                [
+                  0.006,
+                  3208,
+                  "python3"
+                ]
+              ],
+              "excluded_kernel_cores": 0.0,
+              "excluded_runtime_cores": 0.014
+            },
+            {
+              "t_s": 10.097,
+              "wall_s": 5.042,
+              "foreign_cores": 0.083,
+              "own_cores": 0.01,
+              "host_minus_own_cores": 0.323,
+              "top_foreign": [
+                [
+                  0.026,
+                  "MainThread"
+                ],
+                [
+                  0.012,
+                  "agy"
+                ],
+                [
+                  0.01,
+                  "grafana"
+                ],
+                [
+                  0.008,
+                  "cloudflared"
+                ],
+                [
+                  0.006,
+                  "gh"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.026,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.01,
+                  4344,
+                  "grafana server"
+                ],
+                [
+                  0.008,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  1032256,
+                  "gh run"
+                ],
+                [
+                  0.004,
+                  34216,
+                  "claude stream-json"
+                ]
+              ],
+              "excluded_kernel_cores": 0.232,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 15.14,
+              "wall_s": 5.043,
+              "foreign_cores": 0.143,
+              "own_cores": 0.008,
+              "host_minus_own_cores": 0.133,
+              "top_foreign": [
+                [
+                  0.081,
+                  "MainThread"
+                ],
+                [
+                  0.016,
+                  "agy"
+                ],
+                [
+                  0.008,
+                  "prometheus-node"
+                ],
+                [
+                  0.006,
+                  "cloudflared"
+                ],
+                [
+                  0.006,
+                  "claude"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.079,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.012,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.008,
+                  2152,
+                  "prometheus-node-exporter"
+                ],
+                [
+                  0.006,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.004,
+                  998572,
+                  "agy"
+                ]
+              ],
+              "excluded_kernel_cores": 0.002,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 20.182,
+              "wall_s": 5.041,
+              "foreign_cores": 0.063,
+              "own_cores": 0.006,
+              "host_minus_own_cores": 0.073,
+              "top_foreign": [
+                [
+                  0.024,
+                  "MainThread"
+                ],
+                [
+                  0.008,
+                  "codex"
+                ],
+                [
+                  0.008,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  "claude"
+                ],
+                [
+                  0.004,
+                  "python3"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.024,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.008,
+                  1028426,
+                  "codex exec"
+                ],
+                [
+                  0.006,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.004,
+                  4344,
+                  "grafana server"
+                ]
+              ],
+              "excluded_kernel_cores": 0.004,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 25.224,
+              "wall_s": 5.042,
+              "foreign_cores": 0.083,
+              "own_cores": 0.01,
+              "host_minus_own_cores": 0.071,
+              "top_foreign": [
+                [
+                  0.032,
+                  "MainThread"
+                ],
+                [
+                  0.014,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  "python3"
+                ],
+                [
+                  0.006,
+                  "cloudflared"
+                ],
+                [
+                  0.006,
+                  "claude"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.03,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.01,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.004,
+                  998572,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  3474,
+                  "bat-server"
+                ]
+              ],
+              "excluded_kernel_cores": 0.006,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 30.014,
+              "wall_s": 4.79,
+              "foreign_cores": 0.223,
+              "own_cores": 0.008,
+              "host_minus_own_cores": 0.205,
+              "top_foreign": [
+                [
+                  0.146,
+                  "python3"
+                ],
+                [
+                  0.025,
+                  "MainThread"
+                ],
+                [
+                  0.013,
+                  "agy"
+                ],
+                [
+                  0.01,
+                  "cloudflared"
+                ],
+                [
+                  0.004,
+                  "hermes"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.142,
+                  2239763,
+                  "python3"
+                ],
+                [
+                  0.025,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.008,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  3192,
+                  "cloudflared tunnel"
+                ],
+                [
+                  0.004,
+                  3224,
+                  "cloudflared tunnel"
+                ]
+              ],
+              "excluded_kernel_cores": 0.004,
+              "excluded_runtime_cores": 0.0
+            }
+          ],
+          "vmstat_recorded": {
+            "rows": [
+              {
+                "r": 0,
+                "id": 99
+              },
+              {
+                "r": 0,
+                "id": 98
+              },
+              {
+                "r": 0,
+                "id": 99
+              },
+              {
+                "r": 0,
+                "id": 99
+              },
+              {
+                "r": 0,
+                "id": 100
+              },
+              {
+                "r": 0,
+                "id": 99
+              }
+            ],
+            "ok": true
+          }
+        }
+      ],
+      "reserve": {
+        "at": "2026-11-03T12:26:11.119052Z",
+        "exit": 0,
+        "out": "reserved for w2-updater until 07:56:11",
+        "err": ""
+      },
+      "release": {
+        "at": "2026-11-03T12:28:34.741727Z",
+        "t_s": 143.623,
+        "exit": 0,
+        "out": "released w2-updater",
+        "err": ""
+      },
+      "legs": {
+        "load": {
+          "kind": "load",
+          "args": [
+            [
+              "go",
+              "test",
+              "-count=1",
+              "./node/agent/..."
+            ],
+            [
+              "go",
+              "test",
+              "-v",
+              "-run",
+              "^TestAT25_FileMeterWaitRestartRechecksCurrentFile$",
+              "-count=50",
+              "./node/updater"
+            ]
+          ],
+          "status": "completed",
+          "qualified": true,
+          "watchdog_s": 300,
+          "post_exit_s": 30,
+          "preflight_wait_s": 30.136,
+          "started_at": "2026-11-03T12:27:41.255932Z",
+          "ended_at": "2026-11-03T12:28:34.708001Z",
+          "elapsed_s": 53.452,
+          "measured_end_s": 23.385,
+          "max_sample_gap_s": 5.066,
+          "foreign_cpu_ok": true,
+          "foreign_cpu_max_cores": 0.105,
+          "foreign_cpu_post_exit_max_cores": 0.385,
+          "post_exit_breach_recorded_only": [],
+          "in_leg_vmstat_ok_recorded_only": true,
+          "agent_updater_overlap_s": 23.383,
+          "preflights": [
+            {
+              "at": "2026-11-03T12:27:11.179254Z",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [
+                "1031737 bash -c cd <worktree> && pgrep -u \"$(id -u)\" -af \"go test\" | grep -v pgrep; git status --short; date -u +%T; export TMPDIR=$PWD/.agent/tmp GOTMPDIR=$PWD/.agent/tmp CGO_ENABLED=0 GOTOOLCHAIN=local "
+              ],
+              "hold_after": "free",
+              "foreign_after": [],
+              "ok": true,
+              "foreign_cpu_avg_cores": 0.077,
+              "foreign_cpu_intervals": [
+                {
+                  "t_s": 5.052,
+                  "wall_s": 5.04,
+                  "foreign_cores": 0.093,
+                  "own_cores": 0.008,
+                  "host_minus_own_cores": 0.087,
+                  "top_foreign": [
+                    [
+                      0.028,
+                      "python3"
+                    ],
+                    [
+                      0.026,
+                      "MainThread"
+                    ],
+                    [
+                      0.012,
+                      "agy"
+                    ],
+                    [
+                      0.01,
+                      "claude"
+                    ],
+                    [
+                      0.006,
+                      "cloudflared"
+                    ]
+                  ],
+                  "top_foreign_processes": [
+                    [
+                      0.026,
+                      601179,
+                      "node index.js"
+                    ],
+                    [
+                      0.024,
+                      2239763,
+                      "python3"
+                    ],
+                    [
+                      0.01,
+                      34216,
+                      "claude stream-json"
+                    ],
+                    [
+                      0.008,
+                      997013,
+                      "agy"
+                    ],
+                    [
+                      0.004,
+                      4344,
+                      "grafana server"
+                    ]
+                  ],
+                  "excluded_kernel_cores": 0.006,
+                  "excluded_runtime_cores": 0.002
+                },
+                {
+                  "t_s": 10.093,
+                  "wall_s": 5.041,
+                  "foreign_cores": 0.073,
+                  "own_cores": 0.008,
+                  "host_minus_own_cores": 0.063,
+                  "top_foreign": [
+                    [
+                      0.028,
+                      "MainThread"
+                    ],
+                    [
+                      0.016,
+                      "agy"
+                    ],
+                    [
+                      0.01,
+                      "claude"
+                    ],
+                    [
+                      0.006,
+                      "cloudflared"
+                    ],
+                    [
+                      0.002,
+                      "tailscaled"
+                    ]
+                  ],
+                  "top_foreign_processes": [
+                    [
+                      0.022,
+                      601179,
+                      "node index.js"
+                    ],
+                    [
+                      0.01,
+                      34216,
+                      "claude stream-json"
+                    ],
+                    [
+                      0.01,
+                      997013,
+                      "agy"
+                    ],
+                    [
+                      0.004,
+                      3192,
+                      "cloudflared tunnel"
+                    ],
+                    [
+                      0.004,
+                      998572,
+                      "agy"
+                    ]
+                  ],
+                  "excluded_kernel_cores": 0.0,
+                  "excluded_runtime_cores": 0.0
+                },
+                {
+                  "t_s": 15.135,
+                  "wall_s": 5.042,
+                  "foreign_cores": 0.071,
+                  "own_cores": 0.008,
+                  "host_minus_own_cores": 0.282,
+                  "top_foreign": [
+                    [
+                      0.026,
+                      "MainThread"
+                    ],
+                    [
+                      0.01,
+                      "agy"
+                    ],
+                    [
+                      0.008,
+                      "cloudflared"
+                    ],
+                    [
+                      0.006,
+                      "claude"
+                    ],
+                    [
+                      0.004,
+                      "python"
+                    ]
+                  ],
+                  "top_foreign_processes": [
+                    [
+                      0.026,
+                      601179,
+                      "node index.js"
+                    ],
+                    [
+                      0.006,
+                      34216,
+                      "claude stream-json"
+                    ],
+                    [
+                      0.006,
+                      997013,
+                      "agy"
+                    ],
+                    [
+                      0.004,
+                      4344,
+                      "grafana server"
+                    ],
+                    [
+                      0.004,
+                      998572,
+                      "agy"
+                    ]
+                  ],
+                  "excluded_kernel_cores": 0.23,
+                  "excluded_runtime_cores": 0.0
+                },
+                {
+                  "t_s": 20.178,
+                  "wall_s": 5.043,
+                  "foreign_cores": 0.079,
+                  "own_cores": 0.008,
+                  "host_minus_own_cores": 0.067,
+                  "top_foreign": [
+                    [
+                      0.02,
+                      "MainThread"
+                    ],
+                    [
+                      0.018,
+                      "claude"
+                    ],
+                    [
+                      0.01,
+                      "cloudflared"
+                    ],
+                    [
+                      0.01,
+                      "agy"
+                    ],
+                    [
+                      0.006,
+                      "python3"
+                    ]
+                  ],
+                  "top_foreign_processes": [
+                    [
+                      0.02,
+                      601179,
+                      "node index.js"
+                    ],
+                    [
+                      0.018,
+                      34216,
+                      "claude stream-json"
+                    ],
+                    [
+                      0.008,
+                      997013,
+                      "agy"
+                    ],
+                    [
+                      0.004,
+                      3474,
+                      "bat-server"
+                    ],
+                    [
+                      0.004,
+                      2239763,
+                      "python3"
+                    ]
+                  ],
+                  "excluded_kernel_cores": 0.0,
+                  "excluded_runtime_cores": 0.0
+                },
+                {
+                  "t_s": 25.22,
+                  "wall_s": 5.042,
+                  "foreign_cores": 0.071,
+                  "own_cores": 0.008,
+                  "host_minus_own_cores": 0.073,
+                  "top_foreign": [
+                    [
+                      0.024,
+                      "MainThread"
+                    ],
+                    [
+                      0.02,
+                      "hermes"
+                    ],
+                    [
+                      0.016,
+                      "agy"
+                    ],
+                    [
+                      0.002,
+                      "uvicorn"
+                    ],
+                    [
+                      0.002,
+                      "tailscaled"
+                    ]
+                  ],
+                  "top_foreign_processes": [
+                    [
+                      0.022,
+                      601179,
+                      "node index.js"
+                    ],
+                    [
+                      0.02,
+                      3208,
+                      "python3"
+                    ],
+                    [
+                      0.01,
+                      997013,
+                      "agy"
+                    ],
+                    [
+                      0.004,
+                      998572,
+                      "agy"
+                    ],
+                    [
+                      0.002,
+                      2537,
+                      "tailscaled"
+                    ]
+                  ],
+                  "excluded_kernel_cores": 0.006,
+                  "excluded_runtime_cores": 0.0
+                },
+                {
+                  "t_s": 30.014,
+                  "wall_s": 4.794,
+                  "foreign_cores": 0.077,
+                  "own_cores": 0.008,
+                  "host_minus_own_cores": 0.056,
+                  "top_foreign": [
+                    [
+                      0.021,
+                      "MainThread"
+                    ],
+                    [
+                      0.013,
+                      "cloudflared"
+                    ],
+                    [
+                      0.01,
+                      "agy"
+                    ],
+                    [
+                      0.008,
+                      "python3"
+                    ],
+                    [
+                      0.006,
+                      "codex"
+                    ]
+                  ],
+                  "top_foreign_processes": [
+                    [
+                      0.017,
+                      601179,
+                      "node index.js"
+                    ],
+                    [
+                      0.006,
+                      34216,
+                      "claude stream-json"
+                    ],
+                    [
+                      0.006,
+                      997013,
+                      "agy"
+                    ],
+                    [
+                      0.004,
+                      3208,
+                      "python3"
+                    ],
+                    [
+                      0.004,
+                      3224,
+                      "cloudflared tunnel"
+                    ]
+                  ],
+                  "excluded_kernel_cores": 0.0,
+                  "excluded_runtime_cores": 0.0
+                }
+              ],
+              "vmstat_recorded": {
+                "rows": [
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 98
+                  },
+                  {
+                    "r": 0,
+                    "id": 98
+                  },
+                  {
+                    "r": 0,
+                    "id": 100
+                  },
+                  {
+                    "r": 1,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  }
+                ],
+                "ok": true
+              }
+            }
+          ],
+          "in_leg_samples": {
+            "count": 4,
+            "all_hold_free": true,
+            "foreign_suite_samples": 0,
+            "non_suite_matches": [
+              "1031737 bash -c cd <worktree> && pgrep -u \"$(id -u)\" -af \"go test\" | grep -v pgrep; git status --short; date -u +%T; export TMPDIR=$PWD/.agent/tmp GOTMPDIR=$PWD/.agent/tmp CGO_ENABLED=0 GOTOOLCHAIN=local "
+            ],
+            "samples": [
+              {
+                "t_s": 5.066,
+                "phase": "in_leg",
+                "hold": "free",
+                "foreign": [],
+                "non_suite_matches": [
+                  "1031737 bash -c cd <worktree> && pgrep -u \"$(id -u)\" -af \"go test\" | grep -v pgrep; git status --short; date -u +%T; export TMPDIR=$PWD/.agent/tmp GOTMPDIR=$PWD/.agent/tmp CGO_ENABLED=0 GOTOOLCHAIN=local "
+                ],
+                "running": [
+                  "agent",
+                  "updater"
+                ],
+                "recover_samples": 50,
+                "foreign_cpu_max_so_far": 0.085
+              },
+              {
+                "t_s": 10.128,
+                "phase": "in_leg",
+                "hold": "free",
+                "foreign": [],
+                "non_suite_matches": [
+                  "1031737 bash -c cd <worktree> && pgrep -u \"$(id -u)\" -af \"go test\" | grep -v pgrep; git status --short; date -u +%T; export TMPDIR=$PWD/.agent/tmp GOTMPDIR=$PWD/.agent/tmp CGO_ENABLED=0 GOTOOLCHAIN=local "
+                ],
+                "running": [
+                  "agent",
+                  "updater"
+                ],
+                "recover_samples": 105,
+                "foreign_cpu_max_so_far": 0.085
+              },
+              {
+                "t_s": 15.192,
+                "phase": "in_leg",
+                "hold": "free",
+                "foreign": [],
+                "non_suite_matches": [
+                  "1031737 bash -c cd <worktree> && pgrep -u \"$(id -u)\" -af \"go test\" | grep -v pgrep; git status --short; date -u +%T; export TMPDIR=$PWD/.agent/tmp GOTMPDIR=$PWD/.agent/tmp CGO_ENABLED=0 GOTOOLCHAIN=local "
+                ],
+                "running": [
+                  "agent",
+                  "updater"
+                ],
+                "recover_samples": 170,
+                "foreign_cpu_max_so_far": 0.105
+              },
+              {
+                "t_s": 20.254,
+                "phase": "in_leg",
+                "hold": "free",
+                "foreign": [],
+                "non_suite_matches": [
+                  "1031737 bash -c cd <worktree> && pgrep -u \"$(id -u)\" -af \"go test\" | grep -v pgrep; git status --short; date -u +%T; export TMPDIR=$PWD/.agent/tmp GOTMPDIR=$PWD/.agent/tmp CGO_ENABLED=0 GOTOOLCHAIN=local "
+                ],
+                "running": [
+                  "agent",
+                  "updater"
+                ],
+                "recover_samples": 219,
+                "foreign_cpu_max_so_far": 0.105
+              }
+            ]
+          },
+          "post_exit_samples": [
+            {
+              "t_s": 28.514,
+              "phase": "post_exit",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [
+                "1031737 bash -c cd <worktree> && pgrep -u \"$(id -u)\" -af \"go test\" | grep -v pgrep; git status --short; date -u +%T; export TMPDIR=$PWD/.agent/tmp GOTMPDIR=$PWD/.agent/tmp CGO_ENABLED=0 GOTOOLCHAIN=local "
+              ],
+              "running": [
+                "agent"
+              ],
+              "recover_samples": 250,
+              "foreign_cpu_max_so_far": 0.105
+            },
+            {
+              "t_s": 33.573,
+              "phase": "post_exit",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [
+                "1031737 bash -c cd <worktree> && pgrep -u \"$(id -u)\" -af \"go test\" | grep -v pgrep; git status --short; date -u +%T; export TMPDIR=$PWD/.agent/tmp GOTMPDIR=$PWD/.agent/tmp CGO_ENABLED=0 GOTOOLCHAIN=local "
+              ],
+              "running": [
+                "agent"
+              ],
+              "recover_samples": 250,
+              "foreign_cpu_max_so_far": 0.206
+            },
+            {
+              "t_s": 38.631,
+              "phase": "post_exit",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [
+                "1031737 bash -c cd <worktree> && pgrep -u \"$(id -u)\" -af \"go test\" | grep -v pgrep; git status --short; date -u +%T; export TMPDIR=$PWD/.agent/tmp GOTMPDIR=$PWD/.agent/tmp CGO_ENABLED=0 GOTOOLCHAIN=local "
+              ],
+              "running": [
+                "agent"
+              ],
+              "recover_samples": 250,
+              "foreign_cpu_max_so_far": 0.206
+            },
+            {
+              "t_s": 43.688,
+              "phase": "post_exit",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [
+                "1031737 bash -c cd <worktree> && pgrep -u \"$(id -u)\" -af \"go test\" | grep -v pgrep; git status --short; date -u +%T; export TMPDIR=$PWD/.agent/tmp GOTMPDIR=$PWD/.agent/tmp CGO_ENABLED=0 GOTOOLCHAIN=local "
+              ],
+              "running": [
+                "agent"
+              ],
+              "recover_samples": 250,
+              "foreign_cpu_max_so_far": 0.206
+            },
+            {
+              "t_s": 48.746,
+              "phase": "post_exit",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [
+                "1031737 bash -c cd <worktree> && pgrep -u \"$(id -u)\" -af \"go test\" | grep -v pgrep; git status --short; date -u +%T; export TMPDIR=$PWD/.agent/tmp GOTMPDIR=$PWD/.agent/tmp CGO_ENABLED=0 GOTOOLCHAIN=local "
+              ],
+              "running": [
+                "agent"
+              ],
+              "recover_samples": 250,
+              "foreign_cpu_max_so_far": 0.206
+            },
+            {
+              "t_s": 53.442,
+              "phase": "post_exit",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [
+                "1031737 bash -c cd <worktree> && pgrep -u \"$(id -u)\" -af \"go test\" | grep -v pgrep; git status --short; date -u +%T; export TMPDIR=$PWD/.agent/tmp GOTMPDIR=$PWD/.agent/tmp CGO_ENABLED=0 GOTOOLCHAIN=local "
+              ],
+              "running": [
+                "agent"
+              ],
+              "recover_samples": 250,
+              "foreign_cpu_max_so_far": 0.206
+            }
+          ],
+          "foreign_cpu_in_leg": [
+            {
+              "t_s": 5.048,
+              "wall_s": 5.04,
+              "foreign_cores": 0.085,
+              "own_cores": 0.423,
+              "host_minus_own_cores": 0.272,
+              "top_foreign": [
+                [
+                  0.028,
+                  "MainThread"
+                ],
+                [
+                  0.024,
+                  "python3"
+                ],
+                [
+                  0.008,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  "claude"
+                ],
+                [
+                  0.004,
+                  "hermes"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.028,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.022,
+                  2239763,
+                  "python3"
+                ],
+                [
+                  0.006,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.006,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  4344,
+                  "grafana server"
+                ]
+              ],
+              "excluded_kernel_cores": 0.04,
+              "excluded_runtime_cores": 0.012
+            },
+            {
+              "t_s": 10.088,
+              "wall_s": 5.041,
+              "foreign_cores": 0.073,
+              "own_cores": 0.43,
+              "host_minus_own_cores": 0.333,
+              "top_foreign": [
+                [
+                  0.022,
+                  "MainThread"
+                ],
+                [
+                  0.014,
+                  "claude"
+                ],
+                [
+                  0.008,
+                  "grafana"
+                ],
+                [
+                  0.006,
+                  "codex"
+                ],
+                [
+                  0.006,
+                  "cloudflared"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.022,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.014,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.008,
+                  4344,
+                  "grafana server"
+                ],
+                [
+                  0.004,
+                  3192,
+                  "cloudflared tunnel"
+                ],
+                [
+                  0.004,
+                  998572,
+                  "agy"
+                ]
+              ],
+              "excluded_kernel_cores": 0.272,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 15.128,
+              "wall_s": 5.04,
+              "foreign_cores": 0.105,
+              "own_cores": 0.325,
+              "host_minus_own_cores": 0.119,
+              "top_foreign": [
+                [
+                  0.044,
+                  "MainThread"
+                ],
+                [
+                  0.014,
+                  "claude"
+                ],
+                [
+                  0.014,
+                  "agy"
+                ],
+                [
+                  0.008,
+                  "prometheus-node"
+                ],
+                [
+                  0.006,
+                  "codex"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.042,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.014,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.01,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.008,
+                  2152,
+                  "prometheus-node-exporter"
+                ],
+                [
+                  0.004,
+                  1028426,
+                  "codex exec"
+                ]
+              ],
+              "excluded_kernel_cores": 0.036,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 20.169,
+              "wall_s": 5.041,
+              "foreign_cores": 0.065,
+              "own_cores": 0.23,
+              "host_minus_own_cores": 0.198,
+              "top_foreign": [
+                [
+                  0.026,
+                  "MainThread"
+                ],
+                [
+                  0.01,
+                  "cloudflared"
+                ],
+                [
+                  0.01,
+                  "claude"
+                ],
+                [
+                  0.006,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  "python3"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.024,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.01,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.004,
+                  3208,
+                  "python3"
+                ],
+                [
+                  0.002,
+                  3235,
+                  "cloudflared tunnel"
+                ],
+                [
+                  0.002,
+                  997013,
+                  "agy"
+                ]
+              ],
+              "excluded_kernel_cores": 0.161,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 25.21,
+              "wall_s": 5.041,
+              "foreign_cores": 0.083,
+              "own_cores": 0.161,
+              "host_minus_own_cores": 0.099,
+              "top_foreign": [
+                [
+                  0.028,
+                  "MainThread"
+                ],
+                [
+                  0.012,
+                  "claude"
+                ],
+                [
+                  0.012,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  "cloudflared"
+                ],
+                [
+                  0.004,
+                  "systemd"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.026,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.012,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.008,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  3474,
+                  "bat-server"
+                ],
+                [
+                  0.004,
+                  1028426,
+                  "codex exec"
+                ]
+              ],
+              "excluded_kernel_cores": 0.03,
+              "excluded_runtime_cores": 0.0
+            }
+          ],
+          "foreign_cpu_post_exit": [
+            {
+              "t_s": 30.25,
+              "wall_s": 5.041,
+              "foreign_cores": 0.206,
+              "own_cores": 0.056,
+              "host_minus_own_cores": 0.369,
+              "top_foreign": [
+                [
+                  0.137,
+                  "python3"
+                ],
+                [
+                  0.028,
+                  "MainThread"
+                ],
+                [
+                  0.01,
+                  "claude"
+                ],
+                [
+                  0.008,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  "cloudflared"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.133,
+                  2239763,
+                  "python3"
+                ],
+                [
+                  0.026,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.01,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.004,
+                  3192,
+                  "cloudflared tunnel"
+                ],
+                [
+                  0.004,
+                  4344,
+                  "grafana server"
+                ]
+              ],
+              "excluded_kernel_cores": 0.028,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 35.29,
+              "wall_s": 5.04,
+              "foreign_cores": 0.097,
+              "own_cores": 0.054,
+              "host_minus_own_cores": 0.123,
+              "top_foreign": [
+                [
+                  0.028,
+                  "python3"
+                ],
+                [
+                  0.024,
+                  "MainThread"
+                ],
+                [
+                  0.012,
+                  "agy"
+                ],
+                [
+                  0.01,
+                  "claude"
+                ],
+                [
+                  0.006,
+                  "cloudflared"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.024,
+                  2239763,
+                  "python3"
+                ],
+                [
+                  0.022,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.01,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.01,
+                  998572,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  2156,
+                  "prometheus"
+                ]
+              ],
+              "excluded_kernel_cores": 0.04,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 40.331,
+              "wall_s": 5.04,
+              "foreign_cores": 0.071,
+              "own_cores": 0.157,
+              "host_minus_own_cores": 0.083,
+              "top_foreign": [
+                [
+                  0.022,
+                  "MainThread"
+                ],
+                [
+                  0.014,
+                  "agy"
+                ],
+                [
+                  0.012,
+                  "claude"
+                ],
+                [
+                  0.008,
+                  "cloudflared"
+                ],
+                [
+                  0.002,
+                  "uvicorn"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.018,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.012,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.008,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  7033,
+                  "node"
+                ],
+                [
+                  0.004,
+                  696768,
+                  "agy stream-json"
+                ]
+              ],
+              "excluded_kernel_cores": 0.04,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 45.371,
+              "wall_s": 5.04,
+              "foreign_cores": 0.062,
+              "own_cores": 0.224,
+              "host_minus_own_cores": 0.296,
+              "top_foreign": [
+                [
+                  0.018,
+                  "MainThread"
+                ],
+                [
+                  0.01,
+                  "claude"
+                ],
+                [
+                  0.008,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  "python3"
+                ],
+                [
+                  0.006,
+                  "cloudflared"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.018,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.01,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.006,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.004,
+                  2537,
+                  "tailscaled"
+                ],
+                [
+                  0.004,
+                  4344,
+                  "grafana server"
+                ]
+              ],
+              "excluded_kernel_cores": 0.264,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 50.412,
+              "wall_s": 5.041,
+              "foreign_cores": 0.073,
+              "own_cores": 0.147,
+              "host_minus_own_cores": 0.117,
+              "top_foreign": [
+                [
+                  0.022,
+                  "MainThread"
+                ],
+                [
+                  0.016,
+                  "agy"
+                ],
+                [
+                  0.012,
+                  "cloudflared"
+                ],
+                [
+                  0.008,
+                  "claude"
+                ],
+                [
+                  0.006,
+                  "hermes"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.02,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.014,
+                  997013,
+                  "agy"
+                ],
+                [
+                  0.008,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.006,
+                  3208,
+                  "python3"
+                ],
+                [
+                  0.004,
+                  3205,
+                  "cloudflared tunnel"
+                ]
+              ],
+              "excluded_kernel_cores": 0.018,
+              "excluded_runtime_cores": 0.0
+            },
+            {
+              "t_s": 53.452,
+              "wall_s": 3.04,
+              "foreign_cores": 0.385,
+              "own_cores": 0.02,
+              "host_minus_own_cores": 0.378,
+              "top_foreign": [
+                [
+                  0.306,
+                  "MainThread"
+                ],
+                [
+                  0.03,
+                  "hermes"
+                ],
+                [
+                  0.013,
+                  "agy"
+                ],
+                [
+                  0.007,
+                  "grafana"
+                ],
+                [
+                  0.007,
+                  "cloudflared"
+                ]
+              ],
+              "top_foreign_processes": [
+                [
+                  0.306,
+                  601179,
+                  "node index.js"
+                ],
+                [
+                  0.03,
+                  3208,
+                  "python3"
+                ],
+                [
+                  0.007,
+                  34216,
+                  "claude stream-json"
+                ],
+                [
+                  0.007,
+                  998572,
+                  "agy"
+                ],
+                [
+                  0.007,
+                  4344,
+                  "grafana server"
+                ]
+              ],
+              "excluded_kernel_cores": 0.0,
+              "excluded_runtime_cores": 0.0
+            }
+          ],
+          "excluded_cpu_max_cores": {
+            "kernel": 0.272,
+            "runtime": 0.012
+          },
+          "vmstat_recorded": {
+            "intervals": 10,
+            "max_r": 1,
+            "min_id": 92,
+            "rows": [
+              {
+                "t_s": 5.002,
+                "r": 1,
+                "id": 92
+              },
+              {
+                "t_s": 10.002,
+                "r": 0,
+                "id": 92
+              },
+              {
+                "t_s": 15.002,
+                "r": 1,
+                "id": 94
+              },
+              {
+                "t_s": 20.002,
+                "r": 0,
+                "id": 93
+              },
+              {
+                "t_s": 25.003,
+                "r": 0,
+                "id": 94
+              },
+              {
+                "t_s": 30.003,
+                "r": 0,
+                "id": 94
+              },
+              {
+                "t_s": 35.003,
+                "r": 0,
+                "id": 95
+              },
+              {
+                "t_s": 40.003,
+                "r": 0,
+                "id": 95
+              },
+              {
+                "t_s": 45.004,
+                "r": 0,
+                "id": 95
+              },
+              {
+                "t_s": 50.004,
+                "r": 0,
+                "id": 97
+              }
+            ]
+          },
+          "processes": [
+            {
+              "name": "agent",
+              "start_s": 0.001,
+              "end_s": 53.445,
+              "exit": -15
+            },
+            {
+              "name": "updater",
+              "start_s": 0.002,
+              "end_s": 23.385,
+              "exit": 0
+            }
+          ],
+          "iterations": {
+            "completed": 50,
+            "passed": 50,
+            "failed": 0
+          },
+          "recover_calls": 250,
+          "failures": [],
+          "cases": {
+            "missing": {
+              "recover_wall_ms": {
+                "n": 50,
+                "min": 10.855,
+                "median": 19.066,
+                "p99": 22.537,
+                "max": 22.537,
+                "mean": 18.288
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "250.0": 50
+              },
+              "bubble_elapsed_ms_distinct": {
+                "250.0": 50
+              }
+            },
+            "replaced": {
+              "recover_wall_ms": {
+                "n": 50,
+                "min": 11.233,
+                "median": 18.98,
+                "p99": 22.227,
+                "max": 22.227,
+                "mean": 18.537
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "250.0": 50
+              },
+              "bubble_elapsed_ms_distinct": {
+                "250.0": 50
+              }
+            },
+            "withdrawn": {
+              "recover_wall_ms": {
+                "n": 50,
+                "min": 12.807,
+                "median": 22.752,
+                "p99": 33.079,
+                "max": 33.079,
+                "mean": 21.937
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "250.0": 50
+              },
+              "bubble_elapsed_ms_distinct": {
+                "0.0": 50
+              }
+            },
+            "new_boot": {
+              "recover_wall_ms": {
+                "n": 50,
+                "min": 10.996,
+                "median": 18.767,
+                "p99": 21.926,
+                "max": 21.926,
+                "mean": 18.028
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "250.0": 50
+              },
+              "bubble_elapsed_ms_distinct": {
+                "0.0": 50
+              }
+            },
+            "expired": {
+              "recover_wall_ms": {
+                "n": 50,
+                "min": 11.103,
+                "median": 18.454,
+                "p99": 22.577,
+                "max": 22.577,
+                "mean": 17.947
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "-1.0": 50
+              },
+              "bubble_elapsed_ms_distinct": {
+                "0.0": 50
+              }
+            }
+          },
+          "go_test_tail": [
+            "    --- PASS: TestAT25_FileMeterWaitRestartRechecksCurrentFile/expired (0.09s)",
+            "PASS",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t23.078s"
+          ],
+          "under_agent_load": {
+            "recover_calls_lower_bound": 219,
+            "note": "first k Recover calls in log order completed while the agent suite was still running (5 s sample granularity)"
+          },
+          "agent_tail": []
+        }
+      }
+    }
+  },
+  "sessions": [
+    {
+      "agent": "agy/claude-opus-5-5-high",
+      "ended_reason": "model quota exhausted at 07:30 EST / 12:30Z before the report",
+      "work": [
+        "committed declaration f770117d",
+        "input tree and deterministic checks",
+        "runner dry self-test",
+        "both measured reservations r1 and r2",
+        "post tree and deterministic checks",
+        "F23-01 diagnosis and initial C1/C2/M1 controls",
+        "parked item2.patch",
+        "drafted verdict, timing JSON and item 2"
+      ]
+    },
+    {
+      "agent": "codex/gpt-6-astra",
+      "work": [
+        "recomputed retained summary with summarize.py",
+        "independently checked qualification, CPU partitions, logs, budgets and tree hashes",
+        "applied item2.patch unchanged",
+        "reran retained controls after admission",
+        "ran gates and cross-builds",
+        "completed public records and hand-off report"
+      ],
+      "new_reservations": 0,
+      "new_measured_legs": 0,
+      "fix_commit": "159329d9"
+    }
+  ],
+  "record_verification": {
+    "r1": {
+      "iterations": {
+        "completed": 20,
+        "passed": 20,
+        "failed": 0
+      },
+      "recover_calls": 102,
+      "qualified": false,
+      "foreign_cpu_deciding_max_cores": 0.996,
+      "foreign_cpu_post_exit_max_cores": null,
+      "max_sample_gap_s": 5.064,
+      "measured_end_s": 10.129,
+      "preflight_passed": true,
+      "post_exit_sampling_s": null,
+      "post_exit_note": "no post-exit sampling for the stopped leg; 0.011 s is cleanup overhead only"
+    },
+    "r2": {
+      "iterations": {
+        "completed": 50,
+        "passed": 50,
+        "failed": 0
+      },
+      "recover_calls": 250,
+      "qualified": true,
+      "foreign_cpu_deciding_max_cores": 0.105,
+      "foreign_cpu_post_exit_max_cores": 0.385,
+      "max_sample_gap_s": 5.066,
+      "measured_end_s": 23.385,
+      "preflight_passed": true,
+      "post_exit_sampling_s": 30.067
+    },
+    "computed_verdict": "HOLDS",
+    "summary_equals_retained_draft": true,
+    "deterministic_budget_exact_before_after": true,
+    "disagreements": [],
+    "method": "summarize.py verdict.json r1 r2; independent raw-interval qualification audit; post.json exit, admission, sample and tree checks; preserved original draft and logs"
+  },
+  "input_checks": {
+    "tree": {
+      "f22_tip": "5eea3f02180adddf37c38bface5001eb12b216b1",
+      "head": "f770117da6422a08df8c2f4d6379134bfa336a43",
+      "files": [
+        {
+          "path": "node/updater/meter_barrier_test.go",
+          "blob_f22_tip": "e1d911ad96b206a217924801ee828607e5ca90eb",
+          "blob_worktree": "e1d911ad96b206a217924801ee828607e5ca90eb",
+          "sha256_f22_tip": "81a82b322b4d5188d787d8346e7184493aecc8bd8c175501563f12512525ead9",
+          "sha256_worktree": "81a82b322b4d5188d787d8346e7184493aecc8bd8c175501563f12512525ead9",
+          "identical": true
+        },
+        {
+          "path": "node/updater/followup17_test.go",
+          "blob_f22_tip": "98b300dd22b3a57c1e7ee921388872f191382901",
+          "blob_worktree": "98b300dd22b3a57c1e7ee921388872f191382901",
+          "sha256_f22_tip": "2d7d0ac93b20ac641d4c3793a4e4c72e8bd99d628c0fd498926e43b77972637f",
+          "sha256_worktree": "2d7d0ac93b20ac641d4c3793a4e4c72e8bd99d628c0fd498926e43b77972637f",
+          "identical": true
+        }
+      ],
+      "identical": true,
+      "diff_names_node_pkg_internal_gomod_since_tip": [],
+      "worktree_clean_node_updater": true,
+      "at": "2026-11-03T12:08:50.332157Z"
+    },
+    "steps": [
+      {
+        "step": "build-updater",
+        "args": [
+          "go",
+          "test",
+          "-count=1",
+          "-run",
+          "^$",
+          "./node/updater"
+        ],
+        "admission": "free",
+        "waited_s": 0,
+        "exit": 0,
+        "elapsed_s": 0.302,
+        "at": "2026-11-03T12:08:50.668520Z"
+      },
+      {
+        "step": "build-agent",
+        "args": [
+          "go",
+          "test",
+          "-count=1",
+          "-run",
+          "^$",
+          "./node/agent/..."
+        ],
+        "admission": "free",
+        "waited_s": 0,
+        "exit": 0,
+        "elapsed_s": 0.327,
+        "at": "2026-11-03T12:08:51.030636Z"
+      },
+      {
+        "step": "deadline",
+        "args": [
+          "go",
+          "test",
+          "-v",
+          "-count=50",
+          "-run",
+          "^TestAT25_FileMeterWaitRestartKeepsDeadline$",
+          "./node/updater"
+        ],
+        "admission": "free",
+        "waited_s": 0,
+        "exit": 0,
+        "elapsed_s": 1.096,
+        "at": "2026-11-03T12:08:52.160835Z",
+        "samples": 200,
+        "distinct": [
+          "meter wait elapsed=0s original remaining=0s",
+          "meter wait elapsed=250ms original remaining=250ms",
+          "meter wait elapsed=50ms original remaining=50ms"
+        ]
+      }
+    ]
+  },
+  "post_checks": {
+    "tree": {
+      "f22_tip": "5eea3f02180adddf37c38bface5001eb12b216b1",
+      "head": "f770117da6422a08df8c2f4d6379134bfa336a43",
+      "files": [
+        {
+          "path": "node/updater/meter_barrier_test.go",
+          "blob_f22_tip": "e1d911ad96b206a217924801ee828607e5ca90eb",
+          "blob_worktree": "e1d911ad96b206a217924801ee828607e5ca90eb",
+          "sha256_f22_tip": "81a82b322b4d5188d787d8346e7184493aecc8bd8c175501563f12512525ead9",
+          "sha256_worktree": "81a82b322b4d5188d787d8346e7184493aecc8bd8c175501563f12512525ead9",
+          "identical": true
+        },
+        {
+          "path": "node/updater/followup17_test.go",
+          "blob_f22_tip": "98b300dd22b3a57c1e7ee921388872f191382901",
+          "blob_worktree": "98b300dd22b3a57c1e7ee921388872f191382901",
+          "sha256_f22_tip": "2d7d0ac93b20ac641d4c3793a4e4c72e8bd99d628c0fd498926e43b77972637f",
+          "sha256_worktree": "2d7d0ac93b20ac641d4c3793a4e4c72e8bd99d628c0fd498926e43b77972637f",
+          "identical": true
+        }
+      ],
+      "identical": true,
+      "diff_names_node_pkg_internal_gomod_since_tip": [],
+      "worktree_clean_node_updater": true,
+      "at": "2026-11-03T12:28:46.068265Z"
+    },
+    "steps": [
+      {
+        "step": "deadline",
+        "args": [
+          "go",
+          "test",
+          "-v",
+          "-count=50",
+          "-run",
+          "^TestAT25_FileMeterWaitRestartKeepsDeadline$",
+          "./node/updater"
+        ],
+        "admission": "free",
+        "waited_s": 0,
+        "exit": 0,
+        "elapsed_s": 1.074,
+        "at": "2026-11-03T12:28:47.176197Z",
+        "samples": 200,
+        "distinct": [
+          "meter wait elapsed=0s original remaining=0s",
+          "meter wait elapsed=250ms original remaining=250ms",
+          "meter wait elapsed=50ms original remaining=50ms"
+        ]
+      }
+    ]
+  },
+  "retained_record_sha256": {
+    "r2-window.json": "6fa106bae069f15710db193608ef17eab40d3ecfd75c5c09fce4e812eee719bc",
+    "r2-console.log": "e9ed5bd29e9c6dbd739c2bb267e55c0a87827916fb22a68c2949ff351ee51b9a",
+    "item2-doc.md": "9db0dd71ded645eed24b64ff7ae731625b569c17d9a3f57b0ca0c708bd0dc329",
+    "inputs-build-updater.log": "b7bbcbdb1cc2e005fe64375051702daedaafc40aaeb74cecd3e4abbc8f23c5e2",
+    "verdict.json": "6ba88898f8f636ed940b1dfb0fe280f63426e8b463f86502501e383820196e28",
+    "m1-fixed.log": "b5950bd355f2bf1b07c83bac2d9ca7ddd2d8869e376445e800d2556eaab20ff2",
+    "summarize.py": "463f96b93df31f1e76595b66c710548617d5a89871ffc63c2820930d0fb491cf",
+    "r1-load-updater.log": "0ca27524bcb611951a393382898c57aba185a96eb38021fb60430a32867b23db",
+    "mkcontrol.py": "4bd7d7102cc2d147035eec56818e22e30191bddc7fb4d381fffbb30cffffa87b",
+    "r2-load-agent.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "c2-fixed.log": "e885a1c529e7c05c5d197a823966a4a29ae570d3b84994464a72835f60feb4e1",
+    "window.py": "597b2a6f5439c83153fd7b2282f78cc7c8af015446f6ab2f0e3eb18e5bd4eb06",
+    "gates.py": "a4fca6226a8b141933dab0fffadddb3ab13307d50e632f735aeb207c8a6d6afa",
+    "c1-fixed-plain.log": "dc0c2e1266a5667d0f8c9ec9795686477e7aad4f8e64c3de47efa8f75aeb7e33",
+    "r2-load-updater.log": "4558eacff869b377bf34cf772b32242bb4010e0a43c2a53a5ea6f2dacbbc147c",
+    "inputs-build-agent.log": "4cb41213092ce473c034a2e4212e4d9451745b00027e6e2319792d055d66082d",
+    "wait-ledger.json": "450752238d66a1a9291b368d1bc8bcb1091a1289cbcded3ef9785208b1dbf186",
+    "m1-current.log": "4bfcbf87ee0738d083435a09a56849830d8e16063e722c3900b99e2c347d2ac4",
+    "c1-current.log": "799fa1d187e22e4153b73be83f792c7ac6a29539a75c355b0c71c900993b7d78",
+    "r1-window.json": "5f0edbde91defa546c7878a8119952e5aabc34e0b2548f8989fc9a09c6ec8a22",
+    "r1-console.log": "5c79f9a6d17f723e1d5f6024e5fe3b7858601f81d600b90111cc91d94c667c0f",
+    "c2.log": "9bb86f6973e138def224e4c2b8180eb0e08d90d48eb7acde6b4f36c0188c6501",
+    "inputs.json": "c483bce5d1fb0f9374e17c2a2a1adceb47bb7a4fc3fad0dfe43d1579761c559b",
+    "inputs.py": "e4b720aa8411fe4a96c7d00993628936a60647079a958803515dec8a3ed47691",
+    "post-deadline.log": "7765da58607fdf08e79807a81df81f3860a93751892c5812dab3a86c6ad48abc",
+    "r1-load-agent.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "item2.patch": "b430e9f980bae924faeaeae7415dd99d2e44588b33278c14842370cb2b54dbc7",
+    "c1-fixed.log": "822f58be5a63fabbcb27cbe7ec986e9fbfdf0343b28910370729e12fdf0d2fe5",
+    "dry-load-agent.log": "4cb41213092ce473c034a2e4212e4d9451745b00027e6e2319792d055d66082d",
+    "dry-console.log": "1d50956165ab39d5adcf5a0d010a28869e1035f28ddc4c44ee47fcd4842a754b",
+    "c1-current-plain.log": "a4a9dcd6d96f37da4b9467729814cd0781154d1a145e67c4b2f5f4f54a9641c1",
+    "dry-load-updater.log": "f859af4bc244563c122546f6ef3b9f7a9e1b0c383f41cec84145669b74d9d7dd",
+    "inputs-deadline.log": "a37b878f7be9bff07863e3fd0f3e13963ff3b2b714ea8a710aabb9cbf6bbf0f0",
+    "dry-window.json": "6c01f50451b5e80967b9123b81c82af38a407c676cae07fc2003157c0aec4edc",
+    "post.json": "be866d399b3ab1930c3e29ee3aa6516e232100083fe2beae5d7ff725c8d4a28c",
+    "lib.py": "6085f488ac5ab9a79d0ae40ab021626e96973ac3533ac55679909e104c1df46e",
+    "control/c2-engine_test.go": "3d2dbcf371811a19c6f3da36e410efd10bf04918d13895a8b8596eab9ea89f3d",
+    "control/c1-current-overlay.json": "80d19ba63da60ccbadf39067b0d00e0a0806bd3304999ae46c07ea2092145247",
+    "control/c1-current-review_d053_test.go": "73a59d42f630d1a0e92da3bf178763119813398620d214a0e4019afaa27bf960",
+    "control/c1-fixed-overlay.json": "3f2344986cefae0f94466af26be2fb19c5d667a46e7c1fae5b77d47ad54f75b6",
+    "control/m1-fixed-overlay.json": "4f89d7aba3650c9e67a74fd2f396679ea15017acb4e4ac59816e738b76428e00",
+    "control/m1-current-overlay.json": "ed2f8eef78d3f1d96de8be352c10e0bec79d587e9e467c86da220aa3d20b1298",
+    "control/m1-attest.go": "58cf16816b6ae8fa20dd03804741f1a9d5f1a514bd52159df9317a842a1f6c4c",
+    "control/f23_control_test.go": "93d78b4060aa78ec2e497017e0cf772cb206d1c0188593f334e43d4dfcba0026",
+    "control/m1-current-review_d053_test.go": "878be093dfcd7edc4a468a996da976fdca5f336f30ff73158cd14d3e50ec2fda",
+    "control/c1-fixed-review_d053_test.go": "7255d1835f005bfbe3e72a1cdd5d866a8d897819f005a43119b9a1a75313bf54",
+    "control/c2-overlay.json": "53888d0310622a29a1c5a5300b0ea099c11e6228058203a6bd127c04720f7568",
+    "control/c2-fixed-overlay.json": "53888d0310622a29a1c5a5300b0ea099c11e6228058203a6bd127c04720f7568"
+  },
+  "runner_self_test": {
+    "source": "dry-window.json",
+    "purpose": "unmeasured runner self-test, not pooled",
+    "reservation": false,
+    "qualified": false,
+    "status": "completed",
+    "started_at": "2026-11-03T12:09:27.000887Z",
+    "measured_end_s": 1.221,
+    "iterations": {
+      "passed": 2,
+      "failed": 0
+    },
+    "in_leg_samples": 0,
+    "foreign_cpu_deciding_max_cores": 0.095,
+    "foreign_cpu_post_exit_max_cores": 0.246,
+    "log_tail": [
+      "    --- PASS: TestAT25_FileMeterWaitRestartRechecksCurrentFile/expired (0.06s)",
+      "PASS",
+      "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t0.936s"
+    ]
+  },
+  "item2": {
+    "finding": "F23-01",
+    "classification": "fixture defect",
+    "test": "TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires",
+    "mechanism": "The test clock call during the first read can stall past the 80 ms wall-clock context; poll returns before the injected Sleep rewrites the warm-up attestation.",
+    "fix": "Retained item2.patch applied unchanged: synctest.Test with bubbleWorld, preserving Wait=80ms, Poll=10ms, TTL and all assertions.",
+    "changed_file": "node/updater/review_d053_test.go",
+    "diff_ignoring_whitespace": {
+      "added": 10,
+      "removed": 1
+    },
+    "control_definitions": {
+      "C1": "250 ms blocking nanosleep on the second nc.Now call, inside the first read",
+      "C2": "100 ms blocking nanosleep in the world clock whenever NodeChecks.poll is on the stack; full package",
+      "M1": "product overlay breaks poll at the first attestation"
+    },
+    "retained_and_rerun_results": [
+      {
+        "control": "c1-current",
+        "retained_log": "c1-current.log",
+        "rerun_log": "completion/c1-current.log",
+        "retained": {
+          "top_pass": 0,
+          "top_fail": 1,
+          "expected_failure_message": true,
+          "c1_stall_ran": true,
+          "c2_stalls": 0,
+          "c2_test_cases": 0,
+          "c2_by_case": {},
+          "tail": [
+            "FAIL",
+            "FAIL\tgithub.com/TED-H-com/Freedom-VPN/node/updater\t0.292s",
+            "FAIL"
+          ]
+        },
+        "rerun": {
+          "top_pass": 0,
+          "top_fail": 1,
+          "expected_failure_message": true,
+          "c1_stall_ran": true,
+          "c2_stalls": 0,
+          "c2_test_cases": 0,
+          "c2_by_case": {},
+          "tail": [
+            "FAIL",
+            "FAIL\tgithub.com/TED-H-com/Freedom-VPN/node/updater\t0.287s",
+            "FAIL"
+          ]
+        },
+        "outcome_differences": []
+      },
+      {
+        "control": "c1-fixed",
+        "retained_log": "c1-fixed.log",
+        "rerun_log": "completion/c1-fixed.log",
+        "retained": {
+          "top_pass": 1,
+          "top_fail": 0,
+          "expected_failure_message": false,
+          "c1_stall_ran": true,
+          "c2_stalls": 0,
+          "c2_test_cases": 0,
+          "c2_by_case": {},
+          "tail": [
+            "--- PASS: TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires (0.30s)",
+            "PASS",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t0.305s"
+          ]
+        },
+        "rerun": {
+          "top_pass": 1,
+          "top_fail": 0,
+          "expected_failure_message": false,
+          "c1_stall_ran": true,
+          "c2_stalls": 0,
+          "c2_test_cases": 0,
+          "c2_by_case": {},
+          "tail": [
+            "--- PASS: TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires (0.29s)",
+            "PASS",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t0.295s"
+          ]
+        },
+        "outcome_differences": []
+      },
+      {
+        "control": "m1-current",
+        "retained_log": "m1-current.log",
+        "rerun_log": "completion/m1-current.log",
+        "retained": {
+          "top_pass": 0,
+          "top_fail": 1,
+          "expected_failure_message": true,
+          "c1_stall_ran": false,
+          "c2_stalls": 0,
+          "c2_test_cases": 0,
+          "c2_by_case": {},
+          "tail": [
+            "FAIL",
+            "FAIL\tgithub.com/TED-H-com/Freedom-VPN/node/updater\t0.041s",
+            "FAIL"
+          ]
+        },
+        "rerun": {
+          "top_pass": 0,
+          "top_fail": 1,
+          "expected_failure_message": true,
+          "c1_stall_ran": false,
+          "c2_stalls": 0,
+          "c2_test_cases": 0,
+          "c2_by_case": {},
+          "tail": [
+            "FAIL",
+            "FAIL\tgithub.com/TED-H-com/Freedom-VPN/node/updater\t0.037s",
+            "FAIL"
+          ]
+        },
+        "outcome_differences": []
+      },
+      {
+        "control": "m1-fixed",
+        "retained_log": "m1-fixed.log",
+        "rerun_log": "completion/m1-fixed.log",
+        "retained": {
+          "top_pass": 0,
+          "top_fail": 1,
+          "expected_failure_message": true,
+          "c1_stall_ran": false,
+          "c2_stalls": 0,
+          "c2_test_cases": 0,
+          "c2_by_case": {},
+          "tail": [
+            "FAIL",
+            "FAIL\tgithub.com/TED-H-com/Freedom-VPN/node/updater\t0.044s",
+            "FAIL"
+          ]
+        },
+        "rerun": {
+          "top_pass": 0,
+          "top_fail": 1,
+          "expected_failure_message": true,
+          "c1_stall_ran": false,
+          "c2_stalls": 0,
+          "c2_test_cases": 0,
+          "c2_by_case": {},
+          "tail": [
+            "FAIL",
+            "FAIL\tgithub.com/TED-H-com/Freedom-VPN/node/updater\t0.036s",
+            "FAIL"
+          ]
+        },
+        "outcome_differences": []
+      },
+      {
+        "control": "fixed-plain",
+        "retained_log": "c1-fixed-plain.log",
+        "rerun_log": "completion/fixed-plain.log",
+        "retained": {
+          "top_pass": 20,
+          "top_fail": 0,
+          "expected_failure_message": false,
+          "c1_stall_ran": false,
+          "c2_stalls": 0,
+          "c2_test_cases": 0,
+          "c2_by_case": {},
+          "tail": [
+            "--- PASS: TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires (0.02s)",
+            "PASS",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t0.397s"
+          ]
+        },
+        "rerun": {
+          "top_pass": 20,
+          "top_fail": 0,
+          "expected_failure_message": false,
+          "c1_stall_ran": false,
+          "c2_stalls": 0,
+          "c2_test_cases": 0,
+          "c2_by_case": {},
+          "tail": [
+            "--- PASS: TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires (0.02s)",
+            "PASS",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t0.410s"
+          ]
+        },
+        "outcome_differences": []
+      },
+      {
+        "control": "c2-fixed",
+        "retained_log": "c2-fixed.log",
+        "rerun_log": "completion/c2-fixed.log",
+        "retained": {
+          "top_pass": 176,
+          "top_fail": 0,
+          "expected_failure_message": false,
+          "c1_stall_ran": false,
+          "c2_stalls": 88,
+          "c2_test_cases": 28,
+          "c2_by_case": {
+            "TestUPD_D053_UnpublishedInstallSetsLastGood": 2,
+            "TestUPD_D053_PublishedIntentFollowsServingRules/in_serving_set": 2,
+            "TestUPD_D053_PublishedIntentFollowsServingRules/outside_serving_set": 2,
+            "TestUPD_D053_MissingAttestationRecovers": 2,
+            "TestUPD_D053_AttestationRejections/wrong_nonce": 3,
+            "TestUPD_D053_AttestationRejections/wrong_release": 3,
+            "TestUPD_D053_AttestationRejections/previous_boot": 3,
+            "TestUPD_D053_AttestationRejections/expired": 3,
+            "TestUPD_D053_AttestationRejections/version_mismatch": 3,
+            "TestUPD_D053_AttestationRejections/not_run": 3,
+            "TestUPD_D053_PreseededAttestationIsIgnored": 2,
+            "TestUPD_D053_RollbackAnswersItsOwnChallenge": 5,
+            "TestUPD_D062_CandidateHealthFlush/checked_candidate": 5,
+            "TestUPD_D062_CandidateHealthFlush/before_candidate_checks": 2,
+            "TestUPD_D062_RollbackReportsRestoredHealthAndKeepsCandidate": 5,
+            "TestUPD_D053_CommitFailureDoesNotPromoteLastGoodOrSchema/locally_succeeded": 4,
+            "TestUPD_D053_CommitFailureDoesNotPromoteLastGoodOrSchema/rolled_back": 7,
+            "TestUPD_D053_RevocationFailureStopsTargetAndReportsPrevious": 3,
+            "TestUPD_D053_UntrustedReasonNeverReachesJournal": 3,
+            "TestUPD_D063_OmissionSurvivesHealthAndConsumption/node_addresses_unavailable": 2,
+            "TestUPD_D063_OmissionSurvivesHealthAndConsumption/agent_config_unavailable": 2,
+            "TestUPD_D053_Review_RevokedCurrentRollbackIssuesChallengeAndReportsTruth": 2,
+            "TestUPD_D053_Review_CrashInStepRollbackAfterSetLastGoodLiesRecoveryRequired": 5,
+            "TestUPD_D053_Review_CrashInStepCheckAfterSetStateSchemaBreaksRollback": 2,
+            "TestUPD_D053_Review_Held_VersionTokenAndTTLClampCannotHideMismatch": 5,
+            "TestUPD_D053_Review_Held_PartialWriteAndChallengeWriteFailureRollBack/partial_JSON_write_rolls_back_with_malformed": 4,
+            "TestUPD_D053_Review_Held_PartialWriteAndChallengeWriteFailureRollBack/challenge_write_failure_fails_closed_and_rolls_back": 2,
+            "TestUPD_RevokedCurrentRollsBack": 2
+          },
+          "tail": [
+            "    --- PASS: TestF902_SeedUpgradedTreeAcrossCallerUmasks/apply077_seed022 (0.11s)",
+            "PASS",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t35.202s"
+          ]
+        },
+        "rerun": {
+          "top_pass": 176,
+          "top_fail": 0,
+          "expected_failure_message": false,
+          "c1_stall_ran": false,
+          "c2_stalls": 88,
+          "c2_test_cases": 28,
+          "c2_by_case": {
+            "TestUPD_D053_UnpublishedInstallSetsLastGood": 2,
+            "TestUPD_D053_PublishedIntentFollowsServingRules/in_serving_set": 2,
+            "TestUPD_D053_PublishedIntentFollowsServingRules/outside_serving_set": 2,
+            "TestUPD_D053_MissingAttestationRecovers": 2,
+            "TestUPD_D053_AttestationRejections/wrong_nonce": 3,
+            "TestUPD_D053_AttestationRejections/wrong_release": 3,
+            "TestUPD_D053_AttestationRejections/previous_boot": 3,
+            "TestUPD_D053_AttestationRejections/expired": 3,
+            "TestUPD_D053_AttestationRejections/version_mismatch": 3,
+            "TestUPD_D053_AttestationRejections/not_run": 3,
+            "TestUPD_D053_PreseededAttestationIsIgnored": 2,
+            "TestUPD_D053_RollbackAnswersItsOwnChallenge": 5,
+            "TestUPD_D062_CandidateHealthFlush/checked_candidate": 5,
+            "TestUPD_D062_CandidateHealthFlush/before_candidate_checks": 2,
+            "TestUPD_D062_RollbackReportsRestoredHealthAndKeepsCandidate": 5,
+            "TestUPD_D053_CommitFailureDoesNotPromoteLastGoodOrSchema/locally_succeeded": 4,
+            "TestUPD_D053_CommitFailureDoesNotPromoteLastGoodOrSchema/rolled_back": 7,
+            "TestUPD_D053_RevocationFailureStopsTargetAndReportsPrevious": 3,
+            "TestUPD_D053_UntrustedReasonNeverReachesJournal": 3,
+            "TestUPD_D063_OmissionSurvivesHealthAndConsumption/node_addresses_unavailable": 2,
+            "TestUPD_D063_OmissionSurvivesHealthAndConsumption/agent_config_unavailable": 2,
+            "TestUPD_D053_Review_RevokedCurrentRollbackIssuesChallengeAndReportsTruth": 2,
+            "TestUPD_D053_Review_CrashInStepRollbackAfterSetLastGoodLiesRecoveryRequired": 5,
+            "TestUPD_D053_Review_CrashInStepCheckAfterSetStateSchemaBreaksRollback": 2,
+            "TestUPD_D053_Review_Held_VersionTokenAndTTLClampCannotHideMismatch": 5,
+            "TestUPD_D053_Review_Held_PartialWriteAndChallengeWriteFailureRollBack/partial_JSON_write_rolls_back_with_malformed": 4,
+            "TestUPD_D053_Review_Held_PartialWriteAndChallengeWriteFailureRollBack/challenge_write_failure_fails_closed_and_rolls_back": 2,
+            "TestUPD_RevokedCurrentRollsBack": 2
+          },
+          "tail": [
+            "    --- PASS: TestF902_SeedUpgradedTreeAcrossCallerUmasks/apply077_seed022 (0.08s)",
+            "PASS",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t25.340s"
+          ]
+        },
+        "outcome_differences": []
+      }
+    ],
+    "rerun_commands": [
+      {
+        "name": "c1-current",
+        "command": [
+          "go",
+          "test",
+          "-v",
+          "-count=1",
+          "-run",
+          "^TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires$",
+          "-overlay=.agent/tmp/f23/control/c1-current-overlay.json",
+          "./node/updater"
+        ],
+        "admission_checks": [
+          {
+            "at": "2026-11-03T12:33:39.246808+00:00",
+            "exit": 0,
+            "out": "free",
+            "err": ""
+          }
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "elapsed_s": 0.584,
+        "log": "c1-current.log"
+      },
+      {
+        "name": "c1-fixed",
+        "command": [
+          "go",
+          "test",
+          "-v",
+          "-count=1",
+          "-run",
+          "^TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires$",
+          "-overlay=.agent/tmp/f23/control/c1-fixed-overlay.json",
+          "./node/updater"
+        ],
+        "admission_checks": [
+          {
+            "at": "2026-11-03T12:33:39.866520+00:00",
+            "exit": 0,
+            "out": "free",
+            "err": ""
+          }
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "elapsed_s": 0.594,
+        "log": "c1-fixed.log"
+      },
+      {
+        "name": "m1-current",
+        "command": [
+          "go",
+          "test",
+          "-v",
+          "-count=1",
+          "-run",
+          "^TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires$",
+          "-overlay=.agent/tmp/f23/control/m1-current-overlay.json",
+          "./node/updater"
+        ],
+        "admission_checks": [
+          {
+            "at": "2026-11-03T12:33:40.495147+00:00",
+            "exit": 0,
+            "out": "free",
+            "err": ""
+          }
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "elapsed_s": 0.334,
+        "log": "m1-current.log"
+      },
+      {
+        "name": "m1-fixed",
+        "command": [
+          "go",
+          "test",
+          "-v",
+          "-count=1",
+          "-run",
+          "^TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires$",
+          "-overlay=.agent/tmp/f23/control/m1-fixed-overlay.json",
+          "./node/updater"
+        ],
+        "admission_checks": [
+          {
+            "at": "2026-11-03T12:33:40.865170+00:00",
+            "exit": 0,
+            "out": "free",
+            "err": ""
+          }
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "elapsed_s": 0.328,
+        "log": "m1-fixed.log"
+      },
+      {
+        "name": "fixed-plain",
+        "command": [
+          "go",
+          "test",
+          "-v",
+          "-count=20",
+          "-run",
+          "^TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires$",
+          "./node/updater"
+        ],
+        "admission_checks": [
+          {
+            "at": "2026-11-03T12:33:41.229291+00:00",
+            "exit": 0,
+            "out": "free",
+            "err": ""
+          }
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "elapsed_s": 0.698,
+        "log": "fixed-plain.log"
+      },
+      {
+        "name": "c2-fixed",
+        "command": [
+          "go",
+          "test",
+          "-v",
+          "-count=1",
+          "-overlay=.agent/tmp/f23/control/c2-fixed-overlay.json",
+          "./node/updater"
+        ],
+        "admission_checks": [
+          {
+            "at": "2026-11-03T12:33:41.962751+00:00",
+            "exit": 0,
+            "out": "free",
+            "err": ""
+          }
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "elapsed_s": 25.641,
+        "log": "c2-fixed.log"
+      }
+    ],
+    "reruns_are_measurements": false,
+    "overlays_unchanged": true,
+    "control_residue_under_node": false,
+    "outcome_disagreements": [],
+    "known_uncontrolled_windows": [
+      "30 s PollRetainsLastValidFailure context",
+      "long download and DNS deadlines; test-owned lock/reader guards",
+      "updatejournal SnapshotDuringWriteTransaction wall-clock guard outside this item scope"
+    ]
+  },
+  "gates": [
+    {
+      "name": "updater-nodelock",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./node/updater/...",
+        "./node/nodelock/..."
+      ],
+      "admission_checks": [
+        {
+          "at": "2026-11-03T12:34:49.715638+00:00",
+          "exit": 0,
+          "out": "free",
+          "err": ""
+        }
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "elapsed_s": 17.129,
+      "log": "updater-nodelock.log"
+    },
+    {
+      "name": "handover",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "admission_checks": [
+        {
+          "at": "2026-11-03T12:35:06.879653+00:00",
+          "exit": 0,
+          "out": "free",
+          "err": ""
+        }
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "elapsed_s": 3.466,
+      "log": "handover.log"
+    },
+    {
+      "name": "go-lint",
+      "command": [
+        "make",
+        "go-lint",
+        "go-with-disk-tmp=set -eu;"
+      ],
+      "admission_checks": [
+        {
+          "at": "2026-11-03T12:35:10.381194+00:00",
+          "exit": 0,
+          "out": "free",
+          "err": ""
+        }
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "elapsed_s": 2.102,
+      "log": "go-lint.log"
+    },
+    {
+      "name": "go-vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "admission_checks": [
+        {
+          "at": "2026-11-03T12:35:12.518461+00:00",
+          "exit": 0,
+          "out": "free",
+          "err": ""
+        }
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "elapsed_s": 0.377,
+      "log": "go-vet.log"
+    },
+    {
+      "name": "gofmt",
+      "command": [
+        "bash",
+        "-c",
+        "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+      ],
+      "admission_checks": [
+        {
+          "at": "2026-11-03T12:35:12.931471+00:00",
+          "exit": 0,
+          "out": "free",
+          "err": ""
+        }
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "elapsed_s": 0.225,
+      "log": "gofmt.log"
+    },
+    {
+      "name": "diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "admission_checks": [
+        {
+          "at": "2026-11-03T12:35:13.192385+00:00",
+          "exit": 0,
+          "out": "free",
+          "err": ""
+        }
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "elapsed_s": 0.006,
+      "log": "diff-check.log"
+    },
+    {
+      "name": "diff-check-main",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "main...HEAD"
+      ],
+      "admission_checks": [
+        {
+          "at": "2026-11-03T12:35:13.232953+00:00",
+          "exit": 0,
+          "out": "free",
+          "err": ""
+        }
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "elapsed_s": 0.002,
+      "log": "diff-check-main.log"
+    },
+    {
+      "name": "updater-lint",
+      "command": [
+        "make",
+        "-f",
+        "mk/updater.mk",
+        "updater-lint"
+      ],
+      "admission_checks": [
+        {
+          "at": "2026-11-03T12:35:13.268211+00:00",
+          "exit": 0,
+          "out": "free",
+          "err": ""
+        }
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "elapsed_s": 0.957,
+      "log": "updater-lint.log"
+    },
+    {
+      "name": "updater-build",
+      "command": [
+        "make",
+        "-f",
+        "mk/updater.mk",
+        "updater-build"
+      ],
+      "admission_checks": [
+        {
+          "at": "2026-11-03T12:35:14.260252+00:00",
+          "exit": 0,
+          "out": "free",
+          "err": ""
+        }
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "elapsed_s": 1.421,
+      "log": "updater-build.log"
+    },
+    {
+      "name": "arm64-test-build",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-o",
+        ".agent/tmp/f23/completion/updater-arm64.test",
+        "./node/updater"
+      ],
+      "admission_checks": [
+        {
+          "at": "2026-11-03T12:35:15.717196+00:00",
+          "exit": 0,
+          "out": "free",
+          "err": ""
+        }
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "elapsed_s": 1.098,
+      "log": "arm64-test-build.log"
+    }
+  ],
+  "docker_inventory": [
+    {
+      "kind": "containers",
+      "admission": "free",
+      "exit": 0,
+      "inventory": [],
+      "error": ""
+    },
+    {
+      "kind": "networks",
+      "admission": "free",
+      "exit": 0,
+      "inventory": [],
+      "error": ""
+    },
+    {
+      "kind": "volumes",
+      "admission": "free",
+      "exit": 0,
+      "inventory": [],
+      "error": ""
+    },
+    {
+      "kind": "images",
+      "admission": "free",
+      "exit": 0,
+      "inventory": [],
+      "error": ""
+    }
+  ]
+}
