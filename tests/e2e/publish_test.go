@@ -77,9 +77,17 @@ func (r *runner) publish(ctx context.Context, admin *session, nodeID uuid.UUID) 
 	}
 	noteNode(&rec, detail.Body)
 	capacity := map[string]any{"capacity": map[string]any{"down_bps": 200000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
-	capReply, capErr := admin.call(ctx, "PATCH", r.lab.public+"/api/v1/admin/nodes/"+nodeID.String(), capacity, map[string]string{"Idempotency-Key": uuid.NewString(), "If-Match": detail.Header.Get("ETag")})
-	rec.Observations = append(rec.Observations, Observation{Name: "capacity_patch", Detail: httpDetail(capReply, capErr)}, Observation{Name: "capacity_input", Detail: `TEST ONLY 200 Mbps parent / 100 Mbps member caps through PATCH; required by the agent QoS model`})
-	if capErr != nil || (capReply.Status != 200 && capReply.Status != 202) {
+	capETag := detail.Header.Get("ETag")
+	// TEST ONLY, off by default: provoke a real API conflict without racing or
+	// changing stored state. Every subsequent attempt uses the real GET ETag.
+	if os.Getenv("FVPN_E2E_PUBLISH_STALE_ETAG") == "1" {
+		capETag = `"0"`
+		recPathNote(&rec)("test_only_stale_etag", "capacity first attempt only")
+	}
+	nodeURL := r.lab.public + "/api/v1/admin/nodes/" + nodeID.String()
+	capResult := admin.writeNode(ctx, "PATCH", nodeURL, nodeURL, capacity, capETag, nodeFieldsMatch(capacity), []int{200, 202}, recPathNote(&rec))
+	rec.Observations = append(rec.Observations, Observation{Name: "capacity_patch", Detail: httpDetail(capResult.Reply, capResult.Err)}, Observation{Name: "capacity_input", Detail: `TEST ONLY 200 Mbps parent / 100 Mbps member caps through PATCH; required by the agent QoS model`})
+	if !capResult.accepted(200, 202) {
 		r.record(rec)
 		return
 	}
@@ -89,22 +97,39 @@ func (r *runner) publish(ctx context.Context, admin *session, nodeID uuid.UUID) 
 		return
 	}
 	etag := detail.Header.Get("ETag")
+	if os.Getenv("FVPN_E2E_PUBLISH_STALE_ETAG") == "1" {
+		etag = `"0"`
+		recPathNote(&rec)("test_only_stale_etag", "publication first attempt only")
+	}
 	rec.Observations = append(rec.Observations, Observation{Name: "request", Detail: `{"publication_intent":"published","group_ids":["` + r.groupID.String() + `"],"reason":"e2e acceptance publish"}; If-Match=` + etag})
-	put, err := admin.call(ctx, "PUT", r.lab.public+"/api/v1/admin/nodes/"+nodeID.String()+"/publication", api.PublicationRequest{
+	putResult := admin.writeNode(ctx, "PUT", nodeURL+"/publication", nodeURL, api.PublicationRequest{
 		GroupIds: &[]uuid.UUID{r.groupID}, PublicationIntent: api.PublicationIntentPublished, Reason: "e2e acceptance publish",
-	}, map[string]string{"Idempotency-Key": uuid.NewString(), "If-Match": etag})
+	}, etag, publishedNode(r.groupID), []int{202}, recPathNote(&rec))
+	put, err := putResult.Reply, putResult.Err
 	rec.Observations = append(rec.Observations, Observation{Name: "put", Detail: httpDetail(put, err)})
 	if err != nil {
-		rec.Status = StatusFail
+		if put.Status != 412 || put.Code != "RESOURCE_VERSION_CONFLICT" {
+			rec.Status = StatusFail
+		}
 		r.record(rec)
 		return
 	}
-	if put.Status != 202 {
+	if !putResult.accepted(202) {
 		rec.Observations = append(rec.Observations, Observation{Name: "put_error", Detail: apiErrorText(put.Body)})
 		r.record(rec)
 		return
 	}
 	opID := operationID(put.Body)
+	if putResult.AlreadyIntended {
+		// No new write: recover the real existing publication operation, then
+		// keep every operation/observed-state predicate below unchanged.
+		if dbErr == nil {
+			_ = conn.QueryRow(ctx, `SELECT id::text FROM operations
+				WHERE resource_type='node' AND resource_id=$1 AND kind='node.publish'
+				ORDER BY created_at DESC, id DESC LIMIT 1`, nodeID).Scan(&opID)
+		}
+		recPathNote(&rec)("existing_publication_operation", emptyDash(opID))
+	}
 	rec.Observations = append(rec.Observations, Observation{Name: "operation_id", Detail: emptyDash(opID)})
 	if opID == "" {
 		rec.Observations = append(rec.Observations, Observation{Name: "put_body", Detail: clipText(string(put.Body), 400)})

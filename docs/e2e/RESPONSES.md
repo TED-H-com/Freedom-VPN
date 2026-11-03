@@ -1426,3 +1426,50 @@ carrying this link in members commit
 `docs/poc/G1-app-checklist.md`; the
 [per-file verification](runs/2026-11-03/followup31/archive-links.md) records each
 source file, source digest and successful target/byte comparison.
+
+## 2026-11-03 — isolation 19 F19-02: bounded node ETag conflict handling
+
+The shared publisher now re-reads the node after an exact HTTP 412
+`RESOURCE_VERSION_CONFLICT` on its capacity PATCH or publication PUT. If the
+re-read has all requested capacity values, or published intent and the exact
+requested group, that command succeeds without another write. Otherwise it
+retries with the new ETag. Each command has at most three write attempts and a
+ten-second total deadline, including re-reads. This permits two transient races
+while keeping persistent contention blocked. Other statuses, other 412 codes,
+failed re-reads and transport errors stop immediately. No run is retried and
+nothing is added to `expected-blocked.json`.
+
+The contract and `internal/nodes/observations.go` show that accepted reports
+advance the node version. Isolation's stored check timestamps include
+`2026-11-03T22:10:56.673939768Z`, in the same second as its blocked PATCH record.
+A report arriving between the GET and PATCH is a plausible explanation, but
+that record lacks the sent ETag, returned current version and individual request
+times needed to identify the competing write. This is not proof of host
+interference or a product defect. Isolation's later independent PUT returned
+202 and remained running; that separate evidence is preserved.
+
+Retries keep the original UUID key and unchanged body. OpenAPI `IdempotencyKey`
+and spec §14.5 identify the same logical command by its validated payload;
+`If-Match` is not in that hash. The server rolls back both the failed command
+and its key reservation on a 412, and stores only durable successful results.
+A new key is unnecessary. The [source audit](runs/2026-11-03/followup32/audit.md)
+traces this boundary and lists every owned/AT conditional-write site.
+
+Consumer records now contain a `node_write` observation for each command. Its
+JSON has ordered `attempts`, method/path, sent `if_match`, UUID key, response
+status/error code, decimal-string `current_resource_version` when supplied,
+UTC start/finish times, and the nested re-read's method/path/status/error/ETag
+and times. `outcome=already_intended` explicitly identifies success without a
+second write. Bounds and the terminal outcome/status are included. This
+command receipt does not imply applied state: all downstream publication
+predicates remain intact, including real operation success and active observed
+publication. The other owned node helpers use the same implementation;
+unrelated calls keep their existing behavior.
+
+`FVPN_E2E_PUBLISH_STALE_ETAG=1` is an off-by-default TEST ONLY switch: it sends
+`"0"` on the first capacity and first publication attempt, provoking real API
+412s without modifying product state or observations. Subsequent writes use
+the actual re-read ETags. The [follow-up 32 evidence](runs/2026-11-03/followup32/README.md)
+retains the synthetic gates and both fresh-stack attempts, including the
+ordinary path with the switch unset. AT-owned sites are read-only hand-offs in
+the audit's dated Requests to orchestrator; isolation reruns after merge.

@@ -222,24 +222,19 @@ func (r *runner) survivorHold30(ctx context.Context, s *Stack, admin *session) {
 	if err != nil || detail.Status != 200 {
 		return
 	}
-	patch, err := admin.call(ctx, "PATCH", nodePath, map[string]any{
+	capacity := map[string]any{
 		"capacity": map[string]any{
-			"down_bps":            210000000,
-			"up_bps":              210000000,
-			"member_down_bps_cap": 100000000,
-			"member_up_bps_cap":   100000000,
+			"down_bps": 210000000, "up_bps": 210000000,
+			"member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000,
 		},
-	}, map[string]string{
-		"If-Match":        detail.Header.Get("ETag"),
-		"Idempotency-Key": uuid.NewString(),
-	})
+	}
+	result := admin.writeNode(ctx, "PATCH", nodePath, nodePath, capacity, detail.Header.Get("ETag"), nodeFieldsMatch(capacity), []int{202}, recPathNote(&rec))
 	noteJSON(&rec, "command", map[string]any{
-		"at":       time.Now().UTC(),
-		"status":   patch.Status,
-		"accepted": err == nil && patch.Status == 202,
-		"body":     json.RawMessage(patch.Body),
+		"at": time.Now().UTC(), "status": result.Reply.Status,
+		"accepted": result.accepted(202), "already_intended": result.AlreadyIntended,
+		"body": json.RawMessage(result.Reply.Body),
 	})
-	if err != nil || patch.Status != 202 {
+	if !result.accepted(202) {
 		return
 	}
 

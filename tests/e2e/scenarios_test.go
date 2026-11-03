@@ -828,12 +828,13 @@ func (r *runner) revoke(ctx context.Context, nodeID uuid.UUID) {
 		r.record(rec)
 		return
 	}
-	etag := detail.Header.Get("ETag")
-	rev, err := admin.call(ctx, "POST", r.lab.public+"/api/v1/admin/nodes/"+nodeID.String()+"/revoke", api.ReasonRequest{Reason: "e2e acceptance revoke"}, map[string]string{
-		"Idempotency-Key": uuid.NewString(), "If-Match": etag,
-	})
-	rec.Observations = append(rec.Observations, Observation{Name: "revoke", Detail: httpDetail(rev, err)})
-	if err != nil || rev.Status != 202 {
+	nodeURL := r.lab.public + "/api/v1/admin/nodes/" + nodeID.String()
+	result := admin.writeNode(ctx, "POST", nodeURL+"/revoke", nodeURL, api.ReasonRequest{Reason: "e2e acceptance revoke"}, detail.Header.Get("ETag"), revokedNode, []int{202}, recPathNote(&rec))
+	rec.Observations = append(rec.Observations, Observation{Name: "revoke", Detail: httpDetail(result.Reply, result.Err)})
+	if !result.accepted(202) {
+		if result.Reply.Status == 412 && result.Reply.Code == "RESOURCE_VERSION_CONFLICT" {
+			rec.Status = StatusBlocked
+		}
 		r.record(rec)
 		return
 	}
