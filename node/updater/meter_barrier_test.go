@@ -20,6 +20,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/apierr"
 	"github.com/google/uuid"
+	"golang.org/x/sys/unix"
 )
 
 type barrierCounterSource struct{ obs meter.Observation }
@@ -105,87 +106,93 @@ func TestUPD03_AgentBarrierSnapshotAndReceiptValues(t *testing.T) {
 func TestAT25_FileMeterWaitFailsClosedWithoutCorrelation(t *testing.T) {
 	for _, scenario := range []string{"older_boot_epoch", "missing", "late_within_bound", "after_bound", "withdrawn", "withdrawn_reblocked"} {
 		t.Run(scenario, func(t *testing.T) {
-			w := newWorld(t)
-			t.Cleanup(func() { _ = w.eng.Close() })
-			old := w.makeRelease("baseline", 1, nil)
-			w.seed(old)
-			next := w.makeRelease("candidate", 1, nil)
-			path := stageInstaller(t, w, next)
-			g := FileGate{Path: filepath.Join(w.layout.Journal, "forwarding.blocked")}
-			m := FileMeter{Path: filepath.Join(w.layout.State, "meter.checkpoint"), Wait: 250 * time.Millisecond}
-			w.eng.Gate, w.eng.Meter = g, m
-			raw := agentBarrierBytes(t, uuid.New()) // distinct previous boot
-			if scenario == "older_boot_epoch" {
-				if err := fsutil.WriteFileAtomic(m.Path, raw, 0600); err != nil {
-					t.Fatal(err)
+			// F21-01: the hook and its publisher/withdrawer goroutine are the
+			// test's own work after the block; on the bubble's clock their
+			// disk and scheduler stalls cannot consume the 250 ms budget.
+			synctest.Test(t, func(t *testing.T) {
+				w := bubbleWorld(t)
+				t.Cleanup(func() { _ = w.eng.Close() })
+				old := w.makeRelease("baseline", 1, nil)
+				w.seed(old)
+				next := w.makeRelease("candidate", 1, nil)
+				path := stageInstaller(t, w, next)
+				g := FileGate{Path: filepath.Join(w.layout.Journal, "forwarding.blocked")}
+				m := FileMeter{Path: filepath.Join(w.layout.State, "meter.checkpoint"), Wait: 250 * time.Millisecond}
+				w.eng.Gate, w.eng.Meter = g, m
+				raw := agentBarrierBytes(t, uuid.New()) // distinct previous boot
+				if scenario == "older_boot_epoch" {
+					if err := fsutil.WriteFileAtomic(m.Path, raw, 0600); err != nil {
+						t.Fatal(err)
+					}
 				}
-			}
-			done := make(chan error, 1)
-			var started time.Time
-			w.eng.Hooks.AfterStage = func(stage string) error {
-				if stage != string(updatejournal.StageBlocked) {
+				done := make(chan error, 1)
+				var started time.Time
+				w.eng.Hooks.AfterStage = func(stage string) error {
+					if stage != string(updatejournal.StageBlocked) {
+						return nil
+					}
+					started = time.Now()
+					if scenario == "late_within_bound" || scenario == "withdrawn" || scenario == "withdrawn_reblocked" {
+						go func() {
+							time.Sleep(25 * time.Millisecond)
+							if scenario == "late_within_bound" {
+								done <- fsutil.WriteFileAtomic(m.Path, raw, 0600)
+								return
+							}
+							if err := g.Unblock(context.Background()); err != nil {
+								done <- err
+								return
+							}
+							if scenario == "withdrawn_reblocked" {
+								done <- g.Block(context.Background())
+							} else {
+								done <- nil
+							}
+						}()
+					} else {
+						done <- nil
+					}
 					return nil
 				}
-				started = time.Now()
-				if scenario == "late_within_bound" || scenario == "withdrawn" || scenario == "withdrawn_reblocked" {
-					go func() {
-						time.Sleep(25 * time.Millisecond)
-						if scenario == "late_within_bound" {
-							done <- fsutil.WriteFileAtomic(m.Path, raw, 0600)
-							return
-						}
-						if err := g.Unblock(context.Background()); err != nil {
-							done <- err
-							return
-						}
-						if scenario == "withdrawn_reblocked" {
-							done <- g.Block(context.Background())
-						} else {
-							done <- nil
-						}
-					}()
-				} else {
-					done <- nil
+				err := w.eng.ApplyPending(t.Context(), path)
+				if err == nil {
+					t.Fatal("uncorrelated checkpoint allowed apply")
 				}
-				return nil
-			}
-			err := w.eng.ApplyPending(t.Context(), path)
-			if err == nil {
-				t.Fatal("uncorrelated checkpoint allowed apply")
-			}
-			if err := <-done; err != nil {
-				t.Fatal(err)
-			}
-			if time.Since(started) > 2*time.Second {
-				t.Fatal("wait exceeded bound")
-			}
-			if scenario == "after_bound" {
-				if err := fsutil.WriteFileAtomic(m.Path, raw, 0600); err != nil {
+				if err := <-done; err != nil {
 					t.Fatal(err)
 				}
-			}
-			code, reason := apierr.CheckpointFailed, "meter_checkpoint_timeout"
-			if scenario == "older_boot_epoch" || scenario == "late_within_bound" {
-				reason = "meter_checkpoint_uncorrelated"
-			}
-			if scenario == "withdrawn" || scenario == "withdrawn_reblocked" {
-				code, reason = apierr.StateConflict, "meter_barrier_withdrawn"
-			}
-			assertMeterFailure(t, w, old.id, code, reason)
-			before, _ := w.eng.Journal.Outbox(t.Context())
-			if err := w.eng.Close(); err != nil {
-				t.Fatal(err)
-			}
-			w.eng.Journal = openJournal(t, w.layout.Journal)
-			w.eng.Hooks = Hooks{}
-			if err := w.eng.Recover(t.Context()); !errors.Is(err, ErrMembersBlocked) {
-				t.Fatalf("sealed failure reopened: %v", err)
-			}
-			after, _ := w.eng.Journal.Outbox(t.Context())
-			if len(after) != 1 || !bytes.Equal(before[0].Payload, after[0].Payload) {
-				t.Fatal("restart resealed failed receipt")
-			}
-			assertMeterFailure(t, w, old.id, code, reason)
+				// Bubble time: the engine's own waiting, not disk/setup stalls.
+				if time.Since(started) > 2*time.Second {
+					t.Fatal("wait exceeded bound")
+				}
+				if scenario == "after_bound" {
+					if err := fsutil.WriteFileAtomic(m.Path, raw, 0600); err != nil {
+						t.Fatal(err)
+					}
+				}
+				code, reason := apierr.CheckpointFailed, "meter_checkpoint_timeout"
+				if scenario == "older_boot_epoch" || scenario == "late_within_bound" {
+					reason = "meter_checkpoint_uncorrelated"
+				}
+				if scenario == "withdrawn" || scenario == "withdrawn_reblocked" {
+					code, reason = apierr.StateConflict, "meter_barrier_withdrawn"
+				}
+				assertMeterFailure(t, w, old.id, code, reason)
+				before, _ := w.eng.Journal.Outbox(t.Context())
+				if err := w.eng.Close(); err != nil {
+					t.Fatal(err)
+				}
+				w.eng.Journal = openJournal(t, w.layout.Journal)
+				w.eng.Hooks = Hooks{}
+				if err := w.eng.Recover(t.Context()); !errors.Is(err, ErrMembersBlocked) {
+					t.Fatalf("sealed failure reopened: %v", err)
+				}
+				after, _ := w.eng.Journal.Outbox(t.Context())
+				if len(after) != 1 || !bytes.Equal(before[0].Payload, after[0].Payload) {
+					t.Fatal("restart resealed failed receipt")
+				}
+				assertMeterFailure(t, w, old.id, code, reason)
+			})
 		})
 	}
 }
@@ -210,84 +217,132 @@ func assertMeterFailure(t *testing.T, w *world, baseline uuid.UUID, code apierr.
 	}
 }
 
+// bubbleWorld builds the standard world inside a synctest bubble (F21-01).
+// The persisted meter deadline and every engine wait then run on the
+// bubble's clock, which advances only when the bubble is durably blocked:
+// disk I/O, fsync, SQLite and scheduler stalls in a test's own setup take
+// real time but none of the budget. The loopback TLS server is closed
+// first, because an idle Accept is not durably blocking and would keep the
+// bubble clock from ever advancing. These tests stage the release locally
+// and make no HTTP request; any attempt fails instead of hanging.
+func bubbleWorld(t *testing.T) *world {
+	t.Helper()
+	w := newWorld(t)
+	w.srv.close()
+	return w
+}
+
+// wallNow reads CLOCK_MONOTONIC directly. Inside a bubble time.Now is the
+// bubble's clock, so this is the only way to log Recover's real wall time.
+func wallNow(t *testing.T) time.Duration {
+	t.Helper()
+	var ts unix.Timespec
+	if err := unix.ClockGettime(unix.CLOCK_MONOTONIC, &ts); err != nil {
+		t.Fatal(err)
+	}
+	return time.Duration(ts.Nano())
+}
+
 func TestAT25_FileMeterWaitRestartRechecksCurrentFile(t *testing.T) {
 	for _, change := range []string{"missing", "replaced", "withdrawn", "new_boot", "expired"} {
 		t.Run(change, func(t *testing.T) {
-			w := newWorld(t)
-			t.Cleanup(func() { _ = w.eng.Close() })
-			old := w.makeRelease("baseline", 1, nil)
-			w.seed(old)
-			next := w.makeRelease("candidate", 1, nil)
-			path := stageInstaller(t, w, next)
-			g := FileGate{Path: filepath.Join(w.layout.Journal, "forwarding.blocked")}
-			m := FileMeter{Path: filepath.Join(w.layout.State, "meter.checkpoint"), Wait: 250 * time.Millisecond}
-			w.eng.Gate, w.eng.Meter = g, m
-			raw := agentBarrierBytes(t, w.node.BootID)
-			w.eng.Hooks.AfterStage = func(stage string) error {
-				if stage == string(updatejournal.StageBlocked) {
-					if err := fsutil.WriteFileAtomic(m.Path, raw, 0600); err != nil {
-						return err
+			// F21-01: the expected result must not depend on how long the
+			// crash, the SQLite reopen and the subcase setup take in wall
+			// time. Only the product's own timers consume the 250 ms budget.
+			synctest.Test(t, func(t *testing.T) {
+				w := bubbleWorld(t)
+				t.Cleanup(func() { _ = w.eng.Close() })
+				old := w.makeRelease("baseline", 1, nil)
+				w.seed(old)
+				next := w.makeRelease("candidate", 1, nil)
+				path := stageInstaller(t, w, next)
+				g := FileGate{Path: filepath.Join(w.layout.Journal, "forwarding.blocked")}
+				m := FileMeter{Path: filepath.Join(w.layout.State, "meter.checkpoint"), Wait: 250 * time.Millisecond}
+				w.eng.Gate, w.eng.Meter = g, m
+				raw := agentBarrierBytes(t, w.node.BootID)
+				w.eng.Hooks.AfterStage = func(stage string) error {
+					if stage == string(updatejournal.StageBlocked) {
+						if err := fsutil.WriteFileAtomic(m.Path, raw, 0600); err != nil {
+							return err
+						}
+						// A valid pre-restart read must not be cached as permission.
+						if _, err := m.FinalSample(t.Context()); err != nil {
+							return err
+						}
+						return ErrCrashed
 					}
-					// A valid pre-restart read must not be cached as permission.
-					if _, err := m.FinalSample(t.Context()); err != nil {
-						return err
+					return nil
+				}
+				if err := w.eng.ApplyPending(t.Context(), path); !errors.Is(err, ErrCrashed) {
+					t.Fatal(err)
+				}
+				txn, _ := w.eng.Journal.ActiveTxn(t.Context())
+				notePath := filepath.Join(w.layout.Journal, meterWaitPrefix+txn.TxnID)
+				noteRaw := fileBytes(t, notePath)
+				var note meterWait
+				if err := json.Unmarshal(noteRaw, &note); err != nil {
+					t.Fatal(err)
+				}
+				if err := w.eng.Close(); err != nil {
+					t.Fatal(err)
+				}
+				// Recreate the engine and file adapters as well as the SQLite handle.
+				nextEngine := *w.eng
+				nextEngine.Journal = openJournal(t, w.layout.Journal)
+				nextEngine.Hooks = Hooks{}
+				nextEngine.Meter = FileMeter{Path: m.Path, Wait: time.Minute} // must not renew deadline
+				w.eng = &nextEngine
+				code, detail := apierr.CheckpointFailed, "meter_checkpoint_timeout"
+				remaining := m.Wait // setup consumes none of the persisted budget
+				switch change {
+				case "missing":
+					if err := os.Remove(m.Path); err != nil {
+						t.Fatal(err)
 					}
-					return ErrCrashed
+				case "replaced":
+					if err := fsutil.WriteFileAtomic(m.Path, agentBarrierBytes(t, uuid.New()), 0600); err != nil {
+						t.Fatal(err)
+					}
+					detail = "meter_checkpoint_uncorrelated"
+				case "withdrawn":
+					if err := g.Unblock(t.Context()); err != nil {
+						t.Fatal(err)
+					}
+					code, detail = apierr.StateConflict, "meter_barrier_withdrawn"
+				case "new_boot":
+					w.eng.Node.BootID = uuid.New()
+					detail = "meter_wait_invalid"
+				case "expired":
+					// Deliberately past the deadline, on the bubble's clock.
+					time.Sleep(time.Until(note.Deadline) + time.Millisecond)
+					remaining = -time.Millisecond
 				}
-				return nil
-			}
-			if err := w.eng.ApplyPending(t.Context(), path); !errors.Is(err, ErrCrashed) {
-				t.Fatal(err)
-			}
-			txn, _ := w.eng.Journal.ActiveTxn(t.Context())
-			notePath := filepath.Join(w.layout.Journal, meterWaitPrefix+txn.TxnID)
-			noteRaw := fileBytes(t, notePath)
-			var note meterWait
-			if err := json.Unmarshal(noteRaw, &note); err != nil {
-				t.Fatal(err)
-			}
-			if err := w.eng.Close(); err != nil {
-				t.Fatal(err)
-			}
-			// Recreate the engine and file adapters as well as the SQLite handle.
-			nextEngine := *w.eng
-			nextEngine.Journal = openJournal(t, w.layout.Journal)
-			nextEngine.Hooks = Hooks{}
-			nextEngine.Meter = FileMeter{Path: m.Path, Wait: time.Minute} // must not renew deadline
-			w.eng = &nextEngine
-			code, detail := apierr.CheckpointFailed, "meter_checkpoint_timeout"
-			switch change {
-			case "missing":
-				if err := os.Remove(m.Path); err != nil {
+				start := time.Now()
+				// Fixture guard: the subcase starts Recover with exactly the
+				// remaining budget it means to test, so neither the detail
+				// nor withdrawn's in-budget path depends on setup speed.
+				if got := note.Deadline.Sub(start); got != remaining {
+					t.Fatalf("Recover started with %s of the persisted budget left, want %s", got, remaining)
+				}
+				wallStart := wallNow(t)
+				if err := w.eng.Recover(t.Context()); !errors.Is(err, ErrMembersBlocked) {
 					t.Fatal(err)
 				}
-			case "replaced":
-				if err := fsutil.WriteFileAtomic(m.Path, agentBarrierBytes(t, uuid.New()), 0600); err != nil {
-					t.Fatal(err)
+				wall := wallNow(t) - wallStart
+				elapsed := time.Since(start)
+				t.Logf("F20 recover_elapsed_ns=%d original_remaining_ns=%d bubble_elapsed_ns=%d", wall.Nanoseconds(), note.Deadline.Sub(start).Nanoseconds(), elapsed.Nanoseconds())
+				// On the bubble clock only the engine's own timers advance
+				// time, so a restart that renewed the wait would show here
+				// deterministically; wall time is logged, never asserted.
+				if elapsed > max(remaining, 0) {
+					t.Fatalf("Recover waited %s on the bubble clock; original remaining budget %s", elapsed, remaining)
 				}
-				detail = "meter_checkpoint_uncorrelated"
-			case "withdrawn":
-				if err := g.Unblock(t.Context()); err != nil {
-					t.Fatal(err)
-				}
-				code, detail = apierr.StateConflict, "meter_barrier_withdrawn"
-			case "new_boot":
-				w.eng.Node.BootID = uuid.New()
-				detail = "meter_wait_invalid"
-			case "expired":
-				time.Sleep(time.Until(note.Deadline) + time.Millisecond)
-			}
-			start := time.Now()
-			if err := w.eng.Recover(t.Context()); !errors.Is(err, ErrMembersBlocked) {
-				t.Fatal(err)
-			}
-			elapsed := time.Since(start)
-			t.Logf("F20 recover_elapsed_ns=%d original_remaining_ns=%d", elapsed.Nanoseconds(), note.Deadline.Sub(start).Nanoseconds())
-			// Recover also fsyncs the lock, seals the failure and cleans up.
-			// Its wall time cannot prove that the meter deadline was renewed.
-			// TestAT25_FileMeterWaitRestartKeepsDeadline checks that bound
-			// on a controlled clock, independently of storage/scheduling.
-			assertMeterFailure(t, w, old.id, code, detail)
+				// Recover also fsyncs the lock, seals the failure and cleans up.
+				// Its wall time cannot prove that the meter deadline was renewed.
+				// TestAT25_FileMeterWaitRestartKeepsDeadline checks that bound
+				// on a controlled clock, independently of storage/scheduling.
+				assertMeterFailure(t, w, old.id, code, detail)
+			})
 		})
 	}
 }
