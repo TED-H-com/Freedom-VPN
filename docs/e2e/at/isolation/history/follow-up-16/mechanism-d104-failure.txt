@@ -1,0 +1,11 @@
+=== RUN   TestD104_AT13_DeadlineContinuity
+    scenario_deadline_test.go:23: deadline trace: exit status 1 Traceback (most recent call last):
+          File "/work/tests/netlab/scripts/deadline.py", line 35, in <module>
+            assert all(values[i+1][1]-values[i][1] == 1 for i in range(7)), values
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        AssertionError: [(1001, 699), (1002, 700), (1003, 701), (1004, 702), (1005, 703), (1006, 704), (1007, 706), (1008, 707)]
+
+--- FAIL: TestD104_AT13_DeadlineContinuity (0.13s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/netlab	19.864s
+FAIL

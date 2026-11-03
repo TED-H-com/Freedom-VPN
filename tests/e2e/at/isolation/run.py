@@ -12,44 +12,18 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[4]
 os.chdir(ROOT)
 
+from suite_admission import wait as wait_for_suites
+
 def slots():
-    started = time.monotonic()
-    while True:
-        result = subprocess.run(['pgrep', '-af', 'gates.sh|mk/at-'], text=True, capture_output=True)
-        print('shared-host suite inventory:\n' + result.stdout, flush=True)
-        # Count top-level suite process trees, not their sh/make descendants.
-        rows = []
-        for line in result.stdout.splitlines():
-            pid, _, command = line.partition(' ')
-            if pid.isdigit() and ('make ' in command or 'gates.sh' in command) and 'pgrep' not in command:
-                rows.append(int(pid))
-        def parent(pid):
-            try:
-                return int(subprocess.check_output(['ps', '-o', 'ppid=', '-p', str(pid)], text=True).strip())
-            except (OSError, ValueError, subprocess.CalledProcessError):
-                return 0
-        ancestors = set()
-        pid = os.getpid()
-        while pid:
-            ancestors.add(pid)
-            pid = parent(pid)
-        other = set(rows) - ancestors
-        roots = []
-        for pid in other:
-            p = parent(pid)
-            while p and p not in other:
-                p = parent(p)
-            if not p:
-                roots.append(pid)
-        if len(roots) < 2:
-            print(f"suite admission: other_roots={roots} waited_seconds={time.monotonic()-started:.3f}", flush=True)
-            return
-        print('Two other suites active; waiting 30 seconds.', flush=True)
-        time.sleep(30)
+    return wait_for_suites(os.environ.get('FVPN_AT_EVIDENCE_DIR'))
+
+phases = []
 
 def call(args, env):
     print('+ ' + ' '.join(args), flush=True)
-    return subprocess.run(args, env=env).returncode
+    code = subprocess.run(args, env=env).returncode
+    phases.append(dict(name=" ".join(args[:3]), exit_code=code))
+    return code
 
 (ROOT / '.agent/tmp').mkdir(parents=True, exist_ok=True)
 with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp') as temp:
@@ -63,6 +37,8 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
     env['FVPN_LAB_PREFIX'] = 'fvpn-w4-isolation-lab'
     evidence = str(ROOT / env.get('FVPN_AT_EVIDENCE_DIR', 'docs/e2e/at/isolation'))
     env['FVPN_AT_EVIDENCE_DIR'] = evidence
+    os.environ['FVPN_AT_EVIDENCE_DIR'] = evidence
+    Path(evidence).mkdir(parents=True, exist_ok=True)
     env['FVPN_NETLAB_EVIDENCE_DIR'] = evidence + '/reload-stream'
     lab = stack = 1
     operation_observer = None
@@ -110,5 +86,12 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
     import json
     Path(evidence, 'cleanup-inventory.json').write_text(json.dumps(inventory, indent=2)+'\n')
     print('owned-prefix inventory: ' + json.dumps(inventory), flush=True)
+    if env.get('FVPN_AT_SCHEDULED') == '1':
+        from nightly_summary import summarize
+        result = summarize(Path(evidence), phases, env['FVPN_AT_RUN_ID'])
+        if env.get('GITHUB_STEP_SUMMARY'):
+            with open(env['GITHUB_STEP_SUMMARY'], 'a') as f:
+                f.write(Path(evidence, 'scheduled-job.md').read_text())
+        stack = stack or int(result['status'] != 'pass')
     print(f'at-isolation lab={lab} stack={stack}', flush=True)
     raise SystemExit(2 if lab or stack or any(inventory.values()) else 0)
