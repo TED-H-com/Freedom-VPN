@@ -412,9 +412,24 @@ func (e *Engine) loadIdentity(ctx context.Context) error {
 	return nil
 }
 
+// bootLocalBudget bounds each phase of Boot's local completion: the runtime
+// reads before adoption, and the fail-closed baseline, ledger open, retained
+// usage settlement and heartbeat after it. A stop request during Boot ends
+// lock waits and control/probe I/O but not this local work, so TERM cannot
+// turn into a canceled, unreported baseline (r20 M-1). Ten seconds is Step's
+// maximum local allowance; with Close's three seconds it stays inside the
+// 13 s cooperative stop budget under TimeoutStopSec=15s.
+const bootLocalBudget = 10 * time.Second
+
+// bootLocal is a local budget whose control requests still follow caller.
+func bootLocal(caller context.Context) (context.Context, context.CancelFunc) {
+	return newLocalBudget(context.WithValue(caller, controlBudgetKey{}, caller), bootLocalBudget)
+}
+
 // Boot adopts a verified same-boot ruleset or installs the fail-closed baseline.
 // Reboot/clock loss still requires new authorization (§16.3).
 func (e *Engine) Boot(ctx context.Context) error {
+	caller := ctx
 	if p, ok := e.plane.(interface{ MissingExecutables() []string }); ok {
 		missing := p.MissingExecutables()
 		e.dependencyMissing = len(missing) != 0
@@ -422,23 +437,31 @@ func (e *Engine) Boot(ctx context.Context) error {
 			e.log.Error("enforcement dependency unavailable", "executable", name)
 		}
 	}
-	if err := e.loadRuntime(ctx); err != nil {
+	load, cancelLoad := bootLocal(caller)
+	if err := e.loadRuntime(load); err != nil {
 		e.storageOK = false
-		_ = e.baseline(ctx)
+		_ = e.baseline(load)
+		cancelLoad()
 		return err
 	}
 	e.leaseFresh = false
 	e.serving = false
-	e.recoverOnce(ctx)
+	e.recoverOnce(caller)
 	e.latch()
 	if e.identityFrozen && !e.freezeDurable {
-		e.persistFreeze(ctx)
+		e.persistFreeze(load)
 	}
-	if e.adoptStoredServing(ctx) {
+	cancelLoad()
+	// Lock waits, the probe and the resolver refresh follow the caller: a
+	// stop request ends them and refuses adoption.
+	rejected := e.applyError
+	if e.adoptStoredServing(caller) {
 		e.beat()
-		e.answerHealthOnBoot(ctx)
+		e.answerHealthOnBoot(caller)
 		return nil
 	}
+	ctx, cancel := bootLocal(caller)
+	defer cancel()
 	dp, err := e.cfg.DatapathValue()
 	if err != nil {
 		return err
@@ -447,13 +470,25 @@ func (e *Engine) Boot(ctx context.Context) error {
 	e.baselineOK = err == nil
 	e.serving, e.leaseFresh = false, false
 	e.policyExpires = 0
+	if e.baselineOK && e.applyError != nil && e.applyError != rejected && !e.quarantinePending {
+		// The refused adoption's live read is retained as serving-read
+		// evidence and logged. Its candidate was never installed, and the
+		// verified baseline replaced the rules it read. It must not block the
+		// ACK of a later non-serving generation (r20 M-3). Quarantine keeps
+		// its error until the containment owner's repair path clears it.
+		e.applyError = nil
+	}
 	e.ensureUsage(ctx)
+	e.settleRetainedUsage(ctx)
 	e.decision = Decide(e.input())
 	e.beat()
 	// A stored document that is still inside its validity window can be
 	// answered at start. A missing document, or one that expired while the
-	// process was stopped, is not a DNS result yet.
-	e.answerHealthOnBoot(ctx)
+	// process was stopped, is not a DNS result yet. A canceled probe is not
+	// a health answer.
+	if caller.Err() == nil {
+		e.answerHealthOnBoot(caller)
+	}
 	return nil
 }
 
@@ -654,6 +689,12 @@ func (e *Engine) loadRuntime(ctx context.Context) error {
 			return err
 		}
 		e.appliedModel, e.appliedAssignments = &retained.Model, retained.Assignments
+		// Kernel counters stay bound to the installed model until the first
+		// full Apply rebinds them. Explain them with the same bindings, so
+		// bytes admitted while no process sampled are attributed rather than
+		// read as a mapping conflict after a refused adoption (r20 H-1). A
+		// changed boot closes the epoch before any delta is attributed.
+		e.setMeterBindings(retained.Model.Bindings)
 	}
 
 	if raw, ok, err := e.store.Meta(ctx, "member_path"); err != nil {

@@ -245,6 +245,24 @@ func (e *Engine) setMeterBindings(b []enforce.Binding) {
 	e.mu.Unlock()
 }
 
+// settleRetainedUsage runs after a Boot that did not adopt, once the baseline
+// has stopped member admission. It samples the open epoch against the
+// retained installed bindings loadRuntime restored, so bytes the previous
+// rules counted while no process sampled become complete records before the
+// first Step can hand off or rebind (r20 H-1). The kernel counters persist,
+// so a repeated settlement after another crash finds a zero delta. A failed
+// sample leaves the delta pending under the same bindings: a non-serving
+// hand-off still attributes it, and a rebinding Apply records a gap rather
+// than a misattribution.
+func (e *Engine) settleRetainedUsage(ctx context.Context) {
+	if e.meter == nil || e.appliedModel == nil || e.finalDone {
+		return
+	}
+	if err := e.meter.Sample(ctx); err != nil && !errors.Is(err, meter.ErrPaused) {
+		e.log.Warn("usage settlement", "err", err.Error())
+	}
+}
+
 // readMeter copies the meter's health onto the forwarding gate.
 // Store caps win inside meter.Health, so a full outbox is not reported
 // as METER_PATH_INVALID.
@@ -416,6 +434,15 @@ func (e *Engine) shutdownUsage(ctx context.Context) {
 	e.shutUsage = true
 	if e.sampleOn && !e.preserveServingOnStop(ctx) {
 		e.handoff(ctx)
+		if !e.serving {
+			// Record the withdrawal. A retained serving heartbeat would
+			// describe rules this hand-off just replaced, inviting a
+			// same-boot successor to verify a ruleset that is gone (r20 M-3).
+			// A hand-off that failed before its baseline leaves the old
+			// heartbeat, which still describes the kernel.
+			e.decision = Decide(e.input())
+			e.beat()
+		}
 	}
 	if e.loopCancel != nil {
 		e.loopCancel()

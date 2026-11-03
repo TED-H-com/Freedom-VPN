@@ -53,7 +53,13 @@ func (e *Engine) withProbeException(ctx context.Context, run func()) {
 
 // updateLockHeld never waits for or keeps the lock. Only contention is
 // authority for D-064; a missing or inaccessible lock is not an update.
+// While this process itself holds the exclusive node lock (same-boot
+// adoption), the updater cannot hold it: our own descriptor's contention is
+// not D-064 evidence (r20 M-2).
 func (e *Engine) updateLockHeld() bool {
+	if e.planeLocked {
+		return false
+	}
 	lock, err := nodelock.TryAcquire(e.cfg.LockPath)
 	if err == nil {
 		lock.Release()
