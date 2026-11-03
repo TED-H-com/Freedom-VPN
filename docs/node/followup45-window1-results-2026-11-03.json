@@ -1,0 +1,513 @@
+{
+  "scope": "TEST ONLY same-host D-133/D-138; timestamp-only overlays; nearest-rank percentiles.",
+  "sources": {
+    "A": {
+      "commit": "567080be1969bf22782617e78c7605c2c92a52a2",
+      "tree": "a75453f25ecdef31da6941dd08a4dc45c178156e",
+      "archive_sha256": "3b0c7791dcdd4a8e0c79819bc4c55c67963805f69e775ab04c38d41f690134b9",
+      "verified_blobs": 18889,
+      "mismatches": []
+    },
+    "B": {
+      "commit": "38420dadef6ae9d0236288eef533bc1ddee0da53",
+      "tree": "6cdb55b1ef780a290f6f1331912df0f16d5f0eb9",
+      "archive_sha256": "5933e9a86278143e841e5316fdf3a8c025c6f7a24ce0d27a9356f9e8226b74fe",
+      "verified_blobs": 18939,
+      "mismatches": []
+    }
+  },
+  "window": {
+    "created": "2026-11-03T22:45:12.152947+00:00",
+    "A": "567080be1969bf22782617e78c7605c2c92a52a2",
+    "B": "38420dadef6ae9d0236288eef533bc1ddee0da53",
+    "windows": {
+      "1": [
+        "A1",
+        "B1",
+        "A2",
+        "B2"
+      ],
+      "2": [
+        "A3",
+        "B3",
+        "A4",
+        "B4"
+      ]
+    },
+    "prefix": "fvpn-w2-agent-core-f45",
+    "interval_seconds": 4.0,
+    "reservation_minutes": 30,
+    "maximum_reservations": 2,
+    "minimum_retained_whole_step_fraction": 0.5,
+    "rule": "foreign CPU >0.5 marks interval; other qualification unchanged"
+  },
+  "overlays": {
+    "A": {
+      "engine.go": "2da977908daf24ecddde341582251c9a33a3e61cc895202bc13484a780e35b1f",
+      "followup43_spans.go": "bea36a4ad8059002f6f16d2d11d9c04f80844c4a1016937a31f47bd52fedb22f",
+      "original_engine_sha256": "d3177df609bc773d27d7155a83611dfffe4138d00a59fb6017b6923064001e22"
+    },
+    "B": {
+      "engine.go": "e31a711a319ba2cf3c5dcafa1b6f43a20aadd89e7a85150cd2e363f89cd29667",
+      "followup43_spans.go": "bea36a4ad8059002f6f16d2d11d9c04f80844c4a1016937a31f47bd52fedb22f",
+      "original_engine_sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1"
+    }
+  },
+  "reservations": [
+    {
+      "window": 1,
+      "utc": "2026-11-03T22:46:49.312845+00:00",
+      "waited_seconds": 0.07151031000830699,
+      "exit": 0,
+      "stdout": "reserved for w2-agent-core until 18:16:49\n",
+      "stderr": ""
+    }
+  ],
+  "releases": [
+    {
+      "utc": "2026-11-03T22:47:53.544637+00:00",
+      "window": 1,
+      "exit": 0,
+      "stdout": "released w2-agent-core\n",
+      "stderr": ""
+    }
+  ],
+  "completion": {
+    "utc": "2026-11-03T22:47:53.544754+00:00",
+    "stop": "unqualified leg; no retry in this reservation",
+    "windows_attempted": 1,
+    "pooled_legs": [],
+    "production_gate": false
+  },
+  "legs": [
+    {
+      "leg": "A1",
+      "arm": "A",
+      "source": "567080be1969bf22782617e78c7605c2c92a52a2",
+      "window": 1,
+      "qualified": false,
+      "reason": "preflight failed",
+      "exit": null,
+      "utc": "2026-11-03T22:47:53.506685+00:00",
+      "evidence": ".agent/f45/timing/window1/A1",
+      "measurement": {
+        "excluded_counts": {
+          "outer_guard": 0,
+          "install_command": 0,
+          "render_to_installed": 0,
+          "whole_serving_step": 0,
+          "pre_apply_accounting": 0
+        },
+        "excluded_spans": [],
+        "clock": null,
+        "metrics": {
+          "outer_guard": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "install_command": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "render_to_installed": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "whole_serving_step": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "pre_apply_accounting": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          }
+        },
+        "values_ns": {
+          "outer_guard": [],
+          "install_command": [],
+          "render_to_installed": [],
+          "whole_serving_step": [],
+          "pre_apply_accounting": []
+        },
+        "failed_operations": [],
+        "snapshots": 0,
+        "spans": 0,
+        "sequence_gaps": [],
+        "packets": {},
+        "binaries": null,
+        "image": null,
+        "raw_pins": {
+          "result.json": {
+            "sha256": "32c3976f3328bf07666b08dd63bf455c8758f018024b275f3656b3d872786c51",
+            "bytes": 264
+          }
+        }
+      },
+      "marked_intervals": [
+        {
+          "start_ns": "69511919110913",
+          "end_ns": "69515936286803",
+          "utc": "2026-11-03T22:47:53.503300+00:00",
+          "foreign_cores": 1.3442279222693885,
+          "processes": [
+            {
+              "pid": 2836578,
+              "comm": "python3",
+              "ticks": 495
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 25
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 5
+            },
+            {
+              "pid": 2834949,
+              "comm": "agy",
+              "ticks": 2
+            },
+            {
+              "pid": 831,
+              "comm": "systemd-journal",
+              "ticks": 1
+            }
+          ]
+        }
+      ],
+      "qualification_samples": [
+        {
+          "utc": "2026-11-03T22:47:53.503300+00:00",
+          "clock": "CLOCK_MONOTONIC",
+          "mono_ns": "69515936286803",
+          "interval_start_ns": "69511919110913",
+          "interval_end_ns": "69515936286803",
+          "label": "A1",
+          "seconds": 4.017175889995997,
+          "cpu_ticks": {
+            "foreign": 540,
+            "runner_descendants": 2,
+            "own_containers": 0,
+            "kernel_threads": 3,
+            "container_runtime": 1
+          },
+          "cpu_cores": {
+            "foreign": 1.3442279222693885,
+            "runner_descendants": 0.004978621934331068,
+            "own_containers": 0.0,
+            "kernel_threads": 0.007467932901496602,
+            "container_runtime": 0.002489310967165534
+          },
+          "foreign_cpu_processes": [
+            {
+              "pid": 831,
+              "comm": "systemd-journal",
+              "ticks": 1
+            },
+            {
+              "pid": 2304,
+              "comm": "rsyslogd",
+              "ticks": 1
+            },
+            {
+              "pid": 2322,
+              "comm": "NetworkManager",
+              "ticks": 1
+            },
+            {
+              "pid": 3192,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3196,
+              "comm": "python3",
+              "ticks": 1
+            },
+            {
+              "pid": 3205,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3208,
+              "comm": "hermes",
+              "ticks": 1
+            },
+            {
+              "pid": 3224,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3991,
+              "comm": "MainThread",
+              "ticks": 1
+            },
+            {
+              "pid": 4344,
+              "comm": "grafana",
+              "ticks": 1
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 5
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 25
+            },
+            {
+              "pid": 609504,
+              "comm": "codex",
+              "ticks": 1
+            },
+            {
+              "pid": 2239763,
+              "comm": "python3",
+              "ticks": 1
+            },
+            {
+              "pid": 2834129,
+              "comm": "codex",
+              "ticks": 1
+            },
+            {
+              "pid": 2834949,
+              "comm": "agy",
+              "ticks": 2
+            },
+            {
+              "pid": 2836578,
+              "comm": "python3",
+              "ticks": 495
+            }
+          ],
+          "running_containers": [
+            {
+              "id": "157163aa0ee8eed96c1f63fbb3d4bcd2a595af36f17ff4f9abc69d587dade406",
+              "name": "fvpn-pg"
+            },
+            {
+              "id": "2380751cd16f768235d67fb22747f18b276830130234f1c53238b07de82b3117",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "bd1818a3a004002e79d72529f29ce648d8925055a08a4db32ed26fb1ec0aef49",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "99cadc3104d6427a7e98ed35673b91995689d8c4de4bb4ef1d058270c20d927c",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "945f25a22e1beb3b0ce6138ff56cfa490418e3d0058f3b81f2d83b2737fa6adb",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "b14d490d2ff9a8e1a4bffad8fff6e39c04246cf8a2eedf5d783331a244dacc7e",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "8e7b2b4f4c2451a716c8233274b5657ec76202576c4329f2e2dea8bb397fb5a0",
+              "name": "foreign-non-lane-container"
+            }
+          ],
+          "foreign_containers": [],
+          "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  0 2997632 19520028 2987060 153486256   16   57 27161 37754 22328   20  3  2 94  1  0  0\n",
+          "unreadable": [],
+          "departed_pids": [],
+          "marked": true,
+          "top_foreign_processes": [
+            {
+              "pid": 2836578,
+              "comm": "python3",
+              "ticks": 495
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 25
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 5
+            },
+            {
+              "pid": 2834949,
+              "comm": "agy",
+              "ticks": 2
+            },
+            {
+              "pid": 831,
+              "comm": "systemd-journal",
+              "ticks": 1
+            }
+          ],
+          "qualified": false,
+          "foreign_suite_count": 1
+        }
+      ]
+    }
+  ],
+  "pooled": {
+    "A": {
+      "pooled_legs": [],
+      "metrics": {
+        "outer_guard": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "install_command": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "render_to_installed": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "whole_serving_step": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "pre_apply_accounting": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        }
+      },
+      "excluded_counts": {
+        "outer_guard": 0,
+        "install_command": 0,
+        "render_to_installed": 0,
+        "whole_serving_step": 0,
+        "pre_apply_accounting": 0
+      },
+      "all_leg_excluded_counts": {
+        "outer_guard": 0,
+        "install_command": 0,
+        "render_to_installed": 0,
+        "whole_serving_step": 0,
+        "pre_apply_accounting": 0
+      },
+      "failed_operations": []
+    },
+    "B": {
+      "pooled_legs": [],
+      "metrics": {
+        "outer_guard": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "install_command": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "render_to_installed": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "whole_serving_step": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "pre_apply_accounting": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        }
+      },
+      "excluded_counts": {
+        "outer_guard": 0,
+        "install_command": 0,
+        "render_to_installed": 0,
+        "whole_serving_step": 0,
+        "pre_apply_accounting": 0
+      },
+      "all_leg_excluded_counts": {
+        "outer_guard": 0,
+        "install_command": 0,
+        "render_to_installed": 0,
+        "whole_serving_step": 0,
+        "pre_apply_accounting": 0
+      },
+      "failed_operations": []
+    }
+  },
+  "monitoring_pins": {
+    "admission.jsonl": {
+      "sha256": "d1ba07db704215840e5a02c240b8307f2afc4f6e8074cb300460c8ecc014dacb",
+      "bytes": 2409
+    },
+    "input-verification.jsonl": {
+      "sha256": "d41a5d7b19f7737a0fa98d92a0cb33cb8524ffb50da50dd8ad7721d9e21e403e",
+      "bytes": 234
+    },
+    "releases.jsonl": {
+      "sha256": "80c6802d8534f0ed72ec0d12903c9ca326d11a8ca121c30f08cdfc2d1efa6a29",
+      "bytes": 120
+    },
+    "reservations.jsonl": {
+      "sha256": "9daa74eb047fad1e7aadb34a2186657832596fded46188f95f92d7639c77a88d",
+      "bytes": 178
+    },
+    "samples.jsonl": {
+      "sha256": "b4e67a9480bc98df7c76f922fcfff31be52ec331860a863fee2605504020c79f",
+      "bytes": 5450
+    },
+    "windows.jsonl": {
+      "sha256": "969886075f9f11d2ea7e877117913e219b5129da7d34494061cca0e195e85e7d",
+      "bytes": 57
+    }
+  },
+  "monitoring_limit": "Successive /proc PID/start samples cannot reconstruct CPU for processes that start and exit entirely between samples; departed PIDs are retained."
+}
