@@ -31,6 +31,10 @@ is insufficient. Address reuse, an absent old element, missing anchor or an
 unknown comparison is ineligible. A new address cannot become eligible from a
 coincidentally equal IP. Keep the eligible set static; it conveys no lifetime.
 
+Use the previous installation's anchored deadline/ceiling bounds, not a new
+`old timeout + now` calculation. If a previously admitted element has expired,
+it cannot be reconstructed from its original timeout to qualify for continuity.
+
 For the first implementation proposal, any global isolation/resolver/host-prefix,
 SNAT, interface/route/MTU, IPv6 mode, probe configuration, node/member QoS ceiling,
 class or metering-semantic change selects the current unconditional guard for
@@ -57,6 +61,14 @@ rules, named counters and class markers. Verify the new layout and deadline
 read-back before recording it. All baseline writers/readers must already
 understand the format. This transition is not hitless and is not counted as a
 C1 reload. There is never a rename/copy of a live timeout to simulate retention.
+
+Once migrated, **every** guarded operation, including unconditional fallback,
+uses a fresh token and the fenced release below. "Current unconditional path"
+means its drop/budget/rollback semantics; it does not permit an unfenced legacy
+release inside the new layout. Interrupted operations require a completed,
+verified baseline that invalidates their tokens before a new operation starts.
+No second writer may begin while an outstanding child can perform an unfenced
+legacy release. This is part of the upgrade/restart barrier, not a timing hope.
 
 **C1.1 — preflight and shape.** Obtain provenance, perform existing ownership,
 rule/path checks and choose eligible addresses. Keep the old bank immutable.
