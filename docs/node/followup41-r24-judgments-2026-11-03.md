@@ -158,3 +158,22 @@ fail-closed availability error. The isolated proof on `0d920a28` returns
 Cap the binding duration by the already-admissible member window before
 adding its monotonic anchor. The pure calculation proof is added before the
 correction; no timing measurement is involved.
+
+## First production lab: counting setup — 2026-11-03, before adaptation
+
+The full functional lab on ee601702 passes 12 of 13 scenarios. UsageLedger
+fails its initial setup because one instantaneous 40-datagram UDP burst does
+not increase admission counters (145062 -> 145062). Its failure snapshot has
+serving generation 3, live allow elements and long member lifetimes; the other
+12 scenarios, including renewal/expiry correlation and external meter reset,
+pass. This is retained as a failed gate, not discarded or called green.
+
+The snapshot alone does not establish the lost burst's exact cause. The test
+currently assumes that a positive probe guarantees the next instantaneous burst
+is admitted; guarded installs may still occur between those observations. That
+assumption predates 41 and is not a promised accounting or hitless property.
+Make this accounting scenario require an actually counted burst within a bounded
+five-second setup window, failing with the same plane evidence if no traffic is
+counted. Keep its final ledger/nft byte equality, no-recount, final-sample,
+contiguous ACK and watermark assertions unchanged. Do not alter runtime or
+claim a loss/timing result. The next full lab must still pass all 13 scenarios.
