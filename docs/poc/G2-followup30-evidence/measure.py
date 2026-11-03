@@ -49,12 +49,15 @@ try:
         if ready:break
         if elapsed>120:raise RuntimeError('quiet preflight not met in 120 seconds; no launch')
     (host.DEST/(name+'-preflight.json')).write_text(json.dumps(dict(wait_seconds=elapsed,settle_seconds=60),indent=2)+'\n')
-    env=dict(os.environ,FVPN_LAB_PREFIX=host.PREFIX,FVPN_NETLAB_EVIDENCE_DIR='docs/poc/G2-followup30-evidence/'+name,
+    env=dict(os.environ,FVPN_F30_RUN=name,FVPN_LAB_PREFIX=host.PREFIX,FVPN_NETLAB_EVIDENCE_DIR='docs/poc/G2-followup30-evidence/'+name,
              FVPN_NETLAB_AT12_OBSERVE='0',FVPN_NETLAB_TCP_OBSERVE='1' if mode=='guard' else '0',FVPN_NETLAB_GUARD_LOG='1' if mode=='guard' else '0')
     if mode=='collector':cmd=[sys.executable,str(host.DEST/'collector-run.py'),name]
     elif mode=='guard':cmd=[sys.executable,str(host.DEST/'guard-window.py')]
     else:cmd=['make','-f','mk/netlab.mk','netlab-test','FVPN_LAB_PREFIX='+host.PREFIX]
     code=subprocess.run([sys.executable,'-B',str(host.DEST/'run.py'),name,*cmd],env=env).returncode
+    if mode!='collector':
+        cleanup=subprocess.run([sys.executable,'-B',str(host.DEST/'run.py'),name+'-cleanup',sys.executable,'-B',str(host.DEST/'cleanup.py'),name+'-inventory'],env=env).returncode
+        code=code or cleanup
 finally:
     stop.set()
     if 'thread' in locals():thread.join()

@@ -55,7 +55,7 @@ matched=[dict(injected=r,records=[x['packet'] for x in rows if all(x.get(k)==r[k
 meta=json.loads(Path(BASE+'.meta.json').read_text())
 result=dict(test_only=True,not_a_measurement=True,expected=8,decoded=len(rows),matches=matched,
             precision_ns=[r['pcap_precision_ns'] for r in rows],kernel_timestamp_present=['kernel_wall_ns' in r for r in rows],
-            receiver=meta['stats'],pass_check=len(rows)==8 and all(len(r['records'])==1 for r in matched))
+            receiver=meta['stats'],pass_check=len(rows)==8 and all(len(r['records'])==1 for r in matched) and meta['stats']['captured']==8 and meta['stats']['received_by_filter']==8 and meta['stats']['dropped_by_kernel']==0)
 Path(BASE+'-result.json').write_text(json.dumps(result,indent=2)+'\n')
 assert result['pass_check'],result
 print(json.dumps(result,indent=2))

@@ -27,12 +27,19 @@ for log in logs:
     release=next(b for b in apply['batches'] if b['kind']=='guard_release')
     start=int(install['start']['wall_ns']);end=int(release['end']['wall_ns'])
     up=log['rule']=='iifname'
-    matches=[p for p in nodes if p['interface']==('fv-fh' if up else 'fv-ih') and p['direction']=='in' and same(p,log) and start<=int(p['wall_ns'])<=end]
+    match_keys=KEY if up else tuple(k for k in KEY if k!='destination')
+    matches=[p for p in nodes if p['interface']==('fv-fh' if up else 'fv-ih') and p['direction']=='in' and same(p,log,match_keys) and (up or (p['destination']=='192.0.2.37' and log['destination']=='100.64.1.1')) and start<=int(p['wall_ns'])<=end]
     row=dict(log=log,ingress_matches=matches,install=install['start'],installed_by=install['end'],release_start=release['start'],release_end=release['end'])
     row['exact_rule_attribution']=len(matches)==1
     if len(matches)==1:
         p=matches[0];ns=int(p['wall_ns'])
-        row['egress_matches']=[q for q in nodes if q['interface']==('fv-ih' if up else 'fv-fh') and q['direction']=='out' and same(q,p,tuple(k for k in KEY if k!='source')) and 0<=int(q['wall_ns'])-ns<100_000_000]
+        row['egress_matches']=[q for q in nodes if q['interface']==('fv-ih' if up else 'fv-fh') and q['direction']=='out' and same(q,p,tuple(k for k in KEY if k!=('source' if up else 'destination'))) and 0<=int(q['wall_ns'])-ns<100_000_000]
+        row['timing_basis']='matched ingress bounds; pcap delivery time is not kernel verdict time'
+        if 'kernel_wall_ns' in log:
+            kernel=int(log['kernel_wall_ns'])
+            row['kernel_timestamp_in_outer_bracket']=start-1000<=kernel<=end+1000
+            row['kernel_bracket']='install' if kernel<=int(install['end']['wall_ns']) else 'installed_to_release' if kernel<int(release['start']['wall_ns']) else 'release'
+            row['timing_basis']='NFLOG kernel timestamp, microsecond resolution, plus matched ingress'
         row['ingress_bracket']='install' if ns<=int(install['end']['wall_ns']) else 'installed_to_release' if ns<int(release['start']['wall_ns']) else 'release'
     rows.append(row)
 
@@ -57,12 +64,12 @@ for segment in tcp['segments']:
     if incoming not in segment['stages'] or outgoing in segment['stages']:continue
     packet=segment['stages'][incoming]['packet']
     matching=[r for r in rows if r['exact_rule_attribution'] and r['ingress_matches'][0]['packet']==packet]
-    missing.append(dict(segment=segment['number'],direction=segment['direction'],kind=segment['kind'],
+    missing.append(dict(wall_ns=segment['wall_ns'],seq=segment['seq'],ack=segment['ack'],data_length=segment['data_length'],since_original_ns=segment.get('since_original_ns'),since_previous_overlapping_ns=segment.get('since_previous_overlapping_ns'),segment=segment['number'],direction=segment['direction'],kind=segment['kind'],
                         retransmission=segment['retransmission'],ingress=packet,
                         exact_guard_logs=[r['log']['packet'] for r in matching],attributed=len(matching)==1))
 result=dict(test_only=True,historical_B1='FAIL',F27_01='unresolved: this window does not recover B1 packets',
     tcp_summary=tcp['summary'],missing_node_egresses=missing,all_missing_attributed=all(r['attributed'] for r in missing),
-    log_count=len(logs),tcp_log_count=len(rows),exact_matches=sum(r['exact_rule_attribution'] for r in rows),
+    timestamp_precision_ns=sorted(set(r['pcap_precision_ns'] for r in logs)),kernel_timestamp_present=sum('kernel_wall_ns' in r for r in logs),kernel_timestamp_absent=sum('kernel_wall_ns' not in r for r in logs),nflog_sequence_present=sum('nflog_sequence' in r for r in logs),log_ip_bytes=sum(r.get('ip_length',0) for r in logs),derived_log_bytes=len(raw('at10-guard.jsonl').encode()),log_count=len(logs),tcp_log_count=len(rows),exact_matches=sum(r['exact_rule_attribution'] for r in rows),
     logged_tcp_with_egress=sum(bool(r.get('egress_matches')) for r in rows),
     capture=json.loads(raw('at10-guard.meta.json')),cost={k:stats(v) for k,v in times.items()},
     cost_limit='Diagnostic logging only; incremental overhead is not isolated by a contemporaneous A/B. Production code unchanged.',logs=rows)
