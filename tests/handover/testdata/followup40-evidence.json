@@ -539,6 +539,10 @@
   ],
   "proofs": [
     {
+      "path": "tests/netlab/scenario_at00_test.go",
+      "name": "TestAT00_Topology"
+    },
+    {
       "path": "tests/e2e/at/members/timing_stream_test.go",
       "name": "TestAT02_F18RecordedRetireLifecycle"
     },
@@ -563,6 +567,18 @@
       "name": "TestAT09_D146_MSSRenderParseVerify"
     },
     {
+      "path": "tests/netlab/scenario_at10_test.go",
+      "name": "TestAT10_AT13_ReloadRevokeBaseline"
+    },
+    {
+      "path": "tests/netlab/scenario_at11_test.go",
+      "name": "TestAT11_IPv6Blocked"
+    },
+    {
+      "path": "tests/netlab/scenario_at12_test.go",
+      "name": "TestAT12_ISO01_ISO04_AllowDeny"
+    },
+    {
       "path": "tests/netlab/at/d147_test.go",
       "name": "TestAT13_D147RelatedFragNeeded"
     },
@@ -572,7 +588,55 @@
     },
     {
       "path": "node/agent/followup12_test.go",
+      "name": "TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing"
+    },
+    {
+      "path": "node/agent/followup12_test.go",
+      "name": "TestAT13_F27_UnrecordedApplyRefusesRestartAdoption"
+    },
+    {
+      "path": "node/agent/followup12_test.go",
+      "name": "TestAT13_F32_SimulatorTCCommitAndCrashCut"
+    },
+    {
+      "path": "node/agent/followup12_test.go",
       "name": "TestAT13_F34_SimulatorRejectsUnknownStatementAtomically"
+    },
+    {
+      "path": "node/agent/followup35_restart_test.go",
+      "name": "TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth"
+    },
+    {
+      "path": "node/agent/followup28_test.go",
+      "name": "TestAT13_ISOF603_ExactProducerReplay955To961"
+    },
+    {
+      "path": "tests/netlab/scenario_at14_test.go",
+      "name": "TestAT14_MTR01_MTR02_CountOnce"
+    },
+    {
+      "path": "tests/netlab/scenario_at18_test.go",
+      "name": "TestAT18_FUP02_QoS"
+    },
+    {
+      "path": "tests/netlab/scenario_at29_test.go",
+      "name": "TestAT29_LeaseTimeout"
+    },
+    {
+      "path": "tests/e2e/at/isolation/record_test.go",
+      "name": "TestCommittedEvidenceFiles_ValidAndHygieneClean"
+    },
+    {
+      "path": "tests/e2e/at/usage/record_test.go",
+      "name": "TestCommittedEvidenceFiles_ValidAndHygieneClean"
+    },
+    {
+      "path": "tests/netlab/evidence_test.go",
+      "name": "TestCommittedEvidenceFiles_ValidAndHygieneClean"
+    },
+    {
+      "path": "tests/e2e/evidence_test.go",
+      "name": "TestCommittedFixtureEvidence_ValidAndHygieneClean"
     },
     {
       "path": "tests/e2e/at/members/evidence_test.go",
@@ -591,8 +655,224 @@
       "name": "TestD104_AT13_DeadlineContinuity"
     },
     {
+      "path": "node/agent/followup27_test.go",
+      "name": "TestD104_TimingMeasurementLiveAndBlockedSnapshots"
+    },
+    {
+      "path": "node/agent/followup25_evidence_test.go",
+      "name": "TestD106_ProducerRetainsAuthoritativeSnapshot"
+    },
+    {
+      "path": "tests/netlab/agent/scenario_d116_test.go",
+      "name": "TestD116_AT10_InstallerMarkerEnrollment"
+    },
+    {
+      "path": "tests/netlab/scenario_f32_test.go",
+      "name": "TestISO01_AT13_F32_UnknownStateBaselineAtomic"
+    },
+    {
+      "path": "node/enforce/followup27_test.go",
+      "name": "TestISO01_F27_LiveSetDrift"
+    },
+    {
+      "path": "tests/netlab/scenario_f27_test.go",
+      "name": "TestISO01_F27_LiveSetDrift"
+    },
+    {
+      "path": "tests/netlab/scenario_f27_test.go",
+      "name": "TestISO01_F27_RenderedCoverage"
+    },
+    {
+      "path": "node/agent/followup41_drift_test.go",
+      "name": "TestISO01_F41_SkippedTicksStillDetectLiveDrift"
+    },
+    {
+      "path": "node/agent/followup12_test.go",
+      "name": "TestISO01_PendingConntrackDeleteKeepsServingAndRetries"
+    },
+    {
+      "path": "node/agent/followup12_test.go",
+      "name": "TestISO01_UnverifiedConntrackFailureStillRestoresBaseline"
+    },
+    {
+      "path": "node/agent/followup12_test.go",
+      "name": "TestISO01_VerifyFailureStillRestoresBaseline"
+    },
+    {
+      "path": "tests/netlab/scenario_tc_recovery_test.go",
+      "name": "TestISO_F6_01_ForeignRemovalNewGeneration"
+    },
+    {
+      "path": "node/agent/followup24_test.go",
+      "name": "TestISO_F6_ApplyRejectionTimestampPrecedesRollback"
+    },
+    {
+      "path": "node/agent/followup24_test.go",
+      "name": "TestISO_F6_ForeignStillPresentWithholdsNewACK"
+    },
+    {
+      "path": "tests/netlab/scenario_interface_test.go",
+      "name": "TestISO_F6_InterfaceApply"
+    },
+    {
+      "path": "node/agent/followup25_evidence_test.go",
+      "name": "TestISO_F6_RetainedErrorRenewsDesiredWithoutACK"
+    },
+    {
+      "path": "node/agent/followup12_test.go",
+      "name": "TestISO_F6_RetainedFailureBlocksNewGeneration"
+    },
+    {
+      "path": "tests/netlab/agent/scenario_test.go",
+      "name": "TestLab01_ForwardOnlyAfterLease"
+    },
+    {
+      "path": "tests/netlab/agent/scenario_test.go",
+      "name": "TestLab02_WatchdogEnforces"
+    },
+    {
+      "path": "tests/netlab/agent/scenario_test.go",
+      "name": "TestLab03_KernelTimeout"
+    },
+    {
+      "path": "tests/netlab/agent/scenario_test.go",
+      "name": "TestLab04_RestartKeepsVerifiedLease"
+    },
+    {
+      "path": "tests/netlab/agent/scenario_test.go",
+      "name": "TestLab05_NoAllowAllOnUpdate"
+    },
+    {
+      "path": "tests/netlab/agent/scenario_test.go",
+      "name": "TestLab06_RevokedStopsForwarding"
+    },
+    {
+      "path": "tests/netlab/agent/scenario_test.go",
+      "name": "TestLab07_UnpublishedBaselineAck"
+    },
+    {
+      "path": "tests/netlab/agent/scenario_health_test.go",
+      "name": "TestLab08_HealthAttestationUnpublished"
+    },
+    {
+      "path": "tests/netlab/agent/scenario_ac_timing_test.go",
+      "name": "TestLabD087_D104_GrantRenewalExpiryCorrelation"
+    },
+    {
+      "path": "tests/netlab/agent/scenario_az_external_test.go",
+      "name": "TestLabExternalMeterReset"
+    },
+    {
+      "path": "tests/netlab/agent/scenario_f36_test.go",
+      "name": "TestLabF36_AT13_RestartChangedSetsStopsEstablishedFlow"
+    },
+    {
+      "path": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "name": "TestLabISO_F6_RecoveryAndEvidence"
+    },
+    {
+      "path": "tests/netlab/agent/scenario_at_usage_test.go",
+      "name": "TestLabUsageLedger"
+    },
+    {
+      "path": "node/agent/followup15_test.go",
+      "name": "TestM2_UnpublishedTransitionStillDeletesSameIP"
+    },
+    {
+      "path": "node/agent/followup15_test.go",
+      "name": "TestM3_ConntrackAttemptBoundSurvivesRestart"
+    },
+    {
+      "path": "tests/netlab/scenario_nb_test.go",
+      "name": "TestNetBird_InterferenceFailClosed"
+    },
+    {
       "path": "tests/e2e/at/isolation/record_test.go",
       "name": "TestParseForwardChain_D146AndD147Shapes"
+    },
+    {
+      "path": "tests/netlab/scenario_probe_test.go",
+      "name": "TestProbe_BaselineException"
+    },
+    {
+      "path": "tests/netlab/scenario_dns_accept_test.go",
+      "name": "TestProbe_DNSAcceptBound"
+    },
+    {
+      "path": "node/enforce/review_r20_test.go",
+      "name": "TestR20_Held_VerifyServingCatchesResolverBindingQoSAndSNATDrift"
+    },
+    {
+      "path": "node/enforce/review_r24_test.go",
+      "name": "TestR24_H2_OrphanMemberTCClassDeletedBeforeNftBatch"
+    },
+    {
+      "path": "node/enforce/review_r24_test.go",
+      "name": "TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen"
+    },
+    {
+      "path": "node/enforce/review_r24_test.go",
+      "name": "TestR24_Held_Q1_GuardInstallBoundLifetimeCeilingAndCounterContinuity"
+    },
+    {
+      "path": "node/enforce/review_r24_test.go",
+      "name": "TestR24_M2_PostShapeClockCheckSkipsBaselineInApply"
+    },
+    {
+      "path": "node/agent/review_r13_agent_test.go",
+      "name": "TestReviewR13_Q2_PendingRevokeNotPrunedOnReAdmission"
+    },
+    {
+      "path": "node/agent/review_r13_agent_test.go",
+      "name": "TestReviewR13_Q2_PermanentConntrackFailureNeverEscalates"
+    },
+    {
+      "path": "node/agent/review_r13_agent_test.go",
+      "name": "TestReviewR13_Q2_SameIPDeviceSwapSkipsConntrackDelete"
+    },
+    {
+      "path": "node/agent/followup12_test.go",
+      "name": "TestReviewR15_TCForeignFilterWithdrawsServingOnApply"
+    },
+    {
+      "path": "tests/netlab/review_r15_q8_bypass_test.go",
+      "name": "TestReviewR15_TcMirredAndPolicyRoutingBypass"
+    },
+    {
+      "path": "node/enforce/review_r18_lifecycle_test.go",
+      "name": "TestReviewR18_DisabledRunCommandMatchesRun"
+    },
+    {
+      "path": "node/enforce/review_r18_lifecycle_test.go",
+      "name": "TestReviewR18_EnabledCancelReapsChild"
+    },
+    {
+      "path": "node/enforce/review_r18_lifecycle_test.go",
+      "name": "TestReviewR18_EnabledSampleIgnoresInstallDeadline"
+    },
+    {
+      "path": "node/enforce/review_r18_lifecycle_test.go",
+      "name": "TestReviewR18_RenderCaptureStaysInMemory"
+    },
+    {
+      "path": "node/agent/review_r19_intersection_test.go",
+      "name": "TestReviewR19_Q4_ConntrackAttemptIsCountedAfterTheDelete"
+    },
+    {
+      "path": "node/enforce/review_r19_intersection_test.go",
+      "name": "TestReviewR19_Q4_CurrentRenderDoesNotRestrictEstablishedDownload"
+    },
+    {
+      "path": "tests/netlab/review_r19_destination_test.go",
+      "name": "TestReviewR19_Q4_EstablishedDownloadSurvivesDestinationDeny"
+    },
+    {
+      "path": "node/enforce/review_r19_intersection_test.go",
+      "name": "TestReviewR19_Q4_ExistingCounterIsNotRecreated"
+    },
+    {
+      "path": "tests/netlab/scenario_revoke_flow_test.go",
+      "name": "TestRevoke_RulesetStopsEstablished"
     }
   ]
 }

@@ -441,7 +441,7 @@ audit checks baselineDecision at 8dec4100: lines 170–209, mono starts at 211.
 Neither the r26 archive nor #430's erratum changes.
 
 `followup40-evidence.json` pins 76 immutable dated/per-follow-up records,
-11 exact cutoff snapshots and 14 Go test declarations on main. The owned
+11 exact cutoff snapshots and 84 Go test declarations on main. The owned
 members-run2 and isolation-assembled directories are frozen copies of selected
 #434-cutoff records; tests never read living roots. `case-checks.json` extracts
 the ten case verdicts/counts/blockers and all 77 AT09 names/statuses from the

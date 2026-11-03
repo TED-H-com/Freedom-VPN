@@ -12626,7 +12626,7 @@ func TestHandover_Followup40Claims(t *testing.T) {
 	checkHash("tests/handover/testdata/followup40-snapshots.json", "cdc93eea4fd260b10023d6237b0902d3548974df14ac4be9c07767f40a99c5ba")
 	checkHash("tests/handover/testdata/followup40-decisions.json", "ca6ae07ab3bdfe835f81ffcff9c05c00269be57deecf9f0fb49d8a0210904015")
 	checkHash("tests/handover/testdata/followup40-findings.json", "d349e257360bebeadd694901a0d6055af0b8fc4c8f10352d5a19f9721629ea8b")
-	checkHash("tests/handover/testdata/followup40-evidence.json", "97e3ff8f2d718f7a822ab51ef625c3b411718a3b6ce062ff842ab2a05181b110")
+	checkHash("tests/handover/testdata/followup40-evidence.json", "2b5d13fbf18716f4dfff16416a6db6954c48d49c69e4785dc5223fc4a74fc65d")
 	checkHash("tests/handover/testdata/history/follow-up-40/source-audit.json", "9ac37ffd3378a98bdde5e85d89ec748aebbbcd8ae0f817765f588e1d1b4d640a")
 	checkHash("tests/handover/testdata/history/follow-up-40/members-run2/case-checks.json", "2f116fcf36b03de6acb7b1584685afd43ad6014385c3d4051185a7afb1ef6ee1")
 	checkHash("docs/handover/follow-up-40.md", "4975b48b8bcee747a0926e43cebfa2e5fd434c009f1568f73245138506ca8360")
@@ -12748,7 +12748,7 @@ func TestHandover_Followup40Claims(t *testing.T) {
 		require(frozen+"pr430-excerpt.json", "13:18 EST", "13:50", "gpt-6-astra", "6 commits and 32 owned files", "872.4 s in total", "suite wait was 0 s", "99 rows", "15 dated documents and 75 Go test declarations")
 		require(doc, "No continuation", "53 decisions and 99 findings rows", "six commits and 32 owned files")
 	})
-	t.Run("76_immutable_records_11_snapshots_and_14_Go_declarations", func(t *testing.T) {
+	t.Run("76_immutable_records_11_snapshots_and_84_Go_declarations", func(t *testing.T) {
 		var e struct {
 			Commit               string `json:"source_commit"`
 			Documents, Snapshots []struct {
@@ -12759,7 +12759,7 @@ func TestHandover_Followup40Claims(t *testing.T) {
 			Proofs []struct{ Path, Name string }
 		}
 		readJSON(fixture+"followup40-evidence.json", &e)
-		if e.Commit != cut || len(e.Documents) != 76 || len(e.Snapshots) != 11 || len(e.Proofs) != 14 {
+		if e.Commit != cut || len(e.Documents) != 76 || len(e.Snapshots) != 11 || len(e.Proofs) != 84 {
 			t.Fatal("evidence inventory")
 		}
 		for _, r := range append(e.Documents, e.Snapshots...) {
