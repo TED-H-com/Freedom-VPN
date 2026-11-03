@@ -1191,6 +1191,14 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 			return nil
 		}
 		if e.canRetainServing(ctx, d) {
+			// A reset may have rotated the head since the last Apply. Persist
+			// first; recordUsageIntent publishes memory only after that write.
+			// A crash before it retains the older, continuity-scoped intent.
+			if err := e.recordUsageIntent(ctx, d.Model); err != nil {
+				e.usagePersist = true
+				e.withdraw(ctx)
+				return nil
+			}
 			e.beat()
 			return nil
 		}

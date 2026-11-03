@@ -42,14 +42,19 @@ func (e *Engine) canRetainServing(ctx context.Context, d Decision) bool {
 		!sameEnforcement(*e.appliedModel, d.Model, e.appliedAssignments) {
 		return false
 	}
-	// A reset may have changed the epoch since the last Apply. Keep its intent
-	// and synchronous switch path current instead of relying on a future change.
+	// Same-boot counter resets do not change the counting interval. A final
+	// sample, closed epoch or boot boundary still defeats retention. The caller
+	// durably advances the intent to the current head before publishing a skip.
 	h, err := e.usage.Head(ctx)
 	if err != nil {
 		return false
 	}
 	intent := e.restartIntent
-	return intent != nil && h.OpenEpoch != uuid.Nil && h.BootID == e.bootID.String() &&
-		intent.Boot == e.bootID && intent.Epoch == h.OpenEpoch &&
-		uint64(intent.Generation) == d.Model.Generation && sameUsageBindings(intent.bindings(), d.Model.Bindings)
+	if intent == nil || h.OpenEpoch == uuid.Nil || h.BootID != e.bootID.String() ||
+		intent.Boot != e.bootID || uint64(intent.Generation) != d.Model.Generation ||
+		!sameUsageBindings(intent.bindings(), d.Model.Bindings) {
+		return false
+	}
+	same, err := e.usage.SameCountingInterval(ctx, intent.Epoch, h.OpenEpoch, e.bootID.String())
+	return err == nil && same
 }
