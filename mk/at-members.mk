@@ -11,7 +11,7 @@ LINT_TARGETS += at-members-lint
 
 at-members:
 	@python3 tests/e2e/at/members/admission.py
-	@$(at-members-disk) env FVPN_E2E=1 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 go test -tags e2e -count=1 -p 1 -parallel 2 -timeout 55m -v ./tests/e2e/at/members/...
+	@$(at-members-disk) env FVPN_E2E=1 FVPN_E2E_PREFIX=w4-members FVPN_E2E_PORT_BASE=24000 go test -tags e2e -count=1 -p 1 -parallel 2 -timeout 75m -v ./tests/e2e/at/members/...
 
 at-members-test:
 	@$(at-members-disk) go test -p 1 -parallel 2 ./tests/e2e/at/members/...
@@ -22,7 +22,7 @@ at-members-lint:
 	@$(at-members-disk) go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e ./tests/e2e/at/members/...
 
 at-members-build:
-	@$(at-members-disk) sh -ec 'for arch in amd64 arm64; do for pkg in ./tests/e2e/at/members/cmd/probe ./tests/e2e/cmd/fvpn-e2e-fixture-probe ./tests/e2e/cmd/fvpn-e2e-member-session ./tests/e2e/cmd/fvpn-e2e-native-observe; do GOOS=linux GOARCH=$$arch go build -o "$$AT_MEMBERS_TMP/$${pkg##*/}-$$arch" $$pkg; done; done'
+	@$(at-members-disk) sh -ec 'for arch in amd64 arm64; do for pkg in ./tests/e2e/at/members/cmd/probe ./tests/e2e/cmd/fvpn-e2e-fixture-probe ./tests/e2e/cmd/fvpn-e2e-member-session ./tests/e2e/cmd/fvpn-e2e-native-observe ./tests/e2e/cmd/fvpn-e2e-lease-read; do GOOS=linux GOARCH=$$arch go build -o "$$AT_MEMBERS_TMP/$${pkg##*/}-$$arch" $$pkg; done; done'
 
 # Supplements evidence from the same live run; leaves complete AT status blocked.
 at-members-readback:

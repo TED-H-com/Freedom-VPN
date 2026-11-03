@@ -52,6 +52,9 @@ func (l *live) useSecond() func() {
 }
 
 func (l *live) twoExits(r *record) {
+	// The full assembled campaign can outlast a member browser idle session.
+	// Reauthenticate through OIDC; do not lengthen the product timeout.
+	l.a = l.login("AT-member-A-"+l.run, "member")
 	if !l.secondExit(r) {
 		return
 	}

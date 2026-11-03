@@ -415,3 +415,14 @@ After the run, execute `followup15_index.py`, `followup15_evidence.py`,
 the repository root. They read the original records/private captures and write
 public diagnostic indexes; they neither send traffic nor replace live verdicts.
 Compress any new oversized derived files and regenerate that new run's pins.
+
+
+## Follow-up 16 retained evidence and resume
+
+D-098 archives e80bb592 first. Devstack 27's [TEST ONLY arm/release sequence](../../scenarios/harness-exports.md#follow-up-27--bounded-populated-generation-hold-test-only) is read-only to this lane. Each incident uses its own arm UUID and real capacity command. Sole-member closure requires its own one-member populated lease and real member suspension. A report before a sibling suspension cannot prove survivor continuation. Full-population re-grant and sibling captures precede the new hold scenarios.
+
+The stream records every attempted write with monotonic/UTC before/after times, including failed writes. Full native sessions sample routes and latest-handshake each second; all 4,724 attempts are joined to member, node and origin packet headers. No node nft observation rules are installed. Reservation accounting reads `host.before_apply.end_ns` to `timing.start_ns` and leaves it inside the existing command/baseline interval once.
+
+Run-derived scripts, from the repository root with `python3 -B`, are `followup16_index.py`, `followup16_evidence.py`, `followup16_receipts.py`, `followup16_transitions.py`, `followup16_review.py`, `followup16_native_sessions.py`, then `followup16_resume.py` and `followup16_resume.py contention`, all in `tests/e2e/at/members/`. They consume retained cases, original private pcaps and producer exports; they send no traffic. Keep original signed documents, measured outcomes and prior archives unchanged. Run the contention index last after other JSON derivation; it pins uncompressed source bytes and resolves serialized `actual` JSON using `@json` pointers. Archive capture manifests pin the payload-free headers and analyses; raw packets stay private.
+
+The November 2 resume does **not** repeat the assembled run. Before each offline `go test`, `make` or Docker command, use the orchestrator's host admission script and start only on `free`, checking held admission every 60 seconds. All gates are foreground, sequential, and use `disktmp.py` for disk TMPDIR/GOTMPDIR; obtain GOCACHE from `go env GOCACHE`. Follow the exact gate order in RUN.md. The three future harness corrections (skip no-op unsuspension, include member.patch audits, re-authenticate before AT09) do not alter 0ffb355a's verdicts.

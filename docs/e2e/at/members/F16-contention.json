@@ -1,0 +1,1775 @@
+{
+  "run_id": "0ffb355a-945b-4198-a551-3794120a686c",
+  "classification": "contention-confounded for every observation overlapping the window",
+  "start": "2026-11-01T17:32:43Z",
+  "end": "2026-11-01T17:37:12Z",
+  "decision": "D-133",
+  "cause_status": "unproven",
+  "source": "Orchestrator resume instruction, 2026-11-02: handover 29 CPU-heavy gates",
+  "rule": "All timings, failures and anomalies inside or overlapping this window are contention-confounded. Values and verdicts stand; overlap assigns no cause. Cumulative snapshots may reference earlier events; evaluate the event time, not the later snapshot time.",
+  "index": "F16-contention.json",
+  "monotonic_window": {
+    "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+    "start_ns": "137900516344293",
+    "end_ns": "138169516376472",
+    "assumption": "Envelope of retained native wall/monotonic clock pairs; no intervening wall-clock step. Boundary overlap conservatively included."
+  },
+  "steps": [
+    {
+      "case": "AT01",
+      "step_index": 14,
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "at": "2026-11-01T17:25:35Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 2,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT01",
+      "step_index": 15,
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "at": "2026-11-01T17:25:35Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 2,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 8,
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "at": "2026-11-01T17:26:19Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 2,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 9,
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "at": "2026-11-01T17:26:19Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 2,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 41,
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "at": "2026-11-01T17:27:10Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 2,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 42,
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "at": "2026-11-01T17:27:10Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 2,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 44,
+      "name": "F14-01 original re-grant attempt retained",
+      "status": "pass",
+      "at": "2026-11-01T17:27:23Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 4,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 116,
+      "name": "finite grant production transition",
+      "status": "pass",
+      "at": "2026-11-01T17:31:35Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 118,
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "at": "2026-11-01T17:31:35Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 2,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 119,
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "at": "2026-11-01T17:31:36Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 2,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 122,
+      "name": "real finite valid_until expiry",
+      "status": "pass",
+      "at": "2026-11-01T17:32:46Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 3,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 123,
+      "name": "real finite expiry audited withdrawal",
+      "status": "pass",
+      "at": "2026-11-01T17:32:46Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 4,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 124,
+      "name": "configured heartbeat bound",
+      "status": "pass",
+      "at": "2026-11-01T17:32:46Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 125,
+      "name": "persistent withdrawal member-a3",
+      "status": "pass",
+      "at": "2026-11-01T17:32:57Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 953,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 126,
+      "name": "finite expiry restoration HTTP",
+      "status": "pass",
+      "at": "2026-11-01T17:32:57Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 3,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 127,
+      "name": "finite expiry restored 3/0",
+      "status": "pass",
+      "at": "2026-11-01T17:33:03Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 128,
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "at": "2026-11-01T17:33:03Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 26,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 129,
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "at": "2026-11-01T17:33:04Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 26,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 130,
+      "name": "bounded member transfer observation",
+      "status": "pass",
+      "at": "2026-11-01T17:33:18Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 3,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 131,
+      "name": "native capture completeness regrant-01a19828-0441-7763-852d-abe7d3a7c46c",
+      "status": "pass",
+      "at": "2026-11-01T17:33:21Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 9555,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 132,
+      "name": "AT02 assertion boundary",
+      "status": "pass",
+      "at": "2026-11-01T17:33:21Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 133,
+      "name": "r18 M-2 SIGTERM to process exit",
+      "status": "pass",
+      "at": "2026-11-01T17:33:21Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 5,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 134,
+      "name": "agent transition usage stop",
+      "status": "pass",
+      "at": "2026-11-01T17:33:22Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 12,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 135,
+      "name": "usage diagnostic supervisor stop",
+      "status": "pass",
+      "at": "2026-11-01T17:33:22Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 136,
+      "name": "mTLS usage binding negative control",
+      "status": "pass",
+      "at": "2026-11-01T17:33:24Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 137,
+      "name": "real metered event receipt",
+      "status": "pass",
+      "at": "2026-11-01T17:33:24Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 138,
+      "name": "real metered usage replay",
+      "status": "pass",
+      "at": "2026-11-01T17:33:28Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 139,
+      "name": "positive control durable evidence",
+      "status": "pass",
+      "at": "2026-11-01T17:33:28Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 140,
+      "name": "usage diagnostic adds no sequence conflict",
+      "status": "pass",
+      "at": "2026-11-01T17:33:28Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 141,
+      "name": "agent transition usage resume",
+      "status": "pass",
+      "at": "2026-11-01T17:33:29Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 12,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 142,
+      "name": "usage diagnostic supervisor resume",
+      "status": "pass",
+      "at": "2026-11-01T17:33:29Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 143,
+      "name": "second exit enrolled through shared hook",
+      "status": "pass",
+      "at": "2026-11-01T17:33:32Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 144,
+      "name": "finite capacity and classification",
+      "status": "pass",
+      "at": "2026-11-01T17:33:37Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 145,
+      "name": "publication command published",
+      "status": "pass",
+      "at": "2026-11-01T17:33:38Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 146,
+      "name": "publication progress published",
+      "status": "pass",
+      "at": "2026-11-01T17:33:42Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 147,
+      "name": "publication operation published",
+      "status": "pass",
+      "at": "2026-11-01T17:33:42Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 148,
+      "name": "finite capacity and classification",
+      "status": "pass",
+      "at": "2026-11-01T17:33:44Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 149,
+      "name": "publication command published",
+      "status": "pass",
+      "at": "2026-11-01T17:33:45Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 150,
+      "name": "publication progress published",
+      "status": "pass",
+      "at": "2026-11-01T17:33:46Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 151,
+      "name": "publication operation published",
+      "status": "pass",
+      "at": "2026-11-01T17:33:46Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 152,
+      "name": "populated hold capacity command alarm-recovery",
+      "status": "pass",
+      "at": "2026-11-01T17:34:59Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 153,
+      "name": "populated hold alarm and central escalation alarm-recovery",
+      "status": "pass",
+      "at": "2026-11-01T17:35:11Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 154,
+      "name": "populated matching recovery",
+      "status": "pass",
+      "at": "2026-11-01T17:35:16Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 155,
+      "name": "conditional suspension update",
+      "status": "fail",
+      "at": "2026-11-01T17:35:19Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 2,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 156,
+      "name": "finite capacity and classification",
+      "status": "pass",
+      "at": "2026-11-01T17:35:20Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 157,
+      "name": "publication command published",
+      "status": "pass",
+      "at": "2026-11-01T17:35:22Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 158,
+      "name": "publication progress published",
+      "status": "pass",
+      "at": "2026-11-01T17:35:27Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 159,
+      "name": "publication operation published",
+      "status": "pass",
+      "at": "2026-11-01T17:35:27Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 160,
+      "name": "populated hold capacity command sibling-removal",
+      "status": "pass",
+      "at": "2026-11-01T17:36:33Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 161,
+      "name": "populated hold alarm and central escalation sibling-removal",
+      "status": "pass",
+      "at": "2026-11-01T17:36:46Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 162,
+      "name": "conditional suspension update",
+      "status": "pass",
+      "at": "2026-11-01T17:36:48Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 3,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 163,
+      "name": "conditional suspension update",
+      "status": "pass",
+      "at": "2026-11-01T17:37:03Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 3,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 164,
+      "name": "finite capacity and classification",
+      "status": "pass",
+      "at": "2026-11-01T17:37:04Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 165,
+      "name": "publication command published",
+      "status": "pass",
+      "at": "2026-11-01T17:37:05Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 166,
+      "name": "publication progress published",
+      "status": "pass",
+      "at": "2026-11-01T17:37:06Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 167,
+      "name": "publication operation published",
+      "status": "pass",
+      "at": "2026-11-01T17:37:06Z",
+      "classification": "contention-confounded",
+      "step_completed_in_window": true,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 179,
+      "name": "conditional suspension update",
+      "status": "fail",
+      "at": "2026-11-01T17:40:25Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT02",
+      "step_index": 185,
+      "name": "D-135 D-136 node-wide baseline transitions (provisional)",
+      "status": "fail",
+      "at": "2026-11-01T17:40:35Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 56401,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT08",
+      "step_index": 24,
+      "name": "agent transition disabled node restart",
+      "status": "pass",
+      "at": "2026-11-01T17:54:53Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT09",
+      "step_index": 16,
+      "name": "agent transition selected namespace stop",
+      "status": "pass",
+      "at": "2026-11-01T18:04:24Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 1,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT20",
+      "step_index": 37,
+      "name": "RR case 06 TCP=false",
+      "status": "pass",
+      "at": "2026-11-01T17:55:45Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 45,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT20",
+      "step_index": 58,
+      "name": "RR case 06 TCP=true",
+      "status": "pass",
+      "at": "2026-11-01T17:55:48Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 45,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT20",
+      "step_index": 73,
+      "name": "native case/dot normalization",
+      "status": "pass",
+      "at": "2026-11-01T17:55:50Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 45,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT20",
+      "step_index": 74,
+      "name": "native case/dot normalization",
+      "status": "pass",
+      "at": "2026-11-01T17:55:50Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 45,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT20",
+      "step_index": 87,
+      "name": "F12-04 original query evidence",
+      "status": "pass",
+      "at": "2026-11-01T17:56:37Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 54,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    },
+    {
+      "case": "AT21",
+      "step_index": 3,
+      "name": "fallback block policy",
+      "status": "pass",
+      "at": "2026-11-01T17:56:43Z",
+      "classification": "contains earlier contention-confounded observations",
+      "step_completed_in_window": false,
+      "referenced_times_in_window": 45,
+      "index": "F16-contention.json",
+      "cause_status": "unproven"
+    }
+  ],
+  "capture_windows": [
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/AT02-AT02-sibling-original-capture.json",
+      "capture_id": "35a818bd-0ba6-4c75-8d0e-da2919c5f03b",
+      "start_wall_ns": "1793554119483354441",
+      "end_wall_ns": "1793554217993824957",
+      "overlaps": false,
+      "classification": "outside this reported window"
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/AT02-regrant-01a19825-19ae-7789-9c81-4b8954a8efb3-original-capture.json",
+      "capture_id": "bb51260e-cc32-4392-a822-bf638b957ac8",
+      "start_wall_ns": "1793553992771743105",
+      "end_wall_ns": "1793554043766321281",
+      "overlaps": false,
+      "classification": "outside this reported window"
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/AT02-regrant-01a19828-0441-7763-852d-abe7d3a7c46c-original-capture.json",
+      "capture_id": "f64a9f65-34b3-47aa-8371-8ac6640dfe16",
+      "start_wall_ns": "1793554267780007676",
+      "end_wall_ns": "1793554400445570502",
+      "overlaps": true,
+      "classification": "contention-confounded for the overlapping portion"
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/AT03-regrant-01a19834-e4f1-717e-99cc-76264c928856-original-capture.json",
+      "capture_id": "b729aedd-284f-4e81-96f9-f731d10c69a2",
+      "start_wall_ns": "1793554997243851791",
+      "end_wall_ns": "1793555043902635841",
+      "overlaps": false,
+      "classification": "outside this reported window"
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/initial-selection-original-capture.json",
+      "capture_id": "7b06ab3d-dd75-418e-b3a2-af2e27990dcf",
+      "start_wall_ns": "1793553936211289213",
+      "end_wall_ns": "1793553950165574515",
+      "overlaps": false,
+      "classification": "outside this reported window"
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/ipv6-asymmetric-original-capture.json",
+      "capture_id": "0ad27a87-d0f4-4075-8eb9-596ca320eca7",
+      "start_wall_ns": "1793556438623030283",
+      "end_wall_ns": "1793556447123249824",
+      "overlaps": false,
+      "classification": "outside this reported window"
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/ipv6-explicit1280-original-capture.json",
+      "capture_id": "8c111ce7-f02e-4e82-a92c-22b75be99122",
+      "start_wall_ns": "1793556448462310953",
+      "end_wall_ns": "1793556451535654434",
+      "overlaps": false,
+      "classification": "outside this reported window"
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrix1280-original-capture.json",
+      "capture_id": "25845629-a6f6-4c68-9a56-de2f4a543f28",
+      "start_wall_ns": "1793556417183337510",
+      "end_wall_ns": "1793556437293287105",
+      "overlaps": false,
+      "classification": "outside this reported window"
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrix4-original-capture.json",
+      "capture_id": "f31ae0b6-312a-49d6-b7e4-68cc6476a57b",
+      "start_wall_ns": "1793556388430075713",
+      "end_wall_ns": "1793556396669464118",
+      "overlaps": false,
+      "classification": "outside this reported window"
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrix6-original-capture.json",
+      "capture_id": "e9421404-3a80-4029-8f1c-c5332347b2a4",
+      "start_wall_ns": "1793556398038874626",
+      "end_wall_ns": "1793556406259075096",
+      "overlaps": false,
+      "classification": "outside this reported window"
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrixDual-original-capture.json",
+      "capture_id": "69168978-1e21-4d44-892c-c91b2da04aca",
+      "start_wall_ns": "1793556407617097460",
+      "end_wall_ns": "1793556415801366926",
+      "overlaps": false,
+      "classification": "outside this reported window"
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/native-dns-delivery-original-capture.json",
+      "capture_id": "c720f2d1-b2f4-4498-8d69-ec2093e07ffd",
+      "start_wall_ns": "1793555743239658855",
+      "end_wall_ns": "1793555797062532122",
+      "overlaps": false,
+      "classification": "outside this reported window"
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/router-ipv4-original-capture.json",
+      "capture_id": "66b84646-1c41-467d-9242-99d08139ce23",
+      "start_wall_ns": "1793556493810529058",
+      "end_wall_ns": "1793556501951207857",
+      "overlaps": false,
+      "classification": "outside this reported window"
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/router-ipv6-original-capture.json",
+      "capture_id": "98525f59-e682-4ef7-b621-19dec4dc804e",
+      "start_wall_ns": "1793556485418658722",
+      "end_wall_ns": "1793556493253699158",
+      "overlaps": false,
+      "classification": "outside this reported window"
+    }
+  ],
+  "files": [
+    {
+      "file": "AT01.json",
+      "uncompressed_sha256": "db2df009ab0d4ded237ccae1fb4dc2c410c61c9e44bf9bdc071816bbf74acd8f",
+      "marked_timestamp_references": 4
+    },
+    {
+      "file": "AT02-enforcement-timing.json.gz",
+      "uncompressed_sha256": "996b7d971290448b07470d0c3199767c2fdc23492d1d35d4e432f431c0790fc0",
+      "marked_timestamp_references": 30965
+    },
+    {
+      "file": "AT02.json.gz",
+      "uncompressed_sha256": "63807e9bdceb72b4d8e8ad34e96c54ee9adae6db2f5201b6ca45d2aaa7378c06",
+      "marked_timestamp_references": 67063
+    },
+    {
+      "file": "AT03.json",
+      "uncompressed_sha256": "76f5fad296a73ea85851d0e35d122dd3b8a01969941a234f7508c5a0336a5b44",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "AT04.json",
+      "uncompressed_sha256": "3e3d3885ad30ce2e465d5e0826a4b5498e4b8f8d1a783fea67b7c6a27335da57",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "AT05.json",
+      "uncompressed_sha256": "27a7e29bf9ac67940602a5db7e3ee31be3e2696f2d76725226c0112d8651a706",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "AT08.json",
+      "uncompressed_sha256": "05c6d699422f4d448b2f1e64ab61ffdcd9b9ff95e3d2c849d0c5a7c225dfd0d7",
+      "marked_timestamp_references": 1
+    },
+    {
+      "file": "AT09.json",
+      "uncompressed_sha256": "760de936f95a5ca1c9637065c3a29423b06bef6d4ec6b0adb00e715d5a3f7c7c",
+      "marked_timestamp_references": 1
+    },
+    {
+      "file": "AT20.json",
+      "uncompressed_sha256": "53a2341b8b072166dc6600f3e2723f2df24fdd80073ff5cc2a3b03538a861ed9",
+      "marked_timestamp_references": 234
+    },
+    {
+      "file": "AT21.json",
+      "uncompressed_sha256": "28de5c60d8815440f6c591de3e9f7e20b0b1f2051ebc189a75db77fc47ef46cf",
+      "marked_timestamp_references": 45
+    },
+    {
+      "file": "AT22.json",
+      "uncompressed_sha256": "23bed0719614a4b81fb53725800a196d61b357a45149864383ba764e615c806f",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "F16-AT01-generation-holds.json",
+      "uncompressed_sha256": "6c4e108435bb6e5a8ff238dcc70f8ade736a7cd26ecd88f0997176f283d94210",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "F16-AT02-central-hold-join.json",
+      "uncompressed_sha256": "65c836de74c2c2f3fe2be619d8d9739556f5ac22dca0164173efa8e8325d7656",
+      "marked_timestamp_references": 122
+    },
+    {
+      "file": "F16-AT02-every-send.json",
+      "uncompressed_sha256": "7132f14a86c726c7ea7ab487b9fb7fcc10cf450728624aa0a7cf26304779bc69",
+      "marked_timestamp_references": 38
+    },
+    {
+      "file": "F16-AT02-generation-holds.json",
+      "uncompressed_sha256": "e9fbee771a3c3e1d2b7495c017e2b451609db9d8d427cd2a03e54bb216f3d281",
+      "marked_timestamp_references": 118
+    },
+    {
+      "file": "F16-AT02-member-patch-audits.json",
+      "uncompressed_sha256": "f3218912bcceef87df618090d2328edc91e10dac87fd18fa512e892ff2c3647e",
+      "marked_timestamp_references": 3
+    },
+    {
+      "file": "F16-AT02-policy-missing.json.gz",
+      "uncompressed_sha256": "ae1d92e40c8a1e8a746d9a142d6f1383521853eb36fbb9c2a783fcd681d750bb",
+      "marked_timestamp_references": 6567
+    },
+    {
+      "file": "F16-AT02-recovery.json.gz",
+      "uncompressed_sha256": "0094e99fb1794633140e166692a813755dcb2a168e33237ed98d71a2c0905745",
+      "marked_timestamp_references": 56401
+    },
+    {
+      "file": "F16-AT02-revocation-members.json",
+      "uncompressed_sha256": "c9c10969ce37732c0454edfbd2120e672efb5fda3db784fa42049726890b2be8",
+      "marked_timestamp_references": 6
+    },
+    {
+      "file": "F16-AT03-generation-holds.json",
+      "uncompressed_sha256": "c6a4503ee2f7cece04e5a61133482da6c3a108a58992afba716904733341499a",
+      "marked_timestamp_references": 127
+    },
+    {
+      "file": "F16-AT04-generation-holds.json",
+      "uncompressed_sha256": "e74f26ed1d22dd10a08f1597ade30dd2a26035db569031ead186d9da9edfd6ef",
+      "marked_timestamp_references": 105
+    },
+    {
+      "file": "F16-AT05-generation-holds.json",
+      "uncompressed_sha256": "80eef87b68ac97a79836b8ecacc753cc8889c0d942e0415a9d687a18f97be01b",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "F16-AT08-generation-holds.json",
+      "uncompressed_sha256": "5d740ed8579713d89eb04f5df4a6e8c601dbcc5827c28bc8946bb3a55f26e6f0",
+      "marked_timestamp_references": 105
+    },
+    {
+      "file": "F16-AT09-failure-review.json",
+      "uncompressed_sha256": "4b214ac28c33593b054c38973a0b027b7464b9e16f9a73ac419537f1c845bece",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "F16-AT09-generation-holds.json",
+      "uncompressed_sha256": "a22ee2432af64c6a2a5efadc6e90ced1dc6db68fff5068d8fffefcb5223c3874",
+      "marked_timestamp_references": 105
+    },
+    {
+      "file": "F16-AT09-restart.json",
+      "uncompressed_sha256": "1d12a7e2163a426e854bb40bf99d680462e21f7e105c1a38e1fb75c1739e5f6f",
+      "marked_timestamp_references": 1
+    },
+    {
+      "file": "F16-AT20-cache.json",
+      "uncompressed_sha256": "a43e9ec0d1b539c2345399625d323c337284c0c3a18e528bfe8c8770738ddc8a",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "F16-AT20-generation-holds.json",
+      "uncompressed_sha256": "99760548023df31656d64629902726e50bc0c471ffb2d2829fcd9ec6d2fab1f3",
+      "marked_timestamp_references": 105
+    },
+    {
+      "file": "F16-AT21-generation-holds.json",
+      "uncompressed_sha256": "cdb74984b2176f97b567c7dfa67ea8ba13490caf5fbf0d8cd3a2e4642c1e275d",
+      "marked_timestamp_references": 105
+    },
+    {
+      "file": "F16-AT22-generation-holds.json",
+      "uncompressed_sha256": "06934dfafe20abaee88c3cbe60a87add03800f43a30f831ba56e04ec405a979d",
+      "marked_timestamp_references": 105
+    },
+    {
+      "file": "F16-D077-regrant-attempts.json",
+      "uncompressed_sha256": "89fedf4ccfcfe7d3ecda3a76d32152ff39bff20cc5901a4e46e74b647630b5b5",
+      "marked_timestamp_references": 8
+    },
+    {
+      "file": "F16-D137-native-paths.json",
+      "uncompressed_sha256": "4aad1fec92383955891c07a8418504653a2b076fbd63b2d0f6809ac42e9ca1d0",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "F16-F11-01-first-selection.json",
+      "uncompressed_sha256": "8c1f58f0dff5309103b081797ee8b0107199016e67f157dac0335b409f99200c",
+      "marked_timestamp_references": 4
+    },
+    {
+      "file": "F16-F12-04-original-dns.json",
+      "uncompressed_sha256": "07a87c71ed9432f17327f89a47ba4ac78834c1900b8b12569cccf6d9bd14efea",
+      "marked_timestamp_references": 54
+    },
+    {
+      "file": "F16-F13-01-private-receipts.json",
+      "uncompressed_sha256": "43eb45103074695fc64ae7626d1e16d8acf86b4b1944538be6a9a0a83281ca80",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "F16-agent-transitions.json",
+      "uncompressed_sha256": "21826639de4a9cfa1581e7deb85fe70b0a617a815b42cf8ab919c4c022a50b47",
+      "marked_timestamp_references": 637
+    },
+    {
+      "file": "F16-hold-alarm-recovery.json",
+      "uncompressed_sha256": "448057fce42a92b54142a564ee0b59fe20b297a892eecb88058d1b22c4955141",
+      "marked_timestamp_references": 10985
+    },
+    {
+      "file": "F16-hold-retained-safety.json",
+      "uncompressed_sha256": "0cccf5f785f13c4a58660094ddf7054fff6c05fef2e2a68e213256c4889f5f11",
+      "marked_timestamp_references": 23714
+    },
+    {
+      "file": "F16-hold-sibling-removal.json",
+      "uncompressed_sha256": "5659de5a2d70bf995c2066504e6bd3ffac33c88dfb0d94a0271783fa2c64b8c0",
+      "marked_timestamp_references": 21854
+    },
+    {
+      "file": "F16-hold-sole-member.json",
+      "uncompressed_sha256": "d45fedac3238e671e6e76a45d9313f2e6aa14b30a3d9bdec4386da198c473c95",
+      "marked_timestamp_references": 23611
+    },
+    {
+      "file": "F16-host-preflight-admission-stop-1.json",
+      "uncompressed_sha256": "11aca749cd64e4bf129c435f1d20c0ba2596c6a054380914e7bd2c7c1f4e3e86",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "F16-host-preflight.json",
+      "uncompressed_sha256": "826a0fdc12374fd161fa328239034b907fc36969e7138c26b5764a3887b786d4",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "F16-loopback-and-first-selection.json",
+      "uncompressed_sha256": "17248e4069e55654105098a47ed7f60d0f89a5fac1028f935ddb014499b5fa3e",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "F16-populated-hold-joins.json",
+      "uncompressed_sha256": "d52bfdd6fa816f980c47720d4d52025e864e4c5d6355c58656fda1d243b42c3e",
+      "marked_timestamp_references": 81
+    },
+    {
+      "file": "F16-pre-apply-reservations.json.gz",
+      "uncompressed_sha256": "c7eb1dc2970b35b309befadc5273f13a41b5c94a5200584c7f93760dbdecf642",
+      "marked_timestamp_references": 47445
+    },
+    {
+      "file": "F16-results.json",
+      "uncompressed_sha256": "c736e3431819d520962c727689fc003d70ffef699a62d90134fa1e5e569b9e05",
+      "marked_timestamp_references": 1
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/AT02-AT02-sibling-analysis.json.gz",
+      "uncompressed_sha256": "ac5c973ae4f8f2f10ecad9dca177c38fc19582f59ead52b14388dec427adf0c2",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/AT02-AT02-sibling-original-capture.json",
+      "uncompressed_sha256": "6d6bdb15766565f1cb1798fb6db1e1e863a00cfcac6e331f048d99a42e7e6f4d",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/AT02-regrant-01a19825-19ae-7789-9c81-4b8954a8efb3-analysis.json",
+      "uncompressed_sha256": "5fc5c9f8c80b2243d07f0b8884fb8baf9fa26b0fd0ae91d6cd1c56ba86d67d36",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/AT02-regrant-01a19825-19ae-7789-9c81-4b8954a8efb3-original-capture.json",
+      "uncompressed_sha256": "abbd3412a00961fc96b93ddb1f9d699aa9c805772e4cc83da5d49cb660f5341d",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/AT02-regrant-01a19828-0441-7763-852d-abe7d3a7c46c-analysis.json",
+      "uncompressed_sha256": "e234cc5a7a148537cdf33870fe4c779df32fa82f1044324fdb75cf47d37dfbe5",
+      "marked_timestamp_references": 10096
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/AT02-regrant-01a19828-0441-7763-852d-abe7d3a7c46c-original-capture.json",
+      "uncompressed_sha256": "2b5b8b855dda1f59a57eec4f230d62afb2df722367a1dfc811878c222aafb4ae",
+      "marked_timestamp_references": 9554
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/AT03-regrant-01a19834-e4f1-717e-99cc-76264c928856-analysis.json",
+      "uncompressed_sha256": "a93ff55282678ac1c08c592e8ed7d6de77477e7005856933f5b18f8ca6d1a397",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/AT03-regrant-01a19834-e4f1-717e-99cc-76264c928856-original-capture.json",
+      "uncompressed_sha256": "3e3ba02d0e7931e046a7f6e2064a13173ec7a71e513fcd8dd1f8d00341bc7057",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/analysis.json",
+      "uncompressed_sha256": "656d196a4897ef0f2699cd9192d4ad131e811ffe99790bc58f0821500567315c",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/dns-delivery-analysis.json",
+      "uncompressed_sha256": "c21ddf3437c15dc3afdf73197927212e69f90daa9e6bc06d21d93ad47af8c533",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/AT02-AT02-sibling/member.headers.jsonl",
+      "uncompressed_sha256": "479be9d0d98aae164c21040db81fd68e8356f48334f6d781b7c537cbc1006eae",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/AT02-AT02-sibling/node.headers.jsonl",
+      "uncompressed_sha256": "c100513658b91d9e6f94302629ed5744f7cdbc3955bc191649646a765e4afc6b",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/AT02-AT02-sibling/origin.headers.jsonl",
+      "uncompressed_sha256": "6b9b289c0581a3c2048794b02a4ef3fa9bd8b3890ece44f3001ce6ffe8b193f6",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/AT02-regrant-01a19825-19ae-7789-9c81-4b8954a8efb3/member.headers.jsonl",
+      "uncompressed_sha256": "0a2319d9d8859079082cca30d27468136139aba69e7d253b79b707427f428c5c",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/AT02-regrant-01a19825-19ae-7789-9c81-4b8954a8efb3/node.headers.jsonl",
+      "uncompressed_sha256": "a162d943c8033f23f8d07c0852e50b4d31de42cbedef05b7ec36ee7f60284d29",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/AT02-regrant-01a19825-19ae-7789-9c81-4b8954a8efb3/origin.headers.jsonl",
+      "uncompressed_sha256": "3ce171092d1f7503dc207135678d45d37dc685d1dec75e733b984fa998673d57",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/AT02-regrant-01a19828-0441-7763-852d-abe7d3a7c46c/member.headers.jsonl",
+      "uncompressed_sha256": "e9aa6d7f8842d2120dde9e93d18aeb345c3dd5be6d4303aa7e5cc769eada94e8",
+      "marked_timestamp_references": 455
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/AT02-regrant-01a19828-0441-7763-852d-abe7d3a7c46c/node.headers.jsonl",
+      "uncompressed_sha256": "0a72d728e29247d80c03a5c2ee40b19c11a08a7a4feec6639186d126c8d205c7",
+      "marked_timestamp_references": 550
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/AT02-regrant-01a19828-0441-7763-852d-abe7d3a7c46c/origin.headers.jsonl",
+      "uncompressed_sha256": "b11caa12da199a4186e4656c2635458f259009204ae25a918fcafa43348ab6d8",
+      "marked_timestamp_references": 170
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/AT03-regrant-01a19834-e4f1-717e-99cc-76264c928856/member.headers.jsonl",
+      "uncompressed_sha256": "db79324de7240476e1aa8e52f342ff55f8c3401ff902ad25231a32df75703f19",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/AT03-regrant-01a19834-e4f1-717e-99cc-76264c928856/node.headers.jsonl",
+      "uncompressed_sha256": "a09220f95f14783103f6c114c789018963c4d0a044e2af7d69b49698ad571dd4",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/AT03-regrant-01a19834-e4f1-717e-99cc-76264c928856/origin.headers.jsonl",
+      "uncompressed_sha256": "cf89b1e6847fcda16f5bc44c76fa101c851de7e17f8bf150e910f00e4989c52a",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/initial-selection/member.bounds.jsonl",
+      "uncompressed_sha256": "7577cb99ad499744855074b0353c27589e96f339f878849bc3eb6d86b78cbfc2",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/initial-selection/member.headers.jsonl",
+      "uncompressed_sha256": "9783eb13429cd16e04942c0e654b0fe55d92e5d44445558786e323471254d83a",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/initial-selection/node.bounds.jsonl",
+      "uncompressed_sha256": "1047f897282eb377176977aa62ed3571fc2e43dea6b502762eaaaa7abaec3f83",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/initial-selection/node.headers.jsonl",
+      "uncompressed_sha256": "7d5c507bca115f71c76079ed6cac30f80783d9aa432c35f99bea83d6a6ca64b6",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/initial-selection/origin.bounds.jsonl",
+      "uncompressed_sha256": "05066dd6a42f42635762bf7f413c65418da3a527139c4d44d64365d40e6bcb9a",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/initial-selection/origin.headers.jsonl",
+      "uncompressed_sha256": "76e9930565bb35cfa7b37e9ad0708d09cb01bf18987be297c8472107188f80c3",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/ipv6-asymmetric/member.bounds.jsonl",
+      "uncompressed_sha256": "9f60dee9ed2a7295b21f6cfb8e877ac30325e9392c05c8117f69d0d76226f6f7",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/ipv6-asymmetric/member.headers.jsonl",
+      "uncompressed_sha256": "17ce161c85d07f1a2f00eeeffbf77ff9f76743fe4c989986ca8b5123ba7a87bd",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/ipv6-asymmetric/node.bounds.jsonl",
+      "uncompressed_sha256": "b590e6bd324f933979deef95f6a0040b769279642f027180dad3797b936f2733",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/ipv6-asymmetric/node.headers.jsonl",
+      "uncompressed_sha256": "9daa70306a47428fae55babae1d3bbdde1fd34ea75c18b7c02b565c29e7cd7ac",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/ipv6-asymmetric/origin.bounds.jsonl",
+      "uncompressed_sha256": "79ac702c88d2ca85265394882810a050037dcceebb21b751a375d5249b86ce4c",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/ipv6-asymmetric/origin.headers.jsonl",
+      "uncompressed_sha256": "4aac903c41a0242d8d8e5c33cec33bcd057bf702fcf06c5f4046910677d1710b",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/ipv6-explicit1280/member.bounds.jsonl",
+      "uncompressed_sha256": "75d4c4a3d6a1f91c9e545b154789c67771ad23223c478ca409d2277681cf5a20",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/ipv6-explicit1280/member.headers.jsonl",
+      "uncompressed_sha256": "1728e68c2bb6d8041059797edb6131dd15012621a4afc576098cd2e738ea5fae",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/ipv6-explicit1280/node.bounds.jsonl",
+      "uncompressed_sha256": "a0e2bd59db4b1ddbd98aa6201dd954ce166b928406aca3643011ac0d69edafa1",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/ipv6-explicit1280/node.headers.jsonl",
+      "uncompressed_sha256": "3bde28a39bec323f5c2e6fdb6bd61f1010d7a14c22fa0e6cb8879263ccb50b49",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/ipv6-explicit1280/origin.bounds.jsonl",
+      "uncompressed_sha256": "613b8998a1fa9d7f7be9ad4dd5a70f57cd1af98542e0e0e7ba6ceded2ca3155f",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/ipv6-explicit1280/origin.headers.jsonl",
+      "uncompressed_sha256": "84e05b0736530474901a9c0fbec4ae28f658350eea7b0daea413cba70e376478",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix1280/member.bounds.jsonl",
+      "uncompressed_sha256": "2f703c37c6e4c5e0e4b9beeb463e0753f48f90c3e4ae293191f3bf4a1848c127",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix1280/member.headers.jsonl",
+      "uncompressed_sha256": "7b0e78bdc96fe610df8c05274373aa797eeb7dc33b0ed132d4e22f85e9da28f1",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix1280/node.bounds.jsonl",
+      "uncompressed_sha256": "13042fea78cf0ecc2333cb4e3f9f91e6a3730ae1a187aa1107989a7d02b956a3",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix1280/node.headers.jsonl",
+      "uncompressed_sha256": "dbeb62f34e3bf8262deaf03cd234ed717dba3058103d1e29c755bd22d1c96a9d",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix1280/origin.bounds.jsonl",
+      "uncompressed_sha256": "d838ff4c286e30360c6f39c23708c18f65c9e6e0ed18db5d200eca4aa16b4fcb",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix1280/origin.headers.jsonl",
+      "uncompressed_sha256": "8b71fed8c98b3237ca02329211baaebf695d0c4882151565acfd8ea62f004a3b",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix4/member.bounds.jsonl",
+      "uncompressed_sha256": "98e37045653ab1bdd627b657ee211fa34d6f973bcaaf4b879a9ff7a7c30a1cab",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix4/member.headers.jsonl",
+      "uncompressed_sha256": "a43831d3da1beb7fde003843a24df440815bae11f1baa415ccc9bdbada407999",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix4/node.bounds.jsonl",
+      "uncompressed_sha256": "250e935e588f62401a8c3fc9aa42e4548d01735d221b832d719a5e29b6a62269",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix4/node.headers.jsonl",
+      "uncompressed_sha256": "a165442f3d0d58f95c21826ae1e1e9d85df6ef3973d0e5dfecb15afd9afe3ca1",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix4/origin.bounds.jsonl",
+      "uncompressed_sha256": "cec69487be8e70b801b662d56a1b5f8d4ff1fd91714df8fbb82a9e4d9e68754d",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix4/origin.headers.jsonl",
+      "uncompressed_sha256": "4863f6db8a6a4212cac6734cf95a958a4b669a62b66c81ab488578fe0467f2e5",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix6/member.bounds.jsonl",
+      "uncompressed_sha256": "45b71a852806b53e519d4152c5cfb0d1d223651d4db24738519a910a30c55f7b",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix6/member.headers.jsonl",
+      "uncompressed_sha256": "8d319975011488f99d8ed507a4a1e70b56a8a33ce7dba3e1ba4c517a9e6df9a8",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix6/node.bounds.jsonl",
+      "uncompressed_sha256": "592f2ba34137e4da453b5bf9b83e7b7df74dd66013215315e381d10dcd7b7518",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix6/node.headers.jsonl",
+      "uncompressed_sha256": "e140c04026f4966fdbc0b01bceca54f9b8c86b1f538340fcc8f920d04a744431",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix6/origin.bounds.jsonl",
+      "uncompressed_sha256": "9e4a154fc1552b7efdb2d19d363f8a5e3085df6764e8ce476e7d53ce19c23f6d",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrix6/origin.headers.jsonl",
+      "uncompressed_sha256": "c74c2b22bf9e7128dcba0d5f96d7e35ca225c4a40eac2a7d85a0682c0486ce83",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrixDual/member.bounds.jsonl",
+      "uncompressed_sha256": "36c69537f662eeefa886485324d7190d47eac7c91208de3312e280b5998fe1be",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrixDual/member.headers.jsonl",
+      "uncompressed_sha256": "901175fd5104d9140eff0321d848ada76ef8d8d197b1d4c79de246f8e057bfd0",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrixDual/node.bounds.jsonl",
+      "uncompressed_sha256": "309ee568870e5b7fcedc093fd0ee7da629d47b0c933f266d5d3943204a3b93f1",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrixDual/node.headers.jsonl",
+      "uncompressed_sha256": "9dd8083efa2e2020a4f300ded20c59777aada2d52a187417d11aff4610a83177",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrixDual/origin.bounds.jsonl",
+      "uncompressed_sha256": "095c8abb004793e05acfafdf404320995a70bd4c328b7c216783e3ad87dc87bd",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/matrixDual/origin.headers.jsonl",
+      "uncompressed_sha256": "17ea7f6740c5e933a08fad8e7b7d40e4564282bd2b23cd307f31812cb8fa44b0",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/native-dns-delivery/member.bounds.jsonl",
+      "uncompressed_sha256": "b90b6c042de74ad49f1d7c2c9c2a84c17ba4c36945ee8bf1cbeaaf60c7dec82d",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/native-dns-delivery/member.headers.jsonl",
+      "uncompressed_sha256": "ae88883a1b2530fe82260c672a42d3c01f5721cf8fbbb0c726af32a48bbceb42",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/native-dns-delivery/node.bounds.jsonl",
+      "uncompressed_sha256": "7dfe5ed50188849ab17c874e70c5ccb6f767defa89735983a43e74db2290f251",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/native-dns-delivery/node.headers.jsonl",
+      "uncompressed_sha256": "fee26d264ba1f492239b638b38188e06f873a56643105a3be72a35afa24b2c65",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/native-dns-delivery/origin.bounds.jsonl",
+      "uncompressed_sha256": "b3db6e402518d5bea847cbf2ddbd960a0db47d6881d26d8ed6d738f874bb11ed",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/native-dns-delivery/origin.headers.jsonl",
+      "uncompressed_sha256": "4bf1ae95ecf3ffe9b09626d91a09fe90a631fbe6a62d10827a2511516794c8f6",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/native-dns-delivery/primary.bounds.jsonl",
+      "uncompressed_sha256": "3e44865d1e00853af95b69389ab043a8c14d9b0acc4560aa48160d8f4e5f0dca",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/native-dns-delivery/primary.headers.jsonl",
+      "uncompressed_sha256": "12307bc6471a6f9cf0da9b377d902f59a99a802bc4f4cf23a2564267c0fd9c48",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/native-dns-delivery/secondary.bounds.jsonl",
+      "uncompressed_sha256": "e8427bad00dc38474153153e8707937877a4a901771d7d5e95c094b1e5c53116",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/native-dns-delivery/secondary.headers.jsonl",
+      "uncompressed_sha256": "e1a018d059aa5612f87460154c5126e95338cb122919363da5659782a13df3f1",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv4/member.bounds.jsonl",
+      "uncompressed_sha256": "02c1074161fb191580ad8cb14b84c0a2a67e8fdb21ca30de594c49651be8827b",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv4/member.headers.jsonl",
+      "uncompressed_sha256": "cce805d8d3515790b9678b11c4ad946cc65ed892063fe94c4a0a2a422749f7e5",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv4/node.bounds.jsonl",
+      "uncompressed_sha256": "1a248dba3a79718ad111e531871838e3cb05f4753445a0c3aba9f995bf3c8bf1",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv4/node.headers.jsonl",
+      "uncompressed_sha256": "6dfc48465b68fab49005255dacf06b5d73370fa35daa254115757f6e0ec21426",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv4/origin.bounds.jsonl",
+      "uncompressed_sha256": "50000b0c79049de2110ef5739c4c97701715e4c34c5ffba9391a1808295f173a",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv4/origin.headers.jsonl",
+      "uncompressed_sha256": "ee7beed73b89ec025c25c3b5ee1bef6be9aac2f43f3f911411f076d3d0c4f0a4",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv4/router.bounds.jsonl",
+      "uncompressed_sha256": "2e7b0ade2a6e54d44cb84494b4e5a94071ef753c39398a3fc58a50095bc9d92c",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv4/router.headers.jsonl",
+      "uncompressed_sha256": "36ddbc59e41e80cfbcf3000659707b13e7a3bfc3102752dae9d3bc7041f8a066",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv6/member.bounds.jsonl",
+      "uncompressed_sha256": "55f2bab8a6d4294d23e4014a9489e39589c12bcdcfff4f37558e76e9e1525b91",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv6/member.headers.jsonl",
+      "uncompressed_sha256": "f792f2923e0257cf78926c0ffe88762465b6f128b058b8a26f36f6bf7dc05f9a",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv6/node.bounds.jsonl",
+      "uncompressed_sha256": "78d7d2450bb8cd8f8574a963d934728bd1ad2299306132436d29b2cc4a029e76",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv6/node.headers.jsonl",
+      "uncompressed_sha256": "892981fb9250df76efd3b9c7c72a431e8b07508add8b66a82399b102df9aeb6f",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv6/origin.bounds.jsonl",
+      "uncompressed_sha256": "d2d94451b43f27a34ff085083bae6b2468a25ae06adddd1438aa17dc14fb1e42",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv6/origin.headers.jsonl",
+      "uncompressed_sha256": "b4246eedf6df7dd9207e9a594a8512b2040d953a16bc294d28045fbac6de0cd9",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv6/router.bounds.jsonl",
+      "uncompressed_sha256": "deae52beaba74d61804671d25253ff2686d8b245a42199efc1069c5e7d9bcffc",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/headers/router-ipv6/router.headers.jsonl",
+      "uncompressed_sha256": "5f7d154d86696f1a27307e9a89c770fbd968f25688777a8d1869dbdcbea0346f",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/initial-selection-analysis.json",
+      "uncompressed_sha256": "49e8b11502ce0db601f6fe02438a7cb3ac187a54b0e8edb23b9244162c5ad5e3",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/initial-selection-original-capture.json",
+      "uncompressed_sha256": "15ffdeed135416ec34b73c41ceb6aa308513f353d66554370ae3c8512164d15a",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/initial-selection.json",
+      "uncompressed_sha256": "5d90692935dc956bb637f485c02c44b87f38ce512bf8d5ab3c19961470f5dbf6",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/ipv6-asymmetric-analysis.json",
+      "uncompressed_sha256": "e7821a636e7ed2e9d34edc1cc08061661549d98bb513aa934f44492098d28366",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/ipv6-asymmetric-original-capture.json",
+      "uncompressed_sha256": "ba56362a94d0be7f40207d26927fba2b63ff8f850847c4c9b553967d9a8c3115",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/ipv6-asymmetric.json",
+      "uncompressed_sha256": "d90ac0b878a3cd3b7bb2dc9089e0673ac3c1ea60578ee6fa947f8c41e2cc67a9",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/ipv6-explicit1280-analysis.json",
+      "uncompressed_sha256": "cf32b80f08728ebc4b77996c00843a57802ad533ffd4337ebfe66731f2859498",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/ipv6-explicit1280-original-capture.json",
+      "uncompressed_sha256": "625a4d4aae512860ba572c5d04bc0dc586e1de8d81158d7b787cfdcc3dc0f739",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/ipv6-explicit1280.json",
+      "uncompressed_sha256": "96a2704ccbdefa3c33ec3dce341fda8312a333b7d6b4438fd3b78ce52f2a9901",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrix1280-analysis.json",
+      "uncompressed_sha256": "01cfb353377cb7cf61de50c76f4b3a40e6c07bfe78ebe7be689840ee4a4b8be4",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrix1280-original-capture.json",
+      "uncompressed_sha256": "4b462edf956188e1da4e42855a80a353175bb2778395d0a0db7cbf8bf1e13e6e",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrix1280.json",
+      "uncompressed_sha256": "4a5fbf99459f58624279a22a2d30caa556347295bc4a98b192b51638ff4a6369",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrix4-analysis.json",
+      "uncompressed_sha256": "55dd521e985ed42649611e3f6b370687788ffa0692a9717601bdd525e8f108d3",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrix4-original-capture.json",
+      "uncompressed_sha256": "ca3fd89ecab87fee16de0c3c649cf23275978805b58e9484041bc469c7a746a7",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrix4.json",
+      "uncompressed_sha256": "f842ee2758ea2e64786afc76f39ae631d8fbf39999daf9b11f006218eb5d7539",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrix6-analysis.json",
+      "uncompressed_sha256": "83d6fe9f21d9b9ed70457b59d0ef4f981b0a4603018d86da9a483392432464ae",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrix6-original-capture.json",
+      "uncompressed_sha256": "9435f2f4429bb56968f66843da3e1e78f599c5b3b8b269cc3203f1e4389ca3e3",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrix6.json",
+      "uncompressed_sha256": "eddf1a516ec33132b9eca6905f362af6b60944d869195eee1d2735f060962af8",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrixDual-analysis.json",
+      "uncompressed_sha256": "568bb6c682a544578ec8d77b26e0aba9b2e73941ae70d036a16c7e2bc276f6d4",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrixDual-original-capture.json",
+      "uncompressed_sha256": "12bd79a8a5ee53383e4c4a244ccc49f1212d68a95d350788bc705f164b7adc97",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/matrixDual.json",
+      "uncompressed_sha256": "e9537896682042b3c2c78f33ea21bf2d7c9a7e9f8ff9b8c6150348205344a9a3",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/native-dns-delivery-analysis.json",
+      "uncompressed_sha256": "12ff9979f920c776755bb4e165796e90372df170c5e9561e4bbd799b4808121b",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/native-dns-delivery-original-capture.json",
+      "uncompressed_sha256": "b404714a10b1946401ee0b9c07693f285879d8c346e32cae748f54fe3c602919",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/native-dns-delivery.json",
+      "uncompressed_sha256": "9a684a45abe8423e49b14f3a5c3c8ce9ceb47c434a67f7a10b9f47163635eae0",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/router-analysis-ipv4.json",
+      "uncompressed_sha256": "9ff794fc8c60c6b5ddd9a9e842e8061fd4ec21baa0c7c1d461b799cb31bc2c24",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/router-analysis-ipv6.json",
+      "uncompressed_sha256": "6a5fa0cd150c9a40ae291bba3a157ab17f66f3cf0c5590f3dd93ad517e54617c",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/router-ipv4-analysis.json",
+      "uncompressed_sha256": "ed9b02023bfe12031d60242af79324246a2b6ec9e08dddacc5f1e59002de25ff",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/router-ipv4-original-capture.json",
+      "uncompressed_sha256": "7340d7c247dea412d6b68f5585e089b9c540998fa1dd1352b0aeb6234eafd42d",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/router-ipv4.json",
+      "uncompressed_sha256": "07945ff81f09ff63f776b16935725447af94ec61a694cb773ee818b4875ad25a",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/router-ipv6-analysis.json",
+      "uncompressed_sha256": "568b8001a386814f62b0eb5886b132ddc276f4fb4c21a1752316bae0a831ec60",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/router-ipv6-original-capture.json",
+      "uncompressed_sha256": "ffadda78b82ff15a84686b5d72149ab20c342a4023a151b85be379eaa46e892e",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/router-ipv6.json",
+      "uncompressed_sha256": "02f85a0b8237122c2d20453a50a67f35eb8c3700624cc95f83d43d3c80568ec7",
+      "marked_timestamp_references": 0
+    },
+    {
+      "file": "history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/session-index.json",
+      "uncompressed_sha256": "e4c70b8cbdaed1dd6a450a2288af8defd63f89e82a5abf41dff368582b458348",
+      "marked_timestamp_references": 0
+    }
+  ],
+  "timestamp_references": 311545,
+  "observations": "F16-contention-observations.jsonl.gz",
+  "coverage": "All root F16/AT JSON and this run's retained capture JSON/JSONL; @json traverses serialized actual fields, /line is one-based JSONL. This conservatively marks historical references too, without asserting that a later snapshot was measured during contention. Intervals crossing the window are confounded even if endpoints lie outside. No known time is inferred for untimed records. Earlier archives unchanged."
+}

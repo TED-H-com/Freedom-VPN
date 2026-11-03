@@ -85,6 +85,7 @@ type record struct {
 type live struct {
 	holdSnapshots                []map[string]any
 	dnsCapture                   *nativeCaptureSession
+	regrantCapture               *nativeCaptureSession
 	siblingSent, siblingObserved json.RawMessage
 
 	probeSequence                            int
@@ -132,7 +133,7 @@ func TestATMembers_Live(t *testing.T) {
 	if os.Getenv("FVPN_E2E_PREFIX") != "w4-members" || os.Getenv("FVPN_E2E_PORT_BASE") != "24000" {
 		t.Fatal("wrong assigned instance")
 	}
-	ctx, cancel := context.WithTimeout(t.Context(), 50*time.Minute)
+	ctx, cancel := context.WithTimeout(t.Context(), 70*time.Minute)
 	defer cancel()
 	l := &live{t: t, ctx: ctx, root: repository(t), run: uuid.NewString()[:8]}
 	l.state = filepath.Join(l.root, ".agent/e2e-state-w4-members")
@@ -185,6 +186,9 @@ func TestATMembers_Live(t *testing.T) {
 			l.holdSnapshots = nil
 			l.holdSnapshot(task.id + " start")
 			task.run(&r)
+			if task.id == "AT02" {
+				l.populatedHolds(&r)
+			}
 			l.recordGenerationHolds(&r)
 			if task.id == "AT02" {
 				l.recordCounterTiming(&r)
