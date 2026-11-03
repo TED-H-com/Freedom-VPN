@@ -15,9 +15,12 @@ func TestISO01_F41_SkippedTicksStillDetectLiveDrift(t *testing.T) {
 			serveBoundGeneration(t, r)
 			r.manualUsage(t)
 			p := &replayPlane{memPlane: r.plane}
+			// Seed the emulated kernel with the already-applied model before
+			// switching from the startup fake to real live verification.
+			if _, err := p.Apply(t.Context(), *r.eng.appliedModel, r.eng.counters); err != nil {
+				t.Fatal(err)
+			}
 			r.eng.plane = p
-			r.clock.Advance(time.Second)
-			r.eng.leaseRefreshPending = true
 			stepOK(t, r)
 			if !r.eng.serving {
 				t.Fatalf("fixture failed: %+v", r.eng.applyError)
