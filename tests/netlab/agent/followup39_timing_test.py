@@ -4,6 +4,21 @@ import followup39_timing as runner
 
 
 class QualificationTests(unittest.TestCase):
+    def test_container_events_retain_even_transient_foreign_activity(self):
+        state = runner.ContainerState([{'id': 'shared', 'name': 'fvpn-pg'}])
+        def event(identity, name, action):
+            return {'Action': action, 'Actor': {'ID': identity, 'Attributes': {'name': name}}}
+        state.update(event('own', runner.PREFIX, 'start'))
+        state.update(event('other', 'fvpn-another-lane', 'start'))
+        state.update(event('other', 'fvpn-another-lane', 'die'))
+        running, foreign, own = state.snapshot()
+        self.assertEqual({r['id'] for r in running}, {'shared', 'own'})
+        self.assertEqual(foreign, [{'id': 'other', 'name': 'fvpn-another-lane'}])
+        self.assertEqual(own, {'own'})
+        self.assertEqual(state.snapshot()[1], [])
+        state.update(event('own', runner.PREFIX, 'die'))
+        self.assertEqual(state.snapshot()[2], {'own'})
+
     def test_stat_command_can_contain_spaces_and_parentheses(self):
         fields = ['S', '44'] + ['0'] * 9 + ['250', '150'] + ['0'] * 6 + ['900']
         got = runner.parse_stat('123 (a process (with spaces)) ' + ' '.join(fields))

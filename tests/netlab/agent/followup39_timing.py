@@ -10,11 +10,13 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import queue
 import re
 import shutil
 import signal
 import subprocess
 import sys
+import threading
 import time
 
 PREFIX = 'fvpn-w2-agent-core-f39'
@@ -132,9 +134,95 @@ def running_containers():
     return [dict(zip(('id', 'name'), line.split(maxsplit=1))) for line in raw.splitlines()]
 
 
+class ContainerState:
+    def __init__(self, initial):
+        self.running = {row['id']: row for row in initial}
+        self.own_ids = {row['id'] for row in initial if row['name'].startswith(PREFIX)}
+        self.foreign_seen = {}
+
+    def update(self, event):
+        actor = event.get('Actor', {})
+        identity = actor.get('ID', event.get('id', ''))
+        name = actor.get('Attributes', {}).get('name', '')
+        action = event.get('Action', event.get('status', ''))
+        if name.startswith(PREFIX):
+            self.own_ids.add(identity)
+        if action in {'start', 'unpause'} and identity and name:
+            row = {'id': identity, 'name': name}
+            self.running[identity] = row
+            if name.startswith('fvpn-') and not name.startswith(PREFIX) and name not in SHARED:
+                self.foreign_seen[identity] = row
+        elif action in {'die', 'destroy'}:
+            self.running.pop(identity, None)
+
+    def snapshot(self):
+        foreign = dict(self.foreign_seen)
+        for identity, row in self.running.items():
+            if row['name'].startswith('fvpn-') and not row['name'].startswith(PREFIX) and row['name'] not in SHARED:
+                foreign[identity] = row
+        self.foreign_seen.clear()
+        return list(self.running.values()), list(foreign.values()), set(self.own_ids)
+
+
+class ContainerEvents:
+    """One admitted, joined foreground child; no Docker calls during the suite.
+
+    The admission script regards sibling make processes as competitors. An
+    event stream admitted before make preserves continuous inventory evidence
+    without bypassing that check or changing the frozen product trees.
+    """
+    def __init__(self, label):
+        since = str(int(time.time()) - 1)
+        self.state = ContainerState(running_containers())
+        if not admission():
+            raise RuntimeError('Docker events not admitted')
+        self.child = subprocess.Popen(['docker', 'events', '--since', since,
+                                      '--filter', 'type=container', '--format', '{{json .}}'],
+                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        self.pending = queue.Queue()
+        self.label = label
+        self.reader = threading.Thread(target=self.read, daemon=False)
+        self.reader.start()
+
+    def read(self):
+        for raw in self.child.stdout:
+            try:
+                event = json.loads(raw)
+            except ValueError:
+                self.pending.put(None)
+                continue
+            append(OUT / 'container-events.jsonl', {'utc': utc(), 'label': self.label, 'event': event})
+            self.pending.put(event)
+
+    def snapshot(self):
+        if self.child.poll() is not None:
+            raise RuntimeError('Docker event stream ended before suite')
+        while True:
+            try:
+                event = self.pending.get_nowait()
+            except queue.Empty:
+                break
+            if event is None:
+                raise RuntimeError('unreadable Docker event')
+            self.state.update(event)
+        return self.state.snapshot()
+
+    def close(self):
+        self.child.terminate()
+        try:
+            self.child.wait(timeout=5)
+        except subprocess.TimeoutExpired:
+            self.child.kill()
+            self.child.wait()
+        self.reader.join()
+        self.child.stdout.close()
+        self.child.stderr.close()
+
+
 class Monitor:
     def __init__(self, label):
         self.label = label
+        self.events = ContainerEvents(label)
         self.remembered = set()
         self.previous, self.unreadable = proc_snapshot()
         self.own = descendants(self.previous, os.getpid(), self.remembered)
@@ -143,10 +231,8 @@ class Monitor:
         self.container_ids = set()
 
     def sample(self):
-        containers = running_containers()
-        self.container_ids.update(c['id'] for c in containers if c['name'].startswith(PREFIX))
-        foreign_containers = [c for c in containers if c['name'].startswith('fvpn-')
-                              and not c['name'].startswith(PREFIX) and c['name'] not in SHARED]
+        containers, foreign_containers, own_ids = self.events.snapshot()
+        self.container_ids.update(own_ids)
         current, unreadable = proc_snapshot()
         now = time.monotonic()
         own = descendants(current, os.getpid(), self.remembered)
@@ -264,13 +350,18 @@ def run_leg(label, window, window_number, deadline):
         return row
     if not admission():
         return refused('entry admission refused', 125)
-    monitor = Monitor(label)
+    try:
+        monitor = Monitor(label)
+    except (RuntimeError, subprocess.CalledProcessError) as error:
+        return refused(str(error))
     time.sleep(INTERVAL)
     try:
         preflight = monitor.sample()
     except (RuntimeError, subprocess.CalledProcessError) as error:
+        monitor.events.close()
         return refused(str(error))
     if not preflight['qualified']:
+        monitor.events.close()
         return refused('preflight failed')
     bindir = OUT / 'bin'
     bindir.mkdir(exist_ok=True)
@@ -285,40 +376,45 @@ def run_leg(label, window, window_number, deadline):
                F39_TIMING_ROOT=str(ROOT))
     env['GOCACHE'] = subprocess.check_output(['go', 'env', 'GOCACHE'], text=True).strip()
     env['PATH'] = str(bindir) + os.pathsep + env['PATH']
-    cmd = ['make', '-f', 'mk/node.mk', 'node-test-netlab', 'FVPN_LAB_PREFIX=' + PREFIX]
+    cmd = ['make', '-f', 'mk/node.mk', 'node-test-netlab', 'FVPN_LAB_PREFIX=' + PREFIX,
+           'MAKE=' + str(bindir / 'make')]
     started, begin = utc(), time.monotonic()
     print('START ' + label + ' ' + started, flush=True)
     qualified, reason, samples = True, '', 0
-    with (evidence / 'suite.log').open('w') as stream:
-        child = subprocess.Popen(cmd, cwd=tree, env=env, stdout=stream, stderr=subprocess.STDOUT, start_new_session=True)
-        while child.poll() is None:
-            try:
-                child.wait(timeout=max(0, INTERVAL - (time.monotonic() - monitor.at)))
-            except subprocess.TimeoutExpired:
-                pass
-            try:
-                row = monitor.sample()
-                samples += 1
-                qualified = row['qualified']
-                if not qualified:
-                    reason = 'in-leg foreign suite/container or CPU breach; see samples'
-            except (RuntimeError, subprocess.CalledProcessError) as error:
-                qualified, reason = False, str(error)
-            if time.monotonic() >= deadline - 30:
-                qualified, reason = False, 'reservation ending; stop before protected window expires'
-            if not qualified:
-                if child.poll() is None:
-                    os.killpg(child.pid, signal.SIGTERM)
+    try:
+        with (evidence / 'suite.log').open('w') as stream:
+            child = subprocess.Popen(cmd, cwd=tree, env=env, stdout=stream, stderr=subprocess.STDOUT, start_new_session=True)
+            while child.poll() is None:
                 try:
-                    child.wait(timeout=5)
+                    child.wait(timeout=max(0, INTERVAL - (time.monotonic() - monitor.at)))
                 except subprocess.TimeoutExpired:
-                    os.killpg(child.pid, signal.SIGKILL)
-                    child.wait()
-                break
-        code = child.wait()
+                    pass
+                try:
+                    row = monitor.sample()
+                    samples += 1
+                    qualified = row['qualified']
+                    if not qualified:
+                        reason = 'in-leg foreign suite/container or CPU breach; see samples'
+                except (RuntimeError, subprocess.CalledProcessError) as error:
+                    qualified, reason = False, str(error)
+                if time.monotonic() >= deadline - 30:
+                    qualified, reason = False, 'reservation ending; stop before protected window expires'
+                if not qualified:
+                    if child.poll() is None:
+                        os.killpg(child.pid, signal.SIGTERM)
+                    try:
+                        child.wait(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        os.killpg(child.pid, signal.SIGKILL)
+                        child.wait()
+                    break
+            code = child.wait()
+    finally:
+        monitor.events.close()
     row = {'leg': label, 'arm': arm, 'source': window[arm], 'window': window_number, 'started': started,
            'completed': utc(), 'seconds': time.monotonic() - begin, 'exit': code, 'qualified': qualified,
-           'reason': reason, 'samples': samples, 'evidence': str(evidence.relative_to(ROOT))}
+           'reason': reason, 'samples': samples, 'evidence': str(evidence.relative_to(ROOT)),
+           'timing_runner_sha256': file_hash(Path(__file__))}
     text = (evidence / 'suite.log').read_text()
     row['passed_scenarios'] = re.findall(r'^--- PASS: (Test\S+)', text, re.M)
     row['failed_scenarios'] = re.findall(r'^--- FAIL: (Test\S+)', text, re.M)
@@ -350,8 +446,14 @@ def run():
     for ref in ['main', 'origin/main']:
         if subprocess.check_output(['git', 'rev-parse', ref], text=True).strip() != window['A']:
             raise RuntimeError('main changed after declaration; merge and redeclare before reservation')
-    results, stop, released = [], '', None
-    for number in [1, 2]:
+    results = json.loads((OUT / 'results.json').read_text()) if (OUT / 'results.json').exists() else []
+    releases = [json.loads(line) for line in (OUT / 'releases.jsonl').read_text().splitlines()] if (OUT / 'releases.jsonl').exists() else []
+    first = max([r['window'] for r in releases], default=0) + 1
+    stop, released = '', None
+    if releases:
+        elapsed = time.time() - datetime.datetime.fromisoformat(releases[-1]['utc']).timestamp()
+        released = time.monotonic() - elapsed
+    for number in range(first, 3):
         if number == 2:
             print('Waiting ten minutes after release before second reservation', flush=True)
             time.sleep(max(0, 600 - (time.monotonic() - released)))

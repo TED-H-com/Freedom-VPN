@@ -59,3 +59,30 @@ expiry predicates, source/binary/fixture identities, and qualification samples.
 Report only comparisons supported by admitted legs. The binding-change cost
 includes withdrawal and durable metering before Apply; command-only guard
 measurements are not a direct measurement of that entire boundary.
+
+## First reservation retained; monitoring correction (2026-11-03)
+
+Reservation 1 succeeded at 11:20:35 UTC after 330.438 seconds and eleven
+refusals. Following the sixty-second drain, A1 entered at 11:21:40 UTC with
+`free` admission and a qualifying preflight. At its first in-leg Docker read,
+the admission script reported this runner's own child make as competing work.
+The leg stopped after 4.016 seconds, before any scenario; it is **unqualified**.
+Its log, receipts and result remain in `window1/A1`. Inventory was empty and
+the reservation released at 11:21:44 UTC. No leg was retried in that reservation.
+
+The same immutable A/B archives will be used in the sole remaining reservation.
+Before taking it, the monitoring harness is corrected to admit a foreground
+Docker event stream and initial inventory before starting make. The stream is
+owned, terminated and joined by the runner. It supplies running-container IDs
+and also detects a foreign container that starts and exits between samples.
+No in-leg Docker monitoring invocation competes with its own make sibling.
+CPU, process and interval criteria are unchanged. Recursive make calls now
+explicitly retain the admission wrapper through MAKE. Four synthetic monitor
+tests pass. The revised runner SHA-256 is `a9431ffee5be67e12f7fee4f97c7735127ae5818472e7d623d13f3df0e6468e7`; the old runner is preserved
+in B's archive and commit. This tooling change does not alter either product
+tree, binary input, qualifier, or scenario.
+
+The resumed driver reads prior results and the release receipt, starts at
+reservation 2, and enforces ten minutes from that release (not earlier than
+11:31:44 UTC). It cannot obtain a third reservation. All four legs are still
+owed; no first-window result is pooled as qualified.
