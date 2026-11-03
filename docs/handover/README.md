@@ -113,22 +113,20 @@ is frozen at #418, with its 81 findings and nine owner requests.
 
 <a id="follow-up-38-decisions-register-2026-11-03-est"></a>
 
-## Follow-up 39 decisions register (2026-11-03 EST)
+## Follow-up 40 decisions register (2026-11-03 EST)
 
-Verified against main **1b87ab32344fa3be3216df0d5f7b489eb853e011**, through
-**#429**: **#428 and #429 only**, immediately after #427. No unbriefed PR.
-[Evidence cut](follow-up-39.md) and
-[acceptance snapshot](../ops/README.md#follow-up-39-acceptance-snapshot-2026-11-03-est).
-No decision was added after D-144 on main before this cut. This handover adds
-**five owner decisions and one orchestrator decision**, for **53 decisions**.
-The owner's eight confirmations change status/date only; their decision text,
-including earlier confirmation/overturn language, stays historical and is
-superseded in status by the dated confirmation. D-137 confirms the supported
-scope; D-146 separately answers its hardening option. D-143 stays Ted's.
-D-150 remains provisional. **All ten owner requests are answered; the open
-owner-request list is empty.** Their original text remains in
-[follow-up 38](follow-up-38.md#requests-to-orchestrator), mapped to answers in
-[follow-up 39](follow-up-39.md#owner-answers).
+Verified against main **3f7dbc254ba1ce001628af8151a4d81c6954412d**, through
+**#434**: **#430–#434**, immediately after #429. Exactly the five briefed PRs;
+no unbriefed PR. [Evidence cut](follow-up-40.md) and
+[acceptance snapshot](../ops/README.md#follow-up-40-acceptance-snapshot-2026-11-03-est).
+No decision was added after D-150 on main before this cut. Two provisional
+orchestrator decisions, **D-151 and D-152**, bring the count to **55 decisions**;
+the owner may overturn either. D-146 and D-147 change status/date only to
+on `main` (#432); D-150 retains its substance and gains the attempted/repeat
+status. Every other decision row is byte-identical to #430.
+All ten earlier owner requests remain answered; their original text stays in
+[follow-up 38](follow-up-38.md#requests-to-orchestrator), with answers in
+[follow-up 39](follow-up-39.md#owner-answers). D-150 remains provisional.
 
 | Decision | Operator meaning and delivery boundary |
 |---|---|
@@ -180,11 +178,13 @@ owner-request list is empty.** Their original text remains in
 | D-143 | **23:1x EST, 2026-11-02, Ted.** Coding and review lanes are shared by codex `gpt-6-astra`, agy `claude-opus-5-5-high` and agy `gemini-4-argon-high`. Supersedes D-086's codex-only routing. Every commit's `Agent:` trailer names the session's tool and model. Process decision; no product value or operator procedure changes. |
 | D-144 | **00:25 EST, 2026-11-03, orchestrator — confirmed by Ted, 2026-11-03 about 12:30 EST**; the nightly signal, from devstack 29's request 1. A scheduled job fails on any fail, any error or traceback, and any blocked row that is not on the job's committed expected-blocked list. Each list entry names the row, the reason and the owner; a row is listed only once its block is established as expected on GitHub's runner. Listed blocked rows keep the job green; the job summary and the uploaded records name them. A listed row that passes is reported as unblocked, to be removed from the list. Unchanged: acceptance status (the rows stay blocked in records, RUN.md files and roadmap rows), and pull-request and local runs. Why: an always-red nightly hid devstack's real billing failures for four nights. No list is on main at #403; devstack 30 (e2e stack) and isolation 17 (at-isolation accept) apply it. Owner overturn option remains. |
 | D-145 | **Ted, 2026-11-03 about 12:30 EST — owner decision, relayed by the orchestrator.** G5/G6 and C1: production keeps the current guard. C1 is not implemented. Reopen only with field complaints, or measured member-visible impact after r24 H-1's fix merges. Netlab 31's C1 design and netlab 32's revision stay on main as history. |
-| D-146 | **Ted, 2026-11-03 about 12:30 EST — owner decision, relayed by the orchestrator.** D-137 hardening: approve a TCP MSS clamp; no lower tunnel MTU. Netlab designs the value and placement against the receive-only MTU-1280 row. UDP and QUIC over a receive-only link without PTB stay a documented limitation; historical F8-02 rows stay failed. Netlab 34 implements it; not on main at this cut, no date promised. |
-| D-147 | **Ted, 2026-11-03 about 12:30 EST — owner decision, relayed by the orchestrator.** Accept IPv4 ICMP fragmentation-needed (type 3, code 4) from a spec-denied outer source only when conntrack marks it RELATED to an allowed member connection. Time-exceeded and every other ICMP from spec-denied sources stay dropped. Netlab 34 implements it; not on main at this cut, no date promised. |
+| D-146 | **Ted, 2026-11-03 about 12:30 EST — owner decision, relayed by the orchestrator.** D-137 hardening: approve a TCP MSS clamp; no lower tunnel MTU. Netlab designs the value and placement against the receive-only MTU-1280 row. UDP and QUIC over a receive-only link without PTB stay a documented limitation; historical F8-02 rows stay failed. Status 2026-11-03 EST: on `main` (#432), netlab 34. |
+| D-147 | **Ted, 2026-11-03 about 12:30 EST — owner decision, relayed by the orchestrator.** Accept IPv4 ICMP fragmentation-needed (type 3, code 4) from a spec-denied outer source only when conntrack marks it RELATED to an allowed member connection. Time-exceeded and every other ICMP from spec-denied sources stay dropped. Status 2026-11-03 EST: on `main` (#432), netlab 34. |
 | D-148 | **Ted, 2026-11-03 about 12:30 EST — owner decision, relayed by the orchestrator.** F11-01: no product, pin, daemon or architecture change now. Report the ::1 response-source boundary to NetBird upstream with public evidence. The orchestrator filed [NetBird discussion 8473](https://github.com/netbirdio/netbird/discussions/8473) on 2026-11-03. Members F11-01 stays OPEN, upstream-dependent. |
 | D-149 | **Ted, 2026-11-03 about 12:30 EST — owner decision, relayed by the orchestrator.** Dismiss Dependabot #22 (minimatch < 11.0.1, GHSA-g3hv-75wg-m249, development scope) as a tolerable risk, per #349. Revisit when eslint-plugin-jsx-a11y accepts minimatch ≥ 11.0.1. |
-| D-150 | **2026-11-03, orchestrator — provisional; the owner may overturn.** Agent-core 37–43 merge as #429 without the D-133 A,B,A,B. D-133 attributes a failed live timing gate; none of these deliveries has one: every delivery's full production node-test-netlab passed, D087 / D104 included. Follow-up 43's two reservations qualified no leg; both stopped on foreign CPU from periodic jobs outside the project, which the orchestrator never pauses. Under agent-core follow-up 39's every-interval rule this host cannot qualify a full lab leg. The comparison is not dropped: agent-core 44 measures the same arms after the merge, marks intervals where foreign CPU exceeds 0.5 cores instead of stopping, and excludes overlapping spans from both arms. Every other rule of agent-core 39 and D-138 is unchanged. An attributable B shift or B-only failure routes a fix to a later agent-core follow-up. Lab-only measurement; no operator procedure. |
+| D-150 | **2026-11-03, orchestrator — provisional; the owner may overturn.** Agent-core 37–43 merge as #429 without the D-133 A,B,A,B. D-133 attributes a failed live timing gate; none of these deliveries has one: every delivery's full production node-test-netlab passed, D087 / D104 included. Follow-up 43's two reservations qualified no leg; both stopped on foreign CPU from periodic jobs outside the project, which the orchestrator never pauses. Under agent-core follow-up 39's every-interval rule this host cannot qualify a full lab leg. The comparison is not dropped: agent-core 44 measures the same arms after the merge, marks intervals where foreign CPU exceeds 0.5 cores instead of stopping, and excludes overlapping spans from both arms. Every other rule of agent-core 39 and D-138 is unchanged. An attributable B shift or B-only failure routes a fix to a later agent-core follow-up. Lab-only measurement; no operator procedure. **Status 2026-11-03 EST:** agent-core 44 (#431) attempted the measurement with no comparison; no leg reached a scenario and each arm had zero pooled legs. Agent-core 45 repeats it with the repaired wrapper and corrected same-clock condition. |
+| D-151 | **2026-11-03 EST, orchestrator — provisional; the owner may overturn.** AT09 receive-only MTU 1280 TCP rows under D-146: D-146 is the D-137 hardening the owner approved for that row. Such a row may pass on its unchanged byte predicate only when the same run proves the clamp did the work: SYN MSS above 1160 arrives as 1160; every reverse datagram fits 1280 and none is missing; no PTB appears. Without that evidence the row stays blocked under D-137, with measurements retained. UDP and QUIC over a receive-only link stay D-146’s documented limitation. Historical F8-02 rows stay failed. |
+| D-152 | **2026-11-03 EST, orchestrator — provisional; the owner may overturn.** Answers isolation 19’s F19-01: judge D-147’s upload negative at production’s applicable destination-deny rule: `ctbadns` for a resolver-only source; `cthost` for a host-only source; `ctdeny` for a denied source and for a source in both denied and host sets. The isolation brief’s literal `ctdeny` meant that applicable rule. No rule order changes. The requirement is unchanged: the member’s upload to the source is dropped, with zero upload usage. |
 
 Current contract is revision 14: OpenAPI `1.10.0`, `50` operations (#289).
 Wire-members follow-up 11 (#297) registers `revokeMemberGrant` at
