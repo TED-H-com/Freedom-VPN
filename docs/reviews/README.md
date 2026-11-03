@@ -29,7 +29,7 @@
 | `r21-adoption-fixes-review` | [r21-adoption-fixes-review.md](r21-adoption-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `7b3d7bf8` | Agent-core 37 fixes for r20 H-1, M-1, M-2, M-3 and L-1; D-141 | 0 Critical / 2 High / 2 Medium / 1 Low; returned before merge, none confirmed | Proof branch `47f75c04`; none adopted on main at this cut |
 | `r22-attribution-fixes-review` | [r22-attribution-fixes-review.md](r22-attribution-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `31862b3a` | Agent-core 38 carrying 37: r20 fixes and r21 H-1, H-2, M-1, M-2, L-1 fixes; D-141 | 0 Critical / 2 High / 3 Medium / 0 Low; returned to agent-core 39 before merge, none confirmed | Proof branch `ef78b9b7`; none adopted on main at this cut |
 | `r23-intent-fixes-review` | [r23-intent-fixes-review.md](r23-intent-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `99f93112` | Agent-core 37–39, r20/r21/r22 fixes | 5 (0 Critical, 3 High, 1 Medium, 1 Low); returned to agent-core 40 before merge, none confirmed | None; proofs on `26ffc36c` for four findings, L-1 code trace; exact archive only. |
-| `r24-hitless-guard-review` | [`r24-hitless-guard-review.md`](r24-hitless-guard-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Netlab 31 design at 52a7e59b; review ba5d3004, 08:19:51 EST; G5/G6 owner trade | 8 (0 Critical, 4 High, 3 Medium, 1 Low); #423 enforcement fixes, C1 revision documents only, H-1/H-3 returned to agent-core 41 | [`node/enforce/review_r24_test.go`](../../node/enforce/review_r24_test.go) adopted by #423; copied M-3 dropped; agent/watchdog proofs review-branch only |
+| `r24-hitless-guard-review` | [`r24-hitless-guard-review.md`](r24-hitless-guard-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Netlab 31 design at 52a7e59b; review ba5d3004, 08:19:51 EST; G5/G6 owner trade | 8 (0 Critical, 4 High, 3 Medium, 1 Low); #423 enforcement fixes, C1 revision documents only, H-1/H-3 returned to agent-core 41; [#426 additive L-1 / M-3 corrections](../poc/G2-followup33-design/corrections.md) | [`node/enforce/review_r24_test.go`](../../node/enforce/review_r24_test.go) adopted by #423; copied M-3 dropped; agent/watchdog proofs review-branch only |
 
 ## What Held Across the Reviews
 
@@ -468,3 +468,29 @@ failure stays failed. See [follow-up 36](../handover/follow-up-36.md).
   no source, and its replacement contradicts main. An additive
   correction to the netlab revision is requested; its immutable files and the
   review archive stay unchanged. This does not undo the empty-set correction.
+
+## Follow-up 37 additive r24 errata (2026-11-03 EST)
+
+At #426, [netlab 33's corrections](../poc/G2-followup33-design/corrections.md)
+supersede the L-1 judgment and B1 characterization adopted by netlab 32.
+The #423 dispositions and original archive above remain historical and unchanged.
+
+- **L-1: confirmed in part.** The lock-location half is rejected: the cited
+  follow-up 31 line names no lock path, node/updater/config.go does not exist,
+  and every main default uses /var/lib/vpn-node/update.lock. The empty eligible-set
+  half remains specified by follow-up 32, documents only. Delayed fallback
+  fencing depends on a shared lock and reaping timed-out children, not the path's
+  spelling. This answers follow-up 36's additive-correction request.
+- **M-3: B1 citation correction.** Neither TCP_RTO_MIN nor socket pacing appears
+  anywhere at 52a7e59b. The cited d133-comparison.md:65–75 supplies stop/admission
+  rules. B1 is the first candidate arm of A1,B1,A2,B2, including follow-up 27's
+  failed F27-01 read. Follow-up 32 adopted r24's unsupported characterization;
+  the constraint against transport/socket changes in any C1 acceptance run or
+  comparison arm stays. M-3's tooling-prerequisite status is otherwise unchanged.
+
+The correction's table has 16 rows: 14 Verified and two Corrected. Both netlab
+32 trees and the raw r24 archive remain byte-identical. Agent-core H-1/H-3
+stay OPEN on main — RETURNED; #425 records fixes on unmerged agent-core 41.
+At briefing r25 was running on 8cc27609, status only; its archive belongs to
+a later cut. The owner's G5/G6 trade stays undecided; production keeps the
+current guard. See [follow-up 37](../handover/follow-up-37.md).

@@ -395,3 +395,12 @@ jitter arithmetic and the lock-path discrepancy returned to netlab. The raw
 archive and producer evidence are unchanged. Follow-up 35's assertions change
 only their rewritten-document inputs; their restored function hash stays exact.
 Live document integrity remains a separate check of the secops inventory.
+
+Follow-up 37 seals the #424–#426 cut at 792e3e41. Its main manifest freezes
+three final roadmap rows and three lossless JSON-encoded public PR excerpts.
+Ten #426 owned-document slices preserve follow-up 36's original assertions.
+The evidence manifest pins the dated isolation diagnosis, netlab 33's additive
+correction and the 138-file follow-up 17 archive; follow-up 36's complete
+netlab 32 inventory remains sealed. The separate source audit records code
+readings and commit-scoped searches. Living isolation 9f1bc0ff, members
+81b638e8 and usage b8a6e9e1 roots are never claims inputs.
