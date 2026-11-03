@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/work/tests/netlab/scripts/f34_paths.py", line 288, in <module>
+    measure(mode)
+  File "/work/tests/netlab/scripts/f34_paths.py", line 258, in measure
+    rows.append(phase(mode+'-'+direction, roles, 'fv-a1', 'python3', '-B', script, 'client', dst, direction))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/tests/netlab/scripts/f34_paths.py", line 203, in phase
+    raise RuntimeError('incomplete capture '+stem)
+RuntimeError: incomplete capture receive-upload-member

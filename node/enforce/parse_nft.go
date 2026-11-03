@@ -100,7 +100,10 @@ type RuleView struct {
 	Counter  string
 	SetsMark bool
 	Offload  bool
-	Prios    []uint32
+	// TCPMSS marks the sole permitted TCP-option mangle; full shape is verified.
+	TCPMSS    bool
+	ICMPMatch bool
+	Prios     []uint32
 	// Parsed match expressions. Verification uses these, not the raw JSON
 	// text, so a comment cannot impersonate an interface or a set (§8.2).
 	IIF              []string
@@ -862,6 +865,7 @@ func walkExpr(v any, rv *RuleView) {
 func noteMangle(v any, rv *RuleView) {
 	m, ok := v.(map[string]any)
 	if !ok {
+		rv.Tainted = true
 		return
 	}
 	key := m["key"]
@@ -883,10 +887,20 @@ func noteMangle(v any, rv *RuleView) {
 		rv.SetsMark = true
 	}
 	if inner["key"] == "priority" {
-		if n, ok := asUint(val); ok {
+		if n, ok := asUint(val); ok && n <= 0xffffffff {
 			rv.Prios = append(rv.Prios, uint32(n))
+			return
 		}
 	}
+	if opt, ok := meta["tcp option"].(map[string]any); ok && len(meta) == 1 && len(opt) == 2 && opt["name"] == "maxseg" && opt["field"] == "size" {
+		rv.TCPMSS = true
+		if n, ok := asUint(val); ok && n == memberTCPMSS && len(m) == 2 {
+			return
+		}
+	}
+	// In particular, meta nftrace and unrecognized payload writes never pass
+	// merely because mangle is a generally recognized statement key.
+	rv.Tainted = true
 }
 
 // opIsEq is the positive match the renderer emits. A missing operator is the
@@ -945,6 +959,9 @@ func noteMatch(v any, rv *RuleView) {
 	}
 	if payload, ok := left["payload"].(map[string]any); ok {
 		field, _ := payload["field"].(string)
+		if payload["protocol"] == "icmp" || payload["protocol"] == "icmpv6" {
+			rv.ICMPMatch = true
+		}
 		switch field {
 		case "saddr", "daddr":
 			noteAddrMatch(rv, op, field, right)

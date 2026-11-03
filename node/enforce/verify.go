@@ -88,6 +88,12 @@ func verifyServingRuleset(raw []byte, m Model, assignments map[uuid.UUID]uint16)
 			}
 		}
 	}
+	if err := verifyPMTUExceptions(rs, m, devices); err != nil {
+		return err
+	}
+	if err := verifyMSSClamps(rs, m, devices); err != nil {
+		return err
+	}
 	if err := verifyDeviceClass(fwd, devices); err != nil {
 		return err
 	}
@@ -142,6 +148,13 @@ func VerifyBaseline(raw []byte, m Model) error {
 	rs, err := ParseRuleset(raw)
 	if err != nil {
 		return checkf(ReasonIsolationBaselineMissing, "cannot parse nft listing: %v", err)
+	}
+	for _, ch := range rs.Chains {
+		for _, r := range ch.Rules {
+			if r.TCPMSS {
+				return checkf(ReasonIsolationBaselineMissing, "baseline contains MSS clamp")
+			}
+		}
 	}
 	if err := rejectBypass(rs); err != nil {
 		return &CheckError{Reason: ReasonIsolationBaselineMissing, Detail: err.Error()}
@@ -689,6 +702,12 @@ func acceptDirections(rule RuleView, m Model) (upload, download bool) {
 // servingAcceptKind classifies a forward accept Render emits for a member.
 // Probe accepts are classified separately. Anything else is outside the model.
 func servingAcceptKind(rule RuleView, m Model) string {
+	if pmtuSource(rule, m) != "" {
+		return "pmtu-down"
+	}
+	if rule.ICMPMatch || rule.TCPMSS {
+		return ""
+	}
 	if rule.Verdict != "accept" || rule.SetsMark || rule.MatchMark || rule.Offload || rule.DNAT || rule.CTEstablished {
 		return ""
 	}
@@ -758,11 +777,20 @@ func verifyRuleShape(chain string, rule RuleView) error {
 	if rule.Tainted || rule.Verdicts > 1 {
 		return checkf(ReasonIsolation, "rule uses an expression the renderer does not emit")
 	}
+	if rule.TCPMSS && (chain != "forward" || rule.Verdict != "" || rule.SNAT != "") {
+		return checkf(ReasonIsolation, "MSS mangle outside its non-verdict forward rule")
+	}
+	if rule.ICMPMatch && (chain != "forward" || rule.Verdict != "accept") {
+		return checkf(ReasonIsolation, "ICMP match outside member PMTU accept")
+	}
 	if isMarker(rule) {
 		return nil
 	}
 	switch chain {
 	case "forward":
+		if rule.TCPMSS && rule.Verdict == "" && rule.Verdicts == 0 {
+			return nil
+		}
 		if rule.Verdict != "accept" && rule.Verdict != "drop" {
 			return checkf(ReasonIsolation, "forward rule has no verdict")
 		}
@@ -782,7 +810,7 @@ func verifyRuleShape(chain string, rule RuleView) error {
 }
 
 func isMarker(rule RuleView) bool {
-	if rule.Verdict != "" || rule.SNAT != "" || rule.Verdicts != 0 || rule.Tainted {
+	if rule.Verdict != "" || rule.SNAT != "" || rule.Verdicts != 0 || rule.Tainted || rule.TCPMSS {
 		return false
 	}
 	return strings.Contains(rule.Comment, "fvpn_generation=") || strings.Contains(rule.Comment, "fvpn_class=")
@@ -924,7 +952,7 @@ func coversPrefix(got []netip.Prefix, want netip.Prefix) bool {
 // verifyIsolationDrops requires the deny, host, and non-53 resolver drops
 // whenever the model has bindings or resolvers, including when Probe is nil.
 // Require current source restrictions before every generic return accept, in
-// serving and probe baseline paths. Only the exact resolver reply hole precedes
+// serving and probe baseline paths. Exact resolver replies and member D-147 exceptions precede
 // them. Conntrack state alone is never evidence that a source remains allowed.
 func verifyDownloadIsolation(rs Ruleset, m Model, resolver bool) error {
 	if _, ok := rs.Counters[counterDeniedDown]; !ok {
@@ -946,6 +974,12 @@ func verifyDownloadIsolation(rs Ruleset, m Model, resolver bool) error {
 		}
 		_, download := acceptDirections(r, m)
 		if !download {
+			continue
+		}
+		if servingAcceptKind(r, m) == "pmtu-down" {
+			if len(seen) != 0 {
+				return checkf(ReasonIsolation, "PMTU exception is after a source denial")
+			}
 			continue
 		}
 		if servingAcceptKind(r, m) == "dns-down" || (m.Probe != nil && m.Probe.ResolverDNS && classifyProbeRule(r, m) == "dns-down") {

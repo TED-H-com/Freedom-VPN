@@ -176,6 +176,7 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 		prio := fmt.Sprintf("0x%08x", ClassID(d.Minor))
 		upCounter := usageCounter(dirUpload, d.Binding.DeviceID)
 		for _, addr := range d.Addrs {
+			writeMSSClamp(&b, in, up, "saddr", addr)
 			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr %s counter name %q meta priority set %s accept", in, up, addr, upCounter, prio))
 		}
 	}
@@ -205,6 +206,18 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 	if m.Probe != nil && m.Probe.ResolverDNS {
 		writeProbeDNSDown(&b, in, up)
 	}
+	// D-147: outer router addresses can be protected even when the quoted
+	// connection is allowed. Only RELATED IPv4 fragmentation-needed qualifies.
+	for _, d := range devices {
+		if !d.TimeoutOK() {
+			continue
+		}
+		for _, addr := range d.Addrs {
+			for _, set := range []string{"resolver_v4", "denied_v4", "host_v4"} {
+				rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @%s ip daddr %s ct state related icmp type destination-unreachable icmp code frag-needed counter name %q meta priority set 0x%08x accept", up, in, set, addr, usageCounter(dirDownload, d.Binding.DeviceID), ClassID(d.Minor)))
+			}
+		}
+	}
 	writeDownloadDenials(&b, in, up, true)
 	if m.Probe != nil {
 		writeProbeDown(&b, in, up)
@@ -216,6 +229,7 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 		prio := fmt.Sprintf("0x%08x", ClassID(d.Minor))
 		useDown := usageCounter(dirDownload, d.Binding.DeviceID)
 		for _, addr := range d.Addrs {
+			writeMSSClamp(&b, up, in, "daddr", addr)
 			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr %s counter name %q meta priority set %s accept", up, in, addr, useDown, prio))
 		}
 	}
@@ -443,7 +457,7 @@ func writeProbeTuple(b *strings.Builder, in, up string) {
 	rule(b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @%s ip daddr . meta l4proto . th dport @%s counter name %q accept", in, up, setProbeV4, setProbeDstV4, counterProbeUp))
 }
 
-// DNS replies are the only remote-source exception, matching the upload hole.
+// Probe DNS replies match the upload hole; D-147 applies only to members.
 // The explicit conntrack check also protects the baseline probe path.
 func writeProbeDNSDown(b *strings.Builder, in, up string) {
 	for _, proto := range []string{"tcp", "udp"} {
@@ -609,4 +623,15 @@ func sortedKeys(m map[string]bool) []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+// D-146: 1280 - IPv6(40) - UDP(8) - WireGuard(32) = 1200,
+// already a multiple of 16, minus inner IPv4(20) and TCP(20) = 1160.
+// TCP senders subtract actual IP/TCP options from data (RFC 6691).
+// Immediately precedes the same address's general forwarding accept; DNS
+// and probe paths have already terminated. This rule has no verdict or meter.
+const memberTCPMSS = 1160
+
+func writeMSSClamp(b *strings.Builder, in, out, field string, addr netip.Addr) {
+	rule(b, "forward", fmt.Sprintf("iifname %q oifname %q ip %s %s tcp flags & syn == syn tcp option maxseg size > %d tcp option maxseg size set %d", in, out, field, addr, memberTCPMSS, memberTCPMSS))
 }

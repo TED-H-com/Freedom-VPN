@@ -1,0 +1,7 @@
+{
+  "command": "go test -count=1 -v ./node/agent -run 'Test(AT09_AT13_F34_|AT13_F34_|AT13_F32_Simulator|ISO01_PendingConntrackDeleteKeepsServingAndRetries)'",
+  "exit_code": 1,
+  "output": "focused-continuation1-attempt1.txt",
+  "output_sha256": "7b8682ed2ed08d2038cee5d121fb1ac82217e31aa51a3804fcaeeef647152407",
+  "diagnosis": "New grammar and rejection tests pass; PMTU verifier rejects the older fixture hexadecimal priority string. Retained before translating rendered priority to a numeric nft JSON value."
+}

@@ -1,0 +1,7 @@
+{
+  "command": "go test -count=1 -v ./node/agent -run 'Test(AT09_AT13_F34_|AT13_F34_|AT13_F32_Simulator|ISO01_PendingConntrackDeleteKeepsServingAndRetries)'",
+  "exit_code": 0,
+  "output": "focused-continuation1-attempt2.txt",
+  "output_sha256": "101ba2c5c1f41e6910a9f713a0626d5afe46e9935fbc0afb887508e27e6fe1fc",
+  "diagnosis": "Numeric priority translation added. New grammar and negative tests, existing atomic/add-if-missing tests, tc ordering/crash cuts and pending conntrack retry all pass."
+}

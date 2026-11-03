@@ -890,7 +890,7 @@ func fixtureServing(m Model, assignments map[uuid.UUID]uint16) []byte {
 	if err != nil {
 		panic(err)
 	}
-	return f27StaticSets(raw, m)
+	return f27StaticSets(f34PMTUFixture(f34MSSFixture(raw, m), m), m)
 }
 
 func fixtureQoS(m Model, assignments map[uuid.UUID]uint16) map[string][2][]byte {

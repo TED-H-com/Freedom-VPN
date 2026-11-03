@@ -1,0 +1,151 @@
+--- FAIL: TestISO01_PendingConntrackDeleteKeepsServingAndRetries (0.20s)
+    followup12_test.go:62: fixture did not install verified ruleset: [nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&"]
+--- FAIL: TestISO01_UnverifiedConntrackFailureStillRestoresBaseline (0.22s)
+    followup12_test.go:180: unverified typed delete failure did not fail closed: verified=false err=nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.2 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&" serving=false baselines=2 reasons=[safety_check_failed]
+--- FAIL: TestISO01_VerifyFailureStillRestoresBaseline (0.20s)
+    followup12_test.go:194: enforce did not restore baseline before any delete
+--- FAIL: TestReviewR15_TCForeignFilterWithdrawsServingOnApply (0.22s)
+    followup12_test.go:347: clean serving control failed: [nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&"]
+--- FAIL: TestISO_F6_RetainedFailureBlocksNewGeneration (0.39s)
+    followup12_test.go:1278: errors=[TC_FOREIGN_FILTER: interface fv-fh parent ingress handle 1 kind matchall nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&" nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&" nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&" nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&" nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&"] decision={Serve:false Reasons:[safety_check_failed] Model:{Generation:0 IPv6Mode: Now:0001-01-01 00:00:00 +0000 UTC NowMono:0s timeoutReserve:0 Datapath:{MemberIngress: Uplink: SNAT:invalid IP} Bindings:[] Leases:[] Resolvers:[] DeniedV4:[] ExtraDeniedV4:[] HostV4:[] QoS:{Up:{RateBPS:0 CeilBPS:0} Down:{RateBPS:0 CeilBPS:0} HostUp:{RateBPS:0 CeilBPS:0} HostDown:{RateBPS:0 CeilBPS:0} Members:[] Assignments:map[]} Revoke:[] Probe:<nil>} Checks:[{Detail:<nil> ErrorCode:{value: specified:true null:true} Name:dns_policy ObservedAt:2026-11-03 18:38:56.276213219 +0000 UTC Status:passed} {Detail:<nil> ErrorCode:{value: specified:true null:true} Name:internet_only ObservedAt:2026-11-03 18:38:56.276213219 +0000 UTC Status:passed} {Detail:<nil> ErrorCode:{value:HEALTH_CHECK_FAILED specified:true null:false} Name:lease ObservedAt:2026-11-03 18:38:56.276213219 +0000 UTC Status:failed} {Detail:<nil> ErrorCode:{value: specified:true null:true} Name:meter_path ObservedAt:2026-11-03 18:38:56.276213219 +0000 UTC Status:passed} {Detail:<nil> ErrorCode:{value: specified:true null:true} Name:policy_signature ObservedAt:2026-11-03 18:38:56.276213219 +0000 UTC Status:passed} {Detail:<nil> ErrorCode:{value:HEALTH_CHECK_FAILED specified:true null:false} Name:qos ObservedAt:2026-11-03 18:38:56.276213219 +0000 UTC Status:failed} {Detail:<nil> ErrorCode:{value: specified:true null:true} Name:release_supported ObservedAt:2026-11-03 18:38:56.276213219 +0000 UTC Status:passed} {Detail:<nil> ErrorCode:{value:HEALTH_CHECK_FAILED specified:true null:false} Name:source_binding ObservedAt:2026-11-03 18:38:56.276213219 +0000 UTC Status:failed} {Detail:<nil> ErrorCode:{value: specified:true null:true} Name:storage ObservedAt:2026-11-03 18:38:56.276213219 +0000 UTC Status:passed} {Detail:0x2d24ec2e01f0 ErrorCode:{value: specified:true null:true} Name:tunnel_probe ObservedAt:2026-11-03 18:38:56.276213219 +0000 UTC Status:passed}] Errors:[{Code:HEALTH_CHECK_FAILED Message:apply failed ObservedAt:2026-11-03 18:38:56.276213219 +0000 UTC Stage:apply}] Safety:failed Provisioning:applying Publication:published PolicyExpires:0s Applied:0 DataHealth:healthy}
+    followup12_test.go:1279: recovery failed: serving=false applied=2 desired=3 lease=3 apply_calls=5 renewals=1
+--- FAIL: TestAT13_F27_UnrecordedApplyRefusesRestartAdoption (0.33s)
+    --- FAIL: TestAT13_F27_UnrecordedApplyRefusesRestartAdoption/denied (0.16s)
+        followup12_test.go:1302: setup serving false applied 2 bindings 0 reasons [safety_check_failed]
+    --- FAIL: TestAT13_F27_UnrecordedApplyRefusesRestartAdoption/host (0.18s)
+        followup12_test.go:1302: setup serving false applied 2 bindings 0 reasons [safety_check_failed]
+--- FAIL: TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing (1.10s)
+    --- FAIL: TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing/denied_v4/add (0.19s)
+        followup12_test.go:1374: setup serving false applied 2 bindings 0 reasons [safety_check_failed]
+    --- FAIL: TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing/denied_v4/remove (0.17s)
+        followup12_test.go:1374: setup serving false applied 2 bindings 0 reasons [safety_check_failed]
+    --- FAIL: TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing/denied_v4/replace (0.17s)
+        followup12_test.go:1374: setup serving false applied 2 bindings 0 reasons [safety_check_failed]
+    --- FAIL: TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing/host_v4/add (0.18s)
+        followup12_test.go:1374: setup serving false applied 2 bindings 0 reasons [safety_check_failed]
+    --- FAIL: TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing/host_v4/remove (0.20s)
+        followup12_test.go:1374: setup serving false applied 2 bindings 0 reasons [safety_check_failed]
+    --- FAIL: TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing/host_v4/replace (0.18s)
+        followup12_test.go:1374: setup serving false applied 2 bindings 0 reasons [safety_check_failed]
+--- FAIL: TestAT13_F32_SimulatorTCCommitAndCrashCut (0.57s)
+    --- FAIL: TestAT13_F32_SimulatorTCCommitAndCrashCut/complete (0.20s)
+        followup12_test.go:1549: two-member serving setup nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&"
+    --- FAIL: TestAT13_F32_SimulatorTCCommitAndCrashCut/restart_apply (0.19s)
+        followup12_test.go:1549: two-member serving setup nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&"
+    --- FAIL: TestAT13_F32_SimulatorTCCommitAndCrashCut/baseline (0.18s)
+        followup12_test.go:1549: two-member serving setup nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&"
+--- FAIL: TestM2_UnpublishedTransitionStillDeletesSameIP (0.23s)
+    followup15_test.go:524: same IP after unpublish: serving=false revoke=[100.64.1.1] deletes=[]
+--- FAIL: TestM3_ConntrackAttemptBoundSurvivesRestart (0.45s)
+    followup15_test.go:542: under the bound: serving=false attempts=11 blocked=false
+--- FAIL: TestISO_F6_ForeignStillPresentWithholdsNewACK (0.51s)
+    --- FAIL: TestISO_F6_ForeignStillPresentWithholdsNewACK/same_generation (0.25s)
+        followup24_test.go:59: clean retry failed: [{Code:HEALTH_CHECK_FAILED Message:apply failed ObservedAt:2026-11-03 18:39:33.813490779 +0000 UTC Stage:apply}]
+    --- FAIL: TestISO_F6_ForeignStillPresentWithholdsNewACK/new_generation (0.27s)
+        followup24_test.go:59: clean retry failed: [{Code:HEALTH_CHECK_FAILED Message:apply failed ObservedAt:2026-11-03 18:39:34.06049052 +0000 UTC Stage:apply}]
+--- FAIL: TestISO_F6_ApplyRejectionTimestampPrecedesRollback (0.11s)
+    followup24_test.go:156: nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&"
+--- FAIL: TestD106_ProducerRetainsAuthoritativeSnapshot (0.11s)
+    followup25_evidence_test.go:126: nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&"
+--- FAIL: TestISO_F6_RetainedErrorRenewsDesiredWithoutACK (0.17s)
+    followup25_evidence_test.go:247: clean matching lease Apply did not recover with history
+--- FAIL: TestD104_TimingMeasurementLiveAndBlockedSnapshots (0.11s)
+    followup27_test.go:175: nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&"
+--- FAIL: TestAT13_ISOF603_ExactProducerReplay955To961 (0.17s)
+    --- FAIL: TestAT13_ISOF603_ExactProducerReplay955To961/same_lease_repair (0.08s)
+        followup28_test.go:149: mismatch reported as success
+    --- FAIL: TestAT13_ISOF603_ExactProducerReplay955To961/repair_fails_closed (0.08s)
+        followup28_test.go:149: mismatch reported as success
+--- FAIL: TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth (0.31s)
+    --- FAIL: TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth/same_boot_adoption (0.15s)
+        followup35_restart_test.go:85: setup serving false applied 2 bindings 0 reasons [safety_check_failed]
+    --- FAIL: TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth/missing_heartbeat_baseline (0.17s)
+        followup35_restart_test.go:85: setup serving false applied 2 bindings 0 reasons [safety_check_failed]
+--- FAIL: TestISO01_F41_SkippedTicksStillDetectLiveDrift (0.46s)
+    --- FAIL: TestISO01_F41_SkippedTicksStillDetectLiveDrift/deleted_element (0.13s)
+        followup41_drift_test.go:23: nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&"
+    --- FAIL: TestISO01_F41_SkippedTicksStillDetectLiveDrift/deleted_chain (0.12s)
+        followup41_drift_test.go:23: nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&"
+    --- FAIL: TestISO01_F41_SkippedTicksStillDetectLiveDrift/foreign_tc (0.11s)
+        followup41_drift_test.go:23: nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&"
+    --- FAIL: TestISO01_F41_SkippedTicksStillDetectLiveDrift/metering_version (0.11s)
+        followup41_drift_test.go:23: nft listing: add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160: tcp port "&"
+2026/11/03 13:40:21 INFO baseline decision writer=watchdog cause=heartbeat_stale boot_id=01a1a2b6-5796-7809-b03b-136e247533e0 mono_ns=3650998000000 heartbeat_mono_ns=3619998000000 policy_expires_mono_ns=3679998000000 generation=3 serving=true baseline_ok=true
+2026/11/03 13:40:21 INFO baseline write writer=watchdog phase=begin cause=heartbeat_stale mono_ns=3650998000000 heartbeat_mono_ns=3619998000000 policy_expires_mono_ns=3679998000000 generation=3
+2026/11/03 13:40:21 INFO baseline write writer=watchdog phase=end cause=heartbeat_stale mono_ns=3650998000000 succeeded=true
+2026/11/03 13:40:21 INFO baseline decision writer=watchdog cause=policy_expired boot_id=01a1a2b6-5840-7ebb-9437-c8a11c9160f8 mono_ns=3679998000000 heartbeat_mono_ns=3678998000000 policy_expires_mono_ns=3679998000000 generation=3 serving=true baseline_ok=true
+2026/11/03 13:40:21 INFO baseline write writer=watchdog phase=begin cause=policy_expired mono_ns=3679998000000 heartbeat_mono_ns=3678998000000 policy_expires_mono_ns=3679998000000 generation=3
+2026/11/03 13:40:21 INFO baseline write writer=watchdog phase=end cause=policy_expired mono_ns=3679998000000 succeeded=true
+2026/11/03 13:40:21 INFO baseline decision writer=watchdog cause=heartbeat_stale boot_id=01a1a2b6-5905-7425-a66b-aa14effccc7c mono_ns=3650998000000 heartbeat_mono_ns=3619998000000 policy_expires_mono_ns=3679998000000 generation=3 serving=true baseline_ok=true
+2026/11/03 13:40:21 INFO baseline write writer=watchdog phase=begin cause=heartbeat_stale mono_ns=3650998000000 heartbeat_mono_ns=3619998000000 policy_expires_mono_ns=3679998000000 generation=3
+2026/11/03 13:40:21 INFO baseline write writer=watchdog phase=end cause=heartbeat_stale mono_ns=3650998000000 succeeded=true
+2026/11/03 13:40:22 INFO baseline decision writer=watchdog cause=policy_expired boot_id=01a1a2b6-59cb-7930-a6a4-a4b34c1a08d3 mono_ns=3679998000000 heartbeat_mono_ns=3678998000000 policy_expires_mono_ns=3679998000000 generation=3 serving=true baseline_ok=true
+2026/11/03 13:40:22 INFO baseline write writer=watchdog phase=begin cause=policy_expired mono_ns=3679998000000 heartbeat_mono_ns=3678998000000 policy_expires_mono_ns=3679998000000 generation=3
+2026/11/03 13:40:22 INFO baseline write writer=watchdog phase=end cause=policy_expired mono_ns=3679998000000 succeeded=true
+--- FAIL: TestReviewR13_Q2_SameIPDeviceSwapSkipsConntrackDelete (0.12s)
+    review_r13_agent_test.go:26: initial serving generation not applied: serving=false models=1
+--- FAIL: TestReviewR13_Q2_PendingRevokeNotPrunedOnReAdmission (0.16s)
+    review_r13_agent_test.go:93: replaced address was not revoked: []
+--- FAIL: TestReviewR13_Q2_PermanentConntrackFailureNeverEscalates (0.32s)
+    review_r13_agent_test.go:151: internet_only: status=passed detail="" check={Detail:<nil> ErrorCode:{value: specified:true null:true} Name:internet_only ObservedAt:2026-11-03 18:41:30.563948197 +0000 UTC Status:passed}
+--- FAIL: TestReviewR19_Q4_ConntrackAttemptIsCountedAfterTheDelete (0.15s)
+    review_r19_intersection_test.go:322: crash = <nil> apply=1 log=time=2026-11-03T13:40:50.612-05:00 level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=begin mono_ns=54693063375692 generation=0
+        time=2026-11-03T13:40:50.612-05:00 level=INFO msg="baseline write" writer=agent cause=boot_unverified phase=end mono_ns=54693063386092 succeeded=true
+        time=2026-11-03T13:40:50.624-05:00 level=INFO msg="meter epoch opened" epoch_id=01a1a2b6-c9bf-7060-a7ba-1ffb54c97fd6 reason=baseline boot_id=01a1a2b6-c99a-769d-b28c-c8db7c51e472 event_seq=0
+        time=2026-11-03T13:40:50.626-05:00 level=INFO msg="usage checkpoint applied"
+        time=2026-11-03T13:40:50.627-05:00 level=INFO msg="meter epoch closed" epoch_id=01a1a2b6-c9bf-7060-a7ba-1ffb54c97fd6 reason=final_sample event_seq=0
+        time=2026-11-03T13:40:50.641-05:00 level=INFO msg="bootstrap stored"
+        time=2026-11-03T13:40:50.645-05:00 level=INFO msg="meter epoch opened" epoch_id=01a1a2b6-c9d4-7247-aae5-94548d801665 reason=after_final_sample boot_id=01a1a2b6-c99a-769d-b28c-c8db7c51e472 event_seq=0
+        time=2026-11-03T13:40:50.654-05:00 level=INFO msg="usage status available"
+        time=2026-11-03T13:40:50.654-05:00 level=WARN msg="updater journal snapshot" reason=missing
+        time=2026-11-03T13:40:50.666-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=54693117700782 generation=1
+        time=2026-11-03T13:40:50.666-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=54693117708365 succeeded=true
+        time=2026-11-03T13:40:50.667-05:00 level=INFO msg="meter epoch closed" epoch_id=01a1a2b6-c9d4-7247-aae5-94548d801665 reason=final_sample event_seq=0
+        time=2026-11-03T13:40:50.667-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=54693118921240 generation=1
+        time=2026-11-03T13:40:50.667-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=54693118924885 succeeded=true
+        time=2026-11-03T13:40:50.667-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=54693119005245 generation=1
+        time=2026-11-03T13:40:50.667-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=54693119008071 succeeded=true
+        time=2026-11-03T13:40:50.672-05:00 level=INFO msg="meter epoch opened" epoch_id=01a1a2b6-c9ef-7af1-bbec-f32618a96e0e reason=after_final_sample boot_id=01a1a2b6-c99a-769d-b28c-c8db7c51e472 event_seq=0
+        time=2026-11-03T13:40:50.693-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=54693144630495 generation=2
+        time=2026-11-03T13:40:50.693-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=54693144637340 succeeded=true
+        time=2026-11-03T13:40:50.694-05:00 level=INFO msg="meter epoch closed" epoch_id=01a1a2b6-c9ef-7af1-bbec-f32618a96e0e reason=final_sample event_seq=0
+        time=2026-11-03T13:40:50.694-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=54693145982655 generation=2
+        time=2026-11-03T13:40:50.694-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=54693145986458 succeeded=true
+        time=2026-11-03T13:40:50.694-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=begin mono_ns=54693146067366 generation=2
+        time=2026-11-03T13:40:50.694-05:00 level=INFO msg="baseline write" writer=agent cause=policy_missing phase=end mono_ns=54693146079230 succeeded=true
+        time=2026-11-03T13:40:50.699-05:00 level=INFO msg="meter epoch opened" epoch_id=01a1a2b6-ca0a-7b39-9b03-96ddfd0d2e9b reason=after_final_sample boot_id=01a1a2b6-c99a-769d-b28c-c8db7c51e472 event_seq=0
+        time=2026-11-03T13:40:50.726-05:00 level=INFO msg="baseline write" writer=agent cause=non_serving phase=begin mono_ns=54693177799184 generation=3
+        time=2026-11-03T13:40:50.726-05:00 level=INFO msg="baseline write" writer=agent cause=non_serving phase=end mono_ns=54693177805764 succeeded=true
+        time=2026-11-03T13:40:50.727-05:00 level=INFO msg="meter epoch closed" epoch_id=01a1a2b6-ca0a-7b39-9b03-96ddfd0d2e9b reason=final_sample event_seq=0
+        time=2026-11-03T13:40:50.728-05:00 level=INFO msg="meter epoch opened" epoch_id=01a1a2b6-ca27-7c8b-81d4-765f138a71e1 reason=after_final_sample boot_id=01a1a2b6-c99a-769d-b28c-c8db7c51e472 event_seq=0
+        time=2026-11-03T13:40:50.731-05:00 level=WARN msg=apply err="apply failed"
+        time=2026-11-03T13:40:50.731-05:00 level=INFO msg="baseline write" writer=agent cause=verification_HEALTH_CHECK_FAILED phase=begin mono_ns=54693182890991 generation=3
+        time=2026-11-03T13:40:50.731-05:00 level=INFO msg="baseline write" writer=agent cause=verification_HEALTH_CHECK_FAILED phase=end mono_ns=54693182898386 succeeded=true
+        time=2026-11-03T13:40:50.733-05:00 level=INFO msg="meter epoch closed" epoch_id=01a1a2b6-ca27-7c8b-81d4-765f138a71e1 reason=final_sample event_seq=0
+        time=2026-11-03T13:40:50.733-05:00 level=INFO msg="baseline write" writer=agent cause=verification_HEALTH_CHECK_FAILED phase=begin mono_ns=54693184803978 generation=3
+        time=2026-11-03T13:40:50.733-05:00 level=INFO msg="baseline write" writer=agent cause=verification_HEALTH_CHECK_FAILED phase=end mono_ns=54693184808859 succeeded=true
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/node/agent	143.462s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent	0.302s
+ok  	github.com/TED-H-com/Freedom-VPN/node/dns	0.020s
+ok  	github.com/TED-H-com/Freedom-VPN/node/enforce	2.016s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/agentstore	0.287s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/controlclient	30.010s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol	0.077s
+?   	github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/healthattest	0.095s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/meter	0.865s
+?   	github.com/TED-H-com/Freedom-VPN/node/internal/nodelock	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor	0.002s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal	0.961s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/usagestore	1.277s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/usageupload	1.343s
+ok  	github.com/TED-H-com/Freedom-VPN/node/nodelock	0.075s
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater	25.941s
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater	0.958s
+?   	github.com/TED-H-com/Freedom-VPN/node/updater/fsutil	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/node/watchdog	0.191s
+?   	github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/packaging/installer	8.852s
+?   	github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install	[no test files]
+FAIL

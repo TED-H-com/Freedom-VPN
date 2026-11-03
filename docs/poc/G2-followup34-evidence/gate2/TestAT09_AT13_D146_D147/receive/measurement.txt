@@ -1,0 +1,74 @@
+[
+  {
+    "name": "receive-upload",
+    "result": {
+      "code": 0,
+      "stdout": "{\"direction\": \"upload\", \"bytes\": 64064, \"expected\": 64064, \"connected\": true, \"error\": \"\", \"pmtu\": 1420, \"socket_mss\": 1148, \"elapsed_ms\": 3.262541002186481}\n",
+      "stderr": ""
+    },
+    "counters": {
+      "d_019a00000000700080000000000000a1": {
+        "packets": 43,
+        "bytes": 2249
+      },
+      "u_019a00000000700080000000000000a1": {
+        "packets": 61,
+        "bytes": 67245
+      }
+    }
+  },
+  {
+    "name": "receive-download",
+    "result": {
+      "code": 0,
+      "stdout": "{\"direction\": \"download\", \"bytes\": 64064, \"expected\": 64064, \"connected\": true, \"error\": \"\", \"pmtu\": 1420, \"socket_mss\": 1148, \"elapsed_ms\": 4.1377860034117475}\n",
+      "stderr": ""
+    },
+    "counters": {
+      "d_019a00000000700080000000000000a1": {
+        "packets": 58,
+        "bytes": 67088
+      },
+      "u_019a00000000700080000000000000a1": {
+        "packets": 24,
+        "bytes": 1257
+      }
+    }
+  },
+  {
+    "name": "receive-small-mss",
+    "result": {
+      "code": 0,
+      "stdout": "{\"direction\": \"download\", \"bytes\": 64064, \"expected\": 64064, \"connected\": true, \"error\": \"\", \"pmtu\": 1420, \"socket_mss\": 988, \"elapsed_ms\": 3.1282700001611374}\n",
+      "stderr": ""
+    },
+    "counters": {
+      "d_019a00000000700080000000000000a1": {
+        "packets": 67,
+        "bytes": 67556
+      },
+      "u_019a00000000700080000000000000a1": {
+        "packets": 21,
+        "bytes": 1101
+      }
+    }
+  },
+  {
+    "name": "receive-udp",
+    "result": {
+      "code": 0,
+      "stdout": "{\"bytes\": 0, \"expected\": 1280, \"error\": \"TimeoutError\"}\n",
+      "stderr": ""
+    },
+    "counters": {
+      "d_019a00000000700080000000000000a1": {
+        "packets": 1,
+        "bytes": 1308
+      },
+      "u_019a00000000700080000000000000a1": {
+        "packets": 1,
+        "bytes": 29
+      }
+    }
+  }
+]

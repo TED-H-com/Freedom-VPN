@@ -1,0 +1,11 @@
+{
+  "renames": [
+    {
+      "reason": "Existing AT12 collector writes a Go struct dump; retain it as text, not invalid JSON.",
+      "original_path": "gate2/TestAT12_ISO01_ISO04_AllowDeny/counters.json",
+      "retained_path": "gate2/TestAT12_ISO01_ISO04_AllowDeny/counters.txt",
+      "sha256": "402d57aecfe7bf6231d34f4b613b530ebb49fc9e792ff7bdb150be9457cd8084"
+    }
+  ],
+  "text_normalization": "New Follow-up 34 readable text trims trailing whitespace and terminal blank lines; measured values and verdicts unchanged."
+}

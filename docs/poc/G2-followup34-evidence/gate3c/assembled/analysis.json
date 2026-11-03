@@ -1,0 +1,183 @@
+{
+  "scope": "TEST ONLY assembled agent/kernel/TLS fake control; 80ms dual-phase diagnostic; no D-120 tolerance",
+  "snapshots": 796,
+  "runs": [
+    {
+      "run_id": "45a9eba3-8faf-44ac-8eb8-6aaf35d4566c",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe"
+    },
+    {
+      "run_id": "e080886a-d22d-4726-be5d-e23d5ef9d0dd",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe"
+    },
+    {
+      "run_id": "f757217c-b271-4a36-9e82-036b20622b6a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe"
+    }
+  ],
+  "brackets": {
+    "baseline": {
+      "count": 29,
+      "median_ns": "23783466",
+      "worst_ns": "46878410"
+    },
+    "apply": {
+      "count": 9,
+      "median_ns": "88215857",
+      "worst_ns": "143904829"
+    },
+    "verifier": {
+      "count": 331,
+      "median_ns": "31286049",
+      "worst_ns": "36984859"
+    },
+    "nft_read": {
+      "count": 331,
+      "median_ns": "3102647",
+      "worst_ns": "5227445"
+    },
+    "precision_read": {
+      "count": 322,
+      "median_ns": "2807106",
+      "worst_ns": "3587125"
+    },
+    "tc_read": {
+      "count": 331,
+      "median_ns": "16407693",
+      "worst_ns": "20288393"
+    },
+    "install_command": {
+      "count": 7,
+      "median_ns": "18576554",
+      "worst_ns": "26664263"
+    },
+    "release_command": {
+      "count": 7,
+      "median_ns": "13888848",
+      "worst_ns": "16886066"
+    },
+    "outer_guard": {
+      "count": 7,
+      "median_ns": "32688393",
+      "worst_ns": "38886942"
+    },
+    "inner_guard": {
+      "count": 7,
+      "median_ns": "1893",
+      "worst_ns": "4911"
+    },
+    "render_to_installed": {
+      "count": 7,
+      "median_ns": "18658939",
+      "worst_ns": "26757609"
+    },
+    "verify": {
+      "count": 323,
+      "median_ns": "31240938",
+      "worst_ns": "36984859"
+    }
+  },
+  "renewal": {
+    "probes": 1518,
+    "delivered": 1517,
+    "losses": [
+      {
+        "packet": {
+          "packet_id": 1240,
+          "phase": "phased",
+          "scheduled_ns": "55085354498181",
+          "sent_ns": "55085354616900",
+          "result": "timeout",
+          "read_completion_ns": "55085434689286",
+          "ingress_ns": "55085355275790"
+        },
+        "install_window_overlap": [
+          {
+            "run_id": "45a9eba3-8faf-44ac-8eb8-6aaf35d4566c",
+            "sequence": "467"
+          }
+        ],
+        "ingress_in_install": [
+          {
+            "run_id": "45a9eba3-8faf-44ac-8eb8-6aaf35d4566c",
+            "sequence": "467"
+          }
+        ],
+        "ingress_in_outer_guard": [
+          {
+            "run_id": "45a9eba3-8faf-44ac-8eb8-6aaf35d4566c",
+            "sequence": "467"
+          }
+        ],
+        "ingress_in_inner_guard": []
+      }
+    ],
+    "actual_renewals": [
+      {
+        "run_id": "45a9eba3-8faf-44ac-8eb8-6aaf35d4566c",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "sequence": "233",
+        "source": "renewal",
+        "anchor": {
+          "mono_before_ns": "55052672568094",
+          "wall": "2026-11-03T18:46:50.221191469Z",
+          "mono_after_ns": "55052672568261"
+        },
+        "lease": {
+          "lease_id": "01a1a2bc-466a-740a-9b14-d1f8997290ff",
+          "generation": "3",
+          "issued_at": "2026-11-03T18:46:50.218263048Z",
+          "expires_at": "2026-11-03T18:47:50.218263048Z",
+          "request_mono_ns": "55052668022822",
+          "node_deadline_ns": "55112668022822",
+          "members": 2
+        },
+        "renewal": {
+          "request_id": "01a1a2bc-4668-79e8-bbff-e48050daabc0",
+          "start_ns": "55052668022822",
+          "end_ns": "55052672567402",
+          "request_wall": "2026-11-03T18:46:50.216646198Z",
+          "new_lease": true
+        }
+      },
+      {
+        "run_id": "45a9eba3-8faf-44ac-8eb8-6aaf35d4566c",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "sequence": "466",
+        "source": "renewal",
+        "anchor": {
+          "mono_before_ns": "55085306164270",
+          "wall": "2026-11-03T18:47:22.854787606Z",
+          "mono_after_ns": "55085306164383"
+        },
+        "lease": {
+          "lease_id": "01a1a2bc-c5e3-7e7b-8164-6c44b0d42864",
+          "generation": "3",
+          "issued_at": "2026-11-03T18:47:22.851948238Z",
+          "expires_at": "2026-11-03T18:48:22.851948238Z",
+          "request_mono_ns": "55085302216861",
+          "node_deadline_ns": "55145302216861",
+          "members": 2
+        },
+        "renewal": {
+          "request_id": "01a1a2bc-c5e2-7cdb-b20a-9e31a40b55b1",
+          "start_ns": "55085302216861",
+          "end_ns": "55085306163861",
+          "request_wall": "2026-11-03T18:47:22.850840332Z",
+          "new_lease": true
+        }
+      }
+    ],
+    "loss_windows_overlapping_install": 1,
+    "ingress_in_outer_guard": 1,
+    "unresolved_ingress": 0
+  },
+  "expiry": {
+    "deadline_ns": "55145302216861",
+    "last_positive_offset_ns": "-100390223",
+    "first_drop_offset_ns": "-63929287",
+    "positives": 97,
+    "drops": 15,
+    "packet_predicate": "pass"
+  }
+}

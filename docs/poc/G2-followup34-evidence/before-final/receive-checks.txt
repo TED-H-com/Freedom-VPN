@@ -1,0 +1,95 @@
+[
+  {
+    "name": "receive-upload",
+    "bytes": 64064,
+    "mss": {
+      "member_syn": [
+        1380
+      ],
+      "member_synack": [
+        1460
+      ],
+      "origin_syn": [
+        1380
+      ],
+      "origin_synack": [
+        1460
+      ]
+    },
+    "outer_receive": {
+      "sizes": {
+        "120": {
+          "sent": 1,
+          "arrived": 1,
+          "absent": 0
+        },
+        "124": {
+          "sent": 25,
+          "arrived": 25,
+          "absent": 0
+        }
+      },
+      "absent_sender_packets": [],
+      "unmatched_receiver_packets": 0
+    },
+    "metering": "exact",
+    "classification": "1:2f"
+  },
+  {
+    "name": "receive-download",
+    "bytes": 0,
+    "mss": {
+      "member_syn": [
+        1380
+      ],
+      "member_synack": [
+        1460
+      ],
+      "origin_syn": [
+        1380
+      ],
+      "origin_synack": [
+        1460
+      ]
+    },
+    "outer_receive": {
+      "sizes": {
+        "124": {
+          "sent": 2,
+          "arrived": 2,
+          "absent": 0
+        },
+        "1480": {
+          "sent": 15,
+          "arrived": 0,
+          "absent": 15
+        }
+      },
+      "absent_sender_packets": [
+        26,
+        27,
+        28,
+        29,
+        30,
+        41,
+        42,
+        43,
+        44,
+        45,
+        48,
+        51,
+        54,
+        57,
+        60
+      ],
+      "unmatched_receiver_packets": 0
+    },
+    "metering": "exact",
+    "classification": "1:2f"
+  },
+  {
+    "name": "UDP limitation",
+    "bytes": 0,
+    "quic": "not tested; no client"
+  }
+]

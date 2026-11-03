@@ -1,0 +1,8 @@
+{
+  "command": "go test -count=1 ./node/... ./packaging/installer/...",
+  "exit_code": 1,
+  "output": "gate3a.txt",
+  "output_sha256": "e8d0df6e9bfb8b073a8f070ad9f78796a6bb9c394e8897bc398ceb3a0904a2e7",
+  "top_level_failures": 22,
+  "diagnosis": "The unchanged test-only nft translator in node/agent/followup12_test.go treats tcp flags as a port match and rejects &. Dependent agent fixture tests fail before serving; all other node and installer packages pass."
+}
