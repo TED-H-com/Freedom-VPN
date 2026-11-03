@@ -412,3 +412,21 @@ sealed byte-for-byte, with proof names pinned only inside the archive. The
 separate frozen audit records source readings at 8cc27609 and proof metadata
 at 1afecb29, neither on main, and verifies #427's 258 digest-only changes.
 The proof file is never copied. No living lane evidence is a claims input.
+
+Follow-up 39 seals #428–#429 at 1b87ab32. Its main manifest pins two final
+roadmap rows and two lossless public PR excerpts. Ten frozen #428 input slices
+preserve follow-up 38's assertions and follow-up 28's live diagnostic-note read;
+only those document reads move. The source audit seals 98 cited/corrected source
+excerpts, 24 declaration references (seven unique stale-line citations), exact
+r25/r26 import metadata, no-sensitive-pattern inspection and #428's 258
+strictly digest-only changes. The r26 archive remains 19,545 exact bytes.
+
+The evidence manifest seals 15 dated agent-core documents and 75 Go test
+names now on main. The judgment manifest binds every requested row to its
+record, verdict, sub-trace limits, fix and proof names; no rejected claim is
+promoted to a fix. Thirty finding rows change and 69 remain byte-identical.
+Eight confirmations are status/date substitutions only; six new decisions
+bring the count to 53, with all ten historical owner requests answered.
+The 11 follow-up 39 subtests keep the two unqualified timing windows out of
+both zero-sized arm pools. Living AT roots remain excluded; live document
+digests in scope-review.json stay separate from these frozen claim inputs.

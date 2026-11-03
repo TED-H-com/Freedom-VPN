@@ -59,6 +59,7 @@ var ownedDocs = []string{
 	"docs/handover/follow-up-34.md",
 	"docs/handover/follow-up-35.md",
 	"docs/handover/follow-up-36.md",
+	"docs/handover/follow-up-39.md",
 	"docs/ops/README.md",
 	"docs/reviews/README.md",
 	"docs/reviews/r3-d055-review.md",
@@ -7163,12 +7164,12 @@ func TestHandover_Followup28Claims(t *testing.T) {
 				t.Errorf("stale entrypoint: %s", path)
 			}
 		}
-		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		op := readOwnedDoc(t, root, fixture+"history/follow-up-39/operator-guide38.md.txt")
 		a, b, note := strings.Index(op, "### 3.4 "), strings.Index(op, "### 3.5 "), strings.Index(op, followup28Diagnostics)
 		if a < 0 || note <= a || b <= note || strings.Count(op, followup28Diagnostics) != 1 {
 			t.Fatal("diagnostic note missing, repeated or outside node diagnostics")
 		}
-		requireHandoverClaimTokens(t, root, "docs/handover/operator-guide.md", followup28Diagnostics)
+		requireHandoverClaimTokens(t, root, fixture+"history/follow-up-39/operator-guide38.md.txt", followup28Diagnostics)
 		for pr := 386; pr <= 390; pr++ {
 			requireHandoverClaimTokens(t, root, fixture+"history/follow-up-29/entrypoint-docs_ops_README.md.txt", fmt.Sprintf("#%d", pr))
 		}
@@ -7218,6 +7219,8 @@ func readBeforeFollowup29Note(t *testing.T, root, path string) string {
 // earlier whole-function hashes. Their expected hashes and assertions stay intact.
 func restoreFollowup29Assertions(source string) string {
 	return strings.NewReplacer(
+		`readOwnedDoc(t, root, fixture+"history/follow-up-39/operator-guide38.md.txt")`, `readOwnedDoc(t, root, "docs/handover/operator-guide.md")`,
+		`requireHandoverClaimTokens(t, root, fixture+"history/follow-up-39/operator-guide38.md.txt",`, `requireHandoverClaimTokens(t, root, "docs/handover/operator-guide.md",`,
 		"readBeforeFollowup29Note(t, root, path)", "readOwnedDoc(t, root, path)",
 		"restoreFollowup29Assertions(source[start : start+end])", "source[start : start+end]",
 		`const register = fixture + "history/follow-up-29/register28.md"`, `const register = "docs/handover/README.md"`,
@@ -12205,7 +12208,7 @@ func TestHandover_Followup39Claims(t *testing.T) {
 		}
 	})
 	checkHash("tests/handover/testdata/followup39-main.json", "39b1d9b49433f3ff157a1ec5c671cebc9579b18a7f55262d7379f2e1dfd3539b")
-	checkHash("tests/handover/testdata/followup39-snapshots.json", "f00eb9ab2947f428b5e583c8a1764b0d4949177391afdeeb6023b44782667b84")
+	checkHash("tests/handover/testdata/followup39-snapshots.json", "72f5a615975c3193470e430daa046f3210e4a9d08dd248feea817f47f7122167")
 	checkHash("tests/handover/testdata/history/follow-up-39/source-audit.json", "d74fb642043f9cce0d4c1a335f6bc68d1b6b48a4db1316695dafdf3d69ba5d76")
 	t.Run("53_decisions_eight_status_only_confirmations", func(t *testing.T) {
 		old := readOwnedDoc(t, root, frozen+"register38.md")
@@ -12491,8 +12494,11 @@ func TestHandover_Followup39Claims(t *testing.T) {
 			Pooled map[string]struct {
 				Legs    []any `json:"qualified_legs"`
 				Metrics map[string]struct {
-					Count              int
-					P50, P90, P99, Max *float64
+					Count int
+					P50   *float64 `json:"p50_ns"`
+					P90   *float64 `json:"p90_ns"`
+					P99   *float64 `json:"p99_ns"`
+					Max   *float64 `json:"max_ns"`
 				}
 			}
 		}
@@ -12548,6 +12554,32 @@ func TestHandover_Followup39Claims(t *testing.T) {
 	checkHash("tests/handover/testdata/followup39-confirmations.json", "ab89ab7fe53223521ab4652643b3d1dce9db5f589d1307d61839470f0f77640d")
 	checkHash("tests/handover/testdata/followup39-judgments.json", "0d79a0756003c465302836ff7bb2ad00e733d3e16eaece48f1918bb95b24490d")
 	checkHash("tests/handover/testdata/followup39-evidence.json", "145a6fc5054ea01ece65380abc4e243d6968c89aaec4efcb67dd7f0340193ff3")
-	// F39_ENTRYPOINT_CLAIMS
+	t.Run("seven_entrypoints_and_current_operator_behavior", func(t *testing.T) {
+		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
+			lines := strings.Split(readOwnedDoc(t, root, path), "\n")
+			if len(lines) < 4 || !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-39.md") || !strings.Contains(lines[2], "#428–#429") || !strings.Contains(lines[3], "follow-up-38.md") || !strings.Contains(lines[3], "#427") {
+				t.Errorf("entrypoint drift: %s", path)
+			}
+		}
+		const op = "docs/handover/operator-guide.md"
+		requireHandoverClaimTokens(t, root, op, "Refused-restart accounting fixed in #429", "Settlement\nfailure keeps forwarding closed", "r24 H-1 fixed", "under the node lock", "freshly verifies", "304 poll no longer", "Lease renewals", "pending revocations", "same tick", "current guard under **D-145**", "No hitless hand-over is implemented and no C1 benefit is promised", "C1 stays unimplemented", "field complaints or measured member-visible impact", "D-146", "no lower\ntunnel MTU", "not on main at this cut", "UDP and QUIC", "without PTB", "RELATED ICMP decision", "type 3, code 4", "Time-exceeded", "Netlab 34", "no date is promised", "F11-01 (D-148) remains OPEN and upstream-dependent", "no\nproduct, pin, daemon or architecture change", "https://github.com/netbirdio/netbird/discussions/8473")
+		content := readOwnedDoc(t, root, op)
+		if strings.Count(content, followup31Update) != 1 {
+			t.Fatal("F30-01 guidance changed")
+		}
+		for _, stale := range []string{"r24 H-1 remains open on main", "r20 H-1's mapping-conflict usage\ngap stays open", "owner question remains open", "D-150"} {
+			if strings.Contains(content, stale) {
+				t.Errorf("stale/operator-inapplicable guidance %q", stale)
+			}
+		}
+		requireHandoverClaimTokens(t, root, "docs/ops/README.md", "## Follow-up 39 acceptance snapshot", "30 rows updated, 69 byte-identical", "53 decisions", "Earlier snapshot sections below describe their own cuts")
+	})
+	checkHash("docs/handover/follow-up-39.md", "ecc47633cb533b397a7df7cdd1d898d68d8e3813831528fde316230a95a30877")
+
+	checkHash("docs/handover/follow-up-38.md", "92693384703929cda0cf66ff4303c252f2a6fa3c094fcb190269122b2af9647e")
+
+	t.Run("cut_boundaries_and_immutable_claim_inputs", func(t *testing.T) {
+		requireHandoverClaimTokens(t, root, doc, cut, "#428 and #429", "No unbriefed PR", "D-098 / D-109 / D-132", "81b638e8", "9f1bc0ff", "b8a6e9e1", "never claims inputs", "Every other rule of agent-core 39 and D-138 stays unchanged", "no operator procedure or measurement result from 44")
+	})
 
 }

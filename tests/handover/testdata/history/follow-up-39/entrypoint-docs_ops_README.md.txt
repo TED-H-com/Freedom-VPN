@@ -25,4 +25,3 @@ promised. Production keeps the current guard pending the owner's G5/G6 decision.
 #424's at-isolation fix is merged; #427 records no first scheduled exercise.
 All 47 decisions and ten owner requests remain unchanged. Every historical
 failure stays failed.
-
