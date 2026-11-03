@@ -115,8 +115,8 @@ real	15m17.152s
 ## teardown
 
 ```text
- Volume fvpn-e2e-nb Removed 
- Volume fvpn-e2e-pg Removed 
+ Volume fvpn-e2e-nb Removed
+ Volume fvpn-e2e-pg Removed
 e2e stack is down
 containers: 0
 networks: 0
