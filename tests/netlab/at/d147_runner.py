@@ -112,9 +112,14 @@ def parse_pcap(path: pathlib.Path) -> dict:
     if len(raw) < 24:
         raise RuntimeError("truncated pcap header")
     magic = raw[:4]
+    if magic not in (b"\xd4\xc3\xb2\xa1", b"\x4d\x3c\xb2\xa1", b"\xa1\xb2\xc3\xd4", b"\xa1\xb2\x3c\x4d"):
+        raise RuntimeError("unsupported pcap magic")
     endian = "<" if magic in (b"\xd4\xc3\xb2\xa1", b"\x4d\x3c\xb2\xa1") else ">"
     _, _, _, _, _, _, linktype = struct.unpack(endian + "IHHIIII", raw[:24])
+    if linktype not in (1, 12, 101, 113):
+        raise RuntimeError("unsupported pcap link type")
     off = 24
+    frames = 0
     packets = 0
     ip_bytes = 0
     tcp_packets = 0
@@ -129,6 +134,9 @@ def parse_pcap(path: pathlib.Path) -> dict:
     while off + 16 <= len(raw):
         _, _, incl_len, _ = struct.unpack(endian + "IIII", raw[off : off + 16])
         off += 16
+        if off + incl_len > len(raw):
+            raise RuntimeError("truncated pcap frame")
+        frames += 1
         frame = raw[off : off + incl_len]
         off += incl_len
         if linktype == 1:
@@ -195,6 +203,9 @@ def parse_pcap(path: pathlib.Path) -> dict:
                     "ip_len": total_len,
                 }
             )
+    captured = re.search(r"(?m)^(\d+) packets? captured$", completion)
+    if off != len(raw) or captured is None or frames != int(captured[1]) or packets != frames:
+        raise RuntimeError("capture packet count does not match decoded IPv4 records")
     return {
         "packets": packets,
         "ip_bytes": ip_bytes,

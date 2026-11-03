@@ -99,6 +99,7 @@ type d147Report struct {
 
 func d147LabModel(gen uint64) enforce.Model {
 	m := labModel(gen, allBinds(), nil)
+	// TEST ONLY: the lab exempts the documentation prefix from DeniedV4.
 	// Add 203.0.113.53 to Resolvers so it is ONLY in @resolver_v4 (203.0.113.0/24
 	// is omitted from DeniedV4, and 203.0.113.53 is not in HostV4).
 	m.Resolvers = []netip.Addr{
