@@ -1,9 +1,36 @@
 # Follow-up 17 acceptance results
 
-The single assembled run is pending host admission. No new result is claimed yet.
+Run `81b638e8-be59-4996-9594-14dd402ebb86`, measured harness `3ba0856487288b9be3cf81f3e3afa37b0fa43a47`, baseline `a7497ddf0b08805e4cddfc0e3b5f47399205054e` (#406).
 
-D-098 first commit `4d73c80a` freezes all 81 root files of run `0ffb355a-945b-4198-a551-3794120a686c`, byte-identical including gzip, under [follow-up 16](history/follow-up-16/INDEX.md). [Published harness commit mapping](history/follow-up-16/PUBLISHED-COMMITS.md) is additive; original IDs and historical outcomes stay unchanged.
+**2 PASS / 6 BLOCKED / 2 FAIL**, **691 passed / 7 blocked / 5 failed subchecks**. One assembled ten-case run; live make exit **2**.
 
-Follow-up 16 remains **2 PASS / 6 BLOCKED / 2 FAIL**, **679 / 6 / 7** subchecks, including its contention window and four AT09 failures. [Original results](history/follow-up-16/summary.md). D-135/D-136 remain provisional; F11-01 and F14-01 causes remain unproven. A passing selection closes neither.
+| Case | Requirements | Status | Pass / blocked / fail |
+|---|---|---|---:|
+| [AT05](AT05.json) | NODE01 NODE04 ENR01 ENR04 PKG01 | blocked | 31 / 0 / 0 |
+| [AT01](AT01.json) | APP01 ID01 MEM01 | blocked | 23 / 0 / 0 |
+| [AT02](AT02.json.gz) | MEM01 MEM02 MEM03 SEC01 | fail | 190 / 0 / 3 |
+| [AT03](AT03.json) | BILL01 BILL03 ENT01 | pass | 98 / 0 / 0 |
+| [AT04](AT04.json) | BILL02 ENT02 MEM03 | blocked | 113 / 0 / 0 |
+| [AT08](AT08.json) | NODE02 NODE03 EXIT01 EXIT03 | pass | 35 / 0 / 0 |
+| [AT20](AT20.json) | DNS01 DNS02 ISO04 | blocked | 89 / 0 / 0 |
+| [AT21](AT21.json) | DNS03 DNS04 APP01 | blocked | 13 / 0 / 0 |
+| [AT22](AT22.json) | SEC02 DNS01 DNS04 | blocked | 40 / 0 / 0 |
+| [AT09](AT09.json) | EXIT02 APP01 NFR01 | fail | 59 / 7 / 2 |
 
-[Run ledger](RUN.md), [owner assignments](requests.md), [AT02 index](AT02.md).
+D-098 first commit `4d73c80a` freezes all **81** root files of run 0ffb355a, byte-identical including gzip and sidecars, in [follow-up 16](history/follow-up-16/INDEX.md). [Published harness commit mapping](history/follow-up-16/PUBLISHED-COMMITS.md) records `3a8b6159` → `5d9e5f04`, `cbd59ccb` → `876c0558`, and `7852fba6` → `f97da33d` additively. No archived ID or status changed; earlier archives are untouched. Handover claims use frozen pins, so no D-132 test edit was required. The plain [AT02 index](AT02.md) remains.
+
+All three follow-up 16 harness fixes are qualified by this run. Conditional restoration records **false / true / true / false**: both no-op PATCHes were skipped, and both necessary restorations returned 202. The original live audit query retains **four member.patch rows**, with exact mutation/operation IDs and suspension booleans; no supplemental query was needed. Fresh OIDC re-authentication precedes AT09's member-exits **200**, and there is **no AT09 401**. Every member-endpoint non-2xx retains status, error code and a scrubbed body excerpt; the real cross-owner DELETE **404 RESOURCE_NOT_FOUND** exercises this path. [Qualification and original records](F17-qualification.json). Follow-up 16's two no-op failures and unretained 401 reason remain as recorded.
+
+The survivor row is exercised through devstack 30's continuation. A fresh arm retains the original two-member generation-8 lease through target 9 and the real sibling suspension's next offered generation **11**. Accepted post-command report `01a1a07f-dbe5-7dea-a894-f38323a91f94` belongs to the same open incident at generation 11, equal to the proxy's continued generation. Exact forwarded/local digest and a separate serving report establish recovery evidence. Four controlled incidents retain **14 accepted samples**, four alarms and one escalation each before the 30-second fallback. Sole-member closure is `members_revoked`, without a service-recovery claim. The retained TC-safety row has two failed Applies and five safety-priority reports. A separate source-address-fault hold is **not exercised**. [Incident/report/audit IDs, generations and first/last seen](F17-populated-holds.md).
+
+AT02's original primary sibling stream has **6,197 sends**, zero send errors, **985 absent node ingresses**, and **268 ingress-without-egress losses**: **all 1,253 losses count**. Three failed Applies occur during the bounded TC stimulus on this same stream; **189 successful / 3 failed Applies** and **82 baseline calls** are retained. The unchanged provisional evaluator has `measurement_valid=false`, `failed_apply_bracketed=0`; both D-135/D-136 and the now-exercised F11-03 recovery row fail. Of 268 ingress losses, 15 are inside completed guards and 253 outside; 238 are outside baseline/completed-guard accounting. These labels exclude no loss and assign no drop cause. The third AT02 failure is the first D-077 re-grant's original counted-forwarding check; it precedes the TC stimulus. [Every-send/guard/baseline/revocation join](F17-AT02-every-send.json), [original recovery](F17-AT02-recovery.json.gz), [full member/node/origin header joins](history/follow-up-17-captures/81b638e8-be59-4996-9594-14dd402ebb86/session-index.json). All four full-session captures are complete and zero-drop.
+
+AT01's first selection passes its original transfer this time; the first SYN's joined transit is **0.204648161–0.204651952 s**. The three original re-grants are independently retained: the first AT02 attempt fails, the later AT02 and AT03 attempts pass. F11-01 and F14-01 remain **unproven**; no passing attempt closes either historical finding. [Initial selection and loopback joins](F17-loopback-and-first-selection.json), [all original re-grants](F17-D077-regrant-attempts.json). Header/hash coincidences are not an exact kernel discard trace or causal attribution.
+
+AT09 retains two failed predicates: the revision-11 provisional observation and the combined same-generation restart. Desired/applied generation remains **63**, with serving readiness **6.014294830 s** and first counted recovery **12.697727774 s**. Three distinct stored reads (the stopped read appears on both adjacent transition records) retain identical DeniedV4 / ExtraDeniedV4 / HostV4 values: nil DeniedV4 means spec defaults; extras and host additions remain empty. This is the unchanged-set case, not a changed-set adoption proof; the namespace itself is destroyed/recreated. No AT09 predicate changed. [Original restart rows](F17-AT09-restart.json), [set readbacks and failures](F17-qualification.json).
+
+The receive-only dual MTU row (d) is now **BLOCKED: 64,064 bytes / 1 ms**, under the same predicate; it is not a supported-PMTU PASS. All 64 reverse 1,132-byte datagrams and 11 small datagrams arrive; no PTB is observed. It does not reproduce follow-up 16's 1,340-byte black-hole loss because those larger datagrams are absent here; no historical cause is assigned. Receive-only IPv6 is also **BLOCKED: 64,064 / 1 ms**, with all 64 reverse 1,152-byte datagrams and 14 small datagrams arriving, no PTB. Follow-up 16's dual **FAIL 12,012 / 12,011** and earlier statuses remain unchanged. D-137 limitations and D-123 IPv6Block remain. [Native rows](F17-D137-native-paths.json), [packet analyses](history/follow-up-17-captures/81b638e8-be59-4996-9594-14dd402ebb86/analysis.json).
+
+The pre-Apply reservation bracket remains **host.before_apply.end_ns → timing.start_ns**. [Original reservation/revocation and suspension joins](F17-pre-apply-reservations.json.gz) preserve command bounds without counting reservation twice. D-135/D-136 remain provisional; no outage ceiling, loss waiver, full-h or partial-service classification is introduced.
+
+The run waited **60.055 s** for chain/suite admission; area lint earlier waited **120.113 s** for host admission. **557 process samples** observed no chain-gate overlap; five-second sampling cannot exclude a shorter unobserved process. No contention window is invented. The 2758.08-second live test and teardown were executed once; owned Docker inventory is zero. [Run, host state and gates](RUN.md), [seven carried groups and one source-fault request](requests.md).

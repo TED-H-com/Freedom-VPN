@@ -1,5 +1,7 @@
 # AT02 trace — follow-up 16
 
+Current follow-up 17 results and limits are in [summary](summary.md), [hold joins](F17-populated-holds.md) and [qualification](F17-qualification.json). The detailed follow-up 16 observations below remain historical and link to their frozen archive.
+
 Run `0ffb355a-945b-4198-a551-3794120a686c`, measured harness `3a8b61594b447d164bb7c9481545e207f8688ec2`, baseline `d640ce96d9145e57a60e04e5875e049070f30b96`.
 
 **D-133 contention:** the orchestrator reported CPU-heavy handover gates at **2026-11-01 17:32:43–17:37:12 UTC**. Every timing, failure and anomaly overlapping that window is **contention-confounded**, with `cause_status=unproven`; measured values and verdicts stand. [Complete time and step index](history/follow-up-16/F16-contention.json) includes 46 AT02 steps completed in the window and cumulative references in later records. Finite-expiry withdrawal/restoration, the second re-grant, SIGTERM/usage stop/resume, node2 preparation, alarm recovery and sibling removal overlap. The 4,724-send stream, initial AT01 selection, sole-member/retained-safety holds and fresh AT09 measurements are outside this reported window.
