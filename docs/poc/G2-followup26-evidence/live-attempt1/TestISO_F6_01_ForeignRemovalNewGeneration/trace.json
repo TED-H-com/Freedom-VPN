@@ -1,0 +1,1420 @@
+{
+  "scope": "TEST ONLY: direct node/enforce on lab veth; no agent decision or lease bypass claim",
+  "rows": [
+    {
+      "stage": "initial generation 31",
+      "started_at": "2026-11-03T05:32:25.327569686Z",
+      "finished_at": "2026-11-03T05:32:25.421927534Z",
+      "exit": 0,
+      "tc_evidence": {
+        "attachments": [
+          {
+            "attachment": "qdisc",
+            "interface": "fv-fh",
+            "objects": [
+              {
+                "handle": "2f:",
+                "kind": "fq_codel",
+                "parent": "1:2f"
+              },
+              {
+                "handle": "30:",
+                "kind": "fq_codel",
+                "parent": "1:30"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "qdisc",
+            "interface": "fv-ih",
+            "objects": [
+              {
+                "handle": "2f:",
+                "kind": "fq_codel",
+                "parent": "1:2f"
+              },
+              {
+                "handle": "30:",
+                "kind": "fq_codel",
+                "parent": "1:30"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:2f",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:30",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "2f:",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "30:",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "egress",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "ingress",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "root",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:2f",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:30",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "2f:",
+            "interface": "fv-ih",
+            "objects": []
+          }
+        ],
+        "candidate_generation": "31",
+        "error_code": null,
+        "objects_total": 6,
+        "phase": "verify",
+        "read_at": "2026-11-03T05:32:25.417798067Z",
+        "reads_total": 20,
+        "rejected": null,
+        "sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8",
+        "truncated": true,
+        "verified": true
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "apply",
+        "candidate_generation": "31",
+        "start_ns": "7387801747672",
+        "end_ns": "7387869348896",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "1000000",
+          "install_bound_ns": "100000000",
+          "apply_start_ns": "7387801747672",
+          "render_start_ns": "7387816449767",
+          "install_start_ns": "7387816588714",
+          "installed_by_ns": "7387832380308",
+          "install_ok": true,
+          "release_start_ns": "7387832381935",
+          "release_end_ns": "7387848253416",
+          "guard_released": true
+        },
+        "verifications": [
+          {
+            "start_ns": "7387848256186",
+            "end_ns": "7387869333003",
+            "nft_read": {
+              "start_ns": "7387848256628",
+              "end_ns": "7387850863958",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "7387854287321",
+              "end_ns": "7387868036069",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "7387852883606",
+              "end_ns": "7387854266426",
+              "elements": 3,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8",
+            "verified": true
+          }
+        ]
+      }
+    },
+    {
+      "stage": "foreign filter injected",
+      "started_at": "2026-11-03T05:32:25.468166412Z",
+      "finished_at": "2026-11-03T05:32:25.51886714Z",
+      "exit": 3,
+      "tc_evidence": {
+        "attachments": [
+          {
+            "attachment": "qdisc",
+            "interface": "fv-fh",
+            "objects": [
+              {
+                "handle": "ffff:",
+                "kind": "clsact",
+                "parent": "ffff:fff1"
+              }
+            ]
+          },
+          {
+            "attachment": "ingress",
+            "interface": "fv-fh",
+            "objects": [
+              {
+                "actions": [
+                  "mirred"
+                ],
+                "handle": "1",
+                "kind": "matchall"
+              },
+              {
+                "kind": "matchall"
+              }
+            ]
+          },
+          {
+            "attachment": "qdisc",
+            "interface": "fv-ih",
+            "objects": [
+              {
+                "handle": "2f:",
+                "kind": "fq_codel",
+                "parent": "1:2f"
+              },
+              {
+                "handle": "30:",
+                "kind": "fq_codel",
+                "parent": "1:30"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:2f",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:30",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "2f:",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "30:",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "egress",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "root",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:2f",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:30",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "2f:",
+            "interface": "fv-ih",
+            "objects": []
+          }
+        ],
+        "candidate_generation": "31",
+        "error_code": "TC_FOREIGN_FILTER",
+        "objects_total": 9,
+        "phase": "verify",
+        "read_at": "2026-11-03T05:32:25.515811306Z",
+        "reads_total": 20,
+        "rejected": {
+          "attachment": "qdisc",
+          "interface": "fv-fh",
+          "objects": [
+            {
+              "handle": "ffff:",
+              "kind": "clsact",
+              "parent": "ffff:fff1"
+            }
+          ]
+        },
+        "sha256": "e8bb129adbbb8f1ca8baa59fdf487a95a970dda5e4893adef26eff0f0a38bbd0",
+        "truncated": true,
+        "verified": false
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "31",
+        "start_ns": "7387941477845",
+        "end_ns": "7387967357346",
+        "succeeded": false,
+        "verified": false,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "7387941477845",
+            "end_ns": "7387967357346",
+            "nft_read": {
+              "start_ns": "7387941478295",
+              "end_ns": "7387944601507",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "7387948278504",
+              "end_ns": "7387965827283",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "7387946617564",
+              "end_ns": "7387948269362",
+              "elements": 3,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "e8bb129adbbb8f1ca8baa59fdf487a95a970dda5e4893adef26eff0f0a38bbd0",
+            "verified": false
+          }
+        ]
+      }
+    },
+    {
+      "stage": "dirty Apply quarantines",
+      "started_at": "2026-11-03T05:32:25.519244866Z",
+      "finished_at": "2026-11-03T05:32:25.59858938Z",
+      "exit": 3,
+      "tc_evidence": {
+        "attachments": [
+          {
+            "attachment": "qdisc",
+            "interface": "fv-fh",
+            "objects": [
+              {
+                "handle": "ffff:",
+                "kind": "clsact",
+                "parent": "ffff:fff1"
+              }
+            ]
+          },
+          {
+            "attachment": "ingress",
+            "interface": "fv-fh",
+            "objects": [
+              {
+                "actions": [
+                  "mirred"
+                ],
+                "handle": "1",
+                "kind": "matchall"
+              },
+              {
+                "kind": "matchall"
+              }
+            ]
+          },
+          {
+            "attachment": "qdisc",
+            "interface": "fv-ih",
+            "objects": [
+              {
+                "handle": "2f:",
+                "kind": "fq_codel",
+                "parent": "1:2f"
+              },
+              {
+                "handle": "30:",
+                "kind": "fq_codel",
+                "parent": "1:30"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:2f",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:30",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "2f:",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "30:",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "egress",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "root",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:2f",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:30",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "2f:",
+            "interface": "fv-ih",
+            "objects": []
+          }
+        ],
+        "candidate_generation": "31",
+        "error_code": "TC_FOREIGN_FILTER",
+        "objects_total": 9,
+        "phase": "pre_apply",
+        "read_at": "2026-11-03T05:32:25.564440128Z",
+        "reads_total": 20,
+        "rejected": {
+          "attachment": "qdisc",
+          "interface": "fv-fh",
+          "objects": [
+            {
+              "handle": "ffff:",
+              "kind": "clsact",
+              "parent": "ffff:fff1"
+            }
+          ]
+        },
+        "sha256": "e8bb129adbbb8f1ca8baa59fdf487a95a970dda5e4893adef26eff0f0a38bbd0",
+        "truncated": true,
+        "verified": false
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "apply",
+        "candidate_generation": "31",
+        "start_ns": "7387992569655",
+        "end_ns": "7388046363894",
+        "succeeded": false,
+        "verified": false,
+        "deadline": {
+          "granularity_ns": "1000000",
+          "install_bound_ns": "100000000",
+          "apply_start_ns": "7387992569655",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": []
+      }
+    },
+    {
+      "stage": "filter removed but foreign clsact remains",
+      "started_at": "2026-11-03T05:32:25.642158575Z",
+      "finished_at": "2026-11-03T05:32:25.686943847Z",
+      "exit": 3,
+      "tc_evidence": {
+        "attachments": [
+          {
+            "attachment": "qdisc",
+            "interface": "fv-fh",
+            "objects": [
+              {
+                "handle": "ffff:",
+                "kind": "clsact",
+                "parent": "ffff:fff1"
+              }
+            ]
+          },
+          {
+            "attachment": "qdisc",
+            "interface": "fv-ih",
+            "objects": [
+              {
+                "handle": "2f:",
+                "kind": "fq_codel",
+                "parent": "1:2f"
+              },
+              {
+                "handle": "30:",
+                "kind": "fq_codel",
+                "parent": "1:30"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:2f",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:30",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "2f:",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "30:",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "egress",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "ingress",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "root",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:2f",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:30",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "2f:",
+            "interface": "fv-ih",
+            "objects": []
+          }
+        ],
+        "candidate_generation": "31",
+        "error_code": "TC_FOREIGN_FILTER",
+        "objects_total": 7,
+        "phase": "verify",
+        "read_at": "2026-11-03T05:32:25.683749162Z",
+        "reads_total": 20,
+        "rejected": {
+          "attachment": "qdisc",
+          "interface": "fv-fh",
+          "objects": [
+            {
+              "handle": "ffff:",
+              "kind": "clsact",
+              "parent": "ffff:fff1"
+            }
+          ]
+        },
+        "sha256": "7141880bedbf1484137266b1976d56e7dd8b45c3f9c1dc2b33ee63ad60d8339c",
+        "truncated": true,
+        "verified": false
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "31",
+        "start_ns": "7388115387191",
+        "end_ns": "7388135313553",
+        "succeeded": false,
+        "verified": false,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "7388115387191",
+            "end_ns": "7388135313553",
+            "nft_read": {
+              "start_ns": "7388115387649",
+              "end_ns": "7388117701570",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "7388118467920",
+              "end_ns": "7388133941278",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "0",
+              "end_ns": "0",
+              "elements": 0,
+              "read_ok": false,
+              "verified": false
+            },
+            "tc_sha256": "7141880bedbf1484137266b1976d56e7dd8b45c3f9c1dc2b33ee63ad60d8339c",
+            "verified": false
+          }
+        ]
+      }
+    },
+    {
+      "stage": "all foreign objects removed; baseline still installed",
+      "started_at": "2026-11-03T05:32:25.710074656Z",
+      "finished_at": "2026-11-03T05:32:25.756276052Z",
+      "exit": 3,
+      "tc_evidence": {
+        "attachments": [
+          {
+            "attachment": "qdisc",
+            "interface": "fv-fh",
+            "objects": [
+              {
+                "handle": "2f:",
+                "kind": "fq_codel",
+                "parent": "1:2f"
+              },
+              {
+                "handle": "30:",
+                "kind": "fq_codel",
+                "parent": "1:30"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "qdisc",
+            "interface": "fv-ih",
+            "objects": [
+              {
+                "handle": "2f:",
+                "kind": "fq_codel",
+                "parent": "1:2f"
+              },
+              {
+                "handle": "30:",
+                "kind": "fq_codel",
+                "parent": "1:30"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:2f",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:30",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "2f:",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "30:",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "egress",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "ingress",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "root",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:2f",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:30",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "2f:",
+            "interface": "fv-ih",
+            "objects": []
+          }
+        ],
+        "candidate_generation": "31",
+        "error_code": "GENERATION_MISMATCH",
+        "objects_total": 6,
+        "phase": "verify",
+        "read_at": "2026-11-03T05:32:25.753315026Z",
+        "reads_total": 20,
+        "rejected": null,
+        "sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8",
+        "truncated": true,
+        "verified": false
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "31",
+        "start_ns": "7388183300030",
+        "end_ns": "7388204856458",
+        "succeeded": false,
+        "verified": false,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "7388183300030",
+            "end_ns": "7388204856458",
+            "nft_read": {
+              "start_ns": "7388183300383",
+              "end_ns": "7388185742153",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "7388186447634",
+              "end_ns": "7388203487661",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "0",
+              "end_ns": "0",
+              "elements": 0,
+              "read_ok": false,
+              "verified": false
+            },
+            "tc_sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8",
+            "verified": false
+          }
+        ]
+      }
+    },
+    {
+      "stage": "clean generation 32 deny-all recovery Apply",
+      "started_at": "2026-11-03T05:32:25.756697801Z",
+      "finished_at": "2026-11-03T05:32:25.893181313Z",
+      "exit": 0,
+      "tc_evidence": {
+        "attachments": [
+          {
+            "attachment": "qdisc",
+            "interface": "fv-fh",
+            "objects": [
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "qdisc",
+            "interface": "fv-ih",
+            "objects": [
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "egress",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "ingress",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "root",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "egress",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "ingress",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "root",
+            "interface": "fv-ih",
+            "objects": []
+          }
+        ],
+        "candidate_generation": "32",
+        "error_code": null,
+        "objects_total": 2,
+        "phase": "verify",
+        "read_at": "2026-11-03T05:32:25.878162677Z",
+        "reads_total": 12,
+        "rejected": null,
+        "sha256": "11181e383412d5f8dc9bbc364dcaff2ffb61c498294fb3d8d6bc0b3fe6aef5e2",
+        "truncated": false,
+        "verified": true
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "apply",
+        "candidate_generation": "32",
+        "start_ns": "7388230326879",
+        "end_ns": "7388340618076",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "1000000",
+          "install_bound_ns": "100000000",
+          "apply_start_ns": "7388230326879",
+          "render_start_ns": "7388253467257",
+          "install_start_ns": "7388253535364",
+          "installed_by_ns": "7388273496184",
+          "install_ok": true,
+          "release_start_ns": "7388273499405",
+          "release_end_ns": "7388296211914",
+          "guard_released": true
+        },
+        "verifications": [
+          {
+            "start_ns": "7388296215813",
+            "end_ns": "7388311394560",
+            "nft_read": {
+              "start_ns": "7388296215959",
+              "end_ns": "7388298310287",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "7388300600380",
+              "end_ns": "7388310023200",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "7388299345033",
+              "end_ns": "7388300597113",
+              "elements": 0,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "11181e383412d5f8dc9bbc364dcaff2ffb61c498294fb3d8d6bc0b3fe6aef5e2",
+            "verified": true
+          },
+          {
+            "start_ns": "7388312583255",
+            "end_ns": "7388329595539",
+            "nft_read": {
+              "start_ns": "7388312583515",
+              "end_ns": "7388314688239",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "7388317540152",
+              "end_ns": "7388328438232",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "7388316159510",
+              "end_ns": "7388317537463",
+              "elements": 0,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "11181e383412d5f8dc9bbc364dcaff2ffb61c498294fb3d8d6bc0b3fe6aef5e2",
+            "verified": true
+          }
+        ]
+      }
+    },
+    {
+      "stage": "clean newer generation 32 Apply",
+      "started_at": "2026-11-03T05:32:26.355660815Z",
+      "finished_at": "2026-11-03T05:32:26.482452123Z",
+      "exit": 0,
+      "tc_evidence": {
+        "attachments": [
+          {
+            "attachment": "qdisc",
+            "interface": "fv-fh",
+            "objects": [
+              {
+                "handle": "2f:",
+                "kind": "fq_codel",
+                "parent": "1:2f"
+              },
+              {
+                "handle": "30:",
+                "kind": "fq_codel",
+                "parent": "1:30"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "qdisc",
+            "interface": "fv-ih",
+            "objects": [
+              {
+                "handle": "2f:",
+                "kind": "fq_codel",
+                "parent": "1:2f"
+              },
+              {
+                "handle": "30:",
+                "kind": "fq_codel",
+                "parent": "1:30"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:2f",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:30",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "2f:",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "30:",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "egress",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "ingress",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "root",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:2f",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:30",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "2f:",
+            "interface": "fv-ih",
+            "objects": []
+          }
+        ],
+        "candidate_generation": "32",
+        "error_code": null,
+        "objects_total": 6,
+        "phase": "verify",
+        "read_at": "2026-11-03T05:32:26.478764181Z",
+        "reads_total": 20,
+        "rejected": null,
+        "sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8",
+        "truncated": true,
+        "verified": true
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "apply",
+        "candidate_generation": "32",
+        "start_ns": "7388830223484",
+        "end_ns": "7388930299270",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "1000000",
+          "install_bound_ns": "100000000",
+          "apply_start_ns": "7388830223484",
+          "render_start_ns": "7388849460479",
+          "install_start_ns": "7388849586509",
+          "installed_by_ns": "7388880446520",
+          "install_ok": true,
+          "release_start_ns": "7388880450299",
+          "release_end_ns": "7388904273618",
+          "guard_released": true
+        },
+        "verifications": [
+          {
+            "start_ns": "7388904277313",
+            "end_ns": "7388930286170",
+            "nft_read": {
+              "start_ns": "7388904277776",
+              "end_ns": "7388907211310",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "7388911896546",
+              "end_ns": "7388928888859",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "7388910415439",
+              "end_ns": "7388911887439",
+              "elements": 3,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8",
+            "verified": true
+          }
+        ]
+      }
+    },
+    {
+      "stage": "fresh public verify generation 32",
+      "started_at": "2026-11-03T05:32:26.527507643Z",
+      "finished_at": "2026-11-03T05:32:26.578010706Z",
+      "exit": 0,
+      "tc_evidence": {
+        "attachments": [
+          {
+            "attachment": "qdisc",
+            "interface": "fv-fh",
+            "objects": [
+              {
+                "handle": "2f:",
+                "kind": "fq_codel",
+                "parent": "1:2f"
+              },
+              {
+                "handle": "30:",
+                "kind": "fq_codel",
+                "parent": "1:30"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "qdisc",
+            "interface": "fv-ih",
+            "objects": [
+              {
+                "handle": "2f:",
+                "kind": "fq_codel",
+                "parent": "1:2f"
+              },
+              {
+                "handle": "30:",
+                "kind": "fq_codel",
+                "parent": "1:30"
+              },
+              {
+                "handle": "1:",
+                "kind": "htb",
+                "root": true
+              }
+            ]
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:2f",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:30",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "2f:",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "30:",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "egress",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "ingress",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "root",
+            "interface": "fv-fh",
+            "objects": []
+          },
+          {
+            "attachment": "1:1",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:2f",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:30",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "1:fffe",
+            "interface": "fv-ih",
+            "objects": []
+          },
+          {
+            "attachment": "2f:",
+            "interface": "fv-ih",
+            "objects": []
+          }
+        ],
+        "candidate_generation": "32",
+        "error_code": null,
+        "objects_total": 6,
+        "phase": "verify",
+        "read_at": "2026-11-03T05:32:26.574219176Z",
+        "reads_total": 20,
+        "rejected": null,
+        "sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8",
+        "truncated": true,
+        "verified": true
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "32",
+        "start_ns": "7389001299945",
+        "end_ns": "7389026337302",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "7389001299945",
+            "end_ns": "7389026337302",
+            "nft_read": {
+              "start_ns": "7389001300504",
+              "end_ns": "7389004333313",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "7389007977924",
+              "end_ns": "7389023928927",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "7389006360000",
+              "end_ns": "7389007969155",
+              "elements": 3,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "710fc38cc7614c2c283545f89e47f67147fd40d5ce16f7fef7c4cfd3922697c8",
+            "verified": true
+          }
+        ]
+      }
+    }
+  ],
+  "route_owner": "lab veth topology; explicit reconciliation after verified Apply",
+  "member_probe_after_route_reconciliation": true
+}

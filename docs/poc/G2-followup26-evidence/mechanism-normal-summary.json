@@ -1,0 +1,19 @@
+{
+  "platform": {
+    "test_only": true,
+    "mode": "normal",
+    "kernel": "7.0.0-38-generic",
+    "nft": "nftables v1.0.9 (Old Doc Yak #3)",
+    "nft_package": "1.0.9-1ubuntu0.1"
+  },
+  "trials": 1000,
+  "old_failures": [
+    70,
+    281,
+    406,
+    758
+  ],
+  "allocation_split_proven": [
+    758
+  ]
+}

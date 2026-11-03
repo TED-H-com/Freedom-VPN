@@ -1,0 +1,17 @@
+{
+  "test_only": true,
+  "header_source": "/usr/src/linux-headers-7.0.0-38-generic/include/generated/autoconf.h",
+  "header_sha256": "f706af3593a9f0bb09f999614fc82932b850a2815a9c972d7dc55af68a1fded6",
+  "kernel_release": "7.0.0-38-generic",
+  "utsrelease": "#define UTS_RELEASE \"7.0.0-38-generic\"\n#define UTS_UBUNTU_RELEASE_ABI 38",
+  "release_matches": true,
+  "defines": [
+    "#define CONFIG_HZ_1000 1",
+    "#define CONFIG_NO_HZ_COMMON 1",
+    "#define CONFIG_NO_HZ 1",
+    "#define CONFIG_NO_HZ_FULL 1",
+    "#define CONFIG_HZ 1000",
+    "#define CONFIG_HIGH_RES_TIMERS 1"
+  ],
+  "scope": "Installed matching-release kernel build headers; supporting configuration evidence, not a binary attestation"
+}

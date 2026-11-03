@@ -1,0 +1,50 @@
+{
+  "test_only": true,
+  "commands": {
+    "containers": [
+      "docker",
+      "ps",
+      "-a",
+      "--filter",
+      "name=fvpn-w1-netlab-f26",
+      "--format",
+      "{{.Names}}"
+    ],
+    "images": [
+      "docker",
+      "image",
+      "ls",
+      "--filter",
+      "reference=fvpn-w1-netlab-f26*",
+      "--format",
+      "{{.Repository}}:{{.Tag}}"
+    ],
+    "networks": [
+      "docker",
+      "network",
+      "ls",
+      "--filter",
+      "name=fvpn-w1-netlab-f26",
+      "--format",
+      "{{.Name}}"
+    ],
+    "volumes": [
+      "docker",
+      "volume",
+      "ls",
+      "--filter",
+      "name=fvpn-w1-netlab-f26",
+      "--format",
+      "{{.Name}}"
+    ]
+  },
+  "remaining": {
+    "containers": [],
+    "images": [],
+    "networks": [],
+    "volumes": []
+  },
+  "remaining_task_scratch": [],
+  "gocache_requeried_sha256": "fe8e7e90e7a2bc91c28b2c880ec36d0ca053954b81aa441a3f98d910f200888e",
+  "gocache_still_matches_finish_receipt": true
+}

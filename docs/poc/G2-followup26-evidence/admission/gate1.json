@@ -1,0 +1,31 @@
+{
+  "waited_seconds": 0.0647380210002666,
+  "quiet_required": false,
+  "qualified": true,
+  "required_windows": 0,
+  "interval_seconds": 60,
+  "polls": [
+    {
+      "elapsed_seconds": 0.0647380210002666,
+      "consecutive_free_60s_windows": 0,
+      "utc": "2026-11-03T05:16:39Z",
+      "hold_command": [
+        "bash",
+        "<admission-script>"
+      ],
+      "hold_exit": 0,
+      "hold_output": "free",
+      "hold_raw_sha256": "0cf9340d8bc2f1f7836e0ce6e2178d5fd382bde7fc50dc845dbf228dee3713b4",
+      "other_runs": [],
+      "own_runs": [],
+      "ready": true,
+      "pgrep_command": [
+        "pgrep",
+        "-af",
+        "gates.sh|mk/at-|go test"
+      ],
+      "pgrep_exit": 0,
+      "pgrep_raw_sha256": "38f10c6a95a33032cd345128bd1633ff0c0a0c1dbf4867139cb16be45903d254"
+    }
+  ]
+}

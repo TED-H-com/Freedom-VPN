@@ -1,0 +1,21 @@
+{
+  "test_only": true,
+  "normal_trials": 1000,
+  "normal_transaction": "exact original eight-element add set/add element transaction, one nft text read, five observational raw dumps, JSON read, delete",
+  "padded_controls": {
+    "count": 2,
+    "padding_elements": 5000,
+    "group_orders": [
+      "1-6 then 7-8",
+      "7-8 then 1-6"
+    ]
+  },
+  "dump_only": {
+    "installations": 1,
+    "raw_dumps": 2000
+  },
+  "full_suite_attempts": 1,
+  "no_synthetic_load": true,
+  "admission": "named priority runs first, 120-minute limit, then fewer than two other suites",
+  "original_83b457ef_attempt": "failed, no deadline mechanism trace; never reclassified"
+}

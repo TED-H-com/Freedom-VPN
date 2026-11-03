@@ -1,0 +1,14 @@
+{
+  "name": "gate2",
+  "command": [
+    "make",
+    "-f",
+    "mk/netlab.mk",
+    "netlab-test",
+    "FVPN_LAB_PREFIX=fvpn-w1-netlab-f26"
+  ],
+  "quiet": true,
+  "environment": {
+    "FVPN_NETLAB_EVIDENCE_DIR": "docs/poc/G2-followup26-evidence/live-attempt1"
+  }
+}

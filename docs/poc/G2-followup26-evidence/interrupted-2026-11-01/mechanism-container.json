@@ -1,0 +1,18 @@
+{
+  "command": [
+    "docker",
+    "run",
+    "-d",
+    "--name",
+    "fvpn-w1-netlab-f26-mechanism",
+    "--privileged",
+    "--network",
+    "none",
+    "-v",
+    "<worktree>:/work:ro",
+    "fvpn-w1-netlab-f26-mechanism:lab"
+  ],
+  "exit": 0,
+  "elapsed_seconds": 0.19360780500574037,
+  "public_output_sha256": "176ca07f477e7c4555bf03afcb1c76da2f298229e5f6192c78573d9e8d67f211"
+}

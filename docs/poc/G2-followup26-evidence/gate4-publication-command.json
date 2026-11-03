@@ -1,0 +1,12 @@
+{
+  "name": "gate4-publication",
+  "command": [
+    "go",
+    "test",
+    "-count=1",
+    "-run",
+    "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
+    "./tests/netlab"
+  ],
+  "quiet": false
+}
