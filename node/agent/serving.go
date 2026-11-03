@@ -91,6 +91,12 @@ func (e *Engine) verifyCurrentServing(ctx context.Context) bool {
 	if !e.serving {
 		return true
 	}
+	if e.usagePersist || e.retainedPending || !e.baselineOK {
+		e.withdraw(ctx)
+		e.decision = Decide(e.input())
+		e.lastObs = time.Time{}
+		return false
+	}
 	if e.expireServing(ctx) {
 		return false
 	}
@@ -174,7 +180,7 @@ func (e *Engine) finishServingStep(ctx context.Context) {
 	}
 	changed := e.updateStaleHold()
 	e.beat()
-	if !ok || changed || (e.identityFrozen && e.lastObs.IsZero()) {
+	if !ok || !e.serving || changed || (e.identityFrozen && e.lastObs.IsZero()) {
 		_ = e.observe(ctx)
 		_ = e.flush(ctx)
 	}

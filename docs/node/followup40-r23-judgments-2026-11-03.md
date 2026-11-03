@@ -82,3 +82,48 @@ and tests the same open epoch after two withdrawal attempts. Receipt
 Requirements: MTR01–MTR04 (§10.2, §10.5–§10.9), ISO01/ISO02 (§16.3),
 UPD04/AT13/AT16 mechanisms. Physical arm64 and field incident rates remain
 unmeasured. Functional gates and further evidence will be appended.
+
+## Implemented boundary and focused proofs
+
+`SameCountingInterval` reads the existing append-only epoch rows, ordered by
+SQLite rowid as ClosedCheckpoint already does. It accepts only an uninterrupted
+chain of same-boot counter-discontinuity closes/opens ending at the open head.
+It cannot cross a final sample, missing origin, new baseline or reboot. No
+schema migration or additional durable write is required. A contradictory
+successful live-generation read still defeats the intent; a transient failure
+does not erase it. All adoption verification gates remain in place.
+
+`epochClosed` records ledger closure independently of `finalDone`, which still
+means barrier completion. Every interrupted publication therefore prepares
+before a serving Apply. A withdrawal attempt sets retainedPending and clears
+serving/expiry before fallible work. Baseline precedes checkpoint removal;
+the original second Baseline attempt in withdraw remains, and the pre-Apply
+return also retries a failed Baseline. A pending interval is a reporting and
+admission gate even before a sample can set usagePersist. The deferred decision
+tracks usage and serving changes, including the early settlement return.
+Blocked Step returns publish their observation as well as their heartbeat.
+A failed pre-Apply intent write is reported at usage, not as a failed Apply.
+
+Focused converted r23 proofs pass, with additional matrix cases for barrier
+removal/replacement, canceled ClosedCheckpoint read after a committed close,
+atomic checkpoint write failure, held/read/persist sample failures, failed
+Baseline, invalidation racing the pre-Apply check, and first-failed/second-good
+Baseline. Each runs with and without an intervening restart and verifies the
+post-recovery restart's bytes. The real renderer is called with the preserved
+counter State for both Baseline and Apply across remove/re-add; it must neither
+delete nor recreate the existing counter. Totals remain 8192 old + 1024 new.
+
+H-1b also has a repair-Apply trace with a pending kernelSource notification
+injected after intent publication; enforce's actual switchEpoch consumes it.
+The original missing-idle-counter fixture remains a labeled guard. The separate
+idle-zero fixture uses the real renderer's counter existence behavior. A failed
+later intent write after a settled boundary cannot reuse the earlier intent.
+The original M-1 portable main comparison fails on the same open/unsettled
+state, confirming the pre-existing classification.
+
+Cost: healthy serving Step adds only boolean comparisons; no extra source
+read, sample, filesystem sync or SQL write. Restart after an epoch switch adds
+one read-only epoch-history query. Failed hand-offs retain the existing retry
+and the pre-Apply failure path adds at most one Baseline retry inside the same
+local deadline. Blocked returns may enqueue/deliver a changed observation;
+normal observation deduplication still applies. No performance claim is made.

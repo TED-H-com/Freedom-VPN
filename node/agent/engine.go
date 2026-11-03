@@ -83,6 +83,7 @@ type Engine struct {
 	uploadOn        bool
 	sampleOn        bool
 	finalDone       bool
+	epochClosed     bool // ledger is closed; independent of barrier publication
 	finalBarrierID  string
 	usageLock       *nodelock.Lock
 	shutUsage       bool
@@ -932,7 +933,7 @@ func (e *Engine) input() Input {
 		RevocationPending: len(e.pendingRevoke) > 0, ConntrackBlocked: e.conntrackBlocked,
 		ConntrackDetail: e.conntrackDetail,
 		OutboxFull:      e.outboxFull, MeterFailed: e.meterFailed,
-		UsageOutbox: e.usageOutbox, UsageDisk: e.usageDisk, UsagePersist: e.usagePersist,
+		UsageOutbox: e.usageOutbox, UsageDisk: e.usageDisk, UsagePersist: e.usagePersist || e.retainedPending,
 		ProbeRan: e.lastProbe.Ran && e.probeOmitted == "", ProbeCheck: e.lastProbe.Check, ProbeHealth: e.lastProbe.Health,
 		ProbeSource: e.probeSource, ProbeOmitted: e.probeOmitted, ProbeOmittedAt: e.probeOmittedAt,
 		DNSDocument: e.dnsDocument, DNSFailed: e.dnsFailed, DNSCode: e.dnsCode, DNSDetail: e.dnsDetail,
@@ -1086,20 +1087,19 @@ func (e *Engine) baseline(ctx context.Context) error {
 }
 
 func (e *Engine) enforce(ctx context.Context, d Decision) error {
-	if e.retainedPending && !e.settleRetainedUsage(ctx) {
-		return nil
-	}
 	baselineOK, meterFailed, applyError := e.baselineOK, e.meterFailed, e.applyError
 	storageOK, revocationPending := e.storageOK, len(e.pendingRevoke) > 0
+	usagePersist, retainedPending, serving := e.usagePersist, e.retainedPending, e.serving
 	blocked := e.conntrackBlocked
 	defer func() {
 		pendingChanged := revocationPending != (len(e.pendingRevoke) > 0)
 		blockedChanged := blocked != e.conntrackBlocked
-		if pendingChanged || blockedChanged {
+		usageChanged := usagePersist != e.usagePersist || retainedPending != e.retainedPending || serving != e.serving
+		if pendingChanged || blockedChanged || usageChanged {
 			// Publish the new pending or failed-closed condition on this tick.
 			e.lastObs = time.Time{}
 		}
-		if baselineOK != e.baselineOK || meterFailed != e.meterFailed || applyError != e.applyError || storageOK != e.storageOK || pendingChanged || blockedChanged {
+		if baselineOK != e.baselineOK || meterFailed != e.meterFailed || applyError != e.applyError || storageOK != e.storageOK || pendingChanged || blockedChanged || usageChanged {
 			errs := e.decision.Errors
 			e.decision = Decide(e.input())
 			for _, err := range errs {
@@ -1109,6 +1109,9 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 			}
 		}
 	}()
+	if e.retainedPending && !e.settleRetainedUsage(ctx) {
+		return nil
+	}
 	if e.conntrackAttempts >= maxConntrackDeleteAttempts {
 		e.conntrackBlocked = true
 		e.conntrackDetail = conntrackBoundDetail
@@ -1220,15 +1223,18 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		// Without a valid pre-Apply candidate the old expectation still applies.
 	}
 	wasServing := e.expectServing.Load()
-	if !closedRecovery && !e.finalDone && len(e.meterBindings()) != 0 && !sameUsageBindings(e.meterBindings(), model.Bindings) {
+	if !closedRecovery && !e.epochClosed && len(e.meterBindings()) != 0 && !sameUsageBindings(e.meterBindings(), model.Bindings) {
 		// A sample while the old rules still forward leaves a race before
 		// Apply. Withdraw first, then commit every outgoing delta (r22 H-1).
 		e.handoff(ctx)
-		if !e.finalDone || e.retainedPending || !e.baselineOK {
+		if !e.epochClosed || e.retainedPending || e.usagePersist || !e.baselineOK {
+			if !e.baselineOK {
+				_ = e.baseline(ctx) // keep the fail-closed retry on this call site too
+			}
 			return nil
 		}
 	}
-	if !closedRecovery && e.meter != nil && e.finalDone {
+	if !closedRecovery && e.meter != nil && e.epochClosed {
 		// A closed epoch must be replaced before Apply can admit the first
 		// packet. Keep the sampler paused across this real durable read.
 		e.finalDone = false
@@ -1238,6 +1244,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 			e.withdraw(ctx)
 			return err
 		}
+		e.epochClosed = false
 	}
 	timing := &applyReadTiming{now: e.clock.Wall}
 	host := e.measureHostBeforeApply()
@@ -1258,7 +1265,9 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	}
 	if !closedRecovery {
 		if err := e.recordUsageIntent(ctx, model); err != nil {
-			e.rejectServing(ctx, model, enforce.ServingEvidence{}, err)
+			// Admission has not run. Report the usage persistence failure,
+			// not a fabricated Apply health-check failure (r23 H-2/H-3).
+			e.withdraw(ctx)
 			e.usagePersist = true
 			return nil
 		}

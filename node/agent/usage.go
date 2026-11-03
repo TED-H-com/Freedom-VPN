@@ -343,6 +343,7 @@ func (e *Engine) settleRetainedUsage(ctx context.Context) bool {
 		return false
 	}
 	e.retainedPending = false
+	e.epochClosed = true
 	e.finalDone = true
 	e.setMeterBindings(nil)
 	e.readMeter(ctx)
@@ -398,6 +399,7 @@ func (e *Engine) resumeSampling() {
 		return
 	}
 	e.finalDone = false
+	e.epochClosed = false
 	e.finalBarrierID = ""
 	e.meter.ResumeSampling()
 	if e.sampleOn {
@@ -420,31 +422,40 @@ func (e *Engine) handoff(ctx context.Context) {
 	if e.usageAdopting {
 		return // adoption's rejected read withdraws first; Boot settles later
 	}
-	if e.retainedPending && !e.settleRetainedUsage(ctx) {
-		return
-	}
 	id, blocked := meterBarrierIdentity(e.cfg.JournalDir)
 	e.latchBlocked = blocked
-	if id == "" {
-		if err := e.invalidateMeterCheckpoint(); err != nil {
-			e.usagePersist = true
+	// The pending latch precedes every fallible withdrawal operation, even
+	// checkpoint removal. A later successful baseline retry must not allow
+	// Apply to overtake the outgoing interval (r23 H-3/M-1).
+	complete := e.finalDone && e.finalBarrierID == id && !e.retainedPending
+	if !complete && e.meter != nil {
+		e.finalDone = false
+		e.retainedPending = true
+		e.serving = false
+		e.policyExpires = 0
+		e.decision.Serve = false
+		if err := e.baseline(ctx); err != nil {
 			return
 		}
 	}
-	if e.meter == nil || (e.finalDone && e.finalBarrierID == id) {
+	if id == "" {
+		if err := e.invalidateMeterCheckpoint(); err != nil {
+			e.usagePersist = true
+			e.serving = false
+			e.policyExpires = 0
+			// Even a completed/no-meter hand-off must withdraw on a new
+			// persistence failure. Do not let ledger health clear this error.
+			if complete || e.meter == nil {
+				_ = e.baseline(ctx)
+			}
+			return
+		}
+	}
+	if e.meter == nil || complete {
 		return
 	}
-	// A new identity must execute the withdrawal/close path again. It cannot
-	// borrow finalDone or relabel the previous checkpoint, even when quiet.
-	e.finalDone = false
-	if err := e.baseline(ctx); err != nil {
-		return
-	}
-	e.serving = false
-	e.decision.Serve = false
 	// FinalSample pauses internally. If it fails, the same settlement gate
 	// used at restart prevents refresh or Apply until the outgoing bytes commit.
-	e.retainedPending = true
 	if !e.settleRetainedUsage(ctx) {
 		return
 	}
@@ -534,8 +545,8 @@ func (e *Engine) shutdownUsage(ctx context.Context) {
 			// Record the withdrawal. A retained serving heartbeat would
 			// describe rules this hand-off just replaced, inviting a
 			// same-boot successor to verify a ruleset that is gone (r20 M-3).
-			// A hand-off that failed before its baseline leaves the old
-			// heartbeat, which still describes the kernel.
+			// A failed baseline reports uncertainty rather than retaining a
+			// successful-serving claim for an unverified kernel.
 			e.decision = Decide(e.input())
 			e.beat()
 		}
