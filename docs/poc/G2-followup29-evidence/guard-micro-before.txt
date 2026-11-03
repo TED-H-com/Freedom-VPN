@@ -1,0 +1,16 @@
+..E.
+======================================================================
+ERROR: test_microsecond_device (guard_observe_test.NFLog.test_microsecond_device)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "<worktree>/tests/netlab/scripts/guard_observe_test.py", line 29, in test_microsecond_device
+    row=g.decode(bytes(raw))[0]
+        ~~~~~~~~^^^^^^^^^^^^
+  File "<worktree>/tests/netlab/scripts/guard_observe.py", line 18, in decode
+    raise ValueError('requires nanosecond little-endian NFLOG pcap')
+ValueError: requires nanosecond little-endian NFLOG pcap
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.000s
+
+FAILED (errors=1)

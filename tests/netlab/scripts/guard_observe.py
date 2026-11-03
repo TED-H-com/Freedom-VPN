@@ -14,14 +14,15 @@ from tcp_observe import validate_stats
 
 
 def decode(raw):
-    if len(raw)<24 or raw[:4]!=b'\x4d\x3c\xb2\xa1' or struct.unpack_from('<I',raw,20)[0]!=239:
-        raise ValueError('requires nanosecond little-endian NFLOG pcap')
+    precision={b'\x4d\x3c\xb2\xa1':1,b'\xd4\xc3\xb2\xa1':1000}.get(raw[:4])
+    if len(raw)<24 or precision is None or struct.unpack_from('<I',raw,20)[0]!=239:
+        raise ValueError('requires little-endian NFLOG pcap')
     pos=24; rows=[]
     while pos<len(raw):
         if len(raw)-pos<16: raise ValueError('partial pcap record')
         sec,nano,size,original=struct.unpack_from('<IIII',raw,pos);pos+=16
         packet=raw[pos:pos+size];pos+=size
-        if size!=original or len(packet)!=size or nano>=10**9 or size<4:raise ValueError('truncated pcap')
+        if size!=original or len(packet)!=size or nano*precision>=10**9 or size<4:raise ValueError('truncated pcap')
         family,version,group=struct.unpack_from('!BBH',packet)
         if family not in (2,10) or version!=0 or group!=29:raise ValueError('unexpected NFLOG group/family')
         at=4;attrs={}
@@ -37,7 +38,7 @@ def decode(raw):
         proto,hook,_=struct.unpack('!HBB',attrs[1])
         if hook!=2:raise ValueError('not the forward hook')
         row=headers(attrs[9],proto)
-        row.update(packet=len(rows)+1,pcap_wall_ns=str(sec*10**9+nano),
+        row.update(packet=len(rows)+1,pcap_wall_ns=str(sec*10**9+nano*precision),pcap_precision_ns=precision,
                    generation=match[1],rule=match[2],verdict='drop',group=group,hook=hook)
         if 3 in attrs:
             seconds,micros=struct.unpack('!QQ',attrs[3])
@@ -52,7 +53,9 @@ def decode(raw):
 def start(base):
     assert not Path(base+'.pid').exists(), 'never reuse a diagnostic capture'
     meta=dict(test_only=True,start=stamp(),group=29)
-    cmd=['tcpdump','--immediate-mode','--time-stamp-precision=nano','-U','-nn','-s','0','-i','nflog:29','-w',base+'.pcap']
+    # NFLOG does not support nanosecond pcap delivery timestamps on the lab's
+    # libpcap backend. Preserve its default microsecond precision explicitly.
+    cmd=['tcpdump','--immediate-mode','-U','-nn','-s','0','-i','nflog:29','-w',base+'.pcap']
     with Path(base+'.err').open('x') as err:
         proc=subprocess.Popen(cmd,stdout=subprocess.DEVNULL,stderr=err,start_new_session=True)
     Path(base+'.pid').write_text(str(proc.pid))

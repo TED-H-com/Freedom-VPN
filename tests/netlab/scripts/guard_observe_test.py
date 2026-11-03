@@ -22,6 +22,14 @@ class NFLog(unittest.TestCase):
         self.assertNotIn('payload',row)
         self.assertNotIn('mac',row)
 
+    def test_microsecond_device(self):
+        raw=bytearray(fixture())
+        raw[:4]=b'\xd4\xc3\xb2\xa1'
+        struct.pack_into('<I',raw,28,124)
+        row=g.decode(bytes(raw))[0]
+        self.assertEqual(row['pcap_wall_ns'],'20000124000')
+        self.assertEqual(row['pcap_precision_ns'],1000)
+
     def test_bad_prefix(self):
         with self.assertRaises(ValueError):g.decode(fixture(b'unexpected\0'))
 
