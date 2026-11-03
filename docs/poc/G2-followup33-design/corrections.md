@@ -9,7 +9,7 @@ This document records an additive, documents-only correction to follow-up 32 ([`
 3. It re-checks every other `r24` (`ba5d3004:.agent/REVIEW.md`) citation, test name, quote, and figure that follow-up 32's [`revision.md`](../G2-followup32-design/revision.md), [`protocol.md`](../G2-followup32-design/protocol.md), and [`owner-decision.md`](../G2-followup32-design/owner-decision.md) adopted or addressed against `main` (`e54700f9d2f8361b8905c44e51f3f32bb82e5bcf` / `9f85c3fbee729f1ff0e825d06c41570dedc231c6`) and the `r24`-reviewed commit (`52a7e59be947422e5e7c39a52d3c227c84050718`), and records an additive correction for the `M-3` / `B1` citation in [`protocol.md:168-171`](../G2-followup32-design/protocol.md#L168-L171) and [`revision.md:33`](../G2-followup32-design/revision.md#L33).
 4. It reports the whole-tree search for `/var/lib/vpn-node/update-journal/update.lock` across code, tests, tooling, and documents.
 
-All files under [`docs/poc/G2-followup32-design/`](../G2-followup32-design) and [`docs/poc/G2-followup32-evidence/`](../G2-followup32-evidence) remain byte-identical because handover follow-up 36 pins both trees file by file. Follow-up 32's `node/enforce` fixes (`H-4`/`M-2`), its C1 protocol design (`H-1` through `M-3` and the empty-set half of `L-1`), and its corrections of `r24`'s figures stand unchanged. The owner's G5/G6 decision remains pending, and production keeps the current unconditional guard.
+All files under [`docs/poc/G2-followup32-design/`](../G2-followup32-design) and [`docs/poc/G2-followup32-evidence/`](../G2-followup32-evidence) remain byte-identical because handover follow-up 36 pins both trees file by file. Between this branch's base (`e54700f9d2f8361b8905c44e51f3f32bb82e5bcf`) and current `origin/main` (`9f85c3fbee729f1ff0e825d06c41570dedc231c6`, handover follow-up 36, `#425`), `git diff --name-only e54700f9 origin/main` lists 31 files, all owned by `w4-handover` and none linked by §1–§3 of this document. Follow-up 32's `node/enforce` fixes (`H-4`/`M-2`), its C1 protocol design (`H-1` through `M-3` and the empty-set half of `L-1`), and its corrections of `r24`'s figures stand unchanged. The owner's G5/G6 decision remains pending, and production keeps the current unconditional guard.
 
 ---
 
@@ -125,12 +125,14 @@ Every citation from `r24` (`ba5d3004:.agent/REVIEW.md`) that follow-up 32's [`re
 
 ### 4.1 Search Commands
 
+On this branch's base commit `e54700f9` (`e54700f9d2f8361b8905c44e51f3f32bb82e5bcf`, including the working tree and all 411 tracked `.gz` archives):
+
 ```sh
-git grep -n 'update-journal/update\.lock'
+git grep -n 'update-journal/update\.lock' e54700f9
 grep -rnI --exclude-dir=.git 'update-journal/update\.lock' .
 python3 -c '
-import glob, gzip
-for p in sorted(glob.glob("docs/poc/**/*.gz", recursive=True)):
+import gzip, subprocess
+for p in subprocess.check_output(["git", "ls-files", "*.gz"], text=True).splitlines():
     with gzip.open(p, "rt", errors="replace") as f:
         for i, line in enumerate(f, 1):
             if "update-journal/update.lock" in line:
@@ -138,11 +140,18 @@ for p in sorted(glob.glob("docs/poc/**/*.gz", recursive=True)):
 '
 ```
 
+On current `origin/main` at `9f85c3fb` (`9f85c3fbee729f1ff0e825d06c41570dedc231c6`, which includes handover follow-up 36, `#425`):
+
+```sh
+git grep -n 'update-journal/update\.lock' origin/main
+```
+
 ### 4.2 Search Results and Ownership
 
 | Location | Tree Status | Owner | Disposition |
 |---|---|---|---|
-| [`docs/poc/G2-followup32-design/protocol.md:93`](../G2-followup32-design/protocol.md#L93) | Tracked on `main` | `w1-netlab` (`docs/poc/G2-*`), pinned file-by-file by `w4-handover` (`tests/handover/...`) | Left byte-identical per task instructions so handover follow-up 36 pins pass; superseded additively by §1.1 of this document. |
-| `.agent/BRIEF.md` | Untracked (`.agent/`, gitignored) | Orchestrator task brief for `w1-netlab` follow-up 33 | Quotes the wrong path in the initial follow-up 33 task prompt; not tracked in git. |
-| `ba5d3004:.agent/REVIEW.md:178, 181` | Unmerged git commit object (`r24` review input) | Orchestrator / `w4-handover` (`docs/reviews/*`) | Not present in the `main` working tree (`git grep` on `HEAD` does not hit it); any review-archive notes under `docs/reviews/` belong to `w4-handover`. |
-| All other code, tests, tooling, packaging, deployment, and documentation files (including `.gz` archives) | Tracked on `main` | All lanes | **0 hits.** Every code, test, installer, updater, agent, and watchdog file uses `/var/lib/vpn-node/update.lock`. |
+| [`docs/poc/G2-followup32-design/protocol.md:93`](../G2-followup32-design/protocol.md#L93) | Tracked on `e54700f9` and current `main` (`9f85c3fb`) | `w1-netlab` (`docs/poc/G2-*`), pinned file-by-file by `w4-handover` (`tests/handover/...`) | Left byte-identical per task instructions so handover follow-up 36 pins pass; superseded additively by §1.1 of this document. |
+| `.agent/BRIEF.md` | Untracked (`.agent/`, gitignored) | Orchestrator task brief for `w1-netlab` follow-up 33 | Quotes the wrong path in the task prompt; not tracked in git. |
+| `ba5d3004:.agent/REVIEW.md:178, 181`; archived on current `main` (`9f85c3fb`) at `docs/reviews/r24-hitless-guard-review.md:178` and `:181` | Unmerged review commit `ba5d3004` at `e54700f9`; tracked on current `main` (`9f85c3fb`) as the byte-for-byte `r24` archive | `w4-handover` (`docs/reviews/*`) | Immutable `r24` review archive; `docs/reviews/README.md:458` (`9f85c3fb`) records its lock-path errata alongside it, so no change is needed. |
+| `docs/handover/follow-up-36.md:95` and `:242`, `docs/reviews/README.md:458`, `tests/handover/handover_test.go:11004` and `:11386`, and `tests/handover/testdata/history/follow-up-36/source-audit.json:141` (`9f85c3fb`) | Tracked on current `main` (`9f85c3fb`, added in handover follow-up 36, `#425`; not on `e54700f9`) | `w4-handover` (`docs/handover/*`, `docs/reviews/*`, `tests/handover/*`) | Each hit quotes `/var/lib/vpn-node/update-journal/update.lock` as the `L-1` / `protocol.md:93` claim being corrected against `/var/lib/vpn-node/update.lock` on `main`; none adopts it, so no change is needed. |
+| All other code, tests, tooling, packaging, deployment, and documentation files (including all 411 tracked `.gz` archives) | Tracked on `e54700f9` and current `main` (`9f85c3fb`) | All lanes | **0 hits** outside the rows above on both `e54700f9` and `9f85c3fb`. Every code, test, installer, updater, agent, and watchdog file uses `/var/lib/vpn-node/update.lock`. |
