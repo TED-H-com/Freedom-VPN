@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -65,6 +66,9 @@ type Lease struct {
 	Envelope        []byte
 	MonoSent        time.Duration
 	BootID          uuid.UUID
+	// RenewalJitter is saved atomically with the lease. Legacy rows use zero
+	// (the safe unjittered lead), without requiring a schema migration.
+	RenewalJitter time.Duration
 }
 
 // Anchor is the persisted time anchor. A new boot must not treat it as live.
@@ -347,6 +351,11 @@ func (s *Store) SaveLease(ctx context.Context, l Lease) error {
 			VALUES (1, ?, ?, ?, ?, ?, ?, ?)`,
 			l.ID.String(), fmtTime(l.IssuedAt), fmtTime(l.ExpiresAt), fmtTime(l.HighestIssuedAt),
 			l.Envelope, int64(l.MonoSent), l.BootID.String())
+		if err != nil {
+			return err
+		}
+		_, err = tx.ExecContext(ctx, `INSERT INTO meta(key,value) VALUES('lease_renew_jitter_ns',?)
+			ON CONFLICT(key) DO UPDATE SET value=excluded.value`, strconv.FormatInt(int64(l.RenewalJitter), 10))
 		return err
 	})
 }
@@ -356,14 +365,17 @@ func (s *Store) Lease(ctx context.Context) (Lease, bool, error) {
 	var l Lease
 	var id, issued, expires, highest, boot string
 	var mono int64
-	err := s.db.QueryRowContext(ctx, `SELECT lease_id, issued_at, expires_at, highest_issued_at, envelope, mono_sent_ns, boot_id FROM lease WHERE id = 1`).
-		Scan(&id, &issued, &expires, &highest, &l.Envelope, &mono, &boot)
+	var jitter int64
+	err := s.db.QueryRowContext(ctx, `SELECT lease_id, issued_at, expires_at, highest_issued_at, envelope, mono_sent_ns, boot_id,
+		COALESCE((SELECT value FROM meta WHERE key='lease_renew_jitter_ns'), '0') FROM lease WHERE id = 1`).
+		Scan(&id, &issued, &expires, &highest, &l.Envelope, &mono, &boot, &jitter)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Lease{}, false, nil
 	}
 	if err != nil {
 		return Lease{}, false, err
 	}
+	l.RenewalJitter = time.Duration(jitter)
 	l.ID, err = uuid.Parse(id)
 	if err != nil {
 		return Lease{}, false, err

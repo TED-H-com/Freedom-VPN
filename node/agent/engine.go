@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"maps"
 	"net/netip"
@@ -138,6 +139,8 @@ type Engine struct {
 	leaseBoot            uuid.UUID
 	highestIssued        time.Time
 	leaseFresh           bool
+	leaseJitter          renewalJitter
+	renewRandom          io.Reader // nil uses crypto/rand.Reader; injected by tests
 	leaseRefreshPending  bool
 	anchor               timeanchor.Anchor
 	anchorOK             bool
@@ -852,6 +855,7 @@ func (e *Engine) loadRuntime(ctx context.Context) error {
 		e.leaseMono = l.MonoSent
 		e.leaseBoot = l.BootID
 		e.highestIssued = l.HighestIssuedAt
+		e.leaseJitter = renewalJitter{valid: true, id: l.ID, issued: l.IssuedAt, value: l.RenewalJitter}
 	}
 	var err error
 	if e.assignments, err = e.store.QoS(ctx); err != nil {

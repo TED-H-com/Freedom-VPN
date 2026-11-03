@@ -7,6 +7,8 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"errors"
+	"io"
+	"math/big"
 	"os"
 	"time"
 
@@ -161,7 +163,7 @@ func (e *Engine) needRenew() bool {
 	if !ok {
 		return true
 	}
-	return timeanchor.Remaining(deadline, e.clock.Mono()) <= e.renewLead(window)+leadJitter(e.renewLead(window))
+	return timeanchor.Remaining(deadline, e.clock.Mono()) <= e.renewLead(window)+e.renewalJitter(window)
 }
 
 // A retained failure must not suppress acquisition of the desired generation's
@@ -257,18 +259,39 @@ func (e *Engine) renewAppliedLease(ctx context.Context) error {
 	return nil
 }
 
-func leadJitter(lead time.Duration) time.Duration {
-	span := lead / 10
+// Millisecond resolution over the entire inclusive +/-10% span. rand.Int
+// uses rejection sampling, so non-power-of-two ranges have no modulo bias.
+func leadJitter(lead time.Duration, source io.Reader) time.Duration {
+	span := lead / 10 / time.Millisecond
 	if span <= 0 {
 		return 0
 	}
-	var b [2]byte
-	if _, err := rand.Read(b[:]); err != nil {
+	if source == nil {
+		source = rand.Reader
+	}
+	n, err := rand.Int(source, big.NewInt(int64(2*span+1)))
+	if err != nil {
 		return 0
 	}
-	n := int(b[0])<<8 | int(b[1])
-	mod := int(span)*2 + 1
-	return time.Duration(n%mod) - span
+	return (time.Duration(n.Int64()) - span) * time.Millisecond
+}
+
+type renewalJitter struct {
+	valid  bool
+	id     uuid.UUID
+	issued time.Time
+	value  time.Duration
+}
+
+func (e *Engine) renewalJitter(window time.Duration) time.Duration {
+	if !e.leaseJitter.valid || e.leaseJitter.id != e.lease.LeaseId || !e.leaseJitter.issued.Equal(e.lease.IssuedAt) {
+		e.leaseJitter = renewalJitter{valid: true, id: e.lease.LeaseId, issued: e.lease.IssuedAt,
+			value: leadJitter(e.renewLead(window), e.renewRandom)}
+	}
+	// A configuration change on restart may shrink the base lead. Keep the
+	// saved draw, but never use an offset outside the new base's +/-10% bound.
+	span := e.renewLead(window) / 10
+	return max(-span, min(span, e.leaseJitter.value))
 }
 
 func (e *Engine) acceptLease(ctx context.Context, raw []byte, monoSent time.Duration, wall time.Time) error {
@@ -315,6 +338,7 @@ func (e *Engine) acceptLease(ctx context.Context, raw []byte, monoSent time.Dura
 	if err := e.store.SaveLease(ctx, agentstore.Lease{
 		ID: lease.LeaseId, IssuedAt: lease.IssuedAt.UTC(), ExpiresAt: lease.ExpiresAt.UTC(),
 		HighestIssuedAt: e.highestIssued, Envelope: raw, MonoSent: monoSent, BootID: e.bootID,
+		RenewalJitter: e.renewalJitter(lease.ExpiresAt.Sub(lease.IssuedAt)),
 	}); err != nil {
 		e.storageOK = false
 		return err
