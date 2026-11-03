@@ -144,3 +144,17 @@ Apply once for its real 1ms expiry change. Node lint passes. Original H-1's
 assertions and setup have not been changed pending the orchestrator's reply;
 the independent actual-304 proof avoids mistaking that fixture conflict for
 a requirement to ignore a policy change.
+
+## Implementation arithmetic review — 2026-11-03, before correction
+
+Reviewing 41's new watchdog boundary calculation found a development defect:
+converting a distant binding ValidUntil to an absolute monotonic deadline
+before intersecting the member window can overflow a duration. A 300-year
+binding interval saturates `time.Time.Sub`; adding the monotonic start wraps
+negative even though the member limit is ordinary. This was introduced by
+41's first H-3 implementation, not present on the starting tip, and is a
+fail-closed availability error. The isolated proof on `0d920a28` returns
+`-2562046h47m16.854775809s` instead of `1h59m59.999s` for PolicyExpires.
+Cap the binding duration by the already-admissible member window before
+adding its monotonic anchor. The pure calculation proof is added before the
+correction; no timing measurement is involved.

@@ -59,3 +59,29 @@ func TestAT13_F41_DeviceDeadlinesInEitherOrder(t *testing.T) {
 		}
 	}
 }
+
+// A distant signed validity must be capped before converting its duration to
+// an absolute monotonic instant; time.Time.Sub saturates at MaxInt64.
+func TestAT13_F41_DistantDeviceDeadlineUsesMemberCap(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	serveBoundGeneration(t, r)
+	r.manualUsage(t)
+	in := r.eng.input()
+	ds := *in.Desired
+	ds.DeviceBindings = append([]api.DeviceBinding(nil), ds.DeviceBindings...)
+	for i := range ds.DeviceBindings {
+		ds.DeviceBindings[i].ValidUntil = in.Lease.IssuedAt.AddDate(300, 0, 0)
+	}
+	in.Desired = &ds
+	m, expires, err := buildModel(in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(m.Leases) != 1 || m.Leases[0].DeadlineMono == nil {
+		t.Fatal("missing member cap")
+	}
+	if want := *m.Leases[0].DeadlineMono; expires != want {
+		t.Fatalf("distant binding changed capped watchdog deadline: got %s want %s", expires, want)
+	}
+}
