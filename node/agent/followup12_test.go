@@ -567,6 +567,25 @@ func (t *listedTable) listingJSON() ([]byte, error) {
 		if len(set.elems) > 0 {
 			obj["elem"] = set.elems
 		}
+		if name == "denied_v4" || name == "host_v4" {
+			obj["type"] = "ipv4_addr"
+			// Match nft JSON's prefix/address shapes. Keep the original
+			// decomposition; verification compares coverage after merging.
+			elems := make([]any, 0, len(set.elems))
+			for _, text := range set.elems {
+				p, err := netip.ParsePrefix(text)
+				if err != nil {
+					return nil, fmt.Errorf("invalid isolation fixture prefix: %w", err)
+				}
+				if p.Bits() == 32 {
+					elems = append(elems, p.Addr().String())
+				} else {
+					elems = append(elems, map[string]any{"prefix": map[string]any{"addr": p.Masked().Addr().String(), "len": p.Bits()}})
+				}
+			}
+			obj["elem"] = elems
+		}
+
 		doc = append(doc, map[string]any{"set": obj})
 	}
 	return json.Marshal(map[string]any{"nftables": doc})
@@ -1296,5 +1315,50 @@ func TestAT13_F27_UnrecordedApplyRefusesRestartAdoption(t *testing.T) {
 				t.Fatal("refused adoption did not empty member admission")
 			}
 		})
+	}
+}
+
+func TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing(t *testing.T) {
+	for _, field := range []string{"denied_v4", "host_v4"} {
+		for _, change := range []string{"add", "remove", "replace"} {
+			t.Run(field+"/"+change, func(t *testing.T) {
+				r := newRig(t)
+				alignControlClock(r)
+				r.eng.cfg.TestMode = true
+				r.eng.cfg.TestExemptV4 = []string{"203.0.113.0/24", "198.51.100.0/24"}
+				r.eng.cfg.ExtraDeniedV4 = []string{"203.0.113.1/32"}
+				r.eng.cfg.HostV4 = []string{"198.51.100.1/32"}
+				mono, err := enforce.MonotonicNow()
+				if err != nil {
+					t.Fatal(err)
+				}
+				p := &f35RestartPlane{memPlane: r.plane, offset: mono - r.clock.Mono()}
+				r.eng.plane = p
+				serveBoundGeneration(t, r)
+				r.manualUsage(t)
+				if !r.eng.verifyCurrentServing(t.Context()) {
+					t.Fatal("positive live control")
+				}
+				if err := p.ex.fold(); err != nil {
+					t.Fatal(err)
+				}
+				set := p.ex.table.sets[field]
+				switch change {
+				case "add":
+					set.elems = append(set.elems, "203.0.113.99/32")
+				case "remove":
+					set.elems = set.elems[1:]
+				case "replace":
+					set.elems[0] = "203.0.113.99/32"
+				}
+				applies := len(p.models)
+				if r.eng.verifyCurrentServing(t.Context()) || r.eng.serving || !r.eng.baselineOK || len(p.models) != applies {
+					t.Fatal("live drift did not withdraw without a new Apply")
+				}
+				if len(p.ex.table.sets["allowed_v4"].elems) != 0 {
+					t.Fatal("withdrawal left member admission")
+				}
+			})
+		}
 	}
 }

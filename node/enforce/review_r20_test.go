@@ -1,7 +1,6 @@
 package enforce
 
 import (
-	"encoding/json"
 	"net/netip"
 	"strings"
 	"testing"
@@ -9,9 +8,8 @@ import (
 	"github.com/google/uuid"
 )
 
-// TODO(review r20): H-2 — VerifyServing and VerifyBaseline do not verify
-// @denied_v4 or @host_v4 contents or set flags, and VerifyBaseline does not
-// require @allowed_v4 to be empty.
+// Regression for review r20 H-2. Before-fail evidence retains the original
+// proof. Replace complete fixture sets to keep each listing unambiguous.
 func TestR20_H2_VerifierIgnoresEmptiedDenyAndHostSets(t *testing.T) {
 	t.Run("serving_emptied_and_timed_deny_and_host_sets", func(t *testing.T) {
 		m := smallModel()
@@ -52,28 +50,28 @@ func TestR20_H2_VerifierIgnoresEmptiedDenyAndHostSets(t *testing.T) {
 		m.ExtraDeniedV4 = []netip.Prefix{mustPrefix("192.0.2.128/25")}
 		m.HostV4 = []netip.Prefix{mustPrefix("192.0.2.33/32"), mustPrefix("192.0.2.37/32")}
 		raw := probeBaselineFixture(m, true)
-		raw = appendNft(raw, map[string]any{"set": map[string]any{
+		raw = f27ReplaceSet(raw, map[string]any{
 			"family": "inet",
 			"table":  "fvpn",
 			"name":   "allowed_v4",
 			"type":   "ipv4_addr",
 			"flags":  []any{"timeout"},
 			"elem":   []any{elemVal("100.64.1.1", map[string]any{"timeout": 300, "expires": 299})},
-		}})
-		raw = appendNft(raw, map[string]any{"set": map[string]any{
+		})
+		raw = f27ReplaceSet(raw, map[string]any{
 			"family": "inet",
 			"table":  "fvpn",
 			"name":   "denied_v4",
 			"type":   "ipv4_addr",
 			"flags":  []any{"interval", "timeout"},
-		}})
-		raw = appendNft(raw, map[string]any{"set": map[string]any{
+		})
+		raw = f27ReplaceSet(raw, map[string]any{
 			"family": "inet",
 			"table":  "fvpn",
 			"name":   "host_v4",
 			"type":   "ipv4_addr",
 			"flags":  []any{"interval", "timeout"},
-		}})
+		})
 		if err := VerifyBaseline(raw, m); err == nil {
 			t.Fatal("H-2: VerifyBaseline accepted a probe baseline with emptied @denied_v4/@host_v4 and a non-empty @allowed_v4")
 		}
@@ -140,16 +138,6 @@ func TestR20_Held_VerifyServingCatchesResolverBindingQoSAndSNATDrift(t *testing.
 }
 
 func fixtureServingWithDenyAndHost(m Model, assignments map[uuid.UUID]uint16, deniedSet, hostSet map[string]any) []byte {
-	var doc map[string]any
-	if err := json.Unmarshal(fixtureServing(m, assignments), &doc); err != nil {
-		panic(err)
-	}
-	items := doc["nftables"].([]any)
-	items = append(items, map[string]any{"set": deniedSet}, map[string]any{"set": hostSet})
-	doc["nftables"] = items
-	raw, err := json.Marshal(doc)
-	if err != nil {
-		panic(err)
-	}
-	return raw
+	raw := fixtureServing(m, assignments)
+	return f27ReplaceSet(f27ReplaceSet(raw, deniedSet), hostSet)
 }
