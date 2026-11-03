@@ -54,3 +54,9 @@ final sampling, fresh baseline preparation and the intent fsync. Follow-up 40
 adds a restart-only continuity query and error-path retries; measure rather
 than infer quantitative equivalence. No arm, sample or comparison was run
 under this draft.
+
+Readiness update: follow-up 40 additionally contains runtime refinement
+`da63e733` and main through `090bb97b`. The final delivery SHA and frozen
+functional source are recorded in follow-up 40's outcome/report. Substitute
+that delivered tree (with the scheduled main merged) for B; the earlier pins
+in this draft describe preparation history, not authorization to run them.

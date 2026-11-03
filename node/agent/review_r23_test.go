@@ -281,6 +281,21 @@ func r23H1b(t *testing.T, idleZero bool) {
 			led.byMemberRev[r21MemberRev{member: memberB, rev: 2}],
 			len(led.gaps), led.gaps)
 	}
+	r.eng = next
+	r.manualUsage(t)
+	next.meter.Close()
+	next.meter, err = meter.New(meter.Config{NodeID: next.nodeID, IncarnationID: next.incID, Store: next.usage, Source: src2, Now: r.clock.Wall})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.clock.Advance(2 * time.Second)
+	if err := next.meter.Sample(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	led := r21ReadLedger(t, next.cfg, next.nodeID, next.incID)
+	if led.byMemberRev[r21MemberRev{member: memberA, rev: 1}] != 2048 || led.byMemberRev[r21MemberRev{member: memberB, rev: 2}] != 4096 || len(led.gaps) != 1 || led.gaps[0].Gap.Reason != api.UsageGapReasonCounterDiscontinuity {
+		t.Fatalf("post-adoption attribution: %+v", led)
+	}
 }
 
 // TestR23_H2_HandoffBarrierRaceLeavesFinalDoneFalse_NextServeFailsAdmission
@@ -669,8 +684,8 @@ func TestR23_Held_AQ2_BindingRebindSettlesOldBindingsBeforePrepareAndApply(t *te
 }
 
 // TestR23_Held_AQ3_EnsureUsageHeadFailureWithdrawsAndBlocksServe verifies what
-// held for Attack Question 3: when ensureUsage fails during Step, Step calls
-// e.withdraw(ctx), sets e.usagePersist = true, and Evaluate blocks serving with
+// held for Attack Question 3: this injects checkpoint invalidation failure
+// during usage initialization (not a Head failure); Step withdraws and reports
 // ReasonMeterStorage (meter_storage_failed) and SafetyStatusFailed.
 func TestR23_Held_AQ3_EnsureUsageHeadFailureWithdrawsAndBlocksServe(t *testing.T) {
 	r := newRig(t)
@@ -766,12 +781,9 @@ func TestR23_Held_AQ4_EnsureUsageRepeatedFailuresLeakNothingAndRecover(t *testin
 
 // TestR23_Held_AQ5_BootHeartbeatStopProbeExceptionAndDatapathValidation
 // verifies Attack Question 5 (M-2, M-3, M-4):
-//   - startBootHeartbeat's stop() waits for the goroutine to exit before
-//     returning and cannot resurrect the heartbeat file after Close() removes it.
-//   - A failed ClearProbeException retains e.probeCleanup with the original
-//     issuance and retries without minting a new issuance; e.baseline clears it.
-//   - Config.DatapathValue() is validated by New() and rejects invalid names or
-//     SNAT addresses at construction time.
+//   - bootHeartbeat refuses publication with an already-canceled context.
+//   - A failed clearProbeException retains the issuance for retry.
+//   - Config.validate rejects an invalid member interface before startup.
 func TestR23_Held_AQ5_BootHeartbeatStopProbeExceptionAndDatapathValidation(t *testing.T) {
 	r := newRig(t)
 	alignControlClock(r)

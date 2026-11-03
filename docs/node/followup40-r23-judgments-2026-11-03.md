@@ -165,3 +165,13 @@ before freezing the functional lab source; all earlier merges remain intact.
 Node lint/unit/integration and amd64/arm64 builds pass with unchanged runtime
 sources across that documentation-only merge. Whole-module and downstream
 checks also run on the merged tree. No r20–r22 assertion was changed in 40.
+
+Portable held tests on main `61c7bf59`, using only copied fixture helpers:
+AQ2 fails (new member gets zero rather than 2048 bytes); AQ3 passes its
+initialization-invalidation withdrawal assertion; AQ4 fails on the first
+initialization attempt with usageOnce/store/lock retained. Receipt:
+`.agent/f40/main-held-portable.log`. AQ1/AQ5/AQ6 depend on 39-only intent,
+heartbeat or cleanup APIs and are not executable unchanged on main.
+The later main `090bb97b` handover update was also merged before the final
+lab freeze. Its handover/evidence changes are covered by the final module
+and evidence gates; it changes no node runtime path.
