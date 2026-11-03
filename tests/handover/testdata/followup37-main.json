@@ -1,0 +1,73 @@
+{
+  "source_commit": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+  "previous_cut": "d7867928d48a7f75259f84abf1b29a9e37675fcb",
+  "merged_prs": [
+    424,
+    425,
+    426
+  ],
+  "rows": [
+    {
+      "pr": 424,
+      "lane": "w4-at-isolation follow-up 18",
+      "row": "| w4-at-isolation follow-up 18 | Diagnosis of scheduled run 41640196805, the first with reason logging (dated `docs/e2e/at/isolation/nightly-diagnosis-2026-11-03.md`; the log lines it relies on are copied in, since the artifact expires on 2026-11-10). Both unlisted blocked rows have one cause in the harness: `deadline()` restarted control and the worker in a deferred `docker start` without waiting for readiness. The next row's admin login and its pre-enrollment fleet audit then hit the gateway's 502 about 0.4 s after the restart (control served its first request about 7.9 s later), and the readiness record that AT10's foreign-redirect row reads was never written, so that row blocked with no injection although the agent had drained its retry queue about 17 s earlier. The previous night's run is consistent with the same cause; its AT10 pass rested on a readiness file inherited from the checkout and is not a qualified result. Outcome (a), fixed in owned paths: every control restart now waits for current-run readiness (main's predicate, plus a non-empty desired generation), stale or foreign readiness records are not trusted, and the review script no longer crashes when no injection ran. `expected-blocked.json` is unchanged. One local assembled run (9f1bc0ff): AT10 9/0/0, AT11 2/1/0, AT12 10/0/0, AT13 6/1/0; only the two listed operator rows block, and the short whole-node expiry passes with its D-140 sample qualified. Follow-up 17's root snapshot is archived first (138 files). The runner sees the fix at the next scheduled run. Session on agy gemini-4-argon-high, with one documents-only correction. | done (#424) |",
+      "sha256": "7f08ee734ab084b71bd01bd392b029b5ed557b2f8cbbfa2c9031279ca3a02649"
+    },
+    {
+      "pr": 425,
+      "lane": "w4-handover follow-up 36",
+      "row": "| w4-handover follow-up 36 | Cut #422–#423 at `d7867928` (handover 35, netlab 32). `TestHandover_Followup36Claims`: 16 subtests, two final roadmap rows, ten frozen #423 input snapshots, the exact r24 archive, all 174 netlab 32 design and evidence files (12 gzip originals), two public PR excerpts and a separate frozen source audit; follow-up 35's claims verified from its function and manifests, earlier assertions unchanged. Netlab 32 recorded as #423 states it: r24's H-4, H-2's tc order and both M-2 post-shape rollback paths fixed after D-141 judgments; C1 revised as documents only; production keeps the current guard and the G5/G6 trade stays the owner's. Review r24 archived byte for byte (46,001 bytes): H-4, H-2's tc order and M-2 fixed by #423; H-2's eligibility, M-1, M-3 and L-1's empty-set half in the C1 revision; H-1 and H-3 returned to agent-core 41. Errata to its unsourced figures and citations in the reviews index only; among them L-1's lock path has no source either way: the follow-up 31 line it cites names no lock, and main uses /var/lib/vpn-node/update.lock, not the update-journal path netlab 32 adopted; an additive netlab correction is requested. r24 H-1, a full Apply on every healthy tick, recorded as open known behaviour on main. Findings register at 96 rows (1 updated, 9 added, Netlab F32-01 among them); 47 decisions, nothing after D-144; ten owner requests, netlab 32's G5/G6 paragraph the tenth. Codex gpt-6-astra, with two continuations: the lock-citation correction and its digest refresh. | done (#425) |",
+      "sha256": "b9719ec0e55d8a730adc4c5196f2a695a00899f530d8b086096d46811917218c"
+    },
+    {
+      "pr": 426,
+      "lane": "w1-netlab follow-up 33",
+      "row": "| w1-netlab follow-up 33 | Additive corrections to netlab 32, documents only, in one new file (`docs/poc/G2-followup33-design/corrections.md`); both netlab 32 trees stay byte-identical, as handover 36 pins them. The shared lock path is `/var/lib/vpn-node/update.lock` in every default on main (the agent's config, nodelock, the updater and installer layouts, the watchdog), not the `update-journal/update.lock` that netlab 32's protocol adopted; `update-journal` is the update journal's directory. r24 L-1 is confirmed in part: its lock-location half is rejected, since the follow-up 31 line it cites names no lock and its cited `node/updater/config.go` does not exist; its empty eligible-set half stands as netlab 32 specified it. No netlab 32 conclusion depends on the path string. New: r24 M-3's description of B1 as a `TCP_RTO_MIN`/socket-pacing follow-up has no source in the tree it reviewed; B1 is the first candidate arm of the D-133 quartet, and the no-transport-change constraint stays. Every other r24 citation that netlab 32 adopted was re-checked against main and the reviewed tree. The wrong path's only adoption is netlab 32's protocol line; handover's documents quote it as the corrected claim. Session on agy gemini-4-argon-high, with four continuations: three returned by the orchestrator (invented test names and figures, one row's attribution, the search refreshed for current main) and one correcting a phrase the orchestrator's brief had wrong. | done (#426) |",
+      "sha256": "3a7e407c594a4f04ce013a0a5c93631eaf38e2356a3452565b5b881832406971"
+    }
+  ],
+  "pr_excerpts": [
+    {
+      "pr": 424,
+      "url": "https://github.com/TED-H-com/Freedom-VPN/pull/424",
+      "title": "isolation: follow-up 18 — the nightly's two unlisted blocked rows are one harness defect, fixed: control restarted without a readiness wait; one local assembled run, only the two listed rows blocked (w4-at-isolation follow-up 18)",
+      "merged_at": "2026-11-03T15:16:37Z",
+      "merge_commit": "f40ef9102fd2b6c3e783f2ccd4b0383061dd7ad8",
+      "changed_files": 274,
+      "path": "tests/handover/testdata/history/follow-up-37/pr424-excerpt.json",
+      "body_sha256": "dbcae9eafaa99f8d143366c11f1af4c5e8094e70cdc78cac29d12c148464301d",
+      "offset": 0,
+      "length": 4421,
+      "decoded_sha256": "3f2f826604cc93d2865cba9bc753b314b63165b3c91dd4483403dec20a773fd1",
+      "sha256": "d44818440d2c50ea14da9d6c40fd04878a3f304cea97fecfd2cc7b45a648a6c5"
+    },
+    {
+      "pr": 425,
+      "url": "https://github.com/TED-H-com/Freedom-VPN/pull/425",
+      "title": "handover: follow-up 36 — cut #422–#423 (handover 35, netlab 32): r24 archived with its dispositions and errata, its L-1 lock path unsourced either way, r24 H-1 open on main, Netlab F32-01 registered (w4-handover follow-up 36)",
+      "merged_at": "2026-11-03T15:43:00Z",
+      "merge_commit": "00561c395c8461f4acfcb30740f12474818550cd",
+      "changed_files": 30,
+      "path": "tests/handover/testdata/history/follow-up-37/pr425-excerpt.json",
+      "body_sha256": "bd8e3af6dfc99a29ca7e2c28ff214edcac31cd242cbfd222ae485e4b16a1e13e",
+      "offset": 0,
+      "length": 4985,
+      "decoded_sha256": "64434e521d276f72255305ed073b6232e9d8313605fd641763723692b712823a",
+      "sha256": "c55e846d20b3809a91a69741aed8381f9a23ce8834c67f91b9ee0accea24182d"
+    },
+    {
+      "pr": 426,
+      "url": "https://github.com/TED-H-com/Freedom-VPN/pull/426",
+      "title": "netlab: follow-up 33 — additive corrections to netlab 32, docs only: the shared lock path is /var/lib/vpn-node/update.lock, r24 L-1 confirmed in part, r24 M-3's B1 citation corrected (w1-netlab follow-up 33)",
+      "merged_at": "2026-11-03T16:22:00Z",
+      "merge_commit": "bf69487be73bd2b4669fa4542adecb4fe7ca6d60",
+      "changed_files": 1,
+      "path": "tests/handover/testdata/history/follow-up-37/pr426-excerpt.json",
+      "body_sha256": "394f6e0027836a8914eb34953b29111d39c223d8bb985c5bd3c070fe7c22bcbb",
+      "offset": 0,
+      "length": 4872,
+      "decoded_sha256": "0201a881198263461c39d8b720e891b92861b7b481d84abf1718c0003c77ca2b",
+      "sha256": "c60b3e01400f0d3a20aa1187bd2945e476a0939e540c820537e5987740e5f332"
+    }
+  ]
+}
