@@ -422,6 +422,16 @@ func (e *Engine) handoff(ctx context.Context) {
 	if e.usageAdopting {
 		return // adoption's rejected read withdraws first; Boot settles later
 	}
+	// A successful final sample can heal meter health, but this pass still
+	// withdrew because of the observed failure. Preserve that cause for its
+	// receipt; the next Step's health refresh may clear it before a new Apply.
+	persist, path, disk, outbox := e.usagePersist, e.meterFailed, e.usageDisk, e.usageOutbox
+	defer func() {
+		e.usagePersist = e.usagePersist || persist
+		e.meterFailed = e.meterFailed || path
+		e.usageDisk = e.usageDisk || disk
+		e.usageOutbox = e.usageOutbox || outbox
+	}()
 	id, blocked := meterBarrierIdentity(e.cfg.JournalDir)
 	e.latchBlocked = blocked
 	// The pending latch precedes every fallible withdrawal operation, even

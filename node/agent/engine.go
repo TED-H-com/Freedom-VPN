@@ -1267,7 +1267,13 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		if err := e.recordUsageIntent(ctx, model); err != nil {
 			// Admission has not run. Report the usage persistence failure,
 			// not a fabricated Apply health-check failure (r23 H-2/H-3).
-			e.withdraw(ctx)
+			if ctx.Err() != nil {
+				// Retain the cancellation diagnostic and independent cleanup
+				// budget for a canceled enforcement attempt (R18 Q4).
+				e.rejectServing(ctx, model, enforce.ServingEvidence{}, ctx.Err())
+			} else {
+				e.withdraw(ctx)
+			}
 			e.usagePersist = true
 			return nil
 		}
