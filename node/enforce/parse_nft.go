@@ -101,8 +101,9 @@ type RuleView struct {
 	SetsMark bool
 	Offload  bool
 	// TCPMSS marks the sole permitted TCP-option mangle; full shape is verified.
-	TCPMSS bool
-	Prios  []uint32
+	TCPMSS    bool
+	ICMPMatch bool
+	Prios     []uint32
 	// Parsed match expressions. Verification uses these, not the raw JSON
 	// text, so a comment cannot impersonate an interface or a set (§8.2).
 	IIF              []string
@@ -958,6 +959,9 @@ func noteMatch(v any, rv *RuleView) {
 	}
 	if payload, ok := left["payload"].(map[string]any); ok {
 		field, _ := payload["field"].(string)
+		if payload["protocol"] == "icmp" || payload["protocol"] == "icmpv6" {
+			rv.ICMPMatch = true
+		}
 		switch field {
 		case "saddr", "daddr":
 			noteAddrMatch(rv, op, field, right)

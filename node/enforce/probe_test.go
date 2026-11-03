@@ -269,7 +269,7 @@ func probeServingFixture(m Model, assignments map[uuid.UUID]uint16, bounded bool
 	if err != nil {
 		panic(err)
 	}
-	return f27StaticSets(f34MSSFixture(raw, m), m)
+	return f27StaticSets(f34PMTUFixture(f34MSSFixture(raw, m), m), m)
 }
 
 func probeBaselineFixture(m Model, bounded bool) []byte {

@@ -29,7 +29,9 @@ func TestReviewR19_Q4_CurrentRenderDoesNotRestrictEstablishedDownload(t *testing
 		case strings.Contains(rule, established) && strings.Contains(rule, "drop"):
 			establishedIdx = i
 		case strings.Contains(rule, fmt.Sprintf("iifname %q oifname %q", m.Datapath.Uplink, m.Datapath.MemberIngress)) &&
-			strings.Contains(rule, " accept") && !strings.Contains(rule, "sport 53") && !strings.Contains(rule, "dport 53"):
+			strings.Contains(rule, " accept") && !strings.Contains(rule, "sport 53") && !strings.Contains(rule, "dport 53") &&
+			!strings.Contains(rule, "ct state related icmp type destination-unreachable icmp code frag-needed"):
+			// D-147 is the separately verified RELATED-only error exception.
 			if acceptIdx < 0 {
 				acceptIdx = i
 			}

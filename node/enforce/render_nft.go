@@ -206,6 +206,18 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 	if m.Probe != nil && m.Probe.ResolverDNS {
 		writeProbeDNSDown(&b, in, up)
 	}
+	// D-147: outer router addresses can be protected even when the quoted
+	// connection is allowed. Only RELATED IPv4 fragmentation-needed qualifies.
+	for _, d := range devices {
+		if !d.TimeoutOK() {
+			continue
+		}
+		for _, addr := range d.Addrs {
+			for _, set := range []string{"resolver_v4", "denied_v4", "host_v4"} {
+				rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @%s ip daddr %s ct state related icmp type destination-unreachable icmp code frag-needed counter name %q meta priority set 0x%08x accept", up, in, set, addr, usageCounter(dirDownload, d.Binding.DeviceID), ClassID(d.Minor)))
+			}
+		}
+	}
 	writeDownloadDenials(&b, in, up, true)
 	if m.Probe != nil {
 		writeProbeDown(&b, in, up)
@@ -445,7 +457,7 @@ func writeProbeTuple(b *strings.Builder, in, up string) {
 	rule(b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr @%s ip daddr . meta l4proto . th dport @%s counter name %q accept", in, up, setProbeV4, setProbeDstV4, counterProbeUp))
 }
 
-// DNS replies are the only remote-source exception, matching the upload hole.
+// Probe DNS replies match the upload hole; D-147 applies only to members.
 // The explicit conntrack check also protects the baseline probe path.
 func writeProbeDNSDown(b *strings.Builder, in, up string) {
 	for _, proto := range []string{"tcp", "udp"} {
