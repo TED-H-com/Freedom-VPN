@@ -701,3 +701,29 @@ omitted unless opted in). When armed with `ArmMatchingLeaseHoldSurvivor`:
   `applied_generation == continued_generation` while `ended_at IS NULL`), and
   the post-release recovery `report_id`, `lease_id`, and `LocalLeaseReadback`
   digest match.
+
+## Follow-up 31 — source-binding fault unavailable; owner prerequisite
+
+Members 17's separate source-address-fault populated-hold row remains **not
+exercised**. No source-binding fault export was added: the requested feasibility
+stop applies. `ArmMatchingLeaseHold` and `ArmMatchingLeaseHoldSurvivor` still
+control only lease delivery and keep their existing behavior.
+
+`bindingOK` in `node/agent/decide.go` comes from signed binding/lease model
+construction. Its failure paths also fail qos; retained live enforcement or
+member-path failures override all three lease/qos/source_binding checks. During
+a generation hold, `source_binding` is already failed because it is ANDed with
+`leaseOK`. Removing an address fault cannot make it pass while that hold remains.
+The non-serving audit retains TC failures but does not promote nft source-rule
+drift into an independent source-binding result. A TC fault, lost packet, or
+edited report is not a substitute for the requested row.
+
+The [feasibility record](../runs/2026-11-03/followup31/source-binding.md) pins the
+inspected product and members commits and traces the relevant checks. It records
+zero stack attempts and no live classification. Agent-core must first define a
+real independent verifier, its checked state during a hold, cause attribution and
+restoration semantics. Any necessary report/central changes belong to those
+owners. After that, devstack can supply the bounded TEST ONLY injection/removal
+handle and command/state/UTC receipts. Consumers will need cleanup registration,
+verified removal and accepted-report/incident/audit joins; there is currently no
+such handle to call.
