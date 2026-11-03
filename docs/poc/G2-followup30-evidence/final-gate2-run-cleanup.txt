@@ -1,0 +1,9 @@
+Error response from daemon: conflict: unable to delete fvpn-w1-netlab-f30:lab (must be forced) - container 5102a55975b0 is using its referenced image fe5f10daa8f5
+Traceback (most recent call last):
+  File "<worktree>/docs/poc/G2-followup30-evidence/cleanup.py", line 20, in <module>
+    subprocess.run(['docker','image','rm',*inventory['images']],check=True)
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['docker', 'image', 'rm', 'fvpn-w1-netlab-f30:lab']' returned non-zero exit status 1.

@@ -328,3 +328,37 @@ Only F27-02, F28-01 and F27-01/B1 prior rows change; all others and all 47
 decision rows remain byte-identical. Living members 81b638e8, isolation
 0ec14b39 and usage b8a6e9e1 roots remain excluded. Live owned-document integrity
 uses a separate scope-review inventory.
+
+## Follow-up 34 — cut #416–#418
+
+`followup34-main.json` pins the three final roadmap rows at
+`cc0ed4ae713f6c8242171f923bdc799a0c07a74c`: handover 33, updater 22, netlab 30.
+Its three public PR excerpts are byte-exact slices of the squash-commit bodies
+on main, with source hashes and offsets. No unbriefed or post-cutoff merge
+was present at task start. Agent-core 39 / r23, updater 23 and netlab 31
+remain outside the cut.
+
+`followup34-snapshots.json` pins ten #418 source slices: register, seven
+entrypoints, full operator guide and reviews index. Earlier claims redirect
+only those reads; follow-up 33's normalized function SHA-256 remains
+`9c03014cb655ab6e68d92eb1322f9415569bbb59aa956f9b64f7ab2c26bc05ac`.
+Its counts are verified from code and manifests: 16 subtests, three rows,
+ten frozen inputs, 512 payloads / 42 gzip originals, three documents,
+three PR excerpts, 81 findings and nine owner requests.
+
+`followup34-evidence.json` pins updater 22's dated hand-off and timing JSON,
+and netlab 30's final manifest, SHA-256
+`cd23561b8e978f126a213b6fa5ed3eb192ccc9de37058ad430c68e4788cd1254`.
+The suite checks 312 payload hashes and lengths, including 19 gzip originals;
+the 283 updater iterations' exact budgets; the finite collector controls;
+all seven unique drop matches and install brackets; cost and host
+qualification; and the byte-identical five prior manifests / 1,506 payloads
+recorded at both endpoints. The actual prior payloads remain protected by
+the earlier claims suites. No living AT root is a claims input.
+
+There are 14 claims subtests, 81 findings, 47 unchanged decisions and nine
+unchanged owner requests. Only F21-01, F27-02 and F27-01/B1 change. #417's
+reported 16 failing control cases are explicitly separated from the JSON's
+15 failure labels; 26 passing test/subtest results remain the recorded fixed
+summary. The counting unit is an orchestrator clarification, not an edit to
+producer evidence. Live document integrity uses a separate scope inventory.

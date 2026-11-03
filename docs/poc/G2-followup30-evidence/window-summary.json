@@ -1,0 +1,466 @@
+{
+  "test_only": true,
+  "historical_B1": "FAIL",
+  "F27_01": "unresolved",
+  "window_qualified": false,
+  "window_cpu_checks": 8,
+  "window_cpu_breaches": [
+    {
+      "utc": "2026-11-03T11:28:46.458275+00:00",
+      "interval_seconds": 3.9903199020009197,
+      "foreign_cpu": 2.4784980259454197,
+      "contributors": [
+        {
+          "pid": 3192,
+          "comm": "cloudflared",
+          "ticks": 1
+        },
+        {
+          "pid": 3196,
+          "comm": "python3",
+          "ticks": 1
+        },
+        {
+          "pid": 3208,
+          "comm": "hermes",
+          "ticks": 1
+        },
+        {
+          "pid": 3474,
+          "comm": "bat-server",
+          "ticks": 1
+        },
+        {
+          "pid": 3475,
+          "comm": "python",
+          "ticks": 1
+        },
+        {
+          "pid": 4307,
+          "comm": "docker-init",
+          "ticks": 1
+        },
+        {
+          "pid": 4344,
+          "comm": "grafana",
+          "ticks": 1
+        },
+        {
+          "pid": 6672,
+          "comm": "sshd-session",
+          "ticks": 1
+        },
+        {
+          "pid": 34216,
+          "comm": "claude",
+          "ticks": 2
+        },
+        {
+          "pid": 563632,
+          "comm": "codex",
+          "ticks": 1
+        },
+        {
+          "pid": 594944,
+          "comm": "agy",
+          "ticks": 2
+        },
+        {
+          "pid": 601179,
+          "comm": "MainThread",
+          "ticks": 11
+        },
+        {
+          "pid": 735139,
+          "comm": "codex",
+          "ticks": 4
+        },
+        {
+          "pid": 735462,
+          "comm": "codex-code-mode",
+          "ticks": 1
+        },
+        {
+          "pid": 743620,
+          "comm": "codex",
+          "ticks": 4
+        },
+        {
+          "pid": 754866,
+          "comm": "python3",
+          "ticks": 38
+        },
+        {
+          "pid": 754879,
+          "comm": "git",
+          "ticks": 917
+        },
+        {
+          "pid": 938588,
+          "comm": "python",
+          "ticks": 1
+        }
+      ]
+    }
+  ],
+  "drops": [
+    {
+      "log": 1,
+      "segment": 29,
+      "cycle": 9,
+      "kind": "data",
+      "retransmission": false,
+      "generation": "1002",
+      "rule": "inet fvpn fv_deadline_guard iifname \"fv-fh\" drop",
+      "direction": "request",
+      "seq": 622216375,
+      "ack": 3301956698,
+      "ip_id": 2354,
+      "ip_length": 55,
+      "kernel_wall_ns": "1793705327075669000",
+      "kernel_phase": "install",
+      "install_start_ns": "1793705327058382772",
+      "installed_by_ns": "1793705327090154036",
+      "release_start_ns": "1793705327090157066",
+      "release_end_ns": "1793705327124029781",
+      "kernel_since_install_start_ns": 17286228,
+      "installed_by_after_kernel_ns": 14485036,
+      "read_elapsed_ns": 211293988
+    },
+    {
+      "log": 2,
+      "segment": 81,
+      "cycle": 26,
+      "kind": "data",
+      "retransmission": false,
+      "generation": "1018",
+      "rule": "inet fvpn fv_deadline_guard iifname \"fv-fh\" drop",
+      "direction": "request",
+      "seq": 622216442,
+      "ack": 3301956765,
+      "ip_id": 2389,
+      "ip_length": 56,
+      "kernel_wall_ns": "1793705330715915000",
+      "kernel_phase": "install",
+      "install_start_ns": "1793705330698378814",
+      "installed_by_ns": "1793705330715950940",
+      "release_start_ns": "1793705330715954693",
+      "release_end_ns": "1793705330724058924",
+      "kernel_since_install_start_ns": 17536186,
+      "installed_by_after_kernel_ns": 35940,
+      "read_elapsed_ns": 416739885
+    },
+    {
+      "log": 3,
+      "segment": 82,
+      "cycle": 26,
+      "kind": "data",
+      "retransmission": true,
+      "generation": "1019",
+      "rule": "inet fvpn fv_deadline_guard iifname \"fv-fh\" drop",
+      "direction": "request",
+      "seq": 622216442,
+      "ack": 3301956765,
+      "ip_id": 2390,
+      "ip_length": 56,
+      "kernel_wall_ns": "1793705330924006000",
+      "kernel_phase": "install",
+      "install_start_ns": "1793705330917003184",
+      "installed_by_ns": "1793705330932029485",
+      "release_start_ns": "1793705330932032210",
+      "release_end_ns": "1793705330944023862",
+      "kernel_since_install_start_ns": 7002816,
+      "installed_by_after_kernel_ns": 8023485,
+      "read_elapsed_ns": 416739885
+    },
+    {
+      "log": 4,
+      "segment": 152,
+      "cycle": 49,
+      "kind": "data",
+      "retransmission": false,
+      "generation": "1041",
+      "rule": "inet fvpn fv_deadline_guard iifname \"fv-fh\" drop",
+      "direction": "request",
+      "seq": 622216534,
+      "ack": 3301956857,
+      "ip_id": 2437,
+      "ip_length": 56,
+      "kernel_wall_ns": "1793705335777417000",
+      "kernel_phase": "install",
+      "install_start_ns": "1793705335771022545",
+      "installed_by_ns": "1793705335781047502",
+      "release_start_ns": "1793705335781054102",
+      "release_end_ns": "1793705335792903815",
+      "kernel_since_install_start_ns": 6394455,
+      "installed_by_after_kernel_ns": 3630502,
+      "read_elapsed_ns": 203733191
+    },
+    {
+      "log": 15,
+      "segment": 282,
+      "cycle": 92,
+      "kind": "data",
+      "retransmission": false,
+      "generation": "1069",
+      "rule": "inet fvpn fv_deadline_guard iifname \"fv-fh\" drop",
+      "direction": "request",
+      "seq": 622216706,
+      "ack": 3301957029,
+      "ip_id": 2524,
+      "ip_length": 56,
+      "kernel_wall_ns": "1793705344722442000",
+      "kernel_phase": "install",
+      "install_start_ns": "1793705344713986600",
+      "installed_by_ns": "1793705344725212352",
+      "release_start_ns": "1793705344725218924",
+      "release_end_ns": "1793705344741035434",
+      "kernel_since_install_start_ns": 8455400,
+      "installed_by_after_kernel_ns": 2770352,
+      "read_elapsed_ns": 210755759
+    },
+    {
+      "log": 16,
+      "segment": 285,
+      "cycle": 92,
+      "kind": "ACK",
+      "retransmission": false,
+      "generation": "1070",
+      "rule": "inet fvpn fv_deadline_guard iifname \"fv-fh\" drop",
+      "direction": "request",
+      "seq": 622216710,
+      "ack": 3301957033,
+      "ip_id": 2526,
+      "ip_length": 52,
+      "kernel_wall_ns": "1793705344933009000",
+      "kernel_phase": "install",
+      "install_start_ns": "1793705344930213603",
+      "installed_by_ns": "1793705344946071457",
+      "release_start_ns": "1793705344946074225",
+      "release_end_ns": "1793705344958996561",
+      "kernel_since_install_start_ns": 2795397,
+      "installed_by_after_kernel_ns": 13062457,
+      "read_elapsed_ns": 210755759
+    },
+    {
+      "log": 18,
+      "segment": 339,
+      "cycle": 110,
+      "kind": "data",
+      "retransmission": false,
+      "generation": "1093",
+      "rule": "inet fvpn fv_deadline_guard iifname \"fv-fh\" drop",
+      "direction": "request",
+      "seq": 622216788,
+      "ack": 3301957111,
+      "ip_id": 2562,
+      "ip_length": 57,
+      "kernel_wall_ns": "1793705350070400000",
+      "kernel_phase": "install",
+      "install_start_ns": "1793705350051360904",
+      "installed_by_ns": "1793705350072088438",
+      "release_start_ns": "1793705350072091096",
+      "release_end_ns": "1793705350091260446",
+      "kernel_since_install_start_ns": 19039096,
+      "installed_by_after_kernel_ns": 1688438,
+      "read_elapsed_ns": 206931190
+    }
+  ],
+  "retries": [
+    {
+      "segment": 30,
+      "cycle": 9,
+      "direction": "request",
+      "retransmits": [
+        29
+      ],
+      "since_original_ns": 210393491,
+      "since_previous_ns": 210393491,
+      "stages": [
+        "origin_out_fv-wg0",
+        "node_in_fv-fh",
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ],
+      "read_elapsed_ns": 211293988
+    },
+    {
+      "segment": 82,
+      "cycle": 26,
+      "direction": "request",
+      "retransmits": [
+        81
+      ],
+      "since_original_ns": 208154467,
+      "since_previous_ns": 208154467,
+      "stages": [
+        "origin_out_fv-wg0",
+        "node_in_fv-fh"
+      ],
+      "read_elapsed_ns": 416739885
+    },
+    {
+      "segment": 83,
+      "cycle": 26,
+      "direction": "request",
+      "retransmits": [
+        81,
+        82
+      ],
+      "since_original_ns": 416030325,
+      "since_previous_ns": 207875858,
+      "stages": [
+        "origin_out_fv-wg0",
+        "node_in_fv-fh",
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ],
+      "read_elapsed_ns": 416739885
+    },
+    {
+      "segment": 153,
+      "cycle": 49,
+      "direction": "request",
+      "retransmits": [
+        152
+      ],
+      "since_original_ns": 202697197,
+      "since_previous_ns": 202697197,
+      "stages": [
+        "origin_out_fv-wg0",
+        "node_in_fv-fh",
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ],
+      "read_elapsed_ns": 203733191
+    },
+    {
+      "segment": 283,
+      "cycle": 92,
+      "direction": "request",
+      "retransmits": [
+        282
+      ],
+      "since_original_ns": 209669621,
+      "since_previous_ns": 209669621,
+      "stages": [
+        "origin_out_fv-wg0",
+        "node_in_fv-fh",
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ],
+      "read_elapsed_ns": 210755759
+    },
+    {
+      "segment": 286,
+      "cycle": 92,
+      "direction": "reply",
+      "retransmits": [
+        284
+      ],
+      "since_original_ns": 207464369,
+      "since_previous_ns": 207464369,
+      "stages": [
+        "origin_in_fv-wg0",
+        "node_in_fv-ih",
+        "node_out_fv-fh",
+        "responder_out_fv-ii"
+      ],
+      "read_elapsed_ns": 210755759
+    },
+    {
+      "segment": 340,
+      "cycle": 110,
+      "direction": "request",
+      "retransmits": [
+        339
+      ],
+      "since_original_ns": 205469748,
+      "since_previous_ns": 205469748,
+      "stages": [
+        "origin_out_fv-wg0",
+        "node_in_fv-fh",
+        "node_out_fv-ih",
+        "responder_in_fv-ii"
+      ],
+      "read_elapsed_ns": 206931190
+    }
+  ],
+  "longest_read": {
+    "event": "tcp_read",
+    "sequence": 26,
+    "wall_ns": "1793705331132289342",
+    "mono_ns": "28773583669554",
+    "size": 4,
+    "elapsed_ns": 416739885
+  },
+  "collector_command_cost": [
+    {
+      "action": "start",
+      "elapsed_ns": 62928116,
+      "exit_code": 0
+    },
+    {
+      "action": "stop",
+      "elapsed_ns": 57258627,
+      "exit_code": 0
+    }
+  ],
+  "collector_ready_cost_ns": 11070288,
+  "cost": {
+    "install_ns": {
+      "count": 101,
+      "min": 8514403,
+      "median": 13684706,
+      "p95": 24470368,
+      "max": 69025183,
+      "mean": 15856344.594059406
+    },
+    "release_ns": {
+      "count": 101,
+      "min": 7931815,
+      "median": 13153761,
+      "p95": 22889335,
+      "max": 35959668,
+      "mean": 14823568.633663366
+    },
+    "outer_guard_ns": {
+      "count": 101,
+      "min": 17883058,
+      "median": 28471576,
+      "p95": 43438670,
+      "max": 94665010,
+      "mean": 30684813.504950494
+    },
+    "installed_to_release_ns": {
+      "count": 101,
+      "min": 1888,
+      "median": 5087,
+      "p95": 8232,
+      "max": 14273,
+      "mean": 4900.277227722772
+    },
+    "producer_outer_guard_ns": {
+      "count": 101,
+      "min": 17905167,
+      "median": 28493114,
+      "p95": 43459978,
+      "max": 94684882,
+      "mean": 30704514.94059406
+    },
+    "added_script_bytes": {
+      "count": 101,
+      "min": 138,
+      "median": 138,
+      "p95": 138,
+      "max": 138,
+      "mean": 138
+    }
+  },
+  "tcp_snapshot_cost_ns": 5367775832,
+  "log_count": 18,
+  "tcp_logs": 7,
+  "log_ip_bytes": 1044,
+  "derived_log_bytes": 9975,
+  "raw_pcap_bytes_discarded": 3664
+}

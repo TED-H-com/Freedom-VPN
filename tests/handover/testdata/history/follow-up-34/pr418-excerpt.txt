@@ -1,0 +1,30 @@
+## Summary
+
+Netlab follow-up 30: session launched 06:10 EST on 2026-11-03 on #415's roadmap row `339db172`, and delivered at 07:06.
+- **Size:** 10 commits, 313 owned files, all new, under `docs/poc/G2-followup30-evidence/`.
+- **Checks:** merge-tree clean on current `main`; prepush-scan clean, including the gzip artifacts.
+- **Scope:** TEST ONLY. No production, ordinary test source, consumer, tool pin or D-120 input changed. `tests/netlab/scripts/guard_observe.py` is byte-identical to `main`'s.
+- **Host:** every live run used a reservation, and every attempt is retained. Collector slot 1 stopped at preflight and slot 2 passed; then one guard window; then one full-suite startup canceled before any test launched, and one full suite.
+
+**The orchestrator's reading.**
+- **The collector prerequisite passed live,** on its second slot. Eight expected logs matched exactly once each, with a separately counted unlogged negative control: 8 captured, 8 received, 0 kernel drops. Every record has microsecond pcap precision and a kernel timestamp. No third attempt.
+- **F27-01's guard-drop mechanism is demonstrated, packet by packet.**
+  - **The window:** AT10's 100-reload scenario, with 101 verified Applies and 118 successful TCP reads. All 381 TCP segments correlate.
+  - **The drops:** seven node egresses are missing: five original request data packets, one request retry and one ACK. Each matches exactly one NFLOG record of `inet fvpn fv_deadline_guard iifname "fv-fh" drop`, member → responder, with no contradictory egress. Each falls inside the install-command bracket of its generation (1002, 1018, 1019, 1041, 1069, 1070, 1093).
+  - **TCP recovered every time.** The worst case, cycle 26, lost both its original and its +208 ms retry, and read at +416.7 ms, inside the 1.5 s timeout.
+- **B1 stays FAIL and unexplained.** Its 1,501.4 ms failed read has no packet or timer trace. The window shows a mechanism that could produce it, not that it did.
+- **Neither live run is host-qualified** by the foreign-CPU rule:
+  - **the guard window:** one 4 s interval at its start reached 2.48 foreign cores, dominated by a foreign `git` process;
+  - **the full suite:** eleven intervals above 0.5 cores, at most 4.31, with no other lane's suite or lab container running.
+  - Every functional assertion passed (the full suite in 292.5 s). This is not a qualified delivery, and nothing is relabelled. The attribution itself does not depend on host quiet; the timings do.
+- **The guard's observed cost** is disclosed, not isolated against a control. Install, release and outer-guard medians are 13.7, 13.2 and 28.5 ms, the outer maximum is 94.7 ms, and each Apply gains 138 script bytes.
+- **A hitless guard hand-over is a proposal only.** It needs its own design first: deadline, revocation, crash, late commit, baseline, verifier failure and rollback. Then a D-133 comparison.
+- **D-098:** 1,506 earlier payload files and five manifests (follow-ups 25 to 29) are byte-identical at start and finish. The new manifest is `cd23561b…`.
+
+**The lane's requests, answered.**
+1. **The roadmap row** records the live collector validation and the seven exact guard drops. It also records both failed qualifications, F27-01 unresolved and B1 FAIL, and keeps functional assertions apart from host-qualified acceptance.
+2. **Non-suite CPU inside reservations.** These measures are now in place:
+   - **The lane `go` command** now also refuses `go build`, `vet`, `run`, `install`, `generate` and `tool` while another lane holds a reservation. Before, it refused only `go test`.
+   - **The orchestrator's launches** wait out every reservation before their worktree reset. The orchestrator's own delivery checks run under a short reservation of their own.
+   - **D-133 comparisons** get a quiet slot that the orchestrator schedules, with no other lane session running.
+   - **Jobs outside this project are not paused.** A breach from one is recorded as such.

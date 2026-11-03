@@ -1,0 +1,11 @@
+{
+  "start_utc": "2026-11-03T12:00:19.526564+00:00",
+  "elapsed_seconds": 0.1338174970005639,
+  "command": [
+    "bash",
+    "-c",
+    "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+  ],
+  "exit_code": 0,
+  "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
