@@ -1,0 +1,11 @@
+{
+  "run_id": "118271c1-616e-46a2-a744-d67b00fb94fb",
+  "source_commit": "b4317bd4e4ad178609b71d3fd4fbb986cb9947db",
+  "windows": [],
+  "cause_status": "unproven",
+  "correction": "Ordinary stale lease: baseline, ACK, renew, Apply, verify, heartbeat. Verified deny-all only with a retained Apply error. No finite outage ceiling. D-141 closes D-139 as design-only; this tree does not implement retained-generation service.",
+  "all_sibling_losses": 1242,
+  "guard_losses": 0,
+  "outside_guard_losses": 257,
+  "accounting": "Every loss counted; overlapping baseline brackets are never summed as unique losses."
+}

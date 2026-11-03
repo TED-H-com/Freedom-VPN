@@ -1,0 +1,91 @@
+{
+  "run_id": "118271c1-616e-46a2-a744-d67b00fb94fb",
+  "source_commit": "b4317bd4e4ad178609b71d3fd4fbb986cb9947db",
+  "rows": [
+    {
+      "row": "alarm-recovery",
+      "coverage": "not exercised",
+      "original_blockers": [
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Publication operation still incomplete at bounded readback (terminal step failure or timeout): running",
+        "alarm-recovery hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "sibling-removal hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "sole-member hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "retained-safety hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "F11-03 D-135: no failed Apply observed in the continuous sibling window; recovery row blocked, not passed"
+      ],
+      "scope": "No original scenario artifact was produced; do not infer a hold from unrelated incidents."
+    },
+    {
+      "row": "sibling-removal",
+      "coverage": "not exercised",
+      "original_blockers": [
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Publication operation still incomplete at bounded readback (terminal step failure or timeout): running",
+        "alarm-recovery hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "sibling-removal hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "sole-member hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "retained-safety hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "F11-03 D-135: no failed Apply observed in the continuous sibling window; recovery row blocked, not passed"
+      ],
+      "scope": "No original scenario artifact was produced; do not infer a hold from unrelated incidents."
+    },
+    {
+      "row": "sole-member",
+      "coverage": "not exercised",
+      "original_blockers": [
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Publication operation still incomplete at bounded readback (terminal step failure or timeout): running",
+        "alarm-recovery hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "sibling-removal hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "sole-member hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "retained-safety hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "F11-03 D-135: no failed Apply observed in the continuous sibling window; recovery row blocked, not passed"
+      ],
+      "scope": "No original scenario artifact was produced; do not infer a hold from unrelated incidents."
+    },
+    {
+      "row": "retained-safety",
+      "coverage": "not exercised",
+      "original_blockers": [
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Positive forwarding not launched: populated-grant serving readiness unavailable",
+        "Publication operation still incomplete at bounded readback (terminal step failure or timeout): running",
+        "alarm-recovery hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "sibling-removal hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "sole-member hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "retained-safety hold not exercised: publication unavailable",
+        "Enrolled node did not project ready after signed baseline",
+        "F11-03 D-135: no failed Apply observed in the continuous sibling window; recovery row blocked, not passed"
+      ],
+      "scope": "No original scenario artifact was produced; do not infer a hold from unrelated incidents."
+    }
+  ],
+  "scope": "Join accepted samples by node/incarnation/report and incident_id; join audits by exact incident_id, never node alone. Each scenario has a fresh transport arm and its original lease population. No incident ending is a service-recovery assertion. Missing failed-Apply or safety combinations remain not exercised."
+}

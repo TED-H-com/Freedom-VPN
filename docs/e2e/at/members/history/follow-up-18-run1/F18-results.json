@@ -1,0 +1,353 @@
+{
+  "run_id": "118271c1-616e-46a2-a744-d67b00fb94fb",
+  "source_commit": "b4317bd4e4ad178609b71d3fd4fbb986cb9947db",
+  "cases": [
+    {
+      "case": "AT05",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 31
+      },
+      "failures": []
+    },
+    {
+      "case": "AT01",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 23
+      },
+      "failures": []
+    },
+    {
+      "case": "AT02",
+      "status": "fail",
+      "subchecks": {
+        "pass": 136,
+        "fail": 11
+      },
+      "failures": [
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T19:51:54Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T19:53:30Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T19:55:02Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T19:56:45Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T19:58:24Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T19:59:55Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "D-077 re-grant counted forwarding",
+          "status": "fail",
+          "at": "2026-11-03T19:59:57Z",
+          "expected": "origin HTTP receipt and both device counters increase",
+          "command": "CA-verified HTTPS through fvmb0 with named device counter attribution"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:01:32Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:03:03Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "D-135 D-136 node-wide baseline transitions (provisional)",
+          "status": "fail",
+          "at": "2026-11-03T20:11:06Z",
+          "expected": "every baseline to next successful Apply retained; every sibling loss counted; recovery required; no guard or baseline exclusion waives loss",
+          "command": "original producer stream and continuous sibling capture; command bounds, not kernel commits"
+        },
+        {
+          "name": "counter reader enforcement attribution",
+          "status": "fail",
+          "at": "2026-11-03T20:11:06Z",
+          "expected": "same-boot nonzero ordered read brackets; every before/after record joins gap-free original producer stream",
+          "command": "EnableEnforcementTiming before enrollment; streamed ExportContainerFile after AT02; command brackets, not kernel commit times"
+        }
+      ]
+    },
+    {
+      "case": "AT03",
+      "status": "fail",
+      "subchecks": {
+        "pass": 71,
+        "fail": 1
+      },
+      "failures": [
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:14:36Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        }
+      ]
+    },
+    {
+      "case": "AT04",
+      "status": "fail",
+      "subchecks": {
+        "pass": 51,
+        "fail": 9
+      },
+      "failures": [
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:16:21Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:17:51Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:19:21Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:20:51Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "AT04 monitor producer stream before member-paid",
+          "status": "fail",
+          "at": "2026-11-03T20:20:51Z",
+          "expected": "whole stream parsed, including beyond 1 MiB",
+          "command": "streamed ExportContainerFile before starting the bounded monitor"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:23:21Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:24:51Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:26:51Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:28:21Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        }
+      ]
+    },
+    {
+      "case": "AT08",
+      "status": "fail",
+      "subchecks": {
+        "pass": 31,
+        "fail": 3
+      },
+      "failures": [
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:30:09Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:35:07Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:36:37Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        }
+      ]
+    },
+    {
+      "case": "AT20",
+      "status": "fail",
+      "subchecks": {
+        "pass": 29,
+        "fail": 2
+      },
+      "failures": [
+        {
+          "name": "native two-resolver configuration",
+          "status": "fail",
+          "at": "2026-11-03T20:39:37Z",
+          "expected": "exact issued pair, native enabled, one OS stub, identical applied documents",
+          "command": "ConfigureNativeDNS; TEST ONLY peer-restricted distribution of production-issued addresses"
+        },
+        {
+          "name": "F12-04 original query evidence",
+          "status": "fail",
+          "at": "2026-11-03T20:39:37Z",
+          "expected": "original one-shot RR query and both resolver lifecycles retained; capture completion is separate",
+          "command": "StartNativeDNSCapture after two-resolver configuration, before readiness and original RR/listener/cache sequence"
+        }
+      ]
+    },
+    {
+      "case": "AT21",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 6
+      },
+      "failures": []
+    },
+    {
+      "case": "AT22",
+      "status": "fail",
+      "subchecks": {
+        "fail": 2,
+        "pass": 38
+      },
+      "failures": [
+        {
+          "name": "privacy native stub in use",
+          "status": "fail",
+          "at": "2026-11-03T20:39:56Z",
+          "expected": "native two-resolver configuration available",
+          "command": "AT20 native DNS configuration and member OS stub"
+        },
+        {
+          "name": "privacy sentinel query",
+          "status": "fail",
+          "at": "2026-11-03T20:39:56Z",
+          "expected": "F8-A scope W / F8-TTL5: RCODE 3, zero answers, SOA TTL 5",
+          "command": "native OS stub sentinel under explicit lab block; docs/dns/BACKEND.md \u00a72.1.4"
+        }
+      ]
+    },
+    {
+      "case": "AT09",
+      "status": "fail",
+      "subchecks": {
+        "pass": 26,
+        "fail": 7
+      },
+      "failures": [
+        {
+          "name": "member sees both published exits",
+          "status": "fail",
+          "at": "2026-11-03T20:46:22Z",
+          "expected": "200 and two exits",
+          "command": "GET /member/exits through member session"
+        },
+        {
+          "name": "populated-grant serving readiness",
+          "status": "fail",
+          "at": "2026-11-03T20:49:22Z",
+          "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+          "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+        },
+        {
+          "name": "second exit fresh serving after restart",
+          "status": "fail",
+          "at": "2026-11-03T20:51:36Z",
+          "expected": "new accepted serving observation and nonempty kernel rules",
+          "command": "poll post-restart node observation and kernel rules; never trust stale pre-restart central row"
+        },
+        {
+          "name": "second exit complete 90-second restart capture",
+          "status": "fail",
+          "at": "2026-11-03T20:51:51Z",
+          "expected": "full window, unchanged generation; boot/final nft/tc, heartbeats, observations and agent log retained",
+          "command": "RestartNodeNamespace90; no state, topology or generation repair"
+        },
+        {
+          "name": "D-067 revision 11 provisional lease observation",
+          "status": "fail",
+          "at": "2026-11-03T20:51:52Z",
+          "expected": "provisional observations report awaiting_member_grants (never lease_expired); each failed lease/qos/source_binding check carries AWAITING_MEMBER_GRANTS or, with safety_check_failed, its active enforcement safety code (D-126); exactly one stage=lease error retains the provisional cause",
+          "command": "inspect post-restart provisional api.ObservationReport rows and GET /admin/nodes/{node2}"
+        },
+        {
+          "name": "same-generation D-067 restart recovery and lease sequence",
+          "status": "fail",
+          "at": "2026-11-03T20:51:52Z",
+          "expected": "forwarding restored on unchanged desired generation within bounded schedule; provisional renewal yields populated lease and counted fvmb0 transfer",
+          "command": "GET /admin/nodes/{node2} before/during/after restart; SELECT serving_leases and contiguous node_observations; verify counted member transfer"
+        },
+        {
+          "name": "r18 M-3 accepted hold and central ID join",
+          "status": "fail",
+          "at": "2026-11-03T20:53:41Z",
+          "expected": "retain incidents, exact reports, lease members, revocation and escalation IDs; markers and retained safety precedence when exercised",
+          "command": "read-only own-stack durable holds/audits; replay publication classification, no new observation"
+        }
+      ]
+    }
+  ],
+  "subchecks": {
+    "pass": 442,
+    "fail": 35
+  },
+  "complete_cases": {
+    "blocked": 3,
+    "fail": 7
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "gates": [
+    {
+      "initial_host_wait_seconds": 0.035,
+      "gate": "01-area-lint",
+      "start": "2026-11-03T19:41:44.334187+00:00",
+      "end": "2026-11-03T19:41:46.712471+00:00",
+      "duration_seconds": 2.378,
+      "exit": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_bytes": "0",
+      "output_tail": []
+    },
+    {
+      "initial_host_wait_seconds": 0.035,
+      "gate": "01b-area-lint",
+      "start": "2026-11-03T19:42:15.446127+00:00",
+      "end": "2026-11-03T19:42:17.090392+00:00",
+      "duration_seconds": 1.644,
+      "exit": 0,
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_bytes": "0",
+      "output_tail": []
+    },
+    {
+      "initial_host_wait_seconds": 0.035,
+      "gate": "02-assembled",
+      "start": "2026-11-03T19:42:19.219056+00:00",
+      "end": "2026-11-03T20:54:26.543577+00:00",
+      "duration_seconds": 4327.325,
+      "exit": 2,
+      "output_sha256": "15eebc660acfd6c8d012000ad87c5be21a204d83a0f7fe2b83b7e0fe31d61228",
+      "output_bytes": "31094",
+      "output_tail": [
+        " Container fvpn-w4-members-node-netns Stopped ",
+        " Container fvpn-w4-members-node-netns Removing ",
+        " Container fvpn-w4-members-node-netns Removed ",
+        " Container fvpn-w4-members-gateway Stopped ",
+        " Container fvpn-w4-members-gateway Removing ",
+        " Container fvpn-w4-members-gateway Removed ",
+        " Container fvpn-w4-members-netbird Stopping ",
+        " Container fvpn-w4-members-netbird Stopped ",
+        " Container fvpn-w4-members-netbird Removing ",
+        " Container fvpn-w4-members-netbird Removed ",
+        " Network fvpn-w4-members Removing ",
+        " Volume fvpn-w4-members-nb Removing ",
+        " Network fvpn-w4-members-origin Removing ",
+        " Volume fvpn-w4-members-pgbackrest-repo Removing ",
+        " Volume fvpn-w4-members-pg Removing ",
+        " Network fvpn-w4-members Resource is still in use ",
+        " Network fvpn-w4-members-origin Resource is still in use ",
+        " Volume fvpn-w4-members-nb Removed ",
+        " Volume fvpn-w4-members-pgbackrest-repo Removed ",
+        " Volume fvpn-w4-members-pg Removed ",
+        "e2e stack is down",
+        "Owned stack teardown exit: 0"
+      ],
+      "live_result_lines": [
+        "--- FAIL: TestATMembers_Live (4202.28s)",
+        "    --- FAIL: TestATMembers_Live/AT05 (16.34s)",
+        "    --- FAIL: TestATMembers_Live/AT01 (76.89s)",
+        "    --- FAIL: TestATMembers_Live/AT02 (1550.27s)",
+        "    --- FAIL: TestATMembers_Live/AT03 (206.47s)",
+        "    --- FAIL: TestATMembers_Live/AT04 (833.71s)",
+        "    --- FAIL: TestATMembers_Live/AT08 (548.88s)",
+        "    --- FAIL: TestATMembers_Live/AT20 (118.67s)",
+        "    --- FAIL: TestATMembers_Live/AT21 (17.73s)",
+        "    --- FAIL: TestATMembers_Live/AT22 (371.39s)",
+        "    --- FAIL: TestATMembers_Live/AT09 (454.12s)",
+        "FAIL\tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members\t4220.189s",
+        "Private producer export node exit: 0",
+        "Private producer export node2 exit: 0",
+        "Owned stack teardown exit: 0"
+      ]
+    }
+  ],
+  "scope": "Real foreground gate attempts in order; live failures retained, no retry. SHA pins name the private full logs; public tails redact only host paths."
+}
