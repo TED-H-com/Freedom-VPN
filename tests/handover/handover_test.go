@@ -7181,6 +7181,9 @@ const followup29Configuration = "**2026-11-01 — Known local configuration beha
 
 func readBeforeFollowup29Note(t *testing.T, root, path string) string {
 	t.Helper()
+	if path == "docs/handover/operator-guide.md" {
+		path = "tests/handover/testdata/history/follow-up-34/operator-guide33.md.txt"
+	}
 	content := readOwnedDoc(t, root, path)
 	for _, note := range []string{followup29Configuration, followup30Configuration, followup31Configuration, followup31Update, followup32Restart, followup33Restart} {
 		content = strings.ReplaceAll(content, note, "")
@@ -9095,7 +9098,7 @@ func TestHandover_Followup33Claims(t *testing.T) {
 	const frozen = fixture + "history/follow-up-33/"
 	const rows = fixture + "followup33-main.json"
 	const doc = "docs/handover/follow-up-33.md"
-	const register = "docs/handover/README.md"
+	const register = fixture + "history/follow-up-34/register33.md"
 	const review = "docs/reviews/r22-attribution-fixes-review.md"
 	const updater = "docs/updates/node-followup21-2026-11-03.md"
 	const timing = "docs/updates/node-followup21-timing-2026-11-03.json"
@@ -9176,12 +9179,12 @@ func TestHandover_Followup33Claims(t *testing.T) {
 		}},
 		{"r22_archive_proofs_and_returned_disposition", []claim{
 			{review, []string{"31862b3a8e52125e07856e7dd98a88dca852ffee", "follow-ups 37 & 38", "agy/gemini-4-argon-high", "Hold for fixes: H-1, H-2, M-1, M-2, M-3.", "TestR22_H1_UnsettledGenerationTransitionAndHandoffMisattributeUsage", "TestR22_H2_CaptureRestartBindingsFalseGapsAcrossCrashWindows", "TestR22_M1_TransientBootMeterOpenFailureWedgesRetainedPendingSettlement", "TestR22_M2_AbortedAdoptionContaminatesBaselineEpochAndBypassesPreserveClosed", "TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat"}},
-			{"docs/reviews/README.md", []string{"| `r22-attribution-fixes-review` |", "37,600 bytes", "0 Critical, 2 High,\n3 Medium, 0 Low", "ef78b9b7", "Returned to agent-core 39 before merge", "none is confirmed", "r20 H-1, M-1, M-2, M-3 and L-1, and r21's five findings, stay open on main"}},
+			{fixture+"history/follow-up-34/reviews-index33.md.txt", []string{"| `r22-attribution-fixes-review` |", "37,600 bytes", "0 Critical, 2 High,\n3 Medium, 0 Low", "ef78b9b7", "Returned to agent-core 39 before merge", "none is confirmed", "r20 H-1, M-1, M-2, M-3 and L-1, and r21's five findings, stay open on main"}},
 			{doc, []string{"31862b3a", "37,600 bytes", "0 Critical, 2 High, 3 Medium, 0 Low", "ef78b9b7", "Returned to agent-core 39 before merge", "none is confirmed", "they merge together with 39 after 39 is reviewed", "No review proof file is adopted here"}},
 		}},
 		{"r22_erratum_is_not_acceptance", []claim{
 			{review, []string{"deploy/systemd/fvpn-agent.service", "TimeoutStopSec=20s", "defaultStopTimeout"}},
-			{"docs/reviews/README.md", []string{"Erratum to What held, item 6 (archive unchanged)", "Neither exists on main", "deploy/node/systemd/fvpn-agent.service", "TimeoutStopSec=15s", "bootLocalBudget + closeLocalBudget == 13s", "unmerged branch", "review's statement, not acceptance evidence"}},
+			{fixture+"history/follow-up-34/reviews-index33.md.txt", []string{"Erratum to What held, item 6 (archive unchanged)", "Neither exists on main", "deploy/node/systemd/fvpn-agent.service", "TimeoutStopSec=15s", "bootLocalBudget + closeLocalBudget == 13s", "unmerged branch", "review's statement, not acceptance evidence"}},
 			{doc, []string{"Neither exists on main", "TimeoutStopSec=15s", "bootLocalBudget + closeLocalBudget ==\n13s", "not acceptance evidence"}},
 			{"packaging/installer/followup9_test.go", []string{"TestPKG01_AT07ShippedAgentStopBudget"}},
 		}},
@@ -9477,19 +9480,19 @@ func TestHandover_Followup33Claims(t *testing.T) {
 
 	t.Run("seven_entrypoints_restart_warning_and_no_scheduled_result", func(t *testing.T) {
 		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
-			lines := strings.Split(readOwnedDoc(t, root, path), "\n")
+			lines := strings.Split(readOwnedDoc(t, root, fixture+"history/follow-up-34/entrypoint-"+strings.ReplaceAll(path, "/", "_")+".txt"), "\n")
 			if len(lines) < 4 || !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-33.md") || !strings.Contains(lines[2], "#415") || !strings.Contains(lines[3], "follow-up-32.md") || !strings.Contains(lines[3], "#408–#412") {
 				t.Errorf("stale entrypoint: %s", path)
 			}
 		}
-		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		op := readOwnedDoc(t, root, fixture+"history/follow-up-34/operator-guide33.md.txt")
 		for _, note := range []string{followup31Update, followup31Configuration, followup32Restart, followup33Restart} {
 			if strings.Count(op, note) != 1 {
 				t.Fatal("operator note changed or missing")
 			}
 		}
-		requireHandoverClaimTokens(t, root, "docs/handover/operator-guide.md", "r20 H-1's mapping-conflict usage\ngap stays open on main while agent-core 37–39 are held", "F30-01 (reported and routed, not yet fixed)", "no fix date is promised")
-		requireHandoverClaimTokens(t, root, "docs/ops/README.md", "## Follow-up 33 acceptance snapshot", "#413", "#414", "#415", "81-row findings register", "Main records no scheduled-run result", "r20 H-1's restart gap stays open")
+		requireHandoverClaimTokens(t, root, fixture+"history/follow-up-34/operator-guide33.md.txt", "r20 H-1's mapping-conflict usage\ngap stays open on main while agent-core 37–39 are held", "F30-01 (reported and routed, not yet fixed)", "no fix date is promised")
+		requireHandoverClaimTokens(t, root, fixture+"history/follow-up-34/entrypoint-docs_ops_README.md.txt", "## Follow-up 33 acceptance snapshot", "#413", "#414", "#415", "81-row findings register", "Main records no scheduled-run result", "r20 H-1's restart gap stays open")
 	})
 	// Manifest hashes seal the inventory itself, not only the files it names.
 	checkHash(t, rows, "a24754a0af7f26006bdf4ecb39060e088b40525cabc1ff32543da2e20d93a36d")
