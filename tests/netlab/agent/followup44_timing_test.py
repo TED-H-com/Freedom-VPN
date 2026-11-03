@@ -2,6 +2,9 @@
 import json
 from pathlib import Path
 import tempfile
+import os
+import subprocess
+import sys
 import unittest
 from unittest.mock import patch, Mock
 
@@ -70,6 +73,26 @@ class MonitorTests(unittest.TestCase):
             for code, stdout, expected in [(0, 'free\n', True), (0, 'busy', False), (125, 'free', False)]:
                 run.return_value = Mock(returncode=code, stdout=stdout)
                 self.assertEqual(runner.admission(), expected)
+
+    def test_admitted_tool_stdout_remains_machine_readable(self):
+        # Real wrapper composition against TEST ONLY executables, no Docker.
+        with tempfile.TemporaryDirectory(dir='.agent/tmp') as directory:
+            root = Path(directory).resolve()
+            real, wrapped = root / 'real', root / 'wrapped'
+            real.mkdir()
+            wrapped.mkdir()
+            hold = root / 'hold.sh'
+            hold.write_text("#!/bin/sh\nprintf 'free\\n'\n")
+            fake = real / 'docker'
+            fake.write_text("#!/bin/sh\nprintf '%s\\n' '{\"ok\":true}'\n")
+            fake.chmod(0o755)
+            (wrapped / 'docker').symlink_to(Path(runner.__file__).resolve())
+            env = dict(os.environ, FVPN_HOLD_SH=str(hold), F44_TIMING_ROOT=str(root),
+                       F44_ORIGINAL_PATH=str(real), F44_LEG=str(root / 'leg'))
+            got = subprocess.run([sys.executable, '-B', str(wrapped / 'docker'), 'inspect'],
+                                 env=env, capture_output=True, text=True, check=True)
+            self.assertEqual(json.loads(got.stdout), {'ok': True})
+            self.assertEqual(got.stderr.strip(), 'free')
 
     def test_one_clock_requires_bracket_namespace_and_zero_offsets(self):
         row = dict(host_before_ns='1', host_after_ns='5', host_time_namespace='time:[1]',

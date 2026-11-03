@@ -46,7 +46,7 @@ def admission():
     result = subprocess.run(['bash', os.environ['FVPN_HOLD_SH']], capture_output=True, text=True)
     row = {'utc': utc(), 'exit': result.returncode, 'output': result.stdout.strip()}
     append(OUT / 'admission.jsonl', row)
-    print(row['output'], flush=True)
+    print(row['output'], file=sys.stderr, flush=True)
     return result.returncode == 0 and row['output'] == 'free'
 
 
