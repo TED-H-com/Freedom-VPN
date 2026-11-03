@@ -8450,11 +8450,11 @@ func TestHandover_Followup31Claims(t *testing.T) {
 		requireHandoverClaimTokens(t, root, frozen+"isolation-scheduled.go.txt", "len(r.Checks) == 0", "seen[c.Name]", "!c.Positive.Valid()", "c.Status != StatusBlocked", "e.Case == r.ID && e.Row == c.Name", "if !matched")
 		requireHandoverClaimTokens(t, root, frozen+"isolation-nightly-summary.py.txt", "current record missing", "different run", "no executed checks", "unblocked; remove from expected-blocked list", "phase['exit_code']!=0", "scheduled-job.json", "scheduled-job.md")
 		requireHandoverClaimTokens(t, root, frozen+"isolation-run.py.txt", "GITHUB_STEP_SUMMARY", "scheduled-job.md", "FVPN_AT_SCHEDULED")
-		requireHandoverClaimTokens(t, root, frozen+"e2e-nightly-gate.go.txt", "Read at run time instead of go:embed", "Unblocked Rows (passed; remove from expected-blocked list)")
+		requireHandoverClaimTokens(t, root, frozen+"e2e-nightly-gate.go.txt", "Read at run time instead of go:embed", "Unblocked Rows (passed; remove from expected-blocked list)", "nightly-gate.md")
 		if strings.Contains(readOwnedDoc(t, root, frozen+"e2e-nightly-gate.go.txt"), "//go:embed") {
 			t.Fatal("list still embedded")
 		}
-		requireHandoverClaimTokens(t, root, frozen+"e2e-nightly-command.go.txt", "GITHUB_STEP_SUMMARY", "nightly-gate.md")
+		requireHandoverClaimTokens(t, root, frozen+"e2e-nightly-command.go.txt", "GITHUB_STEP_SUMMARY", "e2e.WriteNightlyGateArtifacts(runDir, rep, *stepSummary)")
 		requireHandoverClaimTokens(t, root, frozen+"workflow-e2e.yml", "github.event_name }}\" = \"schedule", "-test-exit-code", "-test-log")
 		requireHandoverClaimTokens(t, root, frozen+"workflow-at-isolation.yml", "github.event_name == 'schedule'", "include-hidden-files: true")
 	})
