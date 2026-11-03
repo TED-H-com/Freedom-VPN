@@ -12247,5 +12247,307 @@ func TestHandover_Followup39Claims(t *testing.T) {
 			}
 		}
 	})
-	// F39_MORE_CLAIMS
+	readJSON := func(path string, dst any) {
+		t.Helper()
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, path)), dst); err != nil {
+			t.Fatalf("decode %s: %v", path, err)
+		}
+	}
+	const cut = "1b87ab32344fa3be3216df0d5f7b489eb853e011"
+	const doc = "docs/handover/follow-up-39.md"
+	const index = "docs/reviews/README.md"
+	const register = "docs/handover/README.md"
+	t.Run("two_final_rows_two_PRs_ten_frozen_428_inputs", func(t *testing.T) {
+		var m struct {
+			Commit   string `json:"source_commit"`
+			Previous string `json:"previous_cut"`
+			Merged   []int  `json:"merged_prs"`
+			History  []string
+			Rows     []struct {
+				PR                int
+				Lane, Row, SHA256 string
+			}
+			PRs []struct {
+				Number, Commits, Length int
+				Files                   int `json:"changed_files"`
+				Path, SHA256            string
+				Decoded                 string `json:"decoded_sha256"`
+				Merge                   string `json:"merge_commit"`
+			} `json:"pr_excerpts"`
+		}
+		readJSON(fixture+"followup39-main.json", &m)
+		if m.Commit != cut || m.Previous != "77626af4016443c509f3b14e06cfd4f00f74fb49" || !slices.Equal(m.Merged, []int{428, 429}) || len(m.Rows) != 2 || len(m.PRs) != 2 || len(m.History) != 4 {
+			t.Fatal("cut inventory")
+		}
+		for _, r := range m.Rows {
+			sum := sha256.Sum256([]byte(r.Row))
+			if !strings.HasPrefix(r.Row, "| "+r.Lane+" |") || !strings.HasSuffix(r.Row, fmt.Sprintf("| done (#%d) |", r.PR)) || !strings.Contains(readOwnedDoc(t, root, "docs/ROADMAP.md"), r.Row) || hex.EncodeToString(sum[:]) != r.SHA256 {
+				t.Fatal("final roadmap drift")
+			}
+		}
+		for _, p := range m.PRs {
+			checkHash(p.Path, p.SHA256)
+			var decoded string
+			readJSON(p.Path, &decoded)
+			sum := sha256.Sum256([]byte(decoded))
+			if len(decoded) != p.Length || hex.EncodeToString(sum[:]) != p.Decoded {
+				t.Fatal("PR excerpt bytes")
+			}
+			if p.Number == 428 && (p.Commits != 2 || p.Files != 28 || p.Merge != "0e8b825d5b38e9ad681b9dd605b1fc6a4bcb0f8e") {
+				t.Fatal("#428 metadata")
+			}
+			if p.Number == 429 && p.Merge != "28e9e41cdd92dc34afd460d80efbecd8b4e35ef3" {
+				t.Fatal("#429 merge")
+			}
+		}
+		var snaps []struct {
+			Path, Source, SHA256 string
+			Commit               string `json:"source_commit"`
+			SourceSHA            string `json:"source_sha256"`
+			Offset, Length       int
+		}
+		readJSON(fixture+"followup39-snapshots.json", &snaps)
+		if len(snaps) != 10 {
+			t.Fatal("snapshot inventory")
+		}
+		seen := map[string]bool{}
+		for _, p := range snaps {
+			if seen[p.Path] || !strings.HasPrefix(p.Path, frozen) || p.Commit != "567080be1969bf22782617e78c7605c2c92a52a2" || len(p.SourceSHA) != 64 || p.Offset < 0 || strings.HasPrefix(p.Source, "docs/e2e/at/") {
+				t.Fatal("frozen provenance")
+			}
+			seen[p.Path] = true
+			checkHash(p.Path, p.SHA256)
+			if len(readOwnedDoc(t, root, p.Path)) != p.Length {
+				t.Fatal("snapshot size")
+			}
+		}
+	})
+	t.Run("previous_12_subtests_counts_and_assertions", func(t *testing.T) {
+		s := readOwnedDoc(t, root, "tests/handover/handover_test.go")
+		a := strings.Index(s, "func TestHandover_Followup38Claims(")
+		b := strings.Index(s[a:], "// Reverse only follow-up 38 input redirects")
+		prior := restoreFollowup39Assertions(s[a : a+b])
+		sum := sha256.Sum256([]byte(strings.TrimSpace(prior)))
+		var audit struct {
+			SHA     string   `json:"prior_claims_sha256"`
+			Changes int      `json:"prior_scope_digest_changes"`
+			Fields  []string `json:"prior_scope_changed_fields"`
+			Max     int      `json:"maximum_decision"`
+		}
+		readJSON(frozen+"source-audit.json", &audit)
+		if hex.EncodeToString(sum[:]) != audit.SHA {
+			t.Fatal("prior assertions changed beyond input redirects")
+		}
+		groups := len(regexp.MustCompile(`\{"[^"\n]+", \[\]claim\{`).FindAllString(prior, -1))
+		if groups+len(regexp.MustCompile(`(?m)^\s*t.Run\("`).FindAllString(prior, -1)) != 12 {
+			t.Fatal("prior subtest count")
+		}
+		var m struct {
+			Rows []any
+			PRs  []any `json:"pr_excerpts"`
+		}
+		var snaps []any
+		readJSON(fixture+"followup38-main.json", &m)
+		readJSON(fixture+"followup38-snapshots.json", &snaps)
+		if len(m.Rows) != 1 || len(m.PRs) != 1 || len(snaps) != 10 || audit.Changes != 258 || len(audit.Fields) != 258 || audit.Max != 144 {
+			t.Fatal("previous inventory/digest audit")
+		}
+		for _, p := range audit.Fields {
+			if !strings.HasSuffix(p, "/sha256") {
+				t.Fatal("non-digest prior refresh")
+			}
+		}
+		checkHash("docs/reviews/r25-retain-review.md", "7514218895b014d62d09693b5de38193b3a412c5fa65c2aeb3b44d720d414286")
+		requireHandoverClaimTokens(t, root, frozen+"pr428-excerpt.json", "11:43 EST", "12:00", "gpt-6-astra", "2 commits and 28 owned files", "235.1 s once", "suite wait was 0 s", "99 findings", "97 unchanged, 2 added", "47, with nothing after D-144", "None new")
+	})
+	t.Run("dated_records_and_all_adopted_proof_names", func(t *testing.T) {
+		var e struct {
+			Commit    string `json:"source_commit"`
+			Documents []struct {
+				Path, SHA256 string
+				Bytes        int
+				Commit       string `json:"source_commit"`
+			}
+			Proofs []struct{ Path, Name string }
+		}
+		readJSON(fixture+"followup39-evidence.json", &e)
+		if e.Commit != cut || len(e.Documents) != 15 || len(e.Proofs) != 75 {
+			t.Fatal("record inventory")
+		}
+		for _, p := range e.Documents {
+			if p.Commit != cut || !regexp.MustCompile(`^docs/node/followup(?:3[7-9]|4[0-3])-[a-z0-9-]+-2026-11-03\.(md|json)$`).MatchString(p.Path) {
+				t.Fatal("mutable record")
+			}
+			checkHash(p.Path, p.SHA256)
+			if len(readOwnedDoc(t, root, p.Path)) != p.Bytes {
+				t.Fatal("record bytes")
+			}
+		}
+		for _, p := range e.Proofs {
+			requireHandoverClaimTokens(t, root, p.Path, p.Name)
+		}
+	})
+	t.Run("25_judgments_30_updates_69_unchanged_rows", func(t *testing.T) {
+		var judgments []struct {
+			ID, Record, Status, Summary string
+			ReviewRow                   string `json:"review_row"`
+			RegisterRow                 string `json:"register_row"`
+			Proofs                      []struct{ Path, Name string }
+		}
+		readJSON(fixture+"followup39-judgments.json", &judgments)
+		if len(judgments) != 25 {
+			t.Fatal("judgment count")
+		}
+		for _, r := range judgments {
+			requireHandoverClaimTokens(t, root, index, r.ReviewRow)
+			requireHandoverClaimTokens(t, root, register, r.RegisterRow)
+			if len(r.Proofs) == 0 || r.Record == "" || r.Summary == "" {
+				t.Fatal("missing verdict source/proof")
+			}
+			for _, p := range r.Proofs {
+				requireHandoverClaimTokens(t, root, p.Path, p.Name)
+			}
+		}
+		rows := func(s, heading string) map[string]string {
+			part := strings.Split(strings.Split(s, heading)[1], "\nEvery historical failure")[0]
+			m := map[string]string{}
+			for _, line := range strings.Split(part, "\n") {
+				if strings.HasPrefix(line, "| ") && !strings.HasPrefix(line, "| Finding |") {
+					id := strings.TrimSpace(strings.Split(line, "|")[1])
+					if _, ok := m[id]; ok {
+						t.Fatal("finding ID collision")
+					}
+					m[id] = line
+				}
+			}
+			return m
+		}
+		before := rows(readOwnedDoc(t, root, frozen+"register38.md"), "## Findings register at the follow-up 38 cutoff")
+		after := rows(readOwnedDoc(t, root, register), "## Findings register at the follow-up 39 cutoff")
+		var e struct {
+			Updated   map[string]string `json:"updated_findings"`
+			Decisions []string          `json:"new_decisions"`
+		}
+		readJSON(fixture+"followup39-evidence.json", &e)
+		if len(before) != 99 || len(after) != 99 || len(e.Updated) != 30 || len(e.Decisions) != 6 {
+			t.Fatal("register inventory")
+		}
+		unchanged := 0
+		for id, old := range before {
+			if want, ok := e.Updated[id]; ok {
+				if after[id] != want {
+					t.Errorf("updated row drift: %s", id)
+				}
+			} else {
+				if after[id] != old {
+					t.Errorf("unrequested row changed: %s", id)
+				}
+				unchanged++
+			}
+		}
+		if unchanged != 69 {
+			t.Fatal("unchanged count")
+		}
+		for _, row := range e.Decisions {
+			requireHandoverClaimTokens(t, root, register, row)
+		}
+		requireHandoverClaimTokens(t, root, index, "no requested row is missing", "r24 H-2 fair-share change", "not an agent defect", "DeadlineMono comment", "Follow-up 38 question closed", "pre-existing on main", "Step-entry and retained")
+	})
+	t.Run("r26_questions_limits_and_citation_audit", func(t *testing.T) {
+		var a struct {
+			Review     string `json:"review_commit"`
+			Target     string `json:"reviewed_commit"`
+			Hits       int    `json:"sensitive_pattern_hits"`
+			Mismatches int    `json:"review_proof_line_mismatches"`
+			Sources    []struct {
+				Path, Excerpt, SHA256 string
+				Commit                string `json:"source_commit"`
+				Within                bool   `json:"within_file"`
+			} `json:"source_readings"`
+			Tests []struct {
+				Name   string
+				Actual []int `json:"actual_lines"`
+			} `json:"test_name_checks"`
+		}
+		readJSON(frozen+"source-audit.json", &a)
+		if a.Review != "5c6d6abe6af7ebba4707ef64c56c157362f74b7b" || a.Target != "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545" || a.Hits != 0 || a.Mismatches != 7 || len(a.Sources) != 98 || len(a.Tests) != 24 {
+			t.Fatal("citation inventory")
+		}
+		for _, s := range a.Sources {
+			if s.Excerpt == "" || len(s.SHA256) != 64 || !s.Within || (s.Commit != a.Review && s.Commit != a.Target) {
+				t.Fatal("citation provenance")
+			}
+		}
+		for _, test := range a.Tests {
+			if len(test.Actual) != 1 {
+				t.Fatal("missing cited test")
+			}
+		}
+		requireHandoverClaimTokens(t, root, index, "19,545 bytes", "12:28:35 EST", "0 Critical, 0 High, 0 Medium, 0 Low", "reviewer's recommendation", "37–43 as #429 under provisional D-150", "AQ1", "AQ2", "AQ3", "AQ4", "AQ5", "AQ6", "AQ7", "Not examined by r26", "central Go packages", "no portal validation", "Additive citation errata to r26", "no deviceDeadlines helper", "Equality to 100 ms", "does not reject a future binding", "no watchdog Check function", "meterreset.go:311–332", "206", "281", "470", "544", "149", "242")
+	})
+	t.Run("43_windows_legs_and_zero_qualified_pools", func(t *testing.T) {
+		var results struct {
+			Legs   []struct{ Qualified bool }
+			Pooled map[string]struct {
+				Legs    []any `json:"qualified_legs"`
+				Metrics map[string]struct {
+					Count              int
+					P50, P90, P99, Max *float64
+				}
+			}
+		}
+		readJSON("docs/node/followup43-timing-results-2026-11-03.json", &results)
+		if len(results.Legs) != 2 || len(results.Pooled) != 2 {
+			t.Fatal("timing inventory")
+		}
+		for _, leg := range results.Legs {
+			if leg.Qualified {
+				t.Fatal("unqualified leg promoted")
+			}
+		}
+		for _, arm := range []string{"A", "B"} {
+			p, ok := results.Pooled[arm]
+			if !ok || len(p.Legs) != 0 || len(p.Metrics) != 5 {
+				t.Fatal("pool inventory")
+			}
+			for _, m := range p.Metrics {
+				if m.Count != 0 || m.P50 != nil || m.P90 != nil || m.P99 != nil || m.Max != nil {
+					t.Fatal("invented pooled result")
+				}
+			}
+		}
+		requireHandoverClaimTokens(t, root, doc, "17:44:03 → 17:45:45", "36.144 s", "0.691858", "17:55:45 → 17:58:23", "92.415 s", "1.311445", "37.742 / 37.742", "205.757 / 205.757", "81.643 / 81.643", "1636.113 / 1636.113", "B1, A2 and B2 never started", "13 failed operations (three Apply, ten Verify)", "600.037 s", "No A/B comparison or attributable shift", "The comparison\nis not dropped", "0.5 cores", "both arms", "B shift or B-only failure")
+		requireHandoverClaimTokens(t, root, frozen+"pr429-excerpt.json", "65 non-merge commits and 95 owned files", "37 to 43 merge without", "Every delivery's full production", "D087 / D104 included", "periodic jobs outside the project", "never pauses", "Agent-core 44 measures the same arms after the merge")
+	})
+	t.Run("ten_answers_and_preserved_requests", func(t *testing.T) {
+		current := readOwnedDoc(t, root, doc)
+		for _, row := range []string{
+			"| 1: D-135 + D-136 confirmation | Confirmed by the owner. |",
+			"| 2: D-137 hardening option | D-146:",
+			"| 3: D-138 overturn option | Kept and confirmed. |",
+			"| 4: D-140 overturn option | Kept and confirmed. |",
+			"| 5: D-141 overturn option | Kept and confirmed. |",
+			"| 6: F11-01 repair direction and upstream report | D-148:",
+			"| 7: RELATED ICMP from spec-denied outer sources | D-147:",
+			"| 8: D-142 overturn option | Kept and confirmed. |",
+			"| 9: D-144 overturn option | Kept and confirmed. |",
+			"| 10: the G5/G6 trade | D-145:",
+		} {
+			if !strings.Contains(current, row) {
+				t.Errorf("missing answer %q", row)
+			}
+		}
+		if len(regexp.MustCompile(`(?m)^\| [0-9]+:`).FindAllString(strings.Split(current, "## Owner answers")[1], -1)) != 10 {
+			t.Fatal("owner-answer count")
+		}
+		if strings.Count(readOwnedDoc(t, root, "docs/handover/follow-up-38.md"), "— **Owner ") != 10 {
+			t.Fatal("historical requests")
+		}
+		requireHandoverClaimTokens(t, root, doc, "All ten owner requests are answered; the open owner-request list is empty", "Netlab 34 and agent-core 44 were running when briefed", "Status only", "No unbriefed PR", "53 decisions", "D-143 stays Ted's", "No new scope exception or outside-owned pin request", "No\nitem is stopped")
+	})
+	checkHash("tests/handover/testdata/followup39-confirmations.json", "ab89ab7fe53223521ab4652643b3d1dce9db5f589d1307d61839470f0f77640d")
+	checkHash("tests/handover/testdata/followup39-judgments.json", "0d79a0756003c465302836ff7bb2ad00e733d3e16eaece48f1918bb95b24490d")
+	checkHash("tests/handover/testdata/followup39-evidence.json", "145a6fc5054ea01ece65380abc4e243d6968c89aaec4efcb67dd7f0340193ff3")
+	// F39_ENTRYPOINT_CLAIMS
+
 }
