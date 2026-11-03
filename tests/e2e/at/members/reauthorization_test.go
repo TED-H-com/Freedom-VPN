@@ -194,43 +194,59 @@ func (l *live) reauthorization(r *record, b *browser, id uuid.UUID, service stri
 	stopSamples := capture.periodic()
 	defer func() { l.regrantCapture = nil; stopSamples(); capture.sample("after-regrant"); capture.stop() }()
 	l.holdSnapshot("before D-077 fence withdrawal")
-	if !l.fenceInsert(r, id) {
-		return
-	}
-	withdrawn := l.wait(90*time.Second, func() bool {
-		return l.count(`SELECT count(*) FROM device_authorization_observations WHERE device_id=$1 AND NOT observed_authorized`, id) == 1
+	runReauthorization(r, reauthorizationSteps{
+		fenceInsert: func() bool {
+			return l.fenceInsert(r, id)
+		},
+		fenceCount: func() int {
+			return l.fenceCount(id)
+		},
+		authorizeDevice: func() response {
+			return l.api(l.admin, "POST", authorizePath(b.member, id), nil, commandHeaders())
+		},
+		waitAuthorized: func() bool {
+			return l.wait(90*time.Second, func() bool {
+				final := l.api(b, "GET", "/api/v1/member/devices", nil, nil)
+				return final.status == 200 && fenceMatches(final.body, id, "authorized", false, false)
+			})
+		},
+		afterFenceInsert: func() {
+			withdrawn := l.wait(90*time.Second, func() bool {
+				return l.count(`SELECT count(*) FROM device_authorization_observations WHERE device_id=$1 AND NOT observed_authorized`, id) == 1
+			})
+			r.check("D-077 worker withdrawal", "fenced device observed withdrawn", fmt.Sprintf("device_id=%s; withdrawn=%t; fence_count=%d", id, withdrawn, l.fenceCount(id)), "wait running worker sync; read observation only", withdrawn)
+			l.holdSnapshot("after D-077 worker withdrawal")
+			l.fenceList(r, b, id, "pending", true, siblings)
+			if negatives {
+				l.fenceAdminPages(r, b, id)
+				path := authorizePath(b.member, id)
+				l.fenceCall(r, "member session denied", b, "POST", path, commandHeaders(), id, 401, "UNAUTHENTICATED")
+				missing := commandHeaders()
+				missing["X-CSRF-Token"] = ""
+				l.fenceCall(r, "missing CSRF", l.admin, "POST", path, missing, id, 403, "")
+				l.fenceCall(r, "wrong member", l.admin, "POST", authorizePath(l.b.member, id), commandHeaders(), id, 404, "RESOURCE_NOT_FOUND")
+				r.check("D-077 negatives retain fence", "one fence", fmt.Sprint(l.fenceCount(id)), "read fence after denied mutations", l.fenceCount(id) == 1)
+			}
+			// Passing the real ID deliberately retains device counter attribution even if
+			// the product fails to withdraw. Classify this observation explicitly below.
+			previous := len(r.Forwarding)
+			l.traceForwardingExpected(r, service, id, false)
+			if len(r.Forwarding) == previous {
+				r.check("D-077 fenced forwarding", "no origin receipt", "probe unavailable", "bounded HTTPS", false)
+			} else {
+				o := r.Forwarding[len(r.Forwarding)-1]
+				var transfer struct {
+					Receipt    bool `json:"origin_receipt"`
+					ProbeError bool `json:"probe_error"`
+				}
+				decoded := json.Unmarshal(o.Transfer, &transfer) == nil
+				raw, _ := json.Marshal(o)
+				r.check("D-077 fenced forwarding", "zero origin receipts and no counted HTTPS; wire-members owns any continued forwarding", string(raw), "same native device HTTPS after worker withdrawal; inspect fvmb0 and device counters", decoded && !transfer.ProbeError && o.OriginVerified && !transfer.Receipt && o.OriginRequests == 0 && !o.Counted)
+			}
+			l.write(r)
+			l.fenceGrant(r, b, id, service, true)
+		},
 	})
-	r.check("D-077 worker withdrawal", "fenced device observed withdrawn", fmt.Sprintf("device_id=%s; withdrawn=%t; fence_count=%d", id, withdrawn, l.fenceCount(id)), "wait running worker sync; read observation only", withdrawn)
-	l.holdSnapshot("after D-077 worker withdrawal")
-	l.fenceList(r, b, id, "pending", true, siblings)
-	if negatives {
-		l.fenceAdminPages(r, b, id)
-		path := authorizePath(b.member, id)
-		l.fenceCall(r, "member session denied", b, "POST", path, commandHeaders(), id, 401, "UNAUTHENTICATED")
-		missing := commandHeaders()
-		missing["X-CSRF-Token"] = ""
-		l.fenceCall(r, "missing CSRF", l.admin, "POST", path, missing, id, 403, "")
-		l.fenceCall(r, "wrong member", l.admin, "POST", authorizePath(l.b.member, id), commandHeaders(), id, 404, "RESOURCE_NOT_FOUND")
-		r.check("D-077 negatives retain fence", "one fence", fmt.Sprint(l.fenceCount(id)), "read fence after denied mutations", l.fenceCount(id) == 1)
-	}
-	// Passing the real ID deliberately retains device counter attribution even if
-	// the product fails to withdraw. Classify this observation explicitly below.
-	previous := len(r.Forwarding)
-	l.traceForwardingExpected(r, service, id, false)
-	if len(r.Forwarding) == previous {
-		r.check("D-077 fenced forwarding", "no origin receipt", "probe unavailable", "bounded HTTPS", false)
-	} else {
-		o := r.Forwarding[len(r.Forwarding)-1]
-		var transfer struct {
-			Receipt    bool `json:"origin_receipt"`
-			ProbeError bool `json:"probe_error"`
-		}
-		decoded := json.Unmarshal(o.Transfer, &transfer) == nil
-		raw, _ := json.Marshal(o)
-		r.check("D-077 fenced forwarding", "zero origin receipts and no counted HTTPS; wire-members owns any continued forwarding", string(raw), "same native device HTTPS after worker withdrawal; inspect fvmb0 and device counters", decoded && !transfer.ProbeError && o.OriginVerified && !transfer.Receipt && o.OriginRequests == 0 && !o.Counted)
-	}
-	l.write(r)
-	l.fenceGrant(r, b, id, service, true)
 }
 
 func (l *live) reauthorizationLimit(r *record, id, revoked uuid.UUID, service string) {
@@ -255,31 +271,84 @@ func (l *live) reauthorizationLimit(r *record, id, revoked uuid.UUID, service st
 	l.invalidFiniteGrant(r, l.a, lower)
 	l.forwardingGate(r)
 	l.traceForwarding(r, service, id)
-	flow := l.startPersistent(r, service, id)
-	transitionAt := time.Now().UTC()
-	if !l.replaceFiniteGrant(r, l.a, lower, time.Now().UTC().Add(time.Hour)) {
-		r.check("D-081 setup", "real plan downgrade", "failed", "production grant transition", false)
-		return
-	}
-	l.finishPersistent(r, flow, transitionAt, l.memberHeartbeat(r))
-	pending := l.wait(60*time.Second, func() bool {
-		return l.count(`SELECT count(*) FROM member_devices WHERE id=$1 AND status='pending'`, id) == 1 && l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='authorized'`, l.a.member) == 2
+	var flow *persistentFlow
+	var transitionAt time.Time
+	var capture *nativeCaptureSession
+	var stopSamples func()
+	defer func() {
+		if capture != nil {
+			l.regrantCapture = nil
+			stopSamples()
+			capture.sample("after-regrant")
+			capture.stop()
+		}
+	}()
+	runReauthorizationLimit(r, reauthorizationLimitSteps{
+		startPersistent: func() {
+			flow = l.startPersistent(r, service, id)
+			transitionAt = time.Now().UTC()
+		},
+		abortPersistent: func() {
+			l.abortPersistent(flow)
+		},
+		replaceLowerGrant: func() bool {
+			return l.replaceFiniteGrant(r, l.a, lower, time.Now().UTC().Add(time.Hour))
+		},
+		afterLowerGrant: func() {
+			l.finishPersistent(r, flow, transitionAt, l.memberHeartbeat(r))
+			pending := l.wait(60*time.Second, func() bool {
+				return l.count(`SELECT count(*) FROM member_devices WHERE id=$1 AND status='pending'`, id) == 1 && l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='authorized'`, l.a.member) == 2
+			})
+			r.check("D-081 limit precondition", "two authorized of limit two; replacement pending", fmt.Sprintf("ready=%t", pending), "real plan downgrade -> entitlement worker reconciliation; no row fixtures", pending)
+			l.traceForwarding(r, "member", l.awaitDevice(l.nativePeer))
+			capture = l.startNativeCapture(r, service, "regrant-"+id.String())
+			l.regrantCapture = capture
+			capture.sample("before-fence")
+			stopSamples = capture.periodic()
+			l.holdSnapshot("before D-077 fence withdrawal")
+		},
+		fenceInsert: func() bool {
+			return l.fenceInsert(r, id)
+		},
+		afterFenceInsert: func() {
+			l.fenceCall(r, "device limit", l.admin, "POST", authorizePath(l.a.member, id), commandHeaders(), id, 409, "DEVICE_LIMIT_REACHED")
+			r.check("D-081 limit denial retains fence", "one fence", fmt.Sprint(l.fenceCount(id)), "read fence count after HTTP 409", l.fenceCount(id) == 1)
+			restored := l.replaceFiniteGrant(r, l.a, l.planRev, time.Now().UTC().Add(time.Hour))
+			r.check("D-077 entitlement restoration retains fence", "original plan restored; fence stays", fmt.Sprintf("restored=%t; fence=%d", restored, l.fenceCount(id)), "production grant transition, then explicit re-authorization", restored && l.fenceCount(id) == 1)
+			l.fenceGrant(r, l.a, id, service, false)
+			l.finiteExpiry(r, id, service)
+		},
+		hasLiveOtherPlanGrant: func() bool {
+			return l.count(`SELECT count(*) FROM entitlement_grants WHERE member_id=$1 AND revoked_at IS NULL AND valid_until>clock_timestamp() AND plan_revision_id<>$2`, l.a.member, l.planRev) > 0
+		},
+		replaceOriginalPlan: func() bool {
+			return l.replaceFiniteGrant(r, l.a, l.planRev, time.Now().UTC().Add(time.Hour))
+		},
+		grantRestore: func() response {
+			return l.grant(l.a, time.Now().UTC().Add(time.Hour))
+		},
+		fenceCount: func() int {
+			return l.fenceCount(id)
+		},
+		authorizeDevice: func() response {
+			return l.api(l.admin, "POST", authorizePath(l.a.member, id), nil, commandHeaders())
+		},
+		waitDevices: func() (bool, int, int) {
+			var authorized, pending int
+			restored := l.wait(60*time.Second, func() bool {
+				authorized = l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='authorized'`, l.a.member)
+				pending = l.count(`SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='pending'`, l.a.member)
+				return authorized == 3 && pending == 0
+			})
+			return restored, authorized, pending
+		},
+		waitOperation: func(opID uuid.UUID) (bool, response) {
+			var operation response
+			completed := l.wait(60*time.Second, func() bool {
+				operation = l.api(l.admin, "GET", "/api/v1/admin/operations/"+opID.String(), nil, nil)
+				return operation.status == 200 && completedOperation(operation.body)
+			})
+			return completed, operation
+		},
 	})
-	r.check("D-081 limit precondition", "two authorized of limit two; replacement pending", fmt.Sprintf("ready=%t", pending), "real plan downgrade -> entitlement worker reconciliation; no row fixtures", pending)
-	l.traceForwarding(r, "member", l.awaitDevice(l.nativePeer))
-	capture := l.startNativeCapture(r, service, "regrant-"+id.String())
-	l.regrantCapture = capture
-	capture.sample("before-fence")
-	stopSamples := capture.periodic()
-	defer func() { l.regrantCapture = nil; stopSamples(); capture.sample("after-regrant"); capture.stop() }()
-	l.holdSnapshot("before D-077 fence withdrawal")
-	if !l.fenceInsert(r, id) {
-		return
-	}
-	l.fenceCall(r, "device limit", l.admin, "POST", authorizePath(l.a.member, id), commandHeaders(), id, 409, "DEVICE_LIMIT_REACHED")
-	r.check("D-081 limit denial retains fence", "one fence", fmt.Sprint(l.fenceCount(id)), "read fence count after HTTP 409", l.fenceCount(id) == 1)
-	restored := l.replaceFiniteGrant(r, l.a, l.planRev, time.Now().UTC().Add(time.Hour))
-	r.check("D-077 entitlement restoration retains fence", "original plan restored; fence stays", fmt.Sprintf("restored=%t; fence=%d", restored, l.fenceCount(id)), "production grant transition, then explicit re-authorization", restored && l.fenceCount(id) == 1)
-	l.fenceGrant(r, l.a, id, service, false)
-	l.finiteExpiry(r, id, service)
 }

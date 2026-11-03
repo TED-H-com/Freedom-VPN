@@ -23,8 +23,22 @@ func (l *live) populatedHolds(r *record) {
 	restore := l.useSecond()
 	defer restore()
 	defer func() {
-		l.restoreHoldMember(r, "TEST ONLY hold cleanup")
-		l.publish(r, []uuid.UUID{l.groupA})
+		var device uuid.UUID
+		var status string
+		runPopulatedHoldCleanup(r, populatedHoldCleanupSteps{
+			restoreHoldMember: func() {
+				l.restoreHoldMember(r, "TEST ONLY hold cleanup")
+			},
+			deviceNeedsRestore: func() bool {
+				return l.pool.QueryRow(l.ctx, `SELECT id,status FROM member_devices WHERE member_id=$1 ORDER BY created_at,id LIMIT 1`, l.b.member).Scan(&device, &status) == nil && status != "authorized"
+			},
+			authorizeHoldDevice: func() response {
+				return l.api(l.admin, "POST", authorizePath(l.b.member, device), nil, commandHeaders())
+			},
+			publishGroupA: func() {
+				l.publish(r, []uuid.UUID{l.groupA})
+			},
+		})
 	}()
 	for i, row := range []struct {
 		name   string

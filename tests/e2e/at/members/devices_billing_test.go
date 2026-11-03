@@ -211,8 +211,11 @@ func (l *live) entitlementState(b *browser) string {
 	return state
 }
 func (l *live) entitlements(r *record) {
-	if l.paid == nil {
-		r.block("AT03 paid session unavailable")
+	if !runEntitlementsPrecheck(l.paid != nil, l.second.NodeID != uuid.Nil, func() {
+		restore := l.useSecond()
+		l.publicationCommand(r, "disabled", []uuid.UUID{l.groupA})
+		restore()
+	}, r.block) {
 		return
 	}
 	p := l.paid
