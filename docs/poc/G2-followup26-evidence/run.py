@@ -184,6 +184,10 @@ def seal():
 if __name__ == '__main__':
     if sys.argv[1] in ('gate', 'quiet-gate'):
         sys.exit(run(sys.argv[2], sys.argv[3:], quiet=sys.argv[1] == 'quiet-gate'))
+    elif sys.argv[1] == 'plan':
+        plan = json.loads(Path(sys.argv[2]).read_text())
+        os.environ.update(plan.get('environment', {}))
+        sys.exit(run(plan['name'], plan['command'], quiet=plan.get('quiet', False)))
     elif sys.argv[1] == 'admit':
         admission(sys.argv[2])
     elif sys.argv[1] == 'seal':

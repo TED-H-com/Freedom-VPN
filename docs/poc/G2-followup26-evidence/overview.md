@@ -5,6 +5,14 @@ acceptance promotion. Isolation run `83b457ef` stays failed: the assertion
 stopped it before sockets, Apply, and the mechanism trace. Its eight pairs are
 orchestrator-supplied input, not a recovered trace.
 
+The fixture correction is justified by source and live behavior. In the sole
+resumed campaign, all 1,000 exact timeout round trips passed, but the old expiry
+adjacency check rejected four listings. One normal transaction directly proved
+different allocation bases; an unchanged-set control independently proved
+per-element dump-clock sampling. The replacement accepted all 1,000 listings
+without changing the deadline or packet predicate. F16-01's exact event remains
+unattributed because its sorted pairs cannot distinguish these two mechanisms.
+
 ## What the old assertion proved
 
 Follow-up 15 / commit `9b4383a1` (#290), its roadmap row, and
@@ -114,6 +122,71 @@ within one transaction, then reverse the groups. These are explanatory
 controls, excluded from the normal-condition rate. Repeated reads of an
 unchanged set isolate dump-time changes without any new allocation.
 
+## Measured results — sole resumed campaign
+
+[Experiment receipt](experiment.json), [preflights](admission/experiment.json),
+[post-run process check](monitor/experiment.json), and
+[derived analysis](mechanism-analysis.json) retain the complete result. The
+campaign took 24.311 s after qualification; no other-lane overlap was observed.
+Kernel `7.0.0-38-generic`, nft `1.0.9-1ubuntu0.1`. The original interrupted
+attempt contributes no measurement.
+
+| Observation | Result |
+|---|---:|
+| Exact 1001–1008 ms timeout round trips | 1,000 / 1,000 |
+| Old adjacency-check failures | 4 / 1,000 (0.4%) |
+| Replacement-check failures | 0 / 1,000 |
+| Direct allocation-split witnesses in normal transactions | 1 / 1,000 (0.1%, witnessed lower bound) |
+| Exact F16-01 age-vector shape recaptured | 0 / 1,000 |
+| Normal trials with changing relative ages across subsequent dumps | 16 / 1,000 |
+| Padded controls proving a split, in opposite group orders | 2 / 2 |
+| Unchanged-set dumps with nonuniform ages | 2 / 2,000; the other 1,998 were uniform |
+
+The four original-check failures are zero-based trial indices **70, 281, 406,
+758**. Across the 7,000 adjacent pairs in normal text listings, six steps were
+2 ms, four were 0 ms and 6,990 were 1 ms. This reproduces the extra-step failure
+class, but not F16-01's exact split after element 6. No attempt was repeated for
+a better result. “Normal” here means the original eight-element transaction
+without padding or injected load in the quiet isolated tools container; it
+uses a fresh `inet fvpn` table, not the full assembled topology/baseline.
+The finite observed rates are not estimates of an assembled-run failure rate.
+The other three rejected text listings are not assigned individual causes from
+subsequent dumps; those are different reads.
+
+**Allocation witness:** normal trial index 758 lists expires
+`699,700,701,703,704,705,706,707`. The first raw dump returns key 3 before key 6:
+key 3 has configured expires 703 and observed 701 (age 2 ms), then key 6 has
+configured 706 and observed 705 (age 1 ms). Time advancing during a dump cannot
+make age decrease if bases are equal. Hence key 6's allocation base is at least
+1 ms later than key 3's. The same offset persists through all five dumps.
+This directly establishes split allocation timing on the running kernel,
+independent of nft text ordering. See [all normal replies](mechanism-normal.jsonl.gz),
+including raw netlink bytes and order.
+
+**Transaction controls:** inserting 5,000 unrelated elements between the two
+groups inside one `nft -f -` transaction creates at least a 2 ms base separation
+in both directions. Forward order gives older elements 1–6; reverse order gives
+older elements 7–8. Raw age decreases are key 6 → 8 (4 → 2 ms) and key 8 → 3
+(4 → 2 ms), respectively. Atomic publication therefore does not reset these
+new elements to one common transaction/commit base. The allocation source
+identifies the exact initialization operation; the live controls corroborate
+its placement before commit. [Padded replies](mechanism-padded.jsonl.gz).
+
+**Dump-clock witness:** one unchanged set is read 2,000 times. Dump index 398
+has age 13 ms for every element. Dump 399 reads keys `6,3,8,7,2,5` at age 13,
+then keys `1,4` at age 14; dump 400 has age 14 for all. Dump 399's entire
+userspace request/reply bracket is 27,827 ns. A second analogous crossing
+occurs at dump 693. There are no intervening writes, and the relative-age
+vector returns to uniform immediately after each crossing. This proves the
+listing clock alternative on the lab kernel; nft subsequently sorting the
+keys obscures that temporal order. [All unchanged-set replies](mechanism-dump.jsonl.gz).
+
+Both duration conversion and raw netlink data agree with the exact integer
+millisecond text path. Clock advancement at allocation and at dump is observed;
+coarse conversion or a text-parser rounding error is not needed to explain
+these failures. Neither live control supplies the missing raw order/timestamps
+from the original `83b457ef` run, which remains failed and causally ambiguous.
+
 ## Reproduction and retention
 
 D-098 was checked first: 163/163 files, complete coverage, both gzip forms,
@@ -155,3 +228,61 @@ pins the probe and analysis source before execution, and permits one campaign
 with no retry for a better result. The new [campaign driver](campaign.py)
 creates the isolated container only after quiet qualification, executes all
 three modes in order, and removes it in Python cleanup.
+
+### Admission wrapper correction (2026-11-03)
+
+Before gate 2 started, `hold.sh` matched the **queued** `netlab-test` text in
+our two waiting Python wrappers. No lab command was running. The
+[exact public match](hold-wrapper-false-positive.txt) and
+[disposition](wrapper-disposition.json) preserve the false admission hold.
+Only the owned waiting child was interrupted; its disk-temp parent unwound.
+The original preflight receipt is retained as
+[gate2-queued-wrapper](admission/gate2-queued-wrapper.json). This is an abandoned
+preflight, not a failed or retried lab attempt.
+
+The owned runner now accepts a command plan file, so a waiting process carries
+no future gate command in its arguments. It still requires `hold.sh` to print
+`free` and applies the same real-process checks. The actual `make` and `go test`
+children remain visible once launched. No private admission-script edit or
+other-lane process change was made. Use `run.py plan gate2-command.json` (with
+the full evidence-relative path) and the same disk-temp wrapper.
+
+## Required gates and cleanup
+
+All nine required gates passed in order. Gate 1 includes 29 Python tests and
+amd64/arm64 builds. The full lab package took 227.651 s (235.272 s including
+setup/teardown/checks), after three quiet windows; no other-lane overlap was
+observed. Its unchanged D-104 trace has 26 positives and 7 drops, last positive
+D−100.703983 ms, first drop D−0.742217 ms, render→installed 12.810495 ms, and
+precision read 1.290625 ms. No later or post-deadline positive occurred.
+[Live trace](live-attempt1/TestD104_AT13_DeadlineContinuity/trace.json).
+
+| Gate | Result | Seconds | Receipt |
+|---|---|---:|---|
+| 1 | PASS | 9.135 | [gate1](gate1.json) |
+| 2 | PASS | 235.272 | [gate2](gate2.json) |
+| 3 | PASS | 8.016 | [gate3](gate3.json) |
+| 4 | PASS | 2.124 | [gate4](gate4.json) |
+| 5 | PASS | 4.943 | [gate5](gate5.json) |
+| 6 | PASS | 5.030 | [gate6](gate6.json) |
+| 7 | PASS | 0.387 | [gate7](gate7.json) |
+| 8 | PASS | 0.170 | [gate8](gate8.json) |
+| 9 | PASS | 0.071 | [gate9](gate9.json) |
+
+The isolation consumer passed without edits. Root lint, vet, formatting and
+diff checks passed. [Cleanup](cleanup.json) records zero owned Docker objects
+and absence of all known own build manifests. [Final D-098](d098-final.json)
+again validates 163/163 follow-up 25 files and every older G2 tree.
+[Finish environment](environment-finish.json) records the queried cache digest
+and unchanged cache location; the literal path is only in the ignored report.
+
+The AT12 producer still emits a Go struct dump named `counters.json`; this new
+publication retains its exact bytes under `counters.txt`, with the
+[hash/name mapping](publication-names.json). No producer or older evidence was
+edited. Large new JSON/JSONL uses lossless gzip and dual byte/hash pins; text
+whitespace presentation retains exact public raw bytes alongside when needed.
+
+The private `hold.sh` matcher correction is an advisory hand-off dated
+2026-11-03. The owned wrapper workaround is complete; no external edit blocks
+this delivery. Physical arm64, other kernels and suspend/resume remain
+unmeasured. Follow-up 27 remains deferred.

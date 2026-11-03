@@ -1,0 +1,90 @@
+ef15f4637312552c4f321f677f0d0c7bb85501831e0144edbe47fe04909cb60a
+{
+  "platform": {
+    "test_only": true,
+    "mode": "normal",
+    "kernel": "7.0.0-38-generic",
+    "nft": "nftables v1.0.9 (Old Doc Yak #3)",
+    "nft_package": "1.0.9-1ubuntu0.1"
+  },
+  "trials": 1000,
+  "old_failures": [
+    70,
+    281,
+    406,
+    758
+  ],
+  "allocation_split_proven": [
+    758
+  ]
+}
+{
+  "platform": {
+    "test_only": true,
+    "mode": "padded",
+    "kernel": "7.0.0-38-generic",
+    "nft": "nftables v1.0.9 (Old Doc Yak #3)",
+    "nft_package": "1.0.9-1ubuntu0.1"
+  },
+  "trials": 2,
+  "old_failures": [
+    0,
+    1
+  ],
+  "allocation_split_proven": [
+    0,
+    1
+  ]
+}
+{
+  "platform": {
+    "test_only": true,
+    "mode": "dump",
+    "kernel": "7.0.0-38-generic",
+    "nft": "nftables v1.0.9 (Old Doc Yak #3)",
+    "nft_package": "1.0.9-1ubuntu0.1"
+  },
+  "dumps": 2000,
+  "relative_age_vectors": [
+    {
+      "vector": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "count": 1998
+    },
+    {
+      "vector": [
+        0,
+        -1,
+        -1,
+        0,
+        -1,
+        -1,
+        -1,
+        -1
+      ],
+      "count": 1
+    },
+    {
+      "vector": [
+        0,
+        0,
+        -1,
+        0,
+        0,
+        -1,
+        0,
+        -1
+      ],
+      "count": 1
+    }
+  ]
+}
+fvpn-w1-netlab-f26-mechanism
