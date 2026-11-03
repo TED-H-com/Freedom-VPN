@@ -1,0 +1,10 @@
+{
+  "test_only": true,
+  "scope": "pre-startup only; full suite has its own qualification",
+  "checks": 2,
+  "qualified": true,
+  "max_check_interval_seconds": 4.001003068999125,
+  "max_foreign_cpu": 0.03998997182474667,
+  "exit_code": 0,
+  "accounting": "utime+stime differences for each PID/start-time pair. New PIDs use their accumulated ticks when born in the interval. Processes that exit between snapshots cannot be recovered from proc; disappeared PIDs are retained. Excluded classes are reported separately."
+}
