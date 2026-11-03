@@ -448,5 +448,33 @@
     "later_changes": "documentation and tests/e2e/at/isolation only",
     "second_main_merge_taken": false,
     "production_node_code_changed_after_merged_main": false
-  }
+  },
+  "continuations": [
+    {
+      "continuation": 1,
+      "label": "10:25",
+      "date": "2026-11-03",
+      "approval": "orchestrator approved exact setup-only H-1 correction",
+      "patch_commit": "56829cc48d0d1ae328b41da402d7de76f862f2f0",
+      "patch_sha256": "14dcaccdf073e991e8c3cd35eb957a8fbd5749eeb5862fd8ba83142804a408fe",
+      "proof_change": "H-1 differs from ba5d3004 by exactly the three approved setup lines; name, doc comment, assertions and all other bytes preserved",
+      "watchdog_r24_unchanged": true,
+      "reason": "fake signer refreshes issued=now-1min and expiry, yielding 200s; freezing at the snapshot signing instant produces the intended 304s; real control returns 304 on an ETag match",
+      "before": "original canonical H-1 failed on 9415fd51 with one required Apply for a real 1ms policy-expiry change",
+      "after_proof_receipt": ".agent/f41/c1-h1-proof.log",
+      "after_proof_exit": 0,
+      "canonical_gates_status": "pending rerun",
+      "production_source": "f1ed8f3bba25ed233ad81e290ad6c9068a506b89",
+      "production_files_changed": false,
+      "lab_rerun": false,
+      "reservation_taken": false,
+      "timing_measurement": false,
+      "D133_arm": false,
+      "requests": {
+        "fixture": "approved and applied",
+        "enforcement_comment": "routed to netlab",
+        "D133": "scheduled after r25 and follow-up 42"
+      }
+    }
+  ]
 }

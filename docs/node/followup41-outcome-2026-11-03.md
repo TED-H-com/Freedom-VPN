@@ -291,3 +291,27 @@ changes are confined to documentation and tests/e2e/at/isolation; no production
 node/control code changed. The single requested main merge remains c98ea61c,
 and final lab source remains f1ed8f3b. Hygiene against current main still lists
 only owned paths. No validation of the later isolation harness is claimed.
+
+
+### Continuation 1 approval — 2026-11-03 (10:25)
+
+The orchestrator approved the setup-only H-1 correction on 2026-11-03.
+Commit 56829cc48d0d1ae328b41da402d7de76f862f2f0 applies exactly the three-line patch from
+.agent/f41/r24-h1-fixture.patch. The H-1 proof now differs from ba5d3004 by
+those three setup lines only. Its name, doc comment and every assertion are
+unchanged; the watchdog's r24 file is unchanged. The earlier byte-identical
+statements above describe the original import and remain historical records.
+
+The fake control signs desired state with issued = now minus one minute and
+a fresh expiry. Advancing its clock therefore produces HTTP 200 envelopes
+with changed signed times, rather than the proof's claimed 304 steady state.
+Freezing the signer at the snapshot's own signing instant makes subsequent
+polls genuine 304s. The real control also returns 304 for an ETag match.
+This corrects the fixture premise; the full-model comparison still applies
+real policy-expiry changes. The canonical H-1 proof now passes without an
+overlay (.agent/f41/c1-h1-proof.log). Canonical gate receipts follow below.
+
+No production file changes or lab rerun are authorized in this continuation.
+The 13/13 functional receipt on f1ed8f3b remains the production receipt.
+The enforcement comment request is routed to netlab; D-133 is scheduled after
+r25 and follow-up 42. Neither that work nor leadJitter is changed here.
