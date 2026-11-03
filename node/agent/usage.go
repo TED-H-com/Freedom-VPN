@@ -160,7 +160,7 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 		}
 	}()
 	id, blocked := meterBarrierIdentity(e.cfg.JournalDir)
-	if id == "" {
+	if id == "" && !e.usageAdopting {
 		if err := e.invalidateMeterCheckpoint(); err != nil {
 			e.usagePersist = true
 			return
@@ -190,6 +190,7 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 	m, err = meter.NewContext(ctx, meter.Config{
 		NodeID: e.nodeID, IncarnationID: e.incID, Store: st, Source: src, Logger: e.log,
 		PreserveClosedEpoch: blocked || e.retainedPending,
+		ExistingEpochOnly:   e.usageAdopting,
 	})
 	if err != nil {
 		e.meterFailed = true
@@ -211,9 +212,25 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 	e.uploader = up
 	e.usagePersist, e.meterFailed = false, false
 	e.usageOnce = true
+	if !e.usageAdopting {
+		e.activateUsage(ctx)
+	}
+	if blocked && !e.usageAdopting {
+		e.handoff(ctx)
+	}
+}
+
+// activateUsage is called only after initialization and the adoption decision
+// succeed. Preparing a candidate cannot start uploads or restore ledger state.
+func (e *Engine) activateUsage(ctx context.Context) {
+	if e.uploader == nil || e.uploadOn {
+		return
+	}
+	up := e.uploader
 	// Uploads follow the process caller, not Boot's cancellation-independent
 	// local context or a Step's short HTTP budget.
 	if e.runCtx == nil || e.runCtx.Err() == nil {
+		e.uploadOn = true
 		e.startLoops()
 		parent := e.loopCtx
 		if e.runCtx != nil {
@@ -235,9 +252,21 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 		}()
 	}
 	e.restoreUsage(ctx)
-	if blocked {
-		e.handoff(ctx)
+}
+
+// discardUsagePreparation has no running loops and no ledger writes to undo.
+func (e *Engine) discardUsagePreparation() {
+	if e.meter != nil {
+		e.meter.Close()
 	}
+	if e.usage != nil {
+		_ = e.usage.Close()
+	}
+	if e.usageLock != nil {
+		e.usageLock.Release()
+	}
+	e.meter, e.uploader, e.usage, e.usageStatus, e.usageLock = nil, nil, nil, nil, nil
+	e.usageOnce = false
 }
 
 func (e *Engine) openUsage(ctx context.Context) (*usagestore.Store, error) {
@@ -383,6 +412,9 @@ func (e *Engine) resumeSampling() {
 // A clean final sample checkpoints the counters so the next epoch does
 // not recount them (step 11).
 func (e *Engine) handoff(ctx context.Context) {
+	if e.usageAdopting {
+		return // adoption's rejected read withdraws first; Boot settles later
+	}
 	if e.retainedPending && !e.settleRetainedUsage(ctx) {
 		return
 	}

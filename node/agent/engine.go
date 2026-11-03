@@ -79,6 +79,8 @@ type Engine struct {
 	expectServing   atomic.Bool
 	uploader        *usageupload.Uploader
 	usageOnce       bool
+	usageAdopting   bool
+	uploadOn        bool
 	sampleOn        bool
 	finalDone       bool
 	finalBarrierID  string

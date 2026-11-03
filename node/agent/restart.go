@@ -100,15 +100,24 @@ func (e *Engine) adoptStoredServing(ctx context.Context) bool {
 	if !e.checkMemberPath(ctx, d.Model) {
 		return false
 	}
-	// Attribute bytes accumulated while the process was absent BEFORE opening
-	// the meter. Its same-boot continuity check retains the open epoch.
-	e.setMeterBindings(d.Model.Bindings)
+	// Prepare the meter read-only. The last verification can still refuse
+	// adoption; it must not leave an epoch, new bindings or an uploader behind
+	// (r22 M-2). Reconciliation that needs a write takes Boot's baseline path.
+	prepared := !e.usageOnce
+	e.usageAdopting = true
 	e.ensureUsage(ctx)
+	defer func() { e.usageAdopting = false }()
 	e.readMeter(ctx)
 	e.decision = Decide(e.input())
 	if controlContext(ctx).Err() != nil || e.meter == nil || !e.decision.Serve || !e.verifyServingModel(ctx, d.Model, e.appliedAssignments) {
+		if prepared {
+			e.discardUsagePreparation()
+		}
 		return false
 	}
+	e.usageAdopting = false
+	e.setMeterBindings(d.Model.Bindings)
+	e.activateUsage(ctx)
 	e.appliedModel = &d.Model
 	e.policyExpires = d.PolicyExpires
 	e.serving = true

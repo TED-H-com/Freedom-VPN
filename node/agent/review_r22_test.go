@@ -718,87 +718,42 @@ func TestR22_M1_TransientBootMeterOpenFailureWedgesRetainedPendingSettlement(t *
 	}
 }
 
-// M-2: adoptStoredServing calls e.setMeterBindings(d.Model.Bindings) and
-// e.ensureUsage(ctx) at restart.go:105-106 while e.retainedPending is false,
-// BEFORE the final adoption gates at line 109 (!e.decision.Serve,
-// !e.verifyServingModel, controlContext(ctx).Err() != nil). When adoption is
-// then refused at line 109 (e.g. VerifyServing fails on the post-meter recheck
-// or SIGTERM arrives during checkMemberPath) and the previous epoch in usage.db
-// was closed (or switched on boot/reset):
-//  1. ensureUsage ran with PreserveClosedEpoch == false and retainedPending ==
-//     false, opening a new baseline epoch whose counters in usage.db inherit
-//     the retained bindings (d.Model.Bindings) instead of uuid.Nil/rev 0.
-//  2. When Boot then falls back to Baseline, sets e.retainedPending = true, and
-//     calls e.ensureUsage(ctx) at engine.go:538, ensureUsage is a no-op because
-//     e.usageOnce is already true. If the wall clock has not advanced since
-//     restart.go:106 and a packet arrived before Baseline, settleRetainedUsage
-//     at engine.go:539 hits ErrHold or closes an epoch contaminated with the
-//     retained bindings.
-func TestR22_M2_AbortedAdoptionContaminatesBaselineEpochAndBypassesPreserveClosed(t *testing.T) {
+// r22 M-2: a final adoption read may fail after preparing the meter. Neither
+// the bindings, epoch nor uploader may be committed before that read succeeds.
+// D-141: the original closed-epoch fixture made its gap before Boot by calling
+// FinalSample with nil bindings while leaving serving rules live. Use the real
+// open same-boot epoch and late drift instead.
+func TestR22_M2_AdoptionPreparationHasNoUsageEffectsBeforeLateAbort(t *testing.T) {
 	r, src, upName := r20ServedPendingDelta(t)
-
-	// Close the open epoch in usage.db cleanly (as after a completed barrier or
-	// prior final_sample) while residual counter u_<D> = 8192 remains in the kernel.
-	st, err := usagestore.Open(r.eng.cfg.UsageDBPath(), r.eng.nodeID, r.eng.incID, usagestore.Options{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	mClose, err := meter.New(meter.Config{
-		NodeID: r.eng.nodeID, IncarnationID: r.eng.incID, Store: st, Source: src,
-	})
-	if err != nil {
-		_ = st.Close()
-		t.Fatal(err)
-	}
-	if err := mClose.FinalSample(t.Context()); err != nil {
-		mClose.Close()
-		_ = st.Close()
-		t.Fatal(err)
-	}
-	mClose.Close()
-	_ = st.Close()
-
-	// VerifyServing succeeds on the first check in adoptStoredServing
-	// (restart.go:97) and fails on the second check after ensureUsage
-	// (restart.go:109), causing adoptStoredServing to return false at line 110.
+	before := r21ReadLedger(t, r.eng.cfg, r.eng.nodeID, r.eng.incID)
 	verifyCalls := 0
+	var next *Engine
+	premature := false
 	plane := &r22FailSecondVerifyPlane{
 		memPlane: r.plane,
 		onSecondVerify: func() {
-			// A packet arrives before Boot's fallback Baseline replaces the ruleset.
+			premature = len(next.meterBindings()) != 0 || next.loopCancel != nil
+			atDecision := r21ReadLedger(t, next.cfg, next.nodeID, next.incID)
+			if len(atDecision.gaps) != len(before.gaps) || atDecision.byRevision[1] != before.byRevision[1] {
+				premature = true
+			}
 			src.setCounter(upName, enforce.CounterValue{Packets: 3, Bytes: 9216})
 		},
 		calls: &verifyCalls,
 	}
-
-	next := r20Successor(t, r, r.eng.cfg, src, plane)
+	next = r20Successor(t, r, r.eng.cfg, src, plane)
 	if err := next.Boot(t.Context()); err != nil {
 		t.Fatal(err)
 	}
-	if next.serving {
-		t.Fatal("precondition: expected adoption to be refused when second VerifyServing failed")
+	if premature {
+		t.Fatal("r22 M-2: usage bindings, ledger or uploader changed before final adoption decision")
 	}
-
-	// Now Generation 3 rebinds the device to Member M2 (rev 2).
-	m2 := uuid.Must(uuid.NewV7())
-	b := oneBinding(r.clock.Wall())
-	b.MemberId = m2
-	b.BindingRevision = 2
-	r.srv.SetFixture(generationFixture(3, b))
-	r.eng = next
-	next.plane = r.plane
-	r.clock.Advance(time.Second)
-	alignControlClock(r)
-	stepOK(t, r)
-
-	u := r21ReadLedger(t, r.eng.cfg, next.nodeID, next.incID)
-	// TODO(review r22): M-2 — Aborted adoption at restart.go:109 must not have
-	// opened a new epoch with PreserveClosedEpoch=false and contaminated baseline
-	// counters before Boot installed Baseline; after Boot settles, retainedPending
-	// must be false and Generation 3 must be able to serve cleanly.
-	if next.retainedPending || !next.serving || len(u.gaps) != 0 {
-		t.Fatalf("M-2: aborted adoption after ensureUsage bypassed PreserveClosedEpoch and contaminated baseline: retainedPending=%v serving=%v byRevision=%v gaps=%d",
-			next.retainedPending, next.serving, u.byRevision, len(u.gaps))
+	if verifyCalls < 2 || next.serving {
+		t.Fatal("late adoption refusal was not exercised")
+	}
+	u := r21ReadLedger(t, next.cfg, next.nodeID, next.incID)
+	if u.byRevision[1] != 9216 || len(u.gaps) != 0 || next.retainedPending {
+		t.Fatalf("late abort lost outgoing bytes: revisions=%v gaps=%d pending=%v", u.byRevision, len(u.gaps), next.retainedPending)
 	}
 }
 
