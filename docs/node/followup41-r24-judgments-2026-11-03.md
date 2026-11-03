@@ -43,3 +43,17 @@ Netlab 32 owns H-4, M-2, tc deletion ordering and C1's design revision.
 Retained audit models and Apply's local render clock are not C1 eligibility
 receipts. Keep those distinctions in that design. Schedule the owed quiet
 D-133 A,B,A,B for 37–41 later; no reservation or timing run is part of 41.
+
+## Supplemental H-1 verifier dependency — 2026-11-03, before fix
+
+Code inspection found an additional pre-existing liveness dependency masked
+by unconditional Apply: `verifyAllowedSet` rejects tainted elements, and
+`verifyAllowedLifetimes` rejects excessive lifetimes of elements present, but
+neither requires every currently authorized address to be present. A deleted
+allow element is therefore not detected by the existing live verifier. This
+is reachable through live drift. `TestISO01_F41_SkippedTicksStillDetectLiveDrift`
+uses the existing rendered executor with real SystemPlane verification; its
+deleted-element, deleted-chain and foreign-tc cases are queued behind host
+admission. The intended owned-path fix is a read-only completeness check in
+SystemPlane using the same nft snapshot, with the existing D-104 early-expiry
+allowance. No changes to node/enforce are proposed.
