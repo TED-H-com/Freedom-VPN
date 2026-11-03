@@ -1,7 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 38](follow-up-38.md) (2026-11-03 EST):** #427 only: handover 37 recorded; r25 archived, both findings returned to agent-core 42 before merge, not yet judged. Operator guidance unchanged: no hitless hand-over or C1 benefit; r24 H-1/H-3, F30-01 and r20 H-1 stay open on main. Ten owner requests.
-**Previous cut — [follow-up 37](follow-up-37.md):** #424–#426 at 792e3e41; 16 subtests, three final rows, ten frozen inputs, three PR excerpts, two immutable documents, 138 archive payloads and separate source audit; 97 findings, 47 decisions, ten requests.
+**Current cut — [follow-up 39](follow-up-39.md) (2026-11-03 EST):** #428–#429 at 1b87ab32: agent-core 37–43 merged; r26 archived with zero findings. r24 H-1 and r20 H-1 fixed; F30-01 stays known behaviour. Production keeps the guard under D-145; C1 unimplemented. D-146/D-147 await netlab 34; F11-01 is upstream-dependent. All ten owner requests answered; 53 decisions.
+**Previous cut — [follow-up 38](follow-up-38.md):** #427 at 77626af4; 12 subtests, one final row, ten frozen inputs, one PR excerpt, exact r25 and separate audit; 99 findings, 47 decisions, ten then-open owner requests.
 
 ## Restart measurements at #412
 
@@ -25,7 +25,7 @@ work. Real failures still fail closed; the bound does not extend a signed lease
 or promise an outage ceiling. The restart lab requires a recorded graceful
 exit; forced process death is a separate case.
 
-**D-136 correction — provisional, to be confirmed together with D-135:**
+**D-136 correction — confirmed with D-135 by the owner, 2026-11-03:**
 a generation change can close every member on a node while its serving lease
 still names another generation. The ordinary stale-lease path installs the
 node-wide baseline and ACKs, renews, then Applies, verifies and heartbeats.
@@ -36,14 +36,17 @@ D-136's fail-closed reading and D-135's bracket rule are unchanged: baseline →
 next successful Apply, every loss counted, recovery required, never waived.
 Historical failures stay failed. [Decision and evidence](follow-up-24.md#provisional-decisions-and-findings).
 
-**D-137 routed-hop scope — provisional:** #367 delivers a separate router with
+**D-137 routed-hop scope — confirmed by the owner, 2026-11-03:** #367 delivers a separate router with
 a 1280 member-facing link: IPv6 passes by PTB with learned PMTU 1280; IPv4
 passes by DF=0 fragmentation in transit, not measured IPv4 PMTU discovery.
 Known-PMTU controls also pass. Receive-only no-PTB links remain PMTU black-hole
 limitations, never a pass; historical F8-02 rows stay failed. Members adoption
 is pending. This is tested fixture scope, not complete real-platform or QUIC
-qualification. No global MTU / MSS clamp; lower tunnel MTU or an MSS clamp
-remains an owner hardening option (§8.3; §19 AT09).
+qualification. Under D-146 the owner approved a TCP MSS clamp, with no lower
+tunnel MTU. Netlab 34 is implementing its value and placement against the
+receive-only MTU-1280 row; it is not on main at this cut and no date is promised.
+UDP and QUIC over receive-only links without PTB remain a documented limitation
+(§8.3; §19 AT09); historical F8-02 rows stay failed.
 
 ## Operator changes at #356
 
@@ -56,7 +59,7 @@ maximum is a measurement, not a guaranteed ceiling. An install overrun never
 opens the guard; the closed generation-0 baseline replaces it atomically.
 D-104 / D-120 / AT13 / AT29 predicates are unchanged.
 
-**D-135 rollback — provisional, pending the owner's confirmation:** a failed
+**D-135 rollback — confirmed by the owner, 2026-11-03:** a failed
 Apply closes every member on that node until the next successful Apply.
 Rollback installs the node-wide generation-0 baseline, preserving revocation;
 it does not restore the previous generation. Repeated failures can keep that
@@ -366,53 +369,49 @@ proves withdrawal without another Apply, and
 TestAT13_F27_UnrecordedApplyRefusesRestartAdoption proves baseline on restart
 after an unrecorded Apply. See the [final #405 roadmap row](../ROADMAP.md).
 
-**Known behaviour at #407 (r20 H-1, reported and routed, not yet judged).**
-After such a restart, the bytes counted since the last sample before it can be
-recorded as an unattributed `mapping conflict` usage gap instead of member
-usage. See the [archived r20 review](../reviews/r20-adoption-signal-review.md).
-Agent-core 37's fixes were held after r21 and go with reviewed agent-core 38;
-the finding remains open on main. No fix date is promised.
+**2026-11-03 — Refused-restart accounting fixed in #429 (r20 H-1).**
+A refused same-boot adoption settles pending usage under durable attribution
+before refreshing desired state or admitting replacement bindings. Boot and
+usage epochs distinguish known identities from ambiguous crash history;
+unknown ownership still produces an honest mapping-conflict gap. Settlement
+failure keeps forwarding closed until recovery. The old unconditional retained-
+model attribution is not a guarantee: 38–40 corrected its crash-window and
+epoch limits. See [the merged judgments](../reviews/README.md#r20-to-r25-dispositions-at-the-follow-up-39-cutoff-2026-11-03-est).
+This closes the r20 H-1 warning, without promising lossless accounting for
+unknowable provenance or changing F30-01's separate update behavior in §4.3.
 
-**2026-11-03 — Follow-up 37 at #426.** The at-isolation nightly harness
-readiness fix is merged in #424. Local run 9f1bc0ff passes both previously
-unlisted rows; the first scheduled run exercising the fix is still pending.
-AT11's native platform matrix and AT13's full fault matrix remain operator
-rows. The previous night's 41456092596 AT10 pass used inherited readiness
-and is not qualified. Netlab 33's additive citation corrections change no
-reload behavior. The follow-up 36 guidance below remains current at this cut;
-r24 H-1 and r20 H-1 remain open on main while agent-core 37–41 are held.
-See [follow-up 37](follow-up-37.md).
+**2026-11-03 — Reload behavior after #429 (r24 H-1 fixed).**
+Healthy unchanged enforcement is retained after the agent compares the complete
+model and pending work under the node lock and freshly verifies the live rules,
+allow elements and member path. A successful unchanged 304 poll no longer
+performs a full Apply. Meter sampling, heartbeat, authorization checks and
+watchdog expiry continue; retention never slides a signed deadline.
 
-**2026-11-03 — Reload and restart limits at #423.** During a ruleset reload,
-in-flight member TCP segments can be dropped while a generation installs.
-Netlab 30 matched seven missing node egresses to deadline-guard drops inside
-their install-command brackets. TCP recovered by retransmission in every
-observed read; the worst was 416.7 ms. B1's earlier 1,501.4 ms failed read has
-no packet trace and remains unexplained. The guard window and full suite
-were host-unqualified despite passing functional assertions. These samples
-provide no guaranteed recovery bound. Netlab 32 (#423) changed the install
-order, not the guard. C1 is revised as documents only; the owner's G5/G6 trade
-is still undecided and production keeps the current guard. No hitless hand-over
-is implemented and no C1 benefit is promised.
+Lease renewals, changed authorization or model inputs (including device/member
+deadlines, rates, sets and topology), pending revocations and required repair
+still take their enforcement path. Failed live verification withdraws or
+repairs according to the existing fail-closed rules. Sibling expiry re-decides
+and Applies surviving bindings on the same tick; individual kernel cutoffs
+remain independent, and last-binding or node-level expiry still closes.
 
-**r24 H-1 remains open on main:** a serving node re-installs its unchanged
-enforcement after every successful nominal ten-second poll. Each install closes
-member forwarding for the guard window. Netlab 30's 28.5 ms median and 94.7 ms
-maximum are outer command brackets, not exact outages or future bounds.
-Agent-core 41's fix is not merged; no date is promised.
+Actual installs retain the current guard under **D-145**. In-flight TCP
+segments can still drop during a reload. Netlab 30's seven traced missing
+egresses matched guard drops; all observed reads recovered by retransmission,
+worst 416.7 ms. Its windows/full suite were host-unqualified, and B1's earlier
+1,501.4 ms failed read remains unexplained. The 28.5 ms median / 94.7 ms maximum
+outer command brackets are historical measurements, not outages or guarantees.
+Netlab 32 changed install order; #429 removes unnecessary unchanged-tick
+installs. **No hitless hand-over is implemented and no C1 benefit is promised.**
+C1 stays unimplemented; netlab 31/32's design and revision remain history.
+Reopen only with field complaints or measured member-visible impact after
+r24 H-1's merged fix. See [follow-up 39](follow-up-39.md).
 
-r20 H-1's mapping-conflict usage gap stays open on main while agent-core
-37–41 are held. Their judgments and fixes are outside this cut. F30-01 remains
-known behaviour with no merged fix. See [follow-up 36](follow-up-36.md) and
-[netlab 32's revision](../poc/G2-followup32-design/revision.md).
-
-**2026-11-03 — Restart warning at #415.** r20 H-1's mapping-conflict usage
-gap stays open on main while agent-core 37–39 are held. Review r22 returned
-38's delivered tip (carrying 37) to 39 before merge; 39 judges the findings
-under D-141 and must be reviewed before the combined merge. None is confirmed.
-F30-01 remains the known behaviour in §4.3, with no merged fix or verified
-production restart procedure. See [follow-up 33](follow-up-33.md) and the
-[r22 disposition](../reviews/README.md#r22-dispositions-at-the-follow-up-33-cutoff-2026-11-03-est).
+**Scheduled acceptance boundary.** #424's at-isolation readiness fix is merged.
+Local run 9f1bc0ff passes the two previously unlisted rows; this cut supplies
+no first scheduled exercise. AT11's native platform matrix and AT13's full
+fault matrix remain operator rows. The earlier 41456092596 AT10 pass inherited
+readiness and is not qualified. **F30-01 remains known behaviour with no merged
+fix or verified production restart procedure.**
 
 First fetch the node (`GET /api/v1/admin/nodes/{node_id}`) and capture the response `ETag` header (`"<resource_version>"`). Supply `If-Match` and `Idempotency-Key` (`428 Precondition Required` if `If-Match` is missing; `412 Precondition Failed` if stale):
 
@@ -525,13 +524,21 @@ this in devstack 25; it was harness interference, not a product defect.
 Diagnose from the member side, or capture packets without touching the node's
 ruleset. See the [dated devstack 26 analysis](../e2e/runs/2026-11-01/followup26/analysis.md).
 
-**Known traceroute behaviour (#389).** The fail-closed download source guard
-drops RELATED ICMP errors (fragmentation needed or time exceeded) whose outer
-source is in the spec deny list, even when the quoted connection is allowed.
-That list includes 10/8, 172.16/12, 192.168/16 and 100.64/10. A member's
-traceroute therefore shows no reply for on-path hops with those addresses.
-No exception exists; the [owner question remains open](follow-up-28.md).
-This records current behaviour and promises no fix.
+**RELATED ICMP decision, implementation pending (D-147).** At this cutoff,
+#389's source guard still drops fragmentation-needed and time-exceeded from
+spec-denied outer sources, including 10/8, 172.16/12, 192.168/16 and 100.64/10.
+The owner approved only IPv4 fragmentation-needed (type 3, code 4) when
+conntrack marks it RELATED to an allowed member connection. Time-exceeded and
+every other ICMP from denied sources stay dropped. Netlab 34 is implementing
+the exception; it is not on main here and no date is promised. Traceroute still
+has no reply from those denied-source hops.
+
+**Members F11-01 (D-148) remains OPEN and upstream-dependent.** There is no
+product, pin, daemon or architecture change. The orchestrator reported the
+::1 response-source boundary with public evidence in
+[NetBird discussion 8473](https://github.com/netbirdio/netbird/discussions/8473)
+on 2026-11-03. This assigns no common cause to the other historical delivery
+failures and promises no resolution date.
 
 ### 3.5 Revoking (`POST .../revoke`), Retiring (`DELETE /api/v1/admin/nodes/{node_id}`), Incarnation History (`GET /api/v1/admin/nodes/{node_id}/incarnations`), and Cloned-Identity Conflict Runbook (`D-072`, `#211`, `#213`, `#217`, `#223`)
 

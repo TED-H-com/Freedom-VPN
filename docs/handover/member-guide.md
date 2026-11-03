@@ -1,7 +1,7 @@
 # Freedom VPN 會員使用手冊 / Member Guide (`docs/handover/member-guide.md`)
 
-**Current cut — [follow-up 38](follow-up-38.md) (2026-11-03 EST):** #427 only: handover 37 recorded; r25 archived, both findings returned to agent-core 42 before merge, not yet judged. Operator guidance unchanged: no hitless hand-over or C1 benefit; r24 H-1/H-3, F30-01 and r20 H-1 stay open on main. Ten owner requests.
-**Previous cut — [follow-up 37](follow-up-37.md):** #424–#426 at 792e3e41; 16 subtests, three final rows, ten frozen inputs, three PR excerpts, two immutable documents, 138 archive payloads and separate source audit; 97 findings, 47 decisions, ten requests.
+**Current cut — [follow-up 39](follow-up-39.md) (2026-11-03 EST):** #428–#429 at 1b87ab32: agent-core 37–43 merged; r26 archived with zero findings. r24 H-1 and r20 H-1 fixed; F30-01 stays known behaviour. Production keeps the guard under D-145; C1 unimplemented. D-146/D-147 await netlab 34; F11-01 is upstream-dependent. All ten owner requests answered; 53 decisions.
+**Previous cut — [follow-up 38](follow-up-38.md):** #427 at 77626af4; 12 subtests, one final row, ten frozen inputs, one PR excerpt, exact r25 and separate audit; 99 findings, 47 decisions, ten then-open owner requests.
 
 **2026-10-31 服務通知（#351 截止）：** DNS 的 TTL 是快取最長有效時間，
 不保證期間內每次查詢答案相同；較早送出的上游請求若較晚完成，可能覆蓋較新的
