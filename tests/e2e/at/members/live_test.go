@@ -54,6 +54,20 @@ type memberHTTPRecord struct {
 	BodyExcerpt string    `json:"scrubbed_body_excerpt,omitempty"`
 }
 
+type response struct {
+	status  int
+	headers http.Header
+	body    []byte
+	code    string
+}
+type step struct {
+	Name     string `json:"name"`
+	Status   string `json:"status"`
+	Expected string `json:"expected"`
+	Actual   string `json:"actual"`
+	Command  string `json:"command"`
+	At       string `json:"at"`
+}
 type buildInfo struct {
 	TestBinary string                       `json:"test_binary_sha256"`
 	Source     string                       `json:"source_commit"`

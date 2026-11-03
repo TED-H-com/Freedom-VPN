@@ -16,6 +16,10 @@ import (
 	"github.com/google/uuid"
 )
 
+func (r response) grantResp() grantHTTPResponse {
+	return grantHTTPResponse{status: r.status, body: r.body, code: r.code}
+}
+
 func (r *record) jsonCheck(name, expected string, value any, command string, ok bool) {
 	raw, err := json.Marshal(value)
 	r.check(name, expected, string(raw), command, ok && err == nil)
@@ -115,8 +119,8 @@ func (l *live) finiteExpiry(r *record, id uuid.UUID, service string) {
 			r.check("real finite expiry audited withdrawal", "three authorized-to-pending audit events", string(expiryAudit), "read expiry device.revoke audit rows; no synthetic audit input", auditErr == nil && auditCount == 3)
 			l.finishPersistent(r, flow, u, l.memberHeartbeat(r))
 		},
-		grantRestore: func() response {
-			return l.grant(l.a, time.Now().UTC().Add(time.Hour))
+		grantRestore: func() grantHTTPResponse {
+			return l.grant(l.a, time.Now().UTC().Add(time.Hour)).grantResp()
 		},
 		waitDevices: func() (bool, int, int) {
 			var authorized, pending int
@@ -127,13 +131,13 @@ func (l *live) finiteExpiry(r *record, id uuid.UUID, service string) {
 			})
 			return restored, authorized, pending
 		},
-		waitOperation: func(opID uuid.UUID) (bool, response) {
+		waitOperation: func(opID uuid.UUID) (bool, grantHTTPResponse) {
 			var operation response
 			completed := l.wait(60*time.Second, func() bool {
 				operation = l.api(l.admin, "GET", "/api/v1/admin/operations/"+opID.String(), nil, nil)
 				return operation.status == 200 && completedOperation(operation.body)
 			})
-			return completed, operation
+			return completed, operation.grantResp()
 		},
 	})
 }

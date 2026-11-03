@@ -3,32 +3,20 @@ package members
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 )
 
-type response struct {
-	status  int
-	headers http.Header
-	body    []byte
-	code    string
-}
-
-type step struct {
-	Name     string `json:"name"`
-	Status   string `json:"status"`
-	Expected string `json:"expected"`
-	Actual   string `json:"actual"`
-	Command  string `json:"command"`
-	At       string `json:"at"`
+type grantHTTPResponse struct {
+	status int
+	body   []byte
+	code   string
 }
 
 type checkRecorder interface {
 	check(name, expected, actual, command string, ok bool)
-	jsonCheck(name, expected string, value any, command string, ok bool)
 }
 
 // finiteExpirySteps injects the operations called by finiteExpiry so the exact
@@ -86,9 +74,9 @@ type finiteExpirySteps struct {
 	forwardingGate     func()
 	traceForwarding    func() bool
 	runNormalExpiry    func(until time.Time)
-	grantRestore       func() response
+	grantRestore       func() grantHTTPResponse
 	waitDevices        func() (restored bool, authorized, pending int)
-	waitOperation      func(opID uuid.UUID) (completed bool, operation response)
+	waitOperation      func(opID uuid.UUID) (completed bool, operation grantHTTPResponse)
 }
 
 func runFiniteExpiry(r checkRecorder, s finiteExpirySteps) {
@@ -158,11 +146,11 @@ type reauthorizationLimitSteps struct {
 	afterFenceInsert      func()
 	hasLiveOtherPlanGrant func() bool
 	replaceOriginalPlan   func() bool
-	grantRestore          func() response
+	grantRestore          func() grantHTTPResponse
 	fenceCount            func() int
-	authorizeDevice       func() response
+	authorizeDevice       func() grantHTTPResponse
 	waitDevices           func() (restored bool, authorized, pending int)
-	waitOperation         func(opID uuid.UUID) (completed bool, operation response)
+	waitOperation         func(opID uuid.UUID) (completed bool, operation grantHTTPResponse)
 }
 
 func runReauthorizationLimit(r checkRecorder, s reauthorizationLimitSteps) {
@@ -183,7 +171,7 @@ func runReauthorizationLimit(r checkRecorder, s reauthorizationLimitSteps) {
 
 func restoreLimitGrantOnEarlyReturn(r checkRecorder, s reauthorizationLimitSteps) {
 	var completed bool
-	var operation response
+	var operation grantHTTPResponse
 	if s.hasLiveOtherPlanGrant != nil && s.hasLiveOtherPlanGrant() {
 		replaced := s.replaceOriginalPlan()
 		r.check("D-081 early-return restoration HTTP", "true", fmt.Sprintf("replaced=%t", replaced), "Stack.ReplaceFiniteGrant back to original plan on early return", replaced)
@@ -207,7 +195,7 @@ type reauthorizationSteps struct {
 	fenceInsert      func() bool
 	afterFenceInsert func()
 	fenceCount       func() int
-	authorizeDevice  func() response
+	authorizeDevice  func() grantHTTPResponse
 	waitAuthorized   func() bool
 }
 
@@ -229,7 +217,7 @@ func runReauthorization(r checkRecorder, s reauthorizationSteps) {
 type populatedHoldCleanupSteps struct {
 	restoreHoldMember   func()
 	deviceNeedsRestore  func() bool
-	authorizeHoldDevice func() response
+	authorizeHoldDevice func() grantHTTPResponse
 	publishGroupA       func()
 }
 

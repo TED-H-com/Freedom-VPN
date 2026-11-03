@@ -32,8 +32,8 @@ func (l *live) populatedHolds(r *record) {
 			deviceNeedsRestore: func() bool {
 				return l.pool.QueryRow(l.ctx, `SELECT id,status FROM member_devices WHERE member_id=$1 ORDER BY created_at,id LIMIT 1`, l.b.member).Scan(&device, &status) == nil && status != "authorized"
 			},
-			authorizeHoldDevice: func() response {
-				return l.api(l.admin, "POST", authorizePath(l.b.member, device), nil, commandHeaders())
+			authorizeHoldDevice: func() grantHTTPResponse {
+				return l.api(l.admin, "POST", authorizePath(l.b.member, device), nil, commandHeaders()).grantResp()
 			},
 			publishGroupA: func() {
 				l.publish(r, []uuid.UUID{l.groupA})

@@ -1,7 +1,6 @@
 package members
 
 import (
-	"encoding/json"
 	"strings"
 	"testing"
 	"time"
@@ -9,9 +8,17 @@ import (
 	"github.com/google/uuid"
 )
 
+type stepEntry struct {
+	Name     string
+	Status   string
+	Expected string
+	Actual   string
+	Command  string
+}
+
 type stepLog struct {
 	failed bool
-	steps  []step
+	steps  []stepEntry
 }
 
 func (l *stepLog) check(name, expected, actual, command string, ok bool) {
@@ -20,19 +27,13 @@ func (l *stepLog) check(name, expected, actual, command string, ok bool) {
 		status = "fail"
 		l.failed = true
 	}
-	l.steps = append(l.steps, step{
+	l.steps = append(l.steps, stepEntry{
 		Name:     name,
 		Status:   status,
 		Expected: expected,
 		Actual:   actual,
 		Command:  command,
-		At:       "2026-11-03T22:00:00Z",
 	})
-}
-
-func (l *stepLog) jsonCheck(name, expected string, value any, command string, ok bool) {
-	raw, err := json.Marshal(value)
-	l.check(name, expected, string(raw), command, ok && err == nil)
 }
 
 func TestAT02_FiniteExpiryRestoresOnEveryEarlyReturnAndOnceOnNormalPath(t *testing.T) {
@@ -81,21 +82,21 @@ func TestAT02_FiniteExpiryRestoresOnEveryEarlyReturnAndOnceOnNormalPath(t *testi
 					runNormalExpiry: func(time.Time) {
 						normalExpiryCalls++
 					},
-					grantRestore: func() response {
+					grantRestore: func() grantHTTPResponse {
 						restoreCalls++
 						authorized, pending = 3, 0
-						return response{status: 202, body: createBody}
+						return grantHTTPResponse{status: 202, body: createBody}
 					},
 					waitDevices: func() (bool, int, int) {
 						waitDevCalls++
 						return authorized == 3 && pending == 0, authorized, pending
 					},
-					waitOperation: func(gotID uuid.UUID) (bool, response) {
+					waitOperation: func(gotID uuid.UUID) (bool, grantHTTPResponse) {
 						waitOpCalls++
 						if gotID != opID {
 							t.Fatalf("opID = %v, want %v", gotID, opID)
 						}
-						return true, response{status: 200, body: succeededBody}
+						return true, grantHTTPResponse{status: 200, body: succeededBody}
 					},
 				})
 
@@ -179,21 +180,21 @@ func TestAT02_FiniteExpiryRestoresOnEveryEarlyReturnAndOnceOnNormalPath(t *testi
 					runNormalExpiry: func(time.Time) {
 						normalExpiryCalls++
 					},
-					grantRestore: func() response {
+					grantRestore: func() grantHTTPResponse {
 						restoreCalls++
 						authorized, pending = 3, 0
-						return response{status: 202, body: createBody}
+						return grantHTTPResponse{status: 202, body: createBody}
 					},
 					waitDevices: func() (bool, int, int) {
 						waitDevCalls++
 						return authorized == 3 && pending == 0, authorized, pending
 					},
-					waitOperation: func(gotID uuid.UUID) (bool, response) {
+					waitOperation: func(gotID uuid.UUID) (bool, grantHTTPResponse) {
 						waitOpCalls++
 						if gotID != opID {
 							t.Fatalf("opID = %v, want %v", gotID, opID)
 						}
-						return true, response{status: 200, body: succeededBody}
+						return true, grantHTTPResponse{status: 200, body: succeededBody}
 					},
 				})
 
@@ -271,21 +272,21 @@ func TestAT02_FiniteExpiryRestoresOnEveryEarlyReturnAndOnceOnNormalPath(t *testi
 					true,
 				)
 			},
-			grantRestore: func() response {
+			grantRestore: func() grantHTTPResponse {
 				restoreCalls++
 				authorized, pending = 3, 0
-				return response{status: 202, body: createBody}
+				return grantHTTPResponse{status: 202, body: createBody}
 			},
 			waitDevices: func() (bool, int, int) {
 				waitDevCalls++
 				return authorized == 3 && pending == 0, authorized, pending
 			},
-			waitOperation: func(gotID uuid.UUID) (bool, response) {
+			waitOperation: func(gotID uuid.UUID) (bool, grantHTTPResponse) {
 				waitOpCalls++
 				if gotID != opID {
 					t.Fatalf("opID = %v, want %v", gotID, opID)
 				}
-				return true, response{status: 200, body: succeededBody}
+				return true, grantHTTPResponse{status: 200, body: succeededBody}
 			},
 		})
 
@@ -336,16 +337,16 @@ func TestAT02_AuditedEarlyReturnRestorations(t *testing.T) {
 			hasLiveOtherPlanGrant: func() bool {
 				return false
 			},
-			grantRestore: func() response {
+			grantRestore: func() grantHTTPResponse {
 				restoredCalls++
 				authorized, pending = 3, 0
-				return response{status: 202, body: createBody}
+				return grantHTTPResponse{status: 202, body: createBody}
 			},
 			waitDevices: func() (bool, int, int) {
 				return authorized == 3 && pending == 0, authorized, pending
 			},
-			waitOperation: func(uuid.UUID) (bool, response) {
-				return true, response{status: 200, body: succeededBody}
+			waitOperation: func(uuid.UUID) (bool, grantHTTPResponse) {
+				return true, grantHTTPResponse{status: 200, body: succeededBody}
 			},
 		})
 
@@ -381,11 +382,11 @@ func TestAT02_AuditedEarlyReturnRestorations(t *testing.T) {
 				return true
 			},
 			fenceCount: func() int { return fences },
-			authorizeDevice: func() response {
+			authorizeDevice: func() grantHTTPResponse {
 				authCalls++
 				fences = 0
 				authorized, pending = 3, 0
-				return response{status: 202, body: []byte(`{"status":"pending"}`)}
+				return grantHTTPResponse{status: 202, body: []byte(`{"status":"pending"}`)}
 			},
 			waitDevices: func() (bool, int, int) {
 				return authorized == 3 && pending == 0, authorized, pending
@@ -413,7 +414,7 @@ func TestAT02_AuditedEarlyReturnRestorations(t *testing.T) {
 			afterLowerGrant:   func() {},
 			fenceInsert:       func() bool { return true },
 			afterFenceInsert:  func() { normalRan++ },
-			grantRestore:      func() response { earlyRestore++; return response{status: 202} },
+			grantRestore:      func() grantHTTPResponse { earlyRestore++; return grantHTTPResponse{status: 202} },
 		})
 		if normalRan != 1 || earlyRestore != 0 || len(rec.steps) != 0 {
 			t.Fatalf("normalRan=%d earlyRestore=%d steps=%+v", normalRan, earlyRestore, rec.steps)
@@ -431,10 +432,10 @@ func TestAT02_AuditedEarlyReturnRestorations(t *testing.T) {
 			},
 			afterFenceInsert: func() { afterFence++ },
 			fenceCount:       func() int { return fences },
-			authorizeDevice: func() response {
+			authorizeDevice: func() grantHTTPResponse {
 				authCalls++
 				fences = 0
-				return response{status: 202, body: []byte(`{"kind":"member.device_authorize"}`)}
+				return grantHTTPResponse{status: 202, body: []byte(`{"kind":"member.device_authorize"}`)}
 			},
 			waitAuthorized: func() bool { return true },
 		})
@@ -447,7 +448,7 @@ func TestAT02_AuditedEarlyReturnRestorations(t *testing.T) {
 			fenceInsert:      func() bool { return true },
 			afterFenceInsert: func() { afterFence++ },
 			fenceCount:       func() int { return 1 },
-			authorizeDevice:  func() response { authCalls++; return response{status: 202} },
+			authorizeDevice:  func() grantHTTPResponse { authCalls++; return grantHTTPResponse{status: 202} },
 		})
 		if afterFence != 1 || authCalls != 1 || len(normalRec.steps) != 0 {
 			t.Fatalf("normal reauthorization ran early restore: afterFence=%d authCalls=%d steps=%+v", afterFence, authCalls, normalRec.steps)
@@ -460,9 +461,9 @@ func TestAT02_AuditedEarlyReturnRestorations(t *testing.T) {
 		runPopulatedHoldCleanup(rec, populatedHoldCleanupSteps{
 			restoreHoldMember:  func() { memberRestored++ },
 			deviceNeedsRestore: func() bool { return true },
-			authorizeHoldDevice: func() response {
+			authorizeHoldDevice: func() grantHTTPResponse {
 				deviceAuthorized++
-				return response{status: 202}
+				return grantHTTPResponse{status: 202}
 			},
 			publishGroupA: func() { published++ },
 		})
@@ -474,7 +475,7 @@ func TestAT02_AuditedEarlyReturnRestorations(t *testing.T) {
 		runPopulatedHoldCleanup(normalRec, populatedHoldCleanupSteps{
 			restoreHoldMember:   func() { memberRestored++ },
 			deviceNeedsRestore:  func() bool { return false },
-			authorizeHoldDevice: func() response { deviceAuthorized++; return response{status: 202} },
+			authorizeHoldDevice: func() grantHTTPResponse { deviceAuthorized++; return grantHTTPResponse{status: 202} },
 			publishGroupA:       func() { published++ },
 		})
 		if memberRestored != 2 || deviceAuthorized != 1 || published != 2 || len(normalRec.steps) != 0 {

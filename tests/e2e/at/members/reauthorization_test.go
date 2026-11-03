@@ -201,8 +201,8 @@ func (l *live) reauthorization(r *record, b *browser, id uuid.UUID, service stri
 		fenceCount: func() int {
 			return l.fenceCount(id)
 		},
-		authorizeDevice: func() response {
-			return l.api(l.admin, "POST", authorizePath(b.member, id), nil, commandHeaders())
+		authorizeDevice: func() grantHTTPResponse {
+			return l.api(l.admin, "POST", authorizePath(b.member, id), nil, commandHeaders()).grantResp()
 		},
 		waitAuthorized: func() bool {
 			return l.wait(90*time.Second, func() bool {
@@ -324,14 +324,14 @@ func (l *live) reauthorizationLimit(r *record, id, revoked uuid.UUID, service st
 		replaceOriginalPlan: func() bool {
 			return l.replaceFiniteGrant(r, l.a, l.planRev, time.Now().UTC().Add(time.Hour))
 		},
-		grantRestore: func() response {
-			return l.grant(l.a, time.Now().UTC().Add(time.Hour))
+		grantRestore: func() grantHTTPResponse {
+			return l.grant(l.a, time.Now().UTC().Add(time.Hour)).grantResp()
 		},
 		fenceCount: func() int {
 			return l.fenceCount(id)
 		},
-		authorizeDevice: func() response {
-			return l.api(l.admin, "POST", authorizePath(l.a.member, id), nil, commandHeaders())
+		authorizeDevice: func() grantHTTPResponse {
+			return l.api(l.admin, "POST", authorizePath(l.a.member, id), nil, commandHeaders()).grantResp()
 		},
 		waitDevices: func() (bool, int, int) {
 			var authorized, pending int
@@ -342,13 +342,13 @@ func (l *live) reauthorizationLimit(r *record, id, revoked uuid.UUID, service st
 			})
 			return restored, authorized, pending
 		},
-		waitOperation: func(opID uuid.UUID) (bool, response) {
+		waitOperation: func(opID uuid.UUID) (bool, grantHTTPResponse) {
 			var operation response
 			completed := l.wait(60*time.Second, func() bool {
 				operation = l.api(l.admin, "GET", "/api/v1/admin/operations/"+opID.String(), nil, nil)
 				return operation.status == 200 && completedOperation(operation.body)
 			})
-			return completed, operation
+			return completed, operation.grantResp()
 		},
 	})
 }
