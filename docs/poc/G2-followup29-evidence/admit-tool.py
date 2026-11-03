@@ -26,6 +26,8 @@ if name in ('make','docker') or (name=='go' and sys.argv[1:2]==['test']):
 if name=='go' and sys.argv[1:2]==['test'] and os.environ.get('FVPN_NETLAB')=='1' and os.environ.get('FVPN_F29_MEASURE')=='1':
     host.admission('admission/'+os.environ['FVPN_F29_RUN']+'-after-startup', quiet=True)
     import subprocess
+    binary=subprocess.check_output(['docker','exec',os.environ['FVPN_LAB_PREFIX'],'sha256sum','/usr/local/bin/fvpn-netlab'],text=True).split()[0]
+    (host.DEST/'admission'/(os.environ['FVPN_F29_RUN']+'-binary.json')).write_text(json.dumps(dict(sha256=binary,toolchain=subprocess.check_output(['go','version'],text=True).strip()),indent=2)+'\n')
     if os.environ.get('FVPN_NETLAB_AT12_OBSERVE')=='1':
         subprocess.run(['docker','exec',os.environ['FVPN_LAB_PREFIX'],'python3','/opt/netlab/scripts/at12_observe.py','start','/scratch/at12-all'],check=True)
 os.execve(real,[name,*sys.argv[1:]],dict(os.environ))

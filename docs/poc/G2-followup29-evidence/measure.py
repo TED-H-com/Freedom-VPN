@@ -43,6 +43,7 @@ try:
         command=[sys.executable,str(host.DEST/'guard-window.py')]
     code=subprocess.run([sys.executable,str(host.DEST/'run.py'),name,*command],env=env).returncode
 finally:
+    (host.DEST/(name+'-posthost.json')).write_text(json.dumps(dict(utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),hold=host.hold(),processes=host.processes()),indent=2)+'\n')
     p=subprocess.run(['bash',str(host.HOLD),'--release'],text=True,capture_output=True)
     (host.DEST/(name+'-release.json')).write_text(json.dumps(dict(utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),exit_code=p.returncode,output=host.public(p.stdout+p.stderr)),indent=2)+'\n')
     if p.returncode: raise RuntimeError('release failed')
