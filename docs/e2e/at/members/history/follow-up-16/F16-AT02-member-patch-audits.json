@@ -1,0 +1,84 @@
+{
+  "run_id": "0ffb355a-945b-4198-a551-3794120a686c",
+  "source_commit": "3a8b61594b447d164bb7c9481545e207f8688ec2",
+  "through": "2026-11-01T17:40:32.213389522Z",
+  "method": "Read-only SELECT of original member.patch audit IDs and before/after admin_suspended booleans through the AT02 complete snapshot on the same owned stack; no profile fields or full audit diffs exported. Supplements the original generation-hold query, whose action list omitted member.patch.",
+  "rows": [
+    {
+      "id": "01a1982e-153c-76d7-8093-7c82bc685dc3",
+      "action": "member.patch",
+      "result": "succeeded",
+      "resource": "member:01a19824-21a0-758e-b551-5b99a7c32483",
+      "member_id": "01a19824-21a0-758e-b551-5b99a7c32483",
+      "occurred_at": "2026-11-01T17:35:19.354334+00:00",
+      "operation_id": null,
+      "after_suspended": null,
+      "before_suspended": null
+    },
+    {
+      "id": "01a1982f-70fb-7b16-8945-404aee049082",
+      "action": "member.patch",
+      "result": "succeeded",
+      "resource": "member:01a19824-21a0-758e-b551-5b99a7c32483",
+      "member_id": "01a19824-21a0-758e-b551-5b99a7c32483",
+      "occurred_at": "2026-11-01T17:36:48.376109+00:00",
+      "operation_id": "01a1982f-70fb-761e-99b7-a4d89d0a74b2",
+      "after_suspended": true,
+      "before_suspended": false
+    },
+    {
+      "id": "01a1982f-ab45-7bae-bfd2-0e32e5e6148a",
+      "action": "member.patch",
+      "result": "succeeded",
+      "resource": "member:01a19824-21a0-758e-b551-5b99a7c32483",
+      "member_id": "01a19824-21a0-758e-b551-5b99a7c32483",
+      "occurred_at": "2026-11-01T17:37:03.296915+00:00",
+      "operation_id": "01a1982f-ab45-7799-b1f2-3b16979baf60",
+      "after_suspended": false,
+      "before_suspended": true
+    },
+    {
+      "id": "01a19830-f680-7844-81d9-ff303d3e72da",
+      "action": "member.patch",
+      "result": "succeeded",
+      "resource": "member:01a19824-21a0-758e-b551-5b99a7c32483",
+      "member_id": "01a19824-21a0-758e-b551-5b99a7c32483",
+      "occurred_at": "2026-11-01T17:38:28.092799+00:00",
+      "operation_id": "01a19830-f680-704a-bb69-94d73feed983",
+      "after_suspended": true,
+      "before_suspended": false
+    },
+    {
+      "id": "01a19831-05cf-7d29-a44a-116a0ac21119",
+      "action": "member.patch",
+      "result": "succeeded",
+      "resource": "member:01a19824-21a0-758e-b551-5b99a7c32483",
+      "member_id": "01a19824-21a0-758e-b551-5b99a7c32483",
+      "occurred_at": "2026-11-01T17:38:32.0138+00:00",
+      "operation_id": "01a19831-05cf-793c-88dc-c8d8dbccf6eb",
+      "after_suspended": false,
+      "before_suspended": true
+    },
+    {
+      "id": "01a19832-c150-7b56-b84a-8f8565ccc252",
+      "action": "member.patch",
+      "result": "succeeded",
+      "resource": "member:01a19824-21a0-758e-b551-5b99a7c32483",
+      "member_id": "01a19824-21a0-758e-b551-5b99a7c32483",
+      "occurred_at": "2026-11-01T17:40:25.551359+00:00",
+      "operation_id": null,
+      "after_suspended": null,
+      "before_suspended": null
+    }
+  ],
+  "contention_context": {
+    "classification": "contention-confounded for every observation overlapping the window",
+    "start": "2026-11-01T17:32:43Z",
+    "end": "2026-11-01T17:37:12Z",
+    "decision": "D-133",
+    "cause_status": "unproven",
+    "source": "Orchestrator resume instruction, 2026-11-02: handover 29 CPU-heavy gates",
+    "rule": "All timings, failures and anomalies inside or overlapping this window are contention-confounded. Values and verdicts stand; overlap assigns no cause. Cumulative snapshots may reference earlier events; evaluate the event time, not the later snapshot time.",
+    "index": "F16-contention.json"
+  }
+}

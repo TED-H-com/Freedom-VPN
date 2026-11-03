@@ -1,0 +1,1469 @@
+{
+  "node_incarnations": {
+    "node": "01a19824-75e0-76ca-a711-a3a8639b44d7",
+    "node2": "01a1982c-6c15-706d-95ad-1b97f1fab978"
+  },
+  "complete": true,
+  "forwarding": [
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a19824-75e0-76ca-a711-a3a8639b44d7",
+      "origin_verified": true,
+      "origin_requests": 1,
+      "origin_snat_matches": true,
+      "probe_sha256": "4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a",
+      "at": "2026-11-01T17:53:41Z",
+      "first_counted_byte_at": "2026-11-01T17:53:46.660882983Z",
+      "member_container_role": "member",
+      "route_selected": true,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "58",
+        "device_upload_bytes": "261191",
+        "device_download_bytes": "20421",
+        "member_accept_rules": 18,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "3111",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "1350",
+          "ctv6": "0",
+          "nd_01a1982519ae77899c814b8954a8efb3": "0",
+          "nd_01a198258f607908a91f43532587354e": "0",
+          "nd_01a198271783777fa2ea56e5eccc459b": "0",
+          "nd_01a1982804417763852dabe7d3a7c46c": "0",
+          "nd_01a19834e4f1717e99cc76264c928856": "0",
+          "nd_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nd_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nd_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nd_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nd_01a1983ce6b374508d3f16a00c087106": "0",
+          "nu_01a1982519ae77899c814b8954a8efb3": "0",
+          "nu_01a198258f607908a91f43532587354e": "0",
+          "nu_01a198271783777fa2ea56e5eccc459b": "0",
+          "nu_01a1982804417763852dabe7d3a7c46c": "0",
+          "nu_01a19834e4f1717e99cc76264c928856": "0",
+          "nu_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nu_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nu_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nu_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nu_01a1983ce6b374508d3f16a00c087106": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "58",
+        "device_upload_bytes": "263456",
+        "device_download_bytes": "22831",
+        "member_accept_rules": 18,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "3111",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "1350",
+          "ctv6": "0",
+          "nd_01a1982519ae77899c814b8954a8efb3": "0",
+          "nd_01a198258f607908a91f43532587354e": "0",
+          "nd_01a198271783777fa2ea56e5eccc459b": "0",
+          "nd_01a1982804417763852dabe7d3a7c46c": "0",
+          "nd_01a19834e4f1717e99cc76264c928856": "0",
+          "nd_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nd_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nd_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nd_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nd_01a1983ce6b374508d3f16a00c087106": "0",
+          "nu_01a1982519ae77899c814b8954a8efb3": "0",
+          "nu_01a198258f607908a91f43532587354e": "0",
+          "nu_01a198271783777fa2ea56e5eccc459b": "0",
+          "nu_01a1982804417763852dabe7d3a7c46c": "0",
+          "nu_01a19834e4f1717e99cc76264c928856": "0",
+          "nu_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nu_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nu_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nu_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nu_01a1983ce6b374508d3f16a00c087106": "0"
+        }
+      },
+      "packet_observations": {
+        "member": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9004,
+          "filter": "controlled-origin TCP/443, client port 20033",
+          "interfaces": {
+            "fvnb0": {
+              "from_origin": 7,
+              "to_origin": 9
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9044,
+          "filter": "controlled-origin TCP/443, client port 20033",
+          "interfaces": {
+            "fvmb0": {
+              "from_origin": 7,
+              "to_origin": 9
+            },
+            "fvup0": {
+              "from_origin": 7,
+              "to_origin": 9
+            }
+          }
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9011,
+          "filter": "controlled-origin TCP/443, client port 20033",
+          "interfaces": {
+            "eth0": {
+              "from_origin": 7,
+              "to_origin": 9
+            }
+          }
+        }
+      },
+      "transfer": {
+        "body_bytes": 3,
+        "http_status": 200,
+        "origin_receipt": true
+      },
+      "counted": true,
+      "first_unconfirmed_hop": "none: origin HTTP response and both device admission counters increased"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a19824-75e0-76ca-a711-a3a8639b44d7",
+      "origin_verified": true,
+      "origin_requests": 0,
+      "origin_snat_matches": false,
+      "probe_sha256": "4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a",
+      "at": "2026-11-01T17:53:54Z",
+      "member_container_role": "member-b1",
+      "route_selected": false,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "58",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 18,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "3111",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "1350",
+          "ctv6": "0",
+          "nd_01a1982519ae77899c814b8954a8efb3": "0",
+          "nd_01a198258f607908a91f43532587354e": "0",
+          "nd_01a198271783777fa2ea56e5eccc459b": "0",
+          "nd_01a1982804417763852dabe7d3a7c46c": "0",
+          "nd_01a19834e4f1717e99cc76264c928856": "0",
+          "nd_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nd_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nd_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nd_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nd_01a1983ce6b374508d3f16a00c087106": "0",
+          "nu_01a1982519ae77899c814b8954a8efb3": "0",
+          "nu_01a198258f607908a91f43532587354e": "0",
+          "nu_01a198271783777fa2ea56e5eccc459b": "0",
+          "nu_01a1982804417763852dabe7d3a7c46c": "0",
+          "nu_01a19834e4f1717e99cc76264c928856": "0",
+          "nu_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nu_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nu_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nu_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nu_01a1983ce6b374508d3f16a00c087106": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "58",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 18,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "3111",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "1350",
+          "ctv6": "0",
+          "nd_01a1982519ae77899c814b8954a8efb3": "0",
+          "nd_01a198258f607908a91f43532587354e": "0",
+          "nd_01a198271783777fa2ea56e5eccc459b": "0",
+          "nd_01a1982804417763852dabe7d3a7c46c": "0",
+          "nd_01a19834e4f1717e99cc76264c928856": "0",
+          "nd_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nd_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nd_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nd_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nd_01a1983ce6b374508d3f16a00c087106": "0",
+          "nu_01a1982519ae77899c814b8954a8efb3": "0",
+          "nu_01a198258f607908a91f43532587354e": "0",
+          "nu_01a198271783777fa2ea56e5eccc459b": "0",
+          "nu_01a1982804417763852dabe7d3a7c46c": "0",
+          "nu_01a19834e4f1717e99cc76264c928856": "0",
+          "nu_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nu_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nu_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nu_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nu_01a1983ce6b374508d3f16a00c087106": "0"
+        }
+      },
+      "packet_observations": {
+        "member-b1": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9040,
+          "filter": "controlled-origin TCP/443, client port 20034",
+          "interfaces": {
+            "eth0": {
+              "to_origin": 5
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9083,
+          "filter": "controlled-origin TCP/443, client port 20034",
+          "interfaces": {}
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9038,
+          "filter": "controlled-origin TCP/443, client port 20034",
+          "interfaces": {}
+        }
+      },
+      "transfer": {
+        "body_bytes": 0,
+        "http_status": 0,
+        "origin_receipt": false
+      },
+      "counted": false,
+      "first_unconfirmed_hop": "member exit selection: controlled-origin route remains on underlay; no selected exit"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a19824-75e0-76ca-a711-a3a8639b44d7",
+      "origin_verified": true,
+      "origin_requests": 1,
+      "origin_snat_matches": true,
+      "probe_sha256": "4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a",
+      "at": "2026-11-01T17:54:11Z",
+      "first_counted_byte_at": "2026-11-01T17:54:15.85804306Z",
+      "member_container_role": "member-b1",
+      "route_selected": true,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "60",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 6,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "3111",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "1350",
+          "ctv6": "0",
+          "nd_01a1982519ae77899c814b8954a8efb3": "0",
+          "nd_01a198258f607908a91f43532587354e": "0",
+          "nd_01a19825ca63714d9815ec81aaeda494": "0",
+          "nd_01a198271783777fa2ea56e5eccc459b": "0",
+          "nd_01a1982804417763852dabe7d3a7c46c": "0",
+          "nd_01a19834e4f1717e99cc76264c928856": "0",
+          "nd_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nd_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nd_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nd_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nd_01a1983ce6b374508d3f16a00c087106": "0",
+          "nu_01a1982519ae77899c814b8954a8efb3": "0",
+          "nu_01a198258f607908a91f43532587354e": "0",
+          "nu_01a19825ca63714d9815ec81aaeda494": "0",
+          "nu_01a198271783777fa2ea56e5eccc459b": "0",
+          "nu_01a1982804417763852dabe7d3a7c46c": "0",
+          "nu_01a19834e4f1717e99cc76264c928856": "0",
+          "nu_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nu_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nu_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nu_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nu_01a1983ce6b374508d3f16a00c087106": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "60",
+        "device_upload_bytes": "2305",
+        "device_download_bytes": "2409",
+        "member_accept_rules": 6,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "3111",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "1350",
+          "ctv6": "0",
+          "nd_01a1982519ae77899c814b8954a8efb3": "0",
+          "nd_01a198258f607908a91f43532587354e": "0",
+          "nd_01a19825ca63714d9815ec81aaeda494": "0",
+          "nd_01a198271783777fa2ea56e5eccc459b": "0",
+          "nd_01a1982804417763852dabe7d3a7c46c": "0",
+          "nd_01a19834e4f1717e99cc76264c928856": "0",
+          "nd_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nd_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nd_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nd_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nd_01a1983ce6b374508d3f16a00c087106": "0",
+          "nu_01a1982519ae77899c814b8954a8efb3": "0",
+          "nu_01a198258f607908a91f43532587354e": "0",
+          "nu_01a19825ca63714d9815ec81aaeda494": "0",
+          "nu_01a198271783777fa2ea56e5eccc459b": "0",
+          "nu_01a1982804417763852dabe7d3a7c46c": "0",
+          "nu_01a19834e4f1717e99cc76264c928856": "0",
+          "nu_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nu_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nu_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nu_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nu_01a1983ce6b374508d3f16a00c087106": "0"
+        }
+      },
+      "packet_observations": {
+        "member-b1": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9016,
+          "filter": "controlled-origin TCP/443, client port 20035",
+          "interfaces": {
+            "fvnb0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9031,
+          "filter": "controlled-origin TCP/443, client port 20035",
+          "interfaces": {
+            "fvmb0": {
+              "from_origin": 7,
+              "to_origin": 10
+            },
+            "fvup0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9009,
+          "filter": "controlled-origin TCP/443, client port 20035",
+          "interfaces": {
+            "eth0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
+        }
+      },
+      "transfer": {
+        "body_bytes": 3,
+        "http_status": 200,
+        "origin_receipt": true
+      },
+      "counted": true,
+      "first_unconfirmed_hop": "none: origin HTTP response and both device admission counters increased"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a19824-75e0-76ca-a711-a3a8639b44d7",
+      "origin_verified": true,
+      "origin_requests": 0,
+      "origin_snat_matches": false,
+      "probe_sha256": "4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a",
+      "at": "2026-11-01T17:54:23Z",
+      "member_container_role": "member",
+      "route_selected": false,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "60",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 6,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "3111",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "1350",
+          "ctv6": "0",
+          "nd_01a1982519ae77899c814b8954a8efb3": "0",
+          "nd_01a198258f607908a91f43532587354e": "0",
+          "nd_01a19825ca63714d9815ec81aaeda494": "0",
+          "nd_01a198271783777fa2ea56e5eccc459b": "0",
+          "nd_01a1982804417763852dabe7d3a7c46c": "0",
+          "nd_01a19834e4f1717e99cc76264c928856": "0",
+          "nd_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nd_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nd_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nd_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nd_01a1983ce6b374508d3f16a00c087106": "0",
+          "nu_01a1982519ae77899c814b8954a8efb3": "0",
+          "nu_01a198258f607908a91f43532587354e": "0",
+          "nu_01a19825ca63714d9815ec81aaeda494": "0",
+          "nu_01a198271783777fa2ea56e5eccc459b": "0",
+          "nu_01a1982804417763852dabe7d3a7c46c": "0",
+          "nu_01a19834e4f1717e99cc76264c928856": "0",
+          "nu_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nu_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nu_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nu_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nu_01a1983ce6b374508d3f16a00c087106": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "60",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 6,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "3111",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "1350",
+          "ctv6": "0",
+          "nd_01a1982519ae77899c814b8954a8efb3": "0",
+          "nd_01a198258f607908a91f43532587354e": "0",
+          "nd_01a19825ca63714d9815ec81aaeda494": "0",
+          "nd_01a198271783777fa2ea56e5eccc459b": "0",
+          "nd_01a1982804417763852dabe7d3a7c46c": "0",
+          "nd_01a19834e4f1717e99cc76264c928856": "0",
+          "nd_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nd_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nd_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nd_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nd_01a1983ce6b374508d3f16a00c087106": "0",
+          "nu_01a1982519ae77899c814b8954a8efb3": "0",
+          "nu_01a198258f607908a91f43532587354e": "0",
+          "nu_01a19825ca63714d9815ec81aaeda494": "0",
+          "nu_01a198271783777fa2ea56e5eccc459b": "0",
+          "nu_01a1982804417763852dabe7d3a7c46c": "0",
+          "nu_01a19834e4f1717e99cc76264c928856": "0",
+          "nu_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nu_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nu_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nu_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nu_01a1983ce6b374508d3f16a00c087106": "0"
+        }
+      },
+      "packet_observations": {
+        "member": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9002,
+          "filter": "controlled-origin TCP/443, client port 20036",
+          "interfaces": {
+            "eth0": {
+              "to_origin": 5
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9097,
+          "filter": "controlled-origin TCP/443, client port 20036",
+          "interfaces": {}
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9029,
+          "filter": "controlled-origin TCP/443, client port 20036",
+          "interfaces": {}
+        }
+      },
+      "transfer": {
+        "body_bytes": 0,
+        "http_status": 0,
+        "origin_receipt": false
+      },
+      "counted": false,
+      "first_unconfirmed_hop": "member exit selection: controlled-origin route remains on underlay; no selected exit"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a19824-75e0-76ca-a711-a3a8639b44d7",
+      "origin_verified": true,
+      "origin_requests": 0,
+      "origin_snat_matches": false,
+      "probe_sha256": "4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a",
+      "at": "2026-11-01T17:54:39Z",
+      "member_container_role": "member-b1",
+      "route_selected": false,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "0",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 0,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "3111",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "1350",
+          "ctv6": "0",
+          "nd_01a1982519ae77899c814b8954a8efb3": "0",
+          "nd_01a198258f607908a91f43532587354e": "0",
+          "nd_01a19825ca63714d9815ec81aaeda494": "0",
+          "nd_01a198271783777fa2ea56e5eccc459b": "0",
+          "nd_01a1982804417763852dabe7d3a7c46c": "0",
+          "nd_01a19834e4f1717e99cc76264c928856": "0",
+          "nd_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nd_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nd_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nd_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nd_01a1983ce6b374508d3f16a00c087106": "0",
+          "nu_01a1982519ae77899c814b8954a8efb3": "0",
+          "nu_01a198258f607908a91f43532587354e": "0",
+          "nu_01a19825ca63714d9815ec81aaeda494": "0",
+          "nu_01a198271783777fa2ea56e5eccc459b": "0",
+          "nu_01a1982804417763852dabe7d3a7c46c": "0",
+          "nu_01a19834e4f1717e99cc76264c928856": "0",
+          "nu_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nu_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nu_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nu_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nu_01a1983ce6b374508d3f16a00c087106": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "0",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 0,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "3111",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "1350",
+          "ctv6": "0",
+          "nd_01a1982519ae77899c814b8954a8efb3": "0",
+          "nd_01a198258f607908a91f43532587354e": "0",
+          "nd_01a19825ca63714d9815ec81aaeda494": "0",
+          "nd_01a198271783777fa2ea56e5eccc459b": "0",
+          "nd_01a1982804417763852dabe7d3a7c46c": "0",
+          "nd_01a19834e4f1717e99cc76264c928856": "0",
+          "nd_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nd_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nd_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nd_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nd_01a1983ce6b374508d3f16a00c087106": "0",
+          "nu_01a1982519ae77899c814b8954a8efb3": "0",
+          "nu_01a198258f607908a91f43532587354e": "0",
+          "nu_01a19825ca63714d9815ec81aaeda494": "0",
+          "nu_01a198271783777fa2ea56e5eccc459b": "0",
+          "nu_01a1982804417763852dabe7d3a7c46c": "0",
+          "nu_01a19834e4f1717e99cc76264c928856": "0",
+          "nu_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nu_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nu_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nu_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nu_01a1983ce6b374508d3f16a00c087106": "0"
+        }
+      },
+      "packet_observations": {
+        "member-b1": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9002,
+          "filter": "controlled-origin TCP/443, client port 20037",
+          "interfaces": {
+            "eth0": {
+              "to_origin": 5
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9075,
+          "filter": "controlled-origin TCP/443, client port 20037",
+          "interfaces": {}
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9000,
+          "filter": "controlled-origin TCP/443, client port 20037",
+          "interfaces": {}
+        }
+      },
+      "transfer": {
+        "body_bytes": 0,
+        "http_status": 0,
+        "origin_receipt": false
+      },
+      "counted": false,
+      "first_unconfirmed_hop": "member exit selection: controlled-origin route remains on underlay; no selected exit"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a19824-75e0-76ca-a711-a3a8639b44d7",
+      "origin_verified": true,
+      "origin_requests": 0,
+      "origin_snat_matches": false,
+      "probe_sha256": "4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a",
+      "at": "2026-11-01T17:54:55Z",
+      "member_container_role": "member-b1",
+      "route_selected": false,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "0",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 0,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "3111",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "1350",
+          "ctv6": "0",
+          "nd_01a1982519ae77899c814b8954a8efb3": "0",
+          "nd_01a198258f607908a91f43532587354e": "0",
+          "nd_01a19825ca63714d9815ec81aaeda494": "0",
+          "nd_01a198271783777fa2ea56e5eccc459b": "0",
+          "nd_01a1982804417763852dabe7d3a7c46c": "0",
+          "nd_01a19834e4f1717e99cc76264c928856": "0",
+          "nd_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nd_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nd_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nd_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nd_01a1983ce6b374508d3f16a00c087106": "0",
+          "nu_01a1982519ae77899c814b8954a8efb3": "0",
+          "nu_01a198258f607908a91f43532587354e": "0",
+          "nu_01a19825ca63714d9815ec81aaeda494": "0",
+          "nu_01a198271783777fa2ea56e5eccc459b": "0",
+          "nu_01a1982804417763852dabe7d3a7c46c": "0",
+          "nu_01a19834e4f1717e99cc76264c928856": "0",
+          "nu_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nu_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nu_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nu_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nu_01a1983ce6b374508d3f16a00c087106": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "0",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 0,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "3111",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "1350",
+          "ctv6": "0",
+          "nd_01a1982519ae77899c814b8954a8efb3": "0",
+          "nd_01a198258f607908a91f43532587354e": "0",
+          "nd_01a19825ca63714d9815ec81aaeda494": "0",
+          "nd_01a198271783777fa2ea56e5eccc459b": "0",
+          "nd_01a1982804417763852dabe7d3a7c46c": "0",
+          "nd_01a19834e4f1717e99cc76264c928856": "0",
+          "nd_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nd_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nd_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nd_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nd_01a1983ce6b374508d3f16a00c087106": "0",
+          "nu_01a1982519ae77899c814b8954a8efb3": "0",
+          "nu_01a198258f607908a91f43532587354e": "0",
+          "nu_01a19825ca63714d9815ec81aaeda494": "0",
+          "nu_01a198271783777fa2ea56e5eccc459b": "0",
+          "nu_01a1982804417763852dabe7d3a7c46c": "0",
+          "nu_01a19834e4f1717e99cc76264c928856": "0",
+          "nu_01a198367dd2756f948cb0a15c5fd887": "0",
+          "nu_01a19838c6fa7c6a8a802b0199f2f52e": "0",
+          "nu_01a198393d277cd1a76ba4bde20c60f0": "0",
+          "nu_01a1983c72d9739aa7678579378e6bb5": "0",
+          "nu_01a1983ce6b374508d3f16a00c087106": "0"
+        }
+      },
+      "packet_observations": {
+        "member-b1": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9023,
+          "filter": "controlled-origin TCP/443, client port 20038",
+          "interfaces": {
+            "eth0": {
+              "to_origin": 5
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9098,
+          "filter": "controlled-origin TCP/443, client port 20038",
+          "interfaces": {}
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9043,
+          "filter": "controlled-origin TCP/443, client port 20038",
+          "interfaces": {}
+        }
+      },
+      "transfer": {
+        "body_bytes": 0,
+        "http_status": 0,
+        "origin_receipt": false
+      },
+      "counted": false,
+      "first_unconfirmed_hop": "member exit selection: controlled-origin route remains on underlay; no selected exit"
+    }
+  ],
+  "id": "AT08",
+  "title": "Publication, groups and disable",
+  "spec": [
+    "\u00a719.1",
+    "\u00a719 AT08",
+    "NODE02 NODE03 EXIT01 EXIT03"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "finite capacity and classification",
+      "detail": "pass; expected: 200 or 202; actual: HTTP 202 ; command: PATCH node capacity: TEST ONLY 200 Mbps / 100 Mbps member caps"
+    },
+    {
+      "name": "publication command published",
+      "detail": "pass; expected: 202 pending, group_ids accepted; actual: HTTP 202 ; command: PUT /admin/nodes/{id}/publication with group_ids and If-Match"
+    },
+    {
+      "name": "publication progress published",
+      "detail": "pass; expected: record pending/partial versus fully observed states; actual: operation_id=4afef4b5-d5de-469c-9969-210dbb72f093; states={\"pending\":\"2026-11-01T17:53:38.655687263Z\",\"running\":\"2026-11-01T17:53:39.656624099Z\",\"succeeded\":\"2026-11-01T17:53:40.657519843Z\"}; command: poll same immutable operation identity until succeeded or bounded timeout"
+    },
+    {
+      "name": "publication operation published",
+      "detail": "pass; expected: record applied operation independently of intent; actual: status=succeeded; required=3; succeeded=3; intent=published; observed=active; command: poll operations.steps and required observations; read exits projection"
+    },
+    {
+      "name": "A-only publication readback",
+      "detail": "pass; expected: one A attachment, zero B; NetBird routes readable; actual: A=1; B=0; routes=1; HTTP=200; command: read exit_groups; GET NetBird /api/routes"
+    },
+    {
+      "name": "populated-grant serving readiness",
+      "detail": "pass; expected: fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row; actual: {\"accepted\":{\"applied\":\"58\",\"desired\":\"58\",\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"device_id\":\"00000000-0000-0000-0000-000000000000\",\"expires_at\":\"2026-11-02T17:53:39.298888+00:00\",\"observation\":{\"lease\":{\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"expires_at\":\"2026-11-02T17:53:39.298888752Z\"},\"usage\":{\"blocked_seq\":\"29\",\"ledger_epoch\":\"60bdfb1f-e00e-4511-b9e8-f286b63f0e27\",\"meter_epoch_id\":\"01a1983e-ddff-7969-b8d0-4f46e0803d1d\",\"oldest_unacked_at\":\"2026-11-01T17:30:44.349595268Z\",\"acked_archive_bytes\":\"18338\",\"unacked_event_count\":40,\"central_acked_through\":\"28\",\"unacked_payload_bytes\":\"25934\",\"last_durable_event_seq\":\"68\"},\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"qos\",\"detail\":\"read_at=2026-11-01T17:53:39.418103328Z source=live candidate=58 verified=true {\\\"generation\\\":\\\"58\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"05f7a250bbd4c38ea3f4f7176e776f280a5c35e057c6705916ceeb4c28ea33a2\\\"}\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"}],\"errors\":[],\"update\":{\"stage\":null,\"state\":null,\"job_id\":null,\"generation\":null},\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"netbird\":{\"backend\":\"kernel\",\"peer_id\":null,\"version\":null},\"node_id\":\"01a19824-7330-7bde-928c-2a72e0b781e5\",\"report_id\":\"01a1983e-de67-7b68-ad14-d5e6ec178788\",\"data_health\":\"healthy\",\"observed_at\":\"2026-11-01T17:53:39.431735684Z\",\"tc_evidence\":{\"phase\":\"verify\",\"sha256\":\"05f7a250bbd4c38ea3f4f7176e776f280a5c35e057c6705916ceeb4c28ea33a2\",\"read_at\":\"2026-11-01T17:53:39.417995999Z\",\"rejected\":null,\"verified\":true,\"truncated\":false,\"error_code\":null,\"attachments\":[{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"3052:\",\"parent\":\"1:3052\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvmb0\",\"attachment\":\"qdisc\"},{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"3052:\",\"parent\":\"1:3052\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvup0\",\"attachment\":\"qdisc\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:3052\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"3052:\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"root\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:3052\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"3052:\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"root\"}],\"reads_total\":16,\"objects_total\":4,\"candidate_generation\":\"58\"},\"agent_version\":\"0.1.0\",\"safety_status\":\"passed\",\"current_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"provisioning_state\":\"ready\",\"applied_policy_refs\":{\"dns_generation\":\"1\",\"fup_generation\":\"1\",\"authorization_generation\":\"1\"},\"dns_policy_evidence\":{\"feeds\":[],\"outcome\":\"applied\",\"applied_at\":\"2026-11-01T17:53:39.320251859Z\",\"error_code\":null,\"generation\":\"1\",\"document_id\":\"01a19824-6813-75da-8fb9-849c52756f1d\",\"content_sha256\":\"a9b7cc97222fde0330c017adba1be8cd3f765b38f413e14122a61d040aaa00f8\"},\"node_incarnation_id\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"last_good_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"applied_binding_revision\":\"5\",\"forwarding_block_reasons\":[],\"applied_config_generation\":\"58\",\"member_forwarding_enabled\":true},\"member_count\":7,\"lease_generation\":\"58\"},\"device_id\":\"00000000-0000-0000-0000-000000000000\",\"last_stage\":\"producer_serving_join\",\"producer_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2060\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139156982974827\",\"wall\":\"2026-11-01T17:53:39.466603829Z\",\"mono_after_ns\":\"139156982975242\"},\"lease\":{\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"generation\":\"58\",\"issued_at\":\"2026-11-01T17:53:39.298888752Z\",\"expires_at\":\"2026-11-02T17:53:39.298888752Z\",\"request_mono_ns\":\"139156811226301\",\"node_deadline_ns\":\"225556811226301\",\"members\":7},\"heartbeat\":{\"mono_ns\":\"139156981136988\",\"policy_expires_mono_ns\":\"139756687327541\",\"generation\":\"58\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"producer_stream\":{\"bytes\":\"39343473\",\"sha256\":\"b9a2d000655c02be85208d84c339cf7c316db2a8ad935ca06edef4bcd80a2c50\",\"node\":\"node\",\"records\":2942,\"last_original_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2060\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139156982974827\",\"wall\":\"2026-11-01T17:53:39.466603829Z\",\"mono_after_ns\":\"139156982975242\"},\"lease\":{\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"generation\":\"58\",\"issued_at\":\"2026-11-01T17:53:39.298888752Z\",\"expires_at\":\"2026-11-02T17:53:39.298888752Z\",\"request_mono_ns\":\"139156811226301\",\"node_deadline_ns\":\"225556811226301\",\"members\":7},\"heartbeat\":{\"mono_ns\":\"139156981136988\",\"policy_expires_mono_ns\":\"139756687327541\",\"generation\":\"58\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"complete_records\":true},\"reader_error\":\"\",\"ready\":true}; command: read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+    },
+    {
+      "name": "populated-grant serving readiness",
+      "detail": "pass; expected: fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row; actual: {\"accepted\":{\"applied\":\"58\",\"desired\":\"58\",\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"device_id\":\"01a19825-19ae-7789-9c81-4b8954a8efb3\",\"expires_at\":\"2026-11-02T17:53:39.298888+00:00\",\"observation\":{\"lease\":{\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"expires_at\":\"2026-11-02T17:53:39.298888752Z\"},\"usage\":{\"blocked_seq\":\"29\",\"ledger_epoch\":\"60bdfb1f-e00e-4511-b9e8-f286b63f0e27\",\"meter_epoch_id\":\"01a1983e-ddff-7969-b8d0-4f46e0803d1d\",\"oldest_unacked_at\":\"2026-11-01T17:30:44.349595268Z\",\"acked_archive_bytes\":\"18338\",\"unacked_event_count\":40,\"central_acked_through\":\"28\",\"unacked_payload_bytes\":\"25934\",\"last_durable_event_seq\":\"68\"},\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"qos\",\"detail\":\"read_at=2026-11-01T17:53:39.418103328Z source=live candidate=58 verified=true {\\\"generation\\\":\\\"58\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"05f7a250bbd4c38ea3f4f7176e776f280a5c35e057c6705916ceeb4c28ea33a2\\\"}\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"}],\"errors\":[],\"update\":{\"stage\":null,\"state\":null,\"job_id\":null,\"generation\":null},\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"netbird\":{\"backend\":\"kernel\",\"peer_id\":null,\"version\":null},\"node_id\":\"01a19824-7330-7bde-928c-2a72e0b781e5\",\"report_id\":\"01a1983e-de67-7b68-ad14-d5e6ec178788\",\"data_health\":\"healthy\",\"observed_at\":\"2026-11-01T17:53:39.431735684Z\",\"tc_evidence\":{\"phase\":\"verify\",\"sha256\":\"05f7a250bbd4c38ea3f4f7176e776f280a5c35e057c6705916ceeb4c28ea33a2\",\"read_at\":\"2026-11-01T17:53:39.417995999Z\",\"rejected\":null,\"verified\":true,\"truncated\":false,\"error_code\":null,\"attachments\":[{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"3052:\",\"parent\":\"1:3052\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvmb0\",\"attachment\":\"qdisc\"},{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"3052:\",\"parent\":\"1:3052\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvup0\",\"attachment\":\"qdisc\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:3052\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"3052:\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"root\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:3052\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"3052:\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"root\"}],\"reads_total\":16,\"objects_total\":4,\"candidate_generation\":\"58\"},\"agent_version\":\"0.1.0\",\"safety_status\":\"passed\",\"current_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"provisioning_state\":\"ready\",\"applied_policy_refs\":{\"dns_generation\":\"1\",\"fup_generation\":\"1\",\"authorization_generation\":\"1\"},\"dns_policy_evidence\":{\"feeds\":[],\"outcome\":\"applied\",\"applied_at\":\"2026-11-01T17:53:39.320251859Z\",\"error_code\":null,\"generation\":\"1\",\"document_id\":\"01a19824-6813-75da-8fb9-849c52756f1d\",\"content_sha256\":\"a9b7cc97222fde0330c017adba1be8cd3f765b38f413e14122a61d040aaa00f8\"},\"node_incarnation_id\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"last_good_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"applied_binding_revision\":\"5\",\"forwarding_block_reasons\":[],\"applied_config_generation\":\"58\",\"member_forwarding_enabled\":true},\"member_count\":7,\"lease_generation\":\"58\"},\"device_id\":\"01a19825-19ae-7789-9c81-4b8954a8efb3\",\"last_stage\":\"producer_serving_join\",\"producer_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2060\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139156982974827\",\"wall\":\"2026-11-01T17:53:39.466603829Z\",\"mono_after_ns\":\"139156982975242\"},\"lease\":{\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"generation\":\"58\",\"issued_at\":\"2026-11-01T17:53:39.298888752Z\",\"expires_at\":\"2026-11-02T17:53:39.298888752Z\",\"request_mono_ns\":\"139156811226301\",\"node_deadline_ns\":\"225556811226301\",\"members\":7},\"heartbeat\":{\"mono_ns\":\"139156981136988\",\"policy_expires_mono_ns\":\"139756687327541\",\"generation\":\"58\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"producer_stream\":{\"bytes\":\"39343473\",\"sha256\":\"b9a2d000655c02be85208d84c339cf7c316db2a8ad935ca06edef4bcd80a2c50\",\"node\":\"node\",\"records\":2942,\"last_original_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2060\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139156982974827\",\"wall\":\"2026-11-01T17:53:39.466603829Z\",\"mono_after_ns\":\"139156982975242\"},\"lease\":{\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"generation\":\"58\",\"issued_at\":\"2026-11-01T17:53:39.298888752Z\",\"expires_at\":\"2026-11-02T17:53:39.298888752Z\",\"request_mono_ns\":\"139156811226301\",\"node_deadline_ns\":\"225556811226301\",\"members\":7},\"heartbeat\":{\"mono_ns\":\"139156981136988\",\"policy_expires_mono_ns\":\"139756687327541\",\"generation\":\"58\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"complete_records\":true},\"reader_error\":\"\",\"ready\":true}; command: read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"origin_verified\":true,\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a\",\"at\":\"2026-11-01T17:53:41Z\",\"first_counted_byte_at\":\"2026-11-01T17:53:46.660882983Z\",\"member_container_role\":\"member\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"58\",\"device_upload_bytes\":\"261191\",\"device_download_bytes\":\"20421\",\"member_accept_rules\":18,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"58\",\"device_upload_bytes\":\"263456\",\"device_download_bytes\":\"22831\",\"member_accept_rules\":18,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"packet_observations\":{\"member\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9004,\"filter\":\"controlled-origin TCP/443, client port 20033\",\"interfaces\":{\"fvnb0\":{\"from_origin\":7,\"to_origin\":9}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9044,\"filter\":\"controlled-origin TCP/443, client port 20033\",\"interfaces\":{\"fvmb0\":{\"from_origin\":7,\"to_origin\":9},\"fvup0\":{\"from_origin\":7,\"to_origin\":9}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9011,\"filter\":\"controlled-origin TCP/443, client port 20033\",\"interfaces\":{\"eth0\":{\"from_origin\":7,\"to_origin\":9}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"origin_verified\":true,\"origin_requests\":0,\"origin_snat_matches\":false,\"probe_sha256\":\"4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a\",\"at\":\"2026-11-01T17:53:54Z\",\"member_container_role\":\"member-b1\",\"route_selected\":false,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"58\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":18,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"58\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":18,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"packet_observations\":{\"member-b1\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9040,\"filter\":\"controlled-origin TCP/443, client port 20034\",\"interfaces\":{\"eth0\":{\"to_origin\":5}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9083,\"filter\":\"controlled-origin TCP/443, client port 20034\",\"interfaces\":{}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9038,\"filter\":\"controlled-origin TCP/443, client port 20034\",\"interfaces\":{}}},\"transfer\":{\"body_bytes\":0,\"http_status\":0,\"origin_receipt\":false},\"counted\":false,\"first_unconfirmed_hop\":\"member exit selection: controlled-origin route remains on underlay; no selected exit\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
+    },
+    {
+      "name": "unauthorized real transfer",
+      "detail": "pass; expected: no origin response; actual: origin_receipt=false; command: bounded HTTPS from native peer expected to have no authorized exit"
+    },
+    {
+      "name": "publication command published",
+      "detail": "pass; expected: 202 pending, group_ids accepted; actual: HTTP 202 ; command: PUT /admin/nodes/{id}/publication with group_ids and If-Match"
+    },
+    {
+      "name": "publication progress published",
+      "detail": "pass; expected: record pending/partial versus fully observed states; actual: operation_id=613895f1-536f-4495-9110-97abb5e6c8de; states={\"pending\":\"2026-11-01T17:54:08.61919352Z\",\"running\":\"2026-11-01T17:54:09.620666768Z\",\"succeeded\":\"2026-11-01T17:54:10.621470538Z\"}; command: poll same immutable operation identity until succeeded or bounded timeout"
+    },
+    {
+      "name": "publication operation published",
+      "detail": "pass; expected: record applied operation independently of intent; actual: status=succeeded; required=3; succeeded=3; intent=published; observed=active; command: poll operations.steps and required observations; read exits projection"
+    },
+    {
+      "name": "populated-grant serving readiness",
+      "detail": "pass; expected: fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row; actual: {\"accepted\":{\"applied\":\"60\",\"desired\":\"60\",\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"device_id\":\"00000000-0000-0000-0000-000000000000\",\"expires_at\":\"2026-11-02T17:54:09.324578+00:00\",\"observation\":{\"lease\":{\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"expires_at\":\"2026-11-02T17:54:09.324578678Z\"},\"usage\":{\"blocked_seq\":\"29\",\"ledger_epoch\":\"60bdfb1f-e00e-4511-b9e8-f286b63f0e27\",\"meter_epoch_id\":\"01a1983f-5347-7907-a34f-0644b5ba09f1\",\"oldest_unacked_at\":\"2026-11-01T17:30:44.349595268Z\",\"acked_archive_bytes\":\"18338\",\"unacked_event_count\":41,\"central_acked_through\":\"28\",\"unacked_payload_bytes\":\"26583\",\"last_durable_event_seq\":\"69\"},\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"qos\",\"detail\":\"read_at=2026-11-01T17:54:09.449682032Z source=live candidate=60 verified=true {\\\"generation\\\":\\\"60\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"6cbed2fa4d8032dee60941234b47eea5257d4e74c6bb1f2e9bbc9395972f413b\\\"}\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"}],\"errors\":[],\"update\":{\"stage\":null,\"state\":null,\"job_id\":null,\"generation\":null},\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"netbird\":{\"backend\":\"kernel\",\"peer_id\":null,\"version\":null},\"node_id\":\"01a19824-7330-7bde-928c-2a72e0b781e5\",\"report_id\":\"01a1983f-53b8-7e1a-a7f6-d9c89c3c86d1\",\"data_health\":\"healthy\",\"observed_at\":\"2026-11-01T17:54:09.464912458Z\",\"tc_evidence\":{\"phase\":\"verify\",\"sha256\":\"6cbed2fa4d8032dee60941234b47eea5257d4e74c6bb1f2e9bbc9395972f413b\",\"read_at\":\"2026-11-01T17:54:09.449584855Z\",\"rejected\":null,\"verified\":true,\"truncated\":false,\"error_code\":null,\"attachments\":[{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"c854:\",\"parent\":\"1:c854\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvmb0\",\"attachment\":\"qdisc\"},{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"c854:\",\"parent\":\"1:c854\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvup0\",\"attachment\":\"qdisc\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:c854\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"c854:\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"root\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:c854\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"c854:\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"root\"}],\"reads_total\":16,\"objects_total\":4,\"candidate_generation\":\"60\"},\"agent_version\":\"0.1.0\",\"safety_status\":\"passed\",\"current_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"provisioning_state\":\"ready\",\"applied_policy_refs\":{\"dns_generation\":\"1\",\"fup_generation\":\"1\",\"authorization_generation\":\"1\"},\"dns_policy_evidence\":{\"feeds\":[],\"outcome\":\"applied\",\"applied_at\":\"2026-11-01T17:54:09.345487497Z\",\"error_code\":null,\"generation\":\"1\",\"document_id\":\"01a19824-6813-75da-8fb9-849c52756f1d\",\"content_sha256\":\"a9b7cc97222fde0330c017adba1be8cd3f765b38f413e14122a61d040aaa00f8\"},\"node_incarnation_id\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"last_good_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"applied_binding_revision\":\"3\",\"forwarding_block_reasons\":[],\"applied_config_generation\":\"60\",\"member_forwarding_enabled\":true},\"member_count\":1,\"lease_generation\":\"60\"},\"device_id\":\"00000000-0000-0000-0000-000000000000\",\"last_stage\":\"producer_serving_join\",\"producer_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2112\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139187013707896\",\"wall\":\"2026-11-01T17:54:09.497336799Z\",\"mono_after_ns\":\"139187013708178\"},\"lease\":{\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"generation\":\"60\",\"issued_at\":\"2026-11-01T17:54:09.324578678Z\",\"expires_at\":\"2026-11-02T17:54:09.324578678Z\",\"request_mono_ns\":\"139186838139631\",\"node_deadline_ns\":\"225586838139631\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"139187011872063\",\"policy_expires_mono_ns\":\"139786716113620\",\"generation\":\"60\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"producer_stream\":{\"bytes\":\"40030926\",\"sha256\":\"1da18bb592effe25143e1ee58fe46bb000c6818cbf42860d910ac90ae07efaef\",\"node\":\"node\",\"records\":2994,\"last_original_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2112\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139187013707896\",\"wall\":\"2026-11-01T17:54:09.497336799Z\",\"mono_after_ns\":\"139187013708178\"},\"lease\":{\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"generation\":\"60\",\"issued_at\":\"2026-11-01T17:54:09.324578678Z\",\"expires_at\":\"2026-11-02T17:54:09.324578678Z\",\"request_mono_ns\":\"139186838139631\",\"node_deadline_ns\":\"225586838139631\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"139187011872063\",\"policy_expires_mono_ns\":\"139786716113620\",\"generation\":\"60\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"complete_records\":true},\"reader_error\":\"\",\"ready\":true}; command: read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+    },
+    {
+      "name": "populated-grant serving readiness",
+      "detail": "pass; expected: fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row; actual: {\"accepted\":{\"applied\":\"60\",\"desired\":\"60\",\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"device_id\":\"01a19825-ca63-714d-9815-ec81aaeda494\",\"expires_at\":\"2026-11-02T17:54:09.324578+00:00\",\"observation\":{\"lease\":{\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"expires_at\":\"2026-11-02T17:54:09.324578678Z\"},\"usage\":{\"blocked_seq\":\"29\",\"ledger_epoch\":\"60bdfb1f-e00e-4511-b9e8-f286b63f0e27\",\"meter_epoch_id\":\"01a1983f-5347-7907-a34f-0644b5ba09f1\",\"oldest_unacked_at\":\"2026-11-01T17:30:44.349595268Z\",\"acked_archive_bytes\":\"18338\",\"unacked_event_count\":41,\"central_acked_through\":\"28\",\"unacked_payload_bytes\":\"26583\",\"last_durable_event_seq\":\"69\"},\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"qos\",\"detail\":\"read_at=2026-11-01T17:54:09.449682032Z source=live candidate=60 verified=true {\\\"generation\\\":\\\"60\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"6cbed2fa4d8032dee60941234b47eea5257d4e74c6bb1f2e9bbc9395972f413b\\\"}\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"}],\"errors\":[],\"update\":{\"stage\":null,\"state\":null,\"job_id\":null,\"generation\":null},\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"netbird\":{\"backend\":\"kernel\",\"peer_id\":null,\"version\":null},\"node_id\":\"01a19824-7330-7bde-928c-2a72e0b781e5\",\"report_id\":\"01a1983f-53b8-7e1a-a7f6-d9c89c3c86d1\",\"data_health\":\"healthy\",\"observed_at\":\"2026-11-01T17:54:09.464912458Z\",\"tc_evidence\":{\"phase\":\"verify\",\"sha256\":\"6cbed2fa4d8032dee60941234b47eea5257d4e74c6bb1f2e9bbc9395972f413b\",\"read_at\":\"2026-11-01T17:54:09.449584855Z\",\"rejected\":null,\"verified\":true,\"truncated\":false,\"error_code\":null,\"attachments\":[{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"c854:\",\"parent\":\"1:c854\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvmb0\",\"attachment\":\"qdisc\"},{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"c854:\",\"parent\":\"1:c854\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvup0\",\"attachment\":\"qdisc\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:c854\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"c854:\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"root\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:c854\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"c854:\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"root\"}],\"reads_total\":16,\"objects_total\":4,\"candidate_generation\":\"60\"},\"agent_version\":\"0.1.0\",\"safety_status\":\"passed\",\"current_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"provisioning_state\":\"ready\",\"applied_policy_refs\":{\"dns_generation\":\"1\",\"fup_generation\":\"1\",\"authorization_generation\":\"1\"},\"dns_policy_evidence\":{\"feeds\":[],\"outcome\":\"applied\",\"applied_at\":\"2026-11-01T17:54:09.345487497Z\",\"error_code\":null,\"generation\":\"1\",\"document_id\":\"01a19824-6813-75da-8fb9-849c52756f1d\",\"content_sha256\":\"a9b7cc97222fde0330c017adba1be8cd3f765b38f413e14122a61d040aaa00f8\"},\"node_incarnation_id\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"last_good_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"applied_binding_revision\":\"3\",\"forwarding_block_reasons\":[],\"applied_config_generation\":\"60\",\"member_forwarding_enabled\":true},\"member_count\":1,\"lease_generation\":\"60\"},\"device_id\":\"01a19825-ca63-714d-9815-ec81aaeda494\",\"last_stage\":\"producer_serving_join\",\"producer_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2112\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139187013707896\",\"wall\":\"2026-11-01T17:54:09.497336799Z\",\"mono_after_ns\":\"139187013708178\"},\"lease\":{\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"generation\":\"60\",\"issued_at\":\"2026-11-01T17:54:09.324578678Z\",\"expires_at\":\"2026-11-02T17:54:09.324578678Z\",\"request_mono_ns\":\"139186838139631\",\"node_deadline_ns\":\"225586838139631\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"139187011872063\",\"policy_expires_mono_ns\":\"139786716113620\",\"generation\":\"60\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"producer_stream\":{\"bytes\":\"40030926\",\"sha256\":\"1da18bb592effe25143e1ee58fe46bb000c6818cbf42860d910ac90ae07efaef\",\"node\":\"node\",\"records\":2994,\"last_original_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2112\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139187013707896\",\"wall\":\"2026-11-01T17:54:09.497336799Z\",\"mono_after_ns\":\"139187013708178\"},\"lease\":{\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"generation\":\"60\",\"issued_at\":\"2026-11-01T17:54:09.324578678Z\",\"expires_at\":\"2026-11-02T17:54:09.324578678Z\",\"request_mono_ns\":\"139186838139631\",\"node_deadline_ns\":\"225586838139631\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"139187011872063\",\"policy_expires_mono_ns\":\"139786716113620\",\"generation\":\"60\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"complete_records\":true},\"reader_error\":\"\",\"ready\":true}; command: read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"origin_verified\":true,\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a\",\"at\":\"2026-11-01T17:54:11Z\",\"first_counted_byte_at\":\"2026-11-01T17:54:15.85804306Z\",\"member_container_role\":\"member-b1\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"60\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"60\",\"device_upload_bytes\":\"2305\",\"device_download_bytes\":\"2409\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"packet_observations\":{\"member-b1\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9016,\"filter\":\"controlled-origin TCP/443, client port 20035\",\"interfaces\":{\"fvnb0\":{\"from_origin\":7,\"to_origin\":10}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9031,\"filter\":\"controlled-origin TCP/443, client port 20035\",\"interfaces\":{\"fvmb0\":{\"from_origin\":7,\"to_origin\":10},\"fvup0\":{\"from_origin\":7,\"to_origin\":10}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9009,\"filter\":\"controlled-origin TCP/443, client port 20035\",\"interfaces\":{\"eth0\":{\"from_origin\":7,\"to_origin\":10}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"origin_verified\":true,\"origin_requests\":0,\"origin_snat_matches\":false,\"probe_sha256\":\"4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a\",\"at\":\"2026-11-01T17:54:23Z\",\"member_container_role\":\"member\",\"route_selected\":false,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"60\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"60\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"packet_observations\":{\"member\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9002,\"filter\":\"controlled-origin TCP/443, client port 20036\",\"interfaces\":{\"eth0\":{\"to_origin\":5}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9097,\"filter\":\"controlled-origin TCP/443, client port 20036\",\"interfaces\":{}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9029,\"filter\":\"controlled-origin TCP/443, client port 20036\",\"interfaces\":{}}},\"transfer\":{\"body_bytes\":0,\"http_status\":0,\"origin_receipt\":false},\"counted\":false,\"first_unconfirmed_hop\":\"member exit selection: controlled-origin route remains on underlay; no selected exit\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
+    },
+    {
+      "name": "unauthorized real transfer",
+      "detail": "pass; expected: no origin response; actual: origin_receipt=false; command: bounded HTTPS from native peer expected to have no authorized exit"
+    },
+    {
+      "name": "regroup projection",
+      "detail": "pass; expected: group B attached; actual: B=1; command: PUT group_ids=[B]; read product attachment"
+    },
+    {
+      "name": "publication command disabled",
+      "detail": "pass; expected: 202 pending, group_ids accepted; actual: HTTP 202 ; command: PUT /admin/nodes/{id}/publication with group_ids and If-Match"
+    },
+    {
+      "name": "publication progress disabled",
+      "detail": "pass; expected: record pending/partial versus fully observed states; actual: operation_id=4b53c8ff-6a39-42b4-b07c-b25c7796ed17; states={\"partially_succeeded\":\"2026-11-01T17:54:38.919344103Z\",\"pending\":\"2026-11-01T17:54:37.918184474Z\",\"succeeded\":\"2026-11-01T17:54:39.920752925Z\"}; command: poll same immutable operation identity until succeeded or bounded timeout"
+    },
+    {
+      "name": "publication operation disabled",
+      "detail": "pass; expected: record applied operation independently of intent; actual: status=succeeded; required=2; succeeded=2; intent=disabled; observed=withdrawn; command: poll operations.steps and required observations; read exits projection"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"origin_verified\":true,\"origin_requests\":0,\"origin_snat_matches\":false,\"probe_sha256\":\"4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a\",\"at\":\"2026-11-01T17:54:39Z\",\"member_container_role\":\"member-b1\",\"route_selected\":false,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"0\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":0,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"0\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":0,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"packet_observations\":{\"member-b1\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9002,\"filter\":\"controlled-origin TCP/443, client port 20037\",\"interfaces\":{\"eth0\":{\"to_origin\":5}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9075,\"filter\":\"controlled-origin TCP/443, client port 20037\",\"interfaces\":{}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9000,\"filter\":\"controlled-origin TCP/443, client port 20037\",\"interfaces\":{}}},\"transfer\":{\"body_bytes\":0,\"http_status\":0,\"origin_receipt\":false},\"counted\":false,\"first_unconfirmed_hop\":\"member exit selection: controlled-origin route remains on underlay; no selected exit\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
+    },
+    {
+      "name": "unauthorized real transfer",
+      "detail": "pass; expected: no origin response; actual: origin_receipt=false; command: bounded HTTPS from native peer expected to have no authorized exit"
+    },
+    {
+      "name": "agent transition disabled node restart",
+      "detail": "pass; expected: record command duration and stored lease continuity; actual: {\"command_ok\":true,\"control_io_after_cancel\":\"not observable here\",\"duration_ns\":\"563729651\",\"ended_at\":\"2026-11-01T17:54:53.660118403Z\",\"parent_wait_receipt\":{\"id\":\"6083b7a8-4ee6-4351-b106-973c5e1f23df\",\"pid\":158363,\"start_ticks\":\"13794624\",\"started_at\":\"2026-11-01T17:33:28.730498681Z\",\"wait_observed_at\":\"2026-11-01T17:54:53.310724694Z\",\"wait_status\":0,\"exit_code\":0,\"signal\":null,\"core_dump\":false},\"sigterm_to_exit\":\"see separate r18 M-2 direct stop if present; otherwise exact signal/exit interval not observable here\",\"started_at\":\"2026-11-01T17:54:53.096388752Z\",\"stored_lease_after\":{\"available\":true,\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"envelope_sha256\":\"dd62ee14b3536e5a1bd97d49d023c2e867161b1729dba21129efbc658e92d339\",\"expires_at\":\"2026-11-02T17:54:44.333612569Z\",\"highest_issued_at\":\"2026-11-01T17:54:44.333612569Z\",\"issued_at\":\"2026-11-01T17:54:44.333612569Z\",\"lease_id\":\"ebb0ac90-6b1f-4c4f-afcb-85ab7eae2b84\",\"mono_sent_ns\":\"139221847952009\",\"present\":true,\"read_at\":\"2026-11-01T17:54:53.959444223Z\"},\"stored_lease_before\":{\"available\":true,\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"envelope_sha256\":\"dd62ee14b3536e5a1bd97d49d023c2e867161b1729dba21129efbc658e92d339\",\"expires_at\":\"2026-11-02T17:54:44.333612569Z\",\"highest_issued_at\":\"2026-11-01T17:54:44.333612569Z\",\"issued_at\":\"2026-11-01T17:54:44.333612569Z\",\"lease_id\":\"ebb0ac90-6b1f-4c4f-afcb-85ab7eae2b84\",\"mono_sent_ns\":\"139221847952009\",\"present\":true,\"process_id\":\"6083b7a8-4ee6-4351-b106-973c5e1f23df\",\"read_at\":\"2026-11-01T17:54:53.071167307Z\"},\"stored_lease_status\":\"survived unchanged\"}; command: read-only SQLite lease metadata before/after; no renewal or repair requested"
+    },
+    {
+      "name": "node restart",
+      "detail": "pass; expected: restart succeeds; actual: restart_ok=true; command: docker restart fvpn-w4-members-node"
+    },
+    {
+      "name": "durable restart without token",
+      "detail": "pass; expected: enrolled, same incarnation, nft readable, token absent; actual: resumed=true; stage=enrolled; same_incarnation=true; nft_readable=true; token_absent=true; command: docker restart node; poll entrypoint and product incarnation; no Service workaround"
+    },
+    {
+      "name": "disabled persists",
+      "detail": "pass; expected: disabled intent after node restart; actual: intent=disabled; observed=withdrawn; command: read publication after reconnect/restart"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "detail": "pass; expected: record selected route, node counters, packet hops and origin receipt; actual: {\"node_container_role\":\"node\",\"node_incarnation\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"origin_verified\":true,\"origin_requests\":0,\"origin_snat_matches\":false,\"probe_sha256\":\"4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a\",\"at\":\"2026-11-01T17:54:55Z\",\"member_container_role\":\"member-b1\",\"route_selected\":false,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"0\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":0,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"0\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":0,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"packet_observations\":{\"member-b1\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9023,\"filter\":\"controlled-origin TCP/443, client port 20038\",\"interfaces\":{\"eth0\":{\"to_origin\":5}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9098,\"filter\":\"controlled-origin TCP/443, client port 20038\",\"interfaces\":{}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9043,\"filter\":\"controlled-origin TCP/443, client port 20038\",\"interfaces\":{}}},\"transfer\":{\"body_bytes\":0,\"http_status\":0,\"origin_receipt\":false},\"counted\":false,\"first_unconfirmed_hop\":\"member exit selection: controlled-origin route remains on underlay; no selected exit\"}; command: netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after"
+    },
+    {
+      "name": "unauthorized real transfer",
+      "detail": "pass; expected: no origin response; actual: origin_receipt=false; command: bounded HTTPS from native peer expected to have no authorized exit"
+    },
+    {
+      "name": "finite capacity and classification",
+      "detail": "pass; expected: 200 or 202; actual: HTTP 202 ; command: PATCH node capacity: TEST ONLY 200 Mbps / 100 Mbps member caps"
+    },
+    {
+      "name": "publication command published",
+      "detail": "pass; expected: 202 pending, group_ids accepted; actual: HTTP 202 ; command: PUT /admin/nodes/{id}/publication with group_ids and If-Match"
+    },
+    {
+      "name": "publication progress published",
+      "detail": "pass; expected: record pending/partial versus fully observed states; actual: operation_id=755b4fd9-4f3a-4b85-bf71-ee0fb96bf596; states={\"pending\":\"2026-11-01T17:55:10.439327168Z\",\"running\":\"2026-11-01T17:55:11.441001391Z\",\"succeeded\":\"2026-11-01T17:55:14.444587318Z\"}; command: poll same immutable operation identity until succeeded or bounded timeout"
+    },
+    {
+      "name": "publication operation published",
+      "detail": "pass; expected: record applied operation independently of intent; actual: status=succeeded; required=3; succeeded=3; intent=published; observed=active; command: poll operations.steps and required observations; read exits projection"
+    },
+    {
+      "name": "r18 M-3 accepted hold and central ID join",
+      "detail": "pass; expected: retain incidents, exact reports, lease members, revocation and escalation IDs; markers and retained safety precedence when exercised; actual: samples=15; valid=true; details=F16-AT08-generation-holds.json; no matching scenario is not exercised; command: read-only own-stack durable holds/audits; replay publication classification, no new observation"
+    },
+    {
+      "name": "provenance",
+      "detail": "source=3a8b61594b447d164bb7c9481545e207f8688ec2; applied generation=64; incarnation=01a19824-75e0-76ca-a711-a3a8639b44d7; image/binary digests in JSON"
+    }
+  ],
+  "at": "2026-11-01T17:53:35Z",
+  "run_id": "0ffb355a-945b-4198-a551-3794120a686c",
+  "source_commit": "3a8b61594b447d164bb7c9481545e207f8688ec2",
+  "release_digests": {
+    "artifact_sha256_0.1.0_amd64": "fd7a9e41ba10766229ed6bc9e305ee2336beab205f8299ad99975b2c7f35f411",
+    "artifact_sha256_0.1.0_arm64": "7365f5a0892d1b3ba2bb6ba079611c186a9c0d90a58636cd388b72c73de31b41",
+    "manifest_sha256_0.1.0": "1e80962405bd447c37730d1161e9847e6efaf4ece491d5c00da4c17b39e26238",
+    "signed_manifest_sha256_0.1.0": "5d63acdd5a2194eee7bd36d90839c6c07b52980087e69fefe40393634be1c617"
+  },
+  "build": {
+    "test_binary_sha256": "8daee7d18898fab331b1ad2e66a2eaff2c95087d03bfc8bacbce86848777e367",
+    "source_commit": "3a8b61594b447d164bb7c9481545e207f8688ec2",
+    "source_dirty": true,
+    "image_digests": {
+      "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "control": "sha256:08d1b307ef629fc211a6044be7a16e5fa29f8c0382961c83735c67facd556eb7",
+      "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "idp": "sha256:6fb7b17a7e3bdd0d50e4d638ae281d93aba091a37bbf32c6206581b1ccadbc8c",
+      "member": "sha256:007d1a72b164df0aebee1c8ffa5874debcb897a486ada2fdd96723ef1f6b3bbf",
+      "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "node": "sha256:007d1a72b164df0aebee1c8ffa5874debcb897a486ada2fdd96723ef1f6b3bbf",
+      "node-netns": "sha256:007d1a72b164df0aebee1c8ffa5874debcb897a486ada2fdd96723ef1f6b3bbf",
+      "node2": "sha256:007d1a72b164df0aebee1c8ffa5874debcb897a486ada2fdd96723ef1f6b3bbf",
+      "node2-adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "node2-netns": "sha256:007d1a72b164df0aebee1c8ffa5874debcb897a486ada2fdd96723ef1f6b3bbf",
+      "origin": "sha256:28e9933c060bc631523e5bed1aee32814a8f32e697a27db98bef77f006f8fdcf",
+      "payment": "sha256:196115e12ef832096d94be685ae6a944fc8a1dae65dc42b437e3edb47fd4a448",
+      "postgres": "sha256:22b967773fb515549de1a2eb712f7942adbb95ed3d87b5b427b7a35409200afa",
+      "worker": "sha256:909f0308c0b2c17937e291b1f42ca5ff364be2442e553b5006e8516a2a59239b"
+    },
+    "binary_sha256": {
+      "fvpn-agent": "f3cfe8e87548eaa42f38857a67a5356583cf1486c10c03bae3bd43dca2d055e3",
+      "fvpn-control": "b9b4cc138f290e994e1a2636aceaeca4040246d8c48782797400d5f2651533ea",
+      "fvpn-updater": "bf2ca2bdd98e1a302442fe2600bdf6570119643e0106231b00f67c7749ffd056",
+      "fvpn-worker": "4eea2299757f75af56a8daf20c0833720d10df299c174f6a78430280ce35a50c"
+    },
+    "binary_vcs": {
+      "fvpn-agent": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "3a8b61594b447d164bb7c9481545e207f8688ec2",
+        "vcs.time": "2026-11-01T17:19:01Z"
+      },
+      "fvpn-control": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "3a8b61594b447d164bb7c9481545e207f8688ec2",
+        "vcs.time": "2026-11-01T17:19:01Z"
+      },
+      "fvpn-updater": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "3a8b61594b447d164bb7c9481545e207f8688ec2",
+        "vcs.time": "2026-11-01T17:19:01Z"
+      },
+      "fvpn-worker": {
+        "go_version": "go1.27.3",
+        "vcs.modified": "true",
+        "vcs.revision": "3a8b61594b447d164bb7c9481545e207f8688ec2",
+        "vcs.time": "2026-11-01T17:19:01Z"
+      }
+    }
+  },
+  "policy_revision": "64",
+  "active_policy_revisions": {
+    "dns_profile": "01a19824-64ce-7e8a-b0d1-3a928c8e1f7e",
+    "domain_rule_set": "01a19824-5fff-7305-8c22-5ece6ed814e3",
+    "fair_use": "01a19824-5b31-7d1e-9635-1af020f2a30b",
+    "plan": "01a19829-857d-7b91-9982-6c64553980a6",
+    "release_support": "01a19824-53d7-7d20-af0a-a9c88170d293"
+  },
+  "node_incarnation": "01a19824-75e0-76ca-a711-a3a8639b44d7",
+  "steps": [
+    {
+      "name": "finite capacity and classification",
+      "status": "pass",
+      "expected": "200 or 202",
+      "actual": "HTTP 202 ",
+      "command": "PATCH node capacity: TEST ONLY 200 Mbps / 100 Mbps member caps",
+      "at": "2026-11-01T17:53:37Z"
+    },
+    {
+      "name": "publication command published",
+      "status": "pass",
+      "expected": "202 pending, group_ids accepted",
+      "actual": "HTTP 202 ",
+      "command": "PUT /admin/nodes/{id}/publication with group_ids and If-Match",
+      "at": "2026-11-01T17:53:38Z"
+    },
+    {
+      "name": "publication progress published",
+      "status": "pass",
+      "expected": "record pending/partial versus fully observed states",
+      "actual": "operation_id=4afef4b5-d5de-469c-9969-210dbb72f093; states={\"pending\":\"2026-11-01T17:53:38.655687263Z\",\"running\":\"2026-11-01T17:53:39.656624099Z\",\"succeeded\":\"2026-11-01T17:53:40.657519843Z\"}",
+      "command": "poll same immutable operation identity until succeeded or bounded timeout",
+      "at": "2026-11-01T17:53:40Z"
+    },
+    {
+      "name": "publication operation published",
+      "status": "pass",
+      "expected": "record applied operation independently of intent",
+      "actual": "status=succeeded; required=3; succeeded=3; intent=published; observed=active",
+      "command": "poll operations.steps and required observations; read exits projection",
+      "at": "2026-11-01T17:53:40Z"
+    },
+    {
+      "name": "A-only publication readback",
+      "status": "pass",
+      "expected": "one A attachment, zero B; NetBird routes readable",
+      "actual": "A=1; B=0; routes=1; HTTP=200",
+      "command": "read exit_groups; GET NetBird /api/routes",
+      "at": "2026-11-01T17:53:41Z"
+    },
+    {
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+      "actual": "{\"accepted\":{\"applied\":\"58\",\"desired\":\"58\",\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"device_id\":\"00000000-0000-0000-0000-000000000000\",\"expires_at\":\"2026-11-02T17:53:39.298888+00:00\",\"observation\":{\"lease\":{\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"expires_at\":\"2026-11-02T17:53:39.298888752Z\"},\"usage\":{\"blocked_seq\":\"29\",\"ledger_epoch\":\"60bdfb1f-e00e-4511-b9e8-f286b63f0e27\",\"meter_epoch_id\":\"01a1983e-ddff-7969-b8d0-4f46e0803d1d\",\"oldest_unacked_at\":\"2026-11-01T17:30:44.349595268Z\",\"acked_archive_bytes\":\"18338\",\"unacked_event_count\":40,\"central_acked_through\":\"28\",\"unacked_payload_bytes\":\"25934\",\"last_durable_event_seq\":\"68\"},\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"qos\",\"detail\":\"read_at=2026-11-01T17:53:39.418103328Z source=live candidate=58 verified=true {\\\"generation\\\":\\\"58\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"05f7a250bbd4c38ea3f4f7176e776f280a5c35e057c6705916ceeb4c28ea33a2\\\"}\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"}],\"errors\":[],\"update\":{\"stage\":null,\"state\":null,\"job_id\":null,\"generation\":null},\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"netbird\":{\"backend\":\"kernel\",\"peer_id\":null,\"version\":null},\"node_id\":\"01a19824-7330-7bde-928c-2a72e0b781e5\",\"report_id\":\"01a1983e-de67-7b68-ad14-d5e6ec178788\",\"data_health\":\"healthy\",\"observed_at\":\"2026-11-01T17:53:39.431735684Z\",\"tc_evidence\":{\"phase\":\"verify\",\"sha256\":\"05f7a250bbd4c38ea3f4f7176e776f280a5c35e057c6705916ceeb4c28ea33a2\",\"read_at\":\"2026-11-01T17:53:39.417995999Z\",\"rejected\":null,\"verified\":true,\"truncated\":false,\"error_code\":null,\"attachments\":[{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"3052:\",\"parent\":\"1:3052\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvmb0\",\"attachment\":\"qdisc\"},{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"3052:\",\"parent\":\"1:3052\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvup0\",\"attachment\":\"qdisc\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:3052\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"3052:\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"root\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:3052\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"3052:\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"root\"}],\"reads_total\":16,\"objects_total\":4,\"candidate_generation\":\"58\"},\"agent_version\":\"0.1.0\",\"safety_status\":\"passed\",\"current_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"provisioning_state\":\"ready\",\"applied_policy_refs\":{\"dns_generation\":\"1\",\"fup_generation\":\"1\",\"authorization_generation\":\"1\"},\"dns_policy_evidence\":{\"feeds\":[],\"outcome\":\"applied\",\"applied_at\":\"2026-11-01T17:53:39.320251859Z\",\"error_code\":null,\"generation\":\"1\",\"document_id\":\"01a19824-6813-75da-8fb9-849c52756f1d\",\"content_sha256\":\"a9b7cc97222fde0330c017adba1be8cd3f765b38f413e14122a61d040aaa00f8\"},\"node_incarnation_id\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"last_good_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"applied_binding_revision\":\"5\",\"forwarding_block_reasons\":[],\"applied_config_generation\":\"58\",\"member_forwarding_enabled\":true},\"member_count\":7,\"lease_generation\":\"58\"},\"device_id\":\"00000000-0000-0000-0000-000000000000\",\"last_stage\":\"producer_serving_join\",\"producer_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2060\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139156982974827\",\"wall\":\"2026-11-01T17:53:39.466603829Z\",\"mono_after_ns\":\"139156982975242\"},\"lease\":{\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"generation\":\"58\",\"issued_at\":\"2026-11-01T17:53:39.298888752Z\",\"expires_at\":\"2026-11-02T17:53:39.298888752Z\",\"request_mono_ns\":\"139156811226301\",\"node_deadline_ns\":\"225556811226301\",\"members\":7},\"heartbeat\":{\"mono_ns\":\"139156981136988\",\"policy_expires_mono_ns\":\"139756687327541\",\"generation\":\"58\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"producer_stream\":{\"bytes\":\"39343473\",\"sha256\":\"b9a2d000655c02be85208d84c339cf7c316db2a8ad935ca06edef4bcd80a2c50\",\"node\":\"node\",\"records\":2942,\"last_original_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2060\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139156982974827\",\"wall\":\"2026-11-01T17:53:39.466603829Z\",\"mono_after_ns\":\"139156982975242\"},\"lease\":{\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"generation\":\"58\",\"issued_at\":\"2026-11-01T17:53:39.298888752Z\",\"expires_at\":\"2026-11-02T17:53:39.298888752Z\",\"request_mono_ns\":\"139156811226301\",\"node_deadline_ns\":\"225556811226301\",\"members\":7},\"heartbeat\":{\"mono_ns\":\"139156981136988\",\"policy_expires_mono_ns\":\"139756687327541\",\"generation\":\"58\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"complete_records\":true},\"reader_error\":\"\",\"ready\":true}",
+      "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable",
+      "at": "2026-11-01T17:53:41Z"
+    },
+    {
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+      "actual": "{\"accepted\":{\"applied\":\"58\",\"desired\":\"58\",\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"device_id\":\"01a19825-19ae-7789-9c81-4b8954a8efb3\",\"expires_at\":\"2026-11-02T17:53:39.298888+00:00\",\"observation\":{\"lease\":{\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"expires_at\":\"2026-11-02T17:53:39.298888752Z\"},\"usage\":{\"blocked_seq\":\"29\",\"ledger_epoch\":\"60bdfb1f-e00e-4511-b9e8-f286b63f0e27\",\"meter_epoch_id\":\"01a1983e-ddff-7969-b8d0-4f46e0803d1d\",\"oldest_unacked_at\":\"2026-11-01T17:30:44.349595268Z\",\"acked_archive_bytes\":\"18338\",\"unacked_event_count\":40,\"central_acked_through\":\"28\",\"unacked_payload_bytes\":\"25934\",\"last_durable_event_seq\":\"68\"},\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"qos\",\"detail\":\"read_at=2026-11-01T17:53:39.418103328Z source=live candidate=58 verified=true {\\\"generation\\\":\\\"58\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"05f7a250bbd4c38ea3f4f7176e776f280a5c35e057c6705916ceeb4c28ea33a2\\\"}\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:53:39.324293354Z\"}],\"errors\":[],\"update\":{\"stage\":null,\"state\":null,\"job_id\":null,\"generation\":null},\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"netbird\":{\"backend\":\"kernel\",\"peer_id\":null,\"version\":null},\"node_id\":\"01a19824-7330-7bde-928c-2a72e0b781e5\",\"report_id\":\"01a1983e-de67-7b68-ad14-d5e6ec178788\",\"data_health\":\"healthy\",\"observed_at\":\"2026-11-01T17:53:39.431735684Z\",\"tc_evidence\":{\"phase\":\"verify\",\"sha256\":\"05f7a250bbd4c38ea3f4f7176e776f280a5c35e057c6705916ceeb4c28ea33a2\",\"read_at\":\"2026-11-01T17:53:39.417995999Z\",\"rejected\":null,\"verified\":true,\"truncated\":false,\"error_code\":null,\"attachments\":[{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"3052:\",\"parent\":\"1:3052\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvmb0\",\"attachment\":\"qdisc\"},{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"3052:\",\"parent\":\"1:3052\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvup0\",\"attachment\":\"qdisc\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:3052\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"3052:\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"root\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:3052\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"3052:\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"root\"}],\"reads_total\":16,\"objects_total\":4,\"candidate_generation\":\"58\"},\"agent_version\":\"0.1.0\",\"safety_status\":\"passed\",\"current_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"provisioning_state\":\"ready\",\"applied_policy_refs\":{\"dns_generation\":\"1\",\"fup_generation\":\"1\",\"authorization_generation\":\"1\"},\"dns_policy_evidence\":{\"feeds\":[],\"outcome\":\"applied\",\"applied_at\":\"2026-11-01T17:53:39.320251859Z\",\"error_code\":null,\"generation\":\"1\",\"document_id\":\"01a19824-6813-75da-8fb9-849c52756f1d\",\"content_sha256\":\"a9b7cc97222fde0330c017adba1be8cd3f765b38f413e14122a61d040aaa00f8\"},\"node_incarnation_id\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"last_good_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"applied_binding_revision\":\"5\",\"forwarding_block_reasons\":[],\"applied_config_generation\":\"58\",\"member_forwarding_enabled\":true},\"member_count\":7,\"lease_generation\":\"58\"},\"device_id\":\"01a19825-19ae-7789-9c81-4b8954a8efb3\",\"last_stage\":\"producer_serving_join\",\"producer_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2060\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139156982974827\",\"wall\":\"2026-11-01T17:53:39.466603829Z\",\"mono_after_ns\":\"139156982975242\"},\"lease\":{\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"generation\":\"58\",\"issued_at\":\"2026-11-01T17:53:39.298888752Z\",\"expires_at\":\"2026-11-02T17:53:39.298888752Z\",\"request_mono_ns\":\"139156811226301\",\"node_deadline_ns\":\"225556811226301\",\"members\":7},\"heartbeat\":{\"mono_ns\":\"139156981136988\",\"policy_expires_mono_ns\":\"139756687327541\",\"generation\":\"58\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"producer_stream\":{\"bytes\":\"39343473\",\"sha256\":\"b9a2d000655c02be85208d84c339cf7c316db2a8ad935ca06edef4bcd80a2c50\",\"node\":\"node\",\"records\":2942,\"last_original_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2060\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139156982974827\",\"wall\":\"2026-11-01T17:53:39.466603829Z\",\"mono_after_ns\":\"139156982975242\"},\"lease\":{\"lease_id\":\"1d65a431-4b67-49f6-a606-dce46fdeb049\",\"generation\":\"58\",\"issued_at\":\"2026-11-01T17:53:39.298888752Z\",\"expires_at\":\"2026-11-02T17:53:39.298888752Z\",\"request_mono_ns\":\"139156811226301\",\"node_deadline_ns\":\"225556811226301\",\"members\":7},\"heartbeat\":{\"mono_ns\":\"139156981136988\",\"policy_expires_mono_ns\":\"139756687327541\",\"generation\":\"58\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"complete_records\":true},\"reader_error\":\"\",\"ready\":true}",
+      "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable",
+      "at": "2026-11-01T17:53:41Z"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "status": "pass",
+      "expected": "record selected route, node counters, packet hops and origin receipt",
+      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"origin_verified\":true,\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a\",\"at\":\"2026-11-01T17:53:41Z\",\"first_counted_byte_at\":\"2026-11-01T17:53:46.660882983Z\",\"member_container_role\":\"member\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"58\",\"device_upload_bytes\":\"261191\",\"device_download_bytes\":\"20421\",\"member_accept_rules\":18,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"58\",\"device_upload_bytes\":\"263456\",\"device_download_bytes\":\"22831\",\"member_accept_rules\":18,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"packet_observations\":{\"member\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9004,\"filter\":\"controlled-origin TCP/443, client port 20033\",\"interfaces\":{\"fvnb0\":{\"from_origin\":7,\"to_origin\":9}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9044,\"filter\":\"controlled-origin TCP/443, client port 20033\",\"interfaces\":{\"fvmb0\":{\"from_origin\":7,\"to_origin\":9},\"fvup0\":{\"from_origin\":7,\"to_origin\":9}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9011,\"filter\":\"controlled-origin TCP/443, client port 20033\",\"interfaces\":{\"eth0\":{\"from_origin\":7,\"to_origin\":9}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}",
+      "command": "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after",
+      "at": "2026-11-01T17:53:54Z"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "status": "pass",
+      "expected": "record selected route, node counters, packet hops and origin receipt",
+      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"origin_verified\":true,\"origin_requests\":0,\"origin_snat_matches\":false,\"probe_sha256\":\"4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a\",\"at\":\"2026-11-01T17:53:54Z\",\"member_container_role\":\"member-b1\",\"route_selected\":false,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"58\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":18,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"58\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":18,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"packet_observations\":{\"member-b1\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9040,\"filter\":\"controlled-origin TCP/443, client port 20034\",\"interfaces\":{\"eth0\":{\"to_origin\":5}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9083,\"filter\":\"controlled-origin TCP/443, client port 20034\",\"interfaces\":{}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9038,\"filter\":\"controlled-origin TCP/443, client port 20034\",\"interfaces\":{}}},\"transfer\":{\"body_bytes\":0,\"http_status\":0,\"origin_receipt\":false},\"counted\":false,\"first_unconfirmed_hop\":\"member exit selection: controlled-origin route remains on underlay; no selected exit\"}",
+      "command": "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after",
+      "at": "2026-11-01T17:54:07Z"
+    },
+    {
+      "name": "unauthorized real transfer",
+      "status": "pass",
+      "expected": "no origin response",
+      "actual": "origin_receipt=false",
+      "command": "bounded HTTPS from native peer expected to have no authorized exit",
+      "at": "2026-11-01T17:54:07Z"
+    },
+    {
+      "name": "publication command published",
+      "status": "pass",
+      "expected": "202 pending, group_ids accepted",
+      "actual": "HTTP 202 ",
+      "command": "PUT /admin/nodes/{id}/publication with group_ids and If-Match",
+      "at": "2026-11-01T17:54:08Z"
+    },
+    {
+      "name": "publication progress published",
+      "status": "pass",
+      "expected": "record pending/partial versus fully observed states",
+      "actual": "operation_id=613895f1-536f-4495-9110-97abb5e6c8de; states={\"pending\":\"2026-11-01T17:54:08.61919352Z\",\"running\":\"2026-11-01T17:54:09.620666768Z\",\"succeeded\":\"2026-11-01T17:54:10.621470538Z\"}",
+      "command": "poll same immutable operation identity until succeeded or bounded timeout",
+      "at": "2026-11-01T17:54:10Z"
+    },
+    {
+      "name": "publication operation published",
+      "status": "pass",
+      "expected": "record applied operation independently of intent",
+      "actual": "status=succeeded; required=3; succeeded=3; intent=published; observed=active",
+      "command": "poll operations.steps and required observations; read exits projection",
+      "at": "2026-11-01T17:54:10Z"
+    },
+    {
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+      "actual": "{\"accepted\":{\"applied\":\"60\",\"desired\":\"60\",\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"device_id\":\"00000000-0000-0000-0000-000000000000\",\"expires_at\":\"2026-11-02T17:54:09.324578+00:00\",\"observation\":{\"lease\":{\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"expires_at\":\"2026-11-02T17:54:09.324578678Z\"},\"usage\":{\"blocked_seq\":\"29\",\"ledger_epoch\":\"60bdfb1f-e00e-4511-b9e8-f286b63f0e27\",\"meter_epoch_id\":\"01a1983f-5347-7907-a34f-0644b5ba09f1\",\"oldest_unacked_at\":\"2026-11-01T17:30:44.349595268Z\",\"acked_archive_bytes\":\"18338\",\"unacked_event_count\":41,\"central_acked_through\":\"28\",\"unacked_payload_bytes\":\"26583\",\"last_durable_event_seq\":\"69\"},\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"qos\",\"detail\":\"read_at=2026-11-01T17:54:09.449682032Z source=live candidate=60 verified=true {\\\"generation\\\":\\\"60\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"6cbed2fa4d8032dee60941234b47eea5257d4e74c6bb1f2e9bbc9395972f413b\\\"}\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"}],\"errors\":[],\"update\":{\"stage\":null,\"state\":null,\"job_id\":null,\"generation\":null},\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"netbird\":{\"backend\":\"kernel\",\"peer_id\":null,\"version\":null},\"node_id\":\"01a19824-7330-7bde-928c-2a72e0b781e5\",\"report_id\":\"01a1983f-53b8-7e1a-a7f6-d9c89c3c86d1\",\"data_health\":\"healthy\",\"observed_at\":\"2026-11-01T17:54:09.464912458Z\",\"tc_evidence\":{\"phase\":\"verify\",\"sha256\":\"6cbed2fa4d8032dee60941234b47eea5257d4e74c6bb1f2e9bbc9395972f413b\",\"read_at\":\"2026-11-01T17:54:09.449584855Z\",\"rejected\":null,\"verified\":true,\"truncated\":false,\"error_code\":null,\"attachments\":[{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"c854:\",\"parent\":\"1:c854\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvmb0\",\"attachment\":\"qdisc\"},{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"c854:\",\"parent\":\"1:c854\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvup0\",\"attachment\":\"qdisc\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:c854\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"c854:\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"root\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:c854\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"c854:\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"root\"}],\"reads_total\":16,\"objects_total\":4,\"candidate_generation\":\"60\"},\"agent_version\":\"0.1.0\",\"safety_status\":\"passed\",\"current_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"provisioning_state\":\"ready\",\"applied_policy_refs\":{\"dns_generation\":\"1\",\"fup_generation\":\"1\",\"authorization_generation\":\"1\"},\"dns_policy_evidence\":{\"feeds\":[],\"outcome\":\"applied\",\"applied_at\":\"2026-11-01T17:54:09.345487497Z\",\"error_code\":null,\"generation\":\"1\",\"document_id\":\"01a19824-6813-75da-8fb9-849c52756f1d\",\"content_sha256\":\"a9b7cc97222fde0330c017adba1be8cd3f765b38f413e14122a61d040aaa00f8\"},\"node_incarnation_id\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"last_good_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"applied_binding_revision\":\"3\",\"forwarding_block_reasons\":[],\"applied_config_generation\":\"60\",\"member_forwarding_enabled\":true},\"member_count\":1,\"lease_generation\":\"60\"},\"device_id\":\"00000000-0000-0000-0000-000000000000\",\"last_stage\":\"producer_serving_join\",\"producer_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2112\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139187013707896\",\"wall\":\"2026-11-01T17:54:09.497336799Z\",\"mono_after_ns\":\"139187013708178\"},\"lease\":{\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"generation\":\"60\",\"issued_at\":\"2026-11-01T17:54:09.324578678Z\",\"expires_at\":\"2026-11-02T17:54:09.324578678Z\",\"request_mono_ns\":\"139186838139631\",\"node_deadline_ns\":\"225586838139631\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"139187011872063\",\"policy_expires_mono_ns\":\"139786716113620\",\"generation\":\"60\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"producer_stream\":{\"bytes\":\"40030926\",\"sha256\":\"1da18bb592effe25143e1ee58fe46bb000c6818cbf42860d910ac90ae07efaef\",\"node\":\"node\",\"records\":2994,\"last_original_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2112\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139187013707896\",\"wall\":\"2026-11-01T17:54:09.497336799Z\",\"mono_after_ns\":\"139187013708178\"},\"lease\":{\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"generation\":\"60\",\"issued_at\":\"2026-11-01T17:54:09.324578678Z\",\"expires_at\":\"2026-11-02T17:54:09.324578678Z\",\"request_mono_ns\":\"139186838139631\",\"node_deadline_ns\":\"225586838139631\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"139187011872063\",\"policy_expires_mono_ns\":\"139786716113620\",\"generation\":\"60\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"complete_records\":true},\"reader_error\":\"\",\"ready\":true}",
+      "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable",
+      "at": "2026-11-01T17:54:10Z"
+    },
+    {
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+      "actual": "{\"accepted\":{\"applied\":\"60\",\"desired\":\"60\",\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"device_id\":\"01a19825-ca63-714d-9815-ec81aaeda494\",\"expires_at\":\"2026-11-02T17:54:09.324578+00:00\",\"observation\":{\"lease\":{\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"expires_at\":\"2026-11-02T17:54:09.324578678Z\"},\"usage\":{\"blocked_seq\":\"29\",\"ledger_epoch\":\"60bdfb1f-e00e-4511-b9e8-f286b63f0e27\",\"meter_epoch_id\":\"01a1983f-5347-7907-a34f-0644b5ba09f1\",\"oldest_unacked_at\":\"2026-11-01T17:30:44.349595268Z\",\"acked_archive_bytes\":\"18338\",\"unacked_event_count\":41,\"central_acked_through\":\"28\",\"unacked_payload_bytes\":\"26583\",\"last_durable_event_seq\":\"69\"},\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"qos\",\"detail\":\"read_at=2026-11-01T17:54:09.449682032Z source=live candidate=60 verified=true {\\\"generation\\\":\\\"60\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"6cbed2fa4d8032dee60941234b47eea5257d4e74c6bb1f2e9bbc9395972f413b\\\"}\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-01T17:54:09.348302351Z\"}],\"errors\":[],\"update\":{\"stage\":null,\"state\":null,\"job_id\":null,\"generation\":null},\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"netbird\":{\"backend\":\"kernel\",\"peer_id\":null,\"version\":null},\"node_id\":\"01a19824-7330-7bde-928c-2a72e0b781e5\",\"report_id\":\"01a1983f-53b8-7e1a-a7f6-d9c89c3c86d1\",\"data_health\":\"healthy\",\"observed_at\":\"2026-11-01T17:54:09.464912458Z\",\"tc_evidence\":{\"phase\":\"verify\",\"sha256\":\"6cbed2fa4d8032dee60941234b47eea5257d4e74c6bb1f2e9bbc9395972f413b\",\"read_at\":\"2026-11-01T17:54:09.449584855Z\",\"rejected\":null,\"verified\":true,\"truncated\":false,\"error_code\":null,\"attachments\":[{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"c854:\",\"parent\":\"1:c854\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvmb0\",\"attachment\":\"qdisc\"},{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"c854:\",\"parent\":\"1:c854\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvup0\",\"attachment\":\"qdisc\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:c854\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"c854:\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"root\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:c854\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"c854:\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"root\"}],\"reads_total\":16,\"objects_total\":4,\"candidate_generation\":\"60\"},\"agent_version\":\"0.1.0\",\"safety_status\":\"passed\",\"current_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"provisioning_state\":\"ready\",\"applied_policy_refs\":{\"dns_generation\":\"1\",\"fup_generation\":\"1\",\"authorization_generation\":\"1\"},\"dns_policy_evidence\":{\"feeds\":[],\"outcome\":\"applied\",\"applied_at\":\"2026-11-01T17:54:09.345487497Z\",\"error_code\":null,\"generation\":\"1\",\"document_id\":\"01a19824-6813-75da-8fb9-849c52756f1d\",\"content_sha256\":\"a9b7cc97222fde0330c017adba1be8cd3f765b38f413e14122a61d040aaa00f8\"},\"node_incarnation_id\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"last_good_release_id\":\"01a19824-4f45-78a0-acbc-5afcd10e2966\",\"applied_binding_revision\":\"3\",\"forwarding_block_reasons\":[],\"applied_config_generation\":\"60\",\"member_forwarding_enabled\":true},\"member_count\":1,\"lease_generation\":\"60\"},\"device_id\":\"01a19825-ca63-714d-9815-ec81aaeda494\",\"last_stage\":\"producer_serving_join\",\"producer_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2112\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139187013707896\",\"wall\":\"2026-11-01T17:54:09.497336799Z\",\"mono_after_ns\":\"139187013708178\"},\"lease\":{\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"generation\":\"60\",\"issued_at\":\"2026-11-01T17:54:09.324578678Z\",\"expires_at\":\"2026-11-02T17:54:09.324578678Z\",\"request_mono_ns\":\"139186838139631\",\"node_deadline_ns\":\"225586838139631\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"139187011872063\",\"policy_expires_mono_ns\":\"139786716113620\",\"generation\":\"60\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"producer_stream\":{\"bytes\":\"40030926\",\"sha256\":\"1da18bb592effe25143e1ee58fe46bb000c6818cbf42860d910ac90ae07efaef\",\"node\":\"node\",\"records\":2994,\"last_original_record\":{\"run_id\":\"d12af10c-2c72-4a2e-b642-e924db4cc5fd\",\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"sequence\":\"2112\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"139187013707896\",\"wall\":\"2026-11-01T17:54:09.497336799Z\",\"mono_after_ns\":\"139187013708178\"},\"lease\":{\"lease_id\":\"c22f37d7-6518-4e6c-bbb3-3e7a152d9604\",\"generation\":\"60\",\"issued_at\":\"2026-11-01T17:54:09.324578678Z\",\"expires_at\":\"2026-11-02T17:54:09.324578678Z\",\"request_mono_ns\":\"139186838139631\",\"node_deadline_ns\":\"225586838139631\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"139187011872063\",\"policy_expires_mono_ns\":\"139786716113620\",\"generation\":\"60\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"complete_records\":true},\"reader_error\":\"\",\"ready\":true}",
+      "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable",
+      "at": "2026-11-01T17:54:11Z"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "status": "pass",
+      "expected": "record selected route, node counters, packet hops and origin receipt",
+      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"origin_verified\":true,\"origin_requests\":1,\"origin_snat_matches\":true,\"probe_sha256\":\"4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a\",\"at\":\"2026-11-01T17:54:11Z\",\"first_counted_byte_at\":\"2026-11-01T17:54:15.85804306Z\",\"member_container_role\":\"member-b1\",\"route_selected\":true,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"fvnb0\",\"flags\":[],\"table\":\"netbird\",\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"60\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"60\",\"device_upload_bytes\":\"2305\",\"device_download_bytes\":\"2409\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"packet_observations\":{\"member-b1\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9016,\"filter\":\"controlled-origin TCP/443, client port 20035\",\"interfaces\":{\"fvnb0\":{\"from_origin\":7,\"to_origin\":10}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9031,\"filter\":\"controlled-origin TCP/443, client port 20035\",\"interfaces\":{\"fvmb0\":{\"from_origin\":7,\"to_origin\":10},\"fvup0\":{\"from_origin\":7,\"to_origin\":10}}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9009,\"filter\":\"controlled-origin TCP/443, client port 20035\",\"interfaces\":{\"eth0\":{\"from_origin\":7,\"to_origin\":10}}}},\"transfer\":{\"body_bytes\":3,\"http_status\":200,\"origin_receipt\":true},\"counted\":true,\"first_unconfirmed_hop\":\"none: origin HTTP response and both device admission counters increased\"}",
+      "command": "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after",
+      "at": "2026-11-01T17:54:23Z"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "status": "pass",
+      "expected": "record selected route, node counters, packet hops and origin receipt",
+      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"origin_verified\":true,\"origin_requests\":0,\"origin_snat_matches\":false,\"probe_sha256\":\"4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a\",\"at\":\"2026-11-01T17:54:23Z\",\"member_container_role\":\"member\",\"route_selected\":false,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"60\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"60\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":6,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"packet_observations\":{\"member\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9002,\"filter\":\"controlled-origin TCP/443, client port 20036\",\"interfaces\":{\"eth0\":{\"to_origin\":5}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9097,\"filter\":\"controlled-origin TCP/443, client port 20036\",\"interfaces\":{}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9029,\"filter\":\"controlled-origin TCP/443, client port 20036\",\"interfaces\":{}}},\"transfer\":{\"body_bytes\":0,\"http_status\":0,\"origin_receipt\":false},\"counted\":false,\"first_unconfirmed_hop\":\"member exit selection: controlled-origin route remains on underlay; no selected exit\"}",
+      "command": "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after",
+      "at": "2026-11-01T17:54:36Z"
+    },
+    {
+      "name": "unauthorized real transfer",
+      "status": "pass",
+      "expected": "no origin response",
+      "actual": "origin_receipt=false",
+      "command": "bounded HTTPS from native peer expected to have no authorized exit",
+      "at": "2026-11-01T17:54:36Z"
+    },
+    {
+      "name": "regroup projection",
+      "status": "pass",
+      "expected": "group B attached",
+      "actual": "B=1",
+      "command": "PUT group_ids=[B]; read product attachment",
+      "at": "2026-11-01T17:54:36Z"
+    },
+    {
+      "name": "publication command disabled",
+      "status": "pass",
+      "expected": "202 pending, group_ids accepted",
+      "actual": "HTTP 202 ",
+      "command": "PUT /admin/nodes/{id}/publication with group_ids and If-Match",
+      "at": "2026-11-01T17:54:37Z"
+    },
+    {
+      "name": "publication progress disabled",
+      "status": "pass",
+      "expected": "record pending/partial versus fully observed states",
+      "actual": "operation_id=4b53c8ff-6a39-42b4-b07c-b25c7796ed17; states={\"partially_succeeded\":\"2026-11-01T17:54:38.919344103Z\",\"pending\":\"2026-11-01T17:54:37.918184474Z\",\"succeeded\":\"2026-11-01T17:54:39.920752925Z\"}",
+      "command": "poll same immutable operation identity until succeeded or bounded timeout",
+      "at": "2026-11-01T17:54:39Z"
+    },
+    {
+      "name": "publication operation disabled",
+      "status": "pass",
+      "expected": "record applied operation independently of intent",
+      "actual": "status=succeeded; required=2; succeeded=2; intent=disabled; observed=withdrawn",
+      "command": "poll operations.steps and required observations; read exits projection",
+      "at": "2026-11-01T17:54:39Z"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "status": "pass",
+      "expected": "record selected route, node counters, packet hops and origin receipt",
+      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"origin_verified\":true,\"origin_requests\":0,\"origin_snat_matches\":false,\"probe_sha256\":\"4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a\",\"at\":\"2026-11-01T17:54:39Z\",\"member_container_role\":\"member-b1\",\"route_selected\":false,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"0\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":0,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"0\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":0,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"packet_observations\":{\"member-b1\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9002,\"filter\":\"controlled-origin TCP/443, client port 20037\",\"interfaces\":{\"eth0\":{\"to_origin\":5}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9075,\"filter\":\"controlled-origin TCP/443, client port 20037\",\"interfaces\":{}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9000,\"filter\":\"controlled-origin TCP/443, client port 20037\",\"interfaces\":{}}},\"transfer\":{\"body_bytes\":0,\"http_status\":0,\"origin_receipt\":false},\"counted\":false,\"first_unconfirmed_hop\":\"member exit selection: controlled-origin route remains on underlay; no selected exit\"}",
+      "command": "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after",
+      "at": "2026-11-01T17:54:52Z"
+    },
+    {
+      "name": "unauthorized real transfer",
+      "status": "pass",
+      "expected": "no origin response",
+      "actual": "origin_receipt=false",
+      "command": "bounded HTTPS from native peer expected to have no authorized exit",
+      "at": "2026-11-01T17:54:52Z"
+    },
+    {
+      "name": "agent transition disabled node restart",
+      "status": "pass",
+      "expected": "record command duration and stored lease continuity",
+      "actual": "{\"command_ok\":true,\"control_io_after_cancel\":\"not observable here\",\"duration_ns\":\"563729651\",\"ended_at\":\"2026-11-01T17:54:53.660118403Z\",\"parent_wait_receipt\":{\"id\":\"6083b7a8-4ee6-4351-b106-973c5e1f23df\",\"pid\":158363,\"start_ticks\":\"13794624\",\"started_at\":\"2026-11-01T17:33:28.730498681Z\",\"wait_observed_at\":\"2026-11-01T17:54:53.310724694Z\",\"wait_status\":0,\"exit_code\":0,\"signal\":null,\"core_dump\":false},\"sigterm_to_exit\":\"see separate r18 M-2 direct stop if present; otherwise exact signal/exit interval not observable here\",\"started_at\":\"2026-11-01T17:54:53.096388752Z\",\"stored_lease_after\":{\"available\":true,\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"envelope_sha256\":\"dd62ee14b3536e5a1bd97d49d023c2e867161b1729dba21129efbc658e92d339\",\"expires_at\":\"2026-11-02T17:54:44.333612569Z\",\"highest_issued_at\":\"2026-11-01T17:54:44.333612569Z\",\"issued_at\":\"2026-11-01T17:54:44.333612569Z\",\"lease_id\":\"ebb0ac90-6b1f-4c4f-afcb-85ab7eae2b84\",\"mono_sent_ns\":\"139221847952009\",\"present\":true,\"read_at\":\"2026-11-01T17:54:53.959444223Z\"},\"stored_lease_before\":{\"available\":true,\"boot_id\":\"97c018d7-a925-4723-9127-83c097de1c8a\",\"envelope_sha256\":\"dd62ee14b3536e5a1bd97d49d023c2e867161b1729dba21129efbc658e92d339\",\"expires_at\":\"2026-11-02T17:54:44.333612569Z\",\"highest_issued_at\":\"2026-11-01T17:54:44.333612569Z\",\"issued_at\":\"2026-11-01T17:54:44.333612569Z\",\"lease_id\":\"ebb0ac90-6b1f-4c4f-afcb-85ab7eae2b84\",\"mono_sent_ns\":\"139221847952009\",\"present\":true,\"process_id\":\"6083b7a8-4ee6-4351-b106-973c5e1f23df\",\"read_at\":\"2026-11-01T17:54:53.071167307Z\"},\"stored_lease_status\":\"survived unchanged\"}",
+      "command": "read-only SQLite lease metadata before/after; no renewal or repair requested",
+      "at": "2026-11-01T17:54:53Z",
+      "contention_context": {
+        "classification": "contains earlier contention-confounded observations",
+        "step_completed_in_window": false,
+        "referenced_times_in_window": 1,
+        "index": "F16-contention.json",
+        "cause_status": "unproven"
+      }
+    },
+    {
+      "name": "node restart",
+      "status": "pass",
+      "expected": "restart succeeds",
+      "actual": "restart_ok=true",
+      "command": "docker restart fvpn-w4-members-node",
+      "at": "2026-11-01T17:54:53Z"
+    },
+    {
+      "name": "durable restart without token",
+      "status": "pass",
+      "expected": "enrolled, same incarnation, nft readable, token absent",
+      "actual": "resumed=true; stage=enrolled; same_incarnation=true; nft_readable=true; token_absent=true",
+      "command": "docker restart node; poll entrypoint and product incarnation; no Service workaround",
+      "at": "2026-11-01T17:54:55Z"
+    },
+    {
+      "name": "disabled persists",
+      "status": "pass",
+      "expected": "disabled intent after node restart",
+      "actual": "intent=disabled; observed=withdrawn",
+      "command": "read publication after reconnect/restart",
+      "at": "2026-11-01T17:54:55Z"
+    },
+    {
+      "name": "bounded member transfer observation",
+      "status": "pass",
+      "expected": "record selected route, node counters, packet hops and origin receipt",
+      "actual": "{\"node_container_role\":\"node\",\"node_incarnation\":\"01a19824-75e0-76ca-a711-a3a8639b44d7\",\"origin_verified\":true,\"origin_requests\":0,\"origin_snat_matches\":false,\"probe_sha256\":\"4c468bdef0a1028ed568952a7abc1293528b4a5c648c4d688ae771e261cf236a\",\"at\":\"2026-11-01T17:54:55Z\",\"member_container_role\":\"member-b1\",\"route_selected\":false,\"route_before\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"route_after\":[{\"cache\":[],\"dev\":\"eth0\",\"flags\":[],\"uid\":0}],\"peer_status\":{\"daemonStatus\":\"Connected\",\"daemonVersion\":\"0.82.0\",\"networks\":null,\"usesKernelInterface\":true},\"node_before\":{\"available\":true,\"generation\":\"0\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":0,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"node_after\":{\"available\":true,\"generation\":\"0\",\"device_upload_bytes\":\"0\",\"device_download_bytes\":\"0\",\"member_accept_rules\":0,\"diagnostic_bytes\":{\"ctbadns\":\"0\",\"ctbase\":\"3111\",\"ctdeny\":\"0\",\"ctdenyd\":\"0\",\"cthost\":\"0\",\"ctin\":\"0\",\"ctinv\":\"0\",\"ctnodn\":\"0\",\"ctunkd\":\"0\",\"ctunku\":\"1350\",\"ctv6\":\"0\",\"nd_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nd_01a198258f607908a91f43532587354e\":\"0\",\"nd_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nd_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nd_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nd_01a19834e4f1717e99cc76264c928856\":\"0\",\"nd_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nd_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nd_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nd_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nd_01a1983ce6b374508d3f16a00c087106\":\"0\",\"nu_01a1982519ae77899c814b8954a8efb3\":\"0\",\"nu_01a198258f607908a91f43532587354e\":\"0\",\"nu_01a19825ca63714d9815ec81aaeda494\":\"0\",\"nu_01a198271783777fa2ea56e5eccc459b\":\"0\",\"nu_01a1982804417763852dabe7d3a7c46c\":\"0\",\"nu_01a19834e4f1717e99cc76264c928856\":\"0\",\"nu_01a198367dd2756f948cb0a15c5fd887\":\"0\",\"nu_01a19838c6fa7c6a8a802b0199f2f52e\":\"0\",\"nu_01a198393d277cd1a76ba4bde20c60f0\":\"0\",\"nu_01a1983c72d9739aa7678579378e6bb5\":\"0\",\"nu_01a1983ce6b374508d3f16a00c087106\":\"0\"}},\"packet_observations\":{\"member-b1\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9023,\"filter\":\"controlled-origin TCP/443, client port 20038\",\"interfaces\":{\"eth0\":{\"to_origin\":5}}},\"node\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9098,\"filter\":\"controlled-origin TCP/443, client port 20038\",\"interfaces\":{}},\"origin\":{\"available\":true,\"duration_seconds\":9,\"elapsed_ms\":9043,\"filter\":\"controlled-origin TCP/443, client port 20038\",\"interfaces\":{}}},\"transfer\":{\"body_bytes\":0,\"http_status\":0,\"origin_receipt\":false},\"counted\":false,\"first_unconfirmed_hop\":\"member exit selection: controlled-origin route remains on underlay; no selected exit\"}",
+      "command": "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after",
+      "at": "2026-11-01T17:55:07Z"
+    },
+    {
+      "name": "unauthorized real transfer",
+      "status": "pass",
+      "expected": "no origin response",
+      "actual": "origin_receipt=false",
+      "command": "bounded HTTPS from native peer expected to have no authorized exit",
+      "at": "2026-11-01T17:55:07Z"
+    },
+    {
+      "name": "finite capacity and classification",
+      "status": "pass",
+      "expected": "200 or 202",
+      "actual": "HTTP 202 ",
+      "command": "PATCH node capacity: TEST ONLY 200 Mbps / 100 Mbps member caps",
+      "at": "2026-11-01T17:55:09Z"
+    },
+    {
+      "name": "publication command published",
+      "status": "pass",
+      "expected": "202 pending, group_ids accepted",
+      "actual": "HTTP 202 ",
+      "command": "PUT /admin/nodes/{id}/publication with group_ids and If-Match",
+      "at": "2026-11-01T17:55:10Z"
+    },
+    {
+      "name": "publication progress published",
+      "status": "pass",
+      "expected": "record pending/partial versus fully observed states",
+      "actual": "operation_id=755b4fd9-4f3a-4b85-bf71-ee0fb96bf596; states={\"pending\":\"2026-11-01T17:55:10.439327168Z\",\"running\":\"2026-11-01T17:55:11.441001391Z\",\"succeeded\":\"2026-11-01T17:55:14.444587318Z\"}",
+      "command": "poll same immutable operation identity until succeeded or bounded timeout",
+      "at": "2026-11-01T17:55:14Z"
+    },
+    {
+      "name": "publication operation published",
+      "status": "pass",
+      "expected": "record applied operation independently of intent",
+      "actual": "status=succeeded; required=3; succeeded=3; intent=published; observed=active",
+      "command": "poll operations.steps and required observations; read exits projection",
+      "at": "2026-11-01T17:55:14Z"
+    },
+    {
+      "name": "r18 M-3 accepted hold and central ID join",
+      "status": "pass",
+      "expected": "retain incidents, exact reports, lease members, revocation and escalation IDs; markers and retained safety precedence when exercised",
+      "actual": "samples=15; valid=true; details=F16-AT08-generation-holds.json; no matching scenario is not exercised",
+      "command": "read-only own-stack durable holds/audits; replay publication classification, no new observation",
+      "at": "2026-11-01T17:55:14Z"
+    }
+  ],
+  "blockers": [],
+  "contention_context": {
+    "classification": "contention-confounded for every observation overlapping the window",
+    "start": "2026-11-01T17:32:43Z",
+    "end": "2026-11-01T17:37:12Z",
+    "decision": "D-133",
+    "cause_status": "unproven",
+    "source": "Orchestrator resume instruction, 2026-11-02: handover 29 CPU-heavy gates",
+    "rule": "All timings, failures and anomalies inside or overlapping this window are contention-confounded. Values and verdicts stand; overlap assigns no cause. Cumulative snapshots may reference earlier events; evaluate the event time, not the later snapshot time.",
+    "index": "F16-contention.json"
+  }
+}
