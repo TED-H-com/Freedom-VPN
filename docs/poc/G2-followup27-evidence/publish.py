@@ -36,7 +36,8 @@ for p in sorted(ROOT.rglob('*')):
         p.unlink()
     elif p.suffix in ('.txt','.nft'):
         text=data.decode()
-        normalized='\n'.join(line.rstrip() for line in text.splitlines())+'\n'
+        normalized='\n'.join(line.rstrip() for line in text.splitlines()).rstrip()
+        normalized=normalized+'\n' if normalized else ''
         if data and normalized.encode()!=data:
             target=Path(str(p)+'.raw.gz');assert not target.exists()
             zipped=gzip.compress(data,mtime=0);target.write_bytes(zipped)

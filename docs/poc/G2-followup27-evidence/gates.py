@@ -25,7 +25,14 @@ steps=[
 ]
 # No shell trap: disktmp.py owns scratch lifetime around this whole runner,
 # and each netlab target retains its own nested disk wrapper.
-for name,cmd in steps:
+remaining=steps
+if len(sys.argv)>1:
+    # Explicit continuation after an out-of-scope failed gate: never rerun or
+    # overwrite that attempt. The failed receipt remains the gate's verdict.
+    assert len(sys.argv)==3 and sys.argv[1]=='--after'
+    index=[name for name,_ in steps].index(sys.argv[2])
+    remaining=steps[index+1:]
+for name,cmd in remaining:
     print('Starting '+name,flush=True)
     env=dict(os.environ,PYTHONDONTWRITEBYTECODE='1')
     if name=='gate4':

@@ -1,0 +1,13 @@
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	91.122s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent	0.216s
+2026/11/03 01:57:52 http: TLS handshake error from 127.0.0.1:42342: remote error: tls: bad certificate
+--- FAIL: TestAT25_FileMeterWaitRestartRechecksCurrentFile (3.07s)
+    --- FAIL: TestAT25_FileMeterWaitRestartRechecksCurrentFile/missing (2.22s)
+        meter_barrier_test.go:284: restart renewed the original wait deadline
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/node/updater	30.739s
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater	0.814s
+?   	github.com/TED-H-com/Freedom-VPN/node/updater/fsutil	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/packaging/installer	8.765s
+?   	github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install	[no test files]
+FAIL

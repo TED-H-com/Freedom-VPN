@@ -132,7 +132,21 @@ command-text false matches; the host observations are not test pass criteria.
 comparison unaccepted. Review its preserved trace and determine the next
 controlled diagnostic window; this follow-up's no-retry quartet is finished.
 No evidence supports assigning the cause to host contention or to the verifier.
-The functional fix and mandatory gates are delivered independently of that
-unresolved verdict. Historical evidence and historical failed verdicts remain
-unchanged. RELATED ICMP remains the owner's open question, with its source
-guard unchanged. Physical arm64 remains unmeasured.
+The functional fix and gate receipts are delivered independently of that
+unresolved verdict.
+
+**2026-11-03 — updater owner via orchestrator:** the mandatory combined
+consumer command failed at
+`TestAT25_FileMeterWaitRestartRechecksCurrentFile/missing`,
+`node/updater/meter_barrier_test.go:284`, with "restart renewed the original
+wait deadline". Agent and installer packages passed. The assertion measures
+all of Recover against one second; the log does not establish deadline renewal
+or the cause of the delay. [The failure record](updater-failure.json) pins the
+unchanged updater paths. No updater file was edited and the failed command
+was not retried. Remaining gates continued in their prescribed order. The
+required all-green consumer condition is therefore unmet and needs owner
+disposition.
+
+Historical evidence and historical failed verdicts remain unchanged. RELATED
+ICMP remains the owner's open question, with its source guard unchanged.
+Physical arm64 remains unmeasured.
