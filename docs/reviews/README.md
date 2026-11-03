@@ -27,6 +27,7 @@
 | `r19-intersection-design-review` | [r19-intersection-design-review.md](r19-intersection-design-review.md) | 2026-11-01 | `grok/grok-4.7`, base `6eda25d0` | Agent-core 33 option (b) intersection-serving design, D-139 | H-1 → netlab 24; M-2/L-2 → agent-core 34: routed; in progress. Eleven design-only findings → D-141 reconsideration conditions. | Only the report is archived; proof files remain on the review branch. |
 | `r20-adoption-signal-review` | [r20-adoption-signal-review.md](r20-adoption-signal-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `7d34c885` | Agent-core 36 same-boot adoption refusal on changed deny / host sets, signal lifetime through Close, durability and lab proofs | 6 routed, not yet judged: 2 High / 3 Medium / 1 Low; H-1, M-1, M-2, M-3 (pre-existing), L-1 → agent-core 37; H-2 → netlab 27 | Only the report is archived; proof files remain on the review branch (`639eda6b`). |
 | `r21-adoption-fixes-review` | [r21-adoption-fixes-review.md](r21-adoption-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `7b3d7bf8` | Agent-core 37 fixes for r20 H-1, M-1, M-2, M-3 and L-1; D-141 | 0 Critical / 2 High / 2 Medium / 1 Low; returned before merge, none confirmed | Proof branch `47f75c04`; none adopted on main at this cut |
+| `r22-attribution-fixes-review` | [r22-attribution-fixes-review.md](r22-attribution-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `31862b3a` | Agent-core 38 carrying 37: r20 fixes and r21 H-1, H-2, M-1, M-2, L-1 fixes; D-141 | 0 Critical / 2 High / 3 Medium / 0 Low; returned to agent-core 39 before merge, none confirmed | Proof branch `ef78b9b7`; none adopted on main at this cut |
 
 ## What Held Across the Reviews
 
@@ -255,3 +256,46 @@ withdrawal without another Apply and baseline after an unrecorded Apply.
 The r20 disposition above remains the historical #403 cut. What held in r21
 is the review's statement, not new acceptance evidence. [Follow-up 31](../handover/follow-up-31.md)
 pins this disposition; historical failures stay failed.
+
+## r22 dispositions at the follow-up 33 cutoff (2026-11-03 EST)
+
+Exact source: `r22-attribution-fixes-review` worktree's `.agent/REVIEW.md`.
+Reviewer **agy `gemini-4-argon-high`** reviewed agent-core 38's delivered
+**31862b3a** before merge. That tip carries agent-core 37's r20 fixes and
+38's fixes for r21 H-1, H-2, M-1, M-2 and L-1. The [raw archive](r22-attribution-fixes-review.md)
+is byte-for-byte: **37,600 bytes**, SHA-256
+**05e7806a1f5dfec8388e4fe2cbe0e5e1ed11ec1d4c291f3bb5236d7c0fe43c02**.
+It carries no host path, username or secret. Findings: **0 Critical, 2 High,
+3 Medium, 0 Low**, each with a proof test on the review branch
+**r22-attribution-fixes-review**, **ef78b9b7**. Recommendation:
+**Hold for fixes: H-1, H-2, M-1, M-2, M-3.**
+
+**Returned to agent-core 39 before merge.** Agent-core 37 and 38 are not on
+main at #415; they merge together with 39 after 39 is reviewed. D-141 requires
+39 to judge each finding before fixing it; **none is confirmed**. No proof
+files are adopted by this handover.
+
+| Finding | Disposition at #415 |
+|---|---|
+| H-1 | Returned, not yet judged — agent-core 39; review reports unsettled transitions and failed handoff FinalSample allowing wrong-member/revision billing on rebinding Apply. |
+| H-2 | Returned, not yet judged — agent-core 39; review reports false mapping-conflict gaps across five crash windows. |
+| M-1 | Returned, not yet judged — agent-core 39; review reports transient Boot meter-open failure permanently wedging retained settlement. |
+| M-2 | Returned, not yet judged — agent-core 39; review reports late-aborted adoption bypassing PreserveClosedEpoch and contaminating the epoch baseline. |
+| M-3 | Returned, not yet judged — agent-core 39; review reports untruthful failed/timed-out Boot heartbeats and probe_clear failure consuming the challenge nonce. |
+
+r20 H-1, M-1, M-2, M-3 and L-1, and r21's five findings, stay open on main.
+Earlier disposition tables retain their cutoffs. What held in r22 is the
+review's statement, not acceptance evidence. [Follow-up 33](../handover/follow-up-33.md)
+pins this disposition; every historical failure stays failed.
+
+**Erratum to What held, item 6 (archive unchanged).** The report cites
+“deploy/systemd/fvpn-agent.service” with **TimeoutStopSec=20s** and a
+**defaultStopTimeout** in main.go. Neither exists on main. The shipped unit is
+`deploy/node/systemd/fvpn-agent.service`, with **TimeoutStopSec=15s**, pinned by
+`TestPKG01_AT07ShippedAgentStopBudget` in `packaging/installer/followup9_test.go`.
+The budget assertion in the review-branch held test
+`TestR22_Held_Q4_Q5_Q6_Q7_FinalSampleCloseAndStopBudgetAndMemberPathEvidence`
+checks only **bootLocalBudget + closeLocalBudget == 13s**; those constants
+are on agent-core's unmerged branch. It does not check the shipped unit or
+a defaultStopTimeout. This prose correction adds no acceptance claim and
+changes no byte of the review archive.
