@@ -1,9 +1,9 @@
 package agent
 
 // Adversarial review r23 proofs for agent-core follow-up 39 (99f93112).
-// Failing proof tests carry `// TODO(review r23): <ID>` and fail against
-// 99f93112 for the exact reason documented in .agent/REVIEW.md. Passing tests
-// prove what held across Attack Questions 1-6.
+// Original proofs are preserved in commit dcdc3d96. Historical trace comments
+// describe the before-fail. Follow-up 40 conversions and fixture limits are in
+// docs/node/followup40-r23-judgments-2026-11-03.md.
 // TEST ONLY in-memory data planes and disk SQLite; no host networking or root.
 
 import (
@@ -44,7 +44,7 @@ import (
 // falls back to uniqueUsageBindings(G2, G3), turning 100% of Member M1's pure
 // G2 traffic in E2 into a false mapping_conflict gap.
 func TestR23_H1a_EpochSwitchDuringServing_InvalidatesUsageIntentAndCreatesFalseConflictOnRestart(t *testing.T) {
-	// TODO(review r23): H-1 (R23-H-1) — When the open usage epoch advances while
+	// Regression r23: H-1 (R23-H-1) — When the open usage epoch advances while
 	// serving the same generation, usage_apply_intent remains pinned to the
 	// superseded epoch E1; restartHeadBindings then rejects the intent on E2
 	// and falls back to uniqueUsageBindings(G2, G3), turning pure G2 traffic in
@@ -135,17 +135,19 @@ func TestR23_H1a_EpochSwitchDuringServing_InvalidatesUsageIntentAndCreatesFalseC
 	}
 
 	led := r21ReadLedger(t, r.eng.cfg, next.nodeID, next.incID)
-	wantTotal := uint64(4096 + 1024 + 4096) // 4096 in E1 + 5120 in E2
+	// The reset itself is a legitimate gap; 1024 is the new baseline.
+	wantTotal := uint64(4096 + 4096)
 	gotM1 := led.byMemberRev[r21MemberRev{member: member1, rev: 1}]
-	if gotM1 != wantTotal || len(led.gaps) != 0 {
+	if gotM1 != wantTotal || len(led.gaps) != 1 || led.gaps[0].Gap.Reason != api.UsageGapReasonCounterDiscontinuity {
 		t.Fatalf("R23-H-1a: epoch switch from E1 (%s) to E2 (%s) invalidated usage_apply_intent; "+
 			"member1 attributed=%d (want %d), gaps=%d (%+v)",
 			epoch1, epoch2, gotM1, wantTotal, len(led.gaps), led.gaps)
 	}
 }
 
-// TestR23_H1b_EpochSwitchDuringServing_RefusesSameBootAdoptionAndDropsNewlyActiveDevice
-// proves R23-H-1 (Subcase B):
+// TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption
+// Guards R23-H-1 (Subcase B). TEST ONLY: a verified real renderer creates
+// idle zero counters. This absent-counter state is not a production proof:
 //
 // When enforce repairs a prior rejected apply (e.applyError != nil) or
 // baseline failure (!e.baselineOK) while k.nudgePending() is true, enforce
@@ -161,8 +163,12 @@ func TestR23_H1a_EpochSwitchDuringServing_InvalidatesUsageIntentAndCreatesFalseC
 // dropping devB. Consequently, adoptStoredServing refuses same-boot adoption
 // (!sameUsageBindings) and Boot's settleRetainedUsage turns devB's E2 traffic
 // into an unknown_device gap.
-func TestR23_H1b_EpochSwitchDuringServing_RefusesSameBootAdoptionAndDropsNewlyActiveDevice(t *testing.T) {
-	// TODO(review r23): H-1 (R23-H-1) — When the open usage epoch advances while
+func TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption(t *testing.T) {
+	r23H1b(t, false)
+}
+
+func r23H1b(t *testing.T, idleZero bool) {
+	// Regression r23: H-1 (R23-H-1) — When the open usage epoch advances while
 	// serving a multi-device generation, usage_apply_intent remains on E1; on a
 	// same-boot restart after devB becomes active in E2, restartHeadBindings
 	// drops devB, adoptStoredServing refuses adoption, and settleRetainedUsage
@@ -202,6 +208,9 @@ func TestR23_H1b_EpochSwitchDuringServing_RefusesSameBootAdoptionAndDropsNewlyAc
 		counters: map[string]enforce.CounterValue{
 			upA: {Packets: 1, Bytes: 2048},
 		},
+	}
+	if idleZero {
+		src1.setCounter(upB, enforce.CounterValue{})
 	}
 	r.eng.meterSource = src1
 
@@ -293,7 +302,7 @@ func TestR23_H1b_EpochSwitchDuringServing_RefusesSameBootAdoptionAndDropsNewlyAc
 // epoch for admission" and rejectServing aborts serving with a false
 // HEALTH_CHECK_FAILED apply error and STORE_UNAVAILABLE.
 func TestR23_H2_HandoffBarrierRaceLeavesFinalDoneFalse_NextServeFailsAdmission(t *testing.T) {
-	// TODO(review r23): H-2 (R23-H-2) — handoff must not leave e.finalDone=false
+	// Regression r23: H-2 (R23-H-2) — handoff must not leave e.finalDone=false
 	// after settleRetainedUsage closed the open epoch in usage.db, or enforce
 	// will skip PrepareSampling and fail recordUsageIntent on the next Serve.
 	r := barrierRig(t)
@@ -356,7 +365,7 @@ func TestR23_H2_HandoffBarrierRaceLeavesFinalDoneFalse_NextServeFailsAdmission(t
 //     requires SafetyStatus: "failed"), Checks[storage]: "passed", and
 //     Errors: [] (missing STORE_UNAVAILABLE).
 func TestR23_H3a_PreApplyHandoffSettleFailure_EmitsCorruptObservationAndDashHeartbeat(t *testing.T) {
-	// TODO(review r23): H-3 (R23-H-3) — enforce's defer must recompute
+	// Regression r23: H-3 (R23-H-3) — enforce's defer must recompute
 	// e.decision when pre-Apply e.handoff(ctx) mutates e.usagePersist,
 	// e.retainedPending, or e.serving so heartbeats and ObservationReports
 	// report meter_storage_failed and SafetyStatus: "failed".
@@ -459,7 +468,7 @@ func TestR23_H3a_PreApplyHandoffSettleFailure_EmitsCorruptObservationAndDashHear
 // contradictory ObservationReport with MemberForwardingEnabled: true,
 // SafetyStatus: "failed", and ForwardingBlockReasons: ["safety_check_failed"].
 func TestR23_H3b_PreApplyHandoffBaselineFailure_LeavesServingTrueWithFailedSafety(t *testing.T) {
-	// TODO(review r23): H-3 (R23-H-3) — When pre-Apply e.handoff(ctx) fails
+	// Regression r23: H-3 (R23-H-3) — When pre-Apply e.handoff(ctx) fails
 	// (including when e.baseline(ctx) fails), e.serving and e.policyExpires
 	// must be cleared so heartbeats and ObservationReports do not report
 	// Serving: true alongside BaselineOK: false / SafetyStatus: "failed".
@@ -515,7 +524,7 @@ func TestR23_H3b_PreApplyHandoffBaselineFailure_LeavesServingTrueWithFailedSafet
 // while e.retainedPending is false, e.finalDone is false, and the open usage
 // epoch in usage.db remains open and unsettled.
 func TestR23_M1_WithdrawSecondBaselineSuccess_LeavesOpenEpochUnsettledWithRetainedPendingFalse(t *testing.T) {
-	// TODO(review r23): M-1 (R23-M-1) — withdraw(ctx) must not install Baseline
+	// Regression r23: M-1 (R23-M-1) — withdraw(ctx) must not install Baseline
 	// via a second _ = e.baseline(ctx) call after e.handoff(ctx)'s baseline
 	// failed while leaving e.retainedPending=false and the open epoch unsettled.
 	r := newRig(t)

@@ -111,7 +111,8 @@ func (e *Engine) adoptStoredServing(ctx context.Context, beat watchdog.Beat) boo
 	usageKnown := false
 	if e.usage != nil {
 		if h, err := e.usage.Head(ctx); err == nil {
-			usageKnown = sameUsageBindings(e.restartHeadBindings(h), d.Model.Bindings)
+			bindings, err := e.restartHeadBindings(ctx, e.usage, h)
+			usageKnown = err == nil && sameUsageBindings(bindings, d.Model.Bindings)
 		}
 	}
 	if controlContext(ctx).Err() != nil || e.meter == nil || !usageKnown || !e.decision.Serve || !e.verifyServingModel(ctx, d.Model, e.appliedAssignments) {

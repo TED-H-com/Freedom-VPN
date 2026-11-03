@@ -180,7 +180,12 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 			e.usagePersist = true
 			return
 		}
-		e.setMeterBindings(e.restartHeadBindings(head))
+		bindings, err := e.restartHeadBindings(ctx, st, head)
+		if err != nil {
+			e.usagePersist = true
+			return
+		}
+		e.setMeterBindings(bindings)
 	}
 	m, err = meter.NewContext(ctx, meter.Config{
 		NodeID: e.nodeID, IncarnationID: e.incID, Store: st, Source: src, Logger: e.log,

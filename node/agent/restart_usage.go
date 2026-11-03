@@ -16,9 +16,9 @@ import (
 const usageIntentKey = "usage_apply_intent"
 
 // usageIntent is written before admission, after any outgoing identity has
-// been settled under Baseline. Exactly these identities can count in Epoch.
-// It is accounting evidence, never authority to forward. Epoch and boot scope
-// prevent an old retained_applied model from contaminating a new interval.
+// been settled under Baseline. These identities can count in Epoch and its
+// uninterrupted same-boot reset successors. A final sample ends that interval.
+// This is accounting evidence, never authority to forward.
 type usageIntent struct {
 	Boot       uuid.UUID       `json:"boot_id"`
 	Epoch      uuid.UUID       `json:"epoch_id"`
@@ -75,6 +75,14 @@ func (e *Engine) recordUsageIntent(ctx context.Context, model enforce.Model) err
 // Generation zero cannot exclude an Apply preceding a crashed withdrawal.
 func (e *Engine) captureRestartBindings(ctx context.Context) {
 	e.restartBindings, e.restartIntent = nil, nil
+	// A failed nft read is not evidence that the durable intent disappeared.
+	// The ledger checks its interval below; adoption still verifies live rules.
+	if raw, exists, err := e.store.Meta(ctx, usageIntentKey); err == nil && exists {
+		var intent usageIntent
+		if json.Unmarshal([]byte(raw), &intent) == nil && intent.Boot == e.bootID && intent.Epoch != uuid.Nil && intent.Generation != 0 {
+			e.restartIntent = &intent
+		}
+	}
 	reader, ok := e.plane.(interface {
 		RestartGeneration(context.Context) (uint64, error)
 	})
@@ -88,12 +96,9 @@ func (e *Engine) captureRestartBindings(ctx context.Context) {
 		return
 	}
 	retained, desired := e.appliedModel, e.restartDesired
-	if raw, exists, err := e.store.Meta(ctx, usageIntentKey); err == nil && exists {
-		var intent usageIntent
-		if json.Unmarshal([]byte(raw), &intent) == nil && intent.Boot == e.bootID &&
-			(gen == 0 || gen == uint64(intent.Generation) || (retained != nil && gen == retained.Generation && sameUsageBindings(retained.Bindings, intent.bindings()))) {
-			e.restartIntent = &intent
-		}
+	if p := e.restartIntent; p != nil && gen != 0 && gen != uint64(p.Generation) &&
+		!(retained != nil && gen == retained.Generation && sameUsageBindings(retained.Bindings, p.bindings())) {
+		e.restartIntent = nil // a contradictory live marker defeats the intent
 	}
 	// Legacy recovery: unique identities among the generations that could
 	// have counted. A later checkpoint check rejects unknown older bindings.
@@ -123,12 +128,21 @@ func desiredMayCount(d api.DesiredState) bool {
 	return err == nil
 }
 
-func (e *Engine) restartHeadBindings(h usagestore.Head) []enforce.Binding {
+func (e *Engine) restartHeadBindings(ctx context.Context, st *usagestore.Store, h usagestore.Head) ([]enforce.Binding, error) {
 	if h.OpenEpoch == uuid.Nil || h.BootID != e.bootID.String() {
-		return nil
+		return nil, nil
 	}
-	if p := e.restartIntent; p != nil && p.Epoch == h.OpenEpoch {
-		return p.bindings()
+	if p := e.restartIntent; p != nil {
+		if p.Epoch == h.OpenEpoch {
+			return p.bindings(), nil
+		}
+		continuous, err := st.SameCountingInterval(ctx, p.Epoch, h.OpenEpoch, e.bootID.String())
+		if err != nil {
+			return nil, err
+		}
+		if continuous {
+			return p.bindings(), nil
+		}
 	}
 	// Without a scoped intent, an absent/nil-bound checkpoint could conceal
 	// an intermediate add/remove/rebind (r22 H-1). Do not charge that entire
@@ -146,7 +160,7 @@ func (e *Engine) restartHeadBindings(h usagestore.Head) []enforce.Binding {
 			safe = append(safe, b)
 		}
 	}
-	return safe
+	return safe, nil
 }
 
 // Identity ignores admission addresses, timeouts and QoS. Adding or removing
