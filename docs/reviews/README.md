@@ -31,6 +31,7 @@
 | `r23-intent-fixes-review` | [r23-intent-fixes-review.md](r23-intent-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `99f93112` | Agent-core 37–39, r20/r21/r22 fixes | 5 (0 Critical, 3 High, 1 Medium, 1 Low); returned to agent-core 40 before merge, none confirmed | None; proofs on `26ffc36c` for four findings, L-1 code trace; exact archive only. |
 | `r24-hitless-guard-review` | [`r24-hitless-guard-review.md`](r24-hitless-guard-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Netlab 31 design at 52a7e59b; review ba5d3004, 08:19:51 EST; G5/G6 owner trade | 8 (0 Critical, 4 High, 3 Medium, 1 Low); #423 enforcement fixes, C1 revision documents only, H-1/H-3 returned to agent-core 41; [#426 additive L-1 / M-3 corrections](../poc/G2-followup33-design/corrections.md) | [`node/enforce/review_r24_test.go`](../../node/enforce/review_r24_test.go) adopted by #423; copied M-3 dropped; agent/watchdog proofs review-branch only |
 | `r25-retain-review` | [r25-retain-review.md](r25-retain-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `8cc27609` | Agent-core 40/41, carrying 37–41; unmerged | 0 Critical / 1 High / 1 Medium / 0 Low; RETURNED to agent-core 42 before merge, not yet judged | None; 680-line node/agent/review_r25_test.go on `1afecb29` only; exact archive only. |
+| `r26-expiry-fixes-review` | [`r26-expiry-fixes-review.md`](r26-expiry-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Agent-core 42 at 8dec4100 and 37–42 together; expiry, retention and jitter | 0 Critical, 0 High, 0 Medium, 0 Low; reviewer recommends merge 37–42; orchestrator merged 37–43 as #429 under D-150 | [`node/agent/review_r26_test.go`](../../node/agent/review_r26_test.go), six TestR26_Held_* proofs imported by 43; [cut dispositions and errata](#r26-dispositions-at-the-follow-up-39-cutoff-2026-11-03-est) |
 
 ## What Held Across the Reviews
 
@@ -594,3 +595,164 @@ source readings and test-name checks.
   scenario_at_usage_test.go:68 checks nonzero bytes and equality to
   nftAfter. The raw log quote matches; its direct emitter and rule quotation
   are corrected here.
+
+## r26 dispositions at the follow-up 39 cutoff (2026-11-03 EST)
+
+The [r26 archive](r26-expiry-fixes-review.md) is unchanged from
+`.agent/REVIEW.md` on `r26-expiry-fixes-review` at
+**5c6d6abe6af7ebba4707ef64c56c157362f74b7b**, dated **12:28:35 EST**:
+**19,545 bytes**, SHA-256
+**8cd7cc8be881389d5f50e70abe2e18eb13136b2281d66a261d9ad5820a3f0d28**.
+Inspection found no host path, username or secret; product paths are retained.
+**agy `gemini-4-argon-high`** reviewed agent-core 42 at
+**8dec4100ce9fba96ea8b0436c41ed8d2b0c75545**, and 37–42 together
+(**77626af4..8dec4100**). Findings: **0 Critical, 0 High, 0 Medium, 0 Low**.
+
+**“Merge 37 to 42 as they are” is the reviewer's recommendation.** The
+orchestrator subsequently merged **37–43 as #429 under provisional D-150**,
+after 43's two timing windows qualified no leg. No comparative performance
+conclusion follows. Agent-core 44 measures after the merge; its results are
+outside this cut. Both r25's and r26's proof files are now on main. Agent-core
+43 imported r26's file byte-identically in fe256ba9; no proof is copied by
+this handover.
+
+The following are the **reviewer's seven answered questions**, with citation
+corrections below; they are not new acceptance measurements:
+
+| Question | What the reviewer says held |
+|---|---|
+| AQ1 | Earliest wake/retention and last-binding whole-node deadlines are separate; per-binding kernel timeouts still cut off the earlier device, with all member/node caps and saturation checks. Watchdog behavior is unchanged. |
+| AQ2 | Sibling expiry proceeds to same-tick survivor Apply without intermediate baseline. Early returns verify actual retained serving and report truthfully; last-binding/node expiry still closes. |
+| AQ3 | The expired-only path requires the exact unchanged surviving subset and expired removed bindings; live verification and a checkpoint precede narrower intent/Apply. Counter and restart accounting preserve retired bytes. |
+| AQ4 | Both reset-epoch producers retain only through proven SameCountingInterval continuity. Intent refresh is durable before memory; persistence failure withdraws, real counting boundaries reject retention. |
+| AQ5 | Renewal jitter is uniform in integer milliseconds, drawn once per lease, persisted atomically, restored and clamped. Default lead is 108–132 s over 24,001 points; random failure and legacy rows use zero offset. |
+| AQ6 | The enforcement change is only the DeadlineMono comment; dated 42 records match the production/validation boundary. |
+| AQ7 | No pre-existing tests were modified by 42's own changes, r25's import is exact, and the reviewer reports earlier review/package invariants held. Main-merge test edits are excluded from that statement. |
+
+**Not examined by r26:** (1) privileged Docker netlab execution and D-133
+paired timing; (2) physical linux/arm64 and live external NetBird / AdGuard /
+PostgreSQL services; (3) central control/worker and portal packages outside
+the review scope. [43's outcome](../node/followup43-outcome-2026-11-03.md)
+supplies the ordinary B lab pass (all 13 scenarios, D087/D104 included), two
+unqualified timing attempts and plain whole-module Go tests, which include
+central Go packages. It supplies arm64 cross-builds, not physical arm64 or
+live external service acceptance, and no portal validation. Configured test
+PostgreSQL integration is not a claim of live external-service acceptance.
+Neither timing attempt completes expiry/renewal packet predicates. The ordinary
+B gate is functional evidence, not a qualified timing leg.
+
+The six Go proof names now on main in `node/agent/review_r26_test.go` are:
+
+- `TestR26_Held_AQ1_ServingDeadlineAndKernelCutOff`
+- `TestR26_Held_AQ2_SurvivorsApplyAndEarlyReturnTruthfulness`
+- `TestR26_Held_AQ3_ExpiredOnlyRemovalExactnessAndAccounting`
+- `TestR26_Held_AQ4_SameCountingIntervalRetentionAndIntentPersistence`
+- `TestR26_Held_AQ5_RenewalJitterBoundsPersistenceAndClamping`
+- `TestR26_Held_AQ6_AQ7_ValidationRecordAndZeroDecisionContract`
+
+**Additive citation errata to r26 (archive unchanged).** Code and existing
+proofs were checked at **8dec4100**, new r26 proofs at **5c6d6abe**. The frozen
+source audit retains the cited excerpts and declaration checks. These correct
+citations and descriptions, without adding a finding or changing the review's
+recommendation:
+
+- AQ1's heartbeat assignment is engine.go:1537–1540 and
+  boot_heartbeat.go:25, not engine.go:1390 / boot_heartbeat.go:17.
+  The latter two lines are respectively an unrelated serving reset and the
+  beginning of the Beat literal.
+- There is no deviceDeadlines helper at render_nft.go:560–597. Actual
+  per-binding timeout arithmetic is node/enforce/deadline.go:35–61;
+  validate.go:123–132 calls it, and render_nft.go:576–586 renders elements.
+  The 100 ms install-budget check is apply.go:200–206. The cited
+  releaseDeadlineGuard at deadline_install.go:49–50 only deletes the guard;
+  it does not perform that elapsed-budget check. Equality to 100 ms is
+  accepted by the `>` check; the archive's later `< 100ms` wording is strict
+  where the code permits equality. This does not extend a binding deadline.
+- validateServing at validate.go:130 does not reject a future binding as a
+  validation error: memberTimeout returns non-admission and the renderer
+  omits its allow element while retaining its counter. buildModel's future
+  binding exclusion at decide.go:649–650 is correctly cited.
+- There is no watchdog Check function at watch.go:116–157. Once starts at
+  119 and calls baselineDecision (170–215), including its second read before
+  Baseline. A non-serving heartbeat with a verified baseline already present
+  need not trigger another Baseline. The rules are unchanged; the archive's
+  unconditional `!hb.Serving` description is too broad.
+- AQ3's delta.go:98–125 is usageCounters, not planContinuity; the latter
+  starts at 171. attribute starts at 432, and the cited 457–504 range is
+  inside it; the zero-delta skip at 492–493 precedes its mapping check.
+- AQ4's switchEpoch is meterreset.go:311–332, not 255–263 (rearm). It consumes
+  a pending nudge through the meter sample; the cited planSwitch and
+  SameCountingInterval mechanisms are present.
+- Proof declaration lines: r26 AQ1 **53** and AQ4 **424** match; AQ2 is
+  **206**, not 196; AQ3 **281**, not 259; AQ5 **470**, not 462; AQ6/AQ7
+  **544**, not 533. At 8dec4100, r25 H-1b is **149**, not 144; r25 M-1
+  **242**, not 254; agentstore's lease/jitter transaction proof **11**, not
+  12. All cited test names exist. The other declaration citations match.
+- AQ7's inventory excludes the a4b76e09 main merge as the archive says.
+  The full 8cc27609..8dec4100 diff also modifies three test files from main
+  (isolation's producer_timing_test.go and scheduled_test.go, and handover's
+  handover_test.go). No pre-existing node proof is changed by 42.
+
+
+## r20 to r25 dispositions at the follow-up 39 cutoff (2026-11-03 EST)
+
+Agent-core 37–43 merged as **#429**. These are the delivered D-141 judgments,
+including the additive corrections within their dated records. Earlier cutoff
+sections remain historical. “FIXED” applies only to confirmed defects backed
+by the named Go tests now on main; rejected sub-claims stay rejected. Test
+names containing an old failure describe regression tests, not current failures.
+The records and every declaration below are pinned by TestHandover_Followup39Claims.
+
+| Finding | Disposition | Judgment, correction and implemented fix | Proofs on main |
+|---|---|---|---|
+| r20 H-1 | FIXED — #429 | Confirmed refused-adoption pending-byte loss. 37 restores/settles retained usage; its claim that an Apply-before-retained-write crash could only gap was false. 38 corrects provenance using pre-refresh desired/live generation, closes settlement before refresh/Apply, clears retired bindings and opens an unbound epoch. Later 39/40 refinements remain in the merged branch. Unknown attribution still gaps; no invented owner. Record: [followup37-r20-adoption-review-2026-11-03.md](../node/followup37-r20-adoption-review-2026-11-03.md). | `TestR20_H1_RefusedAdoptionAttributesPendingDeltaOnce`; `TestR21_H1_MixedBindingsCrashWindows` |
+| r20 M-1 | FIXED — #429 | Confirmed TERM could leave live rules under a false heartbeat. Local baseline completion is bounded; 38 corrects 37’s false 13 s claim to one 10 s Boot budget and 3 s Close, preserves nonzero Boot failures, and stops Run entering another Step after TERM. Successful completed baseline plus TERM still exits zero. Record: [followup37-r20-adoption-review-2026-11-03.md](../node/followup37-r20-adoption-review-2026-11-03.md). | `TestR20_M1_TermDuringBootInstallsBaselineAndExitsZero`; `TestR21_M2_CloseWaitsForTimedOutBootWithinStopBudget`; `TestR21_M2_TermCompletedBootDoesNotStartAnotherStepBudget` |
+| r20 M-2 | FIXED — #429 | Confirmed delayed refusal. Generation, clock and set checks precede lock/probe and sets are checked again after evaluation. An already-held adoption node lock is not mistaken for an updater lock, avoiding a self-conflicting probe baseline. Record: [followup37-r20-adoption-review-2026-11-03.md](../node/followup37-r20-adoption-review-2026-11-03.md). | `TestR20_M2_RefusalPrecedesLockAndProbe`; `TestR20_M2_AdoptionLockIsNotUpdaterLock` |
+| r20 M-3 | FIXED — #429 | Confirmed heartbeat and stale-error defects; original two-hour monotonic rewind proof rejected and replaced. Withdrawing handoff writes its heartbeat; a verified Boot baseline clears refused-adoption error, quarantine keeps it. 38 corrects orphan member-path diagnostics without discarding topology evidence. Record: [followup37-r20-adoption-review-2026-11-03.md](../node/followup37-r20-adoption-review-2026-11-03.md). | `TestR20_M3_ShutdownHandoffRecordsWithdrawal`; `TestR20_M3_RefusedAdoptionErrorDoesNotBlockNonServingAck`; `TestR20_M3_AdoptionQuarantineKeepsError`; `TestR21_L1_RefusedAdoptionMemberPathLeavesOrphanMemberPathPending` |
+| r20 L-1 | CLOSED — rejected; guards in #429 | Empty installed DeniedV4 is unreachable because enforce rejects it. Retained generation ahead of ACK is harmless: persisted desired already makes adoption refuse. Explicit equality guards remain. 38 replaces the retired-binding assertion with closed-epoch/empty bindings because that assertion encoded 37’s regression. Record: [followup37-r20-adoption-review-2026-11-03.md](../node/followup37-r20-adoption-review-2026-11-03.md). | `TestR20_L1_EmptyDeniedV4NeverEqual`; `TestR20_L1_RetainedAheadOfAckRefusesAdoption` |
+| r21 H-1 | FIXED — #429 | Confirmed 37 regression: crash after counting Apply before retained persistence can charge the old member. Boot captures desired before refresh and live generation, initially intersects plausible identities; 39’s appended correction replaces over-restrictive/unscoped intersection with durable boot/epoch intent. Unknown identities gap individually; unchanged devices retain records. Record: [followup38-r21-attribution-and-boot-2026-11-03.md](../node/followup38-r21-attribution-and-boot-2026-11-03.md). | `TestR21_H1_CrashBetweenApplyAndRetainedAppliedMisattributesToPreviousMember`; `TestR21_H1_MixedBindingsCrashWindows` |
+| r21 H-2 | FIXED — #429 | Confirmed pre-existing failed-settlement/rebinding mischarge; 37 narrowed the restart window. Pending final settlement holds refresh and Apply, closes the interval and prepares an unbound epoch. A persistent source/storage failure keeps forwarding off. 39 extends the pending gate to runtime handoff as the appended correction states. Record: [followup38-r21-attribution-and-boot-2026-11-03.md](../node/followup38-r21-attribution-and-boot-2026-11-03.md). | `TestR21_H2_FailedSettlementThenRebindingApplyMisattributesToNewMember`; `TestR22_H1B_FailedHandoffSettlementAndSampling` |
+| r21 M-1 | FIXED — #429 | Both confirmed: open-head rebinding gap pre-existed; restoring retired identities into a closed epoch was a 37 regression. Close the old interval, clear identities and prepare an unbound baseline before new traffic. Original proof’s pre-Apply traffic and nil-binding close were corrected; the old r20 retained-ahead assertion was corrected too. Record: [followup38-r21-attribution-and-boot-2026-11-03.md](../node/followup38-r21-attribution-and-boot-2026-11-03.md). | `TestR21_M1_RefusedAdoptionLeavesOpenRetainedBindingCausingFalseConflictOnRebind`; `TestR21_M1_FinalClockGapClosesEpoch` |
+| r21 M-2 | FIXED — #429 | All four confirmed: uploader cancellation pre-existed (37 exposed entry-canceled/lock wait); canceled recovery latch pre-existed; stacked phases were 37’s design with older cleanup/Run-to-Step paths; false exit zero/stale failure heartbeat pre-existed. Caller-bound upload/lock, shared 10 s Boot worker plus 3 s Close, no spurious recovery latch, nonzero ErrBoot and failure receipts; 39’s correction publishes conservative receipts before blocking work. Record: [followup38-r21-attribution-and-boot-2026-11-03.md](../node/followup38-r21-attribution-and-boot-2026-11-03.md). | `TestR21_M2_BootUnderSIGTERMUncanceledUploadAndRecoverBlocked`; `TestR21_M2_OneBootBudgetAllStages`; `TestR21_M2_CloseWaitsForTimedOutBootWithinStopBudget`; `TestR21_M2_RunCanceledBootExitStatusMatrix` |
+| r21 L-1 | FIXED — #429 | Confirmed 37 orphan reason; earlier main retained the actual error. Keep pending topology evidence, but heartbeat override requires a current member-path error. Non-serving decision/heartbeat agree; later serving attempts still verify and eventual repair clears it. Record: [followup38-r21-attribution-and-boot-2026-11-03.md](../node/followup38-r21-attribution-and-boot-2026-11-03.md). | `TestR21_L1_RefusedAdoptionMemberPathLeavesOrphanMemberPathPending` |
+| r22 H-1 | FIXED — #429 | A/B confirmed pre-existing: same-pass lease refresh can rebind before a sample commits; failed runtime handoff bypassed settlement. Withdraw, settle outgoing identities, prepare unbound epoch and persist scoped intent before identity change; all failed handoffs gate refresh/Apply. B’s permanent paused-sampling explanation is rejected: successful Apply already calls resumeSampling unconditionally; retain ErrHold/source-failure recovery and periodic sampling guards. Record: [followup39-r22-judgments-2026-11-03.md](../node/followup39-r22-judgments-2026-11-03.md). | `TestR22_H1_UnsettledGenerationTransitionAndHandoffMisattributeUsage`; `TestR22_H1B_FailedHandoffSettlementAndSampling` |
+| r22 H-2 | FIXED — #429 | All five confirmed with corrected traces: .1 live marker excludes unapplied desired; .2 unpublished desired cannot admit; .3 omitted devices have no counting rule, unique identities recover but older reuse needs provenance; .4 failed retained write triggers Baseline, then crash before settlement; .5 real first Apply counts before retained persistence, replacing artificial deletion. 38 introduced the over-restrictive/unscoped intersection/nil-model return; older restart loss and 37’s stale model existed. Pre-Apply boot/epoch intent plus qualified legacy recovery fixes false gaps; unknown older ownership still gaps. 40’s appended reset-continuity correction is retained. Record: [followup39-r22-judgments-2026-11-03.md](../node/followup39-r22-judgments-2026-11-03.md). | `TestR22_H2_CaptureRestartBindingsFalseGapsAcrossCrashWindows`; `TestR22_H2_RemovedThenReaddedCounterKeepsOlderBytesOutOfNewBinding` |
+| r22 M-1 | FIXED — #429 | Confirmed pre-existing early initialization latch, made persistently wedged by 38’s pending gate. Publish initialization only after success, release partially initialized resources and retry meter/store construction. Record: [followup39-r22-judgments-2026-11-03.md](../node/followup39-r22-judgments-2026-11-03.md). | `TestR22_M1_TransientBootMeterOpenFailureWedgesRetainedPendingSettlement` |
+| r22 M-2 | FIXED — #429 | Pre-existing irreversible adoption ordering confirmed: prepare meter read-only with an existing continuous open epoch, defer bindings/activation/upload until final gates. Original false-gap trace rejected: nil-bound FinalSample created its gap before Boot and closed while forwarding remained live. Reachable open-epoch late-abort proof replaces it; no pre-decision mutation/upload. Record: [followup39-r22-judgments-2026-11-03.md](../node/followup39-r22-judgments-2026-11-03.md). | `TestR22_M2_AdoptionPreparationHasNoUsageEffectsBeforeLateAbort` |
+| r22 M-3 | FIXED — #429 | A/B confirmed: 38’s bounded worker exposed older late/failure publication gaps; publish conservative startup before blocking stages and verified baseline before ledger work, with capped writes inside the shared budget. C confirmed pre-existing: failed probe clear falsely burned nonce and left stale receipt; keep uncleared, retry without reinstall/extension and report failure. DatapathValue is production-unreachable after LoadConfig validation, retained only as ErrBoot/heartbeat guard. Existing kernel expiry still bounds failed-clear exposure. Record: [followup39-r22-judgments-2026-11-03.md](../node/followup39-r22-judgments-2026-11-03.md). | `TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat`; `TestR22_M3_DatapathValidationGuard`; `TestR22_M3_ProbeClearRetriesWithoutBurningNonceOrExtendingLifetime` |
+| r23 H-1 | FIXED confirmed sub-traces — #429; H-1b guard retained | H-1a confirmed extra mapping gap, rejecting zero-gap/reset-byte demand: 8192 attributed, one legitimate counter_discontinuity gap, not 9216. H-1b is a confirmed provenance limitation; absent-idle-counter fixture is a guard, real zero-counter trace already passes 39, so no healthy-renderer outage proven. H-1c confirmed 39 transient-marker gate losing intent. Accept only proven same-boot reset continuity, load durable intent independently, reject contradictory marker and settled boundaries; exercise real repair/nudge. Switching is incident-driven, no measured frequency. Record: [followup40-r23-judgments-2026-11-03.md](../node/followup40-r23-judgments-2026-11-03.md). | `TestR23_H1a_EpochSwitchDuringServing_InvalidatesUsageIntentAndCreatesFalseConflictOnRestart`; `TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption`; `TestR23_H1c_MarkerReadFailureKeepsIntentAcrossRestart`; `TestR23_H1b_IdleZeroCounterSurvivesSwitchAndRestart`; `TestR23_H1b_RepairApplySwitchEpochKeepsIntent`; `TestR23_H1_IntentCannotCrossSettledBoundaryOrFailedIntentWrite` |
+| r23 H-2 | FIXED — #429 | Confirmed interrupted barrier/checkpoint publication after a committed close. Dual-purpose flag pre-existed; 39 added the false admission error. Separate epochClosed from finalDone/barrier completion, always prepare next epoch before admission after interruption; main’s passing serving assertion did not prove preparation. Record: [followup40-r23-judgments-2026-11-03.md](../node/followup40-r23-judgments-2026-11-03.md). | `TestR23_H2_HandoffBarrierRaceLeavesFinalDoneFalse_NextServeFailsAdmission`; `TestR23_H2_InterruptedCheckpointPreparesNextEpoch` |
+| r23 H-3 | FIXED — #429 | a/b/b′ confirmed: stale decision after settlement failure; unverified serving after failed Baseline; checkpoint-removal failure bypassing withdrawal. 39 added pre-Apply exposure, underlying ordering pre-existed. Latch/clear serving before fallible work, baseline before invalidation, recompute reports including early returns and keep retry. A failed kernel command is not verified closure. Healing-final-sample reason guard preserves the withdrawal cause; its receipt is after initial 40 edits, not an unchanged-39/main introduction proof. Record: [followup40-r23-judgments-2026-11-03.md](../node/followup40-r23-judgments-2026-11-03.md). | `TestR23_H3a_PreApplyHandoffSettleFailure_EmitsCorruptObservationAndDashHeartbeat`; `TestR23_H3b_PreApplyHandoffBaselineFailure_LeavesServingTrueWithFailedSafety`; `TestR23_H3_M1_FailedHandoffReportsRecoversAndRestarts`; `TestR23_H3a_HealingFinalSampleKeepsWithdrawalReasonUntilNextPass` |
+| r23 M-1 | FIXED — #429 | Confirmed pre-existing missed settlement latch (38’s pending state omitted this return): first Baseline fails, second succeeds. Latch before withdrawal and preserve second fail-closed attempt; restart/recovery must not depend on a later incidental sample. Record: [followup40-r23-judgments-2026-11-03.md](../node/followup40-r23-judgments-2026-11-03.md). | `TestR23_M1_WithdrawSecondBaselineSuccess_LeavesOpenEpochUnsettledWithRetainedPendingFalse`; `TestR23_H3_M1_FailedHandoffReportsRecoversAndRestarts` |
+| r23 L-1 | CLARIFIED — #429 | Ordering clarified additively in 39 records: latch removes orphan checkpoint before adoption and under node lock; read-only ExistingEpochOnly preparation precedes final gates; bindings and activateUsage wait. Reviewer’s quoted sentence and loadUsageIntent/prepareAdoptionUsage/resumeAdoptionUsage names are absent. No standalone L-1 proof exists; the named M-2 guard supports ordering, not a newly invented L-1 test. Record: [followup40-r23-judgments-2026-11-03.md](../node/followup40-r23-judgments-2026-11-03.md). | `TestR22_M2_AdoptionPreparationHasNoUsageEffectsBeforeLateAbort` |
+| r24 H-1 | FIXED — #429 | Confirmed pre-existing unchanged-poll Apply; timeout-only retention dates to 28. Compare complete renderer inputs and pending work under node lock, freshly verify serving/member path and allow-element completeness. Healthy genuine 304 ticks retain enforcement; renewals, changed models or required repair still Apply. Original fake-signing fixture was actually 200 with a real 1 ms expiry change; orchestrator approved setup-only genuine-304 correction. Missing-element live drift was an additional confirmed verifier dependency. Record: [followup41-r24-judgments-2026-11-03.md](../node/followup41-r24-judgments-2026-11-03.md). | `TestR24_H1_SteadyStateNoOpStepReappliesEveryPollTick`; `TestAT10_F41_Actual304RetainsFullModel`; `TestISO01_F41_SkippedTicksStillDetectLiveDrift`; `TestISO01_F41_RendererChangesAlwaysApply`; `TestAT13_F41_LeaseRenewalApplies` |
+| r24 H-3 | FIXED — #429 | Deadline collapse confirmed pre-existing in member aggregation (25), with earlier binding window. Correct mechanism: renderer already caps ValidUntil; agent collapsed every binding into shared DeadlineMono and first binding supplied wall ends. Keep member-only caps plus independent device timeout in either order. Retained model after withdrawal/reboot and Apply value-copy clock are true C1 design warnings, not new production authorization defects; no C1 receipt/eligibility. Distant deadline arithmetic caps before anchor addition. Record: [followup41-r24-judgments-2026-11-03.md](../node/followup41-r24-judgments-2026-11-03.md). | `TestR24_H3_AppliedModelRetainedAcrossWithdrawAndMultiDeviceDeadlineCollapse`; `TestAT13_F41_DeviceDeadlinesInEitherOrder`; `TestAT13_F41_DistantDeviceDeadlineUsesMemberCap` |
+| r25 H-1 | FIXED — #429 | Confirmed device/member siblings at Step entry, verify and retained read. Correct attribution: verify-path whole-node withdrawal/contradictory report and watchdog earliest-deadline closure pre-existed on main; 41 added entry/retained variants. Earliest wake stays separate from last-installed-binding watchdog cap; re-decide and Apply survivors same tick, exact expired-only removal checkpoints old bytes without intermediate baseline. Last expiry/node caps and errors fail closed; current reasons replace false dash. Follow-up 38’s main-overlap question is closed. Record: [followup42-r25-judgments-2026-11-03.md](../node/followup42-r25-judgments-2026-11-03.md). | `TestR25_H1a_SiblingExpiryOnStepEntryTearsDownWholeNodeToBaselineBeforeControlPass`; `TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat`; `TestAT13_F42_WatchdogAcrossSiblingAndLastDeadline`; `TestMTR03_F42_ExpiredRemovalSettlesBytesWithoutClosingInterval`; `TestMTR03_F42_ExpiredSettlementFailureKeepsIntentAndCloses`; `TestAT13_F42_ReportingRefreshesExistingCause` |
+| r25 M-1 | FIXED — #429 | Confirmed 41 strict retention equality for both post-Apply switch and sampler discontinuity. SameCountingInterval proves continuity; persist refreshed intent before memory. Real final-sample/boot/closed-epoch boundaries reject, and failed durable refresh withdraws. Restart can interpret either side of the write. Record: [followup42-r25-judgments-2026-11-03.md](../node/followup42-r25-judgments-2026-11-03.md). | `TestR25_M1_EpochSwitchDuringServingLeavesIntentEpochStaleAndForcesRedundantApplyOnNext304Tick`; `TestMTR03_F42_RetainedEpochIntentIsDurable`; `TestMTR03_F42_RetentionRejectsCountingBoundaries`; `TestMTR03_F42_IntentRefreshFailureWithdraws` |
+| Netlab F32-01 | FIXED — #429 | Confirmed pre-existing two-byte nanosecond modulus effectively fixed at minus 12 s and re-drawn on checks. Uniform integer-millisecond jitter is drawn once per lease and saved atomically: default lead 108–132 s, 24,001 points; zero offset on random failure/legacy row, restart reuse and configuration clamp. Half-window cap permits at most 0.55 of window, subject to existing 1 s base floor. Grant-less D-067 schedule unchanged. Record: [followup42-outcome-2026-11-03.md](../node/followup42-outcome-2026-11-03.md). | `TestAT13_F32_01_UniformMillisecondRenewalJitter`; `TestAT13_F32_01_RenewalDrawOncePerLease`; `TestAT13_F32_01_FailedRandomReadKeepsSafeLead`; `TestAT13_F32_01_LeaseReplayAndRestartKeepDraw`; `TestAT13_F42_LeaseAndRenewalJitterCommitTogether` |
+
+**Scope differences from the briefing table:** no requested row is missing.
+Follow-up 41 additionally judges **r24 H-2 fair-share change** as expected
+behavior, not an agent defect: removing an independent member changes remaining
+guaranteed shares. `TestR24_H2_MemberRevocationMutatesSiblingQoSRateInDecide`
+passes unchanged. This does not change netlab 32's separate H-2 tc-order fix
+or documents-only eligibility revision. Follow-up 42's outcome additionally
+judges the stale **DeadlineMono comment**, corrected with the approved
+comment-only change; no enforcement runtime change. Its judgments also discuss
+F32-01, which its outcome explicitly records. 41's retained-model and value-copy
+clock observations are C1 design warnings, not added runtime findings.
+
+**Follow-up 38 question closed:** 42 judges r25 H-1's verify-path early
+withdrawal/contradictory report and watchdog whole-node close at the earliest
+binding deadline as pre-existing on main; 41 introduced Step-entry and retained
+read variants. This is the lane's corrected attribution, not r25's original
+attribution adopted wholesale. The earlier open question remains historical.
+
+**r25 proof file now on main:** agent-core 42 imported it unchanged from
+1afecb29. Its three finding and three held declarations are
+`TestR25_H1a_SiblingExpiryOnStepEntryTearsDownWholeNodeToBaselineBeforeControlPass`,
+`TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat`,
+`TestR25_M1_EpochSwitchDuringServingLeavesIntentEpochStaleAndForcesRedundantApplyOnNext304Tick`,
+`TestR25_Held_AQ1_RetainedTickVerifiesUnderLockAndBlocksOnAnyPendingGateOrClockSkew`,
+`TestR25_Held_AQ2_PerDeviceDeadlinesAndEdgeCases`, and
+`TestR25_Held_AQ3_SameCountingIntervalAndHandoffRecoveryInvariants`.

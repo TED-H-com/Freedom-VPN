@@ -1,0 +1,56 @@
+{
+  "source_commit": "1b87ab32344fa3be3216df0d5f7b489eb853e011",
+  "previous_cut": "77626af4016443c509f3b14e06cfd4f00f74fb49",
+  "merged_prs": [
+    428,
+    429
+  ],
+  "rows": [
+    {
+      "pr": 428,
+      "lane": "w4-handover follow-up 38",
+      "row": "| w4-handover follow-up 38 | Cut #427 at `77626af4` (handover 37 only; no unbriefed PR). `TestHandover_Followup38Claims` pins the final roadmap row and public PR excerpt, ten frozen #427 inputs, the exact r25 archive and a separate frozen source audit; follow-up 37's counts verified from its function and manifests, earlier assertions unchanged. Handover 37 recorded as #427 states it. Review r25 (agy gemini-4-argon-high, reviewing agent-core 40 and 41 at 8cc27609, not on main) archived byte-for-byte from 1afecb29: 31,868 bytes, 0 Critical, 1 High, 1 Medium, 0 Low; its recommendation, merge after fixing H-1 and M-1, is the reviewer's. Both findings RETURNED, not yet judged, to agent-core 42 before merge; which part of H-1 already exists on main is left open for agent-core 42's D-141 judgment. Additive citation errata in the reviews index: M-1's switchEpoch location and mechanism, two absent proof names, the edited-test inventory, the presence margin, the binding-clock and wake description, and one rule quote. Findings register at 99 rows (r25 H-1 and M-1 added; 97 unchanged); 47 decisions, nothing after D-144; ten owner requests, the G5/G6 trade still undecided. Operator guidance unchanged. Agent-core 42 recorded as running at briefing. Codex gpt-6-astra. | done (#428) |",
+      "sha256": "09cd931f8a9ac0671a0917a7f2dd761b23cd82b55f37662118e0563d08e9cb81"
+    },
+    {
+      "pr": 429,
+      "lane": "w2-agent-core follow-up 43",
+      "row": "| w2-agent-core follow-up 43 | Agent-core follow-ups 37 to 43 merged together; six adversarial reviews judged before their fixes (D-141). 37 (r20 of #401): refused same-boot adoption settles retained usage, TERM during Boot completes a bounded baseline, generation, clock and set checks before the node lock and probe, withdrawal heartbeat; L-1 rejected, kept as guards. 38 (r21): pre-refresh desired snapshot with the live generation, Apply and refresh held until final settlement, open and closed epochs, one 10 s Boot budget with a bounded worker and a 3 s Close. 39 (r22): withdraw and commit outgoing attribution before an identity change, a pending-settlement gate for every failed hand-off, false restart gaps removed. 40 (r23): intent accepted through reset-only counting continuity, epochClosed separated from finalDone, transient marker errors keep durable attribution. 41 (r24 H-1, H-3): an unchanged 304 tick no longer runs a full Apply, element completeness verified, each binding keeps its own ValidUntil cap. 42 (r25, F32-01): a sibling binding's deadline no longer withdraws the whole node (two deadlines, a same-tick survivor Apply, an expired-only removal fast path), retention survives an epoch rotation, uniform millisecond renewal jitter. 43: r26 found 0 Critical, 0 High, 0 Medium, 0 Low; its proofs imported; the owed D-133 A,B,A,B ran in two reservations and no leg qualified (foreign CPU from periodic jobs outside the project). D-150 (orchestrator, provisional): merged without it, since no delivery failed a live D087 or D104 gate; agent-core 44 measures it after the merge, marking breached intervals and excluding overlapping spans from both arms. 43's ordinary B lab passed all 13 scenarios, D087 and D104 included; no production change in 43. 65 non-merge commits, 95 owned files. | done (#429) |",
+      "sha256": "513ce57a4214aaa75d1cfeebe8d5e9ad79d5bb3fff611a1cfb0a3aa83a31111c"
+    }
+  ],
+  "pr_excerpts": [
+    {
+      "number": 428,
+      "url": "https://github.com/TED-H-com/Freedom-VPN/pull/428",
+      "merged_at": "2026-11-03T17:09:50Z",
+      "merge_commit": "0e8b825d5b38e9ad681b9dd605b1fc6a4bcb0f8e",
+      "head": "f1d6dddb5c4e786bedaad9730257894fcbba40c9",
+      "commits": 2,
+      "changed_files": 28,
+      "path": "tests/handover/testdata/history/follow-up-39/pr428-excerpt.json",
+      "sha256": "9294aa2fefeb5616280a95ef467566b1090f038c124c9e4429e17f2e71c3cd96",
+      "decoded_sha256": "51e2e624299f4b2227f60cbc7052e95c29016bdce906366cb7412a50719cce95",
+      "length": 4466
+    },
+    {
+      "number": 429,
+      "url": "https://github.com/TED-H-com/Freedom-VPN/pull/429",
+      "merged_at": "2026-11-03T18:16:02Z",
+      "merge_commit": "28e9e41cdd92dc34afd460d80efbecd8b4e35ef3",
+      "head": "2a092a1f1023af32f325e107c782f6cc891b6a22",
+      "commits": 75,
+      "changed_files": 95,
+      "path": "tests/handover/testdata/history/follow-up-39/pr429-excerpt.json",
+      "sha256": "df646c1cbcdfc77f4218a9d402f002dfca258b740e02dd97e0072125c8513cf5",
+      "decoded_sha256": "14ec9bc1e2119018d99c7e479d1e8b80495f2e177ce16fac8ec490b0ce30a54b",
+      "length": 5450
+    }
+  ],
+  "history": [
+    "1b87ab32344fa3be3216df0d5f7b489eb853e011 roadmap: w2-agent-core follow-up 43 merged (#429)",
+    "28e9e41cdd92dc34afd460d80efbecd8b4e35ef3 agent: follow-ups 37 to 43 — reviews r20 to r25 judged and fixed (adoption, usage attribution, Boot, retention, per-binding expiry); r26 found nothing; D-133 timing moved after the merge under D-150 (w2-agent-core follow-up 43) (#429)",
+    "567080be1969bf22782617e78c7605c2c92a52a2 roadmap: w4-handover follow-up 38 merged (#428)",
+    "0e8b825d5b38e9ad681b9dd605b1fc6a4bcb0f8e handover: follow-up 38 — cut #427 (handover 37): r25 archived unchanged with its dispositions, both findings returned to agent-core 42 unjudged, additive citation errata, r25 H-1 and M-1 registered (w4-handover follow-up 38) (#428)"
+  ]
+}
