@@ -1,0 +1,1554 @@
+{
+  "after_ttl": {
+    "dns_wire_id": 56453,
+    "authority_serial": 0,
+    "dns_trace": {
+      "resolver_observation_boundary": "relay_write_completed_not_client_received",
+      "trace_streams": {
+        "authority": [
+          "c4a33ae0-d271-4125-ab18-fdf901de8936"
+        ],
+        "primary": [
+          "534937fd-34be-4e2c-962a-64a013ce2c54"
+        ]
+      },
+      "started": "2026-11-03T21:41:13.509622293Z",
+      "completed": "2026-11-03T21:41:13.603152123Z",
+      "responder": "primary",
+      "cache_state": "fetch_authority_request_observed",
+      "trace_complete": true,
+      "resolver_events": [
+        {
+          "query_sha256": "841fbcbd52a2684b70244d6196efb442bd09d40596e942f2b4be293331d5cccc",
+          "reply_sha256": "f9bdc55714cfb9d582dc7b6d393a873d691aefc2526ba1a988939753f13becd1",
+          "wire_id": 56453,
+          "reply_bytes": 83,
+          "request_id": "914245b4-1a5d-4981-bf73-31a721df5e49",
+          "stream_id": "534937fd-34be-4e2c-962a-64a013ce2c54",
+          "sequence": "78",
+          "phase": "completed",
+          "started": "2026-11-03T21:41:13.599184813Z",
+          "completed": "2026-11-03T21:41:13.600103029Z",
+          "role": "primary",
+          "source_role": "native",
+          "fixture_case": "cache",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "private_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_events": [
+        {
+          "query_sha256": "73126b14a5191d91b4fc1785f6db3f01f13e0b8fcf236f70b1cff4c7d8958cad",
+          "reply_sha256": "109b67854ad371f756148c8f6999082cade46d2206e8b11102b3a962ed26c5f4",
+          "wire_id": 61259,
+          "reply_bytes": 134,
+          "request_id": "8a52e58f-4ece-429e-a618-7784f68ebf15",
+          "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+          "sequence": "186",
+          "phase": "completed",
+          "started": "2026-11-03T21:40:58.050302956Z",
+          "completed": "2026-11-03T21:40:58.050530818Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "cache",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        },
+        {
+          "query_sha256": "64a8f87a7445b312ec5ce7a95cd612a1b03c3d919c6f78e5b4ea00a7b2df1f5d",
+          "reply_sha256": "5fd9fcf8abefabd9f8dcd90a086235f6d5d397ca973c5195f5cfbbc7bb778e07",
+          "wire_id": 56453,
+          "reply_bytes": 134,
+          "request_id": "1402b7f2-9975-42ee-bdf6-d90e9581567d",
+          "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+          "sequence": "204",
+          "phase": "completed",
+          "started": "2026-11-03T21:41:13.599606467Z",
+          "completed": "2026-11-03T21:41:13.599954792Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "cache",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "private_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_history": [
+        {
+          "start": {
+            "query_sha256": "73126b14a5191d91b4fc1785f6db3f01f13e0b8fcf236f70b1cff4c7d8958cad",
+            "wire_id": 61259,
+            "request_id": "8a52e58f-4ece-429e-a618-7784f68ebf15",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "185",
+            "phase": "started",
+            "started": "2026-11-03T21:40:58.050302956Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "query_sha256": "73126b14a5191d91b4fc1785f6db3f01f13e0b8fcf236f70b1cff4c7d8958cad",
+            "reply_sha256": "109b67854ad371f756148c8f6999082cade46d2206e8b11102b3a962ed26c5f4",
+            "wire_id": 61259,
+            "reply_bytes": 134,
+            "request_id": "8a52e58f-4ece-429e-a618-7784f68ebf15",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "186",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:58.050302956Z",
+            "completed": "2026-11-03T21:40:58.050530818Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 0,
+            "ttls": [
+              10
+            ],
+            "address_classes": [
+              "other_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          }
+        },
+        {
+          "start": {
+            "query_sha256": "64a8f87a7445b312ec5ce7a95cd612a1b03c3d919c6f78e5b4ea00a7b2df1f5d",
+            "wire_id": 56453,
+            "request_id": "1402b7f2-9975-42ee-bdf6-d90e9581567d",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "203",
+            "phase": "started",
+            "started": "2026-11-03T21:41:13.599606467Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "query_sha256": "64a8f87a7445b312ec5ce7a95cd612a1b03c3d919c6f78e5b4ea00a7b2df1f5d",
+            "reply_sha256": "5fd9fcf8abefabd9f8dcd90a086235f6d5d397ca973c5195f5cfbbc7bb778e07",
+            "wire_id": 56453,
+            "reply_bytes": 134,
+            "request_id": "1402b7f2-9975-42ee-bdf6-d90e9581567d",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "204",
+            "phase": "completed",
+            "started": "2026-11-03T21:41:13.599606467Z",
+            "completed": "2026-11-03T21:41:13.599954792Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 0,
+            "ttls": [
+              10
+            ],
+            "address_classes": [
+              "private_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          }
+        }
+      ],
+      "authority_outstanding_at_query_start": [],
+      "authority_outstanding_at_query_completion": [],
+      "authority_outstanding_at_trace_read": [],
+      "trace_read_at": {
+        "authority": "2026-11-03T21:41:13.900657739Z",
+        "primary": "2026-11-03T21:41:13.702031125Z",
+        "secondary": "2026-11-03T21:41:13.800989678Z"
+      },
+      "authority_serial_after_query": 1002,
+      "authority_read_at": "2026-11-03T21:41:13.983545294Z",
+      "answer_ttl_remaining": [
+        10
+      ]
+    },
+    "authority_ttl": 0,
+    "has_soa": false,
+    "available": true,
+    "rcode": 0,
+    "types": [
+      1
+    ],
+    "ttls": [
+      10
+    ],
+    "address_classes": [
+      "private_ipv4"
+    ],
+    "expected_answer": true,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 1
+  },
+  "attribution": {
+    "assertion_scope": "same uniquely matched resolver",
+    "cause_status": "unproven",
+    "classification": "same-resolver inferred hit without new authority fetch (F9-HIT)",
+    "contract": "docs/dns/BACKEND.md §2.1.5: F9-HIT / F9-OTHER / F9-ROUND / F9-INFLIGHT",
+    "earliest_whole_second_expiry": "2026-11-03T21:41:07.053354179Z",
+    "elapsed_query_completion_ms": 2594,
+    "fallback": "not established",
+    "fetch_in_next_query": false,
+    "initial_responder": "primary",
+    "next_responder": "primary",
+    "older_outstanding_completions": [],
+    "subsecond_expiry_possible": false
+  },
+  "authority": {
+    "dns_wire_id": 10334,
+    "authority_serial": 0,
+    "authority_ttl": 0,
+    "has_soa": false,
+    "available": true,
+    "rcode": 0,
+    "types": [
+      1
+    ],
+    "ttls": [
+      10
+    ],
+    "address_classes": [
+      "private_ipv4"
+    ],
+    "expected_answer": true,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 0
+  },
+  "authority_change_at": "2026-11-03T21:40:58.903413886Z",
+  "before_ttl": {
+    "dns_wire_id": 33530,
+    "authority_serial": 0,
+    "dns_trace": {
+      "resolver_observation_boundary": "relay_write_completed_not_client_received",
+      "trace_streams": {
+        "authority": [
+          "c4a33ae0-d271-4125-ab18-fdf901de8936"
+        ],
+        "primary": [
+          "534937fd-34be-4e2c-962a-64a013ce2c54"
+        ]
+      },
+      "started": "2026-11-03T21:41:00.547424226Z",
+      "completed": "2026-11-03T21:41:00.647497616Z",
+      "responder": "primary",
+      "cache_state": "inferred_hit_no_authority_exchange",
+      "trace_complete": true,
+      "resolver_events": [
+        {
+          "query_sha256": "ea65b1aa2ff573309ef75e57d546592d4487fa225fa15a3afc69aa4964a64ff4",
+          "reply_sha256": "21d86379841c2e6f578b110d76246720179d65a9b1ab52481d0735033f987c71",
+          "wire_id": 33530,
+          "reply_bytes": 83,
+          "request_id": "59aa6592-6399-4f66-98da-c7d281ff3a49",
+          "stream_id": "534937fd-34be-4e2c-962a-64a013ce2c54",
+          "sequence": "74",
+          "phase": "completed",
+          "started": "2026-11-03T21:41:00.643425148Z",
+          "completed": "2026-11-03T21:41:00.644046101Z",
+          "role": "primary",
+          "source_role": "native",
+          "fixture_case": "cache",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            8
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_events": [
+        {
+          "query_sha256": "73126b14a5191d91b4fc1785f6db3f01f13e0b8fcf236f70b1cff4c7d8958cad",
+          "reply_sha256": "109b67854ad371f756148c8f6999082cade46d2206e8b11102b3a962ed26c5f4",
+          "wire_id": 61259,
+          "reply_bytes": 134,
+          "request_id": "8a52e58f-4ece-429e-a618-7784f68ebf15",
+          "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+          "sequence": "186",
+          "phase": "completed",
+          "started": "2026-11-03T21:40:58.050302956Z",
+          "completed": "2026-11-03T21:40:58.050530818Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "cache",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_history": [
+        {
+          "start": {
+            "query_sha256": "73126b14a5191d91b4fc1785f6db3f01f13e0b8fcf236f70b1cff4c7d8958cad",
+            "wire_id": 61259,
+            "request_id": "8a52e58f-4ece-429e-a618-7784f68ebf15",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "185",
+            "phase": "started",
+            "started": "2026-11-03T21:40:58.050302956Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "query_sha256": "73126b14a5191d91b4fc1785f6db3f01f13e0b8fcf236f70b1cff4c7d8958cad",
+            "reply_sha256": "109b67854ad371f756148c8f6999082cade46d2206e8b11102b3a962ed26c5f4",
+            "wire_id": 61259,
+            "reply_bytes": 134,
+            "request_id": "8a52e58f-4ece-429e-a618-7784f68ebf15",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "186",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:58.050302956Z",
+            "completed": "2026-11-03T21:40:58.050530818Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 0,
+            "ttls": [
+              10
+            ],
+            "address_classes": [
+              "other_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          }
+        }
+      ],
+      "authority_outstanding_at_query_start": [],
+      "authority_outstanding_at_query_completion": [],
+      "authority_outstanding_at_trace_read": [],
+      "trace_read_at": {
+        "authority": "2026-11-03T21:41:00.945383906Z",
+        "primary": "2026-11-03T21:41:00.748039014Z",
+        "secondary": "2026-11-03T21:41:00.847020164Z"
+      },
+      "authority_serial_after_query": 1002,
+      "authority_read_at": "2026-11-03T21:41:01.030154425Z",
+      "answer_ttl_remaining": [
+        8
+      ]
+    },
+    "authority_ttl": 0,
+    "has_soa": false,
+    "available": true,
+    "rcode": 0,
+    "types": [
+      1
+    ],
+    "ttls": [
+      8
+    ],
+    "address_classes": [
+      "other_ipv4"
+    ],
+    "expected_answer": true,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 1
+  },
+  "contract": "docs/dns/BACKEND.md §2.1.5: F9-HIT / F9-OTHER / F9-ROUND / F9-INFLIGHT",
+  "formerly_negative_after_ttl": {
+    "dns_wire_id": 29706,
+    "authority_serial": 0,
+    "dns_trace": {
+      "resolver_observation_boundary": "relay_write_completed_not_client_received",
+      "trace_streams": {
+        "authority": [
+          "c4a33ae0-d271-4125-ab18-fdf901de8936"
+        ],
+        "primary": [
+          "534937fd-34be-4e2c-962a-64a013ce2c54"
+        ]
+      },
+      "started": "2026-11-03T21:41:13.031648433Z",
+      "completed": "2026-11-03T21:41:13.131182047Z",
+      "responder": "primary",
+      "cache_state": "fetch_authority_request_observed",
+      "trace_complete": true,
+      "resolver_events": [
+        {
+          "query_sha256": "8c5ea696afc30369e0a4998855b22a4629a5ef09a55be08b3a9ca200828e47c2",
+          "reply_sha256": "d6b0cce583197a99a66aa0b300c04856fd7e35015835fdac373ec36e0ed3e622",
+          "wire_id": 29706,
+          "reply_bytes": 84,
+          "request_id": "9ff914d2-d9d4-4fa2-b93e-67c35a94d486",
+          "stream_id": "534937fd-34be-4e2c-962a-64a013ce2c54",
+          "sequence": "76",
+          "phase": "completed",
+          "started": "2026-11-03T21:41:13.128841328Z",
+          "completed": "2026-11-03T21:41:13.129639828Z",
+          "role": "primary",
+          "source_role": "native",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            5
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_events": [
+        {
+          "query_sha256": "f1b5b726a76140a7015dd8752d845a2aa5241e3f032bd7c3121d9fd762fe800b",
+          "reply_sha256": "b6471b256e072fc9de762d7bd369d34d0d16c72406230b1929e1c1a48917cd90",
+          "wire_id": 61947,
+          "reply_bytes": 146,
+          "request_id": "88b95ede-4954-4ecf-98a1-ff12b9884526",
+          "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+          "sequence": "154",
+          "phase": "completed",
+          "started": "2026-11-03T21:40:42.240738304Z",
+          "completed": "2026-11-03T21:40:42.240996715Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        },
+        {
+          "query_sha256": "7f09a8233bbb3b2cf08d433d154ec90995abe057301e3439a51e5c8b15962bf8",
+          "reply_sha256": "c4c9397cc7a7823a6d5d65b2f54f7c7dde397af88b3e2cad0c62ebfd826a7ed3",
+          "wire_id": 62355,
+          "reply_bytes": 146,
+          "request_id": "9dff60c8-ad01-475a-91a0-b1f50bd2e85f",
+          "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+          "sequence": "176",
+          "phase": "completed",
+          "started": "2026-11-03T21:40:49.459093781Z",
+          "completed": "2026-11-03T21:40:49.459384683Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        },
+        {
+          "query_sha256": "ca17f9423e5f60ad0fdf23ee11752250225fab6fba23b04b3122544ff2ad6bfb",
+          "reply_sha256": "cf68a6df1096d603abe630f4e62a90d107e3134421fe5b8a233324e3256b7ba6",
+          "wire_id": 7240,
+          "reply_bytes": 146,
+          "request_id": "d73cbcde-aeed-4051-8957-3ed523f21dbf",
+          "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+          "sequence": "188",
+          "phase": "completed",
+          "started": "2026-11-03T21:40:58.52182152Z",
+          "completed": "2026-11-03T21:40:58.522047654Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        },
+        {
+          "query_sha256": "bea91d9ff4bcf1a0278555ba4d40af35b98dfcc27cba6d7ed41d497f1d8cf1f2",
+          "reply_sha256": "deca9fe2a7a3bfd005c59bb9a683eb2603d1cdefc5b2c46e539a9a73556061bc",
+          "wire_id": 29706,
+          "reply_bytes": 136,
+          "request_id": "dd65c69d-16d6-4727-9e7e-d67e550d9ceb",
+          "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+          "sequence": "202",
+          "phase": "completed",
+          "started": "2026-11-03T21:41:13.129269208Z",
+          "completed": "2026-11-03T21:41:13.12948814Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            5
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_history": [
+        {
+          "start": {
+            "query_sha256": "f1b5b726a76140a7015dd8752d845a2aa5241e3f032bd7c3121d9fd762fe800b",
+            "wire_id": 61947,
+            "request_id": "88b95ede-4954-4ecf-98a1-ff12b9884526",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "153",
+            "phase": "started",
+            "started": "2026-11-03T21:40:42.240738304Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "query_sha256": "f1b5b726a76140a7015dd8752d845a2aa5241e3f032bd7c3121d9fd762fe800b",
+            "reply_sha256": "b6471b256e072fc9de762d7bd369d34d0d16c72406230b1929e1c1a48917cd90",
+            "wire_id": 61947,
+            "reply_bytes": 146,
+            "request_id": "88b95ede-4954-4ecf-98a1-ff12b9884526",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "154",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:42.240738304Z",
+            "completed": "2026-11-03T21:40:42.240996715Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        },
+        {
+          "start": {
+            "query_sha256": "7f09a8233bbb3b2cf08d433d154ec90995abe057301e3439a51e5c8b15962bf8",
+            "wire_id": 62355,
+            "request_id": "9dff60c8-ad01-475a-91a0-b1f50bd2e85f",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "175",
+            "phase": "started",
+            "started": "2026-11-03T21:40:49.459093781Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "query_sha256": "7f09a8233bbb3b2cf08d433d154ec90995abe057301e3439a51e5c8b15962bf8",
+            "reply_sha256": "c4c9397cc7a7823a6d5d65b2f54f7c7dde397af88b3e2cad0c62ebfd826a7ed3",
+            "wire_id": 62355,
+            "reply_bytes": 146,
+            "request_id": "9dff60c8-ad01-475a-91a0-b1f50bd2e85f",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "176",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:49.459093781Z",
+            "completed": "2026-11-03T21:40:49.459384683Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        },
+        {
+          "start": {
+            "query_sha256": "ca17f9423e5f60ad0fdf23ee11752250225fab6fba23b04b3122544ff2ad6bfb",
+            "wire_id": 7240,
+            "request_id": "d73cbcde-aeed-4051-8957-3ed523f21dbf",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "187",
+            "phase": "started",
+            "started": "2026-11-03T21:40:58.52182152Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "query_sha256": "ca17f9423e5f60ad0fdf23ee11752250225fab6fba23b04b3122544ff2ad6bfb",
+            "reply_sha256": "cf68a6df1096d603abe630f4e62a90d107e3134421fe5b8a233324e3256b7ba6",
+            "wire_id": 7240,
+            "reply_bytes": 146,
+            "request_id": "d73cbcde-aeed-4051-8957-3ed523f21dbf",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "188",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:58.52182152Z",
+            "completed": "2026-11-03T21:40:58.522047654Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        },
+        {
+          "start": {
+            "query_sha256": "bea91d9ff4bcf1a0278555ba4d40af35b98dfcc27cba6d7ed41d497f1d8cf1f2",
+            "wire_id": 29706,
+            "request_id": "dd65c69d-16d6-4727-9e7e-d67e550d9ceb",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "201",
+            "phase": "started",
+            "started": "2026-11-03T21:41:13.129269208Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "query_sha256": "bea91d9ff4bcf1a0278555ba4d40af35b98dfcc27cba6d7ed41d497f1d8cf1f2",
+            "reply_sha256": "deca9fe2a7a3bfd005c59bb9a683eb2603d1cdefc5b2c46e539a9a73556061bc",
+            "wire_id": 29706,
+            "reply_bytes": 136,
+            "request_id": "dd65c69d-16d6-4727-9e7e-d67e550d9ceb",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "202",
+            "phase": "completed",
+            "started": "2026-11-03T21:41:13.129269208Z",
+            "completed": "2026-11-03T21:41:13.12948814Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 0,
+            "ttls": [
+              5
+            ],
+            "address_classes": [
+              "other_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          }
+        }
+      ],
+      "authority_outstanding_at_query_start": [],
+      "authority_outstanding_at_query_completion": [],
+      "authority_outstanding_at_trace_read": [],
+      "trace_read_at": {
+        "authority": "2026-11-03T21:41:13.426154398Z",
+        "primary": "2026-11-03T21:41:13.229722081Z",
+        "secondary": "2026-11-03T21:41:13.329320764Z"
+      },
+      "authority_serial_after_query": 1002,
+      "authority_read_at": "2026-11-03T21:41:13.509612769Z",
+      "answer_ttl_remaining": [
+        5
+      ]
+    },
+    "authority_ttl": 0,
+    "has_soa": false,
+    "available": true,
+    "rcode": 0,
+    "types": [
+      1
+    ],
+    "ttls": [
+      5
+    ],
+    "address_classes": [
+      "other_ipv4"
+    ],
+    "expected_answer": true,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 1
+  },
+  "historical_F10_03": "run 2be2d32f remains failed/unattributed; immutable history/follow-up-10/F10-03-cache.json",
+  "initial": {
+    "dns_wire_id": 61259,
+    "authority_serial": 0,
+    "dns_trace": {
+      "resolver_observation_boundary": "relay_write_completed_not_client_received",
+      "trace_streams": {
+        "authority": [
+          "c4a33ae0-d271-4125-ab18-fdf901de8936"
+        ],
+        "primary": [
+          "534937fd-34be-4e2c-962a-64a013ce2c54"
+        ]
+      },
+      "started": "2026-11-03T21:40:57.951878805Z",
+      "completed": "2026-11-03T21:40:58.053354179Z",
+      "responder": "primary",
+      "cache_state": "fetch_authority_request_observed",
+      "trace_complete": true,
+      "resolver_events": [
+        {
+          "query_sha256": "73e7a659bca404fb2e45ec62c67b7253007760487b51861ee6a4757ffc5ecb55",
+          "reply_sha256": "5ffd21701a712a395b38140a5fa5e9d1f9fb6fae6723349f3362defad677ebdc",
+          "wire_id": 61259,
+          "reply_bytes": 83,
+          "request_id": "7e1e674b-5419-4c7c-a2bb-177123fe1143",
+          "stream_id": "534937fd-34be-4e2c-962a-64a013ce2c54",
+          "sequence": "68",
+          "phase": "completed",
+          "started": "2026-11-03T21:40:58.0498532Z",
+          "completed": "2026-11-03T21:40:58.050663657Z",
+          "role": "primary",
+          "source_role": "native",
+          "fixture_case": "cache",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_events": [
+        {
+          "query_sha256": "73126b14a5191d91b4fc1785f6db3f01f13e0b8fcf236f70b1cff4c7d8958cad",
+          "reply_sha256": "109b67854ad371f756148c8f6999082cade46d2206e8b11102b3a962ed26c5f4",
+          "wire_id": 61259,
+          "reply_bytes": 134,
+          "request_id": "8a52e58f-4ece-429e-a618-7784f68ebf15",
+          "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+          "sequence": "186",
+          "phase": "completed",
+          "started": "2026-11-03T21:40:58.050302956Z",
+          "completed": "2026-11-03T21:40:58.050530818Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "cache",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 0,
+          "ttls": [
+            10
+          ],
+          "address_classes": [
+            "other_ipv4"
+          ],
+          "authority_serial": 0,
+          "success": true
+        }
+      ],
+      "authority_history": [
+        {
+          "start": {
+            "query_sha256": "73126b14a5191d91b4fc1785f6db3f01f13e0b8fcf236f70b1cff4c7d8958cad",
+            "wire_id": 61259,
+            "request_id": "8a52e58f-4ece-429e-a618-7784f68ebf15",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "185",
+            "phase": "started",
+            "started": "2026-11-03T21:40:58.050302956Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "query_sha256": "73126b14a5191d91b4fc1785f6db3f01f13e0b8fcf236f70b1cff4c7d8958cad",
+            "reply_sha256": "109b67854ad371f756148c8f6999082cade46d2206e8b11102b3a962ed26c5f4",
+            "wire_id": 61259,
+            "reply_bytes": 134,
+            "request_id": "8a52e58f-4ece-429e-a618-7784f68ebf15",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "186",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:58.050302956Z",
+            "completed": "2026-11-03T21:40:58.050530818Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "cache",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 0,
+            "ttls": [
+              10
+            ],
+            "address_classes": [
+              "other_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          }
+        }
+      ],
+      "authority_outstanding_at_query_start": [],
+      "authority_outstanding_at_query_completion": [],
+      "authority_outstanding_at_trace_read": [],
+      "trace_read_at": {
+        "authority": "2026-11-03T21:40:58.352933848Z",
+        "primary": "2026-11-03T21:40:58.152377212Z",
+        "secondary": "2026-11-03T21:40:58.253864249Z"
+      },
+      "authority_serial_after_query": 1001,
+      "authority_read_at": "2026-11-03T21:40:58.433607141Z",
+      "answer_ttl_remaining": [
+        10
+      ]
+    },
+    "authority_ttl": 0,
+    "has_soa": false,
+    "available": true,
+    "rcode": 0,
+    "types": [
+      1
+    ],
+    "ttls": [
+      10
+    ],
+    "address_classes": [
+      "other_ipv4"
+    ],
+    "expected_answer": true,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 1
+  },
+  "initial_negative": {
+    "dns_wire_id": 7240,
+    "authority_serial": 0,
+    "dns_trace": {
+      "resolver_observation_boundary": "relay_write_completed_not_client_received",
+      "trace_streams": {
+        "authority": [
+          "c4a33ae0-d271-4125-ab18-fdf901de8936"
+        ],
+        "primary": [
+          "534937fd-34be-4e2c-962a-64a013ce2c54"
+        ]
+      },
+      "started": "2026-11-03T21:40:58.433614821Z",
+      "completed": "2026-11-03T21:40:58.523695804Z",
+      "responder": "primary",
+      "cache_state": "unknown",
+      "trace_complete": true,
+      "resolver_events": [
+        {
+          "query_sha256": "8c3c606dd8ec51ca0a4d912ec1232bc9dcefb0e486851d552ab6a38eeaa08c22",
+          "reply_sha256": "9e14d7a67ddf8b46644e4651bf6216d59207423ac60cf82e1d997ff8bf883d85",
+          "wire_id": 7240,
+          "reply_bytes": 101,
+          "request_id": "c6ea0f6e-0348-48d3-b2dc-4298351dadfa",
+          "stream_id": "534937fd-34be-4e2c-962a-64a013ce2c54",
+          "sequence": "70",
+          "phase": "completed",
+          "started": "2026-11-03T21:40:58.521411142Z",
+          "completed": "2026-11-03T21:40:58.522190759Z",
+          "role": "primary",
+          "source_role": "native",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        }
+      ],
+      "authority_events": [
+        {
+          "query_sha256": "f1b5b726a76140a7015dd8752d845a2aa5241e3f032bd7c3121d9fd762fe800b",
+          "reply_sha256": "b6471b256e072fc9de762d7bd369d34d0d16c72406230b1929e1c1a48917cd90",
+          "wire_id": 61947,
+          "reply_bytes": 146,
+          "request_id": "88b95ede-4954-4ecf-98a1-ff12b9884526",
+          "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+          "sequence": "154",
+          "phase": "completed",
+          "started": "2026-11-03T21:40:42.240738304Z",
+          "completed": "2026-11-03T21:40:42.240996715Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        },
+        {
+          "query_sha256": "7f09a8233bbb3b2cf08d433d154ec90995abe057301e3439a51e5c8b15962bf8",
+          "reply_sha256": "c4c9397cc7a7823a6d5d65b2f54f7c7dde397af88b3e2cad0c62ebfd826a7ed3",
+          "wire_id": 62355,
+          "reply_bytes": 146,
+          "request_id": "9dff60c8-ad01-475a-91a0-b1f50bd2e85f",
+          "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+          "sequence": "176",
+          "phase": "completed",
+          "started": "2026-11-03T21:40:49.459093781Z",
+          "completed": "2026-11-03T21:40:49.459384683Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        },
+        {
+          "query_sha256": "ca17f9423e5f60ad0fdf23ee11752250225fab6fba23b04b3122544ff2ad6bfb",
+          "reply_sha256": "cf68a6df1096d603abe630f4e62a90d107e3134421fe5b8a233324e3256b7ba6",
+          "wire_id": 7240,
+          "reply_bytes": 146,
+          "request_id": "d73cbcde-aeed-4051-8957-3ed523f21dbf",
+          "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+          "sequence": "188",
+          "phase": "completed",
+          "started": "2026-11-03T21:40:58.52182152Z",
+          "completed": "2026-11-03T21:40:58.522047654Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        }
+      ],
+      "authority_history": [
+        {
+          "start": {
+            "query_sha256": "f1b5b726a76140a7015dd8752d845a2aa5241e3f032bd7c3121d9fd762fe800b",
+            "wire_id": 61947,
+            "request_id": "88b95ede-4954-4ecf-98a1-ff12b9884526",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "153",
+            "phase": "started",
+            "started": "2026-11-03T21:40:42.240738304Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "query_sha256": "f1b5b726a76140a7015dd8752d845a2aa5241e3f032bd7c3121d9fd762fe800b",
+            "reply_sha256": "b6471b256e072fc9de762d7bd369d34d0d16c72406230b1929e1c1a48917cd90",
+            "wire_id": 61947,
+            "reply_bytes": 146,
+            "request_id": "88b95ede-4954-4ecf-98a1-ff12b9884526",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "154",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:42.240738304Z",
+            "completed": "2026-11-03T21:40:42.240996715Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        },
+        {
+          "start": {
+            "query_sha256": "7f09a8233bbb3b2cf08d433d154ec90995abe057301e3439a51e5c8b15962bf8",
+            "wire_id": 62355,
+            "request_id": "9dff60c8-ad01-475a-91a0-b1f50bd2e85f",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "175",
+            "phase": "started",
+            "started": "2026-11-03T21:40:49.459093781Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "query_sha256": "7f09a8233bbb3b2cf08d433d154ec90995abe057301e3439a51e5c8b15962bf8",
+            "reply_sha256": "c4c9397cc7a7823a6d5d65b2f54f7c7dde397af88b3e2cad0c62ebfd826a7ed3",
+            "wire_id": 62355,
+            "reply_bytes": 146,
+            "request_id": "9dff60c8-ad01-475a-91a0-b1f50bd2e85f",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "176",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:49.459093781Z",
+            "completed": "2026-11-03T21:40:49.459384683Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        },
+        {
+          "start": {
+            "query_sha256": "ca17f9423e5f60ad0fdf23ee11752250225fab6fba23b04b3122544ff2ad6bfb",
+            "wire_id": 7240,
+            "request_id": "d73cbcde-aeed-4051-8957-3ed523f21dbf",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "187",
+            "phase": "started",
+            "started": "2026-11-03T21:40:58.52182152Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "query_sha256": "ca17f9423e5f60ad0fdf23ee11752250225fab6fba23b04b3122544ff2ad6bfb",
+            "reply_sha256": "cf68a6df1096d603abe630f4e62a90d107e3134421fe5b8a233324e3256b7ba6",
+            "wire_id": 7240,
+            "reply_bytes": 146,
+            "request_id": "d73cbcde-aeed-4051-8957-3ed523f21dbf",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "188",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:58.52182152Z",
+            "completed": "2026-11-03T21:40:58.522047654Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        }
+      ],
+      "authority_outstanding_at_query_start": [],
+      "authority_outstanding_at_query_completion": [],
+      "authority_outstanding_at_trace_read": [],
+      "trace_read_at": {
+        "authority": "2026-11-03T21:40:58.820656952Z",
+        "primary": "2026-11-03T21:40:58.623144806Z",
+        "secondary": "2026-11-03T21:40:58.723159546Z"
+      },
+      "authority_serial_after_query": 1001,
+      "authority_read_at": "2026-11-03T21:40:58.902761168Z",
+      "answer_ttl_remaining": []
+    },
+    "authority_ttl": 5,
+    "has_soa": true,
+    "available": true,
+    "rcode": 3,
+    "types": [],
+    "ttls": [],
+    "address_classes": [],
+    "expected_answer": false,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 1
+  },
+  "negative_attribution": {
+    "assertion_scope": "same uniquely matched resolver",
+    "cause_status": "unproven",
+    "classification": "negative response without new authority fetch; cache state remains unknown (local synthesis is separate)",
+    "contract": "docs/dns/BACKEND.md §2.1.5: F9-HIT / F9-OTHER / F9-ROUND / F9-INFLIGHT",
+    "earliest_whole_second_expiry": "2026-11-03T21:41:02.523695804Z",
+    "elapsed_query_completion_ms": 1647,
+    "fallback": "not established",
+    "fetch_in_next_query": false,
+    "initial_responder": "primary",
+    "next_responder": "primary",
+    "older_outstanding_completions": [],
+    "subsecond_expiry_possible": false
+  },
+  "negative_before_ttl": {
+    "dns_wire_id": 65408,
+    "authority_serial": 0,
+    "dns_trace": {
+      "resolver_observation_boundary": "relay_write_completed_not_client_received",
+      "trace_streams": {
+        "authority": [
+          "c4a33ae0-d271-4125-ab18-fdf901de8936"
+        ],
+        "primary": [
+          "534937fd-34be-4e2c-962a-64a013ce2c54"
+        ]
+      },
+      "started": "2026-11-03T21:41:00.071470748Z",
+      "completed": "2026-11-03T21:41:00.171052955Z",
+      "responder": "primary",
+      "cache_state": "unknown",
+      "trace_complete": true,
+      "resolver_events": [
+        {
+          "query_sha256": "2fda65a48d21e95fc5d64de001b4cbb7917509c705172974b18514a18de0ae7d",
+          "reply_sha256": "8577bacc1155bb21046d2e1bd78b417a33d0904b9cce19552f63522d31424166",
+          "wire_id": 65408,
+          "reply_bytes": 101,
+          "request_id": "aa4c6895-c4a1-46fd-bada-fa42d1e38dff",
+          "stream_id": "534937fd-34be-4e2c-962a-64a013ce2c54",
+          "sequence": "72",
+          "phase": "completed",
+          "started": "2026-11-03T21:41:00.16769927Z",
+          "completed": "2026-11-03T21:41:00.168138347Z",
+          "role": "primary",
+          "source_role": "native",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        }
+      ],
+      "authority_events": [
+        {
+          "query_sha256": "f1b5b726a76140a7015dd8752d845a2aa5241e3f032bd7c3121d9fd762fe800b",
+          "reply_sha256": "b6471b256e072fc9de762d7bd369d34d0d16c72406230b1929e1c1a48917cd90",
+          "wire_id": 61947,
+          "reply_bytes": 146,
+          "request_id": "88b95ede-4954-4ecf-98a1-ff12b9884526",
+          "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+          "sequence": "154",
+          "phase": "completed",
+          "started": "2026-11-03T21:40:42.240738304Z",
+          "completed": "2026-11-03T21:40:42.240996715Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        },
+        {
+          "query_sha256": "7f09a8233bbb3b2cf08d433d154ec90995abe057301e3439a51e5c8b15962bf8",
+          "reply_sha256": "c4c9397cc7a7823a6d5d65b2f54f7c7dde397af88b3e2cad0c62ebfd826a7ed3",
+          "wire_id": 62355,
+          "reply_bytes": 146,
+          "request_id": "9dff60c8-ad01-475a-91a0-b1f50bd2e85f",
+          "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+          "sequence": "176",
+          "phase": "completed",
+          "started": "2026-11-03T21:40:49.459093781Z",
+          "completed": "2026-11-03T21:40:49.459384683Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        },
+        {
+          "query_sha256": "ca17f9423e5f60ad0fdf23ee11752250225fab6fba23b04b3122544ff2ad6bfb",
+          "reply_sha256": "cf68a6df1096d603abe630f4e62a90d107e3134421fe5b8a233324e3256b7ba6",
+          "wire_id": 7240,
+          "reply_bytes": 146,
+          "request_id": "d73cbcde-aeed-4051-8957-3ed523f21dbf",
+          "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+          "sequence": "188",
+          "phase": "completed",
+          "started": "2026-11-03T21:40:58.52182152Z",
+          "completed": "2026-11-03T21:40:58.522047654Z",
+          "role": "authority",
+          "source_role": "primary",
+          "fixture_case": "absent",
+          "rr_type": 1,
+          "protocol": "udp",
+          "rcode": 3,
+          "ttls": [],
+          "address_classes": [],
+          "authority_serial": 1001,
+          "success": true
+        }
+      ],
+      "authority_history": [
+        {
+          "start": {
+            "query_sha256": "f1b5b726a76140a7015dd8752d845a2aa5241e3f032bd7c3121d9fd762fe800b",
+            "wire_id": 61947,
+            "request_id": "88b95ede-4954-4ecf-98a1-ff12b9884526",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "153",
+            "phase": "started",
+            "started": "2026-11-03T21:40:42.240738304Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "query_sha256": "f1b5b726a76140a7015dd8752d845a2aa5241e3f032bd7c3121d9fd762fe800b",
+            "reply_sha256": "b6471b256e072fc9de762d7bd369d34d0d16c72406230b1929e1c1a48917cd90",
+            "wire_id": 61947,
+            "reply_bytes": 146,
+            "request_id": "88b95ede-4954-4ecf-98a1-ff12b9884526",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "154",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:42.240738304Z",
+            "completed": "2026-11-03T21:40:42.240996715Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        },
+        {
+          "start": {
+            "query_sha256": "7f09a8233bbb3b2cf08d433d154ec90995abe057301e3439a51e5c8b15962bf8",
+            "wire_id": 62355,
+            "request_id": "9dff60c8-ad01-475a-91a0-b1f50bd2e85f",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "175",
+            "phase": "started",
+            "started": "2026-11-03T21:40:49.459093781Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "query_sha256": "7f09a8233bbb3b2cf08d433d154ec90995abe057301e3439a51e5c8b15962bf8",
+            "reply_sha256": "c4c9397cc7a7823a6d5d65b2f54f7c7dde397af88b3e2cad0c62ebfd826a7ed3",
+            "wire_id": 62355,
+            "reply_bytes": 146,
+            "request_id": "9dff60c8-ad01-475a-91a0-b1f50bd2e85f",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "176",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:49.459093781Z",
+            "completed": "2026-11-03T21:40:49.459384683Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        },
+        {
+          "start": {
+            "query_sha256": "ca17f9423e5f60ad0fdf23ee11752250225fab6fba23b04b3122544ff2ad6bfb",
+            "wire_id": 7240,
+            "request_id": "d73cbcde-aeed-4051-8957-3ed523f21dbf",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "187",
+            "phase": "started",
+            "started": "2026-11-03T21:40:58.52182152Z",
+            "completed": "0001-01-01T00:00:00Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": -1,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 0,
+            "success": false
+          },
+          "completion": {
+            "query_sha256": "ca17f9423e5f60ad0fdf23ee11752250225fab6fba23b04b3122544ff2ad6bfb",
+            "reply_sha256": "cf68a6df1096d603abe630f4e62a90d107e3134421fe5b8a233324e3256b7ba6",
+            "wire_id": 7240,
+            "reply_bytes": 146,
+            "request_id": "d73cbcde-aeed-4051-8957-3ed523f21dbf",
+            "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+            "sequence": "188",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:58.52182152Z",
+            "completed": "2026-11-03T21:40:58.522047654Z",
+            "role": "authority",
+            "source_role": "primary",
+            "fixture_case": "absent",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 3,
+            "ttls": [],
+            "address_classes": [],
+            "authority_serial": 1001,
+            "success": true
+          }
+        }
+      ],
+      "authority_outstanding_at_query_start": [],
+      "authority_outstanding_at_query_completion": [],
+      "authority_outstanding_at_trace_read": [],
+      "trace_read_at": {
+        "authority": "2026-11-03T21:41:00.464381771Z",
+        "primary": "2026-11-03T21:41:00.268688304Z",
+        "secondary": "2026-11-03T21:41:00.366911053Z"
+      },
+      "authority_serial_after_query": 1002,
+      "authority_read_at": "2026-11-03T21:41:00.547416862Z",
+      "answer_ttl_remaining": []
+    },
+    "authority_ttl": 3,
+    "has_soa": true,
+    "available": true,
+    "rcode": 3,
+    "types": [],
+    "ttls": [],
+    "address_classes": [],
+    "expected_answer": false,
+    "connected": false,
+    "bytes": 0,
+    "milliseconds": 1
+  },
+  "quiet_window": {
+    "available": true,
+    "earliest_expiry": "2026-11-03T21:41:02.523695804Z",
+    "precision_reserve_seconds": 1,
+    "quiet_end": "2026-11-03T21:40:57.951878472Z",
+    "quiet_start": "2026-11-03T21:40:51.947097199Z",
+    "receipt_at": "2026-11-03T21:40:58.523695804Z",
+    "remaining_soa_ttl_seconds": 5
+  },
+  "run_id": "50117c68-d1b3-431d-a2be-cd94d27a2447",
+  "settings_after": {
+    "adguard": {
+      "available": true,
+      "blocked_response_ttl": 5,
+      "blocking_mode": "nxdomain",
+      "cache_optimistic": false,
+      "cache_size": 4096,
+      "cache_ttl_max": 0,
+      "cache_ttl_min": 0,
+      "fallback_dns": [],
+      "read_at": "2026-11-03T21:41:14.084731841Z",
+      "upstream_mode": "",
+      "upstream_timeout": 10
+    },
+    "node2-adguard": {
+      "available": true,
+      "blocked_response_ttl": 5,
+      "blocking_mode": "nxdomain",
+      "cache_optimistic": false,
+      "cache_size": 4096,
+      "cache_ttl_max": 0,
+      "cache_ttl_min": 0,
+      "fallback_dns": [],
+      "read_at": "2026-11-03T21:41:14.186157195Z",
+      "upstream_mode": "",
+      "upstream_timeout": 10
+    }
+  },
+  "settings_before": {
+    "adguard": {
+      "available": true,
+      "blocked_response_ttl": 5,
+      "blocking_mode": "nxdomain",
+      "cache_optimistic": false,
+      "cache_size": 4096,
+      "cache_ttl_max": 0,
+      "cache_ttl_min": 0,
+      "fallback_dns": [],
+      "read_at": "2026-11-03T21:40:51.847800603Z",
+      "upstream_mode": "",
+      "upstream_timeout": 10
+    },
+    "node2-adguard": {
+      "available": true,
+      "blocked_response_ttl": 5,
+      "blocking_mode": "nxdomain",
+      "cache_optimistic": false,
+      "cache_size": 4096,
+      "cache_ttl_max": 0,
+      "cache_ttl_min": 0,
+      "fallback_dns": [],
+      "read_at": "2026-11-03T21:40:51.947094468Z",
+      "upstream_mode": "",
+      "upstream_timeout": 10
+    }
+  },
+  "source_commit": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
+  "within_precision_window": true
+}

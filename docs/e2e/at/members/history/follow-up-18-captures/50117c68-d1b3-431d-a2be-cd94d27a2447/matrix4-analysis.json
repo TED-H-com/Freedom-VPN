@@ -1,0 +1,1107 @@
+{
+  "id": "matrix4",
+  "run_id": "50117c68-d1b3-431d-a2be-cd94d27a2447",
+  "source_commit": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
+  "status": "pass",
+  "clock_offsets": {
+    "member": {
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "pairs": 132,
+      "offset_lower_ns": "-1793676557548623777",
+      "offset_upper_ns": "-1793676557548622996",
+      "measured_offset_span_ns": "781",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    },
+    "node": {
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "pairs": 132,
+      "offset_lower_ns": "-1793676557548623800",
+      "offset_upper_ns": "-1793676557548623016",
+      "measured_offset_span_ns": "784",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    },
+    "origin": {
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "pairs": 76,
+      "offset_lower_ns": "-1793676557548623801",
+      "offset_upper_ns": "-1793676557548620993",
+      "measured_offset_span_ns": "2808",
+      "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+    }
+  },
+  "capture_checks": {
+    "member": {
+      "complete": true,
+      "decoded": 968,
+      "captured": 968,
+      "kernel_drops": 0
+    },
+    "node": {
+      "complete": true,
+      "decoded": 770,
+      "captured": 770,
+      "kernel_drops": 0
+    },
+    "origin": {
+      "complete": true,
+      "decoded": 166,
+      "captured": 166,
+      "kernel_drops": 0
+    }
+  },
+  "metadata_checks": {
+    "member": {
+      "links_and_origin_route": true,
+      "native_implementation_recorded": true
+    },
+    "node": {
+      "links_and_origin_route": true,
+      "native_implementation_recorded": true
+    },
+    "origin": {
+      "links_and_origin_route": true,
+      "native_implementation_recorded": true
+    }
+  },
+  "ptb": {
+    "member": [],
+    "node": [],
+    "origin": []
+  },
+  "fragmentation_needed": {
+    "member": [],
+    "node": [],
+    "origin": []
+  },
+  "selected_before": {
+    "member": {
+      "local": {
+        "address": "addr-beec7c00603ab8bb",
+        "port": "51820",
+        "family": "ipv4"
+      },
+      "remote": {
+        "address": "addr-156910cb925246e0",
+        "port": "39252",
+        "family": "ipv4"
+      },
+      "wireguard_endpoint": {
+        "address": "addr-156910cb925246e0",
+        "port": "39252",
+        "family": "ipv4"
+      },
+      "routes": {
+        "origin_route": [
+          {
+            "dst": "addr-57ec18e83681ee2f",
+            "dev": "fvnb0",
+            "prefsrc": "addr-bcab55f52b47789e",
+            "table": "netbird"
+          }
+        ],
+        "overlay_route": [
+          {
+            "dst": "addr-828d53b21f818413",
+            "dev": "fvnb0",
+            "prefsrc": "addr-bcab55f52b47789e"
+          }
+        ],
+        "peer_route": [
+          {
+            "dst": "addr-156910cb925246e0",
+            "dev": "eth0",
+            "prefsrc": "addr-beec7c00603ab8bb"
+          }
+        ],
+        "route_table4": [
+          {
+            "dst": "default",
+            "dev": "fvnb0",
+            "table": "netbird"
+          },
+          {
+            "dst": "default",
+            "dev": "eth0",
+            "gateway": "addr-e51930d6cefc9c00"
+          },
+          {
+            "dst": "addr-164a45471ae863af",
+            "dev": "fvnb0",
+            "prefsrc": "addr-bcab55f52b47789e"
+          },
+          {
+            "dst": "addr-e43f6898b47e2373",
+            "dev": "eth0",
+            "prefsrc": "addr-beec7c00603ab8bb"
+          },
+          {
+            "dst": "addr-bcab55f52b47789e",
+            "dev": "fvnb0",
+            "prefsrc": "addr-bcab55f52b47789e",
+            "table": "local"
+          },
+          {
+            "dst": "addr-6a1bc69f4ac1f390",
+            "dev": "fvnb0",
+            "prefsrc": "addr-bcab55f52b47789e",
+            "table": "local"
+          },
+          {
+            "dst": "addr-b6da1098e40c579e",
+            "dev": "lo",
+            "prefsrc": "addr-12ca17b49af22894",
+            "table": "local"
+          },
+          {
+            "dst": "addr-12ca17b49af22894",
+            "dev": "lo",
+            "prefsrc": "addr-12ca17b49af22894",
+            "table": "local"
+          },
+          {
+            "dst": "addr-94856e10697c54a6",
+            "dev": "lo",
+            "prefsrc": "addr-12ca17b49af22894",
+            "table": "local"
+          },
+          {
+            "dst": "addr-beec7c00603ab8bb",
+            "dev": "eth0",
+            "prefsrc": "addr-beec7c00603ab8bb",
+            "table": "local"
+          },
+          {
+            "dst": "addr-5510741291694beb",
+            "dev": "eth0",
+            "prefsrc": "addr-beec7c00603ab8bb",
+            "table": "local"
+          }
+        ],
+        "route_table6": [
+          {
+            "dst": "default",
+            "dev": "lo",
+            "table": "netbird"
+          },
+          {
+            "dst": "addr-ddb508cf68268e3a",
+            "dev": "eth1"
+          },
+          {
+            "dst": "addr-a3ed9f61f7dd1b3a",
+            "dev": "eth1"
+          },
+          {
+            "dst": "default",
+            "dev": "eth1",
+            "gateway": "addr-192f69b2263e2a02"
+          },
+          {
+            "dst": "addr-eff8e7ca506627fe",
+            "dev": "lo",
+            "table": "local"
+          },
+          {
+            "dst": "addr-ab8283067e853f4e",
+            "dev": "eth1",
+            "table": "local"
+          },
+          {
+            "dst": "addr-8178d11255eb5d04",
+            "dev": "eth1",
+            "table": "local"
+          },
+          {
+            "dst": "addr-19fe08267fc9e501",
+            "dev": "eth1",
+            "table": "local"
+          },
+          {
+            "dst": "addr-19fe08267fc9e501",
+            "dev": "fvnb0",
+            "table": "local"
+          }
+        ],
+        "wireguard_route": [
+          {
+            "dst": "addr-156910cb925246e0",
+            "dev": "eth0",
+            "prefsrc": "addr-beec7c00603ab8bb"
+          }
+        ]
+      }
+    },
+    "node": {
+      "local": {
+        "address": "addr-07156c6ae354d0bd",
+        "port": "33252",
+        "family": "ipv4"
+      },
+      "remote": {
+        "address": "addr-beec7c00603ab8bb",
+        "port": "51820",
+        "family": "ipv4"
+      },
+      "wireguard_endpoint": {
+        "address": "addr-beec7c00603ab8bb",
+        "port": "51820",
+        "family": "ipv4"
+      },
+      "routes": {
+        "origin_route": [
+          {
+            "dst": "addr-57ec18e83681ee2f",
+            "dev": "fvup0",
+            "prefsrc": "addr-5ae8cd8dcbfe2329"
+          }
+        ],
+        "overlay_route": [
+          {
+            "dst": "addr-bcab55f52b47789e",
+            "dev": "fvmb0",
+            "prefsrc": "addr-828d53b21f818413"
+          }
+        ],
+        "peer_route": [
+          {
+            "dst": "addr-beec7c00603ab8bb",
+            "dev": "eth0",
+            "prefsrc": "addr-156910cb925246e0"
+          }
+        ],
+        "route_table4": [
+          {
+            "dst": "default",
+            "dev": "eth0",
+            "gateway": "addr-e51930d6cefc9c00"
+          },
+          {
+            "dst": "addr-164a45471ae863af",
+            "dev": "fvmb0",
+            "prefsrc": "addr-828d53b21f818413"
+          },
+          {
+            "dst": "addr-e43f6898b47e2373",
+            "dev": "eth0",
+            "prefsrc": "addr-156910cb925246e0"
+          },
+          {
+            "dst": "addr-ba2b5be4badd796d",
+            "dev": "fvup0",
+            "prefsrc": "addr-5ae8cd8dcbfe2329"
+          },
+          {
+            "dst": "addr-863b282f8542980b",
+            "dev": "fvfixture",
+            "prefsrc": "addr-863b282f8542980b",
+            "table": "local"
+          },
+          {
+            "dst": "addr-828d53b21f818413",
+            "dev": "fvmb0",
+            "prefsrc": "addr-828d53b21f818413",
+            "table": "local"
+          },
+          {
+            "dst": "addr-6a1bc69f4ac1f390",
+            "dev": "fvmb0",
+            "prefsrc": "addr-828d53b21f818413",
+            "table": "local"
+          },
+          {
+            "dst": "addr-b6da1098e40c579e",
+            "dev": "lo",
+            "prefsrc": "addr-12ca17b49af22894",
+            "table": "local"
+          },
+          {
+            "dst": "addr-12ca17b49af22894",
+            "dev": "lo",
+            "prefsrc": "addr-12ca17b49af22894",
+            "table": "local"
+          },
+          {
+            "dst": "addr-94856e10697c54a6",
+            "dev": "lo",
+            "prefsrc": "addr-12ca17b49af22894",
+            "table": "local"
+          },
+          {
+            "dst": "addr-156910cb925246e0",
+            "dev": "eth0",
+            "prefsrc": "addr-156910cb925246e0",
+            "table": "local"
+          },
+          {
+            "dst": "addr-5510741291694beb",
+            "dev": "eth0",
+            "prefsrc": "addr-156910cb925246e0",
+            "table": "local"
+          },
+          {
+            "dst": "addr-5ae8cd8dcbfe2329",
+            "dev": "fvup0",
+            "prefsrc": "addr-5ae8cd8dcbfe2329",
+            "table": "local"
+          },
+          {
+            "dst": "addr-6a102976f7411ec1",
+            "dev": "fvup0",
+            "prefsrc": "addr-5ae8cd8dcbfe2329",
+            "table": "local"
+          }
+        ],
+        "route_table6": [
+          {
+            "dst": "addr-ddb508cf68268e3a",
+            "dev": "eth2"
+          },
+          {
+            "dst": "addr-ed77cd6812ba7a08",
+            "dev": "fvfixture"
+          },
+          {
+            "dst": "addr-a3ed9f61f7dd1b3a",
+            "dev": "eth2"
+          },
+          {
+            "dst": "addr-a3ed9f61f7dd1b3a",
+            "dev": "fvfixture"
+          },
+          {
+            "dst": "default",
+            "dev": "eth2",
+            "gateway": "addr-192f69b2263e2a02"
+          },
+          {
+            "dst": "addr-eff8e7ca506627fe",
+            "dev": "lo",
+            "table": "local"
+          },
+          {
+            "dst": "addr-d1439358dea1ea21",
+            "dev": "eth2",
+            "table": "local"
+          },
+          {
+            "dst": "addr-ed77cd6812ba7a08",
+            "dev": "fvfixture",
+            "table": "local"
+          },
+          {
+            "dst": "addr-132f24567cfbe633",
+            "dev": "eth2",
+            "table": "local"
+          },
+          {
+            "dst": "addr-c363cdbb5c1b78ae",
+            "dev": "fvfixture",
+            "table": "local"
+          },
+          {
+            "dst": "addr-19fe08267fc9e501",
+            "dev": "eth2",
+            "table": "local"
+          },
+          {
+            "dst": "addr-19fe08267fc9e501",
+            "dev": "fvfixture",
+            "table": "local"
+          },
+          {
+            "dst": "addr-19fe08267fc9e501",
+            "dev": "fvmb0",
+            "table": "local"
+          }
+        ],
+        "wireguard_route": [
+          {
+            "dst": "addr-beec7c00603ab8bb",
+            "dev": "eth0",
+            "prefsrc": "addr-156910cb925246e0"
+          }
+        ]
+      }
+    }
+  },
+  "transfer": {
+    "after_counters": {
+      "upload_bytes": "351645",
+      "download_bytes": "96979",
+      "Present": true,
+      "kernel_generation": "75",
+      "read_diagnostic": {
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "read_start_mono_ns": "66170190562026",
+        "read_end_mono_ns": "66170193977265",
+        "enforcement_before": {
+          "available": true,
+          "record": {
+            "run_id": "dd6a81b3-b291-4ac3-978e-66e7af7689f3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1068",
+            "source": "live",
+            "anchor": {
+              "mono_before_ns": "66168881225431",
+              "wall": "2026-11-03T21:52:06.429848894Z",
+              "mono_after_ns": "66168881225696"
+            },
+            "timing": {
+              "version": 1,
+              "clock": "CLOCK_MONOTONIC",
+              "operation": "verify",
+              "candidate_generation": "75",
+              "start_ns": "66168852275772",
+              "end_ns": "66168881221609",
+              "succeeded": true,
+              "verified": true,
+              "deadline": {
+                "granularity_ns": "0",
+                "install_bound_ns": "0",
+                "apply_start_ns": "0",
+                "render_start_ns": "0",
+                "install_start_ns": "0",
+                "installed_by_ns": "0",
+                "install_ok": false,
+                "release_start_ns": "0",
+                "release_end_ns": "0",
+                "guard_released": false
+              },
+              "verifications": [
+                {
+                  "start_ns": "66168852275772",
+                  "end_ns": "66168881221609",
+                  "nft_read": {
+                    "start_ns": "66168852275889",
+                    "end_ns": "66168855341991",
+                    "ok": true
+                  },
+                  "tc_read": {
+                    "start_ns": "66168865078293",
+                    "end_ns": "66168879913922",
+                    "ok": true
+                  },
+                  "precision_read": {
+                    "start_ns": "66168862220060",
+                    "end_ns": "66168865066974",
+                    "elements": 3,
+                    "read_ok": true,
+                    "verified": true
+                  },
+                  "tc_sha256": "3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545",
+                  "verified": true
+                }
+              ]
+            },
+            "tc_sha256": "3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545",
+            "lease": {
+              "lease_id": "053e1bf5-1148-4721-8374-8f6cf39337ec",
+              "generation": "75",
+              "issued_at": "2026-11-03T21:48:36.37503717Z",
+              "expires_at": "2026-11-04T21:48:36.37503717Z",
+              "request_mono_ns": "65958822525680",
+              "node_deadline_ns": "152358822525680",
+              "members": 7
+            }
+          }
+        },
+        "enforcement_after": {
+          "available": true,
+          "record": {
+            "run_id": "dd6a81b3-b291-4ac3-978e-66e7af7689f3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1068",
+            "source": "live",
+            "anchor": {
+              "mono_before_ns": "66168881225431",
+              "wall": "2026-11-03T21:52:06.429848894Z",
+              "mono_after_ns": "66168881225696"
+            },
+            "timing": {
+              "version": 1,
+              "clock": "CLOCK_MONOTONIC",
+              "operation": "verify",
+              "candidate_generation": "75",
+              "start_ns": "66168852275772",
+              "end_ns": "66168881221609",
+              "succeeded": true,
+              "verified": true,
+              "deadline": {
+                "granularity_ns": "0",
+                "install_bound_ns": "0",
+                "apply_start_ns": "0",
+                "render_start_ns": "0",
+                "install_start_ns": "0",
+                "installed_by_ns": "0",
+                "install_ok": false,
+                "release_start_ns": "0",
+                "release_end_ns": "0",
+                "guard_released": false
+              },
+              "verifications": [
+                {
+                  "start_ns": "66168852275772",
+                  "end_ns": "66168881221609",
+                  "nft_read": {
+                    "start_ns": "66168852275889",
+                    "end_ns": "66168855341991",
+                    "ok": true
+                  },
+                  "tc_read": {
+                    "start_ns": "66168865078293",
+                    "end_ns": "66168879913922",
+                    "ok": true
+                  },
+                  "precision_read": {
+                    "start_ns": "66168862220060",
+                    "end_ns": "66168865066974",
+                    "elements": 3,
+                    "read_ok": true,
+                    "verified": true
+                  },
+                  "tc_sha256": "3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545",
+                  "verified": true
+                }
+              ]
+            },
+            "tc_sha256": "3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545",
+            "lease": {
+              "lease_id": "053e1bf5-1148-4721-8374-8f6cf39337ec",
+              "generation": "75",
+              "issued_at": "2026-11-03T21:48:36.37503717Z",
+              "expires_at": "2026-11-04T21:48:36.37503717Z",
+              "request_mono_ns": "65958822525680",
+              "node_deadline_ns": "152358822525680",
+              "members": 7
+            }
+          }
+        },
+        "started": "2026-11-03T21:52:07.715821606Z",
+        "completed": "2026-11-03T21:52:07.742601071Z",
+        "stage": "nft_read",
+        "category": "none",
+        "exit": 0,
+        "heartbeat_before": {
+          "read_at": "2026-11-03T21:52:07.715845786Z",
+          "wall_unix_ns": "1793742726432097058",
+          "serving": true,
+          "read_ok": true
+        },
+        "heartbeat_after": {
+          "read_at": "2026-11-03T21:52:07.742601454Z",
+          "wall_unix_ns": "1793742726432097058",
+          "serving": true,
+          "read_ok": true
+        }
+      }
+    },
+    "after_path": {
+      "path": {
+        "Relayed": 0,
+        "Direct": 2,
+        "Forced": false
+      },
+      "candidate_families": {
+        "ipv4": 4
+      }
+    },
+    "before_counters": {
+      "upload_bytes": "284253",
+      "download_bytes": "28788",
+      "Present": true,
+      "kernel_generation": "75",
+      "read_diagnostic": {
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "read_start_mono_ns": "66168019664835",
+        "read_end_mono_ns": "66168022780239",
+        "enforcement_before": {
+          "available": true,
+          "record": {
+            "run_id": "dd6a81b3-b291-4ac3-978e-66e7af7689f3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1061",
+            "source": "live",
+            "anchor": {
+              "mono_before_ns": "66163883546312",
+              "wall": "2026-11-03T21:52:01.432169714Z",
+              "mono_after_ns": "66163883546525"
+            },
+            "timing": {
+              "version": 1,
+              "clock": "CLOCK_MONOTONIC",
+              "operation": "verify",
+              "candidate_generation": "75",
+              "start_ns": "66163857838056",
+              "end_ns": "66163883543371",
+              "succeeded": true,
+              "verified": true,
+              "deadline": {
+                "granularity_ns": "0",
+                "install_bound_ns": "0",
+                "apply_start_ns": "0",
+                "render_start_ns": "0",
+                "install_start_ns": "0",
+                "installed_by_ns": "0",
+                "install_ok": false,
+                "release_start_ns": "0",
+                "release_end_ns": "0",
+                "guard_released": false
+              },
+              "verifications": [
+                {
+                  "start_ns": "66163857838056",
+                  "end_ns": "66163883543371",
+                  "nft_read": {
+                    "start_ns": "66163857838152",
+                    "end_ns": "66163860698279",
+                    "ok": true
+                  },
+                  "tc_read": {
+                    "start_ns": "66163870206146",
+                    "end_ns": "66163882241074",
+                    "ok": true
+                  },
+                  "precision_read": {
+                    "start_ns": "66163867244231",
+                    "end_ns": "66163870197322",
+                    "elements": 3,
+                    "read_ok": true,
+                    "verified": true
+                  },
+                  "tc_sha256": "3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545",
+                  "verified": true
+                }
+              ]
+            },
+            "tc_sha256": "3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545",
+            "lease": {
+              "lease_id": "053e1bf5-1148-4721-8374-8f6cf39337ec",
+              "generation": "75",
+              "issued_at": "2026-11-03T21:48:36.37503717Z",
+              "expires_at": "2026-11-04T21:48:36.37503717Z",
+              "request_mono_ns": "65958822525680",
+              "node_deadline_ns": "152358822525680",
+              "members": 7
+            }
+          }
+        },
+        "enforcement_after": {
+          "available": true,
+          "record": {
+            "run_id": "dd6a81b3-b291-4ac3-978e-66e7af7689f3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1061",
+            "source": "live",
+            "anchor": {
+              "mono_before_ns": "66163883546312",
+              "wall": "2026-11-03T21:52:01.432169714Z",
+              "mono_after_ns": "66163883546525"
+            },
+            "timing": {
+              "version": 1,
+              "clock": "CLOCK_MONOTONIC",
+              "operation": "verify",
+              "candidate_generation": "75",
+              "start_ns": "66163857838056",
+              "end_ns": "66163883543371",
+              "succeeded": true,
+              "verified": true,
+              "deadline": {
+                "granularity_ns": "0",
+                "install_bound_ns": "0",
+                "apply_start_ns": "0",
+                "render_start_ns": "0",
+                "install_start_ns": "0",
+                "installed_by_ns": "0",
+                "install_ok": false,
+                "release_start_ns": "0",
+                "release_end_ns": "0",
+                "guard_released": false
+              },
+              "verifications": [
+                {
+                  "start_ns": "66163857838056",
+                  "end_ns": "66163883543371",
+                  "nft_read": {
+                    "start_ns": "66163857838152",
+                    "end_ns": "66163860698279",
+                    "ok": true
+                  },
+                  "tc_read": {
+                    "start_ns": "66163870206146",
+                    "end_ns": "66163882241074",
+                    "ok": true
+                  },
+                  "precision_read": {
+                    "start_ns": "66163867244231",
+                    "end_ns": "66163870197322",
+                    "elements": 3,
+                    "read_ok": true,
+                    "verified": true
+                  },
+                  "tc_sha256": "3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545",
+                  "verified": true
+                }
+              ]
+            },
+            "tc_sha256": "3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545",
+            "lease": {
+              "lease_id": "053e1bf5-1148-4721-8374-8f6cf39337ec",
+              "generation": "75",
+              "issued_at": "2026-11-03T21:48:36.37503717Z",
+              "expires_at": "2026-11-04T21:48:36.37503717Z",
+              "request_mono_ns": "65958822525680",
+              "node_deadline_ns": "152358822525680",
+              "members": 7
+            }
+          }
+        },
+        "started": "2026-11-03T21:52:05.544907361Z",
+        "completed": "2026-11-03T21:52:05.571404363Z",
+        "stage": "nft_read",
+        "category": "none",
+        "exit": 0,
+        "heartbeat_before": {
+          "read_at": "2026-11-03T21:52:05.544932238Z",
+          "wall_unix_ns": "1793742721434762530",
+          "serving": true,
+          "read_ok": true
+        },
+        "heartbeat_after": {
+          "read_at": "2026-11-03T21:52:05.571404862Z",
+          "wall_unix_ns": "1793742721434762530",
+          "serving": true,
+          "read_ok": true
+        }
+      }
+    },
+    "before_path": {
+      "path": {
+        "Relayed": 0,
+        "Direct": 2,
+        "Forced": false
+      },
+      "candidate_families": {
+        "ipv4": 4
+      }
+    },
+    "decision": "under provisional D-137",
+    "ipv6_mode": "block",
+    "ipv6_no_leak_evidence": "docs/poc/G2-f802-mtu1280-2026-10-31.md (independent netlab measurement; ctv6 drops in both directions, no member class dequeue)",
+    "overlay_family": "ipv4",
+    "scope": "1500 baseline",
+    "selected_exit_after": {
+      "connected": true,
+      "connection_type": "P2P",
+      "chosen_family": "ipv4"
+    },
+    "selected_exit_before": {
+      "connected": true,
+      "connection_type": "P2P",
+      "chosen_family": "ipv4"
+    },
+    "selection": {
+      "input": {
+        "underlay": "ipv4",
+        "mtu": 1500,
+        "protocol": "tcp",
+        "platform": "linux"
+      },
+      "available": true,
+      "reason": ""
+    },
+    "transfer": {
+      "dns_wire_id": 0,
+      "authority_serial": 0,
+      "endpoint": {
+        "at": "2026-11-03T21:52:05.821165803Z",
+        "local_port": 42568,
+        "remote_port": 9446,
+        "read_bytes": 64387,
+        "write_bytes": 64108,
+        "complete_lines": 64,
+        "partial_line_bytes": 0,
+        "error": "none",
+        "tcp_info": {
+          "bytes_acked": 64109,
+          "bytes_received": 64387,
+          "lost": 0,
+          "notsent_bytes": 0,
+          "rcv_mss": 1006,
+          "rcv_space": 12280,
+          "retrans": 0,
+          "rto_us": 201000,
+          "rtt_us": 120,
+          "sacked": 0,
+          "snd_cwnd": 66,
+          "snd_mss": 1148,
+          "snd_wnd": 65536,
+          "state": 1,
+          "total_retrans": 0,
+          "unacked": 0
+        }
+      },
+      "authority_ttl": 0,
+      "has_soa": false,
+      "available": true,
+      "rcode": -1,
+      "types": [],
+      "ttls": [],
+      "address_classes": [],
+      "expected_answer": false,
+      "connected": true,
+      "bytes": 64064,
+      "milliseconds": 1
+    },
+    "bulk": {
+      "dns_wire_id": 0,
+      "authority_serial": 0,
+      "endpoint": {
+        "at": "2026-11-03T21:52:05.821165803Z",
+        "local_port": 42568,
+        "remote_port": 9446,
+        "read_bytes": 64387,
+        "write_bytes": 64108,
+        "complete_lines": 64,
+        "partial_line_bytes": 0,
+        "error": "none",
+        "tcp_info": {
+          "bytes_acked": 64109,
+          "bytes_received": 64387,
+          "lost": 0,
+          "notsent_bytes": 0,
+          "rcv_mss": 1006,
+          "rcv_space": 12280,
+          "retrans": 0,
+          "rto_us": 201000,
+          "rtt_us": 120,
+          "sacked": 0,
+          "snd_cwnd": 66,
+          "snd_mss": 1148,
+          "snd_wnd": 65536,
+          "state": 1,
+          "total_retrans": 0,
+          "unacked": 0
+        }
+      },
+      "authority_ttl": 0,
+      "has_soa": false,
+      "available": true,
+      "rcode": -1,
+      "types": [],
+      "ttls": [],
+      "address_classes": [],
+      "expected_answer": false,
+      "connected": true,
+      "bytes": 64064,
+      "milliseconds": 1
+    }
+  },
+  "reverse": {
+    "sizes": {
+      "124": {
+        "sent": 9,
+        "arrived": 9,
+        "absent": 0
+      },
+      "1132": {
+        "sent": 64,
+        "arrived": 64,
+        "absent": 0
+      }
+    },
+    "absent_sender_packets": [],
+    "unmatched_receiver_packets": 0,
+    "sender_interface": "eth0",
+    "receiver_interface": "eth0",
+    "absent_bounds": []
+  },
+  "forward": {
+    "sizes": {
+      "124": {
+        "sent": 30,
+        "arrived": 30,
+        "absent": 0
+      },
+      "156": {
+        "sent": 1,
+        "arrived": 1,
+        "absent": 0
+      },
+      "1260": {
+        "sent": 55,
+        "arrived": 55,
+        "absent": 0
+      },
+      "1036": {
+        "sent": 1,
+        "arrived": 1,
+        "absent": 0
+      }
+    },
+    "absent_sender_packets": [],
+    "unmatched_receiver_packets": 0,
+    "sender_interface": "eth0",
+    "receiver_interface": "eth0",
+    "absent_bounds": []
+  },
+  "bulk_local_port": 42568,
+  "reverse_streams": {
+    "42568": {
+      "current_bulk": true,
+      "first_gap": null,
+      "sent_packets": [
+        17,
+        20,
+        21,
+        25,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        36,
+        38,
+        41,
+        44,
+        47,
+        49,
+        52,
+        54,
+        58,
+        61,
+        62,
+        65,
+        69,
+        71,
+        73,
+        76,
+        78,
+        82,
+        84,
+        85,
+        87,
+        88,
+        89,
+        90,
+        91,
+        92,
+        93,
+        94,
+        95,
+        96,
+        97,
+        98,
+        99,
+        100,
+        101,
+        102,
+        103,
+        107,
+        112,
+        113,
+        114,
+        117,
+        118,
+        119,
+        121,
+        122,
+        124,
+        125,
+        127,
+        128,
+        129,
+        130,
+        131,
+        132,
+        135,
+        136,
+        138,
+        139,
+        141,
+        142,
+        143,
+        145,
+        150
+      ],
+      "received_packets": [
+        699,
+        705,
+        707,
+        724,
+        725,
+        731,
+        732,
+        742,
+        743,
+        747,
+        758,
+        759,
+        766,
+        771,
+        777,
+        780,
+        787,
+        794,
+        795,
+        807,
+        808,
+        811,
+        818,
+        819,
+        827,
+        828,
+        830,
+        834,
+        837,
+        838,
+        841,
+        844,
+        847,
+        849,
+        853,
+        854,
+        857,
+        860,
+        861,
+        864,
+        867,
+        870,
+        871,
+        882,
+        883,
+        884,
+        888,
+        890,
+        894,
+        896,
+        901,
+        902,
+        905,
+        909,
+        910,
+        916,
+        917,
+        919,
+        921,
+        924,
+        926,
+        931,
+        934,
+        936,
+        938,
+        942,
+        946,
+        949,
+        954,
+        955,
+        957,
+        960,
+        966
+      ]
+    }
+  },
+  "datagram_scope": "All selected endpoint datagrams within the command window, including control packets and older TCP streams. Stream ports above keep current bulk separate. Encrypted packets are not assigned to inner streams by time alone.",
+  "first_missing_tcp_range": null
+}

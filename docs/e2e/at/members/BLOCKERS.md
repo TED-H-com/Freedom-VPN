@@ -1,6 +1,34 @@
+# Follow-up 18 run 2 — 2026-11-03
+
+Run 2 `50117c68-d1b3-431d-a2be-cd94d27a2447`, measured harness `4eb5d7d32c449da7689e749fd8ecb208657937dd`, baseline `27ff63928222c9642e4f5e180cf225108327a1e5`. **2 PASS / 6 BLOCKED / 2 FAIL; 699 passed / 5 blocked / 4 failed subchecks.**
+
+| Receive-only row | Selected family | Transfer / upload / evidence | Payload bytes / ms | Member SYN MSS sent → received | Origin SYN-ACK MSS sent → received | Reverse sent / received / max sent / max received IP bytes |
+|---|---|---|---:|---|---|---:|
+| [native dual MTU 1280](history/follow-up-18-captures/50117c68-d1b3-431d-a2be-cd94d27a2447/matrix-dual-1280-d146/analysis.json) | ipv4 | pass / pass / pass | 64064 / 1 | 1240 → 1160 | 1460 → 1160 | 73 / 73 / 1132 / 1132 |
+| [native ipv6 MTU 1280](history/follow-up-18-captures/50117c68-d1b3-431d-a2be-cd94d27a2447/matrix-ipv6-1280-d146/analysis.json) | ipv6 | pass / pass / pass | 64064 / 1 | 1240 → 1160 | 1460 → 1160 | 74 / 74 / 1152 / 1152 |
+| [native ipv4 MTU 1280](history/follow-up-18-captures/50117c68-d1b3-431d-a2be-cd94d27a2447/matrix-ipv4-1280-d146/analysis.json) | ipv4 | pass / pass / pass | 64064 / 1 | 1240 → 1160 | 1460 → 1160 | 72 / 72 / 1132 / 1132 |
+
+The existing dual and IPv6 inputs and original byte/counter/family predicate are unchanged. The additional IPv4-only 1280 row makes IPv4 selection explicit independently of the dual row. The upload check uses the original bulk connection and requires 64,064 payload bytes after subtracting its 44-byte MEMBER greeting, with all 64 exact echoes proving acceptance at the origin. D-146 removes the D-137 downgrade only when every same-run qualification condition passes; an original failed transfer stays failed. Missing evidence or an advertisement already at/below 1160 cannot qualify the clamp. All three original analyses qualify: every selected reverse datagram matches at sender and member ingress, and both PTB types are absent at member, node and origin. Reverse payloads remain the fixture's 1006-byte echo writes; the endpoint MSS rewrites are the direct evidence that the clamp operated.
+
+Receive-only UDP and QUIC without PTB remain documented limitations. The smaller-MSS control is **not exercised**: the unchanged fixture has no TCP_MAXSEG input; [Netlab 34's 1000 → 1000 control](../../../poc/G2-followup34-2026-11-03.md) stands. Clamp operation at 1280 on relay, real platforms, other encapsulations, IPv6 overlay and physical arm64 remain unverified. D-123 IPv6Block is unchanged.
+
+AT09 records serving readiness **6.021246702 s**, counted recovery **12.548980167 s**, and desired generation **66 → 66**. [Every original AT09 subcheck](F18-AT09-subchecks.md), including D-067 and the combined restart, retains its measured status; [original restart records](F18-AT09-restart.json). These timing values alone identify no particular merged change from agent-core 37–43 (#429). Any narrower attribution requires the original records. Namespace destruction/recreation does not prove warm-kernel adoption. The D-067 record has 2 provisional observations, stage=lease error counts [0, 0], forwarding-block reasons [['safety_check_failed'], ['safety_check_failed']], and saw_lease_expired=False. Captured errors include [('apply', 'TC_FOREIGN_FILTER'), ('initial_quarantine', 'TC_FOREIGN_FILTER'), ('probe', 'HEALTH_CHECK_FAILED'), ('quarantine', 'TC_FOREIGN_FILTER'), ('tc_evidence', 'TC_FOREIGN_FILTER')]. These are original failure observations, not a causal attribution to a merged change.
+
+AT02 retains **6250 sends**, **0 send errors**, **983 absent node ingresses**, and **259 ingress-without-egress losses**. All **1242** losses count. [Every original send](F18-AT02-every-send.json), [original recovery](F18-AT02-recovery.json.gz), [reservation joins](F18-pre-apply-reservations.json.gz). D-135/D-136 remain provisional; no loss waiver or finite outage ceiling is introduced. The original evaluator records measurement_valid=False, failed_apply_in_capture=3, failed_apply_bracketed=0, and cause_status=unproven.
+
+AT01's original first selection is counted=False, HTTP status 0, origin receipt=False, with 0 origin requests. Its joined first-SYN transit is 5.654543001–5.654549869 s. [Original headers and observations](F18-loopback-and-first-selection.json) retain cause_status=unproven. F11-01 remains OPEN and upstream-dependent; later success closes neither F11-01 nor historical F14-01.
+
+Run 1 `118271c1`, measured harness `b4317bd4`, remains **0 PASS / 3 BLOCKED / 7 FAIL; 442 / 0 / 35 subchecks**. [Archive commit 71dc60ac](history/follow-up-18-run1/INDEX.md) retains 72 byte-identical root files, gzip and pins, plus the original captures. The [retire rejection and 16 exact export-prefix joins](history/follow-up-18-run1/F18-lifecycle-phase-compatibility.json) prove the reader defect where joined; they do not explain every independent failure. Its [finite-grant restoration gap](history/follow-up-18-run1/F18-AT09-precondition.json), restart failures and unexercised D-146 rows remain recorded.
+
+Orchestrator note 1 (2026-11-03 15:58 EST) authorized this second run after archiving run 1. Commit `4eb5d7d3` adds only the missing production retire phase to the reader and preserves its other validation. [Closed-list audit and regression tests](F18-reader-audit.md). D-146, all timeouts and the case order are unchanged. No third run is authorized or performed.
+
+[Complete results](summary.md), [each qualification condition](F18-D146.json). F11-01 remains OPEN/upstream-dependent; owner-resource groups and all historical statuses remain unchanged.
+
+---
+
 # Follow-up 16 limits
 
-Current follow-up 17 results and limits are in [summary](summary.md), [hold joins](F17-populated-holds.md) and [qualification](F17-qualification.json). The detailed follow-up 16 observations below remain historical and link to their frozen archive.
+Current follow-up 17 results and limits are in [summary](history/follow-up-17/summary.md), [hold joins](history/follow-up-17/F17-populated-holds.md) and [qualification](history/follow-up-17/F17-qualification.json). The detailed follow-up 16 observations below remain historical and link to their frozen archive.
 
 **2 PASS / 6 BLOCKED / 2 FAIL**, with **679 passed / 6 blocked / 7 failed subchecks**. One assembled ten-case run; live make exit **2**. No assembled run was repeated after the reboot.
 
@@ -30,4 +58,4 @@ Fresh routed IPv6 passes 64,064 / 2 ms: one oversize ingress, one PTB observed a
 
 [D-137 assessment](history/follow-up-16/F16-D137-assessment.md), [independent original rows](history/follow-up-16/F16-D137-native-paths.json), [packet analysis](history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/analysis.json).
 
-F4-03, F4-04, F4-05/F4-07, F4-06 and F4-10 remain unchanged owner-resource rows. No real platform/QUIC, physical second NAT/roaming, rendered portal, production platform DNS/DoH, physical arm64 or remaining retention/backup capability is inferred from the lab. [Carried ownership and the single new seam request](requests.md).
+F4-03, F4-04, F4-05/F4-07, F4-06 and F4-10 remain unchanged owner-resource rows. No real platform/QUIC, physical second NAT/roaming, rendered portal, production platform DNS/DoH, physical arm64 or remaining retention/backup capability is inferred from the lab. [Carried ownership and the single new seam request](history/follow-up-17/requests.md).

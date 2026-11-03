@@ -19,3 +19,5 @@ Reviewed `command_lifecycle_test.go`, `timing_stream_test.go`, `timing_export_te
 Tests cover a synthetic successful Apply with nft install followed by tc retire and guard release, unknown phase/kind rejection of the complete stream, and unchanged lifecycle rejection for invalid retire timestamps, invented exact child start, negative CPU and invalid cancellation. A separate regression test parses the exact original sequence-582 record from [run 1's byte-pinned evidence](history/follow-up-18-run1/F18-lifecycle-phase-compatibility.json).
 
 [Run 1 archive](history/follow-up-18-run1/INDEX.md) preserves all observed failures and the 16 exact export-prefix joins. Correcting the reader does not rewrite any historical outcome or prove that every run-1 failure had this cause.
+
+Run 2 live confirmation: [the original AT02 trace](AT02-enforcement-timing.json) retains 1,534 accepted producer records, including `sequence=584`, `timing.commands[28]` with `kind=tc` and `phase=retire`. The original counter-reader enforcement-attribution check passes. This confirms compatibility on this run; the unchanged D-135/D-136 availability assertions still fail.
