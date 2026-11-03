@@ -1,0 +1,306 @@
+[
+  {
+    "name": "receive-upload",
+    "result": {
+      "code": 0,
+      "stdout": "{\"direction\": \"upload\", \"bytes\": 64064, \"expected\": 64064, \"connected\": true, \"error\": \"\", \"pmtu\": 1420, \"socket_mss\": 1368, \"elapsed_ms\": 2.802087998134084}\n",
+      "stderr": ""
+    },
+    "counter_delta": {
+      "d_019a00000000700080000000000000a1": {
+        "packets": 27,
+        "bytes": 1417
+      },
+      "u_019a00000000700080000000000000a1": {
+        "packets": 51,
+        "bytes": 66725
+      }
+    },
+    "forwarded": {
+      "upload": {
+        "bytes": 66725,
+        "packets": 51
+      },
+      "download": {
+        "bytes": 1417,
+        "packets": 27
+      }
+    },
+    "tc_delta": {
+      "fv-ih": {
+        "1:1": {
+          "bytes": 67439,
+          "packets": 51,
+          "dropped": 0
+        },
+        "1:2f": {
+          "bytes": 67439,
+          "packets": 51,
+          "dropped": 0
+        }
+      },
+      "fv-fh": {
+        "1:1": {
+          "bytes": 1795,
+          "packets": 27,
+          "dropped": 0
+        },
+        "1:2f": {
+          "bytes": 1795,
+          "packets": 27,
+          "dropped": 0
+        }
+      }
+    },
+    "outer_receive": {
+      "sizes": {
+        "124": {
+          "sent": 27,
+          "arrived": 27,
+          "absent": 0
+        }
+      },
+      "absent_sender_packets": [],
+      "unmatched_receiver_packets": 0
+    }
+  },
+  {
+    "name": "receive-download",
+    "result": {
+      "code": 0,
+      "stdout": "{\"direction\": \"download\", \"bytes\": 0, \"expected\": 64064, \"connected\": true, \"error\": \"TimeoutError\", \"pmtu\": 1420, \"socket_mss\": 1368, \"elapsed_ms\": 5006.016207000357}\n",
+      "stderr": ""
+    },
+    "counter_delta": {
+      "d_019a00000000700080000000000000a1": {
+        "packets": 18,
+        "bytes": 21464
+      },
+      "u_019a00000000700080000000000000a1": {
+        "packets": 5,
+        "bytes": 1637
+      }
+    },
+    "forwarded": {
+      "upload": {
+        "bytes": 1637,
+        "packets": 5
+      },
+      "download": {
+        "bytes": 21464,
+        "packets": 18
+      }
+    },
+    "tc_delta": {
+      "fv-ih": {
+        "1:1": {
+          "bytes": 1749,
+          "packets": 6,
+          "dropped": 0
+        },
+        "1:fffe": {
+          "bytes": 42,
+          "packets": 1,
+          "dropped": 0
+        },
+        "1:2f": {
+          "bytes": 1707,
+          "packets": 5,
+          "dropped": 0
+        }
+      },
+      "fv-fh": {
+        "1:1": {
+          "bytes": 21716,
+          "packets": 18,
+          "dropped": 0
+        },
+        "1:2f": {
+          "bytes": 21716,
+          "packets": 18,
+          "dropped": 0
+        }
+      }
+    },
+    "outer_receive": {
+      "sizes": {
+        "124": {
+          "sent": 3,
+          "arrived": 3,
+          "absent": 0
+        },
+        "1480": {
+          "sent": 15,
+          "arrived": 0,
+          "absent": 15
+        }
+      },
+      "absent_sender_packets": [
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        48,
+        51,
+        54,
+        57,
+        64
+      ],
+      "unmatched_receiver_packets": 0
+    }
+  },
+  {
+    "name": "receive-small-mss",
+    "result": {
+      "code": 0,
+      "stdout": "{\"direction\": \"download\", \"bytes\": 64064, \"expected\": 64064, \"connected\": true, \"error\": \"\", \"pmtu\": 1420, \"socket_mss\": 988, \"elapsed_ms\": 2.6864280007430352}\n",
+      "stderr": ""
+    },
+    "counter_delta": {
+      "d_019a00000000700080000000000000a1": {
+        "packets": 68,
+        "bytes": 67608
+      },
+      "u_019a00000000700080000000000000a1": {
+        "packets": 25,
+        "bytes": 1309
+      }
+    },
+    "forwarded": {
+      "upload": {
+        "bytes": 1309,
+        "packets": 25
+      },
+      "download": {
+        "bytes": 67608,
+        "packets": 68
+      }
+    },
+    "tc_delta": {
+      "fv-ih": {
+        "1:1": {
+          "bytes": 1659,
+          "packets": 25,
+          "dropped": 0
+        },
+        "1:2f": {
+          "bytes": 1659,
+          "packets": 25,
+          "dropped": 0
+        }
+      },
+      "fv-fh": {
+        "1:1": {
+          "bytes": 68560,
+          "packets": 68,
+          "dropped": 0
+        },
+        "1:2f": {
+          "bytes": 68560,
+          "packets": 68,
+          "dropped": 0
+        }
+      }
+    },
+    "outer_receive": {
+      "sizes": {
+        "124": {
+          "sent": 3,
+          "arrived": 3,
+          "absent": 0
+        },
+        "1100": {
+          "sent": 64,
+          "arrived": 64,
+          "absent": 0
+        },
+        "956": {
+          "sent": 1,
+          "arrived": 1,
+          "absent": 0
+        }
+      },
+      "absent_sender_packets": [],
+      "unmatched_receiver_packets": 0
+    }
+  },
+  {
+    "name": "receive-udp",
+    "result": {
+      "code": 0,
+      "stdout": "{\"bytes\": 0, \"expected\": 1280, \"error\": \"TimeoutError\"}\n",
+      "stderr": ""
+    },
+    "counter_delta": {
+      "d_019a00000000700080000000000000a1": {
+        "packets": 2,
+        "bytes": 2728
+      },
+      "u_019a00000000700080000000000000a1": {
+        "packets": 1,
+        "bytes": 29
+      }
+    },
+    "forwarded": {
+      "upload": {
+        "bytes": 29,
+        "packets": 1
+      },
+      "download": {
+        "bytes": 2728,
+        "packets": 2
+      }
+    },
+    "tc_delta": {
+      "fv-ih": {
+        "1:1": {
+          "bytes": 43,
+          "packets": 1,
+          "dropped": 0
+        },
+        "1:2f": {
+          "bytes": 43,
+          "packets": 1,
+          "dropped": 0
+        }
+      },
+      "fv-fh": {
+        "1:1": {
+          "bytes": 2756,
+          "packets": 2,
+          "dropped": 0
+        },
+        "1:2f": {
+          "bytes": 2756,
+          "packets": 2,
+          "dropped": 0
+        }
+      }
+    },
+    "outer_receive": {
+      "sizes": {
+        "1372": {
+          "sent": 1,
+          "arrived": 0,
+          "absent": 1
+        },
+        "1480": {
+          "sent": 1,
+          "arrived": 0,
+          "absent": 1
+        }
+      },
+      "absent_sender_packets": [
+        6,
+        9
+      ],
+      "unmatched_receiver_packets": 0
+    }
+  }
+]

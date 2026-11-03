@@ -1,0 +1,186 @@
+[
+  {
+    "name": "router-upload",
+    "result": {
+      "code": 0,
+      "stdout": "{\"direction\": \"upload\", \"bytes\": 64064, \"expected\": 64064, \"connected\": true, \"error\": \"\", \"pmtu\": 1000, \"socket_mss\": 948, \"elapsed_ms\": 4.6597149994340725}\n",
+      "stderr": ""
+    },
+    "counter_delta": {
+      "d_019a00000000700080000000000000a1": {
+        "packets": 36,
+        "bytes": 7125
+      },
+      "u_019a00000000700080000000000000a1": {
+        "packets": 85,
+        "bytes": 79961
+      }
+    },
+    "forwarded": {
+      "upload": {
+        "bytes": 79961,
+        "packets": 85
+      },
+      "download": {
+        "bytes": 7125,
+        "packets": 36
+      }
+    },
+    "tc_delta": {
+      "fv-ih": {
+        "1:1": {
+          "bytes": 81151,
+          "packets": 85,
+          "dropped": 0
+        },
+        "1:2f": {
+          "bytes": 81151,
+          "packets": 85,
+          "dropped": 0
+        }
+      },
+      "fv-fh": {
+        "1:1": {
+          "bytes": 7629,
+          "packets": 36,
+          "dropped": 0
+        },
+        "1:2f": {
+          "bytes": 7629,
+          "packets": 36,
+          "dropped": 0
+        }
+      }
+    },
+    "outer_receive": {
+      "sizes": {
+        "124": {
+          "sent": 26,
+          "arrived": 26,
+          "absent": 0
+        },
+        "636": {
+          "sent": 10,
+          "arrived": 10,
+          "absent": 0
+        }
+      },
+      "absent_sender_packets": [],
+      "unmatched_receiver_packets": 0
+    }
+  },
+  {
+    "name": "router-time-exceeded",
+    "result": {
+      "code": 1,
+      "stdout": "PING 203.0.113.34 (203.0.113.34) 56(84) bytes of data.\n\n--- 203.0.113.34 ping statistics ---\n1 packets transmitted, 0 received, 100% packet loss, time 0ms\n\n",
+      "stderr": ""
+    },
+    "counter_delta": {
+      "ctdenyd": {
+        "packets": 1,
+        "bytes": 112
+      },
+      "u_019a00000000700080000000000000a1": {
+        "packets": 1,
+        "bytes": 84
+      }
+    },
+    "forwarded": {
+      "upload": {
+        "bytes": 84,
+        "packets": 1
+      },
+      "download": {
+        "bytes": 0,
+        "packets": 0
+      }
+    },
+    "tc_delta": {
+      "fv-ih": {
+        "1:1": {
+          "bytes": 98,
+          "packets": 1,
+          "dropped": 0
+        },
+        "1:2f": {
+          "bytes": 98,
+          "packets": 1,
+          "dropped": 0
+        }
+      },
+      "fv-fh": {}
+    },
+    "outer_receive": {
+      "sizes": {},
+      "absent_sender_packets": [],
+      "unmatched_receiver_packets": 0
+    }
+  },
+  {
+    "name": "router-unsolicited",
+    "result": {
+      "code": 0,
+      "stdout": "{\"injected\": true, \"type\": 3, \"code\": 4}\n",
+      "stderr": ""
+    },
+    "counter_delta": {
+      "ctinv": {
+        "packets": 1,
+        "bytes": 56
+      }
+    },
+    "forwarded": {
+      "upload": {
+        "bytes": 0,
+        "packets": 0
+      },
+      "download": {
+        "bytes": 0,
+        "packets": 0
+      }
+    },
+    "tc_delta": {
+      "fv-ih": {},
+      "fv-fh": {}
+    },
+    "outer_receive": {
+      "sizes": {},
+      "absent_sender_packets": [],
+      "unmatched_receiver_packets": 0
+    }
+  },
+  {
+    "name": "router-denied-upload",
+    "result": {
+      "code": 1,
+      "stdout": "PING 192.168.34.1 (192.168.34.1) 56(84) bytes of data.\n\n--- 192.168.34.1 ping statistics ---\n1 packets transmitted, 0 received, 100% packet loss, time 0ms\n\n",
+      "stderr": ""
+    },
+    "counter_delta": {
+      "ctdeny": {
+        "packets": 1,
+        "bytes": 84
+      }
+    },
+    "forwarded": {
+      "upload": {
+        "bytes": 0,
+        "packets": 0
+      },
+      "download": {
+        "bytes": 0,
+        "packets": 0
+      }
+    },
+    "tc_delta": {
+      "fv-ih": {},
+      "fv-fh": {}
+    },
+    "outer_receive": {
+      "sizes": {},
+      "absent_sender_packets": [],
+      "unmatched_receiver_packets": 0
+    }
+  }
+]

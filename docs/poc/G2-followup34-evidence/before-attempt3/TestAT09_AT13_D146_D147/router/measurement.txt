@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/work/tests/netlab/scripts/f34_paths.py", line 289, in <module>
+    measure(mode)
+  File "/work/tests/netlab/scripts/f34_paths.py", line 262, in measure
+    rows.append(phase('router-unsolicited', roles, 'fv-inet', 'python3', '-B', script, 'unsolicited'))
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/work/tests/netlab/scripts/f34_paths.py", line 203, in phase
+    raise RuntimeError('incomplete capture '+stem)
+RuntimeError: incomplete capture router-unsolicited-node
