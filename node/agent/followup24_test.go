@@ -34,6 +34,7 @@ func TestISO_F6_ForeignStillPresentWithholdsNewACK(t *testing.T) {
 			r.eng.plane = p
 			stepOK(t, r)
 			p.ex.foreignTC = true
+			requireApplyChangeForTest(r)
 			stepOK(t, r)
 			if r.eng.containment == nil || len(r.eng.containment.TC) == 0 {
 				t.Fatal("missing rejected read")

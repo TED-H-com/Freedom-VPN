@@ -6,6 +6,8 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io"
 	"log/slog"
 	"maps"
 	"net/netip"
@@ -72,28 +74,38 @@ type Engine struct {
 	meterSource meter.Source
 	ownStore    bool
 
-	usage          *usagestore.Store
-	meter          *meter.Meter
-	kernel         *kernelSource
-	expectServing  atomic.Bool
-	uploader       *usageupload.Uploader
-	usageOnce      bool
-	sampleOn       bool
-	finalDone      bool
-	finalBarrierID string
-	usageLock      *nodelock.Lock
-	shutUsage      bool
-	meterSnap      []enforce.Binding
-	usageOutbox    bool
-	usageDisk      bool
-	usagePersist   bool
-	loopCtx        context.Context
-	loopCancel     context.CancelFunc
-	loops          sync.WaitGroup
-	closeOnce      sync.Once
-	closeDone      chan struct{}
-	closeCtx       context.Context
-	closeErr       error
+	usage           *usagestore.Store
+	meter           *meter.Meter
+	kernel          *kernelSource
+	expectServing   atomic.Bool
+	uploader        *usageupload.Uploader
+	usageOnce       bool
+	usageAdopting   bool
+	uploadOn        bool
+	sampleOn        bool
+	finalDone       bool
+	epochClosed     bool // ledger is closed; independent of barrier publication
+	finalBarrierID  string
+	usageLock       *nodelock.Lock
+	shutUsage       bool
+	meterSnap       []enforce.Binding
+	restartDesired  *api.DesiredState
+	restartBindings []enforce.Binding
+	restartIntent   *usageIntent
+	retainedPending bool
+	runCtx          context.Context
+	usageOutbox     bool
+	usageDisk       bool
+	usagePersist    bool
+	loopCtx         context.Context
+	loopCancel      context.CancelFunc
+	loops           sync.WaitGroup
+	closeOnce       sync.Once
+	closeDone       chan struct{}
+	bootDone        chan struct{}
+	bootSafe        atomic.Bool
+	closeCtx        context.Context
+	closeErr        error
 
 	// usageStatus is the open store, read when an observation is built.
 	// Nil before the store opens and after it closes. usageStatusBound
@@ -127,6 +139,8 @@ type Engine struct {
 	leaseBoot            uuid.UUID
 	highestIssued        time.Time
 	leaseFresh           bool
+	leaseJitter          renewalJitter
+	renewRandom          io.Reader // nil uses crypto/rand.Reader; injected by tests
 	leaseRefreshPending  bool
 	anchor               timeanchor.Anchor
 	anchorOK             bool
@@ -194,6 +208,7 @@ type Engine struct {
 	healthSig   string
 	// probeChallenge records the issuance already installed by this process.
 	probeChallenge  *healthattest.Challenge
+	probeCleanup    *probeCleanup
 	probedChallenge *healthattest.Challenge
 	// desiredSynced is set when a verified document was loaded, or when this
 	// process received a desired-state response (200, 304, or revocation).
@@ -313,11 +328,16 @@ func (e *Engine) Close() error {
 	// finishes or the process exits; never close a store under a live sampler.
 	e.closeOnce.Do(func() {
 		var cancel context.CancelFunc
-		e.closeCtx, cancel = newLocalBudget(context.Background(), 3*time.Second)
+		e.closeCtx, cancel = newLocalBudget(context.Background(), closeLocalBudget)
 		e.closeDone = make(chan struct{})
 		go func() {
 			defer cancel()
 			defer close(e.closeDone)
+			// A timed-out Boot may still own SQLite or a kernel operation. Never
+			// close underneath it; the caller's Close deadline still bounds exit.
+			if e.bootDone != nil {
+				<-e.bootDone
+			}
 			e.shutdownUsage(e.closeCtx)
 			if e.client != nil {
 				e.client.Close()
@@ -412,9 +432,88 @@ func (e *Engine) loadIdentity(ctx context.Context) error {
 	return nil
 }
 
+// bootLocalBudget is ONE deadline for all Boot stages, including adoption's
+// cleanup, recovery, ledger reconciliation and final settlement. Close has a
+// separate three-second allowance: cooperative Boot + Close is at most 13s
+// under TimeoutStopSec=15s. Control I/O and lock waits additionally follow TERM.
+const bootLocalBudget = 10 * time.Second
+const closeLocalBudget = 3 * time.Second
+
+// ErrBoot distinguishes failure to establish startup safety from an ordinary
+// stop after Boot completed. The command must retain it even under TERM.
+var ErrBoot = errors.New("agent: boot failed")
+
+func bootLocal(caller context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
+	control, stop := context.WithTimeout(caller, timeout)
+	ctx, cancel := newLocalBudget(context.WithValue(caller, controlBudgetKey{}, control), timeout)
+	return ctx, func() { stop(); cancel() }
+}
+
 // Boot adopts a verified same-boot ruleset or installs the fail-closed baseline.
 // Reboot/clock loss still requires new authorization (§16.3).
-func (e *Engine) Boot(ctx context.Context) error {
+func (e *Engine) Boot(caller context.Context) error {
+	return e.bootWithBudget(caller, bootLocalBudget)
+}
+
+// Like Close, Boot also bounds synchronous filesystem work or an executor
+// that fails to honor cancellation. Ownership stays with the worker until it
+// finishes or the process exits; Close waits instead of closing its stores.
+func (e *Engine) bootWithBudget(caller context.Context, timeout time.Duration) error {
+	e.runCtx = caller
+	ctx, cancel := bootLocal(caller, timeout)
+	e.bootDone = make(chan struct{})
+	e.bootSafe.Store(false)
+	result := make(chan error, 1)
+	go func() {
+		defer close(e.bootDone)
+		defer cancel()
+		result <- e.boot(ctx)
+	}()
+	select {
+	case err := <-result:
+		return err
+	case <-ctx.Done():
+		select {
+		case err := <-result:
+			return err
+		default:
+			// TERM after a completed baseline is a normal stop even if optional
+			// ledger work is still finishing. Return cancellation so Run never
+			// enters Step concurrently with that worker; Close waits for ownership.
+			if e.bootSafe.Load() && caller.Err() != nil {
+				return caller.Err()
+			}
+			return fmt.Errorf("%w: local deadline: %w", ErrBoot, ctx.Err())
+		}
+	}
+}
+
+func (e *Engine) boot(ctx context.Context) (bootErr error) {
+	caller := controlContext(ctx)
+	previous, _ := watchdog.ReadHeartbeat(e.cfg.HeartbeatPath)
+	// Publish uncertainty before any stage can block. Adoption checks the
+	// captured prior receipt, never this new startup heartbeat (r22 M-3).
+	e.serving, e.baselineOK = false, false
+	e.policyExpires = 0
+	if err := e.bootHeartbeat(ctx); err != nil {
+		return fmt.Errorf("%w: heartbeat: %w", ErrBoot, err)
+	}
+	defer func() {
+		if bootErr == nil && ctx.Err() != nil {
+			if e.bootSafe.Load() && caller.Err() != nil {
+				bootErr = caller.Err()
+			} else {
+				bootErr = fmt.Errorf("%w: local deadline: %w", ErrBoot, ctx.Err())
+			}
+		}
+		if bootErr != nil || ctx.Err() != nil {
+			e.serving = false
+			e.policyExpires = 0
+		}
+		if err := e.bootHeartbeat(ctx); err != nil && bootErr == nil && ctx.Err() == nil {
+			bootErr = fmt.Errorf("%w: heartbeat: %w", ErrBoot, err)
+		}
+	}()
 	if p, ok := e.plane.(interface{ MissingExecutables() []string }); ok {
 		missing := p.MissingExecutables()
 		e.dependencyMissing = len(missing) != 0
@@ -425,7 +524,10 @@ func (e *Engine) Boot(ctx context.Context) error {
 	if err := e.loadRuntime(ctx); err != nil {
 		e.storageOK = false
 		_ = e.baseline(ctx)
-		return err
+		e.serving, e.leaseFresh = false, false
+		e.policyExpires = 0
+		e.decision = Decide(e.input())
+		return fmt.Errorf("%w: runtime: %w", ErrBoot, err)
 	}
 	e.leaseFresh = false
 	e.serving = false
@@ -434,32 +536,67 @@ func (e *Engine) Boot(ctx context.Context) error {
 	if e.identityFrozen && !e.freezeDurable {
 		e.persistFreeze(ctx)
 	}
-	if e.adoptStoredServing(ctx) {
-		e.beat()
+	e.captureRestartBindings(ctx)
+	// Lock waits, the probe and the resolver refresh follow the caller: a
+	// stop request ends them and refuses adoption.
+	rejected := e.applyError
+	if e.adoptStoredServing(ctx, previous) {
 		e.answerHealthOnBoot(ctx)
 		return nil
 	}
+	e.baselineOK = false
 	dp, err := e.cfg.DatapathValue()
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: datapath: %w", ErrBoot, err)
 	}
 	err = e.baselineCall("boot_unverified", func() error { return e.plane.Baseline(ctx, dp) })
+	err = errors.Join(err, ctx.Err())
 	e.baselineOK = err == nil
 	e.serving, e.leaseFresh = false, false
 	e.policyExpires = 0
-	e.ensureUsage(ctx)
+	if e.baselineOK && e.applyError != nil && e.applyError != rejected && !e.quarantinePending {
+		// The refused adoption's live read is retained as serving-read
+		// evidence and logged. Its candidate was never installed, and the
+		// verified baseline replaced the rules it read. It must not block the
+		// ACK of a later non-serving generation (r20 M-3). Quarantine keeps
+		// its error until the containment owner's repair path clears it.
+		e.applyError = nil
+	}
+	if e.baselineOK {
+		// This receipt must precede migration, source reads and settlement.
+		// No timeout publisher races the worker's filesystem ownership.
+		if err := e.bootHeartbeat(ctx); err != nil {
+			return fmt.Errorf("%w: heartbeat: %w", ErrBoot, err)
+		}
+		e.bootSafe.Store(true)
+		e.retainedPending = true
+		e.setMeterBindings(e.restartBindings)
+		e.ensureUsage(ctx)
+		e.settleRetainedUsage(ctx)
+	}
+	e.readMeter(ctx)
 	e.decision = Decide(e.input())
-	e.beat()
 	// A stored document that is still inside its validity window can be
 	// answered at start. A missing document, or one that expired while the
-	// process was stopped, is not a DNS result yet.
-	e.answerHealthOnBoot(ctx)
+	// process was stopped, is not a DNS result yet. A canceled probe is not
+	// a health answer.
+	if err != nil {
+		return fmt.Errorf("%w: baseline: %w", ErrBoot, err)
+	}
+	if caller.Err() == nil && ctx.Err() == nil {
+		e.answerHealthOnBoot(ctx)
+	}
 	return nil
 }
 
 // Run boots, then steps until ctx ends.
 func (e *Engine) Run(ctx context.Context) error {
 	if err := e.Boot(ctx); err != nil {
+		return err
+	}
+	// A TERM'd Boot can successfully finish its local baseline. Do not start
+	// a new Step audit/budget before Close after that completed stop request.
+	if err := ctx.Err(); err != nil {
 		return err
 	}
 	interval := e.stepInterval()
@@ -494,6 +631,9 @@ func (e *Engine) Run(ctx context.Context) error {
 // Failed requests and replayed expired leases retry at the control cadence,
 // rather than spinning on an already elapsed deadline. Retry-After wins.
 func (e *Engine) nextStepDelay(interval time.Duration) time.Duration {
+	if e.retainedPending {
+		interval = min(interval, meter.DefaultSampleInterval)
+	}
 	if e.serving && e.policyExpires > 0 {
 		interval = min(interval, max(0, e.policyExpires-e.clock.Mono()))
 	}
@@ -533,7 +673,6 @@ func (e *Engine) Step(ctx context.Context) error {
 	ctx, cancelLocal := newLocalBudget(ctx, e.controlPassTimeout()+5*time.Second)
 	defer cancelLocal()
 	defer e.finishServingStep(ctx)
-	previousDesired, previousLease := e.desired, e.lease
 	e.staleHold.counted = false
 	e.leaseAttempted = false
 	if err := caller.Err(); err != nil {
@@ -554,6 +693,17 @@ func (e *Engine) Step(ctx context.Context) error {
 	}
 	if !e.enrolled {
 		return nil
+	}
+	// Re-decide at a binding boundary; only a non-serving decision withdraws.
+	e.expireServing(ctx)
+	// Do not replace persisted desired provenance or bindings while a restart
+	// delta is pending. A held sample retries with forwarding still withdrawn.
+	if e.retainedPending {
+		e.ensureUsage(ctx)
+		if !e.settleRetainedUsage(ctx) {
+			e.decision = Decide(e.input())
+			return nil
+		}
 	}
 	// Check the retained model before Apply can overwrite evidence of drift.
 	// A valid same-generation mismatch is repaired immediately after retaining
@@ -616,19 +766,8 @@ func (e *Engine) Step(ctx context.Context) error {
 		e.outboxFull = len(pending) >= 32
 	}
 	e.evaluate(ctx)
-	// A timed-out control pass did not authorize a new policy. Keep the
-	// just-verified generation instead of re-installing the same expiring
-	// allowset on each outage retry. No guard/timeout is reset by this path.
-	retain := ioCtx.Err() != nil && e.serving && e.decision.Serve && e.applyError == nil &&
-		previousDesired == e.desired && previousLease == e.lease && e.appliedModel != nil &&
-		e.appliedGen == e.decision.Model.Generation && e.policyExpires == e.decision.PolicyExpires &&
-		len(e.pendingRevoke) == 0 && !e.memberPathPending && !e.quarantinePending
-	if retain {
-		e.checkMemberPath(ctx, *e.appliedModel)
-	} else {
-		if err := e.enforce(ctx, e.decision); err != nil && ctx.Err() != nil {
-			return err
-		}
+	if err := e.enforce(ctx, e.decision); err != nil && ctx.Err() != nil {
+		return err
 	}
 	// The generation this step just applied is visible only after enforce.
 	// The matching lease is requested before heartbeat and observation.
@@ -654,6 +793,7 @@ func (e *Engine) loadRuntime(ctx context.Context) error {
 			return err
 		}
 		e.appliedModel, e.appliedAssignments = &retained.Model, retained.Assignments
+
 	}
 
 	if raw, ok, err := e.store.Meta(ctx, "member_path"); err != nil {
@@ -686,6 +826,11 @@ func (e *Engine) loadRuntime(ctx context.Context) error {
 		if !accept {
 			now = e.clock.Wall()
 		}
+		// Accounting provenance survives document expiry; it is never serving
+		// authorization. Keep the persisted document before any control refresh.
+		if ds, err := verifyDesired(d.Envelope, e.trust, now); err == nil && ds.NodeId == e.nodeID && ds.NodeIncarnationId == e.incID {
+			e.restartDesired = &ds
+		}
 		if ds, err := verifyDesired(d.Envelope, e.trust, now); err == nil && desiredInForce(ds, e.nodeID, e.incID, now) {
 			e.desired = &ds
 			e.desiredETag = d.ETag
@@ -710,6 +855,7 @@ func (e *Engine) loadRuntime(ctx context.Context) error {
 		e.leaseMono = l.MonoSent
 		e.leaseBoot = l.BootID
 		e.highestIssued = l.HighestIssuedAt
+		e.leaseJitter = renewalJitter{valid: true, id: l.ID, issued: l.IssuedAt, value: l.RenewalJitter}
 	}
 	var err error
 	if e.assignments, err = e.store.QoS(ctx); err != nil {
@@ -781,7 +927,7 @@ func (e *Engine) input() Input {
 		RevocationPending: len(e.pendingRevoke) > 0, ConntrackBlocked: e.conntrackBlocked,
 		ConntrackDetail: e.conntrackDetail,
 		OutboxFull:      e.outboxFull, MeterFailed: e.meterFailed,
-		UsageOutbox: e.usageOutbox, UsageDisk: e.usageDisk, UsagePersist: e.usagePersist,
+		UsageOutbox: e.usageOutbox, UsageDisk: e.usageDisk, UsagePersist: e.usagePersist || e.retainedPending,
 		ProbeRan: e.lastProbe.Ran && e.probeOmitted == "", ProbeCheck: e.lastProbe.Check, ProbeHealth: e.lastProbe.Health,
 		ProbeSource: e.probeSource, ProbeOmitted: e.probeOmitted, ProbeOmittedAt: e.probeOmittedAt,
 		DNSDocument: e.dnsDocument, DNSFailed: e.dnsFailed, DNSCode: e.dnsCode, DNSDetail: e.dnsDetail,
@@ -799,7 +945,7 @@ func (e *Engine) refreshProbe(ctx context.Context) {
 		published := e.desired != nil && e.desired.PublicationIntent == api.PublicationIntentPublished
 		targets, timeout, source, bad := egressTargets(e.desired, e.desiredOK, e.cfg.EgressProbeTarget)
 		e.probeSource = probeSourceDetail(source, bad)
-		e.lastProbe = p.Probe(ctx, ProbeRequest{
+		e.lastProbe = p.Probe(controlContext(ctx), ProbeRequest{
 			Published: published,
 			Targets:   targets,
 			Timeout:   timeout,
@@ -895,6 +1041,10 @@ func (e *Engine) recoverOnce(ctx context.Context) {
 	}
 	cmd := exec.CommandContext(ctx, e.cfg.UpdaterRecover, "recover", "-config", e.cfg.UpdaterConfig)
 	err := cmd.Run()
+	if ctx.Err() != nil {
+		e.recovered = false // interrupted recovery supplies no failure evidence
+		return
+	}
 	if err == nil {
 		e.recoverBlocked = false
 		return
@@ -922,21 +1072,28 @@ func (e *Engine) baseline(ctx context.Context) error {
 	}
 	e.baselineOK = true
 	e.policyExpires = 0
+	if e.probeCleanup != nil {
+		// A full verified baseline also removes probe rules and sets. It can
+		// complete an earlier failed narrow clear without reinstalling it.
+		e.recordProbeCleared(ctx)
+	}
 	return nil
 }
 
 func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	baselineOK, meterFailed, applyError := e.baselineOK, e.meterFailed, e.applyError
 	storageOK, revocationPending := e.storageOK, len(e.pendingRevoke) > 0
+	usagePersist, retainedPending, serving := e.usagePersist, e.retainedPending, e.serving
 	blocked := e.conntrackBlocked
 	defer func() {
 		pendingChanged := revocationPending != (len(e.pendingRevoke) > 0)
 		blockedChanged := blocked != e.conntrackBlocked
-		if pendingChanged || blockedChanged {
+		usageChanged := usagePersist != e.usagePersist || retainedPending != e.retainedPending || serving != e.serving
+		if pendingChanged || blockedChanged || usageChanged {
 			// Publish the new pending or failed-closed condition on this tick.
 			e.lastObs = time.Time{}
 		}
-		if baselineOK != e.baselineOK || meterFailed != e.meterFailed || applyError != e.applyError || storageOK != e.storageOK || pendingChanged || blockedChanged {
+		if baselineOK != e.baselineOK || meterFailed != e.meterFailed || applyError != e.applyError || storageOK != e.storageOK || pendingChanged || blockedChanged || usageChanged {
 			errs := e.decision.Errors
 			e.decision = Decide(e.input())
 			for _, err := range errs {
@@ -946,6 +1103,9 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 			}
 		}
 	}()
+	if e.retainedPending && !e.settleRetainedUsage(ctx) {
+		return nil
+	}
 	if e.conntrackAttempts >= maxConntrackDeleteAttempts {
 		e.conntrackBlocked = true
 		e.conntrackDetail = conntrackBoundDetail
@@ -1016,6 +1176,37 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		e.withdraw(ctx)
 		return nil
 	}
+	e.planeLocked = true
+	defer func() { e.planeLocked = false }()
+	if !closedRecovery && e.canRetainServing(ctx, d) {
+		// Same installed model, but fresh live evidence is still mandatory.
+		// Failures take the ordinary reject/quarantine/withdraw path; no
+		// cached evidence or elapsed control timeout authorizes a skip.
+		if !e.verifyServingModel(ctx, *e.appliedModel, e.appliedAssignments) ||
+			e.expireServing(ctx) || !e.checkMemberPath(ctx, *e.appliedModel) {
+			return nil
+		}
+		// Either local read can cross a binding deadline. Rebuild before
+		// skipping; survivors must reach ordinary Apply on this same tick.
+		d = Decide(e.input())
+		e.decision = d
+		if !d.Serve {
+			e.withdraw(ctx)
+			return nil
+		}
+		if e.canRetainServing(ctx, d) {
+			// A reset may have rotated the head since the last Apply. Persist
+			// first; recordUsageIntent publishes memory only after that write.
+			// A crash before it retains the older, continuity-scoped intent.
+			if err := e.recordUsageIntent(ctx, d.Model); err != nil {
+				e.usagePersist = true
+				e.withdraw(ctx)
+				return nil
+			}
+			e.beat()
+			return nil
+		}
+	}
 	if !closedRecovery {
 		if err := e.invalidateMeterCheckpoint(); err != nil {
 			e.usagePersist = true
@@ -1023,8 +1214,6 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 			return err
 		}
 	}
-	e.planeLocked = true
-	defer func() { e.planeLocked = false }()
 	model := d.Model
 	queued := planRevokes(e.pendingRevoke, e.addresses, model.Bindings)
 	model.Revoke = queued
@@ -1057,15 +1246,34 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		// Without a valid pre-Apply candidate the old expectation still applies.
 	}
 	wasServing := e.expectServing.Load()
-	if !closedRecovery && e.meter != nil && e.finalDone {
+	if !closedRecovery && !e.epochClosed && len(e.meterBindings()) != 0 && !sameUsageBindings(e.meterBindings(), model.Bindings) {
+		if e.onlyExpiredBindingsRemoved(model) {
+			if !e.settleExpiredBindings(ctx) {
+				return nil
+			}
+		} else {
+			// A sample while the old rules still forward leaves a race before
+			// Apply. Withdraw first, then commit every outgoing delta (r22 H-1).
+			e.handoff(ctx)
+			if !e.epochClosed || e.retainedPending || e.usagePersist || !e.baselineOK {
+				if !e.baselineOK {
+					_ = e.baseline(ctx) // keep the fail-closed retry on this call site too
+				}
+				return nil
+			}
+		}
+	}
+	if !closedRecovery && e.meter != nil && e.epochClosed {
 		// A closed epoch must be replaced before Apply can admit the first
 		// packet. Keep the sampler paused across this real durable read.
 		e.finalDone = false
+		e.setMeterBindings(nil) // a fresh baseline has no retired attribution
 		if err := e.meter.PrepareSampling(ctx); err != nil {
 			e.usagePersist = true
 			e.withdraw(ctx)
 			return err
 		}
+		e.epochClosed = false
 	}
 	timing := &applyReadTiming{now: e.clock.Wall}
 	host := e.measureHostBeforeApply()
@@ -1082,6 +1290,21 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		if err := e.reserveConntrack(ctx, model); err != nil {
 			e.withdraw(ctx)
 			return err
+		}
+	}
+	if !closedRecovery {
+		if err := e.recordUsageIntent(ctx, model); err != nil {
+			// Admission has not run. Report the usage persistence failure,
+			// not a fabricated Apply health-check failure (r23 H-2/H-3).
+			if ctx.Err() != nil {
+				// Retain the cancellation diagnostic and independent cleanup
+				// budget for a canceled enforcement attempt (R18 Q4).
+				e.rejectServing(ctx, model, enforce.ServingEvidence{}, ctx.Err())
+			} else {
+				e.withdraw(ctx)
+			}
+			e.usagePersist = true
+			return nil
 		}
 	}
 	res, err := e.plane.Apply(applyCtx, model, prev)
@@ -1299,24 +1522,26 @@ func (e *Engine) beat() {
 		return
 	}
 	reason := "-"
+	d := e.reportingDecision()
 	if e.serving {
 		reason = "serving"
-	} else if len(e.decision.Reasons) > 0 {
-		reason = string(e.decision.Reasons[0])
+	} else if len(d.Reasons) > 0 {
+		reason = string(d.Reasons[0])
 	}
-	if e.memberPathPending && !e.quarantinePending {
+	if e.memberPathPending && !e.quarantinePending && e.applyError != nil && e.applyError.Message == "member_path_unconfigured" {
 		reason = "member_path_unconfigured"
 	}
 	if e.identityFrozen {
 		reason = "identity_frozen"
 	}
+	expires := e.servingDeadline()
 	err := watchdog.WriteHeartbeat(e.cfg.HeartbeatPath, watchdog.Beat{
 		BootID: e.bootID, Mono: mono, Wall: e.clock.Wall().UTC(),
-		PolicyExpires: e.policyExpires, BaselineOK: e.baselineOK, Serving: e.serving,
+		PolicyExpires: expires, BaselineOK: e.baselineOK, Serving: e.serving,
 		Generation: e.appliedGen, Reason: reason, Evidence: e.containmentJSON(),
 	})
 	e.writeMeasurement(Measurement{Source: "heartbeat", Heartbeat: &MeasurementHeartbeat{
-		Mono: mono, PolicyExpires: e.policyExpires, Generation: decstr.U64(e.appliedGen),
+		Mono: mono, PolicyExpires: expires, Generation: decstr.U64(e.appliedGen),
 		BaselineOK: e.baselineOK, Serving: e.serving, Reason: reason, Written: err == nil,
 	}})
 	if err != nil {

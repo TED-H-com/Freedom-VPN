@@ -1,0 +1,71 @@
+// TEST ONLY build-overlay fixture. Never part of a production build.
+package agent
+
+import (
+	"context"
+	"encoding/json"
+	"os"
+	"syscall"
+	"time"
+
+	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
+)
+
+type f43Span struct {
+	Kind          string        `json:"kind"`
+	Start         time.Duration `json:"start_ns,string"`
+	End           time.Duration `json:"end_ns,string"`
+	ServingBefore bool          `json:"serving_before"`
+	ServingAfter  bool          `json:"serving_after"`
+	ReachedApply  bool          `json:"reached_apply"`
+	ReturnedError bool          `json:"returned_error"`
+	UsagePersist  bool          `json:"usage_persist"`
+	RunID         string        `json:"run_id"`
+	BootID        string        `json:"boot_id"`
+}
+
+func (e *Engine) f43Span(kind string) *f43Span {
+	if !e.measurementEnabled() {
+		return nil
+	}
+	start, _ := timeanchor.Mono()
+	return &f43Span{Kind: kind, Start: start, ServingBefore: e.serving}
+}
+
+func (s *f43Span) stop() {
+	if s != nil && s.End == 0 {
+		s.End, _ = timeanchor.Mono()
+	}
+}
+
+func (s *f43Span) write(e *Engine) {
+	if s == nil {
+		return
+	}
+	s.stop()
+	s.ServingAfter, s.UsagePersist = e.serving, e.usagePersist
+	s.RunID, s.BootID = e.measurementRun.String(), e.bootID.String()
+	f, err := os.OpenFile(e.cfg.TestTimingPath+".f43-spans", os.O_WRONLY|os.O_CREATE|os.O_APPEND|syscall.O_NOFOLLOW|syscall.O_NONBLOCK, 0o600)
+	if err != nil {
+		e.log.Warn("f43 span unavailable")
+		return
+	}
+	defer f.Close()
+	st, err := f.Stat()
+	if err != nil || !st.Mode().IsRegular() || json.NewEncoder(f).Encode(s) != nil {
+		e.log.Warn("f43 span unavailable")
+	}
+}
+
+// Includes the original Step's deferred verification, heartbeat and cleanup.
+// The new span's serialization is outside its bracket; existing measurement
+// I/O and the pre-Apply span's deferred write remain part of Step cost.
+func (e *Engine) Step(ctx context.Context) error {
+	s := e.f43Span("whole_step")
+	err := e.f43OriginalStep(ctx)
+	if s != nil {
+		s.ReturnedError = err != nil
+		s.write(e)
+	}
+	return err
+}

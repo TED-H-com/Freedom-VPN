@@ -42,7 +42,7 @@ func TestD112_ProductionSamplingInterval(t *testing.T) {
 			return true
 		}
 		sel, ok := call.Fun.(*ast.SelectorExpr)
-		if !ok || sel.Sel.Name != "New" {
+		if !ok || (sel.Sel.Name != "New" && sel.Sel.Name != "NewContext") {
 			return true
 		}
 		pkg, ok := sel.X.(*ast.Ident)
@@ -50,7 +50,7 @@ func TestD112_ProductionSamplingInterval(t *testing.T) {
 			return true
 		}
 		found++
-		cfg, ok := call.Args[0].(*ast.CompositeLit)
+		cfg, ok := call.Args[len(call.Args)-1].(*ast.CompositeLit)
 		if !ok {
 			t.Error("review production meter configuration against D-112")
 			return true

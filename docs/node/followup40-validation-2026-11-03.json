@@ -1,0 +1,441 @@
+{
+  "followup": 40,
+  "date": "2026-11-03",
+  "status": "all requested functional gates passed; D-133 not yet run",
+  "runtime_equivalence": {
+    "node_gate_runtime_commit": "da63e733",
+    "production_commit": "5d964d2a",
+    "changed_non_test_go_files": []
+  },
+  "production": {
+    "source": "5d964d2a05111e86ca881f6c1a103e7617909ce5",
+    "main": "090bb97b88b4062073a487c82676d0e1faca4fac",
+    "archive_sha256": "17da6860c865f68f82069c597279e3ab27393475ecc3eafe3694e5bbd4643b72",
+    "verified_blobs": 18528,
+    "functional_only": true,
+    "optional_timing_export": false,
+    "binary_sha256": {
+      "fvpn-agent": "7da70b08781616fdfe7a31488396889a2b2e534358e9c4872930610408726f5e",
+      "fvpn-watchdog": "8503e0d98ae2657e461833df2c6871a438046350bd3d8b3c0a6ec9860034e939",
+      "fvpn-labcontrol": "336faca23e599da379baef3d957877bbe148a40eceb5b9c109818aceaaf6fef8"
+    },
+    "fixture_image": {
+      "image_id": "sha256:7a61d563fcaefca1240be98cd6a22a0a938715bc35f5f31946e8ca6f968fbdc2"
+    },
+    "result": {
+      "gate": "production-netlab",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test-netlab",
+        "FVPN_LAB_PREFIX=fvpn-w2-agent-core-f40",
+        "MAKE=<admission-wrapper>"
+      ],
+      "exit": 0,
+      "source": "5d964d2a05111e86ca881f6c1a103e7617909ce5",
+      "functional_only": true,
+      "optional_timing_export": false
+    },
+    "passed_scenarios": [
+      "TestLabISO_F6_RecoveryAndEvidence",
+      "TestLabD087_D104_GrantRenewalExpiryCorrelation",
+      "TestLabUsageLedger",
+      "TestLabExternalMeterReset",
+      "TestLabF36_AT13_RestartChangedSetsStopsEstablishedFlow",
+      "TestLab08_HealthAttestationUnpublished",
+      "TestLab01_ForwardOnlyAfterLease",
+      "TestLab02_WatchdogEnforces",
+      "TestLab03_KernelTimeout",
+      "TestLab04_RestartKeepsVerifiedLease",
+      "TestLab05_NoAllowAllOnUpdate",
+      "TestLab07_UnpublishedBaselineAck",
+      "TestLab06_RevokedStopsForwarding"
+    ],
+    "skipped_optional_scenarios": [
+      "TestD116_AT10_InstallerMarkerEnrollment"
+    ]
+  },
+  "environment": {
+    "CGO_ENABLED": "0",
+    "GOTOOLCHAIN": "local",
+    "TMPDIR": ".agent/tmp",
+    "GOTMPDIR": ".agent/tmp",
+    "GOCACHE": "~/.cache/go-build",
+    "cache_source": "go env GOCACHE",
+    "admission": "bash \"$FVPN_HOLD_SH\" must print free before each Go test, make and Docker command",
+    "reservation_taken": false
+  },
+  "d141": {
+    "proof_source_commit": "26ffc36c",
+    "unmodified_import_commit": "dcdc3d96",
+    "pre_fix_product": "99f93112 plus main 61c7bf59 merged as 533fa0e3",
+    "original_finding_functions_failed": 6,
+    "original_held_functions_passed": 6,
+    "judgments": "followup40-r23-judgments-2026-11-03.md",
+    "original_proof_matches_source": true,
+    "h1a_corrected_expectation": "8192 attributed bytes plus exactly one genuine counter_discontinuity gap; 9216 and zero gaps were invalid",
+    "h1b_exact_absent_counter_trace": "labeled guard; a verified renderer creates idle zero counters, whose production-shaped proof also passes before the fix",
+    "main_comparison": "whole file has absent APIs; extracted H2 passes serving only, H3b does not reach the injected pre-Apply handoff, M1 reproduces open/unsettled epoch; AQ2 and AQ4 fail, AQ3 passes",
+    "r20_r21_r22_assertions_changed_in_40": false
+  },
+  "regression_coverage": [
+    "H-1a Sample reset and crash after Baseline",
+    "H-1b missing-idle guard, real idle-zero counters, and actual enforce repair switchEpoch",
+    "H-1c failed live-generation read and two restarts",
+    "reject earlier same-boot intent across final-sample/new-baseline boundary, including failed later intent write",
+    "H-2 barrier removal, replacement, ClosedCheckpoint read and atomic checkpoint publication failures, with and without restart",
+    "H-3a held/read/persist settlement and healed-final-sample reporting",
+    "H-3b baseline failure and H-3b-prime checkpoint invalidation race, with and without restart",
+    "M-1 first failed and second successful Baseline, with and without restart",
+    "real renderer counter preservation across remove/re-add and restart",
+    "r20 through r23 converted proofs and six r23 held tests",
+    "unchanged followup12, R16 through R19, consumers and blocking Boot/Close matrix"
+  ],
+  "shutdown_budget": {
+    "boot_seconds": 10,
+    "close_seconds": 3,
+    "shipped_timeout_stop_sec": 15,
+    "existing_combined_test_tolerance_ms": 300,
+    "blocking_matrix": "PASS; no budget or assertion changed; package test duration includes fixture setup"
+  },
+  "gates": [
+    {
+      "gate": "node-gates",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-lint",
+        "node-test",
+        "node-test-integration",
+        "node-build"
+      ],
+      "exit": 2,
+      "utc": "2026-11-03T13:30:06Z",
+      "receipt": ".agent/f40/node-gates.log"
+    },
+    {
+      "gate": "healing-before",
+      "command": [
+        "go",
+        "test",
+        "./node/agent",
+        "-run",
+        "^TestR23_H3a_Healing",
+        "-count=1",
+        "-v"
+      ],
+      "exit": 1,
+      "utc": "2026-11-03T13:30:15Z",
+      "receipt": ".agent/f40/healing-before.log"
+    },
+    {
+      "gate": "recovery-refinement",
+      "command": [
+        "go",
+        "test",
+        "./node/agent",
+        "-run",
+        "^Test(R23_|ReviewR18_Q4_CanceledApply)",
+        "-count=1"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:31:24Z",
+      "receipt": ".agent/f40/recovery-refinement.log"
+    },
+    {
+      "gate": "final-node-gates",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-lint",
+        "node-test",
+        "node-test-integration",
+        "node-build"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:36:43Z",
+      "receipt": ".agent/f40/final-node-gates.log"
+    },
+    {
+      "gate": "consumers",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./node/updater/...",
+        "./packaging/installer/..."
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:39:03Z",
+      "receipt": ".agent/f40/consumers.log"
+    },
+    {
+      "gate": "reviews",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./node/agent",
+        "./node/enforce",
+        "-run",
+        "^TestReviewR1[6-9]_"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:39:24Z",
+      "receipt": ".agent/f40/reviews.log"
+    },
+    {
+      "gate": "handover",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:39:29Z",
+      "receipt": ".agent/f40/handover.log"
+    },
+    {
+      "gate": "root-lint",
+      "command": [
+        "make",
+        "go-lint",
+        "go-with-disk-tmp=set -eu;"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:39:32Z",
+      "receipt": ".agent/f40/root-lint.log"
+    },
+    {
+      "gate": "vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:39:32Z",
+      "receipt": ".agent/f40/vet.log"
+    },
+    {
+      "gate": "evidence",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/netlab",
+        "-run",
+        "^TestCommittedEvidenceFiles_ValidAndHygieneClean$"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:39:35Z",
+      "receipt": ".agent/f40/evidence.log"
+    },
+    {
+      "gate": "fixture-hygiene",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/e2e",
+        "-run",
+        "^TestCommittedFixtureEvidence_ValidAndHygieneClean$"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:39:44Z",
+      "receipt": ".agent/f40/fixture-hygiene.log"
+    },
+    {
+      "gate": "final-r23",
+      "command": [
+        "go",
+        "test",
+        "./node/agent",
+        "-run",
+        "^TestR23_",
+        "-count=1"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:41:20Z",
+      "receipt": ".agent/f40/final-r23.log"
+    },
+    {
+      "gate": "production-netlab",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test-netlab",
+        "FVPN_LAB_PREFIX=fvpn-w2-agent-core-f40",
+        "MAKE=<admission-wrapper>"
+      ],
+      "exit": 0,
+      "source": "5d964d2a05111e86ca881f6c1a103e7617909ce5",
+      "functional_only": true,
+      "optional_timing_export": false,
+      "receipt": ".agent/f40/production/suite.log"
+    },
+    {
+      "gate": "final-root-lint",
+      "command": [
+        "make",
+        "go-lint",
+        "go-with-disk-tmp=set -eu;"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:53:43Z",
+      "receipt": ".agent/f40/final-root-lint.log"
+    },
+    {
+      "gate": "final-vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:53:43Z",
+      "receipt": ".agent/f40/final-vet.log"
+    },
+    {
+      "gate": "final-handover",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:53:47Z",
+      "receipt": ".agent/f40/final-handover.log"
+    },
+    {
+      "gate": "final-evidence",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/netlab",
+        "-run",
+        "^TestCommittedEvidenceFiles_ValidAndHygieneClean$"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:53:50Z",
+      "receipt": ".agent/f40/final-evidence.log"
+    },
+    {
+      "gate": "final-fixture-hygiene",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/e2e",
+        "-run",
+        "^TestCommittedFixtureEvidence_ValidAndHygieneClean$"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:53:59Z",
+      "receipt": ".agent/f40/final-fixture-hygiene.log"
+    },
+    {
+      "gate": "final-whole-module",
+      "command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T13:56:14Z",
+      "receipt": ".agent/f40/final-whole-module.log"
+    }
+  ],
+  "raw_receipt_pins": [
+    {
+      "path": ".agent/f40/before-r23.log",
+      "bytes": 5289,
+      "sha256": "19486e1a962920305522cc0e5a5a8923d24362d83e18c615c47c1dcaa7d02286"
+    },
+    {
+      "path": ".agent/f40/before-main-full.log",
+      "bytes": 966,
+      "sha256": "658659178a8085a78515886035080c89541722a87555bdb025a772eaa6767ae7"
+    },
+    {
+      "path": ".agent/f40/before-main-portable.log",
+      "bytes": 685,
+      "sha256": "3bb017ff433fbb9b9ecfba3352b70ec04d982c3ac7562152f65a76e9bfe1fe1f"
+    },
+    {
+      "path": ".agent/f40/before-main-m1.log",
+      "bytes": 473,
+      "sha256": "e7513286d2dbb1f77115f3d69a55364d795065650e63ab1b5920891274e8323a"
+    },
+    {
+      "path": ".agent/f40/main-held-portable.log",
+      "bytes": 1150,
+      "sha256": "bbca9adf552fdcd866996972686001b846c9037e0671e9b3274541a174e588b2"
+    },
+    {
+      "path": ".agent/f40/before-supplemental-2.log",
+      "bytes": 22207,
+      "sha256": "31d6487d8cf7f91ef170a86c2802df0169ec17099df90fd991eb0af20586d4c3"
+    },
+    {
+      "path": ".agent/f40/before-h3-prime.log",
+      "bytes": 854,
+      "sha256": "5879d4412ffc1af4592cab2914355799d465b8d9575478624968037970ac0b5f"
+    },
+    {
+      "path": ".agent/f40/healing-before.log",
+      "bytes": 4256,
+      "sha256": "de2fd7bc4b7d52685281bdd717e92990c0212b162d919e6a417d1781cb6b8d71"
+    },
+    {
+      "path": ".agent/f40/focused-regressions.log",
+      "bytes": 30376,
+      "sha256": "4b63c4b609bf6e83166729db606ea818c34ec91fb485efb7ee7a088c65424194"
+    },
+    {
+      "path": ".agent/f40/production/suite.log",
+      "bytes": 11816,
+      "sha256": "8301f9297086a2c99adfd780f52e510467736032140e906f5e6294f442938ab6"
+    }
+  ],
+  "inventory": {
+    "prefix": "fvpn-w2-agent-core-f40",
+    "removed_images": [],
+    "remaining": {
+      "containers": [],
+      "images": [],
+      "networks": [],
+      "volumes": []
+    }
+  },
+  "hygiene": {
+    "owned_paths_only": true,
+    "public_diff_clean": true,
+    "gofmt_empty": true,
+    "diff_check_clean": true,
+    "followup39_append_only": true,
+    "followup37_38_unchanged": true,
+    "consumers_enforcement_followup12_unchanged": true,
+    "original_r23_import_matches": true,
+    "compared_main": "090bb97b"
+  },
+  "timing": {
+    "reservation_taken": false,
+    "comparison_run": false,
+    "optional_whole_suite_timing_export": false,
+    "draft": "followup40-timing-draft-2026-11-03.md",
+    "status": "NOT YET RUN; orchestrator must schedule the later quiet A,B,A,B slot"
+  },
+  "limits": [
+    "Physical arm64 and field-network acceptance remain unmeasured.",
+    "Persistent failure of all kernel withdrawal commands leaves physical withdrawal unverified; report Serving=false and BaselineOK=false, retry, and retain existing expiry/watchdog backstops.",
+    "No quantitative serving Step performance conclusion is drawn."
+  ]
+}

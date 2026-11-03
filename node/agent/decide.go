@@ -89,14 +89,17 @@ type Input struct {
 
 // Decision is the forwarding choice for one step (§14.7, §16.3).
 type Decision struct {
-	Serve         bool
-	Reasons       []api.ForwardingBlockReason
-	Model         enforce.Model
-	Checks        []api.NodeCheck
-	Errors        []api.NodeError
-	Safety        api.SafetyStatus
-	Provisioning  api.ProvisioningState
-	Publication   api.PublicationIntent
+	Serve        bool
+	Reasons      []api.ForwardingBlockReason
+	Model        enforce.Model
+	Checks       []api.NodeCheck
+	Errors       []api.NodeError
+	Safety       api.SafetyStatus
+	Provisioning api.ProvisioningState
+	Publication  api.PublicationIntent
+	// PolicyExpires is the next installed binding boundary that needs a
+	// decision, or the node cap for an intentionally empty model. The watchdog
+	// uses servingDeadline instead, so one expiry cannot withdraw siblings.
 	PolicyExpires time.Duration
 	// Applied is the desired generation the baseline (or a serving apply)
 	// may acknowledge. Zero means this step does not acknowledge one.
@@ -651,9 +654,6 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 		}
 		window := timeanchor.Window(in.Lease.IssuedAt, ml.LeaseEnd, ml.EffectiveServiceEnd)
 		window = min(window, nodeWindow)
-		if !b.ValidUntil.IsZero() {
-			window = min(window, b.ValidUntil.Sub(in.Lease.IssuedAt))
-		}
 		deadline, ok := timeanchor.MemberDeadline(in.LeaseMonoSent, window)
 		if !ok {
 			continue
@@ -661,9 +661,17 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 		if timeanchor.Remaining(deadline, in.MonoNow) <= 0 {
 			continue
 		}
-		if deadline < policyExpires {
-			policyExpires = deadline
+		// Wake the agent at the first device or member boundary. The watchdog
+		// uses the last installed binding's deadline; each kernel element
+		// still expires independently of its siblings.
+		deviceDeadline := deadline
+		if !b.ValidUntil.IsZero() {
+			// Cap before adding the anchor: a distant wall deadline can make
+			// Sub saturate even though the admitted member window is short.
+			deviceWindow := min(window, b.ValidUntil.Sub(in.Lease.IssuedAt))
+			deviceDeadline = in.LeaseMonoSent + deviceWindow
 		}
+		policyExpires = min(policyExpires, deviceDeadline)
 		prefs, err := hostPrefixes(b.AllowedIpv4)
 		if err != nil || b.PeerId == "" {
 			return enforce.Model{}, 0, errCapacity
@@ -680,14 +688,10 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 			ValidFrom: b.ValidFrom, ValidUntil: b.ValidUntil,
 		})
 		admitted[b.MemberId] = true
-		if i, exists := leaseIndex[b.MemberId]; exists {
-			// One member lease can cover several devices. Retain the earliest
-			// applicable binding limit, independent of binding iteration order.
-			if deadline < *leases[i].DeadlineMono {
-				leases[i].DeadlineMono = &deadline
-			}
-		} else {
+		if _, exists := leaseIndex[b.MemberId]; !exists {
 			leaseIndex[b.MemberId] = len(leases)
+			// Member limits only. memberTimeout intersects these with each
+			// binding's own ValidUntil using the monotonic-derived model clock.
 			end := in.Lease.IssuedAt.Add(window)
 			leases = append(leases, enforce.MemberLease{
 				MemberID: b.MemberId, EffectiveServiceEnd: end, NodeLeaseEnd: end,

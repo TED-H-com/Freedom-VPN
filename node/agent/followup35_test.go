@@ -138,6 +138,7 @@ func TestAT16_F35_CtdenydApplyPersistenceDoesNotBecomeUsage(t *testing.T) {
 	for _, value := range []uint64{700, 1, 0} {
 		p.counters = map[string]enforce.CounterValue{"ctdenyd": {Packets: value, Bytes: value}}
 		r.clock.Advance(time.Second)
+		requireApplyChangeForTest(r)
 		stepOK(t, r)
 		// Raw enforcement readings are deliberately persisted in agentstore;
 		// this separate connection proves that exclusion is in the consumers.

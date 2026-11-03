@@ -15,16 +15,35 @@ import (
 // Adoption does not reset any kernel timeout. Both signed documents, the
 // original same-boot lease anchor, the current release, live rules and meter
 // ownership must still qualify. A reboot or uncertain state takes the baseline.
-func (e *Engine) adoptStoredServing(ctx context.Context) bool {
+func (e *Engine) adoptStoredServing(ctx context.Context, beat watchdog.Beat) bool {
 	if e.lease == nil || e.leaseBoot != e.bootID || e.lease.NodeId != e.nodeID || e.lease.NodeIncarnationId != e.incID ||
 		e.desired == nil || e.appliedModel == nil || e.appliedGen == 0 ||
 		e.appliedGen != uint64(e.desired.ConfigGeneration) || e.desired.ConfigGeneration != e.lease.ConfigGeneration {
 		return false
 	}
-	beat, err := watchdog.ReadHeartbeat(e.cfg.HeartbeatPath)
 	now := e.clock.Mono()
-	if err != nil || beat.BootID != e.bootID || !beat.Serving || !beat.BaselineOK || beat.Generation != e.appliedGen ||
+	if beat.BootID != e.bootID || !beat.Serving || !beat.BaselineOK || beat.Generation != e.appliedGen ||
 		beat.Mono > now || now-beat.Mono > time.Duration(e.cfg.WatchdogStaleSeconds)*time.Second || beat.PolicyExpires <= now {
+		return false
+	}
+	installed := e.appliedModel
+	// retained_applied is written before checkMemberPath and the ACK. A crash
+	// in that window leaves it ahead of applied_snapshot; the stored desired
+	// generation is then also ahead and the check above already refuses. Keep
+	// the invariant local: only the acknowledged installation is adoptable
+	// (r20 L-1).
+	if installed.Generation != e.appliedGen {
+		return false
+	}
+	// nft retains both the initial timeout and the decreasing expires value.
+	// Verify the former against the actual installation sample, while the
+	// latter is still checked at the live read against the signed deadlines.
+	// Rebuild all authorization fields below; only reuse the sample, and only
+	// when it belongs to this same-boot lease anchor. These checks need only
+	// the retained model and the stored lease, so they run before any lock
+	// wait or network I/O (r20 M-2).
+	if installed.NowMono < e.leaseMono || installed.NowMono > now ||
+		!installed.Now.Equal(e.lease.IssuedAt.Add(installed.NowMono-e.leaseMono)) {
 		return false
 	}
 	e.refreshDesired()
@@ -34,16 +53,28 @@ func (e *Engine) adoptStoredServing(ctx context.Context) bool {
 	in := e.input()
 	in.ProbeRan, in.ProbeCheck = true, api.HealthCheckStatusPassed
 	in.DNSFailed = false // applyResolver below supplies this process's fresh result
-	if !Decide(in).Serve {
+	prelim := Decide(in)
+	if !prelim.Serve {
+		return false
+	}
+	// Adoption never installs the candidate. Any changed deny/host set,
+	// including a shrink, requires Boot's baseline followed by a full Apply.
+	// Compare with retained_applied before replacing that installed model.
+	// The sets come from local configuration, so the preliminary candidate
+	// already carries them: refuse before the node lock, the live probe and
+	// the resolver refresh, while the old rules are still forwarding (r20 M-2).
+	if !sameRestartSets(*installed, prelim.Model) {
 		return false
 	}
 	// A healthy watchdog briefly holds this same lock for its presence read.
 	// Contention alone must not turn a process replacement into withdrawal.
-	lock, err := nodelock.Acquire(ctx, e.cfg.LockPath, 201, 10*time.Millisecond)
+	lock, err := nodelock.Acquire(controlContext(ctx), e.cfg.LockPath, 201, 10*time.Millisecond)
 	if err != nil {
 		return false
 	}
 	defer lock.Release()
+	// This process now holds the node lock; updateLockHeld must not report
+	// that descriptor as the updater's (D-064).
 	e.planeLocked = true
 	defer func() { e.planeLocked = false }()
 	e.latch()
@@ -51,21 +82,14 @@ func (e *Engine) adoptStoredServing(ctx context.Context) bool {
 		return false
 	}
 	e.evaluate(ctx)
-	d := e.decision
-	// nft retains both the initial timeout and the decreasing expires value.
-	// Verify the former against the actual installation sample, while the
-	// latter is still checked at the live read against the signed deadlines.
-	// Rebuild all authorization fields above; only reuse the sample, and only
-	// when it belongs to this same-boot lease anchor.
-	installed := e.appliedModel
-	// Adoption never installs the candidate. Any changed deny/host set,
-	// including a shrink, requires Boot's baseline followed by a full Apply.
-	// Compare with retained_applied before replacing that installed model.
-	if !sameRestartSets(*installed, d.Model) {
+	// A stop request during the probe or resolver refresh leaves no fresh
+	// evidence to adopt on; Boot takes the baseline under its local budget.
+	if controlContext(ctx).Err() != nil || ctx.Err() != nil {
 		return false
 	}
-	if installed.NowMono < e.leaseMono || installed.NowMono > now ||
-		!installed.Now.Equal(e.lease.IssuedAt.Add(installed.NowMono-e.leaseMono)) {
+	d := e.decision
+	// Re-check against the evaluated candidate before verifying it.
+	if !sameRestartSets(*installed, d.Model) {
 		return false
 	}
 	d.Model.Now, d.Model.NowMono = installed.Now, installed.NowMono
@@ -75,26 +99,48 @@ func (e *Engine) adoptStoredServing(ctx context.Context) bool {
 	if !e.checkMemberPath(ctx, d.Model) {
 		return false
 	}
-	// Attribute bytes accumulated while the process was absent BEFORE opening
-	// the meter. Its same-boot continuity check retains the open epoch.
-	e.setMeterBindings(d.Model.Bindings)
+	// Prepare the meter read-only. The last verification can still refuse
+	// adoption; it must not leave an epoch, new bindings or an uploader behind
+	// (r22 M-2). Reconciliation that needs a write takes Boot's baseline path.
+	prepared := !e.usageOnce
+	e.usageAdopting = true
 	e.ensureUsage(ctx)
+	defer func() { e.usageAdopting = false }()
 	e.readMeter(ctx)
 	e.decision = Decide(e.input())
-	if e.meter == nil || !e.decision.Serve || !e.verifyServingModel(ctx, d.Model, e.appliedAssignments) {
+	usageKnown := false
+	if e.usage != nil {
+		if h, err := e.usage.Head(ctx); err == nil {
+			bindings, err := e.restartHeadBindings(ctx, e.usage, h)
+			usageKnown = err == nil && sameUsageBindings(bindings, d.Model.Bindings)
+		}
+	}
+	if controlContext(ctx).Err() != nil || e.meter == nil || !usageKnown || !e.decision.Serve || !e.verifyServingModel(ctx, d.Model, e.appliedAssignments) {
+		if prepared {
+			e.discardUsagePreparation()
+		}
 		return false
 	}
+	e.usageAdopting = false
+	e.setMeterBindings(d.Model.Bindings)
+	e.activateUsage(ctx)
 	e.appliedModel = &d.Model
 	e.policyExpires = d.PolicyExpires
 	e.serving = true
 	e.expectServing.Store(true)
 	e.resumeSampling()
 	e.leaseRefreshPending = true // try central promptly, retain authorization on an outage
-	e.log.Info("serving rules adopted", "generation", e.appliedGen, "policy_expires_mono_ns", int64(e.policyExpires))
+	e.log.Info("serving rules adopted", "generation", e.appliedGen, "policy_expires_mono_ns", int64(e.servingDeadline()), "next_binding_expiry_mono_ns", int64(e.policyExpires))
 	return true
 }
 
 func sameRestartSets(installed, candidate enforce.Model) bool {
+	// A non-nil empty DeniedV4 is not the spec default: enforce rejects it,
+	// so it can never describe installed rules. Never call it equal (r20 L-1).
+	if (installed.DeniedV4 != nil && len(installed.DeniedV4) == 0) ||
+		(candidate.DeniedV4 != nil && len(candidate.DeniedV4) == 0) {
+		return false
+	}
 	// nil DeniedV4 means the spec defaults, not an empty deny set.
 	if installed.DeniedV4 == nil {
 		installed.DeniedV4 = enforce.SpecDeniedV4()
@@ -144,6 +190,6 @@ func (e *Engine) preserveServingOnStop(ctx context.Context) bool {
 	if err := e.meter.CheckpointForRestart(ctx); err != nil {
 		return false
 	}
-	e.log.Info("serving rules retained for restart", "generation", e.appliedGen, "policy_expires_mono_ns", int64(e.policyExpires))
+	e.log.Info("serving rules retained for restart", "generation", e.appliedGen, "policy_expires_mono_ns", int64(e.servingDeadline()), "next_binding_expiry_mono_ns", int64(e.policyExpires))
 	return true
 }

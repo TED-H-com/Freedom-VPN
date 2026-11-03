@@ -145,13 +145,20 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 		e.log.Error("usage store", "err", err.Error())
 		return
 	}
-	e.usageOnce = true
-	e.usageLock = lifetime
-	e.usagePersist = false
-	e.usage = st
-	e.usageStatus = st
+	// Initialization is retryable. Neither the ownership lock nor a partially
+	// constructed meter may survive a failed attempt (r22 M-1).
+	var m *meter.Meter
+	defer func() {
+		if !e.usageOnce {
+			if m != nil {
+				m.Close()
+			}
+			_ = st.Close()
+			lifetime.Release()
+		}
+	}()
 	id, blocked := meterBarrierIdentity(e.cfg.JournalDir)
-	if id == "" {
+	if id == "" && !e.usageAdopting {
 		if err := e.invalidateMeterCheckpoint(); err != nil {
 			e.usagePersist = true
 			return
@@ -167,15 +174,29 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 		e.kernel = ks
 		src = ks
 	}
-	m, err := meter.New(meter.Config{
+	if e.retainedPending {
+		head, err := st.Head(ctx)
+		if err != nil {
+			e.usagePersist = true
+			return
+		}
+		bindings, err := e.restartHeadBindings(ctx, st, head)
+		if err != nil {
+			e.usagePersist = true
+			return
+		}
+		e.setMeterBindings(bindings)
+	}
+	m, err = meter.NewContext(ctx, meter.Config{
 		NodeID: e.nodeID, IncarnationID: e.incID, Store: st, Source: src, Logger: e.log,
-		PreserveClosedEpoch: blocked,
+		PreserveClosedEpoch: blocked || e.retainedPending,
+		ExistingEpochOnly:   e.usageAdopting,
 	})
 	if err != nil {
 		e.meterFailed = true
+		e.usagePersist = true
 		e.log.Error("usage meter", "err", err.Error())
-	} else {
-		e.meter = m
+		return
 	}
 	up, err := usageupload.New(usageupload.Config{
 		Store: st, Transport: usageTransport{client: e.client}, Logger: e.log,
@@ -185,34 +206,84 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 		e.log.Error("usage upload", "err", err.Error())
 		return
 	}
+	e.usageLock = lifetime
+	e.usage, e.usageStatus = st, st
+	e.meter = m
 	e.uploader = up
-	e.startLoops()
-	e.loops.Add(1)
-	go func() {
-		defer e.loops.Done()
-		_ = up.Run(e.loopCtx)
-	}()
-	e.restoreUsage(ctx)
-	if blocked {
+	e.usagePersist, e.meterFailed = false, false
+	e.usageOnce = true
+	if !e.usageAdopting {
+		e.activateUsage(ctx)
+	}
+	if blocked && !e.usageAdopting {
 		e.handoff(ctx)
 	}
 }
 
+// activateUsage is called only after initialization and the adoption decision
+// succeed. Preparing a candidate cannot start uploads or restore ledger state.
+func (e *Engine) activateUsage(ctx context.Context) {
+	if e.uploader == nil || e.uploadOn {
+		return
+	}
+	up := e.uploader
+	// Uploads follow the process caller, not Boot's cancellation-independent
+	// local context or a Step's short HTTP budget.
+	if e.runCtx == nil || e.runCtx.Err() == nil {
+		e.uploadOn = true
+		e.startLoops()
+		parent := e.loopCtx
+		if e.runCtx != nil {
+			parent = e.runCtx
+		}
+		// Signal cancellation propagates synchronously to the request context.
+		// An AfterFunc on runCtx could otherwise race the first upload.
+		uploadCtx, cancel := context.WithCancel(parent)
+		stop := func() bool { return false }
+		if e.runCtx != nil {
+			stop = context.AfterFunc(e.loopCtx, cancel)
+		}
+		e.loops.Add(1)
+		go func() {
+			defer e.loops.Done()
+			defer cancel()
+			defer stop()
+			_ = up.Run(uploadCtx)
+		}()
+	}
+	e.restoreUsage(ctx)
+}
+
+// discardUsagePreparation has no running loops and no ledger writes to undo.
+func (e *Engine) discardUsagePreparation() {
+	if e.meter != nil {
+		e.meter.Close()
+	}
+	if e.usage != nil {
+		_ = e.usage.Close()
+	}
+	if e.usageLock != nil {
+		e.usageLock.Release()
+	}
+	e.meter, e.uploader, e.usage, e.usageStatus, e.usageLock = nil, nil, nil, nil, nil
+	e.usageOnce = false
+}
+
 func (e *Engine) openUsage(ctx context.Context) (*usagestore.Store, error) {
 	opt := usagestore.Options{Trust: e.trust}
-	st, err := usagestore.Open(e.cfg.UsageDBPath(), e.nodeID, e.incID, opt)
+	st, err := usagestore.OpenContext(ctx, e.cfg.UsageDBPath(), e.nodeID, e.incID, opt)
 	if !errors.Is(err, usagestore.ErrIdentity) {
 		return st, err
 	}
 	// Same-incarnation update restarts can open while the updater owns the
 	// node lock. Only adoption of a different incarnation requires it here.
-	lock, err := nodelock.Acquire(ctx, e.cfg.LockPath, 3, 50*time.Millisecond)
+	lock, err := nodelock.Acquire(controlContext(ctx), e.cfg.LockPath, 3, 50*time.Millisecond)
 	if err != nil {
 		return nil, err
 	}
 	defer lock.Release()
 	opt.RetirePreviousAt = e.clock.Wall()
-	return usagestore.Open(e.cfg.UsageDBPath(), e.nodeID, e.incID, opt)
+	return usagestore.OpenContext(ctx, e.cfg.UsageDBPath(), e.nodeID, e.incID, opt)
 }
 
 func (e *Engine) startLoops() {
@@ -245,10 +316,49 @@ func (e *Engine) setMeterBindings(b []enforce.Binding) {
 	e.mu.Unlock()
 }
 
+// settleRetainedUsage closes a pending restart or runtime hand-off only after
+// verified Baseline stopped admission. Bindings describe the candidates that
+// could have counted, scoped to the ledger interval when intent is available.
+// A failed/held sample keeps the delta and its provenance pending; Step must
+// retry before fetching desired state or applying a generation. Closing the
+// epoch prevents retired bindings contaminating the next baseline (r21 H1/H2/M1).
+func (e *Engine) settleRetainedUsage(ctx context.Context) bool {
+	if !e.retainedPending {
+		return true
+	}
+	if e.meter == nil {
+		e.usagePersist = true
+		return false
+	}
+	if !e.baselineOK {
+		if err := e.baseline(ctx); err != nil {
+			return false
+		}
+	}
+	err := e.meter.FinalSample(ctx)
+	if err != nil && !errors.Is(err, meter.ErrNoEpoch) {
+		e.log.Warn("usage settlement", "err", err.Error())
+		e.readMeter(ctx)
+		e.usagePersist = true
+		return false
+	}
+	e.retainedPending = false
+	e.epochClosed = true
+	e.finalDone = true
+	e.setMeterBindings(nil)
+	e.readMeter(ctx)
+	return true
+}
+
 // readMeter copies the meter's health onto the forwarding gate.
 // Store caps win inside meter.Health, so a full outbox is not reported
 // as METER_PATH_INVALID.
 func (e *Engine) readMeter(ctx context.Context) {
+	defer func() {
+		if e.retainedPending {
+			e.usagePersist = true
+		}
+	}()
 	if e.meter == nil {
 		return
 	}
@@ -289,6 +399,7 @@ func (e *Engine) resumeSampling() {
 		return
 	}
 	e.finalDone = false
+	e.epochClosed = false
 	e.finalBarrierID = ""
 	e.meter.ResumeSampling()
 	if e.sampleOn {
@@ -303,40 +414,64 @@ func (e *Engine) resumeSampling() {
 	}()
 }
 
-// handoff stops new samples, installs the baseline, then takes the final
+// handoff installs the baseline, stops new samples, then takes the final
 // sample (§13.6 step 8). A later successful apply calls resumeSampling.
 // A clean final sample checkpoints the counters so the next epoch does
 // not recount them (step 11).
 func (e *Engine) handoff(ctx context.Context) {
+	if e.usageAdopting {
+		return // adoption's rejected read withdraws first; Boot settles later
+	}
+	// A successful final sample can heal meter health, but this pass still
+	// withdrew because of the observed failure. Preserve that cause for its
+	// receipt; the next Step's health refresh may clear it before a new Apply.
+	persist, path, disk, outbox := e.usagePersist, e.meterFailed, e.usageDisk, e.usageOutbox
+	defer func() {
+		e.usagePersist = e.usagePersist || persist
+		e.meterFailed = e.meterFailed || path
+		e.usageDisk = e.usageDisk || disk
+		e.usageOutbox = e.usageOutbox || outbox
+	}()
 	id, blocked := meterBarrierIdentity(e.cfg.JournalDir)
 	e.latchBlocked = blocked
-	if id == "" {
-		if err := e.invalidateMeterCheckpoint(); err != nil {
-			e.usagePersist = true
+	// The pending latch precedes every fallible withdrawal operation, even
+	// checkpoint removal. A later successful baseline retry must not allow
+	// Apply to overtake the outgoing interval (r23 H-3/M-1).
+	complete := e.finalDone && e.finalBarrierID == id && !e.retainedPending
+	if !complete && e.meter != nil {
+		e.finalDone = false
+		e.retainedPending = true
+		e.serving = false
+		e.policyExpires = 0
+		e.decision.Serve = false
+		if err := e.baseline(ctx); err != nil {
 			return
 		}
 	}
-	if e.meter == nil || (e.finalDone && e.finalBarrierID == id) {
+	if id == "" {
+		if err := e.invalidateMeterCheckpoint(); err != nil {
+			e.usagePersist = true
+			e.serving = false
+			e.policyExpires = 0
+			// Even a completed/no-meter hand-off must withdraw on a new
+			// persistence failure. Do not let ledger health clear this error.
+			if complete || e.meter == nil {
+				_ = e.baseline(ctx)
+			}
+			return
+		}
+	}
+	if e.meter == nil || complete {
 		return
 	}
-	// A new identity must execute the withdrawal/close path again. It cannot
-	// borrow finalDone or relabel the previous checkpoint, even when quiet.
+	// FinalSample pauses internally. If it fails, the same settlement gate
+	// used at restart prevents refresh or Apply until the outgoing bytes commit.
+	if !e.settleRetainedUsage(ctx) {
+		return
+	}
+	// Accounting is settled; the updater barrier is not acknowledged until
+	// its identity has been rechecked and its checkpoint has been published.
 	e.finalDone = false
-	if err := e.meter.Barrier(ctx); err != nil {
-		e.usagePersist = true
-		return
-	}
-	if err := e.baseline(ctx); err != nil {
-		return
-	}
-	e.serving = false
-	e.decision.Serve = false
-	err := e.meter.FinalSample(ctx)
-	if err != nil && !errors.Is(err, meter.ErrNoEpoch) {
-		e.log.Warn("final sample", "err", err.Error())
-		e.usagePersist = true
-		return
-	}
 	cp, err := e.usage.ClosedCheckpoint(ctx)
 	if err != nil {
 		e.usagePersist = true
@@ -416,6 +551,15 @@ func (e *Engine) shutdownUsage(ctx context.Context) {
 	e.shutUsage = true
 	if e.sampleOn && !e.preserveServingOnStop(ctx) {
 		e.handoff(ctx)
+		if !e.serving {
+			// Record the withdrawal. A retained serving heartbeat would
+			// describe rules this hand-off just replaced, inviting a
+			// same-boot successor to verify a ruleset that is gone (r20 M-3).
+			// A failed baseline reports uncertainty rather than retaining a
+			// successful-serving claim for an unverified kernel.
+			e.decision = Decide(e.input())
+			e.beat()
+		}
 	}
 	if e.loopCancel != nil {
 		e.loopCancel()

@@ -55,6 +55,9 @@ type Config struct {
 	// PreserveClosedEpoch keeps a completed final_sample closed at blocked
 	// startup. PrepareSampling must open the next epoch before admission.
 	PreserveClosedEpoch bool
+	// ExistingEpochOnly prepares same-boot adoption without writing the ledger.
+	// A closed epoch, reset or reboot requires withdrawal before reconciliation.
+	ExistingEpochOnly bool
 	// Mono is the monotonic clock used to space samples (§10.5). Nil means
 	// time.Now, whose Sub uses the monotonic reading. Timestamps stored on
 	// events still come from Now.
@@ -96,7 +99,10 @@ var _ Controller = (*Meter)(nil)
 // New checks the open meter epoch against the current counters (§10.7) and
 // returns a meter ready to sample. A source that cannot be read fails the
 // constructor: the agent must not forward when it cannot meter.
-func New(cfg Config) (*Meter, error) {
+func New(cfg Config) (*Meter, error) { return NewContext(context.Background(), cfg) }
+
+// NewContext bounds startup reconciliation by the caller's local budget.
+func NewContext(ctx context.Context, cfg Config) (*Meter, error) {
 	if cfg.Store == nil || cfg.Source == nil || cfg.NodeID == uuid.Nil || cfg.IncarnationID == uuid.Nil {
 		return nil, fmt.Errorf("meter: store, source, node and incarnation are required")
 	}
@@ -125,13 +131,33 @@ func New(cfg Config) (*Meter, error) {
 		wake: make(chan struct{}, 1),
 	}
 	m.cond = sync.NewCond(&m.mu)
+	if cfg.ExistingEpochOnly {
+		obs, err := m.src.Read(ctx)
+		if err != nil {
+			return nil, err
+		}
+		head, err := m.store.Head(ctx)
+		if err != nil {
+			return nil, err
+		}
+		p, err := planContinuity(head, obs, m.nowUTC())
+		if err != nil {
+			return nil, err
+		}
+		if !p.noop {
+			return nil, fmt.Errorf("meter: adoption requires a continuous open epoch")
+		}
+		m.paused = true
+		m.markSampled()
+		return m, nil
+	}
 	if cfg.PreserveClosedEpoch {
-		if _, err := m.store.ClosedCheckpoint(context.Background()); err == nil {
+		if _, err := m.store.ClosedCheckpoint(ctx); err == nil {
 			m.paused = true
 			return m, nil
 		}
 	}
-	if err := m.reconcile(context.Background()); err != nil {
+	if err := m.reconcile(ctx); err != nil {
 		return nil, err
 	}
 	return m, nil

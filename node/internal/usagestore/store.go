@@ -71,6 +71,11 @@ type Store struct {
 // directory is mode 0700. WAL and synchronous=FULL are set so a commit is
 // durable before the caller is told it succeeded (§10.5).
 func Open(path string, nodeID, incID uuid.UUID, opt Options) (*Store, error) {
+	return OpenContext(context.Background(), path, nodeID, incID, opt)
+}
+
+// OpenContext includes migrations and incarnation retirement in the caller's budget.
+func OpenContext(ctx context.Context, path string, nodeID, incID uuid.UUID, opt Options) (*Store, error) {
 	if nodeID == uuid.Nil || incID == uuid.Nil {
 		return nil, fmt.Errorf("usagestore: node and incarnation are required")
 	}
@@ -117,7 +122,7 @@ func Open(path string, nodeID, incID uuid.UUID, opt Options) (*Store, error) {
 	if s.diskFoot == nil {
 		s.diskFoot = footprint
 	}
-	if err := s.migrate(context.Background()); err != nil {
+	if err := s.migrate(ctx); err != nil {
 		_ = db.Close()
 		return nil, err
 	}

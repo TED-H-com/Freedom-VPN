@@ -2,6 +2,7 @@ package watchdog
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,8 +14,9 @@ import (
 )
 
 // Beat is one agent heartbeat (§16.3). Mono is CLOCK_MONOTONIC, shared with
-// this process. PolicyExpires is the monotonic instant member forwarding must
-// already have stopped; zero means the agent is not serving.
+// this process. PolicyExpires is the monotonic instant all installed member
+// admission expires, capped by node limits. Earlier bindings expire through
+// their own kernel element timeouts. Zero means the agent is not serving.
 type Beat struct {
 	BootID        uuid.UUID
 	Mono          time.Duration
@@ -47,6 +49,12 @@ func ReadBootID(path string) (uuid.UUID, error) {
 
 // WriteHeartbeat atomically replaces path. The watchdog only reads it.
 func WriteHeartbeat(path string, b Beat) error {
+	return WriteHeartbeatContext(context.Background(), path, b)
+}
+
+// WriteHeartbeatContext checks the local deadline before publishing. Slow
+// filesystem work may finish later, but cannot rename an expired heartbeat.
+func WriteHeartbeatContext(ctx context.Context, path string, b Beat) error {
 	if b.BootID == uuid.Nil || b.Mono <= 0 {
 		return fmt.Errorf("watchdog: incomplete heartbeat")
 	}
@@ -67,7 +75,7 @@ func WriteHeartbeat(path string, b Beat) error {
 	if b.Evidence != "" && !strings.ContainsAny(b.Evidence, "\r\n") {
 		fmt.Fprintf(&body, "evidence %s\n", b.Evidence)
 	}
-	return writeAtomic(path, []byte(body.String()), 0o644)
+	return writeAtomicContext(ctx, path, []byte(body.String()), 0o644)
 }
 
 // ReadHeartbeat parses a heartbeat file. A malformed file is an error.
@@ -156,7 +164,10 @@ func boolBit(v bool) int {
 	return 0
 }
 
-func writeAtomic(path string, data []byte, mode os.FileMode) error {
+func writeAtomicContext(ctx context.Context, path string, data []byte, mode os.FileMode) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	dir := filepath.Dir(path)
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return err
@@ -183,6 +194,9 @@ func writeAtomic(path string, data []byte, mode os.FileMode) error {
 		return err
 	}
 	if err := tmp.Close(); err != nil {
+		return err
+	}
+	if err := ctx.Err(); err != nil {
 		return err
 	}
 	if err := os.Rename(name, path); err != nil {

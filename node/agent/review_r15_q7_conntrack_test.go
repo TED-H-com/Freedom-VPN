@@ -67,8 +67,17 @@ func TestReviewR15_ReassignedAddressDeleteIsOnceAndAddressOnly(t *testing.T) {
 	if !revokeContains(r.plane.last.Revoke, addr) {
 		t.Fatalf("first apply did not queue conntrack -D for %s (revoke=%v)", addr, r.plane.last.Revoke)
 	}
+	before := r.plane.applies
 	stepOK(t, r)
-	if revokeContains(r.plane.last.Revoke, addr) {
+	if len(r.eng.pendingRevoke) != 0 || r.eng.conntrackAttempts != 0 {
+		t.Fatal("successful delete remained pending")
+	}
+	if r.plane.applies > before && revokeContains(r.plane.last.Revoke, addr) {
+		t.Fatal("tick repeated a completed delete")
+	}
+	requireApplyChangeForTest(r)
+	stepOK(t, r)
+	if r.plane.applies <= before || revokeContains(r.plane.last.Revoke, addr) {
 		t.Fatalf("second apply queued conntrack -D again for %s (revoke=%v)", addr, r.plane.last.Revoke)
 	}
 }

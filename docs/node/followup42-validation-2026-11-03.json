@@ -1,0 +1,307 @@
+{
+  "date": "2026-11-03",
+  "production": {
+    "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+    "main": "77626af4016443c509f3b14e06cfd4f00f74fb49",
+    "archive_sha256": "e5e44ecd1e8954924230e502ad9ed05a78bf64f54451abf69c4b76e6028706a9",
+    "verified_blobs": 18919,
+    "functional_only": true,
+    "optional_timing_export": false
+  },
+  "merge_commit": "a4b76e09f8b8c0f90c56413c638a4a27ef9eaeda",
+  "review": "1afecb29",
+  "unchanged_review_import": "bf68757f",
+  "before_fail": "followup42-r25-before-2026-11-03.txt",
+  "environment": {
+    "CGO_ENABLED": "0",
+    "GOTOOLCHAIN": "local",
+    "TMPDIR": ".agent/tmp",
+    "GOTMPDIR": ".agent/tmp",
+    "GOCACHE": "~/.cache/go-build",
+    "cache_source": "go env GOCACHE",
+    "admission": "bash \"$FVPN_HOLD_SH\" must print free before every go test, make and docker",
+    "reservation_taken": false,
+    "D133_measurement_run": false
+  },
+  "gates": [
+    {
+      "gate": "final-node-lint-build",
+      "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-lint",
+        "node-build"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T16:46:21Z",
+      "receipt": ".agent/f42/final-node-lint-build.log",
+      "sha256": "905d6120b09828cbbffa1688fca614a9b07aa03db9e0995d981cb31d270136ed"
+    },
+    {
+      "gate": "final-node-test",
+      "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T16:48:41Z",
+      "receipt": ".agent/f42/final-node-test.log",
+      "sha256": "5bb028161d4e747b76c8e22d938f9e7da541f37c9fc2d5112240a5256d2596d7"
+    },
+    {
+      "gate": "final-node-integration",
+      "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test-integration"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T16:50:58Z",
+      "receipt": ".agent/f42/final-node-integration.log",
+      "sha256": "bd335b64d944a8184bdaf3b09db31a01bdb822e01f39797408c376f313d6c62c"
+    },
+    {
+      "gate": "final-consumers",
+      "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./node/updater/...",
+        "./packaging/installer/...",
+        "./node/enforce/..."
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T16:51:18Z",
+      "receipt": ".agent/f42/final-consumers.log",
+      "sha256": "70c5bd6398666dc2386b2e763a3761dd9121c312d829a19dc9bfaadf105918db"
+    },
+    {
+      "gate": "final-reviews-r16-r19",
+      "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./node/agent",
+        "./node/enforce",
+        "-run",
+        "^TestReviewR1[6-9]_"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T16:51:38Z",
+      "receipt": ".agent/f42/final-reviews-r16-r19.log",
+      "sha256": "24d67088c6bb962d0a55863823259d67370d7ac6a248ceabab826f4e1ffa6d30"
+    },
+    {
+      "gate": "final-reviews-r20-r25",
+      "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./node/agent",
+        "./node/agent/cmd/fvpn-agent",
+        "./node/watchdog",
+        "./node/enforce",
+        "-run",
+        "^Test(R2[0-5]_|ReviewR2[0-5]_|ReviewR11_ClearFailureNextStep)"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T16:52:21Z",
+      "receipt": ".agent/f42/final-reviews-r20-r25.log",
+      "sha256": "cdf0d4d84b58e7e02b134fb393923ec37201392d02e3511a137d143ee5ad41e9"
+    },
+    {
+      "gate": "final-handover",
+      "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T16:52:26Z",
+      "receipt": ".agent/f42/final-handover.log",
+      "sha256": "9eafbd61504c23739bb017457353c367c6b2e9acea4ed1ef5257858787487e5d"
+    },
+    {
+      "gate": "final-go-lint",
+      "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+      "command": [
+        "make",
+        "go-lint",
+        "go-with-disk-tmp=set -eu;"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T16:52:30Z",
+      "receipt": ".agent/f42/final-go-lint.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "gate": "final-vet",
+      "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T16:52:30Z",
+      "receipt": ".agent/f42/final-vet.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "gate": "final-evidence",
+      "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/netlab",
+        "-run",
+        "^TestCommittedEvidenceFiles_ValidAndHygieneClean$"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T16:52:33Z",
+      "receipt": ".agent/f42/final-evidence.log",
+      "sha256": "8cc09f243c57f01dc97e222ea3d94a70695b363e0d58ee5f7ac9d6baf7a66887"
+    },
+    {
+      "gate": "final-fixture-hygiene",
+      "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/e2e",
+        "-run",
+        "^TestCommittedFixtureEvidence_ValidAndHygieneClean$"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T16:52:42Z",
+      "receipt": ".agent/f42/final-fixture-hygiene.log",
+      "sha256": "9e25e2da8bfa3d22ae550a1f4459866807cee1a8df896198107e0c3cd52f50a1"
+    },
+    {
+      "gate": "production-netlab",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test-netlab",
+        "FVPN_LAB_PREFIX=fvpn-w2-agent-core-f42",
+        "MAKE=<admission-wrapper>"
+      ],
+      "exit": 0,
+      "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+      "functional_only": true,
+      "optional_timing_export": false,
+      "receipt": ".agent/f42/production/suite.log",
+      "sha256": "4056bf7aac8663ea27c447c7a88bbf9e780ade44736ab28fdeed6d37020561d9"
+    },
+    {
+      "gate": "final-all-tests",
+      "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+      "command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T17:00:26Z",
+      "receipt": ".agent/f42/final-all-tests.log",
+      "sha256": "1946f6376f5cdafe068b87954a8a11adb3687ca6d0ac4b459bcfcabd2802eb79"
+    }
+  ],
+  "lab": {
+    "scenario_passes": [
+      "TestLabISO_F6_RecoveryAndEvidence",
+      "TestLabD087_D104_GrantRenewalExpiryCorrelation",
+      "TestLabUsageLedger",
+      "TestLabExternalMeterReset",
+      "TestLabF36_AT13_RestartChangedSetsStopsEstablishedFlow",
+      "TestLab08_HealthAttestationUnpublished",
+      "TestLab01_ForwardOnlyAfterLease",
+      "TestLab02_WatchdogEnforces",
+      "TestLab03_KernelTimeout",
+      "TestLab04_RestartKeepsVerifiedLease",
+      "TestLab05_NoAllowAllOnUpdate",
+      "TestLab07_UnpublishedBaselineAck",
+      "TestLab06_RevokedStopsForwarding"
+    ],
+    "scenario_skips": [
+      "TestD116_AT10_InstallerMarkerEnrollment"
+    ],
+    "functional_only": true,
+    "optional_timing_export": false,
+    "binaries": {
+      "fvpn-agent": "9e4f26ee4d32a856c5cc4d2826946797c3c718790a691bdfddc5372883d85f0c",
+      "fvpn-watchdog": "61bfe4d95eb1978b0d04c90194c5fabcbb698cd554bfb4c930d9cecbfea114fb",
+      "fvpn-labcontrol": "336faca23e599da379baef3d957877bbe148a40eceb5b9c109818aceaaf6fef8"
+    },
+    "fixture": {
+      "image_id": "sha256:efe621aefa055317eac806077a0d18f5c152581117caf2f3e689ae7094bebd7c"
+    }
+  },
+  "hygiene": {
+    "source": "b42ed80b0dfaa184f20303f13a90a226925228e2",
+    "main": "77626af4016443c509f3b14e06cfd4f00f74fb49",
+    "owned_paths_only": true,
+    "public_diff_clean": true,
+    "gofmt_empty": true,
+    "diff_check_clean": true,
+    "prior_node_records_preserved": true,
+    "consumers_unchanged": true,
+    "enforce_comment_only": true,
+    "all_prior_review_tests_unchanged": true,
+    "r25_import_unchanged": true,
+    "earlier_tip_in_ancestry": true
+  },
+  "owned_inventory": {
+    "prefix": "fvpn-w2-agent-core-f42",
+    "removed": {
+      "containers": [],
+      "images": [],
+      "networks": [],
+      "volumes": []
+    },
+    "remaining": {
+      "containers": [],
+      "images": [],
+      "networks": [],
+      "volumes": []
+    }
+  },
+  "admission": {
+    "checks": 628,
+    "all_free": true
+  },
+  "development_failures": [
+    {
+      "receipt": ".agent/f42/h1-proofs.log",
+      "cause": "New accounting restart fixture allowed uploader to ACK events, while ledger helper reads unacked events only; fixture now holds usage uploads unavailable. Assertions unchanged."
+    },
+    {
+      "receipt": ".agent/f42/jitter-fixed.log",
+      "cause": "Initial implementation compile error: missing formatting import, corrected with strconv."
+    },
+    {
+      "receipt": ".agent/f42/node-lint-build.log",
+      "cause": "Staticcheck S1008 return simplification, fixed before final gates."
+    }
+  ],
+  "requests": [
+    "Schedule owed D-133 A,B,A,B for 37\u201342 after review in a quiet slot."
+  ]
+}

@@ -258,6 +258,7 @@ func TestD090_ApplyQuarantineEvidenceTLS(t *testing.T) {
 	serveBoundGeneration(t, r)
 	p := &quarantinePlane{livePlane: &livePlane{memPlane: r.plane}, configured: true, applyForeign: true}
 	r.eng.plane = p
+	requireApplyChangeForTest(r)
 	stepOK(t, r)
 	assertTCWire(t, r)
 	rep, _ := r.srv.LastObservation()

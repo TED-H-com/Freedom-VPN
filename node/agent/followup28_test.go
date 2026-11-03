@@ -122,6 +122,7 @@ func TestAT13_ISOF603_ExactProducerReplay955To961(t *testing.T) {
 			lease, anchor := r.eng.lease.LeaseId, r.eng.leaseMono
 			p := &replayPlane{memPlane: r.plane}
 			r.eng.plane = p
+			r.eng.serving = false // the new emulated kernel has no verified installation yet
 			r.eng.cfg.TestMode = true
 			r.eng.cfg.TestTimingPath = filepath.Join(r.dir, "operations.jsonl")
 			for _, row := range trace.Rows {

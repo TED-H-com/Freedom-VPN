@@ -32,9 +32,17 @@ type probeIssuance struct {
 
 const probeIssuanceKey = "probe_issuance"
 
+type probeCleanup struct {
+	model    enforce.Model
+	issuance probeIssuance
+}
+
 // withProbeException binds the result to the exact challenge read before the
 // probe, even when a free update lock means probing the normal node state.
 func (e *Engine) withProbeException(ctx context.Context, run func()) {
+	if e.probeCleanup != nil && !e.clearProbeException(ctx) {
+		return
+	}
 	ch, ok := e.matchingChallenge()
 	e.probedChallenge = nil
 	if ok {
@@ -53,7 +61,13 @@ func (e *Engine) withProbeException(ctx context.Context, run func()) {
 
 // updateLockHeld never waits for or keeps the lock. Only contention is
 // authority for D-064; a missing or inaccessible lock is not an update.
+// While this process itself holds the exclusive node lock (same-boot
+// adoption), the updater cannot hold it: our own descriptor's contention is
+// not D-064 evidence (r20 M-2).
 func (e *Engine) updateLockHeld() bool {
+	if e.planeLocked {
+		return false
+	}
 	lock, err := nodelock.TryAcquire(e.cfg.LockPath)
 	if err == nil {
 		lock.Release()
@@ -156,17 +170,8 @@ func (e *Engine) installProbeException(ctx context.Context, ch healthattest.Chal
 	clear := func() {
 		bare := model
 		bare.Probe = nil
-		cleanupCtx, cancel := context.WithTimeout(localContext(ctx), 5*time.Second)
-		defer cancel()
-		if err := e.baselineCall("probe_clear", func() error { return e.plane.BaselineModel(cleanupCtx, bare) }); err != nil {
-			e.baselineOK = false
-			e.lastProbe.Check = api.HealthCheckStatusFailed
-			e.lastProbe.Health = api.DataHealthFailed
-			e.lastProbe.Detail = "probe_clear_failed"
-			e.log.Warn("probe exception", "err", "not removed")
-		}
-		issuance.Cleared = true
-		e.saveProbeIssuance(cleanupCtx, issuance)
+		e.probeCleanup = &probeCleanup{model: bare, issuance: issuance}
+		e.clearProbeException(ctx)
 	}
 	if err := e.baselineCall("probe_install", func() error { return e.plane.BaselineModel(ctx, model) }); err != nil {
 		clear()
@@ -175,6 +180,44 @@ func (e *Engine) installProbeException(ctx context.Context, ch healthattest.Chal
 	}
 	e.baselineOK = true
 	return clear, true
+}
+
+// Retrying a clear never reinstalls the exception or extends its timeout.
+// Failure keeps the durable nonce uncleared and is reflected in the heartbeat.
+func (e *Engine) clearProbeException(ctx context.Context) bool {
+	p := e.probeCleanup
+	if p == nil {
+		return true
+	}
+	cleanupCtx, cancel := context.WithTimeout(localContext(ctx), 5*time.Second)
+	defer cancel()
+	if err := e.baselineCall("probe_clear", func() error { return e.plane.BaselineModel(cleanupCtx, p.model) }); err != nil {
+		e.baselineOK = false
+		e.lastProbe.Check = api.HealthCheckStatusFailed
+		e.lastProbe.Health = api.DataHealthFailed
+		e.lastProbe.Detail = "probe_clear_failed"
+		e.log.Warn("probe exception", "err", "not removed")
+		e.beat()
+		return false
+	}
+	if !e.recordProbeCleared(cleanupCtx) {
+		return false
+	}
+	e.baselineOK = true
+	return true
+}
+
+func (e *Engine) recordProbeCleared(ctx context.Context) bool {
+	if e.probeCleanup == nil {
+		return true
+	}
+	cleared := e.probeCleanup.issuance
+	cleared.Cleared = true
+	if !e.saveProbeIssuance(ctx, cleared) {
+		return false
+	}
+	e.probeCleanup = nil
+	return true
 }
 
 func (e *Engine) saveProbeIssuance(ctx context.Context, issuance probeIssuance) bool {

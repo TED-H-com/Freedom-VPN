@@ -108,8 +108,9 @@ type MemberLease struct {
 	MaxOfflineSeconds   uint64    `json:"max_offline_seconds"`
 	TimeoutCeilSeconds  uint64    `json:"timeout_ceil_seconds,omitempty"`
 	// DeadlineMono is the absolute CLOCK_MONOTONIC elapsed duration at which
-	// forwarding must stop. Nil supports legacy callers; a non-nil zero or
-	// negative value is expired. Include every signed/binding/local cap in it.
+	// member forwarding must stop. Nil supports legacy callers; a non-nil zero
+	// or negative value is expired. Include member-level signed/local caps;
+	// memberTimeout separately intersects each binding's ValidUntil.
 	// It is not wall time, a relative timeout, or time since process start.
 	DeadlineMono *time.Duration `json:"deadline_mono_ns,omitempty,string"`
 }

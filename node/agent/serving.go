@@ -91,6 +91,12 @@ func (e *Engine) verifyCurrentServing(ctx context.Context) bool {
 	if !e.serving {
 		return true
 	}
+	if e.usagePersist || e.retainedPending || !e.baselineOK {
+		e.withdraw(ctx)
+		e.decision = Decide(e.input())
+		e.lastObs = time.Time{}
+		return false
+	}
 	if e.expireServing(ctx) {
 		return false
 	}
@@ -112,6 +118,13 @@ func (e *Engine) verifyCurrentServing(ctx context.Context) bool {
 
 func (e *Engine) expireServing(ctx context.Context) bool {
 	if !e.serving || (e.policyExpires > 0 && e.clock.Mono() < e.policyExpires) {
+		return false
+	}
+	e.refreshDesired()
+	e.decision = Decide(e.input())
+	if e.policyExpires > 0 && e.decision.Serve {
+		// A binding boundary is a wake, not a node withdrawal. Its kernel
+		// timeout already stopped admission; enforce applies survivors.
 		return false
 	}
 	cleanup, cancel := context.WithTimeout(localContext(ctx), 5*time.Second)
@@ -174,7 +187,7 @@ func (e *Engine) finishServingStep(ctx context.Context) {
 	}
 	changed := e.updateStaleHold()
 	e.beat()
-	if !ok || changed || (e.identityFrozen && e.lastObs.IsZero()) {
+	if !ok || !e.serving || changed || (e.identityFrozen && e.lastObs.IsZero()) {
 		_ = e.observe(ctx)
 		_ = e.flush(ctx)
 	}

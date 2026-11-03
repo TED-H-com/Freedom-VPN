@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"log/slog"
@@ -118,7 +119,7 @@ func runWithOpen(args []string, loop bool, open func(string) (runEngine, error))
 	}
 	defer eng.Close()
 	if loop {
-		if err := eng.Run(ctx); err != nil && ctx.Err() == nil {
+		if err := eng.Run(ctx); err != nil && (errors.Is(err, agent.ErrBoot) || ctx.Err() == nil || !errors.Is(err, ctx.Err())) {
 			fmt.Fprintln(os.Stderr, "fvpn-agent:", err.Error())
 			return 1
 		}

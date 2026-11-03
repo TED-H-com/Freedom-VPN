@@ -1,0 +1,700 @@
+{
+  "followup": 41,
+  "date": "2026-11-03",
+  "status": "runtime fixes and final 13 functional lab scenarios pass; required green gates blocked by original H-1 fixture restriction",
+  "all_required_gates_green": false,
+  "production": {
+    "source": "f1ed8f3bba25ed233ad81e290ad6c9068a506b89",
+    "main": "c98ea61c1a860476c6570ca60ae29b5061296e6a",
+    "archive_sha256": "76237d6b3fa79d60f72b95e795e48ff26f2d8f5029c2e438ea790cfd1f51d7b3",
+    "verified_blobs": 18718,
+    "functional_only": true,
+    "optional_timing_export": false,
+    "binary_sha256": {
+      "fvpn-agent": "45264982d76d9a15599ca6be23bebb9c0c1972ed66311191567534e502f9b05a",
+      "fvpn-watchdog": "36cf9ac5d4fe037a1bd9c4d7862adf06923aef6ff118a02d51e55c88e0f1ae98",
+      "fvpn-labcontrol": "336faca23e599da379baef3d957877bbe148a40eceb5b9c109818aceaaf6fef8"
+    },
+    "fixture_image": {
+      "image_id": "sha256:2d2dda7752b3c38e4a7906688c40f88b8f9e8e9b54e08be41766faa4ef49d545"
+    },
+    "passed_scenarios": [
+      "TestLabISO_F6_RecoveryAndEvidence",
+      "TestLabD087_D104_GrantRenewalExpiryCorrelation",
+      "TestLabUsageLedger",
+      "TestLabExternalMeterReset",
+      "TestLabF36_AT13_RestartChangedSetsStopsEstablishedFlow",
+      "TestLab08_HealthAttestationUnpublished",
+      "TestLab01_ForwardOnlyAfterLease",
+      "TestLab02_WatchdogEnforces",
+      "TestLab03_KernelTimeout",
+      "TestLab04_RestartKeepsVerifiedLease",
+      "TestLab05_NoAllowAllOnUpdate",
+      "TestLab07_UnpublishedBaselineAck",
+      "TestLab06_RevokedStopsForwarding"
+    ],
+    "skipped_optional_scenarios": [
+      "TestD116_AT10_InstallerMarkerEnrollment"
+    ],
+    "result": {
+      "gate": "production-netlab",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test-netlab",
+        "FVPN_LAB_PREFIX=fvpn-w2-agent-core-f41",
+        "MAKE=<admission-wrapper>"
+      ],
+      "exit": 0,
+      "source": "f1ed8f3bba25ed233ad81e290ad6c9068a506b89",
+      "functional_only": true,
+      "optional_timing_export": false
+    }
+  },
+  "runtime_equivalence": {
+    "broad_gate_source": "ee601702",
+    "production_source": "f1ed8f3bba25ed233ad81e290ad6c9068a506b89",
+    "changed_paths": [
+      "docs/node/followup41-r24-judgments-2026-11-03.md",
+      "tests/netlab/agent/scenario_at_usage_test.go"
+    ],
+    "production_binaries_identical_to_first_lab": true
+  },
+  "environment": {
+    "CGO_ENABLED": "0",
+    "GOTOOLCHAIN": "local",
+    "TMPDIR": ".agent/tmp",
+    "GOTMPDIR": ".agent/tmp",
+    "GOCACHE": "~/.cache/go-build",
+    "cache_source": "go env GOCACHE",
+    "admission": "bash \"$FVPN_HOLD_SH\" must print free before each Go test, make and Docker command",
+    "reservation_taken": false
+  },
+  "d141": {
+    "proof_source": "ba5d3004",
+    "unmodified_import": "660ab392",
+    "starting_tip": "b17c8c17",
+    "judgment_and_inventory_commit": "1ebc1fe3",
+    "original_H1_before": "three extra Applies",
+    "original_H3_before": "one-hour device shortened to five minutes",
+    "both_pre_existing": true,
+    "original_review_files_unchanged": true,
+    "main_merge": "6b6a26b0",
+    "enforcement_owner_files_edited_by_lane": false
+  },
+  "fixture_proposal": {
+    "source": "ee6017027a413c343828512a8f84698638309781",
+    "patch": "r24-h1-fixture.patch",
+    "patch_sha256": "14dcaccdf073e991e8c3cd35eb957a8fbd5749eeb5862fd8ba83142804a408fe",
+    "tracked_proof_unchanged": true,
+    "assertions_unchanged": true,
+    "overlay_test_exit": 0,
+    "overlay_receipt": "proposed-r24-h1-setup.log",
+    "approval": "pending"
+  },
+  "gates": [
+    {
+      "gate": "final-node-lint-build",
+      "source": "ee6017027a413c343828512a8f84698638309781",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-lint",
+        "node-build"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T14:52:04Z",
+      "receipt": ".agent/f41/final-node-lint-build.log"
+    },
+    {
+      "gate": "final-node-test",
+      "source": "ee6017027a413c343828512a8f84698638309781",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test"
+      ],
+      "exit": 2,
+      "utc": "2026-11-03T14:54:16Z",
+      "receipt": ".agent/f41/final-node-test.log",
+      "failure": "original H-1 fixture changes effective policy expiry by 1 ms; setup correction pending authorization"
+    },
+    {
+      "gate": "final-node-integration",
+      "source": "ee6017027a413c343828512a8f84698638309781",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test-integration"
+      ],
+      "exit": 2,
+      "utc": "2026-11-03T14:56:30Z",
+      "receipt": ".agent/f41/final-node-integration.log",
+      "failure": "original H-1 fixture changes effective policy expiry by 1 ms; setup correction pending authorization"
+    },
+    {
+      "gate": "final-consumers",
+      "source": "ee6017027a413c343828512a8f84698638309781",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./node/updater/...",
+        "./packaging/installer/..."
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T14:56:51Z",
+      "receipt": ".agent/f41/final-consumers.log"
+    },
+    {
+      "gate": "final-reviews-r16-r19",
+      "source": "ee6017027a413c343828512a8f84698638309781",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./node/agent",
+        "./node/enforce",
+        "-run",
+        "^TestReviewR1[6-9]_"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T14:57:11Z",
+      "receipt": ".agent/f41/final-reviews-r16-r19.log"
+    },
+    {
+      "gate": "final-reviews-r20-r24",
+      "source": "ee6017027a413c343828512a8f84698638309781",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./node/agent",
+        "./node/agent/cmd/fvpn-agent",
+        "./node/watchdog",
+        "./node/enforce",
+        "-run",
+        "^Test(R2[0-4]_|ReviewR2[0-4]_|ReviewR11_ClearFailureNextStep)"
+      ],
+      "exit": 1,
+      "utc": "2026-11-03T14:57:52Z",
+      "receipt": ".agent/f41/final-reviews-r20-r24.log",
+      "failure": "original H-1 fixture changes effective policy expiry by 1 ms; setup correction pending authorization"
+    },
+    {
+      "gate": "final-handover",
+      "source": "ee6017027a413c343828512a8f84698638309781",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T14:57:56Z",
+      "receipt": ".agent/f41/final-handover.log"
+    },
+    {
+      "gate": "final-go-lint",
+      "source": "ee6017027a413c343828512a8f84698638309781",
+      "command": [
+        "make",
+        "go-lint",
+        "go-with-disk-tmp=set -eu;"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T14:58:00Z",
+      "receipt": ".agent/f41/final-go-lint.log"
+    },
+    {
+      "gate": "final-vet",
+      "source": "ee6017027a413c343828512a8f84698638309781",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T14:58:00Z",
+      "receipt": ".agent/f41/final-vet.log"
+    },
+    {
+      "gate": "final-evidence",
+      "source": "ee6017027a413c343828512a8f84698638309781",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/netlab",
+        "-run",
+        "^TestCommittedEvidenceFiles_ValidAndHygieneClean$"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T14:58:03Z",
+      "receipt": ".agent/f41/final-evidence.log"
+    },
+    {
+      "gate": "final-fixture-hygiene",
+      "source": "ee6017027a413c343828512a8f84698638309781",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/e2e",
+        "-run",
+        "^TestCommittedFixtureEvidence_ValidAndHygieneClean$"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T14:58:11Z",
+      "receipt": ".agent/f41/final-fixture-hygiene.log"
+    },
+    {
+      "gate": "final-all-tests",
+      "source": "ee6017027a413c343828512a8f84698638309781",
+      "command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "exit": 1,
+      "utc": "2026-11-03T15:00:32Z",
+      "receipt": ".agent/f41/final-all-tests.log",
+      "failure": "original H-1 fixture changes effective policy expiry by 1 ms; setup correction pending authorization"
+    },
+    {
+      "gate": "production-netlab-attempt1",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test-netlab",
+        "FVPN_LAB_PREFIX=fvpn-w2-agent-core-f41",
+        "MAKE=<admission-wrapper>"
+      ],
+      "exit": 2,
+      "source": "ee6017027a413c343828512a8f84698638309781",
+      "functional_only": true,
+      "optional_timing_export": false,
+      "receipt": ".agent/f41/production-attempt1/suite.log",
+      "failure": "usage setup single UDP burst did not move admission counters; initial gate retained"
+    },
+    {
+      "gate": "production-netlab",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test-netlab",
+        "FVPN_LAB_PREFIX=fvpn-w2-agent-core-f41",
+        "MAKE=<admission-wrapper>"
+      ],
+      "exit": 0,
+      "source": "f1ed8f3bba25ed233ad81e290ad6c9068a506b89",
+      "functional_only": true,
+      "optional_timing_export": false,
+      "receipt": ".agent/f41/production/suite.log"
+    },
+    {
+      "gate": "final-lab-setup-lint",
+      "source": "f1ed8f3bba25ed233ad81e290ad6c9068a506b89",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-lint"
+      ],
+      "exit": 0,
+      "utc": "2026-11-03T15:11:34Z",
+      "receipt": ".agent/f41/final-lab-setup-lint.log"
+    },
+    {
+      "gate": "delivery-all-tests",
+      "source": "f1ed8f3bba25ed233ad81e290ad6c9068a506b89",
+      "command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "exit": 1,
+      "utc": "2026-11-03T15:15:16Z",
+      "receipt": ".agent/f41/delivery-all-tests.log",
+      "failure": "only original H-1 fixture; setup correction pending authorization",
+      "working_tree_note": "production at f1ed8f3b plus staged outcome/validation documents"
+    }
+  ],
+  "raw_receipt_pins": [
+    {
+      "path": ".agent/f41/before-r24.log",
+      "bytes": 1906,
+      "sha256": "d1d3833ff4333c9ece4f9078babf55f0a176cb185a9ce45ef10fd1afbf690c36"
+    },
+    {
+      "path": ".agent/f41/before-actual304.log",
+      "bytes": 257,
+      "sha256": "1c20c2443111f41c156cb14918a2d78512d081393a3f62417638f7ab6af12f81"
+    },
+    {
+      "path": ".agent/f41/h1-independent-before-presence-2.log",
+      "bytes": 4139,
+      "sha256": "0f799f8bf51b922c3ccafc18f24f6437c29ff113da3d050157ee256638281597"
+    },
+    {
+      "path": ".agent/f41/h1-independent-fixed.log",
+      "bytes": 5027,
+      "sha256": "fd3c9c2ced7e346436151b641876971b56cd93ddbc3ad4109c133152a1945475"
+    },
+    {
+      "path": ".agent/f41/broad-agent.log",
+      "bytes": 12851,
+      "sha256": "39770e689e84f12679ebc6438d7d5a56256fc08a94528bf26005671f5af900d1"
+    },
+    {
+      "path": ".agent/f41/adapted-fixtures.log",
+      "bytes": 2674,
+      "sha256": "c9b81921ce2f995626b3f78db3f87e8821501557732f92a423efb477e27a7554"
+    },
+    {
+      "path": ".agent/f41/before-distant.log",
+      "bytes": 324,
+      "sha256": "518b1b0e639607a4faea20840dead71ae9371f7bf814a9a23a881a26105bb5ac"
+    },
+    {
+      "path": ".agent/f41/distant-fixed.log",
+      "bytes": 297,
+      "sha256": "a0d52f04f874871c4c18addc3a7f28a8a5cb7a2cd17fca39481ae0aa2c21f506"
+    },
+    {
+      "path": ".agent/f41/merged-mechanisms.log",
+      "bytes": 11798,
+      "sha256": "63b39795e8eb91f32308e71d513985f3f128af67d3125b31b31f6ca8235c3f91"
+    },
+    {
+      "path": ".agent/f41/proposed-r24-h1-setup.log",
+      "bytes": 195,
+      "sha256": "5faa16b246c7631220d81774e74fc49828599219987f7f072f75bf12d7383ee9"
+    },
+    {
+      "path": ".agent/f41/production-attempt1/suite.log",
+      "bytes": 28085,
+      "sha256": "a0ef01b8ca1b72f75191b0db3c3443e6f14a6068ba3c8611c7a4b188f51db056"
+    },
+    {
+      "path": ".agent/f41/production/suite.log",
+      "bytes": 11687,
+      "sha256": "e175c6d5ee75a814104d404ebd163e1d591383616e4691f43415287f5c11a4be"
+    },
+    {
+      "path": ".agent/f41/r24-h1-fixture.patch",
+      "bytes": 510,
+      "sha256": "14dcaccdf073e991e8c3cd35eb957a8fbd5749eeb5862fd8ba83142804a408fe"
+    },
+    {
+      "path": ".agent/f41/delivery-all-tests.log",
+      "bytes": 9451,
+      "sha256": "af6faeac8131fc6dcdc7e8af7d65b466ca1480c9d635bad1dc7eecf935e4fd7f"
+    }
+  ],
+  "hygiene": {
+    "source": "f1ed8f3bba25ed233ad81e290ad6c9068a506b89",
+    "main": "d7867928d48a7f75259f84abf1b29a9e37675fcb",
+    "owned_paths_only": true,
+    "public_diff_clean": true,
+    "gofmt_empty": true,
+    "diff_check_clean": true,
+    "prior_node_records_preserved": true,
+    "consumers_and_enforce_unchanged": true,
+    "r24_import_unchanged": true,
+    "earlier_tip_in_ancestry": true
+  },
+  "inventory": {
+    "prefix": "fvpn-w2-agent-core-f41",
+    "removed": {
+      "containers": [],
+      "images": [],
+      "networks": [],
+      "volumes": []
+    },
+    "remaining": {
+      "containers": [],
+      "images": [],
+      "networks": [],
+      "volumes": []
+    }
+  },
+  "owned_processes": [],
+  "timing": {
+    "reservation_taken": false,
+    "D133_comparison_run": false,
+    "optional_whole_suite_timing_export": false,
+    "status": "NOT RUN; later quiet A,B,A,B for 37–41 is owed",
+    "functional_suite": "ordinary deadline/correlation tests retain their existing diagnostics; no separate timing campaign or A/B analysis"
+  },
+  "limits": [
+    "Original r24 H-1 fixture setup correction awaits authorization; no green all-tests claim.",
+    "D-104 already permits element expiry in (D-101ms,D]; no exact zero-early-expiry guarantee.",
+    "Physical arm64 and field networks remain unmeasured.",
+    "C1 remains unimplemented; expiry still uses conservative withdrawal and settlement.",
+    "First lab single-burst miss retained; snapshot alone does not establish exact cause."
+  ],
+  "final_reference_audit": {
+    "compared_main": "e54700f9d2f8361b8905c44e51f3f32bb82e5bcf",
+    "merged_main": "c98ea61c",
+    "later_changes": "documentation and tests/e2e/at/isolation only",
+    "second_main_merge_taken": false,
+    "production_node_code_changed_after_merged_main": false
+  },
+  "continuations": [
+    {
+      "continuation": 1,
+      "label": "10:25",
+      "date": "2026-11-03",
+      "approval": "orchestrator approved exact setup-only H-1 correction",
+      "patch_commit": "56829cc48d0d1ae328b41da402d7de76f862f2f0",
+      "patch_sha256": "14dcaccdf073e991e8c3cd35eb957a8fbd5749eeb5862fd8ba83142804a408fe",
+      "proof_change": "H-1 differs from ba5d3004 by exactly the three approved setup lines; name, doc comment, assertions and all other bytes preserved",
+      "watchdog_r24_unchanged": true,
+      "reason": "fake signer refreshes issued=now-1min and expiry, yielding 200s; freezing at the snapshot signing instant produces the intended 304s; real control returns 304 on an ETag match",
+      "before": "original canonical H-1 failed on 9415fd51 with one required Apply for a real 1ms policy-expiry change",
+      "after_proof_receipt": ".agent/f41/c1-h1-proof.log",
+      "after_proof_exit": 0,
+      "canonical_gates_status": "pending rerun",
+      "production_source": "f1ed8f3bba25ed233ad81e290ad6c9068a506b89",
+      "production_files_changed": false,
+      "lab_rerun": false,
+      "reservation_taken": false,
+      "timing_measurement": false,
+      "D133_arm": false,
+      "requests": {
+        "fixture": "approved and applied",
+        "enforcement_comment": "routed to netlab",
+        "D133": "scheduled after r25 and follow-up 42"
+      },
+      "completion": {
+        "canonical_gates_status": "all requested canonical gates pass",
+        "all_requested_gates_green": true,
+        "canonical_source": "71b4d9d5dc58beaf9425a2162463fbd66b8289e8",
+        "gates": [
+          {
+            "gate": "c1-h1-proof",
+            "source": "56829cc48d0d1ae328b41da402d7de76f862f2f0",
+            "command": [
+              "go",
+              "test",
+              "-count=1",
+              "-v",
+              "./node/agent",
+              "-run",
+              "^TestR24_H1_SteadyStateNoOpStepReappliesEveryPollTick$"
+            ],
+            "exit": 0,
+            "utc": "2026-11-03T15:24:41Z",
+            "receipt": ".agent/f41/c1-h1-proof.log",
+            "receipt_sha256": "fdb918df11818589fb9938b19ef899875e753f540f6d722a5ae3006239d727e8"
+          },
+          {
+            "gate": "c1-node-test",
+            "source": "71b4d9d5dc58beaf9425a2162463fbd66b8289e8",
+            "command": [
+              "make",
+              "-f",
+              "mk/node.mk",
+              "node-test"
+            ],
+            "exit": 0,
+            "utc": "2026-11-03T15:27:55Z",
+            "receipt": ".agent/f41/c1-node-test.log",
+            "receipt_sha256": "4a456b348aef3b575bf819448f3cb8c6e4331f565a44f0dfd39272e6f8187c4b"
+          },
+          {
+            "gate": "c1-node-integration",
+            "source": "71b4d9d5dc58beaf9425a2162463fbd66b8289e8",
+            "command": [
+              "make",
+              "-f",
+              "mk/node.mk",
+              "node-test-integration"
+            ],
+            "exit": 0,
+            "utc": "2026-11-03T15:30:09Z",
+            "receipt": ".agent/f41/c1-node-integration.log",
+            "receipt_sha256": "5b53f1712466fbdf816aebaca85d8940ed63052082538c6826a3605dede48f1e"
+          },
+          {
+            "gate": "c1-reviews-r20-r24",
+            "source": "71b4d9d5dc58beaf9425a2162463fbd66b8289e8",
+            "command": [
+              "go",
+              "test",
+              "-count=1",
+              "-v",
+              "./node/agent",
+              "./node/agent/cmd/fvpn-agent",
+              "./node/watchdog",
+              "./node/enforce",
+              "-run",
+              "^Test(R2[0-4]_|ReviewR2[0-4]_|ReviewR11_ClearFailureNextStep)"
+            ],
+            "exit": 0,
+            "utc": "2026-11-03T15:30:51Z",
+            "receipt": ".agent/f41/c1-reviews-r20-r24.log",
+            "receipt_sha256": "6ab9c73745edf243dcc30f375ff71d7cb3d37d93c771c6814f4ea5bcdb4a2aa7"
+          },
+          {
+            "gate": "c1-go-lint",
+            "source": "71b4d9d5dc58beaf9425a2162463fbd66b8289e8",
+            "command": [
+              "make",
+              "go-lint",
+              "go-with-disk-tmp=set -eu;"
+            ],
+            "exit": 0,
+            "utc": "2026-11-03T15:30:54Z",
+            "receipt": ".agent/f41/c1-go-lint.log",
+            "receipt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "gate": "c1-vet",
+            "source": "71b4d9d5dc58beaf9425a2162463fbd66b8289e8",
+            "command": [
+              "go",
+              "vet",
+              "./..."
+            ],
+            "exit": 0,
+            "utc": "2026-11-03T15:30:54Z",
+            "receipt": ".agent/f41/c1-vet.log",
+            "receipt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "gate": "c1-consumers",
+            "source": "71b4d9d5dc58beaf9425a2162463fbd66b8289e8",
+            "command": [
+              "go",
+              "test",
+              "-count=1",
+              "./node/updater/...",
+              "./packaging/installer/..."
+            ],
+            "exit": 0,
+            "utc": "2026-11-03T15:31:16Z",
+            "receipt": ".agent/f41/c1-consumers.log",
+            "receipt_sha256": "caa49dfaefa9e0b1d31bf88f421ff9f1f233a62b911de701751c5cc1c8d475d1"
+          },
+          {
+            "gate": "c1-handover",
+            "source": "71b4d9d5dc58beaf9425a2162463fbd66b8289e8",
+            "command": [
+              "go",
+              "test",
+              "-count=1",
+              "./tests/handover/..."
+            ],
+            "exit": 0,
+            "utc": "2026-11-03T15:31:20Z",
+            "receipt": ".agent/f41/c1-handover.log",
+            "receipt_sha256": "39172385d2be968484ca553ea7f6993766d41558c9ff18755807571f129d1d77"
+          },
+          {
+            "gate": "c1-evidence",
+            "source": "71b4d9d5dc58beaf9425a2162463fbd66b8289e8",
+            "command": [
+              "go",
+              "test",
+              "-count=1",
+              "./tests/netlab",
+              "-run",
+              "^TestCommittedEvidenceFiles_ValidAndHygieneClean$"
+            ],
+            "exit": 0,
+            "utc": "2026-11-03T15:31:23Z",
+            "receipt": ".agent/f41/c1-evidence.log",
+            "receipt_sha256": "dca30a17657d85698a9d643031eec679a57036ce56f88daea408fdc414031d0e"
+          },
+          {
+            "gate": "c1-fixture-hygiene",
+            "source": "71b4d9d5dc58beaf9425a2162463fbd66b8289e8",
+            "command": [
+              "go",
+              "test",
+              "-count=1",
+              "./tests/e2e",
+              "-run",
+              "^TestCommittedFixtureEvidence_ValidAndHygieneClean$"
+            ],
+            "exit": 0,
+            "utc": "2026-11-03T15:31:31Z",
+            "receipt": ".agent/f41/c1-fixture-hygiene.log",
+            "receipt_sha256": "126358b53234abe37c71ca6263d23b05d0ab06274084354ac23b52b0bd0c0818"
+          },
+          {
+            "gate": "c1-gofmt",
+            "source": "71b4d9d5dc58beaf9425a2162463fbd66b8289e8",
+            "command": [
+              "python3",
+              "-B",
+              ".agent/f41/c1-format.py"
+            ],
+            "exit": 0,
+            "utc": "2026-11-03T15:31:31Z",
+            "receipt": ".agent/f41/c1-gofmt.log",
+            "receipt_sha256": "d9f5ee91167112e59cd454dfd909fed19df0f885c82625fefc317133a0ef5054"
+          },
+          {
+            "gate": "c1-diff-check",
+            "source": "71b4d9d5dc58beaf9425a2162463fbd66b8289e8",
+            "command": [
+              "git",
+              "diff",
+              "--check",
+              "9415fd51",
+              "HEAD"
+            ],
+            "exit": 0,
+            "utc": "2026-11-03T15:31:31Z",
+            "receipt": ".agent/f41/c1-diff-check.log",
+            "receipt_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "gate": "c1-all-tests",
+            "source": "71b4d9d5dc58beaf9425a2162463fbd66b8289e8",
+            "command": [
+              "go",
+              "test",
+              "./..."
+            ],
+            "exit": 0,
+            "utc": "2026-11-03T15:33:53Z",
+            "receipt": ".agent/f41/c1-all-tests.log",
+            "receipt_sha256": "7f2ef97850da3cc709ab6a05e63e52c95cb9a1f08236ea8508c8bca4e5a9268c"
+          }
+        ],
+        "scope_audit": {
+          "source": "71b4d9d5dc58beaf9425a2162463fbd66b8289e8",
+          "scope_paths": [
+            "docs/node/followup41-outcome-2026-11-03.md",
+            "docs/node/followup41-validation-2026-11-03.json",
+            "node/agent/review_r24_test.go"
+          ],
+          "approved_patch_only": true,
+          "original_assertions_and_doc_comment_preserved": true,
+          "watchdog_proof_unchanged": true,
+          "patch_commit_test_only": true,
+          "prior_outcome_bytes_preserved": true,
+          "prior_validation_values_preserved": true,
+          "production_unchanged_from_lab_f1ed8f3b": true,
+          "original_delivery_ancestor": true,
+          "public_diff_clean": true,
+          "diff_check_clean": true
+        },
+        "production_receipt_unchanged": "13/13 functional netlab on f1ed8f3b; no lab rerun",
+        "outstanding_requests": []
+      }
+    }
+  ]
+}
