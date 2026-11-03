@@ -1,0 +1,121 @@
+{
+  "wait_seconds": 90.17156667100062,
+  "admitted": true,
+  "rows": [
+    {
+      "utc": "2026-11-03T06:43:05.523594+00:00",
+      "load_before": [
+        3.81298828125,
+        2.43994140625,
+        1.83251953125
+      ],
+      "load_after": [
+        3.8955078125,
+        2.57666015625,
+        1.8974609375
+      ],
+      "before": {
+        "pgrep": "",
+        "pgrep_exit": 1,
+        "suites": [],
+        "timing_sensitive": []
+      },
+      "after": {
+        "pgrep": "2002466 /bin/bash -c make -f mk/at-isolation.mk at-isolation-lint at-isolation-test at-isolation-build > .agent/f17/lane-gates-final.log 2>&1\n2002473 make -f mk/at-isolation.mk at-isolation-lint at-isolation-test at-isolation-build\n",
+        "pgrep_exit": 0,
+        "suites": [
+          {
+            "pid": 2002473,
+            "ppid": 2002466,
+            "args": "make -f mk/at-isolation.mk at-isolation-lint at-isolation-test at-isolation-build",
+            "sensitive": false
+          }
+        ],
+        "timing_sensitive": []
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  1 138164 7201712 1791768 166503612    4   12 152704 140208 23396   20  3  2 94  1  0  0\n 5  0 138164 6839732 1792036 166541144    0    0    34 109342 35232 21707  7  1 91  1  0  0\n 2  0 138164 6792844 1792164 166535280    0    0    38 79974 24234 24847 10  2 87  1  0  0\n 1  1 138164 7145176 1792180 166543164    0    0     0 44930 18786 30509  6  4 90  0  0  0\n 2  1 138164 7126628 1792280 166550228    0    0    21 143379 26141 47295  4  5 90  1  0  0\n 7  0 138164 6451944 1797164 166837040    0    0 51520 145690 79635 75576 14  6 78  2  0  0\n 3  3 138164 5857572 1798024 167003028    0    0 21618 148337 156581 60556 18  6 73  3  0  0\n",
+      "ignore_first_since_boot_row": true,
+      "quiet": false,
+      "current": [
+        {
+          "r": 5,
+          "idle": 91
+        },
+        {
+          "r": 2,
+          "idle": 87
+        },
+        {
+          "r": 1,
+          "idle": 90
+        },
+        {
+          "r": 2,
+          "idle": 90
+        },
+        {
+          "r": 7,
+          "idle": 78
+        },
+        {
+          "r": 3,
+          "idle": 73
+        }
+      ]
+    },
+    {
+      "utc": "2026-11-03T06:44:05.611223+00:00",
+      "load_before": [
+        3.1826171875,
+        2.5478515625,
+        1.91015625
+      ],
+      "load_after": [
+        2.0693359375,
+        2.33544921875,
+        1.85888671875
+      ],
+      "before": {
+        "pgrep": "",
+        "pgrep_exit": 1,
+        "suites": [],
+        "timing_sensitive": []
+      },
+      "after": {
+        "pgrep": "",
+        "pgrep_exit": 1,
+        "suites": [],
+        "timing_sensitive": []
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  0 138164 6681336 1798836 167346596    4   12 151994 139872 23539   20  3  2 94  1  0  0\n 0  0 138164 6802380 1798848 167349796    0    0     2  8761 4120 6490  0  0 99  0  0  0\n 0  0 138164 6884028 1798860 167348340    0    0    25  5835 3178 4942  0  0 100  0  0  0\n 0  0 138164 6935964 1798868 167348440    0    0     2  3553 3107 5008  0  0 100  0  0  0\n 1  0 138164 6963244 1798868 167348568    0    0    24   146 3817 5392  0  1 99  0  0  0\n 0  4 138164 6961196 1798868 167348588    0    0     8    79 3326 5273  1  0 99  0  0  0\n 0  0 138164 6363472 1799064 167585136    0    0 44870  2918 4444 6957  2  0 97  0  0  0\n",
+      "ignore_first_since_boot_row": true,
+      "quiet": true,
+      "current": [
+        {
+          "r": 0,
+          "idle": 99
+        },
+        {
+          "r": 0,
+          "idle": 100
+        },
+        {
+          "r": 0,
+          "idle": 100
+        },
+        {
+          "r": 1,
+          "idle": 99
+        },
+        {
+          "r": 0,
+          "idle": 99
+        },
+        {
+          "r": 0,
+          "idle": 97
+        }
+      ]
+    }
+  ]
+}

@@ -229,3 +229,25 @@ func TestISO01_F27_IntervalBoundaries(t *testing.T) {
 		}
 	}
 }
+
+func TestISO01_F27_ProbeBaselineAdmissionMustBeEmpty(t *testing.T) {
+	m := smallModel()
+	m.Probe = probeModel().Probe
+	raw := probeBaselineFixture(m, true)
+	if err := VerifyBaseline(raw, m); err != nil {
+		t.Fatal(err)
+	}
+	for name, element := range map[string]any{
+		"timed_host": elemVal("100.64.1.1", map[string]any{"timeout": 30, "expires": 29}),
+		"prefix":     map[string]any{"prefix": map[string]any{"addr": "100.64.0.0", "len": 10}},
+		"unknown":    map[string]any{"unexpected": nil},
+	} {
+		t.Run(name, func(t *testing.T) {
+			changed := f27ChangeSet(raw, "allowed_v4", func(s map[string]any) { s["elem"] = []any{element} })
+			var check *CheckError
+			if err := VerifyBaseline(changed, m); !errors.As(err, &check) || check.Reason != ReasonIsolation {
+				t.Fatalf("baseline admission: %v", err)
+			}
+		})
+	}
+}
