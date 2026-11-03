@@ -559,6 +559,11 @@ func (e *Engine) Run(ctx context.Context) error {
 	if err := e.Boot(ctx); err != nil {
 		return err
 	}
+	// A TERM'd Boot can successfully finish its local baseline. Do not start
+	// a new Step audit/budget before Close after that completed stop request.
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 	interval := e.stepInterval()
 	// SIGHUP reloads resolver credentials between steps. It does not stop
 	// the process. SIGINT and SIGTERM still cancel ctx.

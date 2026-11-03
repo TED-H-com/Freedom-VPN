@@ -452,3 +452,45 @@ func TestR21_M2_TermAfterBaselineKeepsNormalStopOnLedgerTimeout(t *testing.T) {
 		t.Fatalf("completed baseline lost normal TERM status: %v", err)
 	}
 }
+
+type r21AfterBootAuditPlane struct {
+	*memPlane
+	calls  int
+	block  bool
+	cancel context.CancelFunc
+}
+
+func (p *r21AfterBootAuditPlane) Baseline(ctx context.Context, dp enforce.Datapath) error {
+	err := p.memPlane.Baseline(ctx, dp)
+	if p.cancel != nil {
+		p.cancel()
+	}
+	return err
+}
+
+func (p *r21AfterBootAuditPlane) VerifyServing(ctx context.Context, m enforce.Model, a map[uuid.UUID]uint16) (enforce.ServingEvidence, error) {
+	if p.block {
+		p.calls++
+		<-ctx.Done()
+		return enforce.ServingEvidence{}, ctx.Err()
+	}
+	return p.memPlane.VerifyServing(ctx, m, a)
+}
+
+func TestR21_M2_TermCompletedBootDoesNotStartAnotherStepBudget(t *testing.T) {
+	r, src, _ := r20ServedPendingDelta(t)
+	p := &r21AfterBootAuditPlane{memPlane: r.plane, block: true}
+	next := r20Successor(t, r, r20ChangedSets(r), src, p)
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	p.cancel = cancel
+	err := next.Run(ctx)
+	p.block = false
+	defer next.Close()
+	if !errors.Is(err, context.Canceled) || !next.baselineOK {
+		t.Fatalf("TERM did not complete its baseline normally: %v baseline=%v", err, next.baselineOK)
+	}
+	if p.calls != 0 {
+		t.Fatalf("TERM after Boot started %d additional Step audits outside Boot+Close budget", p.calls)
+	}
+}
