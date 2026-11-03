@@ -1,56 +1,9 @@
-# Follow-up 16 acceptance results
+# Follow-up 17 acceptance results
 
-Run `0ffb355a-945b-4198-a551-3794120a686c`, measured harness `3a8b61594b447d164bb7c9481545e207f8688ec2`, baseline `d640ce96d9145e57a60e04e5875e049070f30b96`.
+The single assembled run is pending host admission. No new result is claimed yet.
 
-**2 PASS / 6 BLOCKED / 2 FAIL**, with **679 passed / 6 blocked / 7 failed subchecks**. One assembled ten-case run; live make exit **2**. No assembled run was repeated after the reboot.
+D-098 first commit `4d73c80a` freezes all 81 root files of run `0ffb355a-945b-4198-a551-3794120a686c`, byte-identical including gzip, under [follow-up 16](history/follow-up-16/INDEX.md). [Published harness commit mapping](history/follow-up-16/PUBLISHED-COMMITS.md) is additive; original IDs and historical outcomes stay unchanged.
 
-**D-133 contention:** the orchestrator reported CPU-heavy handover gates at **2026-11-01 17:32:43–17:37:12 UTC**. Every timing, failure and anomaly overlapping that window is **contention-confounded**, with `cause_status=unproven`; measured values and verdicts stand. [Complete time and step index](F16-contention.json) includes 46 AT02 steps completed in the window and cumulative references in later records. Finite-expiry withdrawal/restoration, the second re-grant, SIGTERM/usage stop/resume, node2 preparation, alarm recovery and sibling removal overlap. The 4,724-send stream, initial AT01 selection, sole-member/retained-safety holds and fresh AT09 measurements are outside this reported window.
+Follow-up 16 remains **2 PASS / 6 BLOCKED / 2 FAIL**, **679 / 6 / 7** subchecks, including its contention window and four AT09 failures. [Original results](history/follow-up-16/summary.md). D-135/D-136 remain provisional; F11-01 and F14-01 causes remain unproven. A passing selection closes neither.
 
-| Case | Requirements | Status | Pass / blocked / fail |
-|---|---|---|---:|
-| [AT05](AT05.json) | NODE01 NODE04 ENR01 ENR04 PKG01 | blocked | 31 / 0 / 0 |
-| [AT01](AT01.json) | APP01 ID01 MEM01 | blocked | 19 / 0 / 0 |
-| [AT02](AT02.json.gz) | MEM01 MEM02 MEM03 SEC01 | fail | 184 / 0 / 3 |
-| [AT03](AT03.json) | BILL01 BILL03 ENT01 | pass | 98 / 0 / 0 |
-| [AT04](AT04.json) | BILL02 ENT02 MEM03 | blocked | 113 / 0 / 0 |
-| [AT08](AT08.json) | NODE02 NODE03 EXIT01 EXIT03 | pass | 35 / 0 / 0 |
-| [AT20](AT20.json) | DNS01 DNS02 ISO04 | blocked | 89 / 0 / 0 |
-| [AT21](AT21.json) | DNS03 DNS04 APP01 | blocked | 13 / 0 / 0 |
-| [AT22](AT22.json) | SEC02 DNS01 DNS04 | blocked | 40 / 0 / 0 |
-| [AT09](AT09.json) | EXIT02 APP01 NFR01 | fail | 57 / 6 / 4 |
-
-AT02 has a member-side monotonic before/after and UTC before/after timestamp for **every one of 4,724 sends** (0 send errors). All 4,724 reach node ingress; **19 have no observed egress**: 11 inside completed guards, 8 outside guards but inside baseline/recovery. Every loss remains in the denominator. No ingress gap exceeds 100 ms; this does not explain the historical 5.0975-second gap. Capture drops/read errors are zero. `measurement_valid=true`; the provisional zero-loss check remains **FAIL**. There are 185 successful Applies and 61 baseline calls in the original primary-node trace, zero failed Applies there; three recovery brackets overlap the continuous stream. The separate node2 hold has two failed Applies and does not retroactively exercise the primary-stream F11-03 row.
-
-[Every-send/guard/baseline/revocation join](F16-AT02-every-send.json), [original recovery](F16-AT02-recovery.json.gz), [policy windows](F16-AT02-policy-missing.json.gz), [native packet/session index](history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/session-index.json). Periodic TEST ONLY member/node samples retain route tables, selected endpoints and WireGuard latest-handshake. None of the four full-session captures contains `::1`-source traffic; IPv4 loopback initiation packets remain recorded. No node nft observer was added.
-
-The two other AT02 failed subchecks are redundant false→false unsuspend calls returning HTTP 200 where the harness expected 202. The first at 17:35:19 UTC is contention-confounded; the second at 17:40:25 is outside the window. Their original failures stand. Future calls check the current suspension state before issuing a restoration; the generic success predicate was not weakened.
-
-D-135/D-136 remain provisional. Ordinary stale leases take baseline → ACK → renew → Apply → verify → heartbeat; only a retained Apply error enables the verified deny-all candidate. No fixed outage ceiling, loss exclusion, full-h or partial-service classification is asserted. D-139 is still a design track. All historical failures and their unproven causes remain unchanged.
-
-Agent-core 34's durable reservation is included in the **`host.before_apply.end_ns` → `timing.start_ns`** bracket before Apply. The [reservation join](F16-pre-apply-reservations.json.gz) retains the original producer records, revoked-device request/command bounds, surviving-sibling baseline-to-recovery windows and both AT04 suspension monitors. Original `phase=revoke` commands establish a nonempty delete batch. Absence of such a command cannot exclude an early failed reservation/Apply. The bracket also includes common setup; it is not an isolated reservation latency. Request-to-install and baseline-to-Apply bounds include it once, without adding it twice.
-
-The inventory retains 792 Apply records and 19 records with original revoke commands. For AT02's revoked-device batch (producer sequence 398), the pre-Apply bracket is **1.264829 ms**; the before-command snapshot → restricting-install end bound is **3.270914141–3.270914407 s** (after-command snapshot → install: 2.651206713–2.651206979 s). For AT04 suspension, the queued batches have pre-Apply brackets **1.465935 ms** (node) and **1.762922 ms** (node2); suspension input → restricting-install end bounds are respectively **2.445555565–2.445555932 s** and **2.446532587–2.446533072 s**. These command bounds include reservation and are not exact packet cutoff instants. All 61 retained baseline-to-recovery intervals contain their full pre-Apply bracket.
-
-Four fresh arms produced **13 accepted hold samples**, **four alarm-triggered single escalations**, and exact node/incarnation/report/incident/audit joins. Alarm recovery has forwarded/local lease digest agreement and a separate serving report. A real suspension of the sole member in its own one-member populated lease ends **`members_revoked`**, with **no claim that service recovered**. The TC fault row has **two failed Applies** and **five safety-priority reports** carrying TC failures in lease, QoS and source binding alongside lease-stage STALE_GENERATION. A separate source-address fault was not exercised.
-
-Sibling continuation is **not exercised**: the real member suspension committed, but the last accepted hold report precedes it; the seam released on `generation_superseded` before an accepted survivor hold sample. Do not infer continuation from the earlier two-member reports. The alarm-recovery and sibling-removal timing observations are contention-confounded.
-
-[All row IDs, first/last seen and coverage](F16-populated-holds.md), [machine joins](F16-populated-hold-joins.json), [central incident/revocation join](F16-AT02-central-hold-join.json). Original `member.patch` audits were read from the same owned stack before teardown and [joined by exact ID](F16-AT02-member-patch-audits.json); the live query omission is fixed for future runs.
-
-AT01's original first selection still misses its five-second request deadline after serving readiness. The longer native capture sees the first SYN reach the node **5.222189904–5.222194186 s** after member emission, followed by the other queued SYNs. This late TCP exchange is not an authenticated HTTP receipt. All captures are complete with zero drops (216 / 250 / 61 member/node/origin records). A type-2 WireGuard response with `::1` source has the same message hash and IP hash at node egress and member ingress; both sampled latest handshakes remain 0 through the original transfer, and the member IPv6 header-error counter changes 0→1. These are joined observations, not an exact kernel discard trace or causal attribution. [Original attempt](F16-F11-01-first-selection.json), [hash/hop/counter join](F16-loopback-and-first-selection.json).
-
-All three original re-grants pass. Full native sessions surround the original AT02 population and preceding mutations, plus AT03 re-grant; request ports join the original forwarding records, receipts and counters. The second AT02 session overlaps contention, including its positive request. [All original attempts](F16-D077-regrant-attempts.json), [session index](history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/session-index.json), [comparison with af718646](F16-F14-01-assessment.md). af718646 reproduces the five-second symptom on a reduced population; it does not attribute 258ba504. Historical F14-01 `cause_status: unproven` is unchanged, and successful selections/re-grants close neither F11-01 nor F14-01.
-
-AT09 retains **four failed subchecks**: member exits API HTTP 401; the revision-11 provisional-observation predicate; its combined same-generation recovery assertion; and receive-only dual MTU 1280. [Individual review and exact original steps](F16-AT09-failure-review.json). The 401's exact reason was not retained; session expiry is unproven. Future runs re-authenticate before this long-campaign check. Restart reports include actual tunnel-probe/safety failures rather than only awaiting-grants reports; counted recovery is 11.776274584 s at unchanged generation 64 with the populated lease retained. No D-067 predicate or outcome is relaxed.
-
-The fresh receive-only dual row repeats **FAIL: 12,012 bytes / 12,011 ms**. All 18 selected reverse 1,340-byte datagrams are absent at member ingress, while smaller sizes arrive; no PTB or IPv4 fragmentation-needed packet is observed. The member underlays alone are set to 1280. This is an asymmetric **harness construct with a black-hole symptom**, not proof that a generated PTB failed to reach its sender. No waiver or upgrade. Historical e80bb592 remains 12,012 / 12,011, with its independent 24 missing datagrams.
-
-Receive-only IPv6 stays **BLOCKED**: historical 64,064 bytes / 1 ms; fresh 64,064 / 2 ms. The successful finite transfer uses small reverse datagrams and source fragmentation without routed PTB learning. IPv4 payload over IPv6 underlay does not establish IPv6-overlay support under D-123. The known-PMTU row is separate (64,064 / 1,004 ms).
-
-Fresh routed IPv6 passes 64,064 / 2 ms: one oversize ingress, one PTB observed at router and sender, 36 fragment egresses all received. Routed IPv4 passes 64,064 / 1 ms: 43 DF=0 oversize datagrams become 86 received fragments; no fragmentation-needed message. No measured AT09 row depends on an **inner IPv4 ICMP error from a spec-denied private source** traversing the node's member-download path. Such a dependency would be rejected by netlab 24's guard before RELATED accepts; the owner's question remains open. Outer native IPv6 PTB is a separate path. The topology was not reconfigured to evade the guard. Forced relay (Relayed=2 / Direct=0) and same-socket relay-to-direct recovery pass; historical failures remain failed.
-
-[D-137 assessment](F16-D137-assessment.md), [independent original rows](F16-D137-native-paths.json), [packet analysis](history/follow-up-16-captures/0ffb355a-945b-4198-a551-3794120a686c/analysis.json).
-
-D-098 is the first separate commit `56eb3c0b`: all **64 root files** of e80bb592, including gzip bytes and sidecars, are byte-identical in [follow-up 15](history/follow-up-15/RUN.md), with [SHA-256 pins](history/follow-up-15/SHA256SUMS). Every earlier archive is untouched. Handover claim tests read frozen evidence and explicitly reject living root pins; no D-132 one-file exception was needed. The plain [AT02.md index](AT02.md) is retained for Markdown links.
-
-[Run and gates](RUN.md); [limits](BLOCKERS.md); [owner assignments](requests.md).
+[Run ledger](RUN.md), [owner assignments](requests.md), [AT02 index](AT02.md).

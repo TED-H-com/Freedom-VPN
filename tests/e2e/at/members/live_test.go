@@ -67,6 +67,7 @@ type buildInfo struct {
 	BinaryVCS  map[string]map[string]string `json:"binary_vcs"`
 }
 type record struct {
+	MemberHTTP []memberHTTPRecord      `json:"member_http,omitempty"`
 	Nodes      map[string]string       `json:"node_incarnations,omitempty"`
 	Complete   bool                    `json:"complete"`
 	Forwarding []forwardingObservation `json:"forwarding,omitempty"`
@@ -83,6 +84,7 @@ type record struct {
 	Operator         string            `json:"operator_status,omitempty"`
 }
 type live struct {
+	memberHTTP                   []memberHTTPRecord
 	holdSnapshots                []map[string]any
 	dnsCapture                   *nativeCaptureSession
 	regrantCapture               *nativeCaptureSession
@@ -177,6 +179,7 @@ func TestATMembers_Live(t *testing.T) {
 			if focused && (task.id == "AT01" || task.id == "AT09") {
 				t.Skip("Follow-up 12: retain prior case; wait for devstack 22 exports/captures")
 			}
+			l.memberHTTP = nil
 			r := l.newRecord(task.id)
 			// Each independent case performs real OIDC reauthentication; never lengthen recent-auth policy.
 			l.admin = l.login("e2e-admin", "admin")
@@ -368,7 +371,7 @@ func (l *live) request(b *browser, method, endpoint string, body any, headers ma
 	defer resp.Body.Close()
 	raw, err = io.ReadAll(io.LimitReader(resp.Body, 2<<20))
 	if err != nil {
-		return response{code: "RESPONSE_READ_FAILED"}
+		return response{status: resp.StatusCode, headers: resp.Header, body: raw, code: "RESPONSE_READ_FAILED"}
 	}
 	var env struct {
 		Error struct {
@@ -379,7 +382,20 @@ func (l *live) request(b *browser, method, endpoint string, body any, headers ma
 	return response{resp.StatusCode, resp.Header, raw, env.Error.Code}
 }
 func (l *live) api(b *browser, method, path string, body any, headers map[string]string) response {
-	return l.request(b, method, "https://portal.example.invalid:8443"+path, body, headers)
+	started := time.Now().UTC()
+	got := l.request(b, method, "https://portal.example.invalid:8443"+path, body, headers)
+	if strings.HasPrefix(path, "/api/v1/member/") {
+		entry := memberHTTPRecord{Method: method, Path: strings.SplitN(path, "?", 2)[0], Started: started, Completed: time.Now().UTC(), Status: got.status, Code: got.code}
+		if got.status < 200 || got.status >= 300 {
+			var secrets []string
+			if b != nil {
+				secrets = []string{b.csrf, b.cred.Password, b.cred.Email}
+			}
+			entry.BodyExcerpt = memberResponseExcerpt(got.body, secrets...)
+		}
+		l.memberHTTP = append(l.memberHTTP, entry)
+	}
+	return got
 }
 func commandHeaders() map[string]string {
 	return map[string]string{"Idempotency-Key": uuid.NewString()}
@@ -465,6 +481,7 @@ func (l *live) write(r *record) {
 		copy.Blockers = append(append([]string{}, r.Blockers...), "Run in progress; this is an incremental record, not a full AT result.")
 		r = &copy
 	}
+	r.MemberHTTP = append([]memberHTTPRecord(nil), l.memberHTTP...)
 	r.Observations = nil
 	r.Build.Images = l.build.Images
 	if r.Nodes == nil {
