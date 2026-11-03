@@ -1,0 +1,597 @@
+{
+  "test_only": true,
+  "date": "2026-11-03",
+  "base": "535ea71a",
+  "measurement": "time.Since(start) immediately after Recover and its ErrMembersBlocked check; excludes test setup",
+  "units": "milliseconds",
+  "quantile_method": "nearest rank ceil(p*n), minimum for p=0",
+  "qualified_quiet_campaign_complete": false,
+  "controlled_parallel_load": "not started; foreign lane suites prevented admission",
+  "runs": {
+    "before-initial-unqualified": {
+      "failures": [
+        "--- FAIL: TestAT25_FileMeterWaitRestartRechecksCurrentFile (2.48s)",
+        "--- FAIL: TestAT25_FileMeterWaitRestartRechecksCurrentFile/new_boot (1.50s)"
+      ],
+      "cases": {
+        "missing": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 249.773454,
+            "p50": 260.363313,
+            "p90": 261.948574,
+            "p95": 262.345053,
+            "p99": 263.72761,
+            "max": 264.266761,
+            "mean": 259.14354,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 230.669168,
+            "p50": 240.577859,
+            "p90": 241.275705,
+            "p95": 241.438469,
+            "p99": 241.602255,
+            "max": 241.637474,
+            "mean": 240.135778,
+            "over_one_second": 0
+          }
+        },
+        "replaced": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 228.598103,
+            "p50": 248.056219,
+            "p90": 250.452472,
+            "p95": 251.361086,
+            "p99": 252.072861,
+            "max": 256.995286,
+            "mean": 246.908242,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 213.035742,
+            "p50": 228.284307,
+            "p90": 229.763436,
+            "p95": 230.21668,
+            "p99": 230.529149,
+            "max": 230.729129,
+            "mean": 227.573174,
+            "over_one_second": 0
+          }
+        },
+        "withdrawn": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 12.695564,
+            "p50": 14.587014,
+            "p90": 16.785207,
+            "p95": 21.430346,
+            "p99": 25.037728,
+            "max": 25.311417,
+            "mean": 15.256541,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 230.962636,
+            "p50": 239.664369,
+            "p90": 240.36545,
+            "p95": 240.57653,
+            "p99": 240.749302,
+            "max": 240.965902,
+            "mean": 239.203245,
+            "over_one_second": 0
+          }
+        },
+        "new_boot": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 10.834027,
+            "p50": 12.584711,
+            "p90": 14.407019,
+            "p95": 19.221932,
+            "p99": 22.214968,
+            "max": 1438.84714,
+            "mean": 20.223529,
+            "over_one_second": 1
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 232.822474,
+            "p50": 240.601046,
+            "p90": 241.256642,
+            "p95": 241.423605,
+            "p99": 241.577988,
+            "max": 241.710489,
+            "mean": 240.190841,
+            "over_one_second": 0
+          }
+        },
+        "expired": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 12.022463,
+            "p50": 20.885184,
+            "p90": 22.719286,
+            "p95": 23.099938,
+            "p99": 26.208786,
+            "max": 29.050571,
+            "mean": 20.220187,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": -2.26267,
+            "p50": -1.6268,
+            "p90": -1.07728,
+            "p95": -1.052764,
+            "p99": -1.033792,
+            "max": -1.012224,
+            "mean": -1.592688,
+            "over_one_second": 0
+          }
+        }
+      }
+    },
+    "before-monitored-unqualified": {
+      "failures": [
+        "--- FAIL: TestAT25_FileMeterWaitRestartRechecksCurrentFile (2.65s)",
+        "--- FAIL: TestAT25_FileMeterWaitRestartRechecksCurrentFile/missing (1.81s)"
+      ],
+      "cases": {
+        "missing": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 248.278583,
+            "p50": 259.694547,
+            "p90": 262.230186,
+            "p95": 262.896448,
+            "p99": 264.211768,
+            "max": 1759.50307,
+            "mean": 265.77239,
+            "over_one_second": 1
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 230.774815,
+            "p50": 240.384195,
+            "p90": 241.140125,
+            "p95": 241.259751,
+            "p99": 241.583926,
+            "max": 241.786745,
+            "mean": 239.174823,
+            "over_one_second": 0
+          }
+        },
+        "replaced": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 228.311612,
+            "p50": 247.205362,
+            "p90": 250.029903,
+            "p95": 250.346439,
+            "p99": 252.44199,
+            "max": 252.873295,
+            "mean": 244.489782,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 212.634113,
+            "p50": 228.005029,
+            "p90": 229.164512,
+            "p95": 229.691618,
+            "p99": 230.513425,
+            "max": 230.983637,
+            "mean": 225.439367,
+            "over_one_second": 0
+          }
+        },
+        "withdrawn": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 12.60067,
+            "p50": 14.735679,
+            "p90": 22.275027,
+            "p95": 22.788963,
+            "p99": 25.238211,
+            "max": 26.179527,
+            "mean": 16.335131,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 231.177544,
+            "p50": 239.533399,
+            "p90": 240.33765,
+            "p95": 240.498327,
+            "p99": 240.759639,
+            "max": 240.892237,
+            "mean": 238.355452,
+            "over_one_second": 0
+          }
+        },
+        "new_boot": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 10.601594,
+            "p50": 12.878218,
+            "p90": 19.051271,
+            "p95": 19.857374,
+            "p99": 21.925946,
+            "max": 24.957744,
+            "mean": 14.168584,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 232.634365,
+            "p50": 240.487263,
+            "p90": 241.274794,
+            "p95": 241.463397,
+            "p99": 241.618159,
+            "max": 241.813658,
+            "mean": 239.404376,
+            "over_one_second": 0
+          }
+        },
+        "expired": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 12.181145,
+            "p50": 20.350078,
+            "p90": 22.797913,
+            "p95": 23.669059,
+            "p99": 24.861362,
+            "max": 99.906002,
+            "mean": 20.173185,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": -2.189125,
+            "p50": -1.655923,
+            "p90": -1.121593,
+            "p95": -1.072629,
+            "p99": -1.014893,
+            "max": -1.012486,
+            "mean": -1.611802,
+            "over_one_second": 0
+          }
+        }
+      },
+      "admission": {
+        "qualified": false,
+        "exit": 1,
+        "elapsed_s": 222.311,
+        "observation_count": 45
+      }
+    },
+    "before-third-unqualified": {
+      "failures": [],
+      "cases": {
+        "missing": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 238.375207,
+            "p50": 256.550541,
+            "p90": 262.89044,
+            "p95": 266.165477,
+            "p99": 271.497017,
+            "max": 273.486879,
+            "mean": 256.50211,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 218.018069,
+            "p50": 238.176198,
+            "p90": 240.823724,
+            "p95": 241.180593,
+            "p99": 241.45419,
+            "max": 241.515841,
+            "mean": 235.820949,
+            "over_one_second": 0
+          }
+        },
+        "replaced": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 203.990518,
+            "p50": 241.648308,
+            "p90": 249.575467,
+            "p95": 250.686485,
+            "p99": 251.291162,
+            "max": 256.200695,
+            "mean": 239.655402,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 183.131928,
+            "p50": 222.318529,
+            "p90": 228.370888,
+            "p95": 229.129532,
+            "p99": 230.002761,
+            "max": 230.411169,
+            "mean": 218.76607,
+            "over_one_second": 0
+          }
+        },
+        "withdrawn": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 13.011817,
+            "p50": 18.473878,
+            "p90": 33.329653,
+            "p95": 39.0177,
+            "p99": 51.064961,
+            "max": 62.548173,
+            "mean": 21.990359,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 208.542792,
+            "p50": 237.386953,
+            "p90": 239.746552,
+            "p95": 239.999705,
+            "p99": 240.380457,
+            "max": 240.467021,
+            "mean": 234.953041,
+            "over_one_second": 0
+          }
+        },
+        "new_boot": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 10.883361,
+            "p50": 15.670884,
+            "p90": 27.487852,
+            "p95": 28.965231,
+            "p99": 42.397388,
+            "max": 494.166756,
+            "mean": 20.516321,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 214.380257,
+            "p50": 238.457661,
+            "p90": 240.732873,
+            "p95": 240.986146,
+            "p99": 241.288975,
+            "max": 241.778664,
+            "mean": 236.172677,
+            "over_one_second": 0
+          }
+        },
+        "expired": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 12.245172,
+            "p50": 20.470374,
+            "p90": 30.675275,
+            "p95": 33.469043,
+            "p99": 39.714815,
+            "max": 533.414024,
+            "mean": 24.376301,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": -2.282052,
+            "p50": -1.593948,
+            "p90": -1.129603,
+            "p95": -1.076419,
+            "p99": -1.012082,
+            "max": -1.008209,
+            "mean": -1.559557,
+            "over_one_second": 0
+          }
+        }
+      },
+      "admission": {
+        "qualified": false,
+        "exit": 0,
+        "elapsed_s": 242.683,
+        "observation_count": 49
+      }
+    },
+    "after-monitored-unqualified": {
+      "failures": [],
+      "cases": {
+        "missing": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 246.446946,
+            "p50": 260.197698,
+            "p90": 262.77256,
+            "p95": 263.084311,
+            "p99": 264.049032,
+            "max": 264.83273,
+            "mean": 258.972869,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 229.171219,
+            "p50": 240.525928,
+            "p90": 241.291532,
+            "p95": 241.450108,
+            "p99": 241.763016,
+            "max": 241.812677,
+            "mean": 239.431892,
+            "over_one_second": 0
+          }
+        },
+        "replaced": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 231.189498,
+            "p50": 248.108291,
+            "p90": 251.044693,
+            "p95": 251.442831,
+            "p99": 252.52489,
+            "max": 253.052694,
+            "mean": 245.656057,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 209.123667,
+            "p50": 228.26051,
+            "p90": 230.016069,
+            "p95": 230.349146,
+            "p99": 230.892339,
+            "max": 231.230269,
+            "mean": 226.010516,
+            "over_one_second": 0
+          }
+        },
+        "withdrawn": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 12.58543,
+            "p50": 14.560484,
+            "p90": 22.952582,
+            "p95": 23.916773,
+            "p99": 25.377949,
+            "max": 28.100794,
+            "mean": 16.13848,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 230.016613,
+            "p50": 239.652662,
+            "p90": 240.400084,
+            "p95": 240.581071,
+            "p99": 240.786949,
+            "max": 240.955219,
+            "mean": 238.431116,
+            "over_one_second": 0
+          }
+        },
+        "new_boot": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 10.713874,
+            "p50": 12.49404,
+            "p90": 19.153911,
+            "p95": 20.91846,
+            "p99": 21.975633,
+            "max": 24.522064,
+            "mean": 13.771406,
+            "over_one_second": 0
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": 230.50725,
+            "p50": 240.591058,
+            "p90": 241.365278,
+            "p95": 241.431921,
+            "p99": 241.820485,
+            "max": 242.192619,
+            "mean": 239.431646,
+            "over_one_second": 0
+          }
+        },
+        "expired": {
+          "recover_elapsed": {
+            "n": 200,
+            "min": 13.185155,
+            "p50": 20.808412,
+            "p90": 22.732635,
+            "p95": 23.137554,
+            "p99": 24.283752,
+            "max": 1546.253617,
+            "mean": 32.85834,
+            "over_one_second": 2
+          },
+          "original_remaining_at_start": {
+            "n": 200,
+            "min": -2.12907,
+            "p50": -1.58982,
+            "p90": -1.085716,
+            "p95": -1.062222,
+            "p99": -1.024107,
+            "max": -1.010393,
+            "mean": -1.544249,
+            "over_one_second": 0
+          }
+        }
+      },
+      "admission": {
+        "qualified": false,
+        "exit": 0,
+        "elapsed_s": 282.417,
+        "observation_count": 46
+      }
+    },
+    "before-seal-delay": {
+      "failures": [
+        "--- FAIL: TestAT25_FileMeterWaitRestartRechecksCurrentFile (1.46s)",
+        "--- FAIL: TestAT25_FileMeterWaitRestartRechecksCurrentFile/missing (1.46s)"
+      ],
+      "cases": {
+        "missing": {
+          "recover_elapsed": {
+            "n": 1,
+            "min": 1355.440024,
+            "p50": 1355.440024,
+            "p90": 1355.440024,
+            "p95": 1355.440024,
+            "p99": 1355.440024,
+            "max": 1355.440024,
+            "mean": 1355.440024,
+            "over_one_second": 1
+          },
+          "original_remaining_at_start": {
+            "n": 1,
+            "min": 231.967216,
+            "p50": 231.967216,
+            "p90": 231.967216,
+            "p95": 231.967216,
+            "p99": 231.967216,
+            "max": 231.967216,
+            "mean": 231.967216,
+            "over_one_second": 0
+          }
+        }
+      }
+    },
+    "after-seal-delay": {
+      "failures": [],
+      "cases": {
+        "missing": {
+          "recover_elapsed": {
+            "n": 1,
+            "min": 1352.42376,
+            "p50": 1352.42376,
+            "p90": 1352.42376,
+            "p95": 1352.42376,
+            "p99": 1352.42376,
+            "max": 1352.42376,
+            "mean": 1352.42376,
+            "over_one_second": 1
+          },
+          "original_remaining_at_start": {
+            "n": 1,
+            "min": 227.314512,
+            "p50": 227.314512,
+            "p90": 227.314512,
+            "p95": 227.314512,
+            "p99": 227.314512,
+            "max": 227.314512,
+            "mean": 227.314512,
+            "over_one_second": 0
+          }
+        }
+      }
+    }
+  }
+}
