@@ -748,9 +748,15 @@ func parseRule(tok []string) (string, []any, error) {
 				continue
 			}
 			if i+3 < len(tok) && tok[i+1] == "priority" && tok[i+2] == "set" {
+				// The renderer writes a hexadecimal integer; nft read-back
+				// uses a JSON integer or major:minor, not that hex string.
+				value, err := strconv.ParseUint(tok[i+3], 0, 32)
+				if err != nil {
+					return "", nil, fmt.Errorf("meta priority %q", tok[i+3])
+				}
 				expr = append(expr, map[string]any{"mangle": map[string]any{
 					"key":   map[string]any{"meta": map[string]any{"key": "priority"}},
-					"value": tok[i+3],
+					"value": value,
 				}})
 				i += 3
 				continue
@@ -769,6 +775,11 @@ func parseRule(tok []string) (string, []any, error) {
 			right, last, err := ctRight(tok, rest)
 			if err != nil {
 				return "", nil, err
+			}
+			// nft 1.0.9 lists the implicit singleton RELATED test as "in".
+			// Preserve the existing negated established/related guard.
+			if state, ok := right.(string); ok && state == "related" && op == "==" {
+				op = "in"
 			}
 			expr = append(expr, map[string]any{"match": map[string]any{
 				"op":    op,
@@ -811,8 +822,49 @@ func parseRule(tok []string) (string, []any, error) {
 				"right": tok[rest],
 			}})
 			i = rest
+		case "icmp":
+			if i+2 >= len(tok) || (tok[i+1] != "type" && tok[i+1] != "code") {
+				return "", nil, fmt.Errorf("icmp type/code match")
+			}
+			expr = append(expr, map[string]any{"match": map[string]any{
+				"op":    "==",
+				"left":  map[string]any{"payload": map[string]any{"protocol": "icmp", "field": tok[i+1]}},
+				"right": tok[i+2],
+			}})
+			i += 2
 		case "tcp", "udp":
-			if i+2 >= len(tok) {
+			if tok[i] == "tcp" && i+1 < len(tok) {
+				switch tok[i+1] {
+				case "flags":
+					if i+5 >= len(tok) || tok[i+2] != "&" || tok[i+3] != "syn" || tok[i+4] != "==" || tok[i+5] != "syn" {
+						return "", nil, fmt.Errorf("tcp SYN flag test")
+					}
+					expr = append(expr, map[string]any{"match": map[string]any{
+						"op":    "==",
+						"left":  map[string]any{"&": []any{map[string]any{"payload": map[string]any{"protocol": "tcp", "field": "flags"}}, "syn"}},
+						"right": "syn",
+					}})
+					i += 5
+					continue
+				case "option":
+					if i+5 >= len(tok) || tok[i+2] != "maxseg" || tok[i+3] != "size" || (tok[i+4] != ">" && tok[i+4] != "set") {
+						return "", nil, fmt.Errorf("tcp maxseg comparison/mangle")
+					}
+					value, err := strconv.ParseUint(tok[i+5], 10, 16)
+					if err != nil {
+						return "", nil, fmt.Errorf("tcp maxseg size %q", tok[i+5])
+					}
+					key := map[string]any{"tcp option": map[string]any{"name": "maxseg", "field": "size"}}
+					if tok[i+4] == "set" {
+						expr = append(expr, map[string]any{"mangle": map[string]any{"key": key, "value": value}})
+					} else {
+						expr = append(expr, map[string]any{"match": map[string]any{"op": ">", "left": key, "right": value}})
+					}
+					i += 5
+					continue
+				}
+			}
+			if i+2 >= len(tok) || (tok[i+1] != "sport" && tok[i+1] != "dport") {
 				return "", nil, fmt.Errorf("%s port", tok[i])
 			}
 			port, err := strconv.Atoi(tok[i+2])
@@ -1681,5 +1733,90 @@ class del dev fv-ih classid 1:999
 		if err != nil || string(raw) != "[]" {
 			t.Fatalf("root deletion left %s: %s %v", kind, raw, err)
 		}
+	}
+}
+
+// D-146/D-147: compare the simulator's statements with independent kernel
+// JSON shapes. Values are translated, not substituted from the desired model.
+func TestAT09_AT13_F34_SimulatorTCPAndICMPExpressions(t *testing.T) {
+	for _, tc := range []struct{ name, text, want string }{
+		{"mss", "tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160", `[
+            {"match":{"op":"==","left":{"&":[{"payload":{"protocol":"tcp","field":"flags"}},"syn"]},"right":"syn"}},
+            {"match":{"op":">","left":{"tcp option":{"name":"maxseg","field":"size"}},"right":1160}},
+            {"mangle":{"key":{"tcp option":{"name":"maxseg","field":"size"}},"value":1160}}
+        ]`},
+		{"literal-values", "tcp option maxseg size > 1200 tcp option maxseg size set 1000", `[
+            {"match":{"op":">","left":{"tcp option":{"name":"maxseg","field":"size"}},"right":1200}},
+            {"mangle":{"key":{"tcp option":{"name":"maxseg","field":"size"}},"value":1000}}
+        ]`},
+		{"pmtu", "ct state related icmp type destination-unreachable icmp code frag-needed meta priority set 0x0001002f", `[
+            {"match":{"op":"in","left":{"ct":{"key":"state"}},"right":"related"}},
+            {"match":{"op":"==","left":{"payload":{"protocol":"icmp","field":"type"}},"right":"destination-unreachable"}},
+            {"match":{"op":"==","left":{"payload":{"protocol":"icmp","field":"code"}},"right":"frag-needed"}},
+            {"mangle":{"key":{"meta":{"key":"priority"}},"value":65583}}
+        ]`},
+		{"not-related", "ct state != related", `[
+            {"match":{"op":"!=","left":{"ct":{"key":"state"}},"right":"related"}}
+        ]`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			_, expr, err := parseRule(tokenizeNFT(tc.text))
+			if err != nil {
+				t.Fatal(err)
+			}
+			raw, err := json.Marshal(expr)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var got, want any
+			if err := json.Unmarshal(raw, &got); err != nil {
+				t.Fatal(err)
+			}
+			if err := json.Unmarshal([]byte(tc.want), &want); err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(got, want) {
+				t.Fatalf("wrong nft expressions: got %s; want %s", raw, tc.want)
+			}
+		})
+	}
+}
+
+func TestAT13_F34_SimulatorRejectsUnknownStatementAtomically(t *testing.T) {
+	ex := &renderedExecutor{}
+	const initial = `add table inet fvpn
+add chain inet fvpn forward { type filter hook forward priority -150; policy drop; }
+`
+	if err := ex.NftBatch(t.Context(), initial); err != nil {
+		t.Fatal(err)
+	}
+	before, err := ex.table.listingJSON()
+	if err != nil {
+		t.Fatal(err)
+	}
+	installedAt, history := ex.allowedInstalledAt, len(ex.scripts)
+	const clamp = `add rule inet fvpn forward iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160
+`
+	for _, unsupported := range []string{
+		"meta nftrace set 1",
+		"tcp option timestamp size set 1160",
+		"tcp option maxseg size set",
+		"tcp option maxseg size set 65536",
+		"tcp flags | syn == syn",
+		"tcp mystery 1",
+		"icmp mystery frag-needed",
+	} {
+		t.Run(unsupported, func(t *testing.T) {
+			if err := ex.NftBatch(t.Context(), clamp+"add rule inet fvpn forward "+unsupported+"\n"); err == nil {
+				t.Fatal("unknown or malformed trailing statement accepted")
+			}
+			after, err := ex.table.listingJSON()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(after) != string(before) || ex.allowedInstalledAt != installedAt || len(ex.scripts) != history {
+				t.Fatal("failed batch changed rules, expiry anchor or successful history")
+			}
+		})
 	}
 }
