@@ -17,6 +17,8 @@ type Ruleset struct {
 	Counters map[string]CounterValue
 	Sets     map[string]bool
 	Elements map[string][]setElement
+	// intervals contains only the two static IPv4 isolation sets.
+	intervals map[string][]ipv4Range
 	// Tainted is true when a set contains an element this parser cannot
 	// accept as a timed host address: a prefix wider than /32, a port range,
 	// or any other shape. Verification fails closed on a tainted allow or
@@ -182,13 +184,14 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 		return Ruleset{}, fmt.Errorf("nft json: %w", err)
 	}
 	rs := Ruleset{
-		Chains:   map[string]ChainView{},
-		Counters: map[string]CounterValue{},
-		Sets:     map[string]bool{},
-		Elements: map[string][]setElement{},
-		Tainted:  map[string]bool{},
-		SetFlags: map[string][]string{},
-		Raw:      string(raw),
+		Chains:    map[string]ChainView{},
+		Counters:  map[string]CounterValue{},
+		Sets:      map[string]bool{},
+		Elements:  map[string][]setElement{},
+		intervals: map[string][]ipv4Range{},
+		Tainted:   map[string]bool{},
+		SetFlags:  map[string][]string{},
+		Raw:       string(raw),
 	}
 	// Chains are keyed by (family, table, name). A second inet fvpn object
 	// with the same identity is an error. A different family or table is
@@ -250,8 +253,24 @@ func ParseRuleset(raw []byte) (Ruleset, error) {
 				return Ruleset{}, err
 			}
 			flags, err := parseSetFlags(s.Flags)
-			if err != nil {
+			isolation := s.Name == "denied_v4" || s.Name == "host_v4"
+			if err != nil && !isolation {
 				return Ruleset{}, fmt.Errorf("set %s flags: %w", s.Name, err)
+			}
+			if isolation {
+				ranges, tainted := parseIntervalElems(s.Elem)
+				tainted = tainted || err != nil
+				var metadata map[string]json.RawMessage
+				_ = json.Unmarshal(obj["set"], &metadata) // object already decoded above
+				var typ string
+				if json.Unmarshal(metadata["type"], &typ) != nil || typ != "ipv4_addr" ||
+					hasKey(metadata, "timeout") || hasKey(metadata, "expires") || rs.Sets[s.Name] {
+					tainted = true
+				}
+				rs.intervals[s.Name] = ranges
+				rs.Tainted[s.Name] = rs.Tainted[s.Name] || tainted
+				rs.Sets[s.Name], rs.SetFlags[s.Name] = true, flags
+				continue
 			}
 			rs.Sets[s.Name] = true
 			if len(flags) > 0 {

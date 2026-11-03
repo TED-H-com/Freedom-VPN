@@ -1,0 +1,33 @@
+=== RUN   TestISO01_F27_LiveSetDrift
+=== RUN   TestISO01_F27_LiveSetDrift/denied_v4/add
+    followup27_test.go:42: live denied_v4 add was not rejected as isolation: <nil>
+=== RUN   TestISO01_F27_LiveSetDrift/denied_v4/remove
+    followup27_test.go:42: live denied_v4 remove was not rejected as isolation: <nil>
+=== RUN   TestISO01_F27_LiveSetDrift/denied_v4/replace
+    followup27_test.go:42: live denied_v4 replace was not rejected as isolation: <nil>
+=== RUN   TestISO01_F27_LiveSetDrift/host_v4/add
+    followup27_test.go:42: live host_v4 add was not rejected as isolation: <nil>
+=== RUN   TestISO01_F27_LiveSetDrift/host_v4/remove
+    followup27_test.go:42: live host_v4 remove was not rejected as isolation: <nil>
+=== RUN   TestISO01_F27_LiveSetDrift/host_v4/replace
+    followup27_test.go:42: live host_v4 replace was not rejected as isolation: <nil>
+--- FAIL: TestISO01_F27_LiveSetDrift (0.00s)
+    --- FAIL: TestISO01_F27_LiveSetDrift/denied_v4/add (0.00s)
+    --- FAIL: TestISO01_F27_LiveSetDrift/denied_v4/remove (0.00s)
+    --- FAIL: TestISO01_F27_LiveSetDrift/denied_v4/replace (0.00s)
+    --- FAIL: TestISO01_F27_LiveSetDrift/host_v4/add (0.00s)
+    --- FAIL: TestISO01_F27_LiveSetDrift/host_v4/remove (0.00s)
+    --- FAIL: TestISO01_F27_LiveSetDrift/host_v4/replace (0.00s)
+=== RUN   TestR20_H2_VerifierIgnoresEmptiedDenyAndHostSets
+=== RUN   TestR20_H2_VerifierIgnoresEmptiedDenyAndHostSets/serving_emptied_and_timed_deny_and_host_sets
+    review_r20_test.go:44: H-2: verifyServingRuleset accepted emptied @denied_v4 and @host_v4 with timeout flags against a model requiring 2 extra-denied and 2 host prefixes
+=== RUN   TestR20_H2_VerifierIgnoresEmptiedDenyAndHostSets/probe_baseline_emptied_deny_host_and_nonempty_allowed_v4
+    review_r20_test.go:78: H-2: VerifyBaseline accepted a probe baseline with emptied @denied_v4/@host_v4 and a non-empty @allowed_v4
+--- FAIL: TestR20_H2_VerifierIgnoresEmptiedDenyAndHostSets (0.00s)
+    --- FAIL: TestR20_H2_VerifierIgnoresEmptiedDenyAndHostSets/serving_emptied_and_timed_deny_and_host_sets (0.00s)
+    --- FAIL: TestR20_H2_VerifierIgnoresEmptiedDenyAndHostSets/probe_baseline_emptied_deny_host_and_nonempty_allowed_v4 (0.00s)
+=== RUN   TestR20_Held_VerifyServingCatchesResolverBindingQoSAndSNATDrift
+--- PASS: TestR20_Held_VerifyServingCatchesResolverBindingQoSAndSNATDrift (0.00s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/node/enforce	0.011s
+FAIL

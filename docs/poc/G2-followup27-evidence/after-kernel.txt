@@ -1,0 +1,30 @@
+=== RUN   TestISO01_F27_LiveSetDrift
+=== RUN   TestISO01_F27_LiveSetDrift/denied_v4/add
+=== RUN   TestISO01_F27_LiveSetDrift/denied_v4/remove
+=== RUN   TestISO01_F27_LiveSetDrift/denied_v4/replace
+=== RUN   TestISO01_F27_LiveSetDrift/host_v4/add
+=== RUN   TestISO01_F27_LiveSetDrift/host_v4/remove
+=== RUN   TestISO01_F27_LiveSetDrift/host_v4/replace
+--- PASS: TestISO01_F27_LiveSetDrift (1.63s)
+    --- PASS: TestISO01_F27_LiveSetDrift/denied_v4/add (0.27s)
+    --- PASS: TestISO01_F27_LiveSetDrift/denied_v4/remove (0.29s)
+    --- PASS: TestISO01_F27_LiveSetDrift/denied_v4/replace (0.27s)
+    --- PASS: TestISO01_F27_LiveSetDrift/host_v4/add (0.25s)
+    --- PASS: TestISO01_F27_LiveSetDrift/host_v4/remove (0.27s)
+    --- PASS: TestISO01_F27_LiveSetDrift/host_v4/replace (0.27s)
+=== RUN   TestISO01_F27_RenderedCoverage
+=== RUN   TestISO01_F27_RenderedCoverage/spec/serving
+=== RUN   TestISO01_F27_RenderedCoverage/spec/serving_probe
+=== RUN   TestISO01_F27_RenderedCoverage/spec/baseline_probe
+=== RUN   TestISO01_F27_RenderedCoverage/overlap/serving
+=== RUN   TestISO01_F27_RenderedCoverage/overlap/serving_probe
+=== RUN   TestISO01_F27_RenderedCoverage/overlap/baseline_probe
+--- PASS: TestISO01_F27_RenderedCoverage (1.38s)
+    --- PASS: TestISO01_F27_RenderedCoverage/spec/serving (0.26s)
+    --- PASS: TestISO01_F27_RenderedCoverage/spec/serving_probe (0.25s)
+    --- PASS: TestISO01_F27_RenderedCoverage/spec/baseline_probe (0.17s)
+    --- PASS: TestISO01_F27_RenderedCoverage/overlap/serving (0.26s)
+    --- PASS: TestISO01_F27_RenderedCoverage/overlap/serving_probe (0.26s)
+    --- PASS: TestISO01_F27_RenderedCoverage/overlap/baseline_probe (0.17s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/netlab	3.014s
