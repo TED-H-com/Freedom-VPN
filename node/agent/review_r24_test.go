@@ -25,6 +25,9 @@ func TestR24_H1_SteadyStateNoOpStepReappliesEveryPollTick(t *testing.T) {
 	alignControlClock(r)
 	serveBoundGeneration(t, r)
 	r.manualUsage(t)
+	// Keep the fake signer at this snapshot so later polls are actual 304s.
+	signedAt := r.eng.desired.IssuedAt.Add(time.Minute)
+	r.srv.SetClock(func() time.Time { return signedAt })
 
 	if !r.eng.serving || r.plane.applies < 1 {
 		t.Fatalf("expected serving after serveBoundGeneration, got serving=%v applies=%d", r.eng.serving, r.plane.applies)
