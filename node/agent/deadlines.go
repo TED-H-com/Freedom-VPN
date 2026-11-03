@@ -77,11 +77,7 @@ func (e *Engine) onlyExpiredBindingsRemoved(next enforce.Model) bool {
 			}
 		}
 	}
-	if len(remaining) != 0 {
-		return false
-	}
-
-	return true
+	return len(remaining) == 0
 }
 
 func (e *Engine) settleExpiredBindings(ctx context.Context) bool {
