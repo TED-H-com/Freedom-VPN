@@ -1,0 +1,842 @@
+{
+  "test_only": true,
+  "historical_f28_attribution": "No original all-traffic capture exists; new packets cannot identify historical packet IDs.",
+  "phases": {
+    "before": {
+      "counter": {
+        "packets": 356,
+        "bytes": 16669
+      },
+      "read_start_ns": "1793701552808397945",
+      "read_end_ns": "1793701552970354953"
+    },
+    "mid": {
+      "counter": {
+        "packets": 356,
+        "bytes": 16669
+      },
+      "read_start_ns": "1793701557410545837",
+      "read_end_ns": "1793701557570328384"
+    }
+  },
+  "counter_deltas": {
+    "ctbadns": {
+      "bytes": 144,
+      "packets": 2
+    },
+    "ctin": {
+      "bytes": 396,
+      "packets": 6
+    },
+    "ctunku": {
+      "bytes": 144,
+      "packets": 2
+    }
+  },
+  "capture_counts": {
+    "origin": 1808,
+    "node": 1954,
+    "responder": 761
+  },
+  "upload_ledger": [
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 60,
+        "source": "100.64.1.1",
+        "destination": "100.64.1.2",
+        "ip_length": 60,
+        "ip_id": 26240,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 41944,
+        "destination_port": 8080,
+        "seq": 2207871874,
+        "ack": 0,
+        "flags": 2,
+        "flags_text": [
+          "SYN"
+        ],
+        "data_length": 0,
+        "tcp_header_length": 40,
+        "packet": 1859,
+        "wall_ns": "1793701554497838467",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [
+        {
+          "ethertype": 2048,
+          "captured_length": 60,
+          "source": "100.64.1.1",
+          "destination": "100.64.1.2",
+          "ip_length": 60,
+          "ip_id": 26240,
+          "protocol": 6,
+          "fragment": 0,
+          "source_port": 41944,
+          "destination_port": 8080,
+          "seq": 2207871874,
+          "ack": 0,
+          "flags": 2,
+          "flags_text": [
+            "SYN"
+          ],
+          "data_length": 0,
+          "tcp_header_length": 40,
+          "packet": 1739,
+          "wall_ns": "1793701554497507733",
+          "interface": "fv-wg0",
+          "packet_type": 4
+        }
+      ],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    },
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 30,
+        "source": "100.64.1.1",
+        "destination": "127.0.0.1",
+        "ip_length": 30,
+        "ip_id": 0,
+        "protocol": 17,
+        "fragment": 0,
+        "source_port": 40000,
+        "destination_port": 9,
+        "data_length": 2,
+        "packet": 1860,
+        "wall_ns": "1793701554497851728",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    },
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 60,
+        "source": "100.64.1.1",
+        "destination": "100.64.2.1",
+        "ip_length": 60,
+        "ip_id": 50252,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 47716,
+        "destination_port": 8080,
+        "seq": 2890256121,
+        "ack": 0,
+        "flags": 2,
+        "flags_text": [
+          "SYN"
+        ],
+        "data_length": 0,
+        "tcp_header_length": 40,
+        "packet": 1861,
+        "wall_ns": "1793701554497838933",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [
+        {
+          "ethertype": 2048,
+          "captured_length": 60,
+          "source": "100.64.1.1",
+          "destination": "100.64.2.1",
+          "ip_length": 60,
+          "ip_id": 50252,
+          "protocol": 6,
+          "fragment": 0,
+          "source_port": 47716,
+          "destination_port": 8080,
+          "seq": 2890256121,
+          "ack": 0,
+          "flags": 2,
+          "flags_text": [
+            "SYN"
+          ],
+          "data_length": 0,
+          "tcp_header_length": 40,
+          "packet": 1740,
+          "wall_ns": "1793701554497601443",
+          "interface": "fv-wg0",
+          "packet_type": 4
+        }
+      ],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    },
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 60,
+        "source": "100.64.1.1",
+        "destination": "192.0.2.33",
+        "ip_length": 60,
+        "ip_id": 44970,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 41998,
+        "destination_port": 2222,
+        "seq": 1030487146,
+        "ack": 0,
+        "flags": 2,
+        "flags_text": [
+          "SYN"
+        ],
+        "data_length": 0,
+        "tcp_header_length": 40,
+        "packet": 1863,
+        "wall_ns": "1793701554498014809",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [
+        {
+          "ethertype": 2048,
+          "captured_length": 60,
+          "source": "100.64.1.1",
+          "destination": "192.0.2.33",
+          "ip_length": 60,
+          "ip_id": 44970,
+          "protocol": 6,
+          "fragment": 0,
+          "source_port": 41998,
+          "destination_port": 2222,
+          "seq": 1030487146,
+          "ack": 0,
+          "flags": 2,
+          "flags_text": [
+            "SYN"
+          ],
+          "data_length": 0,
+          "tcp_header_length": 40,
+          "packet": 1743,
+          "wall_ns": "1793701554497820877",
+          "interface": "fv-wg0",
+          "packet_type": 4
+        }
+      ],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    },
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 60,
+        "source": "100.64.1.1",
+        "destination": "100.64.5.5",
+        "ip_length": 60,
+        "ip_id": 27172,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 47892,
+        "destination_port": 80,
+        "seq": 2034070883,
+        "ack": 0,
+        "flags": 2,
+        "flags_text": [
+          "SYN"
+        ],
+        "data_length": 0,
+        "tcp_header_length": 40,
+        "packet": 1864,
+        "wall_ns": "1793701554498248365",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [
+        {
+          "ethertype": 2048,
+          "captured_length": 60,
+          "source": "100.64.1.1",
+          "destination": "100.64.5.5",
+          "ip_length": 60,
+          "ip_id": 27172,
+          "protocol": 6,
+          "fragment": 0,
+          "source_port": 47892,
+          "destination_port": 80,
+          "seq": 2034070883,
+          "ack": 0,
+          "flags": 2,
+          "flags_text": [
+            "SYN"
+          ],
+          "data_length": 0,
+          "tcp_header_length": 40,
+          "packet": 1745,
+          "wall_ns": "1793701554497934990",
+          "interface": "fv-wg0",
+          "packet_type": 4
+        }
+      ],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    },
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 60,
+        "source": "100.64.1.1",
+        "destination": "192.168.0.1",
+        "ip_length": 60,
+        "ip_id": 28188,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 35442,
+        "destination_port": 80,
+        "seq": 2198126382,
+        "ack": 0,
+        "flags": 2,
+        "flags_text": [
+          "SYN"
+        ],
+        "data_length": 0,
+        "tcp_header_length": 40,
+        "packet": 1866,
+        "wall_ns": "1793701554498566532",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [
+        {
+          "ethertype": 2048,
+          "captured_length": 60,
+          "source": "100.64.1.1",
+          "destination": "192.168.0.1",
+          "ip_length": 60,
+          "ip_id": 28188,
+          "protocol": 6,
+          "fragment": 0,
+          "source_port": 35442,
+          "destination_port": 80,
+          "seq": 2198126382,
+          "ack": 0,
+          "flags": 2,
+          "flags_text": [
+            "SYN"
+          ],
+          "data_length": 0,
+          "tcp_header_length": 40,
+          "packet": 1747,
+          "wall_ns": "1793701554498228799",
+          "interface": "fv-wg0",
+          "packet_type": 4
+        }
+      ],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    },
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 60,
+        "source": "100.64.1.1",
+        "destination": "192.168.10.10",
+        "ip_length": 60,
+        "ip_id": 22556,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 35814,
+        "destination_port": 80,
+        "seq": 1424868683,
+        "ack": 0,
+        "flags": 2,
+        "flags_text": [
+          "SYN"
+        ],
+        "data_length": 0,
+        "tcp_header_length": 40,
+        "packet": 1867,
+        "wall_ns": "1793701554498566690",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [
+        {
+          "ethertype": 2048,
+          "captured_length": 60,
+          "source": "100.64.1.1",
+          "destination": "192.168.10.10",
+          "ip_length": 60,
+          "ip_id": 22556,
+          "protocol": 6,
+          "fragment": 0,
+          "source_port": 35814,
+          "destination_port": 80,
+          "seq": 1424868683,
+          "ack": 0,
+          "flags": 2,
+          "flags_text": [
+            "SYN"
+          ],
+          "data_length": 0,
+          "tcp_header_length": 40,
+          "packet": 1748,
+          "wall_ns": "1793701554498432179",
+          "interface": "fv-wg0",
+          "packet_type": 4
+        }
+      ],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    },
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 60,
+        "source": "100.64.1.1",
+        "destination": "192.0.2.37",
+        "ip_length": 60,
+        "ip_id": 16761,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 51202,
+        "destination_port": 8443,
+        "seq": 2551105382,
+        "ack": 0,
+        "flags": 2,
+        "flags_text": [
+          "SYN"
+        ],
+        "data_length": 0,
+        "tcp_header_length": 40,
+        "packet": 1868,
+        "wall_ns": "1793701554498670379",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [
+        {
+          "ethertype": 2048,
+          "captured_length": 60,
+          "source": "100.64.1.1",
+          "destination": "192.0.2.37",
+          "ip_length": 60,
+          "ip_id": 16761,
+          "protocol": 6,
+          "fragment": 0,
+          "source_port": 51202,
+          "destination_port": 8443,
+          "seq": 2551105382,
+          "ack": 0,
+          "flags": 2,
+          "flags_text": [
+            "SYN"
+          ],
+          "data_length": 0,
+          "tcp_header_length": 40,
+          "packet": 1751,
+          "wall_ns": "1793701554498478221",
+          "interface": "fv-wg0",
+          "packet_type": 4
+        }
+      ],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    },
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 60,
+        "source": "100.64.1.1",
+        "destination": "10.1.2.10",
+        "ip_length": 60,
+        "ip_id": 5777,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 40278,
+        "destination_port": 80,
+        "seq": 3124826297,
+        "ack": 0,
+        "flags": 2,
+        "flags_text": [
+          "SYN"
+        ],
+        "data_length": 0,
+        "tcp_header_length": 40,
+        "packet": 1869,
+        "wall_ns": "1793701554498670549",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [
+        {
+          "ethertype": 2048,
+          "captured_length": 60,
+          "source": "100.64.1.1",
+          "destination": "10.1.2.10",
+          "ip_length": 60,
+          "ip_id": 5777,
+          "protocol": 6,
+          "fragment": 0,
+          "source_port": 40278,
+          "destination_port": 80,
+          "seq": 3124826297,
+          "ack": 0,
+          "flags": 2,
+          "flags_text": [
+            "SYN"
+          ],
+          "data_length": 0,
+          "tcp_header_length": 40,
+          "packet": 1752,
+          "wall_ns": "1793701554498535634",
+          "interface": "fv-wg0",
+          "packet_type": 4
+        }
+      ],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    },
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 60,
+        "source": "100.64.1.1",
+        "destination": "172.16.5.10",
+        "ip_length": 60,
+        "ip_id": 53062,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 36882,
+        "destination_port": 80,
+        "seq": 3933793980,
+        "ack": 0,
+        "flags": 2,
+        "flags_text": [
+          "SYN"
+        ],
+        "data_length": 0,
+        "tcp_header_length": 40,
+        "packet": 1870,
+        "wall_ns": "1793701555298088681",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [
+        {
+          "ethertype": 2048,
+          "captured_length": 60,
+          "source": "100.64.1.1",
+          "destination": "172.16.5.10",
+          "ip_length": 60,
+          "ip_id": 53062,
+          "protocol": 6,
+          "fragment": 0,
+          "source_port": 36882,
+          "destination_port": 80,
+          "seq": 3933793980,
+          "ack": 0,
+          "flags": 2,
+          "flags_text": [
+            "SYN"
+          ],
+          "data_length": 0,
+          "tcp_header_length": 40,
+          "packet": 1755,
+          "wall_ns": "1793701555297733413",
+          "interface": "fv-wg0",
+          "packet_type": 4
+        }
+      ],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    },
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 60,
+        "source": "100.64.1.1",
+        "destination": "169.254.169.254",
+        "ip_length": 60,
+        "ip_id": 58777,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 54836,
+        "destination_port": 80,
+        "seq": 1761484534,
+        "ack": 0,
+        "flags": 2,
+        "flags_text": [
+          "SYN"
+        ],
+        "data_length": 0,
+        "tcp_header_length": 40,
+        "packet": 1871,
+        "wall_ns": "1793701555299119933",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [
+        {
+          "ethertype": 2048,
+          "captured_length": 60,
+          "source": "100.64.1.1",
+          "destination": "169.254.169.254",
+          "ip_length": 60,
+          "ip_id": 58777,
+          "protocol": 6,
+          "fragment": 0,
+          "source_port": 54836,
+          "destination_port": 80,
+          "seq": 1761484534,
+          "ack": 0,
+          "flags": 2,
+          "flags_text": [
+            "SYN"
+          ],
+          "data_length": 0,
+          "tcp_header_length": 40,
+          "packet": 1757,
+          "wall_ns": "1793701555298462664",
+          "interface": "fv-wg0",
+          "packet_type": 4
+        }
+      ],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    },
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 60,
+        "source": "100.64.1.1",
+        "destination": "169.254.1.50",
+        "ip_length": 60,
+        "ip_id": 45909,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 58422,
+        "destination_port": 80,
+        "seq": 4292886822,
+        "ack": 0,
+        "flags": 2,
+        "flags_text": [
+          "SYN"
+        ],
+        "data_length": 0,
+        "tcp_header_length": 40,
+        "packet": 1872,
+        "wall_ns": "1793701555299120296",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [
+        {
+          "ethertype": 2048,
+          "captured_length": 60,
+          "source": "100.64.1.1",
+          "destination": "169.254.1.50",
+          "ip_length": 60,
+          "ip_id": 45909,
+          "protocol": 6,
+          "fragment": 0,
+          "source_port": 58422,
+          "destination_port": 80,
+          "seq": 4292886822,
+          "ack": 0,
+          "flags": 2,
+          "flags_text": [
+            "SYN"
+          ],
+          "data_length": 0,
+          "tcp_header_length": 40,
+          "packet": 1758,
+          "wall_ns": "1793701555298660451",
+          "interface": "fv-wg0",
+          "packet_type": 4
+        }
+      ],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    },
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 60,
+        "source": "100.64.1.1",
+        "destination": "192.0.2.200",
+        "ip_length": 60,
+        "ip_id": 6711,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 37246,
+        "destination_port": 80,
+        "seq": 2600735853,
+        "ack": 0,
+        "flags": 2,
+        "flags_text": [
+          "SYN"
+        ],
+        "data_length": 0,
+        "tcp_header_length": 40,
+        "packet": 1873,
+        "wall_ns": "1793701555299286720",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [
+        {
+          "ethertype": 2048,
+          "captured_length": 60,
+          "source": "100.64.1.1",
+          "destination": "192.0.2.200",
+          "ip_length": 60,
+          "ip_id": 6711,
+          "protocol": 6,
+          "fragment": 0,
+          "source_port": 37246,
+          "destination_port": 80,
+          "seq": 2600735853,
+          "ack": 0,
+          "flags": 2,
+          "flags_text": [
+            "SYN"
+          ],
+          "data_length": 0,
+          "tcp_header_length": 40,
+          "packet": 1760,
+          "wall_ns": "1793701555298858060",
+          "interface": "fv-wg0",
+          "packet_type": 4
+        }
+      ],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    },
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 60,
+        "source": "100.64.1.1",
+        "destination": "198.51.100.53",
+        "ip_length": 60,
+        "ip_id": 27752,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 37690,
+        "destination_port": 8080,
+        "seq": 1995018639,
+        "ack": 0,
+        "flags": 2,
+        "flags_text": [
+          "SYN"
+        ],
+        "data_length": 0,
+        "tcp_header_length": 40,
+        "packet": 1874,
+        "wall_ns": "1793701555299591969",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [
+        {
+          "ethertype": 2048,
+          "captured_length": 60,
+          "source": "100.64.1.1",
+          "destination": "198.51.100.53",
+          "ip_length": 60,
+          "ip_id": 27752,
+          "protocol": 6,
+          "fragment": 0,
+          "source_port": 37690,
+          "destination_port": 8080,
+          "seq": 1995018639,
+          "ack": 0,
+          "flags": 2,
+          "flags_text": [
+            "SYN"
+          ],
+          "data_length": 0,
+          "tcp_header_length": 40,
+          "packet": 1762,
+          "wall_ns": "1793701555299037743",
+          "interface": "fv-wg0",
+          "packet_type": 4
+        }
+      ],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    },
+    {
+      "ingress": {
+        "ethertype": 2048,
+        "captured_length": 84,
+        "source": "100.64.1.1",
+        "destination": "198.51.100.53",
+        "ip_length": 84,
+        "ip_id": 29445,
+        "protocol": 1,
+        "fragment": 0,
+        "icmp_type": 8,
+        "icmp_code": 0,
+        "icmp_id": 13104,
+        "icmp_sequence": 1,
+        "packet": 1875,
+        "wall_ns": "1793701555300820892",
+        "interface": "fv-fh",
+        "packet_type": 0
+      },
+      "inside_both_reads": true,
+      "node_egresses": [],
+      "origin_copies": [
+        {
+          "ethertype": 2048,
+          "captured_length": 84,
+          "source": "100.64.1.1",
+          "destination": "198.51.100.53",
+          "ip_length": 84,
+          "ip_id": 29445,
+          "protocol": 1,
+          "fragment": 0,
+          "icmp_type": 8,
+          "icmp_code": 0,
+          "icmp_id": 13104,
+          "icmp_sequence": 1,
+          "packet": 1765,
+          "wall_ns": "1793701555300383128",
+          "interface": "fv-wg0",
+          "packet_type": 4
+        }
+      ],
+      "responder_copies": [],
+      "prior_origin_packets": []
+    }
+  ],
+  "observed_egress_packets": 0,
+  "observed_egress_bytes": 0,
+  "read_boundary_ingresses": []
+}

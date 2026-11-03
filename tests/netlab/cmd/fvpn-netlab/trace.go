@@ -50,6 +50,8 @@ type traceExecutor struct {
 	enforce.System
 	Batches    []traceBatch
 	ObserveTCP bool
+	GuardLog   bool
+	Generation uint64
 	// TEST ONLY: fail one real verifier read after a completed release. The
 	// candidate, guard and rollback still execute in the real kernel.
 	FailVerificationRead bool
@@ -78,6 +80,13 @@ func (e *traceExecutor) NftBatch(ctx context.Context, script string) error {
 	if strings.Contains(script, "fvpn_generation=0") {
 		kind = "baseline"
 	}
+	if e.GuardLog && kind == "guard_install" {
+		var err error
+		script, err = guardLogScript(script, e.Generation)
+		if err != nil {
+			return err
+		}
+	}
 	start := traceNow()
 	err := e.System.NftBatch(ctx, script)
 	e.Batches = append(e.Batches, traceBatch{Kind: kind, Start: start, End: traceNow(), OK: err == nil, Script: script})
@@ -88,6 +97,7 @@ func tracedApply(ctx context.Context, m enforce.Model, prev map[string]enforce.C
 }
 
 func tracedApplyExecutor(ctx context.Context, ex *traceExecutor, m enforce.Model, prev map[string]enforce.CounterValue, dst io.Writer) (enforce.ApplyResult, error) {
+	ex.Generation = m.Generation
 	input, encodeErr := json.Marshal(m)
 	if encodeErr != nil {
 		return enforce.ApplyResult{}, encodeErr
@@ -139,6 +149,31 @@ func tracedApplyExecutor(ctx context.Context, ex *traceExecutor, m enforce.Model
 		return res, logErr
 	}
 	return res, err
+}
+
+// TEST ONLY: retain both original predicates and terminal drop verdicts. This
+// changes the diagnostic kernel ruleset, never the production renderer. Logs
+// identify generation and rule direction without reading inside the guard.
+func guardLogScript(script string, generation uint64) (string, error) {
+	lines := strings.Split(script, "\n")
+	seen := map[string]bool{}
+	for i, line := range lines {
+		for _, direction := range []string{"iifname", "oifname"} {
+			prefix := "add rule inet fvpn fv_deadline_guard " + direction + " "
+			if !strings.HasPrefix(line, prefix) {
+				continue
+			}
+			if seen[direction] || !strings.HasSuffix(line, " drop") {
+				return "", errors.New("TEST ONLY unexpected guard drop shape")
+			}
+			seen[direction] = true
+			lines[i] = strings.TrimSuffix(line, " drop") + fmt.Sprintf(" log prefix \"f29g%d-%s\" group 29 snaplen 128 queue-threshold 1 drop", generation, direction)
+		}
+	}
+	if len(seen) != 2 {
+		return "", errors.New("TEST ONLY expected two guard drops")
+	}
+	return strings.Join(lines, "\n"), nil
 }
 
 // TEST ONLY read-only snapshots enclose Apply; no extra command executes

@@ -1,0 +1,116 @@
+{
+  "test_only": true,
+  "wait_seconds": 120.28420453299987,
+  "admitted": true,
+  "ignore_first_since_boot_row": true,
+  "rows": [
+    {
+      "hold": {
+        "utc": "2026-11-03T10:37:36.357775+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "575427 /bin/bash -c export CGO_ENABLED=0 GOTOOLCHAIN=local TMPDIR=\"$PWD/.agent/tmp\" GOTMPDIR=\"$PWD/.agent/tmp\" export GOCACHE=\"$(go env GOCACHE)\" for attempt in $(seq 1 30); do   date -u +%FT%TZ >> .agent/f39/main-admission.log   if bash \"$FVPN_HOLD_SH\" >> .agent/f39/main-admission.log 2>&1; then     (cd .agent/f39/main-before && go test -count=1 -v ./node/agent -run '^TestR22_') > .agent/f39/before-main-r22.log 2>&1     rc=$?     tail -60 .agent/f39/before-main-r22.log     exit \"$rc\"   fi   sleep 60 done exit 125\n594625 python3 <worktree>/.agent/tmp/fvpn-w1-netlab-f29-tools/go test -tags netlab -count=1 -timeout 10m -p 1 -parallel 1 -v ./tests/netlab -run ^TestAT10_AT13_ReloadRevokeBaseline$\n",
+        "pgrep_exit": 0,
+        "actual": [],
+        "suites": []
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  0 1042216 3602068 2565488 170802964    5   53 70844 77070 25220   22  3  2 93  1  0  0\n 2  0 1024880 3874424 2565816 170805176    0    0   130  3197 86097 550210  6  3 91  0  0  0\n 1  0 991120 4556336 2565824 170812356    0    0     0  1302 79219 449539  5  3 93  0  0  0\n 5  0 991120 4187580 2579252 171249984    0    0 26703  2421 33459 197853  5  3 91  1  0  0\n 0  0 991120 5235592 2593104 170920044    0    0   434  7101 19236 166141  2  2 96  0  0  0\n 1  0 991120 5264072 2593120 170926864    0    0     1 26107 3662 4623  0  0 100  0  0  0\n 0  2 991120 5265212 2593128 170932328    0    0     0  1077 3440 4630  0  0 100  0  0  0\n",
+      "current": [
+        {
+          "r": 2,
+          "idle": 91
+        },
+        {
+          "r": 1,
+          "idle": 93
+        },
+        {
+          "r": 5,
+          "idle": 91
+        },
+        {
+          "r": 0,
+          "idle": 96
+        },
+        {
+          "r": 1,
+          "idle": 100
+        },
+        {
+          "r": 0,
+          "idle": 100
+        }
+      ],
+      "quiet": false,
+      "after": {
+        "pgrep": "575427 /bin/bash -c export CGO_ENABLED=0 GOTOOLCHAIN=local TMPDIR=\"$PWD/.agent/tmp\" GOTMPDIR=\"$PWD/.agent/tmp\" export GOCACHE=\"$(go env GOCACHE)\" for attempt in $(seq 1 30); do   date -u +%FT%TZ >> .agent/f39/main-admission.log   if bash \"$FVPN_HOLD_SH\" >> .agent/f39/main-admission.log 2>&1; then     (cd .agent/f39/main-before && go test -count=1 -v ./node/agent -run '^TestR22_') > .agent/f39/before-main-r22.log 2>&1     rc=$?     tail -60 .agent/f39/before-main-r22.log     exit \"$rc\"   fi   sleep 60 done exit 125\n594625 python3 <worktree>/.agent/tmp/fvpn-w1-netlab-f29-tools/go test -tags netlab -count=1 -timeout 10m -p 1 -parallel 1 -v ./tests/netlab -run ^TestAT10_AT13_ReloadRevokeBaseline$\n",
+        "pgrep_exit": 0,
+        "actual": [],
+        "suites": []
+      },
+      "hold_after": {
+        "utc": "2026-11-03T10:38:06.466062+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T10:39:06.502521+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "575427 /bin/bash -c export CGO_ENABLED=0 GOTOOLCHAIN=local TMPDIR=\"$PWD/.agent/tmp\" GOTMPDIR=\"$PWD/.agent/tmp\" export GOCACHE=\"$(go env GOCACHE)\" for attempt in $(seq 1 30); do   date -u +%FT%TZ >> .agent/f39/main-admission.log   if bash \"$FVPN_HOLD_SH\" >> .agent/f39/main-admission.log 2>&1; then     (cd .agent/f39/main-before && go test -count=1 -v ./node/agent -run '^TestR22_') > .agent/f39/before-main-r22.log 2>&1     rc=$?     tail -60 .agent/f39/before-main-r22.log     exit \"$rc\"   fi   sleep 60 done exit 125\n594625 python3 <worktree>/.agent/tmp/fvpn-w1-netlab-f29-tools/go test -tags netlab -count=1 -timeout 10m -p 1 -parallel 1 -v ./tests/netlab -run ^TestAT10_AT13_ReloadRevokeBaseline$\n",
+        "pgrep_exit": 0,
+        "actual": [],
+        "suites": []
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  0 999312 6070844 2593256 170466808    5   53 70601 76842 25185   22  3  2 93  1  0  0\n 0  0 999312 6101436 2593264 170466808    0    0     0   276 3328 4986  0  0 100  0  0  0\n 0  0 999312 6103992 2593272 170466900    0    0    19  6457 2928 4365  0  0 100  0  0  0\n 0  0 999312 6103500 2593280 170466900    0    0     0  2795 3016 4601  0  0 100  0  0  0\n 0  0 999312 6110276 2593288 170466908    0    0     0  3958 3370 5104  0  1 99  0  0  0\n 0  0 999312 6108208 2593620 170470352   18    0   741   194 3031 4781  0  0 100  0  0  0\n 0  0 999312 6104364 2593636 170470504    0    0     0  6570 2727 4028  0  0 100  0  0  0\n",
+      "current": [
+        {
+          "r": 0,
+          "idle": 100
+        },
+        {
+          "r": 0,
+          "idle": 100
+        },
+        {
+          "r": 0,
+          "idle": 100
+        },
+        {
+          "r": 0,
+          "idle": 99
+        },
+        {
+          "r": 0,
+          "idle": 100
+        },
+        {
+          "r": 0,
+          "idle": 100
+        }
+      ],
+      "quiet": true,
+      "after": {
+        "pgrep": "575427 /bin/bash -c export CGO_ENABLED=0 GOTOOLCHAIN=local TMPDIR=\"$PWD/.agent/tmp\" GOTMPDIR=\"$PWD/.agent/tmp\" export GOCACHE=\"$(go env GOCACHE)\" for attempt in $(seq 1 30); do   date -u +%FT%TZ >> .agent/f39/main-admission.log   if bash \"$FVPN_HOLD_SH\" >> .agent/f39/main-admission.log 2>&1; then     (cd .agent/f39/main-before && go test -count=1 -v ./node/agent -run '^TestR22_') > .agent/f39/before-main-r22.log 2>&1     rc=$?     tail -60 .agent/f39/before-main-r22.log     exit \"$rc\"   fi   sleep 60 done exit 125\n594625 python3 <worktree>/.agent/tmp/fvpn-w1-netlab-f29-tools/go test -tags netlab -count=1 -timeout 10m -p 1 -parallel 1 -v ./tests/netlab -run ^TestAT10_AT13_ReloadRevokeBaseline$\n",
+        "pgrep_exit": 0,
+        "actual": [],
+        "suites": []
+      },
+      "hold_after": {
+        "utc": "2026-11-03T10:39:36.608241+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    }
+  ]
+}

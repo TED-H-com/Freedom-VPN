@@ -1,0 +1,170 @@
+{
+  "test_only": true,
+  "wait_seconds": 210.4483874360012,
+  "admitted": true,
+  "ignore_first_since_boot_row": true,
+  "rows": [
+    {
+      "hold": {
+        "utc": "2026-11-03T10:43:45.641467+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "602778 /bin/sh -c set -eu; \\ status=0; \\ make -f mk/netlab.mk netlab-up FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || status=$?; \\ if [ $status -eq 0 ]; then \\ ?cd <worktree> && python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' \\ ??go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$?; \\ fi; \\ make -f mk/netlab.mk netlab-down FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || true; \\ exit $status\n603966 python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w1-netlab-f29 go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n603967 python3 <worktree>/.agent/tmp/fvpn-w1-netlab-f29-tools/go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n",
+        "pgrep_exit": 0,
+        "actual": [],
+        "suites": []
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  0 854384 4798208 2617016 170954756    5   52 69855 76086 25061   22  3  2 93  1  0  0\n 1  0 854384 4757584 2617024 171039768    0    0   258   902 6008 6851  4  2 94  0  0  0\n 2  1 854384 4859300 2617032 170975068    0    0    11  2050 6734 9795  5  1 94  0  0  0\n 4  0 854384 4638956 2617052 170956960    0    0     0  1646 6075 8956  4  2 94  0  0  0\n 1  0 854384 4566620 2617060 171019672    0    0     0   801 6025 8047  4  1 95  0  0  0\n 1  0 854384 4611944 2617068 170959724    0    0    78  7167 8694 12571  4  1 94  0  0  0\n 1  0 854384 4590060 2617080 171039964    0    0     0  8032 5150 6976  4  1 95  0  0  0\n",
+      "current": [
+        {
+          "r": 1,
+          "idle": 94
+        },
+        {
+          "r": 2,
+          "idle": 94
+        },
+        {
+          "r": 4,
+          "idle": 94
+        },
+        {
+          "r": 1,
+          "idle": 95
+        },
+        {
+          "r": 1,
+          "idle": 94
+        },
+        {
+          "r": 1,
+          "idle": 95
+        }
+      ],
+      "quiet": false,
+      "after": {
+        "pgrep": "602778 /bin/sh -c set -eu; \\ status=0; \\ make -f mk/netlab.mk netlab-up FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || status=$?; \\ if [ $status -eq 0 ]; then \\ ?cd <worktree> && python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' \\ ??go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$?; \\ fi; \\ make -f mk/netlab.mk netlab-down FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || true; \\ exit $status\n603966 python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w1-netlab-f29 go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n603967 python3 <worktree>/.agent/tmp/fvpn-w1-netlab-f29-tools/go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n",
+        "pgrep_exit": 0,
+        "actual": [],
+        "suites": []
+      },
+      "hold_after": {
+        "utc": "2026-11-03T10:44:15.751800+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T10:45:15.788056+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "602778 /bin/sh -c set -eu; \\ status=0; \\ make -f mk/netlab.mk netlab-up FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || status=$?; \\ if [ $status -eq 0 ]; then \\ ?cd <worktree> && python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' \\ ??go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$?; \\ fi; \\ make -f mk/netlab.mk netlab-down FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || true; \\ exit $status\n603966 python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w1-netlab-f29 go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n603967 python3 <worktree>/.agent/tmp/fvpn-w1-netlab-f29-tools/go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n605820 /bin/bash -c export CGO_ENABLED=0 GOTOOLCHAIN=local TMPDIR=\"$PWD/.agent/tmp\" GOTMPDIR=\"$PWD/.agent/tmp\" export GOCACHE=\"$(go env GOCACHE)\" for attempt in $(seq 1 25); do   date -u +%FT%TZ >> .agent/f39/focused-admission.log   if bash \"$FVPN_HOLD_SH\" >> .agent/f39/focused-admission.log 2>&1; then     go test -count=1 -v ./node/agent ./node/watchdog ./node/internal/meter -run '^Test(R22_M[123]|R21_M2|R20_M[123])' > .agent/f39/boot-first.log 2>&1     rc=$?     tail -55 .agent/f39/boot-first.log     exit \"$rc\"   fi   sleep 60 done exit 125\n",
+        "pgrep_exit": 0,
+        "actual": [],
+        "suites": []
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 2  1 854368 4203572 2617620 171031480    5   52 69617 75835 24999   22  3  2 93  1  0  0\n 4  0 854368 4205916 2617628 171093392    0    0 12694   211 11273 15810  5  1 92  2  0  0\n 1  0 854368 4081784 2617636 171094888    0    0     0  7570 5842 8502  4  2 94  0  0  0\n 2  0 854368 3934120 2617644 171094844    0    0     0  4136 7527 9841  5  1 94  0  0  0\n 1  0 854368 3877472 2617652 171173968    0    0     0   954 4779 6334  4  1 95  0  0  0\n 1  0 854368 3963232 2617660 171093960    0    0     0  1743 8539 13488  6  1 93  0  0  0\n 5  0 854368 3754416 2617676 171009428    0    0     1  1775 10905 14305  5  1 93  0  0  0\n",
+      "current": [
+        {
+          "r": 4,
+          "idle": 92
+        },
+        {
+          "r": 1,
+          "idle": 94
+        },
+        {
+          "r": 2,
+          "idle": 94
+        },
+        {
+          "r": 1,
+          "idle": 95
+        },
+        {
+          "r": 1,
+          "idle": 93
+        },
+        {
+          "r": 5,
+          "idle": 93
+        }
+      ],
+      "quiet": false,
+      "after": {
+        "pgrep": "602778 /bin/sh -c set -eu; \\ status=0; \\ make -f mk/netlab.mk netlab-up FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || status=$?; \\ if [ $status -eq 0 ]; then \\ ?cd <worktree> && python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' \\ ??go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$?; \\ fi; \\ make -f mk/netlab.mk netlab-down FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || true; \\ exit $status\n603966 python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w1-netlab-f29 go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n603967 python3 <worktree>/.agent/tmp/fvpn-w1-netlab-f29-tools/go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n605820 /bin/bash -c export CGO_ENABLED=0 GOTOOLCHAIN=local TMPDIR=\"$PWD/.agent/tmp\" GOTMPDIR=\"$PWD/.agent/tmp\" export GOCACHE=\"$(go env GOCACHE)\" for attempt in $(seq 1 25); do   date -u +%FT%TZ >> .agent/f39/focused-admission.log   if bash \"$FVPN_HOLD_SH\" >> .agent/f39/focused-admission.log 2>&1; then     go test -count=1 -v ./node/agent ./node/watchdog ./node/internal/meter -run '^Test(R22_M[123]|R21_M2|R20_M[123])' > .agent/f39/boot-first.log 2>&1     rc=$?     tail -55 .agent/f39/boot-first.log     exit \"$rc\"   fi   sleep 60 done exit 125\n",
+        "pgrep_exit": 0,
+        "actual": [],
+        "suites": []
+      },
+      "hold_after": {
+        "utc": "2026-11-03T10:45:45.902011+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T10:46:45.939319+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "602778 /bin/sh -c set -eu; \\ status=0; \\ make -f mk/netlab.mk netlab-up FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || status=$?; \\ if [ $status -eq 0 ]; then \\ ?cd <worktree> && python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' \\ ??go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$?; \\ fi; \\ make -f mk/netlab.mk netlab-down FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || true; \\ exit $status\n603966 python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w1-netlab-f29 go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n603967 python3 <worktree>/.agent/tmp/fvpn-w1-netlab-f29-tools/go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n605820 /bin/bash -c export CGO_ENABLED=0 GOTOOLCHAIN=local TMPDIR=\"$PWD/.agent/tmp\" GOTMPDIR=\"$PWD/.agent/tmp\" export GOCACHE=\"$(go env GOCACHE)\" for attempt in $(seq 1 25); do   date -u +%FT%TZ >> .agent/f39/focused-admission.log   if bash \"$FVPN_HOLD_SH\" >> .agent/f39/focused-admission.log 2>&1; then     go test -count=1 -v ./node/agent ./node/watchdog ./node/internal/meter -run '^Test(R22_M[123]|R21_M2|R20_M[123])' > .agent/f39/boot-first.log 2>&1     rc=$?     tail -55 .agent/f39/boot-first.log     exit \"$rc\"   fi   sleep 60 done exit 125\n",
+        "pgrep_exit": 0,
+        "actual": [],
+        "suites": []
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  0 854964 3698616 2538752 170670400    5   52 69383 75581 24937   22  3  2 93  1  0  0\n 0  0 854964 3720012 2538760 170670564    0    0     0    36 3201 4409  0  0 99  0  0  0\n 0  0 854964 3712140 2538768 170670580    0    0     0   111 2727 4416  1  0 98  1  0  0\n 3  0 854964 2931532 2538784 170670620    0    0     7 17442 5526 55489  4  3 89  4  0  0\n 1  0 854964 2945464 2538792 170670644    0    0     0   166 5542 3905  5  4 91  0  0  0\n 0  0 854964 3228452 2538800 170670652    0    0     0   166 4579 4169  3  3 94  0  0  0\n 0  0 854964 3379400 2538808 170670648    0    0     0   560 2305 3378  0  0 99  1  0  0\n",
+      "current": [
+        {
+          "r": 0,
+          "idle": 99
+        },
+        {
+          "r": 0,
+          "idle": 98
+        },
+        {
+          "r": 3,
+          "idle": 89
+        },
+        {
+          "r": 1,
+          "idle": 91
+        },
+        {
+          "r": 0,
+          "idle": 94
+        },
+        {
+          "r": 0,
+          "idle": 99
+        }
+      ],
+      "quiet": true,
+      "after": {
+        "pgrep": "602778 /bin/sh -c set -eu; \\ status=0; \\ make -f mk/netlab.mk netlab-up FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || status=$?; \\ if [ $status -eq 0 ]; then \\ ?cd <worktree> && python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' \\ ??go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$?; \\ fi; \\ make -f mk/netlab.mk netlab-down FVPN_LAB_PREFIX='fvpn-w1-netlab-f29' || true; \\ exit $status\n603966 python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w1-netlab-f29 go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n603967 python3 <worktree>/.agent/tmp/fvpn-w1-netlab-f29-tools/go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n605820 /bin/bash -c export CGO_ENABLED=0 GOTOOLCHAIN=local TMPDIR=\"$PWD/.agent/tmp\" GOTMPDIR=\"$PWD/.agent/tmp\" export GOCACHE=\"$(go env GOCACHE)\" for attempt in $(seq 1 25); do   date -u +%FT%TZ >> .agent/f39/focused-admission.log   if bash \"$FVPN_HOLD_SH\" >> .agent/f39/focused-admission.log 2>&1; then     go test -count=1 -v ./node/agent ./node/watchdog ./node/internal/meter -run '^Test(R22_M[123]|R21_M2|R20_M[123])' > .agent/f39/boot-first.log 2>&1     rc=$?     tail -55 .agent/f39/boot-first.log     exit \"$rc\"   fi   sleep 60 done exit 125\n",
+        "pgrep_exit": 0,
+        "actual": [],
+        "suites": []
+      },
+      "hold_after": {
+        "utc": "2026-11-03T10:47:16.056575+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "test_only": true,
+  "windows": [
+    {
+      "run": "full1",
+      "reservation_wait_seconds": 0.03554833699672599,
+      "settling_seconds": 60,
+      "preflights": [
+        {
+          "stage": "before",
+          "wait_seconds": 30.15590323500146,
+          "attempts": 1,
+          "rejected": 0,
+          "admitted": true,
+          "accepted_max_r": 1,
+          "accepted_min_idle": 99
+        },
+        {
+          "stage": "after-startup",
+          "wait_seconds": 30.156925803003105,
+          "attempts": 1,
+          "rejected": 0,
+          "admitted": true,
+          "accepted_max_r": 0,
+          "accepted_min_idle": 97
+        }
+      ]
+    },
+    {
+      "run": "gate2",
+      "reservation_wait_seconds": 0.03563749300155905,
+      "settling_seconds": 60,
+      "preflights": [
+        {
+          "stage": "before",
+          "wait_seconds": 30.15104680800141,
+          "attempts": 1,
+          "rejected": 0,
+          "admitted": true,
+          "accepted_max_r": 0,
+          "accepted_min_idle": 92
+        },
+        {
+          "stage": "after-startup",
+          "wait_seconds": 30.15079542500098,
+          "attempts": 1,
+          "rejected": 0,
+          "admitted": true,
+          "accepted_max_r": 3,
+          "accepted_min_idle": 98
+        }
+      ]
+    },
+    {
+      "run": "guard-window",
+      "reservation_wait_seconds": 0.035307521000504494,
+      "settling_seconds": 60,
+      "preflights": [
+        {
+          "stage": "before",
+          "wait_seconds": 210.4858478749993,
+          "attempts": 3,
+          "rejected": 2,
+          "admitted": true,
+          "accepted_max_r": 1,
+          "accepted_min_idle": 93
+        },
+        {
+          "stage": "after-startup",
+          "wait_seconds": 120.28420453299987,
+          "attempts": 2,
+          "rejected": 1,
+          "admitted": true,
+          "accepted_max_r": 0,
+          "accepted_min_idle": 99
+        }
+      ]
+    },
+    {
+      "run": "final-gate2",
+      "reservation_wait_seconds": 0.03311381599996821,
+      "settling_seconds": 60,
+      "preflights": [
+        {
+          "stage": "before",
+          "wait_seconds": 30.140760483998747,
+          "attempts": 1,
+          "rejected": 0,
+          "admitted": true,
+          "accepted_max_r": 2,
+          "accepted_min_idle": 84
+        },
+        {
+          "stage": "after-startup",
+          "wait_seconds": 210.4483874360012,
+          "attempts": 3,
+          "rejected": 2,
+          "admitted": true,
+          "accepted_max_r": 3,
+          "accepted_min_idle": 89
+        }
+      ]
+    }
+  ]
+}

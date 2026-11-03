@@ -1,0 +1,15 @@
+{
+  "utc": "2026-11-03T10:52:10.159848+00:00",
+  "hold": {
+    "utc": "2026-11-03T10:52:10.198145+00:00",
+    "exit_code": 0,
+    "output": "free\n",
+    "free": true
+  },
+  "processes": {
+    "pgrep": "605820 /bin/bash -c export CGO_ENABLED=0 GOTOOLCHAIN=local TMPDIR=\"$PWD/.agent/tmp\" GOTMPDIR=\"$PWD/.agent/tmp\" export GOCACHE=\"$(go env GOCACHE)\" for attempt in $(seq 1 25); do   date -u +%FT%TZ >> .agent/f39/focused-admission.log   if bash \"$FVPN_HOLD_SH\" >> .agent/f39/focused-admission.log 2>&1; then     go test -count=1 -v ./node/agent ./node/watchdog ./node/internal/meter -run '^Test(R22_M[123]|R21_M2|R20_M[123])' > .agent/f39/boot-first.log 2>&1     rc=$?     tail -55 .agent/f39/boot-first.log     exit \"$rc\"   fi   sleep 60 done exit 125\n",
+    "pgrep_exit": 0,
+    "actual": [],
+    "suites": []
+  }
+}
