@@ -128,3 +128,19 @@ verification in production:
   model change so the original no-repeat-delete assertion still runs on Apply.
 
 No R16–R19 or original r20–r24 assertion is weakened by these adaptations.
+
+## Genuine 304 control and fixture follow-through — 2026-11-03
+
+The independent `TestAT10_F41_Actual304RetainsFullModel` checks an actual
+`ErrNotModified` response on every tick, preserves desired pointer and policy
+expiry, and requires zero additional Applies plus a serving heartbeat.
+On an unchanged archive of `b17c8c17` it fails on the first tick with
+`applies 2 -> 3`; on the fixed implementation all three ticks pass.
+The frozen pre-fix output is `.agent/f41/before-actual304.log`.
+
+The explicit-Apply fault-fixture adaptations pass as a group. A subsequent
+integration run has only the original H-1 fixture failure: three ticks now
+Apply once for its real 1ms expiry change. Node lint passes. Original H-1's
+assertions and setup have not been changed pending the orchestrator's reply;
+the independent actual-304 proof avoids mistaking that fixture conflict for
+a requirement to ignore a policy change.
