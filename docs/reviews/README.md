@@ -30,6 +30,7 @@
 | `r22-attribution-fixes-review` | [r22-attribution-fixes-review.md](r22-attribution-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `31862b3a` | Agent-core 38 carrying 37: r20 fixes and r21 H-1, H-2, M-1, M-2, L-1 fixes; D-141 | 0 Critical / 2 High / 3 Medium / 0 Low; returned to agent-core 39 before merge, none confirmed | Proof branch `ef78b9b7`; none adopted on main at this cut |
 | `r23-intent-fixes-review` | [r23-intent-fixes-review.md](r23-intent-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `99f93112` | Agent-core 37–39, r20/r21/r22 fixes | 5 (0 Critical, 3 High, 1 Medium, 1 Low); returned to agent-core 40 before merge, none confirmed | None; proofs on `26ffc36c` for four findings, L-1 code trace; exact archive only. |
 | `r24-hitless-guard-review` | [`r24-hitless-guard-review.md`](r24-hitless-guard-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Netlab 31 design at 52a7e59b; review ba5d3004, 08:19:51 EST; G5/G6 owner trade | 8 (0 Critical, 4 High, 3 Medium, 1 Low); #423 enforcement fixes, C1 revision documents only, H-1/H-3 returned to agent-core 41; [#426 additive L-1 / M-3 corrections](../poc/G2-followup33-design/corrections.md) | [`node/enforce/review_r24_test.go`](../../node/enforce/review_r24_test.go) adopted by #423; copied M-3 dropped; agent/watchdog proofs review-branch only |
+| `r25-retain-review` | [r25-retain-review.md](r25-retain-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `8cc27609` | Agent-core 40/41, carrying 37–41; unmerged | 0 Critical / 1 High / 1 Medium / 0 Low; RETURNED to agent-core 42 before merge, not yet judged | None; 680-line node/agent/review_r25_test.go on `1afecb29` only; exact archive only. |
 
 ## What Held Across the Reviews
 
@@ -494,3 +495,102 @@ stay OPEN on main — RETURNED; #425 records fixes on unmerged agent-core 41.
 At briefing r25 was running on 8cc27609, status only; its archive belongs to
 a later cut. The owner's G5/G6 trade stays undecided; production keeps the
 current guard. See [follow-up 37](../handover/follow-up-37.md).
+
+## r25 dispositions at the follow-up 38 cutoff (2026-11-03 EST)
+
+**agy `gemini-4-argon-high`** reviewed agent-core follow-ups **40 and 41** at
+**8cc2760965abbbb1af3340976c6c4adf1be3dc37**, 41's delivered tip carrying
+37–41, **not on main**. Source: `r25-retain-review`, commit
+**1afecb29c82bcc8cea6f39a16fa724f0acc7a5d5**, **11:30:07 EST**.
+The [raw archive](r25-retain-review.md) is byte-for-byte that commit's
+`.agent/REVIEW.md`: **31,868 bytes**, SHA-256
+**7514218895b014d62d09693b5de38193b3a412c5fa65c2aeb3b44d720d414286**.
+Inspection found no host path, username or secret. Product paths are retained.
+Proofs: **node/agent/review_r25_test.go**, **680 lines** on 1afecb29, not on
+main and not copied by handover. Agent-core 42's brief imports that file alone
+first. No proof or finding is adopted on main at this cut.
+
+Findings: **0 Critical, 1 High, 1 Medium, 0 Low**. Recommendation:
+**“Merge after named fixes”** — H-1 and M-1 before follow-ups 37–41 merge.
+This is **the reviewer's recommendation, not a decision**. Both findings are
+**RETURNED — not yet judged; agent-core 42 before merge** under D-141.
+
+| Finding | Reviewer's claim | Disposition at #427 |
+|---|---|---|
+| H-1 | One binding's deadline, with a sibling still valid, withdraws the whole node to baseline before the control/probe pass. In verifyCurrentServing or the retained branch, the early return leaves survivors unserved, a `-` heartbeat reason and a contradictory observation report. r25 attributes this to follow-up 41 interacting with expireServing, which it dates to follow-up 23. | RETURNED — not yet judged; agent-core 42 before merge |
+| M-1 | canRetainServing requires exact intent/open-epoch equality; after a same-interval epoch rotation, the next unchanged tick forces a redundant Apply. r25 attributes this to follow-up 41 interacting with follow-up 40. | RETURNED — not yet judged; agent-core 42 before merge |
+
+**Open question, unanswered:** which part of H-1, if any, already exists on
+main? The candidate is main's whole-node withdrawal when the earliest admitted
+binding's deadline passes. The orchestrator asked agent-core 42 to judge it
+under D-141. No main defect disposition or operator warning is added here.
+Agent-core 42 was running since 11:36 EST at briefing, also handling Netlab
+F32-01. Agent-core 37–41 were delivered and held. Their judgments are outside
+this cut; r20–r24's agent-core rows stay as follow-up 37 recorded them.
+
+**What held — the reviewer's five answered questions, not acceptance:**
+
+| Question | Reviewer's claim (subject to the additive errata below) |
+|---|---|
+| Q1 — stale or unsafe retention | Whole-model equality, pending/failure gates, node lock, latch reread, live kernel/member-path verification, clock checks and heartbeat protect skipped Apply ticks; real control can return an unchanged 304. |
+| Q2 — per-device deadlines | Member-only caps and per-device ValidUntil preserve independent timeouts in either binding order, including distant/zero/inactive bindings. H-1 is the sibling-expiry exception. The claimed future-ValidFrom wake is corrected below. |
+| Q3 — r23 fixes | Counting-interval continuity, retained intent on transient marker reads, closed-epoch preparation and handoff persistence/observation gates hold. M-1 concerns the separate live-retention path. |
+| Q4 — edited-test coverage | Apply-fault fixtures force an actual model change, retained-tick live-drift coverage remains, and the reviewer claims no weakened assertions. Its stated file inventory and description of all edits are corrected below. |
+| Q5 — fixture changes | Pinning the fake signer clock produces actual 304 ticks; separate renewal coverage remains. Waiting for a counted UDP burst is justified by the upload counter and accept sharing one rule, followed by the ledger/counter equality assertion. |
+
+The reviewer inspected the netlab scenario statically and did not execute it.
+Question 6 reports the two findings; it is not a sixth “held” assurance.
+Every historical failure stays failed. See [follow-up 38](../handover/follow-up-38.md).
+
+**Additive citation errata to r25 (archive unchanged).** Code and existing
+agent tests below were checked at **8cc27609**; the new review proofs at
+**1afecb29**. Neither commit is on main. These are source corrections, not
+agent-core 42's judgments. The separate frozen handover audit retains the
+source readings and test-name checks.
+
+- **M-1's switchEpoch citation and mechanism:** usage.go:349–364 is the end
+  of settlement and start of readMeter, not switchEpoch; node/agent/reset.go
+  does not exist. The implementation is node/agent/meterreset.go:311–332.
+  It consumes a pending kernel nudge through `e.meter.Sample(ctx)`; there is
+  no NotifyRulesetSwitch call in the reviewed implementation. The strict
+  epoch equality at retain.go:53 is present. This correction does not judge M-1.
+- **Q1 call site and presence margin:** canRetainServing is called at
+  engine.go:1178, not 1181 (a comment). allowed_presence.go:81–88 skips the
+  presence requirement when a binding's computed remaining authorization is
+  **at most 101 ms**; above that it requires the prefix to be present. It does
+  not itself assert a live element's remaining timeout is at least 101 ms.
+  The full serving verifier supplies the other checks. No new bound is inferred.
+- **Q2 binding clock and wake:** no bindingActive helper exists in the cited
+  code. decide.go:623 and 646–650 use signed lease time plus monotonic elapsed
+  time and inline ValidFrom/ValidUntil checks, not bindingActive(b, in.Now)
+  at line 615. nextStepDelay is engine.go:630–646; it caps by policy expiry
+  and grant-less renewal, with no future-ValidFrom wake calculation. The
+  cited 649–659 span signaled and the Step declaration. Future activation is
+  evaluated on a subsequent tick; the claimed special wake is unsupported.
+- **Q1/Q3/Q4 proof names:** two cited names are absent at 8cc27609:
+  TestAT13_F41_LiveDriftOnSkippedTickRepairsOrWithdraws and
+  TestR23_H2_PostFinalSampleCheckpointFailureStillPreparesNewEpoch.
+  The actual declarations are TestISO01_F41_SkippedTicksStillDetectLiveDrift
+  in node/agent/followup41_drift_test.go:12 and
+  TestR23_H2_InterruptedCheckpointPreparesNextEpoch in
+  node/agent/followup40_test.go:158. The drift file has 73 lines, so the cited
+  47–105 range runs past EOF. The six named r25 proof declarations and their
+  three quoted failure sites match 1afecb29; none is a main test here.
+- **Q3 L-1 / Q4 inventory:** in the stated b17c8c17..8cc27609 range,
+  node/agent/engine_test.go and node/agent/review_r23_test.go are unchanged;
+  node/agent/review_r24_test.go is added. Across that exact range there are
+  **14 modified and ten added test files**, including merged main changes,
+  not the report's list of 12 edited files. Within node/agent there are
+  **11 modified test files**. In particular followup23_expiry_test.go changes
+  deadline assertions to rendered per-device timeouts; its edits are not
+  solely an Apply-trigger helper or lease-refresh flag. This corrects the
+  inventory and edit description without issuing a coverage judgment.
+- **Q5 log and rule quote:** the exact log message “usage checkpoint applied”
+  is emitted at node/internal/usageupload/upload.go:518; engine.go:758–761
+  calls restoreUsage before enforce at 767. render_nft.go:179's upload rule
+  contains the counter, `meta priority set` and `accept`; the archive's
+  quoted `ip daddr != @denied_v4` clause is absent there. Denied/host drops
+  precede that rule. The counter/accept relationship remains visible, and
+  scenario_at_usage_test.go:68 checks nonzero bytes and equality to
+  nftAfter. The raw log quote matches; its direct emitter and rule quotation
+  are corrected here.
