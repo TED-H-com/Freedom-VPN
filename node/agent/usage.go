@@ -147,11 +147,18 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 		e.log.Error("usage store", "err", err.Error())
 		return
 	}
-	e.usageOnce = true
-	e.usageLock = lifetime
-	e.usagePersist = false
-	e.usage = st
-	e.usageStatus = st
+	// Initialization is retryable. Neither the ownership lock nor a partially
+	// constructed meter may survive a failed attempt (r22 M-1).
+	var m *meter.Meter
+	defer func() {
+		if !e.usageOnce {
+			if m != nil {
+				m.Close()
+			}
+			_ = st.Close()
+			lifetime.Release()
+		}
+	}()
 	id, blocked := meterBarrierIdentity(e.cfg.JournalDir)
 	if id == "" {
 		if err := e.invalidateMeterCheckpoint(); err != nil {
@@ -180,15 +187,15 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 			e.setMeterBindings(nil)
 		}
 	}
-	m, err := meter.NewContext(ctx, meter.Config{
+	m, err = meter.NewContext(ctx, meter.Config{
 		NodeID: e.nodeID, IncarnationID: e.incID, Store: st, Source: src, Logger: e.log,
 		PreserveClosedEpoch: blocked || e.retainedPending,
 	})
 	if err != nil {
 		e.meterFailed = true
+		e.usagePersist = true
 		e.log.Error("usage meter", "err", err.Error())
-	} else {
-		e.meter = m
+		return
 	}
 	up, err := usageupload.New(usageupload.Config{
 		Store: st, Transport: usageTransport{client: e.client}, Logger: e.log,
@@ -198,7 +205,12 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 		e.log.Error("usage upload", "err", err.Error())
 		return
 	}
+	e.usageLock = lifetime
+	e.usage, e.usageStatus = st, st
+	e.meter = m
 	e.uploader = up
+	e.usagePersist, e.meterFailed = false, false
+	e.usageOnce = true
 	// Uploads follow the process caller, not Boot's cancellation-independent
 	// local context or a Step's short HTTP budget.
 	if e.runCtx == nil || e.runCtx.Err() == nil {
