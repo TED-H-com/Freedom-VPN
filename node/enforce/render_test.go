@@ -362,6 +362,7 @@ func TestVerifyBaseline(t *testing.T) {
 
 func fixtureBaseline() []byte {
 	return []byte(`{"nftables":[
+        {"set":{"family":"inet","table":"fvpn","name":"allowed_v4","flags":["timeout"]}},
 		{"chain":{"family":"inet","table":"fvpn","name":"forward","type":"filter","hook":"forward","prio":-150,"policy":"drop"}},
 		{"rule":{"family":"inet","table":"fvpn","chain":"forward","comment":"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1","expr":[{"match":{"left":"never","right":"never"}}]}},
 		{"rule":{"family":"inet","table":"fvpn","chain":"forward","expr":[{"match":{"left":{"meta":{"key":"iifname"}},"right":"fv-fh"}},{"drop":null}]}},
@@ -889,7 +890,7 @@ func fixtureServing(m Model, assignments map[uuid.UUID]uint16) []byte {
 	if err != nil {
 		panic(err)
 	}
-	return raw
+	return f27StaticSets(raw, m)
 }
 
 func fixtureQoS(m Model, assignments map[uuid.UUID]uint16) map[string][2][]byte {

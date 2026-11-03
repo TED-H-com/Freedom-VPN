@@ -1,0 +1,21 @@
+{
+  "start_utc": "2026-11-03T06:08:59.998197+00:00",
+  "elapsed_seconds": 2.0745019909991242,
+  "command": [
+    "env",
+    "FVPN_NETLAB=1",
+    "FVPN_LAB_PREFIX=fvpn-w1-netlab-f27-before",
+    "FVPN_NETLAB_EVIDENCE_DIR=docs/poc/G2-followup27-evidence/before-kernel",
+    "go",
+    "test",
+    "-tags",
+    "netlab",
+    "-count=1",
+    "-v",
+    "./tests/netlab",
+    "-run",
+    "^TestISO01_F27_LiveSetDrift$"
+  ],
+  "exit_code": 1,
+  "output_sha256": "72a84cec70d1c13fd30e709c6c257c4c5273269052c241eb0dac25845ed2847f"
+}

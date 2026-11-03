@@ -1,0 +1,66 @@
+{
+  "test_only": true,
+  "declared_utc": "2026-11-03T06:18:18.326480+00:00",
+  "A_main": "b943941157ab6aeba6b04c79377de686c22bfbb4",
+  "B_commit": "94f26b878facc506268c247dc57bdb8bdcc2f831",
+  "binaries": {
+    "A": {
+      "path": ".agent/tmp/fvpn-w1-netlab-f27-before-fvpn-netlab",
+      "sha256": "c71bfd3ed43826c822066adeca9aa0a6b37efdaad4e943090c9a3b653e3a1fa9"
+    },
+    "B": {
+      "path": ".agent/tmp/fvpn-w1-netlab-f27-B",
+      "sha256": "03a83705b00ca2ac40bc91183f32a9eca60ff3b773dee867c9b055e9f8f496ff"
+    }
+  },
+  "legs": [
+    {
+      "label": "A1",
+      "arm": "A"
+    },
+    {
+      "label": "B1",
+      "arm": "B"
+    },
+    {
+      "label": "A2",
+      "arm": "A"
+    },
+    {
+      "label": "B2",
+      "arm": "B"
+    }
+  ],
+  "attempts_per_leg": 1,
+  "retries": 0,
+  "same_host": true,
+  "fresh_topology_each_leg": true,
+  "phase_order": [
+    "100 full live verifies at each of spec and expanded sizes",
+    "unchanged TestAT10_AT13_ReloadRevokeBaseline: 100 reloads"
+  ],
+  "set_inputs": {
+    "spec": {
+      "DeniedV4": "nil -> 16 spec prefixes",
+      "ExtraDeniedV4": 0,
+      "HostV4": 0,
+      "implicit_host_SNAT": 1
+    },
+    "expanded": {
+      "DeniedV4": "15 spec prefixes (TEST ONLY omit 203.0.113.0/24)",
+      "ExtraDeniedV4": "128 nonadjacent /32 in documentation range",
+      "HostV4": "128 nonadjacent /32 in documentation range",
+      "implicit_host_SNAT": 1
+    }
+  },
+  "host_admission": "Before each leg vmstat 5 7, ignore first row, all six current r<=3 and id>=80. Wait at most 3600s for quiet, then run anyway if no actual timing-sensitive suite. Never overlap at-isolation, at-members or node-test-netlab startup; executable-aware checks before setup/start/phases. Record after-host too; host state is not a pass criterion and no attempt is excluded.",
+  "judgement": "D-133 / D-138: preserve all failures, compare B-only failure and timing distributions; one quartet is descriptive, not a causal universal timing guarantee. Existing D-120 and render-to-installed 100ms predicates unchanged. Guard duration is reported separately, not assigned the install bound.",
+  "harness_sha256": {
+    "tests/netlab/scenario_f27_test.go": "56a615b7157d6c4e480719e3cc8f8a73475bf97b73e79b5918d6343d928828be",
+    "tests/netlab/scenario_at10_test.go": "44c1bdd32a761f5a1616da533067bef361d7cec6f2d32beb931a72a6f48df09b",
+    "tests/netlab/scripts/stream.py": "674066fa64c3c2c6d60182fb10d36862ca0d1b1c4880bdc38c3822a743a0031f",
+    "tests/netlab/scripts/trace_capture.py": "8af8df5cb84ac46c7b6d4978ed53f4d4a719cef3a1c9cf5da8706bc03c85bd6f",
+    "docs/poc/G2-followup27-evidence/host.py": "e88cc1af756fab6aff83432d8658dacfe196f187620486042728d7dd87926442",
+    "docs/poc/G2-followup27-evidence/comparison.py": "3012db5200769b44854c84f01ed7d69e0e709301708e98e5c79ab72b410516a6"
+  }
+}

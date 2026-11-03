@@ -1,0 +1,28 @@
+{
+  "start_utc": "2026-11-03T06:46:09.042832+00:00",
+  "elapsed_seconds": 10.328266941000038,
+  "command": [
+    "env",
+    "FVPN_NETLAB=1",
+    "FVPN_LAB_PREFIX=fvpn-w1-netlab-f27-a2",
+    "FVPN_NETLAB_F27_COST=1",
+    "FVPN_NETLAB_EVIDENCE_DIR=docs/poc/G2-followup27-evidence/comparison/A2/cost",
+    "go",
+    "test",
+    "-tags",
+    "netlab",
+    "-count=1",
+    "-timeout",
+    "10m",
+    "-p",
+    "1",
+    "-parallel",
+    "1",
+    "-v",
+    "./tests/netlab",
+    "-run",
+    "^TestISO01_F27_VerifyCost$"
+  ],
+  "exit_code": 0,
+  "output_sha256": "55ffc37c11fa936ed9e57749c0f5fd891096cdeaa22725e6a1f70ff845cd9931"
+}

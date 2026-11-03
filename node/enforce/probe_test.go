@@ -269,7 +269,7 @@ func probeServingFixture(m Model, assignments map[uuid.UUID]uint16, bounded bool
 	if err != nil {
 		panic(err)
 	}
-	return raw
+	return f27StaticSets(raw, m)
 }
 
 func probeBaselineFixture(m Model, bounded bool) []byte {
@@ -312,7 +312,7 @@ func probeBaselineFixture(m Model, bounded bool) []byte {
 	if err != nil {
 		panic(err)
 	}
-	return raw
+	return f27StaticSets(f27ChangeSet(raw, "allowed_v4", func(set map[string]any) { set["flags"] = []any{"timeout"} }), m)
 }
 
 func resolverSetFixture(m Model) map[string]any {
