@@ -99,3 +99,32 @@ assertion would be wrong. A setup-only correction to produce actual 304s was
 asked of the orchestrator because the prompt restricts original-proof
 adaptations to API changes. Independent proofs use explicit stable windows
 and retain all assertions. No production workaround discards an expiry change.
+
+## Broad-gate fixture judgments — 2026-11-03, before adaptation
+
+`broad-agent.log` records the first broad run (agent FAIL; command/watchdog
+packages PASS). Aside from the separately pending original H-1 fixture, these
+failures depend on unconditional Apply and do not demonstrate a skipped live
+verification in production:
+
+- R15 Apply/foreign-tc and the F6 retained-failure fixtures use a fake live
+  verifier that always succeeds; their foreign-tc fault exists only in Apply.
+  Trigger their intended Apply with a small valid local host-reserve QoS
+  change. Keep failure, quarantine, historical evidence and ACK assertions.
+- Follow-up 31 cancellation-on-Apply and follow-up 40's r23 repair/nudge test
+  inject their fault inside Apply. Give them the same explicit model change;
+  also make the passing cancellation case prove its callback actually ran.
+- Follow-up 35 diagnostic-counter persistence intentionally checks Apply's raw
+  snapshot writes, not sampler persistence. Trigger real Apply before each
+  check. Keep the no-usage/no-epoch-change assertions.
+- Follow-up 28's captured producer replay swaps a verified fake plane for an
+  empty emulated kernel. Its initial installation must start non-serving;
+  an empty new executor cannot inherit the old fake's serving claim. Preserve
+  the original lease, replay clock, producer and later repair assertions.
+- R15 reassigned-address test reads `last.Revoke` after a tick, even when no
+  Apply occurred: that is the previous call's consumed action. Check the
+  call-count delta first; if an Apply happened its revoke list must be empty.
+  Pending revocation accounting must also be empty. Add an explicit later
+  model change so the original no-repeat-delete assertion still runs on Apply.
+
+No R16–R19 or original r20–r24 assertion is weakened by these adaptations.
