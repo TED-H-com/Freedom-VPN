@@ -995,5 +995,17 @@
     "pgrep -af 'gates.sh|mk/at-'",
     "go env GOCACHE"
   ],
-  "pgrep": "Original output retained privately; admission inventory above is sanitized"
+  "pgrep": "Original output retained privately; admission inventory above is sanitized",
+  "gocache_note": "Display redacts the home directory only; exact go env GOCACHE output is retained in the private original preflight. No cache override or hard-coded cache path.",
+  "private_original_sha256": "d17d872d8880de50e8ff9e799587bade95be8c3bd44b59c305d4e243caf46b3d",
+  "contention_context": {
+    "classification": "contention-confounded for every observation overlapping the window",
+    "start": "2026-11-01T17:32:43Z",
+    "end": "2026-11-01T17:37:12Z",
+    "decision": "D-133",
+    "cause_status": "unproven",
+    "source": "Orchestrator resume instruction, 2026-11-02: handover 29 CPU-heavy gates",
+    "rule": "All timings, failures and anomalies inside or overlapping this window are contention-confounded. Values and verdicts stand; overlap assigns no cause. Cumulative snapshots may reference earlier events; evaluate the event time, not the later snapshot time.",
+    "index": "F16-contention.json"
+  }
 }

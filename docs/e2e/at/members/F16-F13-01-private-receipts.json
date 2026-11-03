@@ -1,0 +1,25 @@
+{
+  "run_id": "0ffb355a-945b-4198-a551-3794120a686c",
+  "source_commit": "3a8b61594b447d164bb7c9481545e207f8688ec2",
+  "samples": [],
+  "withdrawals": [],
+  "producer_export": {
+    "complete": true,
+    "bytes": "58576926",
+    "sha256": "ebc5157dc9f24d48f4a030be8019c612af133528f51c607bfb6b09eea532328a",
+    "records": 4366,
+    "scope": "read-only stream export after original sample; private full JSONL retained"
+  },
+  "producer_windows": [],
+  "historical_F13_01": "both original failed rows remain failed and unattributed; their raw bytes were never retained",
+  "contention_context": {
+    "classification": "contention-confounded for every observation overlapping the window",
+    "start": "2026-11-01T17:32:43Z",
+    "end": "2026-11-01T17:37:12Z",
+    "decision": "D-133",
+    "cause_status": "unproven",
+    "source": "Orchestrator resume instruction, 2026-11-02: handover 29 CPU-heavy gates",
+    "rule": "All timings, failures and anomalies inside or overlapping this window are contention-confounded. Values and verdicts stand; overlap assigns no cause. Cumulative snapshots may reference earlier events; evaluate the event time, not the later snapshot time.",
+    "index": "F16-contention.json"
+  }
+}

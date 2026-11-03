@@ -1,0 +1,118 @@
+{
+  "at": "2026-11-01T17:23:01.823528+00:00",
+  "baseline_commit": "d640ce96d9145e57a60e04e5875e049070f30b96",
+  "harness_commit": "3a8b61594b447d164bb7c9481545e207f8688ec2",
+  "gocache": "${HOME}/.cache/go-build",
+  "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 2  5  51544 43105348 12010552 115639416    0    0 19649 28973 38793   35  8  3 79 10  0  0\n 2  5  51544 43035944 12010552 115666164    0    0     0  7905 61456 6809  7  1 83  8  0  0\n 1  5  51544 43310584 12010552 115694340    0    0     2 12426 63259 8572  6  1 85  8  0  0\n 2  5  51544 43691808 12010552 115715556    0    0     0  8818 61386 6140  6  1 85  8  0  0\n 1  5  51544 43966092 12010552 115742100    0    0     0 34854 57018 6087  6  1 85  8  0  0\n 1  5  51544 44036444 12010552 115769824    0    0     0  6637 74360 66600  7  2 83  8  0  0\n 0  4  51544 44136444 12010552 115755448    0    0     2  6682 82837 63867  6  2 85  7  0  0\n",
+  "suite_wait": {
+    "wait_seconds": 240.537,
+    "waited_for_isolation": false,
+    "polls": [
+      {
+        "elapsed_seconds": 0.033,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 15.063,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 30.093,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 45.125,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 60.156,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 75.186,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 90.218,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 105.248,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 120.279,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 135.312,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 150.342,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 165.373,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 180.405,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 195.442,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 210.472,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 225.507,
+        "other_suites": 2,
+        "isolation_active": false
+      },
+      {
+        "elapsed_seconds": 240.537,
+        "other_suites": 1,
+        "isolation_active": false
+      }
+    ]
+  },
+  "commands": [
+    "vmstat 5 7",
+    "pgrep -af 'gates.sh|mk/at-'",
+    "go env GOCACHE"
+  ],
+  "pgrep": "Original output retained privately; admission inventory above is sanitized",
+  "gocache_note": "Display redacts the home directory only; exact go env GOCACHE output is retained in the private original preflight. No cache override or hard-coded cache path.",
+  "private_original_sha256": "5c91a509eb874efa846bd87e2eb1c1b9540d42501a6f0f789cc9baff630e35fe",
+  "main_ref_at_preflight": "97912766d885b0cbe549ab0a7f781e991ef832df",
+  "baseline_note": "Measured source 3a8b6159 is based on d640ce96. Main advanced during admission to 97912766: only docs/ROADMAP.md and tests/e2e/internal/counterread/read_test.go differ. No runtime source difference; no change to the running tree.",
+  "contention_context": {
+    "classification": "contention-confounded for every observation overlapping the window",
+    "start": "2026-11-01T17:32:43Z",
+    "end": "2026-11-01T17:37:12Z",
+    "decision": "D-133",
+    "cause_status": "unproven",
+    "source": "Orchestrator resume instruction, 2026-11-02: handover 29 CPU-heavy gates",
+    "rule": "All timings, failures and anomalies inside or overlapping this window are contention-confounded. Values and verdicts stand; overlap assigns no cause. Cumulative snapshots may reference earlier events; evaluate the event time, not the later snapshot time.",
+    "index": "F16-contention.json"
+  }
+}

@@ -1,0 +1,358 @@
+{
+  "run_id": "0ffb355a-945b-4198-a551-3794120a686c",
+  "source_commit": "3a8b61594b447d164bb7c9481545e207f8688ec2",
+  "rows": [
+    {
+      "case": "AT02",
+      "name": "AT02-regrant-01a19825-19ae-7789-9c81-4b8954a8efb3",
+      "capture_id": "bb51260e-cc32-4392-a822-bf638b957ac8",
+      "capture_checks": {
+        "member": {
+          "complete": true,
+          "records": 393,
+          "kernel_drops": 0,
+          "decoder": {
+            "file": "member.pcap",
+            "bytes": 75843,
+            "sha256": "e6c517dd3e6189588819696a6a0112e184a1cc34b87e4bdeab1b73eb2388bf29",
+            "snaplen": 65535,
+            "linktype": 276,
+            "records": 393,
+            "snap_truncated_records": 0,
+            "header_errors": 0,
+            "unparsed_records": 0,
+            "file_complete": true,
+            "first": "1793553993.266830",
+            "last": "1793554043.178768",
+            "protocol_records": {
+              "6": 203,
+              "17": 178,
+              "58": 10,
+              "1": 2
+            }
+          }
+        },
+        "node": {
+          "complete": true,
+          "records": 432,
+          "kernel_drops": 0,
+          "decoder": {
+            "file": "node.pcap",
+            "bytes": 85966,
+            "sha256": "658ba0e72dceefbabc826751265ce9a86174b11d13fa809fd230d6a5a36a9ba3",
+            "snaplen": 65535,
+            "linktype": 276,
+            "records": 432,
+            "snap_truncated_records": 0,
+            "header_errors": 0,
+            "unparsed_records": 0,
+            "file_complete": true,
+            "first": "1793553993.654191",
+            "last": "1793554043.232887",
+            "protocol_records": {
+              "17": 195,
+              "6": 231,
+              "58": 5,
+              "1": 1
+            }
+          }
+        },
+        "origin": {
+          "complete": true,
+          "records": 182,
+          "kernel_drops": 0,
+          "decoder": {
+            "file": "origin.pcap",
+            "bytes": 38788,
+            "sha256": "7f631b50bdc1fe09cf33a0ac4e4b0388a22b97b1ed2f7d0a87781eb56f77d7d1",
+            "snaplen": 65535,
+            "linktype": 276,
+            "records": 182,
+            "snap_truncated_records": 0,
+            "header_errors": 0,
+            "unparsed_records": 0,
+            "file_complete": true,
+            "first": "1793553995.281778",
+            "last": "1793554043.074662",
+            "protocol_records": {
+              "6": 182
+            }
+          }
+        }
+      },
+      "loopback_packets": 2,
+      "request_count": 2,
+      "missing_sequences_by_point": null
+    },
+    {
+      "case": "AT02",
+      "name": "AT02-AT02-sibling",
+      "capture_id": "35a818bd-0ba6-4c75-8d0e-da2919c5f03b",
+      "capture_checks": {
+        "member": {
+          "complete": true,
+          "records": 10401,
+          "kernel_drops": 0,
+          "decoder": {
+            "file": "member.pcap",
+            "bytes": 1353215,
+            "sha256": "305ee5ca70064d7ea16156c8913c30f6683826addd47ae4a599f72d54cbae6bd",
+            "snaplen": 65535,
+            "linktype": 276,
+            "records": 10401,
+            "snap_truncated_records": 0,
+            "header_errors": 0,
+            "unparsed_records": 0,
+            "file_complete": true,
+            "first": "1793554120.113862",
+            "last": "1793554217.296208",
+            "protocol_records": {
+              "17": 10038,
+              "1": 102,
+              "6": 260,
+              "58": 1
+            }
+          }
+        },
+        "node": {
+          "complete": true,
+          "records": 15949,
+          "kernel_drops": 0,
+          "decoder": {
+            "file": "node.pcap",
+            "bytes": 1948076,
+            "sha256": "d9331649a914f821827b21273ea5c5d9ceca5e49a3173fc2aed78fa7ee2f49c8",
+            "snaplen": 65535,
+            "linktype": 276,
+            "records": 15949,
+            "snap_truncated_records": 0,
+            "header_errors": 0,
+            "unparsed_records": 0,
+            "file_complete": true,
+            "first": "1793554119.732768",
+            "last": "1793554217.296214",
+            "protocol_records": {
+              "17": 15356,
+              "6": 386,
+              "1": 205,
+              "58": 2
+            }
+          }
+        },
+        "origin": {
+          "complete": true,
+          "records": 5161,
+          "kernel_drops": 0,
+          "decoder": {
+            "file": "origin.pcap",
+            "bytes": 508183,
+            "sha256": "529ff405de8086f7d0668375271c7a87563ca5e68f07705b8e6461133d63d621",
+            "snaplen": 65535,
+            "linktype": 276,
+            "records": 5161,
+            "snap_truncated_records": 0,
+            "header_errors": 0,
+            "unparsed_records": 0,
+            "file_complete": true,
+            "first": "1793554120.113996",
+            "last": "1793554216.987132",
+            "protocol_records": {
+              "17": 4706,
+              "1": 102,
+              "6": 353
+            }
+          }
+        }
+      },
+      "loopback_packets": 1,
+      "request_count": 0,
+      "missing_sequences_by_point": {
+        "member": [],
+        "node": [],
+        "origin": [
+          "202",
+          "203",
+          "204",
+          "205",
+          "206",
+          "207",
+          "208",
+          "209",
+          "210",
+          "448",
+          "691",
+          "1179",
+          "1910",
+          "2155",
+          "2642",
+          "2886",
+          "3130",
+          "3618",
+          "4594"
+        ]
+      }
+    },
+    {
+      "case": "AT02",
+      "name": "AT02-regrant-01a19828-0441-7763-852d-abe7d3a7c46c",
+      "capture_id": "f64a9f65-34b3-47aa-8371-8ac6640dfe16",
+      "capture_checks": {
+        "member": {
+          "complete": true,
+          "records": 2299,
+          "kernel_drops": 0,
+          "decoder": {
+            "file": "member.pcap",
+            "bytes": 383653,
+            "sha256": "1cb6ebdac2af5ef0fa6906606bc855917319d4e9621d98a5933cd668bd859b00",
+            "snaplen": 65535,
+            "linktype": 276,
+            "records": 2299,
+            "snap_truncated_records": 0,
+            "header_errors": 0,
+            "unparsed_records": 0,
+            "file_complete": true,
+            "first": "1793554268.827899",
+            "last": "1793554398.396228",
+            "protocol_records": {
+              "6": 824,
+              "17": 1473,
+              "1": 2
+            }
+          }
+        },
+        "node": {
+          "complete": true,
+          "records": 3852,
+          "kernel_drops": 0,
+          "decoder": {
+            "file": "node.pcap",
+            "bytes": 661475,
+            "sha256": "f15bb3142608f35f2a078ef9b557e6985e92cde82694a3e70e73ae318fa19dbe",
+            "snaplen": 65535,
+            "linktype": 276,
+            "records": 3852,
+            "snap_truncated_records": 0,
+            "header_errors": 0,
+            "unparsed_records": 0,
+            "file_complete": true,
+            "first": "1793554268.534821",
+            "last": "1793554398.396236",
+            "protocol_records": {
+              "17": 2609,
+              "6": 1239,
+              "1": 2,
+              "58": 2
+            }
+          }
+        },
+        "origin": {
+          "complete": true,
+          "records": 1040,
+          "kernel_drops": 0,
+          "decoder": {
+            "file": "origin.pcap",
+            "bytes": 160817,
+            "sha256": "8a0a35ec3039be34e604530a042ec1575111c8138416e1de19d5b194fe0b9d35",
+            "snaplen": 65535,
+            "linktype": 276,
+            "records": 1040,
+            "snap_truncated_records": 0,
+            "header_errors": 0,
+            "unparsed_records": 0,
+            "file_complete": true,
+            "first": "1793554269.793784",
+            "last": "1793554398.605625",
+            "protocol_records": {
+              "6": 819,
+              "17": 221
+            }
+          }
+        }
+      },
+      "loopback_packets": 4,
+      "request_count": 3,
+      "missing_sequences_by_point": null
+    },
+    {
+      "case": "AT03",
+      "name": "AT03-regrant-01a19834-e4f1-717e-99cc-76264c928856",
+      "capture_id": "b729aedd-284f-4e81-96f9-f731d10c69a2",
+      "capture_checks": {
+        "member": {
+          "complete": true,
+          "records": 422,
+          "kernel_drops": 0,
+          "decoder": {
+            "file": "member.pcap",
+            "bytes": 81399,
+            "sha256": "e8d736b0806351fae1e264bdcc015f408f725a8bbdc5a3440e04e667a96c4d9e",
+            "snaplen": 65535,
+            "linktype": 276,
+            "records": 422,
+            "snap_truncated_records": 0,
+            "header_errors": 0,
+            "unparsed_records": 0,
+            "file_complete": true,
+            "first": "1793554999.014233",
+            "last": "1793555043.146263",
+            "protocol_records": {
+              "17": 216,
+              "6": 206
+            }
+          }
+        },
+        "node": {
+          "complete": true,
+          "records": 648,
+          "kernel_drops": 0,
+          "decoder": {
+            "file": "node.pcap",
+            "bytes": 135795,
+            "sha256": "f7a5ed0c4cbe20a8981364d87a0e5efbe8f0d3533e8a1d6266f9937166fa15ae",
+            "snaplen": 65535,
+            "linktype": 276,
+            "records": 648,
+            "snap_truncated_records": 0,
+            "header_errors": 0,
+            "unparsed_records": 0,
+            "file_complete": true,
+            "first": "1793554998.574900",
+            "last": "1793555043.146268",
+            "protocol_records": {
+              "17": 438,
+              "6": 209,
+              "1": 1
+            }
+          }
+        },
+        "origin": {
+          "complete": true,
+          "records": 170,
+          "kernel_drops": 0,
+          "decoder": {
+            "file": "origin.pcap",
+            "bytes": 36032,
+            "sha256": "7ac963ef3409bd2eace4959bcbbf30b1cfa7f077be7e7767266aa603860cdffd",
+            "snaplen": 65535,
+            "linktype": 276,
+            "records": 170,
+            "snap_truncated_records": 0,
+            "header_errors": 0,
+            "unparsed_records": 0,
+            "file_complete": true,
+            "first": "1793555001.847730",
+            "last": "1793555043.189618",
+            "protocol_records": {
+              "6": 170
+            }
+          }
+        }
+      },
+      "loopback_packets": 2,
+      "request_count": 2,
+      "missing_sequences_by_point": null
+    }
+  ],
+  "decoder_sha256": "918c34338ca19b4e5ebb041cb910f48e0a2768e1e77e3a905d0cc723ee75608f"
+}
