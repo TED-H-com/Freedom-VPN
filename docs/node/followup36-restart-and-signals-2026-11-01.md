@@ -346,3 +346,26 @@ repeated shift requiring a production fix. The historical failures and all
 losses stay recorded with their original results. Request 2's attribution is
 closed; request 1 remains the already-briefed netlab 26 verifier content
 check. This resume changes evidence and reporting only.
+
+## Correction (2026-11-03, follow-up 37)
+
+Review r20 (finding H-1) showed that the "Durable state if Close is
+interrupted" claim above holds only when the next same-boot process
+**adopts** the retained rules. That section's proof built the successor's
+meter directly with the pre-crash bindings and did not boot a second
+`Engine`. On the **refused-adoption** path (for example the changed-set
+refusal this follow-up introduced), the successor's meter had no bindings:
+the bytes the retained rules counted while no process sampled became a
+`mapping conflict` gap at the first hand-off or rebinding Apply. They were
+neither attributed exactly once nor lost silently, but they were not
+recovered.
+
+Follow-up 37 restores the retained installed model's bindings when
+`loadRuntime` reads `retained_applied`, and settles the open epoch against
+them right after Boot's baseline when adoption is refused. The corrected
+statement is: on the same boot, the pending counter delta is attributed
+exactly once whether the successor adopts or refuses; after a boot-ID change
+the epoch still closes as a power-loss gap and nothing carries over. Proofs,
+the remaining gaps and r20's other findings are in
+[follow-up 37](followup37-r20-adoption-review-2026-11-03.md). The text above
+is unchanged.
