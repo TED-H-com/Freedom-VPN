@@ -430,3 +430,28 @@ bring the count to 53, with all ten historical owner requests answered.
 The 11 follow-up 39 subtests keep the two unqualified timing windows out of
 both zero-sized arm pools. Living AT roots remain excluded; live document
 digests in scope-review.json stay separate from these frozen claim inputs.
+
+## Follow-up 40 provenance
+
+`followup40-main.json` pins #430–#434 at main `3f7dbc25`: five final roadmap
+rows, ten first-parent commits and five lossless public PR body excerpts.
+`followup40-snapshots.json` freezes ten #430 handover inputs; earlier assertions
+are unchanged after reversing only six input redirects. The separate source
+audit checks baselineDecision at 8dec4100: lines 170–209, mono starts at 211.
+Neither the r26 archive nor #430's erratum changes.
+
+`followup40-evidence.json` pins 76 immutable dated/per-follow-up records,
+11 exact cutoff snapshots and 14 Go test declarations on main. The owned
+members-run2 and isolation-assembled directories are frozen copies of selected
+#434-cutoff records; tests never read living roots. `case-checks.json` extracts
+the ten case verdicts/counts/blockers and all 77 AT09 names/statuses from the
+original JSON (including AT02 gzip), with full source hashes and cutoff commit.
+No assertion, failure or payload is invented. Historical relative links in
+these snapshots resolve at their source paths/commits, not their copied paths.
+The D-146 header archives and isolation's D-147 lab archives remain in place.
+
+Decision and finding manifests pin 55 decisions and 102 findings: only three
+old decision statuses change, two provisional decisions are added; four finding
+rows change, three are added and 95 remain byte-identical. Live scope-review
+digests are separate from immutable claims. Agent-core 45, devstack 32 and
+members 19 are recorded by briefing status only, with no post-cutoff results.

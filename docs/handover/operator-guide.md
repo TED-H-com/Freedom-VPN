@@ -1,20 +1,22 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 39](follow-up-39.md) (2026-11-03 EST):** #428–#429 at 1b87ab32: agent-core 37–43 merged; r26 archived with zero findings. r24 H-1 and r20 H-1 fixed; F30-01 stays known behaviour. Production keeps the guard under D-145; C1 unimplemented. D-146/D-147 await netlab 34; F11-01 is upstream-dependent. All ten owner requests answered; 53 decisions.
-**Previous cut — [follow-up 38](follow-up-38.md):** #427 at 77626af4; 12 subtests, one final row, ten frozen inputs, one PR excerpt, exact r25 and separate audit; 99 findings, 47 decisions, ten then-open owner requests.
+**Current cut — [follow-up 40](follow-up-40.md) (2026-11-03 EST):** #430–#434 at 3f7dbc25: D-146/D-147 on main (#432); members 18’s three receive-only TCP rows pass under provisional D-151, while AT09 stays failed. Isolation 19’s four source sets pass in the lab; assembled checks blocked by capacity PATCH 412. Agent-core 44 has no comparison; 45 repeats. D-152 answers F19-01; devstack 32 and members 19 requests stay open. 55 decisions.
+**Previous cut — [follow-up 39](follow-up-39.md):** #428–#429 at 1b87ab32; 11 subtests, two final rows/PR excerpts, ten frozen inputs, exact r26 and separate audit, 15 dated documents/75 Go tests; 99 findings, 53 decisions, all ten owner requests answered.
 
-## Restart measurements at #412
+## Restart measurements at #433
 
-Members 17 (#410), run 81b638e8 on #406, records **6.01 s serving readiness**
-and **12.70 s counted recovery**, both at **generation 63**. The D-067
-provisional predicate and the combined same-generation restart **FAIL**;
-these are observed times, not a promised bound. The **36.976 s / 41.695 s**
-figures retained below are historical members 6 (#231) measurements, not the
-current result. AT09's earlier 401 did not recur after fresh OIDC sign-in;
-follow-up 16's cause stays unknown. The receive-only dual-MTU row is blocked.
-See [the final #410 roadmap row](../ROADMAP.md) and [follow-up 32](follow-up-32.md).
-F30-01 remains the separate known update behaviour described in §4.3, with
-no merged fix or verified production restart procedure.
+Members 18 run 2 (50117c68, #433) records **6.02 s serving readiness** and
+**12.55 s counted recovery**, generation **66→66**. D-067 and the combined
+same-generation restart still **FAIL**. These are observed times, not a
+promised recovery bound or attribution to agent-core 37–43. Its three fresh
+receive-only MTU-1280 TCP rows pass under D-151, separately from AT09 overall.
+Run 1's reader rejected the production retire phase and never reached the
+native matrix; its failures stay failed. [Full cut](follow-up-40.md).
+
+Members 17's **6.01 / 12.70 s** at generation **63**, and members 6's
+**36.976 / 41.695 s**, remain historical measurements. Follow-up 16's 401
+cause remains unknown. F30-01 is the separate known update behaviour in
+§4.3, with no merged fix or verified production restart procedure.
 
 ## Operator changes at #369
 
@@ -36,17 +38,31 @@ D-136's fail-closed reading and D-135's bracket rule are unchanged: baseline →
 next successful Apply, every loss counted, recovery required, never waived.
 Historical failures stay failed. [Decision and evidence](follow-up-24.md#provisional-decisions-and-findings).
 
-**D-137 routed-hop scope — confirmed by the owner, 2026-11-03:** #367 delivers a separate router with
-a 1280 member-facing link: IPv6 passes by PTB with learned PMTU 1280; IPv4
-passes by DF=0 fragmentation in transit, not measured IPv4 PMTU discovery.
-Known-PMTU controls also pass. Receive-only no-PTB links remain PMTU black-hole
-limitations, never a pass; historical F8-02 rows stay failed. Members adoption
-is pending. This is tested fixture scope, not complete real-platform or QUIC
-qualification. Under D-146 the owner approved a TCP MSS clamp, with no lower
-tunnel MTU. Netlab 34 is implementing its value and placement against the
-receive-only MTU-1280 row; it is not on main at this cut and no date is promised.
-UDP and QUIC over receive-only links without PTB remain a documented limitation
-(§8.3; §19 AT09); historical F8-02 rows stay failed.
+**D-137 / D-146 MTU scope — clamp on main (#432), 2026-11-03.**
+New TCP connections of admitted members negotiate at most **1160 MSS** when
+their SYN/SYN-ACK has a larger existing MSS option. Smaller and missing
+options are untouched. The two non-verdict clamps sit immediately before
+general upload/download accepts; DNS-service and probe accepts are unchanged.
+No lower tunnel MTU is imposed. Already-established connections need a new
+handshake to negotiate the ceiling. This covers IPv4 member forwarding over
+standard WireGuard transport headers; extra encapsulation/IPv6 extension
+headers need their own budget, and IPv6 overlay remains blocked under D-123.
+
+Members 18 (#433) run 2 passes the receive-only 1280 TCP rows for dual
+(IPv4 selected), IPv6 and explicit IPv4 underlays: 64,064 bytes and 64 exact
+echoes each; member SYN 1240→1160, origin SYN-ACK 1460→1160, reverse datagrams
+73/73 at most 1132 B, 74/74 at most 1152 B, and 72/72 at most 1132 B,
+respectively; no PTB. **Provisional D-151** permits that row to pass only on
+its unchanged byte predicate plus same-run proof of the MSS rewrite, every
+reverse datagram fitting 1280 with none missing, and no PTB. Missing evidence
+keeps the row blocked under D-137. Historical F8-02 failures stay failed.
+
+Known-PMTU and routed-hop controls also pass in that run: routed IPv6 learns
+1280 through PTB; routed IPv4 uses DF=0 fragmentation in transit, not measured
+IPv4 PMTU discovery. **UDP and QUIC over a receive-only link without PTB
+remain limitations** (§8.3; §19 AT09). Netlab 34's fixed IPv4 lab and members'
+native fixture do not certify real platforms, relay-at-1280 or physical arm64.
+[Evidence and limits](follow-up-40.md#members-18-433-two-assembled-runs).
 
 ## Operator changes at #356
 
@@ -524,14 +540,18 @@ this in devstack 25; it was harness interference, not a product defect.
 Diagnose from the member side, or capture packets without touching the node's
 ruleset. See the [dated devstack 26 analysis](../e2e/runs/2026-11-01/followup26/analysis.md).
 
-**RELATED ICMP decision, implementation pending (D-147).** At this cutoff,
-#389's source guard still drops fragmentation-needed and time-exceeded from
-spec-denied outer sources, including 10/8, 172.16/12, 192.168/16 and 100.64/10.
-The owner approved only IPv4 fragmentation-needed (type 3, code 4) when
-conntrack marks it RELATED to an allowed member connection. Time-exceeded and
-every other ICMP from denied sources stay dropped. Netlab 34 is implementing
-the exception; it is not on main here and no date is promised. Traceroute still
-has no reply from those denied-source hops.
+**RELATED ICMP on main (D-147, #432).** IPv4 fragmentation-needed
+(type 3, code 4) from spec-denied outer sources now reaches an admitted member
+when conntrack marks it RELATED to an allowed member connection. The three
+resolver/denied/host-source accepts meter it once as **download**, using the
+device's existing counter and priority. Isolation 19's four source-set lab
+rows pass with exact usage, including overlap. This grants no upload access
+to those sources, probe exception, unsolicited download or IPv6 forwarding.
+Time-exceeded and every other ICMP from spec-denied sources still drop, so
+**traceroute still gets no reply from those hops**. D-152 confirms upload
+denial at the applicable destination rule, with zero upload usage; rule order
+is unchanged. Isolation's assembled run is blocked at capacity PATCH 412,
+so the real-node D-147 row is not exercised. [Cut evidence](follow-up-40.md).
 
 **Members F11-01 (D-148) remains OPEN and upstream-dependent.** There is no
 product, pin, daemon or architecture change. The orchestrator reported the
