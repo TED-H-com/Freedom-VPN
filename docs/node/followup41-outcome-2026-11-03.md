@@ -315,3 +315,85 @@ No production file changes or lab rerun are authorized in this continuation.
 The 13/13 functional receipt on f1ed8f3b remains the production receipt.
 The enforcement comment request is routed to netlab; D-133 is scheduled after
 r25 and follow-up 42. Neither that work nor leadJitter is changed here.
+
+### Continuation 1 canonical gate results — 2026-11-03
+
+All requested canonical gates pass on 71b4d9d5. The patch-only commit is
+56829cc48d0d1ae328b41da402d7de76f862f2f0; 71b4d9d5 adds only the approval
+record. No production or other test file changes were made. Earlier failed
+gate receipts and byte-identical-import statements remain as written; these
+continuation receipts are the later successful results.
+
+Before: on 9415fd51, the original H-1 fixture failed with one extra Apply
+(2 -> 3) for its real 1 ms effective-expiry change. This was reproduced and
+verified by the orchestrator; the retained receipt is
+.agent/f41/delivery-all-tests.log. After the approved three-line setup change,
+the canonical H-1 proof passes without an overlay in c1-h1-proof and in the
+full review set; its original assertions require zero extra Applies.
+
+| Gate | Result | Receipt |
+| --- | --- | --- |
+| c1-h1-proof | PASS (0) | `.agent/f41/c1-h1-proof.log` |
+| c1-node-test | PASS (0) | `.agent/f41/c1-node-test.log` |
+| c1-node-integration | PASS (0) | `.agent/f41/c1-node-integration.log` |
+| c1-reviews-r20-r24 | PASS (0) | `.agent/f41/c1-reviews-r20-r24.log` |
+| c1-go-lint | PASS (0) | `.agent/f41/c1-go-lint.log` |
+| c1-vet | PASS (0) | `.agent/f41/c1-vet.log` |
+| c1-consumers | PASS (0) | `.agent/f41/c1-consumers.log` |
+| c1-handover | PASS (0) | `.agent/f41/c1-handover.log` |
+| c1-evidence | PASS (0) | `.agent/f41/c1-evidence.log` |
+| c1-fixture-hygiene | PASS (0) | `.agent/f41/c1-fixture-hygiene.log` |
+| c1-gofmt | PASS (0) | `.agent/f41/c1-gofmt.log` |
+| c1-diff-check | PASS (0) | `.agent/f41/c1-diff-check.log` |
+| c1-all-tests | PASS (0) | `.agent/f41/c1-all-tests.log` |
+
+Real output tails:
+
+```text
+c1-h1-proof:
+--- PASS: TestR24_H1_SteadyStateNoOpStepReappliesEveryPollTick (0.16s)
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	0.163s
+c1-node-test:
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	130.155s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent	0.293s
+ok  	github.com/TED-H-com/Freedom-VPN/node/watchdog	0.114s
+c1-node-integration:
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	132.464s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent	0.285s
+c1-reviews-r20-r24:
+--- PASS: TestR24_H1_SteadyStateNoOpStepReappliesEveryPollTick (0.15s)
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	41.357s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent	0.080s
+ok  	github.com/TED-H-com/Freedom-VPN/node/watchdog	0.019s
+ok  	github.com/TED-H-com/Freedom-VPN/node/enforce	0.012s
+c1-consumers:
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater	21.610s
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater	1.339s
+ok  	github.com/TED-H-com/Freedom-VPN/packaging/installer	9.191s
+c1-handover:
+ok  	github.com/TED-H-com/Freedom-VPN/tests/handover	3.248s
+c1-all-tests:
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	139.356s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent	0.286s
+ok  	github.com/TED-H-com/Freedom-VPN/node/enforce	1.403s
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater	25.932s
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater	0.780s
+ok  	github.com/TED-H-com/Freedom-VPN/node/watchdog	0.121s
+ok  	github.com/TED-H-com/Freedom-VPN/packaging/installer	8.761s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/handover	3.392s
+```
+
+Admission was required before each Go test and make command, using
+bash "$FVPN_HOLD_SH" and starting only after free. CGO_ENABLED=0,
+GOTOOLCHAIN=local, disk TMPDIR/GOTMPDIR=.agent/tmp, and GOCACHE from go env
+GOCACHE (public spelling ~/.cache/go-build) were retained. Root go-lint's
+existing override removes only its shell cleanup trap; all pinned checks ran.
+Commands remained foreground. No Docker command, lab run, reservation, timing
+measurement or D-133 arm was needed or run in this continuation.
+
+The scope audit confirms exactly the approved three setup lines, unchanged
+assertions/doc comment/watchdog proof, preserved earlier outcome bytes and
+validation values, unchanged production versus f1ed8f3b, and clean public
+diff/whitespace. The 13/13 production lab receipt remains f1ed8f3b. The
+enforcement comment is routed to netlab; quiet D-133 is scheduled after r25
+and follow-up 42. There is no outstanding request in this continuation.
