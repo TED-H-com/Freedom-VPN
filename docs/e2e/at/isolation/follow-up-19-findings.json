@@ -1,0 +1,123 @@
+{
+  "run_id": "70beb28e-4766-4004-932b-510fd01f986a",
+  "baseline": "27ff63928222c9642e4f5e180cf225108327a1e5",
+  "build": "458b7a89f07c22dd4e66f839195b6549db4b883d",
+  "confounded_initial_window": true,
+  "retry": false,
+  "findings": [
+    {
+      "id": "F19-01",
+      "owner": "orchestrator / w1-netlab",
+      "status": "expectation clarification requested",
+      "scope": "D-147 upload negative counter",
+      "observed": {
+        "resolver_v4_only": "ctbadns",
+        "denied_v4_only": "ctdeny",
+        "host_v4_only": "cthost",
+        "denied_v4_and_host_v4_overlap": "ctdeny"
+      },
+      "literal_ctdeny_for_exclusive_resolver_and_host": "not exercised; incompatible with current production set-specific destination deny order",
+      "evidence": [
+        "history/follow-up-19-lab-final/lab-AT13-d147-detail.json",
+        "history/follow-up-19-lab-final/lab-AT13-d147-ruleset.nft"
+      ]
+    },
+    {
+      "id": "F19-02",
+      "owner": "w3-devstack-e2e / shared publisher; coordinate w3-wire-nodes and w2-agent-core",
+      "status": "blocked",
+      "scope": "Assembled serving setup",
+      "capacity_patch": "412 RESOURCE_VERSION_CONFLICT",
+      "capacity_writer": "tests/e2e/publish_test.go: initial GET ETag followed by one capacity PATCH; returns on 412 without retry",
+      "publication_put": "202",
+      "operation": {
+        "completed_at": null,
+        "created_at": "2026-11-03T22:10:56.893735Z",
+        "desired_generation": "2",
+        "error": null,
+        "kind": "node.publish",
+        "observed_generation": "3",
+        "operation_id": "cfc779a5-6f49-4e79-8a1a-4597402393da",
+        "request_id": "01a1a377-24fb-7352-9806-83b9fb90fc1f",
+        "resource": {
+          "id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "type": "node"
+        },
+        "resource_version": "25",
+        "status": "running",
+        "steps": [
+          {
+            "error_code": null,
+            "message": null,
+            "name": "agent_policy",
+            "observed_at": "2026-11-03T22:12:25.306069103Z",
+            "required": true,
+            "status": "succeeded"
+          },
+          {
+            "error_code": "NODE_NOT_SERVICEABLE",
+            "message": "member_forwarding_unconfirmed (forwarding_disabled)",
+            "name": "data_path_probe",
+            "observed_at": null,
+            "required": true,
+            "status": "pending"
+          },
+          {
+            "error_code": null,
+            "message": null,
+            "name": "netbird_route_readback",
+            "observed_at": null,
+            "required": true,
+            "status": "pending"
+          }
+        ],
+        "updated_at": "2026-11-03T22:12:25.310117Z"
+      },
+      "observed_intent": "\"published\"",
+      "observed_publication": "\"absent\"",
+      "config_generation": "{\"applied\":\"3\",\"desired\":\"3\"}",
+      "evidence": [
+        "support/publish.json",
+        "AT10.json",
+        "publication-operation-history.json",
+        "receiver-capture.json",
+        "producer-operations.jsonl"
+      ],
+      "needed": "Owner-reviewed fresh-ETag conflict handling in the shared publisher and verification of the bootstrap/publication consequences. No seam or production edits in this lane; no assembled retry.",
+      "causality_limit": "Capacity conflict is directly recorded. The subsequent publication remained pending on forwarding; no proof that host contention caused the conflict or that this is the sole remaining bootstrap cause."
+    }
+  ],
+  "secondary_diagnostics": [
+    {
+      "scope": "unexecuted populated hold review",
+      "observed": "FileNotFoundError for populated-holds.json.gz after setup aborted; no populated-hold verdict was produced",
+      "owner": "isolation reader; future graceful unavailable handling",
+      "retry": false
+    },
+    {
+      "scope": "clone closure export",
+      "observed": "No such container: fvpn-w4-isolation-node-clone; setup exited before clone creation",
+      "causality": "secondary artifact-collection diagnostic, not the earlier capacity PATCH failure"
+    },
+    {
+      "scope": "generic recovery verdict",
+      "observed": "run_id=null, passed=false/status=blocked; static creator description is not evidence that a redirect was injected",
+      "actual": "foreignRedirect was not reached"
+    }
+  ],
+  "producer": {
+    "sources": {
+      "baseline": 155,
+      "renewal": 10,
+      "heartbeat": 154
+    },
+    "timed_operations": 0,
+    "command_phases": {},
+    "retire_runtime": "not exercised; 23 synthetic reader tests passed"
+  },
+  "carried_requests": [
+    "AT11 native platform matrix",
+    "AT13 full continuous fault matrix",
+    "F17-01 pure stale_generation; not exercised in this setup-blocked run"
+  ]
+}

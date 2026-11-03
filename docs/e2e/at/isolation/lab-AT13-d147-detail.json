@@ -39,7 +39,7 @@
             "body": "ok:64064",
             "socket_pmtu": 1000,
             "socket_mss": 948,
-            "elapsed_ms": 4.5,
+            "elapsed_ms": 3.47,
             "pmtu": 1000
           },
           "captures": {
@@ -571,7 +571,7 @@
                   "src": "192.0.2.37",
                   "dst": "203.0.113.34",
                   "protocol": 6,
-                  "ip_len": 1000
+                  "ip_len": 912
                 },
                 {
                   "src": "192.0.2.37",
@@ -703,7 +703,7 @@
                   "src": "192.0.2.37",
                   "dst": "203.0.113.34",
                   "protocol": 6,
-                  "ip_len": 583
+                  "ip_len": 671
                 },
                 {
                   "src": "192.0.2.37",
@@ -721,10 +721,10 @@
               "completion": "tcpdump: listening on fv-ih, link-type EN10MB (Ethernet), snapshot length 262144 bytes\n84 packets captured\n84 packets received by filter\n0 packets dropped by kernel\n"
             },
             "node_down_egress_fv_fh": {
-              "packets": 44,
-              "ip_bytes": 7601,
-              "tcp_packets": 34,
-              "tcp_ip_bytes": 1841,
+              "packets": 45,
+              "ip_bytes": 7653,
+              "tcp_packets": 35,
+              "tcp_ip_bytes": 1893,
               "icmp_packets": 10,
               "icmp_ip_bytes": 5760,
               "max_ip_len": 576,
@@ -1065,6 +1065,12 @@
                   "src": "203.0.113.34",
                   "dst": "100.64.1.1",
                   "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
                   "ip_len": 117
                 },
                 {
@@ -1080,13 +1086,13 @@
                   "ip_len": 52
                 }
               ],
-              "completion": "tcpdump: listening on fv-fh, link-type EN10MB (Ethernet), snapshot length 262144 bytes\n44 packets captured\n44 packets received by filter\n0 packets dropped by kernel\n"
+              "completion": "tcpdump: listening on fv-fh, link-type EN10MB (Ethernet), snapshot length 262144 bytes\n45 packets captured\n45 packets received by filter\n0 packets dropped by kernel\n"
             },
             "member_fv_wg0": {
-              "packets": 128,
-              "ip_bytes": 87608,
-              "tcp_packets": 118,
-              "tcp_ip_bytes": 81848,
+              "packets": 129,
+              "ip_bytes": 87660,
+              "tcp_packets": 119,
+              "tcp_ip_bytes": 81900,
               "icmp_packets": 10,
               "icmp_ip_bytes": 5760,
               "max_ip_len": 1200,
@@ -1275,36 +1281,6 @@
                   "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.53",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "203.0.113.53",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "203.0.113.53",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "203.0.113.53",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "203.0.113.53",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
                   "src": "100.64.1.1",
                   "dst": "203.0.113.34",
                   "protocol": 6,
@@ -1377,34 +1353,34 @@
                   "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.34",
+                  "src": "203.0.113.53",
                   "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "protocol": 1,
+                  "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.34",
+                  "src": "203.0.113.53",
                   "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "protocol": 1,
+                  "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.34",
+                  "src": "203.0.113.53",
                   "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "protocol": 1,
+                  "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.34",
+                  "src": "203.0.113.53",
                   "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "protocol": 1,
+                  "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.34",
+                  "src": "203.0.113.53",
                   "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "protocol": 1,
+                  "ip_len": 576
                 },
                 {
                   "src": "203.0.113.34",
@@ -1461,6 +1437,96 @@
                   "ip_len": 1000
                 },
                 {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
                   "src": "100.64.1.1",
                   "dst": "203.0.113.34",
                   "protocol": 6,
@@ -1539,84 +1605,6 @@
                   "ip_len": 52
                 },
                 {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
                   "src": "100.64.1.1",
                   "dst": "203.0.113.34",
                   "protocol": 6,
@@ -1635,10 +1623,22 @@
                   "ip_len": 52
                 },
                 {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
                   "protocol": 6,
-                  "ip_len": 1000
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
                 },
                 {
                   "src": "100.64.1.1",
@@ -1681,6 +1681,42 @@
                   "dst": "203.0.113.34",
                   "protocol": 6,
                   "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 912
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
                 },
                 {
                   "src": "203.0.113.34",
@@ -1791,6 +1827,42 @@
                   "ip_len": 1000
                 },
                 {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
                   "src": "203.0.113.34",
                   "dst": "100.64.1.1",
                   "protocol": 6,
@@ -1800,67 +1872,7 @@
                   "src": "100.64.1.1",
                   "dst": "203.0.113.34",
                   "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 583
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "ip_len": 671
                 },
                 {
                   "src": "203.0.113.34",
@@ -1923,14 +1935,14 @@
                   "ip_len": 117
                 },
                 {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
                   "protocol": 6,
                   "ip_len": 52
                 },
                 {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
                   "protocol": 6,
                   "ip_len": 52
                 },
@@ -1947,7 +1959,7 @@
                   "ip_len": 52
                 }
               ],
-              "completion": "tcpdump: listening on fv-wg0, link-type RAW (Raw IP), snapshot length 262144 bytes\n128 packets captured\n128 packets received by filter\n0 packets dropped by kernel\n"
+              "completion": "tcpdump: listening on fv-wg0, link-type RAW (Raw IP), snapshot length 262144 bytes\n129 packets captured\n129 packets received by filter\n0 packets dropped by kernel\n"
             }
           },
           "counters": {
@@ -1956,8 +1968,8 @@
               "bytes": 80007
             },
             "d_019a00000000700080000000000000a1": {
-              "packets": 44,
-              "bytes": 7601
+              "packets": 45,
+              "bytes": 7653
             },
             "nu_019a00000000700080000000000000a1": {
               "packets": 0,
@@ -2002,24 +2014,24 @@
             "assigned_tc_class": "1:2f",
             "upload_counter_matches_capture": true,
             "download_counter_matches_capture": true,
-            "download_tcp_ip_bytes": 1841,
+            "download_tcp_ip_bytes": 1893,
             "download_frag_needed_icmp_packets": 10,
             "download_frag_needed_icmp_ip_bytes": 5760,
-            "download_total_ip_bytes": 7601,
+            "download_total_ip_bytes": 7653,
             "tc_upload_leaf": {
               "packets": 84,
               "bytes": 81183,
               "drops": 0
             },
             "tc_download_leaf": {
-              "packets": 44,
-              "bytes": 8217,
+              "packets": 45,
+              "bytes": 8283,
               "drops": 0
             },
             "tc_upload_all": {
               "1:1": {
-                "packets": 85,
-                "bytes": 81225,
+                "packets": 84,
+                "bytes": 81183,
                 "drops": 0
               },
               "1:2f": {
@@ -2028,25 +2040,25 @@
                 "drops": 0
               },
               "1:fffe": {
-                "packets": 1,
-                "bytes": 42,
+                "packets": 0,
+                "bytes": 0,
                 "drops": 0
               }
             },
             "tc_download_all": {
               "1:1": {
                 "packets": 45,
-                "bytes": 8259,
+                "bytes": 8283,
                 "drops": 0
               },
               "1:2f": {
-                "packets": 44,
-                "bytes": 8217,
+                "packets": 45,
+                "bytes": 8283,
                 "drops": 0
               },
               "1:fffe": {
-                "packets": 1,
-                "bytes": 42,
+                "packets": 0,
+                "bytes": 0,
                 "drops": 0
               }
             }
@@ -2445,7 +2457,7 @@
             "body": "ok:64064",
             "socket_pmtu": 1000,
             "socket_mss": 948,
-            "elapsed_ms": 5.0,
+            "elapsed_ms": 6.55,
             "pmtu": 1000
           },
           "captures": {
@@ -3127,10 +3139,10 @@
               "completion": "tcpdump: listening on fv-ih, link-type EN10MB (Ethernet), snapshot length 262144 bytes\n84 packets captured\n84 packets received by filter\n0 packets dropped by kernel\n"
             },
             "node_down_egress_fv_fh": {
-              "packets": 36,
-              "ip_bytes": 7185,
-              "tcp_packets": 26,
-              "tcp_ip_bytes": 1425,
+              "packets": 40,
+              "ip_bytes": 7393,
+              "tcp_packets": 30,
+              "tcp_ip_bytes": 1633,
               "icmp_packets": 10,
               "icmp_ip_bytes": 5760,
               "max_ip_len": 576,
@@ -3423,6 +3435,30 @@
                   "src": "203.0.113.34",
                   "dst": "100.64.1.1",
                   "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
                   "ip_len": 117
                 },
                 {
@@ -3438,13 +3474,13 @@
                   "ip_len": 52
                 }
               ],
-              "completion": "tcpdump: listening on fv-fh, link-type EN10MB (Ethernet), snapshot length 262144 bytes\n36 packets captured\n36 packets received by filter\n0 packets dropped by kernel\n"
+              "completion": "tcpdump: listening on fv-fh, link-type EN10MB (Ethernet), snapshot length 262144 bytes\n40 packets captured\n40 packets received by filter\n0 packets dropped by kernel\n"
             },
             "member_fv_wg0": {
-              "packets": 120,
-              "ip_bytes": 87192,
-              "tcp_packets": 110,
-              "tcp_ip_bytes": 81432,
+              "packets": 124,
+              "ip_bytes": 87400,
+              "tcp_packets": 114,
+              "tcp_ip_bytes": 81640,
               "icmp_packets": 10,
               "icmp_ip_bytes": 5760,
               "max_ip_len": 1200,
@@ -3633,36 +3669,6 @@
                   "ip_len": 576
                 },
                 {
-                  "src": "192.168.34.2",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "192.168.34.2",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "192.168.34.2",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "192.168.34.2",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "192.168.34.2",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
                   "src": "100.64.1.1",
                   "dst": "203.0.113.34",
                   "protocol": 6,
@@ -3735,40 +3741,34 @@
                   "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.34",
+                  "src": "192.168.34.2",
                   "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "protocol": 1,
+                  "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.34",
+                  "src": "192.168.34.2",
                   "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "protocol": 1,
+                  "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.34",
+                  "src": "192.168.34.2",
                   "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "protocol": 1,
+                  "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.34",
+                  "src": "192.168.34.2",
                   "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "protocol": 1,
+                  "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.34",
+                  "src": "192.168.34.2",
                   "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "protocol": 1,
+                  "ip_len": 576
                 },
                 {
                   "src": "203.0.113.34",
@@ -3807,244 +3807,10 @@
                   "ip_len": 104
                 },
                 {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
                   "src": "203.0.113.34",
                   "dst": "100.64.1.1",
                   "protocol": 6,
                   "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
                 },
                 {
                   "src": "100.64.1.1",
@@ -4153,6 +3919,204 @@
                   "dst": "100.64.1.1",
                   "protocol": 6,
                   "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
                 },
                 {
                   "src": "100.64.1.1",
@@ -4230,7 +4194,7 @@
                   "src": "203.0.113.34",
                   "dst": "100.64.1.1",
                   "protocol": 6,
-                  "ip_len": 117
+                  "ip_len": 52
                 },
                 {
                   "src": "203.0.113.34",
@@ -4239,8 +4203,104 @@
                   "ip_len": 52
                 },
                 {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 117
+                },
+                {
                   "src": "100.64.1.1",
                   "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
                   "protocol": 6,
                   "ip_len": 52
                 },
@@ -4257,7 +4317,7 @@
                   "ip_len": 52
                 }
               ],
-              "completion": "tcpdump: listening on fv-wg0, link-type RAW (Raw IP), snapshot length 262144 bytes\n120 packets captured\n120 packets received by filter\n0 packets dropped by kernel\n"
+              "completion": "tcpdump: listening on fv-wg0, link-type RAW (Raw IP), snapshot length 262144 bytes\n124 packets captured\n124 packets received by filter\n0 packets dropped by kernel\n"
             }
           },
           "counters": {
@@ -4266,8 +4326,8 @@
               "bytes": 80007
             },
             "d_019a00000000700080000000000000a1": {
-              "packets": 36,
-              "bytes": 7185
+              "packets": 40,
+              "bytes": 7393
             },
             "nu_019a00000000700080000000000000a1": {
               "packets": 0,
@@ -4312,18 +4372,18 @@
             "assigned_tc_class": "1:2f",
             "upload_counter_matches_capture": true,
             "download_counter_matches_capture": true,
-            "download_tcp_ip_bytes": 1425,
+            "download_tcp_ip_bytes": 1633,
             "download_frag_needed_icmp_packets": 10,
             "download_frag_needed_icmp_ip_bytes": 5760,
-            "download_total_ip_bytes": 7185,
+            "download_total_ip_bytes": 7393,
             "tc_upload_leaf": {
               "packets": 84,
               "bytes": 81183,
               "drops": 0
             },
             "tc_download_leaf": {
-              "packets": 36,
-              "bytes": 7689,
+              "packets": 40,
+              "bytes": 7953,
               "drops": 0
             },
             "tc_upload_all": {
@@ -4345,13 +4405,13 @@
             },
             "tc_download_all": {
               "1:1": {
-                "packets": 36,
-                "bytes": 7689,
+                "packets": 40,
+                "bytes": 7953,
                 "drops": 0
               },
               "1:2f": {
-                "packets": 36,
-                "bytes": 7689,
+                "packets": 40,
+                "bytes": 7953,
                 "drops": 0
               },
               "1:fffe": {
@@ -4755,7 +4815,7 @@
             "body": "ok:64064",
             "socket_pmtu": 1000,
             "socket_mss": 948,
-            "elapsed_ms": 5.17,
+            "elapsed_ms": 3.36,
             "pmtu": 1000
           },
           "captures": {
@@ -5287,7 +5347,7 @@
                   "src": "192.0.2.37",
                   "dst": "203.0.113.34",
                   "protocol": 6,
-                  "ip_len": 1000
+                  "ip_len": 912
                 },
                 {
                   "src": "192.0.2.37",
@@ -5419,7 +5479,7 @@
                   "src": "192.0.2.37",
                   "dst": "203.0.113.34",
                   "protocol": 6,
-                  "ip_len": 583
+                  "ip_len": 671
                 },
                 {
                   "src": "192.0.2.37",
@@ -5437,10 +5497,10 @@
               "completion": "tcpdump: listening on fv-ih, link-type EN10MB (Ethernet), snapshot length 262144 bytes\n84 packets captured\n84 packets received by filter\n0 packets dropped by kernel\n"
             },
             "node_down_egress_fv_fh": {
-              "packets": 38,
-              "ip_bytes": 7289,
-              "tcp_packets": 28,
-              "tcp_ip_bytes": 1529,
+              "packets": 44,
+              "ip_bytes": 7601,
+              "tcp_packets": 34,
+              "tcp_ip_bytes": 1841,
               "icmp_packets": 10,
               "icmp_ip_bytes": 5760,
               "max_ip_len": 576,
@@ -5745,6 +5805,42 @@
                   "src": "203.0.113.34",
                   "dst": "100.64.1.1",
                   "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
                   "ip_len": 117
                 },
                 {
@@ -5760,13 +5856,13 @@
                   "ip_len": 52
                 }
               ],
-              "completion": "tcpdump: listening on fv-fh, link-type EN10MB (Ethernet), snapshot length 262144 bytes\n38 packets captured\n38 packets received by filter\n0 packets dropped by kernel\n"
+              "completion": "tcpdump: listening on fv-fh, link-type EN10MB (Ethernet), snapshot length 262144 bytes\n44 packets captured\n44 packets received by filter\n0 packets dropped by kernel\n"
             },
             "member_fv_wg0": {
-              "packets": 122,
-              "ip_bytes": 87296,
-              "tcp_packets": 112,
-              "tcp_ip_bytes": 81536,
+              "packets": 128,
+              "ip_bytes": 87608,
+              "tcp_packets": 118,
+              "tcp_ip_bytes": 81848,
               "icmp_packets": 10,
               "icmp_ip_bytes": 5760,
               "max_ip_len": 1200,
@@ -5961,30 +6057,6 @@
                   "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.33",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "203.0.113.33",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "203.0.113.33",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "203.0.113.33",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
                   "src": "100.64.1.1",
                   "dst": "203.0.113.34",
                   "protocol": 6,
@@ -6057,34 +6129,28 @@
                   "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.34",
+                  "src": "203.0.113.33",
                   "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "protocol": 1,
+                  "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.34",
+                  "src": "203.0.113.33",
                   "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "protocol": 1,
+                  "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.34",
+                  "src": "203.0.113.33",
                   "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "protocol": 1,
+                  "ip_len": 576
                 },
                 {
-                  "src": "203.0.113.34",
+                  "src": "203.0.113.33",
                   "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
+                  "protocol": 1,
+                  "ip_len": 576
                 },
                 {
                   "src": "203.0.113.34",
@@ -6141,78 +6207,6 @@
                   "ip_len": 1000
                 },
                 {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
                   "src": "203.0.113.34",
                   "dst": "100.64.1.1",
                   "protocol": 6,
@@ -6249,166 +6243,10 @@
                   "ip_len": 52
                 },
                 {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
                   "src": "203.0.113.34",
                   "dst": "100.64.1.1",
                   "protocol": 6,
                   "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
                 },
                 {
                   "src": "100.64.1.1",
@@ -6513,6 +6351,42 @@
                   "ip_len": 52
                 },
                 {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
                   "src": "100.64.1.1",
                   "dst": "203.0.113.34",
                   "protocol": 6,
@@ -6546,7 +6420,265 @@
                   "src": "100.64.1.1",
                   "dst": "203.0.113.34",
                   "protocol": 6,
-                  "ip_len": 583
+                  "ip_len": 1000
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 912
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 671
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
                 },
                 {
                   "src": "203.0.113.34",
@@ -6591,7 +6723,7 @@
                   "ip_len": 52
                 }
               ],
-              "completion": "tcpdump: listening on fv-wg0, link-type RAW (Raw IP), snapshot length 262144 bytes\n122 packets captured\n122 packets received by filter\n0 packets dropped by kernel\n"
+              "completion": "tcpdump: listening on fv-wg0, link-type RAW (Raw IP), snapshot length 262144 bytes\n128 packets captured\n128 packets received by filter\n0 packets dropped by kernel\n"
             }
           },
           "counters": {
@@ -6600,8 +6732,8 @@
               "bytes": 80007
             },
             "d_019a00000000700080000000000000a1": {
-              "packets": 38,
-              "bytes": 7289
+              "packets": 44,
+              "bytes": 7601
             },
             "nu_019a00000000700080000000000000a1": {
               "packets": 0,
@@ -6646,18 +6778,18 @@
             "assigned_tc_class": "1:2f",
             "upload_counter_matches_capture": true,
             "download_counter_matches_capture": true,
-            "download_tcp_ip_bytes": 1529,
+            "download_tcp_ip_bytes": 1841,
             "download_frag_needed_icmp_packets": 10,
             "download_frag_needed_icmp_ip_bytes": 5760,
-            "download_total_ip_bytes": 7289,
+            "download_total_ip_bytes": 7601,
             "tc_upload_leaf": {
               "packets": 84,
               "bytes": 81183,
               "drops": 0
             },
             "tc_download_leaf": {
-              "packets": 38,
-              "bytes": 7821,
+              "packets": 44,
+              "bytes": 8217,
               "drops": 0
             },
             "tc_upload_all": {
@@ -6679,13 +6811,13 @@
             },
             "tc_download_all": {
               "1:1": {
-                "packets": 38,
-                "bytes": 7821,
+                "packets": 44,
+                "bytes": 8217,
                 "drops": 0
               },
               "1:2f": {
-                "packets": 38,
-                "bytes": 7821,
+                "packets": 44,
+                "bytes": 8217,
                 "drops": 0
               },
               "1:fffe": {
@@ -7091,7 +7223,7 @@
             "body": "ok:64064",
             "socket_pmtu": 1000,
             "socket_mss": 948,
-            "elapsed_ms": 4.21,
+            "elapsed_ms": 3.76,
             "pmtu": 1000
           },
           "captures": {
@@ -7773,10 +7905,10 @@
               "completion": "tcpdump: listening on fv-ih, link-type EN10MB (Ethernet), snapshot length 262144 bytes\n84 packets captured\n84 packets received by filter\n0 packets dropped by kernel\n"
             },
             "node_down_egress_fv_fh": {
-              "packets": 50,
-              "ip_bytes": 7913,
-              "tcp_packets": 40,
-              "tcp_ip_bytes": 2153,
+              "packets": 40,
+              "ip_bytes": 7393,
+              "tcp_packets": 30,
+              "tcp_ip_bytes": 1633,
               "icmp_packets": 10,
               "icmp_ip_bytes": 5760,
               "max_ip_len": 576,
@@ -8093,66 +8225,6 @@
                   "src": "203.0.113.34",
                   "dst": "100.64.1.1",
                   "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
                   "ip_len": 117
                 },
                 {
@@ -8168,13 +8240,13 @@
                   "ip_len": 52
                 }
               ],
-              "completion": "tcpdump: listening on fv-fh, link-type EN10MB (Ethernet), snapshot length 262144 bytes\n50 packets captured\n50 packets received by filter\n0 packets dropped by kernel\n"
+              "completion": "tcpdump: listening on fv-fh, link-type EN10MB (Ethernet), snapshot length 262144 bytes\n40 packets captured\n40 packets received by filter\n0 packets dropped by kernel\n"
             },
             "member_fv_wg0": {
-              "packets": 134,
-              "ip_bytes": 87920,
-              "tcp_packets": 124,
-              "tcp_ip_bytes": 82160,
+              "packets": 124,
+              "ip_bytes": 87400,
+              "tcp_packets": 114,
+              "tcp_ip_bytes": 81640,
               "icmp_packets": 10,
               "icmp_ip_bytes": 5760,
               "max_ip_len": 1200,
@@ -8351,48 +8423,6 @@
                   "ip_len": 576
                 },
                 {
-                  "src": "192.168.34.1",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "192.168.34.1",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "192.168.34.1",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "192.168.34.1",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "192.168.34.1",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "192.168.34.1",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
-                  "src": "192.168.34.1",
-                  "dst": "100.64.1.1",
-                  "protocol": 1,
-                  "ip_len": 576
-                },
-                {
                   "src": "100.64.1.1",
                   "dst": "203.0.113.34",
                   "protocol": 6,
@@ -8465,6 +8495,60 @@
                   "ip_len": 576
                 },
                 {
+                  "src": "192.168.34.1",
+                  "dst": "100.64.1.1",
+                  "protocol": 1,
+                  "ip_len": 576
+                },
+                {
+                  "src": "192.168.34.1",
+                  "dst": "100.64.1.1",
+                  "protocol": 1,
+                  "ip_len": 576
+                },
+                {
+                  "src": "192.168.34.1",
+                  "dst": "100.64.1.1",
+                  "protocol": 1,
+                  "ip_len": 576
+                },
+                {
+                  "src": "192.168.34.1",
+                  "dst": "100.64.1.1",
+                  "protocol": 1,
+                  "ip_len": 576
+                },
+                {
+                  "src": "192.168.34.1",
+                  "dst": "100.64.1.1",
+                  "protocol": 1,
+                  "ip_len": 576
+                },
+                {
+                  "src": "192.168.34.1",
+                  "dst": "100.64.1.1",
+                  "protocol": 1,
+                  "ip_len": 576
+                },
+                {
+                  "src": "192.168.34.1",
+                  "dst": "100.64.1.1",
+                  "protocol": 1,
+                  "ip_len": 576
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
                   "src": "203.0.113.34",
                   "dst": "100.64.1.1",
                   "protocol": 6,
@@ -8501,72 +8585,6 @@
                   "ip_len": 104
                 },
                 {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
                   "src": "100.64.1.1",
                   "dst": "203.0.113.34",
                   "protocol": 6,
@@ -8613,66 +8631,6 @@
                   "dst": "100.64.1.1",
                   "protocol": 6,
                   "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
                 },
                 {
                   "src": "100.64.1.1",
@@ -8753,6 +8711,24 @@
                   "ip_len": 52
                 },
                 {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
+                  "src": "203.0.113.34",
+                  "dst": "100.64.1.1",
+                  "protocol": 6,
+                  "ip_len": 52
+                },
+                {
                   "src": "100.64.1.1",
                   "dst": "203.0.113.34",
                   "protocol": 6,
@@ -8777,28 +8753,76 @@
                   "ip_len": 1000
                 },
                 {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
                   "protocol": 6,
-                  "ip_len": 52
+                  "ip_len": 1000
                 },
                 {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
                   "protocol": 6,
-                  "ip_len": 52
+                  "ip_len": 1000
                 },
                 {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
                   "protocol": 6,
-                  "ip_len": 52
+                  "ip_len": 1000
                 },
                 {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
                   "protocol": 6,
-                  "ip_len": 52
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
                 },
                 {
                   "src": "100.64.1.1",
@@ -8813,6 +8837,132 @@
                   "ip_len": 912
                 },
                 {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
+                  "src": "100.64.1.1",
+                  "dst": "203.0.113.34",
+                  "protocol": 6,
+                  "ip_len": 1000
+                },
+                {
                   "src": "203.0.113.34",
                   "dst": "100.64.1.1",
                   "protocol": 6,
@@ -8823,150 +8973,12 @@
                   "dst": "100.64.1.1",
                   "protocol": 6,
                   "ip_len": 52
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
-                },
-                {
-                  "src": "100.64.1.1",
-                  "dst": "203.0.113.34",
-                  "protocol": 6,
-                  "ip_len": 1000
                 },
                 {
                   "src": "100.64.1.1",
                   "dst": "203.0.113.34",
                   "protocol": 6,
                   "ip_len": 671
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
-                },
-                {
-                  "src": "203.0.113.34",
-                  "dst": "100.64.1.1",
-                  "protocol": 6,
-                  "ip_len": 52
                 },
                 {
                   "src": "203.0.113.34",
@@ -9071,7 +9083,7 @@
                   "ip_len": 52
                 }
               ],
-              "completion": "tcpdump: listening on fv-wg0, link-type RAW (Raw IP), snapshot length 262144 bytes\n134 packets captured\n134 packets received by filter\n0 packets dropped by kernel\n"
+              "completion": "tcpdump: listening on fv-wg0, link-type RAW (Raw IP), snapshot length 262144 bytes\n124 packets captured\n124 packets received by filter\n0 packets dropped by kernel\n"
             }
           },
           "counters": {
@@ -9080,8 +9092,8 @@
               "bytes": 80007
             },
             "d_019a00000000700080000000000000a1": {
-              "packets": 50,
-              "bytes": 7913
+              "packets": 40,
+              "bytes": 7393
             },
             "nu_019a00000000700080000000000000a1": {
               "packets": 0,
@@ -9126,18 +9138,18 @@
             "assigned_tc_class": "1:2f",
             "upload_counter_matches_capture": true,
             "download_counter_matches_capture": true,
-            "download_tcp_ip_bytes": 2153,
+            "download_tcp_ip_bytes": 1633,
             "download_frag_needed_icmp_packets": 10,
             "download_frag_needed_icmp_ip_bytes": 5760,
-            "download_total_ip_bytes": 7913,
+            "download_total_ip_bytes": 7393,
             "tc_upload_leaf": {
               "packets": 84,
               "bytes": 81183,
               "drops": 0
             },
             "tc_download_leaf": {
-              "packets": 50,
-              "bytes": 8613,
+              "packets": 40,
+              "bytes": 7953,
               "drops": 0
             },
             "tc_upload_all": {
@@ -9159,13 +9171,13 @@
             },
             "tc_download_all": {
               "1:1": {
-                "packets": 50,
-                "bytes": 8613,
+                "packets": 40,
+                "bytes": 7953,
                 "drops": 0
               },
               "1:2f": {
-                "packets": 50,
-                "bytes": 8613,
+                "packets": 40,
+                "bytes": 7953,
                 "drops": 0
               },
               "1:fffe": {
