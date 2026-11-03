@@ -340,3 +340,130 @@ follow-up 20's corrected test stays **failed**, as recorded.
   started no `git`; I committed before reserving, not during the window.
 - **In-leg "non-suite" matches** were my own wait loop's shell (the
   runner's parent, idle). It is not a suite and used no CPU.
+
+### Reservation 2 (11:30:45Z–11:33:16Z, 151 s held), load leg only
+
+- **Timing and admission:** taken 10 min 26 s after the first release, at
+  the first check, when admission printed `free` and no `go test` was
+  running. Reserved with `reserved for w2-updater until 07:00:45` (local),
+  and released with `released w2-updater`.
+- **Rules:** the commands and rules are the declared ones. Nothing was
+  changed between the reservations.
+
+| Leg | Preflights (wait) | Iterations / failures | In-leg record | Qualification |
+|---|---|---|---|---|
+| bounded load | 1 (30.1 s, 0.166) | **50 / 0**. The updater process ran 0–24.0 s, exit 0, entirely inside the agent suite | 12 samples, max gap 5.06 s, all `free`, no foreign suite. Foreign CPU stayed at 0.08–0.37 cores in the 11 intervals up to t = 55.5 s, which include all of the updater process (max 0.335). At t = 60.5 s, with only the agent suite still running, one interval reached **1.80** cores. It came from non-lane host jobs: `_l1l4_rearm_ab.` 0.67, `run_l5_qwen.py` 0.46, `supervise.py` 0.20 | **unqualified, stopped** (`stopped_foreign_cpu`). The agent suite was terminated at 60.7 s, so its result is not recorded |
+
+**Not relabelled.** The declared rule judges the leg, not the updater
+process inside it. So the load leg stays unqualified, even though every
+interval in which the updater test ran was below 0.5 cores. That
+sub-record is reported as a fact only. The brief allows no further
+reservation.
+
+### After the window
+
+At 11:33:37Z, `TestAT25_FileMeterWaitRestartKeepsDeadline -count=50` was
+exact again in all 200 samples: 0 s → 250 ms, 200 ms → 50 ms,
+250 ms → 0 s and 1 s → 0 s.
+
+## 6. Per-leg results
+
+`Recover`'s **wall time** per subcase, in milliseconds: min, median, p99
+and max, as nearest-rank quantiles. With n ≤ 50, p99 is the maximum. "Q"
+marks a qualified leg. Full records are in the
+[timing record](node-followup22-timing-2026-11-03.json).
+
+| Window / leg | Q | Iter. / fail | Foreign CPU max (cores) | missing | replaced | withdrawn | new_boot | expired |
+|---|---|---|---:|---|---|---|---|---|
+| r1 quiet | **yes** | 200 / 0 | 0.345 | 10.7 / 12.2 / 15.0 / 19.5 | 10.7 / 12.2 / 15.0 / 16.5 | 12.5 / 13.9 / 16.2 / 20.4 | 10.6 / 12.0 / 14.1 / 16.6 | 10.8 / 12.0 / 13.9 / 15.1 |
+| r1 load (stopped at 15.2 s) | no | 33 / 0 | 1.66 | 11.5 / 18.7 / 23.0 / 23.0 | 11.1 / 18.9 / 21.5 / 21.5 | 13.8 / 21.9 / 25.1 / 25.1 | 11.1 / 18.7 / 22.4 / 22.4 | 11.0 / 18.5 / 21.1 / 21.1 |
+| r2 load (stopped at 60.7 s) | no | 50 / 0 | 1.80 (0.335 while the updater ran) | 11.6 / 19.2 / 24.7 / 24.7 | 11.7 / 19.1 / 23.1 / 23.1 | 13.4 / 22.6 / 28.7 / 28.7 | 11.0 / 19.0 / 23.8 / 23.8 | 11.2 / 18.9 / 22.6 / 22.6 |
+
+**Bubble clock, in every sample of every leg (283 iterations, 1,415
+`Recover` calls):**
+
+- `original_remaining` was exactly 250 ms for `missing`, `replaced`,
+  `withdrawn` and `new_boot`, and −1 ms for `expired`. The setup consumed
+  none of the budget in any iteration.
+- `bubble_elapsed` was exactly 250 ms for `missing` and `replaced`, and 0
+  for the others. No wait was ever longer than the original budget.
+
+**How to read the wall times.**
+
+- They are no longer comparable with follow-up 21's, whose `missing` and
+  `replaced` medians were about 249–261 ms. The 250 ms meter wait now
+  passes on the bubble clock in no wall time, so `Recover`'s wall time is
+  only its own work: lock, journal, sealing and cleanup.
+- That work took 10.6–28.7 ms here. The largest was 28.7 ms
+  (`withdrawn`, r2 load), and no sample reached 30 ms.
+- Load raised the median from about 12 ms to about 19 ms.
+
+## 7. Verdicts
+
+**F21-01 is fixed, in the test fixtures, by its mechanism.**
+
+- The expected result of the parent test, of
+  `TestAT25_FileMeterWaitFailsClosedWithoutCorrelation` and of
+  `correlatedApply` no longer depends on how long the tests' own work
+  takes:
+  - controls C1–C3: the pre-fix tests failed with
+    `meter_checkpoint_timeout`, and the fixed ones passed;
+  - the guard held in every measured iteration;
+  - none of the 283 measured iterations failed.
+- The product is unchanged.
+- The persisted budgets are unchanged.
+- Every assertion on result, error, receipt and forwarding is unchanged.
+
+**F27-02's fixture-defect reading, for the fixed test, stays UNDECIDED**
+by the rule declared in §4:
+
+- **No contradiction:** the fixed parent test did not fail in any leg
+  (200/0 quiet, 33/0 and 50/0 under load). The deterministic budget was
+  exact before and after the window, and in every parent sample.
+- **But one leg is unqualified:** the quiet leg qualified. The bounded-load
+  leg did not qualify in either permitted reservation. Both times it was
+  stopped by foreign CPU from processes outside the lanes' suites: a
+  foreign `git` at 1.40 cores in r1, and non-lane host jobs at 1.80 cores
+  in r2.
+- **So "held" is not reached.** By the rule, the reading neither fails nor
+  holds.
+
+**History stays.** By its own declared rule, follow-up 21's verdict on
+follow-up 20's corrected test remains **failed**. Netlab 27's F27-02 and
+follow-up 20's runs remain as recorded. This verdict is about the fixed
+test only.
+
+## 8. Known gaps and later work
+
+- **The qualified load leg is still missing.** It needs a reservation that
+  also keeps non-lane host jobs quiet, or an orchestrator decision; see §9.
+- **The foreign-CPU sampler has a limit:** CPU a process uses after its
+  last 1 s snapshot, before it exits, is not counted.
+- **`TestAT25_FileMeterSubprocessCrashAndSealedReplay`** still spends its
+  500 ms budget on the wall clock across processes. Its assertion accepts
+  either meter-wait detail, so its result does not depend on that.
+- **`replaced` in the parent test** writes a checkpoint without a
+  `barrier_id`. The pre-restart checkpoint has none either, so `replaced`
+  would also be `uncorrelated` without the replacement. That is a coverage
+  observation, not part of F21-01, and it is unchanged here.
+- **Not covered:** physical arm64 runs, power-loss durability and
+  worst-case production load. The wall times above are not a `Recover`
+  SLO.
+
+## 9. Requests to orchestrator
+
+- **2026-11-03 — load-leg qualification (scheduling, outside updater
+  paths):** both bounded-load attempts were stopped by foreign CPU that
+  was not another lane's test suite, and that admission and the reservation
+  do not cover:
+  - r1, 11:20:19Z: a `git` process at 1.40 cores;
+  - r2, 11:33:16Z: `_l1l4_rearm_ab.`, `run_l5_qwen.py` and `supervise.py`,
+    1.80 cores in total.
+  - **Please decide one of these:**
+    1. schedule one more load-leg reservation in which those host jobs
+       are paused;
+    2. or rule whether a breach after the updater process has exited
+       should end a load leg. In r2 the updater ran 0–24.0 s at ≤ 0.335
+       foreign cores.
+  - Until then, F27-02's fixture-defect reading for the fixed test stays
+    undecided.

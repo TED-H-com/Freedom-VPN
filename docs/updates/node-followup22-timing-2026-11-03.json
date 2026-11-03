@@ -14,9 +14,48 @@
     "snapshot_step_s": 1,
     "preflight": "admission free, no foreign suite, foreign CPU 30 s average <= 0.5 cores; vmstat recorded only"
   },
-  "verdict": "pending",
+  "verdict": "UNDECIDED by the declared rule: no failure of the fixed parent test in any leg (r1 quiet 200/0 qualified; r1 load 33/0 and r2 load 50/0 both stopped by non-lane foreign CPU, unqualified); deterministic budget exact before, after and in every parent sample. Follow-up 21's verdict on follow-up 20's corrected test stays failed.",
+  "findings": {
+    "F21-01": "fixed in the test fixtures (commit 28821e09): parent test, FailsClosedWithoutCorrelation and correlatedApply run on a synctest bubble clock; controls: pre-fix fails with meter_checkpoint_timeout under a wall-clock stall, fixed passes"
+  },
+  "controls": {
+    "stall": "blocking nanosleep in the test's own work: 600 ms before Recover (parent), 600 ms in the blocked hook (FailsClosed), budget+350 ms in the blocked hook (correlatedApply)",
+    "pre_fix_failed_meter_checkpoint_timeout": [
+      "parent/replaced",
+      "FailsClosed/older_boot_epoch",
+      "FailsClosed/late_within_bound",
+      "FailsClosed/withdrawn",
+      "FailsClosed/withdrawn_reblocked",
+      "D125 fresh",
+      "D125 late",
+      "D125 foreign",
+      "D125 malformed",
+      "D125 legacy",
+      "D125 restart",
+      "D125 republished",
+      "D125 spelling",
+      "D125 sampled_restart",
+      "D125 sampled_withdrawn"
+    ],
+    "fixed": "all 26 test/subtest results PASS with the same stalls",
+    "renewal_mutation": "fixed parent fails missing/replaced/expired (Recover waited 1m0s on the bubble clock); KeepsDeadline fails 4/4"
+  },
   "deterministic_budget": {
     "inputs-deadline": {
+      "0s": {
+        "elapsed=250ms remaining=250ms": 50
+      },
+      "200ms": {
+        "elapsed=50ms remaining=50ms": 50
+      },
+      "250ms": {
+        "elapsed=0s remaining=0s": 50
+      },
+      "1s": {
+        "elapsed=0s remaining=0s": 50
+      }
+    },
+    "post-deadline": {
       "0s": {
         "elapsed=250ms remaining=250ms": 50
       },
@@ -1597,6 +1636,856 @@
           ],
           "under_agent_load": {
             "recover_calls_lower_bound": 165,
+            "note": "first k Recover calls in log order completed while the agent suite was still running (5 s sample granularity)"
+          },
+          "agent_tail": []
+        }
+      }
+    },
+    "r2": {
+      "reserve": {
+        "at": "2026-11-03T11:30:45.474638Z",
+        "exit": 0,
+        "out": "reserved for w2-updater until 07:00:45",
+        "err": ""
+      },
+      "release": {
+        "at": "2026-11-03T11:33:16.356422Z",
+        "t_s": 150.882,
+        "exit": 0,
+        "out": "released w2-updater",
+        "err": ""
+      },
+      "legs": {
+        "load": {
+          "kind": "load",
+          "args": [
+            [
+              "go",
+              "test",
+              "-count=1",
+              "./node/agent/..."
+            ],
+            [
+              "go",
+              "test",
+              "-v",
+              "-run",
+              "^TestAT25_FileMeterWaitRestartRechecksCurrentFile$",
+              "-count=50",
+              "./node/updater"
+            ]
+          ],
+          "status": "stopped_foreign_cpu",
+          "qualified": false,
+          "watchdog_s": 300,
+          "preflight_wait_s": 30.135,
+          "started_at": "2026-11-03T11:32:15.610273Z",
+          "ended_at": "2026-11-03T11:33:16.321045Z",
+          "elapsed_s": 60.711,
+          "max_sample_gap_s": 5.061,
+          "foreign_cpu_ok": false,
+          "foreign_cpu_max_cores": 1.801,
+          "in_leg_vmstat_ok_recorded_only": true,
+          "active_load_s": 60.701,
+          "agent_updater_overlap_s": 23.955,
+          "preflights": [
+            {
+              "at": "2026-11-03T11:31:45.531810Z",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [
+                "774563 bash -c cd <worktree> && date -u +%T && ok=0; for i in $(seq 1 40); do o=$(bash \"$FVPN_HOLD_SH\"); n=$(pgrep -fc '^[^ ]*go test'); echo \"$(date -u +%T) $o gotest=$n\"; if [ \"$o\" = free ] && [ \"$n\" = "
+              ],
+              "hold_after": "free",
+              "foreign_after": [],
+              "ok": true,
+              "foreign_cpu_avg_cores": 0.166,
+              "foreign_cpu_intervals": [
+                {
+                  "t_s": 5.056,
+                  "wall_s": 5.044,
+                  "foreign_cores": 0.337,
+                  "own_cores": 0.01,
+                  "host_minus_own_cores": 0.321,
+                  "top_foreign": [
+                    [
+                      0.099,
+                      "kworker/20:2+display_unordered"
+                    ],
+                    [
+                      0.099,
+                      "kworker/20:1-events"
+                    ],
+                    [
+                      0.059,
+                      "MainThread"
+                    ],
+                    [
+                      0.014,
+                      "kworker/20:2-display_unordered"
+                    ],
+                    [
+                      0.014,
+                      "codex"
+                    ]
+                  ]
+                },
+                {
+                  "t_s": 10.102,
+                  "wall_s": 5.046,
+                  "foreign_cores": 0.157,
+                  "own_cores": 0.01,
+                  "host_minus_own_cores": 0.166,
+                  "top_foreign": [
+                    [
+                      0.081,
+                      "python3"
+                    ],
+                    [
+                      0.018,
+                      "MainThread"
+                    ],
+                    [
+                      0.012,
+                      "codex"
+                    ],
+                    [
+                      0.008,
+                      "gh"
+                    ],
+                    [
+                      0.006,
+                      "systemd"
+                    ]
+                  ]
+                },
+                {
+                  "t_s": 15.15,
+                  "wall_s": 5.048,
+                  "foreign_cores": 0.216,
+                  "own_cores": 0.008,
+                  "host_minus_own_cores": 0.21,
+                  "top_foreign": [
+                    [
+                      0.115,
+                      "kworker/7:1-display_unordered"
+                    ],
+                    [
+                      0.038,
+                      "MainThread"
+                    ],
+                    [
+                      0.016,
+                      "codex"
+                    ],
+                    [
+                      0.01,
+                      "prometheus-node"
+                    ],
+                    [
+                      0.008,
+                      "claude"
+                    ]
+                  ]
+                },
+                {
+                  "t_s": 20.193,
+                  "wall_s": 5.043,
+                  "foreign_cores": 0.083,
+                  "own_cores": 0.008,
+                  "host_minus_own_cores": 0.091,
+                  "top_foreign": [
+                    [
+                      0.018,
+                      "MainThread"
+                    ],
+                    [
+                      0.008,
+                      "codex"
+                    ],
+                    [
+                      0.008,
+                      "cloudflared"
+                    ],
+                    [
+                      0.008,
+                      "claude"
+                    ],
+                    [
+                      0.006,
+                      "python"
+                    ]
+                  ]
+                },
+                {
+                  "t_s": 25.24,
+                  "wall_s": 5.047,
+                  "foreign_cores": 0.081,
+                  "own_cores": 0.01,
+                  "host_minus_own_cores": 0.063,
+                  "top_foreign": [
+                    [
+                      0.024,
+                      "MainThread"
+                    ],
+                    [
+                      0.01,
+                      "cloudflared"
+                    ],
+                    [
+                      0.008,
+                      "grafana"
+                    ],
+                    [
+                      0.006,
+                      "python3"
+                    ],
+                    [
+                      0.006,
+                      "claude"
+                    ]
+                  ]
+                },
+                {
+                  "t_s": 30.015,
+                  "wall_s": 4.775,
+                  "foreign_cores": 0.117,
+                  "own_cores": 0.008,
+                  "host_minus_own_cores": 0.119,
+                  "top_foreign": [
+                    [
+                      0.042,
+                      "MainThread"
+                    ],
+                    [
+                      0.027,
+                      "python3"
+                    ],
+                    [
+                      0.01,
+                      "cloudflared"
+                    ],
+                    [
+                      0.008,
+                      "claude"
+                    ],
+                    [
+                      0.006,
+                      "prometheus"
+                    ]
+                  ]
+                }
+              ],
+              "vmstat_recorded": {
+                "rows": [
+                  {
+                    "r": 0,
+                    "id": 98
+                  },
+                  {
+                    "r": 1,
+                    "id": 99
+                  },
+                  {
+                    "r": 1,
+                    "id": 98
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  }
+                ],
+                "ok": true
+              }
+            }
+          ],
+          "in_leg_samples": {
+            "count": 12,
+            "all_hold_free": true,
+            "foreign_suite_samples": 0,
+            "non_suite_match_samples": 12,
+            "non_suite_matches": [
+              "774563 bash -c cd <worktree> && date -u +%T && ok=0; for i in $(seq 1 40); do o=$(bash \"$FVPN_HOLD_SH\"); n=$(pgrep -fc '^[^ ]*go test'); echo \"$(date -u +%T) $o gotest=$n\"; if [ \"$o\" = free ] && [ \"$n\" = "
+            ],
+            "stop_sample": {
+              "t_s": 60.7,
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [
+                "774563 bash -c cd <worktree> && date -u +%T && ok=0; for i in $(seq 1 40); do o=$(bash \"$FVPN_HOLD_SH\"); n=$(pgrep -fc '^[^ ]*go test'); echo \"$(date -u +%T) $o gotest=$n\"; if [ \"$o\" = free ] && [ \"$n\" = "
+              ],
+              "running": [
+                "agent"
+              ],
+              "recover_samples": 250,
+              "foreign_cpu_max_so_far": 1.801,
+              "foreign_cpu_breach": {
+                "t_s": 60.506,
+                "wall_s": 5.042,
+                "foreign_cores": 1.801,
+                "own_cores": 0.21,
+                "host_minus_own_cores": 2.118,
+                "top_foreign": [
+                  [
+                    0.672,
+                    "_l1l4_rearm_ab."
+                  ],
+                  [
+                    0.456,
+                    "run_l5_qwen.py"
+                  ],
+                  [
+                    0.204,
+                    "supervise.py"
+                  ],
+                  [
+                    0.186,
+                    "python3"
+                  ],
+                  [
+                    0.131,
+                    "MainThread"
+                  ]
+                ]
+              }
+            }
+          },
+          "foreign_cpu_in_leg": [
+            {
+              "t_s": 5.048,
+              "wall_s": 5.041,
+              "foreign_cores": 0.101,
+              "own_cores": 0.419,
+              "host_minus_own_cores": 0.234,
+              "top_foreign": [
+                [
+                  0.024,
+                  "MainThread"
+                ],
+                [
+                  0.022,
+                  "jbd2/dm-0-8"
+                ],
+                [
+                  0.008,
+                  "cloudflared"
+                ],
+                [
+                  0.008,
+                  "claude"
+                ],
+                [
+                  0.008,
+                  "agy"
+                ]
+              ]
+            },
+            {
+              "t_s": 10.089,
+              "wall_s": 5.041,
+              "foreign_cores": 0.335,
+              "own_cores": 0.421,
+              "host_minus_own_cores": 0.304,
+              "top_foreign": [
+                [
+                  0.113,
+                  "kworker/23:1-display_unordered"
+                ],
+                [
+                  0.067,
+                  "kworker/23:0+events"
+                ],
+                [
+                  0.048,
+                  "kworker/23:0-events"
+                ],
+                [
+                  0.026,
+                  "jbd2/dm-0-8"
+                ],
+                [
+                  0.02,
+                  "MainThread"
+                ]
+              ]
+            },
+            {
+              "t_s": 15.131,
+              "wall_s": 5.042,
+              "foreign_cores": 0.266,
+              "own_cores": 0.335,
+              "host_minus_own_cores": 0.244,
+              "top_foreign": [
+                [
+                  0.143,
+                  "python3"
+                ],
+                [
+                  0.024,
+                  "MainThread"
+                ],
+                [
+                  0.022,
+                  "jbd2/dm-0-8"
+                ],
+                [
+                  0.022,
+                  "hermes"
+                ],
+                [
+                  0.01,
+                  "claude"
+                ]
+              ]
+            },
+            {
+              "t_s": 20.173,
+              "wall_s": 5.041,
+              "foreign_cores": 0.083,
+              "own_cores": 0.226,
+              "host_minus_own_cores": 0.073,
+              "top_foreign": [
+                [
+                  0.028,
+                  "jbd2/dm-0-8"
+                ],
+                [
+                  0.02,
+                  "MainThread"
+                ],
+                [
+                  0.006,
+                  "codex"
+                ],
+                [
+                  0.004,
+                  "cloudflared"
+                ],
+                [
+                  0.004,
+                  "claude"
+                ]
+              ]
+            },
+            {
+              "t_s": 25.214,
+              "wall_s": 5.041,
+              "foreign_cores": 0.111,
+              "own_cores": 0.165,
+              "host_minus_own_cores": 0.133,
+              "top_foreign": [
+                [
+                  0.034,
+                  "MainThread"
+                ],
+                [
+                  0.024,
+                  "jbd2/dm-0-8"
+                ],
+                [
+                  0.006,
+                  "kworker/u96:28-ext4-rsv-conversion"
+                ],
+                [
+                  0.006,
+                  "grafana"
+                ],
+                [
+                  0.006,
+                  "cloudflared"
+                ]
+              ]
+            },
+            {
+              "t_s": 30.254,
+              "wall_s": 5.04,
+              "foreign_cores": 0.121,
+              "own_cores": 0.06,
+              "host_minus_own_cores": 0.137,
+              "top_foreign": [
+                [
+                  0.028,
+                  "jbd2/dm-0-8"
+                ],
+                [
+                  0.026,
+                  "python3"
+                ],
+                [
+                  0.02,
+                  "MainThread"
+                ],
+                [
+                  0.008,
+                  "claude"
+                ],
+                [
+                  0.004,
+                  "kworker/5:1H-kblockd"
+                ]
+              ]
+            },
+            {
+              "t_s": 35.296,
+              "wall_s": 5.041,
+              "foreign_cores": 0.367,
+              "own_cores": 0.06,
+              "host_minus_own_cores": 0.359,
+              "top_foreign": [
+                [
+                  0.113,
+                  "kworker/7:2-display_unordered"
+                ],
+                [
+                  0.089,
+                  "kworker/7:1+events"
+                ],
+                [
+                  0.069,
+                  "MainThread"
+                ],
+                [
+                  0.026,
+                  "kworker/7:1-events"
+                ],
+                [
+                  0.024,
+                  "jbd2/dm-0-8"
+                ]
+              ]
+            },
+            {
+              "t_s": 40.337,
+              "wall_s": 5.042,
+              "foreign_cores": 0.115,
+              "own_cores": 0.137,
+              "host_minus_own_cores": 0.159,
+              "top_foreign": [
+                [
+                  0.022,
+                  "jbd2/dm-0-8"
+                ],
+                [
+                  0.02,
+                  "MainThread"
+                ],
+                [
+                  0.014,
+                  "cloudflared"
+                ],
+                [
+                  0.012,
+                  "codex"
+                ],
+                [
+                  0.008,
+                  "python3"
+                ]
+              ]
+            },
+            {
+              "t_s": 45.379,
+              "wall_s": 5.041,
+              "foreign_cores": 0.089,
+              "own_cores": 0.2,
+              "host_minus_own_cores": 0.083,
+              "top_foreign": [
+                [
+                  0.028,
+                  "MainThread"
+                ],
+                [
+                  0.014,
+                  "jbd2/dm-0-8"
+                ],
+                [
+                  0.014,
+                  "agy"
+                ],
+                [
+                  0.006,
+                  "codex"
+                ],
+                [
+                  0.006,
+                  "claude"
+                ]
+              ]
+            },
+            {
+              "t_s": 50.421,
+              "wall_s": 5.043,
+              "foreign_cores": 0.087,
+              "own_cores": 0.145,
+              "host_minus_own_cores": 0.081,
+              "top_foreign": [
+                [
+                  0.022,
+                  "MainThread"
+                ],
+                [
+                  0.01,
+                  "jbd2/dm-0-8"
+                ],
+                [
+                  0.008,
+                  "cloudflared"
+                ],
+                [
+                  0.008,
+                  "claude"
+                ],
+                [
+                  0.006,
+                  "python3"
+                ]
+              ]
+            },
+            {
+              "t_s": 55.464,
+              "wall_s": 5.043,
+              "foreign_cores": 0.085,
+              "own_cores": 0.093,
+              "host_minus_own_cores": 0.073,
+              "top_foreign": [
+                [
+                  0.03,
+                  "MainThread"
+                ],
+                [
+                  0.01,
+                  "claude"
+                ],
+                [
+                  0.008,
+                  "jbd2/dm-0-8"
+                ],
+                [
+                  0.006,
+                  "grafana"
+                ],
+                [
+                  0.004,
+                  "python3"
+                ]
+              ]
+            },
+            {
+              "t_s": 60.506,
+              "wall_s": 5.042,
+              "foreign_cores": 1.801,
+              "own_cores": 0.21,
+              "host_minus_own_cores": 2.118,
+              "top_foreign": [
+                [
+                  0.672,
+                  "_l1l4_rearm_ab."
+                ],
+                [
+                  0.456,
+                  "run_l5_qwen.py"
+                ],
+                [
+                  0.204,
+                  "supervise.py"
+                ],
+                [
+                  0.186,
+                  "python3"
+                ],
+                [
+                  0.131,
+                  "MainThread"
+                ]
+              ]
+            }
+          ],
+          "in_leg_vmstat_recorded": {
+            "intervals": 12,
+            "max_r": 3,
+            "min_id": 88,
+            "rows": [
+              {
+                "t_s": 5.002,
+                "r": 1,
+                "id": 93
+              },
+              {
+                "t_s": 10.002,
+                "r": 1,
+                "id": 92
+              },
+              {
+                "t_s": 15.002,
+                "r": 0,
+                "id": 93
+              },
+              {
+                "t_s": 20.003,
+                "r": 0,
+                "id": 94
+              },
+              {
+                "t_s": 25.003,
+                "r": 0,
+                "id": 94
+              },
+              {
+                "t_s": 30.003,
+                "r": 0,
+                "id": 95
+              },
+              {
+                "t_s": 35.003,
+                "r": 1,
+                "id": 94
+              },
+              {
+                "t_s": 40.004,
+                "r": 2,
+                "id": 95
+              },
+              {
+                "t_s": 45.004,
+                "r": 0,
+                "id": 95
+              },
+              {
+                "t_s": 50.004,
+                "r": 0,
+                "id": 97
+              },
+              {
+                "t_s": 55.004,
+                "r": 0,
+                "id": 98
+              },
+              {
+                "t_s": 60.005,
+                "r": 3,
+                "id": 88
+              }
+            ]
+          },
+          "processes": [
+            {
+              "name": "agent",
+              "start_s": 0.001,
+              "end_s": 60.702,
+              "exit": -15
+            },
+            {
+              "name": "updater",
+              "start_s": 0.003,
+              "end_s": 23.958,
+              "exit": 0
+            }
+          ],
+          "iterations": {
+            "completed": 50,
+            "passed": 50,
+            "failed": 0
+          },
+          "recover_calls": 250,
+          "failures": [],
+          "cases": {
+            "missing": {
+              "recover_wall_ms": {
+                "n": 50,
+                "min": 11.628,
+                "median": 19.162,
+                "p99": 24.674,
+                "max": 24.674,
+                "mean": 18.703
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "250.0": 50
+              },
+              "bubble_elapsed_ms_distinct": {
+                "250.0": 50
+              }
+            },
+            "replaced": {
+              "recover_wall_ms": {
+                "n": 50,
+                "min": 11.683,
+                "median": 19.149,
+                "p99": 23.101,
+                "max": 23.101,
+                "mean": 18.771
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "250.0": 50
+              },
+              "bubble_elapsed_ms_distinct": {
+                "250.0": 50
+              }
+            },
+            "withdrawn": {
+              "recover_wall_ms": {
+                "n": 50,
+                "min": 13.413,
+                "median": 22.571,
+                "p99": 28.652,
+                "max": 28.652,
+                "mean": 21.991
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "250.0": 50
+              },
+              "bubble_elapsed_ms_distinct": {
+                "0.0": 50
+              }
+            },
+            "new_boot": {
+              "recover_wall_ms": {
+                "n": 50,
+                "min": 11.012,
+                "median": 19.043,
+                "p99": 23.795,
+                "max": 23.795,
+                "mean": 18.489
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "250.0": 50
+              },
+              "bubble_elapsed_ms_distinct": {
+                "0.0": 50
+              }
+            },
+            "expired": {
+              "recover_wall_ms": {
+                "n": 50,
+                "min": 11.244,
+                "median": 18.88,
+                "p99": 22.589,
+                "max": 22.589,
+                "mean": 18.378
+              },
+              "original_remaining_at_start_ms_distinct": {
+                "-1.0": 50
+              },
+              "bubble_elapsed_ms_distinct": {
+                "0.0": 50
+              }
+            }
+          },
+          "go_test_tail": [
+            "    --- PASS: TestAT25_FileMeterWaitRestartRechecksCurrentFile/expired (0.10s)",
+            "PASS",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t23.650s"
+          ],
+          "under_agent_load": {
+            "recover_calls_lower_bound": 250,
             "note": "first k Recover calls in log order completed while the agent suite was still running (5 s sample granularity)"
           },
           "agent_tail": []
