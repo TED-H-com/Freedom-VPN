@@ -1,0 +1,16 @@
+{
+  "start_utc": "2026-11-03T06:41:19.570503+00:00",
+  "elapsed_seconds": 6.2799435119995906,
+  "command": [
+    "make",
+    "-f",
+    "mk/netlab.mk",
+    "-o",
+    "netlab-build",
+    "netlab-up",
+    "FVPN_LAB_PREFIX=fvpn-w1-netlab-f27-a1",
+    "NETLAB_BIN=.agent/tmp/fvpn-w1-netlab-f27-before-fvpn-netlab"
+  ],
+  "exit_code": 0,
+  "output_sha256": "2b05c5565e1ee3bef2699e68f3f1b1aa0eca01aa77f4adfd7dd9f4d961cc5a5e"
+}

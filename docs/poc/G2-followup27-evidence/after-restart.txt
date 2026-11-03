@@ -1,0 +1,52 @@
+=== RUN   TestAT13_F27_UnrecordedApplyRefusesRestartAdoption
+=== RUN   TestAT13_F27_UnrecordedApplyRefusesRestartAdoption/denied
+=== RUN   TestAT13_F27_UnrecordedApplyRefusesRestartAdoption/host
+--- PASS: TestAT13_F27_UnrecordedApplyRefusesRestartAdoption (0.31s)
+    --- PASS: TestAT13_F27_UnrecordedApplyRefusesRestartAdoption/denied (0.16s)
+    --- PASS: TestAT13_F27_UnrecordedApplyRefusesRestartAdoption/host (0.16s)
+=== RUN   TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth
+=== RUN   TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth/same_boot_adoption
+=== RUN   TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth/missing_heartbeat_baseline
+--- PASS: TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth (0.37s)
+    --- PASS: TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth/same_boot_adoption (0.18s)
+    --- PASS: TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth/missing_heartbeat_baseline (0.19s)
+=== RUN   TestAT13_F36_InterruptedCloseDurability
+--- PASS: TestAT13_F36_InterruptedCloseDurability (0.13s)
+=== RUN   TestAT13_F36_RestartSetChanges
+=== RUN   TestAT13_F36_RestartSetChanges/denied/grow
+=== RUN   TestAT13_F36_RestartSetChanges/denied/shrink
+=== RUN   TestAT13_F36_RestartSetChanges/denied/replace
+=== RUN   TestAT13_F36_RestartSetChanges/denied/unchanged
+=== RUN   TestAT13_F36_RestartSetChanges/denied/reorder
+=== RUN   TestAT13_F36_RestartSetChanges/extra/grow
+=== RUN   TestAT13_F36_RestartSetChanges/extra/shrink
+=== RUN   TestAT13_F36_RestartSetChanges/extra/replace
+=== RUN   TestAT13_F36_RestartSetChanges/extra/unchanged
+=== RUN   TestAT13_F36_RestartSetChanges/extra/reorder
+=== RUN   TestAT13_F36_RestartSetChanges/host/grow
+=== RUN   TestAT13_F36_RestartSetChanges/host/shrink
+=== RUN   TestAT13_F36_RestartSetChanges/host/replace
+=== RUN   TestAT13_F36_RestartSetChanges/host/unchanged
+=== RUN   TestAT13_F36_RestartSetChanges/host/reorder
+--- PASS: TestAT13_F36_RestartSetChanges (3.08s)
+    --- PASS: TestAT13_F36_RestartSetChanges/denied/grow (0.25s)
+    --- PASS: TestAT13_F36_RestartSetChanges/denied/shrink (0.27s)
+    --- PASS: TestAT13_F36_RestartSetChanges/denied/replace (0.25s)
+    --- PASS: TestAT13_F36_RestartSetChanges/denied/unchanged (0.13s)
+    --- PASS: TestAT13_F36_RestartSetChanges/denied/reorder (0.13s)
+    --- PASS: TestAT13_F36_RestartSetChanges/extra/grow (0.26s)
+    --- PASS: TestAT13_F36_RestartSetChanges/extra/shrink (0.25s)
+    --- PASS: TestAT13_F36_RestartSetChanges/extra/replace (0.26s)
+    --- PASS: TestAT13_F36_RestartSetChanges/extra/unchanged (0.13s)
+    --- PASS: TestAT13_F36_RestartSetChanges/extra/reorder (0.13s)
+    --- PASS: TestAT13_F36_RestartSetChanges/host/grow (0.25s)
+    --- PASS: TestAT13_F36_RestartSetChanges/host/shrink (0.25s)
+    --- PASS: TestAT13_F36_RestartSetChanges/host/replace (0.26s)
+    --- PASS: TestAT13_F36_RestartSetChanges/host/unchanged (0.13s)
+    --- PASS: TestAT13_F36_RestartSetChanges/host/reorder (0.13s)
+=== RUN   TestAT13_F36_ChangedSetsControlTimeout
+--- PASS: TestAT13_F36_ChangedSetsControlTimeout (1.14s)
+=== RUN   TestAT13_F36_RetainedModelContainsSets
+--- PASS: TestAT13_F36_RetainedModelContainsSets (0.11s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	5.152s

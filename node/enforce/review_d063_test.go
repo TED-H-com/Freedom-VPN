@@ -313,5 +313,5 @@ func probeBaselineWithCustomElems(m Model, probeV4Elems, probeDstElems []any) []
 	if err != nil {
 		panic(err)
 	}
-	return raw
+	return f27StaticSets(f27ChangeSet(raw, "allowed_v4", func(set map[string]any) { set["flags"] = []any{"timeout"} }), m)
 }

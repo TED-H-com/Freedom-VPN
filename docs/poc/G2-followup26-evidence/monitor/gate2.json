@@ -1,0 +1,115 @@
+{
+  "checks": [
+    {
+      "elapsed_seconds": 60.07046053100021,
+      "utc": "2026-11-03T05:29:32Z",
+      "hold_command": [
+        "bash",
+        "<admission-script>"
+      ],
+      "hold_exit": 1,
+      "hold_output": "not free",
+      "hold_raw_sha256": "8075324a55ef7478452bbf83ee693f1b7a83dbc63e67d0e315ac832b9a4d9505",
+      "other_runs": [],
+      "own_runs": [
+        {
+          "pid": 854841,
+          "kind": "netlab-test"
+        },
+        {
+          "pid": 855771,
+          "kind": "go-test"
+        }
+      ],
+      "ready": false,
+      "pgrep_command": [
+        "pgrep",
+        "-af",
+        "gates.sh|mk/at-|go test"
+      ],
+      "pgrep_exit": 0,
+      "pgrep_raw_sha256": "ce67987fa0735d5408722f0dd3fd666d02972792626412208ef28a8e9ba42b43"
+    },
+    {
+      "elapsed_seconds": 120.19821607799986,
+      "utc": "2026-11-03T05:30:32Z",
+      "hold_command": [
+        "bash",
+        "<admission-script>"
+      ],
+      "hold_exit": 1,
+      "hold_output": "not free",
+      "hold_raw_sha256": "8075324a55ef7478452bbf83ee693f1b7a83dbc63e67d0e315ac832b9a4d9505",
+      "other_runs": [],
+      "own_runs": [
+        {
+          "pid": 854841,
+          "kind": "netlab-test"
+        },
+        {
+          "pid": 855771,
+          "kind": "go-test"
+        }
+      ],
+      "ready": false,
+      "pgrep_command": [
+        "pgrep",
+        "-af",
+        "gates.sh|mk/at-|go test"
+      ],
+      "pgrep_exit": 0,
+      "pgrep_raw_sha256": "ce67987fa0735d5408722f0dd3fd666d02972792626412208ef28a8e9ba42b43"
+    },
+    {
+      "elapsed_seconds": 180.27570177899997,
+      "utc": "2026-11-03T05:31:32Z",
+      "hold_command": [
+        "bash",
+        "<admission-script>"
+      ],
+      "hold_exit": 1,
+      "hold_output": "not free",
+      "hold_raw_sha256": "8075324a55ef7478452bbf83ee693f1b7a83dbc63e67d0e315ac832b9a4d9505",
+      "other_runs": [],
+      "own_runs": [
+        {
+          "pid": 854841,
+          "kind": "netlab-test"
+        },
+        {
+          "pid": 855771,
+          "kind": "go-test"
+        }
+      ],
+      "ready": false,
+      "pgrep_command": [
+        "pgrep",
+        "-af",
+        "gates.sh|mk/at-|go test"
+      ],
+      "pgrep_exit": 0,
+      "pgrep_raw_sha256": "ce67987fa0735d5408722f0dd3fd666d02972792626412208ef28a8e9ba42b43"
+    },
+    {
+      "elapsed_seconds": 235.20115763300055,
+      "utc": "2026-11-03T05:32:27Z",
+      "hold_command": [
+        "bash",
+        "<admission-script>"
+      ],
+      "hold_exit": 0,
+      "hold_output": "free",
+      "hold_raw_sha256": "0cf9340d8bc2f1f7836e0ce6e2178d5fd382bde7fc50dc845dbf228dee3713b4",
+      "other_runs": [],
+      "own_runs": [],
+      "ready": true,
+      "pgrep_command": [
+        "pgrep",
+        "-af",
+        "gates.sh|mk/at-|go test"
+      ],
+      "pgrep_exit": 1,
+      "pgrep_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

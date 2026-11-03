@@ -1,0 +1,9 @@
+{
+  "name": "gate8",
+  "command": [
+    "sh",
+    "-ec",
+    "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+  ],
+  "quiet": false
+}

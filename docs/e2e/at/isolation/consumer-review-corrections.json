@@ -1,0 +1,19 @@
+{
+  "run_id": "0ec14b39-467e-4a37-a239-1a33ef12eb71",
+  "initial_general_hold_review": {
+    "exit_code": 1,
+    "evidence": "initial-general-hold-review.json",
+    "reason": "The generic review incorrectly required local counter decrease and after_restart snapshot for the separate Step-1 central-age experiment."
+  },
+  "corrected_general_hold_review": {
+    "evidence": "generation-holds-review.json",
+    "change": "Only counter-reset review is restricted to its planned incident. All 16 accepted hold/lease/sample/incident/audit joins remain included, including the third incident. Central-age fallback has its own audit predicate."
+  },
+  "capture_evaluator": {
+    "runtime_observation": "unavailable",
+    "cause": "noteEvaluator assumed the evidence directory had exactly four parents to the module root; fresh .agent/f17/evidence has three.",
+    "change": "Use moduleRoot for subsequent consumers. The captured AT13 observation is retained unchanged.",
+    "offline_check": "capture.go, capture_review_test.go, deadline_trace.go and deadline_trace_test.go are byte-identical between baseline, measured consumer and final source."
+  },
+  "scope": "Offline consumer corrections only. No second assembled run, packet sweep, fixture retry, report alteration or product change."
+}
