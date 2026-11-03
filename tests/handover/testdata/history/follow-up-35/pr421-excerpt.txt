@@ -1,0 +1,29 @@
+## Summary
+
+Netlab follow-up 31: session launched 07:19 EST on 2026-11-03 on #418's roadmap row `cc0ed4ae`, and delivered at 07:41.
+- **Model:** codex `gpt-6-astra`.
+- **Size:** 3 commits, 6 new owned files, all under `docs/poc/G2-followup31-design/`; 1,005 lines added.
+- **Checks:** merge-tree clean on current `main`; prepush-scan clean. All seven gates pass on the final tree.
+- **Scope:** design only. No production file, ordinary test, tool or dependency changed. No live run, executable sketch, reservation or container.
+
+**The orchestrator's reading.**
+- **Today's guarantees come first, from the code.** The design writes down what the current guard guarantees and how, as G1–G10 with file and line citations. They cover deadline, revocation, baseline, failed or rejected Apply, a crash or kill at each step, late commit, verifier failure, rollback, and ISO01 / ISO02 isolation during install.
+  - **Its cost, from netlab 30's evidence:** member packets are dropped while a generation installs. The install, release and outer-guard medians are 13.7, 13.2 and 28.5 ms.
+- **Three candidates:**
+  - **C1, a retained-deadline intersection guard.** The old timed admission elements are never refreshed or copied. They cap the identities that are unchanged and already verified while the full candidate installs. Revocations commit inside the install transaction, and every other member stays closed until release.
+  - **C2, a staged inactive generation switched by one atomic jump.** It adds revocation delay, and changed QoS still needs today's closure.
+  - **C3, an absolute kernel deadline.** Rejected: stock nft `expires` is relative, and no proven absolute monotonic primitive exists.
+- **No candidate keeps every guarantee and is hitless.** Today, a late commit, or a kill or stop before the budget check, closes **all** members.
+  - **Under C1,** eligible members continue at that cut until their unchanged old deadline. A stopped lock holder can also delay the watchdog until then. That is the G5/G6 trade, with its G4/G8 failure-containment difference.
+  - **The design does not hide it:** C1 is no blanket established-flow exception, and it relaxes no deadline. A failed Apply never turns green.
+- **The recommendation: C1 for design review only.** Production keeps the current guard. Nothing is implemented.
+- **For a later follow-up:** the proof obligations, the failure injections (crash or kill at each step, late commit, expired lease, verifier failure, rollback), and the netlab scenarios with AT10's unchanged 1.5 s timeout and D-120 analyzer.
+  - **The D-133 A,B,A,B comparison is declared now:** A is `main`'s guard and B is C1. It fixes the source, the order, the populations, the qualification rule (foreign CPU at or below 0.5 cores in every interval), the common observation and the decision rule, before any measurement.
+- **History stays:** B1 stays FAIL and unexplained, and both of netlab 30's live runs stay host-unqualified. Follow-ups 25 to 30 are byte-identical: 1,818 payload files and six manifests.
+
+**Its requests, answered.**
+1. **The owner's decision on the G5/G6 trade:** it goes to the owner as a question. The orchestrator does not decide it. Until the owner accepts the trade, production keeps the current guard, and C1 is reviewed but not implemented. Handover 35 carries the question.
+2. **Agent-core provenance and adoption work:** only after the owner accepts C1. Nothing is scheduled now.
+3. **Updater, installer and acceptance work** (reader and writer inventory, rollback compatibility, native and arm64 proofs): likewise, only after the owner accepts C1.
+4. **The quiet D-133 slot:** scheduled by the orchestrator only after the design is reviewed and its implementation proofs pass.
+- **Next:** an adversarial review of this design, r24, on agy `gemini-4-argon-high`, before any implementation.

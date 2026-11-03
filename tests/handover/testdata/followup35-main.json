@@ -1,0 +1,44 @@
+{
+  "commit": "dff6bdb0ddcf6dfd8392a8db364c0120783a48f3",
+  "cutoff_pr": 421,
+  "rows": [
+    "| w4-handover follow-up 34 | Cut #416–#418 at `cc0ed4ae` (handover 33, updater 22, netlab 30). `TestHandover_Followup34Claims`: 14 subtests, three final roadmap rows, ten frozen handover inputs, 312 netlab payload hashes and lengths (19 gzip originals included), two dated updater documents and three PR excerpts; follow-up 33's claims verified from its function and manifests, earlier assertions unchanged. Updater 22 recorded as #417 states it: F21-01 fixed in the test fixtures by its mechanism (a synctest bubble clock; budgets and assertions unchanged), and its coverage of the three F21-01-class CI failures on `main` attributed to the PR; the quiet leg qualified at 200/0 and both load legs did not, so F27-02's fixed-test reading stays undecided. Netlab 30: the NFLOG collector passed live, and each of the seven missing TCP egresses in AT10's 100-reload window matched exactly one `fv_deadline_guard` drop inside its install bracket (worst read 416.7 ms); F27-01 unresolved with no fix, B1 FAIL and unexplained, both live runs host-unqualified. Seven entrypoints at follow-up 34; the operator guide now says in-flight member TCP segments can be dropped while a ruleset generation installs and recover by retransmission, with no bound promised; F30-01 and r20 H-1 stay open. Findings register at 81 rows (F21-01, F27-02 and F27-01 updated); 47 decisions, nothing after D-144; 9 owner requests carried; new request: #417's control count (16 reported, 15 failing cases enumerated). Session on codex gpt-6-astra. | done (#419) |",
+    "| w2-updater follow-up 23 | The missing bounded-load leg, under an end rule declared before any measured run (the leg ends when the measured test process exits): reservation 1 was stopped by non-lane foreign CPU (0.996 cores) at 20/0 and stays unqualified; reservation 2 qualified at 50/0, with foreign CPU at most 0.105 cores before the process exited and 0.385 after, and both meter fixture files byte-identical to updater 22's tip. Pooled with updater 22's qualified quiet leg (200/0), and with the deterministic budget exact in all 352 logged parent `Recover` calls, F27-02's fixture-defect reading for the fixed test HOLDS; updater 21's failed and updater 22's undecided verdicts stay recorded. Item 2, judged before fixing (D-141): of the short `AttestWindow` waits, only `TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires` depends on its own work finishing inside its 80 ms real-clock window (F23-01, a fixture defect). A 250 ms stall in the test's clock fails it before the fix and passes after; the test now runs on a `synctest` bubble clock with its window, poll interval, TTL and assertion unchanged (+10/−1 ignoring whitespace), and a first-attestation mutation still fails it; a package-wide stall control passes all 176 tests with 88 stalls. Erratum to #417: its row said 16 timing-dependent cases; the retained control log, the dated table and the timing JSON show 15 (the parent test's `replaced`, four `FailsClosedWithoutCorrelation` scenarios and ten `TestD125_Rule` tests), and 26 counts test and subtest results (24 cases plus two parent tests). Sessions: agy claude-opus-5-5-high (declaration, both reservations, diagnosis), whose model quota ran out at 07:30 EST; codex gpt-6-astra completed it from the retained records, with no new reservation or measurement. | done (#420) |",
+    "| w1-netlab follow-up 31 | Design only (`docs/poc/G2-followup31-design/`): no production, test or tool change, no live run and no reservation. The current guard's guarantees are written down from the code first: G1–G10 with file and line citations, the crash cuts, and follow-up 30's measured cost (install, release and outer-guard medians of 13.7, 13.2 and 28.5 ms). Three candidates. C1, a retained-deadline intersection guard: the old timed admission elements cap unchanged, verified identities while the full candidate installs, and revocations commit in the install transaction. C2, a staged inactive generation switched by one atomic jump: it adds revocation delay. C3, an absolute kernel deadline: rejected, because stock nft `expires` is relative and no proven absolute monotonic primitive exists. None keeps the current all-member closure after a late commit, or a kill before the budget check, while being hitless: under C1, eligible members continue until their unchanged old deadline instead (the G5/G6 trade, with its G4/G8 failure-containment difference), which only the owner can accept. Recommendation: C1 for design review only; production keeps the current guard. The proof obligations, failure injections and a predeclared D-133 A,B,A,B comparison with its fixed decision rule are written for a later follow-up. Implementation waits for review, the owner's decision, and cross-lane provenance and rollout work (agent-core, updater, installer, acceptance). B1 stays FAIL and unexplained; follow-ups 25–30 are byte-identical (1,818 payload files, six manifests). Session on codex gpt-6-astra. | done (#421) |"
+  ],
+  "merged_after_cutoff": [],
+  "absent_at_start": [
+    "w2-agent-core follow-ups 37–39 (delivered, held)",
+    "w2-agent-core follow-up 40 (running)",
+    "review r24 (after the cutoff; design review only)"
+  ],
+  "pr_excerpts": [
+    {
+      "path": "tests/handover/testdata/history/follow-up-35/pr419-excerpt.txt",
+      "sha256": "c0710a4511511f6ad4d84c08dec8e6cc01e5de59af6914e292f5bb41ec3fd22b",
+      "bytes": 3673,
+      "pr": 419,
+      "source_commit": "d57276679c6b4de225410cea2325c76cd35248eb",
+      "offset": 246,
+      "source_sha256": "dc217e077a969016897fda73bb5d996ce9d6d51c85fc3eff533248786776d4aa"
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-35/pr420-excerpt.txt",
+      "sha256": "4d981cc817005f32415aae4909201d60c4aaee9bb52e4861b774f7a65c8fe71c",
+      "bytes": 4872,
+      "pr": 420,
+      "source_commit": "8bbd9caff846ea2dc87c06e96e97bc73a1769bd3",
+      "offset": 250,
+      "source_sha256": "4efa2d41bbc076a80baf073dc93c082d2afd2a8d3f405f2d11edc6bff8fd51d5"
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-35/pr421-excerpt.txt",
+      "sha256": "2281237fd26700b0dc8200ee7d481743c7e8e6508d4be1ceb9fa2966de3f8268",
+      "bytes": 3851,
+      "pr": 421,
+      "source_commit": "868f919d50ec2fe7279ca96bd2b44ddeefdd5faf",
+      "offset": 245,
+      "source_sha256": "5e7a7b4fc90a416201324da47f8b547e0d768e971bdd585c6b66f8fe21b3e2b8"
+    }
+  ]
+}
