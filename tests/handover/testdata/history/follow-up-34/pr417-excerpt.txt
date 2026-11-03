@@ -1,0 +1,34 @@
+## Summary
+
+Updater follow-up 22: session launched 05:37 EST on 2026-11-03 on #413's roadmap row `3d25307d`, and delivered at 06:43.
+- **Model:** agy `claude-opus-5-5-high`.
+- **Size:** 6 commits, 4 owned files: `node/updater/meter_barrier_test.go`, `node/updater/followup17_test.go`, the dated doc `docs/updates/node-followup22-2026-11-03.md` and its timing JSON. Ignoring whitespace, the two test files change by +58/−3 and +9/−1; the rest is re-indentation into the bubble.
+- **Checks:** merge-tree clean on current `main`; prepush-scan clean.
+- **Scope:** test fixtures and measurement only. No product source changed. Follow-up 20's and 21's docs and JSON are untouched.
+- **Commit order:** the fix (`28821e09`) and its mechanism-and-controls record (`d1435752`) came first. The declaration (`0b8cedfa`) was committed before any measured run, then reservation 1's results (`edc3ab64`), and the results and verdict (`126ec6f7`). `5eea3f02` scopes the control-residue check to `node/`.
+
+**The orchestrator's reading.**
+- **F21-01 is fixed by its mechanism, with no product change.** The persisted meter deadline is wall-clock time from the block. The tests' own setup between the block and the engine's first read ran on that same clock: the crash, the SQLite reopen, the meter close, fsync publication, and the publisher and withdrawer goroutines.
+  - **The fix:** the three affected fixtures run on a `synctest` bubble clock. Disk and scheduler stalls take real time but no budget. Budgets and every assertion on result, error, receipt and forwarding are unchanged.
+  - **The controls decide it deterministically:** a blocking-syscall stall longer than the budget, placed in the test's own work. Before the fix, 16 timing-dependent cases fail, each with `meter_checkpoint_timeout`; after it, all 26 pass. The overlays are removed.
+  - **Renewal is detectable again:** the parent test now asserts that `Recover` starts with exactly the remaining budget, and never waits longer than that on the bubble clock.
+- **It covers the three F21-01-class CI failures on `main`,** none of which was re-run:
+  - run 41616194943 (#411): `TestD125_RuleMalformedIdentity`;
+  - run 41620760976 (#413's roadmap commit): `TestAT25_FileMeterWaitFailsClosedWithoutCorrelation/withdrawn_reblocked`;
+  - run 41625190790 (#415): `TestD125_RuleLegacyFourMembers`.
+  - All three now run on the bubble clock. A `meter_checkpoint_timeout` from these fixtures after this merge is a new finding, not F21-01.
+- **The re-measurement, by the declared rule:**
+  - **Quiet leg:** qualified, 200/0, foreign CPU at most 0.345 cores.
+  - **Bounded-load leg:** unqualified in both permitted reservations, at 33/0 and then 50/0. Each was stopped by one 5 s interval of non-lane foreign CPU.
+    - **Reservation 1, 06:20:19 EST:** a `git` process at 1.40 cores. Most likely this was the orchestrator's own launch of handover 33, which reset that lane's worktree at 06:20. The orchestrator now keeps heavy git work out of other lanes' reservations.
+    - **Reservation 2, 06:33:16 EST:** host jobs outside this project, 1.80 cores in total, after the updater test process had exited.
+  - **The deterministic budget** stayed exact in all 283 iterations, and before and after the window.
+- **Verdict:** F27-02's fixture-defect reading for the fixed test is **undecided**: no failure, and one leg unqualified. Follow-up 21's verdict stays **failed**, and so does netlab 27's F27-02. Nothing is relabelled.
+- **`node/updater` now runs in 17 s,** against 28 s, because its meter waits run on the bubble clock.
+
+**The lane's requests, answered.**
+1. **Load-leg qualification.**
+   - **The orchestrator does not pause jobs outside this project.**
+   - **The ruling:** reservation 2's leg stays unqualified, as declared. For later legs, the leg ends when the measured test process exits; foreign CPU after that is recorded and does not disqualify. A later leg must declare that before it runs.
+   - **Next:** updater 23 runs one bounded-load leg under that declared rule.
+2. **Admission while other lanes' `go test` runs:** by design. `free` means no reservation and no timing-sensitive suite, so ordinary `go test` runs do not block admission. Inside a reservation, the `go` command refuses every other lane's `go test`, and the quiet check covers the rest.

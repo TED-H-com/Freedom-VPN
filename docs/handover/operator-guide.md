@@ -1,7 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 32](follow-up-32.md) (2026-11-03 EST):** Through #412: F27-02 fixture defect, qualified comparison open; first live D-102 survivor continuation; B1 unresolved. F28-01 and F31-01 routed, not yet judged. AT02 / AT09 stay failed; F30-01 has no merged fix. Nine owner requests.
-**Previous cut — [follow-up 31](follow-up-31.md):** #404–#407 at 3573f396; 21 subtests, four rows, nine handover snapshots, nine nightly inputs, 596 checks, three dated documents and 72 findings.
+**Current cut — [follow-up 34](follow-up-34.md) (2026-11-03 EST):** Through #418: F21-01 fixed in fixtures; fixed-test F27-02 reading undecided. Seven guard drops attributed; B1 stays FAIL, both live runs host-unqualified. r22 unchanged; F30-01 and r20 H-1 open. Nine owner requests.
+**Previous cut — [follow-up 33](follow-up-33.md):** #413–#415 at 339db172; 16 subtests, three rows, ten frozen inputs, 512 payload checks (42 gzip originals), three documents, three PR excerpts, 81 findings and nine requests.
 
 ## Restart measurements at #412
 
@@ -372,6 +372,29 @@ recorded as an unattributed `mapping conflict` usage gap instead of member
 usage. See the [archived r20 review](../reviews/r20-adoption-signal-review.md).
 Agent-core 37's fixes were held after r21 and go with reviewed agent-core 38;
 the finding remains open on main. No fix date is promised.
+
+**2026-11-03 — Reload and restart limits at #418.** During a ruleset reload,
+in-flight member TCP segments can be dropped while a generation installs.
+Netlab 30 matched seven missing node egresses to deadline-guard drops inside
+their install-command brackets. TCP recovered by retransmission in every
+observed read; the worst was 416.7 ms. B1's earlier 1,501.4 ms failed read has
+no packet trace and remains unexplained. The guard window and full suite
+were host-unqualified despite passing functional assertions. These samples
+provide no guaranteed recovery bound. A hitless guard hand-over is proposed
+only, with netlab 31 designing it; no fix is implemented.
+
+r20 H-1's mapping-conflict usage gap stays open on main while agent-core
+37–39 are held for r23 before merge. F30-01 remains known behaviour with no
+merged fix. See [follow-up 34](follow-up-34.md) and
+[netlab 30's guard evidence](../poc/G2-followup30-evidence/guard-outcome.md).
+
+**2026-11-03 — Restart warning at #415.** r20 H-1's mapping-conflict usage
+gap stays open on main while agent-core 37–39 are held. Review r22 returned
+38's delivered tip (carrying 37) to 39 before merge; 39 judges the findings
+under D-141 and must be reviewed before the combined merge. None is confirmed.
+F30-01 remains the known behaviour in §4.3, with no merged fix or verified
+production restart procedure. See [follow-up 33](follow-up-33.md) and the
+[r22 disposition](../reviews/README.md#r22-dispositions-at-the-follow-up-33-cutoff-2026-11-03-est).
 
 First fetch the node (`GET /api/v1/admin/nodes/{node_id}`) and capture the response `ETag` header (`"<resource_version>"`). Supply `If-Match` and `Idempotency-Key` (`428 Precondition Required` if `If-Match` is missing; `412 Precondition Failed` if stale):
 

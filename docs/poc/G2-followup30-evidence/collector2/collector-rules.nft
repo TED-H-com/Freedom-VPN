@@ -1,0 +1,4 @@
+add chain inet fvpn fv_collector_check { type filter hook forward priority -400; policy accept; }
+add rule inet fvpn fv_collector_check iifname "fv-fh" ip saddr 100.64.1.1 ip daddr 203.0.113.10 udp sport 49030 udp dport 49031 counter log prefix "f29g30000-iifname" group 29 snaplen 128 queue-threshold 1 drop
+add rule inet fvpn fv_collector_check oifname "fv-fh" ip saddr 203.0.113.10 ip daddr 100.64.1.1 udp sport 49031 udp dport 49030 counter log prefix "f29g30000-oifname" group 29 snaplen 128 queue-threshold 1 drop
+add rule inet fvpn fv_collector_check ip saddr 100.64.1.1 udp sport 49030 udp dport 49032 counter drop

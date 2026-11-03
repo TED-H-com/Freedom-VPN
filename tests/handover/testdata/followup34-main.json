@@ -1,0 +1,45 @@
+{
+  "commit": "cc0ed4ae713f6c8242171f923bdc799a0c07a74c",
+  "cutoff_pr": 418,
+  "rows": [
+    "| w4-handover follow-up 33 | Cut #413–#415 at `339db172` (updater 21, handover 32, netlab 29). `TestHandover_Followup33Claims`: 16 subtests, three final roadmap rows, ten frozen handover inputs, 512 netlab payload checks (42 gzip originals included), three documents (updater 21's two dated documents and the raw r22 review) and three PR excerpts; follow-up 32's claims verified from its function and manifests and pinned by its normalized function hash, earlier assertions unchanged except frozen input redirects to #415 bytes. Updater 21 recorded as #413 states it: F27-02's fixture-defect reading failed by its predeclared rule, with F21-01 (the replaced setup consumed about 533 ms of a 250 ms meter budget) as the mechanism; the original F27-02 reading supported, not closed. Netlab 29's F28-01 closed as test isolation (AT10's admitted socket: a 57-byte retransmission and a 40-byte RST), follow-up 28's gate 2 still FAIL; F27-01 and B1 unresolved, the guard diagnostic failed at startup. r22 archived byte-for-byte (37,600 bytes) and returned to agent-core 39 before merge, none of its five findings confirmed; the stop-budget erratum added in the reviews index without editing the archive. Findings register at 81 rows (F21-01 and r22's five unconfirmed findings added; F27-02, F28-01 and F27-01 updated); 47 decisions unchanged, nothing after D-144; 9 owner requests carried; no scheduled-run result claimed. Session on codex gpt-6-astra. | done (#416) |",
+    "| w2-updater follow-up 22 | F21-01 fixed in the test fixtures by its mechanism, no product change: the persisted meter deadline is wall-clock time from the block, and the tests' own setup (crash, SQLite reopen, meter close, fsync publication, publisher and withdrawer goroutines) ran on that clock. The parent test, `TestAT25_FileMeterWaitFailsClosedWithoutCorrelation` and `followup17_test.go`'s `correlatedApply` now run on a `synctest` bubble clock with budgets and assertions unchanged; the parent test gains a remaining-budget guard and a bubble bound, so a deadline renewal fails deterministically again. Controls (blocking-syscall stalls, removed): pre-fix, 16 timing-dependent cases fail with `meter_checkpoint_timeout`, including #411's CI failure `TestD125_RuleMalformedIdentity`; fixed, all 26 pass. Re-measurement under the foreign-CPU rule: quiet leg qualified 200/0; the bounded-load leg unqualified in both reservations (33/0 and 50/0), each stopped by non-lane foreign CPU (a `git` process, then host jobs after the test had exited); deterministic budget exact in all 283 iterations. F27-02's fixture-defect reading for the fixed test UNDECIDED by the declared rule; follow-up 21's verdict stays failed. `node/updater` runs in 17 s, against 28 s. Session on agy claude-opus-5-5-high. | done (#417) |",
+    "| w1-netlab follow-up 30 | TEST ONLY, evidence under `docs/poc/G2-followup30-evidence/` (313 new files, 19 gzip artifacts, manifest `cd23561b…`); no production, consumer, tool-pin or D-120 change. The corrected NFLOG collector validated live on its second slot: eight expected logs matched once each, an unlogged negative control, zero kernel drops, microsecond precision and kernel timestamps on every record. The single AT10 guard window (100 reloads, 101 verified Applies, 118 TCP reads): all 381 segments correlate, and the seven missing node egresses each match exactly one `fv_deadline_guard` drop (member to responder) inside the install-command bracket of its generation (1002 to 1093); the worst read recovered at 416.7 ms. F27-01's guard-drop mechanism is demonstrated; B1's 1,501.4 ms failed read has no packet trace, is not reconstructed, and B1 stays FAIL. Both host qualifications failed under the foreign-CPU rule (the guard window's first interval at 2.48 cores, dominated by a foreign git process; eleven full-suite intervals above 0.5, max 4.31 cores) while every functional assertion passed. Observed guard cost disclosed, not isolated (install, release and outer-guard medians 13.7, 13.2 and 28.5 ms; outer max 94.7 ms). A hitless guard hand-over is a proposal only. D-098 verified at both ends (1,506 earlier payload files, five manifests). Session on codex gpt-6-astra. | done (#418) |"
+  ],
+  "merged_after_cutoff": [],
+  "absent_at_start": [
+    "w2-agent-core follow-up 39 (carries 37 and 38)",
+    "review r23",
+    "w2-updater follow-up 23",
+    "w1-netlab follow-up 31"
+  ],
+  "pr_excerpts": [
+    {
+      "path": "tests/handover/testdata/history/follow-up-34/pr416-excerpt.txt",
+      "sha256": "41f33f843a7893fa340e326a688e534cb81fde71b6405eb92a250f81f80faa6c",
+      "bytes": 3492,
+      "pr": 416,
+      "source_commit": "5dbcdbaadac984507af599af055b4cc88a6b4ab2",
+      "offset": 256,
+      "source_sha256": "278ccd08d3f8452e42d7be45cf293f48bdd97a7ac3aa84af0420c04822d14c68"
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-34/pr417-excerpt.txt",
+      "sha256": "d059f62e2bc2492a02ccb90987ce91f036cc38846b512ed0be18a3011d718b3e",
+      "bytes": 4318,
+      "pr": 417,
+      "source_commit": "2ea6a6a605330b45d515eb75a2fa9778e43120bb",
+      "offset": 232,
+      "source_sha256": "4fdd794993efdbc7cd5b6529ed0ece32e761f9d1888e17bede44c6c023624abf"
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-34/pr418-excerpt.txt",
+      "sha256": "0eaebd577d1a392cd1ad65e411144ff2c355dc581618aca8cbe4ff3f70979cfe",
+      "bytes": 3948,
+      "pr": 418,
+      "source_commit": "01f8252c9f303e4447c6c5faf14ecfb0e8241129",
+      "offset": 236,
+      "source_sha256": "4f43fb0ab9689e26a4ddc52d94b0303ca94ef22d0125fc9839abe32d62758137"
+    }
+  ]
+}
