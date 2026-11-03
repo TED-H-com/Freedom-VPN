@@ -1,7 +1,7 @@
 # Production Deployment Runbook (`docs/handover/deploy.md`)
 
-**Current cut — [follow-up 34](follow-up-34.md) (2026-11-03 EST):** Through #418: F21-01 fixed in fixtures; fixed-test F27-02 reading undecided. Seven guard drops attributed; B1 stays FAIL, both live runs host-unqualified. r22 unchanged; F30-01 and r20 H-1 open. Nine owner requests.
-**Previous cut — [follow-up 33](follow-up-33.md):** #413–#415 at 339db172; 16 subtests, three rows, ten frozen inputs, 512 payload checks (42 gzip originals), three documents, three PR excerpts, 81 findings and nine requests.
+**Current cut — [follow-up 35](follow-up-35.md) (2026-11-03 EST):** Through #421: F27-02’s fixed-test reading holds; F23-01 fixed in fixtures; #417 count corrected to 15. Hitless guard design awaits the owner; production keeps the current guard. r23 returned to agent-core 40, none confirmed. F30-01 and r20 H-1 open. Ten owner requests.
+**Previous cut — [follow-up 34](follow-up-34.md):** #416–#418 at cc0ed4ae; 14 subtests, three rows, ten frozen inputs, 312 payload hashes and lengths (19 gzip originals), two dated documents, three PR excerpts, 81 findings, 47 decisions and nine requests.
 
 Installer 7 reporting inputs are required: a validated HTTPS control origin
 (`--control-url`) and its readable server CA bundle (`--server-ca`). Generated

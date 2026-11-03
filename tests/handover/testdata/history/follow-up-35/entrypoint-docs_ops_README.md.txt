@@ -20,4 +20,3 @@ are unchanged. Agent-core 39's judgments and r23 are outside the cut;
 r22's five findings remain returned, none confirmed on main.
 F30-01 stays known behaviour with no merged fix; r20 H-1's restart gap stays open.
 Main records no scheduled-run result. Every historical failure stays failed.
-
