@@ -143,19 +143,19 @@ func TestAT13_D147RelatedFragNeeded(t *testing.T) {
 	}
 
 	out, errOut, err := dockerExecStdin([]string{"python3", "-B", "-"}, d147RunnerPy)
+	// Retain the raw runner document, including capture completion and per-packet
+	// headers, even when one row fails. The typed view is for concise assertions.
+	if json.Valid([]byte(out)) {
+		if writeErr := isolation.WriteExtra(evidenceDir(), "lab-AT13-d147-detail.json", out); writeErr != nil {
+			fail(t, &rec, "write d147 detail: %v", writeErr)
+		}
+	}
 	if err != nil {
-		fail(t, &rec, "d147 runner failed: %v\nstderr:\n%s\nstdout:\n%s", err, errOut, out)
+		fail(t, &rec, "d147 runner failed: %v; see lab-AT13-d147-detail.json; stderr=%s", err, clipOne(errOut))
 	}
 	var report d147Report
 	if err := json.Unmarshal([]byte(out), &report); err != nil {
 		fail(t, &rec, "d147 runner json decode: %v\n%s", err, clipOne(out))
-	}
-	pretty, err := json.MarshalIndent(report, "", "  ")
-	if err != nil {
-		fail(t, &rec, "d147 runner json marshal: %v", err)
-	}
-	if err := isolation.WriteExtra(evidenceDir(), "lab-AT13-d147-detail.json", string(pretty)+"\n"); err != nil {
-		fail(t, &rec, "write lab-AT13-d147-detail.json: %v", err)
 	}
 	if !report.Passed || len(report.Rows) != 4 {
 		fail(t, &rec, "d147 report did not pass all 4 rows: passed=%v rows=%d", report.Passed, len(report.Rows))

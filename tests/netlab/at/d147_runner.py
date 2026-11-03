@@ -6,6 +6,8 @@ import ipaddress
 import json
 import os
 import pathlib
+import re
+import signal
 import socket
 import struct
 import subprocess
@@ -29,9 +31,9 @@ ETHERNET_L2_LEN = 14
 COUNTERS = (
     f"u_{DEV_A1}",
     f"d_{DEV_A1}",
-    f"du_{DEV_A1}",
-    f"dd_{DEV_A1}",
-    "ctdns",
+    f"nu_{DEV_A1}",
+    f"nd_{DEV_A1}",
+    "ctbadns",
     "ctdeny",
     "cthost",
     "ctdenyd",
@@ -45,7 +47,7 @@ ROWS = (
         "id": "resolver_v4_only",
         "source_ip": "203.0.113.53",
         "expected_sets": ["resolver_v4"],
-        "upload_drop_counter": "ctdns",
+        "upload_drop_counter": "ctbadns",
     },
     {
         "id": "denied_v4_only",
@@ -103,20 +105,12 @@ def ipv4_header(src: str, dst: str, proto: int, payload_len: int, ttl: int = 64,
 
 
 def parse_pcap(path: pathlib.Path) -> dict:
-    raw = path.read_bytes() if path.exists() else b""
+    completion = path.with_suffix(".pcap.err").read_text()
+    if "0 packets dropped by kernel" not in completion or "pcap_loop:" in completion:
+        raise RuntimeError("incomplete capture: " + completion)
+    raw = path.read_bytes()
     if len(raw) < 24:
-        return {
-            "packets": 0,
-            "ip_bytes": 0,
-            "tcp_packets": 0,
-            "tcp_ip_bytes": 0,
-            "icmp_packets": 0,
-            "icmp_ip_bytes": 0,
-            "max_ip_len": 0,
-            "max_tcp_payload": 0,
-            "syn_mss": [],
-            "icmp": [],
-        }
+        raise RuntimeError("truncated pcap header")
     magic = raw[:4]
     endian = "<" if magic in (b"\xd4\xc3\xb2\xa1", b"\x4d\x3c\xb2\xa1") else ">"
     _, _, _, _, _, _, linktype = struct.unpack(endian + "IHHIIII", raw[:24])
@@ -131,6 +125,7 @@ def parse_pcap(path: pathlib.Path) -> dict:
     max_tcp_payload = 0
     syn_mss = []
     icmp_rows = []
+    headers = []
     while off + 16 <= len(raw):
         _, _, incl_len, _ = struct.unpack(endian + "IIII", raw[off : off + 16])
         off += 16
@@ -155,6 +150,7 @@ def parse_pcap(path: pathlib.Path) -> dict:
         proto = pkt[9]
         src = socket.inet_ntoa(pkt[12:16])
         dst = socket.inet_ntoa(pkt[16:20])
+        headers.append(dict(src=src, dst=dst, protocol=proto, ip_len=total_len))
         packets += 1
         ip_bytes += total_len
         max_ip_len = max(max_ip_len, total_len)
@@ -210,6 +206,8 @@ def parse_pcap(path: pathlib.Path) -> dict:
         "max_tcp_payload": max_tcp_payload,
         "syn_mss": syn_mss,
         "icmp": icmp_rows,
+        "headers": headers,
+        "completion": completion,
     }
 
 
@@ -218,29 +216,40 @@ def capture(ns: str | None, iface: str, expr: str, direction: str | None = None)
     fd, raw_path = tempfile.mkstemp(prefix="d147-", suffix=".pcap", dir="/scratch")
     os.close(fd)
     path = pathlib.Path(raw_path)
+    err_path = pathlib.Path(raw_path + ".err")
     path.unlink(missing_ok=True)
+    err_path.unlink(missing_ok=True)
     cmd = []
     if ns:
         cmd.extend(["ip", "netns", "exec", ns])
-    cmd.extend(["tcpdump", "-ni", iface, "-s", "0", "-U", "-w", str(path)])
+    cmd.extend(["tcpdump", "--immediate-mode", "-ni", iface, "-B", "65536", "-s", "0", "-U", "-w", str(path)])
     if direction:
         cmd.append(f"--direction={direction}")
     cmd.append(expr)
-    proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, text=True)
-    time.sleep(0.2)
-    if proc.poll() is not None:
-        err = proc.stderr.read() if proc.stderr else ""
-        raise RuntimeError(f"tcpdump failed on {ns or 'root'}:{iface}: {err.strip()}")
+    with err_path.open("w") as err_file:
+        proc = subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=err_file, text=True)
+    deadline = time.monotonic() + 3.0
+    while "listening on" not in (err_path.read_text() if err_path.exists() else ""):
+        if proc.poll() is not None or time.monotonic() > deadline:
+            err = err_path.read_text() if err_path.exists() else ""
+            if proc.poll() is None:
+                proc.kill()
+            proc.wait(timeout=2)
+            path.unlink(missing_ok=True)
+            err_path.unlink(missing_ok=True)
+            raise RuntimeError(f"tcpdump failed on {ns or 'root'}:{iface}: {err.strip()}")
+        time.sleep(0.01)
     try:
         yield path
     finally:
         time.sleep(0.15)
-        proc.terminate()
+        proc.send_signal(signal.SIGINT)
         try:
             proc.wait(timeout=2)
         except subprocess.TimeoutExpired:
             proc.kill()
             proc.wait(timeout=2)
+
 
 
 def read_nft_table() -> dict:
@@ -254,7 +263,9 @@ def read_counters() -> dict:
         c = item.get("counter")
         if c and c.get("name") in COUNTERS:
             found[c["name"]] = {"packets": int(c["packets"]), "bytes": int(c["bytes"])}
-    return {name: found.get(name, {"packets": 0, "bytes": 0}) for name in COUNTERS}
+    if set(found) != set(COUNTERS):
+        raise RuntimeError("missing production counters: " + str(set(COUNTERS) - set(found)))
+    return found
 
 
 def diff_counters(before: dict, after: dict) -> dict:
@@ -306,18 +317,18 @@ def verify_set_membership(addr_str: str) -> dict:
 
 
 def read_tc_classes(iface: str) -> dict:
-    doc = json.loads(run("tc", "-j", "-s", "class", "show", "dev", iface).stdout)
-    out = {}
-    for item in doc:
-        handle = item.get("handle")
-        stats = item.get("stats", {})
-        if handle:
-            out[handle] = {
-                "packets": int(stats.get("packets", 0)),
-                "bytes": int(stats.get("bytes", 0)),
-                "drops": int(stats.get("drops", 0)),
-            }
-    return out
+    text = run("tc", "-s", "class", "show", "dev", iface).stdout
+    return {
+        m[1]: {
+            "bytes": int(m[2]),
+            "packets": int(m[3]),
+            "drops": int(m[4]),
+        }
+        for m in re.finditer(
+            r"class htb (\S+)[^\n]*\n Sent (\d+) bytes (\d+) pkt \(dropped (\d+)",
+            text,
+        )
+    }
 
 
 def diff_tc_classes(before: dict, after: dict) -> dict:
@@ -375,10 +386,12 @@ s.sendto(outer + icmp, ("{MEMBER_IP}", 0))
 
 def tcp_upload(ns: str, dst: str, port: int, total_bytes: int, timeout: float = 12.0) -> dict:
     code = f"""
-import json, socket, time
+import json, socket, struct, time
 t0 = time.monotonic()
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.settimeout({timeout})
+sock_pmtu = None
+sock_mss = None
 try:
     s.connect(("{dst}", {port}))
     body = b"U" * {total_bytes}
@@ -392,11 +405,13 @@ try:
         if not data:
             break
         chunks.append(data)
+    sock_pmtu = s.getsockopt(socket.IPPROTO_IP, 14)
+    sock_mss = s.getsockopt(socket.IPPROTO_TCP, socket.TCP_MAXSEG)
     raw = b"".join(chunks).decode("latin1", errors="replace")
     head, _, payload = raw.partition("\\r\\n\\r\\n")
-    print(json.dumps({{"ok": payload.startswith("ok:"), "status": head.splitlines()[0] if head else "", "body": payload.strip(), "elapsed_ms": round((time.monotonic() - t0) * 1000, 2)}}))
+    print(json.dumps({{"ok": payload.startswith("ok:"), "status": head.splitlines()[0] if head else "", "body": payload.strip(), "socket_pmtu": sock_pmtu, "socket_mss": sock_mss, "elapsed_ms": round((time.monotonic() - t0) * 1000, 2)}}))
 except Exception as exc:
-    print(json.dumps({{"ok": False, "error": str(exc), "elapsed_ms": round((time.monotonic() - t0) * 1000, 2)}}))
+    print(json.dumps({{"ok": False, "error": str(exc), "socket_pmtu": sock_pmtu, "socket_mss": sock_mss, "elapsed_ms": round((time.monotonic() - t0) * 1000, 2)}}))
 finally:
     s.close()
 """
@@ -405,8 +420,46 @@ finally:
         res = json.loads(out.stdout.strip().splitlines()[-1])
     except Exception:
         res = {"ok": False, "error": (out.stderr or out.stdout).strip()}
-    res["pmtu"] = route_pmtu(ns, dst)
+    res["pmtu"] = route_pmtu(ns, dst) or res.get("socket_pmtu")
     return res
+
+
+
+# TEST ONLY receiver consumes and verifies the complete upload before replying.
+UPLOAD_SERVER = r"""
+import socket, threading
+
+def handle(conn):
+    with conn:
+        conn.settimeout(15)
+        stream = conn.makefile('rb')
+        try:
+            request = stream.readline()
+            headers = {}
+            while True:
+                line = stream.readline()
+                if line in (b'\r\n', b''):
+                    break
+                key, value = line.split(b':', 1)
+                headers[key.lower()] = value.strip()
+            size = int(headers.get(b'content-length', b'0'))
+            body = stream.read(size)
+            ok = request.startswith(b'POST /upload ') and size == 64064 and body == b'U' * size
+            reply = ('ok:' + str(len(body)) if ok else 'invalid').encode()
+            conn.sendall(b'HTTP/1.1 200 OK\r\nContent-Length: ' + str(len(reply)).encode() + b'\r\nConnection: close\r\n\r\n' + reply)
+        except (OSError, ValueError):
+            pass
+        finally:
+            stream.close()
+
+s = socket.socket()
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+s.bind(('203.0.113.34', 8080))
+s.listen(8)
+while True:
+    conn, _ = s.accept()
+    threading.Thread(target=handle, args=(conn,), daemon=True).start()
+"""
 
 
 def setup_paths():
@@ -418,12 +471,14 @@ def setup_paths():
     run("ip", "link", "set", "fv-f34r", "netns", "fv-inet")
     run("ip", "link", "set", "fv-f34o", "netns", ORIGIN_NS)
 
-    run("ip", "-n", "fv-inet", "addr", "add", "198.18.34.1/30", "dev", "fv-f34r")
+    run("ip", "-n", "fv-inet", "addr", "add", "192.0.2.41/30", "dev", "fv-f34r")
     run("ip", "-n", "fv-inet", "link", "set", "fv-f34r", "mtu", str(PATH_MTU), "up")
     run("ip", "netns", "exec", "fv-inet", "ethtool", "-K", "fv-f34r", "gro", "off", "gso", "off", "tso", "off", check=False)
-    run("ip", "-n", "fv-inet", "route", "replace", f"{ORIGIN_IP}/32", "via", "198.18.34.2", "dev", "fv-f34r")
+    run("ip", "-n", "fv-inet", "route", "replace", f"{ORIGIN_IP}/32", "via", "192.0.2.42", "dev", "fv-f34r")
     for row in ROWS:
-        run("ip", "-n", "fv-inet", "addr", "replace", f"{row['source_ip']}/32", "dev", "lo")
+        run("ip", "-n", "fv-inet", "addr", "replace", f"{row['source_ip']}/32", "dev", "fv-ii")
+    run("ip", "netns", "exec", MEMBER_NS, "sysctl", "-wq", "net.ipv4.tcp_mtu_probing=0")
+    run("ip", "netns", "exec", "fv-fwd", "ethtool", "-K", "fv-wg0", "gro", "off", "gso", "off", "tso", "off", check=False)
     run(
         "ip",
         "netns",
@@ -446,11 +501,11 @@ def setup_paths():
         "for f in /proc/sys/net/ipv4/conf/*/rp_filter; do echo 0 > $f; done",
     )
 
-    run("ip", "-n", ORIGIN_NS, "addr", "add", "198.18.34.2/30", "dev", "fv-f34o")
+    run("ip", "-n", ORIGIN_NS, "addr", "add", "192.0.2.42/30", "dev", "fv-f34o")
     run("ip", "-n", ORIGIN_NS, "addr", "add", f"{ORIGIN_IP}/32", "dev", "lo")
     run("ip", "-n", ORIGIN_NS, "link", "set", "fv-f34o", "mtu", "1500", "up")
     run("ip", "netns", "exec", ORIGIN_NS, "ethtool", "-K", "fv-f34o", "gro", "off", "gso", "off", "tso", "off", check=False)
-    run("ip", "-n", ORIGIN_NS, "route", "replace", "default", "via", "198.18.34.1", "dev", "fv-f34o")
+    run("ip", "-n", ORIGIN_NS, "route", "replace", "default", "via", "192.0.2.41", "dev", "fv-f34o")
     run(
         "ip",
         "netns",
@@ -465,7 +520,7 @@ def setup_paths():
     run("ip", "route", "replace", "192.168.34.2/32", "via", "192.0.2.38", "dev", "fv-ih")
 
     proc = subprocess.Popen(
-        ["ip", "netns", "exec", ORIGIN_NS, "python3", "-B", "/opt/netlab/scripts/services.py", "inet"],
+        ["ip", "netns", "exec", ORIGIN_NS, "python3", "-B", "-c", UPLOAD_SERVER],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
@@ -493,12 +548,15 @@ def cleanup_paths(proc):
             proc.wait(timeout=2)
         except subprocess.TimeoutExpired:
             proc.kill()
+            proc.wait(timeout=2)
+    run("ip", "-n", "fv-inet", "route", "del", "192.0.2.37/32", check=False)
     run("ip", "-n", "fv-inet", "route", "replace", "192.0.2.36/30", "dev", "fv-ii", "proto", "kernel", "scope", "link", "src", "192.0.2.38", check=False)
     for row in ROWS:
+        run("ip", "-n", "fv-inet", "addr", "del", f"{row['source_ip']}/32", "dev", "fv-ii", check=False)
         run("ip", "-n", "fv-inet", "addr", "del", f"{row['source_ip']}/32", "dev", "lo", check=False)
     run("ip", "route", "del", "192.168.34.1/32", "via", "192.0.2.38", "dev", "fv-ih", check=False)
     run("ip", "route", "del", "192.168.34.2/32", "via", "192.0.2.38", "dev", "fv-ih", check=False)
-    run("ip", "-n", "fv-inet", "route", "del", f"{ORIGIN_IP}/32", "via", "198.18.34.2", "dev", "fv-f34r", check=False)
+    run("ip", "-n", "fv-inet", "route", "del", f"{ORIGIN_IP}/32", "via", "192.0.2.42", "dev", "fv-f34r", check=False)
     run("ip", "-n", "fv-inet", "link", "del", "fv-f34r", check=False)
     run("ip", "netns", "del", ORIGIN_NS, check=False)
     run("ip", "-n", MEMBER_NS, "route", "flush", "cache", check=False)
@@ -522,6 +580,20 @@ def run_row(row_spec: dict) -> dict:
         "fv-inet",
         "route",
         "replace",
+        "192.0.2.37/32",
+        "via",
+        "192.0.2.37",
+        "dev",
+        "fv-ii",
+        "src",
+        src_ip,
+    )
+    run(
+        "ip",
+        "-n",
+        "fv-inet",
+        "route",
+        "replace",
         "192.0.2.36/30",
         "dev",
         "fv-ii",
@@ -537,20 +609,20 @@ def run_row(row_spec: dict) -> dict:
 
     # 1. Positive: genuine router ICMP frag-needed (type 3, code 4, MTU 1000)
     # on an admitted member's 64,064-byte TCP upload.
+    c_before = read_counters()
+    tc_up_before = read_tc_classes("fv-ih")
+    tc_down_before = read_tc_classes("fv-fh")
     with (
         capture("fv-inet", "fv-ii", f"icmp and src host {src_ip}") as router_pcap,
         capture(None, "fv-ih", f"ip and src host {SNAT_IP} and dst host {ORIGIN_IP}", "out") as up_pcap,
         capture(None, "fv-fh", f"ip and dst host {MEMBER_IP} and (src host {ORIGIN_IP} or src host {src_ip})", "out") as down_pcap,
         capture(MEMBER_NS, "fv-wg0", f"(tcp and host {ORIGIN_IP}) or (icmp and src host {src_ip})") as mem_pcap,
     ):
-        c_before = read_counters()
-        tc_up_before = read_tc_classes("fv-ih")
-        tc_down_before = read_tc_classes("fv-fh")
         transfer = tcp_upload(MEMBER_NS, ORIGIN_IP, ORIGIN_PORT, UPLOAD_BYTES)
-        time.sleep(0.2)
-    c_after = read_counters()
-    tc_up_after = read_tc_classes("fv-ih")
-    tc_down_after = read_tc_classes("fv-fh")
+        time.sleep(0.25)
+        c_after = read_counters()
+        tc_up_after = read_tc_classes("fv-ih")
+        tc_down_after = read_tc_classes("fv-fh")
 
     router_cap = parse_pcap(router_pcap)
     up_cap = parse_pcap(up_pcap)
@@ -558,6 +630,7 @@ def run_row(row_spec: dict) -> dict:
     mem_cap = parse_pcap(mem_pcap)
     for p in (router_pcap, up_pcap, down_pcap, mem_pcap):
         p.unlink(missing_ok=True)
+        p.with_suffix(".pcap.err").unlink(missing_ok=True)
 
     pos_counters = diff_counters(c_before, c_after)
     tc_up_diff = diff_tc_classes(tc_up_before, tc_up_after)
@@ -584,7 +657,7 @@ def run_row(row_spec: dict) -> dict:
         and down_cap["icmp_ip_bytes"] > 0
         and pos_counters["ctdenyd"]["packets"] == 0
         and pos_counters["ctinv"]["packets"] == 0
-        and pos_counters["ctdns"]["packets"] == 0
+        and pos_counters["ctbadns"]["packets"] == 0
         and pos_counters["ctdeny"]["packets"] == 0
         and pos_counters["cthost"]["packets"] == 0
         and up_usage == {"packets": up_cap["packets"], "bytes": up_cap["ip_bytes"]}
@@ -648,6 +721,7 @@ def run_row(row_spec: dict) -> dict:
     te_mem_cap = parse_pcap(te_mem_pcap)
     for p in (te_router_pcap, te_node_in_pcap, te_node_out_pcap, te_mem_pcap):
         p.unlink(missing_ok=True)
+        p.with_suffix(".pcap.err").unlink(missing_ok=True)
     te_counters = diff_counters(te_before, te_after)
     te_ok = (
         any(x["icmp_type"] == 11 and x["icmp_code"] == 0 for x in te_router_cap["icmp"])
@@ -688,6 +762,7 @@ def run_row(row_spec: dict) -> dict:
     unsol_mem_cap = parse_pcap(unsol_mem_pcap)
     for p in (unsol_node_in_pcap, unsol_node_out_pcap, unsol_mem_pcap):
         p.unlink(missing_ok=True)
+        p.with_suffix(".pcap.err").unlink(missing_ok=True)
     unsol_counters = diff_counters(unsol_before, unsol_after)
     unsol_ok = (
         any(x["icmp_type"] == 3 and x["icmp_code"] == 4 and x["mtu"] == PATH_MTU for x in unsol_node_in_cap["icmp"])
@@ -727,8 +802,9 @@ def run_row(row_spec: dict) -> dict:
     up_router_cap = parse_pcap(up_router_pcap)
     for p in (up_node_in_pcap, up_node_out_pcap, up_router_pcap):
         p.unlink(missing_ok=True)
+        p.with_suffix(".pcap.err").unlink(missing_ok=True)
     up_counters = diff_counters(up_before, up_after)
-    other_upload_drop_counters = [c for c in ("ctdns", "ctdeny", "cthost") if c != upload_drop_counter]
+    other_upload_drop_counters = [c for c in ("ctbadns", "ctdeny", "cthost") if c != upload_drop_counter]
     up_ok = (
         up_node_in_cap["packets"] == 1
         and up_node_out_cap["packets"] == 0
@@ -737,8 +813,8 @@ def run_row(row_spec: dict) -> dict:
         and all(up_counters[c]["packets"] == 0 for c in other_upload_drop_counters)
         and up_counters[f"u_{DEV_A1}"]["packets"] == 0
         and up_counters[f"u_{DEV_A1}"]["bytes"] == 0
-        and up_counters[f"du_{DEV_A1}"]["packets"] == 0
-        and up_counters[f"du_{DEV_A1}"]["bytes"] == 0
+        and up_counters[f"nu_{DEV_A1}"]["packets"] == 0
+        and up_counters[f"nu_{DEV_A1}"]["bytes"] == 0
     )
     upload_subcase = {
         "name": "member-upload-to-source-dropped",
