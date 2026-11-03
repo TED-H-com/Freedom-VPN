@@ -1,0 +1,50 @@
+=== RUN   TestApply_ConntrackFailureKeepsServing
+--- PASS: TestApply_ConntrackFailureKeepsServing (0.00s)
+=== RUN   TestApply_ConntrackEmptyIsSuccess
+--- PASS: TestApply_ConntrackEmptyIsSuccess (0.00s)
+=== RUN   TestApply_ConntrackPendingCountsRemaining
+--- PASS: TestApply_ConntrackPendingCountsRemaining (0.00s)
+=== RUN   TestApply_ConntrackFailedListsUnsuccessfulAddresses
+--- PASS: TestApply_ConntrackFailedListsUnsuccessfulAddresses (0.00s)
+=== RUN   TestAT13_F32_PostShapeClockReadFailureRollsBack
+--- PASS: TestAT13_F32_PostShapeClockReadFailureRollsBack (0.00s)
+=== RUN   TestR24_M2_FatalRevokeInputRejectedBeforeMutation
+--- PASS: TestR24_M2_FatalRevokeInputRejectedBeforeMutation (0.00s)
+=== RUN   TestAT13_F32_OrphanCrashCutRecovery
+=== RUN   TestAT13_F32_OrphanCrashCutRecovery/recover
+=== RUN   TestAT13_F32_OrphanCrashCutRecovery/retire_failure
+=== RUN   TestAT13_F32_OrphanCrashCutRecovery/foreign_filter
+=== RUN   TestAT13_F32_OrphanCrashCutRecovery/missing_class
+=== RUN   TestAT13_F32_OrphanCrashCutRecovery/extra_class
+--- PASS: TestAT13_F32_OrphanCrashCutRecovery (0.01s)
+    --- PASS: TestAT13_F32_OrphanCrashCutRecovery/recover (0.00s)
+    --- PASS: TestAT13_F32_OrphanCrashCutRecovery/retire_failure (0.00s)
+    --- PASS: TestAT13_F32_OrphanCrashCutRecovery/foreign_filter (0.00s)
+    --- PASS: TestAT13_F32_OrphanCrashCutRecovery/missing_class (0.00s)
+    --- PASS: TestAT13_F32_OrphanCrashCutRecovery/extra_class (0.00s)
+=== RUN   TestAT13_F32_CanceledVerificationQuarantinesIndependently
+--- PASS: TestAT13_F32_CanceledVerificationQuarantinesIndependently (0.00s)
+=== RUN   TestAT13_F32_BaselineIndependentOfSnapshot
+--- PASS: TestAT13_F32_BaselineIndependentOfSnapshot (0.00s)
+=== RUN   TestAT13_F32_EachMutationFailureUsesBoundedCleanup
+=== RUN   TestAT13_F32_EachMutationFailureUsesBoundedCleanup/shape
+=== RUN   TestAT13_F32_EachMutationFailureUsesBoundedCleanup/install
+=== RUN   TestAT13_F32_EachMutationFailureUsesBoundedCleanup/release
+--- PASS: TestAT13_F32_EachMutationFailureUsesBoundedCleanup (0.00s)
+    --- PASS: TestAT13_F32_EachMutationFailureUsesBoundedCleanup/shape (0.00s)
+    --- PASS: TestAT13_F32_EachMutationFailureUsesBoundedCleanup/install (0.00s)
+    --- PASS: TestAT13_F32_EachMutationFailureUsesBoundedCleanup/release (0.00s)
+=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen
+=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/cold_start_rollback_with_failed_loadState_omits_delete_chain_and_flush_set
+=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/expired_ctx_during_verify_aborts_rollback_after_guard_release
+--- PASS: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen (0.00s)
+    --- PASS: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/cold_start_rollback_with_failed_loadState_omits_delete_chain_and_flush_set (0.00s)
+    --- PASS: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/expired_ctx_during_verify_aborts_rollback_after_guard_release (0.00s)
+=== RUN   TestR24_H2_OrphanMemberTCClassDeletedBeforeNftBatch
+--- PASS: TestR24_H2_OrphanMemberTCClassDeletedBeforeNftBatch (0.00s)
+=== RUN   TestR24_M2_PostShapeClockCheckSkipsBaselineInApply
+--- PASS: TestR24_M2_PostShapeClockCheckSkipsBaselineInApply (0.00s)
+=== RUN   TestR24_Held_Q1_GuardInstallBoundLifetimeCeilingAndCounterContinuity
+--- PASS: TestR24_Held_Q1_GuardInstallBoundLifetimeCeilingAndCounterContinuity (0.00s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/node/enforce	0.029s

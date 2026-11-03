@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/netip"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -65,7 +66,13 @@ func IsConntrackDeleteFailure(err error) bool {
 // baseline and returns the check error, so member forwarding does not stay
 // on a path we cannot account (§10.3, §8.2). Resets are reported and never
 // cleared by recreating counter objects (§10.7).
-func Apply(ctx context.Context, ex Executor, m Model, previous map[string]CounterValue) (result ApplyResult, err error) {
+func Apply(ctx context.Context, ex Executor, m Model, previous map[string]CounterValue) (ApplyResult, error) {
+	return apply(ctx, ex, m, previous, MonotonicNow)
+}
+
+// The clock parameter permits deterministic syscall-failure tests without
+// mutable package state. Production always uses CLOCK_MONOTONIC.
+func apply(ctx context.Context, ex Executor, m Model, previous map[string]CounterValue, now func() (time.Duration, error)) (result ApplyResult, err error) {
 	measurement := newTiming("apply", m.Generation)
 	ctx = beginCommandMeasurement(ctx, &measurement.Commands)
 	var timing DeadlineEvidence
@@ -75,7 +82,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		measurement.Deadline, measurement.Succeeded, measurement.Verified = timing, err == nil, result.Verified
 		result.Evidence.timing = measurement
 	}()
-	applyStart, err := MonotonicNow()
+	applyStart, err := now()
 	if err != nil {
 		return ApplyResult{}, err
 	}
@@ -95,7 +102,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 			return ApplyResult{}, checkf(ReasonIsolation, "quarantined member path differs from applied model")
 		}
 		if _, err := lowerMemberLink(ctx, ex, m.Datapath.MemberIngress); err != nil {
-			q, qerr := Quarantine(commandPhase(ctx, "quarantine"), ex, m)
+			q, qerr := quarantineAfterFailure(ctx, ex, m)
 			return ApplyResult{Quarantine: &q}, errors.Join(err, qerr)
 		}
 	}
@@ -103,7 +110,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	if err != nil {
 		evidence := ServingEvidence{TC: loadReads}
 		evidence.retainTC(m.Generation, "load", err)
-		q, qerr := Quarantine(commandPhase(ctx, "quarantine"), ex, m)
+		q, qerr := quarantineAfterFailure(ctx, ex, m)
 		evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
 		return ApplyResult{Quarantine: &q, Evidence: evidence}, errors.Join(err, qerr)
 	}
@@ -142,7 +149,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	if tcErr != nil {
 		evidence := ServingEvidence{TC: reads}
 		evidence.retainTC(m.Generation, "pre_apply", tcErr)
-		q, qerr := Quarantine(commandPhase(ctx, "quarantine"), ex, m)
+		q, qerr := quarantineAfterFailure(ctx, ex, m)
 		evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
 		return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence, Quarantine: &q}, errors.Join(tcErr, qerr)
 	}
@@ -155,16 +162,18 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	// Re-render after ownership reads and shaping. Absolute monotonic deadlines
 	// count down throughout Apply. Legacy wall snapshots advance only by elapsed
 	// monotonic time; no wall-clock resampling can extend their allowance.
-	timing.RenderStart, err = MonotonicNow()
+	timing.RenderStart, err = now()
 	if err != nil {
-		return ApplyResult{}, err
+		rollbackErr := installBaseline(ctx, ex, m.Datapath, state)
+		return ApplyResult{}, errors.Join(err, rollbackErr)
 	}
 	anchor := applyStart
 	if m.NowMono > 0 {
 		anchor = m.NowMono
 	}
 	if timing.RenderStart < anchor {
-		return ApplyResult{Deadline: timing}, checkf(ReasonIsolation, "monotonic render precedes model")
+		rollbackErr := installBaseline(ctx, ex, m.Datapath, state)
+		return ApplyResult{Deadline: timing}, errors.Join(checkf(ReasonIsolation, "monotonic render precedes model"), rollbackErr)
 	}
 	m.Now = m.Now.Add(timing.RenderStart - anchor)
 	m.NowMono = timing.RenderStart
@@ -181,7 +190,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	installCtx, cancelInstall := context.WithTimeout(commandPhase(ctx, "install"), DeadlineInstallBound)
 	timing.InstallStart = timingSample()
 	err = ex.NftBatch(installCtx, guarded)
-	timing.InstalledBy, _ = MonotonicNow()
+	timing.InstalledBy, _ = now()
 	timing.InstallOK = err == nil
 	cancelInstall()
 	if state.Chains == nil {
@@ -194,6 +203,15 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 			err = checkf(ReasonIsolation, "deadline installation budget exceeded")
 		}
 		return ApplyResult{Plan: plan, Deadline: timing}, err
+	}
+	// Candidate commit removed all references to retired member classes. Delete
+	// them while the guard is still closed, before release and serving verification.
+	// A crash here leaves only unreferenced classes; the next Apply reclaims them.
+	if plan.TCRetire != "" {
+		if err := ex.TCBatch(commandPhase(ctx, "retire"), plan.TCRetire); err != nil {
+			rollbackErr := installBaseline(ctx, ex, m.Datapath, state)
+			return ApplyResult{Plan: plan}, errors.Join(err, rollbackErr)
+		}
 	}
 	timing.ReleaseStart = timingSample()
 	err = releaseDeadlineGuard(commandPhase(ctx, "release"), ex)
@@ -215,7 +233,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	if err != nil {
 		var check *CheckError
 		if (errors.As(err, &check) && check.Reason == ReasonTCForeignFilter) || len(quarantined) > 0 {
-			q, qerr := Quarantine(commandPhase(ctx, "quarantine"), ex, m)
+			q, qerr := quarantineAfterFailure(ctx, ex, m)
 			evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
 			return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence, Quarantine: &q}, errors.Join(err, qerr)
 		}
@@ -228,7 +246,7 @@ func Apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 			measurement.Verifications = append(measurement.Verifications, evidence.timing.Verifications...)
 		}
 		if err != nil {
-			q, qerr := Quarantine(commandPhase(ctx, "quarantine"), ex, m)
+			q, qerr := quarantineAfterFailure(ctx, ex, m)
 			evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
 			return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence, Quarantine: &q}, errors.Join(err, qerr)
 		}
@@ -298,15 +316,29 @@ func ApplyBaselineModel(ctx context.Context, ex Executor, m Model) error {
 	return VerifyBaseline(raw, m)
 }
 
+// cleanupTimeout matches the existing watchdog/agent cleanup budget for the
+// atomic nft batch and owned tc cleanup. Kernel completion and child reaping
+// can exceed that budget; it is not a lock-occupancy or outage SLA. WithoutCancel preserves timing
+// context values while removing the failed Apply's cancellation and deadline.
+const cleanupTimeout = 5 * time.Second
+
+func quarantineAfterFailure(ctx context.Context, ex Executor, m Model) (QuarantineEvidence, error) {
+	cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), cleanupTimeout)
+	defer cancel()
+	return Quarantine(commandPhase(cleanup, "quarantine"), ex, m)
+}
+
 func installBaseline(ctx context.Context, ex Executor, dp Datapath, state State) error {
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), cleanupTimeout)
+	defer cancel()
 	return installBaselineModel(ctx, ex, Model{Datapath: dp}, state)
 }
 
 func installBaselineModel(ctx context.Context, ex Executor, m Model, state State) error {
 	ctx = commandPhase(ctx, "rollback")
-	if fresh, err := loadState(ctx, ex); err == nil {
-		state = fresh
-	}
+	// The baseline batch is self-contained. A refresh here could consume the
+	// entire cleanup budget before closure, or misdescribe a committed candidate.
+	// State is only retained metadata (counter/class/probe/quarantine evidence).
 	script, err := RenderBaseline(m, state)
 	if err != nil {
 		return err

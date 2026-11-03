@@ -10,10 +10,12 @@ import (
 	"github.com/google/uuid"
 )
 
-// RenderPlan is one atomic nft transaction plus the tc batch that matches it.
+// RenderPlan orders tc preparation, one atomic nft transaction, then tc retirement.
 type RenderPlan struct {
-	NFT         string
+	NFT string
+	// TC adds/replaces classes before NFT. TCRetire deletes only after NFT commits.
 	TC          string
+	TCRetire    string
 	Assignments map[uuid.UUID]uint16
 	// Timeouts is the deprecated whole-second projection for legacy diagnostics.
 	// Use ElementTimeouts for the actual rendered durations; never install from this.
@@ -229,13 +231,14 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 	// Chains are already replaced, so a deleted probe set is no longer referenced.
 	writeProbeSetCleanup(&b, state, m.Probe)
 
-	tc, err := renderTC(m, assignments, tcState)
+	tc, retire, err := renderTC(m, assignments, tcState)
 	if err != nil {
 		return RenderPlan{}, err
 	}
 	plan := RenderPlan{
 		NFT:             b.String(),
 		TC:              tc,
+		TCRetire:        retire,
 		Assignments:     assignments,
 		Timeouts:        map[string]uint32{},
 		ElementTimeouts: map[string]time.Duration{},
@@ -273,9 +276,8 @@ func RenderBaseline(m Model, state State) (string, error) {
 	var b strings.Builder
 	b.WriteString("# inet fvpn boot baseline. Member forwarding is off (§8.2).\n")
 	fmt.Fprintf(&b, "add table %s %s\n", TableFamily, TableName)
-	if state.hasChain(deadlineGuard) {
-		fmt.Fprintf(&b, "delete chain %s %s %s\n", TableFamily, TableName, deadlineGuard)
-	}
+	// Ensure then delete: safe even when a failed read hid a committed guard.
+	fmt.Fprintf(&b, "add chain %s %s %s\ndelete chain %s %s %s\n", TableFamily, TableName, deadlineGuard, TableFamily, TableName, deadlineGuard)
 	names := []string{counterBase, counterV6, counterInput}
 	if m.Probe != nil {
 		names = append(names, counterInvalid, counterDenied, counterHost, counterDeniedDown, counterProbeUp, counterProbeDown)
@@ -284,14 +286,12 @@ func RenderBaseline(m Model, state State) (string, error) {
 		}
 	}
 	for _, name := range names {
-		if !state.hasCounter(name) {
-			fmt.Fprintf(&b, "add counter %s %s %s\n", TableFamily, TableName, name)
-		}
+		// add preserves an existing counter and also works if the whole table
+		// disappeared since the snapshot. Never reset or recreate its value.
+		fmt.Fprintf(&b, "add counter %s %s %s\n", TableFamily, TableName, name)
 	}
-	ensureSet(&b, state, "allowed_v4", "type ipv4_addr; flags timeout;")
-	if state.hasSet("allowed_v4") {
-		fmt.Fprintf(&b, "flush set %s %s allowed_v4\n", TableFamily, TableName)
-	}
+	ensureSet(&b, State{}, "allowed_v4", "type ipv4_addr; flags timeout;")
+	fmt.Fprintf(&b, "flush set %s %s allowed_v4\n", TableFamily, TableName)
 	if m.Probe != nil {
 		denied, err := m.denyV4()
 		if err != nil {
@@ -303,19 +303,17 @@ func RenderBaseline(m Model, state State) (string, error) {
 		}
 		resolvers := append([]netip.Addr{}, m.Resolvers...)
 		sort.Slice(resolvers, func(i, j int) bool { return resolvers[i].Compare(resolvers[j]) < 0 })
-		ensureSet(&b, state, "denied_v4", "type ipv4_addr; flags interval; auto-merge;")
-		ensureSet(&b, state, "host_v4", "type ipv4_addr; flags interval; auto-merge;")
-		ensureSet(&b, state, setProbeV4, "type ipv4_addr; flags timeout;")
+		ensureSet(&b, State{}, "denied_v4", "type ipv4_addr; flags interval; auto-merge;")
+		ensureSet(&b, State{}, "host_v4", "type ipv4_addr; flags interval; auto-merge;")
+		ensureSet(&b, State{}, setProbeV4, "type ipv4_addr; flags timeout;")
 		if m.Probe.ResolverDNS {
-			ensureSet(&b, state, "resolver_v4", "type ipv4_addr;")
+			ensureSet(&b, State{}, "resolver_v4", "type ipv4_addr;")
 		}
 		if len(m.Probe.Destinations) > 0 {
-			ensureSet(&b, state, setProbeDstV4, "type ipv4_addr . inet_proto . inet_service; flags timeout;")
+			ensureSet(&b, State{}, setProbeDstV4, "type ipv4_addr . inet_proto . inet_service; flags timeout;")
 		}
 		flushFill := func(set, body string) {
-			if state.hasSet(set) {
-				fmt.Fprintf(&b, "flush set %s %s %s\n", TableFamily, TableName, set)
-			}
+			fmt.Fprintf(&b, "flush set %s %s %s\n", TableFamily, TableName, set)
 			if body != "" {
 				fmt.Fprintf(&b, "add element %s %s %s { %s }\n", TableFamily, TableName, set, body)
 			}
@@ -332,10 +330,10 @@ func RenderBaseline(m Model, state State) (string, error) {
 			}
 		}
 	}
-	replaceChain(&b, state, "forward", fmt.Sprintf("type filter hook forward priority %d; policy drop;", HookPriorityFilter))
-	replaceChain(&b, state, "input", fmt.Sprintf("type filter hook input priority %d; policy accept;", HookPriorityFilter))
-	replaceChain(&b, state, "output", fmt.Sprintf("type filter hook output priority %d; policy accept;", HookPriorityFilter))
-	replaceChain(&b, state, "postrouting", fmt.Sprintf("type nat hook postrouting priority %d; policy accept;", HookPrioritySNAT))
+	resetBaselineChain(&b, "forward", fmt.Sprintf("type filter hook forward priority %d; policy drop;", HookPriorityFilter))
+	resetBaselineChain(&b, "input", fmt.Sprintf("type filter hook input priority %d; policy accept;", HookPriorityFilter))
+	resetBaselineChain(&b, "output", fmt.Sprintf("type filter hook output priority %d; policy accept;", HookPriorityFilter))
+	resetBaselineChain(&b, "postrouting", fmt.Sprintf("type nat hook postrouting priority %d; policy accept;", HookPrioritySNAT))
 	if err := markerRule(&b, "forward", "fvpn_generation=0 fvpn_baseline=1 fvpn_metering="+MeteringVersion); err != nil {
 		return "", err
 	}
@@ -387,10 +385,18 @@ func RenderBaseline(m Model, state State) (string, error) {
 	// Bare baselines have no rules referencing these sets. Remove retained
 	// contents in the same transaction so read-back has one exact model.
 	if m.Probe == nil {
-		deleteSet(&b, state, "denied_v4")
-		deleteSet(&b, state, "host_v4")
+		removeBaselineSet(&b, "denied_v4", "type ipv4_addr; flags interval; auto-merge;")
+		removeBaselineSet(&b, "host_v4", "type ipv4_addr; flags interval; auto-merge;")
 	}
-	writeProbeSetCleanup(&b, state, m.Probe)
+	if m.Probe == nil || !m.Probe.ResolverDNS {
+		removeBaselineSet(&b, "resolver_v4", "type ipv4_addr;")
+	}
+	if m.Probe == nil {
+		removeBaselineSet(&b, setProbeV4, "type ipv4_addr; flags timeout;")
+	}
+	if m.Probe == nil || len(m.Probe.Destinations) == 0 {
+		removeBaselineSet(&b, setProbeDstV4, "type ipv4_addr . inet_proto . inet_service; flags timeout;")
+	}
 	return b.String(), nil
 }
 
@@ -526,6 +532,21 @@ func replaceChain(b *strings.Builder, state State, name, spec string) {
 		fmt.Fprintf(b, "delete chain %s %s %s\n", TableFamily, TableName, name)
 	}
 	fmt.Fprintf(b, "add chain %s %s %s { %s }\n", TableFamily, TableName, name, spec)
+}
+
+// Baseline commands must work against both a cold table and an unseen committed
+// candidate. Add is idempotent; delete removes every old rule and base-chain
+// attribute before recreation. All commands run in the same nft transaction.
+// Never flush the table: named counters and quarantine markers must survive.
+func resetBaselineChain(b *strings.Builder, name, spec string) {
+	fmt.Fprintf(b, "add chain %s %s %s\n", TableFamily, TableName, name)
+	fmt.Fprintf(b, "delete chain %s %s %s\n", TableFamily, TableName, name)
+	fmt.Fprintf(b, "add chain %s %s %s { %s }\n", TableFamily, TableName, name, spec)
+}
+
+func removeBaselineSet(b *strings.Builder, name, spec string) {
+	ensureSet(b, State{}, name, spec)
+	fmt.Fprintf(b, "delete set %s %s %s\n", TableFamily, TableName, name)
 }
 
 func rule(b *strings.Builder, chain, body string) {

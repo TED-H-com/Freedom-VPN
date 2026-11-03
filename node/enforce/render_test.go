@@ -609,16 +609,16 @@ func TestRender_DeletesOrphanClass(t *testing.T) {
 	for _, iface := range []string{"fv-ih", "fv-fh"} {
 		qdisc := "qdisc del dev " + iface + " parent " + handle
 		class := "class del dev " + iface + " classid " + handle
-		if !strings.Contains(plan.TC, qdisc) || !strings.Contains(plan.TC, class) {
-			t.Fatalf("missing delete for %s:\n%s", iface, plan.TC)
+		if !strings.Contains(plan.TCRetire, qdisc) || !strings.Contains(plan.TCRetire, class) {
+			t.Fatalf("missing delete for %s:\n%s", iface, plan.TCRetire)
 		}
-		if strings.Index(plan.TC, qdisc) > strings.Index(plan.TC, class) {
+		if strings.Index(plan.TCRetire, qdisc) > strings.Index(plan.TCRetire, class) {
 			t.Fatalf("qdisc del is after class del for %s", iface)
 		}
 	}
 	live := "classid " + classHandle(plan.Assignments[memberA])
-	if strings.Index(plan.TC, "class del") > strings.Index(plan.TC, live) {
-		t.Fatalf("class del is not before the replacement class\n%s", plan.TC)
+	if strings.Contains(plan.TC, " del ") || !strings.Contains(plan.TC, live) || strings.Contains(plan.TCRetire, "class replace") {
+		t.Fatalf("preparation and retirement overlap: %s / %s", plan.TC, plan.TCRetire)
 	}
 
 	// A kernel class with no nft comment is still reserved, then deleted.
@@ -630,7 +630,7 @@ func TestRender_DeletesOrphanClass(t *testing.T) {
 	if plan.Assignments[memberA] == orphan {
 		t.Fatalf("unmapped kernel minor 0x%x was reused", orphan)
 	}
-	if !strings.Contains(plan.TC, "class del dev fv-ih classid "+handle) {
+	if !strings.Contains(plan.TCRetire, "class del dev fv-ih classid "+handle) {
 		t.Fatal("unmapped kernel class was not deleted")
 	}
 }

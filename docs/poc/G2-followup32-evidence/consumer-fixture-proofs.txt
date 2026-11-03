@@ -1,0 +1,18 @@
+=== RUN   TestAT13_F32_SimulatorNFTTransactions
+    followup12_test.go:1504: add preserves objects and expiry; bare chains supported; failed warm/cold batches commit nothing; repeated baseline verified
+--- PASS: TestAT13_F32_SimulatorNFTTransactions (0.00s)
+=== RUN   TestAT13_F32_SimulatorTCCommitAndCrashCut
+=== RUN   TestAT13_F32_SimulatorTCCommitAndCrashCut/complete
+    followup12_test.go:1653: complete: observed [prepare commit retire release]; old classes survive preparation/commit; referenced classes intact; orphan reclaimed
+=== RUN   TestAT13_F32_SimulatorTCCommitAndCrashCut/restart_apply
+    followup12_test.go:1653: restart_apply: observed [prepare commit]; old classes survive preparation/commit; referenced classes intact; orphan reclaimed
+=== RUN   TestAT13_F32_SimulatorTCCommitAndCrashCut/baseline
+    followup12_test.go:1653: baseline: observed [prepare commit]; old classes survive preparation/commit; referenced classes intact; orphan reclaimed
+--- PASS: TestAT13_F32_SimulatorTCCommitAndCrashCut (0.35s)
+    --- PASS: TestAT13_F32_SimulatorTCCommitAndCrashCut/complete (0.12s)
+    --- PASS: TestAT13_F32_SimulatorTCCommitAndCrashCut/restart_apply (0.11s)
+    --- PASS: TestAT13_F32_SimulatorTCCommitAndCrashCut/baseline (0.12s)
+=== RUN   TestAT13_F32_SimulatorTCPartialFailureAndRootCleanup
+--- PASS: TestAT13_F32_SimulatorTCPartialFailureAndRootCleanup (0.00s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	0.359s

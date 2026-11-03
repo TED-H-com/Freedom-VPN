@@ -1,0 +1,34 @@
+=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen
+=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/cold_start_rollback_with_failed_loadState_omits_delete_chain_and_flush_set
+    review_r24_test.go:67: TODO(review r24): H-4: post-release rollback rendered against stale cold State{} omitted `delete chain inet fvpn forward` and `flush set inet fvpn allowed_v4`:
+        # inet fvpn boot baseline. Member forwarding is off (§8.2).
+        add table inet fvpn
+        add counter inet fvpn ctbase
+        add counter inet fvpn ctv6
+        add counter inet fvpn ctin
+        add set inet fvpn allowed_v4 { type ipv4_addr; flags timeout; }
+        add chain inet fvpn forward { type filter hook forward priority -150; policy drop; }
+        add chain inet fvpn input { type filter hook input priority -150; policy accept; }
+        add chain inet fvpn output { type filter hook output priority -150; policy accept; }
+        add chain inet fvpn postrouting { type nat hook postrouting priority 100; policy accept; }
+        add rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1"
+        add rule inet fvpn forward iifname "fv-fh" counter name "ctbase" drop
+        add rule inet fvpn forward oifname "fv-fh" counter name "ctbase" drop
+        add rule inet fvpn forward iifname "fv-fh" meta nfproto ipv6 counter name "ctv6" drop
+        add rule inet fvpn forward oifname "fv-fh" meta nfproto ipv6 counter name "ctv6" drop
+        add rule inet fvpn input iifname "fv-fh" counter name "ctin" drop
+        add rule inet fvpn input ip saddr 100.64.0.0/10 counter name "ctin" drop
+=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/expired_ctx_during_verify_aborts_rollback_after_guard_release
+    review_r24_test.go:108: TODO(review r24): H-4: guard was released (batches=2, GuardReleased=true) and verification failed on canceled ctx, but installBaseline reused the canceled ctx and executed no baseline rollback batch
+--- FAIL: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen (0.00s)
+    --- FAIL: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/cold_start_rollback_with_failed_loadState_omits_delete_chain_and_flush_set (0.00s)
+    --- FAIL: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/expired_ctx_during_verify_aborts_rollback_after_guard_release (0.00s)
+=== RUN   TestR24_H2_OrphanMemberTCClassDeletedBeforeNftBatch
+    review_r24_test.go:178: TODO(review r24): H-2: orphan member HTB class 1:30 was deleted in TCBatch before NftBatch replaced forward (order=[tc_delete_member_class:1:30 nft_guarded_install]), routing packets with meta priority 0x10030 into HTB default class 1:fffe (HTBDefaultMinor)
+--- FAIL: TestR24_H2_OrphanMemberTCClassDeletedBeforeNftBatch (0.00s)
+=== RUN   TestR24_M2_PostShapeClockCheckSkipsBaselineInApply
+    review_r24_test.go:228: TODO(review r24): M-2: Apply mutated live TC (tcBatches=1) then failed at apply.go:164 (ISOLATION_POLICY_INVALID: monotonic render precedes model) without calling installBaseline (nftBatches=0)
+--- FAIL: TestR24_M2_PostShapeClockCheckSkipsBaselineInApply (0.00s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/node/enforce	0.008s
+FAIL

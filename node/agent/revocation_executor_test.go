@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
@@ -19,6 +20,7 @@ type revocationExecutor struct {
 	failVerify bool
 	deletes    []string
 	scripts    []string
+	tcDevices  map[string]*listedTCDevice
 }
 
 func (ex *revocationExecutor) LookPath(name string) (string, error) { return "/test-only/" + name, nil }
@@ -27,7 +29,139 @@ func (ex *revocationExecutor) NftBatch(_ context.Context, script string) error {
 	ex.installed = true
 	return nil
 }
-func (ex *revocationExecutor) TCBatch(context.Context, string) error { return nil }
+
+// TC batches are sequential commands, not transactions. In particular, a
+// prepare batch preserves classes absent from the desired model until a later
+// retire command deletes them. A failed command retains earlier mutations.
+func (ex *revocationExecutor) TCBatch(ctx context.Context, script string) error {
+	for _, line := range strings.Split(script, "\n") {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		line = strings.TrimSpace(line)
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		if err := ex.tcCommand(strings.Fields(line)); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+type listedTCDevice struct {
+	qdiscs  map[string]map[string]any // root, or the parent class handle
+	classes map[string]map[string]any // class handle
+}
+
+func tcField(fields []string, key string) string {
+	for i := 0; i+1 < len(fields); i++ {
+		if fields[i] == key {
+			return fields[i+1]
+		}
+	}
+	return ""
+}
+
+// Model the commands emitted by enforce, rejecting unsupported or impossible
+// operations instead of synthesizing the desired state in readback.
+func (ex *revocationExecutor) tcCommand(f []string) error {
+	bad := func() error { return fmt.Errorf("tc fixture: unsupported or missing object: %s", strings.Join(f, " ")) }
+	if len(f) < 5 || f[2] != "dev" || f[3] == "" {
+		return bad()
+	}
+	if ex.tcDevices == nil {
+		ex.tcDevices = map[string]*listedTCDevice{}
+	}
+	dev := ex.tcDevices[f[3]]
+	if dev == nil {
+		dev = &listedTCDevice{qdiscs: map[string]map[string]any{}, classes: map[string]map[string]any{}}
+	}
+	parent, handle := tcField(f, "parent"), tcField(f, "handle")
+	switch f[0] + " " + f[1] {
+	case "qdisc add":
+		if slices.Contains(f, "root") {
+			if dev.qdiscs["root"] != nil || handle == "" || !slices.Contains(f, "htb") || tcField(f, "default") == "" {
+				return bad()
+			}
+			dev.qdiscs["root"] = map[string]any{"kind": "htb", "handle": handle, "root": true, "options": map[string]any{"default": tcField(f, "default")}}
+		} else {
+			if parent == "" || handle == "" || dev.classes[parent] == nil || dev.qdiscs[parent] != nil || !slices.Contains(f, "fq_codel") {
+				return bad()
+			}
+			dev.qdiscs[parent] = map[string]any{"kind": "fq_codel", "handle": handle, "parent": parent}
+		}
+	case "qdisc del":
+		if slices.Contains(f, "root") {
+			if dev.qdiscs["root"] == nil {
+				return &enforce.CmdError{Out: "No such file", Err: bad()}
+			}
+			delete(ex.tcDevices, f[3])
+			return nil
+		}
+		if parent == "" || dev.qdiscs[parent] == nil {
+			return bad()
+		}
+		delete(dev.qdiscs, parent)
+	case "class replace":
+		id, rate, ceil := tcField(f, "classid"), tcField(f, "rate"), tcField(f, "ceil")
+		root := dev.qdiscs["root"]
+		if root == nil || id == "" || parent == "" || rate == "" || ceil == "" || !slices.Contains(f, "htb") {
+			return bad()
+		}
+		if parent != root["handle"] && dev.classes[parent] == nil {
+			return bad()
+		}
+		dev.classes[id] = map[string]any{"kind": "htb", "handle": id, "parent": parent, "options": map[string]any{"rate": rate, "ceil": ceil}}
+	case "class del":
+		id := tcField(f, "classid")
+		if id == "" || dev.classes[id] == nil {
+			return bad()
+		}
+		for _, class := range dev.classes {
+			if class["parent"] == id {
+				return bad()
+			}
+		}
+		delete(dev.classes, id)
+		delete(dev.qdiscs, id)
+	default:
+		return bad()
+	}
+	ex.tcDevices[f[3]] = dev
+	return nil
+}
+
+func (ex *revocationExecutor) tcOutput(args []string) ([]byte, error) {
+	if len(args) >= 2 && args[0] == "-j" {
+		if len(args) < 5 || args[2] != "show" || args[3] != "dev" || !slices.Contains([]string{"qdisc", "class", "filter"}, args[1]) {
+			return nil, fmt.Errorf("tc fixture: unsupported listing %v", args)
+		}
+		var objects map[string]map[string]any
+		dev := ex.tcDevices[tcField(args, "dev")]
+		if dev != nil {
+			switch args[1] {
+			case "qdisc":
+				objects = dev.qdiscs
+			case "class":
+				objects = dev.classes
+			case "filter":
+			}
+		}
+		keys := make([]string, 0, len(objects))
+		for key := range objects {
+			keys = append(keys, key)
+		}
+		slices.Sort(keys)
+		out := make([]any, 0, len(keys))
+		for _, key := range keys {
+			out = append(out, objects[key])
+		}
+		return json.Marshal(out)
+	}
+	return nil, ex.tcCommand(args)
+}
+
 func (ex *revocationExecutor) Output(_ context.Context, name string, args ...string) ([]byte, error) {
 	if name == "conntrack" {
 		ex.deletes = append(ex.deletes, strings.Join(args, " "))
@@ -35,6 +169,9 @@ func (ex *revocationExecutor) Output(_ context.Context, name string, args ...str
 			return nil, fmt.Errorf("TEST ONLY: delete failed")
 		}
 		return nil, nil
+	}
+	if name == "tc" {
+		return ex.tcOutput(args)
 	}
 	if name == "nft" && !ex.installed {
 		return nil, &enforce.CmdError{Out: "No such file", Err: fmt.Errorf("TEST ONLY: empty ruleset")}
@@ -49,25 +186,7 @@ func (ex *revocationExecutor) Output(_ context.Context, name string, args ...str
 		}
 		return revocationRuleset(ex.model, plan.Assignments), nil
 	}
-	if name == "tc" && len(args) > 1 {
-		if args[0] != "-j" {
-			return nil, nil
-		}
-		if !ex.installed {
-			return []byte(`[]`), nil
-		}
-		minor := plan.Assignments[ex.model.Bindings[0].MemberID]
-		handle := fmt.Sprintf("1:%x", minor)
-		if args[1] == "qdisc" {
-			return fmt.Appendf(nil, `[{"kind":"htb","handle":"1:","root":true,"options":{"default":"fffe"}},{"kind":"fq_codel","handle":"%x:","parent":"%s"}]`, minor, handle), nil
-		}
-		q := ex.model.QoS
-		parent, host, member := q.Up, q.HostUp, q.Members[0].Up
-		if args[len(args)-1] == ex.model.Datapath.MemberIngress {
-			parent, host, member = q.Down, q.HostDown, q.Members[0].Down
-		}
-		return fmt.Appendf(nil, `[{"kind":"htb","handle":"1:1","options":{"rate":"%dbit","ceil":"%dbit"}},{"kind":"htb","handle":"1:fffe","options":{"rate":"%dbit","ceil":"%dbit"}},{"kind":"htb","handle":"%s","options":{"rate":"%dbit","ceil":"%dbit"}}]`, parent.RateBPS, parent.CeilBPS, host.RateBPS, host.CeilBPS, handle, member.RateBPS, member.CeilBPS), nil
-	}
+
 	return nil, fmt.Errorf("unexpected fixture command %s", name)
 }
 

@@ -1,5 +1,7 @@
 # inet fvpn boot baseline. Member forwarding is off (§8.2).
 add table inet fvpn
+add chain inet fvpn fv_deadline_guard
+delete chain inet fvpn fv_deadline_guard
 add counter inet fvpn ctbase
 add counter inet fvpn ctv6
 add counter inet fvpn ctin
@@ -11,19 +13,33 @@ add counter inet fvpn probe_up
 add counter inet fvpn probe_down
 add counter inet fvpn ctbadns
 add set inet fvpn allowed_v4 { type ipv4_addr; flags timeout; }
+flush set inet fvpn allowed_v4
 add set inet fvpn denied_v4 { type ipv4_addr; flags interval; auto-merge; }
 add set inet fvpn host_v4 { type ipv4_addr; flags interval; auto-merge; }
 add set inet fvpn probe_v4 { type ipv4_addr; flags timeout; }
 add set inet fvpn resolver_v4 { type ipv4_addr; }
 add set inet fvpn probe_dst_v4 { type ipv4_addr . inet_proto . inet_service; flags timeout; }
+flush set inet fvpn denied_v4
 add element inet fvpn denied_v4 { 0.0.0.0/8, 10.0.0.0/8, 100.64.0.0/10, 127.0.0.0/8, 169.254.0.0/16, 172.16.0.0/12, 192.0.0.0/24, 192.0.2.0/24, 192.0.2.128/25, 192.168.0.0/16, 192.88.99.0/24, 198.18.0.0/15, 198.51.100.0/24, 203.0.113.0/24, 224.0.0.0/4, 240.0.0.0/4, 255.255.255.255/32 }
+flush set inet fvpn host_v4
 add element inet fvpn host_v4 { 192.0.2.33/32, 192.0.2.37/32 }
+flush set inet fvpn resolver_v4
 add element inet fvpn resolver_v4 { 198.51.100.53 }
+flush set inet fvpn probe_v4
 add element inet fvpn probe_v4 { 100.64.8.1 timeout 30s }
+flush set inet fvpn probe_dst_v4
 add element inet fvpn probe_dst_v4 { 1.2.3.4 . tcp . 80 timeout 30s }
+add chain inet fvpn forward
+delete chain inet fvpn forward
 add chain inet fvpn forward { type filter hook forward priority -150; policy drop; }
+add chain inet fvpn input
+delete chain inet fvpn input
 add chain inet fvpn input { type filter hook input priority -150; policy accept; }
+add chain inet fvpn output
+delete chain inet fvpn output
 add chain inet fvpn output { type filter hook output priority -150; policy accept; }
+add chain inet fvpn postrouting
+delete chain inet fvpn postrouting
 add chain inet fvpn postrouting { type nat hook postrouting priority 100; policy accept; }
 add rule inet fvpn forward ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1"
 add rule inet fvpn forward iifname "fv-fh" meta nfproto ipv6 counter name "ctv6" drop
