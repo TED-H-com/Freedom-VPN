@@ -54,8 +54,8 @@ to the verifier. It does not call the production interval parser to build its
 expected listing. Actual auto-merge output is covered by the kernel tests.
 
 [Unchanged source checks](unchanged-contracts.json) pin the RELATED ICMP source
-guard, resolver/probe parsers and checks, rule-order checks, Apply, live-read
-caller, model, reload harness and agent-core 35/36 files. No new public model
+guard, resolver/probe parsers and checks, rule-order checks, Apply,
+model, reload harness and agent-core 35/36 files. No new public model
 field, config watcher, hot reload, dependency or tool pin was introduced.
 
 ## Measurement and reproduction
