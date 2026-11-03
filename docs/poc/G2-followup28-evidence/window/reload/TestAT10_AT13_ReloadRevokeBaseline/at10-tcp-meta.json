@@ -1,0 +1,68 @@
+{
+  "test_only": true,
+  "clock": "CLOCK_REALTIME",
+  "start": {
+    "wall_ns": "1793692509877341977",
+    "mono_before_ns": "15952328717698",
+    "mono_after_ns": "15952328718877"
+  },
+  "roles": {
+    "origin": {
+      "interfaces": {
+        "1": "lo",
+        "2": "fv-wg0",
+        "4": "fv-a1u"
+      },
+      "ready": {
+        "wall_ns": "1793692509900113000",
+        "mono_before_ns": "15952351489024",
+        "mono_after_ns": "15952351489850"
+      },
+      "stats": {
+        "captured": 375,
+        "received_by_filter": 375,
+        "dropped_by_kernel": 0
+      }
+    },
+    "node": {
+      "interfaces": {
+        "1": "lo",
+        "2": "eth0",
+        "14": "fv-fh",
+        "16": "fv-ih",
+        "18": "fv-lh"
+      },
+      "ready": {
+        "wall_ns": "1793692509911818691",
+        "mono_before_ns": "15952363195143",
+        "mono_after_ns": "15952363195511"
+      },
+      "stats": {
+        "captured": 739,
+        "received_by_filter": 739,
+        "dropped_by_kernel": 0
+      }
+    },
+    "responder": {
+      "interfaces": {
+        "1": "lo",
+        "15": "fv-ii"
+      },
+      "ready": {
+        "wall_ns": "1793692509934357783",
+        "mono_before_ns": "15952385733718",
+        "mono_after_ns": "15952385734586"
+      },
+      "stats": {
+        "captured": 364,
+        "received_by_filter": 364,
+        "dropped_by_kernel": 0
+      }
+    }
+  },
+  "end": {
+    "wall_ns": "1793692536727864014",
+    "mono_before_ns": "15979179239905",
+    "mono_after_ns": "15979179240917"
+  }
+}
