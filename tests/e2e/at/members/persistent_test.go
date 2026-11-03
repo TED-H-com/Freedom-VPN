@@ -73,6 +73,14 @@ func (l *live) startPersistent(r *record, service string, id uuid.UUID) *persist
 	})
 	return f
 }
+func (l *live) abortPersistent(f *persistentFlow) {
+	if f == nil {
+		return
+	}
+	f.cancel()
+	<-f.done
+	_ = f.stack.StopEstablishedTransports(l.ctx)
+}
 func (l *live) finishPersistent(r *record, f *persistentFlow, event time.Time, target time.Duration) {
 	if f == nil {
 		return
