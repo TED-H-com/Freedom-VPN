@@ -1,0 +1,575 @@
+{
+  "sources": [
+    {
+      "path": "docs/e2e/at/members/AT01.json",
+      "source_commit": "3f7dbc254ba1ce001628af8151a4d81c6954412d",
+      "sha256": "afe081957e22bd0a291aa98714f6b75e1321e148bf37fdf20c594c15aa30c485",
+      "bytes": 2184031
+    },
+    {
+      "path": "docs/e2e/at/members/AT02.json.gz",
+      "source_commit": "3f7dbc254ba1ce001628af8151a4d81c6954412d",
+      "sha256": "cafe23824a36ba7acec13d8bd04f9ac3c4b225e43d3442b2611a4f1d90bb1448",
+      "bytes": 8194780
+    },
+    {
+      "path": "docs/e2e/at/members/AT03.json",
+      "source_commit": "3f7dbc254ba1ce001628af8151a4d81c6954412d",
+      "sha256": "f2b8a0bcc9d6632eb68132b8870b93b7d833f3b75cc474e86eef9e1966c1b764",
+      "bytes": 7278203
+    },
+    {
+      "path": "docs/e2e/at/members/AT04.json",
+      "source_commit": "3f7dbc254ba1ce001628af8151a4d81c6954412d",
+      "sha256": "46e19126ce68c8cff639f4d8d7e8a57a6df557cee9205d84aff41ef9e8c93225",
+      "bytes": 11105178
+    },
+    {
+      "path": "docs/e2e/at/members/AT05.json",
+      "source_commit": "3f7dbc254ba1ce001628af8151a4d81c6954412d",
+      "sha256": "fcad3e4936a1bae0276112bab75323b8983c852f1c24a81757fe829285ca4ba0",
+      "bytes": 19204
+    },
+    {
+      "path": "docs/e2e/at/members/AT08.json",
+      "source_commit": "3f7dbc254ba1ce001628af8151a4d81c6954412d",
+      "sha256": "af131fc3df39db3385c117f6772df41cb3e5eac4cabdcd5521b2814d8579de1f",
+      "bytes": 170506
+    },
+    {
+      "path": "docs/e2e/at/members/AT09.json",
+      "source_commit": "3f7dbc254ba1ce001628af8151a4d81c6954412d",
+      "sha256": "f2e631f80f7a7ea8117ef2e2276060de01bb871f46fe56fbd79e082066baad8d",
+      "bytes": 12623924
+    },
+    {
+      "path": "docs/e2e/at/members/AT20.json",
+      "source_commit": "3f7dbc254ba1ce001628af8151a4d81c6954412d",
+      "sha256": "94056df2b5015693fdc9b7eed87c83c70936752eb048dc817eed450990c0f065",
+      "bytes": 4127805
+    },
+    {
+      "path": "docs/e2e/at/members/AT21.json",
+      "source_commit": "3f7dbc254ba1ce001628af8151a4d81c6954412d",
+      "sha256": "8f8e8b6972f2b10ab30b613ecc73fa206d02c80e01f711272a1f4b287e9ffca6",
+      "bytes": 236832
+    },
+    {
+      "path": "docs/e2e/at/members/AT22.json",
+      "source_commit": "3f7dbc254ba1ce001628af8151a4d81c6954412d",
+      "sha256": "ead56167f13c9ddabfbef4d254a76b5e7c65349c7440e94b5a13d922df6609af",
+      "bytes": 31476
+    }
+  ],
+  "cases": [
+    {
+      "case": "AT01",
+      "status": "blocked",
+      "counts": {
+        "pass": 19,
+        "blocked": 0,
+        "fail": 0
+      },
+      "blockers": [
+        "F4-01: bounded member transfer did not produce both an origin receipt and device upload/download counter increments. See forwarding-observation.md and this JSON forwarding field; owner to resolve from first missing hop.",
+        "AT01 platform sign-out/network change/sleep-wake scripts need operator run; Linux positive counted forwarding is recorded separately."
+      ]
+    },
+    {
+      "case": "AT02",
+      "status": "fail",
+      "counts": {
+        "pass": 191,
+        "blocked": 0,
+        "fail": 2
+      },
+      "blockers": []
+    },
+    {
+      "case": "AT03",
+      "status": "pass",
+      "counts": {
+        "pass": 98,
+        "blocked": 0,
+        "fail": 0
+      },
+      "blockers": []
+    },
+    {
+      "case": "AT04",
+      "status": "blocked",
+      "counts": {
+        "pass": 113,
+        "blocked": 0,
+        "fail": 0
+      },
+      "blockers": [
+        "F4-04: persistent member TCP/UDP withdrawal is measured above on both exits. Rendered suspended/expired member screens remain with the portal/operator owner; API state alone does not pass the full case."
+      ]
+    },
+    {
+      "case": "AT05",
+      "status": "blocked",
+      "counts": {
+        "pass": 31,
+        "blocked": 0,
+        "fail": 0
+      },
+      "blockers": [
+        "Running lab has one installer node runtime; preinstalled/cloud-init boot flavours and their package provenance are absent. A preinstalled reservation is not a boot test. The signed boot release and nonempty support policy are created through the shared PrepareServingBaseline hook; arm64 is cross-built only."
+      ]
+    },
+    {
+      "case": "AT08",
+      "status": "pass",
+      "counts": {
+        "pass": 35,
+        "blocked": 0,
+        "fail": 0
+      },
+      "blockers": []
+    },
+    {
+      "case": "AT09",
+      "status": "fail",
+      "counts": {
+        "pass": 70,
+        "blocked": 5,
+        "fail": 2
+      },
+      "blockers": [
+        "F4-03 linux/quic: requires a pinned QUIC client/server at the controlled origin; UDP echo is not QUIC",
+        "F4-03 android/tcp: requires the named real platform and operator client; no emulation by the Linux container",
+        "F4-03 ios/tcp: requires the named real platform and operator client; no emulation by the Linux container",
+        "F4-03 windows/tcp: requires the named real platform and operator client; no emulation by the Linux container",
+        "F4-03 macos/tcp: requires the named real platform and operator client; no emulation by the Linux container",
+        "D-123: v1.0 IPv6Block. IPv6 no-leak evidence is the independent rendered-policy netlab follow-up 18 measurement (docs/poc/G2-f802-mtu1280-2026-10-31.md); this native fixture measures IPv4 payload over the selected underlay, not end-to-end IPv6 MTU/PMTU. D-137 is provisional; historical F8-02 stays failed. Known route MTU is separate from reactive PTB.",
+        "F4-03: physical second NAT/roaming and ICMP-black-hole PMTU remain platform/operator work; finite TCP transfers at 1500/1280 are not a full PMTU campaign."
+      ]
+    },
+    {
+      "case": "AT20",
+      "status": "blocked",
+      "counts": {
+        "pass": 89,
+        "blocked": 0,
+        "fail": 0
+      },
+      "blockers": [
+        "F4-05/F4-07: production nameserver distribution and platform Private DNS / browser DoH / Unicode UI still require owner resources; positive fixture IDNA is separate."
+      ]
+    },
+    {
+      "case": "AT21",
+      "status": "blocked",
+      "counts": {
+        "pass": 13,
+        "blocked": 0,
+        "fail": 0
+      },
+      "blockers": [
+        "F4-05 production automatic nameserver distribution is unclaimed: ConfigureNativeDNS uses a TEST ONLY peer group with the exact product-issued list. Android Private DNS/browser DoH remain operator/native-client integration work."
+      ]
+    },
+    {
+      "case": "AT22",
+      "status": "blocked",
+      "counts": {
+        "pass": 40,
+        "blocked": 0,
+        "fail": 0
+      },
+      "blockers": [
+        "D-054 central feed bootstrap/publication/last-good are exercised using self-authored TEST ONLY data. Complete AT22 still needs member URL traffic and remaining file/raw-usage/backup retention coverage; typed resolver application is recorded separately above. Commercial feed approval remains a business decision.",
+        "F4-06: raw usage/rollup purge, file-content scans, retained backup expiry, representative URL privacy and commercial feed approval remain with devstack/usage/database/backup owners. TEST ONLY self-authored feed last-good evidence does not approve a commercial source."
+      ]
+    }
+  ],
+  "at09": [
+    {
+      "index": 0,
+      "name": "AT09 member OIDC reauthentication",
+      "status": "pass"
+    },
+    {
+      "index": 1,
+      "name": "finite capacity and classification",
+      "status": "pass"
+    },
+    {
+      "index": 2,
+      "name": "publication command published",
+      "status": "pass"
+    },
+    {
+      "index": 3,
+      "name": "publication progress published",
+      "status": "pass"
+    },
+    {
+      "index": 4,
+      "name": "publication operation published",
+      "status": "pass"
+    },
+    {
+      "index": 5,
+      "name": "finite capacity and classification",
+      "status": "pass"
+    },
+    {
+      "index": 6,
+      "name": "publication command published",
+      "status": "pass"
+    },
+    {
+      "index": 7,
+      "name": "publication progress published",
+      "status": "pass"
+    },
+    {
+      "index": 8,
+      "name": "publication operation published",
+      "status": "pass"
+    },
+    {
+      "index": 9,
+      "name": "populated-grant serving readiness",
+      "status": "pass"
+    },
+    {
+      "index": 10,
+      "name": "real default-route semantics",
+      "status": "pass"
+    },
+    {
+      "index": 11,
+      "name": "member sees both published exits",
+      "status": "pass"
+    },
+    {
+      "index": 12,
+      "name": "populated-grant serving readiness",
+      "status": "pass"
+    },
+    {
+      "index": 13,
+      "name": "populated-grant serving readiness",
+      "status": "pass"
+    },
+    {
+      "index": 14,
+      "name": "bounded member transfer observation",
+      "status": "pass"
+    },
+    {
+      "index": 15,
+      "name": "populated-grant serving readiness",
+      "status": "pass"
+    },
+    {
+      "index": 16,
+      "name": "bounded member transfer observation",
+      "status": "pass"
+    },
+    {
+      "index": 17,
+      "name": "agent transition selected namespace stop",
+      "status": "pass"
+    },
+    {
+      "index": 18,
+      "name": "selected exit offline behavior",
+      "status": "pass"
+    },
+    {
+      "index": 19,
+      "name": "second exit fresh serving after restart",
+      "status": "pass"
+    },
+    {
+      "index": 20,
+      "name": "populated-grant serving readiness",
+      "status": "pass"
+    },
+    {
+      "index": 21,
+      "name": "populated-grant serving readiness",
+      "status": "pass"
+    },
+    {
+      "index": 22,
+      "name": "bounded member transfer observation",
+      "status": "pass"
+    },
+    {
+      "index": 23,
+      "name": "agent transition selected namespace restart and 90-second observation",
+      "status": "pass"
+    },
+    {
+      "index": 24,
+      "name": "second exit complete 90-second restart capture",
+      "status": "pass"
+    },
+    {
+      "index": 25,
+      "name": "D-067 revision 11 provisional lease observation",
+      "status": "fail"
+    },
+    {
+      "index": 26,
+      "name": "same-generation D-067 restart recovery and lease sequence",
+      "status": "fail"
+    },
+    {
+      "index": 27,
+      "name": "typed DNS evidence",
+      "status": "pass"
+    },
+    {
+      "index": 28,
+      "name": "issued resolver document mTLS fetch",
+      "status": "pass"
+    },
+    {
+      "index": 29,
+      "name": "current desired-state DNS selection",
+      "status": "pass"
+    },
+    {
+      "index": 30,
+      "name": "populated-grant serving readiness",
+      "status": "pass"
+    },
+    {
+      "index": 31,
+      "name": "bounded member transfer observation",
+      "status": "pass"
+    },
+    {
+      "index": 32,
+      "name": "native ipv4 MTU 1500 input",
+      "status": "pass"
+    },
+    {
+      "index": 33,
+      "name": "native capture completeness matrix-ipv4-1500",
+      "status": "pass"
+    },
+    {
+      "index": 34,
+      "name": "native ipv4 MTU 1500 transfer",
+      "status": "pass"
+    },
+    {
+      "index": 35,
+      "name": "native ipv6 MTU 1500 input",
+      "status": "pass"
+    },
+    {
+      "index": 36,
+      "name": "native capture completeness matrix-ipv6-1500",
+      "status": "pass"
+    },
+    {
+      "index": 37,
+      "name": "native ipv6 MTU 1500 transfer",
+      "status": "pass"
+    },
+    {
+      "index": 38,
+      "name": "native dual MTU 1500 input",
+      "status": "pass"
+    },
+    {
+      "index": 39,
+      "name": "native capture completeness matrix-dual-1500",
+      "status": "pass"
+    },
+    {
+      "index": 40,
+      "name": "native dual MTU 1500 transfer",
+      "status": "pass"
+    },
+    {
+      "index": 41,
+      "name": "native dual MTU 1280 input",
+      "status": "pass"
+    },
+    {
+      "index": 42,
+      "name": "native capture completeness matrix-dual-1280",
+      "status": "pass"
+    },
+    {
+      "index": 43,
+      "name": "native dual MTU 1280 transfer",
+      "status": "pass"
+    },
+    {
+      "index": 44,
+      "name": "native dual MTU 1280 upload",
+      "status": "pass"
+    },
+    {
+      "index": 45,
+      "name": "native dual MTU 1280 D-146 clamp evidence",
+      "status": "pass"
+    },
+    {
+      "index": 46,
+      "name": "native ipv6 MTU 1280 input",
+      "status": "pass"
+    },
+    {
+      "index": 47,
+      "name": "native capture completeness matrix-ipv6-1280",
+      "status": "pass"
+    },
+    {
+      "index": 48,
+      "name": "native ipv6 MTU 1280 transfer",
+      "status": "pass"
+    },
+    {
+      "index": 49,
+      "name": "native ipv6 MTU 1280 upload",
+      "status": "pass"
+    },
+    {
+      "index": 50,
+      "name": "native ipv6 MTU 1280 D-146 clamp evidence",
+      "status": "pass"
+    },
+    {
+      "index": 51,
+      "name": "D-137 selected-peer 1280 constraint",
+      "status": "pass"
+    },
+    {
+      "index": 52,
+      "name": "native capture completeness known-pmtu1280",
+      "status": "pass"
+    },
+    {
+      "index": 53,
+      "name": "D-137 supported known-PMTU 1280 transfer",
+      "status": "pass"
+    },
+    {
+      "index": 54,
+      "name": "native ipv4 MTU 1280 input",
+      "status": "pass"
+    },
+    {
+      "index": 55,
+      "name": "native capture completeness matrix-ipv4-1280",
+      "status": "pass"
+    },
+    {
+      "index": 56,
+      "name": "native ipv4 MTU 1280 transfer",
+      "status": "pass"
+    },
+    {
+      "index": 57,
+      "name": "native ipv4 MTU 1280 upload",
+      "status": "pass"
+    },
+    {
+      "index": 58,
+      "name": "native ipv4 MTU 1280 D-146 clamp evidence",
+      "status": "pass"
+    },
+    {
+      "index": 59,
+      "name": "native linux quic",
+      "status": "blocked"
+    },
+    {
+      "index": 60,
+      "name": "native android tcp",
+      "status": "blocked"
+    },
+    {
+      "index": 61,
+      "name": "native ios tcp",
+      "status": "blocked"
+    },
+    {
+      "index": 62,
+      "name": "native windows tcp",
+      "status": "blocked"
+    },
+    {
+      "index": 63,
+      "name": "native macos tcp",
+      "status": "blocked"
+    },
+    {
+      "index": 64,
+      "name": "relay IPv4 precondition",
+      "status": "pass"
+    },
+    {
+      "index": 65,
+      "name": "forced native relay",
+      "status": "pass"
+    },
+    {
+      "index": 66,
+      "name": "persistent TCP/UDP positive member",
+      "status": "pass"
+    },
+    {
+      "index": 67,
+      "name": "restore direct transport",
+      "status": "pass"
+    },
+    {
+      "index": 68,
+      "name": "relay to direct same sockets",
+      "status": "pass"
+    },
+    {
+      "index": 69,
+      "name": "D-137 routed hop setup",
+      "status": "pass"
+    },
+    {
+      "index": 70,
+      "name": "D-137 routed ipv6 selection",
+      "status": "pass"
+    },
+    {
+      "index": 71,
+      "name": "native capture completeness routed-ipv6-1280",
+      "status": "pass"
+    },
+    {
+      "index": 72,
+      "name": "D-137 routed ipv6 1280 transfer",
+      "status": "pass"
+    },
+    {
+      "index": 73,
+      "name": "D-137 routed ipv4 selection",
+      "status": "pass"
+    },
+    {
+      "index": 74,
+      "name": "native capture completeness routed-ipv4-1280",
+      "status": "pass"
+    },
+    {
+      "index": 75,
+      "name": "D-137 routed ipv4 1280 transfer",
+      "status": "pass"
+    },
+    {
+      "index": 76,
+      "name": "r18 M-3 accepted hold and central ID join",
+      "status": "pass"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "reviewed_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+  "path": "node/watchdog/watch.go",
+  "source_sha256": "8f9da067c6691c899ac115025d620c13fdccbfde0794bcb54b490f5bfdb987ab",
+  "first_line": 170,
+  "last_line": 209,
+  "next_function_line": 211,
+  "excerpt": "func (w *Watch) baselineDecision(ctx context.Context) (string, Beat, time.Duration) {\n\t// Read the atomically replaced heartbeat BEFORE sampling now. Otherwise\n\t// a heartbeat written between the two reads looks like a clock rollback.\n\tbeat, readErr := ReadHeartbeat(w.Config.HeartbeatPath)\n\tmono, err := w.mono()\n\tif err != nil || mono <= 0 {\n\t\treturn \"clock_unavailable\", beat, mono\n\t}\n\tif readErr != nil {\n\t\treturn \"heartbeat_unreadable\", beat, mono\n\t}\n\tif w.BootID != uuid.Nil && beat.BootID != w.BootID {\n\t\treturn \"boot_changed\", beat, mono\n\t}\n\tif beat.Mono > mono {\n\t\treturn \"heartbeat_in_future\", beat, mono\n\t}\n\tif mono-beat.Mono > time.Duration(w.Config.WatchdogStaleSeconds)*time.Second {\n\t\treturn \"heartbeat_stale\", beat, mono\n\t}\n\tif !beat.BaselineOK {\n\t\treturn \"baseline_unverified\", beat, mono\n\t}\n\tif beat.PolicyExpires > 0 && mono >= beat.PolicyExpires {\n\t\treturn \"policy_expired\", beat, mono\n\t}\n\tif beat.Serving && beat.PolicyExpires <= 0 {\n\t\treturn \"serving_without_deadline\", beat, mono\n\t}\n\treadCtx, cancel := context.WithTimeout(ctx, time.Second)\n\tdefer cancel()\n\tok, err := w.Enforce.BaselinePresent(readCtx)\n\tif err != nil {\n\t\treturn \"baseline_unreadable\", beat, mono\n\t}\n\tif !ok {\n\t\treturn \"baseline_missing\", beat, mono\n\t}\n\treturn \"\", beat, mono\n}\n\nfunc (w *Watch) mono() (time.Duration, error) {\n",
+  "excerpt_sha256": "01fc46132fdf9416cbdaf534d03ce6ce95a3287667cbb40a207e04c62d2e8c2d",
+  "prior_claims_sha256": "c0001db76b9cfd210d185cb9fec241e3328c2b3087a19a5832ac468a5f1a5009",
+  "prior_subtests": 11,
+  "prior_decisions": 53,
+  "maximum_decision": 150,
+  "prior_findings": 99
+}

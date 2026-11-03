@@ -1,0 +1,107 @@
+{
+  "source_commit": "3f7dbc254ba1ce001628af8151a4d81c6954412d",
+  "previous_cut": "1b87ab32344fa3be3216df0d5f7b489eb853e011",
+  "merged_prs": [
+    430,
+    431,
+    432,
+    433,
+    434
+  ],
+  "history": [
+    "88045f8a2dd4deee21202f36b60c28b135b7d481 handover: follow-up 39 \u2014 cut #428\u2013#429 (handover 38, agent-core 37 to 43): r26 archived unchanged with dispositions and errata; owner decisions D-145 to D-149 answer all ten owner requests; D-150 recorded (w4-handover follow-up 39) (#430)",
+    "99558fcf2e2e9f9ae68cb3eb6b25338c76d020bb roadmap: w4-handover follow-up 39 merged (#430)",
+    "109e9630ed2f75275712ba24a0eb159a67d76412 agent: follow-up 44 \u2014 D-150's measurement attempted after the merge: both windows stopped before any scenario (foreign-container preflight; clock-reader wrapper, repaired); no comparison (w2-agent-core follow-up 44) (#431)",
+    "0a044e0250af6ad0522be992cfa147153da803c1 roadmap: w2-agent-core follow-up 44 merged (#431)",
+    "b402d7bfa88fd311d81ac5851f6ec3ec43babc58 netlab: follow-up 34 \u2014 D-146's TCP MSS clamp at 1160 and D-147's RELATED IPv4 fragmentation-needed from denied sources, verified and metered; the agent's test translator extended (w1-netlab follow-up 34) (#432)",
+    "27ff63928222c9642e4f5e180cf225108327a1e5 roadmap: w1-netlab follow-up 34 merged (#432)",
+    "50b8da83d81e5bb5bc1c69129db88557c090b280 at-members: follow-up 18 \u2014 D-146 qualifies the three receive-only 1280 rows (MSS to 1160, reverse within 1280, no PTB); run 1 lost to the reader's missing retire phase, kept; run 2: 2 pass / 6 blocked / 2 fail (w4-at-members follow-up 18) (#433)",
+    "b246832bed3df1ea27a6041e277fd75e872f8a7c roadmap: w4-at-members follow-up 18 merged (#433)",
+    "99bbc55888791794e89ec14e153d23f46669084c isolation: follow-up 19 \u2014 D-147 lab rows pass for resolver, denied, host and overlap sources (frag-needed, PMTU 1000, exact usage, every negative); retire reader fix; assembled run blocked at capacity PATCH 412 (w4-at-isolation follow-up 19) (#434)",
+    "3f7dbc254ba1ce001628af8151a4d81c6954412d roadmap: w4-at-isolation follow-up 19 merged (#434)"
+  ],
+  "rows": [
+    {
+      "pr": 430,
+      "lane": "w4-handover follow-up 39",
+      "row": "| w4-handover follow-up 39 | Cut #428 to #429 at `1b87ab32` (handover 38 and agent-core 37 to 43; no unbriefed PR). `TestHandover_Followup39Claims` (11 subtests) pins two final roadmap rows, two PR excerpts, ten frozen #428 inputs, the exact r26 archive, a separate source audit, 15 dated documents and 75 Go test declarations; earlier claims tests stay true, with their live-document reads moved to frozen #428 bytes. Agent-core 37 to 43 recorded as #429 states it: all 25 judged rows (r20 to r25 and netlab F32-01) carry their verdicts, sub-traces, rejected claims, corrected attributions, fixes and Go proofs on main; 42 closes handover 38's open r25 H-1 question; 43's D-133 windows recorded with zero qualified legs and no comparison. Review r26 (agy gemini-4-argon-high, on agent-core 42 at 8dec4100) archived byte-for-byte from 5c6d6abe: 19,545 bytes, 0 Critical, 0 High, 0 Medium, 0 Low; AQ1 to AQ7 as the reviewer's claims, its three unexamined items with what 43 supplied, and additive citation errata. Decisions at 53: owner decisions D-145 to D-149, the orchestrator's provisional D-150 (37 to 43 merged without the A,B,A,B; agent-core 44 measures after the merge), and eight owner confirmations by status and date only; all ten owner requests answered, the open list empty. Findings register at 99 rows: 25 agent-core rows and five owner or status rows updated (RELATED ICMP decided by D-147, F11-01 open and upstream-dependent under D-148, Dependabot 22 dismissed under D-149), 69 unchanged. Seven entrypoints updated; current guard kept under D-145; D-146 and D-147 not on main at this cut. Netlab 34 and agent-core 44 recorded as running. Codex gpt-6-astra. | done (#430) |",
+      "sha256": "3f3d33463a90a45874a9979bd4f40e2f1927f5068e77c08b90317907031ceb3d"
+    },
+    {
+      "pr": 431,
+      "lane": "w2-agent-core follow-up 44",
+      "row": "| w2-agent-core follow-up 44 | D-150's post-merge measurement of agent-core 37 to 43 (A 567080be, B 38420dad, the same frozen arms as 43), attempted in two reservations with a new runner that marks foreign-CPU intervals instead of stopping legs. No leg produced a scenario, so A and B each have zero pooled legs and no comparison is drawn. Window 1 stopped at its preflight on another lane's running lab container, which admission had not reported. Window 2 admitted A3, whose clock-reader wrapper failed before any scenario: an admission message reached Docker stdout. The wrapper is repaired, with admission diagnostics on stderr, and regression-tested (24 synthetic tests). A separate probe found the lab containers in their own time namespace, with zero monotonic and boottime offsets and aligned monotonic brackets; the brief's no-separate-namespace prerequisite therefore failed as written. The orchestrator's reading: that wording was stricter than the same-clock requirement, and the next attempt accepts a zero-offset namespace with aligned brackets; reservations now also refuse while another lane's container runs. Main's ordinary production lab passed all 13 scenarios, D087 and D104 included; all ordinary gates pass. Test runner and records only; no production change. 7 commits, 21 owned files. | done (#431) |",
+      "sha256": "a6e375c9d9cc56a8b96c73345f9053230389564ad206d198c5159b9a1449e420"
+    },
+    {
+      "pr": 432,
+      "lane": "w1-netlab follow-up 34",
+      "row": "| w1-netlab follow-up 34 | Owner decisions D-146 and D-147 in the node's rendered rules, with parser and live-verifier enforcement (`docs/poc/G2-followup34-2026-11-03.md`). D-146: a 1160-byte IPv4 TCP MSS ceiling, on SYN and SYN-ACK only when an existing MSS option exceeds it, as one non-verdict clamp before each admitted address's general upload accept and one before its download accept; no MTU changed; 1160 fits the IPv6-underlay worst case (inner 1200, outer 1280). D-147: three per-address accepts before the download source-deny drops, for ICMP type 3 code 4 that conntrack marks RELATED, from resolver, denied or host sources to the admitted address, on the existing download counter and priority; no upload, probe, unsolicited, other ICMP or IPv6 exception. Lab, fixed IPv4 underlay: receive-only 1280 TCP download from 0 to 64,064 bytes; member SYN 1380 to 1160, origin SYN-ACK 1460 to 1160, a smaller 1000 unchanged; UDP still lost, QUIC untested. A private-router upload completes with learned PMTU 1000, its 10 errors forwarded and metered once as 5,760 download bytes; time-exceeded still dropped at ctdenyd, an unsolicited error at ctinv, the member's ping to the router at ctdeny. The full netlab gate and all 13 agent scenarios pass, D-087 and D-104 included. The node consumer gate first failed in netlab's own agent test translator, through the orchestrator's brief wording; one continuation extended it faithfully, with an atomic negative test, and the unchanged gate passed. IPv6 underlay, native, relay and platforms are left to members' and isolation's reruns; historical F8-02 rows stay failed. 7 commits, 769 owned files. Session on codex gpt-6-astra, with one continuation. | done (#432) |",
+      "sha256": "de7feb7dcc9df73d4afda865a548e8b9974eb01c53037888c1fdc08d34e458d3"
+    },
+    {
+      "pr": 433,
+      "lane": "w4-at-members follow-up 18",
+      "row": "| w4-at-members follow-up 18 | D-098 first (`50f4403b`): run 81b638e8's 77 root files archived byte-identically with SHA-256 pins; earlier archives untouched. Run 1 118271c1 (harness `b4317bd4`, baseline #432 `27ff6392`) is confounded by the members producer reader: it rejected production's tc `retire` command phase (since netlab 32, #423) and with it the whole stream from sequence 582 on, so every later node readiness check lacked its producer record and the 70-minute context expired before AT09's native matrix; 0 PASS / 3 BLOCKED / 7 FAIL (442 / 0 / 35), retained byte-identically under history/follow-up-18-run1 (`71dc60ac`), failures unchanged. Reader fix (`4eb5d7d3`): `retire` accepted with every other lifecycle rule unchanged, unknown phases still reject the stream, and a closed-value audit found no other mismatch. Run 2 50117c68 (harness `4eb5d7d3`, baseline #432), the orchestrator's one authorized rerun: 2 PASS (AT03, AT08) / 6 BLOCKED (AT01, AT04, AT05, AT20, AT21, AT22) / 2 FAIL (AT02, AT09); 699 / 5 / 4. Under the orchestrator's provisional D-146 reading, the dual (IPv4 selected), IPv6 and new IPv4 receive-only 1280 rows qualify in the same run: member SYN MSS 1240 and origin SYN-ACK 1460 arrive as 1160, reverse datagrams 73/73, 74/74 and 72/72 all within 1280, no PTB at any capture point, 64,064 bytes with 64 exact echoes; so they pass on their unchanged byte predicate. Smaller-MSS control not exercised; UDP and QUIC stay limitations; historical F8-02 stays failed. AT02's D-077 re-grant now passes; D-135 / D-136 and F11-03 still fail (1,242 losses counted). AT09's D-067 predicate and same-generation restart still fail (serving readiness 6.02 s, counted recovery 12.55 s, generation 66). New request: grant restoration on early failed-readiness paths. Session on codex gpt-6-astra. | done (#433) |",
+      "sha256": "19eefa0128893f58f4de39f56cbdb5ec903c975fc7fd86a05d0571238335ac83"
+    },
+    {
+      "pr": 434,
+      "lane": "w4-at-isolation follow-up 19",
+      "row": "| w4-at-isolation follow-up 19 | D-098 first (`f5a5a425`): follow-up 18's 140 root files archived byte-identically with SHA-256 pins; earlier archives untouched. D-147 in its own test and record (TestAT13_D147RelatedFragNeeded, lab-AT13-d147), on production rules through the normal Apply and live verifier: fresh lab run 1d746f9a on committed `3e12f913` passes all four source sets, resolver_v4 only (203.0.113.53), denied_v4 only (192.168.34.2), host_v4 only (203.0.113.33) and the denied_v4 plus host_v4 overlap (192.168.34.1). In each, a router with MTU 1000 sends ten genuine fragmentation-needed errors (5,760 IP bytes) that reach the member, PMTU 1000 is learned, the 64,064-byte upload completes, usage matches an independent capture exactly in each direction in class 1:2f, and the overlap counts once. Negatives per source: time-exceeded dropped at ctdenyd, an unsolicited fragmentation-needed at ctinv, and the member's upload to that source dropped with no upload usage, at ctdeny for the denied and overlap sources and at production's earlier ctbadns and cthost for the resolver and host sources (literal ctdeny not exercised there, F19-01). Forward view: 27 member accepts, 9 D-147 accepts and 6 D-146 clamps for three admitted addresses; the legacy member-accept predicate unchanged. AT10 to AT13 lab rows pass unchanged in the same lab session; failed fixture attempts retained. Producer reader accepts production's tc retire phase (orchestrator note 2). One assembled run 70beb28e: its lab phase passes, but the shared publisher's capacity PATCH returned 412 RESOURCE_VERSION_CONFLICT and publication never reached serving, so all 12 checks are blocked (AT10 to AT13) and real-node D-147 is not exercised; initial window confounded under D-133, no retry (F19-02, to devstack). Sessions on agy Gemini 4 Argon, then codex gpt-6-astra after a content-filter stop. | done (#434) |",
+      "sha256": "b775c005f25bec857e55e6179b9d68849cb545f06e427b906201c9a045b0eb69"
+    }
+  ],
+  "pr_excerpts": [
+    {
+      "number": 430,
+      "title": "handover: follow-up 39 \u2014 cut #428\u2013#429 (handover 38, agent-core 37 to 43): r26 archived unchanged with dispositions and errata; owner decisions D-145 to D-149 answer all ten owner requests; D-150 recorded (w4-handover follow-up 39)",
+      "path": "tests/handover/testdata/history/follow-up-40/pr430-excerpt.json",
+      "length": 4551,
+      "sha256": "a44d35b378f384f9dd4ac2aed2f011916cdc8b150bfa7114d0e3919f4c8ff590",
+      "decoded_sha256": "87351537ef4d25731dc949613390efb65be00f2db5cb36057a104a5b81dfa40c",
+      "merge_commit": "88045f8a2dd4deee21202f36b60c28b135b7d481",
+      "merged_at": "2026-11-03T18:59:30Z"
+    },
+    {
+      "number": 431,
+      "title": "agent: follow-up 44 \u2014 D-150's measurement attempted after the merge: both windows stopped before any scenario (foreign-container preflight; clock-reader wrapper, repaired); no comparison (w2-agent-core follow-up 44)",
+      "path": "tests/handover/testdata/history/follow-up-40/pr431-excerpt.json",
+      "length": 3263,
+      "sha256": "f0ae13dbef28e1c0d1ee02eb45ef184e41773aa41245217c7707418cf89dbc88",
+      "decoded_sha256": "151173093f1e6f97e3f9cff2454316ff65cf63c2b2c34a121690ca5d7b0bca0c",
+      "merge_commit": "109e9630ed2f75275712ba24a0eb159a67d76412",
+      "merged_at": "2026-11-03T19:17:17Z"
+    },
+    {
+      "number": 432,
+      "title": "netlab: follow-up 34 \u2014 D-146's TCP MSS clamp at 1160 and D-147's RELATED IPv4 fragmentation-needed from denied sources, verified and metered; the agent's test translator extended (w1-netlab follow-up 34)",
+      "path": "tests/handover/testdata/history/follow-up-40/pr432-excerpt.json",
+      "length": 6013,
+      "sha256": "bd2c6e57cd99590a01d40b72722d4f336bb9acf8a005e963f0c39af2179c8b11",
+      "decoded_sha256": "0f93697f63d7fa07bd41e962cbdb744ad83cefd9fe5434bdefa2fad17f9da552",
+      "merge_commit": "b402d7bfa88fd311d81ac5851f6ec3ec43babc58",
+      "merged_at": "2026-11-03T19:35:48Z"
+    },
+    {
+      "number": 433,
+      "title": "at-members: follow-up 18 \u2014 D-146 qualifies the three receive-only 1280 rows (MSS to 1160, reverse within 1280, no PTB); run 1 lost to the reader's missing retire phase, kept; run 2: 2 pass / 6 blocked / 2 fail (w4-at-members follow-up 18)",
+      "path": "tests/handover/testdata/history/follow-up-40/pr433-excerpt.json",
+      "length": 4412,
+      "sha256": "f59ebc3372a0838777db64e6d3dbd72992704c843e6b656eec4f1e6aba60bb76",
+      "decoded_sha256": "aca960922b00457499c2a434d3d8cc970555536912d127f0282cebdf7c4ac696",
+      "merge_commit": "50b8da83d81e5bb5bc1c69129db88557c090b280",
+      "merged_at": "2026-11-03T22:15:45Z"
+    },
+    {
+      "number": 434,
+      "title": "isolation: follow-up 19 \u2014 D-147 lab rows pass for resolver, denied, host and overlap sources (frag-needed, PMTU 1000, exact usage, every negative); retire reader fix; assembled run blocked at capacity PATCH 412 (w4-at-isolation follow-up 19)",
+      "path": "tests/handover/testdata/history/follow-up-40/pr434-excerpt.json",
+      "length": 4666,
+      "sha256": "017266eaf6fafef7b8fe83bfe2655150fcbd924ef4b14ce573123f23dfce1828",
+      "decoded_sha256": "bbd44aef62f561c8ccf6ea1c1c4199098e9dcdd78001dec3f35aa4ff9749644e",
+      "merge_commit": "99bbc55888791794e89ec14e153d23f46669084c",
+      "merged_at": "2026-11-03T22:43:39Z"
+    }
+  ]
+}
