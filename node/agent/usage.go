@@ -13,8 +13,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
-
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/controlclient"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/meter"
@@ -182,10 +180,7 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 			e.usagePersist = true
 			return
 		}
-		// Retired identities explain only a still-open, same-boot delta.
-		if head.OpenEpoch == uuid.Nil || head.BootID != e.bootID.String() {
-			e.setMeterBindings(nil)
-		}
+		e.setMeterBindings(e.restartHeadBindings(head))
 	}
 	m, err = meter.NewContext(ctx, meter.Config{
 		NodeID: e.nodeID, IncarnationID: e.incID, Store: st, Source: src, Logger: e.log,
@@ -316,9 +311,9 @@ func (e *Engine) setMeterBindings(b []enforce.Binding) {
 	e.mu.Unlock()
 }
 
-// settleRetainedUsage closes the pending restart interval only after Boot's
-// verified baseline stopped admission. The bindings are the intersection of
-// every generation that could have counted it, not merely retained_applied.
+// settleRetainedUsage closes a pending restart or runtime hand-off only after
+// verified Baseline stopped admission. Bindings describe the candidates that
+// could have counted, scoped to the ledger interval when intent is available.
 // A failed/held sample keeps the delta and its provenance pending; Step must
 // retry before fetching desired state or applying a generation. Closing the
 // epoch prevents retired bindings contaminating the next baseline (r21 H1/H2/M1).
@@ -326,9 +321,14 @@ func (e *Engine) settleRetainedUsage(ctx context.Context) bool {
 	if !e.retainedPending {
 		return true
 	}
-	if e.meter == nil || !e.baselineOK {
+	if e.meter == nil {
 		e.usagePersist = true
 		return false
+	}
+	if !e.baselineOK {
+		if err := e.baseline(ctx); err != nil {
+			return false
+		}
 	}
 	err := e.meter.FinalSample(ctx)
 	if err != nil && !errors.Is(err, meter.ErrNoEpoch) {
@@ -407,7 +407,7 @@ func (e *Engine) resumeSampling() {
 	}()
 }
 
-// handoff stops new samples, installs the baseline, then takes the final
+// handoff installs the baseline, stops new samples, then takes the final
 // sample (§13.6 step 8). A later successful apply calls resumeSampling.
 // A clean final sample checkpoints the counters so the next epoch does
 // not recount them (step 11).
@@ -432,21 +432,20 @@ func (e *Engine) handoff(ctx context.Context) {
 	// A new identity must execute the withdrawal/close path again. It cannot
 	// borrow finalDone or relabel the previous checkpoint, even when quiet.
 	e.finalDone = false
-	if err := e.meter.Barrier(ctx); err != nil {
-		e.usagePersist = true
-		return
-	}
 	if err := e.baseline(ctx); err != nil {
 		return
 	}
 	e.serving = false
 	e.decision.Serve = false
-	err := e.meter.FinalSample(ctx)
-	if err != nil && !errors.Is(err, meter.ErrNoEpoch) {
-		e.log.Warn("final sample", "err", err.Error())
-		e.usagePersist = true
+	// FinalSample pauses internally. If it fails, the same settlement gate
+	// used at restart prevents refresh or Apply until the outgoing bytes commit.
+	e.retainedPending = true
+	if !e.settleRetainedUsage(ctx) {
 		return
 	}
+	// Accounting is settled; the updater barrier is not acknowledged until
+	// its identity has been rechecked and its checkpoint has been published.
+	e.finalDone = false
 	cp, err := e.usage.ClosedCheckpoint(ctx)
 	if err != nil {
 		e.usagePersist = true

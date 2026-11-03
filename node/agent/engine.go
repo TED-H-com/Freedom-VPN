@@ -89,6 +89,7 @@ type Engine struct {
 	meterSnap       []enforce.Binding
 	restartDesired  *api.DesiredState
 	restartBindings []enforce.Binding
+	restartIntent   *usageIntent
 	retainedPending bool
 	runCtx          context.Context
 	usageOutbox     bool
@@ -203,6 +204,7 @@ type Engine struct {
 	healthSig   string
 	// probeChallenge records the issuance already installed by this process.
 	probeChallenge  *healthattest.Challenge
+	probeCleanup    *probeCleanup
 	probedChallenge *healthattest.Challenge
 	// desiredSynced is set when a verified document was loaded, or when this
 	// process received a desired-state response (200, 304, or revocation).
@@ -482,8 +484,32 @@ func (e *Engine) bootWithBudget(caller context.Context, timeout time.Duration) e
 	}
 }
 
-func (e *Engine) boot(ctx context.Context) error {
+func (e *Engine) boot(ctx context.Context) (bootErr error) {
 	caller := controlContext(ctx)
+	previous, _ := watchdog.ReadHeartbeat(e.cfg.HeartbeatPath)
+	// Publish uncertainty before any stage can block. Adoption checks the
+	// captured prior receipt, never this new startup heartbeat (r22 M-3).
+	e.serving, e.baselineOK = false, false
+	e.policyExpires = 0
+	if err := e.bootHeartbeat(ctx); err != nil {
+		return fmt.Errorf("%w: heartbeat: %w", ErrBoot, err)
+	}
+	defer func() {
+		if bootErr == nil && ctx.Err() != nil {
+			if e.bootSafe.Load() && caller.Err() != nil {
+				bootErr = caller.Err()
+			} else {
+				bootErr = fmt.Errorf("%w: local deadline: %w", ErrBoot, ctx.Err())
+			}
+		}
+		if bootErr != nil || ctx.Err() != nil {
+			e.serving = false
+			e.policyExpires = 0
+		}
+		if err := e.bootHeartbeat(ctx); err != nil && bootErr == nil && ctx.Err() == nil {
+			bootErr = fmt.Errorf("%w: heartbeat: %w", ErrBoot, err)
+		}
+	}()
 	if p, ok := e.plane.(interface{ MissingExecutables() []string }); ok {
 		missing := p.MissingExecutables()
 		e.dependencyMissing = len(missing) != 0
@@ -497,7 +523,6 @@ func (e *Engine) boot(ctx context.Context) error {
 		e.serving, e.leaseFresh = false, false
 		e.policyExpires = 0
 		e.decision = Decide(e.input())
-		e.beat()
 		return fmt.Errorf("%w: runtime: %w", ErrBoot, err)
 	}
 	e.leaseFresh = false
@@ -511,14 +536,14 @@ func (e *Engine) boot(ctx context.Context) error {
 	// Lock waits, the probe and the resolver refresh follow the caller: a
 	// stop request ends them and refuses adoption.
 	rejected := e.applyError
-	if e.adoptStoredServing(ctx) {
-		e.beat()
+	if e.adoptStoredServing(ctx, previous) {
 		e.answerHealthOnBoot(ctx)
 		return nil
 	}
+	e.baselineOK = false
 	dp, err := e.cfg.DatapathValue()
 	if err != nil {
-		return err
+		return fmt.Errorf("%w: datapath: %w", ErrBoot, err)
 	}
 	err = e.baselineCall("boot_unverified", func() error { return e.plane.Baseline(ctx, dp) })
 	err = errors.Join(err, ctx.Err())
@@ -534,6 +559,11 @@ func (e *Engine) boot(ctx context.Context) error {
 		e.applyError = nil
 	}
 	if e.baselineOK {
+		// This receipt must precede migration, source reads and settlement.
+		// No timeout publisher races the worker's filesystem ownership.
+		if err := e.bootHeartbeat(ctx); err != nil {
+			return fmt.Errorf("%w: heartbeat: %w", ErrBoot, err)
+		}
 		e.bootSafe.Store(true)
 		e.retainedPending = true
 		e.setMeterBindings(e.restartBindings)
@@ -542,7 +572,6 @@ func (e *Engine) boot(ctx context.Context) error {
 	}
 	e.readMeter(ctx)
 	e.decision = Decide(e.input())
-	e.beat()
 	// A stored document that is still inside its validity window can be
 	// answered at start. A missing document, or one that expired while the
 	// process was stopped, is not a DNS result yet. A canceled probe is not
@@ -1048,6 +1077,11 @@ func (e *Engine) baseline(ctx context.Context) error {
 	}
 	e.baselineOK = true
 	e.policyExpires = 0
+	if e.probeCleanup != nil {
+		// A full verified baseline also removes probe rules and sets. It can
+		// complete an earlier failed narrow clear without reinstalling it.
+		e.recordProbeCleared(ctx)
+	}
 	return nil
 }
 
@@ -1186,6 +1220,14 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		// Without a valid pre-Apply candidate the old expectation still applies.
 	}
 	wasServing := e.expectServing.Load()
+	if !closedRecovery && !e.finalDone && len(e.meterBindings()) != 0 && !sameUsageBindings(e.meterBindings(), model.Bindings) {
+		// A sample while the old rules still forward leaves a race before
+		// Apply. Withdraw first, then commit every outgoing delta (r22 H-1).
+		e.handoff(ctx)
+		if !e.finalDone || e.retainedPending || !e.baselineOK {
+			return nil
+		}
+	}
 	if !closedRecovery && e.meter != nil && e.finalDone {
 		// A closed epoch must be replaced before Apply can admit the first
 		// packet. Keep the sampler paused across this real durable read.
@@ -1212,6 +1254,13 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		if err := e.reserveConntrack(ctx, model); err != nil {
 			e.withdraw(ctx)
 			return err
+		}
+	}
+	if !closedRecovery {
+		if err := e.recordUsageIntent(ctx, model); err != nil {
+			e.rejectServing(ctx, model, enforce.ServingEvidence{}, err)
+			e.usagePersist = true
+			return nil
 		}
 	}
 	res, err := e.plane.Apply(applyCtx, model, prev)

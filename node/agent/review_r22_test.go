@@ -8,7 +8,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
-	"net/netip"
+	"fmt"
 	"os"
 	"testing"
 	"time"
@@ -22,154 +22,146 @@ import (
 	"github.com/google/uuid"
 )
 
-// H-1: Live generation transitions and failed handoff FinalSamples violate the
-// attribution rule ("Every byte is either attributed to the member and binding
-// revision the kernel counted it under, or recorded as a gap" and "A rebinding
-// Apply never runs while a retained delta is unsettled"):
-//  1. Crash after the retained_applied write, before the first poked sample (or
-//     two Applies back to back before a sample commits):
-//     Generation 3 binds Device A -> (M1, rev 7) and Device B -> (M1, rev 2).
-//     PrepareSampling opens the epoch with unbound baseline counters (hadOld ==
-//     false). Under Generation 3, Device A forwards 1000 B and Device B forwards
-//     4096 B for Member M1 (rev 2). Before the background sampler commits a
-//     sample for Generation 3 (e.g. held by sub-interval clock jitter or before
-//     the async goroutine runs), Generation 4 rebinds Device B -> (M2, rev 3)
-//     while keeping Device A -> (M1, rev 7). enforce runs plane.Apply(Gen 4),
-//     overwrites e.meterSnap and retained_applied in agent.db with Generation 4,
-//     and the process crashes before the first poked sample of Generation 4.
-//     When Process 2 boots and refuses adoption, captureRestartBindings sees
-//     retained == Gen 4 and desired == Gen 4, and settleRetainedUsage bills
-//     Member M2 (rev 3) 4096 B as UsageQualityComplete for traffic that the
-//     kernel counted under Member M1 (rev 2) in Generation 3.
-//  2. Unsettled handoff delta on withdrawal:
-//     When handoff(ctx) withdraws serving to Baseline and FinalSample fails
-//     (e.g. meter.ErrHold or transient counter read error), handoff sets
-//     e.usagePersist = true and leaves e.finalDone = false without setting
-//     e.retainedPending = true. On the next Step, e.readMeter(ctx) clears
-//     e.usagePersist = false, syncDesired accepts a rebinding generation, and
-//     enforce skips PrepareSampling (e.finalDone == false) and runs a rebinding
-//     Apply while the withdrawn generation's delta is still unsettled, billing
-//     the new member/revision as UsageQualityComplete for the old generation's
-//     bytes.
+// r22 H-1: outgoing bytes commit before another identity can count. Exercise
+// both absent and nil-bound heads, a stable neighbor, and live/restart reads.
 func TestR22_H1_UnsettledGenerationTransitionAndHandoffMisattributeUsage(t *testing.T) {
-	t.Run("crash_after_retained_applied_write_before_first_poked_sample_bills_wrong_member", func(t *testing.T) {
-		r := newRig(t)
-		alignControlClock(r)
-		r.srv.SetUsageUnavailable(1000)
-		r.eng.cfg.ExtraDeniedV4 = []string{"203.0.113.1/32"}
-		serveBoundGeneration(t, r)
-		r.manualUsage(t)
+	for _, headKind := range []string{"nil_bound", "absent"} {
+		for _, restart := range []bool{false, true} {
+			t.Run(fmt.Sprintf("head_%s_restart_%v", headKind, restart), func(t *testing.T) {
+				r := newRig(t)
+				alignControlClock(r)
+				r.srv.SetUsageUnavailable(1000)
+				r.eng.cfg.ExtraDeniedV4 = []string{"203.0.113.1/32"}
+				serveBoundGeneration(t, r)
+				r.manualUsage(t)
 
-		m1 := r.eng.appliedModel.Bindings[0].MemberID
-		m2 := uuid.Must(uuid.NewV7())
-		devA := r.eng.appliedModel.Bindings[0].DeviceID
-		devB := uuid.Must(uuid.NewV7())
-		upA := meter.CounterName(devA, meter.DirUpload)
-		upB := meter.CounterName(devB, meter.DirUpload)
+				m1 := r.eng.appliedModel.Bindings[0].MemberID
+				m2 := uuid.Must(uuid.NewV7())
+				devA := r.eng.appliedModel.Bindings[0].DeviceID
+				devB := uuid.Must(uuid.NewV7())
+				upA := meter.CounterName(devA, meter.DirUpload)
+				upB := meter.CounterName(devB, meter.DirUpload)
 
-		src := &r20DynamicSource{
-			boot:     r.eng.bootID.String(),
-			bindings: r.eng.meterBindings,
-			counters: map[string]enforce.CounterValue{
-				upA: {Packets: 1, Bytes: 1000},
-				upB: {Packets: 0, Bytes: 0},
-			},
+				src := &r20DynamicSource{
+					boot:     r.eng.bootID.String(),
+					bindings: r.eng.meterBindings,
+					counters: map[string]enforce.CounterValue{
+						upA: {Packets: 1, Bytes: 1000},
+						upB: {Packets: 0, Bytes: 0},
+					},
+				}
+				if headKind == "absent" {
+					delete(src.counters, upB)
+				}
+				r.eng.meter.Close()
+				var err error
+				r.eng.meter, err = meter.New(meter.Config{
+					NodeID:        r.eng.nodeID,
+					IncarnationID: r.eng.incID,
+					Store:         r.eng.usage,
+					Source:        src,
+				})
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := r.eng.meter.Sample(t.Context()); err != nil {
+					t.Fatal(err)
+				}
+
+				// Generation 3: Device A on (M1, rev 1), Device B added on (M1, rev 2).
+				// Advance into the lease renewal lead window (or post-adoption refresh)
+				// so syncLease at engine.go:713 renews in the same pass as syncDesired.
+				r.clock.Advance(time.Second)
+				r.eng.leaseRefreshPending = true
+				alignControlClock(r)
+				bindA := oneBinding(r.clock.Wall())
+				bindA.MemberId = m1
+				bindA.DeviceId = devA
+				bindA.PeerId = "peer-a1"
+				bindA.BindingRevision = 1
+				bindA.AllowedIpv4 = []string{"100.64.1.1/32"}
+
+				bindB := oneBinding(r.clock.Wall())
+				bindB.MemberId = m1
+				bindB.DeviceId = devB
+				bindB.PeerId = "peer-b"
+				bindB.BindingRevision = 2
+				bindB.AllowedIpv4 = []string{"100.64.1.11/32"}
+
+				f3 := generationFixture(3, bindA)
+				f3.Bindings = []api.DeviceBinding{bindA, bindB}
+				r.srv.SetFixture(f3)
+				stepOK(t, r)
+				if !r.eng.serving || r.eng.appliedGen != 3 {
+					t.Fatalf("setup: expected gen 3 serving, got serving=%v gen=%d reasons=%v", r.eng.serving, r.eng.appliedGen, r.eng.decision.Reasons)
+				}
+
+				// Under Generation 3 (before the async poked sample of Gen 3 commits),
+				// Device B forwards 4096 B for Member M1 (rev 2).
+				src.setCounter(upA, enforce.CounterValue{Packets: 2, Bytes: 3000})
+				src.setCounter(upB, enforce.CounterValue{Packets: 1, Bytes: 4096})
+
+				// Generation 4 rebinds Device B to Member M2 (rev 3); Device A stays on (M1, rev 1).
+				// Advance into the lease renewal lead window (or post-adoption refresh)
+				// so syncLease at engine.go:713 renews to Gen 4 before evaluate/enforce.
+				r.clock.Advance(time.Second)
+				r.eng.leaseRefreshPending = true
+				alignControlClock(r)
+				bindA = oneBinding(r.clock.Wall())
+				bindA.MemberId = m1
+				bindA.DeviceId = devA
+				bindA.PeerId = "peer-a1"
+				bindA.BindingRevision = 1
+				bindA.AllowedIpv4 = []string{"100.64.1.1/32"}
+
+				bindBRebound := oneBinding(r.clock.Wall())
+				bindBRebound.MemberId = m2
+				bindBRebound.DeviceId = devB
+				bindBRebound.PeerId = "peer-b"
+				bindBRebound.BindingRevision = 3
+				bindBRebound.AllowedIpv4 = []string{"100.64.1.11/32"}
+				f4 := generationFixture(4, bindA)
+				f4.Bindings = []api.DeviceBinding{bindA, bindBRebound}
+				r.srv.SetFixture(f4)
+
+				// Step applies Generation 4 and writes retained_applied = Gen 4 without
+				// sampling Generation 3 first. Process 1 then crashes after the
+				// retained_applied write, before the first poked sample of Gen 4 commits.
+				stepOK(t, r)
+				if !r.eng.serving || r.eng.appliedGen != 4 {
+					t.Fatalf("setup: expected gen 4 serving, got serving=%v gen=%d reasons=%v", r.eng.serving, r.eng.appliedGen, r.eng.decision.Reasons)
+				}
+				var u r21LedgerSummary
+				if restart {
+					r20Crash(r.eng)
+					r.clock.Advance(time.Second)
+					cfg := r20ChangedSets(r)
+					next := r20Successor(t, r, cfg, src, r.plane)
+					if err := next.Boot(t.Context()); err != nil {
+						t.Fatal(err)
+					}
+					u = r21ReadLedger(t, cfg, next.nodeID, next.incID)
+				} else {
+					if err := r.eng.meter.Sample(t.Context()); err != nil {
+						t.Fatal(err)
+					}
+					u = r21ReadLedger(t, r.eng.cfg, r.eng.nodeID, r.eng.incID)
+				}
+				if u.byRevision[1] != 3000 || u.byRevision[2] != 4096 || len(u.gaps) != 0 {
+					t.Fatalf("outgoing or unchanged device lost bytes: %v gaps=%d", u.byRevision, len(u.gaps))
+				}
+				// Regression r22: H-1 — 4096 B forwarded by Device B under Generation 3
+				// (Member M1, rev 2) must NEVER be billed as UsageQualityComplete to
+				// Member M2 (rev 3) after Generation 4 overwrote retained_applied before
+				// a sample of Generation 3 committed.
+				if gotM2 := u.byMemberRev[r21MemberRev{member: m2, rev: 3}]; gotM2 != 0 {
+					t.Fatalf("H-1: Member M2 (rev 3) was billed %d B as UsageQualityComplete for traffic counted under Member M1 (rev 2) in Generation 3 (byMemberRev=%v byRevision=%v gaps=%d)",
+						gotM2, u.byMemberRev, u.byRevision, len(u.gaps))
+				}
+			})
+
 		}
-		r.eng.meter.Close()
-		var err error
-		r.eng.meter, err = meter.New(meter.Config{
-			NodeID:        r.eng.nodeID,
-			IncarnationID: r.eng.incID,
-			Store:         r.eng.usage,
-			Source:        src,
-		})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err := r.eng.meter.Sample(t.Context()); err != nil {
-			t.Fatal(err)
-		}
-
-		// Generation 3: Device A on (M1, rev 1), Device B added on (M1, rev 2).
-		// Advance into the lease renewal lead window (or post-adoption refresh)
-		// so syncLease at engine.go:713 renews in the same pass as syncDesired.
-		r.clock.Advance(59 * time.Minute)
-		alignControlClock(r)
-		bindA := oneBinding(r.clock.Wall())
-		bindA.MemberId = m1
-		bindA.DeviceId = devA
-		bindA.PeerId = "peer-a1"
-		bindA.BindingRevision = 1
-		bindA.AllowedIpv4 = []string{"100.64.1.1/32"}
-
-		bindB := oneBinding(r.clock.Wall())
-		bindB.MemberId = m1
-		bindB.DeviceId = devB
-		bindB.PeerId = "peer-b"
-		bindB.BindingRevision = 2
-		bindB.AllowedIpv4 = []string{"100.64.1.11/32"}
-
-		f3 := generationFixture(3, bindA)
-		f3.Bindings = []api.DeviceBinding{bindA, bindB}
-		r.srv.SetFixture(f3)
-		stepOK(t, r)
-		if !r.eng.serving || r.eng.appliedGen != 3 {
-			t.Fatalf("setup: expected gen 3 serving, got serving=%v gen=%d reasons=%v", r.eng.serving, r.eng.appliedGen, r.eng.decision.Reasons)
-		}
-
-		// Under Generation 3 (before the async poked sample of Gen 3 commits),
-		// Device B forwards 4096 B for Member M1 (rev 2).
-		src.setCounter(upB, enforce.CounterValue{Packets: 1, Bytes: 4096})
-
-		// Generation 4 rebinds Device B to Member M2 (rev 3); Device A stays on (M1, rev 1).
-		// Advance into the lease renewal lead window (or post-adoption refresh)
-		// so syncLease at engine.go:713 renews to Gen 4 before evaluate/enforce.
-		r.clock.Advance(59 * time.Minute)
-		alignControlClock(r)
-		bindA = oneBinding(r.clock.Wall())
-		bindA.MemberId = m1
-		bindA.DeviceId = devA
-		bindA.PeerId = "peer-a1"
-		bindA.BindingRevision = 1
-		bindA.AllowedIpv4 = []string{"100.64.1.1/32"}
-
-		bindBRebound := oneBinding(r.clock.Wall())
-		bindBRebound.MemberId = m2
-		bindBRebound.DeviceId = devB
-		bindBRebound.PeerId = "peer-b"
-		bindBRebound.BindingRevision = 3
-		bindBRebound.AllowedIpv4 = []string{"100.64.1.11/32"}
-		f4 := generationFixture(4, bindA)
-		f4.Bindings = []api.DeviceBinding{bindA, bindBRebound}
-		r.srv.SetFixture(f4)
-
-		// Step applies Generation 4 and writes retained_applied = Gen 4 without
-		// sampling Generation 3 first. Process 1 then crashes after the
-		// retained_applied write, before the first poked sample of Gen 4 commits.
-		stepOK(t, r)
-		if !r.eng.serving || r.eng.appliedGen != 4 {
-			t.Fatalf("setup: expected gen 4 serving, got serving=%v gen=%d reasons=%v", r.eng.serving, r.eng.appliedGen, r.eng.decision.Reasons)
-		}
-		r20Crash(r.eng)
-
-		// Process 2 boots on the same boot and refuses adoption (changed ExtraDeniedV4).
-		r.clock.Advance(time.Second)
-		cfg := r20ChangedSets(r)
-		next := r20Successor(t, r, cfg, src, r.plane)
-		if err := next.Boot(t.Context()); err != nil {
-			t.Fatal(err)
-		}
-
-		u := r21ReadLedger(t, cfg, next.nodeID, next.incID)
-		// TODO(review r22): H-1 — 4096 B forwarded by Device B under Generation 3
-		// (Member M1, rev 2) must NEVER be billed as UsageQualityComplete to
-		// Member M2 (rev 3) after Generation 4 overwrote retained_applied before
-		// a sample of Generation 3 committed.
-		if gotM2 := u.byMemberRev[r21MemberRev{member: m2, rev: 3}]; gotM2 != 0 {
-			t.Fatalf("H-1: Member M2 (rev 3) was billed %d B as UsageQualityComplete for traffic counted under Member M1 (rev 2) in Generation 3 (byMemberRev=%v byRevision=%v gaps=%d)",
-				gotM2, u.byMemberRev, u.byRevision, len(u.gaps))
-		}
-	})
+	}
 
 	t.Run("failed_handoff_finalsample_does_not_block_rebinding_apply_in_next_step", func(t *testing.T) {
 		r := newRig(t)
@@ -269,7 +261,7 @@ func TestR22_H1_UnsettledGenerationTransitionAndHandoffMisattributeUsage(t *test
 		}
 
 		u := r21ReadLedger(t, r.eng.cfg, r.eng.nodeID, r.eng.incID)
-		// TODO(review r22): H-1 — A rebinding Apply must never run while the
+		// Regression r22: H-1 — A rebinding Apply must never run while the
 		// withdrawn generation's delta is unsettled; Member M2 (rev 3) must not
 		// be billed for the 4096 B forwarded under Member M1 (rev 2) before
 		// handoff installed Baseline.
@@ -280,42 +272,9 @@ func TestR22_H1_UnsettledGenerationTransitionAndHandoffMisattributeUsage(t *test
 	})
 }
 
-// H-2: captureRestartBindings misidentifies the set of candidate generations on
-// refused adoption, turning unambiguous single-binding traffic into false
-// mapping-conflict UsageQualityGaps across five scenarios where only one
-// binding could have counted the bytes (including regressions from main):
-//  1. Crash before plane.Apply (live kernel RestartGeneration == retained.Generation):
-//     Generation 4 was synced to agent.db (rebinding Device B or unpublishing
-//     the node), but Process 1 crashed before plane.Apply ran. Live kernel
-//     RestartGeneration is still 3 (retained.Generation), proving Generation 4
-//     never counted a single packet. Yet captureRestartBindings intersects
-//     retained (Gen 3) with desired (Gen 4), turning Device B (and when Gen 4
-//     is unpublished, ALL devices) into a mapping-conflict gap.
-//  2. Non-servable desired state (PublicationIntent == unpublished) with gen == 0:
-//     Process 1 served Generation 3, synced unpublished Generation 4
-//     (DeviceBindings = []), installed Baseline (gen == 0), and crashed before
-//     FinalSample. Even though an unpublished desired state can never be
-//     applied by Decide, captureRestartBindings intersects retained.Bindings
-//     with [] and turns 100% of Generation 3's traffic for all devices into a
-//     mapping-conflict gap.
-//  3. Device removed in desired (or added in desired):
-//     A generation that omits Device B renders zero nftables counter rules for
-//     u_<B>/d_<B> and cannot increment Device B's counters. Thus a device
-//     present only in retained (removed in desired) or only in desired (newly
-//     added in desired with no prior conflicting binding in head.Counters)
-//     ran under only one binding, yet commonUsageBindings omits it and turns
-//     its traffic into a mapping-conflict gap.
-//  4. Stale retained_applied from an earlier closed epoch / earlier boot:
-//     retained_applied is never cleared when an epoch closes or across reboots.
-//     When a new epoch applies Generation 4 (Device B on (M2, rev 3)) and
-//     crashes before SetMeta("retained_applied", Gen 4), captureRestartBindings
-//     intersects Generation 4 with the already-settled Generation 3 from the
-//     previous closed epoch / previous boot and drops Device B into a gap.
-//  5. First-ever Apply on a node (retained_applied not yet written):
-//     When e.appliedModel == nil and Process 1 crashes between its first-ever
-//     plane.Apply(Gen 2) and SetMeta("retained_applied", Gen 2),
-//     captureRestartBindings returns nil even though RestartGeneration ==
-//     restartDesired.ConfigGeneration == 2, turning all traffic into a gap.
+// r22 H-2: candidate generations are bounded by live kernel evidence and
+// epoch-scoped pre-Apply intent. Converted crash points run the real enforce
+// path; a removed device's last packets precede its removal (D-141).
 func TestR22_H2_CaptureRestartBindingsFalseGapsAcrossCrashWindows(t *testing.T) {
 	t.Run("crash_before_apply_with_live_retained_generation_in_kernel", func(t *testing.T) {
 		r := newRig(t)
@@ -390,7 +349,7 @@ func TestR22_H2_CaptureRestartBindingsFalseGapsAcrossCrashWindows(t *testing.T) 
 		}
 
 		u := r21ReadLedger(t, r.eng.cfg, next.nodeID, next.incID)
-		// TODO(review r22): H-2 — Because live kernel RestartGeneration was 3
+		// Regression r22: H-2 — Because live kernel RestartGeneration was 3
 		// (retained.Generation), Generation 4's Apply never started in the
 		// kernel; both Device A (rev 1: 3000 B) and Device B (rev 2: 8192 B)
 		// must be attributed without a mapping-conflict gap.
@@ -455,7 +414,7 @@ func TestR22_H2_CaptureRestartBindingsFalseGapsAcrossCrashWindows(t *testing.T) 
 		}
 
 		u := r21ReadLedger(t, r.eng.cfg, next.nodeID, next.incID)
-		// TODO(review r22): H-2 — An unpublished desired document never passes
+		// Regression r22: H-2 — An unpublished desired document never passes
 		// Decide and can never be applied to the kernel; intersecting
 		// retained.Bindings with an unpublished document's empty bindings drops
 		// 100% of the node's retained Generation 2 usage into a gap.
@@ -528,25 +487,15 @@ func TestR22_H2_CaptureRestartBindingsFalseGapsAcrossCrashWindows(t *testing.T) 
 		if err := r.eng.syncDesired(t.Context()); err != nil {
 			t.Fatal(err)
 		}
-		model := *r.eng.appliedModel
-		model.Generation = 4
-		model.Bindings = []enforce.Binding{
-			model.Bindings[0],
-			{
-				DeviceID:        bAdded.DeviceId,
-				MemberID:        bAdded.MemberId,
-				PeerID:          bAdded.PeerId,
-				BindingRevision: uint64(bAdded.BindingRevision),
-				AllowedV4:       []netip.Prefix{netip.MustParsePrefix("100.64.1.3/32")},
-			},
-		}
-		if _, err := r.plane.Apply(t.Context(), model, r.eng.counters); err != nil {
-			t.Fatal(err)
-		}
+		// The removed device's last packets arrive while its old rules exist.
 		src.setCounter(upA, enforce.CounterValue{Packets: 2, Bytes: 3000})
 		src.setCounter(upRemoved, enforce.CounterValue{Packets: 2, Bytes: 5000})
-		src.setCounter(upAdded, enforce.CounterValue{Packets: 1, Bytes: 4096})
-		r20Crash(r.eng)
+		r.eng.leaseRefreshPending = true
+		r.eng.plane = &r22CrashPlane{memPlane: r.plane, afterApply: func() {
+			src.setCounter(upAdded, enforce.CounterValue{Packets: 1, Bytes: 4096})
+			panic(r22CrashFault{})
+		}}
+		r22CrashDuringStep(t, r)
 
 		next := r20Successor(t, r, r.eng.cfg, src, r.plane)
 		if err := next.Boot(t.Context()); err != nil {
@@ -554,7 +503,7 @@ func TestR22_H2_CaptureRestartBindingsFalseGapsAcrossCrashWindows(t *testing.T) 
 		}
 
 		u := r21ReadLedger(t, r.eng.cfg, next.nodeID, next.incID)
-		// TODO(review r22): H-2 — bRemoved only ever had counter rules in Gen 3
+		// Regression r22: H-2 — bRemoved only ever had counter rules in Gen 3
 		// (rev 2: 5000 B total) and bAdded only ever had counter rules in Gen 4
 		// (rev 3: 4096 B total); neither device had competing bindings across
 		// the candidate generations, so both must be attributed without a gap.
@@ -586,18 +535,32 @@ func TestR22_H2_CaptureRestartBindingsFalseGapsAcrossCrashWindows(t *testing.T) 
 		if err := p2.syncDesired(t.Context()); err != nil {
 			t.Fatal(err)
 		}
-		if err := p2.meter.PrepareSampling(t.Context()); err != nil {
+		// Exercise the real failure ordering: the retained write fails, then
+		// rejection installs Baseline. Crash before its final sample.
+		db, err := sql.Open("sqlite", "file:"+cfg.DBPath())
+		if err != nil {
 			t.Fatal(err)
 		}
-		model := *p2.appliedModel
-		model.Generation = 3
-		model.Bindings = append([]enforce.Binding(nil), model.Bindings...)
-		model.Bindings[0].BindingRevision = 2
-		if _, err := r.plane.Apply(t.Context(), model, p2.counters); err != nil {
+		_, err = db.Exec(`CREATE TRIGGER r22_retained_failure BEFORE UPDATE ON meta
+			WHEN NEW.key = 'retained_applied' BEGIN SELECT RAISE(FAIL, 'TEST ONLY retained write failure'); END`)
+		if err != nil {
 			t.Fatal(err)
 		}
-		src.setCounter(upName, enforce.CounterValue{Packets: 3, Bytes: 10240})
-		r20Crash(p2)
+		_ = db.Close()
+		applied := false
+		p2.plane = &r22CrashPlane{memPlane: r.plane, afterApply: func() {
+			applied = true
+			src.setCounter(upName, enforce.CounterValue{Packets: 3, Bytes: 10240})
+		}, afterBaseline: func() {
+			if applied {
+				panic(r22CrashFault{})
+			}
+		}}
+		r.eng = p2
+		r22CrashDuringStep(t, r)
+		if r.plane.last.Generation != 0 {
+			t.Fatal("crash did not follow rejection Baseline")
+		}
 
 		// Process 3 boots and refuses adoption. In the currently open epoch,
 		// ONLY Generation 3 (rev 2) ever ran; Generation 2 (rev 1) belonged to
@@ -608,7 +571,7 @@ func TestR22_H2_CaptureRestartBindingsFalseGapsAcrossCrashWindows(t *testing.T) 
 		}
 
 		u := r21ReadLedger(t, cfg, p3.nodeID, p3.incID)
-		// TODO(review r22): H-2 — Stale retained_applied from an already-closed
+		// Regression r22: H-2 — Stale retained_applied from an already-closed
 		// epoch (or earlier boot) must not intersect with the new epoch's
 		// generation and turn pure Generation 3 (rev 2: 2048 B) traffic into a gap.
 		if u.byRevision[1] != 8192 || u.byRevision[2] != 2048 || len(u.gaps) != 0 {
@@ -618,39 +581,28 @@ func TestR22_H2_CaptureRestartBindingsFalseGapsAcrossCrashWindows(t *testing.T) 
 	})
 
 	t.Run("first_ever_apply_crash_before_retained_applied_has_nil_applied_model", func(t *testing.T) {
-		r, src, _ := r20ServedPendingDelta(t)
-		// Simulate the crash on the first-ever Apply right after plane.Apply
-		// (engine.go:1215) and before SetMeta("retained_applied") (engine.go:1265),
-		// so retained_applied is absent in agent.db while RestartGeneration in
-		// the kernel and restartDesired in agent.db are both Generation 2.
-		db, err := sql.Open("sqlite", "file:"+r.eng.cfg.DBPath())
-		if err != nil {
-			t.Fatal(err)
-		}
-		if _, err := db.Exec(`DELETE FROM meta WHERE key = 'retained_applied'`); err != nil {
-			_ = db.Close()
-			t.Fatal(err)
-		}
-		_ = db.Close()
-
-		// Process 2 boots and refuses adoption (changed ExtraDeniedV4).
-		// RestartGeneration reads gen == 2 == restartDesired.ConfigGeneration,
-		// proving Generation 2 is the sole candidate generation in the kernel,
-		// yet captureRestartBindings returns immediately at `if e.appliedModel == nil`.
-		cfg := r20ChangedSets(r)
-		next := r20Successor(t, r, cfg, src, r.plane)
+		r := newRig(t)
+		alignControlClock(r)
+		r.srv.StickyLease(false)
+		r.srv.SetUsageUnavailable(1000)
+		b := oneBinding(r.clock.Wall())
+		r.srv.SetFixture(generationFixture(2, b))
+		up := meter.CounterName(b.DeviceId, meter.DirUpload)
+		src := &r20DynamicSource{boot: r.eng.bootID.String(), bindings: r.eng.meterBindings, counters: map[string]enforce.CounterValue{}}
+		r.eng.meterSource = src
+		enrollBoot(t, r)
+		r.eng.plane = &r22CrashPlane{memPlane: r.plane, afterApply: func() {
+			src.setCounter(up, enforce.CounterValue{Packets: 1, Bytes: 8192})
+			panic(r22CrashFault{})
+		}}
+		r22CrashDuringStep(t, r)
+		next := r20Successor(t, r, r.eng.cfg, src, r.plane)
 		if err := next.Boot(t.Context()); err != nil {
 			t.Fatal(err)
 		}
-
-		u := r21ReadLedger(t, cfg, next.nodeID, next.incID)
-		// TODO(review r22): H-2 — When retained_applied was not yet written before
-		// a crash on the first-ever Apply, RestartGeneration / restartDesired
-		// must still attribute the unambiguous Generation 2 traffic (8192 B total)
-		// instead of returning early at `if e.appliedModel == nil`.
+		u := r21ReadLedger(t, next.cfg, next.nodeID, next.incID)
 		if u.byRevision[1] != 8192 || len(u.gaps) != 0 {
-			t.Fatalf("H-2 (first-ever Apply crash before retained_applied): 8192 B turned into gap: byRevision=%v gaps=%d (want rev1=8192 gaps=0)",
-				u.byRevision, len(u.gaps))
+			t.Fatalf("first Apply lost bytes: revisions=%v gaps=%d", u.byRevision, len(u.gaps))
 		}
 	})
 }
@@ -709,7 +661,7 @@ func TestR22_M1_TransientBootMeterOpenFailureWedgesRetainedPendingSettlement(t *
 	}
 
 	u := r21ReadLedger(t, cfg, next.nodeID, next.incID)
-	// TODO(review r22): M-1 — Step must retry meter initialization when Boot's
+	// Regression r22: M-1 — Step must retry meter initialization when Boot's
 	// ensureUsage failed after openUsage, settle the retained 8192 B delta, and
 	// clear retainedPending.
 	if next.retainedPending || next.meter == nil || u.byRevision[1] != 8192 {
@@ -816,7 +768,7 @@ func TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat(t *tes
 		if err != nil {
 			t.Fatal(err)
 		}
-		// TODO(review r22): M-3 — Once Boot's Baseline has replaced the kernel
+		// Regression r22: M-3 — Once Boot's Baseline has replaced the kernel
 		// serving ruleset (Generation 0) and bootWithBudget returns, the
 		// on-disk heartbeat must not still claim Serving=true, Generation=2.
 		if hb.Serving || hb.Generation != 0 {
@@ -840,7 +792,7 @@ func TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat(t *tes
 		if err != nil {
 			t.Fatal(err)
 		}
-		// TODO(review r22): M-3 — A failed/timed-out Boot must overwrite any
+		// Regression r22: M-3 — A failed/timed-out Boot must overwrite any
 		// prior same-boot Serving=true heartbeat with Serving=false, BaselineOK=false.
 		if hb.Serving || hb.BaselineOK {
 			t.Fatalf("M-3: timed-out Boot left stale Serving=%v BaselineOK=%v heartbeat on disk", hb.Serving, hb.BaselineOK)
@@ -879,7 +831,7 @@ func TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat(t *tes
 		if err := json.Unmarshal([]byte(rawIssuance), &iss); err != nil {
 			t.Fatal(err)
 		}
-		// TODO(review r22): M-3 — When probe_clear fails during answerHealthOnBoot,
+		// Regression r22: M-3 — When probe_clear fails during answerHealthOnBoot,
 		// e.baselineOK is false and the probe exception is still in the kernel,
 		// so the on-disk heartbeat must not claim BaselineOK=true and
 		// probe_issuance must not record Cleared=true before kernel removal succeeds.

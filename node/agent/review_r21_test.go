@@ -151,6 +151,10 @@ func TestR21_H1_CrashBetweenApplyAndRetainedAppliedMisattributesToPreviousMember
 	model.QoS.Members = append([]enforce.MemberQoS(nil), model.QoS.Members...)
 	model.QoS.Members[0].MemberID = member2
 	model.QoS.Assignments = nil
+	// TEST ONLY legacy image: direct Apply bypasses the new usage intent.
+	if err := r.eng.store.SetMeta(ctx, usageIntentKey, ""); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := r.plane.Apply(ctx, model, r.eng.counters); err != nil {
 		t.Fatal(err)
 	}

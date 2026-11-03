@@ -401,8 +401,10 @@ func TestR20_M1_TermDuringBootInstallsBaselineAndExitsZero(t *testing.T) {
 			if !errors.Is(runErr, context.Canceled) || exit != 0 {
 				t.Fatalf("M-1 %s: Run returned %v (exit %d), want context.Canceled and exit 0", stage, runErr, exit)
 			}
-			if hb.Serving || !hb.BaselineOK || hb.Generation != 2 || hb.Mono < started {
-				t.Fatalf("M-1 %s: heartbeat %+v, want this process's Serving=false BaselineOK=true generation 2", stage, hb)
+			// r22 M-3: Boot reports the installed baseline generation, while
+			// the durable applied ACK remains separately available on Engine.
+			if hb.Serving || !hb.BaselineOK || hb.Generation != 0 || hb.Mono < started {
+				t.Fatalf("M-1 %s: heartbeat %+v, want this process's Serving=false BaselineOK=true generation 0", stage, hb)
 			}
 			if r.plane.baselines <= baselines || r.plane.last.Generation != 0 || len(r.plane.last.Bindings) != 0 || next.serving {
 				t.Fatalf("M-1 %s: kernel not on baseline: baselines %d->%d generation=%d bindings=%d serving=%v",

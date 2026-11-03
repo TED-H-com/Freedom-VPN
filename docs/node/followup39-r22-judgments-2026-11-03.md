@@ -84,3 +84,74 @@ The shipped service is `deploy/node/systemd/fvpn-agent.service`, with
 TimeoutStopSec=15s, pinned by `packaging/installer/followup9_test.go`. There is
 no main.go defaultStopTimeout and no twenty-second shipped stop setting.
 Boot's ten seconds plus Close's three seconds must continue to fit within 13s.
+
+## Main comparison receipts — 2026-11-03
+
+An archive of `8a775315` was tested with fixture-only adapters (no product
+changes). Unsupported 38-only test functions were removed from that archive;
+the in-memory plane was given its read-only RestartGeneration helper. The
+original H-1 A restart assertion passes on main because main does not settle
+the retained delta at Boot. Sampling **before** that restart exposes exactly
+the same wrong charge: revision 3 gets 4096 bytes, revision 2 gets none.
+H-1 B also charges 4096 old bytes to revision 3. The portable M-1 retry leaves
+usageOnce=true with meter=nil after recovery. M-3 C records Cleared=true and
+BaselineOK=true after the clear failed. These are pre-existing mechanisms.
+
+All five H-2 original Boot assertions fail on main too: the new delta has not
+yet been recorded there, rather than being finalized as 38's conflict gap.
+They do not establish a no-loss result on main. The M-2 original fixture's
+pre-Boot false gap also reproduces there and remains rejected as causal
+proof. The portable main receipts are `.agent/f39/before-main-r22.log`
+(1.170 s) and `.agent/f39/before-main-extra2.log` (0.589 s). Build failures and
+all admission refusals are retained, separately from test results.
+
+## Implemented boundary and crash ordering
+
+A device identity is `(device, member, binding_revision)`. A change in the
+identity set, including removal, takes Baseline before FinalSample. The old
+snapshot remains installed in the meter until that sample commits. A failure
+keeps the pending gate set; neither desired refresh nor Apply can overtake it.
+The next epoch is opened from a real unbound counter read before admission.
+The agent then durably writes `usage_apply_intent` with boot, epoch, generation
+and identities. Only then may Apply run. An intent write failure withdraws.
+Same-generation/same-epoch renewals reuse the existing intent after reading
+the current head; they do not repeat the intent write.
+
+There is no transaction spanning two databases and the kernel. Safety follows
+from ordering: before the new epoch, the old interval must be settled; before
+the intent, the kernel is still blocked; before admission, the intent is durable.
+A crash after intent but before Apply has zero new delta. A crash after Apply
+but before retained_applied still has exact epoch-scoped identities. Repeated
+crashes before settlement keep that intent. A counter reset can change the
+meter epoch independently; a mismatching intent cannot label that new epoch.
+Legacy recovery uses the checkpoint and the live-generation-bounded candidates,
+recording a gap for unknowable older ownership instead of assigning it to a
+new member. A missing device in a generation supplies no counting rules, but
+its named counter can survive removal. The remove/re-add regression proves
+8192 old bytes remain on revision 1 and only 1024 new bytes reach revision 2.
+
+The added binding-change cost is one verified Baseline, a final counter read
+and durable sample, a fresh baseline read/epoch commit, and the pre-Apply intent
+write. It is bounded by the existing Step local budget; failure defers serving
+to a later pass. Ordinary same-identity lease renewal adds a ledger-head read,
+with no extra withdrawal and no redundant intent fsync. The reserved lab
+comparison measures the resulting whole serving path; command guard timings
+alone do not measure the preceding accounting boundary.
+
+D-141 conversions: H-2 added/removed traffic now advances the removed device
+before removal and crashes inside real enforce/Apply. The closed-epoch case
+injects an actual retained_applied SQL write failure and crashes at the ensuing
+Baseline, before final settlement. The first-Apply case starts with no retained
+model and crashes in its real first Apply; it no longer deletes metadata after
+an unrelated serving history. r21's direct plane-Apply fixtures are explicitly
+legacy upgrade guards and remove the new intent they otherwise bypass; their
+unchanged-device and gap assertions are retained. r20's stopped-Boot heartbeat
+now expects observed generation zero rather than the old acknowledged two.
+
+Follow-up 39 tests also exercise add/rebind beside an unchanged device with
+both absent and nil-bound heads, with and without restart; ErrHold and source
+failure across hand-off, pending Step, restart, recovery, a running periodic
+sampler, and another restart; late adoption refusal with no premature usage
+mutation; failed probe clear and a successful retry without nonce extension;
+and the unreachable static-datapath validation guard. The actual 13-second
+blocking matrix is retained.

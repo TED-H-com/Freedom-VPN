@@ -15,15 +15,14 @@ import (
 // Adoption does not reset any kernel timeout. Both signed documents, the
 // original same-boot lease anchor, the current release, live rules and meter
 // ownership must still qualify. A reboot or uncertain state takes the baseline.
-func (e *Engine) adoptStoredServing(ctx context.Context) bool {
+func (e *Engine) adoptStoredServing(ctx context.Context, beat watchdog.Beat) bool {
 	if e.lease == nil || e.leaseBoot != e.bootID || e.lease.NodeId != e.nodeID || e.lease.NodeIncarnationId != e.incID ||
 		e.desired == nil || e.appliedModel == nil || e.appliedGen == 0 ||
 		e.appliedGen != uint64(e.desired.ConfigGeneration) || e.desired.ConfigGeneration != e.lease.ConfigGeneration {
 		return false
 	}
-	beat, err := watchdog.ReadHeartbeat(e.cfg.HeartbeatPath)
 	now := e.clock.Mono()
-	if err != nil || beat.BootID != e.bootID || !beat.Serving || !beat.BaselineOK || beat.Generation != e.appliedGen ||
+	if beat.BootID != e.bootID || !beat.Serving || !beat.BaselineOK || beat.Generation != e.appliedGen ||
 		beat.Mono > now || now-beat.Mono > time.Duration(e.cfg.WatchdogStaleSeconds)*time.Second || beat.PolicyExpires <= now {
 		return false
 	}
@@ -109,7 +108,13 @@ func (e *Engine) adoptStoredServing(ctx context.Context) bool {
 	defer func() { e.usageAdopting = false }()
 	e.readMeter(ctx)
 	e.decision = Decide(e.input())
-	if controlContext(ctx).Err() != nil || e.meter == nil || !e.decision.Serve || !e.verifyServingModel(ctx, d.Model, e.appliedAssignments) {
+	usageKnown := false
+	if e.usage != nil {
+		if h, err := e.usage.Head(ctx); err == nil {
+			usageKnown = sameUsageBindings(e.restartHeadBindings(h), d.Model.Bindings)
+		}
+	}
+	if controlContext(ctx).Err() != nil || e.meter == nil || !usageKnown || !e.decision.Serve || !e.verifyServingModel(ctx, d.Model, e.appliedAssignments) {
 		if prepared {
 			e.discardUsagePreparation()
 		}

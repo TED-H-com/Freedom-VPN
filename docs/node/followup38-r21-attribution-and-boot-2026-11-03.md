@@ -217,3 +217,77 @@ Provide a new quiet-host window for the complete frozen A,B,A,B comparison
 under D-133/D-138. The full production lab gate is passed; timing qualification
 is the remaining item. No unowned code change is requested. Final inventory
 at 09:13:14 UTC contains zero owned containers, images, networks or volumes.
+
+## Correction — follow-up 39, 2026-11-03 (r22)
+
+The preceding follow-up 38 record is preserved as delivered. r22 disproved
+several conclusions; this section supersedes those conclusions without
+rewriting the earlier evidence.
+
+- The discarded live-transition checkpoint was needed. A same-pass lease
+  refresh can authorize the next desired generation without withdrawal, and
+  an asynchronous sampler wake is not a committed boundary. A nil-bound or
+  absent counter head can consequently charge an intermediate binding's
+  bytes to the next member. Main `8a775315` reproduces this on the serving
+  path before any crash. Follow-up 39 withdraws, commits the outgoing final
+  sample, and opens an unbound epoch before any identity-set change. The
+  unchanged lease-renewal path does not take that extra withdrawal.
+- The promise that failed settlement blocks Apply was only implemented for
+  restart settlement. A failed runtime hand-off did not set the pending
+  gate. Follow-up 39 uses the gate for both paths, including source errors
+  and wall-clock holds. FinalSample pauses only after verified withdrawal;
+  recovery proves the periodic Run loop actually samples again. r22's
+  separate claim that successful Apply skipped ResumeSampling is rejected:
+  the delivered code called it unconditionally.
+- Intersecting retained and desired identities was too restrictive and did
+  not identify the actual candidate generations. The atomic live marker can
+  prove a newer desired was never installed; an unpublished document cannot
+  admit members; omitting a device supplies no counting rule for it. The
+  latest retained model can belong to an already-closed epoch, and the first
+  Apply can count before any retained model exists. Follow-up 39 persists
+  accounting intent **before** Apply, scoped to boot and usage epoch. Its
+  identities describe all traffic possible in that epoch; a stale model
+  from a prior epoch is irrelevant. A fetched document alone is never an
+  intent. Unique legacy candidate identities are retained when the committed
+  head supports them. An absent/nil-bound legacy head without scoped evidence
+  can conceal older add/remove/rebind traffic and remains an honest gap.
+  Unchanged bound devices retain their records alongside that gap. Thus an
+  unconditional claim that every single-generation-looking delta is exact
+  would still be too strong without historical provenance.
+- Retry scheduling did not guarantee recovery: ensureUsage latched success
+  before meter construction. Follow-up 39 releases partial initialization
+  and retries; the portable main proof confirms the latch pre-existed 37.
+- Adoption performed meter reconciliation and started uploads before its
+  final decision. The prepared meter is now read-only and requires an open,
+  continuous epoch; bindings and upload activation wait until all gates
+  succeed. r22's original M-2 false-gap fixture is rejected under D-141: its
+  manual close used nil bindings and created the asserted gap before Boot,
+  while also leaving serving rules live. A real open-epoch late-drift proof
+  replaces it and checks that no usage effect precedes the decision.
+- A blocked worker need not leave the last serving heartbeat until it ages
+  out. Boot now publishes conservative state before blocking stages, retains
+  the old receipt privately for adoption verification, publishes the verified
+  baseline immediately before ledger work, and publishes after probe cleanup
+  and on errors. Heartbeat writes have a 100 ms cap inside the existing Boot
+  deadline, with a cancellation check before atomic publication. The timeout
+  caller does not race the worker with another writer. A baseline Boot receipt
+  reports kernel generation zero; r20's old generation-two expectation was
+  an acknowledged-generation assertion and is corrected accordingly.
+- Failed probe cleanup previously both left a stale BaselineOK receipt and
+  marked the nonce cleared. It now reports failure, keeps the issuance
+  uncleared, and retries clear without reinstalling or extending the timeout.
+  A verified ordinary baseline can complete that pending clear. The kernel
+  authorizes the failed-clear exception only until its installed element
+  timeout, bounded by the original issuance deadline and 300-second maximum.
+
+The actual Boot/Close allowance remains 10+3 seconds inside the shipped
+`deploy/node/systemd/fvpn-agent.service` TimeoutStopSec=15s. There is no
+main.go defaultStopTimeout or twenty-second shipped unit. Static datapath
+configuration is validated by LoadConfig before production Boot; the raw-error
+path is retained as an ErrBoot/heartbeat guard for invalid direct callers.
+
+The previous full production lab pass and incomplete comparison remain facts
+about follow-up 38. Follow-up 39 owes a new full production gate and a declared,
+reserved A(main), B(final production), A, B comparison. Its qualification uses
+foreign process/container exclusion and at most 0.5 foreign CPU cores per
+interval; vmstat is recorded but does not decide admission.

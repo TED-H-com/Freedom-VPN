@@ -86,6 +86,12 @@ func TestR21_H1_MixedBindingsCrashWindows(t *testing.T) {
 				model.QoS.Members[i].Down.RateBPS /= 2
 			}
 			model.QoS.Assignments = nil
+			// TEST ONLY legacy crash image: this direct plane call bypasses the
+			// agent's new pre-Apply intent and settlement boundary. Retain the
+			// r21 upgrade guard without claiming this is a new production path.
+			if err := r.eng.store.SetMeta(t.Context(), usageIntentKey, ""); err != nil {
+				t.Fatal(err)
+			}
 			if _, err := r.plane.Apply(t.Context(), model, r.eng.counters); err != nil {
 				t.Fatal(err)
 			}
