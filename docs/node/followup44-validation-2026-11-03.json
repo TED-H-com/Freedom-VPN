@@ -1,0 +1,1458 @@
+{
+  "date": "2026-11-03",
+  "source": "5cc12a5efc55270c850aa548701fbdc48b28984f",
+  "main": "1b87ab32344fa3be3216df0d5f7b489eb853e011",
+  "gates": [
+    {
+      "gate": "node-lint-build",
+      "source": "9abcb6bf37ce7cad5ef3589b2094d292b4654943",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-lint",
+        "node-build"
+      ],
+      "exit": 0,
+      "seconds": 3.221,
+      "utc": "2026-11-03T18:25:19Z",
+      "receipt": {
+        "sha256": "905d6120b09828cbbffa1688fca614a9b07aa03db9e0995d981cb31d270136ed",
+        "bytes": 2538
+      },
+      "tail": "TMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go vet ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go vet -tags netlab ./node/agent/... ./tests/netlab/agent/...\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./node/agent/... ./tests/netlab/agent/...\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o bin/linux_amd64/fvpn-agent ./node/agent/cmd/fvpn-agent\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=arm64 go build -trimpath -o bin/linux_arm64/fvpn-agent ./node/agent/cmd/fvpn-agent\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o bin/linux_amd64/fvpn-watchdog ./node/watchdog/cmd/fvpn-watchdog\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=arm64 go build -trimpath -o bin/linux_arm64/fvpn-watchdog ./node/watchdog/cmd/fvpn-watchdog"
+    },
+    {
+      "gate": "node-test",
+      "source": "9abcb6bf37ce7cad5ef3589b2094d292b4654943",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test"
+      ],
+      "exit": 0,
+      "seconds": 153.182,
+      "utc": "2026-11-03T18:28:00Z",
+      "receipt": {
+        "sha256": "3565beb9df3c654dc12bf274824a8c60881acd42b409d372c7a208524a49574f",
+        "bytes": 1307
+      },
+      "tail": "TMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t151.689s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent\t0.299s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/watchdog\t0.110s\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/agentstore\t0.183s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/controlclient\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/timeanchor\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol\t0.028s\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol\t[no test files]\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/internal/nodelock\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/usagestore\t1.027s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/meter\t0.671s"
+    },
+    {
+      "gate": "node-integration",
+      "source": "45613f69ae82cffad1d550b58f51c2dba0f86704",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test-integration"
+      ],
+      "exit": 0,
+      "seconds": 152.398,
+      "utc": "2026-11-03T18:29:17Z",
+      "receipt": {
+        "sha256": "f4d7ef83b806ba331c1160792df04a2322311b9fe77c534cadd1c3a8660a89b0",
+        "bytes": 355
+      },
+      "tail": "TMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test -count=1 -tags integration ./node/agent/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t151.777s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent\t0.294s"
+    },
+    {
+      "gate": "reviews-r16-r19",
+      "source": "45613f69ae82cffad1d550b58f51c2dba0f86704",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./node/agent",
+        "./node/enforce",
+        "-run",
+        "^TestReviewR1[6-9]_"
+      ],
+      "exit": 0,
+      "seconds": 19.898,
+      "utc": "2026-11-03T18:29:58Z",
+      "receipt": {
+        "sha256": "fb82bf40d9690cae0aebc5fc0a8d1f4a04661e5d0ad0a33f886cbbb9365cd2ed",
+        "bytes": 11385
+      },
+      "tail": "--- PASS: TestReviewR18_DisabledRunCommandMatchesRun (0.01s)\n=== RUN   TestReviewR18_RenderCaptureStaysInMemory\n--- PASS: TestReviewR18_RenderCaptureStaysInMemory (0.00s)\n=== RUN   TestReviewR18_EnabledSampleIgnoresInstallDeadline\n    review_r18_lifecycle_test.go:107: finished install context skipped resource sampling (elapsed 1.024665ms, total syscr +11)\n--- PASS: TestReviewR18_EnabledSampleIgnoresInstallDeadline (0.12s)\n=== RUN   TestReviewR18_EnabledCancelReapsChild\n--- PASS: TestReviewR18_EnabledCancelReapsChild (0.05s)\n=== RUN   TestReviewR19_Q4_CurrentRenderDoesNotRestrictEstablishedDownload\n    review_r19_intersection_test.go:66: current destination denial precedes the established download accept\n--- PASS: TestReviewR19_Q4_CurrentRenderDoesNotRestrictEstablishedDownload (0.00s)\n=== RUN   TestReviewR19_Q4_ExistingCounterIsNotRecreated\n--- PASS: TestReviewR19_Q4_ExistingCounterIsNotRecreated (0.00s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/enforce\t0.222s"
+    },
+    {
+      "gate": "reviews-r20-r26",
+      "source": "45613f69ae82cffad1d550b58f51c2dba0f86704",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./node/agent",
+        "./node/agent/cmd/fvpn-agent",
+        "./node/watchdog",
+        "./node/enforce",
+        "-run",
+        "^Test(R2[0-6]_|ReviewR2[0-6]_|ReviewR11_ClearFailureNextStep)"
+      ],
+      "exit": 0,
+      "seconds": 44.038,
+      "utc": "2026-11-03T18:30:42Z",
+      "receipt": {
+        "sha256": "d2072a133a38a26433cd396cbaf173277e089c833cb4722017c797451011baeb",
+        "bytes": 36509
+      },
+      "tail": "--- PASS: TestR20_Held_VerifyServingCatchesResolverBindingQoSAndSNATDrift (0.00s)\n=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen\n=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/cold_start_rollback_with_failed_loadState_omits_delete_chain_and_flush_set\n=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/expired_ctx_during_verify_aborts_rollback_after_guard_release\n--- PASS: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen (0.00s)\n    --- PASS: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/cold_start_rollback_with_failed_loadState_omits_delete_chain_and_flush_set (0.00s)\n    --- PASS: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/expired_ctx_during_verify_aborts_rollback_after_guard_release (0.00s)\n=== RUN   TestR24_H2_OrphanMemberTCClassDeletedBeforeNftBatch\n--- PASS: TestR24_H2_OrphanMemberTCClassDeletedBeforeNftBatch (0.00s)\n=== RUN   TestR24_M2_PostShapeClockCheckSkipsBaselineInApply\n--- PASS: TestR24_M2_PostShapeClockCheckSkipsBaselineInApply (0.00s)\n=== RUN   TestR24_Held_Q1_GuardInstallBoundLifetimeCeilingAndCounterContinuity\n--- PASS: TestR24_Held_Q1_GuardInstallBoundLifetimeCeilingAndCounterContinuity (0.00s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/enforce\t0.012s"
+    },
+    {
+      "gate": "handover",
+      "source": "45613f69ae82cffad1d550b58f51c2dba0f86704",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "exit": 0,
+      "seconds": 3.743,
+      "utc": "2026-11-03T18:30:46Z",
+      "receipt": {
+        "sha256": "fbfce770948e52f3ac08d77832913211ea251a484ced2611ddae1c2b917b7220",
+        "bytes": 60
+      },
+      "tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t3.390s"
+    },
+    {
+      "gate": "go-lint",
+      "source": "45613f69ae82cffad1d550b58f51c2dba0f86704",
+      "command": [
+        "make",
+        "go-lint",
+        "go-with-disk-tmp=set -eu;"
+      ],
+      "exit": 0,
+      "seconds": 2.188,
+      "utc": "2026-11-03T18:30:48Z",
+      "receipt": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "tail": ""
+    },
+    {
+      "gate": "vet",
+      "source": "45613f69ae82cffad1d550b58f51c2dba0f86704",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit": 0,
+      "seconds": 0.421,
+      "utc": "2026-11-03T18:30:49Z",
+      "receipt": {
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "tail": ""
+    },
+    {
+      "gate": "all-tests",
+      "source": "45613f69ae82cffad1d550b58f51c2dba0f86704",
+      "command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "exit": 0,
+      "seconds": 145.467,
+      "utc": "2026-11-03T18:33:25Z",
+      "receipt": {
+        "sha256": "d7be8e88eaea66c6d196ef1087a58c77bae33ddf7f34df4950ebbd125e232072",
+        "bytes": 9193
+      },
+      "tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay\t0.103s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin\t0.003s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls\t(cached)\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture\t(cached)\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t3.434s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t2.688s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab\t(cached)\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority\t[no test files]\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\t[no test files]"
+    },
+    {
+      "gate": "evidence",
+      "source": "5cc12a5efc55270c850aa548701fbdc48b28984f",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/netlab",
+        "-run",
+        "^TestCommittedEvidenceFiles_ValidAndHygieneClean$"
+      ],
+      "exit": 0,
+      "seconds": 2.791,
+      "utc": "2026-11-03T18:45:21Z",
+      "receipt": {
+        "sha256": "2a9a2785a048a52cb8ef03876815852ef1591762f97ff25fc28f561ce7e0ab73",
+        "bytes": 58
+      },
+      "tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t2.540s"
+    },
+    {
+      "gate": "fixture-hygiene",
+      "source": "5cc12a5efc55270c850aa548701fbdc48b28984f",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/e2e",
+        "-run",
+        "^TestCommittedFixtureEvidence_ValidAndHygieneClean$"
+      ],
+      "exit": 0,
+      "seconds": 8.833,
+      "utc": "2026-11-03T18:45:30Z",
+      "receipt": {
+        "sha256": "57480d7550a39fc1bb0f3c3eb71b987ee1e2a8c829b79b17be3cbcdb05d7efc7",
+        "bytes": 55
+      },
+      "tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e\t8.588s"
+    },
+    {
+      "gate": "final-all-tests",
+      "source": "5cc12a5efc55270c850aa548701fbdc48b28984f",
+      "command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "exit": 0,
+      "seconds": 149.742,
+      "utc": "2026-11-03T18:47:59Z",
+      "receipt": {
+        "sha256": "0ff9b48e2b2e7978408cb82afa8aecdedd6b3cb1dd7fcd8412c57645b32af98e",
+        "bytes": 9197
+      },
+      "tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay\t0.104s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin\t0.005s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls\t(cached)\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture\t(cached)\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t(cached)\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab\t(cached)\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority\t[no test files]\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\t[no test files]"
+    }
+  ],
+  "production_lab": {
+    "exit": 0,
+    "seconds": 227.30074163200334,
+    "completed": "2026-11-03T18:44:32Z",
+    "source": {
+      "commit": "1b87ab32344fa3be3216df0d5f7b489eb853e011",
+      "archive_sha256": "d04c982c6a22f7cc508da9348bd1a38243868b829e46a3c6c0c3dc4b1583d078",
+      "verified_blobs": 18955,
+      "functional_only": true,
+      "instrumentation_overlay": false,
+      "clock_probe_sha256": "f38b0adfe9e716a4d2192c12e73487bd155045a70f3610c2fb8a72409bbdd074"
+    },
+    "functional_only": true,
+    "timing_leg": false,
+    "passed_scenarios": [
+      "TestLabISO_F6_RecoveryAndEvidence",
+      "TestLabD087_D104_GrantRenewalExpiryCorrelation",
+      "TestLabUsageLedger",
+      "TestLabExternalMeterReset",
+      "TestLabF36_AT13_RestartChangedSetsStopsEstablishedFlow",
+      "TestLab08_HealthAttestationUnpublished",
+      "TestLab01_ForwardOnlyAfterLease",
+      "TestLab02_WatchdogEnforces",
+      "TestLab03_KernelTimeout",
+      "TestLab04_RestartKeepsVerifiedLease",
+      "TestLab05_NoAllowAllOnUpdate",
+      "TestLab07_UnpublishedBaselineAck",
+      "TestLab06_RevokedStopsForwarding"
+    ],
+    "failed_scenarios": [],
+    "skipped_scenarios": [
+      "TestD116_AT10_InstallerMarkerEnrollment"
+    ],
+    "packets": {
+      "expiry": {
+        "positives": 97,
+        "drops": 15,
+        "deadline_ns": "54837016137087",
+        "last_positive_offset_ns": "-100328716",
+        "first_drop_offset_ns": "-63815657",
+        "positives_at_or_after_deadline": 0,
+        "capture_stats": [
+          {
+            "packets": 213,
+            "drops": 0
+          },
+          {
+            "packets": 200,
+            "drops": 0
+          }
+        ],
+        "predicate": true
+      },
+      "renewal": {
+        "packets": 1518,
+        "losses": 0,
+        "loss_ingress_inside_guard": 0,
+        "loss_ingress_outside_guard": 0,
+        "capture_stats": [
+          {
+            "packets": 3040,
+            "drops": 0
+          },
+          {
+            "packets": 3042,
+            "drops": 0
+          }
+        ],
+        "zero_loss_predicate": true
+      }
+    },
+    "binaries": {
+      "fvpn-agent": "9e4f26ee4d32a856c5cc4d2826946797c3c718790a691bdfddc5372883d85f0c",
+      "fvpn-watchdog": "61bfe4d95eb1978b0d04c90194c5fabcbb698cd554bfb4c930d9cecbfea114fb",
+      "fvpn-labcontrol": "336faca23e599da379baef3d957877bbe148a40eceb5b9c109818aceaaf6fef8"
+    },
+    "image": {
+      "image_id": "sha256:d7c20a65b94fd163bbd6763ec16ff378b23a9f3f586afaf937f69e6a7f93666e"
+    },
+    "raw_pins": {
+      "assembled/agent.log": {
+        "sha256": "c149940bc6de180d8975bb4ec0fe45a19c55ecd2954efa953bdd7a1e864822b2",
+        "bytes": 16353
+      },
+      "assembled/analysis.json": {
+        "sha256": "522cf0e058e244d786bd3ad6017f10e4aef4e4930fbc8128bd8a3986145cb59c",
+        "bytes": 4195
+      },
+      "assembled/expiry.json": {
+        "sha256": "861cd75fa39c2cfb6386e5237cffbb6aeab336a05d2ff3f003e0a13d7d519cb5",
+        "bytes": 31702
+      },
+      "assembled/expiry.json.restart.json": {
+        "sha256": "ad590bff61d07d6890a806b53be4462e79742ccf64a9ebfc4e6a49cc1412621a",
+        "bytes": 103
+      },
+      "assembled/observations.json": {
+        "sha256": "3c1d2bb0300a7faf5d767c4eefb01d69a46262a8cfe8dd5b517432a50ad80b6f",
+        "bytes": 13250
+      },
+      "assembled/operations.jsonl": {
+        "sha256": "dbe50a8a179125b69b1a8ff7f3ede375efeec70407f6b50c195595326377565d",
+        "bytes": 1764928
+      },
+      "assembled/renewal.json": {
+        "sha256": "b39f2abc1c62c8bc9a3d2dd9e55faf3da161a4b2a5aa1eef13b47f32cf0b542d",
+        "bytes": 430580
+      },
+      "assembled/watchdog.log": {
+        "sha256": "f3aa9e108b6c514d1a717c509471d5721045b7e34daff0914d529f8cdb893b3d",
+        "bytes": 762
+      },
+      "binaries.json": {
+        "sha256": "f8d03ad20e9c108f3e8fa3f48c7dfdb43b84060637c51921a24fdb5e40adf29c",
+        "bytes": 263
+      },
+      "f36-result.json": {
+        "sha256": "a9571f3efd568ce1efd6a61fe8663e002cbb6cd96d05ec3a00b83759789ed026",
+        "bytes": 509285
+      },
+      "fixture-image.json": {
+        "sha256": "483ef2682d23df22785b95633886594f347537faebdf7fd394e71a497d198d57",
+        "bytes": 88
+      },
+      "result.json": {
+        "sha256": "6e9c2ca4052e3b7950537d823afb6a269d1989c1de68f41a8e0166ed1dffa2f5",
+        "bytes": 88
+      },
+      "source.json": {
+        "sha256": "55a021efa42f6a1577b68f166f004f46ffef0244649c652ba6d2a71216cffb5e",
+        "bytes": 329
+      },
+      "suite/agent.log": {
+        "sha256": "dd2552c190cebfe7b07ffe16b90eac9e03c72ece938973c4815e85928b5ae236",
+        "bytes": 39510
+      },
+      "suite/operations.jsonl": {
+        "sha256": "a41c6a1e8f3e31e81ce8c5ae9f65be7e48c234dc9936280f4ecb167d95a21611",
+        "bytes": 4405542
+      },
+      "suite/watchdog.log": {
+        "sha256": "1eb8b60dbdd1f47dddec1d0cb535eaa31304d6098124209e62291f866d2c8753",
+        "bytes": 2293
+      },
+      "suite.log": {
+        "sha256": "d90f49987cf8bf558788e29f7e314571ca82f556c4cbad364fd18d58a8bcc6d0",
+        "bytes": 11640
+      }
+    },
+    "failed_operations": [
+      {
+        "run_id": "17e53e82-f006-4b0d-849c-77e6acdfa990",
+        "sequence": "4",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "54861667481118",
+          "end_ns": "54861678146053",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "17e53e82-f006-4b0d-849c-77e6acdfa990",
+        "sequence": "8",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "54863717422726",
+          "end_ns": "54863729436665",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "280e6a01-654c-49d8-8e48-ff1d00d2ca1d",
+        "sequence": "9",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "54837948774358",
+          "end_ns": "54837959550758",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "280e6a01-654c-49d8-8e48-ff1d00d2ca1d",
+        "sequence": "11",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "54837961766402",
+          "end_ns": "54837971388540",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "7dbb8c76-1dff-4652-a3f8-194dd47c0b72",
+        "sequence": "9",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "54711025792734",
+          "end_ns": "54711037297920",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "7dbb8c76-1dff-4652-a3f8-194dd47c0b72",
+        "sequence": "12",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "54711933567058",
+          "end_ns": "54711944736135",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "7dbb8c76-1dff-4652-a3f8-194dd47c0b72",
+        "sequence": "16",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "54711984831976",
+          "end_ns": "54711995358200",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "7dbb8c76-1dff-4652-a3f8-194dd47c0b72",
+        "sequence": "19",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "54712980111197",
+          "end_ns": "54712991867183",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "80d61ceb-caac-4c70-a6a5-8ef2d7e4b9d0",
+        "sequence": "9",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "live",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "2",
+          "start_ns": "54701428453145",
+          "end_ns": "54701454027885",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "80d61ceb-caac-4c70-a6a5-8ef2d7e4b9d0",
+        "sequence": "13",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "2",
+          "start_ns": "54701531853105",
+          "end_ns": "54701549628493",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "80d61ceb-caac-4c70-a6a5-8ef2d7e4b9d0",
+        "sequence": "18",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "apply",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "apply",
+          "candidate_generation": "3",
+          "start_ns": "54702466061939",
+          "end_ns": "54702542812365",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "1000000",
+            "install_bound_ns": "100000000",
+            "apply_start_ns": "54702466061939",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "80d61ceb-caac-4c70-a6a5-8ef2d7e4b9d0",
+        "sequence": "23",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "2",
+          "start_ns": "54702642185092",
+          "end_ns": "54702661066326",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "80d61ceb-caac-4c70-a6a5-8ef2d7e4b9d0",
+        "sequence": "27",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "apply",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "apply",
+          "candidate_generation": "3",
+          "start_ns": "54703457257111",
+          "end_ns": "54703516639915",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "1000000",
+            "install_bound_ns": "100000000",
+            "apply_start_ns": "54703457257111",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "80d61ceb-caac-4c70-a6a5-8ef2d7e4b9d0",
+        "sequence": "32",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "2",
+          "start_ns": "54703601732339",
+          "end_ns": "54703620649172",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "80d61ceb-caac-4c70-a6a5-8ef2d7e4b9d0",
+        "sequence": "36",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "apply",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "apply",
+          "candidate_generation": "3",
+          "start_ns": "54704459067480",
+          "end_ns": "54704516775696",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "1000000",
+            "install_bound_ns": "100000000",
+            "apply_start_ns": "54704459067480",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "80d61ceb-caac-4c70-a6a5-8ef2d7e4b9d0",
+        "sequence": "41",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "2",
+          "start_ns": "54704596171614",
+          "end_ns": "54704616005667",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "80d61ceb-caac-4c70-a6a5-8ef2d7e4b9d0",
+        "sequence": "49",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "54705702084265",
+          "end_ns": "54705713540075",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "a6ff080d-ea98-43fe-9d1f-5f1f7e99c279",
+        "sequence": "14",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "10",
+          "start_ns": "54912831486103",
+          "end_ns": "54912842905784",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "a6ff080d-ea98-43fe-9d1f-5f1f7e99c279",
+        "sequence": "19",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "10",
+          "start_ns": "54913782063061",
+          "end_ns": "54913791362241",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "ac2a4d16-b1c8-4d85-a4f0-8dac0bfacc0b",
+        "sequence": "4",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "54868897640944",
+          "end_ns": "54868907500189",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "ac2a4d16-b1c8-4d85-a4f0-8dac0bfacc0b",
+        "sequence": "7",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "54869891343328",
+          "end_ns": "54869902442266",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "dfa1a01d-6ff1-4dd1-a4fe-f8e1071a59ad",
+        "sequence": "4",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "54873285605285",
+          "end_ns": "54873297732840",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "e3798ddd-7978-4a42-b3c6-214eb9d8a7f5",
+        "sequence": "9",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "8",
+          "start_ns": "54907792121205",
+          "end_ns": "54907803290975",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "e3798ddd-7978-4a42-b3c6-214eb9d8a7f5",
+        "sequence": "12",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "8",
+          "start_ns": "54908634181641",
+          "end_ns": "54908644858184",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "e3798ddd-7978-4a42-b3c6-214eb9d8a7f5",
+        "sequence": "15",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "8",
+          "start_ns": "54909632992776",
+          "end_ns": "54909644750143",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "ef2a4d4a-3340-4509-8ab1-c14c982c6cba",
+        "sequence": "4",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "54867391747643",
+          "end_ns": "54867402933021",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "f4e2fea2-2a9f-48d8-9c37-38c14782762e",
+        "sequence": "20",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "live",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "54853710576508",
+          "end_ns": "54853732105936",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      }
+    ],
+    "actual_renewals": 2,
+    "renewal_loss_details": []
+  },
+  "timing": {
+    "pooled_legs": {
+      "A": 0,
+      "B": 0
+    },
+    "comparison_permitted": false,
+    "reservations": [
+      {
+        "window": 1,
+        "utc": "2026-11-03T18:23:34.721099+00:00",
+        "waited_seconds": 0.03730293799890205,
+        "exit": 0,
+        "stdout": "reserved for w2-agent-core until 13:53:34\n",
+        "stderr": ""
+      },
+      {
+        "window": 2,
+        "utc": "2026-11-03T18:34:39.009901+00:00",
+        "waited_seconds": 0.03958090899686795,
+        "exit": 1,
+        "stdout": "2772301 make -f mk/netlab.mk netlab-test FVPN_LAB_PREFIX=fvpn-w1-netlab-f34\n",
+        "stderr": ""
+      },
+      {
+        "window": 2,
+        "utc": "2026-11-03T18:35:09.046731+00:00",
+        "waited_seconds": 30.07641133099969,
+        "exit": 1,
+        "stdout": "2772301 make -f mk/netlab.mk netlab-test FVPN_LAB_PREFIX=fvpn-w1-netlab-f34\n",
+        "stderr": ""
+      },
+      {
+        "window": 2,
+        "utc": "2026-11-03T18:35:39.086375+00:00",
+        "waited_seconds": 60.11605031799991,
+        "exit": 1,
+        "stdout": "2772301 make -f mk/netlab.mk netlab-test FVPN_LAB_PREFIX=fvpn-w1-netlab-f34\n",
+        "stderr": ""
+      },
+      {
+        "window": 2,
+        "utc": "2026-11-03T18:36:09.124642+00:00",
+        "waited_seconds": 90.1543178399952,
+        "exit": 0,
+        "stdout": "reserved for w2-agent-core until 14:06:09\n",
+        "stderr": ""
+      }
+    ],
+    "releases": [
+      {
+        "utc": "2026-11-03T18:24:38.969843+00:00",
+        "window": 1,
+        "exit": 0,
+        "stdout": "released w2-agent-core\n",
+        "stderr": ""
+      },
+      {
+        "utc": "2026-11-03T18:37:28.006636+00:00",
+        "window": 2,
+        "exit": 0,
+        "stdout": "released w2-agent-core\n",
+        "stderr": ""
+      }
+    ],
+    "marked_intervals": 0,
+    "qualification_samples": 6
+  },
+  "clock_prerequisite": {
+    "clock": "CLOCK_MONOTONIC",
+    "matched": false,
+    "measurements": [
+      {
+        "utc": "2026-11-03T18:40:13.713305+00:00",
+        "host_before_ns": "54656085115928",
+        "host_after_ns": "54656164674952",
+        "host_time_namespace": "time:[4026531834]",
+        "host_timens_offsets": "monotonic           0         0\nboottime            0         0\n",
+        "probe": {
+          "after_ns": "54656163355970",
+          "before_ns": "54656163355032",
+          "mono_ns": "54656163355812",
+          "time_namespace": "time:[4026534102]",
+          "timens_offsets": "monotonic           0         0\nboottime            0         0\n"
+        },
+        "matched": false,
+        "numeric_bracket_matched": true
+      },
+      {
+        "utc": "2026-11-03T18:40:13.794734+00:00",
+        "host_before_ns": "54656164817684",
+        "host_after_ns": "54656246106257",
+        "host_time_namespace": "time:[4026531834]",
+        "host_timens_offsets": "monotonic           0         0\nboottime            0         0\n",
+        "probe": {
+          "after_ns": "54656244769369",
+          "before_ns": "54656244768742",
+          "mono_ns": "54656244769228",
+          "time_namespace": "time:[4026534102]",
+          "timens_offsets": "monotonic           0         0\nboottime            0         0\n"
+        },
+        "matched": false,
+        "numeric_bracket_matched": true
+      },
+      {
+        "utc": "2026-11-03T18:40:13.875511+00:00",
+        "host_before_ns": "54656246213724",
+        "host_after_ns": "54656326884706",
+        "host_time_namespace": "time:[4026531834]",
+        "host_timens_offsets": "monotonic           0         0\nboottime            0         0\n",
+        "probe": {
+          "after_ns": "54656325803703",
+          "before_ns": "54656325802883",
+          "mono_ns": "54656325803553",
+          "time_namespace": "time:[4026534102]",
+          "timens_offsets": "monotonic           0         0\nboottime            0         0\n"
+        },
+        "matched": false,
+        "numeric_bracket_matched": true
+      }
+    ],
+    "scope": "Post-reservation clock prerequisite probe only; no timing leg and no production scenario ran in this attempt.",
+    "source": {
+      "commit": "1b87ab32344fa3be3216df0d5f7b489eb853e011",
+      "archive_sha256": "d04c982c6a22f7cc508da9348bd1a38243868b829e46a3c6c0c3dc4b1583d078",
+      "verified_blobs": 18955,
+      "functional_only": true,
+      "instrumentation_overlay": false,
+      "clock_probe_sha256": "f38b0adfe9e716a4d2192c12e73487bd155045a70f3610c2fb8a72409bbdd074"
+    },
+    "attempt": {
+      "exit": 2,
+      "seconds": 13.433531257003779,
+      "completed": "2026-11-03T18:40:14Z"
+    },
+    "raw_receipts": {
+      "result.json": {
+        "sha256": "4b2ac53251bcf6c358203e6301fd267ea3d526a2b285c9e9ff7fa81566503e26",
+        "bytes": 88
+      },
+      "binaries.json": {
+        "sha256": "f8d03ad20e9c108f3e8fa3f48c7dfdb43b84060637c51921a24fdb5e40adf29c",
+        "bytes": 263
+      },
+      "fixture-image.json": {
+        "sha256": "bf76cdc7a89cb16ac7b9f22c790103afa0bd4320c4332fecad7af5f36f0eb7b6",
+        "bytes": 88
+      },
+      "clock.json": {
+        "sha256": "bf622ac3330e42a8d3682cf8a6d2c00addf49cc9f1ccd28e8e360f1db94a8b0d",
+        "bytes": 1874
+      },
+      "source.json": {
+        "sha256": "55a021efa42f6a1577b68f166f004f46ffef0244649c652ba6d2a71216cffb5e",
+        "bytes": 329
+      },
+      "suite.log": {
+        "sha256": "0eff8d91e555b03ccd78254328a58c21c3d180a4d7812aefb0a7e9599edb51ba",
+        "bytes": 6074
+      }
+    }
+  },
+  "final_audit_admission": [
+    {
+      "utc": "2026-11-03T18:48:52.984707+00:00",
+      "exit": 1,
+      "output": "2887348 make -f mk/node.mk node-test-netlab FVPN_LAB_PREFIX=fvpn-w1-netlab-f34-node",
+      "waited_seconds": 0.0359625999990385
+    },
+    {
+      "utc": "2026-11-03T18:49:23.021839+00:00",
+      "exit": 1,
+      "output": "2887348 make -f mk/node.mk node-test-netlab FVPN_LAB_PREFIX=fvpn-w1-netlab-f34-node",
+      "waited_seconds": 30.07309064600122
+    },
+    {
+      "utc": "2026-11-03T18:49:53.059580+00:00",
+      "exit": 0,
+      "output": "free",
+      "waited_seconds": 60.11083128599421
+    }
+  ],
+  "inventory": {
+    "prefix": "fvpn-w2-agent-core-f44",
+    "remaining": {
+      "containers": [],
+      "images": [],
+      "networks": [],
+      "volumes": []
+    }
+  },
+  "hygiene": {
+    "owned_paths_only": true,
+    "production_unchanged": true,
+    "enforce_unchanged": true,
+    "dependencies_unchanged": true,
+    "earlier_records_unchanged": true,
+    "followup43_tools_hashes_unchanged": true,
+    "gofmt_empty": true,
+    "diff_check_clean": true,
+    "public_files_scanned": 21,
+    "public_files_clean": true,
+    "tracked_go_files": 1414,
+    "admission": "free"
+  },
+  "synthetic_tests": {
+    "count": 24,
+    "exit": 0,
+    "receipt": {
+      "sha256": "bafb787db0a46e864e1609e1d03f985b244afce1666f12d60abe0c9048d93adf",
+      "bytes": 123
+    },
+    "negative_control": {
+      "tests": 13,
+      "errors": 1,
+      "receipt": {
+        "sha256": "eb97cf33d1cefc81552fb709552fae7c378bf1c081b713956c8ca52df2cec88d",
+        "bytes": 1250
+      }
+    }
+  },
+  "platform": {
+    "go": "go version go1.27.3 linux/amd64",
+    "CGO_ENABLED": "0",
+    "GOTOOLCHAIN": "local",
+    "GOMAXPROCS": "4",
+    "TMPDIR": ".agent/tmp",
+    "GOTMPDIR": ".agent/tmp",
+    "GOCACHE": "~/.cache/go-build"
+  },
+  "requests": [
+    "2026-11-03: D-133 comparison remains open; new declaration/follow-up needed after namespace prerequisite is resolved.",
+    "2026-11-03: reconcile reservation admission with running foreign lane containers; window 1 received free admission while one remained."
+  ]
+}
