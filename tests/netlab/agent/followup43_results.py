@@ -137,6 +137,11 @@ def collect(root):
         selected = [s for s in samples if s['label'] == row['leg'] and reserved <= s['utc'] <= released]
         public_samples = [{k: v for k, v in s.items() if k != 'foreign_suites'} |
                           {'foreign_suite_count': len(s['foreign_suites'])} for s in selected]
+        for sample in public_samples:
+            # Raw monitored inventory stays local and hash-pinned. Public
+            # receipts need class/identity, not unrelated projects' names.
+            sample['running_containers'] = [dict(c, name=(c['name'] if c['name'].startswith('fvpn-')
+                else 'foreign-non-lane-container')) for c in sample['running_containers']]
         out['legs'].append(dict(row, measurement=ev, qualification_samples=public_samples))
     out['pooled'] = {}
     for arm in ['A', 'B']:
