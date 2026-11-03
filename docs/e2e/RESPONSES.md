@@ -1473,3 +1473,13 @@ the actual re-read ETags. The [follow-up 32 evidence](runs/2026-11-03/followup32
 retains the synthetic gates and both fresh-stack attempts, including the
 ordinary path with the switch unset. AT-owned sites are read-only hand-offs in
 the audit's dated Requests to orchestrator; isolation reruns after merge.
+
+Follow-up 32 validation result: the ordinary fresh-stack run
+`c52b760c-c289-4220-a722-6c5a059819b9` passed all eight checks, including active
+publication and populated serving. It had zero conflicts. The forced run
+`e22872b7-1112-4082-8e2b-235275f4a659` failed before enrollment because the
+local admission wrapper polluted Docker's JSON stdout with `free`; its original
+failure is retained and the wrapper was corrected. Under the explicit no-run-
+retry rule it was not repeated. **Real-API 412→successful retry validation
+remains not exercised**, although all synthetic conflict cases passed. A later
+orchestrator-authorized forced proof is still needed; F19-02 is not fully closed.

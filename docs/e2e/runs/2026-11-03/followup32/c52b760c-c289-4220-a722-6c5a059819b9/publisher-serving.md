@@ -1,0 +1,18 @@
+# publisher-serving
+
+Populated lease and serving prerequisite before positive measurement
+
+Status: pass
+
+Run: c52b760c-c289-4220-a722-6c5a059819b9
+
+Source: fff680c6c2cd539b77cc534ce9d090f8ad9a8ec3
+
+- started_at: "2026-11-03T23:10:56.699023403Z"
+- last_counters: {"upload_bytes":"1113","download_bytes":"1519","Present":true,"kernel_generation":"5","read_diagnostic":{"boot_id":"56e68667-9243-4933-83af-c70d575ff5fe","read_start_mono_ns":"70899349702167","read_end_mono_ns":"70899352392739","enforcement_before":{"available":false,"error":"timing_not_enabled_or_unreadable"},"enforcement_after":{"available":false,"error":"timing_not_enabled_or_unreadable"},"started":"2026-11-03T23:10:56.898268512Z","completed":"2026-11-03T23:10:56.901016328Z","stage":"nft_read","category":"none","exit":0,"heartbeat_before":{"read_at":"2026-11-03T23:10:56.898294423Z","wall_unix_ns":"1793747454375975949","serving":true,"read_ok":true},"heartbeat_after":{"read_at":"2026-11-03T23:10:56.901016513Z","wall_unix_ns":"1793747454375975949","serving":true,"read_ok":true}}}
+- last_counters: {"upload_bytes":"1113","download_bytes":"1519","Present":true,"kernel_generation":"5","read_diagnostic":{"boot_id":"56e68667-9243-4933-83af-c70d575ff5fe","read_start_mono_ns":"70900615820591","read_end_mono_ns":"70900618401928","enforcement_before":{"available":false,"error":"timing_not_enabled_or_unreadable"},"enforcement_after":{"available":false,"error":"timing_not_enabled_or_unreadable"},"started":"2026-11-03T23:10:58.16439475Z","completed":"2026-11-03T23:10:58.167025605Z","stage":"nft_read","category":"none","exit":0,"heartbeat_before":{"read_at":"2026-11-03T23:10:58.164419879Z","wall_unix_ns":"1793747454375975949","serving":true,"read_ok":true},"heartbeat_after":{"read_at":"2026-11-03T23:10:58.167025847Z","wall_unix_ns":"1793747454375975949","serving":true,"read_ok":true}}}
+- last_counters: {"upload_bytes":"1113","download_bytes":"1519","Present":true,"kernel_generation":"5","read_diagnostic":{"boot_id":"56e68667-9243-4933-83af-c70d575ff5fe","read_start_mono_ns":"70901880301784","read_end_mono_ns":"70901882689967","enforcement_before":{"available":false,"error":"timing_not_enabled_or_unreadable"},"enforcement_after":{"available":false,"error":"timing_not_enabled_or_unreadable"},"started":"2026-11-03T23:10:59.428869938Z","completed":"2026-11-03T23:10:59.431313514Z","stage":"nft_read","category":"none","exit":0,"heartbeat_before":{"read_at":"2026-11-03T23:10:59.428896421Z","wall_unix_ns":"1793747459374988727","serving":true,"read_ok":true},"heartbeat_after":{"read_at":"2026-11-03T23:10:59.431313633Z","wall_unix_ns":"1793747459374988727","serving":true,"read_ok":true}}}
+- counter_read_failed: false
+- ready: true
+- completed_at: "2026-11-03T23:10:59.49910513Z"
+- accepted: {"lease_id":"a0cd9e18-aeb6-4b98-ab75-42bf76c78787","report_id":"01a1a3ad-e32f-7bd2-be5d-9dda91cbfb77","expires_at":"2026-11-04T23:10:44.394844+00:00","generation":"5","observed_at":"2026-11-03T23:10:44.527764+00:00","received_at":"2026-11-03T23:10:44.534111+00:00","member_count":1}

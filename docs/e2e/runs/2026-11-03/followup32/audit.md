@@ -18,7 +18,7 @@ central liveness sweep can still advance it.
 | `tests/e2e/publish_test.go:88` (baseline 80) | node capacity PATCH | Yes | Shared `writeNode`; all four desired capacity fields must match on re-read. |
 | `tests/e2e/publish_test.go:105` (baseline 93) | node publication PUT | Yes | Same helper; published intent and exact requested group membership must match. Continue the existing operation and observed-publication gates. |
 | `tests/e2e/followup18_native_test.go:226` (baseline 225) | retained node capacity PATCH | Yes; agent is stopped but in-flight reports/liveness are possible | Same helper; existing first-offer/read-back predicates retained. |
-| `tests/e2e/followup27_live_test.go:95` (baseline 94) | populated hold capacity PATCH | Yes | Same helper; original hold/report predicates retained. |
+| `tests/e2e/followup27_live_test.go:93` (baseline 94) | populated hold capacity PATCH | Yes | Same helper; original hold/report predicates retained. |
 | `tests/e2e/followup30_live_test.go:231` (baseline 225) | survivor hold capacity PATCH | Yes | Same helper; original hold/report predicates retained. |
 | `tests/e2e/scenarios_test.go:832` (baseline 832) | node revoke POST | Yes | Same helper; already revoked ends writes, then original lifecycle polling. Exhausted conflict remains blocked. |
 | `tests/e2e/exports_live_test.go:353` (baseline 352) | clone reconciliation revoke POST | Yes; primary agent can report | Same helper; already revoked ends writes, then original re-enrollment. |
