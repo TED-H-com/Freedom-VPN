@@ -167,5 +167,45 @@ that wall-clock waits stay exact under load.
 
 ## 3. Results
 
-Pending: added after the window. Raw logs and window records are under
-`.agent/tmp/f21/`.
+### Reservation 1 (09:23:58Z–09:37:15Z, 797 s held)
+
+Reserved with `reserved for w2-updater until 04:53:58` (local), and
+released with `released w2-updater` right after leg 4. All four legs ran to
+completion. No stop rule fired at run time. Every preflight passed on its
+first attempt, so the preflight wait was 0 s beyond each 35 s vmstat.
+
+| Leg | Iterations / failures | In-leg samples | Qualification |
+|---|---|---|---|
+| quiet baseline | 200 / 1 (`expired`) | 42, max gap 5.06 s, all `free`, no foreign suite | **unqualified**: one in-leg vmstat interval at r = 4 (id 95), t = 5 s |
+| quiet corrected | 200 / 0 | 42, max gap 5.06 s, all `free`, no foreign suite | **unqualified**: one in-leg vmstat interval at r = 5 (id 95), t = 60 s |
+| load baseline | 50 / 0 | 17, all `free`, no foreign suite | **qualified**; 88.4 s active agent load, covering the whole updater process (0–58.9 s) |
+| load corrected | 50 / 0 | 17, all `free`; from t = 15.2 s, `bash .agent/tmp/followup31/run-gates.sh` (another lane) present at 15 samples | **unqualified** (see the correction below); 87.6 s active agent load |
+
+**Runner correction, after the fact.** The runner's classifier checked
+only whether an argument's basename was exactly `gates.sh`. The declaration
+counts any argument that names a gates script. `run-gates.sh` names one, and
+the brief's own pattern `gates.sh` matches it. The fail-closed reading is
+that this is another lane's suite runner, not a shell that merely mentions
+the strings. Leg 4 therefore should have been stopped at 15.2 s. It is
+recorded as **unqualified**, and its completed data is kept as unqualified.
+The classifier now counts any argument ending in `gates.sh`. The timing JSON
+keeps the runner's original verdict as `qualified_as_recorded`, beside the
+corrected `qualified`. That other lane started no `go test` during the leg,
+and the in-leg vmstat never breached (max r 3, min id 87).
+
+### Reservation 2 addendum (committed before reservation 2)
+
+This is the one further reservation the brief allows, for the missing legs
+only. It is taken at least 10 minutes after the 09:37:15Z release.
+
+- **Legs, in the declared order:** quiet baseline, quiet corrected, load
+  corrected (`-count=50`). The commands, watchdogs, preflight, sampling,
+  stop rules and the in-leg vmstat rule for quiet legs are the same as in
+  §2. Nothing is loosened.
+- **The only change is the classifier fix above,** which is stricter.
+- **Budget:** 60 + 3 × 35 + 2 × 360 + 300 s = 19.8 min, which fits in 30.
+- **No retries:** a leg that is disqualified again is not retried. It
+  stays unqualified.
+
+Reservation 1's results stand as recorded. Raw logs and window records are
+under `.agent/tmp/f21/` (`r1-*`).
