@@ -1,0 +1,33 @@
+// TEST ONLY clock probe, built outside the measured suite from each frozen arm.
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+
+	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
+	"golang.org/x/sys/unix"
+)
+
+func must(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func main() {
+	var before, after unix.Timespec
+	must(unix.ClockGettime(unix.CLOCK_MONOTONIC, &before))
+	mono, err := timeanchor.Mono()
+	must(err)
+	must(unix.ClockGettime(unix.CLOCK_MONOTONIC, &after))
+	ns, err := os.Readlink("/proc/self/ns/time")
+	must(err)
+	offsets, err := os.ReadFile("/proc/self/timens_offsets")
+	must(err)
+	must(json.NewEncoder(os.Stdout).Encode(map[string]string{
+		"before_ns": fmt.Sprint(before.Nano()), "mono_ns": fmt.Sprint(mono.Nanoseconds()),
+		"after_ns": fmt.Sprint(after.Nano()), "time_namespace": ns, "timens_offsets": string(offsets),
+	}))
+}

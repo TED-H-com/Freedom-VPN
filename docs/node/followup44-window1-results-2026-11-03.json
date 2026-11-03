@@ -1,0 +1,487 @@
+{
+  "scope": "TEST ONLY same-host D-133/D-138; timestamp-only overlays; nearest-rank percentiles.",
+  "sources": {
+    "A": {
+      "commit": "567080be1969bf22782617e78c7605c2c92a52a2",
+      "tree": "a75453f25ecdef31da6941dd08a4dc45c178156e",
+      "archive_sha256": "3b0c7791dcdd4a8e0c79819bc4c55c67963805f69e775ab04c38d41f690134b9",
+      "verified_blobs": 18889,
+      "mismatches": []
+    },
+    "B": {
+      "commit": "38420dadef6ae9d0236288eef533bc1ddee0da53",
+      "tree": "6cdb55b1ef780a290f6f1331912df0f16d5f0eb9",
+      "archive_sha256": "5933e9a86278143e841e5316fdf3a8c025c6f7a24ce0d27a9356f9e8226b74fe",
+      "verified_blobs": 18939,
+      "mismatches": []
+    }
+  },
+  "window": {
+    "created": "2026-11-03T18:20:20.848523+00:00",
+    "A": "567080be1969bf22782617e78c7605c2c92a52a2",
+    "B": "38420dadef6ae9d0236288eef533bc1ddee0da53",
+    "windows": {
+      "1": [
+        "A1",
+        "B1",
+        "A2",
+        "B2"
+      ],
+      "2": [
+        "A3",
+        "B3",
+        "A4",
+        "B4"
+      ]
+    },
+    "prefix": "fvpn-w2-agent-core-f44",
+    "interval_seconds": 4.0,
+    "reservation_minutes": 30,
+    "maximum_reservations": 2,
+    "minimum_retained_whole_step_fraction": 0.5,
+    "rule": "foreign CPU >0.5 marks interval; other qualification unchanged"
+  },
+  "overlays": {
+    "A": {
+      "engine.go": "2da977908daf24ecddde341582251c9a33a3e61cc895202bc13484a780e35b1f",
+      "followup43_spans.go": "bea36a4ad8059002f6f16d2d11d9c04f80844c4a1016937a31f47bd52fedb22f",
+      "original_engine_sha256": "d3177df609bc773d27d7155a83611dfffe4138d00a59fb6017b6923064001e22"
+    },
+    "B": {
+      "engine.go": "e31a711a319ba2cf3c5dcafa1b6f43a20aadd89e7a85150cd2e363f89cd29667",
+      "followup43_spans.go": "bea36a4ad8059002f6f16d2d11d9c04f80844c4a1016937a31f47bd52fedb22f",
+      "original_engine_sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1"
+    }
+  },
+  "reservations": [
+    {
+      "window": 1,
+      "utc": "2026-11-03T18:23:34.721099+00:00",
+      "waited_seconds": 0.03730293799890205,
+      "exit": 0,
+      "stdout": "reserved for w2-agent-core until 13:53:34\n",
+      "stderr": ""
+    }
+  ],
+  "releases": [
+    {
+      "utc": "2026-11-03T18:24:38.969843+00:00",
+      "window": 1,
+      "exit": 0,
+      "stdout": "released w2-agent-core\n",
+      "stderr": ""
+    }
+  ],
+  "completion": {
+    "utc": "2026-11-03T18:24:38.969939+00:00",
+    "stop": "unqualified leg; no retry in this reservation",
+    "windows_attempted": 1,
+    "pooled_legs": [],
+    "production_gate": false
+  },
+  "legs": [
+    {
+      "leg": "A1",
+      "arm": "A",
+      "source": "567080be1969bf22782617e78c7605c2c92a52a2",
+      "window": 1,
+      "qualified": false,
+      "reason": "preflight failed",
+      "exit": null,
+      "utc": "2026-11-03T18:24:38.932006+00:00",
+      "evidence": ".agent/f44/timing/window1/A1",
+      "measurement": {
+        "excluded_counts": {
+          "outer_guard": 0,
+          "install_command": 0,
+          "render_to_installed": 0,
+          "whole_serving_step": 0,
+          "pre_apply_accounting": 0
+        },
+        "excluded_spans": [],
+        "clock": null,
+        "metrics": {
+          "outer_guard": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "install_command": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "render_to_installed": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "whole_serving_step": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "pre_apply_accounting": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          }
+        },
+        "values_ns": {
+          "outer_guard": [],
+          "install_command": [],
+          "render_to_installed": [],
+          "whole_serving_step": [],
+          "pre_apply_accounting": []
+        },
+        "failed_operations": [],
+        "snapshots": 0,
+        "spans": 0,
+        "sequence_gaps": [],
+        "packets": {},
+        "binaries": null,
+        "image": null,
+        "raw_pins": {
+          "result.json": {
+            "sha256": "bfd5ba70452f8c617ce5490b095f3b5eb0672fae46af68390e049c8ea71c358d",
+            "bytes": 264
+          }
+        }
+      },
+      "marked_intervals": [],
+      "qualification_samples": [
+        {
+          "utc": "2026-11-03T18:24:38.928569+00:00",
+          "clock": "CLOCK_MONOTONIC",
+          "mono_ns": "53721360733403",
+          "interval_start_ns": "53717341334241",
+          "interval_end_ns": "53721360733403",
+          "label": "A1",
+          "seconds": 4.019399162003538,
+          "cpu_ticks": {
+            "foreign": 26,
+            "runner_descendants": 2,
+            "own_containers": 0,
+            "kernel_threads": 3,
+            "container_runtime": 2
+          },
+          "cpu_cores": {
+            "foreign": 0.06468628506913421,
+            "runner_descendants": 0.004975868082241094,
+            "own_containers": 0.0,
+            "kernel_threads": 0.00746380212336164,
+            "container_runtime": 0.004975868082241094
+          },
+          "foreign_cpu_processes": [
+            {
+              "pid": 1,
+              "comm": "systemd",
+              "ticks": 1
+            },
+            {
+              "pid": 870,
+              "comm": "multipathd",
+              "ticks": 1
+            },
+            {
+              "pid": 880,
+              "comm": "systemd-resolve",
+              "ticks": 1
+            },
+            {
+              "pid": 884,
+              "comm": "systemd-oomd",
+              "ticks": 1
+            },
+            {
+              "pid": 2984,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3192,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3196,
+              "comm": "python3",
+              "ticks": 1
+            },
+            {
+              "pid": 3201,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3208,
+              "comm": "hermes",
+              "ticks": 1
+            },
+            {
+              "pid": 3224,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3235,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3991,
+              "comm": "MainThread",
+              "ticks": 1
+            },
+            {
+              "pid": 4344,
+              "comm": "grafana",
+              "ticks": 2
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 2
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 9
+            },
+            {
+              "pid": 2239763,
+              "comm": "python3",
+              "ticks": 1
+            }
+          ],
+          "running_containers": [
+            {
+              "id": "3f865fc1d9033a3946ab63ac7badf1e37c4e87d431ea333e004c618edfdecd1f",
+              "name": "fvpn-w1-netlab-f34-before"
+            },
+            {
+              "id": "157163aa0ee8eed96c1f63fbb3d4bcd2a595af36f17ff4f9abc69d587dade406",
+              "name": "fvpn-pg"
+            },
+            {
+              "id": "2380751cd16f768235d67fb22747f18b276830130234f1c53238b07de82b3117",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "bd1818a3a004002e79d72529f29ce648d8925055a08a4db32ed26fb1ec0aef49",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "99cadc3104d6427a7e98ed35673b91995689d8c4de4bb4ef1d058270c20d927c",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "945f25a22e1beb3b0ce6138ff56cfa490418e3d0058f3b81f2d83b2737fa6adb",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "b14d490d2ff9a8e1a4bffad8fff6e39c04246cf8a2eedf5d783331a244dacc7e",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "8e7b2b4f4c2451a716c8233274b5657ec76202576c4329f2e2dea8bb397fb5a0",
+              "name": "foreign-non-lane-container"
+            }
+          ],
+          "foreign_containers": [
+            {
+              "id": "3f865fc1d9033a3946ab63ac7badf1e37c4e87d431ea333e004c618edfdecd1f",
+              "name": "fvpn-w1-netlab-f34-before"
+            }
+          ],
+          "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  0 2812944 16519084 2898872 156895936   13   61 34675 45938 21230   19  3  2 94  1  0  0\n",
+          "unreadable": [],
+          "departed_pids": [
+            2750448,
+            2750449,
+            2750641
+          ],
+          "marked": false,
+          "top_foreign_processes": [
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 9
+            },
+            {
+              "pid": 4344,
+              "comm": "grafana",
+              "ticks": 2
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 2
+            },
+            {
+              "pid": 1,
+              "comm": "systemd",
+              "ticks": 1
+            },
+            {
+              "pid": 870,
+              "comm": "multipathd",
+              "ticks": 1
+            }
+          ],
+          "qualified": false,
+          "foreign_suite_count": 0
+        }
+      ]
+    }
+  ],
+  "pooled": {
+    "A": {
+      "pooled_legs": [],
+      "metrics": {
+        "outer_guard": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "install_command": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "render_to_installed": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "whole_serving_step": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "pre_apply_accounting": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        }
+      },
+      "excluded_counts": {
+        "outer_guard": 0,
+        "install_command": 0,
+        "render_to_installed": 0,
+        "whole_serving_step": 0,
+        "pre_apply_accounting": 0
+      },
+      "all_leg_excluded_counts": {
+        "outer_guard": 0,
+        "install_command": 0,
+        "render_to_installed": 0,
+        "whole_serving_step": 0,
+        "pre_apply_accounting": 0
+      },
+      "failed_operations": []
+    },
+    "B": {
+      "pooled_legs": [],
+      "metrics": {
+        "outer_guard": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "install_command": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "render_to_installed": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "whole_serving_step": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "pre_apply_accounting": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        }
+      },
+      "excluded_counts": {
+        "outer_guard": 0,
+        "install_command": 0,
+        "render_to_installed": 0,
+        "whole_serving_step": 0,
+        "pre_apply_accounting": 0
+      },
+      "all_leg_excluded_counts": {
+        "outer_guard": 0,
+        "install_command": 0,
+        "render_to_installed": 0,
+        "whole_serving_step": 0,
+        "pre_apply_accounting": 0
+      },
+      "failed_operations": []
+    }
+  },
+  "monitoring_pins": {
+    "admission.jsonl": {
+      "sha256": "d6d2f7373f7fe0f60b267d4841c7c023bcf92445dab855145eec5569f583ffa6",
+      "bytes": 511
+    },
+    "input-verification.jsonl": {
+      "sha256": "548c4ca7298cb0107a8d01c43f4eec7b504bad3f6aa27bf7d23293cc825d8b12",
+      "bytes": 234
+    },
+    "releases.jsonl": {
+      "sha256": "c8ada19b52d968fa27d9819fcf43b32fb22e7e88da4bd964429dad14168290ff",
+      "bytes": 120
+    },
+    "reservations.jsonl": {
+      "sha256": "b3422015d99aabc662c23e031d5701c59a05f18d983a77cbdc9fd258e809a523",
+      "bytes": 178
+    },
+    "samples.jsonl": {
+      "sha256": "c90e829524c6766b67f4614df1d792b19ef41614148a7e4ac3d12b34e368d49f",
+      "bytes": 3026
+    },
+    "windows.jsonl": {
+      "sha256": "2ce1be191bb52114d3e87279a2b48839dce209f16005c154651637ed45a07047",
+      "bytes": 57
+    }
+  },
+  "monitoring_limit": "Successive /proc PID/start samples cannot reconstruct CPU for processes that start and exit entirely between samples; departed PIDs are retained."
+}
