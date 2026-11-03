@@ -1356,3 +1356,73 @@ F15-AT02 or F14-01; all three historical files remain byte-identical. Members
 theirs. Ted retains the F11-01 repair choice. No transport, NAT, kernel, member
 validation, probe behavior or NetBird pin changed. The populated-hold arming
 sequence and exact consumer joins are in the preceding Follow-up 27 reply.
+
+## members 16 — 2026-11-03 (follow-up 30, D-102)
+
+> # Follow-up 16 owner assignments — 2026-11-03
+>
+> **2026-11-03 — devstack, survivor hold observation:** `tests/e2e/cmd/fvpn-e2e-nodeconfig/proxy.go` releases a consumed arm on `generation_superseded`, as its D-102 contract says. In this run the real sibling-member suspension advances the generation and releases before an accepted post-command survivor hold report. Please provide or specify a bounded TEST ONLY sequence that can retain that eligible survivor through the next generation without editing/replaying signed documents.
+
+`Stack.ArmMatchingLeaseHoldSurvivor(ctx, slot, baseGeneration, survivorMemberID, duration)` is now exported through `labstack.Stack` as an opt-in, TEST ONLY continuation in the D-102 seam ([exact contract and fields](scenarios/harness-exports.md#follow-up-30--bounded-survivor-hold-continuation-in-the-d-102-seam-test-only)). Existing `ArmMatchingLeaseHold` callers keep `survivor_member_id=""` and `max_continued_generations=0`, so the default D-102 behavior and JSON receipts stay byte-identical.
+
+- **Option and bounds:** `ArmMatchingLeaseHoldSurvivor` validates a non-nil `survivorMemberID` UUID and writes `survivor_member_id` plus `max_continued_generations=1` into `/var/lib/vpn-node/e2e/lease-hold/active/arm.json`. Time remains strictly bounded by the original `HoldSeconds` (`1..120s`, anchored once at `hold_started_at` and never reset on continuation) and the 3-minute `ExpiresAt` arm deadline. Generation continuation is bounded to at most **1** advance (`G1 -> G2`) after initial hold target `G1`.
+- **What it withholds and releases on:** During `G1`, successful 200 renewal responses for `G1` return prompt HTTP `503` (`LEASE_HOLD_TEST_ONLY`) as before. When the real sibling suspension advances desired state to `G2 > G1`, the proxy forwards desired state `G2` unchanged; on the first 200 renewal response for `G2`, it inspects the signed `members` array (read-only) without editing, replaying, or synthesizing any signed document. If the signed `G2` lease contains **only** `survivor_member_id`, the proxy records `continued_generation=G2`, `continued_at`, and a `continuation_started` event, and withholds only `G2` renewal responses within the original `hold_until` window. It immediately releases and forwards unchanged on:
+  - `survivor_mismatch` (if the `G2` lease has 0 members, still contains the suspended sibling, or contains any member other than `survivor_member_id`, so sole-member `members_revoked` closure is never masked);
+  - `generation_superseded` (any second advance `G3 > G2`);
+  - `explicit_release` (`ReleaseMatchingLeaseHold`), `hold_deadline_elapsed`, `arm_expired_before_desired`, `invalid_lease_envelope`, or `proxy_restart`.
+- **What a consumer must record:**
+  1. `arm` (`id`, `base_generation`, `hold_seconds`, `survivor_member_id`, `max_continued_generations`, `armed_at`, `expires_at`), `retained_local_lease` (`lease_id`, `body_sha256`), and the two member IDs (`survivor_member_id`, `sibling_member_id`).
+  2. Initial node command (`status=202`, `desired_generation`), `incident_id`, `entry_hold_report_id` (Step 1), `alarm_hold_report_id` (Step ≥ 3, `reported_alarm=true`), and `escalation_audit_id` (`node.generation_hold.escalated`, count `1`).
+  3. Sibling suspension mutation (`started_at`, `completed_at`, `status=202`) and the accepted `post_command_hold_report_id` received after `completed_at` while `ended_at IS NULL`, at `applied_generation = continued_generation > initial_target_generation`, joined to the retained lease containing the non-suspended survivor and the now-suspended sibling.
+  4. Proxy receipt (`continued_generation`, `continued_at`, `continuation_started`, `withheld` on `continued_generation`, `released`, and `matching_lease_forwarded` on `continued_generation`), `recovery_survivor_lease_id` (matching `LocalLeaseReadback` SHA-256 byte-for-byte), and `recovery_serving_report_id` closing the same incident `generation_matched`.
+- **Fresh stack proof ([`docs/e2e/runs/2026-11-03/followup30/README.md`](runs/2026-11-03/followup30/README.md), run `8576dfe5-aa76-417c-9c12-f104cef47fdb`, 1 attempt, `10 / 0 / 0`):**
+  - Node `01a1a02d-29a3-74ce-b6bf-f63f739267c4`, incarnation `01a1a02d-2d37-786c-a359-090bc44c43a9`, survivor `01a1a02d-7200-7f22-b4ba-9e1c79ce69ee`, sibling `01a1a02d-df51-7e7d-8e43-afd3884056b0`, retained generation-`8` two-member lease `0e45897f-2b45-48dd-9956-4cfe2c987274`, arm `c81a7351-ce93-451b-b988-68aedb4fbb90`.
+  - Incident `01a1a02f-3e1d-7521-836c-c994dfc8190a`; entry hold report `01a1a02f-3e18-75c9-a1ca-df9ecde0daab` (Step 1, applied `9` / lease `8`); alarm hold report `01a1a02f-64cf-7760-b675-b7f64dbb77d3` (Step 3, `reported_alarm=true`, `elapsed_ms=9916`); single escalation audit `01a1a02f-64d5-7ee1-93c3-951a99af5e9a`.
+  - Real sibling suspension (`operation_id=01a1a02f-6675-713d-98b1-22190987579d`, completed `2026-11-03T06:53:43.415287241Z`) advanced desired state to generation `11`; proxy recorded `continuation_started` on generation `11` at `2026-11-03T06:53:47.941470275Z` and withheld generation-`11` survivor-only lease `53dd9d93-50d3-4d7e-bce7-72a5ba53888e`.
+  - Accepted post-command survivor hold report `01a1a02f-785d-79f2-a660-7a99fc16c580` (Step 4, `applied_generation=11`, `lease_generation=8`, `reported_alarm=true`, received `2026-11-03T06:53:48.003245+00:00` while incident remained open).
+  - Explicit release at `2026-11-03T06:53:52.925435523Z` forwarded generation-`11` survivor lease `b36b4be7-84c2-4728-8e36-7049d5523c48` (matching local durable lease `bec6929bb25334fc7a4082e2cb6a908718207e3ebb8a85a064fe935067c7c2ee`), and recovery serving report `01a1a02f-8c27-7587-b6fe-96f8b865a6db` closed the incident `generation_matched` at `2026-11-03T06:53:53.070299+00:00`.
+
+## members 17 — 2026-11-03 (follow-up 31, source-binding feasibility and archive navigation)
+
+**Source-address populated hold: not exercised; hook unavailable.** This item
+stopped at the requested feasibility condition. No new Stack option, bounds,
+state mutation or release behavior is advertised. Existing D-102 callers are
+unchanged. There were zero stack attempts or injections, and no accepted-report
+or central-classification evidence was generated for this row.
+
+The node computes `bindingOK` in `Decide` from signed binding/lease model
+construction. Model errors and zero admitted bindings fail qos too. Live nft
+or member-path failures become a retained Apply error, which overrides lease,
+qos and source_binding together. During the hold, `leaseOK=false` already fails
+both source_binding and qos; the blocked audit promotes TC errors, not an
+independent nft source-rule failure. A TC-free namespace mutation therefore
+cannot satisfy the requested independent source-binding failure and passing
+restoration. See the [complete source trace and rejected mechanisms](runs/2026-11-03/followup31/source-binding.md).
+
+**2026-11-03 hand-off to orchestrator / w2-agent-core:** supply a genuine,
+cause-specific source-binding verifier that runs against a defined binding
+expectation while forwarding is held, and distinguish its result from shared
+Apply/qos and lease-dependent statuses. Specify the checked node state and
+restoration contract; route contract or central changes to their owners.
+This requires changes outside this lane. No report-field override or synthetic
+signed document is a substitute.
+
+Once that exists, the devstack hook must be opt-in and scoped to one node role
+(and member/device where applicable), expire at a hard maximum duration, release
+on explicit removal and test/handle cleanup, and verify idempotent removal by
+state read-back. Consumers must retain commands, exits, before/after state and
+UTC bounds for injection and removal, including every failed attempt; join the
+node/incarnation, populated lease/member IDs, hold arm, incident, accepted report
+and audit IDs; and record central's actual classification. These are future
+acceptance requirements, **not an implemented API**. The separate source-address
+row remains open for members' next follow-up after the owner prerequisite.
+
+**Archive navigation: repaired.** Added
+[`docs/e2e/at/poc/G1-app-checklist.md`](at/poc/G1-app-checklist.md) as a relative
+symlink to `../../../poc/G1-app-checklist.md`. It opens the real checklist and
+preserves every byte-pinned archive. All **14** archived `OPERATORS.md` files
+carrying this link in members commit
+`1019e9591c68a3d8f9323dd51259d94d1e5e5bf8` (follow-ups 3–16) resolve to
+`docs/poc/G1-app-checklist.md`; the
+[per-file verification](runs/2026-11-03/followup31/archive-links.md) records each
+source file, source digest and successful target/byte comparison.

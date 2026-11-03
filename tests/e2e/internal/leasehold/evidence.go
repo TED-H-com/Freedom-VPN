@@ -6,11 +6,13 @@ import "time"
 const Directory = "/var/lib/vpn-node/e2e/matching-lease-hold"
 
 type Arm struct {
-	ID             string    `json:"id"`
-	BaseGeneration string    `json:"base_generation"`
-	HoldSeconds    int       `json:"hold_seconds"`
-	ArmedAt        time.Time `json:"armed_at"`
-	ExpiresAt      time.Time `json:"expires_at"`
+	ID                      string    `json:"id"`
+	BaseGeneration          string    `json:"base_generation"`
+	HoldSeconds             int       `json:"hold_seconds"`
+	SurvivorMemberID        string    `json:"survivor_member_id,omitempty"`
+	MaxContinuedGenerations int       `json:"max_continued_generations,omitempty"`
+	ArmedAt                 time.Time `json:"armed_at"`
+	ExpiresAt               time.Time `json:"expires_at"`
 }
 
 type Event struct {
@@ -26,10 +28,12 @@ type Event struct {
 }
 
 type Evidence struct {
-	Arm              Arm        `json:"arm"`
-	TargetGeneration string     `json:"target_generation,omitempty"`
-	HoldStartedAt    *time.Time `json:"hold_started_at,omitempty"`
-	HoldUntil        *time.Time `json:"hold_until,omitempty"`
-	ReleasedAt       *time.Time `json:"released_at,omitempty"`
-	Events           []Event    `json:"events"`
+	Arm                 Arm        `json:"arm"`
+	TargetGeneration    string     `json:"target_generation,omitempty"`
+	ContinuedGeneration string     `json:"continued_generation,omitempty"`
+	ContinuedAt         *time.Time `json:"continued_at,omitempty"`
+	HoldStartedAt       *time.Time `json:"hold_started_at,omitempty"`
+	HoldUntil           *time.Time `json:"hold_until,omitempty"`
+	ReleasedAt          *time.Time `json:"released_at,omitempty"`
+	Events              []Event    `json:"events"`
 }

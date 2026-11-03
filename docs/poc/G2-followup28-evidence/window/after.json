@@ -1,0 +1,22 @@
+{
+  "hold": {
+    "utc": "2026-11-03T07:55:47.777510+00:00",
+    "exit_code": 0,
+    "output": "free\n",
+    "free": true
+  },
+  "processes": {
+    "pgrep": "2627323 /bin/sh -c TMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' GOTMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n2627324 <home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n",
+    "pgrep_exit": 0,
+    "actual": [
+      {
+        "pid": 2627324,
+        "ppid": 2627323,
+        "args": "<home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...",
+        "suite": false,
+        "go_test": true
+      }
+    ],
+    "suites": []
+  }
+}

@@ -191,6 +191,23 @@ type MatchingLeaseHoldArm = leasehold.Arm
 // node, before a real desired-generation command. No agent stop is needed.
 // Only node/node2 use this proxy. Each use needs a fresh arm; overlap is refused.
 func (s *Stack) ArmMatchingLeaseHold(ctx context.Context, slot, baseGeneration string, duration time.Duration) (MatchingLeaseHoldArm, error) {
+	return s.armMatchingLeaseHold(ctx, slot, baseGeneration, "", duration)
+}
+
+// ArmMatchingLeaseHoldSurvivor is the opt-in TEST ONLY D-102 continuation for
+// sibling removal while a single expected survivor remains eligible. It is
+// bounded to the same hold duration / 3-minute arm expiry and at most one
+// generation advance after the initial hold target, withholding only that
+// survivor's successful matching lease-renewal responses.
+func (s *Stack) ArmMatchingLeaseHoldSurvivor(ctx context.Context, slot, baseGeneration, survivorMemberID string, duration time.Duration) (MatchingLeaseHoldArm, error) {
+	id, err := uuid.Parse(survivorMemberID)
+	if err != nil || id == uuid.Nil {
+		return MatchingLeaseHoldArm{}, fmt.Errorf("invalid TEST ONLY survivor member ID")
+	}
+	return s.armMatchingLeaseHold(ctx, slot, baseGeneration, id.String(), duration)
+}
+
+func (s *Stack) armMatchingLeaseHold(ctx context.Context, slot, baseGeneration, survivorMemberID string, duration time.Duration) (MatchingLeaseHoldArm, error) {
 	var out leasehold.Arm
 	base, err := decstr.Parse(baseGeneration)
 	if err != nil || base == 0 || duration < time.Second || duration > 120*time.Second || duration%time.Second != 0 || (slot != "node" && slot != "node2") {
@@ -206,6 +223,10 @@ func (s *Stack) ArmMatchingLeaseHold(ctx context.Context, slot, baseGeneration s
 	}
 	now := time.Now().UTC()
 	out = leasehold.Arm{ID: uuid.NewString(), BaseGeneration: baseGeneration, HoldSeconds: int(duration / time.Second), ArmedAt: now, ExpiresAt: now.Add(3 * time.Minute)}
+	if survivorMemberID != "" {
+		out.SurvivorMemberID = survivorMemberID
+		out.MaxContinuedGenerations = 1
+	}
 	raw, err := json.Marshal(out)
 	if err == nil {
 		err = writeContainerFile(ctx, c, active+"/arm.tmp", "600", raw)

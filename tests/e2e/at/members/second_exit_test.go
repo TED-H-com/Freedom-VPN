@@ -54,7 +54,9 @@ func (l *live) useSecond() func() {
 func (l *live) twoExits(r *record) {
 	// The full assembled campaign can outlast a member browser idle session.
 	// Reauthenticate through OIDC; do not lengthen the product timeout.
+	reauthStarted := time.Now().UTC()
 	l.a = l.login("AT-member-A-"+l.run, "member")
+	r.jsonCheck("AT09 member OIDC reauthentication", "fresh authenticated member session before member endpoints", map[string]any{"started_at": reauthStarted, "completed_at": time.Now().UTC(), "member_id": l.a.member}, "real OIDC redirects and GET auth/session validated by login", true)
 	if !l.secondExit(r) {
 		return
 	}

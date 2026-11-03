@@ -1,7 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 29](follow-up-29.md) (2026-11-01 EST):** Through #396: same-boot deny-set adoption gap open; isolation 15 unqualified on a 3.821 µs interleave, signal-15 cause unproven. Devstack 27 proves the TEST ONLY populated hold; consumer rows remain open. D-120 measurement end fixed; every failed run stays failed. D-135–D-138, D-140 and D-141 remain provisional. Seven owner decisions retained.
-**Previous cut — [follow-up 28](follow-up-28.md):** #386–#390 at aae6763f; 19 subtests, five rows, 16 snapshots, 1,644 checks and 47 findings. Historical failures stay failed.
+**Current cut — [follow-up 31](follow-up-31.md) (2026-11-03 EST):** Through #407: isolation 17 records the first qualified D-140 pass; netlab 27 closes r20 H-2 and live drift. D-144 lists are on main; F30-01 remains routed. r21 returned to agent-core 38 before merge. Historical failures stay failed; nine owner decisions.
+**Previous cut — [follow-up 30](follow-up-30.md):** #397–#403 at b9439411; 23 subtests, seven rows, nine snapshots, 449 checks, six dated documents and 61 findings. See follow-up 31 for timing errata.
 
 ## Operator changes at #369
 
@@ -334,16 +334,31 @@ Portal pointers: `/admin/groups` lists and creates member groups; `/admin/nodes/
 
 ### 3.2 Updating Node Region, Member Groups, or Capacity (`PATCH /api/v1/admin/nodes/{node_id}`)
 
-**2026-11-01 — Known local configuration behaviour at #396.** After a restart
-with changed `extra_denied_v4` or `host_v4`, same-boot adoption can keep the node
-serving on the previously installed `denied_v4` / `host_v4` until its first
-successful Apply. A larger deny set can therefore leave the old, smaller set
-in force. A busy node lock or control timeout can delay Apply; the verifier
-does not read these sets' elements. SIGHUP does not reload these fields.
-The [agent-core 35 dated hand-off](../node/followup35-diagnostic-and-restart-2026-11-01.md)
-provides no safe procedure and no maximum adoption-to-Apply delay. The fix is
-routed to agent-core 36 (refuse adoption on changed sets), then netlab 26
-(verifier content check); it is open at this cutoff. No workaround is promised.
+**2026-11-03 — Restart with changed deny / host sets, at #407.** With
+agent-core 36 (#401) on main, a restart on the same boot with a changed
+`denied_v4`, `extra_denied_v4` or `host_v4` no longer adopts the previously
+installed sets. Any growth, shrink or replacement refuses same-boot adoption:
+the node takes its baseline, with member forwarding closed, and serves members
+again only after its first full Apply, which installs the configured sets. A
+busy node lock or a control timeout can delay that Apply; the node keeps the
+baseline meanwhile, never the old sets, and no maximum delay is stated.
+Unchanged sets, reordered or duplicated, still adopt. SIGHUP still does not
+reload these fields. See the
+[agent-core 36 dated hand-off](../node/followup36-restart-and-signals-2026-11-01.md).
+Netlab 27 (#405) now detects sets changed underneath a running agent through
+periodic live reads of exact denied_v4 / host_v4 interval coverage. Missing,
+extra or tainted coverage fails closed with ISOLATION_POLICY_INVALID; serving
+is withdrawn until a verified Apply. TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing
+proves withdrawal without another Apply, and
+TestAT13_F27_UnrecordedApplyRefusesRestartAdoption proves baseline on restart
+after an unrecorded Apply. See the [final #405 roadmap row](../ROADMAP.md).
+
+**Known behaviour at #407 (r20 H-1, reported and routed, not yet judged).**
+After such a restart, the bytes counted since the last sample before it can be
+recorded as an unattributed `mapping conflict` usage gap instead of member
+usage. See the [archived r20 review](../reviews/r20-adoption-signal-review.md).
+Agent-core 37's fixes were held after r21 and go with reviewed agent-core 38;
+the finding remains open on main. No fix date is promised.
 
 First fetch the node (`GET /api/v1/admin/nodes/{node_id}`) and capture the response `ETag` header (`"<resource_version>"`). Supply `If-Match` and `Idempotency-Key` (`428 Precondition Required` if `If-Match` is missing; `412 Precondition Failed` if stale):
 
@@ -586,6 +601,21 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/update-batches" \
 ```
 
 ### 4.3 Node Update Execution, `D-053` Health Attestation, and Rollback (`node/updater`, `docs/updates/node-updater.md`, `docs/updates/node-health-attestation.md`)
+
+<a id="f30-01"></a>
+
+**Known behaviour at #407 — F30-01 (reported and routed, not yet fixed).**
+During an update, `fvpn-updater` starts the candidate `fvpn-agent` in
+`stepStart` while still holding `update.lock`. The candidate's boot
+`recoverOnce` invokes `fvpn-updater recover`, receives `UPDATE_BUSY`, and
+latches `recovery_required` with no member serving for the life of that
+process. The updated node does not serve members until its agent is restarted.
+This is a production defect, owned by agent-core with the updater as co-owner;
+no fix date is promised. Devstack 30's #406 report and main's
+`node/updater/apply.go`, `node/updater/engine.go`, `node/agent/engine.go` and
+`node/agent/decide.go` establish this path. The devstack `node-restart` observation is not a verified production
+operator procedure; none is promised. The nightly `lease-expiry` listing
+keeps this defect visible and does not accept the behavior.
 
 When `fvpn-updater` executes a signed `UpdateIntent`:
 1. **Preflight & Verification (`AT23`–`AT25`, `AT27`)**:

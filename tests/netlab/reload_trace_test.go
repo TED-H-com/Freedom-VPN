@@ -4,6 +4,7 @@ package netlab
 
 import (
 	"encoding/json"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -14,6 +15,9 @@ import (
 func startReloadTrace(t *testing.T) {
 	t.Helper()
 	mustExec(t, "python3", "/opt/netlab/scripts/trace_capture.py", "start", "/scratch/at10")
+	if os.Getenv("FVPN_NETLAB_TCP_OBSERVE") == "1" {
+		mustExec(t, "python3", "/opt/netlab/scripts/tcp_observe.py", "start", "/scratch/at10-tcp")
+	}
 	t.Cleanup(func() {
 		// Also retain an aborted Apply, not only successful measurement runs.
 		if !scratchExists("/scratch/at10-trace.done") {
@@ -32,6 +36,17 @@ func finishReloadTrace(t *testing.T) {
 		}
 	}
 	mustExec(t, "python3", "/opt/netlab/scripts/trace_capture.py", "stop", "/scratch/at10")
+	if os.Getenv("FVPN_NETLAB_TCP_OBSERVE") == "1" {
+		out, errOut, err := dockerExec("python3", "/opt/netlab/scripts/tcp_observe.py", "stop", "/scratch/at10-tcp")
+		if err != nil {
+			t.Errorf("TCP observation incomplete: %v %s%s", err, out, errOut)
+		}
+		for _, name := range []string{"at10-tcp-meta.json", "at10-tcp-origin.jsonl", "at10-tcp-node.jsonl", "at10-tcp-responder.jsonl", "at10-tcp-origin.err", "at10-tcp-node.err", "at10-tcp-responder.err"} {
+			if scratchExists("/scratch/" + name) {
+				save(t, name, readScratch(t, "/scratch/"+name))
+			}
+		}
+	}
 	mustExec(t, "touch", "/scratch/at10-trace.done")
 	for _, name := range []string{"at10-origin.txt", "at10-origin.err", "at10-node.txt", "at10-node.err", "at10-responder.txt", "at10-responder.err", "at10-apply.jsonl", "stream-a1.log", "stream-a1.log.jsonl", "stream-a1.log.trace-finish.json", "stream-a1.log.trace-done"} {
 		if scratchExists("/scratch/" + name) {

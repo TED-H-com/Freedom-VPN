@@ -1,0 +1,11 @@
+docker rm -f fvpn-w1-netlab-f28-window >/dev/null 2>&1 || true
+docker network rm fvpn-w1-netlab-f28-window-dns >/dev/null 2>&1 || true
+make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w1-netlab-f28-window'
+make[1]: Entering directory '<worktree>'
+mkdir -p <worktree>/.agent/tmp/fvpn-w1-netlab-f28-window-scratch
+docker rm -f fvpn-w1-netlab-f28-window-wipe >/dev/null 2>&1 || true
+docker run --rm --name fvpn-w1-netlab-f28-window-wipe --network none \
+	-v <worktree>/.agent/tmp/fvpn-w1-netlab-f28-window-scratch:/scratch fvpn-w1-netlab-f28-window:lab \
+	find /scratch -mindepth 1 -delete
+make[1]: Leaving directory '<worktree>'
+rmdir <worktree>/.agent/tmp/fvpn-w1-netlab-f28-window-scratch 2>/dev/null || true

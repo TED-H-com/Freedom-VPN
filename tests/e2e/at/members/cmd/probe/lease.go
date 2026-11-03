@@ -36,4 +36,15 @@ func storedLease() {
 		return
 	}
 	out = map[string]any{"available": true, "present": true, "read_at": time.Now().UTC(), "lease_id": id, "issued_at": issued, "expires_at": expires, "highest_issued_at": highest, "boot_id": boot, "mono_sent_ns": fmt.Sprint(mono), "envelope_sha256": fmt.Sprintf("%x", sha256.Sum256(envelope))}
+	var retained []byte
+	var state struct {
+		Model struct {
+			Denied []string `json:"denied_v4"`
+			Extra  []string `json:"extra_denied_v4"`
+			Host   []string `json:"host_v4"`
+		} `json:"model"`
+	}
+	if db.QueryRowContext(ctx, "SELECT value FROM meta WHERE key='retained_applied'").Scan(&retained) == nil && json.Unmarshal(retained, &state) == nil {
+		out["retained_restart_sets"] = map[string]any{"denied_v4": state.Model.Denied, "extra_denied_v4": state.Model.Extra, "host_v4": state.Model.Host, "nil_denied_means_spec_defaults": true}
+	}
 }

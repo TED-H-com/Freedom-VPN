@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"syscall"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
@@ -280,10 +281,69 @@ func TestAT25_FileMeterWaitRestartRechecksCurrentFile(t *testing.T) {
 			if err := w.eng.Recover(t.Context()); !errors.Is(err, ErrMembersBlocked) {
 				t.Fatal(err)
 			}
-			if time.Since(start) > time.Second {
-				t.Fatal("restart renewed the original wait deadline")
-			}
+			elapsed := time.Since(start)
+			t.Logf("F20 recover_elapsed_ns=%d original_remaining_ns=%d", elapsed.Nanoseconds(), note.Deadline.Sub(start).Nanoseconds())
+			// Recover also fsyncs the lock, seals the failure and cleans up.
+			// Its wall time cannot prove that the meter deadline was renewed.
+			// TestAT25_FileMeterWaitRestartKeepsDeadline checks that bound
+			// on a controlled clock, independently of storage/scheduling.
 			assertMeterFailure(t, w, old.id, code, detail)
+		})
+	}
+}
+
+// The restart integration above exercises the complete durable failure path.
+// Here only timers advance time: slow disk I/O or descheduling cannot be
+// confused with renewing the original wait. Use the real persisted note and
+// FileMeter/FileGate adapters, without a network or database in the bubble.
+func TestAT25_FileMeterWaitRestartKeepsDeadline(t *testing.T) {
+	for _, downtime := range []time.Duration{0, 200 * time.Millisecond, 250 * time.Millisecond, time.Second} {
+		t.Run(downtime.String(), func(t *testing.T) {
+			synctest.Test(t, func(t *testing.T) {
+				dir := t.TempDir()
+				boot := uuid.New()
+				gate := FileGate{Path: filepath.Join(dir, "forwarding.blocked")}
+				meter := FileMeter{Path: filepath.Join(dir, "missing.checkpoint"), Wait: 250 * time.Millisecond}
+				txn := updatejournal.Txn{TxnID: uuid.NewString(), Stage: updatejournal.StageBlocked}
+				before := Engine{Layout: Layout{Journal: dir}, Node: Node{BootID: boot}, Gate: gate, Meter: meter}
+				if err := before.prepareMeterWait(txn, meter); err != nil {
+					t.Fatal(err)
+				}
+				notePath := filepath.Join(dir, meterWaitPrefix+txn.TxnID)
+				raw := fileBytes(t, notePath)
+				var note meterWait
+				if err := json.Unmarshal(raw, &note); err != nil {
+					t.Fatal(err)
+				}
+				time.Sleep(downtime)
+
+				// Recreate adapters and engine; the new configuration must not
+				// grant another minute, even if preparation is replayed.
+				meter.Wait = time.Minute
+				after := Engine{Layout: Layout{Journal: dir}, Node: Node{BootID: boot},
+					Gate: FileGate{Path: gate.Path}, Meter: meter}
+				if err := after.prepareMeterWait(txn, meter); err != nil {
+					t.Fatal(err)
+				}
+				start := time.Now()
+				_, err := after.waitMeter(t.Context(), txn, meter)
+				elapsed := time.Since(start)
+				op := asOp(err)
+				if op == nil || op.Code != apierr.CheckpointFailed || op.Detail != "meter_checkpoint_timeout" {
+					t.Fatalf("missing checkpoint: %v", err)
+				}
+				if elapsed > time.Second {
+					t.Fatal("restart renewed the original wait deadline")
+				}
+				want := max(time.Duration(0), note.Deadline.Sub(start))
+				if elapsed != want {
+					t.Fatalf("wait elapsed %s; original remaining budget %s", elapsed, want)
+				}
+				if !bytes.Equal(raw, fileBytes(t, notePath)) {
+					t.Fatal("restart rewrote the original wait note")
+				}
+				t.Logf("meter wait elapsed=%s original remaining=%s", elapsed, want)
+			})
 		})
 	}
 }
