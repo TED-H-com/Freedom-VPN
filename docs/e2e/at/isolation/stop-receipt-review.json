@@ -1,5 +1,5 @@
 {
-  "run_id": "0ec14b39-467e-4a37-a239-1a33ef12eb71",
+  "run_id": "9f1bc0ff-d01f-4a3f-ad41-6c6a086e6e04",
   "all_parent_receipts_matched": true,
   "stops": [
     {
@@ -7,17 +7,17 @@
       "source": "restart-lifecycle.json",
       "identity": {
         "available": true,
-        "captured_at": "2026-11-03T06:30:19.745195956Z",
-        "launch_id": "59b7662f-9325-48c1-b1e3-3142e2af37c7",
-        "pid": 133948,
-        "start_ticks": "1043378"
+        "captured_at": "2026-11-03T14:19:08.519712207Z",
+        "launch_id": "fb36c1b1-237b-4bc5-8838-e94f1712de02",
+        "pid": 135111,
+        "start_ticks": "3856367"
       },
       "parent_wait_receipt": {
-        "id": "59b7662f-9325-48c1-b1e3-3142e2af37c7",
-        "pid": 133948,
-        "start_ticks": "1043378",
-        "started_at": "2026-11-03T06:23:11.331602449Z",
-        "wait_observed_at": "2026-11-03T06:30:20.016409711Z",
+        "id": "fb36c1b1-237b-4bc5-8838-e94f1712de02",
+        "pid": 135111,
+        "start_ticks": "3856367",
+        "started_at": "2026-11-03T14:12:01.226383984Z",
+        "wait_observed_at": "2026-11-03T14:19:08.859313151Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -28,7 +28,7 @@
       "container_events": [
         {
           "action": "kill",
-          "time_ns": "1793687419783755300",
+          "time_ns": "1793715548564738925",
           "attributes": {
             "name": "fvpn-w4-isolation-node",
             "signal": "15"
@@ -36,14 +36,14 @@
         },
         {
           "action": "stop",
-          "time_ns": "1793687420481534180",
+          "time_ns": "1793715549265041867",
           "attributes": {
             "name": "fvpn-w4-isolation-node"
           }
         },
         {
           "action": "die",
-          "time_ns": "1793687420484407728",
+          "time_ns": "1793715549267025646",
           "attributes": {
             "name": "fvpn-w4-isolation-node",
             "exitCode": "0"
@@ -60,14 +60,14 @@
         "Pid": 0,
         "ExitCode": 0,
         "Error": "",
-        "StartedAt": "2026-11-03T06:17:56.382896438Z",
-        "FinishedAt": "2026-11-03T06:30:20.453639605Z"
+        "StartedAt": "2026-11-03T14:06:44.101990271Z",
+        "FinishedAt": "2026-11-03T14:19:09.240759702Z"
       },
       "agent_budget_seconds": 15,
       "container_grace_seconds": 25,
-      "command_start": "2026-11-03T06:30:19.767363532Z",
-      "command_end": "2026-11-03T06:30:20.486661963Z",
-      "container_term_to_agent_parent_wait_ns": "232654411",
+      "command_start": "2026-11-03T14:19:08.542132671Z",
+      "command_end": "2026-11-03T14:19:09.269112742Z",
+      "container_term_to_agent_parent_wait_ns": "294574226",
       "agent_exit_code": 0,
       "agent_signal": null,
       "cooperative_exit": true
@@ -77,17 +77,17 @@
       "source": "identity-freeze.json",
       "identity": {
         "available": true,
-        "captured_at": "2026-11-03T06:38:20.26539172Z",
-        "launch_id": "d05b5b7e-c5ea-4f76-b792-44b1ba559fd2",
-        "pid": 953,
-        "start_ticks": "1086337"
+        "captured_at": "2026-11-03T14:27:12.272377165Z",
+        "launch_id": "96517b99-9ca8-4591-8e3f-93ec51d64675",
+        "pid": 954,
+        "start_ticks": "3899218"
       },
       "parent_wait_receipt": {
-        "id": "d05b5b7e-c5ea-4f76-b792-44b1ba559fd2",
-        "pid": 953,
-        "start_ticks": "1086337",
-        "started_at": "2026-11-03T06:30:20.922475438Z",
-        "wait_observed_at": "2026-11-03T06:38:20.657238607Z",
+        "id": "96517b99-9ca8-4591-8e3f-93ec51d64675",
+        "pid": 954,
+        "start_ticks": "3899218",
+        "started_at": "2026-11-03T14:19:09.735263146Z",
+        "wait_observed_at": "2026-11-03T14:27:12.597010585Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -98,7 +98,7 @@
       "container_events": [
         {
           "action": "kill",
-          "time_ns": "1793687900352971835",
+          "time_ns": "1793716032363995201",
           "attributes": {
             "name": "fvpn-w4-isolation-node",
             "signal": "15"
@@ -106,14 +106,14 @@
         },
         {
           "action": "stop",
-          "time_ns": "1793687901096749981",
+          "time_ns": "1793716033058758724",
           "attributes": {
             "name": "fvpn-w4-isolation-node"
           }
         },
         {
           "action": "die",
-          "time_ns": "1793687901099731823",
+          "time_ns": "1793716033061207132",
           "attributes": {
             "name": "fvpn-w4-isolation-node",
             "exitCode": "0"
@@ -121,7 +121,7 @@
         },
         {
           "action": "start",
-          "time_ns": "1793687902384063866",
+          "time_ns": "1793716034352019804",
           "attributes": {
             "name": "fvpn-w4-isolation-node"
           }
@@ -134,17 +134,17 @@
         "Restarting": false,
         "OOMKilled": false,
         "Dead": false,
-        "Pid": 1818252,
+        "Pid": 2048907,
         "ExitCode": 0,
         "Error": "",
-        "StartedAt": "2026-11-03T06:38:22.336598682Z",
-        "FinishedAt": "2026-11-03T06:38:21.019670494Z"
+        "StartedAt": "2026-11-03T14:27:14.289116998Z",
+        "FinishedAt": "2026-11-03T14:27:13.030567721Z"
       },
       "agent_budget_seconds": 15,
       "container_grace_seconds": 25,
-      "command_start": "2026-11-03T06:38:20.288163776Z",
-      "command_end": "2026-11-03T06:38:22.385572871Z",
-      "container_term_to_agent_parent_wait_ns": "304266772",
+      "command_start": "2026-11-03T14:27:12.294441472Z",
+      "command_end": "2026-11-03T14:27:14.354148273Z",
+      "container_term_to_agent_parent_wait_ns": "233015384",
       "agent_exit_code": 0,
       "agent_signal": null,
       "cooperative_exit": true
@@ -154,16 +154,16 @@
       "container": "fvpn-w4-isolation-node",
       "source": "receiver-closure.json",
       "identity": {
-        "launch_id": "a6bec9d4-110e-4b48-8f70-758b22fe768f",
-        "pid": 905,
-        "start_ticks": "1134512"
+        "launch_id": "40d03760-a185-4de9-b65c-25d20d0d555d",
+        "pid": 915,
+        "start_ticks": "3947709"
       },
       "parent_wait_receipt": {
-        "id": "a6bec9d4-110e-4b48-8f70-758b22fe768f",
-        "pid": 905,
-        "start_ticks": "1134512",
-        "started_at": "2026-11-03T06:38:22.674435744Z",
-        "wait_observed_at": "2026-11-03T06:40:06.541701669Z",
+        "id": "40d03760-a185-4de9-b65c-25d20d0d555d",
+        "pid": 915,
+        "start_ticks": "3947709",
+        "started_at": "2026-11-03T14:27:14.638917497Z",
+        "wait_observed_at": "2026-11-03T14:28:58.36187303Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -172,18 +172,18 @@
       "parent_identity_matched": true,
       "attempted_escalation": null,
       "signal_start": {
-        "mono_ns": "11448981414218",
-        "wall": "2026-11-03T06:40:06.530038506Z"
+        "mono_ns": "39580773687233",
+        "wall": "2026-11-03T14:28:58.322311266Z"
       },
       "signal_return": {
-        "mono_ns": "11448981419679",
-        "wall": "2026-11-03T06:40:06.530043133Z"
+        "mono_ns": "39580773691741",
+        "wall": "2026-11-03T14:28:58.322315247Z"
       },
       "exit_sample": {
-        "mono_ns": "11448993013598",
-        "wall": "2026-11-03T06:40:06.541642174Z"
+        "mono_ns": "39580813195723",
+        "wall": "2026-11-03T14:28:58.361843316Z"
       },
-      "signal_to_exit_upper_ns": "11597128",
+      "signal_to_exit_upper_ns": "39507101",
       "within_15s": true,
       "agent_budget_seconds": 15,
       "stored_lease_survived": true,
@@ -197,16 +197,16 @@
       "container": "fvpn-w4-isolation-node-clone",
       "source": "receiver-closure.json",
       "identity": {
-        "launch_id": "4337769d-898f-4c66-affc-5dd384572a06",
-        "pid": 1123,
-        "start_ticks": "1134516"
+        "launch_id": "8f7c5fd6-dad8-4359-a976-dc6354e88dfb",
+        "pid": 1138,
+        "start_ticks": "3947713"
       },
       "parent_wait_receipt": {
-        "id": "4337769d-898f-4c66-affc-5dd384572a06",
-        "pid": 1123,
-        "start_ticks": "1134516",
-        "started_at": "2026-11-03T06:38:22.711971719Z",
-        "wait_observed_at": "2026-11-03T06:40:06.912975311Z",
+        "id": "8f7c5fd6-dad8-4359-a976-dc6354e88dfb",
+        "pid": 1138,
+        "start_ticks": "3947713",
+        "started_at": "2026-11-03T14:27:14.682402287Z",
+        "wait_observed_at": "2026-11-03T14:28:58.726140702Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -215,18 +215,18 @@
       "parent_identity_matched": true,
       "attempted_escalation": null,
       "signal_start": {
-        "mono_ns": "11449357985372",
-        "wall": "2026-11-03T06:40:06.90660967Z"
+        "mono_ns": "39581171640087",
+        "wall": "2026-11-03T14:28:58.720264412Z"
       },
       "signal_return": {
-        "mono_ns": "11449357990955",
-        "wall": "2026-11-03T06:40:06.906614405Z"
+        "mono_ns": "39581171644871",
+        "wall": "2026-11-03T14:28:58.720268336Z"
       },
       "exit_sample": {
-        "mono_ns": "11449364297169",
-        "wall": "2026-11-03T06:40:06.912922291Z"
+        "mono_ns": "39581177466683",
+        "wall": "2026-11-03T14:28:58.726090804Z"
       },
-      "signal_to_exit_upper_ns": "6310802",
+      "signal_to_exit_upper_ns": "5826460",
       "within_15s": true,
       "agent_budget_seconds": 15,
       "stored_lease_survived": true,
@@ -238,18 +238,18 @@
     {
       "label": "populated_hold_agent",
       "source": "populated-holds.json",
-      "incident_id": "01a1a011-b499-74b1-9d04-dc9f95871230",
+      "incident_id": "01a1a1be-ea82-776b-9e85-cbee85a25501",
       "identity": {
-        "launch_id": "ad368556-21b4-4066-a412-c3cd029618b5",
+        "launch_id": "f54e270e-2a4d-472e-9e44-a52aa4c50dd6",
         "pid": 1196,
-        "start_ticks": "1012434"
+        "start_ticks": "3825205"
       },
       "parent_wait_receipt": {
-        "id": "ad368556-21b4-4066-a412-c3cd029618b5",
+        "id": "f54e270e-2a4d-472e-9e44-a52aa4c50dd6",
         "pid": 1196,
-        "start_ticks": "1012434",
-        "started_at": "2026-11-03T06:18:01.890024652Z",
-        "wait_observed_at": "2026-11-03T06:21:23.39340504Z",
+        "start_ticks": "3825205",
+        "started_at": "2026-11-03T14:06:49.607859431Z",
+        "wait_observed_at": "2026-11-03T14:10:12.333744598Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -258,18 +258,18 @@
       "parent_identity_matched": true,
       "attempted_escalation": null,
       "signal_start": {
-        "mono_ns": "10325836735200",
-        "wall": "2026-11-03T06:21:23.385359582Z"
+        "mono_ns": "38454777463083",
+        "wall": "2026-11-03T14:10:12.326087286Z"
       },
       "signal_return": {
-        "mono_ns": "10325836740439",
-        "wall": "2026-11-03T06:21:23.38536391Z"
+        "mono_ns": "38454777468184",
+        "wall": "2026-11-03T14:10:12.326091667Z"
       },
       "exit_sample": {
-        "mono_ns": "10325844722134",
-        "wall": "2026-11-03T06:21:23.393347329Z"
+        "mono_ns": "38454785213755",
+        "wall": "2026-11-03T14:10:12.33383781Z"
       },
-      "signal_to_exit_upper_ns": "7986207",
+      "signal_to_exit_upper_ns": "7750413",
       "within_15s": true,
       "agent_budget_seconds": 15,
       "step_cancel": "not observable here",
@@ -280,18 +280,18 @@
     {
       "label": "populated_hold_agent",
       "source": "populated-holds.json",
-      "incident_id": "01a1a012-f825-7e4a-ab4c-268766baa273",
+      "incident_id": "01a1a1c0-2f03-714c-8b8c-2ef3c10ab6a3",
       "identity": {
-        "launch_id": "bcc328dd-7b5f-4974-a49c-db1d8f863ef8",
-        "pid": 84869,
-        "start_ticks": "1032633"
+        "launch_id": "5b438c15-e7e9-40cd-a2bc-4111ec20db52",
+        "pid": 85306,
+        "start_ticks": "3845526"
       },
       "parent_wait_receipt": {
-        "id": "bcc328dd-7b5f-4974-a49c-db1d8f863ef8",
-        "pid": 84869,
-        "start_ticks": "1032633",
-        "started_at": "2026-11-03T06:21:23.88838408Z",
-        "wait_observed_at": "2026-11-03T06:22:40.368220105Z",
+        "id": "5b438c15-e7e9-40cd-a2bc-4111ec20db52",
+        "pid": 85306,
+        "start_ticks": "3845526",
+        "started_at": "2026-11-03T14:10:12.814539618Z",
+        "wait_observed_at": "2026-11-03T14:11:29.28300479Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -300,18 +300,18 @@
       "parent_identity_matched": true,
       "attempted_escalation": null,
       "signal_start": {
-        "mono_ns": "10402813494782",
-        "wall": "2026-11-03T06:22:40.362118844Z"
+        "mono_ns": "38531727268589",
+        "wall": "2026-11-03T14:11:29.275892981Z"
       },
       "signal_return": {
-        "mono_ns": "10402813500020",
-        "wall": "2026-11-03T06:22:40.362123624Z"
+        "mono_ns": "38531727273175",
+        "wall": "2026-11-03T14:11:29.275896635Z"
       },
       "exit_sample": {
-        "mono_ns": "10402819510540",
-        "wall": "2026-11-03T06:22:40.368137307Z"
+        "mono_ns": "38531734433727",
+        "wall": "2026-11-03T14:11:29.283058322Z"
       },
-      "signal_to_exit_upper_ns": "6013990",
+      "signal_to_exit_upper_ns": "7164891",
       "within_15s": true,
       "agent_budget_seconds": 15,
       "step_cancel": "not observable here",
