@@ -89,14 +89,17 @@ type Input struct {
 
 // Decision is the forwarding choice for one step (§14.7, §16.3).
 type Decision struct {
-	Serve         bool
-	Reasons       []api.ForwardingBlockReason
-	Model         enforce.Model
-	Checks        []api.NodeCheck
-	Errors        []api.NodeError
-	Safety        api.SafetyStatus
-	Provisioning  api.ProvisioningState
-	Publication   api.PublicationIntent
+	Serve        bool
+	Reasons      []api.ForwardingBlockReason
+	Model        enforce.Model
+	Checks       []api.NodeCheck
+	Errors       []api.NodeError
+	Safety       api.SafetyStatus
+	Provisioning api.ProvisioningState
+	Publication  api.PublicationIntent
+	// PolicyExpires is the next installed binding boundary that needs a
+	// decision, or the node cap for an intentionally empty model. The watchdog
+	// uses servingDeadline instead, so one expiry cannot withdraw siblings.
 	PolicyExpires time.Duration
 	// Applied is the desired generation the baseline (or a serving apply)
 	// may acknowledge. Zero means this step does not acknowledge one.

@@ -130,7 +130,7 @@ func (e *Engine) adoptStoredServing(ctx context.Context, beat watchdog.Beat) boo
 	e.expectServing.Store(true)
 	e.resumeSampling()
 	e.leaseRefreshPending = true // try central promptly, retain authorization on an outage
-	e.log.Info("serving rules adopted", "generation", e.appliedGen, "policy_expires_mono_ns", int64(e.policyExpires))
+	e.log.Info("serving rules adopted", "generation", e.appliedGen, "policy_expires_mono_ns", int64(e.servingDeadline()), "next_binding_expiry_mono_ns", int64(e.policyExpires))
 	return true
 }
 
@@ -190,6 +190,6 @@ func (e *Engine) preserveServingOnStop(ctx context.Context) bool {
 	if err := e.meter.CheckpointForRestart(ctx); err != nil {
 		return false
 	}
-	e.log.Info("serving rules retained for restart", "generation", e.appliedGen, "policy_expires_mono_ns", int64(e.policyExpires))
+	e.log.Info("serving rules retained for restart", "generation", e.appliedGen, "policy_expires_mono_ns", int64(e.servingDeadline()), "next_binding_expiry_mono_ns", int64(e.policyExpires))
 	return true
 }

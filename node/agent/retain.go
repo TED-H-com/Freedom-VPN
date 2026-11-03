@@ -55,6 +55,9 @@ func (e *Engine) canRetainServing(ctx context.Context, d Decision) bool {
 		!sameUsageBindings(intent.bindings(), d.Model.Bindings) {
 		return false
 	}
+	if intent.Epoch == h.OpenEpoch {
+		return true // Head already proves this epoch is open on the current boot
+	}
 	same, err := e.usage.SameCountingInterval(ctx, intent.Epoch, h.OpenEpoch, e.bootID.String())
 	return err == nil && same
 }
