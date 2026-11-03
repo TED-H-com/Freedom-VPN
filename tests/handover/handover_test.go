@@ -718,6 +718,7 @@ func TestHandover_ReviewsArchive(t *testing.T) {
 		"r23-intent-fixes-review.md",
 		"r24-hitless-guard-review.md",
 		"r25-retain-review.md",
+		"r26-expiry-fixes-review.md",
 	}
 
 	var gotFiles []string
@@ -741,9 +742,9 @@ func TestHandover_ReviewsArchive(t *testing.T) {
 	for _, name := range gotFiles {
 		rel := filepath.Join("docs", "reviews", name)
 		content := readOwnedDoc(t, root, rel)
-		if name == "r16-rev13-d089-d099-review.md" || name == "r17-rev14-d104-d117-review.md" || name == "r18-generation-change-review.md" || name == "r19-intersection-design-review.md" || name == "r20-adoption-signal-review.md" || name == "r21-adoption-fixes-review.md" || name == "r22-attribution-fixes-review.md" || name == "r23-intent-fixes-review.md" || name == "r24-hitless-guard-review.md" || name == "r25-retain-review.md" {
+		if name == "r16-rev13-d089-d099-review.md" || name == "r17-rev14-d104-d117-review.md" || name == "r18-generation-change-review.md" || name == "r19-intersection-design-review.md" || name == "r20-adoption-signal-review.md" || name == "r21-adoption-fixes-review.md" || name == "r22-attribution-fixes-review.md" || name == "r23-intent-fixes-review.md" || name == "r24-hitless-guard-review.md" || name == "r25-retain-review.md" || name == "r26-expiry-fixes-review.md" {
 			// D-098 forbids reformatting the raw report to our older table schema.
-			// Followup15Claims / Followup18Claims / Followup25Claims / Followup27Claims / Followup30Claims / Followup31Claims / Followup33Claims / Followup35Claims / Followup36Claims / Followup38Claims verify SHA-256 and review metadata.
+			// Followup15Claims / Followup18Claims / Followup25Claims / Followup27Claims / Followup30Claims / Followup31Claims / Followup33Claims / Followup35Claims / Followup36Claims / Followup38Claims / Followup39Claims verify SHA-256 and review metadata.
 			continue
 		}
 
@@ -11870,8 +11871,8 @@ func TestHandover_Followup38Claims(t *testing.T) {
 	const fixture = "tests/handover/testdata/"
 	const frozen = fixture + "history/follow-up-38/"
 	const doc = "docs/handover/follow-up-38.md"
-	const register = "docs/handover/README.md"
-	const index = "docs/reviews/README.md"
+	const register = fixture + "history/follow-up-39/register38.md"
+	const index = fixture + "history/follow-up-39/reviews-index38.md.txt"
 	const archive = "docs/reviews/r25-retain-review.md"
 	readJSON := func(t *testing.T, path string, dst any) {
 		t.Helper()
@@ -12088,12 +12089,12 @@ func TestHandover_Followup38Claims(t *testing.T) {
 			t.Fatal("owner request drift")
 		}
 		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
-			lines := strings.Split(readOwnedDoc(t, root, path), "\n")
+			lines := strings.Split(readOwnedDoc(t, root, fixture+"history/follow-up-39/entrypoint-"+strings.ReplaceAll(path, "/", "_")+".txt"), "\n")
 			if len(lines) < 4 || !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-38.md") || !strings.Contains(lines[2], "#427 only") || !strings.Contains(lines[3], "follow-up-37.md") || !strings.Contains(lines[3], "#424–#426") {
 				t.Errorf("stale entrypoint: %s", path)
 			}
 		}
-		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		op := readOwnedDoc(t, root, fixture+"history/follow-up-39/operator-guide38.md.txt")
 		oldOp := readOwnedDoc(t, root, frozen+"operator-guide37.md.txt")
 		if strings.Join(strings.Split(op, "\n")[4:], "\n") != strings.Join(strings.Split(oldOp, "\n")[4:], "\n") {
 			t.Fatal("operator guidance changed")
@@ -12103,7 +12104,7 @@ func TestHandover_Followup38Claims(t *testing.T) {
 				t.Fatal("operator warning changed")
 			}
 		}
-		requireHandoverClaimTokens(t, root, "docs/ops/README.md", "## Follow-up 38 acceptance snapshot", "99-row findings register", "#427 records no first scheduled exercise", "r20 H-1's restart gap stays open while agent-core 37–42 are held")
+		requireHandoverClaimTokens(t, root, fixture+"history/follow-up-39/entrypoint-docs_ops_README.md.txt", "## Follow-up 38 acceptance snapshot", "99-row findings register", "#427 records no first scheduled exercise", "r20 H-1's restart gap stays open while agent-core 37–42 are held")
 	})
 	t.Run("frozen_source_audit_and_D098_D109_D132", func(t *testing.T) {
 		var a struct {
@@ -12162,4 +12163,49 @@ func TestHandover_Followup38Claims(t *testing.T) {
 	checkHash(t, fixture+"followup38-snapshots.json", "6ad3a5fdca181a6b25d2572d0e2dcbbb8160811ba6dadc745bd0da54c9c1de8b")
 	checkHash(t, frozen+"source-audit.json", "d61e30d3023741597501ec2a549bdcfacb286e0fb1d3a957b5617e47f822aefb")
 	t.Log("follow-up 38: 12 subtests / 1 final row / 10 frozen inputs / 1 PR excerpt / exact r25 / 99 findings / 47 decisions / 10 owner requests")
+}
+
+// Reverse only follow-up 38 input redirects; its assertions are unchanged.
+func restoreFollowup39Assertions(source string) string {
+	return strings.NewReplacer(
+		`const register = fixture + "history/follow-up-39/register38.md"`, `const register = "docs/handover/README.md"`,
+		`const index = fixture + "history/follow-up-39/reviews-index38.md.txt"`, `const index = "docs/reviews/README.md"`,
+		`readOwnedDoc(t, root, fixture+"history/follow-up-39/operator-guide38.md.txt")`, `readOwnedDoc(t, root, "docs/handover/operator-guide.md")`,
+		`strings.Split(readOwnedDoc(t, root, fixture+"history/follow-up-39/entrypoint-"+strings.ReplaceAll(path, "/", "_")+".txt"), "\n")`, `strings.Split(readOwnedDoc(t, root, path), "\n")`,
+		`requireHandoverClaimTokens(t, root, fixture+"history/follow-up-39/entrypoint-docs_ops_README.md.txt",`, `requireHandoverClaimTokens(t, root, "docs/ops/README.md",`,
+	).Replace(source)
+}
+
+func TestHandover_Followup39Claims(t *testing.T) {
+	root := repoRoot(t)
+	const fixture = "tests/handover/testdata/"
+	const frozen = fixture + "history/follow-up-39/"
+	checkHash := func(path, want string) {
+		t.Helper()
+		sum := sha256.Sum256([]byte(readOwnedDoc(t, root, path)))
+		if hex.EncodeToString(sum[:]) != want {
+			t.Fatalf("immutable evidence drift: %s", path)
+		}
+	}
+	t.Run("r26_exact_archive_and_adopted_proof_names", func(t *testing.T) {
+		const path = "docs/reviews/r26-expiry-fixes-review.md"
+		checkHash(path, "8cd7cc8be881389d5f50e70abe2e18eb13136b2281d66a261d9ad5820a3f0d28")
+		if len(readOwnedDoc(t, root, path)) != 19545 {
+			t.Fatal("r26 size")
+		}
+		for _, name := range []string{
+			"TestR26_Held_AQ1_ServingDeadlineAndKernelCutOff",
+			"TestR26_Held_AQ2_SurvivorsApplyAndEarlyReturnTruthfulness",
+			"TestR26_Held_AQ3_ExpiredOnlyRemovalExactnessAndAccounting",
+			"TestR26_Held_AQ4_SameCountingIntervalRetentionAndIntentPersistence",
+			"TestR26_Held_AQ5_RenewalJitterBoundsPersistenceAndClamping",
+			"TestR26_Held_AQ6_AQ7_ValidationRecordAndZeroDecisionContract",
+		} {
+			requireHandoverClaimTokens(t, root, "node/agent/review_r26_test.go", name)
+		}
+	})
+	checkHash("tests/handover/testdata/followup39-main.json", "39b1d9b49433f3ff157a1ec5c671cebc9579b18a7f55262d7379f2e1dfd3539b")
+	checkHash("tests/handover/testdata/followup39-snapshots.json", "f00eb9ab2947f428b5e583c8a1764b0d4949177391afdeeb6023b44782667b84")
+	checkHash("tests/handover/testdata/history/follow-up-39/source-audit.json", "d74fb642043f9cce0d4c1a335f6bc68d1b6b48a4db1316695dafdf3d69ba5d76")
+	// F39_MORE_CLAIMS
 }

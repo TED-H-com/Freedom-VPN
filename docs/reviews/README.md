@@ -31,6 +31,7 @@
 | `r23-intent-fixes-review` | [r23-intent-fixes-review.md](r23-intent-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `99f93112` | Agent-core 37–39, r20/r21/r22 fixes | 5 (0 Critical, 3 High, 1 Medium, 1 Low); returned to agent-core 40 before merge, none confirmed | None; proofs on `26ffc36c` for four findings, L-1 code trace; exact archive only. |
 | `r24-hitless-guard-review` | [`r24-hitless-guard-review.md`](r24-hitless-guard-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Netlab 31 design at 52a7e59b; review ba5d3004, 08:19:51 EST; G5/G6 owner trade | 8 (0 Critical, 4 High, 3 Medium, 1 Low); #423 enforcement fixes, C1 revision documents only, H-1/H-3 returned to agent-core 41; [#426 additive L-1 / M-3 corrections](../poc/G2-followup33-design/corrections.md) | [`node/enforce/review_r24_test.go`](../../node/enforce/review_r24_test.go) adopted by #423; copied M-3 dropped; agent/watchdog proofs review-branch only |
 | `r25-retain-review` | [r25-retain-review.md](r25-retain-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `8cc27609` | Agent-core 40/41, carrying 37–41; unmerged | 0 Critical / 1 High / 1 Medium / 0 Low; RETURNED to agent-core 42 before merge, not yet judged | None; 680-line node/agent/review_r25_test.go on `1afecb29` only; exact archive only. |
+| `r26-expiry-fixes-review` | [`r26-expiry-fixes-review.md`](r26-expiry-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Agent-core 42 at 8dec4100 and 37–42 together; expiry, retention and jitter | 0 Critical, 0 High, 0 Medium, 0 Low; reviewer recommends merge 37–42; orchestrator merged 37–43 as #429 under D-150 | [`node/agent/review_r26_test.go`](../../node/agent/review_r26_test.go), six TestR26_Held_* proofs imported by 43; [cut dispositions and errata](#r26-dispositions-at-the-follow-up-39-cutoff-2026-11-03-est) |
 
 ## What Held Across the Reviews
 
@@ -594,3 +595,97 @@ source readings and test-name checks.
   scenario_at_usage_test.go:68 checks nonzero bytes and equality to
   nftAfter. The raw log quote matches; its direct emitter and rule quotation
   are corrected here.
+
+## r26 dispositions at the follow-up 39 cutoff (2026-11-03 EST)
+
+The [r26 archive](r26-expiry-fixes-review.md) is unchanged from
+`.agent/REVIEW.md` on `r26-expiry-fixes-review` at
+**5c6d6abe6af7ebba4707ef64c56c157362f74b7b**, dated **12:28:35 EST**:
+**19,545 bytes**, SHA-256
+**8cd7cc8be881389d5f50e70abe2e18eb13136b2281d66a261d9ad5820a3f0d28**.
+Inspection found no host path, username or secret; product paths are retained.
+**agy `gemini-4-argon-high`** reviewed agent-core 42 at
+**8dec4100ce9fba96ea8b0436c41ed8d2b0c75545**, and 37–42 together
+(**77626af4..8dec4100**). Findings: **0 Critical, 0 High, 0 Medium, 0 Low**.
+
+**“Merge 37 to 42 as they are” is the reviewer's recommendation.** The
+orchestrator subsequently merged **37–43 as #429 under provisional D-150**,
+after 43's two timing windows qualified no leg. No comparative performance
+conclusion follows. Agent-core 44 measures after the merge; its results are
+outside this cut. Both r25's and r26's proof files are now on main. Agent-core
+43 imported r26's file byte-identically in fe256ba9; no proof is copied by
+this handover.
+
+The following are the **reviewer's seven answered questions**, with citation
+corrections below; they are not new acceptance measurements:
+
+| Question | What the reviewer says held |
+|---|---|
+| AQ1 | Earliest wake/retention and last-binding whole-node deadlines are separate; per-binding kernel timeouts still cut off the earlier device, with all member/node caps and saturation checks. Watchdog behavior is unchanged. |
+| AQ2 | Sibling expiry proceeds to same-tick survivor Apply without intermediate baseline. Early returns verify actual retained serving and report truthfully; last-binding/node expiry still closes. |
+| AQ3 | The expired-only path requires the exact unchanged surviving subset and expired removed bindings; live verification and a checkpoint precede narrower intent/Apply. Counter and restart accounting preserve retired bytes. |
+| AQ4 | Both reset-epoch producers retain only through proven SameCountingInterval continuity. Intent refresh is durable before memory; persistence failure withdraws, real counting boundaries reject retention. |
+| AQ5 | Renewal jitter is uniform in integer milliseconds, drawn once per lease, persisted atomically, restored and clamped. Default lead is 108–132 s over 24,001 points; random failure and legacy rows use zero offset. |
+| AQ6 | The enforcement change is only the DeadlineMono comment; dated 42 records match the production/validation boundary. |
+| AQ7 | No pre-existing tests were modified by 42's own changes, r25's import is exact, and the reviewer reports earlier review/package invariants held. Main-merge test edits are excluded from that statement. |
+
+**Not examined by r26:** (1) privileged Docker netlab execution and D-133
+paired timing; (2) physical linux/arm64 and live external NetBird / AdGuard /
+PostgreSQL services; (3) central control/worker and portal packages outside
+the review scope. [43's outcome](../node/followup43-outcome-2026-11-03.md)
+supplies the ordinary B lab pass (all 13 scenarios, D087/D104 included), two
+unqualified timing attempts and plain whole-module Go tests, which include
+central Go packages. It supplies arm64 cross-builds, not physical arm64 or
+live external service acceptance, and no portal validation. Configured test
+PostgreSQL integration is not a claim of live external-service acceptance.
+Neither timing attempt completes expiry/renewal packet predicates. The ordinary
+B gate is functional evidence, not a qualified timing leg.
+
+The six Go proof names now on main in `node/agent/review_r26_test.go` are:
+
+- `TestR26_Held_AQ1_ServingDeadlineAndKernelCutOff`
+- `TestR26_Held_AQ2_SurvivorsApplyAndEarlyReturnTruthfulness`
+- `TestR26_Held_AQ3_ExpiredOnlyRemovalExactnessAndAccounting`
+- `TestR26_Held_AQ4_SameCountingIntervalRetentionAndIntentPersistence`
+- `TestR26_Held_AQ5_RenewalJitterBoundsPersistenceAndClamping`
+- `TestR26_Held_AQ6_AQ7_ValidationRecordAndZeroDecisionContract`
+
+**Additive citation errata to r26 (archive unchanged).** Code and existing
+proofs were checked at **8dec4100**, new r26 proofs at **5c6d6abe**. The frozen
+source audit retains the cited excerpts and declaration checks. These correct
+citations and descriptions, without adding a finding or changing the review's
+recommendation:
+
+- AQ1's heartbeat assignment is engine.go:1537–1540 and
+  boot_heartbeat.go:25, not engine.go:1390 / boot_heartbeat.go:17.
+  The latter two lines are respectively an unrelated serving reset and the
+  beginning of the Beat literal.
+- There is no deviceDeadlines helper at render_nft.go:560–597. Actual
+  per-binding timeout arithmetic is node/enforce/deadline.go:35–61;
+  validate.go:123–132 calls it, and render_nft.go:576–586 renders elements.
+  The 100 ms install-budget check is apply.go:200–206. The cited
+  releaseDeadlineGuard at deadline_install.go:49–50 only deletes the guard;
+  it does not perform that elapsed-budget check. Equality to 100 ms is
+  accepted by the `>` check; the archive's later `< 100ms` wording is strict
+  where the code permits equality. This does not extend a binding deadline.
+- validateServing at validate.go:130 does not reject a future binding as a
+  validation error: memberTimeout returns non-admission and the renderer
+  omits its allow element while retaining its counter. buildModel's future
+  binding exclusion at decide.go:649–650 is correctly cited.
+- There is no watchdog Check function at watch.go:116–157. Once starts at
+  119 and calls baselineDecision (170–215), including its second read before
+  Baseline. A non-serving heartbeat with a verified baseline already present
+  need not trigger another Baseline. The rules are unchanged; the archive's
+  unconditional `!hb.Serving` description is too broad.
+- AQ4's switchEpoch is meterreset.go:311–332, not 255–263 (rearm). It consumes
+  a pending nudge through the meter sample; the cited planSwitch and
+  SameCountingInterval mechanisms are present.
+- Proof declaration lines: r26 AQ1 **53** and AQ4 **424** match; AQ2 is
+  **206**, not 196; AQ3 **281**, not 259; AQ5 **470**, not 462; AQ6/AQ7
+  **544**, not 533. At 8dec4100, r25 H-1b is **149**, not 144; r25 M-1
+  **242**, not 254; agentstore's lease/jitter transaction proof **11**, not
+  12. All cited test names exist. The other declaration citations match.
+- AQ7's inventory excludes the a4b76e09 main merge as the archive says.
+  The full 8cc27609..8dec4100 diff also modifies three test files from main
+  (isolation's producer_timing_test.go and scheduled_test.go, and handover's
+  handover_test.go). No pre-existing node proof is changed by 42.
