@@ -178,3 +178,144 @@ setup stall. No timer is involved.
 
 After the controls, the tree has no control code: `git grep -n
 f22ControlStall` finds nothing.
+
+## 4. Declaration (committed before any measured run)
+
+### Inputs, checked before this declaration (not measured legs)
+
+All at 2026-11-03T10:56Z on `28821e09`, each after admission printed `free`.
+
+- `go test -count=1 -run '^$' ./node/updater` and `./node/agent/...`
+  built. That warmed the build cache, so no compile time lands inside a leg.
+- `go test -v -count=50 -run '^TestAT25_FileMeterWaitRestartKeepsDeadline$'
+  ./node/updater` passed. All 200 samples were exact: 0 s → 250 ms,
+  200 ms → 50 ms, 250 ms → 0 s and 1 s → 0 s.
+- One unmeasured run of the fixed parent took 0.74 s per iteration
+  (0.11–0.20 s per subcase).
+- Idle foreign CPU over 15 s was 0.08–0.10 cores.
+
+### Legs, in order, in one reservation
+
+`PARENT` is `'^TestAT25_FileMeterWaitRestartRechecksCurrentFile$'`. The
+setup is follow-up 21's: the runner (`window.py`, adapted for the new rule
+as `.agent/tmp/f22/window.py`) and the environment, `CGO_ENABLED=0
+GOTOOLCHAIN=local GOMAXPROCS=4 GOFLAGS=-p=4`, with the worktree's
+`.agent/tmp` as `TMPDIR` and `GOTMPDIR` and the cache from `go env
+GOCACHE` (`~/.cache/go-build`).
+
+| # | Leg | Processes | Watchdog |
+|---|---|---|---:|
+| 1 | quiet | `go test -v -run PARENT -count=200 ./node/updater` | 360 s |
+| 2 | bounded load | `go test -count=1 ./node/agent/...` started, then immediately `go test -v -run PARENT -count=50 ./node/updater`, concurrently | 300 s |
+
+- **Reservation:** `bash "$FVPN_HOLD_SH" --reserve 30 "updater f22 F21-01
+  re-measure"`. Then wait 60 s, run the preflight, and run the legs back to
+  back. Release with `bash "$FVPN_HOLD_SH" --release` as soon as the last
+  leg ends.
+- **Worst case:** 60 s + 2 × 35 s preflight + 360 s + 300 s = 13.2 min,
+  which fits in 30 min.
+- **Leg start rule:** a leg starts only if its whole watchdog plus a 30 s
+  margin still fits in the reservation. Otherwise it is recorded as not
+  started.
+
+### Preflight before each leg (recorded with its wait time)
+
+1. `bash "$FVPN_HOLD_SH"` prints `free`.
+2. No other lane's suite process. The classifier is follow-up 21's
+   corrected one:
+   - **A suite process** has `go` as its executable with `test` as its
+     subcommand, or an argument that ends in `gates.sh` or contains
+     `mk/at-`.
+   - **Excluded:** processes descended from the runner.
+3. Foreign CPU is ≤ 0.5 cores, averaged over a 30 s sample. Its 5 s parts
+   are recorded too.
+4. `vmstat 5 7` runs at the same time. It is **recorded only** and no
+   longer decides.
+5. Steps 1 and 2 are repeated after the 30 s sample.
+
+A failed preflight is retried every 30 s, for at most 300 s per leg. That
+retries the preflight, not the leg.
+
+### Foreign CPU (the revised quiet rule)
+
+- **Definition:** foreign CPU is the `utime + stime` from
+  `/proc/<pid>/stat` of every process **not** descended from the runner,
+  divided by the interval's wall time. Our test processes, the agent load,
+  admission calls and `vmstat` all descend from the runner, so they never
+  count.
+- **Sampling:** a snapshot of every process every 1 s. Per-process deltas,
+  keyed by pid and start time, are summed into 5 s intervals.
+  - A process first seen in a step counts with its whole `utime + stime`.
+    This is fail-closed: it may overcount a process that started earlier.
+  - **Known limit:** CPU a process uses after its last 1 s snapshot, before
+    it exits, is not seen.
+- **Recorded beside it, deciding nothing:** host busy CPU from `/proc/stat`
+  minus our own CPU, which is an upper bound, and the top foreign command
+  names.
+
+### What qualifies a leg (both legs, the same rule)
+
+- the preflight passed;
+- at every in-leg sample, taken every 5 s (a gap over 7 s disqualifies),
+  admission printed `free` and no other lane's suite process was present;
+- **foreign CPU was ≤ 0.5 cores in every 5 s interval of the leg;**
+- the leg ran to completion.
+
+In-leg vmstat is recorded only. Test failures do not disqualify a leg:
+they are the measurement. Every log is kept, whether it passed, failed or
+was stopped.
+
+### Stop rules
+
+- **During a leg,** any of these ends it:
+  - another lane's suite process appears;
+  - a 5 s interval's foreign CPU exceeds 0.5 cores;
+  - admission stops printing `free`.
+- **Then:** both of our processes are terminated (process group SIGTERM,
+  then SIGKILL after 10 s). The leg is recorded as **unqualified** and is
+  not retried in this reservation. The next leg runs after its own
+  preflight.
+- **Watchdog or reservation end:** the leg is stopped and recorded as
+  unqualified (incomplete) in the same way.
+- **At most one more reservation,** for the missing leg only, taken at
+  least 10 minutes after releasing the first. It uses the same commands
+  and rules.
+
+### Deterministic budget
+
+- `TestAT25_FileMeterWaitRestartKeepsDeadline` runs at `-count=50` before
+  the window (above) and after it. It must stay exactly 250/50/0/0 ms both
+  times.
+- In addition, the fixed parent test checks its own budget in every
+  iteration of every leg:
+  - the guard: `original_remaining_ns` is exactly 250000000 for `missing`,
+    `replaced`, `withdrawn` and `new_boot`, and −1000000 for `expired`;
+  - the bound: `bubble_elapsed_ns` is never above it.
+  - Either violation would be a test failure.
+
+### What each outcome shows (verdict rule fixed now)
+
+This verdict is about the **fixed** test from §2. Follow-up 21's verdict on
+follow-up 20's corrected test stays **failed**, as recorded.
+
+- **The fixture reading holds:**
+  - the fixed parent test does not fail in either leg;
+  - both legs qualified;
+  - the deterministic budget is exact before and after the window and in
+    every parent sample.
+- **What contradicts it, and makes the reading fail:**
+  - any failure of the fixed parent test, in any leg, qualified or not;
+  - any drift in the deterministic budget.
+  - A failure's mechanism is reported the way follow-up 21 did it: detail,
+    original remaining budget, bubble and wall elapsed time.
+- **Undecided:** there is no failure, but a leg is still unqualified after
+  the permitted reservations.
+
+### What is reported per leg
+
+- iterations and failures;
+- `Recover`'s wall time per subcase: min, median, p99 and max, as
+  nearest-rank quantiles;
+- `bubble_elapsed_ns` and `original_remaining_ns`, distinct values;
+- the qualification record, the preflights with their waits, and the
+  foreign-CPU maximum.
