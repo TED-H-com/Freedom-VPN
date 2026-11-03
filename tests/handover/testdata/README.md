@@ -362,3 +362,20 @@ reported 16 failing control cases are explicitly separated from the JSON's
 15 failure labels; 26 passing test/subtest results remain the recorded fixed
 summary. The counting unit is an orchestrator clarification, not an edit to
 producer evidence. Live document integrity uses a separate scope inventory.
+
+Follow-up 35 pins the #419–#421 cut at `dff6bdb0`: `followup35-main.json`
+contains three exact final roadmap rows and three public PR excerpts with
+squash-commit, offset and hash provenance. `followup35-snapshots.json` seals
+ten #421 input snapshots used to preserve earlier claims. The separate
+`history/follow-up-35/source-audit.json` records the checked renderer/marker,
+counter, stop-budget and proof-name errata, r23's L-1 code-trace boundary,
+and r24's after-cutoff review commit without its results.
+
+`followup35-evidence.json` seals updater 23's two dated documents, the exact
+41,791-byte r23 archive, and all six netlab 31 design files. No living lane
+root is a claims input. `TestHandover_Followup35Claims` has 16 subtests,
+checks the declared load-leg qualifications and all 352 logged Recover
+budgets, verifies F23-01 controls across both sessions and the 15-case
+erratum, preserves follow-up 34's assertions, and verifies 87 findings,
+47 unchanged decisions and ten owner requests. Live document digests remain
+separate. Historical failures retain their recorded verdicts.

@@ -1,0 +1,84 @@
+{
+  "source_commit": "dff6bdb0ddcf6dfd8392a8db364c0120783a48f3",
+  "source_files": [
+    {
+      "path": "node/enforce/render_nft.go",
+      "sha256": "a97265e433cd1de3afd0f7003f5c86505bfba97b20ad4d4b38e5a412159b0e38"
+    },
+    {
+      "path": "node/enforce/parse_nft.go",
+      "sha256": "70f21f60df63829993ccfae7e73864e16f37e3e28f93994200bd69b6617bace6"
+    },
+    {
+      "path": "node/enforce/render_test.go",
+      "sha256": "c76d68e1c5a0e2b9386af26915261c1e7613eef3c07549a486e607cdb224c80c"
+    },
+    {
+      "path": "node/enforce/apply.go",
+      "sha256": "c94aa020ccda3d446062d93ca74bb7fcbb1b1c302d12207f0d12534039a0959a"
+    },
+    {
+      "path": "node/enforce/deadline_install.go",
+      "sha256": "79cc2676742c3a07eea2d732282b756cff8581c0fa57a3094381350650855ab0"
+    },
+    {
+      "path": "node/enforce/deadline.go",
+      "sha256": "5eb45aa470572833c7fc79f6de8e9000b9a9926d1e3961fef1ce6ebf5a790f92"
+    },
+    {
+      "path": "node/enforce/verify.go",
+      "sha256": "bf64997055d416756f4096cf406c74864c9c16831ba527f9b300d849428ddded"
+    },
+    {
+      "path": "node/enforce/render_tc.go",
+      "sha256": "eaf8bdcf6f120ad74edc9084520734b2b087286ed8895cdec35bd6724299f1f2"
+    },
+    {
+      "path": "node/agent/engine.go",
+      "sha256": "d3177df609bc773d27d7155a83611dfffe4138d00a59fb6017b6923064001e22"
+    },
+    {
+      "path": "node/agent/serving.go",
+      "sha256": "97e7f2da52a97740dede06977d517895352ea6b48f3d3bda7a2e5dd5002bb3bd"
+    },
+    {
+      "path": "node/watchdog/watch.go",
+      "sha256": "8f9da067c6691c899ac115025d620c13fdccbfde0794bcb54b490f5bfdb987ab"
+    },
+    {
+      "path": "packaging/installer/followup9_test.go",
+      "sha256": "423d9a63dc00a1f38347961450c393e905b16ef2621a3d3a0dc69b64aa1e79b6"
+    },
+    {
+      "path": "deploy/node/systemd/fvpn-agent.service",
+      "sha256": "d18c003fbb32f8029c10e9a9b3623e23e871e5101c7e67a959dba93d8e7341fb"
+    }
+  ],
+  "renderer": "node/enforce/render_nft.go",
+  "generation_reader": "node/enforce/parse_nft.go:forwardGeneration",
+  "marker": "fvpn_generation=<G> fvpn_metering=<V>",
+  "renderer_deletes_counters": false,
+  "invented_renderer_paths_exist": false,
+  "invented_marker_or_test_names_exist": false,
+  "stop_budget_test": "packaging/installer/followup9_test.go:TestPKG01_AT07ShippedAgentStopBudget",
+  "stop_seconds": 15,
+  "maximum_decision": 144,
+  "reviewed_tip": "99f9311271764c86b11a1cc6d42330da7897dce6",
+  "r20_r22_cited_absent_proof_names": 8,
+  "review_proof_commit": "26ffc36ca19991d6b940f2494fac92c88aa13665",
+  "review_proof_file_sha256": "7407a4bc139b977a2b849e153e1d3f4aaa93bcef389a3d67295f24c98386071c",
+  "r23_proof_function_count": 12,
+  "r23_executable_findings": [
+    "H-1",
+    "H-2",
+    "H-3",
+    "M-1"
+  ],
+  "r23_L1_evidence": "code trace; no named proof test",
+  "after_cutoff_review": {
+    "commit": "ba5d30041e02d6f219c15b39494fe8b34f52997a",
+    "committed_at": "2026-11-03T08:19:51-05:00",
+    "subject": "review: adversarial review of follow-up 31 hitless deadline-guard design (r24)",
+    "results_imported": false
+  }
+}
