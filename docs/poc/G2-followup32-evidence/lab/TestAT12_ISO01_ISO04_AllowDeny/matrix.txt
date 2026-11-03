@@ -1,0 +1,33 @@
+AT12 deny
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-to-a2                         fv-a1    tcp    100.64.1.2             8080   deny     timeout        true
+a1-to-b1                         fv-a1    tcp    100.64.2.1             8080   deny     timeout        true
+a1-to-overlay                    fv-a1    tcp    100.64.5.5             80     deny     timeout        true
+a1-ssh                           fv-a1    tcp    192.0.2.33             2222   deny     timeout        true
+a1-api                           fv-a1    tcp    192.0.2.37             8443   deny     timeout        true
+a1-lan-gw                        fv-a1    tcp    192.168.0.1            80     deny     timeout        true
+a1-rfc1918-192                   fv-a1    tcp    192.168.10.10          80     deny     timeout        true
+a1-rfc1918-10                    fv-a1    tcp    10.1.2.10              80     deny     timeout        true
+a1-rfc1918-172                   fv-a1    tcp    172.16.5.10            80     deny     timeout        true
+a1-metadata                      fv-a1    tcp    169.254.169.254        80     deny     timeout        true
+a1-linklocal                     fv-a1    tcp    169.254.1.50           80     deny     timeout        true
+a1-public-prefix-private         fv-a1    tcp    192.0.2.200            80     deny     timeout        true
+a1-resolver-http                 fv-a1    tcp    198.51.100.53          8080   deny     timeout        true
+a1-resolver-icmp                 fv-a1    icmp   198.51.100.53          0      deny     timeout        true
+rogue-internet                   fv-rogue tcp    203.0.113.10           80     deny     timeout        true
+spoof-internet                   fv-fwd   icmp   203.0.113.10           0      deny     timeout        true
+loopback-inject                  fv-fwd   raw4   127.0.0.1              9      sent     sent           true
+probes=17 failed=0
+AT12 dns
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-dns-udp                       fv-a1    dns    198.51.100.53          53     allow    reply          true
+a1-dns-tcp                       fv-a1    tcp    198.51.100.53          53     allow    connected      true
+probes=2 failed=0
+AT12 allow
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-tcp                           fv-a1    tcp    203.0.113.10           80     allow    connected      true
+a1-udp                           fv-a1    udp    203.0.113.10           9000   allow    reply          true
+a1-icmp                          fv-a1    icmp   203.0.113.10           0      allow    reply          true
+a2-tcp                           fv-a2    tcp    203.0.113.10           80     allow    connected      true
+b1-tcp                           fv-b1    tcp    203.0.113.10           80     allow    connected      true
+probes=5 failed=0

@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"net/netip"
 	"os"
 	"os/exec"
@@ -246,18 +247,15 @@ func TestLEASE01_RetryAfterPreservesFreshLeaseUntilDeadline(t *testing.T) {
 }
 
 // renderedExecutor answers nft -j list with the table the installed scripts
-// leave behind. Each script is the one enforce.Render just handed to NftBatch,
-// so a later verifier change that still accepts Render keeps these tests green.
-// failVerify still returns an empty listing. Conntrack and tc qdisc/class
-// listings stay on the embedded executor; filters and policy rules are explicit.
+// leave behind, committing only complete successful batches. TC readback comes
+// from commands applied to the embedded executor, never from the desired model.
+// failVerify still returns an empty listing; filters and policy rules are explicit.
 type renderedExecutor struct {
 	revocationExecutor
 	folded             int
 	table              listedTable
 	foreignTC          bool
 	linkDown           bool
-	tcModel            enforce.Model
-	tcReady            bool
 	allowedInstalledAt time.Time
 }
 
@@ -265,31 +263,27 @@ type renderedExecutor struct {
 // the original timeout for verification, but report a decaying expires value.
 // Sampling at NftBatch (not lazy fold/read) also models slow consumers.
 func (ex *renderedExecutor) NftBatch(ctx context.Context, script string) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if err := ex.fold(); err != nil {
+		return err
+	}
 	at := time.Now()
+	if err := ex.table.applyScript(script); err != nil {
+		return err
+	}
 	if err := ex.revocationExecutor.NftBatch(ctx, script); err != nil {
 		return err
 	}
-	if strings.Contains(script, "add element inet fvpn allowed_v4") || strings.Contains(script, "flush set inet fvpn allowed_v4") || strings.Contains(script, "add set inet fvpn allowed_v4") {
+	ex.folded = len(ex.scripts)
+	if strings.Contains(script, "add element inet fvpn allowed_v4") || strings.Contains(script, "flush set inet fvpn allowed_v4") {
 		ex.allowedInstalledAt = at
 	}
 	return nil
 }
 
-func (ex *renderedExecutor) TCBatch(context.Context, string) error {
-	ex.tcModel, ex.tcReady = ex.model, true
-	return nil
-}
-
 func (ex *renderedExecutor) Output(ctx context.Context, name string, args ...string) ([]byte, error) {
-	if name == "tc" && len(args) > 1 && args[0] == "-j" && args[1] != "filter" {
-		if !ex.tcReady {
-			return []byte(`[]`), nil
-		}
-		candidate := ex.model
-		ex.model = ex.tcModel
-		defer func() { ex.model = candidate }()
-	}
-
 	if name == "ip" && len(args) == 5 && args[0] == "link" && args[1] == "set" {
 		ex.linkDown = args[4] == "down"
 		return nil, nil
@@ -301,17 +295,6 @@ func (ex *renderedExecutor) Output(ctx context.Context, name string, args ...str
 		}
 		return json.Marshal([]any{map[string]any{"ifname": args[4], "flags": flags, "operstate": "UNKNOWN"}})
 	}
-	if name == "tc" && len(ex.model.Bindings) == 0 && len(args) > 1 && args[0] == "-j" && args[1] != "filter" {
-		if args[1] == "qdisc" {
-			return []byte(`[{"kind":"htb","handle":"1:","root":true,"options":{"default":"fffe"}}]`), nil
-		}
-		parent, host := ex.model.QoS.Up, ex.model.QoS.HostUp
-		if args[len(args)-1] == ex.model.Datapath.MemberIngress {
-			parent, host = ex.model.QoS.Down, ex.model.QoS.HostDown
-		}
-		return fmt.Appendf(nil, `[{"kind":"htb","handle":"1:1","options":{"rate":"%dbit","ceil":"%dbit"}},{"kind":"htb","handle":"1:fffe","options":{"rate":"%dbit","ceil":"%dbit"}}]`, parent.RateBPS, parent.CeilBPS, host.RateBPS, host.CeilBPS), nil
-	}
-
 	if (name == "tc" && len(args) > 1 && args[0] == "-j" && args[1] == "filter") || name == "ip" {
 		if ex.foreignTC && name == "tc" && strings.Join(args, " ") == "-j filter show dev "+ex.model.Datapath.MemberIngress+" ingress" {
 			return []byte(`[{"kind":"matchall","options":{"handle":1,"actions":[{"kind":"mirred"}]}}]`), nil
@@ -412,6 +395,7 @@ type listedSet struct {
 }
 
 type listedTable struct {
+	exists       bool
 	counters     map[string]listedCounter
 	counterOrder []string
 	sets         map[string]*listedSet
@@ -430,11 +414,30 @@ func (t *listedTable) init() {
 }
 
 func (t *listedTable) applyScript(script string) error {
+	// Rules' parsed expressions are immutable. Clone every map, object and
+	// mutable slice so a late error cannot expose an earlier statement.
+	next := *t
+	next.counters = maps.Clone(t.counters)
+	next.counterOrder = slices.Clone(t.counterOrder)
+	next.setOrder = slices.Clone(t.setOrder)
+	next.chainOrder = slices.Clone(t.chainOrder)
+	next.sets = make(map[string]*listedSet, len(t.sets))
+	for name, set := range t.sets {
+		next.sets[name] = &listedSet{flags: slices.Clone(set.flags), elems: slices.Clone(set.elems)}
+	}
+	next.chains = make(map[string]*listedChain, len(t.chains))
+	for name, chain := range t.chains {
+		copy := *chain
+		copy.rules = slices.Clone(chain.rules)
+		next.chains[name] = &copy
+	}
+	next.init()
 	for _, line := range strings.Split(script, "\n") {
-		if err := t.applyLine(line); err != nil {
+		if err := next.applyLine(line); err != nil {
 			return err
 		}
 	}
+	*t = next
 	return nil
 }
 
@@ -449,7 +452,14 @@ func (t *listedTable) applyLine(line string) error {
 	}
 	op := tok[0] + " " + tok[1]
 	if op == "add table" {
+		if len(tok) != 4 || tok[2] != "inet" || tok[3] != "fvpn" {
+			return fmt.Errorf("nft listing: unrecognized table %q", line)
+		}
+		t.exists = true
 		return nil
+	}
+	if !t.exists {
+		return fmt.Errorf("nft listing: missing table")
 	}
 	if len(tok) < 5 || tok[2] != "inet" || tok[3] != "fvpn" {
 		return fmt.Errorf("nft listing: unrecognized line %q", line)
@@ -469,6 +479,9 @@ func (t *listedTable) applyLine(line string) error {
 		body, err := braceBody(line)
 		if err != nil {
 			return err
+		}
+		if t.sets[name] != nil {
+			return nil
 		}
 		t.sets[name] = &listedSet{flags: setFlags(body)}
 		t.setOrder = append(t.setOrder, name)
@@ -492,6 +505,9 @@ func (t *listedTable) applyLine(line string) error {
 		set.elems = nil
 		return nil
 	case "delete set":
+		if t.sets[name] == nil {
+			return fmt.Errorf("nft listing: delete missing set %s", name)
+		}
 		delete(t.sets, name)
 		t.setOrder = dropName(t.setOrder, name)
 		return nil
@@ -503,17 +519,27 @@ func (t *listedTable) applyLine(line string) error {
 		ch.rules = nil
 		return nil
 	case "delete chain":
+		if t.chains[name] == nil {
+			return fmt.Errorf("nft listing: delete missing chain %s", name)
+		}
 		delete(t.chains, name)
 		t.chainOrder = dropName(t.chainOrder, name)
 		return nil
 	case "add chain":
-		body, err := braceBody(line)
-		if err != nil {
-			return err
+		var body string
+		if len(tok) != 5 {
+			var err error
+			body, err = braceBody(line)
+			if err != nil {
+				return err
+			}
 		}
 		ch, err := parseChainSpec(body)
 		if err != nil {
 			return err
+		}
+		if t.chains[name] != nil {
+			return nil
 		}
 		t.chains[name] = ch
 		t.chainOrder = append(t.chainOrder, name)
@@ -536,12 +562,18 @@ func (t *listedTable) applyLine(line string) error {
 
 func (t *listedTable) listingJSON() ([]byte, error) {
 	doc := make([]any, 0, len(t.chainOrder)+len(t.counterOrder)+len(t.setOrder))
+	if t.exists {
+		doc = append(doc, map[string]any{"table": map[string]any{"family": "inet", "name": "fvpn"}})
+	}
 	for _, name := range t.chainOrder {
 		ch := t.chains[name]
-		doc = append(doc, map[string]any{"chain": map[string]any{
+		obj := map[string]any{
 			"family": "inet", "table": "fvpn", "name": name,
-			"type": ch.typ, "hook": ch.hook, "prio": ch.prio, "policy": ch.policy,
-		}})
+		}
+		if ch.hook != "" {
+			obj["type"], obj["hook"], obj["prio"], obj["policy"] = ch.typ, ch.hook, ch.prio, ch.policy
+		}
+		doc = append(doc, map[string]any{"chain": obj})
 		for _, rule := range ch.rules {
 			obj := map[string]any{
 				"family": "inet", "table": "fvpn", "chain": name, "expr": rule.expr,
@@ -665,6 +697,9 @@ func dropName(names []string, name string) []string {
 func parseChainSpec(spec string) (*listedChain, error) {
 	f := strings.Fields(strings.ReplaceAll(spec, ";", " "))
 	ch := &listedChain{}
+	if len(f) == 0 {
+		return ch, nil
+	}
 	seenPrio := false
 	for i := 0; i < len(f); i++ {
 		if i+1 >= len(f) {
@@ -1361,6 +1396,290 @@ func TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing(t *testing.T) {
 					t.Fatal("withdrawal left member admission")
 				}
 			})
+		}
+	}
+}
+
+// These checks exercise the simulator itself. The matching kernel behavior is
+// retained in follow-up 32's single live atomic-baseline check.
+func TestAT13_F32_SimulatorNFTTransactions(t *testing.T) {
+	const initial = `add table inet fvpn
+add chain inet fvpn forward { type filter hook forward priority -150; policy drop; }
+add rule inet fvpn forward iifname "fv-fh" accept
+add set inet fvpn allowed_v4 { type ipv4_addr; flags timeout; }
+add element inet fvpn allowed_v4 { 100.64.1.1 timeout 30s }
+add counter inet fvpn ctbase
+`
+	ex := &renderedExecutor{}
+	if err := ex.NftBatch(t.Context(), initial); err != nil {
+		t.Fatal(err)
+	}
+	snapshot := func() string {
+		t.Helper()
+		raw, err := ex.Output(t.Context(), "nft", "-j", "list", "table", "inet", "fvpn")
+		if err != nil {
+			t.Fatal(err)
+		}
+		return string(raw)
+	}
+	before, installedAt := snapshot(), ex.allowedInstalledAt
+	// Re-adding a table, set or chain preserves contents and chain attributes.
+	// A bare add of the existing base chain must not turn it into a regular one.
+	if err := ex.NftBatch(t.Context(), `add table inet fvpn
+add chain inet fvpn forward
+add chain inet fvpn forward { type filter hook forward priority -150; policy drop; }
+add set inet fvpn allowed_v4 { type ipv4_addr; flags timeout; }
+add counter inet fvpn ctbase
+`); err != nil {
+		t.Fatal(err)
+	}
+	if snapshot() != before || ex.allowedInstalledAt != installedAt {
+		t.Fatal("idempotent add replaced contents, attributes, counters or expiry anchor")
+	}
+	for _, suffix := range []string{
+		"add rule inet fvpn fv_missing drop\n",
+		"delete chain inet fvpn fv_missing\n",
+		"delete set inet fvpn fv_missing\n",
+		"unsupported statement\n",
+	} {
+		// Abort after mutations of every mutable object and its ordering slice.
+		attempt := `flush set inet fvpn allowed_v4
+add element inet fvpn allowed_v4 { 100.64.1.2 timeout 10s }
+delete chain inet fvpn forward
+add chain inet fvpn forward
+add rule inet fvpn forward drop
+add counter inet fvpn ctnew
+add set inet fvpn fv_new { type ipv4_addr; }
+` + suffix
+		count := len(ex.scripts)
+		if err := ex.NftBatch(t.Context(), attempt); err == nil {
+			t.Fatal("invalid trailing statement accepted")
+		}
+		if snapshot() != before || ex.allowedInstalledAt != installedAt || len(ex.scripts) != count {
+			t.Fatal("failed batch partly committed state, expiry anchor or successful history")
+		}
+	}
+	cold := &renderedExecutor{}
+	if err := cold.NftBatch(t.Context(), initial+"add rule inet fvpn fv_missing drop\n"); err == nil || cold.installed || cold.table.exists {
+		t.Fatal("failed cold batch created a table")
+	}
+	if err := ex.NftBatch(t.Context(), `add chain inet fvpn fv_regular
+add rule inet fvpn fv_regular drop
+add chain inet fvpn fv_regular
+`); err != nil {
+		t.Fatal(err)
+	}
+	if ch := ex.table.chains["fv_regular"]; ch.hook != "" || len(ch.rules) != 1 {
+		t.Fatal("bare regular-chain add lost a rule or gained a hook")
+	}
+	if err := ex.NftBatch(t.Context(), `delete chain inet fvpn fv_regular
+add chain inet fvpn fv_regular { }
+`); err != nil || len(ex.table.chains["fv_regular"].rules) != 0 {
+		t.Fatal("regular-chain delete/recreate failed", err)
+	}
+	if err := ex.NftBatch(t.Context(), "delete chain inet fvpn fv_regular\n"); err != nil {
+		t.Fatal(err)
+	}
+	base := enforce.Model{Datapath: enforce.Datapath{MemberIngress: "fv-fh", Uplink: "fv-ih", SNAT: netip.MustParseAddr("192.0.2.37")}}
+	batch, err := enforce.RenderBaseline(base, enforce.State{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := cold.NftBatch(t.Context(), batch); err != nil {
+		t.Fatal("cold baseline", err)
+	}
+	raw, err := cold.Output(t.Context(), "nft", "-j", "list", "ruleset")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := enforce.VerifyBaseline(raw, base); err != nil {
+		t.Fatal("cold baseline readback", err)
+	}
+	for range 2 {
+		if err := ex.NftBatch(t.Context(), batch); err != nil {
+			t.Fatal(err)
+		}
+		if err := enforce.VerifyBaseline([]byte(snapshot()), base); err != nil {
+			t.Fatal("self-contained baseline", err)
+		}
+	}
+	t.Log("add preserves objects and expiry; bare chains supported; failed warm/cold batches commit nothing; repeated baseline verified")
+}
+
+// Hooks observe the actual production Apply order. Panicking only at the
+// committed cut models process death without executing Apply's error cleanup.
+type f32OrderExecutor struct {
+	*renderedExecutor
+	after func(string)
+}
+
+func (ex *f32OrderExecutor) TCBatch(ctx context.Context, script string) error {
+	if err := ex.renderedExecutor.TCBatch(ctx, script); err != nil {
+		return err
+	}
+	phase := "prepare"
+	if strings.Contains(script, "class del ") {
+		phase = "retire"
+	}
+	ex.after(phase)
+	return nil
+}
+
+func (ex *f32OrderExecutor) NftBatch(ctx context.Context, script string) error {
+	if err := ex.renderedExecutor.NftBatch(ctx, script); err != nil {
+		return err
+	}
+	if strings.Contains(script, "# inet fvpn generation ") {
+		ex.after("commit")
+	} else if strings.TrimSpace(script) == "delete chain inet fvpn fv_deadline_guard" {
+		ex.after("release")
+	}
+	return nil
+}
+
+func TestAT13_F32_SimulatorTCCommitAndCrashCut(t *testing.T) {
+	for _, mode := range []string{"complete", "restart_apply", "baseline"} {
+		t.Run(mode, func(t *testing.T) {
+			r := newRig(t)
+			serveTwoBindings(t, r)
+			old := kernelClockModel(r.plane.last)
+			ex := &renderedExecutor{revocationExecutor: revocationExecutor{model: old}}
+			initial, err := enforce.Apply(t.Context(), ex, old, nil)
+			if err != nil || !initial.Verified || len(old.Bindings) != 2 {
+				t.Fatal("two-member serving setup", err)
+			}
+			candidate := old
+			candidate.Generation++
+			removed := old.Bindings[1].MemberID
+			candidate.Bindings = slices.Clone(old.Bindings[:1])
+			candidate.Leases = slices.DeleteFunc(slices.Clone(old.Leases), func(l enforce.MemberLease) bool { return l.MemberID == removed })
+			candidate.QoS.Members = slices.DeleteFunc(slices.Clone(old.QoS.Members), func(q enforce.MemberQoS) bool { return q.MemberID == removed })
+			candidate.QoS.Members[0].Up.RateBPS /= 2
+			candidate.QoS.Members[0].Down.RateBPS /= 2
+			candidate.QoS.Assignments = initial.Plan.Assignments
+			candidateAssignments := maps.Clone(initial.Plan.Assignments)
+			delete(candidateAssignments, removed)
+			ex.model = candidate
+			minor := initial.Plan.Assignments[removed]
+			handle := fmt.Sprintf("1:%x", minor)
+			readTC := func(wantOrphan bool) map[string][2][]byte {
+				t.Helper()
+				out := map[string][2][]byte{}
+				for _, dev := range []string{old.Datapath.MemberIngress, old.Datapath.Uplink} {
+					qdisc, err := ex.Output(t.Context(), "tc", "-j", "qdisc", "show", "dev", dev)
+					if err != nil {
+						t.Fatal(err)
+					}
+					class, err := ex.Output(t.Context(), "tc", "-j", "class", "show", "dev", dev)
+					if err != nil {
+						t.Fatal(err)
+					}
+					view, err := enforce.ParseQdiscJSON(qdisc)
+					if err != nil {
+						t.Fatal(err)
+					}
+					view, err = enforce.ParseClassJSON(class, view)
+					if err != nil || view.Classes[handle].Found != wantOrphan || view.Leaves[minor] != wantOrphan {
+						t.Fatalf("%s orphan presence want=%v: %+v %v", dev, wantOrphan, view, err)
+					}
+					out[dev] = [2][]byte{qdisc, class}
+				}
+				return out
+			}
+			const crash = "TEST ONLY: process died after nft commit"
+			var events []string
+			wrapped := &f32OrderExecutor{renderedExecutor: ex, after: func(phase string) {
+				events = append(events, phase)
+				raw, err := ex.table.listingJSON()
+				if err != nil {
+					t.Fatal(err)
+				}
+				state, err := enforce.ParseState(raw)
+				if err != nil {
+					t.Fatal(err)
+				}
+				switch phase {
+				case "prepare":
+					readTC(true)
+					if state.Generation != old.Generation || state.Classes[removed] != minor {
+						t.Fatal("preparation replaced old nft references")
+					}
+				case "commit":
+					liveTC := readTC(true)
+					if state.Generation != candidate.Generation || state.Classes[removed] != 0 || strings.Contains(string(raw), fmt.Sprintf("0x%x", enforce.ClassID(minor))) {
+						t.Fatal("commit retained a reference to the orphan")
+					}
+					if !state.Chains["fv_deadline_guard"] {
+						t.Fatal("commit omitted guard")
+					}
+					if err := enforce.VerifyQoS(liveTC, candidate, candidateAssignments); err == nil {
+						t.Fatal("serving verification accepted transitional orphan")
+					}
+					if mode != "complete" {
+						panic(crash)
+					}
+				case "retire", "release":
+					readTC(false)
+				}
+			}}
+			func() {
+				defer func() {
+					if p := recover(); p != nil && (mode == "complete" || p != crash) {
+						panic(p)
+					}
+				}()
+				res, err := enforce.Apply(t.Context(), wrapped, candidate, nil)
+				if mode != "complete" || err != nil || !res.Verified {
+					t.Fatalf("apply returned instead of expected serving/crash: verified=%v err=%v", res.Verified, err)
+				}
+			}()
+			if mode == "complete" {
+				if !slices.Equal(events, []string{"prepare", "commit", "retire", "release"}) {
+					t.Fatal("wrong order", events)
+				}
+			} else {
+				if !slices.Equal(events, []string{"prepare", "commit"}) {
+					t.Fatal("crash cut not observed", events)
+				}
+				readTC(true)
+				if mode == "restart_apply" {
+					res, err := enforce.Apply(t.Context(), ex, candidate, nil)
+					if err != nil || !res.Verified {
+						t.Fatal("recovery did not reclaim orphan and verify", err)
+					}
+				} else if err := enforce.ApplyBaseline(t.Context(), ex, candidate.Datapath); err != nil {
+					t.Fatal("crash baseline failed", err)
+				}
+				readTC(false)
+			}
+			t.Logf("%s: observed %v; old classes survive preparation/commit; referenced classes intact; orphan reclaimed", mode, events)
+		})
+	}
+}
+
+func TestAT13_F32_SimulatorTCPartialFailureAndRootCleanup(t *testing.T) {
+	ex := &revocationExecutor{}
+	// tc -batch is not atomic: retain successful commands before an error.
+	err := ex.TCBatch(t.Context(), `qdisc add dev fv-ih root handle 1: htb default fffe
+class replace dev fv-ih parent 1: classid 1:1 htb rate 20mbit ceil 20mbit
+class replace dev fv-ih parent 1:1 classid 1:10 htb rate 10mbit ceil 20mbit
+qdisc add dev fv-ih parent 1:10 handle 10: fq_codel
+class del dev fv-ih classid 1:999
+`)
+	if err == nil {
+		t.Fatal("missing-class deletion accepted")
+	}
+	dev := ex.tcDevices["fv-ih"]
+	if dev == nil || dev.classes["1:10"] == nil || dev.qdiscs["1:10"] == nil {
+		t.Fatal("tc failure incorrectly undid earlier mutations")
+	}
+	if _, err := ex.Output(t.Context(), "tc", "qdisc", "del", "dev", "fv-ih", "root"); err != nil {
+		t.Fatal(err)
+	}
+	for _, kind := range []string{"qdisc", "class"} {
+		raw, err := ex.Output(t.Context(), "tc", "-j", kind, "show", "dev", "fv-ih")
+		if err != nil || string(raw) != "[]" {
+			t.Fatalf("root deletion left %s: %s %v", kind, raw, err)
 		}
 	}
 }

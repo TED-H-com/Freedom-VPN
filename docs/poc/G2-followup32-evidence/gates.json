@@ -1,0 +1,125 @@
+[
+  {
+    "gate": "gate1",
+    "command": [
+      "make",
+      "-f",
+      "mk/netlab.mk",
+      "netlab-lint",
+      "netlab-unit",
+      "netlab-integration",
+      "netlab-build"
+    ],
+    "result": "pass",
+    "source_commit": "f9aa1811abf50490d0a4c6b485c9a13e6e1782f5",
+    "note": "full output retained; outer shell returned tail status, make output and built binary inspection show all targets completed; no make error"
+  },
+  {
+    "command": [
+      "make",
+      "-f",
+      "mk/netlab.mk",
+      "netlab-test",
+      "FVPN_LAB_PREFIX=fvpn-w1-netlab-f32"
+    ],
+    "exit": 0,
+    "seconds": 241.01,
+    "source_commit": "f9aa1811abf50490d0a4c6b485c9a13e6e1782f5",
+    "gate": "gate2"
+  },
+  {
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./node/...",
+      "./packaging/installer/..."
+    ],
+    "exit": 1,
+    "seconds": 90.141,
+    "source_commit": "f9aa1811abf50490d0a4c6b485c9a13e6e1782f5",
+    "gate": "gate3-node"
+  },
+  {
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/e2e/at/usage/...",
+      "./tests/e2e/internal/counterread/..."
+    ],
+    "exit": 0,
+    "seconds": 3.003,
+    "source_commit": "f9aa1811abf50490d0a4c6b485c9a13e6e1782f5",
+    "gate": "gate3-usage"
+  },
+  {
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/netlab",
+      "-run",
+      "^TestCommittedEvidenceFiles_ValidAndHygieneClean$"
+    ],
+    "exit": 0,
+    "seconds": 2.951,
+    "source_commit": "f9aa1811abf50490d0a4c6b485c9a13e6e1782f5",
+    "gate": "gate4-final"
+  },
+  {
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/handover/..."
+    ],
+    "exit": 0,
+    "seconds": 3.753,
+    "source_commit": "f9aa1811abf50490d0a4c6b485c9a13e6e1782f5",
+    "gate": "gate5-final"
+  },
+  {
+    "command": [
+      "make",
+      "go-lint"
+    ],
+    "exit": 0,
+    "seconds": 2.7,
+    "source_commit": "f9aa1811abf50490d0a4c6b485c9a13e6e1782f5",
+    "gate": "gate6"
+  },
+  {
+    "command": [
+      "go",
+      "vet",
+      "./..."
+    ],
+    "exit": 0,
+    "seconds": 0.394,
+    "source_commit": "f9aa1811abf50490d0a4c6b485c9a13e6e1782f5",
+    "gate": "gate7"
+  },
+  {
+    "command": [
+      "bash",
+      "-c",
+      "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+    ],
+    "exit": 0,
+    "seconds": 0.12,
+    "source_commit": "f9aa1811abf50490d0a4c6b485c9a13e6e1782f5",
+    "gate": "gate8"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.027,
+    "source_commit": "f9aa1811abf50490d0a4c6b485c9a13e6e1782f5",
+    "gate": "gate9"
+  }
+]

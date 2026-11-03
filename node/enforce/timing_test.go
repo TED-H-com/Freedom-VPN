@@ -33,7 +33,7 @@ func (f *precisionTimingExec) record(kind string, run func() error) error {
 
 func (f *precisionTimingExec) NftBatch(ctx context.Context, script string) error {
 	kind := "rollback"
-	if strings.Contains(script, "add chain inet fvpn "+deadlineGuard) {
+	if strings.Contains(script, "add chain inet fvpn "+deadlineGuard+" {") {
 		kind = "install"
 	} else if script == "delete chain inet fvpn "+deadlineGuard+"\n" {
 		kind = "release"
