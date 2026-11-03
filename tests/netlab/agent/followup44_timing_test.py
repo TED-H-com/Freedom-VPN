@@ -73,7 +73,7 @@ class MonitorTests(unittest.TestCase):
 
     def test_one_clock_requires_bracket_namespace_and_zero_offsets(self):
         row = dict(host_before_ns='1', host_after_ns='5', host_time_namespace='time:[1]',
-                   host_initial_time_namespace='time:[1]', probe=dict(before_ns='2', mono_ns='3', after_ns='4',
+                   host_timens_offsets='monotonic 0 0\nboottime 0 0', probe=dict(before_ns='2', mono_ns='3', after_ns='4',
                    time_namespace='time:[1]', timens_offsets='monotonic 0 0\nboottime 0 0'))
         self.assertTrue(runner.clock_matches(row))
         for key, value in [('mono_ns', '6'), ('time_namespace', 'time:[2]'),

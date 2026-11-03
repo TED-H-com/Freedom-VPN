@@ -291,7 +291,8 @@ def qualify(row):
 
 def clock_matches(row):
     probe = row['probe']
-    return (row['host_time_namespace'] == row['host_initial_time_namespace'] == probe['time_namespace']
+    return (row['host_time_namespace'] == probe['time_namespace']
+            and row['host_timens_offsets'].split() == ['monotonic', '0', '0', 'boottime', '0', '0']
             and probe['timens_offsets'].split() == ['monotonic', '0', '0', 'boottime', '0', '0']
             and int(row['host_before_ns']) <= int(probe['before_ns']) <= int(probe['mono_ns'])
                 <= int(probe['after_ns']) <= int(row['host_after_ns']))
@@ -301,12 +302,12 @@ def measure_clock(leg):
     rows = []
     for _ in range(3):
         host = os.readlink('/proc/self/ns/time')
-        initial = os.readlink('/proc/1/ns/time')
+        offsets = Path('/proc/self/timens_offsets').read_text()
         before = mono_ns()
         raw = subprocess.check_output(['docker', 'exec', PREFIX, '/work/.agent/f44-clock'], text=True)
         after = mono_ns()
         row = {'utc': utc(), 'host_before_ns': str(before), 'host_after_ns': str(after),
-               'host_time_namespace': host, 'host_initial_time_namespace': initial, 'probe': json.loads(raw)}
+               'host_time_namespace': host, 'host_timens_offsets': offsets, 'probe': json.loads(raw)}
         row['matched'] = clock_matches(row)
         rows.append(row)
     matched = all(r['matched'] for r in rows)
@@ -524,7 +525,7 @@ def verify_inputs():
 
 def run():
     verify_inputs()
-    declared = json.loads((ROOT / 'docs/node/followup44-timing-pins-2026-11-03.json').read_text())
+    declared = json.loads((ROOT / 'docs/node/followup44-timing-amendment-pins-2026-11-03.json').read_text())
     for name, expected in declared['files'].items():
         if file_hash(ROOT / name) != expected:
             raise RuntimeError('declared tool changed: ' + name)
