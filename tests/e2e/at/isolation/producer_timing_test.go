@@ -276,6 +276,34 @@ func TestD098_Followup15ArchivePins(t *testing.T) {
 	}
 }
 
+func TestD098_Followup16ArchivePins(t *testing.T) {
+	root := "../../../../docs/e2e/at/isolation/history/follow-up-16"
+	raw, err := os.ReadFile(filepath.Join(root, "archive.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var manifest struct {
+		RunID string `json:"run_id"`
+		Files []struct{ Path, SHA256 string }
+	}
+	if err = json.Unmarshal(raw, &manifest); err != nil {
+		t.Fatal(err)
+	}
+	if manifest.RunID != "83b457ef-ea16-490b-9923-1fea0df86b36" || len(manifest.Files) != 129 {
+		t.Fatal("wrong archived run")
+	}
+	for _, f := range manifest.Files {
+		body, e := os.ReadFile(filepath.Join(root, f.Path))
+		if e != nil {
+			t.Fatal(e)
+		}
+		sum := sha256.Sum256(body)
+		if hex.EncodeToString(sum[:]) != f.SHA256 {
+			t.Errorf("archive changed: %s", f.Path)
+		}
+	}
+}
+
 func TestAT13_D140InterleavingQualification(t *testing.T) {
 	out, err := exec.Command("python3", "-B", "-m", "unittest", "-v", "boundary_evidence_test.py").CombinedOutput()
 	if err != nil {
@@ -296,6 +324,14 @@ func TestAT13_D102PopulatedHoldRetention(t *testing.T) {
 	out, err := exec.Command("python3", "-B", "-m", "unittest", "-v", "populated_holds_test.py").CombinedOutput()
 	if err != nil {
 		t.Fatalf("populated hold joins: %v\n%s", err, out)
+	}
+	t.Log(string(out))
+}
+
+func TestD144_NightlyReviewAndSuiteAdmission(t *testing.T) {
+	out, err := exec.Command("python3", "-B", "-m", "unittest", "-v", "nightly_test.py").CombinedOutput()
+	if err != nil {
+		t.Fatalf("nightly review: %v\n%s", err, out)
 	}
 	t.Log(string(out))
 }

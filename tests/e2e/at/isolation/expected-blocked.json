@@ -1,0 +1,16 @@
+[
+  {
+    "case": "AT11",
+    "row": "IPv6 platform matrix",
+    "reason": "Native member-platform route/capture matrix requires operator devices; this Linux container run does not execute that matrix.",
+    "owner": "acceptance / platform operators",
+    "established_by": "Both nightly logs (41304317016 and 41456092596) record this named block; driver.go.txt explicitly emits it without running a native platform matrix. D-144 and follow-up 17 carry AT11 as operator work. IPv6 container capability alone cannot pass the platform matrix."
+  },
+  {
+    "case": "AT13",
+    "row": "continuous crash/NetBird/reboot/updater transitions",
+    "reason": "The full fault and physical-device matrix requires an operator run; the container restart row proves only its own transition.",
+    "owner": "acceptance / operator",
+    "established_by": "Both nightly logs record this named block; driver.go.txt emits it after the separate restart row. Follow-up 17 explicitly retains the full AT13 matrix as operator work."
+  }
+]
