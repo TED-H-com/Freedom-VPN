@@ -103,15 +103,15 @@ func TestParseForwardChain_D146AndD147Shapes(t *testing.T) {
 	chain forward {
 		type filter hook forward priority -150; policy drop;
 		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=7 fvpn_metering=forward_admission_v1"
-		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 ip daddr @resolver_v4 tcp dport 53 counter name "du_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
-		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 ip daddr @resolver_v4 udp dport 53 counter name "du_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
-		iifname "fv-fh" oifname "fv-ih" ip daddr @resolver_v4 counter name "ctdns" drop
+		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 ip daddr @resolver_v4 tcp dport 53 counter name "nu_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
+		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 ip daddr @resolver_v4 udp dport 53 counter name "nu_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
+		iifname "fv-fh" oifname "fv-ih" ip daddr @resolver_v4 counter name "ctbadns" drop
 		iifname "fv-fh" oifname "fv-ih" ip daddr @denied_v4 counter name "ctdeny" drop
 		iifname "fv-fh" oifname "fv-ih" ip daddr @host_v4 counter name "cthost" drop
 		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & (syn) == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160
 		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 counter name "u_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
-		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.1 tcp sport 53 counter name "dd_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
-		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.1 udp sport 53 counter name "dd_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
+		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.1 tcp sport 53 counter name "nd_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
+		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.1 udp sport 53 counter name "nd_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
 		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.1 ct state related icmp type destination-unreachable icmp code frag-needed counter name "d_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
 		iifname "fv-ih" oifname "fv-fh" ip saddr @denied_v4 ip daddr 100.64.1.1 ct state related icmp type destination-unreachable icmp code frag-needed counter name "d_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
 		iifname "fv-ih" oifname "fv-fh" ip saddr @host_v4 ip daddr 100.64.1.1 ct state related icmp type destination-unreachable icmp code frag-needed counter name "d_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
