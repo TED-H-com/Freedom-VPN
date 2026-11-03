@@ -25,7 +25,7 @@ type TCState struct {
 	Devices map[string]TCDev
 }
 
-func renderTC(m Model, assignments map[uuid.UUID]uint16, state TCState) (string, error) {
+func renderTC(m Model, assignments map[uuid.UUID]uint16, state TCState) (shape, retire string, err error) {
 	type side struct {
 		iface  string
 		parent Rate
@@ -40,7 +40,7 @@ func renderTC(m Model, assignments map[uuid.UUID]uint16, state TCState) (string,
 	sort.Slice(members, func(i, j int) bool {
 		return members[i].MemberID.String() < members[j].MemberID.String()
 	})
-	var b strings.Builder
+	var b, cleanup strings.Builder
 	b.WriteString("# HTB parent per direction, one leaf class per member, fq_codel under each (§11.4).\n")
 	b.WriteString("# Classification is skb->priority set to the leaf classid. No fwmark, no filter.\n")
 	for _, s := range sides {
@@ -49,21 +49,21 @@ func renderTC(m Model, assignments map[uuid.UUID]uint16, state TCState) (string,
 		for _, mem := range members {
 			minor, ok := assignments[mem.MemberID]
 			if !ok {
-				return "", fmt.Errorf("no class assignment for %s", mem.MemberID)
+				return "", "", fmt.Errorf("no class assignment for %s", mem.MemberID)
 			}
 			assigned[minor] = true
 		}
 		if !dev.RootHTB {
 			fmt.Fprintf(&b, "qdisc add dev %s root handle %x: htb default %x\n", s.iface, HTBMajor, HTBDefaultMinor)
 		} else {
-			// Drop leaves and classes the new generation no longer uses before
-			// replacing the classes that stay. A removed member must not keep
-			// a guaranteed rate on the parent (§11.4).
+			// Retire only after nft stops referencing these classes. Until
+			// that commit, old packets still need their member class rather
+			// than falling into the host default reserve (§11.4).
 			for _, minor := range orphanMinors(dev, assigned) {
 				if dev.Leaves[minor] {
-					fmt.Fprintf(&b, "qdisc del dev %s parent %s\n", s.iface, classHandle(minor))
+					fmt.Fprintf(&cleanup, "qdisc del dev %s parent %s\n", s.iface, classHandle(minor))
 				}
-				fmt.Fprintf(&b, "class del dev %s classid %s\n", s.iface, classHandle(minor))
+				fmt.Fprintf(&cleanup, "class del dev %s classid %s\n", s.iface, classHandle(minor))
 			}
 		}
 		writeClass(&b, s.iface, fmt.Sprintf("%x:", HTBMajor), classHandle(1), s.parent, 0)
@@ -77,7 +77,7 @@ func renderTC(m Model, assignments map[uuid.UUID]uint16, state TCState) (string,
 			}
 		}
 	}
-	return b.String(), nil
+	return b.String(), cleanup.String(), nil
 }
 
 // reserveUnmappedClasses keeps a kernel class minor out of the free set when

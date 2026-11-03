@@ -529,6 +529,17 @@ func VerifyQoS(devJSON map[string][2][]byte, m Model, assignments map[uuid.UUID]
 		if err := expectClass(view, s.iface, classHandle(HTBDefaultMinor), s.host); err != nil {
 			return err
 		}
+		expected := map[string]bool{classHandle(1): true, classHandle(HTBDefaultMinor): true}
+		for _, mem := range m.QoS.Members {
+			if minor, ok := assignments[mem.MemberID]; ok {
+				expected[classHandle(minor)] = true
+			}
+		}
+		for handle := range view.Classes {
+			if !expected[handle] {
+				return checkf(ReasonQoS, "%s has unexpected class %s after retirement", s.iface, handle)
+			}
+		}
 		for _, mem := range m.QoS.Members {
 			minor, ok := assignments[mem.MemberID]
 			if !ok {

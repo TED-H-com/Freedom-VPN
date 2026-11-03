@@ -1,0 +1,65 @@
+--- FAIL: TestISO_F6_RetainedFailureBlocksNewGeneration (0.35s)
+    followup12_test.go:1241: errors=[<nil> TC_FOREIGN_FILTER: interface fv-fh parent ingress handle 1 kind matchall
+        ISOLATION_POLICY_INVALID: quarantine marker was not recorded
+        ISOLATION_BASELINE_MISSING: quarantine baseline verify_failed nft listing: missing braces in "add chain inet fvpn fv_deadline_guard" nft listing: missing braces in "add chain inet fvpn fv_deadline_guard" nft listing: missing braces in "add chain inet fvpn fv_deadline_guard" nft listing: missing braces in "add chain inet fvpn fv_deadline_guard" nft listing: missing braces in "add chain inet fvpn fv_deadline_guard"] decision={Serve:false Reasons:[safety_check_failed] Model:{Generation:0 IPv6Mode: Now:0001-01-01 00:00:00 +0000 UTC NowMono:0s timeoutReserve:0 Datapath:{MemberIngress: Uplink: SNAT:invalid IP} Bindings:[] Leases:[] Resolvers:[] DeniedV4:[] ExtraDeniedV4:[] HostV4:[] QoS:{Up:{RateBPS:0 CeilBPS:0} Down:{RateBPS:0 CeilBPS:0} HostUp:{RateBPS:0 CeilBPS:0} HostDown:{RateBPS:0 CeilBPS:0} Members:[] Assignments:map[]} Revoke:[] Probe:<nil>} Checks:[{Detail:<nil> ErrorCode:{value: specified:true null:true} Name:dns_policy ObservedAt:2026-11-03 13:51:34.662108532 +0000 UTC Status:passed} {Detail:<nil> ErrorCode:{value: specified:true null:true} Name:internet_only ObservedAt:2026-11-03 13:51:34.662108532 +0000 UTC Status:passed} {Detail:<nil> ErrorCode:{value:HEALTH_CHECK_FAILED specified:true null:false} Name:lease ObservedAt:2026-11-03 13:51:34.662108532 +0000 UTC Status:failed} {Detail:<nil> ErrorCode:{value: specified:true null:true} Name:meter_path ObservedAt:2026-11-03 13:51:34.662108532 +0000 UTC Status:passed} {Detail:<nil> ErrorCode:{value: specified:true null:true} Name:policy_signature ObservedAt:2026-11-03 13:51:34.662108532 +0000 UTC Status:passed} {Detail:<nil> ErrorCode:{value:HEALTH_CHECK_FAILED specified:true null:false} Name:qos ObservedAt:2026-11-03 13:51:34.662108532 +0000 UTC Status:failed} {Detail:<nil> ErrorCode:{value: specified:true null:true} Name:release_supported ObservedAt:2026-11-03 13:51:34.662108532 +0000 UTC Status:passed} {Detail:<nil> ErrorCode:{value:HEALTH_CHECK_FAILED specified:true null:false} Name:source_binding ObservedAt:2026-11-03 13:51:34.662108532 +0000 UTC Status:failed} {Detail:<nil> ErrorCode:{value: specified:true null:true} Name:storage ObservedAt:2026-11-03 13:51:34.662108532 +0000 UTC Status:passed} {Detail:0x1f61a577c3c0 ErrorCode:{value: specified:true null:true} Name:tunnel_probe ObservedAt:2026-11-03 13:51:34.662108532 +0000 UTC Status:passed}] Errors:[{Code:HEALTH_CHECK_FAILED Message:apply failed ObservedAt:2026-11-03 13:51:34.662108532 +0000 UTC Stage:apply}] Safety:failed Provisioning:applying Publication:published PolicyExpires:0s Applied:0 DataHealth:healthy}
+    followup12_test.go:1242: recovery failed: serving=false applied=2 desired=3 lease=3 apply_calls=5 renewals=1
+--- FAIL: TestAT13_F27_UnrecordedApplyRefusesRestartAdoption (0.20s)
+    --- FAIL: TestAT13_F27_UnrecordedApplyRefusesRestartAdoption/denied (0.10s)
+        followup12_test.go:1265: setup serving false applied 0 bindings 0 reasons [safety_check_failed policy_missing]
+    --- FAIL: TestAT13_F27_UnrecordedApplyRefusesRestartAdoption/host (0.10s)
+        followup12_test.go:1265: setup serving false applied 0 bindings 0 reasons [safety_check_failed policy_missing]
+--- FAIL: TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing (0.71s)
+    --- FAIL: TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing/denied_v4/add (0.11s)
+        followup12_test.go:1337: setup serving false applied 0 bindings 0 reasons [safety_check_failed policy_missing]
+    --- FAIL: TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing/denied_v4/remove (0.11s)
+        followup12_test.go:1337: setup serving false applied 0 bindings 0 reasons [safety_check_failed policy_missing]
+    --- FAIL: TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing/denied_v4/replace (0.14s)
+        followup12_test.go:1337: setup serving false applied 0 bindings 0 reasons [safety_check_failed policy_missing]
+    --- FAIL: TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing/host_v4/add (0.11s)
+        followup12_test.go:1337: setup serving false applied 0 bindings 0 reasons [safety_check_failed policy_missing]
+    --- FAIL: TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing/host_v4/remove (0.12s)
+        followup12_test.go:1337: setup serving false applied 0 bindings 0 reasons [safety_check_failed policy_missing]
+    --- FAIL: TestAT13_F27_PeriodicLiveSetDriftWithdrawsServing/host_v4/replace (0.12s)
+        followup12_test.go:1337: setup serving false applied 0 bindings 0 reasons [safety_check_failed policy_missing]
+--- FAIL: TestISO_F6_ForeignStillPresentWithholdsNewACK (0.49s)
+    --- FAIL: TestISO_F6_ForeignStillPresentWithholdsNewACK/same_generation (0.25s)
+        followup24_test.go:58: clean retry failed: [{Code:HEALTH_CHECK_FAILED Message:apply failed ObservedAt:2026-11-03 13:52:10.998034008 +0000 UTC Stage:apply}]
+    --- FAIL: TestISO_F6_ForeignStillPresentWithholdsNewACK/new_generation (0.25s)
+        followup24_test.go:58: clean retry failed: [{Code:HEALTH_CHECK_FAILED Message:apply failed ObservedAt:2026-11-03 13:52:11.242680302 +0000 UTC Stage:apply}]
+--- FAIL: TestISO_F6_RetainedErrorRenewsDesiredWithoutACK (0.16s)
+    followup25_evidence_test.go:246: clean matching lease Apply did not recover with history
+--- FAIL: TestAT13_ISOF603_ExactProducerReplay955To961 (0.19s)
+    --- FAIL: TestAT13_ISOF603_ExactProducerReplay955To961/same_lease_repair (0.09s)
+        followup28_test.go:143: nft listing: missing braces in "add chain inet fvpn fv_deadline_guard"
+    --- FAIL: TestAT13_ISOF603_ExactProducerReplay955To961/repair_fails_closed (0.09s)
+        followup28_test.go:143: nft listing: missing braces in "add chain inet fvpn fv_deadline_guard"
+--- FAIL: TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth (0.14s)
+    --- FAIL: TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth/same_boot_adoption (0.07s)
+        followup35_restart_test.go:85: setup serving false applied 0 bindings 0 reasons [safety_check_failed policy_missing]
+    --- FAIL: TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth/missing_heartbeat_baseline (0.07s)
+        followup35_restart_test.go:85: setup serving false applied 0 bindings 0 reasons [safety_check_failed policy_missing]
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/node/agent	88.601s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent	0.222s
+ok  	github.com/TED-H-com/Freedom-VPN/node/dns	0.018s
+ok  	github.com/TED-H-com/Freedom-VPN/node/enforce	1.369s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/agentstore	0.255s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/controlclient	30.034s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol	0.077s
+?   	github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/healthattest	0.093s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/meter	0.858s
+?   	github.com/TED-H-com/Freedom-VPN/node/internal/nodelock	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor	0.003s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal	0.955s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/usagestore	1.293s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/usageupload	1.332s
+ok  	github.com/TED-H-com/Freedom-VPN/node/nodelock	0.076s
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater	25.598s
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater	0.956s
+?   	github.com/TED-H-com/Freedom-VPN/node/updater/fsutil	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/node/watchdog	0.174s
+?   	github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/packaging/installer	8.751s
+?   	github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install	[no test files]
+FAIL
