@@ -128,7 +128,14 @@ func TestD104_DeadlineMinimum(t *testing.T) {
 				desired.DeviceBindings[0].ValidUntil = end
 			}
 			model, expiry, err := buildModel(in)
-			if err != nil || len(model.Leases) != 1 || model.Leases[0].DeadlineMono == nil || *model.Leases[0].DeadlineMono != want || expiry != want {
+			if err != nil || len(model.Leases) != 1 || model.Leases[0].DeadlineMono == nil || expiry != want {
+				t.Fatalf("minimum lost: model=%+v expiry=%s want=%s err=%v", model, expiry, want, err)
+			}
+			plan, err := enforce.Render(model, enforce.State{}, enforce.TCState{})
+			if err != nil || plan.ElementTimeouts[desired.DeviceBindings[0].DeviceId.String()] != want-in.MonoNow {
+				t.Fatalf("device minimum lost: plan=%+v want=%s err=%v", plan, want-in.MonoNow, err)
+			}
+			if limit != "binding" && *model.Leases[0].DeadlineMono != want {
 				t.Fatalf("minimum lost: model=%+v expiry=%s want=%s err=%v", model, expiry, want, err)
 			}
 		})
@@ -138,8 +145,8 @@ func TestD104_DeadlineMinimum(t *testing.T) {
 func TestD104_MemberDeadlinesAreIndependentAndBindingOrderInvariant(t *testing.T) {
 	in := withAdmittedMember(servingInput())
 	bindings := threeBindings(in.Lease.IssuedAt)
-	// Devices 0 and 1 share a member; its shortest binding must win in both
-	// orders, without changing the other member's distinct absolute pointer.
+	// Devices 0 and 1 share a member. Each binding keeps its own deadline in
+	// both orders; member-only limits have distinct absolute pointers.
 	bindings[1].MemberId = bindings[0].MemberId
 	bindings[0].ValidUntil = in.Lease.IssuedAt.Add(2500 * time.Millisecond)
 	bindings[1].ValidUntil = in.Lease.IssuedAt.Add(7500 * time.Millisecond)
@@ -155,12 +162,18 @@ func TestD104_MemberDeadlinesAreIndependentAndBindingOrderInvariant(t *testing.T
 			t.Fatal("aliased deadlines")
 		}
 		for _, lease := range m.Leases {
-			want := in.LeaseMonoSent + 2500*time.Millisecond
-			if lease.MemberID == bindings[2].MemberId {
-				want = in.LeaseMonoSent + 9500*time.Millisecond
-			}
+			want := in.LeaseMonoSent + time.Hour
 			if *lease.DeadlineMono != want {
-				t.Fatal("wrong member minimum", *lease.DeadlineMono, want)
+				t.Fatal("wrong member-only deadline", *lease.DeadlineMono, want)
+			}
+		}
+		plan, err := enforce.Render(m, enforce.State{}, enforce.TCState{})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, binding := range bindings {
+			if got, want := plan.ElementTimeouts[binding.DeviceId.String()], binding.ValidUntil.Sub(m.Now); got != want {
+				t.Fatal("wrong device minimum", got, want)
 			}
 		}
 		if expiry != in.LeaseMonoSent+2500*time.Millisecond {
