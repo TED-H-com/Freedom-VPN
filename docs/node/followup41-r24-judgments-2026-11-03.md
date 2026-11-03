@@ -57,3 +57,24 @@ deleted-element, deleted-chain and foreign-tc cases are queued behind host
 admission. The intended owned-path fix is a read-only completeness check in
 SystemPlane using the same nft snapshot, with the existing D-104 early-expiry
 allowance. No changes to node/enforce are proposed.
+
+## Earlier deadline-test semantics — 2026-11-03, before adaptation
+
+`TestD104_DeadlineMinimum/binding` and
+`TestD104_MemberDeadlinesAreIndependentAndBindingOrderInvariant` explicitly
+expect the member DeadlineMono to equal the shortest binding deadline. Those
+assertions encode H-3 and conflict with this follow-up's per-device rule.
+Keep their per-device minimum, member pointer independence, both orders and
+earliest watchdog wake coverage; move the binding-limit assertions to the
+renderer ElementTimeouts and check member-only limits separately. Their
+before-adaptation run is queued, without claiming a test result while admission
+is unavailable. The original r24 files remain unchanged.
+
+## Requests to orchestrator — 2026-11-03, comment correction
+
+The node/enforce owner should update MemberLease.DeadlineMono's comment
+(`model.go`): it currently says to include every binding cap in the shared
+member deadline. The existing implementation already intersects each binding's
+ValidUntil independently; the comment should describe member-level caps and
+that separate binding intersection. No enforcement runtime change is needed
+for H-3.
