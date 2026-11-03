@@ -1,0 +1,64 @@
+{
+  "test_only": true,
+  "sources": [
+    {
+      "url": "https://github.com/torvalds/linux/blob/v7.0/net/netfilter/nf_tables_api.c",
+      "sha256": "8f056cde0c7e2e7557ed83114d76a7c9f2d31ba60bf1d92b7cbb23b0e0889291",
+      "bytes": 306439,
+      "locations": [
+        "4811-4828 conversions",
+        "6052-6117 per-element dump clock",
+        "6688-6734 allocation clock",
+        "7236-7260 timeout/expiration conversion",
+        "7434-7436 allocation call",
+        "7572-7617 per-element loop",
+        "11408-11420 separate transaction timestamp",
+        "6972-7015 new element activation vs timeout update",
+        "10993-11005 commit adds elements"
+      ]
+    },
+    {
+      "url": "https://github.com/torvalds/linux/blob/v7.0/kernel/time/time.c",
+      "sha256": "bfc4952a21429f5ccdf67a08e6db8edba7f96abc627360c9a6d8a45a4ff573b2",
+      "bytes": 27268,
+      "locations": [
+        "766-805 integer conversions"
+      ]
+    },
+    {
+      "url": "https://github.com/torvalds/linux/blob/v7.0/net/netfilter/nft_set_hash.c",
+      "sha256": "e46ddfc6ba3cbbc3d753aba34f7a0ba51d0af142f1cf0256c9e5b26d4b2a662e",
+      "bytes": 22565,
+      "locations": [
+        "267-299 hash traversal"
+      ]
+    },
+    {
+      "url": "https://git.netfilter.org/nftables/tree/src/netlink.c?h=v1.0.9",
+      "sha256": "b5ba54b95277fc527bda2abf6b2cba1fdbc49c1f1d7c85b0bab12c68d8975d3f",
+      "bytes": 60608,
+      "locations": [
+        "1399-1404 integer attributes",
+        "1530-1560 sorting"
+      ]
+    },
+    {
+      "url": "https://git.netfilter.org/nftables/tree/src/datatype.c?h=v1.0.9",
+      "sha256": "24c8c671f65ae57e35f29db7d4a55d8e8de1833c131aba7b5e97c32f5baec10f",
+      "bytes": 37812,
+      "locations": [
+        "1020-1053 exact millisecond text"
+      ]
+    },
+    {
+      "url": "https://git.netfilter.org/nftables/tree/src/json.c?h=v1.0.9",
+      "sha256": "c0d40fd271ced81e641beb194dae9959465ab30341d16f5101c8347df42df8a6",
+      "bytes": 53903,
+      "locations": [
+        "659-670 floor seconds"
+      ]
+    }
+  ],
+  "nft_source_download": "https://www.netfilter.org/projects/nftables/files/nftables-1.0.9.tar.xz",
+  "nft_source_archive_sha256": "a3c304cd9ba061239ee0474f9afb938a9bb99d89b960246f66f0c3a0a85e14cd"
+}

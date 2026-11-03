@@ -1,0 +1,34 @@
+{
+  "test_only": true,
+  "resume": "2026-11-02",
+  "interrupted_attempt": "UNRUN; historical setup/admission only under interrupted-2026-11-01, no measurements from it",
+  "completed_campaigns_planned": 1,
+  "normal_trials": 1000,
+  "padded_controls": 2,
+  "padding_elements": 5000,
+  "unchanged_set_dumps": 2000,
+  "admission": "hold.sh free and no actual other-lane gates.sh / mk/at- / go test process, three consecutive 60-second free preflight windows, then every 60 seconds while running; no deadline",
+  "decision_rule": "All timeouts must round-trip exactly 1001..1008 ms. Allocation-base split is proven by an age decrease in raw dump traversal order. Relative-age-vector changes between repeated dumps of one unchanged set prove dump-clock effects. Report observed normal frequency as a witnessed lower bound. F16-01 sorted pairs alone remain unable to uniquely identify either mechanism. No retry for a better result.",
+  "source_hashes": [
+    {
+      "path": "probe.py",
+      "sha256": "60641ad43be59e7ea2479f0ab7907e39951a64e8b415b9f86f30fd6a9780a7e6"
+    },
+    {
+      "path": "experiment.py",
+      "sha256": "d1f377624b2f0d02455a3a5bcd7ccd401663f49a6fb50b6e3aaa3ed69a7d321f"
+    },
+    {
+      "path": "analyze.py",
+      "sha256": "d5a23be9ff1a5d0cf59bd020f2437592b79f2a4d00116164e9bc247f7df803ac"
+    },
+    {
+      "path": "campaign.py",
+      "sha256": "db64f0ce3041d807a018a3eaa1b243c0e0e4e9adaee25f79bb6a449c480a4657"
+    },
+    {
+      "path": "attempt-plan.json",
+      "sha256": "5353082ee59d385cd1a55b7e0343225b13261bfda28f3ff61d6958163ef21b3c"
+    }
+  ]
+}
