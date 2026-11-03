@@ -33,6 +33,9 @@ reservation is authorized in this session.
 | M-3 | Confirmed by tooling inspection | Require real classifier/decorator tests and ctunku/ctunkd deltas; prohibit B1 transport changes in acceptance. The copied enforce test is not tooling proof and is dropped. F31 already mentioned an adapter; it was not implemented. |
 | L-1 | Confirmed | Correct lock location and specify the empty eligible-set transaction shape. |
 
+The final consumer gate and dated fixture hand-off are recorded in the
+[delivery outcome](../G2-followup32-evidence/outcome.md).
+
 The original [G1–G10 ledger](../G2-followup31-design/current-guarantees.md) remains
 the numbering authority: **G5 crash and G6 late commit** are the owner's trade,
 with G4/G8 containment consequences. r24 uses different G labels in its “held”
