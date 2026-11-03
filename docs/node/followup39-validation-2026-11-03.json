@@ -8417,6 +8417,55 @@
       "utc": "2026-11-03T11:42:04Z",
       "source": "edc2f387c8f21c4cf36dfcf513af1263e202b95c",
       "scope": "Standalone production gate; outside the exhausted comparison reservations. Not a qualified comparison leg."
+    },
+    {
+      "gate": "final-inventory",
+      "command": [
+        "python3",
+        ".agent/f39/inventory.py"
+      ],
+      "exit": 0,
+      "seconds": 90.513,
+      "utc": "2026-11-03T11:47:03Z"
+    },
+    {
+      "gate": "final-evidence",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/netlab",
+        "-run",
+        "^TestCommittedEvidenceFiles_ValidAndHygieneClean$"
+      ],
+      "exit": 0,
+      "seconds": 32.613,
+      "utc": "2026-11-03T11:47:12Z"
+    },
+    {
+      "gate": "final-fixture-hygiene",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/e2e",
+        "-run",
+        "^TestCommittedFixtureEvidence_ValidAndHygieneClean$"
+      ],
+      "exit": 0,
+      "seconds": 8.409,
+      "utc": "2026-11-03T11:47:21Z"
+    },
+    {
+      "gate": "final-whole-module",
+      "command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "exit": 0,
+      "seconds": 130.323,
+      "utc": "2026-11-03T11:49:31Z"
     }
   ],
   "platform": {
@@ -8442,5 +8491,66 @@
     "qualified_quartet": false,
     "qualified_passing_quartet": false,
     "production_gate": false
+  },
+  "final_checks": {
+    "owned_paths": [
+      "docs/node/followup36-restart-and-signals-2026-11-01.md",
+      "docs/node/followup37-r20-adoption-review-2026-11-03.md",
+      "docs/node/followup38-r21-attribution-and-boot-2026-11-03.md",
+      "docs/node/followup38-validation-2026-11-03.json",
+      "docs/node/followup39-outcome-2026-11-03.md",
+      "docs/node/followup39-r22-judgments-2026-11-03.md",
+      "docs/node/followup39-timing-declaration-2026-11-03.md",
+      "docs/node/followup39-validation-2026-11-03.json",
+      "node/agent/boot_heartbeat.go",
+      "node/agent/cmd/fvpn-agent/main.go",
+      "node/agent/cmd/fvpn-agent/review_r20_test.go",
+      "node/agent/cmd/fvpn-agent/review_r21_test.go",
+      "node/agent/engine.go",
+      "node/agent/engine_test.go",
+      "node/agent/followup38_test.go",
+      "node/agent/followup39_test.go",
+      "node/agent/probeexc.go",
+      "node/agent/restart.go",
+      "node/agent/restart_usage.go",
+      "node/agent/review_r20_test.go",
+      "node/agent/review_r21_test.go",
+      "node/agent/review_r22_test.go",
+      "node/agent/usage.go",
+      "node/internal/meter/delta.go",
+      "node/internal/meter/meter.go",
+      "node/internal/meter/production_test.go",
+      "node/internal/usagestore/store.go",
+      "node/watchdog/heartbeat.go",
+      "tests/netlab/agent/followup39_timing.py",
+      "tests/netlab/agent/followup39_timing_test.py"
+    ],
+    "ownership_violations": [],
+    "public_diff_hygiene": true,
+    "gofmt_tracked_files": 1392,
+    "gofmt_output": [],
+    "diff_check": {
+      "working": 0,
+      "staged": 0,
+      "committed": 0
+    },
+    "followup38_append_only": true,
+    "followup37_preserved": true,
+    "original_r22_proof_preserved": true,
+    "go_changes_after_frozen_B": [],
+    "consumer_lane_diff": [],
+    "json_files": {
+      "followup39-validation-2026-11-03.json": {
+        "valid": true,
+        "hygiene": true
+      }
+    },
+    "final_inventory": {
+      "containers": [],
+      "images": [],
+      "networks": [],
+      "volumes": []
+    },
+    "owned_running_suite_processes": []
   }
 }

@@ -36,8 +36,9 @@ and the first runner version remain retained.
 
 Window 2 recorded 34 in-leg samples, with maximum interval 4.020653 s. No
 foreign suite, foreign lane container or unreadable process sample appeared.
-Its final interval contained 221 foreign CPU ticks at 100 ticks/s; an unrelated
-Codex process contributed 179 of those ticks. This exceeds the fixed threshold,
+Its final interval contained 221 foreign CPU ticks at 100 ticks/s. A `codex`
+process outside the declared exclusions contributed 179 of those ticks. This
+exceeds the fixed threshold,
 so the leg was stopped regardless of the source of that work. Peak excluded
 CPU was recorded separately: runner descendants 0.047290 cores, own containers
 0.074661, kernel threads 0.291162, container runtime 0.119462. vmstat is retained
@@ -96,7 +97,8 @@ was edited. Physical arm64 and real-network acceptance remain unmeasured.
 
 The quantitative serving Step/Apply comparison remains owed. Both permitted
 reservations are exhausted, with zero qualified complete legs; B1/A2/B2 did
-not start. Schedule a follow-up declared quartet with unrelated agent startup
-work quiet for the measured intervals. Keep the 0.5-core rule and the retained
+not start. Schedule a follow-up declared quartet with non-runner process
+activity kept below the threshold for the measured intervals. Keep the
+0.5-core rule and the retained
 failed attempts. This lane makes no comparative performance claim and takes
 no further reservation under follow-up 39.
