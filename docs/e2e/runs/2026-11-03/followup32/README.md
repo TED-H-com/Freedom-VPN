@@ -104,3 +104,42 @@ reports or stored product state, and is off by default.
    remained read-only; preserve expected-error tests.
 3. Isolation owns its post-merge acceptance run and all 12 blocked checks.
    The ordinary serving proof here does not close those acceptance cases.
+
+## 2026-11-03 resume — forced proof resolved
+
+**Resolved by forced invocation `95fb7eab-6795-48df-b3f2-ed014710d292`.**
+The earlier “not exercised” statements describe the original delivery; those
+records and statements are retained. The orchestrator authorized this resume
+and one further forced invocation after an owned proof-helper failure.
+The [resume evidence](resume.md) includes exact request/re-read times, versions,
+keys, body digests, the diagnostic response and downstream predicates.
+
+| New invocation | Source | UTC bounds | Retained result |
+|---|---|---|---|
+| [First forced](af726b13-9f9c-4675-b81f-edd78d3a5c24/acceptance-summary.md), `af726b13-9f9c-4675-b81f-edd78d3a5c24` | `419c065c` | 23:24:17.453976Z–23:24:39.910663Z | Exit 1; publisher passed with two 412→202 sequences, but proof blocked on an absent optional detail; member/serving not run. |
+| [Second forced](95fb7eab-6795-48df-b3f2-ed014710d292/acceptance-summary.md), `95fb7eab-6795-48df-b3f2-ed014710d292` | `59cae103` | 23:33:05.102975Z–23:34:11.474516Z | Exit 0; 8 pass, two real 412s, each followed by one GET and one same-key/body 202 retry; populated serving. |
+| [Fresh ordinary](3ad796d4-b669-42d2-aadf-46e60146822a/acceptance-summary.md), `3ad796d4-b669-42d2-aadf-46e60146822a` | `59cae103` | 23:35:13.618785Z–23:36:20.163561Z | Exit 0; 8 pass, zero conflicts; populated serving. |
+
+The [dry wrapper receipt](wrapper-dry-resume.json) proves complete Docker
+stdout parses as JSON and stderr is empty. All admission output, including
+denials, is isolated in its own private file. A reservation encountered during
+second stack setup was waited out; no forced invocation began during it.
+
+The first resumed proof wrongly required a current-version detail for the
+forced `"0"`. The real API rejects zero before lookup with `details={}`. The
+owned proof helper now honors “when present,” with a stub regression for empty
+and populated details, while requiring exactly one forced conflict and retry.
+The publisher recovery code and downstream predicates remain unchanged.
+Receipts additionally hash the actual serialized body to prove identical retry
+payloads. Both successful runs retain operation success, active publication,
+authorized native member admission, counted traffic and populated serving.
+
+The [appended gate ledger](checks.md#resume-gates--2026-11-03) records all new
+checks and final empty inventories. The original runs remain byte-identical.
+
+### Requests to orchestrator
+
+2026-11-03: live-proof authorization and validation are now resolved. Existing
+AT-owner hand-offs and isolation's independent post-merge run remain. The
+[resume request](resume.md#requests-to-orchestrator) also asks the API owner to
+review zero-header/detail behavior; product and contract paths stayed read-only.
