@@ -34,7 +34,13 @@ func TestE2E_Acceptance(t *testing.T) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Minute)
 	defer cancel()
-	run := &runner{t: t, lab: lab, dir: filepath.Join(lab.root, "docs", "e2e", "runs", time.Now().UTC().Format("2006-01-02"), "followup15")}
+	// FVPN_E2E_RUN_LABEL (the nightly job sets "nightly") selects the record
+	// directory below docs/e2e/runs/<UTC date>/; the historical default stays.
+	dir, err := RunDir(lab.root, os.Getenv(RunLabelEnv), "followup15", time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	run := &runner{t: t, lab: lab, dir: dir, summary: true}
 	run.runID = uuid.NewString()
 	commit, err := exec.Command("git", "rev-parse", "HEAD").Output()
 	if err != nil {
@@ -109,6 +115,10 @@ type runner struct {
 	probePeer    map[string]any
 	probe        *UpdaterProbe
 	updateOwner  string
+	// rows keeps every recorded status in order; summary writes them to
+	// SummaryFile in r.dir when the runner finishes.
+	rows    []SummaryRow
+	summary bool
 }
 
 func (r *runner) record(rec Record) {
@@ -117,6 +127,7 @@ func (r *runner) record(rec Record) {
 		r.counts = map[Status]int{}
 	}
 	r.counts[rec.Status]++
+	r.rows = append(r.rows, SummaryRow{ID: rec.ID, Status: rec.Status})
 	r.t.Logf("scenario %s: %s", rec.ID, rec.Status)
 	if rec.Status == StatusBlocked {
 		owners := map[string]string{
@@ -151,6 +162,11 @@ func (r *runner) record(rec Record) {
 
 func (r *runner) finish() {
 	r.t.Logf("acceptance summary: pass=%d blocked=%d fail=%d run=%s source=%s", r.counts[StatusPass], r.counts[StatusBlocked], r.counts[StatusFail], r.runID, r.sourceCommit)
+	if r.summary {
+		if err := WriteSummary(r.dir, r.rows, r.runID, r.sourceCommit); err != nil {
+			r.t.Errorf("acceptance summary file: %v", err)
+		}
+	}
 	if r.bad {
 		r.t.Error("one or more scenarios are blocked or failed; see docs/e2e/runs")
 	}
