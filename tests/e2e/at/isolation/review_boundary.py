@@ -3,6 +3,7 @@
 import json
 from evidence_io import read_json
 from pathlib import Path
+from review_unexecuted import unexecuted_expiry
 
 
 def timeline(verdict):
@@ -26,12 +27,28 @@ def timeline(verdict):
     return rows,interleavings
 
 
+def qualify_scope(rows, interleavings):
+    by_id = {r['packet_id']:r for r in rows}
+    # D-142 applies prospectively. Earlier archives retain their original verdict.
+    positive = [r for r in rows if int(r['egress_mono_ns'])]
+    drops = [r for r in rows if int(r['ingress_mono_ns']) and not int(r['egress_mono_ns'])]
+    last = max(positive, key=lambda r:int(r['egress_mono_ns']), default=None)
+    first = min(drops, key=lambda r:int(r['ingress_mono_ns']), default=None)
+    start = min((rows.index(r) for r in (last, first) if r is not None), default=0)
+    judged_ids = {r['packet_id'] for r in rows[start:]}
+    for pair in interleavings:
+        pair['d142_judged'] = pair['positive_packet'] in judged_ids
+        pair['packets'] = [by_id[pair[k]] for k in ('positive_packet','next_packet')]
+        pair['overlap_ns'] = str(int(pair['positive_egress_ns'])-int(pair['next_ingress_ns']))
+    return start, last, first
+
+
 def review(root):
     read=lambda name:read_json(root/name)
     current=read('AT13.json')
-    expiry=next((c for c in current.get('checks',[]) if c['name']=='short whole-node lease expiry'),{})
-    if 'D-104 exact packet deadline verdict=' not in expiry.get('actual',''):
-        raise ValueError('Current attempt did not execute expiry; refusing inherited boundary evidence')
+    blocked = unexecuted_expiry(root, 'boundary-review.json', current)
+    if blocked:
+        return blocked
     verdict=read('deadline-verdict.json');plan=read('boundary-schedule.json')
     rows,interleavings=timeline(verdict);errors=[]
     if not plan['qualified']:errors.append('same-run latency calibration unavailable')
@@ -43,7 +60,9 @@ def review(root):
             errors.append('calibration differs from final capture: '+str(s['packet_id']))
         if current.get('phase') not in ('phased','arbitrary_37ms'):errors.append('calibration not on original cadence')
         if int(s['egress_mono_ns'])>=int(plan['planned_at']['mono_ns']):errors.append('calibration was not measured before planning')
-    if interleavings:errors.append('positive transit interleaves next ingress')
+    start, last, first = qualify_scope(rows, interleavings)
+    if any(p['d142_judged'] for p in interleavings):
+        errors.append('positive transit interleaves next ingress within D-142 scope')
     # Exact original 101+101 schedules, without changing the evaluator or tests.
     d=int(verdict['deadline_mono_ns'])
     for phase,offset in [('phased',-101000000),('arbitrary_37ms',-64000000)]:
@@ -55,7 +74,10 @@ def review(root):
         errors.append('planned dense probes missing or extra')
     transit=[int(r['transit_ns']) for r in rows if r['transit_ns'] is not None]
     latency=[int(s['latency_ns']) for s in samples]
-    result=dict(run_id=read('AT13.json')['run_id'],schedule_qualified=not errors,errors=errors,
+    result=dict(run_id=read('AT13.json')['run_id'],status='pass' if not errors and verdict['passed'] else 'fail',schedule_qualified=not errors,errors=errors,
+        qualification_rule='D-142: every adjacent ingress-ordered pair from the earlier of the last positive and first drop through sweep end; earlier positive-positive overlaps recorded only',
+        qualification_start_packet_id=rows[start]['packet_id'] if rows else None,
+        deciding_pair=dict(last_positive=last,first_drop=first),
         unchanged_evaluator_passed=verdict['passed'],unchanged_evaluator_errors=verdict['errors'],
         last_positive_offset_ns=verdict['last_positive_offset_ns'],first_drop_offset_ns=verdict['first_drop_offset_ns'],
         calibration_count=len(samples),calibration_latency_min_ns=str(min(latency)) if latency else None,
@@ -71,5 +93,9 @@ def review(root):
 
 if __name__=='__main__':
     import sys
-    r=review(Path(sys.argv[1]));print(json.dumps({k:v for k,v in r.items() if k!='packets'},indent=2))
-    raise SystemExit(0 if r['schedule_qualified'] else 1)
+    r=review(Path(sys.argv[1]))
+    if r['status']=='blocked':
+        print('blocked: expiry not executed; refusing inherited boundary evidence')
+    else:
+        print(json.dumps({k:v for k,v in r.items() if k!='packets'},indent=2))
+    raise SystemExit(0 if r['status']=='pass' else 1)

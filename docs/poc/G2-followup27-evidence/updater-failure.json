@@ -1,0 +1,33 @@
+{
+  "test_only": true,
+  "gate": "gate3-agent",
+  "test": "TestAT25_FileMeterWaitRestartRechecksCurrentFile/missing",
+  "status": "FAIL",
+  "cause_status": "unproven",
+  "assertion": "node/updater/meter_barrier_test.go:284: restart renewed the original wait deadline",
+  "observed": "Recover returned ErrMembersBlocked; the following wall-time assertion exceeded one second. Printed subtest duration 2.22s includes setup and is not a measured Recover duration.",
+  "scope": "Out of owned paths; no updater edits or retries. Remaining gates continued in their original order.",
+  "source_observation": "This case uses FileMeter/FileGate and a fixture counter source. enforce.Binding and CounterValue are data types; the test does not run the changed ruleset verifier. This source observation does not establish the cause of the elapsed-time failure.",
+  "files": [
+    {
+      "path": "node/updater/meter_barrier_test.go",
+      "sha256": "1eef01104882473289cf4fd447ff01a04e9b24d876eeed1885140a8443a22f6f",
+      "byte_identical_to_base": true
+    },
+    {
+      "path": "node/updater/meter_barrier.go",
+      "sha256": "1b9c4fb288960377348af6dea3bc6b80c73d628e2474d0fb055c525066efcf32",
+      "byte_identical_to_base": true
+    },
+    {
+      "path": "node/updater/apply.go",
+      "sha256": "16f8f7ecdde9cc1f70a075320126c0917ebad5a813ea04fc3eef9943a9ff32ad",
+      "byte_identical_to_base": true
+    },
+    {
+      "path": "node/updater/engine.go",
+      "sha256": "1726be93ebdd1c3b3dee8915f0b759dcdb6290ae730098affdca3659ca35e229",
+      "byte_identical_to_base": true
+    }
+  ]
+}

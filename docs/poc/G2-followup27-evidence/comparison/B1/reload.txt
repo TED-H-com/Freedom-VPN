@@ -1,0 +1,17 @@
+=== RUN   TestAT10_AT13_ReloadRevokeBaseline
+AT10 regen 1025 a1=2054 a2=0
+AT10 regen 1050 a1=4014 a2=0
+AT10 regen 1075 a1=5974 a2=0
+AT10 regen 1100 a1=6750 a2=0
+    scenario_at10_test.go:101: ISO-F6-03: 101 Apply/guard/verifier/precision producer snapshots match executor brackets
+    scenario_at10_test.go:101:
+        AT10 FAIL
+        datagram | generation | bracket start ns | bracket end ns | upper ms | render-installed ms | classification | next datagram | failures
+        46 | 1083 | 1793688298303129036 | 1793688298329002507 | 25.873307 | 15.056499 | boundary | ok | (iv): TCP failure in run
+        (iv): TCP failure: 43:TimeoutError
+
+    scenario_at10_test.go:101: AT10 FAIL: D-120 verdict or evidence check: exit status 1
+--- FAIL: TestAT10_AT13_ReloadRevokeBaseline (15.54s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/netlab	15.542s
+FAIL

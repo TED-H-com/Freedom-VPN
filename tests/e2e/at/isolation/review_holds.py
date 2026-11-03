@@ -220,7 +220,9 @@ def review(root):
         if populated['run_id'] != central['run_id']:
             raise ValueError('populated hold attempts belong to another run')
         for attempt in populated['attempts']:
-            if not attempt.get('stop'):
+            if not attempt.get('stop') or attempt.get('purpose') == 'central_age_fallback':
+                # The early Step-1 stop exercises central age, not a local
+                # counter decrease (1 -> 1 cannot prove a decrease).
                 continue
             checked = review_retention(attempt, populated['final']['samples'])
             populated_retention.append(dict(incident_id=attempt['incident_id'], **checked))

@@ -1,0 +1,41 @@
+--- FAIL: TestAT13_DownloadSourceVerification (0.02s)
+    --- FAIL: TestAT13_DownloadSourceVerification/probe-serving (0.00s)
+        followup24_test.go:30: positive control: ISOLATION_POLICY_INVALID: set denied_v4 is missing or tainted
+--- FAIL: TestVerify_Probe (0.00s)
+    probe_test.go:182: ISOLATION_POLICY_INVALID: set denied_v4 is missing or tainted
+--- FAIL: TestVerify_ProbeDNSAcceptIsNarrow (0.00s)
+    probe_test.go:396: ISOLATION_POLICY_INVALID: set denied_v4 is missing or tainted
+--- FAIL: TestReviewD063_VerifyBaseline_PrefixAndRangeElementsBypass (0.00s)
+    --- FAIL: TestReviewD063_VerifyBaseline_PrefixAndRangeElementsBypass/string_cidr_prefix_in_probe_sets (0.00s)
+        review_d063_test.go:35: VerifyBaseline accepted non-/32 CIDR elements in probe_v4 and probe_dst_v4: err=ISOLATION_POLICY_INVALID: baseline allowed_v4 is missing or nonempty (reason="ISOLATION_POLICY_INVALID")
+    --- FAIL: TestReviewD063_VerifyBaseline_PrefixAndRangeElementsBypass/nft_json_prefix_and_range_objects_silently_dropped (0.00s)
+        review_d063_test.go:56: VerifyBaseline silently ignored prefix/range objects in probe sets: err=ISOLATION_POLICY_INVALID: baseline allowed_v4 is missing or nonempty (reason="ISOLATION_POLICY_INVALID")
+    --- FAIL: TestReviewD063_VerifyBaseline_PrefixAndRangeElementsBypass/expires_exceeding_max_or_model_window_ignored (0.00s)
+        review_d063_test.go:71: VerifyBaseline accepted element expires=900 and timeout=300s for a 5s probe: err=ISOLATION_POLICY_INVALID: baseline allowed_v4 is missing or nonempty (reason="ISOLATION_POLICY_INVALID")
+--- FAIL: TestReviewD063_Held_ProbeBoundsAndMemberIsolation (0.00s)
+    review_d063_test.go:208: over-max timeout reason="ISOLATION_POLICY_INVALID" err=ISOLATION_POLICY_INVALID: baseline allowed_v4 is missing or nonempty
+--- FAIL: TestProbeElementLifetime (0.00s)
+    --- FAIL: TestProbeElementLifetime/300_287_290 (0.00s)
+        verify_probe_lifetime_test.go:56: VerifyBaseline rejected timeout=300 expires=287 window=290s: ISOLATION_POLICY_INVALID: baseline allowed_v4 is missing or nonempty
+    --- FAIL: TestProbeElementLifetime/300_287_280 (0.00s)
+        verify_probe_lifetime_test.go:61: timeout=300 expires=287 window=280s reason="ISOLATION_POLICY_INVALID" err=ISOLATION_POLICY_INVALID: baseline allowed_v4 is missing or nonempty, want PROBE_UNBOUNDED naming probe_v4 and "remaining 287s exceeds bound 281s"
+    --- FAIL: TestProbeElementLifetime/900_100_200 (0.00s)
+        verify_probe_lifetime_test.go:61: timeout=900 expires=100 window=200s reason="ISOLATION_POLICY_INVALID" err=ISOLATION_POLICY_INVALID: baseline allowed_v4 is missing or nonempty, want PROBE_UNBOUNDED naming probe_v4 and "original timeout 900s exceeds ceiling 300s"
+    --- FAIL: TestProbeElementLifetime/45_44_45 (0.00s)
+        verify_probe_lifetime_test.go:56: VerifyBaseline rejected timeout=45 expires=44 window=45s: ISOLATION_POLICY_INVALID: baseline allowed_v4 is missing or nonempty
+    --- FAIL: TestProbeElementLifetime/45_45_44 (0.00s)
+        verify_probe_lifetime_test.go:56: VerifyBaseline rejected timeout=45 expires=45 window=44s: ISOLATION_POLICY_INVALID: baseline allowed_v4 is missing or nonempty
+    --- FAIL: TestProbeElementLifetime/45_45_43 (0.00s)
+        verify_probe_lifetime_test.go:61: timeout=45 expires=45 window=43s reason="ISOLATION_POLICY_INVALID" err=ISOLATION_POLICY_INVALID: baseline allowed_v4 is missing or nonempty, want PROBE_UNBOUNDED naming probe_v4 and "remaining 45s exceeds bound 44s"
+    --- FAIL: TestProbeElementLifetime/300_900_5 (0.00s)
+        verify_probe_lifetime_test.go:61: timeout=300 expires=900 window=5s reason="ISOLATION_POLICY_INVALID" err=ISOLATION_POLICY_INVALID: baseline allowed_v4 is missing or nonempty, want PROBE_UNBOUNDED naming probe_v4 and "original timeout 900s exceeds ceiling 300s"
+    --- FAIL: TestProbeElementLifetime/expires_absent_45_45 (0.00s)
+        verify_probe_lifetime_test.go:56: VerifyBaseline rejected timeout=45 expires=0 window=45s: ISOLATION_POLICY_INVALID: baseline allowed_v4 is missing or nonempty
+    --- FAIL: TestProbeElementLifetime/string_5m_4m47s_290 (0.00s)
+        verify_probe_lifetime_test.go:56: VerifyBaseline rejected timeout=0 expires=0 window=290s: ISOLATION_POLICY_INVALID: baseline allowed_v4 is missing or nonempty
+    --- FAIL: TestProbeElementLifetime/string_5m_4m47s_280 (0.00s)
+        verify_probe_lifetime_test.go:61: timeout=0 expires=0 window=280s reason="ISOLATION_POLICY_INVALID" err=ISOLATION_POLICY_INVALID: baseline allowed_v4 is missing or nonempty, want PROBE_UNBOUNDED naming probe_v4 and "remaining 287s exceeds bound 281s"
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/node/enforce	1.201s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	78.814s
+FAIL

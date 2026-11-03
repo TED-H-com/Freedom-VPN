@@ -1,0 +1,56 @@
+{
+  "test_only": true,
+  "leg": "B1",
+  "status": "FAIL",
+  "cause_status": "unproven",
+  "criterion": "D-120 (iv): any TCP failure",
+  "send": {
+    "event": "tcp_send",
+    "sequence": 43,
+    "wall_ns": "1793688296212473088",
+    "mono_ns": "11738663851693"
+  },
+  "read": {
+    "event": "tcp_read",
+    "sequence": 43,
+    "wall_ns": "1793688297713878691",
+    "mono_ns": "11740165259666",
+    "outcome": "TimeoutError"
+  },
+  "read_elapsed_ns": 1501407973,
+  "send_outer_guard_matches": [
+    {
+      "generation": "1064",
+      "apply_start": {
+        "wall_ns": "1793688296175081823",
+        "mono_ns": "11738626458011"
+      },
+      "apply_end": {
+        "wall_ns": "1793688296253465556",
+        "mono_ns": "11738704842151"
+      },
+      "install_start": {
+        "wall_ns": "1793688296201862245",
+        "mono_ns": "11738653238861"
+      },
+      "install_end": {
+        "wall_ns": "1793688296212877156",
+        "mono_ns": "11738664253759"
+      },
+      "release_start": {
+        "wall_ns": "1793688296212879649",
+        "mono_ns": "11738664256283"
+      },
+      "release_end": {
+        "wall_ns": "1793688296226942496",
+        "mono_ns": "11738678319064"
+      },
+      "lower_ns": 2524,
+      "upper_ns": 25080203,
+      "render_to_installed_ns": 11111558,
+      "verified": true
+    }
+  ],
+  "limitation": "Stream send is not node ingress. Existing captures cover UDP, not TCP. Overlap cannot attribute the timeout or waive D-120. No retry.",
+  "all_101_applies_verified": true
+}

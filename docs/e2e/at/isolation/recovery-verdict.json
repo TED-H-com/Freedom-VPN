@@ -1,5 +1,5 @@
 {
-  "run_id": "83b457ef-ea16-490b-9923-1fea0df86b36",
+  "run_id": "0ec14b39-467e-4a37-a239-1a33ef12eb71",
   "passed": true,
   "status": "pass",
   "assertions": [
@@ -34,2318 +34,2192 @@
       "passed": true
     }
   ],
-  "initial_generation": "35",
-  "durable_apply_generation": "37",
+  "initial_generation": "33",
+  "durable_apply_generation": "35",
   "durable_apply_verified": true,
   "node_any_capture_complete": true,
   "recovered_packet_control": true,
   "apply_evidence": "read-only retained_applied + member_path + installed generation + matching signed lease; qos source=apply is superseded by mandatory fresh live read before reporting",
   "rejected_report_ids": [
-    "01a1981a-6d9d-7d8c-85db-a2014571a160",
-    "01a1981a-6ddc-7a6f-bc99-6183acd37e99",
-    "01a1981a-7130-7802-a308-fa1b833e5f67",
-    "01a1981a-716f-7886-aa96-65d54160f198"
+    "01a1a020-2d1d-7a35-94b3-ee4df3c80615",
+    "01a1a020-2d54-7714-a11c-a421b7685275",
+    "01a1a020-3076-77c8-a84f-99e1af2ede8f",
+    "01a1a020-30ac-7ada-9fdf-05b9d1c5b0f9"
   ],
   "apply_report_ids": [],
   "live_report_ids": [
-    "01a1981a-7566-79d6-b790-dfefb74c126a",
-    "01a1981a-7d0d-7d65-bb99-e9ec214ea69b",
-    "01a1981a-80fd-75b9-97ac-cb1572e6fe3b",
-    "01a1981a-84f1-7a74-870a-0171cd98d602",
-    "01a1981a-8cc3-783d-9c3d-f10253375309",
-    "01a1981a-9490-76dd-807d-00391ba35c19",
-    "01a1981a-987e-7768-a32c-bc141ef32e20",
-    "01a1981a-a034-77f5-b0bf-7b4c67808005",
-    "01a1981a-a424-782b-b72b-b136ef233280",
-    "01a1981a-a819-7989-9de5-ea6eee2650bc",
-    "01a1981a-afd5-7604-bebf-8743ea590ea6",
-    "01a1981a-b3c2-788a-9ecd-3cff5f1f127f",
-    "01a1981a-b7af-745c-81e1-a4ff01530478",
-    "01a1981a-bba5-7cc9-b3ea-13da617c3f49",
-    "01a1981a-c370-70ae-9fce-a25a84de8ce2",
-    "01a1981a-c763-752c-93e6-8e45e5f5338a",
-    "01a1981a-cf29-736e-86f9-17a15b3e5014",
-    "01a1981a-d6f2-744a-bedd-70c112e6af47",
-    "01a1981a-debc-7741-9900-893c3be76ea3",
-    "01a1981a-e694-76ef-aa87-c76b2125b49c",
-    "01a1981a-ea8b-7bbe-8cf6-7a478d7996cb",
-    "01a1981a-f24b-71e6-91f9-3133d719f953",
-    "01a1981a-fa1e-73c4-8cd2-25f8acb1098f",
-    "01a1981a-fe07-7c3b-be19-eff6dffa417a",
-    "01a1981b-01f7-7ce4-b04f-1d87b529ae52",
-    "01a1981b-09cb-72f9-861c-3dea48b91231",
-    "01a1981b-0db4-7ef5-815a-cb496b796451",
-    "01a1981b-11ad-73eb-b474-58745268e139",
-    "01a1981b-196d-77ff-ae2f-90dd251de3d3",
-    "01a1981b-1d64-7875-a7b0-2fc1d0674c3b",
-    "01a1981b-2539-7737-885e-417387a2cc09",
-    "01a1981b-2922-766d-96dc-2e815bdc10b3",
-    "01a1981b-30dc-7ec8-a652-5a9880d6d3f7",
-    "01a1981b-34c7-72c8-babd-36599edd6710",
-    "01a1981b-38b9-7e29-8cf0-73f336fee3e7",
-    "01a1981b-407e-7790-b070-5ba568ac3d78",
-    "01a1981b-4473-7845-a619-d8ea37665405",
-    "01a1981b-4c3d-730a-8a71-83418380e58f",
-    "01a1981b-502f-7991-a7ad-101947f5ac4e",
-    "01a1981b-57ee-774d-8906-fb5a09641d69",
-    "01a1981b-5be1-7bdb-8d74-e29278113c67",
-    "01a1981b-63b5-7942-9767-606e1fbef283",
-    "01a1981b-67ae-740e-b6fd-d851080dd64c",
-    "01a1981b-6f73-74ab-bc45-6fdb2da76263",
-    "01a1981b-7733-7ceb-9056-0fc863da3776",
-    "01a1981b-7b1e-704b-bda0-26c4f738a83e",
-    "01a1981b-7f0d-7501-ad38-1606c5066a65",
-    "01a1981b-86cc-73fc-8377-3f24f3226b1f",
-    "01a1981b-8ab5-7857-9df6-40084ad07275",
-    "01a1981b-aa7d-775d-84af-7e3a6716a66c",
-    "01a1981b-ae82-78fc-9644-59d9eb527ae3",
-    "01a1981b-b272-7b24-8e8b-7238aff7a38d",
-    "01a1981b-b625-7db5-9dd1-c3bb77194a11",
-    "01a1981b-ba3e-7890-8342-dd0cbfc85bd3",
-    "01a1981b-be38-755b-8890-94ff808d377c",
-    "01a1981b-c23f-7746-a4a7-d0bbd8b365ac",
-    "01a1981b-c9e3-7ead-9303-b8e2cc213bc4",
-    "01a1981b-cd9d-722e-a2c9-9edeae3c6157",
-    "01a1981b-d197-7e35-9e56-cb2880474a7a",
-    "01a1981b-d59c-7ec2-a0e4-4f4982ff3e7a",
-    "01a1981b-d951-75f6-93af-4c3ae4d7a991",
-    "01a1981b-dd49-7ac4-98f5-a821437f26f9",
-    "01a1981b-e113-7580-b4fb-289bc91fa49d",
-    "01a1981b-e526-7c82-ba8a-3a90080ae7f2",
-    "01a1981b-e92b-7200-bee6-f86c90119f69",
-    "01a1981b-f0ed-7ce9-a5cb-03339fe7dd18",
-    "01a1981b-f4a7-79dd-9aa0-fcdb602b2ca3",
-    "01a1981b-f8a5-7455-9266-b30abf61322a",
-    "01a1981b-fcb6-7900-a7d3-61b0ee752786",
-    "01a1981c-005a-747a-b935-348cc82f40ca",
-    "01a1981c-045c-7628-a6db-87d92fb3de82",
-    "01a1981c-083f-70c7-8a99-0d7c30272140",
-    "01a1981c-0c22-7282-867c-70ac8ff60ee1",
-    "01a1981c-1002-79a8-a033-812644603ad5",
-    "01a1981c-17de-7ca6-ad5a-7f5b719eb29c",
-    "01a1981c-1bc3-713d-8855-f4a37fac566b",
-    "01a1981c-1fb2-72cb-845e-77c4f0dcaf8a",
-    "01a1981c-23c5-7e77-b18d-37375c41a928",
-    "01a1981c-2b93-7a20-8ade-1e93eba56a15",
-    "01a1981c-2f52-7f1c-a251-86091ddf4aef",
-    "01a1981c-3b25-7389-bcde-2baf7dd4f6df",
-    "01a1981c-3efe-76b9-825c-b1dfa469ece9",
-    "01a1981c-42ef-7557-8d97-b363cd5e65a8",
-    "01a1981c-4703-719e-a14b-ec6b6f5d88da",
-    "01a1981c-4aad-7e54-b7db-59bf18312fc9",
-    "01a1981c-4ea4-79f8-afc8-f8ef68036a6f",
-    "01a1981c-52bb-7a6a-9c1a-1e46d880383b",
-    "01a1981c-5667-7614-b8a7-35354170a0d8",
-    "01a1981c-5e45-7e71-abf9-af84639c9f83",
-    "01a1981c-621e-7771-98e8-44d9d1f7b4a9",
-    "01a1981c-661e-7e5d-a840-6c7fc21146fe",
-    "01a1981c-69f0-771d-b9c6-bf6238e3478d",
-    "01a1981c-6de0-7a46-82b9-8555a0462710",
-    "01a1981c-71bf-7285-b8a9-af1633257dcc",
-    "01a1981c-75be-711e-b6c9-23eb883a57ae",
-    "01a1981c-7994-703d-94ab-206085882e26",
-    "01a1981c-7d7f-7664-afb5-c47a3727373d",
-    "01a1981c-8192-77e5-af0c-e06796a41e07",
-    "01a1981c-854f-7bd1-bf0a-af4ef47cb73e",
-    "01a1981c-8937-7359-a808-273b2d90de4e",
-    "01a1981c-8d51-73ee-b6c8-9090e331a9ee",
-    "01a1981c-913f-737d-ae75-5eb9326a750b",
-    "01a1981c-94ee-74d7-b737-6a413d0272d1",
-    "01a1981c-98eb-78f1-9002-31a02058402b",
-    "01a1981c-9ccb-7f32-98c6-6796b244ccd1",
-    "01a1981c-a0ba-7a46-9840-4e7198d1ac6a",
-    "01a1981c-a48d-7538-a787-f7ba5a58b823",
-    "01a1981c-ac77-7cf4-8ac9-ea1221fe1302",
-    "01a1981c-b043-74aa-81b9-1584cc0ac81a",
-    "01a1981c-b826-7572-b78d-972193c4e9e3",
-    "01a1981c-bbf7-7de7-a44d-533fd03ad099",
-    "01a1981c-c3da-71e0-a642-1bea697617e8",
-    "01a1981c-c7ba-73fa-a84b-1bd01b2ebb55",
-    "01a1981c-d376-73b8-8544-4559ff76f8f1",
-    "01a1981c-d757-7891-b5cc-37583aa95110",
-    "01a1981c-db94-7dfb-9626-4004b5a3f6bf",
-    "01a1981c-df81-771e-b92a-d8d40aaa34d8",
-    "01a1981c-e70a-7dba-b776-e2223100b064",
-    "01a1981c-eafe-7a6d-8c66-51c8a0776043",
-    "01a1981c-eecb-7178-b542-61490ed0af51",
-    "01a1981c-f2d2-7451-874d-973c0597b706",
-    "01a1981c-f6d9-75fd-8ae3-5c0b8963bae7",
-    "01a1981c-fe74-7244-80f0-d8756f9cfb73",
-    "01a1981d-0266-7df0-a288-0d03812fae4c",
-    "01a1981d-064d-7e04-b27f-c93c38eb78bf",
-    "01a1981d-0a41-73b7-a444-91a953960798",
-    "01a1981d-0e0e-7f41-adf8-54fc75fda984",
-    "01a1981d-120b-7f1b-bae3-c70b17599844",
-    "01a1981d-1618-71fe-bad7-a60e1c15e2c8",
-    "01a1981d-19d0-7510-8e3a-17bc8c47b4ae",
-    "01a1981d-1dcb-7730-8d06-450073b49bff",
-    "01a1981d-21ae-74ad-9e8a-09df6def0410",
-    "01a1981d-25a0-7db5-91fe-fbb961209c78",
-    "01a1981d-2982-7989-8f3a-b6c56f7604a1",
-    "01a1981d-2d7b-738e-a838-24fcf26833ed",
-    "01a1981d-3177-7858-8726-50bcce656a5d"
+    "01a1a020-349d-72b6-8018-eaba29455b2d",
+    "01a1a020-3c83-7d4e-b2ef-ac5166f6ce04",
+    "01a1a020-408b-7934-8e0f-2cf730fa7f97",
+    "01a1a020-4481-7038-82de-40bca3b61efd",
+    "01a1a020-4869-78d3-a5b9-d71817f6a1e7",
+    "01a1a020-503e-754f-a63e-034b1ee9da7d",
+    "01a1a020-5427-77c1-b62b-ba9c9a119aee",
+    "01a1a020-5812-7d4b-a427-5201aebfa19f",
+    "01a1a020-5fdb-7226-852f-6b5b7e10e326",
+    "01a1a020-67a9-7086-8087-5d214b476e32",
+    "01a1a020-6b9d-713f-9b4e-f4e98bb2fc2e",
+    "01a1a020-736c-7acf-847c-f4853fd7cdbb",
+    "01a1a020-7768-7911-b05a-7d5076cfcf9f",
+    "01a1a020-7b5d-7b3e-a28e-e8130d170754",
+    "01a1a020-8304-719c-b89f-487d474624b2",
+    "01a1a020-8ad5-7ea4-a014-807f0f236a70",
+    "01a1a020-92b0-7ca9-b189-c7f0eae4b64e",
+    "01a1a020-9a80-7085-9a2b-0c4901ab974c",
+    "01a1a020-a245-73b3-9b4d-81da4c5f32bb",
+    "01a1a020-a63c-7495-8c4c-d066942b57ec",
+    "01a1a020-ae02-7dac-9248-777c66236c27",
+    "01a1a020-b1f3-7415-8ce0-e4d2eca1be43",
+    "01a1a020-b5e2-7da7-a617-a47781244b40",
+    "01a1a020-bda2-7398-b764-83299a59a3c6",
+    "01a1a020-c18f-7a69-932c-a8bc08a763a3",
+    "01a1a020-c963-76e2-b277-b75a1c38174f",
+    "01a1a020-d14b-7900-8f5f-2066ba24dad1",
+    "01a1a020-d53f-71bf-88d1-a261ae342eee",
+    "01a1a020-dcfd-7bed-906e-dcd2b175a7de",
+    "01a1a020-e4cc-7bc1-ba8e-7a43fed68578",
+    "01a1a020-ec96-70f4-9b01-a8422b193101",
+    "01a1a020-f453-70a7-91f7-028c8219b56c",
+    "01a1a020-fc33-7c86-ab46-a327da2afca6",
+    "01a1a021-0021-739b-af6e-7ec17b5cdc7d",
+    "01a1a021-07ed-714c-89c5-8bfbe1314243",
+    "01a1a021-0fad-7b8d-8268-b03196890d0b",
+    "01a1a021-177e-75f0-b3e6-6020f313c557",
+    "01a1a021-1b71-7907-b9b2-407a782c5b22",
+    "01a1a021-1f66-7102-bcb2-4aeb4b2a21bc",
+    "01a1a021-272d-7cd7-822d-9cf7f33c586f",
+    "01a1a021-2efe-7e79-9c64-524aac15dbfb",
+    "01a1a021-36ce-75b8-b8b9-44f86721bc8b",
+    "01a1a021-3e98-73d8-893b-c1a9b5b91fd6",
+    "01a1a021-4280-769c-8f43-825137f1fac5",
+    "01a1a021-466e-72fa-b321-312650ee5734",
+    "01a1a021-4e42-7754-9b8c-f702d0cd8cc0",
+    "01a1a021-5ec7-7ef5-820e-2765c0297efd",
+    "01a1a021-627f-773d-9dae-138b9847b610",
+    "01a1a021-6670-7a57-a204-ad8779264ed7",
+    "01a1a021-6a81-76f2-897a-dbb8202aa5a0",
+    "01a1a021-6e3a-7e13-85f6-30da69e4187a",
+    "01a1a021-7241-704b-bafe-ce041e340531",
+    "01a1a021-762e-791d-b590-c4907450b610",
+    "01a1a021-7a1c-7319-89da-f5c083bd7b77",
+    "01a1a021-8200-7b1e-abfc-f8287a599977",
+    "01a1a021-8598-73c6-bbc1-c9c541536e90",
+    "01a1a021-899e-79b9-8589-feec84e1ea71",
+    "01a1a021-8d73-7535-a065-ddc7ada1db1b",
+    "01a1a021-9170-7066-b182-3f330f6ed682",
+    "01a1a021-957a-795a-916b-5d6ddb5667fb",
+    "01a1a021-9929-75e1-ac5c-cf81f6b0a514",
+    "01a1a021-9d1e-77d0-aa0b-15303bfa55a4",
+    "01a1a021-a100-7628-a6e0-de680b443cc5",
+    "01a1a021-a8f4-7060-a9ca-772aa1ab21e5",
+    "01a1a021-acb9-7cc8-a422-dc573e0d54cd",
+    "01a1a021-b0b4-77b4-9aaf-c0d7b983bf1b",
+    "01a1a021-b4f6-7342-a3b4-2aeed1f821e8",
+    "01a1a021-b876-72b7-bb1b-fc51b9ba3822",
+    "01a1a021-bc6d-76bc-a50c-91504204d9da",
+    "01a1a021-c042-7067-ae7f-780b168d20de",
+    "01a1a021-c43e-7178-93fa-272427b9a35e",
+    "01a1a021-c84b-7a61-bc68-98794e0d918b",
+    "01a1a021-cc06-7f22-abdb-7d614a1a0911",
+    "01a1a021-cff4-7404-9b3d-13b4fd0fe3fc",
+    "01a1a021-d3ff-772d-8038-192a552a04eb",
+    "01a1a021-d7ba-716a-a84a-c14fcb30d512",
+    "01a1a021-dfe4-7013-a049-fc462f257402",
+    "01a1a021-e3aa-763d-b491-f0afa3a3eace",
+    "01a1a021-e7a7-7b21-8440-023f7d8f8e3e",
+    "01a1a021-eb89-7e36-8014-3de2886f3f68",
+    "01a1a021-ef7c-7a54-9faa-37b88b58ed3f",
+    "01a1a021-f37f-784f-8379-468b3dae55bb",
+    "01a1a021-f732-7881-bed0-d9489a221c44",
+    "01a1a021-fb38-7a36-8c97-0c39350a1118",
+    "01a1a021-ff3e-778d-8bc1-b801376b68f7",
+    "01a1a022-0305-7bce-8c07-21df99c920d6",
+    "01a1a022-0700-745c-a390-4bd4be6481fc",
+    "01a1a022-0ac1-747c-83a5-f84fb2b81a1b",
+    "01a1a022-12a3-74a4-91d3-a5a93f558537",
+    "01a1a022-16b0-7a59-b354-582cb03141d3",
+    "01a1a022-1a65-7cb3-9c7b-c308cf9c4eed",
+    "01a1a022-1e65-7b0b-a0a4-9e3f245308ca",
+    "01a1a022-223d-75f7-bbac-35c8ccf3e5f5",
+    "01a1a022-262c-76cb-aa29-8bda00470a68",
+    "01a1a022-2a40-7d0b-9178-622b5e048254",
+    "01a1a022-2de6-78b5-b187-f0d5612ee7be",
+    "01a1a022-31e1-727e-9b30-03fcfbf070ee",
+    "01a1a022-35f3-7f0a-aab9-3051c240d13e",
+    "01a1a022-39dd-7905-8124-c00847ce2d90",
+    "01a1a022-41af-752e-b2db-6353fd1ffadb",
+    "01a1a022-456c-73c2-ae98-8f2467d7a0ee",
+    "01a1a022-496a-7bf4-b839-241159348ac5",
+    "01a1a022-4d84-75fd-8ddd-a84d06e360f9",
+    "01a1a022-5508-721e-8b5a-c34228fa55b7",
+    "01a1a022-5ce3-7080-a1a1-ddcf13af47fe",
+    "01a1a022-6108-7544-b178-13d63f0b0bc3",
+    "01a1a022-68d1-7256-9fa9-13ca386a4b7f",
+    "01a1a022-6c7a-7071-9800-8730e1920192",
+    "01a1a022-7078-7558-bd61-c79fe11cd922",
+    "01a1a022-747b-72b8-a3db-4fcd1d71960f",
+    "01a1a022-7837-74b2-bba2-7803c3caeefe",
+    "01a1a022-801b-7313-9bf9-e2cd089c3d11",
+    "01a1a022-83ea-76c9-8733-8e79d01109b7",
+    "01a1a022-87f2-723e-98cd-b9fe04e718b9",
+    "01a1a022-8bf2-70e9-a0cb-751b1f1b266e",
+    "01a1a022-8fad-7195-9065-82d8d1477957",
+    "01a1a022-9780-7b3a-8f32-b3bec682c50d",
+    "01a1a022-9b8d-7b88-aa1a-fe449b7d4c80",
+    "01a1a022-9f7b-73db-9936-a733f86e4a12",
+    "01a1a022-a334-733f-9798-2a072796cede",
+    "01a1a022-a73b-7d72-ba60-31eb81761d07",
+    "01a1a022-ab3a-7cf2-9b16-dfdb5cc9ed45",
+    "01a1a022-aee9-7de1-90a3-69af8726ea8c",
+    "01a1a022-b2f0-77bb-803b-c7bd9d7fcc74",
+    "01a1a022-b6fb-7c4d-a25b-b49fafc17f77",
+    "01a1a022-baa6-7643-a164-3db5f90ff916",
+    "01a1a022-be9e-76fc-8421-af97f08f8ac9",
+    "01a1a022-c2b5-72c0-ad33-9b85fcb3e687",
+    "01a1a022-ca81-7042-ab71-7580ecee52bb",
+    "01a1a022-d217-74c8-ba96-4a18d8312f88",
+    "01a1a022-d616-7913-9b93-fd90eb2574a6",
+    "01a1a022-da2d-7e8a-8958-2e158a65f03d",
+    "01a1a022-ddde-74b6-a064-4ec2c930cbd5",
+    "01a1a022-e1cb-719e-bc5d-008a944d0d1a",
+    "01a1a022-e5bc-783b-b4e5-976f2d803512"
   ],
   "matching_report_ids": [
-    "01a1981a-7d0d-7d65-bb99-e9ec214ea69b",
-    "01a1981a-80fd-75b9-97ac-cb1572e6fe3b",
-    "01a1981a-84f1-7a74-870a-0171cd98d602",
-    "01a1981a-8cc3-783d-9c3d-f10253375309",
-    "01a1981a-9490-76dd-807d-00391ba35c19",
-    "01a1981a-987e-7768-a32c-bc141ef32e20",
-    "01a1981a-a034-77f5-b0bf-7b4c67808005",
-    "01a1981a-a424-782b-b72b-b136ef233280",
-    "01a1981a-a819-7989-9de5-ea6eee2650bc",
-    "01a1981a-afd5-7604-bebf-8743ea590ea6",
-    "01a1981a-b3c2-788a-9ecd-3cff5f1f127f",
-    "01a1981a-b7af-745c-81e1-a4ff01530478",
-    "01a1981a-bba5-7cc9-b3ea-13da617c3f49",
-    "01a1981a-c370-70ae-9fce-a25a84de8ce2",
-    "01a1981a-c763-752c-93e6-8e45e5f5338a",
-    "01a1981a-cf29-736e-86f9-17a15b3e5014",
-    "01a1981a-d6f2-744a-bedd-70c112e6af47",
-    "01a1981a-debc-7741-9900-893c3be76ea3",
-    "01a1981a-e694-76ef-aa87-c76b2125b49c",
-    "01a1981a-ea8b-7bbe-8cf6-7a478d7996cb",
-    "01a1981a-f24b-71e6-91f9-3133d719f953",
-    "01a1981a-fa1e-73c4-8cd2-25f8acb1098f",
-    "01a1981a-fe07-7c3b-be19-eff6dffa417a",
-    "01a1981b-01f7-7ce4-b04f-1d87b529ae52",
-    "01a1981b-09cb-72f9-861c-3dea48b91231",
-    "01a1981b-0db4-7ef5-815a-cb496b796451",
-    "01a1981b-11ad-73eb-b474-58745268e139",
-    "01a1981b-196d-77ff-ae2f-90dd251de3d3",
-    "01a1981b-1d64-7875-a7b0-2fc1d0674c3b",
-    "01a1981b-2539-7737-885e-417387a2cc09",
-    "01a1981b-2922-766d-96dc-2e815bdc10b3",
-    "01a1981b-30dc-7ec8-a652-5a9880d6d3f7",
-    "01a1981b-34c7-72c8-babd-36599edd6710",
-    "01a1981b-38b9-7e29-8cf0-73f336fee3e7",
-    "01a1981b-407e-7790-b070-5ba568ac3d78",
-    "01a1981b-4473-7845-a619-d8ea37665405",
-    "01a1981b-4c3d-730a-8a71-83418380e58f",
-    "01a1981b-502f-7991-a7ad-101947f5ac4e",
-    "01a1981b-57ee-774d-8906-fb5a09641d69",
-    "01a1981b-5be1-7bdb-8d74-e29278113c67",
-    "01a1981b-63b5-7942-9767-606e1fbef283",
-    "01a1981b-67ae-740e-b6fd-d851080dd64c",
-    "01a1981b-6f73-74ab-bc45-6fdb2da76263",
-    "01a1981b-7733-7ceb-9056-0fc863da3776",
-    "01a1981b-7b1e-704b-bda0-26c4f738a83e",
-    "01a1981b-7f0d-7501-ad38-1606c5066a65",
-    "01a1981b-86cc-73fc-8377-3f24f3226b1f",
-    "01a1981b-8ab5-7857-9df6-40084ad07275",
-    "01a1981b-aa7d-775d-84af-7e3a6716a66c",
-    "01a1981b-ae82-78fc-9644-59d9eb527ae3",
-    "01a1981b-b272-7b24-8e8b-7238aff7a38d",
-    "01a1981b-ba3e-7890-8342-dd0cbfc85bd3",
-    "01a1981b-be38-755b-8890-94ff808d377c",
-    "01a1981b-c23f-7746-a4a7-d0bbd8b365ac",
-    "01a1981b-c9e3-7ead-9303-b8e2cc213bc4",
-    "01a1981b-d197-7e35-9e56-cb2880474a7a",
-    "01a1981b-d59c-7ec2-a0e4-4f4982ff3e7a",
-    "01a1981b-dd49-7ac4-98f5-a821437f26f9",
-    "01a1981b-e526-7c82-ba8a-3a90080ae7f2",
-    "01a1981b-e92b-7200-bee6-f86c90119f69",
-    "01a1981b-f0ed-7ce9-a5cb-03339fe7dd18",
-    "01a1981b-f8a5-7455-9266-b30abf61322a",
-    "01a1981b-fcb6-7900-a7d3-61b0ee752786",
-    "01a1981c-045c-7628-a6db-87d92fb3de82",
-    "01a1981c-0c22-7282-867c-70ac8ff60ee1",
-    "01a1981c-17de-7ca6-ad5a-7f5b719eb29c",
-    "01a1981c-1fb2-72cb-845e-77c4f0dcaf8a",
-    "01a1981c-23c5-7e77-b18d-37375c41a928",
-    "01a1981c-2b93-7a20-8ade-1e93eba56a15",
-    "01a1981c-3b25-7389-bcde-2baf7dd4f6df",
-    "01a1981c-42ef-7557-8d97-b363cd5e65a8",
-    "01a1981c-4703-719e-a14b-ec6b6f5d88da",
-    "01a1981c-4ea4-79f8-afc8-f8ef68036a6f",
-    "01a1981c-52bb-7a6a-9c1a-1e46d880383b",
-    "01a1981c-5e45-7e71-abf9-af84639c9f83",
-    "01a1981c-661e-7e5d-a840-6c7fc21146fe",
-    "01a1981c-6de0-7a46-82b9-8555a0462710",
-    "01a1981c-75be-711e-b6c9-23eb883a57ae",
-    "01a1981c-7d7f-7664-afb5-c47a3727373d",
-    "01a1981c-8192-77e5-af0c-e06796a41e07",
-    "01a1981c-8937-7359-a808-273b2d90de4e",
-    "01a1981c-8d51-73ee-b6c8-9090e331a9ee",
-    "01a1981c-913f-737d-ae75-5eb9326a750b",
-    "01a1981c-98eb-78f1-9002-31a02058402b",
-    "01a1981c-a0ba-7a46-9840-4e7198d1ac6a",
-    "01a1981c-ac77-7cf4-8ac9-ea1221fe1302",
-    "01a1981c-b826-7572-b78d-972193c4e9e3",
-    "01a1981c-c3da-71e0-a642-1bea697617e8",
-    "01a1981c-d376-73b8-8544-4559ff76f8f1",
-    "01a1981c-db94-7dfb-9626-4004b5a3f6bf",
-    "01a1981c-df81-771e-b92a-d8d40aaa34d8",
-    "01a1981c-eafe-7a6d-8c66-51c8a0776043",
-    "01a1981c-f2d2-7451-874d-973c0597b706",
-    "01a1981c-f6d9-75fd-8ae3-5c0b8963bae7",
-    "01a1981d-0266-7df0-a288-0d03812fae4c",
-    "01a1981d-0a41-73b7-a444-91a953960798",
-    "01a1981d-120b-7f1b-bae3-c70b17599844",
-    "01a1981d-1618-71fe-bad7-a60e1c15e2c8",
-    "01a1981d-1dcb-7730-8d06-450073b49bff",
-    "01a1981d-25a0-7db5-91fe-fbb961209c78",
-    "01a1981d-2d7b-738e-a838-24fcf26833ed",
-    "01a1981d-3177-7858-8726-50bcce656a5d"
+    "01a1a020-3c83-7d4e-b2ef-ac5166f6ce04",
+    "01a1a020-408b-7934-8e0f-2cf730fa7f97",
+    "01a1a020-4481-7038-82de-40bca3b61efd",
+    "01a1a020-4869-78d3-a5b9-d71817f6a1e7",
+    "01a1a020-503e-754f-a63e-034b1ee9da7d",
+    "01a1a020-5427-77c1-b62b-ba9c9a119aee",
+    "01a1a020-5812-7d4b-a427-5201aebfa19f",
+    "01a1a020-5fdb-7226-852f-6b5b7e10e326",
+    "01a1a020-67a9-7086-8087-5d214b476e32",
+    "01a1a020-6b9d-713f-9b4e-f4e98bb2fc2e",
+    "01a1a020-736c-7acf-847c-f4853fd7cdbb",
+    "01a1a020-7768-7911-b05a-7d5076cfcf9f",
+    "01a1a020-7b5d-7b3e-a28e-e8130d170754",
+    "01a1a020-8304-719c-b89f-487d474624b2",
+    "01a1a020-8ad5-7ea4-a014-807f0f236a70",
+    "01a1a020-92b0-7ca9-b189-c7f0eae4b64e",
+    "01a1a020-9a80-7085-9a2b-0c4901ab974c",
+    "01a1a020-a245-73b3-9b4d-81da4c5f32bb",
+    "01a1a020-a63c-7495-8c4c-d066942b57ec",
+    "01a1a020-ae02-7dac-9248-777c66236c27",
+    "01a1a020-b1f3-7415-8ce0-e4d2eca1be43",
+    "01a1a020-b5e2-7da7-a617-a47781244b40",
+    "01a1a020-bda2-7398-b764-83299a59a3c6",
+    "01a1a020-c18f-7a69-932c-a8bc08a763a3",
+    "01a1a020-c963-76e2-b277-b75a1c38174f",
+    "01a1a020-d14b-7900-8f5f-2066ba24dad1",
+    "01a1a020-d53f-71bf-88d1-a261ae342eee",
+    "01a1a020-dcfd-7bed-906e-dcd2b175a7de",
+    "01a1a020-e4cc-7bc1-ba8e-7a43fed68578",
+    "01a1a020-ec96-70f4-9b01-a8422b193101",
+    "01a1a020-f453-70a7-91f7-028c8219b56c",
+    "01a1a020-fc33-7c86-ab46-a327da2afca6",
+    "01a1a021-0021-739b-af6e-7ec17b5cdc7d",
+    "01a1a021-07ed-714c-89c5-8bfbe1314243",
+    "01a1a021-0fad-7b8d-8268-b03196890d0b",
+    "01a1a021-177e-75f0-b3e6-6020f313c557",
+    "01a1a021-1b71-7907-b9b2-407a782c5b22",
+    "01a1a021-1f66-7102-bcb2-4aeb4b2a21bc",
+    "01a1a021-272d-7cd7-822d-9cf7f33c586f",
+    "01a1a021-2efe-7e79-9c64-524aac15dbfb",
+    "01a1a021-36ce-75b8-b8b9-44f86721bc8b",
+    "01a1a021-3e98-73d8-893b-c1a9b5b91fd6",
+    "01a1a021-4280-769c-8f43-825137f1fac5",
+    "01a1a021-466e-72fa-b321-312650ee5734",
+    "01a1a021-4e42-7754-9b8c-f702d0cd8cc0",
+    "01a1a021-5ec7-7ef5-820e-2765c0297efd",
+    "01a1a021-6670-7a57-a204-ad8779264ed7",
+    "01a1a021-6a81-76f2-897a-dbb8202aa5a0",
+    "01a1a021-7241-704b-bafe-ce041e340531",
+    "01a1a021-762e-791d-b590-c4907450b610",
+    "01a1a021-7a1c-7319-89da-f5c083bd7b77",
+    "01a1a021-8200-7b1e-abfc-f8287a599977",
+    "01a1a021-899e-79b9-8589-feec84e1ea71",
+    "01a1a021-9170-7066-b182-3f330f6ed682",
+    "01a1a021-957a-795a-916b-5d6ddb5667fb",
+    "01a1a021-9d1e-77d0-aa0b-15303bfa55a4",
+    "01a1a021-a8f4-7060-a9ca-772aa1ab21e5",
+    "01a1a021-b0b4-77b4-9aaf-c0d7b983bf1b",
+    "01a1a021-b4f6-7342-a3b4-2aeed1f821e8",
+    "01a1a021-bc6d-76bc-a50c-91504204d9da",
+    "01a1a021-c43e-7178-93fa-272427b9a35e",
+    "01a1a021-c84b-7a61-bc68-98794e0d918b",
+    "01a1a021-cff4-7404-9b3d-13b4fd0fe3fc",
+    "01a1a021-d3ff-772d-8038-192a552a04eb",
+    "01a1a021-dfe4-7013-a049-fc462f257402",
+    "01a1a021-e7a7-7b21-8440-023f7d8f8e3e",
+    "01a1a021-ef7c-7a54-9faa-37b88b58ed3f",
+    "01a1a021-f37f-784f-8379-468b3dae55bb",
+    "01a1a021-fb38-7a36-8c97-0c39350a1118",
+    "01a1a021-ff3e-778d-8bc1-b801376b68f7",
+    "01a1a022-0700-745c-a390-4bd4be6481fc",
+    "01a1a022-12a3-74a4-91d3-a5a93f558537",
+    "01a1a022-16b0-7a59-b354-582cb03141d3",
+    "01a1a022-1e65-7b0b-a0a4-9e3f245308ca",
+    "01a1a022-262c-76cb-aa29-8bda00470a68",
+    "01a1a022-2a40-7d0b-9178-622b5e048254",
+    "01a1a022-31e1-727e-9b30-03fcfbf070ee",
+    "01a1a022-35f3-7f0a-aab9-3051c240d13e",
+    "01a1a022-39dd-7905-8124-c00847ce2d90",
+    "01a1a022-41af-752e-b2db-6353fd1ffadb",
+    "01a1a022-496a-7bf4-b839-241159348ac5",
+    "01a1a022-4d84-75fd-8ddd-a84d06e360f9",
+    "01a1a022-5ce3-7080-a1a1-ddcf13af47fe",
+    "01a1a022-6108-7544-b178-13d63f0b0bc3",
+    "01a1a022-68d1-7256-9fa9-13ca386a4b7f",
+    "01a1a022-7078-7558-bd61-c79fe11cd922",
+    "01a1a022-747b-72b8-a3db-4fcd1d71960f",
+    "01a1a022-801b-7313-9bf9-e2cd089c3d11",
+    "01a1a022-87f2-723e-98cd-b9fe04e718b9",
+    "01a1a022-8bf2-70e9-a0cb-751b1f1b266e",
+    "01a1a022-9780-7b3a-8f32-b3bec682c50d",
+    "01a1a022-9b8d-7b88-aa1a-fe449b7d4c80",
+    "01a1a022-9f7b-73db-9936-a733f86e4a12",
+    "01a1a022-a73b-7d72-ba60-31eb81761d07",
+    "01a1a022-ab3a-7cf2-9b16-dfdb5cc9ed45",
+    "01a1a022-b2f0-77bb-803b-c7bd9d7fcc74",
+    "01a1a022-b6fb-7c4d-a25b-b49fafc17f77",
+    "01a1a022-be9e-76fc-8421-af97f08f8ac9",
+    "01a1a022-c2b5-72c0-ad33-9b85fcb3e687",
+    "01a1a022-ca81-7042-ab71-7580ecee52bb",
+    "01a1a022-d616-7913-9b93-fd90eb2574a6",
+    "01a1a022-da2d-7e8a-8958-2e158a65f03d",
+    "01a1a022-e1cb-719e-bc5d-008a944d0d1a"
   ],
   "historical_error_rows": [
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"candidate_generation\":\"33\",\"read_at\":\"2026-11-03T06:37:05.554320553Z\",\"source\":\"rejected\"}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"6763:\",\"parent\":\"1:6763\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"a4ef:\",\"parent\":\"1:a4ef\"}]}",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     },
     {
       "code": "TC_FOREIGN_FILTER",
       "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"candidate_generation\":\"35\",\"read_at\":\"2026-11-01T17:13:51.117132876Z\",\"source\":\"rejected\"}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvmb0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"clsact\",\"handle\":\"ffff:\",\"parent\":\"ffff:fff1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"1\",\"actions\":[\"mirred\"]}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvmb0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"5a24:\",\"parent\":\"1:5a24\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"e4b1:\",\"parent\":\"1:e4b1\"}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
-      "stage": "tc_evidence"
-    },
-    {
-      "code": "TC_FOREIGN_FILTER",
-      "message": "{\"interface\":\"fvup0\",\"attachment\":\"qdisc\",\"objects\":[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true}]}",
-      "observed_at": "2026-11-01T17:13:51.117132876Z",
+      "observed_at": "2026-11-03T06:37:05.554320553Z",
       "stage": "tc_evidence"
     }
   ],

@@ -1,0 +1,85 @@
+#!/usr/bin/env python3
+"""TEST ONLY host observations and executable-aware admission (no mutations)."""
+import datetime
+import json
+import os
+from pathlib import Path
+import shlex
+import subprocess
+import time
+
+ROOT = Path(__file__).resolve().parents[3]
+DEST = ROOT/'docs/poc/G2-followup27-evidence'
+
+def public(s):
+    return s.replace(str(ROOT), '<worktree>').replace(str(Path.home()), '<home>')
+
+def processes():
+    pgrep = subprocess.run(['pgrep','-af','gates.sh|mk/at-'],capture_output=True,text=True,check=False)
+    rows = subprocess.check_output(['ps','-eo','pid=,ppid=,args='],text=True)
+    bypid = {}
+    candidates = {}
+    for line in rows.splitlines():
+        fields=line.split(None,2)
+        if len(fields)!=3: continue
+        pid,ppid,args=int(fields[0]),int(fields[1]),fields[2]
+        bypid[pid]=ppid
+        try: words=shlex.split(args)
+        except ValueError: continue
+        if not words: continue
+        executable=Path(words[0]).name
+        sensitive=False
+        suite=False
+        if executable in ('make','gmake'):
+            suite=any(w.startswith('mk/at-') or '/mk/at-' in w for w in words)
+            sensitive=any(w in words for w in ['at-isolation','at-members','node-test-netlab'])
+            suite=suite or sensitive
+        elif executable in ('bash','sh'):
+            # A shell -c containing a command string is not a suite invocation.
+            suite=len(words)>1 and Path(words[1]).name=='gates.sh'
+            sensitive=suite and any(w in words for w in ('agent','isolation','members'))
+        elif executable=='go' and len(words)>1 and words[1]=='test':
+            sensitive=any(w in words for w in ('./tests/netlab/agent','./tests/e2e/at/isolation','./tests/e2e/at/members')) and '-tags' in words
+            suite=sensitive
+        if suite: candidates[pid]=dict(pid=pid,ppid=ppid,args=public(args),sensitive=sensitive)
+    # One running suite's make/bash/go descendants are one other suite.
+    roots=[]
+    for pid,row in candidates.items():
+        parent=bypid.get(pid)
+        seen=set()
+        while parent and parent not in seen and parent not in candidates:
+            seen.add(parent);parent=bypid.get(parent)
+        if parent not in candidates: roots.append(row)
+    return dict(pgrep=public(pgrep.stdout),pgrep_exit=pgrep.returncode,suites=roots,
+                timing_sensitive=[r for r in candidates.values() if r['sensitive']])
+
+def sample(vm=True):
+    at=datetime.datetime.now(datetime.timezone.utc).isoformat()
+    before=processes()
+    load_before=os.getloadavg()
+    raw=subprocess.check_output(['vmstat','5','7'],text=True) if vm else ''
+    numbers=[line.split() for line in raw.splitlines() if line.strip() and line.split()[0].isdigit()]
+    current=numbers[1:]
+    quiet=len(current)==6 and all(int(r[0])<=3 and int(r[14])>=80 for r in current)
+    return dict(utc=at,load_before=load_before,load_after=os.getloadavg(),before=before,after=processes(),
+                vmstat=raw,ignore_first_since_boot_row=True,quiet=quiet,
+                current=[dict(r=int(r[0]),idle=int(r[14])) for r in current])
+
+def admission(name, timing=False):
+    path=DEST/(name+'.json')
+    path.parent.mkdir(parents=True,exist_ok=True)
+    assert not path.exists(), 'do not overwrite admission'
+    rows=[];start=time.monotonic()
+    while True:
+        row=sample(vm=timing);rows.append(row)
+        waited=time.monotonic()-start
+        blocked=any(s['timing_sensitive'] for s in (row['before'],row['after'])) if timing else any(len(s['suites'])>=2 for s in (row['before'],row['after']))
+        admitted=not blocked and (not timing or row['quiet'] or waited>=3600)
+        path.write_text(json.dumps(dict(wait_seconds=waited,admitted=admitted,rows=rows),indent=2)+'\n')
+        print(f'{name}: waited={waited:.1f}s quiet={row["quiet"]} competing={blocked} admitted={admitted}',flush=True)
+        if admitted: return
+        time.sleep(30 if timing else 60)
+
+if __name__=='__main__':
+    import sys
+    admission(sys.argv[1],len(sys.argv)>2 and sys.argv[2]=='timing')

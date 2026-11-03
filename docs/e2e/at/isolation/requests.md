@@ -1,47 +1,42 @@
-# Isolation follow-up 16 requests — 2026-11-01
+# Isolation follow-up 17 requests — 2026-11-03
 
-Four rows: **two carried operator assignments**, one continuing D-140 sampling
-item, and one new shared-netlab item. Run`83b457ef-ea16-490b-9923-1fea0df86b36`;
-[full evidence](summary.md). No retry, waiver or historical reclassification.
+Three rows: two carried operator assignments and one owner capability item.
+Run `0ec14b39-467e-4a37-a239-1a33ef12eb71`; [evidence](summary.md).
 
-1. **Carried — AT11, existing platform/operator assignment.** Native dual-stack
-   and member-platform route/capture matrix remains blocked. No renewed ask.
-2. **Carried — AT13, existing acceptance/operator assignment.** Full continuous
-   crash, NetBird restart, kernel reboot, updater and physical-arm 64 matrix
-   remains blocked. Five agent stop receipts do not close it. No renewed ask.
-3. **Continuing — orchestrator / next isolation sampling decision, D-140.**
-   Correct same-run calibration chose2.2 ms. Packet162 latency3.150529 ms exceeded
-   calibration maximum 1.840658 ms; its egress overlapped packet 163 ingress by
-   **3.609 µs**. The trace is unqualified even though the unchanged evaluator
-   passes and a deciding positive exists. [All times](boundary-review.json) and
-   [F16-02](follow-up-16-findings.json) stay failed. The pre-run resolution versus
-   noninterleaving trade-off is in [RUN.md](RUN.md). Choose the next independent
-   sampling approach; a finite calibration is not an arrival-latency guarantee.
-   This task's one-run authorization provides no retry. No evaluator or product
-   change is requested. Follow-up15 and isolation F14-01 remain failed.
-4. **New — orchestrator / w1-netlab, F16-01.** Outside-owned
-   `tests/netlab/scripts/deadline.py:35` requires all adjacent precision-fixture
-   expiry differences to equal1 ms. This attempt had a2 ms sixth difference:
-   remaining 699,700,701,702,703,704,706,707 ms for requested 1001…1008 ms.
-   [Original assertion](mechanism-d104-failure.txt) precedes sockets and deadline
-   Apply; no fresh trace was emitted. Investigate the fixture and record a
-   justified disposition without weakening D-140 or claiming this packet row
-   ran. No source change or retry was made here; cause remains unproven.
+1. **Carried — AT11 platform/operator assignment.** Full native member-platform
+   route/capture matrix stays blocked. No renewed ask.
+2. **Carried — AT13 acceptance/operator assignment.** Full continuous crash,
+   NetBird restart, kernel reboot, updater and physical-arm64 matrix stays blocked.
+   Six exit-0 receipts do not close it. No renewed ask.
+3. **New — w3-wire-nodes / w2-agent-core, F17-01: pure `stale_generation`.**
+   The 16 accepted holds classify **12 check_failed / 4 isolation_unconfirmed**; pure classification
+   remains **not exercised**. A genuine representative report is
+   `01a1a011-b492-797c-964b-a626658a75aa`, applied 13 / signed lease 12. Its failed
+   QoS detail is `read_at=... source=live candidate=12 verified=true ...`, while
+   central's `generationHoldSafetyFailure` exempts only the exact dependent text
+   `Rate policy could not be applied.`. Agent `attachServingRead` replaces that
+   detail. [Raw checks/errors](follow-up-17-findings.json),
+   [own-lease/report/incident joins](generation-holds-review.json), and
+   [three original seam attempts](populated-holds.md) retain the evidence.
+   The four post-restart samples retain `safety_status=expired`, so their dependent
+   QoS text alone cannot establish pure classification either. That safety
+   precedence is retained. The devstack 27 seam forwards observations unchanged and cannot manufacture
+   the pure row. Needed: an owner-reviewed diagnostic/classification contract or
+   a genuine supported path that produces it without changing signed documents,
+   editing reports, or weakening independent-failure precedence. Relevant
+   outside-owned files are `node/agent/serving_evidence.go` and
+   `internal/nodes/generation_hold.go`; neither was edited. Stop only this item.
 
-The populated-hold dependency is consumed: seven requested categories pass
-across two devstack 27 seam incidents. Pure stale_generation classification,
-central 30-second fallback and the original opportunistic-cut hold remain
-**not exercised**, not newly requested. All per-row joins are in
-[populated-holds.md](populated-holds.md). No seam change is requested.
+D-140 is qualified and its unchanged evaluator passes under prospective D-142.
+The shared D-104 mechanism passes on netlab 26's fixture; no new fixture request.
+Central's 30-second fallback passes from its original Step-1/no-alarm audit.
+Historical isolation 15, isolation 16 and F14-01 remain failed as judged.
 
-The generation 15 install timeout remains a diagnostic failure: the guard did
-not release and rollback/safety baselines and later recovery are retained.
-Its delay's cause is unproven. Follow-up15's terminal-source signal 15 remains
-observed, with its existing agent-core 36 investigation; no renewed assignment.
-Current five parent receipts all record exit 0 and are not used to reinterpret it.
+The nightly short-expiry block is **not established as expected on GitHub's
+runner**. Status-only historical logs and zero artifacts cannot establish its
+precise cause. The owned fix records actual reasons and uploads fresh records
+on the next naturally scheduled run; no workflow was triggered. This is a known
+diagnostic limit, not an allowlist exception or a request to infer a row.
 
-No outside-owned path was edited. Handover claims already use immutable pins;
-the D-132 one-file exception was unnecessary. Follow-up15 is byte-identically
-archived; every earlier archive is unchanged. Historical requests:
-[follow-up 15](history/follow-up-15/requests.md),
-[follow-up 14](history/follow-up-14/requests.md).
+All owned Docker inventories are zero. No install exceeded the 100 ms bound in
+this run. No outside-owned edit or handover pin change was needed.
