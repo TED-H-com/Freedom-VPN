@@ -319,3 +319,24 @@ follow-up 20's corrected test stays **failed**, as recorded.
 - `bubble_elapsed_ns` and `original_remaining_ns`, distinct values;
 - the qualification record, the preflights with their waits, and the
   foreign-CPU maximum.
+
+## 5. Results
+
+### Reservation 1 (11:15:57Z–11:20:19Z, 261 s held)
+
+- **Admission:** reserved with `reserved for w2-updater until 06:45:57`
+  (local), and released with `released w2-updater` right after leg 2 was
+  stopped.
+- **Wait for the window:** from 11:13:57Z. Admission printed `reserved for
+  w1-netlab` until 11:15:57Z, which was the first check showing `free` with
+  no `go test` on the host.
+
+| Leg | Preflights (wait) | Iterations / failures | In-leg record | Qualification |
+|---|---|---|---|---|
+| quiet | 2 (90.3 s). The first failed on foreign CPU: a 30 s average of 0.678 cores, with 5 s parts 1.51, 1.39, 0.70, 0.21, 0.11, 0.12; no foreign suite. The second passed at 0.157 | **200 / 0** (64.8 s) | 12 samples, max gap 5.06 s, all `free`, no foreign suite. Foreign CPU in 13 intervals: max **0.345**, median 0.143. vmstat (recorded only): r ≤ 1, id ≥ 94 | **qualified** |
+| bounded load | 1 (30.1 s, 0.146) | 33 completed / **0** failures, then stopped | 3 samples, all `free`, no foreign suite. At t = 15.1 s, a 5 s interval had foreign CPU **1.66** cores, almost all from a foreign `git` process (1.40 cores) | **unqualified, stopped** (`stopped_foreign_cpu`). Both processes were terminated at 15.2 s. Not retried in this reservation |
+
+- **Nothing of ours made that CPU.** The runner, its tests and its load
+  started no `git`; I committed before reserving, not during the window.
+- **In-leg "non-suite" matches** were my own wait loop's shell (the
+  runner's parent, idle). It is not a suite and used no CPU.
