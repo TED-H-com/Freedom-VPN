@@ -175,3 +175,8 @@ heartbeat or cleanup APIs and are not executable unchanged on main.
 The later main `090bb97b` handover update was also merged before the final
 lab freeze. Its handover/evidence changes are covered by the final module
 and evidence gates; it changes no node runtime path.
+
+The supplemental healing-before receipt was captured after the initial 40
+hand-off changes, before refinement `da63e733`; it is not presented as a
+separate unchanged-39/main reproduction or a proven introduction date. Its
+judgment and failing proof were committed first in `35368299`.

@@ -9,9 +9,10 @@ Source preparation required in the scheduled follow-up:
 
 1. Freeze A as the then-current main and merge that exact main into the
    existing w2-agent-core branch, keeping 37–40 and all prior merges intact.
-   Freeze B as the final delivered 40 tree including that merge. Today the
-   merged main is `61c7bf59`; the runtime fix commits are `ef0f2951` and
-   `05c39d5e`. Use the final delivery SHA from the 40 hand-off, not 39's
+   Freeze B as the final delivered 40 tree including that merge. The functional
+   source is `5d964d2a`, including main `090bb97b`; runtime fixes are
+   `ef0f2951`, `05c39d5e` and `da63e733`. Use the final delivery SHA from the
+   40 hand-off, not 39's
    `edc2f387`, and resolve both arm identifiers to full immutable SHAs.
 2. Regenerate both archives, per-blob verification counts and SHA-256 values.
    Recheck main at admission. Commit the completed declaration and runner
@@ -55,8 +56,7 @@ adds a restart-only continuity query and error-path retries; measure rather
 than infer quantitative equivalence. No arm, sample or comparison was run
 under this draft.
 
-Readiness update: follow-up 40 additionally contains runtime refinement
-`da63e733` and main through `090bb97b`. The final delivery SHA and frozen
-functional source are recorded in follow-up 40's outcome/report. Substitute
-that delivered tree (with the scheduled main merged) for B; the earlier pins
-in this draft describe preparation history, not authorization to run them.
+The final delivery SHA is recorded in follow-up 40's hand-off report; the
+outcome records the frozen functional source. Substitute that delivered tree
+(with the scheduled main merged) for B. These pins prepare a later declaration;
+they do not authorize a measured run in follow-up 40.
