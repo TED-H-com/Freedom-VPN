@@ -1,43 +1,47 @@
-# Isolation follow-up 15 requests — 2026-11-01
+# Isolation follow-up 16 requests — 2026-11-01
 
-Three rows: **two carried operator assignments**, without renewed asks, and
-**one new D-140 qualification follow-up**. Run
-`0b9e4510-776f-4c51-9e66-500404ce9f7e`; [full evidence](summary.md).
+Four rows: **two carried operator assignments**, one continuing D-140 sampling
+item, and one new shared-netlab item. Run`83b457ef-ea16-490b-9923-1fea0df86b36`;
+[full evidence](summary.md). No retry, waiver or historical reclassification.
 
 1. **Carried — AT11, existing platform/operator assignment.** Native dual-stack
-   and member-platform route/capture matrix remains blocked. No new request.
+   and member-platform route/capture matrix remains blocked. No renewed ask.
 2. **Carried — AT13, existing acceptance/operator assignment.** Full continuous
-   crash, NetBird restart, kernel reboot, updater and physical-arm64 matrix
-   remains blocked. Four parent wait receipts do not close it. No new request.
-3. **New — orchestrator / isolation next follow-up, D-140 qualification.**
-   The unchanged evaluator passes this trace, but the requested schedule
-   noninterleaving condition fails: packet172 ingress precedes packet171 egress
-   by **3.821 µs**, both before the first drop. The 0.6 ms measured spacing
-   exceeded node transit but omitted the measured **3.675698 ms** latency spread.
-   [All times and the failed qualification](boundary-review.json) are retained.
-   Final source includes the spread in its formula and would choose **4.3 ms**
-   from this calibration; that correction is **not assembled-qualified**.
-   Schedule the next independent sample under D-140; this task's one-run limit
-   precludes a retry. No product change, evaluator change or waiver is requested.
-   Historical **isolation F14-01** remains failed, distinct from **members F14-01**.
-   The four historical outside-guard renewal losses (15–18, 30→31) stay counted.
+   crash, NetBird restart, kernel reboot, updater and physical-arm 64 matrix
+   remains blocked. Five agent stop receipts do not close it. No renewed ask.
+3. **Continuing — orchestrator / next isolation sampling decision, D-140.**
+   Correct same-run calibration chose2.2 ms. Packet162 latency3.150529 ms exceeded
+   calibration maximum 1.840658 ms; its egress overlapped packet 163 ingress by
+   **3.609 µs**. The trace is unqualified even though the unchanged evaluator
+   passes and a deciding positive exists. [All times](boundary-review.json) and
+   [F16-02](follow-up-16-findings.json) stay failed. The pre-run resolution versus
+   noninterleaving trade-off is in [RUN.md](RUN.md). Choose the next independent
+   sampling approach; a finite calibration is not an arrival-latency guarantee.
+   This task's one-run authorization provides no retry. No evaluator or product
+   change is requested. Follow-up15 and isolation F14-01 remain failed.
+4. **New — orchestrator / w1-netlab, F16-01.** Outside-owned
+   `tests/netlab/scripts/deadline.py:35` requires all adjacent precision-fixture
+   expiry differences to equal1 ms. This attempt had a2 ms sixth difference:
+   remaining 699,700,701,702,703,704,706,707 ms for requested 1001…1008 ms.
+   [Original assertion](mechanism-d104-failure.txt) precedes sockets and deadline
+   Apply; no fresh trace was emitted. Investigate the fixture and record a
+   justified disposition without weakening D-140 or claiming this packet row
+   ran. No source change or retry was made here; cause remains unproven.
 
-**Populated hold: not exercised — devstack 27's fixture pending.** This is the
-already assigned next-follow-up dependency, not a renewed request here. No hold
-report occurred in this run; no alarm/escalation/active-stop evidence is inferred.
+The populated-hold dependency is consumed: seven requested categories pass
+across two devstack 27 seam incidents. Pure stale_generation classification,
+central 30-second fallback and the original opportunistic-cut hold remain
+**not exercised**, not newly requested. All per-row joins are in
+[populated-holds.md](populated-holds.md). No seam change is requested.
 
-Devstack26's D-102 stop hand-off is consumed: 15-second direct-agent budget,
-25-second whole-container and clone grace, pre-stop process identity, matching
-parent receipts copied with `docker cp`, and separate PID1 outcomes. The terminal
-source's actual signal15 is retained; fast exit is not assumed cooperative.
-`.sigkill.json` would be attempted escalation only. Historical forced exits stay
-unchanged. Step cancellation timestamps remain unavailable.
+The generation 15 install timeout remains a diagnostic failure: the guard did
+not release and rollback/safety baselines and later recovery are retained.
+Its delay's cause is unproven. Follow-up15's terminal-source signal 15 remains
+observed, with its existing agent-core 36 investigation; no renewed assignment.
+Current five parent receipts all record exit 0 and are not used to reinterpret it.
 
-No change outside owned paths was needed. The handover claims test already reads
-immutable archives, so the D-132 one-file exception was not used. Large-JSON links
-were re-pointed only in owned living Markdown. Earlier archives remain unchanged.
-
-Historical requests and outcomes: [follow-up14](history/follow-up-14/requests.md),
-[follow-up13](history/follow-up-13/requests.md). F13-01 retains netlab23's typed
-`duplicate_chain` decision and unproven origin; no read failure becomes proof of
-frozen/removed counters or closed forwarding.
+No outside-owned path was edited. Handover claims already use immutable pins;
+the D-132 one-file exception was unnecessary. Follow-up15 is byte-identically
+archived; every earlier archive is unchanged. Historical requests:
+[follow-up 15](history/follow-up-15/requests.md),
+[follow-up 14](history/follow-up-14/requests.md).
