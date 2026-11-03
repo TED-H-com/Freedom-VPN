@@ -332,7 +332,7 @@ func TestR23_H3_M1_FailedHandoffReportsRecoversAndRestarts(t *testing.T) {
 					stepOK(t, r)
 				}
 				if !r.eng.retainedPending {
-					t.Fatal("failed handoff lost pending interval")
+					t.Fatalf("failed handoff lost pending interval: serving=%v kernel_generation=%d usagePersist=%v", r.eng.serving, r.plane.last.Generation, r.eng.usagePersist)
 				}
 				f40AssertBlockedReport(t, r)
 				if fault != "H3b_baseline" && r.plane.last.Generation != 0 {

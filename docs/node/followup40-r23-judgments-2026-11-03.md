@@ -142,3 +142,26 @@ receipt. It produces Reason="-" and no observation reasons. Preserve the usage
 failure that caused this pass's withdrawal until the next Step's health refresh;
 do not report that forwarding resumed merely because final persistence healed.
 This is the same reporting invariant, not an additional admission authority.
+
+### Supplemental frozen-product controls
+
+An archive of the merged pre-fix product `dcdc3d96` ran the supplemental
+fixtures without product edits. H-1c loses the new device's 2048 bytes into a
+gap. H-1b with a real idle zero counter **passes on 39**, while the absent-counter
+fixture fails. Thus no H-1b availability loss is demonstrated for a healthy
+verified production renderer; that exact finding is a retained guard, not a
+claimed production outage. The epoch-continuity limitation itself remains
+confirmed by H-1a and the repair-switch trace.
+
+The checkpoint-invalidation race (H-3b′) fails before edits with serving=true,
+kernel generation 2 and usagePersist=true, with no retainedPending latch.
+It is a reachable fail-open return, now covered by both restart variants.
+Receipts: `.agent/f40/before-supplemental-2.log` and `before-h3-prime.log`.
+The read-error variant already reports a meter-path failure in 39; the omitted
+usage flag specifically matters for held and persistence-failed samples.
+
+Main's subsequent `dff6bdb0` change contains design documents only. It was merged
+before freezing the functional lab source; all earlier merges remain intact.
+Node lint/unit/integration and amd64/arm64 builds pass with unchanged runtime
+sources across that documentation-only merge. Whole-module and downstream
+checks also run on the merged tree. No r20–r22 assertion was changed in 40.
