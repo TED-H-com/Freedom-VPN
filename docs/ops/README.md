@@ -1,7 +1,45 @@
 # Operations Runbooks Index (`docs/ops/`)
 
-**Current cut — [follow-up 31](../handover/follow-up-31.md) (2026-11-03 EST):** Through #407: isolation 17 records the first qualified D-140 pass; netlab 27 closes r20 H-2 and live drift. D-144 lists are on main; F30-01 remains routed. r21 returned to agent-core 38 before merge. Historical failures stay failed; nine owner decisions.
-**Previous cut — [follow-up 30](../handover/follow-up-30.md):** #397–#403 at b9439411; 23 subtests, seven rows, nine snapshots, 449 checks, six dated documents and 61 findings. See follow-up 31 for timing errata.
+**Current cut — [follow-up 33](../handover/follow-up-33.md) (2026-11-03 EST):** Through #415: F27-02's declared fixture reading failed (F21-01); original reading supported, not closed. F28-01 closed as test isolation; B1 stays FAIL. r22 returned to agent-core 39, none confirmed. F30-01 and r20 H-1 remain open. Nine owner requests.
+**Previous cut — [follow-up 32](../handover/follow-up-32.md):** #408–#412 at b7449ec1; 20 subtests, five rows, nine frozen inputs, 301 payload checks, seven documents, 19 symlinks, 14 navigation sources and 75 findings.
+
+## Follow-up 33 acceptance snapshot (2026-11-03 EST)
+
+Cut **#413–#415**, main **339db172**; no unbriefed PR inside the range or later
+merge at task start. [Evidence and nine owner requests](../handover/follow-up-33.md).
+
+| Lane / PR | Result and boundary |
+|---|---|
+| Updater 21 (#413) | Declared fixture-defect reading failed: corrected replaced setup took about 533 ms against 250 ms, Recover 15.1 ms; F21-01, no renewal. Quiet legs never qualified; both load legs 50 / 0 qualified. Original F27-02 reading supported, not closed; updater 22 owns the fixture and re-measurement. |
+| Handover 32 (#414) | #408–#412 at b7449ec1; 20 subtests / five rows / nine frozen inputs / 301 checks (81 members, 220 netlab) / seven documents / 19 symlinks / 14 navigation sources / 75 findings / nine requests. One codex gpt-6-astra session, 05:22 EST launch; repeat gate waited seven minutes behind netlab 29. |
+| Netlab 29 (#415) | F28-01 closed as test isolation: 57-byte retransmitted request + 40-byte RST from AT10's old admitted socket. AT12 closes old sockets; assertion unchanged, two full-suite passes with zero deny bytes. Follow-up 28 gate 2 stays FAIL. Single guard startup attempt failed, not retried; F27-01 unresolved, B1 FAIL, netlab 30 owns the next window. |
+
+r22 is archived and returned to agent-core 39 before merge; none of its five
+findings is confirmed. Agent-core 37/38 remain held with 39; r20's five
+agent-core findings and r21's five remain open on main. The review's stop-budget
+erratum is additive in the [reviews index](../reviews/README.md#r22-dispositions-at-the-follow-up-33-cutoff-2026-11-03-est).
+[81-row findings register](../handover/README.md#findings-register-at-the-follow-up-33-cutoff).
+F30-01 stays known behaviour with no merged fix; r20 H-1's restart gap stays open.
+Main records no scheduled-run result. The nightly reading guide remains
+applicable; every historical failure stays failed.
+
+## Follow-up 32 acceptance snapshot (2026-11-03 EST)
+
+Cut **#408–#412**, main **b7449ec1**; no unbriefed PR inside the range or later
+merge at task start. [Evidence and nine owner requests](../handover/follow-up-32.md).
+
+| Lane / PR | Result and boundary |
+|---|---|
+| Updater 20 (#408) | F27-02 fixture defect: unchanged one-second bound now measures the persisted wait deterministically. Four 200-iteration runs unqualified, load never started; qualified comparison stays open. Historical failure stays failed. F30-01 signal proposed only. |
+| Handover 31 (#409) | #404–#407 at 3573f396; 21 subtests / four rows / nine handover snapshots / nine nightly inputs / 596 checks / three dated documents / 72 findings / nine owner requests. One codex gpt-6-astra session, 03:07 EST launch, gates after 39-minute admission wait. |
+| Members 17 (#410) | 81-file archive plus 18 relative symlinks. 81b638e8 on #406, no retry: 2 pass / 6 blocked / 2 fail, 691/7/5. First live D-102 survivor continuation; 401 did not recur, old cause unknown. AT02 measurement_valid=false, three failed Applies, 1,253 losses counted; AT09 D-067 and combined restart fail, 6.01 s / 12.70 s at generation 63. Separate source-address row not exercised. |
+| Netlab 28 (#411) | 100 reloads / 101 Applies / 118 reads, zero TCP failures; 11 retransmissions / seven reads and RTO backoff are a candidate mechanism only. B1 stays FAIL, F27-01 unresolved. AT12 deny-phase +97 bytes fails full-lab gate without retry; F28-01 → netlab 29. Publication mapping retained in the cut. |
+| Devstack 31 (#412) | Source-binding hook stopped on feasibility, zero stack attempts; F31-01 → agent-core, design first. One checklist symlink repairs 14 archived OPERATORS references without changing pinned bytes. |
+
+[75-row findings register](../handover/README.md#findings-register-at-the-follow-up-32-cutoff).
+F28-01 and F31-01 are routed, not yet judged. F30-01 remains known behaviour,
+with no merged fix. Main records no scheduled-run result. The nightly reading
+guide below remains applicable; all historical failures stay failed.
 
 ## Follow-up 31 acceptance snapshot (2026-11-03 EST)
 

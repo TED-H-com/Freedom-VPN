@@ -73,6 +73,7 @@ func applyCmd(args []string) error {
 	tracePath := fs.String("trace", "", "TEST ONLY: append Apply/guard command brackets as JSONL")
 	failRead := fs.Bool("fail-verification-read", false, "TEST ONLY: fail one post-release verifier read; requires -trace")
 	observeTCP := fs.Bool("tcp-observe", false, "TEST ONLY: read probe conntrack and socket state outside Apply; requires -trace")
+	guardLog := fs.Bool("guard-log", false, "TEST ONLY: NFLOG each guard drop to lab group 29; requires -trace")
 	deadlineWindow := fs.Duration("deadline-window", 0, "TEST ONLY: map member deadline onto CLOCK_MONOTONIC immediately before Apply")
 	if err := fs.Parse(args); err != nil {
 		return err
@@ -82,6 +83,9 @@ func applyCmd(args []string) error {
 	}
 	if *observeTCP && *tracePath == "" {
 		return errors.New("TEST ONLY TCP observation requires -trace")
+	}
+	if *guardLog && *tracePath == "" {
+		return errors.New("TEST ONLY guard logging requires -trace")
 	}
 	m, err := loadModel(*path)
 	if err != nil {
@@ -109,7 +113,7 @@ func applyCmd(args []string) error {
 			return openErr
 		}
 		defer f.Close()
-		res, err = tracedApplyExecutor(context.Background(), &traceExecutor{FailVerificationRead: *failRead, ObserveTCP: *observeTCP}, m, prev, f)
+		res, err = tracedApplyExecutor(context.Background(), &traceExecutor{FailVerificationRead: *failRead, ObserveTCP: *observeTCP, GuardLog: *guardLog}, m, prev, f)
 	} else {
 		res, err = enforce.Apply(context.Background(), enforce.System{}, m, prev)
 	}

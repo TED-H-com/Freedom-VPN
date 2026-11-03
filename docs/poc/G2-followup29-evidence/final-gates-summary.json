@@ -1,0 +1,87 @@
+{
+  "test_only": true,
+  "all_mandatory_final_gates_pass": true,
+  "gates": [
+    {
+      "gate": "final-gate1",
+      "exit_code": 0,
+      "elapsed_seconds": 6.958544809000159,
+      "receipt": "final-gate1.json",
+      "output": "final-gate1.txt"
+    },
+    {
+      "gate": "final-gate2",
+      "exit_code": 0,
+      "elapsed_seconds": 512.4208763120005,
+      "receipt": "final-gate2.json",
+      "output": "final-gate2.txt"
+    },
+    {
+      "gate": "final-gate3-agent",
+      "exit_code": 0,
+      "elapsed_seconds": 118.03742031899674,
+      "receipt": "final-gate3-agent.json",
+      "output": "final-gate3-agent.txt"
+    },
+    {
+      "gate": "final-gate3-reviews",
+      "exit_code": 0,
+      "elapsed_seconds": 21.2571277010029,
+      "receipt": "final-gate3-reviews.json",
+      "output": "final-gate3-reviews.txt"
+    },
+    {
+      "gate": "final-gate3-consumers",
+      "exit_code": 0,
+      "elapsed_seconds": 4.167912715001876,
+      "receipt": "final-gate3-consumers.json",
+      "output": "final-gate3-consumers.txt"
+    },
+    {
+      "gate": "final-gate4",
+      "exit_code": 0,
+      "elapsed_seconds": 2.7338804569990316,
+      "receipt": "final-gate4.json",
+      "output": "final-gate4.txt"
+    },
+    {
+      "gate": "final-gate5",
+      "exit_code": 0,
+      "elapsed_seconds": 3.34530579100101,
+      "receipt": "final-gate5.json",
+      "output": "final-gate5.txt"
+    },
+    {
+      "gate": "final-gate6",
+      "exit_code": 0,
+      "elapsed_seconds": 1.6185492299991893,
+      "receipt": "final-gate6.json",
+      "output": "final-gate6.txt"
+    },
+    {
+      "gate": "final-gate7",
+      "exit_code": 0,
+      "elapsed_seconds": 0.3644396890013013,
+      "receipt": "final-gate7.json",
+      "output": "final-gate7.txt"
+    },
+    {
+      "gate": "final-gate8",
+      "exit_code": 0,
+      "elapsed_seconds": 0.14254387500113808,
+      "receipt": "final-gate8.json",
+      "output": "final-gate8.txt"
+    },
+    {
+      "gate": "final-gate9",
+      "exit_code": 0,
+      "elapsed_seconds": 0.034831865999876754,
+      "receipt": "final-gate9.json",
+      "output": "final-gate9.txt"
+    }
+  ],
+  "separate_failed_measurements": [
+    "full1",
+    "guard-window"
+  ]
+}

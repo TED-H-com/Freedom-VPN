@@ -1,7 +1,20 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 31](follow-up-31.md) (2026-11-03 EST):** Through #407: isolation 17 records the first qualified D-140 pass; netlab 27 closes r20 H-2 and live drift. D-144 lists are on main; F30-01 remains routed. r21 returned to agent-core 38 before merge. Historical failures stay failed; nine owner decisions.
-**Previous cut — [follow-up 30](follow-up-30.md):** #397–#403 at b9439411; 23 subtests, seven rows, nine snapshots, 449 checks, six dated documents and 61 findings. See follow-up 31 for timing errata.
+**Current cut — [follow-up 33](follow-up-33.md) (2026-11-03 EST):** Through #415: F27-02's declared fixture reading failed (F21-01); original reading supported, not closed. F28-01 closed as test isolation; B1 stays FAIL. r22 returned to agent-core 39, none confirmed. F30-01 and r20 H-1 remain open. Nine owner requests.
+**Previous cut — [follow-up 32](follow-up-32.md):** #408–#412 at b7449ec1; 20 subtests, five rows, nine frozen inputs, 301 payload checks, seven documents, 19 symlinks, 14 navigation sources and 75 findings.
+
+## Restart measurements at #412
+
+Members 17 (#410), run 81b638e8 on #406, records **6.01 s serving readiness**
+and **12.70 s counted recovery**, both at **generation 63**. The D-067
+provisional predicate and the combined same-generation restart **FAIL**;
+these are observed times, not a promised bound. The **36.976 s / 41.695 s**
+figures retained below are historical members 6 (#231) measurements, not the
+current result. AT09's earlier 401 did not recur after fresh OIDC sign-in;
+follow-up 16's cause stays unknown. The receive-only dual-MTU row is blocked.
+See [the final #410 roadmap row](../ROADMAP.md) and [follow-up 32](follow-up-32.md).
+F30-01 remains the separate known update behaviour described in §4.3, with
+no merged fix or verified production restart procedure.
 
 ## Operator changes at #369
 
@@ -359,6 +372,14 @@ recorded as an unattributed `mapping conflict` usage gap instead of member
 usage. See the [archived r20 review](../reviews/r20-adoption-signal-review.md).
 Agent-core 37's fixes were held after r21 and go with reviewed agent-core 38;
 the finding remains open on main. No fix date is promised.
+
+**2026-11-03 — Restart warning at #415.** r20 H-1's mapping-conflict usage
+gap stays open on main while agent-core 37–39 are held. Review r22 returned
+38's delivered tip (carrying 37) to 39 before merge; 39 judges the findings
+under D-141 and must be reviewed before the combined merge. None is confirmed.
+F30-01 remains the known behaviour in §4.3, with no merged fix or verified
+production restart procedure. See [follow-up 33](follow-up-33.md) and the
+[r22 disposition](../reviews/README.md#r22-dispositions-at-the-follow-up-33-cutoff-2026-11-03-est).
 
 First fetch the node (`GET /api/v1/admin/nodes/{node_id}`) and capture the response `ETag` header (`"<resource_version>"`). Supply `If-Match` and `Idempotency-Key` (`428 Precondition Required` if `If-Match` is missing; `412 Precondition Failed` if stale):
 

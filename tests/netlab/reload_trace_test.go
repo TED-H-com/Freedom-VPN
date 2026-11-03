@@ -18,6 +18,9 @@ func startReloadTrace(t *testing.T) {
 	if os.Getenv("FVPN_NETLAB_TCP_OBSERVE") == "1" {
 		mustExec(t, "python3", "/opt/netlab/scripts/tcp_observe.py", "start", "/scratch/at10-tcp")
 	}
+	if os.Getenv("FVPN_NETLAB_GUARD_LOG") == "1" {
+		mustExec(t, "python3", "/opt/netlab/scripts/guard_observe.py", "start", "/scratch/at10-guard")
+	}
 	t.Cleanup(func() {
 		// Also retain an aborted Apply, not only successful measurement runs.
 		if !scratchExists("/scratch/at10-trace.done") {
@@ -36,6 +39,17 @@ func finishReloadTrace(t *testing.T) {
 		}
 	}
 	mustExec(t, "python3", "/opt/netlab/scripts/trace_capture.py", "stop", "/scratch/at10")
+	if os.Getenv("FVPN_NETLAB_GUARD_LOG") == "1" {
+		out, stderr, err := dockerExec("python3", "/opt/netlab/scripts/guard_observe.py", "stop", "/scratch/at10-guard")
+		if err != nil {
+			t.Errorf("guard observation incomplete: %v %s%s", err, out, stderr)
+		}
+		for _, suffix := range []string{".jsonl", ".meta.json", ".err"} {
+			if scratchExists("/scratch/at10-guard" + suffix) {
+				save(t, "at10-guard"+suffix, readScratch(t, "/scratch/at10-guard"+suffix))
+			}
+		}
+	}
 	if os.Getenv("FVPN_NETLAB_TCP_OBSERVE") == "1" {
 		out, errOut, err := dockerExec("python3", "/opt/netlab/scripts/tcp_observe.py", "stop", "/scratch/at10-tcp")
 		if err != nil {

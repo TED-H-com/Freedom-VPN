@@ -1,0 +1,22 @@
+probe dns accept
+name                             ns       proto  dst                    port   expect   observed       ok
+dns-udp                          fv-probe dns    198.51.100.53          53     allow    reply          true
+dns-tcp                          fv-probe tcp    198.51.100.53          53     allow    connected      true
+resolver-tcp-80                  fv-probe tcp    198.51.100.53          80     deny     timeout        true
+resolver-udp-853                 fv-probe udp    198.51.100.53          853    deny     timeout        true
+lan-tcp-53                       fv-probe tcp    10.1.2.10              53     deny     timeout        true
+lan-tcp-9                        fv-probe tcp    10.1.2.10              9      deny     timeout        true
+lan-udp-53                       fv-probe dns    10.1.2.10              53     deny     timeout        true
+sixto4-tcp-53                    fv-probe tcp    192.88.99.1            53     deny     timeout        true
+sixto4-udp-80                    fv-probe udp    192.88.99.1            80     deny     timeout        true
+sibling-dns                      fv-probe dns    198.51.100.53          53     deny     timeout        true
+probes=10 failed=0
+probe dns while live
+name                             ns       proto  dst                    port   expect   observed       ok
+dns-while-live                   fv-probe dns    198.51.100.53          53     allow    reply          true
+probes=1 failed=0
+probe dns after expiry
+name                             ns       proto  dst                    port   expect   observed       ok
+dns-after-expiry                 fv-probe dns    198.51.100.53          53     deny     timeout        true
+dns-tcp-after-expiry             fv-probe tcp    198.51.100.53          53     deny     timeout        true
+probes=2 failed=0

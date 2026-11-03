@@ -257,3 +257,74 @@ Go proof names are checked as declarations on main; r21's unmerged proof
 names are checked only inside its raw archived review. Follow-up 31 has
 21 claims subtests, 72 findings and the same nine owner requests. Owned
 current-document digests remain a separate live-integrity check.
+
+## Follow-up 32 — cut #408–#412
+
+`followup32-main.json` pins the five final roadmap rows at
+`b7449ec1931a5cc954862908690969cb8bb2305d`: updater 20, handover 31, members 17,
+netlab 28 and devstack 31. There was no unbriefed in-range PR or later merge at
+start. Agent-core 38 (carrying 37), updater 21 and netlab 29 are outside the cut.
+
+`followup32-snapshots.json` pins nine byte-exact source slices: follow-up 31's
+register, seven entrypoints (ops includes its acceptance and nightly reading
+sections), and the operator guide. Source commit, whole-source SHA-256, offset,
+length and snapshot digest are retained. The old claims test only redirects
+these inputs; its normalized function hash is unchanged.
+
+`followup32-evidence.json` checks 81 members archive payloads and 220 netlab 28
+payloads (301 total, including netlab gzip originals), seven dated/additive
+documents (updater hand-off and timing JSON, members publication mapping, four
+devstack run documents), 18 members relative archive symlinks and the devstack
+checklist symlink, plus all 14 archived OPERATORS source files. Every symlink
+must resolve within the repository and match its target-byte digest. The
+81 archived payloads were independently compared byte-for-byte with the old
+root files on #409; those living roots are never claims-test inputs.
+
+The netlab manifest's main digest is
+`dda5a42a27bd1e215aeb7384d71cdb5ef69286b9bfa873172d318138749f8e5d`.
+The roadmap's additive publication mapping is authoritative for the two
+retained old harness IDs; no old evidence is rewritten.
+
+`history/follow-up-32/pr409-session.txt` is the exact public summary excerpt
+from squash commit `17801d4d` (`git show -s --format=%B`), starting at
+"Handover follow-up 31: session launched" and ending before "The orchestrator's
+reading." Its SHA-256 is pinned separately. It establishes the one-session
+03:07 EST launch and 39-minute admission wait without copying private receipts.
+
+Members 81b638e8, isolation 0ec14b39 and usage b8a6e9e1 remain living. Only
+final roadmap rows / PR numbers support their current acceptance claims.
+
+## Follow-up 33 — cut #413–#415
+
+`followup33-main.json` pins three final roadmap rows at
+`339db17215db583330a2395f0484f2bdad9681e7`: updater 21, handover 32 and netlab 29.
+No unbriefed PR or post-cutoff merge was present at task start. Agent-core 39
+(carrying 37 and 38), updater 22 and netlab 30 are outside the cut. Three exact
+public PR excerpts are retained from their squash commits on main: #413's
+answered requests, #414's session and seven-minute wait, and #415's routing.
+
+`followup33-snapshots.json` pins ten byte-exact #415 source slices: the previous
+register, seven entrypoints, full operator guide and full reviews index. Each
+has source commit, source hash, byte offset, length and retained hash. Earlier
+claims only redirect their inputs; the source-reader normalization reverses
+those redirects for historical function hashes. Follow-up 32's normalized
+SHA-256 is `ad4e9f28727b56e2373f0a64eabc22f559811c80a187c2cc84683f75432ef4ee`.
+Its actual counts remain 20 subtests, five final rows, nine frozen inputs,
+301 payload checks (81 members, 220 netlab), seven documents, 19 relative
+symlinks, 14 archived navigation sources, 75 findings and nine requests.
+
+`followup33-evidence.json` pins both dated updater 21 documents and r22's raw
+37,600-byte review, SHA-256
+`05e7806a1f5dfec8388e4fe2cbe0e5e1ed11ec1d4c291f3bb5236d7c0fe43c02`.
+Netlab 29's manifest is
+`d9f9e7d539a884c113a461646448539343c1da803cf9dc378c4e0ab59dbddefa`:
+512 payload hashes and lengths, including 42 gzip originals. The updater
+JSON independently pins all seven legs and both exact deterministic-budget
+checks. Review proof names are checked only in the archive, never as adopted
+main tests. The stop-budget erratum is in the reviews index, not the archive.
+
+The cut has 16 claims subtests, 81 findings and the same nine owner requests.
+Only F27-02, F28-01 and F27-01/B1 prior rows change; all others and all 47
+decision rows remain byte-identical. Living members 81b638e8, isolation
+0ec14b39 and usage b8a6e9e1 roots remain excluded. Live owned-document integrity
+uses a separate scope-review inventory.
