@@ -1,7 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 36](follow-up-36.md) (2026-11-03 EST):** Through #423: r24 enforcement fixes merged; C1 revised as documents only, owner G5/G6 trade undecided, production keeps the current guard. r24 H-1/H-3 returned to agent-core 41; jitter open. F30-01 and r20 H-1 open. Ten owner requests.
-**Previous cut — [follow-up 35](follow-up-35.md):** #419–#421 at dff6bdb0; 16 subtests, three rows, ten frozen inputs, three documents, six design files, three PR excerpts and separate source audit; 87 findings, 47 decisions, ten requests.
+**Current cut — [follow-up 37](follow-up-37.md) (2026-11-03 EST):** #424–#426: isolation readiness fixed locally; first scheduled exercise pending. Netlab 33 corrects L-1 and B1 citations additively. C1 remains documents only; no hitless hand-over. r24 H-1/H-3, F30-01 and r20 H-1 stay open on main. Ten owner requests.
+**Previous cut — [follow-up 36](follow-up-36.md):** #422–#423 at d7867928; 16 subtests, two final rows, ten frozen inputs, exact r24, 174 netlab files (12 gzip originals), two PR excerpts and separate source audit; 96 findings, 47 decisions, ten requests.
 
 ## Restart measurements at #412
 
@@ -372,6 +372,16 @@ recorded as an unattributed `mapping conflict` usage gap instead of member
 usage. See the [archived r20 review](../reviews/r20-adoption-signal-review.md).
 Agent-core 37's fixes were held after r21 and go with reviewed agent-core 38;
 the finding remains open on main. No fix date is promised.
+
+**2026-11-03 — Follow-up 37 at #426.** The at-isolation nightly harness
+readiness fix is merged in #424. Local run 9f1bc0ff passes both previously
+unlisted rows; the first scheduled run exercising the fix is still pending.
+AT11's native platform matrix and AT13's full fault matrix remain operator
+rows. The previous night's 41456092596 AT10 pass used inherited readiness
+and is not qualified. Netlab 33's additive citation corrections change no
+reload behavior. The follow-up 36 guidance below remains current at this cut;
+r24 H-1 and r20 H-1 remain open on main while agent-core 37–41 are held.
+See [follow-up 37](follow-up-37.md).
 
 **2026-11-03 — Reload and restart limits at #423.** During a ruleset reload,
 in-flight member TCP segments can be dropped while a generation installs.

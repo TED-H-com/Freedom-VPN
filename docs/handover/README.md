@@ -107,17 +107,19 @@ is frozen at #418, with its 81 findings and nine owner requests.
 
 <a id="follow-up-34-decisions-register-2026-11-03-est"></a>
 
-## Follow-up 36 decisions register (2026-11-03 EST)
+<a id="follow-up-36-decisions-register-2026-11-03-est"></a>
 
-Verified against main **d7867928d48a7f75259f84abf1b29a9e37675fcb**, through
-**#423**, covering **#422–#423**. [Evidence cut](follow-up-36.md) and
-[acceptance snapshot](../ops/README.md#follow-up-36-acceptance-snapshot-2026-11-03-est).
-`TestHandover_Followup36Claims` pins two final rows, ten frozen #423 inputs,
-the exact r24 archive, every netlab 32 design/evidence file and two public PR
-excerpts under D-098 / D-109 / D-132. Living AT roots remain excluded.
-No decision was added after D-144 on main. All 47 rows remain unchanged.
+## Follow-up 37 decisions register (2026-11-03 EST)
+
+Verified against main **792e3e4186d00db72aaaf0ee309e6716332b8dd3**, through
+**#426**, covering **#424–#426**. [Evidence cut](follow-up-37.md) and
+[acceptance snapshot](../ops/README.md#follow-up-37-acceptance-snapshot-2026-11-03-est).
+`TestHandover_Followup37Claims` pins three final rows, ten frozen #426 inputs,
+three PR excerpts, the dated isolation diagnosis, netlab 33's correction and
+all 138 follow-up 17 archive payloads. Follow-up 36's 174 netlab files and exact
+r24 archive remain sealed. No decision was added after D-144 on main.
 D-135, D-136, D-137, D-138, D-140, D-141, D-142 and D-144 stay provisional;
-D-143 is Ted's decision.
+D-143 is Ted's decision. All 47 decision rows below are unchanged.
 
 | Decision | Operator meaning and delivery boundary |
 |---|---|
@@ -208,9 +210,14 @@ the SQL shortcut stays labelled.
 The [follow-up 35 register](../../tests/handover/testdata/history/follow-up-36/register35.md)
 is frozen at #423, with 87 findings, 47 decisions and ten owner requests.
 
-## Findings register at the follow-up 36 cutoff
+<a id="findings-register-at-the-follow-up-36-cutoff"></a>
 
-| Finding | Status at #423 | Evidence / next owner |
+The [follow-up 36 register](../../tests/handover/testdata/history/follow-up-37/register36.md)
+is frozen at #426, with 96 findings, 47 decisions and ten owner requests.
+
+## Findings register at the follow-up 37 cutoff
+
+| Finding | Status at #426 | Evidence / next owner |
 |---|---|---|
 | ENR-07 | CLOSED | D-130 #330/#331 plus enrollment #333: AT06 662/0/0, AT07 48/0/0, fresh gap ACK 1 then sequence 2 ACK 2, 908 bytes; planBaseline attribution corrected. |
 | Members F9-01 | CLOSED | #325 / #328 under D-126 / D-128; deliberate cumulative report accepted. Full AT09 fails in #348; provisional acceptance is a separate row. |
@@ -307,21 +314,23 @@ is frozen at #423, with 87 findings, 47 decisions and ten owner requests.
 | r24 H-4 | FIXED — #423 | Confirmed: one self-contained baseline resets fixed candidate chains/sets without fresh state, retains counters and touches no foreign table. Baseline/quarantine cleanup independent of cancellation, five-second budget. Not a recovery bound or C1 bank cleanup. |
 | r24 M-1 | DESIGN CORRECTION — C1 revision, documents only | Counterexample trace; old bank deleted at release and delayed fallback installs fenced by lock plus child reaping. No C1 implementation. |
 | r24 M-2 | CONFIRMED IN PART — post-shape rollback FIXED by #423 | Both post-shape clock errors attempt independent rollback. Alleged fatal Verified:true return rejected as currently unreachable; invalid-address pre-mutation regression retained. |
-| r24 M-3 | TOOLING PREREQUISITE — C1 revision, documents only | Confirmed by trace.go inspection. Copied classifier proof dropped because it did not invoke tooling. Real classifier/decorator tests and ctunku/ctunkd deltas required; B1 transport changes excluded from C1 acceptance. No tooling change. |
-| r24 L-1 | DESIGN PREREQUISITE — netlab 32 judged confirmed, documents only | Empty eligible-set transaction specified. Its claimed lock-path correction contradicts main's /var/lib/vpn-node/update.lock default; the cited follow-up 31 line names no lock path. Additive netlab correction requested. Archive unchanged; no C1 implementation. |
+| r24 M-3 | TOOLING PREREQUISITE — C1 revision, documents only | Confirmed by trace.go inspection. Copied classifier proof dropped because it did not invoke tooling. Real classifier/decorator tests and ctunku/ctunkd deltas required. #426's [additive correction](../poc/G2-followup33-design/corrections.md) rejects r24's unsourced TCP_RTO_MIN/socket-pacing characterization of B1: it is the first D-133 candidate arm, including F27-01's failed read. No transport/socket change in any C1 acceptance run or comparison arm; no tooling change. |
+| r24 L-1 | CONFIRMED IN PART — netlab 33 #426, documents only | [Additive correction](../poc/G2-followup33-design/corrections.md): lock-location half rejected, empty eligible-set half specified by follow-up 32 retained. The cited follow-up 31 line names no lock, node/updater/config.go does not exist, and main defaults to /var/lib/vpn-node/update.lock. No conclusion depends on the path string; shared locking and child reaping fence delayed fallback. Archive unchanged; no C1 implementation. |
 | Netlab F32-01 | OPEN on main — agent-core after 41 | Found in netlab 32's owner-decision.md cadence check. leadJitter uses a nanosecond modulus with two random bytes (at most 65,535 ns): default 120 s lead gives −12 s .. −12 s + 65,535 ns, effectively fixed −12 s instead of uniform ±12 s. Time-triggered renewal starts about 108 s remaining. No collision with existing IDs; no fix here. |
 
-Every historical failure stays failed. Every other follow-up 35 finding row is unchanged.
-The register has 96 rows: F27-01 / B1 updated; r24's eight and Netlab F32-01
-added. The other 86 rows, including every r20–r23 row, are byte-identical.
-Agent-core 37–40 were delivered and held and 41 running at briefing; their
-judgments are not on main. Older routing labels stay historical. F30-01
-remains known behaviour, no merged fix. r20 H-1's restart gap stays open.
-Ten owner requests remain ten, with the tenth G5/G6 trade quoted in plain
-language from netlab 32. Still undecided; production keeps the current guard.
-r24's recommendation to accept is the reviewer's, not an owner decision.
-AT11 / AT13 operator rows, AT29 / AT31 resources, physical arm64, power loss
-and QUIC remain open. This cut claims no scheduled-run result. See the
-[full evidence and dated requests](follow-up-36.md), including the outside-scope
-lock-path correction. #422 answered the r23 code-trace request; #423 completed
-the consumer fixture request in its resume.
+| Isolation F18-01 | FIXED — harness defect, #424; first scheduled exercise pending | Both unlisted blocks in 41640196805 came from restart without readiness: AT13 login/audit 502, AT10 missing readiness/no injection. Current-run readiness waits and no-injection blocked verdict fixed; expected-blocked.json unchanged. Local 9f1bc0ff passes both rows and qualifies D-140 under D-142; only operator rows block. Previous night's 41456092596 AT10 pass inherited checkout readiness and is not qualified. [Dated diagnosis](../e2e/at/isolation/nightly-diagnosis-2026-11-03.md). Distinct from bare F18-01. |
+
+Every historical failure stays failed. Every other follow-up 36 finding row is unchanged.
+The register has 97 rows: r24 L-1 and M-3 updated; Isolation F18-01 added,
+with no collision with bare F18-01. The other 94 rows are byte-identical,
+including r24 H-1/H-3 and Netlab F32-01. Agent-core 37–41 were delivered and
+held at briefing; #425 records H-1/H-3 fixed on unmerged 41 and r25 in progress.
+r25 reviews 8cc27609; status only, archive deferred. Those judgments are not
+on main. Netlab F32-01 is routed to agent-core 42; older row labels stay historical.
+F30-01 remains known behaviour, no merged fix. r20 H-1's restart gap stays open.
+Ten owner requests remain ten; the tenth G5/G6 trade was relayed and is still
+undecided. Production keeps the current guard; no hitless hand-over or C1 benefit
+is promised. AT11 / AT13 operator rows and Isolation F17-01 stay carried;
+AT29 / AT31 resources, physical arm64, power loss and QUIC remain open.
+The at-isolation fix is merged, but no PR in this cut records its first scheduled
+exercise. See the [full evidence and dated requests](follow-up-37.md).
