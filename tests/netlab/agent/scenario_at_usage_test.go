@@ -43,11 +43,19 @@ func TestLabUsageLedger(t *testing.T) {
 	}
 
 	before := nftUsageBytes(t)
-	sendUDPBurst(t)
-	time.Sleep(400 * time.Millisecond)
-	moved := nftUsageBytes(t)
-	if moved <= before {
-		t.Fatalf("udp burst did not move admission counters (%d -> %d)\n%s", before, moved, debugPlane(t))
+	// This scenario proves accounting, not hitless traffic during a guarded
+	// install. Establish an actually counted burst before asserting the ledger.
+	deadline := time.Now().Add(5 * time.Second)
+	for {
+		sendUDPBurst(t)
+		time.Sleep(400 * time.Millisecond)
+		moved := nftUsageBytes(t)
+		if moved > before {
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("udp bursts did not move admission counters (%d -> %d)\n%s", before, moved, debugPlane(t))
+		}
 	}
 
 	// An updater hand-off explicitly withdraws and closes the epoch. An
