@@ -15,6 +15,8 @@ type siblingCapture struct {
 	sender, observer *exec.Cmd
 	send, observe    *bufio.Reader
 	finished         bool
+	native           *nativeCaptureSession
+	stopSamples      func()
 }
 
 func (l *live) startSibling(r *record) *siblingCapture {
@@ -23,6 +25,14 @@ func (l *live) startSibling(r *record) *siblingCapture {
 		return nil
 	}
 	c := &siblingCapture{}
+	c.native = l.startNativeCapture(r, "member", "AT02-sibling")
+	c.native.sample("before-sends")
+	c.stopSamples = c.native.periodic()
+	l.t.Cleanup(func() {
+		if !c.finished {
+			l.finishSibling(r, c)
+		}
+	})
 	for _, role := range []string{"member", "node"} {
 		if _, e := l.inside(role, "rm", "-f", "/tmp/fvpn-members-sibling-stop"); e != nil {
 			return nil
@@ -73,6 +83,7 @@ func (l *live) finishSibling(r *record, c *siblingCapture) {
 		return
 	}
 	c.finished = true
+	defer func() { c.stopSamples(); c.native.sample("after-sends"); c.native.stop() }()
 	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Second)
 	defer cancel()
 	var sent, observed json.RawMessage
@@ -88,5 +99,5 @@ func (l *live) finishSibling(r *record, c *siblingCapture) {
 	sendOK := stop("member", c.sender, c.send, &sent)
 	obsOK := stop("node", c.observer, c.observe, &observed)
 	l.siblingSent, l.siblingObserved = sent, observed
-	r.jsonCheck("D-135 continuous admitted sibling capture", "every synthetic attempt and node ingress/egress retained; no capture loss", map[string]any{"sender": sent, "node": observed}, "20 ms UDP/40002 stream through native route; AF_PACKET metadata only, CLOCK_MONOTONIC; no forwarding repair", sendOK && obsOK)
+	r.jsonCheck("D-135 continuous admitted sibling capture", "every synthetic attempt and node ingress/egress retained; no capture loss", map[string]any{"sender": sent, "node": observed}, "20 ms UDP/40002 stream through native route; AF_PACKET metadata only, CLOCK_MONOTONIC; no forwarding repair", sendOK && obsOK && validateSendTimes(sent, observed) == nil)
 }

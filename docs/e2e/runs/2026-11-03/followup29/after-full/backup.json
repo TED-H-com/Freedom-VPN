@@ -1,0 +1,119 @@
+{
+  "id": "backup",
+  "title": "Archived WAL and isolated physical PITR",
+  "spec": [
+    "§17.2",
+    "§17.3",
+    "§19 AT30"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "enrollment_before",
+      "detail": "201"
+    },
+    {
+      "name": "archive_check_milliseconds",
+      "detail": "214"
+    },
+    {
+      "name": "archive_check_exit",
+      "detail": "0"
+    },
+    {
+      "name": "physical_full_milliseconds",
+      "detail": "4424"
+    },
+    {
+      "name": "physical_full_exit",
+      "detail": "0"
+    },
+    {
+      "name": "repository_info_milliseconds",
+      "detail": "38"
+    },
+    {
+      "name": "repository_info_exit",
+      "detail": "0"
+    },
+    {
+      "name": "backup_label",
+      "detail": "20261103-045424F"
+    },
+    {
+      "name": "backup_type",
+      "detail": "full"
+    },
+    {
+      "name": "target_utc",
+      "detail": "2026-11-03T04:54:29.283960Z"
+    },
+    {
+      "name": "enrollment_after",
+      "detail": "201"
+    },
+    {
+      "name": "primary_marker_count",
+      "detail": "2"
+    },
+    {
+      "name": "wal_switch_archive_milliseconds",
+      "detail": "293"
+    },
+    {
+      "name": "wal_switch_archive_exit",
+      "detail": "0"
+    },
+    {
+      "name": "primary_image_milliseconds",
+      "detail": "11"
+    },
+    {
+      "name": "primary_image_exit",
+      "detail": "0"
+    },
+    {
+      "name": "physical_pitr_restore_milliseconds",
+      "detail": "5157"
+    },
+    {
+      "name": "physical_pitr_restore_exit",
+      "detail": "0"
+    },
+    {
+      "name": "restored_readback_milliseconds",
+      "detail": "56"
+    },
+    {
+      "name": "restored_readback_exit",
+      "detail": "0"
+    },
+    {
+      "name": "restored_before_after_recovery_archive",
+      "detail": "1|0|f|off"
+    },
+    {
+      "name": "restore_isolation_milliseconds",
+      "detail": "11"
+    },
+    {
+      "name": "restore_isolation_exit",
+      "detail": "0"
+    },
+    {
+      "name": "network_and_published_ports",
+      "detail": "none|0"
+    },
+    {
+      "name": "total_milliseconds",
+      "detail": "10224"
+    },
+    {
+      "name": "scope",
+      "detail": "Physical backup + WAL replay; API-created pre-target enrollment retained, post-target enrollment absent. AT30 ledger freeze/recovery remains with at-secops."
+    }
+  ],
+  "at": "2026-11-03T04:54:34Z",
+  "run_id": "91eb0372-e42b-4698-a137-7cce53b263fa",
+  "source_commit": "f52fc9381405d4aafd064dc0ef055977de97f418"
+}

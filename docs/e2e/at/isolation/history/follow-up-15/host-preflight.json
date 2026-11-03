@@ -1,0 +1,70 @@
+{
+  "command": "vmstat 5 7; load average; pgrep -af gates.sh|mk/at-",
+  "recorded_at": "2026-11-01T14:51:05Z",
+  "elapsed_seconds": 30.031078577041626,
+  "samples": [
+    {
+      "r": 1,
+      "b": 2,
+      "id": 79,
+      "wa": 11,
+      "raw": "1 2 51604 14181052 10101948 147463844 0 0 4631 29297 37680 35 8 3 79 11 0 0"
+    },
+    {
+      "r": 0,
+      "b": 2,
+      "id": 90,
+      "wa": 8,
+      "raw": "0 2 51604 14230016 10101948 147463988 0 0 0 706 14435 22904 1 1 90 8 0 0"
+    },
+    {
+      "r": 0,
+      "b": 2,
+      "id": 90,
+      "wa": 8,
+      "raw": "0 2 51604 14359568 10101948 147464584 0 0 0 2084 13915 17857 1 1 90 8 0 0"
+    },
+    {
+      "r": 2,
+      "b": 5,
+      "id": 88,
+      "wa": 9,
+      "raw": "2 5 51604 14381160 10101956 147393560 0 0 0 5909 16326 24094 2 1 88 9 0 0"
+    },
+    {
+      "r": 4,
+      "b": 1,
+      "id": 84,
+      "wa": 1,
+      "raw": "4 1 51604 13738524 10101964 147395812 0 0 0 3595 15690 18996 13 2 84 1 0 0"
+    },
+    {
+      "r": 4,
+      "b": 0,
+      "id": 83,
+      "wa": 1,
+      "raw": "4 0 51604 13753188 10101976 147398912 0 0 0 12785 17519 21819 13 2 83 1 0 0"
+    },
+    {
+      "r": 3,
+      "b": 0,
+      "id": 84,
+      "wa": 0,
+      "raw": "3 0 51604 13814608 10102004 147400696 0 0 2 28152 19438 27744 13 3 84 0 0 0"
+    }
+  ],
+  "load_average": [
+    "4.68",
+    "5.56",
+    "7.41"
+  ],
+  "suite_processes": [
+    {
+      "pid": "2031217",
+      "kind": "make mk/at-"
+    }
+  ],
+  "quiet_every_sample": false,
+  "quiet_interval_samples": false,
+  "scope": "Host context only, not a pass criterion. First vmstat row is since-boot; subsequent six rows are 5-second intervals. Exact private process inventory retained; public command text omits host paths."
+}

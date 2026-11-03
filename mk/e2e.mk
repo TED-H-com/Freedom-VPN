@@ -26,7 +26,7 @@ export CGO_ENABLED := 0
 
 LINT_TARGETS += e2e-lint
 
-.PHONY: e2e-lint e2e-config e2e-up e2e-down e2e-test
+.PHONY: e2e-lint e2e-config e2e-up e2e-down e2e-browser e2e-test
 
 e2e-lint:
 	@test -z "$$(gofmt -l $$(git ls-files --cached --others --exclude-standard 'tests/e2e/**/*.go'))" || { echo 'gofmt required'; exit 1; }
@@ -44,8 +44,20 @@ e2e-up:
 e2e-down:
 	FVPN_E2E_PREFIX=$(FVPN_E2E_PREFIX) FVPN_E2E_PORT_BASE=$(FVPN_E2E_PORT_BASE) FVPN_E2E_STATE=$(FVPN_E2E_STATE) $(E2E_ROOT)/deploy/devstack/down.sh
 
-# Fresh secrets, then the acceptance run. The stack stays up for inspection.
+# The portal-billing-return probe (deploy/devstack/probe-portal.mjs) launches
+# Playwright's headless Chromium. Install the revision that the Portal
+# lockfile's Playwright pins; this is a no-op when that revision is already in
+# the cache. PLAYWRIGHT_BROWSERS_PATH, when set, selects the cache directory.
+# --no-remove keeps every other cached browser revision. No sudo: system
+# libraries are the caller's job (the nightly workflow adds --with-deps).
+# Needs apps/portal/node_modules, which e2e-up installs.
+e2e-browser:
+	cd $(E2E_ROOT)/apps/portal && ./node_modules/.bin/playwright install --only-shell --no-remove --no-progress chromium
+
+# Fresh secrets, the probe browser, then the acceptance run. The stack stays up
+# for inspection. FVPN_E2E_RUN_LABEL selects docs/e2e/runs/<date>/<label>.
 e2e-test:
 	$(MAKE) -f $(E2E_MK) e2e-down
 	$(MAKE) -f $(E2E_MK) e2e-up E2E_RESET=1
+	$(MAKE) -f $(E2E_MK) e2e-browser
 	cd $(E2E_ROOT) && FVPN_E2E=1 FVPN_E2E_PREFIX=$(FVPN_E2E_PREFIX) FVPN_E2E_PORT_BASE=$(FVPN_E2E_PORT_BASE) FVPN_E2E_STATE=$(FVPN_E2E_STATE) go test -v -tags e2e -count=1 -timeout 65m ./tests/e2e

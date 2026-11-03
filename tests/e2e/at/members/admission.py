@@ -2,6 +2,9 @@
 import os
 import subprocess
 import sys
+import time
+import json
+from pathlib import Path
 
 
 def suite_roots(matches, parents, own_pid):
@@ -26,7 +29,7 @@ def suite_roots(matches, parents, own_pid):
     return sorted(roots)
 
 
-def check():
+def inventory():
     found = subprocess.run(['pgrep', '-af', 'gates.sh|mk/at-'], text=True, capture_output=True)
     if found.returncode not in (0, 1):
         raise RuntimeError('suite inventory unavailable')
@@ -36,15 +39,40 @@ def check():
         parents[pid] = parent
     matches = {int(line.split(maxsplit=1)[0]): line for line in found.stdout.splitlines()}
     roots = suite_roots(matches, parents, os.getpid())
+    return matches, roots
+
+
+def check():
+    matches, roots = inventory()
     print('Admission: other active suites =', len(roots), flush=True)
     for pid in roots:
         # Keep the raw process command in private run logs only.
         print(matches[pid], flush=True)
-    if len(roots) >= 2:
-        print('HARD STOP: two or more other suites; no test launched', flush=True)
+    if len(roots) >= 2 or any("mk/at-isolation.mk" in matches[p] for p in roots):
+        print('HARD STOP: isolation active or two other suites; no test launched', flush=True)
         return 75
     return 0
 
 
 if __name__ == '__main__':
     sys.exit(check())
+
+
+def wait_ready():
+    started = time.monotonic()
+    isolation_wait = False
+    polls = []
+    while True:
+        matches, roots = inventory()
+        isolation = any('mk/at-isolation.mk' in matches[p] for p in roots)
+        isolation_wait = isolation_wait or isolation
+        polls.append(dict(elapsed_seconds=round(time.monotonic()-started, 3), other_suites=len(roots), isolation_active=isolation))
+        if not isolation and len(roots) < 2:
+            break
+        if time.monotonic()-started >= 90*60:
+            raise RuntimeError('90-minute suite admission wait exhausted; no run started')
+        print('Waiting for isolation / suite admission:', polls[-1], flush=True)
+        time.sleep(15)
+    receipt=dict(wait_seconds=round(time.monotonic()-started, 3), waited_for_isolation=isolation_wait, polls=polls)
+    Path('.agent/tmp/f16-admission-wait.json').write_text(json.dumps(receipt, indent=2)+'\n')
+    return receipt

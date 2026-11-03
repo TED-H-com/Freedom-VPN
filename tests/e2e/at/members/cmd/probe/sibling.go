@@ -17,7 +17,7 @@ import (
 
 const siblingStop = "/tmp/fvpn-members-sibling-stop"
 
-const siblingMagic = "FVPN TEST ONLY 12"
+const siblingMagic = "FVPN TEST ONLY 27"
 
 func monoNS() int64 {
 	var t unix.Timespec
@@ -45,6 +45,16 @@ func siblingSequence(b []byte) (uint64, bool) {
 	return binary.BigEndian.Uint64(b[h+8+len(siblingMagic):]), true
 }
 
+type siblingSendAttempt struct {
+	Sequence  uint64    `json:"sequence,string"`
+	Before    int64     `json:"mono_before_ns,string"`
+	After     int64     `json:"mono_after_ns,string"`
+	UTCBefore time.Time `json:"utc_before"`
+	UTCAfter  time.Time `json:"utc_after"`
+	Bytes     int       `json:"bytes"`
+	OK        bool      `json:"ok"`
+}
+
 func siblingSend() {
 	c, e := net.ListenUDP("udp4", &net.UDPAddr{Port: 40001})
 	if e != nil {
@@ -54,15 +64,24 @@ func siblingSend() {
 	fmt.Println("ready")
 	attempts, errors := 0, 0
 	start := monoNS()
+	sends := []siblingSendAttempt{}
+	boot, err := os.ReadFile("/proc/sys/kernel/random/boot_id")
+	if err != nil {
+		os.Exit(1)
+	}
 	for until := time.Now().Add(5 * time.Minute); time.Now().Before(until) && !siblingStopped(); time.Sleep(20 * time.Millisecond) {
 		b := append([]byte{}, siblingMagic...)
 		b = binary.BigEndian.AppendUint64(b, uint64(attempts))
+		a := siblingSendAttempt{Sequence: uint64(attempts), Before: monoNS(), UTCBefore: time.Now().UTC()}
+		n, err := c.WriteToUDP(b, &net.UDPAddr{IP: net.ParseIP(controlledOrigin), Port: 40002})
+		a.UTCAfter, a.After, a.Bytes, a.OK = time.Now().UTC(), monoNS(), n, err == nil && n == len(b)
+		sends = append(sends, a)
 		attempts++
-		if _, e := c.WriteToUDP(b, &net.UDPAddr{IP: net.ParseIP(controlledOrigin), Port: 40002}); e != nil {
+		if !a.OK {
 			errors++
 		}
 	}
-	_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"start_ns": fmt.Sprint(start), "end_ns": fmt.Sprint(monoNS()), "attempts": attempts, "send_errors": errors})
+	_ = json.NewEncoder(os.Stdout).Encode(map[string]any{"start_ns": fmt.Sprint(start), "end_ns": fmt.Sprint(monoNS()), "attempts": attempts, "send_errors": errors, "sends": sends, "boot_id": strings.TrimSpace(string(boot)), "clock": "CLOCK_MONOTONIC"})
 }
 
 func siblingObserve() {

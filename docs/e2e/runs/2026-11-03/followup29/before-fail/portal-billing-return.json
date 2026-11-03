@@ -1,0 +1,30 @@
+{
+  "id": "portal-billing-return",
+  "title": "Built Portal billing return renders in a browser",
+  "spec": [
+    "§18.4",
+    "§19 AT03"
+  ],
+  "status": "fail",
+  "observations": [
+    {
+      "name": "billing_return_http",
+      "detail": "200"
+    },
+    {
+      "name": "built_portal_spa",
+      "detail": "true"
+    },
+    {
+      "name": "browser_probe",
+      "detail": "{\"probe_error\":{\"stage\":\"launch\",\"message\":\"browserType.launch: Executable doesn't exist at \u003cworktree\u003e/.agent/tmp/followup29/pw-before/chromium_headless_shell-1248/chrome-headless-shell-linux64/chrome-headless-shell\"}}"
+    },
+    {
+      "name": "browser_error",
+      "detail": "billing page did not render successfully: exit status 1"
+    }
+  ],
+  "at": "2026-11-03T04:51:34Z",
+  "run_id": "bc302dbc-61fd-43a5-9e48-23cf8422f6c2",
+  "source_commit": "0e315f905b43695c42125e20f242655230c851bc"
+}

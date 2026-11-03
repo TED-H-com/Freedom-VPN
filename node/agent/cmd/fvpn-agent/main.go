@@ -81,7 +81,22 @@ func enroll(args []string) int {
 	return 0
 }
 
+type runEngine interface {
+	Run(context.Context) error
+	Boot(context.Context) error
+	Step(context.Context) error
+	Close() error
+}
+
 func run(args []string, loop bool) int {
+	return runWithOpen(args, loop, func(path string) (runEngine, error) { return open(path) })
+}
+
+func runWithOpen(args []string, loop bool, open func(string) (runEngine, error)) int {
+	// Cover startup too, and retain signal handling until Close has completed.
+	// Supervisors may send another TERM while the local checkpoint is running.
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
 	fs := flag.NewFlagSet("run", flag.ContinueOnError)
 	config := fs.String("config", "", "path to agent.json")
 	fs.SetOutput(os.Stderr)
@@ -102,8 +117,6 @@ func run(args []string, loop bool) int {
 		return 1
 	}
 	defer eng.Close()
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer stop()
 	if loop {
 		if err := eng.Run(ctx); err != nil && ctx.Err() == nil {
 			fmt.Fprintln(os.Stderr, "fvpn-agent:", err.Error())

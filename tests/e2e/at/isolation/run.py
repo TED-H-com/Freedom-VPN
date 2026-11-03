@@ -13,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[4]
 os.chdir(ROOT)
 
 def slots():
+    started = time.monotonic()
     while True:
         result = subprocess.run(['pgrep', '-af', 'gates.sh|mk/at-'], text=True, capture_output=True)
         print('shared-host suite inventory:\n' + result.stdout, flush=True)
@@ -41,6 +42,7 @@ def slots():
             if not p:
                 roots.append(pid)
         if len(roots) < 2:
+            print(f"suite admission: other_roots={roots} waited_seconds={time.monotonic()-started:.3f}", flush=True)
             return
         print('Two other suites active; waiting 30 seconds.', flush=True)
         time.sleep(30)
@@ -87,6 +89,8 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
             stack = stack or review
             boundary = call(['python3', '-B', 'tests/e2e/at/isolation/review_boundary.py', evidence], env)
             stack = stack or boundary
+            holds = call(['python3', '-B', 'tests/e2e/at/isolation/review_populated_holds.py', evidence], env)
+            stack = stack or holds
     finally:
         lab = call(['sh', 'tests/e2e/at/isolation/lab.sh', 'down'], env) or lab
         stack = call(['python3', 'tests/e2e/at/isolation/stack.py', 'down'], env) or stack
