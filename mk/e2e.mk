@@ -52,7 +52,7 @@ e2e-down:
 # libraries are the caller's job (the nightly workflow adds --with-deps).
 # Needs apps/portal/node_modules, which e2e-up installs.
 e2e-browser:
-	cd $(E2E_ROOT)/apps/portal && ./node_modules/.bin/playwright install --only-shell --no-remove chromium
+	cd $(E2E_ROOT)/apps/portal && ./node_modules/.bin/playwright install --only-shell --no-remove --no-progress chromium
 
 # Fresh secrets, the probe browser, then the acceptance run. The stack stays up
 # for inspection. FVPN_E2E_RUN_LABEL selects docs/e2e/runs/<date>/<label>.
