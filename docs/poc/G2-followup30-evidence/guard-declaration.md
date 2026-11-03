@@ -46,3 +46,9 @@ If guard logs identify missing segments, distinguish demonstrated candidate
 mechanism from an explanation of B1's 1.501408-second read. If no segment is
 missing, record that without promoting B1. Any guard hand-over improvement is
 only a proposal with a separate D-133 comparison, never a production edit here.
+
+The read-only inventory identifies `fvpn-pg` using `postgres:17-alpine` as the
+shared PostgreSQL service described by the engineering contract. That exact
+name/image pair is recorded as shared infrastructure, outside the **other lane**
+container exclusion. Its CPU still counts as foreign; every other non-owned
+`fvpn-*` container blocks admission. See [the identity record](shared-service.json).

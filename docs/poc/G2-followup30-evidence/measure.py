@@ -59,6 +59,15 @@ try:
         cleanup=subprocess.run([sys.executable,'-B',str(host.DEST/'run.py'),name+'-cleanup',sys.executable,'-B',str(host.DEST/'cleanup.py'),name+'-inventory'],env=env).returncode
         code=code or cleanup
 finally:
+    # Finish a full sampling interval after the foreground run so the last
+    # few seconds of traffic cannot escape CPU/process accounting.
+    if 'thread' in locals():
+        with lock:last_count=len(records)
+        until=time.monotonic()+6
+        while time.monotonic()<until:
+            with lock:advanced=len(records)>last_count
+            if advanced:break
+            time.sleep(.05)
     stop.set()
     if 'thread' in locals():thread.join()
     measured=[r for r in records if 'interval_seconds' in r]

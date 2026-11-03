@@ -72,14 +72,15 @@ class Quiet:
     def __init__(self,runner):
         self.runner=runner;self.previous=None;self.next_sample=0
     def sample(self):
-        listing=admitted_docker(['ps','--no-trunc','--format','{{.ID}} {{.Names}}'])
-        own=[];foreign=[]
+        listing=admitted_docker(['ps','--no-trunc','--format','{{.ID}} {{.Names}} {{.Image}}'])
+        own=[];foreign=[];shared=[]
         for line in listing.splitlines():
-            ident,name=line.split(None,1)
+            ident,name,image=line.split(None,2)
             if name.startswith(PREFIX):own.append(ident)
+            elif name=='fvpn-pg' and image=='postgres:17-alpine':shared.append(dict(name=name,image=image,cpu_class='foreign'))
             elif name.startswith('fvpn-'):foreign.append(name)
         now,rows,errors=snapshot(self.runner,own)
-        result=dict(utc=utc(),monotonic_seconds=now,foreign_containers=foreign,owned_container_ids=own,proc_read_errors=errors,processes=external_suites(rows))
+        result=dict(utc=utc(),monotonic_seconds=now,foreign_containers=foreign,shared_services=shared,owned_container_ids=own,proc_read_errors=errors,processes=external_suites(rows))
         result['vmstat']=subprocess.check_output(['vmstat'],text=True)
         if self.previous:
             before,old,_=self.previous;elapsed=now-before

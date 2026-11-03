@@ -31,3 +31,9 @@ Process exits between proc snapshots are a measurement limitation, recorded as
 missing final samples. Continuous checks cover startup and execution; a breach
 marks the attempt unqualified and is retained. All nested make, docker and go-test
 commands consult `FVPN_HOLD_SH`. No private admission location is recorded.
+
+The read-only inventory identifies `fvpn-pg` using `postgres:17-alpine` as the
+shared PostgreSQL service described by the engineering contract. That exact
+name/image pair is recorded as shared infrastructure, outside the **other lane**
+container exclusion. Its CPU still counts as foreign; every other non-owned
+`fvpn-*` container blocks admission. See [the identity record](shared-service.json).
