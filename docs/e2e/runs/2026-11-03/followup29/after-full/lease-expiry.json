@@ -1,0 +1,30 @@
+{
+  "id": "lease-expiry",
+  "title": "Control stop leaves forwarding off",
+  "spec": [
+    "§5",
+    "§19 AT29"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "admission_counter",
+      "detail": "unavailable after 90 seconds"
+    },
+    {
+      "name": "heartbeat",
+      "detail": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 5940274277180\nwall_unix_ns 1793682497822900905\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 117\nreason recovery_required"
+    },
+    {
+      "name": "note",
+      "detail": "No positive counted flow before fault; control stop is not injected."
+    },
+    {
+      "name": "owner",
+      "detail": "w2-agent-core: device admission counters absent after bounded readiness poll; see accepted serving checks"
+    }
+  ],
+  "at": "2026-11-03T05:08:20Z",
+  "run_id": "91eb0372-e42b-4698-a137-7cce53b263fa",
+  "source_commit": "f52fc9381405d4aafd064dc0ef055977de97f418"
+}
