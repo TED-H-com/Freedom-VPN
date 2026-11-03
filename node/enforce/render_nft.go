@@ -176,6 +176,7 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 		prio := fmt.Sprintf("0x%08x", ClassID(d.Minor))
 		upCounter := usageCounter(dirUpload, d.Binding.DeviceID)
 		for _, addr := range d.Addrs {
+			writeMSSClamp(&b, in, up, "saddr", addr)
 			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip saddr %s counter name %q meta priority set %s accept", in, up, addr, upCounter, prio))
 		}
 	}
@@ -216,6 +217,7 @@ func Render(m Model, state State, tcState TCState) (RenderPlan, error) {
 		prio := fmt.Sprintf("0x%08x", ClassID(d.Minor))
 		useDown := usageCounter(dirDownload, d.Binding.DeviceID)
 		for _, addr := range d.Addrs {
+			writeMSSClamp(&b, up, in, "daddr", addr)
 			rule(&b, "forward", fmt.Sprintf("iifname %q oifname %q ip daddr %s counter name %q meta priority set %s accept", up, in, addr, useDown, prio))
 		}
 	}
@@ -609,4 +611,15 @@ func sortedKeys(m map[string]bool) []string {
 	}
 	sort.Strings(out)
 	return out
+}
+
+// D-146: 1280 - IPv6(40) - UDP(8) - WireGuard(32) = 1200,
+// already a multiple of 16, minus inner IPv4(20) and TCP(20) = 1160.
+// TCP senders subtract actual IP/TCP options from data (RFC 6691).
+// Immediately precedes the same address's general forwarding accept; DNS
+// and probe paths have already terminated. This rule has no verdict or meter.
+const memberTCPMSS = 1160
+
+func writeMSSClamp(b *strings.Builder, in, out, field string, addr netip.Addr) {
+	rule(b, "forward", fmt.Sprintf("iifname %q oifname %q ip %s %s tcp flags & syn == syn tcp option maxseg size > %d tcp option maxseg size set %d", in, out, field, addr, memberTCPMSS, memberTCPMSS))
 }

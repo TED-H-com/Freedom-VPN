@@ -88,6 +88,9 @@ func verifyServingRuleset(raw []byte, m Model, assignments map[uuid.UUID]uint16)
 			}
 		}
 	}
+	if err := verifyMSSClamps(rs, m, devices); err != nil {
+		return err
+	}
 	if err := verifyDeviceClass(fwd, devices); err != nil {
 		return err
 	}
@@ -142,6 +145,13 @@ func VerifyBaseline(raw []byte, m Model) error {
 	rs, err := ParseRuleset(raw)
 	if err != nil {
 		return checkf(ReasonIsolationBaselineMissing, "cannot parse nft listing: %v", err)
+	}
+	for _, ch := range rs.Chains {
+		for _, r := range ch.Rules {
+			if r.TCPMSS {
+				return checkf(ReasonIsolationBaselineMissing, "baseline contains MSS clamp")
+			}
+		}
 	}
 	if err := rejectBypass(rs); err != nil {
 		return &CheckError{Reason: ReasonIsolationBaselineMissing, Detail: err.Error()}
@@ -763,6 +773,9 @@ func verifyRuleShape(chain string, rule RuleView) error {
 	}
 	switch chain {
 	case "forward":
+		if rule.TCPMSS && rule.Verdict == "" && rule.Verdicts == 0 {
+			return nil
+		}
 		if rule.Verdict != "accept" && rule.Verdict != "drop" {
 			return checkf(ReasonIsolation, "forward rule has no verdict")
 		}
@@ -782,7 +795,7 @@ func verifyRuleShape(chain string, rule RuleView) error {
 }
 
 func isMarker(rule RuleView) bool {
-	if rule.Verdict != "" || rule.SNAT != "" || rule.Verdicts != 0 || rule.Tainted {
+	if rule.Verdict != "" || rule.SNAT != "" || rule.Verdicts != 0 || rule.Tainted || rule.TCPMSS {
 		return false
 	}
 	return strings.Contains(rule.Comment, "fvpn_generation=") || strings.Contains(rule.Comment, "fvpn_class=")
