@@ -78,9 +78,17 @@ def review(root):
             active_stop_retention='not exercised',
             matching_recovery='pass' if h['end_reason']=='generation_matched' and accepted_local and forwarded and attempt.get('recovered_counted', {}).get('counted') else 'fail',
             distinct_later_incident='not exercised')
-        if attempt.get('stop'):
+        if attempt.get('stop') and attempt.get('purpose') != 'central_age_fallback':
             row['retention'] = retention(attempt, final.get('samples', []))
             coverage['active_stop_retention'] = row['retention']['status']
+        if attempt.get('purpose') == 'central_age_fallback':
+            coverage['alarm_single_escalation'] = 'not exercised'
+            fallback = [a for a in audits if not a['evidence'].get('alarm_report_id') and
+                        a['evidence'].get('reported_alarm') is False and
+                        ns(a['occurred_at'])-ns(h['first_seen_at']) >= 30000000000]
+            coverage['central_30s_fallback'] = 'pass' if len(audits)==1 and fallback else 'not exercised'
+            row['fallback_audits'] = fallback
+        coverage['pure_stale_generation'] = 'pass' if any(v['classification']=='stale_generation' and not v['unrelated_failure'] and not v['problems'] for v in holds) else 'not exercised'
         if previous:
             coverage['distinct_later_incident'] = 'pass' if h['id'] != previous['incident_id'] and row['arm_id'] != previous['arm_id'] and previous['end_reason']=='generation_matched' and ns(h['first_seen_at']) > ns(previous['ended_at']) else 'fail'
         row.update(status='fail' if 'fail' in coverage.values() else 'partial' if 'not exercised' in coverage.values() else 'pass',
@@ -90,7 +98,7 @@ def review(root):
                    accepted_local_matching_report_ids=accepted_local, forwarded_local_lease_events=forwarded,
                    unrelated_report_ids=[v['report_id'] for v in unrelated], unrelated_classifications=[v['classification'] for v in unrelated], coverage=coverage)
         previous = row
-    required = ('populated_hold','independent_denial','alarm_single_escalation','unrelated_failure_precedence','active_stop_retention','matching_recovery','distinct_later_incident')
+    required = ('populated_hold','independent_denial','alarm_single_escalation','unrelated_failure_precedence','active_stop_retention','matching_recovery','distinct_later_incident','pure_stale_generation','central_30s_fallback')
     coverage = {k:'fail' if any(r['coverage'].get(k)=='fail' for r in rows) else 'pass' if any(r['coverage'].get(k)=='pass' for r in rows) else 'not exercised' for k in required}
     result = dict(run_id=raw['run_id'], status='pass' if all(v=='pass' for v in coverage.values()) and not joined['problems'] else 'incomplete',
                   attempts=rows, coverage=coverage, join_problems=joined['problems'],

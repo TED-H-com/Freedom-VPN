@@ -327,3 +327,11 @@ func TestAT13_D102PopulatedHoldRetention(t *testing.T) {
 	}
 	t.Log(string(out))
 }
+
+func TestD144_NightlyReviewAndSuiteAdmission(t *testing.T) {
+	out, err := exec.Command("python3", "-B", "-m", "unittest", "-v", "nightly_test.py").CombinedOutput()
+	if err != nil {
+		t.Fatalf("nightly review: %v\n%s", err, out)
+	}
+	t.Log(string(out))
+}

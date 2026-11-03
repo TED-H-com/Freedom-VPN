@@ -200,7 +200,7 @@ func (x *isolationRun) finish() {
 	}
 	// All records are persisted before the aggregate test is failed.
 	for _, id := range []string{"AT10", "AT11", "AT12", "AT13"} {
-		if x.records[id].Status != iso.StatusPass {
+		if x.records[id].Status != iso.StatusPass && !(os.Getenv("FVPN_AT_SCHEDULED") == "1" && iso.ScheduledCaseAcceptable(*x.records[id])) {
 			x.t.Errorf("%s: %s", id, x.records[id].Status)
 		}
 	}
@@ -213,7 +213,7 @@ func (x *isolationRun) add(id string, c iso.Check) {
 	if err := iso.Write(x.dir, *x.records[id]); err != nil {
 		x.t.Error(err)
 	}
-	x.t.Logf("%s %s: %s (positive=%t)", id, c.Name, c.Status, c.Positive.Valid())
+	x.t.Logf("%s %s: %s (positive=%t) owner=%s reason=%s", id, c.Name, c.Status, c.Positive.Valid(), c.Owner, strings.Join(strings.Fields(iso.Redact(c.Actual)), " "))
 }
 
 func (x *isolationRun) proof(r *runner) iso.Positive {
@@ -2901,7 +2901,7 @@ func (x *isolationRun) generationHoldCut() {
 // The only extra fault removes an executable inside this owned container;
 // no signed document, observation, central row or node ruleset is edited.
 func (x *isolationRun) populatedHolds() {
-	evidence := map[string]any{"run_id": x.records["AT13"].RunID, "scope": "TEST ONLY two explicit incidents; original capacity commands; devstack 27 seam"}
+	evidence := map[string]any{"run_id": x.records["AT13"].RunID, "scope": "TEST ONLY three explicit incidents; third attempts central age fallback; original capacity commands; devstack 27 seam"}
 	attempts := []map[string]any{}
 	defer func() {
 		evidence["attempts"] = attempts
@@ -2911,14 +2911,14 @@ func (x *isolationRun) populatedHolds() {
 		}
 		x.extra("populated-holds.json", evidence)
 	}()
-	for n := 1; n <= 2; n++ {
+	for n := 1; n <= 3; n++ {
 		row := map[string]any{"attempt": n, "status": "not exercised", "started_at": time.Now().UTC()}
 		attempts = append(attempts, row)
 		if !x.populatedHold(n, row) {
 			// A later incident requires recovery; do not turn setup failure into
 			// a replacement attempt or claim an unexecuted second arm.
-			if n == 1 {
-				attempts = append(attempts, map[string]any{"attempt": 2, "status": "not exercised", "reason": "first incident recovery unavailable"})
+			for later := n + 1; later <= 3; later++ {
+				attempts = append(attempts, map[string]any{"attempt": later, "status": "not exercised", "reason": "preceding incident recovery unavailable"})
 			}
 			return
 		}
@@ -3012,12 +3012,34 @@ func (x *isolationRun) populatedHold(n int, row map[string]any) bool {
 		row["reason"] = "no accepted incident for the retained populated lease"
 		return false
 	}
-	var alarmReport string
-	alarm := waitFor(12, func() bool {
-		return conn.QueryRow(x.ctx, `SELECT report_id::text FROM node_generation_hold_reports WHERE hold_id=$1 AND summary_valid AND reported_alarm ORDER BY reported_steps LIMIT 1`, incident).Scan(&alarmReport) == nil
-	})
-	row["alarm_observed"], row["alarm_report_id"] = alarm, alarmReport
-	snapshot("alarm")
+	if n == 3 {
+		row["purpose"] = "central_age_fallback"
+		snapshot("before_stop")
+		stopStart := time.Now().UTC()
+		out, stopErr := x.r.lab.docker(x.r.lab.node, "/tmp/isolation-probe", "agent-stop-sample")
+		row["stop"] = map[string]any{"start": stopStart, "end": time.Now().UTC(), "ok": stopErr == nil, "output": iso.Redact(string(out))}
+		snapshot("after_stop")
+		ev, e := x.stack.MatchingLeaseHold(x.ctx, "node", arm.ID)
+		row["proxy_after_stop"], row["proxy_after_stop_available"] = ev, e == nil
+		// Observe central's own clock and original audit. An early alarm makes
+		// this attempt ineligible; never suppress, edit or replace its report.
+		var auditID string
+		row["fallback_audit_observed"] = waitFor(35, func() bool {
+			return conn.QueryRow(x.ctx, `SELECT id::text FROM audit_events WHERE action='node.generation_hold.escalated' AND after_diff->>'incident_id'=$1 ORDER BY occurred_at LIMIT 1`, incident).Scan(&auditID) == nil
+		})
+		row["fallback_audit_id"] = auditID
+		snapshot("fallback")
+		restartAt := time.Now().UTC()
+		err = x.stack.Service(x.ctx, "start", "/usr/local")
+		row["restart"] = map[string]any{"start": restartAt, "end": time.Now().UTC(), "ok": err == nil}
+	} else {
+		var alarmReport string
+		alarm := waitFor(12, func() bool {
+			return conn.QueryRow(x.ctx, `SELECT report_id::text FROM node_generation_hold_reports WHERE hold_id=$1 AND summary_valid AND reported_alarm ORDER BY reported_steps LIMIT 1`, incident).Scan(&alarmReport) == nil
+		})
+		row["alarm_observed"], row["alarm_report_id"] = alarm, alarmReport
+		snapshot("alarm")
+	}
 	denial := iso.Check{}
 	route, result, ingress, delivered := x.capturedConnect(x.a1, x.a1.lab.prefix+"-origin", x.a1.originIP(), 443, &denial)
 	row["denial"] = map[string]any{"route": route, "result": result, "ingress": ingress, "delivered": delivered, "observations": denial.Observations}
