@@ -78,8 +78,53 @@ func TestParseForwardChainIgnoresNetBirdAccepts(t *testing.T) {
 	}
 `
 	view = ParseForwardChain(serving)
-	if view.Generation != 4 || view.MemberAccept != 1 {
+	if view.Generation != 4 || view.MemberAccept != 1 || view.MSSClamp != 0 || view.PMTUAccept != 0 {
 		t.Fatalf("serving view %+v", view)
+	}
+}
+
+func TestParseForwardChain_D146AndD147Shapes(t *testing.T) {
+	probeBaseline := `
+	chain forward {
+		type filter hook forward priority -150; policy drop;
+		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1"
+		iifname "fvmb0" oifname "fvup0" ip saddr @probe_v4 ip daddr @resolver_v4 udp dport 53 counter name "probe_up" accept
+		iifname "fvmb0" oifname "fvup0" ip saddr @probe_v4 ip daddr . meta l4proto . th dport @probe_dst_v4 counter name "probe_up" accept
+		iifname "fvup0" oifname "fvmb0" ip daddr @probe_v4 ct state established,related counter name "probe_down" accept
+		iifname "fvmb0" counter name "ctbase" drop
+		oifname "fvmb0" counter name "ctbase" drop
+	}
+`
+	if got := ParseForwardChain(probeBaseline); !got.Present || !got.Baseline || got.Generation != 0 || got.MemberAccept != 3 || got.LabMemberAccept != 0 || got.MSSClamp != 0 || got.PMTUAccept != 0 {
+		t.Fatalf("probe baseline view %+v", got)
+	}
+
+	fullServing := `
+	chain forward {
+		type filter hook forward priority -150; policy drop;
+		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=7 fvpn_metering=forward_admission_v1"
+		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 ip daddr @resolver_v4 tcp dport 53 counter name "du_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
+		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 ip daddr @resolver_v4 udp dport 53 counter name "du_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
+		iifname "fv-fh" oifname "fv-ih" ip daddr @resolver_v4 counter name "ctdns" drop
+		iifname "fv-fh" oifname "fv-ih" ip daddr @denied_v4 counter name "ctdeny" drop
+		iifname "fv-fh" oifname "fv-ih" ip daddr @host_v4 counter name "cthost" drop
+		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 tcp flags & (syn) == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160
+		iifname "fv-fh" oifname "fv-ih" ip saddr 100.64.1.1 counter name "u_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
+		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.1 tcp sport 53 counter name "dd_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
+		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.1 udp sport 53 counter name "dd_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
+		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 ip daddr 100.64.1.1 ct state related icmp type destination-unreachable icmp code frag-needed counter name "d_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
+		iifname "fv-ih" oifname "fv-fh" ip saddr @denied_v4 ip daddr 100.64.1.1 ct state related icmp type destination-unreachable icmp code frag-needed counter name "d_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
+		iifname "fv-ih" oifname "fv-fh" ip saddr @host_v4 ip daddr 100.64.1.1 ct state related icmp type destination-unreachable icmp code frag-needed counter name "d_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
+		iifname "fv-ih" oifname "fv-fh" ip saddr @resolver_v4 counter name "ctdenyd" drop
+		iifname "fv-ih" oifname "fv-fh" ip saddr @denied_v4 counter name "ctdenyd" drop
+		iifname "fv-ih" oifname "fv-fh" ip saddr @host_v4 counter name "ctdenyd" drop
+		iifname "fv-ih" oifname "fv-fh" ip daddr 100.64.1.1 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160
+		iifname "fv-ih" oifname "fv-fh" ip daddr 100.64.1.1 counter name "d_019a00000000700080000000000000a1" meta priority set 0x0001002f accept
+	}
+`
+	got := ParseForwardChain(fullServing)
+	if !got.Present || got.Baseline || got.Policy != "drop" || got.Generation != 7 || got.MSSClamp != 2 || got.PMTUAccept != 3 || got.LabMemberAccept != 9 {
+		t.Fatalf("full serving view %+v", got)
 	}
 }
 
