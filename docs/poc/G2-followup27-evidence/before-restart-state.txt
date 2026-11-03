@@ -1,0 +1,11 @@
+=== RUN   TestAT13_F27_UnrecordedApplyRefusesRestartAdoption
+=== RUN   TestAT13_F27_UnrecordedApplyRefusesRestartAdoption/denied
+    followup12_test.go:1293: kernel mismatch adopted: serving=true baseline=true applies=3/3
+=== RUN   TestAT13_F27_UnrecordedApplyRefusesRestartAdoption/host
+    followup12_test.go:1293: kernel mismatch adopted: serving=true baseline=true applies=3/3
+--- FAIL: TestAT13_F27_UnrecordedApplyRefusesRestartAdoption (0.32s)
+    --- FAIL: TestAT13_F27_UnrecordedApplyRefusesRestartAdoption/denied (0.16s)
+    --- FAIL: TestAT13_F27_UnrecordedApplyRefusesRestartAdoption/host (0.15s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/node/agent	0.322s
+FAIL

@@ -1,0 +1,41 @@
+### 3.2 Updating Node Region, Member Groups, or Capacity (`PATCH /api/v1/admin/nodes/{node_id}`)
+
+**2026-11-01 — Known local configuration behaviour at #396.** After a restart
+with changed `extra_denied_v4` or `host_v4`, same-boot adoption can keep the node
+serving on the previously installed `denied_v4` / `host_v4` until its first
+successful Apply. A larger deny set can therefore leave the old, smaller set
+in force. A busy node lock or control timeout can delay Apply; the verifier
+does not read these sets' elements. SIGHUP does not reload these fields.
+The [agent-core 35 dated hand-off](../node/followup35-diagnostic-and-restart-2026-11-01.md)
+provides no safe procedure and no maximum adoption-to-Apply delay. The fix is
+routed to agent-core 36 (refuse adoption on changed sets), then netlab 26
+(verifier content check); it is open at this cutoff. No workaround is promised.
+
+First fetch the node (`GET /api/v1/admin/nodes/{node_id}`) and capture the response `ETag` header (`"<resource_version>"`). Supply `If-Match` and `Idempotency-Key` (`428 Precondition Required` if `If-Match` is missing; `412 Precondition Failed` if stale):
+
+`[Verified on dev/test stack]`
+```bash
+curl -fsS -X PATCH "https://vpn.example.com:8443/api/v1/admin/nodes/${NODE_ID}" \
+  -H "Cookie: __Host-fvpn-admin=${ADMIN_SESSION}" \
+  -H "X-CSRF-Token: ${ADMIN_CSRF_TOKEN}" \
+  -H "Origin: https://vpn.example.com" \
+  -H "If-Match: \"${ETAG}\"" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "tw-tpe-01",
+    "region": "tw-tpe",
+    "member_group_ids": [
+      "01950000-0000-7000-8000-000000000001"
+    ],
+    "capacity": {
+      "down_bps": "900000000",
+      "up_bps": "900000000",
+      "member_down_bps_cap": "100000000",
+      "member_up_bps_cap": "100000000"
+    }
+  }'
+```
+*(To clear an explicit capacity ceiling and revert to policy defaults, send `"clear_capacity": true` and omit `"capacity"`. Updating `member_group_ids` or `capacity` increments `desired_config_generation` and returns `202 Accepted` with a `node.update` operation; metadata-only changes to `name` or `notes` return `200 OK`. In the Admin Portal (`#235`, `apps/portal/src/pages/admin/AdminNodeDetailPage.tsx`), `/admin/nodes/{id}` caches the `ETag` from `202 Accepted` responses and shows the saved banner only after the post-save refetch settles.)*
+
+### 3.3 Publishing, Disabling, and Unpublishing Exits (`PUT /api/v1/admin/nodes/{node_id}/publication`)

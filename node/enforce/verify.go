@@ -101,6 +101,9 @@ func verifyServingRuleset(raw []byte, m Model, assignments map[uuid.UUID]uint16)
 	if err := verifySetFlags(rs); err != nil {
 		return err
 	}
+	if err := verifyIsolationSets(rs, m, true); err != nil {
+		return err
+	}
 	if err := verifyProbe(rs, m, false); err != nil {
 		return err
 	}
@@ -151,6 +154,15 @@ func VerifyBaseline(raw []byte, m Model) error {
 		return checkf(ReasonIsolationBaselineMissing, "forward chain is not the drop baseline")
 	}
 	if err := verifyAllowedSet(rs); err != nil {
+		return err
+	}
+	if !rs.Sets["allowed_v4"] || len(rs.Elements["allowed_v4"]) != 0 {
+		return checkf(ReasonIsolation, "baseline allowed_v4 is missing or nonempty")
+	}
+	if err := verifySetFlags(rs); err != nil {
+		return err
+	}
+	if err := verifyIsolationSets(rs, m, m.Probe != nil); err != nil {
 		return err
 	}
 	if err := verifyProbe(rs, m, true); err != nil {
@@ -830,9 +842,14 @@ func verifyChainSet(rs Ruleset) error {
 	return nil
 }
 
-// verifySetFlags rejects a flag the renderer does not emit on the sets that
-// must stay host addresses. denied_v4 and host_v4 are interval sets on purpose.
+// verifySetFlags rejects flags the renderer does not emit. The static
+// isolation sets must be interval sets without element expiration.
 func verifySetFlags(rs Ruleset) error {
+	for _, name := range []string{"denied_v4", "host_v4"} {
+		if rs.Sets[name] && (len(rs.SetFlags[name]) != 1 || rs.SetFlags[name][0] != "interval") {
+			return checkf(ReasonIsolation, "set %s must have only the interval flag", name)
+		}
+	}
 	allowed := map[string]map[string]bool{
 		"allowed_v4":  {"timeout": true},
 		setProbeV4:    {"timeout": true},

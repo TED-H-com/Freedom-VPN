@@ -1,0 +1,72 @@
+name: e2e
+
+on:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 4 * * *"
+
+permissions:
+  contents: read
+
+env:
+  GOTOOLCHAIN: local
+  CGO_ENABLED: "0"
+
+jobs:
+  lint:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - name: lint and compose config
+        run: |
+          make -f mk/e2e.mk e2e-lint
+          make -f mk/e2e.mk e2e-config
+
+  stack:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      # Records land in docs/e2e/runs/<UTC date>/nightly, apart from history.
+      FVPN_E2E_RUN_LABEL: nightly
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      # The Portal build and the billing-return browser probe run on the same
+      # Node major as the Portal workflow.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      # A fresh runner has no Playwright browser. Install the headless shell
+      # pinned by the Portal lockfile plus its system libraries; e2e-test then
+      # finds it already present.
+      - name: Portal probe browser
+        working-directory: apps/portal
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps --only-shell --no-progress chromium
+      - name: acceptance run
+        run: make -f mk/e2e.mk e2e-test
+      # Scenario records (*.json, *.md) and acceptance-summary.md only. Stack
+      # state, secrets and cookies live in .agent/ and are never uploaded.
+      - name: upload scenario records
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-stack-records-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            docs/e2e/runs/*/nightly/*.json
+            docs/e2e/runs/*/nightly/*.md
+          if-no-files-found: warn
+          retention-days: 7
+      - name: tear down
+        if: always()
+        run: make -f mk/e2e.mk e2e-down

@@ -654,3 +654,50 @@ origin headers, writes `stream-intervals.csv`, and retains all missing sequences
 large gaps, handshake message/hash/index joins and allowlisted native debug
 metadata. One-second diagnostic views do not waive shorter gaps or losses.
 Observed packet/handshake times are not internal kernel timer/drop callsites.
+
+## Follow-up 30 — bounded survivor-hold continuation in the D-102 seam (TEST ONLY)
+
+For the multi-member sibling-removal case (where revoking one sibling member
+during an active populated hold advances the node's desired generation while
+the surviving leased member remains eligible), `labstack.Stack` exports the
+opt-in continuation:
+
+```go
+arm, err := stack.ArmMatchingLeaseHoldSurvivor(ctx, slot, baseGeneration, survivorMemberID, duration)
+```
+
+`ArmMatchingLeaseHold` and its default contract remain byte-identical for all
+existing callers (`survivor_member_id` and `max_continued_generations` are
+omitted unless opted in). When armed with `ArmMatchingLeaseHoldSurvivor`:
+
+- **Bounds:** `hold_seconds` is still bounded to `1..120` seconds (anchored once
+  at `hold_started_at` and never extended when the continuation starts), the
+  arm still expires after three minutes (`arm_deadline`), and
+  `max_continued_generations` is fixed to `1` (at most one generation transition
+  after `target_generation`).
+- **Scope:** after the initial hold has started at `target_generation`, the
+  first newer lease-renewal response (`config_generation > target_generation`)
+  is inspected in memory without modifying, caching, replaying or synthesizing
+  any signed document. If `signed.members` contains solely `survivor_member_id`,
+  the proxy sets `continued_generation` and `continued_at`, records
+  `continuation_started`, and continues replacing successful renewal responses
+  for `continued_generation` (carrying solely `survivor_member_id`) with prompt
+  503 transport errors.
+- **Release conditions:** `explicit_release`, `hold_deadline`, `arm_deadline`,
+  `proxy_restarted`, `survivor_mismatch` (if a renewal response above
+  `target_generation` or at `continued_generation` does not carry solely
+  `survivor_member_id`), and `generation_superseded` (if the generation
+  advances before `hold_started_at` or advances a second time beyond
+  `continued_generation`). Upon release, the next fresh central-issued matching
+  renewal response at `continued_generation` is forwarded byte-for-byte and
+  recorded as `matching_lease_forwarded`.
+- **Consumer recording requirements:** retain `arm` (including
+  `survivor_member_id` and `max_continued_generations: 1`), `target_generation`,
+  `continued_generation`, `continued_at`, the sibling revocation mutation and
+  its completion timestamp, the open `incident_id`, the initial entry and
+  alarm `report_id`s, the single `node.generation_hold.escalated` `audit_id`,
+  the accepted post-command survivor hold `report_id` (with
+  `received_at > revocation.completed_at` and
+  `applied_generation == continued_generation` while `ended_at IS NULL`), and
+  the post-release recovery `report_id`, `lease_id`, and `LocalLeaseReadback`
+  digest match.

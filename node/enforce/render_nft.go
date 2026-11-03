@@ -384,6 +384,12 @@ func RenderBaseline(m Model, state State) (string, error) {
 	if m.Probe != nil {
 		writeProbeSNAT(&b, up, m.Datapath.SNAT.String())
 	}
+	// Bare baselines have no rules referencing these sets. Remove retained
+	// contents in the same transaction so read-back has one exact model.
+	if m.Probe == nil {
+		deleteSet(&b, state, "denied_v4")
+		deleteSet(&b, state, "host_v4")
+	}
 	writeProbeSetCleanup(&b, state, m.Probe)
 	return b.String(), nil
 }

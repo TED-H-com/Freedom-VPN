@@ -1,0 +1,23 @@
+=== RUN   TestISO01_F27_LiveSetDrift
+=== RUN   TestISO01_F27_LiveSetDrift/denied_v4/add
+    scenario_f27_test.go:52: live denied_v4 add accepted: exit=0
+=== RUN   TestISO01_F27_LiveSetDrift/denied_v4/remove
+    scenario_f27_test.go:52: live denied_v4 remove accepted: exit=0
+=== RUN   TestISO01_F27_LiveSetDrift/denied_v4/replace
+    scenario_f27_test.go:52: live denied_v4 replace accepted: exit=0
+=== RUN   TestISO01_F27_LiveSetDrift/host_v4/add
+    scenario_f27_test.go:52: live host_v4 add accepted: exit=0
+=== RUN   TestISO01_F27_LiveSetDrift/host_v4/remove
+    scenario_f27_test.go:52: live host_v4 remove accepted: exit=0
+=== RUN   TestISO01_F27_LiveSetDrift/host_v4/replace
+    scenario_f27_test.go:52: live host_v4 replace accepted: exit=0
+--- FAIL: TestISO01_F27_LiveSetDrift (1.77s)
+    --- FAIL: TestISO01_F27_LiveSetDrift/denied_v4/add (0.31s)
+    --- FAIL: TestISO01_F27_LiveSetDrift/denied_v4/remove (0.30s)
+    --- FAIL: TestISO01_F27_LiveSetDrift/denied_v4/replace (0.30s)
+    --- FAIL: TestISO01_F27_LiveSetDrift/host_v4/add (0.27s)
+    --- FAIL: TestISO01_F27_LiveSetDrift/host_v4/remove (0.29s)
+    --- FAIL: TestISO01_F27_LiveSetDrift/host_v4/replace (0.28s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/netlab	1.773s
+FAIL
