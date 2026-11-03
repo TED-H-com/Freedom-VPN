@@ -1,0 +1,149 @@
+# Follow-up 33: Additive Corrections to Follow-up 32's Lock Path, `L-1` Judgment, and `r24` Citations
+
+## Scope and Relationship to Follow-up 32
+
+This document records an additive, documents-only correction to follow-up 32 ([`docs/poc/G2-followup32-design/`](../G2-followup32-design)):
+
+1. It corrects the shared lock path stated in [`docs/poc/G2-followup32-design/protocol.md:93`](../G2-followup32-design/protocol.md#L93) and the `L-1` judgment row in [`docs/poc/G2-followup32-design/revision.md:34`](../G2-followup32-design/revision.md#L34).
+2. It verifies whether any conclusion in follow-up 32's design or enforcement changes depends on the lock path string.
+3. It re-checks every other `r24` (`ba5d3004:.agent/REVIEW.md`) citation, test name, quote, and figure that follow-up 32's [`revision.md`](../G2-followup32-design/revision.md), [`protocol.md`](../G2-followup32-design/protocol.md), and [`owner-decision.md`](../G2-followup32-design/owner-decision.md) adopted or addressed against `main` (`e54700f9d2f8361b8905c44e51f3f32bb82e5bcf`) and the `r24`-reviewed commit (`52a7e59be947422e5e7c39a52d3c227c84050718`), and records an additive correction for the `M-3` / `B1` citation in [`protocol.md:168-171`](../G2-followup32-design/protocol.md#L168-L171) and [`revision.md:33`](../G2-followup32-design/revision.md#L33).
+4. It reports the whole-tree search for `/var/lib/vpn-node/update-journal/update.lock` across code, tests, tooling, and documents.
+
+All files under [`docs/poc/G2-followup32-design/`](../G2-followup32-design) and [`docs/poc/G2-followup32-evidence/`](../G2-followup32-evidence) remain byte-identical because handover follow-up 36 pins both trees file by file. Follow-up 32's `node/enforce` fixes (`H-4`/`M-2`), its C1 protocol design (`H-1` through `M-3` and the empty-set half of `L-1`), and its corrections of `r24`'s figures stand unchanged. The owner's G5/G6 decision remains pending, and production keeps the current unconditional guard.
+
+---
+
+## 1. Lock-Path Correction (`protocol.md:93`) and `L-1` Judgment (`revision.md:34`)
+
+### 1.1 Wrong Path vs. Right Path (`protocol.md:93`)
+
+- **What [`docs/poc/G2-followup32-design/protocol.md:93-95`](../G2-followup32-design/protocol.md#L93-L95) states:**
+  > The shared lock path is **`/var/lib/vpn-node/update-journal/update.lock`**, from [agent configuration](../../../node/agent/config.go) and [nodelock](../../../node/internal/nodelock/lock.go).
+- **What is on `main` (and at `52a7e59b`):**
+  Every default lock path in the repository is **`/var/lib/vpn-node/update.lock`**:
+  - [`node/agent/config.go:125`](../../../node/agent/config.go#L125) (`Config.ApplyDefaults`): `c.LockPath = "/var/lib/vpn-node/update.lock"` (lines `121-122` set `c.UpdaterJournal = filepath.Join(updatejournal.DefaultDir, updatejournal.FileName)`, and lines `130-131` set `c.HeartbeatPath = "/run/vpn-node/heartbeat"`);
+  - [`node/nodelock/lock.go:23`](../../../node/nodelock/lock.go#L23): `const DefaultPath = "/var/lib/vpn-node/update.lock"`;
+  - [`node/internal/nodelock/lock.go:14`](../../../node/internal/nodelock/lock.go#L14): `const DefaultPath = real.DefaultPath` (re-exporting `node/nodelock.DefaultPath`);
+  - [`node/updater/layout.go:33`](../../../node/updater/layout.go#L33) (`DefaultLayout`): `Lock: "/var/lib/vpn-node/update.lock"` (while line `32` sets `Journal: "/var/lib/vpn-node/update-journal"`);
+  - [`packaging/installer/layout.go:54`](../../../packaging/installer/layout.go#L54) (`DefaultLayout`): `LockPath: "/var/lib/vpn-node/update.lock"` (while line `47` sets `UpdateJournal: "/var/lib/vpn-node/update-journal"`);
+  - [`node/watchdog/watch.go:78`](../../../node/watchdog/watch.go#L78) (`LoadConfig`): `c.LockPath = nodelock.DefaultPath`.
+
+`/var/lib/vpn-node/update-journal` is the update journal directory ([`node/internal/updatejournal/journal.go:35`](../../../node/internal/updatejournal/journal.go#L35), `const DefaultDir = "/var/lib/vpn-node/update-journal"`, with `const FileName = "journal.db"` at line `38`), not the lock directory.
+
+- **Corrected sentence superseding [`docs/poc/G2-followup32-design/protocol.md:93-95`](../G2-followup32-design/protocol.md#L93-L95):**
+  > The shared lock path is **`/var/lib/vpn-node/update.lock`**, from [agent configuration](../../../node/agent/config.go#L125) (`LockPath`), [nodelock](../../../node/nodelock/lock.go#L23) (`DefaultPath`, re-exported by [`node/internal/nodelock/lock.go:14`](../../../node/internal/nodelock/lock.go#L14)), [updater layout](../../../node/updater/layout.go#L33) (`Lock`), [installer layout](../../../packaging/installer/layout.go#L54) (`LockPath`), and [watchdog configuration](../../../node/watchdog/watch.go#L78) (`LockPath`).
+
+### 1.2 Verification and Corrected Judgment of `L-1` (`revision.md:34`)
+
+- **What `r24`'s `L-1` (`ba5d3004:.agent/REVIEW.md:173-182`) claimed:**
+  1. *Lock-location half:* Claimed [`docs/poc/G2-followup31-design/current-guarantees.md:27`](../G2-followup31-design/current-guarantees.md#L27) places the shared lock at `/var/lib/vpn-node/update.lock`, and claimed `Config.ApplyDefaults` (`node/agent/config.go:130`) and `node/updater/config.go:53` place it at `/var/lib/vpn-node/update-journal/update.lock`.
+  2. *Empty eligible-set half:* Pointed out that [`docs/poc/G2-followup31-design/candidates.md:96-107`](../G2-followup31-design/candidates.md#L96-L107) annotates `add element inet fvpn fv_eligible_g { <eligible address list> } # omit if empty` while lines `103-104` still include the `@fv_eligible_g` / `@fv_allow_A` `return` rules and [`candidates.md:54-60, 158`](../G2-followup31-design/candidates.md#L54-L60) falls back to the unconditional guard when no prior verified bank exists.
+- **What the sources on `main` and at `52a7e59b` say:**
+  - [`docs/poc/G2-followup31-design/current-guarantees.md:27`](../G2-followup31-design/current-guarantees.md#L27) reads `Let R be the final monotonic render sample, B = 100 ms, q = 1 ms, and D`—it begins the guard timing definition and names no lock.
+  - No file under [`docs/poc/G2-followup31-design/`](../G2-followup31-design) names any lock path. At `52a7e59b`, no file anywhere under `docs/poc/` named `update.lock` or `update-journal`.
+  - [`node/agent/config.go:125`](../../../node/agent/config.go#L125) sets `c.LockPath = "/var/lib/vpn-node/update.lock"` (line `130` is `if c.HeartbeatPath == "" {`), and `node/updater/config.go` does not exist on `main` or at `52a7e59b` (updater paths are in [`node/updater/layout.go:33`](../../../node/updater/layout.go#L33)).
+  - Follow-up 31 therefore made no lock-path statement to correct, and `r24`'s proposed `/var/lib/vpn-node/update-journal/update.lock` replacement contradicts `main`.
+  - By contrast, the empty eligible-set transaction shape in [`docs/poc/G2-followup31-design/candidates.md:54-60, 96-107, 158`](../G2-followup31-design/candidates.md#L54-L60) needed explicit disambiguation, which follow-up 32 supplied in [`docs/poc/G2-followup32-design/protocol.md:97-115, 125-126`](../G2-followup32-design/protocol.md#L97-L115).
+
+- **Corrected `L-1` row superseding [`docs/poc/G2-followup32-design/revision.md:34`](../G2-followup32-design/revision.md#L34):**
+
+| ID | Judgment | Action in this revision |
+|---|---|---|
+| L-1 | Confirmed in part (lock-location half rejected; empty-set half confirmed) | Reject the lock-location claim (follow-up 31 named no lock path, `node/updater/config.go` does not exist, and every default on `main` is `/var/lib/vpn-node/update.lock`); keep the empty eligible-set transaction-shape specification ([`protocol.md:97-115, 125-126`](../G2-followup32-design/protocol.md#L97-L115)). |
+
+### 1.3 Verification Commands and Results
+
+| Check | Command | Result |
+|---|---|---|
+| Review `r24` `L-1` text | `git show ba5d3004:.agent/REVIEW.md \| sed -n '173,183p'` | Cites `current-guarantees.md:27`, `candidates.md:96-107`, `node/agent/config.go:130`, and `node/updater/config.go:53`. |
+| Inspect `current-guarantees.md:27` | `sed -n '20,35p' docs/poc/G2-followup31-design/current-guarantees.md` | Line 27 is `Let R be the final monotonic render sample, B = 100 ms, q = 1 ms, and D`; no lock is mentioned. |
+| Search follow-up 31 design for lock paths | `git grep -n -i 'update\.lock\|update-journal\|lockpath\|nodelock' docs/poc/G2-followup31-design/` | Exit code 1 (0 hits). |
+| Search all `docs/poc/` at `52a7e59b` for lock/journal paths | `git grep -n 'update\.lock\|update-journal' 52a7e59b -- docs/poc/` | Exit code 1 (0 hits). |
+| Check `node/updater/config.go` on `main` and `52a7e59b` | `test -e node/updater/config.go; git cat-file -e 52a7e59b:node/updater/config.go` | Does not exist on `main` or at `52a7e59b`. |
+| Check all `update.lock` and `update-journal` definitions in `node/` and `packaging/` | `git grep -n 'update\.lock\|update-journal' node/ packaging/` | `node/agent/config.go:125`, `node/nodelock/lock.go:23`, `node/updater/layout.go:33`, and `packaging/installer/layout.go:54` all set `/var/lib/vpn-node/update.lock`; `/var/lib/vpn-node/update-journal` is only `DefaultDir` / `Journal` / `UpdateJournal` in `node/internal/updatejournal/journal.go:35`, `node/updater/layout.go:32`, and `packaging/installer/layout.go:47`. |
+
+---
+
+## 2. Independence of Follow-up 32's Conclusions from the Lock Path String
+
+No conclusion, safety invariant, proof obligation, or `node/enforce` change in follow-up 32 depends on the directory spelling of the lock path:
+
+1. **Fencing of delayed unconditional-fallback installs ([`protocol.md:132-141`](../G2-followup32-design/protocol.md#L132-L141), [`revision.md:31`](../G2-followup32-design/revision.md#L31), `M-1`):**
+   - The fencing guarantee requires that:
+     1. any timed-out `nft` child is killed (`SIGKILL`) and reaped (`Wait`) before its command call returns ([`node/enforce/executor.go:44-54, 76-97`](../../../node/enforce/executor.go#L44-L54), [`node/enforce/command_lifecycle.go:154-192`](../../../node/enforce/command_lifecycle.go#L154-L192));
+     2. `nodelock` remains held across the entire `Apply`, command-reaping, and any fallback/quarantine window ([`node/agent/engine.go:995`](../../../node/agent/engine.go#L995)); and
+     3. all node writers acquire the same flock so a delayed fallback cannot interleave with or overwrite a newer generation's tables.
+   - None of those properties depends on whether the shared lock file path is `/var/lib/vpn-node/update.lock` or `/var/lib/vpn-node/update-journal/update.lock`; they depend only on every writer locking the same path and reaping timed-out children before releasing that lock.
+2. **Serialization of verified-serving state and live kernel checks ([`protocol.md:72-76, 93-95`](../G2-followup32-design/protocol.md#L72-L76)):**
+   - [`protocol.md:76`](../G2-followup32-design/protocol.md#L76) requires `nodelock` to serialize node writers around `Plane.Apply` and live kernel read-back. On `main`, `fvpn-agent` ([`node/agent/config.go:125`](../../../node/agent/config.go#L125), [`node/agent/engine.go:995`](../../../node/agent/engine.go#L995), [`node/agent/restart.go:42`](../../../node/agent/restart.go#L42)), `fvpn-watchdog` ([`node/watchdog/watch.go:78, 132`](../../../node/watchdog/watch.go#L78)), `fvpn-updater` ([`node/updater/layout.go:33`](../../../node/updater/layout.go#L33)), and the installer ([`packaging/installer/layout.go:54`](../../../packaging/installer/layout.go#L54)) all default to `/var/lib/vpn-node/update.lock` ([`node/nodelock/lock.go:23`](../../../node/nodelock/lock.go#L23)).
+3. **Watchdog contention semantics ([`owner-decision.md:54, 61-62`](../G2-followup32-design/owner-decision.md#L54)):**
+   - [`Watch.Once`](../../../node/watchdog/watch.go#L119-L168) calls `nodelock.TryAcquire(c.LockPath)` (lines `131-140`) and treats `nodelock.ErrBusy` as healthy active-agent progress. Because both `fvpn-agent` and `fvpn-watchdog` default to `/var/lib/vpn-node/update.lock`, that mutual-exclusion contract holds on `main`.
+
+---
+
+## 3. Re-Check of All Other `r24` Citations in `revision.md`, `protocol.md`, and `owner-decision.md`
+
+### 3.1 Additional Citation Correction: `M-3` / `B1` in `protocol.md:168-171` and `revision.md:33`
+
+- **What `r24` (`M-3`, `ba5d3004:.agent/REVIEW.md:153, 162`) claimed and follow-up 32 adopted:**
+  - `r24` claimed: ``d133-comparison.md:65-75 keeps B1 (TCP_RTO_MIN / socket pacing) as a transport follow-up without explicitly forbidding B1 during the primary C1 acceptance run.``
+  - Follow-up 32 adopted that phrasing in [`docs/poc/G2-followup32-design/protocol.md:168-169`](../G2-followup32-design/protocol.md#L168-L169) (`Keep B1's TCP_RTO_MIN/socket-pacing transport follow-up disabled in every C1 acceptance run and both comparison arms.`) and [`docs/poc/G2-followup32-design/revision.md:33`](../G2-followup32-design/revision.md#L33) (`prohibit B1 transport changes in acceptance`).
+- **What `main` and `52a7e59b` actually say:**
+  - [`docs/poc/G2-followup31-design/d133-comparison.md:65-75`](../G2-followup31-design/d133-comparison.md#L65-L75) defines containment failure stopping rules (lines `63-67`) and host admission via `$FVPN_HOLD_SH` (lines `69-75`).
+  - Neither `TCP_RTO_MIN` nor `socket pacing` appears anywhere in [`docs/poc/G2-followup31-design/`](../G2-followup31-design) or anywhere else on `52a7e59b`.
+  - Across the G2 design and evidence trees ([`docs/poc/G2-followup27-evidence/b1-tcp-failure.json:3`](../G2-followup27-evidence/b1-tcp-failure.json#L3), [`docs/poc/G2-followup30-evidence/b1-context.json:2-4`](../G2-followup30-evidence/b1-context.json#L2-L4), [`docs/poc/G2-followup31-design/current-guarantees.md:139`](../G2-followup31-design/current-guarantees.md#L139), [`docs/poc/G2-followup31-design/d133-comparison.md:19, 189, 214`](../G2-followup31-design/d133-comparison.md#L19)), `B1` is the first candidate arm in the interleaved `A1,B1,A2,B2` D-133 quartet (and specifically follow-up 27's `B1` run whose sequence 43 TCP read timed out at `1,501.407973 ms`, finding `F27-01`), not a `TCP_RTO_MIN`/socket-pacing transport follow-up.
+- **Additive correction for [`protocol.md:168-171`](../G2-followup32-design/protocol.md#L168-L171) and [`revision.md:33`](../G2-followup32-design/revision.md#L33):**
+  - Reject `r24`'s citation of `d133-comparison.md:65-75` and its characterization of `B1` as a `TCP_RTO_MIN`/socket-pacing transport follow-up (`B1` is the first candidate arm of the `A1,B1,A2,B2` D-133 quartet).
+  - Keep the substantive experimental constraint in [`protocol.md:168-171`](../G2-followup32-design/protocol.md#L168-L171) and [`revision.md:33`](../G2-followup32-design/revision.md#L33): no transport or socket parameter changes (including any RTO or pacing tuning) may be enabled in any C1 acceptance run or either D-133 comparison arm, and the original `1.5 s` single-exchange timeout, cadence, D-120 analyzer, 100-reload inputs, and historical follow-up 27 `B1` (`1,501.407973 ms`) FAIL status remain unchanged.
+
+### 3.2 Complete Citation Verification Table
+
+Every citation from `r24` (`ba5d3004:.agent/REVIEW.md`) that follow-up 32's [`revision.md`](../G2-followup32-design/revision.md), [`protocol.md`](../G2-followup32-design/protocol.md), and [`owner-decision.md`](../G2-followup32-design/owner-decision.md) adopted or addressed was checked against `main` (`e54700f9d2f8361b8905c44e51f3f32bb82e5bcf`) and `52a7e59b`:
+
+| `r24` Item | Citation / Quote / Figure in `r24` and Follow-up 32 | Actual Location and Content on `main` (and `52a7e59b`) | Verdict |
+|---|---|---|---|
+| `H-1` | [`docs/poc/G2-followup31-design/candidates.md:45-60, 128-131, 156-162, 203`](../G2-followup31-design/candidates.md#L45-L60); [`d133-comparison.md:195-210`](../G2-followup31-design/d133-comparison.md#L195-L210) (unchanged steady-state reload frequency claim). | Exact match at those lines in `docs/poc/G2-followup31-design/`. | **Verified** |
+| `H-1` | [`node/agent/engine.go:619-632`](../../../node/agent/engine.go#L619-L632) (`Engine.Step` always calls `e.enforce` when `retain` is false) and [`node/agent/engine.go:928-1088`](../../../node/agent/engine.go#L928-L1088) (`enforce` rebuilds and calls `e.plane.Apply(applyCtx, model, prev)` at line `1087`). | Exact match on `main` and `52a7e59b`. | **Verified** |
+| `H-1` / Cadence | `r24` cites `node/agent/config.go:133-138` for `PollSeconds = 10`, `HeartbeatSeconds = 10`, and `6/min`, `360/hr`, `8,640/day`. [`owner-decision.md:8-11`](../G2-followup32-design/owner-decision.md#L8-L11) adopts the `10 s` (`6/min`, `360/hr`, `8,640/day`) cadence without the line number. | On `main` and `52a7e59b`, `HeartbeatSeconds = 10` is at [`node/agent/config.go:136-138`](../../../node/agent/config.go#L136-L138) and `PollSeconds = 10` is at [`node/agent/config.go:142-144`](../../../node/agent/config.go#L142-L144) (lines `133-135` are `RenewLeadSeconds = 120`; `139-141` are `WatchdogStaleSeconds = 30`). Follow-up 32 did not copy the off-by-6 line range. | **Verified** (with exact `config.go:136-144` lines noted) |
+| `H-2` | [`docs/poc/G2-followup31-design/candidates.md:38-40, 76-86`](../G2-followup31-design/candidates.md#L38-L40) and [`proof-obligations.md:120-125`](../G2-followup31-design/proof-obligations.md#L120-L125) (unchanged `renderTC` / `TCBatch` order). | Exact line matches in both files (`proof-obligations.md:120-125` is item 3 under "Netlab campaigns for the later follow-up", which `r24` called item 2; [`revision.md`](../G2-followup32-design/revision.md) and [`protocol.md`](../G2-followup32-design/protocol.md) did not adopt `r24`'s item number). | **Verified** |
+| `H-2` | [`node/agent/decide.go:766-812`](../../../node/agent/decide.go#L766-L812) (`buildQoS` sets `ActiveMembers: len(active)`) and [`node/agent/decide.go:815-835`](../../../node/agent/decide.go#L815-L835) (`classRate` computes `fair = cfg.CapacityBps / uint64(active)` and `if rate > ceil { rate = ceil }` at lines `829-832`). | Exact match on `main` and `52a7e59b`. | **Verified** |
+| `H-2` | `r24` cites `node/enforce/render_tc.go:59-79, 62-67, 96` (`prev.QoS.Classes` orphan deletion and `0xfffe`) and `node/enforce/apply.go:151, 183` (`TCBatch` before `NftBatch`), plus spec `§8.3`. [`revision.md:28, 43`](../G2-followup32-design/revision.md#L28) and [`protocol.md:16-32`](../G2-followup32-design/protocol.md#L16-L32) link [`renderTC`](../../../node/enforce/render_tc.go#L41-L82) and [`Plane.Apply`](../../../node/enforce/apply.go#L69-L234) and already correct `§8.3` to `§11`. | `render_tc.go:59-79` and `62-67` match on `main` and `52a7e59b`; `qdisc add ... htb default %x` is at [`render_tc.go:57`](../../../node/enforce/render_tc.go#L57) (`writeClass` for `HTBDefaultMinor` at line `70`), while `HTBDefaultMinor uint16 = 0xFFFE` is defined in [`node/enforce/model.go:38`](../../../node/enforce/model.go#L38) (not `render_tc.go:96`). In [`node/enforce/apply.go`](../../../node/enforce/apply.go), `TCBatch` and `NftBatch` were at lines `151` and `183` at `52a7e59b` and are at lines `158`, `192`, and `209-215` on `main` after follow-up 32's commit `240b0278`. | **Verified** (`§11` already corrected in `revision.md:43`; exact `model.go:38` and post-`240b0278` `apply.go` lines noted) |
+| `H-3` | [`docs/poc/G2-followup31-design/candidates.md:64-66, 99-104`](../G2-followup31-design/candidates.md#L64-L66) and [`proof-obligations.md:107-111`](../G2-followup31-design/proof-obligations.md#L107-L111); [`node/agent/decide.go:682-697`](../../../node/agent/decide.go#L682-L697) (collapses per-binding deadlines into one `DeadlineMono` and copies first binding's `EffectiveServiceEnd` / `NodeLeaseEnd` at `691-695`). | Exact match on `main` and `52a7e59b`. | **Verified** |
+| `H-3` | `r24` claimed `memberTimeout` (`node/enforce/deadline.go:39-40`) ignores `b.ValidUntil`. [`revision.md:29`](../G2-followup32-design/revision.md#L29) and [`protocol.md:64-65`](../G2-followup32-design/protocol.md#L64-L65) rejected that sub-claim and cited [`node/enforce/deadline.go:36-62`](../../../node/enforce/deadline.go#L36-L62). | [`node/enforce/deadline.go:41-43`](../../../node/enforce/deadline.go#L41-L43) caps `deadline` by `binding.ValidUntil`, and lines `51-56` cap by `lease.DeadlineMono`. Follow-up 32's correction of `r24` is exact. | **Verified** |
+| `H-3` | [`node/agent/engine.go:649-657`](../../../node/agent/engine.go#L649-L657) (`loadRuntime` restores `retained_applied`), [`982-994`](../../../node/agent/engine.go#L982-L994) (`!d.Serve` applies baseline without clearing `e.appliedModel`), `1028`, [`1087`](../../../node/agent/engine.go#L1087), [`1126`](../../../node/agent/engine.go#L1126) (`e.appliedModel = &model`), [`1289-1294`](../../../node/agent/engine.go#L1289-L1294) (`withdraw`); [`node/agent/serving.go:185-207`](../../../node/agent/serving.go#L185-L207) (`auditBlocked`); [`node/agent/plane.go:16`](../../../node/agent/plane.go#L16) (`Apply` signature). | Exact match on `main` and `52a7e59b`. (In [`node/enforce/apply.go`](../../../node/enforce/apply.go), `Apply` and `m.Now`/`m.NowMono` were lines `68` and `169-171` at `52a7e59b`, and are lines `69` and `178-180` on `main` after `240b0278`.) | **Verified** |
+| `H-4` & `M-2` | At `52a7e59b`: `node/enforce/apply.go:87, 151-175, 183, 192, 199, 202, 213, 222, 245-273, 305-315` and `node/enforce/render_nft.go:276-395, 292-294, 510-536` (`524-529` `replaceChain`). Fixed in follow-up 32 (`revision.md:10-21, 30, 32`) and tested by `TestISO08_ApplyStageFailure_CallerCanceledStillQuarantines`, `TestISO08_ApplyStageFailure_PostTCClockFailureRollsBackShaping`, and `TestISO08_ApplyStageFailure_CleanupSurvivesPriorDeleteAndCanceledCaller` in [`node/enforce/enforce_test.go`](../../../node/enforce/enforce_test.go). | All pre-fix line numbers match `52a7e59b`; on `main` after `240b0278`, the fixes live at [`node/enforce/apply.go:158-228, 321-395`](../../../node/enforce/apply.go#L158-L228) and [`node/enforce/render_nft.go:277-409, 541-550`](../../../node/enforce/render_nft.go#L277-L409), and all three test functions exist in [`node/enforce/enforce_test.go:752, 811, 860`](../../../node/enforce/enforce_test.go#L752). | **Verified** |
+| `M-1` | [`docs/poc/G2-followup31-design/candidates.md:54-60, 88-112, 133-154, 204`](../G2-followup31-design/candidates.md#L54-L60); [`node/agent/engine.go:1087-1141`](../../../node/agent/engine.go#L1087-L1141) (`1135` `retained_applied`); [`node/enforce/executor.go:44-54, 76-97`](../../../node/enforce/executor.go#L44-L54); [`node/enforce/command_lifecycle.go:154-192`](../../../node/enforce/command_lifecycle.go#L154-L192). | Exact match on `main` and `52a7e59b`. | **Verified** |
+| `M-3` (trace & NFLOG) | [`tests/netlab/cmd/fvpn-netlab/trace.go:72-94`](../../../tests/netlab/cmd/fvpn-netlab/trace.go#L72-L94) (`line 77`: `delete chain inet fvpn fv_deadline_guard`) and [`157-177`](../../../tests/netlab/cmd/fvpn-netlab/trace.go#L157-L177) (`guardLogScript`); [`tests/netlab/scripts/reload_analysis.py:55-56`](../../../tests/netlab/scripts/reload_analysis.py#L55-L56); [`tests/netlab/reload_trace_test.go:125-134`](../../../tests/netlab/reload_trace_test.go#L125-L134). [`revision.md:33`](../G2-followup32-design/revision.md#L33) also notes [`d133-comparison.md:112-126`](../G2-followup31-design/d133-comparison.md#L112-L126) already planned the common adapter. | Exact match on `main` and `52a7e59b`. | **Verified** |
+| `M-3` (`B1` citation) | `r24` (`REVIEW.md:153, 162`) claims `d133-comparison.md:65-75 keeps B1 (TCP_RTO_MIN / socket pacing) as a transport follow-up`, adopted in [`protocol.md:168-169`](../G2-followup32-design/protocol.md#L168-L169) and [`revision.md:33`](../G2-followup32-design/revision.md#L33). | **Mismatch in `r24` source citation:** [`d133-comparison.md:65-75`](../G2-followup31-design/d133-comparison.md#L65-L75) covers stop/admission rules and never mentions `TCP_RTO_MIN` or `socket pacing`; `B1` is the first candidate arm in the `A1,B1,A2,B2` D-133 quartet ([`d133-comparison.md:19, 189, 214`](../G2-followup31-design/d133-comparison.md#L19)). | **Corrected in §3.1 above** (citation rejected; no-transport-tuning prerequisite kept) |
+| `L-1` | Lock location (`current-guarantees.md:27`, `node/agent/config.go:130`, `node/updater/config.go:53`) and empty eligible-set transaction shape (`candidates.md:54-60, 96-107, 158`), adopted in [`protocol.md:93-115`](../G2-followup32-design/protocol.md#L93-L115) and [`revision.md:34`](../G2-followup32-design/revision.md#L34). | **Mismatch in lock-location half; match in empty-set half.** Every default lock path on `main` is `/var/lib/vpn-node/update.lock` (`node/agent/config.go:125`, `node/nodelock/lock.go:23`, `node/updater/layout.go:33`, `packaging/installer/layout.go:54`, `node/watchdog/watch.go:78`). | **Corrected in §1.1–§1.2 above** (lock-location half rejected; empty-set half kept) |
+| Lease / Renewal (`owner-decision.md`) | [`owner-decision.md:16-31`](../G2-followup32-design/owner-decision.md#L16-L31) and [`revision.md:38-41`](../G2-followup32-design/revision.md#L38-L41) cite [`internal/leases/leases.go:28, 193-208`](../../../internal/leases/leases.go#L28) (`DefaultMaxOfflineLeaseSeconds = 86400`, `ComputeMemberLeaseEnd`), [`docs/handover/calibration.md:37, 47, 53`](../../handover/calibration.md#L37), [`contracts/openapi.yaml`](../../../contracts/openapi.yaml) (`max_offline_lease_seconds` `60..86400`), [`needRenew`](../../../node/agent/sync.go#L149-L165), [`leadJitter`](../../../node/agent/sync.go#L260-L272), [`renewLead`](../../../node/agent/engine.go#L1327-L1336), [`adoptStoredServing`](../../../node/agent/restart.go#L18-L95) (`leaseRefreshPending = true` at line `92`), and [`tests/netlab/scenario_at10_test.go:135-154`](../../../tests/netlab/scenario_at10_test.go#L135-L154). | All symbols, files, and figures in `owner-decision.md` and `revision.md` match `main` and `52a7e59b`. (Note: `r24` L233 cited `node/agent/sync.go:142-151` for `renewLead` and `config.go:145-147` for `RenewLeadSeconds = 120`, whereas `renewLead` is in `node/agent/engine.go:1327-1336` and `RenewLeadSeconds` is in `node/agent/config.go:133-135`; `owner-decision.md:18-19` linked the right files directly.) | **Verified** |
+| Watchdog (`owner-decision.md`) | [`owner-decision.md:61-62`](../G2-followup32-design/owner-decision.md#L61-L62) cites [`Watch.Once`](../../../node/watchdog/watch.go#L119-L168) (`TryAcquire` returning `nodelock.ErrBusy` at lines `131-140`) and `30s` stale threshold / `10s` interval ([`node/watchdog/watch.go:83-90`](../../../node/watchdog/watch.go#L83-L90), [`node/agent/config.go:139-141`](../../../node/agent/config.go#L139-L141)). | Matches `main` and `52a7e59b`. (Note: `r24` L214/L238 cited `watch.go:53-98` and `64-73` for `Watch.Once` / `TryAcquire`, which are actually in `watch.go:119-168`; `owner-decision.md:61` linked `Watch.Once` without adopting `r24`'s wrong line numbers.) | **Verified** |
+| Follow-up 27/29/30 Figures (`owner-decision.md`, `revision.md`) | [`owner-decision.md:59-60`](../G2-followup32-design/owner-decision.md#L59-L60) and [`revision.md:42`](../G2-followup32-design/revision.md#L42) reject `r24`'s unsupported `"22 UDP losses, 28 TCP retransmissions, 256.8ms stall"` figure and record follow-up 30's `0` UDP losses, `0` failed TCP exchanges, `4` TCP retransmissions (`1` in `A1`, `3` in `B1`), `37.163689ms` (`A1`) / `37.131917ms` (`B1`) max TCP latency, and follow-up 27 `B1`'s `1,501.407973ms` timeout (`r24` Question 6 wrote `1,501.432 ms`). | Exact match with [`docs/poc/G2-followup30-evidence/guard-outcome.md:3-11, 27-35, 47-51, 58-64`](../G2-followup30-evidence/guard-outcome.md#L3-L11), [`docs/poc/G2-followup30-evidence/b1-context.json:4`](../G2-followup30-evidence/b1-context.json#L4), and [`docs/poc/G2-followup27-evidence/b1-tcp-failure.json:10`](../G2-followup27-evidence/b1-tcp-failure.json#L10). | **Verified** |
+
+---
+
+## 4. Whole-Tree Search for `/var/lib/vpn-node/update-journal/update.lock`
+
+### 4.1 Search Commands
+
+```sh
+git grep -n 'update-journal/update\.lock'
+grep -rnI --exclude-dir=.git 'update-journal/update\.lock' .
+python3 -c '
+import glob, gzip
+for p in sorted(glob.glob("docs/poc/**/*.gz", recursive=True)):
+    with gzip.open(p, "rt", errors="replace") as f:
+        for i, line in enumerate(f, 1):
+            if "update-journal/update.lock" in line:
+                print(f"{p}:{i}:{line.strip()}")
+'
+```
+
+### 4.2 Search Results and Ownership
+
+| Location | Tree Status | Owner | Disposition |
+|---|---|---|---|
+| [`docs/poc/G2-followup32-design/protocol.md:93`](../G2-followup32-design/protocol.md#L93) | Tracked on `main` | `w1-netlab` (`docs/poc/G2-*`), pinned file-by-file by `w4-handover` (`tests/handover/...`) | Left byte-identical per task instructions so handover follow-up 36 pins pass; superseded additively by §1.1 of this document. |
+| `.agent/BRIEF.md:9` | Untracked (`.agent/`, gitignored) | Orchestrator task brief for `w1-netlab` follow-up 33 | Quotes the wrong path as part of the task prompt; not tracked in git. |
+| `ba5d3004:.agent/REVIEW.md:178, 181` | Unmerged git commit object (`r24` review input) | Orchestrator / `w4-handover` (`docs/reviews/*`) | Not present in the `main` working tree (`git grep` on `HEAD` does not hit it); any review-archive notes under `docs/reviews/` belong to `w4-handover`. |
+| All other code, tests, tooling, packaging, deployment, and documentation files (including `.gz` archives) | Tracked on `main` | All lanes | **0 hits.** Every code, test, installer, updater, agent, and watchdog file uses `/var/lib/vpn-node/update.lock`. |
