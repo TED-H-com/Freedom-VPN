@@ -218,7 +218,12 @@ func (f *matchingLeaseHold) modify(resp *http.Response) error {
 			}
 			id, ie := uuid.Parse(arm.ID)
 			base, ge := decstr.Parse(arm.BaseGeneration)
-			if ie != nil || id == uuid.Nil || ge != nil || base == 0 || arm.HoldSeconds < 1 || arm.HoldSeconds > 120 || arm.ArmedAt.IsZero() || arm.ExpiresAt.After(now.Add(3*time.Minute)) || arm.ExpiresAt.After(arm.ArmedAt.Add(3*time.Minute)) || !arm.ExpiresAt.After(arm.ArmedAt) {
+			survivorOK := arm.SurvivorMemberID == "" && arm.MaxContinuedGenerations == 0
+			if arm.SurvivorMemberID != "" {
+				sid, se := uuid.Parse(arm.SurvivorMemberID)
+				survivorOK = se == nil && sid != uuid.Nil && arm.MaxContinuedGenerations == 1
+			}
+			if ie != nil || id == uuid.Nil || ge != nil || base == 0 || !survivorOK || arm.HoldSeconds < 1 || arm.HoldSeconds > 120 || arm.ArmedAt.IsZero() || arm.ExpiresAt.After(now.Add(3*time.Minute)) || arm.ExpiresAt.After(arm.ArmedAt.Add(3*time.Minute)) || !arm.ExpiresAt.After(arm.ArmedAt) {
 				return errors.New("lease hold arm invalid")
 			}
 			// Atomic consume: restarting this proxy cannot re-arm the same file.
@@ -263,6 +268,9 @@ func (f *matchingLeaseHold) modify(resp *http.Response) error {
 		Signed struct {
 			Generation string `json:"config_generation"`
 			LeaseID    string `json:"lease_id"`
+			Members    []struct {
+				MemberID string `json:"member_id"`
+			} `json:"members"`
 		} `json:"signed"`
 	}
 	if json.Unmarshal(body, &doc) != nil {
@@ -278,15 +286,66 @@ func (f *matchingLeaseHold) modify(resp *http.Response) error {
 		ev.Events = append(ev.Events, leasehold.Event{Kind: "desired_forwarded", At: now, Generation: doc.Signed.Generation, SHA256: digestBytes(body), Bytes: len(body), UpstreamStatus: 200, DownstreamStatus: 200})
 		return f.save()
 	}
+	if desired && ev.Arm.SurvivorMemberID != "" && ev.TargetGeneration != "" && ev.HoldStartedAt != nil && ev.ReleasedAt == nil {
+		refGen := ev.TargetGeneration
+		if ev.ContinuedGeneration != "" {
+			refGen = ev.ContinuedGeneration
+		}
+		ref, _ := decstr.Parse(refGen)
+		if generation > ref {
+			ev.Events = append(ev.Events, leasehold.Event{Kind: "desired_forwarded", At: now, Generation: doc.Signed.Generation, SHA256: digestBytes(body), Bytes: len(body), UpstreamStatus: 200, DownstreamStatus: 200})
+			return f.save()
+		}
+	}
 	if !lease || ev.TargetGeneration == "" {
 		return nil
 	}
-	if doc.Signed.Generation != ev.TargetGeneration {
-		target, _ := decstr.Parse(ev.TargetGeneration)
-		if generation > target && ev.ReleasedAt == nil {
-			return f.release(now, "generation_superseded")
+	activeTarget := ev.TargetGeneration
+	if ev.Arm.SurvivorMemberID == "" {
+		if doc.Signed.Generation != ev.TargetGeneration {
+			target, _ := decstr.Parse(ev.TargetGeneration)
+			if generation > target && ev.ReleasedAt == nil {
+				return f.release(now, "generation_superseded")
+			}
+			return nil
 		}
-		return nil
+	} else {
+		if ev.ContinuedGeneration != "" {
+			activeTarget = ev.ContinuedGeneration
+		}
+		if ev.ReleasedAt == nil {
+			if ev.ContinuedGeneration == "" {
+				if doc.Signed.Generation != ev.TargetGeneration {
+					target, _ := decstr.Parse(ev.TargetGeneration)
+					if generation <= target {
+						return nil
+					}
+					if ev.HoldStartedAt == nil {
+						return f.release(now, "generation_superseded")
+					}
+					if len(doc.Signed.Members) != 1 || doc.Signed.Members[0].MemberID != ev.Arm.SurvivorMemberID {
+						return f.release(now, "survivor_mismatch")
+					}
+					continuedAt := now.UTC()
+					ev.ContinuedGeneration = doc.Signed.Generation
+					ev.ContinuedAt = &continuedAt
+					ev.Events = append(ev.Events, leasehold.Event{Kind: "continuation_started", At: now, Generation: doc.Signed.Generation})
+				}
+			} else {
+				if doc.Signed.Generation != ev.ContinuedGeneration {
+					continued, _ := decstr.Parse(ev.ContinuedGeneration)
+					if generation > continued {
+						return f.release(now, "generation_superseded")
+					}
+					return nil
+				}
+				if len(doc.Signed.Members) != 1 || doc.Signed.Members[0].MemberID != ev.Arm.SurvivorMemberID {
+					return f.release(now, "survivor_mismatch")
+				}
+			}
+		} else if doc.Signed.Generation != activeTarget {
+			return nil
+		}
 	}
 	id, err := uuid.Parse(doc.Signed.LeaseID)
 	if err != nil || id == uuid.Nil {
