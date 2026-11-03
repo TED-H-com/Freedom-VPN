@@ -25,6 +25,8 @@
 | `r17-rev14-d104-d117-review` | [r17-rev14-d104-d117-review.md](r17-rev14-d104-d117-review.md) | 2026-10-31 | `grok/grok-4.7`, base `62f24e6d` | Revision 14, D-104–D-118 | 1 Medium: M-1 → fleet-update 12 (#322), D-127; r16 H-1 / M-1 / M-2 / L-1 re-run and held | [installer correction proof](../../internal/fleetupdate/review_r17_installer_integration_test.go) |
 | `r18-generation-change-review` | [r18-generation-change-review.md](r18-generation-change-review.md) | 2026-11-01 | `grok/grok-4.7`, base `5bd75102` | D-135 / corrected D-136, agent-core 31 shutdown and D-138 TEST ONLY observation | 5 OPEN: 3 Medium / 2 Low; M-1/M-2/M-3/L-2 → agent-core 32; L-1 → netlab | Only the report is archived; proof files remain on the review branch. |
 | `r19-intersection-design-review` | [r19-intersection-design-review.md](r19-intersection-design-review.md) | 2026-11-01 | `grok/grok-4.7`, base `6eda25d0` | Agent-core 33 option (b) intersection-serving design, D-139 | H-1 → netlab 24; M-2/L-2 → agent-core 34: routed; in progress. Eleven design-only findings → D-141 reconsideration conditions. | Only the report is archived; proof files remain on the review branch. |
+| `r20-adoption-signal-review` | [r20-adoption-signal-review.md](r20-adoption-signal-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `7d34c885` | Agent-core 36 same-boot adoption refusal on changed deny / host sets, signal lifetime through Close, durability and lab proofs | 6 routed, not yet judged: 2 High / 3 Medium / 1 Low; H-1, M-1, M-2, M-3 (pre-existing), L-1 → agent-core 37; H-2 → netlab 27 | Only the report is archived; proof files remain on the review branch (`639eda6b`). |
+| `r21-adoption-fixes-review` | [r21-adoption-fixes-review.md](r21-adoption-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `7b3d7bf8` | Agent-core 37 fixes for r20 H-1, M-1, M-2, M-3 and L-1; D-141 | 0 Critical / 2 High / 2 Medium / 1 Low; returned before merge, none confirmed | Proof branch `47f75c04`; none adopted on main at this cut |
 
 ## What Held Across the Reviews
 
@@ -192,3 +194,64 @@ The original report and the #385 disposition table above retain their bytes.
 
 RELATED ICMP from a spec-denied outer source is a new open owner question,
 not a defect or a decision. Historical failures stay failed.
+
+## r20 dispositions at the follow-up 30 cutoff (2026-11-03 EST)
+
+Exact source: the `r20-adoption-signal-review` worktree's `.agent/REVIEW.md`,
+delivered with proof commit `639eda6b21bee726695c6a51bcf12637587e1433` on top of
+agent-core 36's `7d34c885`. The [raw archive](r20-adoption-signal-review.md) is
+byte-for-byte: **32,207 bytes**, SHA-256
+`af15fb7c42e86eb7269fd9e8bd1396a730cb5ba51643e52e7f6f1c34738a0f1a`. It carries no
+host path, username or secret. Each finding has a failing proof test on the
+review branch; no proof files were adopted. r20 recommended fixing before the
+merge. [Follow-up 30](../handover/follow-up-30.md) pins this cut.
+
+**Merged with routed fixes.** The orchestrator merged agent-core 36 (#401)
+anyway: it closes a security gap on main, and what r20 found that 36 introduced
+fails closed or is recorded, never silent. The #401 roadmap row records this.
+Agent-core 37 judges each finding before fixing it, so none is recorded as
+confirmed.
+
+| Finding | Disposition at #403 |
+|---|---|
+| H-1 | Routed, not yet judged — agent-core 37. A refused same-boot adoption can record member bytes counted since the last sample as an unattributed `mapping conflict` usage gap. |
+| H-2 | Routed, not yet judged — netlab 27, with four concrete requirements: interval normalisation, SNAT /32 in host_v4, denied_v4 / host_v4 set flags, and baseline bare vs probe sets with allowed_v4 empty. |
+| M-1 | Routed, not yet judged — agent-core 37. SIGTERM during Boot and the heartbeat. |
+| M-2 | Routed, not yet judged — agent-core 37. Comparison order inside adoption. |
+| M-3 | Routed, not yet judged — agent-core 37; pre-existing. Latched apply error and the shutdown heartbeat. |
+| L-1 | Routed, not yet judged — agent-core 37. Empty non-nil DeniedV4 and the generation check. |
+
+What held is the review's statement, not an acceptance result. The lab scenario
+was reviewed statically, and the A,B,A,B timing runs were out of scope.
+Historical failures stay failed.
+
+## r21 dispositions at the follow-up 31 cutoff (2026-11-03 EST)
+
+Exact source: `r21-adoption-fixes-review` worktree's `.agent/REVIEW.md`, with
+proof commit `47f75c04` reviewing agent-core 37's delivered `7b3d7bf8`.
+Reviewer: **agy `gemini-4-argon-high`**. The [raw archive](r21-adoption-fixes-review.md)
+is byte-for-byte: **29,439 bytes**, SHA-256
+`0fcf888bbb59e8e3032abf041f4d600fcb661525a3c390e15850c61e4df2edc0`.
+It carries no host path, username or secret. Findings: **0 Critical, 2 High,
+2 Medium, 1 Low**, each with a proof test on the review branch. None adopted
+onto main. Recommendation: **DO NOT MERGE — Return to agent-core (H-1, H-2,
+M-1, M-2, L-1)**.
+
+**Returned to agent-core 38 before merge.** Agent-core 37 is not on main at
+#407; its fixes travel with 38 after 38 is reviewed. D-141 requires owner
+judgment before fixing; none of r21's findings is recorded as confirmed.
+
+| Finding | Disposition at #407 |
+|---|---|
+| H-1 | Routed, not yet judged — agent-core 38; review reports old-member billing after an Apply/persistence crash. |
+| H-2 | Routed, not yet judged — agent-core 38; review reports new-member billing after failed settlement then rebinding. |
+| M-1 | Routed, not yet judged — agent-core 38; review reports a false mapping-conflict gap after rebinding. |
+| M-2 | Routed, not yet judged — agent-core 38; review reports canceled-boot upload, recovery latch, budgets and exit-status problems. |
+| L-1 | Routed, not yet judged — agent-core 38; review reports an orphan member-path pending flag. |
+
+r20 H-1, M-1, M-2, M-3 and L-1 therefore stay open on main. Separately,
+**r20 H-2 and live drift are closed by netlab 27 (#405)**, including periodic
+withdrawal without another Apply and baseline after an unrecorded Apply.
+The r20 disposition above remains the historical #403 cut. What held in r21
+is the review's statement, not new acceptance evidence. [Follow-up 31](../handover/follow-up-31.md)
+pins this disposition; historical failures stay failed.

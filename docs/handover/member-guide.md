@@ -1,7 +1,7 @@
 # Freedom VPN 會員使用手冊 / Member Guide (`docs/handover/member-guide.md`)
 
-**Current cut — [follow-up 29](follow-up-29.md) (2026-11-01 EST):** Through #396: same-boot deny-set adoption gap open; isolation 15 unqualified on a 3.821 µs interleave, signal-15 cause unproven. Devstack 27 proves the TEST ONLY populated hold; consumer rows remain open. D-120 measurement end fixed; every failed run stays failed. D-135–D-138, D-140 and D-141 remain provisional. Seven owner decisions retained.
-**Previous cut — [follow-up 28](follow-up-28.md):** #386–#390 at aae6763f; 19 subtests, five rows, 16 snapshots, 1,644 checks and 47 findings. Historical failures stay failed.
+**Current cut — [follow-up 31](follow-up-31.md) (2026-11-03 EST):** Through #407: isolation 17 records the first qualified D-140 pass; netlab 27 closes r20 H-2 and live drift. D-144 lists are on main; F30-01 remains routed. r21 returned to agent-core 38 before merge. Historical failures stay failed; nine owner decisions.
+**Previous cut — [follow-up 30](follow-up-30.md):** #397–#403 at b9439411; 23 subtests, seven rows, nine snapshots, 449 checks, six dated documents and 61 findings. See follow-up 31 for timing errata.
 
 **2026-10-31 服務通知（#351 截止）：** DNS 的 TTL 是快取最長有效時間，
 不保證期間內每次查詢答案相同；較早送出的上游請求若較晚完成，可能覆蓋較新的
