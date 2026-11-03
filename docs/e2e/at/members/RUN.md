@@ -48,8 +48,27 @@ Private producer export node2 exit: 0
 Owned stack teardown exit: 0
 ```
 
-The required foreground gate order is area lint; live at-members (above, exit 2); members offline tests; uncached handover tests; root Go lint; root vet; gofmt; diff check; amd64/arm64 helper builds; committed-evidence hygiene. The root invocation uses `make go-lint go-with-disk-tmp=` inside the Python disk wrapper to disable the root Makefile's shell cleanup trap without skipping checks. Final offline receipts are appended after completion.
+The required foreground gate order is area lint; live at-members (above, exit 2); members offline tests; uncached handover tests; root Go lint; root vet; gofmt; diff check; amd64/arm64 helper builds; committed-evidence hygiene. The root invocation uses `make go-lint go-with-disk-tmp=` inside the Python disk wrapper to disable the root Makefile's shell cleanup trap without skipping checks. Final offline receipts follow below.
 
 [Results](summary.md), [archive](history/follow-up-16/INDEX.md), [commit mapping](history/follow-up-16/PUBLISHED-COMMITS.md), [derivation commands](PROCEDURES.md#follow-up-17-retained-evidence).
 
 Post-run root lint initially rejected the live-only `memberHTTPRecord` declaration as unused in the untagged build (`U1000`). Commit `05c5798d` moves the identical declaration into the existing `e2e`-tagged test file and removes the now-unused import. It changes no behavior or predicate. The live measurement remains pinned to `3ba08564`; both build modes are rechecked without repeating the run. The initial failed lint receipt is retained.
+
+Final gate receipts ([all attempts and real output tails](F17-gates.json)):
+
+| Gate | Exit | Elapsed seconds |
+|---|---:|---:|
+| Area lint | 0 | 1.448 |
+| One assembled run | 2 | 2936.107 |
+| Offline members (recheck) | 0 | 253.650 |
+| Uncached handover (recheck) | 0 | 2.730 |
+| Root go-lint (recheck) | 0 | 1.379 |
+| Root go vet | 0 | 0.373 |
+| Exact gofmt assertion | 0 | 0.114 |
+| Diff whitespace | 0 | 0.305 |
+| Five helpers × amd64/arm64 | 0 | 3.037 |
+| Committed-evidence hygiene | 0 | 11.698 |
+
+The offline recheck waited **240.181 s** for host admission, then passed. The initial gofmt shell assertion contained one extra literal `)` and returned 1 without a formatting finding; the exact corrected assertion returned 0. The initial lint U1000 and this invocation error remain in the ledger. Committed-evidence hygiene scanned **220 acceptance JSON records and 416 Markdown documents**, including lossless gzip bytes and pins. No failed live predicate was retried.
+
+Archive/link verification: all 81 original archive files still match baseline bytes and SHA-256. Across current root documents, the new archive and additive references, **336** Markdown targets were checked. One original operator-checklist reference resolves outside owned paths and is listed in [requests](requests.md); the archive index supplies a working direct link. Other checked targets resolve, and plain AT02 remains present. Earlier archives remain untouched.
