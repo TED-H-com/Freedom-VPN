@@ -96,7 +96,10 @@ var _ Controller = (*Meter)(nil)
 // New checks the open meter epoch against the current counters (§10.7) and
 // returns a meter ready to sample. A source that cannot be read fails the
 // constructor: the agent must not forward when it cannot meter.
-func New(cfg Config) (*Meter, error) {
+func New(cfg Config) (*Meter, error) { return NewContext(context.Background(), cfg) }
+
+// NewContext bounds startup reconciliation by the caller's local budget.
+func NewContext(ctx context.Context, cfg Config) (*Meter, error) {
 	if cfg.Store == nil || cfg.Source == nil || cfg.NodeID == uuid.Nil || cfg.IncarnationID == uuid.Nil {
 		return nil, fmt.Errorf("meter: store, source, node and incarnation are required")
 	}
@@ -126,12 +129,12 @@ func New(cfg Config) (*Meter, error) {
 	}
 	m.cond = sync.NewCond(&m.mu)
 	if cfg.PreserveClosedEpoch {
-		if _, err := m.store.ClosedCheckpoint(context.Background()); err == nil {
+		if _, err := m.store.ClosedCheckpoint(ctx); err == nil {
 			m.paused = true
 			return m, nil
 		}
 	}
-	if err := m.reconcile(context.Background()); err != nil {
+	if err := m.reconcile(ctx); err != nil {
 		return nil, err
 	}
 	return m, nil

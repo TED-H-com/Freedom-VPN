@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"maps"
 	"net/netip"
@@ -72,28 +73,33 @@ type Engine struct {
 	meterSource meter.Source
 	ownStore    bool
 
-	usage          *usagestore.Store
-	meter          *meter.Meter
-	kernel         *kernelSource
-	expectServing  atomic.Bool
-	uploader       *usageupload.Uploader
-	usageOnce      bool
-	sampleOn       bool
-	finalDone      bool
-	finalBarrierID string
-	usageLock      *nodelock.Lock
-	shutUsage      bool
-	meterSnap      []enforce.Binding
-	usageOutbox    bool
-	usageDisk      bool
-	usagePersist   bool
-	loopCtx        context.Context
-	loopCancel     context.CancelFunc
-	loops          sync.WaitGroup
-	closeOnce      sync.Once
-	closeDone      chan struct{}
-	closeCtx       context.Context
-	closeErr       error
+	usage           *usagestore.Store
+	meter           *meter.Meter
+	kernel          *kernelSource
+	expectServing   atomic.Bool
+	uploader        *usageupload.Uploader
+	usageOnce       bool
+	sampleOn        bool
+	finalDone       bool
+	finalBarrierID  string
+	usageLock       *nodelock.Lock
+	shutUsage       bool
+	meterSnap       []enforce.Binding
+	restartDesired  *api.DesiredState
+	restartBindings []enforce.Binding
+	retainedPending bool
+	runCtx          context.Context
+	usageOutbox     bool
+	usageDisk       bool
+	usagePersist    bool
+	loopCtx         context.Context
+	loopCancel      context.CancelFunc
+	loops           sync.WaitGroup
+	closeOnce       sync.Once
+	closeDone       chan struct{}
+	bootDone        chan struct{}
+	closeCtx        context.Context
+	closeErr        error
 
 	// usageStatus is the open store, read when an observation is built.
 	// Nil before the store opens and after it closes. usageStatusBound
@@ -313,11 +319,16 @@ func (e *Engine) Close() error {
 	// finishes or the process exits; never close a store under a live sampler.
 	e.closeOnce.Do(func() {
 		var cancel context.CancelFunc
-		e.closeCtx, cancel = newLocalBudget(context.Background(), 3*time.Second)
+		e.closeCtx, cancel = newLocalBudget(context.Background(), closeLocalBudget)
 		e.closeDone = make(chan struct{})
 		go func() {
 			defer cancel()
 			defer close(e.closeDone)
+			// A timed-out Boot may still own SQLite or a kernel operation. Never
+			// close underneath it; the caller's Close deadline still bounds exit.
+			if e.bootDone != nil {
+				<-e.bootDone
+			}
 			e.shutdownUsage(e.closeCtx)
 			if e.client != nil {
 				e.client.Close()
@@ -412,24 +423,57 @@ func (e *Engine) loadIdentity(ctx context.Context) error {
 	return nil
 }
 
-// bootLocalBudget bounds each phase of Boot's local completion: the runtime
-// reads before adoption, and the fail-closed baseline, ledger open, retained
-// usage settlement and heartbeat after it. A stop request during Boot ends
-// lock waits and control/probe I/O but not this local work, so TERM cannot
-// turn into a canceled, unreported baseline (r20 M-1). Ten seconds is Step's
-// maximum local allowance; with Close's three seconds it stays inside the
-// 13 s cooperative stop budget under TimeoutStopSec=15s.
+// bootLocalBudget is ONE deadline for all Boot stages, including adoption's
+// cleanup, recovery, ledger reconciliation and final settlement. Close has a
+// separate three-second allowance: cooperative Boot + Close is at most 13s
+// under TimeoutStopSec=15s. Control I/O and lock waits additionally follow TERM.
 const bootLocalBudget = 10 * time.Second
+const closeLocalBudget = 3 * time.Second
 
-// bootLocal is a local budget whose control requests still follow caller.
-func bootLocal(caller context.Context) (context.Context, context.CancelFunc) {
-	return newLocalBudget(context.WithValue(caller, controlBudgetKey{}, caller), bootLocalBudget)
+// ErrBoot distinguishes failure to establish startup safety from an ordinary
+// stop after Boot completed. The command must retain it even under TERM.
+var ErrBoot = errors.New("agent: boot failed")
+
+func bootLocal(caller context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
+	control, stop := context.WithTimeout(caller, timeout)
+	ctx, cancel := newLocalBudget(context.WithValue(caller, controlBudgetKey{}, control), timeout)
+	return ctx, func() { stop(); cancel() }
 }
 
 // Boot adopts a verified same-boot ruleset or installs the fail-closed baseline.
 // Reboot/clock loss still requires new authorization (§16.3).
-func (e *Engine) Boot(ctx context.Context) error {
-	caller := ctx
+func (e *Engine) Boot(caller context.Context) error {
+	return e.bootWithBudget(caller, bootLocalBudget)
+}
+
+// Like Close, Boot also bounds synchronous filesystem work or an executor
+// that fails to honor cancellation. Ownership stays with the worker until it
+// finishes or the process exits; Close waits instead of closing its stores.
+func (e *Engine) bootWithBudget(caller context.Context, timeout time.Duration) error {
+	e.runCtx = caller
+	ctx, cancel := bootLocal(caller, timeout)
+	e.bootDone = make(chan struct{})
+	result := make(chan error, 1)
+	go func() {
+		defer close(e.bootDone)
+		defer cancel()
+		result <- e.boot(ctx)
+	}()
+	select {
+	case err := <-result:
+		return err
+	case <-ctx.Done():
+		select {
+		case err := <-result:
+			return err
+		default:
+			return fmt.Errorf("%w: local deadline: %w", ErrBoot, ctx.Err())
+		}
+	}
+}
+
+func (e *Engine) boot(ctx context.Context) error {
+	caller := controlContext(ctx)
 	if p, ok := e.plane.(interface{ MissingExecutables() []string }); ok {
 		missing := p.MissingExecutables()
 		e.dependencyMissing = len(missing) != 0
@@ -437,36 +481,37 @@ func (e *Engine) Boot(ctx context.Context) error {
 			e.log.Error("enforcement dependency unavailable", "executable", name)
 		}
 	}
-	load, cancelLoad := bootLocal(caller)
-	if err := e.loadRuntime(load); err != nil {
+	if err := e.loadRuntime(ctx); err != nil {
 		e.storageOK = false
-		_ = e.baseline(load)
-		cancelLoad()
-		return err
+		_ = e.baseline(ctx)
+		e.serving, e.leaseFresh = false, false
+		e.policyExpires = 0
+		e.decision = Decide(e.input())
+		e.beat()
+		return fmt.Errorf("%w: runtime: %w", ErrBoot, err)
 	}
 	e.leaseFresh = false
 	e.serving = false
-	e.recoverOnce(caller)
+	e.recoverOnce(ctx)
 	e.latch()
 	if e.identityFrozen && !e.freezeDurable {
-		e.persistFreeze(load)
+		e.persistFreeze(ctx)
 	}
-	cancelLoad()
+	e.captureRestartBindings(ctx)
 	// Lock waits, the probe and the resolver refresh follow the caller: a
 	// stop request ends them and refuses adoption.
 	rejected := e.applyError
-	if e.adoptStoredServing(caller) {
+	if e.adoptStoredServing(ctx) {
 		e.beat()
-		e.answerHealthOnBoot(caller)
+		e.answerHealthOnBoot(ctx)
 		return nil
 	}
-	ctx, cancel := bootLocal(caller)
-	defer cancel()
 	dp, err := e.cfg.DatapathValue()
 	if err != nil {
 		return err
 	}
 	err = e.baselineCall("boot_unverified", func() error { return e.plane.Baseline(ctx, dp) })
+	err = errors.Join(err, ctx.Err())
 	e.baselineOK = err == nil
 	e.serving, e.leaseFresh = false, false
 	e.policyExpires = 0
@@ -478,16 +523,24 @@ func (e *Engine) Boot(ctx context.Context) error {
 		// its error until the containment owner's repair path clears it.
 		e.applyError = nil
 	}
-	e.ensureUsage(ctx)
-	e.settleRetainedUsage(ctx)
+	if e.baselineOK {
+		e.retainedPending = true
+		e.setMeterBindings(e.restartBindings)
+		e.ensureUsage(ctx)
+		e.settleRetainedUsage(ctx)
+	}
+	e.readMeter(ctx)
 	e.decision = Decide(e.input())
 	e.beat()
 	// A stored document that is still inside its validity window can be
 	// answered at start. A missing document, or one that expired while the
 	// process was stopped, is not a DNS result yet. A canceled probe is not
 	// a health answer.
-	if caller.Err() == nil {
-		e.answerHealthOnBoot(caller)
+	if err != nil {
+		return fmt.Errorf("%w: baseline: %w", ErrBoot, err)
+	}
+	if caller.Err() == nil && ctx.Err() == nil {
+		e.answerHealthOnBoot(ctx)
 	}
 	return nil
 }
@@ -529,6 +582,9 @@ func (e *Engine) Run(ctx context.Context) error {
 // Failed requests and replayed expired leases retry at the control cadence,
 // rather than spinning on an already elapsed deadline. Retry-After wins.
 func (e *Engine) nextStepDelay(interval time.Duration) time.Duration {
+	if e.retainedPending {
+		interval = min(interval, meter.DefaultSampleInterval)
+	}
 	if e.serving && e.policyExpires > 0 {
 		interval = min(interval, max(0, e.policyExpires-e.clock.Mono()))
 	}
@@ -589,6 +645,15 @@ func (e *Engine) Step(ctx context.Context) error {
 	}
 	if !e.enrolled {
 		return nil
+	}
+	// Do not replace persisted desired provenance or bindings while a restart
+	// delta is pending. A held sample retries with forwarding still withdrawn.
+	if e.retainedPending {
+		e.ensureUsage(ctx)
+		if !e.settleRetainedUsage(ctx) {
+			e.decision = Decide(e.input())
+			return nil
+		}
 	}
 	// Check the retained model before Apply can overwrite evidence of drift.
 	// A valid same-generation mismatch is repaired immediately after retaining
@@ -689,12 +754,7 @@ func (e *Engine) loadRuntime(ctx context.Context) error {
 			return err
 		}
 		e.appliedModel, e.appliedAssignments = &retained.Model, retained.Assignments
-		// Kernel counters stay bound to the installed model until the first
-		// full Apply rebinds them. Explain them with the same bindings, so
-		// bytes admitted while no process sampled are attributed rather than
-		// read as a mapping conflict after a refused adoption (r20 H-1). A
-		// changed boot closes the epoch before any delta is attributed.
-		e.setMeterBindings(retained.Model.Bindings)
+
 	}
 
 	if raw, ok, err := e.store.Meta(ctx, "member_path"); err != nil {
@@ -726,6 +786,11 @@ func (e *Engine) loadRuntime(ctx context.Context) error {
 		now, accept := e.verifyTime()
 		if !accept {
 			now = e.clock.Wall()
+		}
+		// Accounting provenance survives document expiry; it is never serving
+		// authorization. Keep the persisted document before any control refresh.
+		if ds, err := verifyDesired(d.Envelope, e.trust, now); err == nil && ds.NodeId == e.nodeID && ds.NodeIncarnationId == e.incID {
+			e.restartDesired = &ds
 		}
 		if ds, err := verifyDesired(d.Envelope, e.trust, now); err == nil && desiredInForce(ds, e.nodeID, e.incID, now) {
 			e.desired = &ds
@@ -840,7 +905,7 @@ func (e *Engine) refreshProbe(ctx context.Context) {
 		published := e.desired != nil && e.desired.PublicationIntent == api.PublicationIntentPublished
 		targets, timeout, source, bad := egressTargets(e.desired, e.desiredOK, e.cfg.EgressProbeTarget)
 		e.probeSource = probeSourceDetail(source, bad)
-		e.lastProbe = p.Probe(ctx, ProbeRequest{
+		e.lastProbe = p.Probe(controlContext(ctx), ProbeRequest{
 			Published: published,
 			Targets:   targets,
 			Timeout:   timeout,
@@ -936,6 +1001,10 @@ func (e *Engine) recoverOnce(ctx context.Context) {
 	}
 	cmd := exec.CommandContext(ctx, e.cfg.UpdaterRecover, "recover", "-config", e.cfg.UpdaterConfig)
 	err := cmd.Run()
+	if ctx.Err() != nil {
+		e.recovered = false // interrupted recovery supplies no failure evidence
+		return
+	}
 	if err == nil {
 		e.recoverBlocked = false
 		return
@@ -967,6 +1036,9 @@ func (e *Engine) baseline(ctx context.Context) error {
 }
 
 func (e *Engine) enforce(ctx context.Context, d Decision) error {
+	if e.retainedPending && !e.settleRetainedUsage(ctx) {
+		return nil
+	}
 	baselineOK, meterFailed, applyError := e.baselineOK, e.meterFailed, e.applyError
 	storageOK, revocationPending := e.storageOK, len(e.pendingRevoke) > 0
 	blocked := e.conntrackBlocked
@@ -1102,6 +1174,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		// A closed epoch must be replaced before Apply can admit the first
 		// packet. Keep the sampler paused across this real durable read.
 		e.finalDone = false
+		e.setMeterBindings(nil) // a fresh baseline has no retired attribution
 		if err := e.meter.PrepareSampling(ctx); err != nil {
 			e.usagePersist = true
 			e.withdraw(ctx)
@@ -1345,7 +1418,7 @@ func (e *Engine) beat() {
 	} else if len(e.decision.Reasons) > 0 {
 		reason = string(e.decision.Reasons[0])
 	}
-	if e.memberPathPending && !e.quarantinePending {
+	if e.memberPathPending && !e.quarantinePending && e.applyError != nil && e.applyError.Message == "member_path_unconfigured" {
 		reason = "member_path_unconfigured"
 	}
 	if e.identityFrozen {

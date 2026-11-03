@@ -39,6 +39,10 @@ type memPlane struct {
 	calls     []planeCall
 }
 
+func (m *memPlane) RestartGeneration(ctx context.Context) (uint64, error) {
+	return m.last.Generation, ctx.Err()
+}
+
 func (m *memPlane) Quarantine(_ context.Context, model enforce.Model) (enforce.QuarantineEvidence, error) {
 	return enforce.QuarantineEvidence{Quarantined: true, Recorded: true, Baseline: enforce.BaselineEvidence{Installed: true, Verified: true}}, nil
 }

@@ -274,7 +274,12 @@ func planSample(head usagestore.Head, obs Observation, now time.Time, interval t
 			}
 			return plan{hold: true}, nil
 		}
-		return planClockGap(head, obs, now)
+		p, err := planClockGap(head, obs, now)
+		if final {
+			p.commit.CloseEpoch = true
+			p.commit.CloseReason = "final_sample"
+		}
+		return p, err
 	}
 	end, estimated := stampEnd(head.LastSample, now, interval)
 	if head.LastSample.IsZero() {

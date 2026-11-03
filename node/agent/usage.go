@@ -13,6 +13,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/controlclient"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/meter"
@@ -167,9 +169,20 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 		e.kernel = ks
 		src = ks
 	}
-	m, err := meter.New(meter.Config{
+	if e.retainedPending {
+		head, err := st.Head(ctx)
+		if err != nil {
+			e.usagePersist = true
+			return
+		}
+		// Retired identities explain only a still-open, same-boot delta.
+		if head.OpenEpoch == uuid.Nil || head.BootID != e.bootID.String() {
+			e.setMeterBindings(nil)
+		}
+	}
+	m, err := meter.NewContext(ctx, meter.Config{
 		NodeID: e.nodeID, IncarnationID: e.incID, Store: st, Source: src, Logger: e.log,
-		PreserveClosedEpoch: blocked,
+		PreserveClosedEpoch: blocked || e.retainedPending,
 	})
 	if err != nil {
 		e.meterFailed = true
@@ -186,12 +199,23 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 		return
 	}
 	e.uploader = up
-	e.startLoops()
-	e.loops.Add(1)
-	go func() {
-		defer e.loops.Done()
-		_ = up.Run(e.loopCtx)
-	}()
+	// Uploads follow the process caller, not Boot's cancellation-independent
+	// local context or a Step's short HTTP budget.
+	if e.runCtx == nil || e.runCtx.Err() == nil {
+		e.startLoops()
+		uploadCtx, cancel := context.WithCancel(e.loopCtx)
+		stop := func() bool { return false }
+		if e.runCtx != nil {
+			stop = context.AfterFunc(e.runCtx, cancel)
+		}
+		e.loops.Add(1)
+		go func() {
+			defer e.loops.Done()
+			defer cancel()
+			defer stop()
+			_ = up.Run(uploadCtx)
+		}()
+	}
 	e.restoreUsage(ctx)
 	if blocked {
 		e.handoff(ctx)
@@ -200,19 +224,19 @@ func (e *Engine) ensureUsage(ctx context.Context) {
 
 func (e *Engine) openUsage(ctx context.Context) (*usagestore.Store, error) {
 	opt := usagestore.Options{Trust: e.trust}
-	st, err := usagestore.Open(e.cfg.UsageDBPath(), e.nodeID, e.incID, opt)
+	st, err := usagestore.OpenContext(ctx, e.cfg.UsageDBPath(), e.nodeID, e.incID, opt)
 	if !errors.Is(err, usagestore.ErrIdentity) {
 		return st, err
 	}
 	// Same-incarnation update restarts can open while the updater owns the
 	// node lock. Only adoption of a different incarnation requires it here.
-	lock, err := nodelock.Acquire(ctx, e.cfg.LockPath, 3, 50*time.Millisecond)
+	lock, err := nodelock.Acquire(controlContext(ctx), e.cfg.LockPath, 3, 50*time.Millisecond)
 	if err != nil {
 		return nil, err
 	}
 	defer lock.Release()
 	opt.RetirePreviousAt = e.clock.Wall()
-	return usagestore.Open(e.cfg.UsageDBPath(), e.nodeID, e.incID, opt)
+	return usagestore.OpenContext(ctx, e.cfg.UsageDBPath(), e.nodeID, e.incID, opt)
 }
 
 func (e *Engine) startLoops() {
@@ -245,28 +269,43 @@ func (e *Engine) setMeterBindings(b []enforce.Binding) {
 	e.mu.Unlock()
 }
 
-// settleRetainedUsage runs after a Boot that did not adopt, once the baseline
-// has stopped member admission. It samples the open epoch against the
-// retained installed bindings loadRuntime restored, so bytes the previous
-// rules counted while no process sampled become complete records before the
-// first Step can hand off or rebind (r20 H-1). The kernel counters persist,
-// so a repeated settlement after another crash finds a zero delta. A failed
-// sample leaves the delta pending under the same bindings: a non-serving
-// hand-off still attributes it, and a rebinding Apply records a gap rather
-// than a misattribution.
-func (e *Engine) settleRetainedUsage(ctx context.Context) {
-	if e.meter == nil || e.appliedModel == nil || e.finalDone {
-		return
+// settleRetainedUsage closes the pending restart interval only after Boot's
+// verified baseline stopped admission. The bindings are the intersection of
+// every generation that could have counted it, not merely retained_applied.
+// A failed/held sample keeps the delta and its provenance pending; Step must
+// retry before fetching desired state or applying a generation. Closing the
+// epoch prevents retired bindings contaminating the next baseline (r21 H1/H2/M1).
+func (e *Engine) settleRetainedUsage(ctx context.Context) bool {
+	if !e.retainedPending {
+		return true
 	}
-	if err := e.meter.Sample(ctx); err != nil && !errors.Is(err, meter.ErrPaused) {
+	if e.meter == nil || !e.baselineOK {
+		e.usagePersist = true
+		return false
+	}
+	err := e.meter.FinalSample(ctx)
+	if err != nil && !errors.Is(err, meter.ErrNoEpoch) {
 		e.log.Warn("usage settlement", "err", err.Error())
+		e.readMeter(ctx)
+		e.usagePersist = true
+		return false
 	}
+	e.retainedPending = false
+	e.finalDone = true
+	e.setMeterBindings(nil)
+	e.readMeter(ctx)
+	return true
 }
 
 // readMeter copies the meter's health onto the forwarding gate.
 // Store caps win inside meter.Health, so a full outbox is not reported
 // as METER_PATH_INVALID.
 func (e *Engine) readMeter(ctx context.Context) {
+	defer func() {
+		if e.retainedPending {
+			e.usagePersist = true
+		}
+	}()
 	if e.meter == nil {
 		return
 	}
@@ -326,6 +365,9 @@ func (e *Engine) resumeSampling() {
 // A clean final sample checkpoints the counters so the next epoch does
 // not recount them (step 11).
 func (e *Engine) handoff(ctx context.Context) {
+	if e.retainedPending && !e.settleRetainedUsage(ctx) {
+		return
+	}
 	id, blocked := meterBarrierIdentity(e.cfg.JournalDir)
 	e.latchBlocked = blocked
 	if id == "" {

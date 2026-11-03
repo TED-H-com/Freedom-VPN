@@ -694,8 +694,10 @@ func TestR20_L1_RetainedAheadOfAckRefusesAdoption(t *testing.T) {
 		t.Fatalf("L-1: retained generation ahead of the ACK adopted or skipped baseline: serving=%v applied=%d retained=%d kernel=%d",
 			next.serving, next.appliedGen, next.appliedModel.Generation, r.plane.last.Generation)
 	}
-	if got := next.meterBindings(); len(got) != 1 || got[0].DeviceID != model.Bindings[0].DeviceID {
-		t.Fatalf("meter bindings %v do not explain the installed generation 3 counters", got)
+	// F38: retired identities explain only the settled delta, never the new
+	// epoch. F37's lasting-binding assertion encoded the M-1 regression.
+	if got := next.meterBindings(); len(got) != 0 || !next.finalDone {
+		t.Fatalf("retained epoch not closed and cleared: bindings=%v final=%v", got, next.finalDone)
 	}
 }
 

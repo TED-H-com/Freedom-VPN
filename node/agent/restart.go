@@ -69,7 +69,7 @@ func (e *Engine) adoptStoredServing(ctx context.Context) bool {
 	}
 	// A healthy watchdog briefly holds this same lock for its presence read.
 	// Contention alone must not turn a process replacement into withdrawal.
-	lock, err := nodelock.Acquire(ctx, e.cfg.LockPath, 201, 10*time.Millisecond)
+	lock, err := nodelock.Acquire(controlContext(ctx), e.cfg.LockPath, 201, 10*time.Millisecond)
 	if err != nil {
 		return false
 	}
@@ -85,7 +85,7 @@ func (e *Engine) adoptStoredServing(ctx context.Context) bool {
 	e.evaluate(ctx)
 	// A stop request during the probe or resolver refresh leaves no fresh
 	// evidence to adopt on; Boot takes the baseline under its local budget.
-	if ctx.Err() != nil {
+	if controlContext(ctx).Err() != nil || ctx.Err() != nil {
 		return false
 	}
 	d := e.decision
@@ -106,7 +106,7 @@ func (e *Engine) adoptStoredServing(ctx context.Context) bool {
 	e.ensureUsage(ctx)
 	e.readMeter(ctx)
 	e.decision = Decide(e.input())
-	if e.meter == nil || !e.decision.Serve || !e.verifyServingModel(ctx, d.Model, e.appliedAssignments) {
+	if controlContext(ctx).Err() != nil || e.meter == nil || !e.decision.Serve || !e.verifyServingModel(ctx, d.Model, e.appliedAssignments) {
 		return false
 	}
 	e.appliedModel = &d.Model
