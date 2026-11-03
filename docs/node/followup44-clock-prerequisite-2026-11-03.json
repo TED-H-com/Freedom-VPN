@@ -1,0 +1,94 @@
+{
+  "clock": "CLOCK_MONOTONIC",
+  "matched": false,
+  "measurements": [
+    {
+      "utc": "2026-11-03T18:40:13.713305+00:00",
+      "host_before_ns": "54656085115928",
+      "host_after_ns": "54656164674952",
+      "host_time_namespace": "time:[4026531834]",
+      "host_timens_offsets": "monotonic           0         0\nboottime            0         0\n",
+      "probe": {
+        "after_ns": "54656163355970",
+        "before_ns": "54656163355032",
+        "mono_ns": "54656163355812",
+        "time_namespace": "time:[4026534102]",
+        "timens_offsets": "monotonic           0         0\nboottime            0         0\n"
+      },
+      "matched": false,
+      "numeric_bracket_matched": true
+    },
+    {
+      "utc": "2026-11-03T18:40:13.794734+00:00",
+      "host_before_ns": "54656164817684",
+      "host_after_ns": "54656246106257",
+      "host_time_namespace": "time:[4026531834]",
+      "host_timens_offsets": "monotonic           0         0\nboottime            0         0\n",
+      "probe": {
+        "after_ns": "54656244769369",
+        "before_ns": "54656244768742",
+        "mono_ns": "54656244769228",
+        "time_namespace": "time:[4026534102]",
+        "timens_offsets": "monotonic           0         0\nboottime            0         0\n"
+      },
+      "matched": false,
+      "numeric_bracket_matched": true
+    },
+    {
+      "utc": "2026-11-03T18:40:13.875511+00:00",
+      "host_before_ns": "54656246213724",
+      "host_after_ns": "54656326884706",
+      "host_time_namespace": "time:[4026531834]",
+      "host_timens_offsets": "monotonic           0         0\nboottime            0         0\n",
+      "probe": {
+        "after_ns": "54656325803703",
+        "before_ns": "54656325802883",
+        "mono_ns": "54656325803553",
+        "time_namespace": "time:[4026534102]",
+        "timens_offsets": "monotonic           0         0\nboottime            0         0\n"
+      },
+      "matched": false,
+      "numeric_bracket_matched": true
+    }
+  ],
+  "scope": "Post-reservation clock prerequisite probe only; no timing leg and no production scenario ran in this attempt.",
+  "source": {
+    "commit": "1b87ab32344fa3be3216df0d5f7b489eb853e011",
+    "archive_sha256": "d04c982c6a22f7cc508da9348bd1a38243868b829e46a3c6c0c3dc4b1583d078",
+    "verified_blobs": 18955,
+    "functional_only": true,
+    "instrumentation_overlay": false,
+    "clock_probe_sha256": "f38b0adfe9e716a4d2192c12e73487bd155045a70f3610c2fb8a72409bbdd074"
+  },
+  "attempt": {
+    "exit": 2,
+    "seconds": 13.433531257003779,
+    "completed": "2026-11-03T18:40:14Z"
+  },
+  "raw_receipts": {
+    "result.json": {
+      "sha256": "4b2ac53251bcf6c358203e6301fd267ea3d526a2b285c9e9ff7fa81566503e26",
+      "bytes": 88
+    },
+    "binaries.json": {
+      "sha256": "f8d03ad20e9c108f3e8fa3f48c7dfdb43b84060637c51921a24fdb5e40adf29c",
+      "bytes": 263
+    },
+    "fixture-image.json": {
+      "sha256": "bf76cdc7a89cb16ac7b9f22c790103afa0bd4320c4332fecad7af5f36f0eb7b6",
+      "bytes": 88
+    },
+    "clock.json": {
+      "sha256": "bf622ac3330e42a8d3682cf8a6d2c00addf49cc9f1ccd28e8e360f1db94a8b0d",
+      "bytes": 1874
+    },
+    "source.json": {
+      "sha256": "55a021efa42f6a1577b68f166f004f46ffef0244649c652ba6d2a71216cffb5e",
+      "bytes": 329
+    },
+    "suite.log": {
+      "sha256": "0eff8d91e555b03ccd78254328a58c21c3d180a4d7812aefb0a7e9599edb51ba",
+      "bytes": 6074
+    }
+  }
+}

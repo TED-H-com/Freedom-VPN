@@ -1,0 +1,1403 @@
+{
+  "source_readings": [
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/decide.go",
+      "start": 627,
+      "end": 674,
+      "sha256": "015a5ffd9f9d7c0a96e338bf9fa624bee3518de026aaf615391a0d02e4b813c0",
+      "excerpt": "627: \tnodeWindow := in.Lease.ExpiresAt.Sub(in.Lease.IssuedAt)\n628: \tnodeWindow = min(nodeWindow, in.Desired.ExpiresAt.Sub(in.Lease.IssuedAt), time.Duration(in.Lease.MaxOfflineSeconds)*time.Second)\n629: \tnodeDeadline, ok := timeanchor.MemberDeadline(in.LeaseMonoSent, nodeWindow)\n630: \tif !ok {\n631: \t\treturn enforce.Model{}, 0, errCapacity\n632: \t}\n633: \tpolicyExpires := nodeDeadline\n634: \n635: \tbyMember := map[uuid.UUID]api.MemberLease{}\n636: \tfor _, m := range in.Lease.Members {\n637: \t\tbyMember[m.MemberId] = m\n638: \t}\n639: \tvar bindings []enforce.Binding\n640: \tvar leases []enforce.MemberLease\n641: \tleaseIndex := map[uuid.UUID]int{}\n642: \tseenAddr := map[netip.Addr]bool{}\n643: \tadmitted := map[uuid.UUID]bool{}\n644: \tfor _, b := range in.Desired.DeviceBindings {\n645: \t\tml, ok := byMember[b.MemberId]\n646: \t\tif !ok {\n647: \t\t\tcontinue\n648: \t\t}\n649: \t\tif !b.ValidFrom.IsZero() && now.Before(b.ValidFrom) {\n650: \t\t\tcontinue\n651: \t\t}\n652: \t\tif !b.ValidUntil.IsZero() && !now.Before(b.ValidUntil) {\n653: \t\t\tcontinue\n654: \t\t}\n655: \t\twindow := timeanchor.Window(in.Lease.IssuedAt, ml.LeaseEnd, ml.EffectiveServiceEnd)\n656: \t\twindow = min(window, nodeWindow)\n657: \t\tdeadline, ok := timeanchor.MemberDeadline(in.LeaseMonoSent, window)\n658: \t\tif !ok {\n659: \t\t\tcontinue\n660: \t\t}\n661: \t\tif timeanchor.Remaining(deadline, in.MonoNow) <= 0 {\n662: \t\t\tcontinue\n663: \t\t}\n664: \t\t// Wake the agent at the first device or member boundary. The watchdog\n665: \t\t// uses the last installed binding's deadline; each kernel element\n666: \t\t// still expires independently of its siblings.\n667: \t\tdeviceDeadline := deadline\n668: \t\tif !b.ValidUntil.IsZero() {\n669: \t\t\t// Cap before adding the anchor: a distant wall deadline can make\n670: \t\t\t// Sub saturate even though the admitted member window is short.\n671: \t\t\tdeviceWindow := min(window, b.ValidUntil.Sub(in.Lease.IssuedAt))\n672: \t\t\tdeviceDeadline = in.LeaseMonoSent + deviceWindow\n673: \t\t}\n674: \t\tpolicyExpires = min(policyExpires, deviceDeadline)",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/decide.go",
+      "start": 657,
+      "end": 700,
+      "sha256": "015a5ffd9f9d7c0a96e338bf9fa624bee3518de026aaf615391a0d02e4b813c0",
+      "excerpt": "657: \t\tdeadline, ok := timeanchor.MemberDeadline(in.LeaseMonoSent, window)\n658: \t\tif !ok {\n659: \t\t\tcontinue\n660: \t\t}\n661: \t\tif timeanchor.Remaining(deadline, in.MonoNow) <= 0 {\n662: \t\t\tcontinue\n663: \t\t}\n664: \t\t// Wake the agent at the first device or member boundary. The watchdog\n665: \t\t// uses the last installed binding's deadline; each kernel element\n666: \t\t// still expires independently of its siblings.\n667: \t\tdeviceDeadline := deadline\n668: \t\tif !b.ValidUntil.IsZero() {\n669: \t\t\t// Cap before adding the anchor: a distant wall deadline can make\n670: \t\t\t// Sub saturate even though the admitted member window is short.\n671: \t\t\tdeviceWindow := min(window, b.ValidUntil.Sub(in.Lease.IssuedAt))\n672: \t\t\tdeviceDeadline = in.LeaseMonoSent + deviceWindow\n673: \t\t}\n674: \t\tpolicyExpires = min(policyExpires, deviceDeadline)\n675: \t\tprefs, err := hostPrefixes(b.AllowedIpv4)\n676: \t\tif err != nil || b.PeerId == \"\" {\n677: \t\t\treturn enforce.Model{}, 0, errCapacity\n678: \t\t}\n679: \t\tfor _, p := range prefs {\n680: \t\t\tif seenAddr[p.Addr()] {\n681: \t\t\t\treturn enforce.Model{}, 0, errCapacity\n682: \t\t\t}\n683: \t\t\tseenAddr[p.Addr()] = true\n684: \t\t}\n685: \t\tbindings = append(bindings, enforce.Binding{\n686: \t\t\tMemberID: b.MemberId, DeviceID: b.DeviceId, PeerID: b.PeerId,\n687: \t\t\tAllowedV4: prefs, BindingRevision: uint64(b.BindingRevision),\n688: \t\t\tValidFrom: b.ValidFrom, ValidUntil: b.ValidUntil,\n689: \t\t})\n690: \t\tadmitted[b.MemberId] = true\n691: \t\tif _, exists := leaseIndex[b.MemberId]; !exists {\n692: \t\t\tleaseIndex[b.MemberId] = len(leases)\n693: \t\t\t// Member limits only. memberTimeout intersects these with each\n694: \t\t\t// binding's own ValidUntil using the monotonic-derived model clock.\n695: \t\t\tend := in.Lease.IssuedAt.Add(window)\n696: \t\t\tleases = append(leases, enforce.MemberLease{\n697: \t\t\t\tMemberID: b.MemberId, EffectiveServiceEnd: end, NodeLeaseEnd: end,\n698: \t\t\t\tSignedServerTime: in.Lease.IssuedAt, MaxOfflineSeconds: uint64(in.Lease.MaxOfflineSeconds),\n699: \t\t\t\tDeadlineMono: &deadline,\n700: \t\t\t})",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 637,
+      "end": 639,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "637: \tif e.serving && e.policyExpires > 0 {\n638: \t\tinterval = min(interval, max(0, e.policyExpires-e.clock.Mono()))\n639: \t}",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/serving.go",
+      "start": 120,
+      "end": 120,
+      "sha256": "08de496e797a4a52bf5a360c56b24c4ba33981ded0ff7307cf1c701a58985ca4",
+      "excerpt": "120: \tif !e.serving || (e.policyExpires > 0 && e.clock.Mono() < e.policyExpires) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/retain.go",
+      "start": 33,
+      "end": 34,
+      "sha256": "548e0ac095849bcd99db3e88963d61619ce6a2f25da53624b4f0e1814827796f",
+      "excerpt": "33: \t\te.leaseBoot != e.bootID || e.appliedGen != d.Model.Generation || e.policyExpires != d.PolicyExpires ||\n34: \t\te.policyExpires <= e.clock.Mono() || e.latchBlocked || e.repairing ||",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 1185,
+      "end": 1197,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "1185: \t\tif !e.verifyServingModel(ctx, *e.appliedModel, e.appliedAssignments) ||\n1186: \t\t\te.expireServing(ctx) || !e.checkMemberPath(ctx, *e.appliedModel) {\n1187: \t\t\treturn nil\n1188: \t\t}\n1189: \t\t// Either local read can cross a binding deadline. Rebuild before\n1190: \t\t// skipping; survivors must reach ordinary Apply on this same tick.\n1191: \t\td = Decide(e.input())\n1192: \t\te.decision = d\n1193: \t\tif !d.Serve {\n1194: \t\t\te.withdraw(ctx)\n1195: \t\t\treturn nil\n1196: \t\t}\n1197: \t\tif e.canRetainServing(ctx, d) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/deadlines.go",
+      "start": 35,
+      "end": 52,
+      "sha256": "5e712fafdee1a4e286c6501de219e8826c02d458b472cce889716d9e5afcbc01",
+      "excerpt": "35: func (e *Engine) servingDeadline() time.Duration {\n36: \tif !e.serving || e.policyExpires <= 0 || e.appliedModel == nil {\n37: \t\treturn 0\n38: \t}\n39: \tm := *e.appliedModel\n40: \tif len(m.Bindings) == 0 {\n41: \t\treturn e.policyExpires // intentionally empty policy: retain its node cap\n42: \t}\n43: \tvar last time.Duration\n44: \tfor _, b := range m.Bindings {\n45: \t\td := bindingDeadline(m, b)\n46: \t\tif d <= 0 {\n47: \t\t\treturn 0 // malformed retained state must not authorize a heartbeat\n48: \t\t}\n49: \t\tlast = max(last, d)\n50: \t}\n51: \treturn last\n52: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 1390,
+      "end": 1390,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "1390: \t\t\te.serving = false",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/boot_heartbeat.go",
+      "start": 17,
+      "end": 17,
+      "sha256": "02d81939e747618b01b9081f65dd98a5c4fa713cbf465c9476cc7b12d226f7ca",
+      "excerpt": "17: \tb := watchdog.Beat{",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/apply.go",
+      "start": 177,
+      "end": 192,
+      "sha256": "7f7692e9cd76946b2461af267d2318e4d42c09e6b569ead9f4dad428bcf70ac5",
+      "excerpt": "177: \t}\n178: \tm.Now = m.Now.Add(timing.RenderStart - anchor)\n179: \tm.NowMono = timing.RenderStart\n180: \tm.timeoutReserve = DeadlineInstallBound\n181: \tplan, err = Render(m, state, tcState)\n182: \tif err != nil {\n183: \t\t_ = installBaseline(ctx, ex, m.Datapath, state)\n184: \t\treturn ApplyResult{Deadline: timing}, err\n185: \t}\n186: \t// The guard and candidate are one transaction. A late commit stays closed,\n187: \t// including if the agent dies before it observes the overrun.\n188: \tcaptureRenderForTest(ctx, m)\n189: \tguarded := guardedNFT(plan.NFT, m)\n190: \tinstallCtx, cancelInstall := context.WithTimeout(commandPhase(ctx, \"install\"), DeadlineInstallBound)\n191: \ttiming.InstallStart = timingSample()\n192: \terr = ex.NftBatch(installCtx, guarded)",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/render_nft.go",
+      "start": 560,
+      "end": 597,
+      "sha256": "318b8660769675ba05c780cc7d00ac756d0440f952e55b887498f581e0fe42a3",
+      "excerpt": "560: \tif len(comment) > nftCommentMax {\n561: \t\treturn fmt.Errorf(\"nft comment is %d bytes, maximum is %d\", len(comment), nftCommentMax)\n562: \t}\n563: \trule(b, chain, fmt.Sprintf(\"ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment %q\", comment))\n564: \treturn nil\n565: }\n566: \n567: func sortedIDs(assignments map[uuid.UUID]uint16) []uuid.UUID {\n568: \tids := make([]uuid.UUID, 0, len(assignments))\n569: \tfor id := range assignments {\n570: \t\tids = append(ids, id)\n571: \t}\n572: \tsort.Slice(ids, func(i, j int) bool { return ids[i].String() < ids[j].String() })\n573: \treturn ids\n574: }\n575: \n576: func allowedElements(devices []admittedDevice) string {\n577: \tvar parts []string\n578: \tfor _, d := range devices {\n579: \t\tif !d.TimeoutOK() {\n580: \t\t\tcontinue\n581: \t\t}\n582: \t\tfor _, addr := range d.Addrs {\n583: \t\t\tparts = append(parts, fmt.Sprintf(\"%s timeout %dms\", addr, d.Timeout/time.Millisecond))\n584: \t\t}\n585: \t}\n586: \treturn strings.Join(parts, \", \")\n587: }\n588: \n589: func prefixList(p []netip.Prefix) string {\n590: \tparts := make([]string, len(p))\n591: \tfor i, x := range p {\n592: \t\tparts[i] = x.String()\n593: \t}\n594: \treturn strings.Join(parts, \", \")\n595: }\n596: \n597: func addrList(a []netip.Addr) string {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/deadline_install.go",
+      "start": 27,
+      "end": 50,
+      "sha256": "79cc2676742c3a07eea2d732282b756cff8581c0fa57a3094381350650855ab0",
+      "excerpt": "27: type DeadlineEvidence struct {\n28: \tGranularity   time.Duration `json:\"granularity_ns,string\"`\n29: \tInstallBound  time.Duration `json:\"install_bound_ns,string\"`\n30: \tApplyStart    time.Duration `json:\"apply_start_ns,string\"`\n31: \tRenderStart   time.Duration `json:\"render_start_ns,string\"`\n32: \tInstallStart  time.Duration `json:\"install_start_ns,string\"`\n33: \tInstalledBy   time.Duration `json:\"installed_by_ns,string\"`\n34: \tInstallOK     bool          `json:\"install_ok\"`\n35: \tReleaseStart  time.Duration `json:\"release_start_ns,string\"`\n36: \tReleaseEnd    time.Duration `json:\"release_end_ns,string\"`\n37: \tGuardReleased bool          `json:\"guard_released\"`\n38: }\n39: \n40: // guardedNFT atomically installs the candidate behind a separate member-path\n41: // drop chain. Even an arbitrarily delayed commit or death before checking the\n42: // elapsed budget cannot expose an overlong relative timeout. Once the budget\n43: // passes, deleting the guard cannot restart the already-counting-down elements.\n44: func guardedNFT(plan string, m Model) string {\n45: \treturn plan + fmt.Sprintf(\"add chain inet fvpn %s { type filter hook forward priority %d; policy accept; }\\nflush chain inet fvpn %s\\nadd rule inet fvpn %s iifname %q drop\\nadd rule inet fvpn %s oifname %q drop\\n\",\n46: \t\tdeadlineGuard, HookPriorityFilter-1, deadlineGuard, deadlineGuard, m.Datapath.MemberIngress, deadlineGuard, m.Datapath.MemberIngress)\n47: }\n48: \n49: func releaseDeadlineGuard(ctx context.Context, ex Executor) error {\n50: \treturn ex.NftBatch(ctx, \"delete chain inet fvpn \"+deadlineGuard+\"\\n\")",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/render_nft.go",
+      "start": 134,
+      "end": 228,
+      "sha256": "318b8660769675ba05c780cc7d00ac756d0440f952e55b887498f581e0fe42a3",
+      "excerpt": "134: \t// Lease and binding before any accept (§8.2, §16.3). An empty allow set\n135: \t// drops every upload source. A live probe source is not a member, so the\n136: \t// drop exempts @probe_v4 only while the exception is installed (§13.9).\n137: \tif m.Probe != nil {\n138: \t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr != @allowed_v4 ip saddr != @%s counter name %q drop\", in, up, setProbeV4, counterUnknown))\n139: \t} else {\n140: \t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr != @allowed_v4 counter name %q drop\", in, up, counterUnknown))\n141: \t}\n142: \n143: \t// DNS exception before the destination deny, because the resolver prefix\n144: \t// is itself inside the spec deny list (§8.1, §10.1). These counters are\n145: \t// dns_service_v1, not forward_admission_v1.\n146: \tfor _, d := range devices {\n147: \t\tif !d.TimeoutOK() {\n148: \t\t\tcontinue\n149: \t\t}\n150: \t\tprio := fmt.Sprintf(\"0x%08x\", ClassID(d.Minor))\n151: \t\tdnsUp := usageCounter(dirDNSUpload, d.Binding.DeviceID)\n152: \t\tfor _, addr := range d.Addrs {\n153: \t\t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr %s ip daddr @resolver_v4 tcp dport 53 counter name %q meta priority set %s accept\", in, up, addr, dnsUp, prio))\n154: \t\t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr %s ip daddr @resolver_v4 udp dport 53 counter name %q meta priority set %s accept\", in, up, addr, dnsUp, prio))\n155: \t\t}\n156: \t}\n157: \t// Probe DNS is the same hole as member DNS: the resolver prefix is inside\n158: \t// the deny list, and only dport 53 is accepted. The source element timeout\n159: \t// closes the hole (§13.9).\n160: \tif m.Probe != nil && m.Probe.ResolverDNS {\n161: \t\twriteProbeDNS(&b, in, up)\n162: \t}\n163: \trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip daddr @resolver_v4 counter name %q drop\", in, up, counterBadDNS))\n164: \trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip daddr @denied_v4 counter name %q drop\", in, up, counterDenied))\n165: \trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip daddr @host_v4 counter name %q drop\", in, up, counterHost))\n166: \t// General probe accepts sit behind the deny and host drops, and before\n167: \t// any member accept. A tuple that is not in the set falls through.\n168: \tif m.Probe != nil && len(m.Probe.Destinations) > 0 {\n169: \t\twriteProbeTuple(&b, in, up)\n170: \t}\n171: \n172: \tfor _, d := range devices {\n173: \t\tif !d.TimeoutOK() {\n174: \t\t\tcontinue\n175: \t\t}\n176: \t\tprio := fmt.Sprintf(\"0x%08x\", ClassID(d.Minor))\n177: \t\tupCounter := usageCounter(dirUpload, d.Binding.DeviceID)\n178: \t\tfor _, addr := range d.Addrs {\n179: \t\t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr %s counter name %q meta priority set %s accept\", in, up, addr, upCounter, prio))\n180: \t\t}\n181: \t}\n182: \n183: \t// Download: the same allow set is checked before established/related\n184: \t// traffic is accepted, so a timeout or revocation stops an existing flow\n185: \t// (§16.3). Current remote-source denials also precede generic returns.\n186: \t// Reverse NAT has already restored the member address (§10.2).\n187: \tif m.Probe != nil {\n188: \t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip daddr != @allowed_v4 ip daddr != @%s counter name %q drop\", up, in, setProbeV4, counterUnkDown))\n189: \t} else {\n190: \t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip daddr != @allowed_v4 counter name %q drop\", up, in, counterUnkDown))\n191: \t}\n192: \trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ct state != { established, related } counter name %q drop\", up, in, counterNoDown))\n193: \tfor _, d := range devices {\n194: \t\tif !d.TimeoutOK() {\n195: \t\t\tcontinue\n196: \t\t}\n197: \t\tprio := fmt.Sprintf(\"0x%08x\", ClassID(d.Minor))\n198: \t\tdnsDown := usageCounter(dirDNSDownload, d.Binding.DeviceID)\n199: \t\tfor _, addr := range d.Addrs {\n200: \t\t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr @resolver_v4 ip daddr %s tcp sport 53 counter name %q meta priority set %s accept\", up, in, addr, dnsDown, prio))\n201: \t\t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr @resolver_v4 ip daddr %s udp sport 53 counter name %q meta priority set %s accept\", up, in, addr, dnsDown, prio))\n202: \t\t}\n203: \t}\n204: \n205: \tif m.Probe != nil && m.Probe.ResolverDNS {\n206: \t\twriteProbeDNSDown(&b, in, up)\n207: \t}\n208: \twriteDownloadDenials(&b, in, up, true)\n209: \tif m.Probe != nil {\n210: \t\twriteProbeDown(&b, in, up)\n211: \t}\n212: \tfor _, d := range devices {\n213: \t\tif !d.TimeoutOK() {\n214: \t\t\tcontinue\n215: \t\t}\n216: \t\tprio := fmt.Sprintf(\"0x%08x\", ClassID(d.Minor))\n217: \t\tuseDown := usageCounter(dirDownload, d.Binding.DeviceID)\n218: \t\tfor _, addr := range d.Addrs {\n219: \t\t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip daddr %s counter name %q meta priority set %s accept\", up, in, addr, useDown, prio))\n220: \t\t}\n221: \t}\n222: \n223: \t// Input drops member-path packets headed at the node. Output stays\n224: \t// accept so the control channel is untouched (§8.1, §17.1).\n225: \trule(&b, \"input\", fmt.Sprintf(\"iifname %q counter name %q drop\", in, counterInput))\n226: \trule(&b, \"input\", fmt.Sprintf(\"ip saddr 100.64.0.0/10 counter name %q drop\", counterInput))\n227: \trule(&b, \"postrouting\", fmt.Sprintf(\"oifname %q ip saddr @allowed_v4 snat ip to %s\", up, m.Datapath.SNAT))\n228: \tif m.Probe != nil {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/render_nft.go",
+      "start": 138,
+      "end": 140,
+      "sha256": "318b8660769675ba05c780cc7d00ac756d0440f952e55b887498f581e0fe42a3",
+      "excerpt": "138: \t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr != @allowed_v4 ip saddr != @%s counter name %q drop\", in, up, setProbeV4, counterUnknown))\n139: \t} else {\n140: \t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr != @allowed_v4 counter name %q drop\", in, up, counterUnknown))",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/render_nft.go",
+      "start": 146,
+      "end": 156,
+      "sha256": "318b8660769675ba05c780cc7d00ac756d0440f952e55b887498f581e0fe42a3",
+      "excerpt": "146: \tfor _, d := range devices {\n147: \t\tif !d.TimeoutOK() {\n148: \t\t\tcontinue\n149: \t\t}\n150: \t\tprio := fmt.Sprintf(\"0x%08x\", ClassID(d.Minor))\n151: \t\tdnsUp := usageCounter(dirDNSUpload, d.Binding.DeviceID)\n152: \t\tfor _, addr := range d.Addrs {\n153: \t\t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr %s ip daddr @resolver_v4 tcp dport 53 counter name %q meta priority set %s accept\", in, up, addr, dnsUp, prio))\n154: \t\t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr %s ip daddr @resolver_v4 udp dport 53 counter name %q meta priority set %s accept\", in, up, addr, dnsUp, prio))\n155: \t\t}\n156: \t}",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/render_nft.go",
+      "start": 172,
+      "end": 181,
+      "sha256": "318b8660769675ba05c780cc7d00ac756d0440f952e55b887498f581e0fe42a3",
+      "excerpt": "172: \tfor _, d := range devices {\n173: \t\tif !d.TimeoutOK() {\n174: \t\t\tcontinue\n175: \t\t}\n176: \t\tprio := fmt.Sprintf(\"0x%08x\", ClassID(d.Minor))\n177: \t\tupCounter := usageCounter(dirUpload, d.Binding.DeviceID)\n178: \t\tfor _, addr := range d.Addrs {\n179: \t\t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr %s counter name %q meta priority set %s accept\", in, up, addr, upCounter, prio))\n180: \t\t}\n181: \t}",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/render_nft.go",
+      "start": 188,
+      "end": 190,
+      "sha256": "318b8660769675ba05c780cc7d00ac756d0440f952e55b887498f581e0fe42a3",
+      "excerpt": "188: \t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip daddr != @allowed_v4 ip daddr != @%s counter name %q drop\", up, in, setProbeV4, counterUnkDown))\n189: \t} else {\n190: \t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip daddr != @allowed_v4 counter name %q drop\", up, in, counterUnkDown))",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/render_nft.go",
+      "start": 192,
+      "end": 192,
+      "sha256": "318b8660769675ba05c780cc7d00ac756d0440f952e55b887498f581e0fe42a3",
+      "excerpt": "192: \trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ct state != { established, related } counter name %q drop\", up, in, counterNoDown))",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/render_nft.go",
+      "start": 193,
+      "end": 203,
+      "sha256": "318b8660769675ba05c780cc7d00ac756d0440f952e55b887498f581e0fe42a3",
+      "excerpt": "193: \tfor _, d := range devices {\n194: \t\tif !d.TimeoutOK() {\n195: \t\t\tcontinue\n196: \t\t}\n197: \t\tprio := fmt.Sprintf(\"0x%08x\", ClassID(d.Minor))\n198: \t\tdnsDown := usageCounter(dirDNSDownload, d.Binding.DeviceID)\n199: \t\tfor _, addr := range d.Addrs {\n200: \t\t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr @resolver_v4 ip daddr %s tcp sport 53 counter name %q meta priority set %s accept\", up, in, addr, dnsDown, prio))\n201: \t\t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr @resolver_v4 ip daddr %s udp sport 53 counter name %q meta priority set %s accept\", up, in, addr, dnsDown, prio))\n202: \t\t}\n203: \t}",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/render_nft.go",
+      "start": 212,
+      "end": 221,
+      "sha256": "318b8660769675ba05c780cc7d00ac756d0440f952e55b887498f581e0fe42a3",
+      "excerpt": "212: \tfor _, d := range devices {\n213: \t\tif !d.TimeoutOK() {\n214: \t\t\tcontinue\n215: \t\t}\n216: \t\tprio := fmt.Sprintf(\"0x%08x\", ClassID(d.Minor))\n217: \t\tuseDown := usageCounter(dirDownload, d.Binding.DeviceID)\n218: \t\tfor _, addr := range d.Addrs {\n219: \t\t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip daddr %s counter name %q meta priority set %s accept\", up, in, addr, useDown, prio))\n220: \t\t}\n221: \t}",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/render_nft.go",
+      "start": 227,
+      "end": 227,
+      "sha256": "318b8660769675ba05c780cc7d00ac756d0440f952e55b887498f581e0fe42a3",
+      "excerpt": "227: \trule(&b, \"postrouting\", fmt.Sprintf(\"oifname %q ip saddr @allowed_v4 snat ip to %s\", up, m.Datapath.SNAT))",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/deadlines.go",
+      "start": 15,
+      "end": 30,
+      "sha256": "5e712fafdee1a4e286c6501de219e8826c02d458b472cce889716d9e5afcbc01",
+      "excerpt": "15: func bindingDeadline(m enforce.Model, b enforce.Binding) time.Duration {\n16: \tfor _, l := range m.Leases {\n17: \t\tif l.MemberID != b.MemberID {\n18: \t\t\tcontinue\n19: \t\t}\n20: \t\tif l.DeadlineMono == nil || *l.DeadlineMono <= 0 || m.NowMono <= 0 {\n21: \t\t\treturn 0\n22: \t\t}\n23: \t\td := *l.DeadlineMono\n24: \t\tif !b.ValidUntil.IsZero() {\n25: \t\t\td = m.NowMono + min(d-m.NowMono, b.ValidUntil.Sub(m.Now))\n26: \t\t}\n27: \t\treturn d\n28: \t}\n29: \treturn 0\n30: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/decide.go",
+      "start": 626,
+      "end": 626,
+      "sha256": "015a5ffd9f9d7c0a96e338bf9fa624bee3518de026aaf615391a0d02e4b813c0",
+      "excerpt": "626: \tnow := in.Lease.IssuedAt.Add(elapsed)",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/decide.go",
+      "start": 722,
+      "end": 722,
+      "sha256": "015a5ffd9f9d7c0a96e338bf9fa624bee3518de026aaf615391a0d02e4b813c0",
+      "excerpt": "722: \t\tNow:           now,",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/decide.go",
+      "start": 649,
+      "end": 650,
+      "sha256": "015a5ffd9f9d7c0a96e338bf9fa624bee3518de026aaf615391a0d02e4b813c0",
+      "excerpt": "649: \t\tif !b.ValidFrom.IsZero() && now.Before(b.ValidFrom) {\n650: \t\t\tcontinue",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/validate.go",
+      "start": 130,
+      "end": 130,
+      "sha256": "25e77fa93cbb097048cfa3035fcc5eaf167a211f464d94a689a87b986d2d352d",
+      "excerpt": "130: \t\t\t// Expired or not-yet-valid devices are omitted from the allow set.",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/watchdog/watch.go",
+      "start": 116,
+      "end": 157,
+      "sha256": "8f9da067c6691c899ac115025d620c13fdccbfde0794bcb54b490f5bfdb987ab",
+      "excerpt": "116: \n117: // Once checks liveness once. A healthy node does not touch the ruleset, so a\n118: // restart of the watchdog cannot restart a kernel timeout (§16.3).\n119: func (w *Watch) Once(ctx context.Context) error {\n120: \tctx, cancel := context.WithTimeout(ctx, 5*time.Second)\n121: \tdefer cancel()\n122: \tif w.Enforce == nil {\n123: \t\treturn errors.New(\"watchdog: no enforcer\")\n124: \t}\n125: \tdp, err := w.Config.datapath()\n126: \tif err != nil {\n127: \t\treturn err\n128: \t}\n129: \t// Serialize with Apply. Re-read the heartbeat after acquiring the lock:\n130: \t// an old expiry/stale decision must not erase a just-installed renewal.\n131: \tif w.Config.LockPath != \"\" {\n132: \t\tlock, err := nodelock.TryAcquire(w.Config.LockPath)\n133: \t\tif errors.Is(err, nodelock.ErrBusy) {\n134: \t\t\treturn nil\n135: \t\t}\n136: \t\tif err != nil {\n137: \t\t\treturn err\n138: \t\t}\n139: \t\tdefer lock.Release()\n140: \t}\n141: \treason, beat, mono := w.baselineDecision(ctx)\n142: \tif reason == \"\" {\n143: \t\treturn nil\n144: \t}\n145: \tlog := w.Log\n146: \tif log == nil {\n147: \t\tlog = slog.Default()\n148: \t}\n149: \tlog.Info(\"baseline decision\", \"writer\", \"watchdog\", \"cause\", reason,\n150: \t\t\"boot_id\", w.BootID, \"mono_ns\", int64(mono), \"heartbeat_mono_ns\", int64(beat.Mono),\n151: \t\t\"policy_expires_mono_ns\", int64(beat.PolicyExpires), \"generation\", beat.Generation,\n152: \t\t\"serving\", beat.Serving, \"baseline_ok\", beat.BaselineOK)\n153: \t// A slow presence read can overlap a fresh heartbeat even under the\n154: \t// apply lock. Re-evaluate immediately before the destructive operation.\n155: \treason, beat, mono = w.baselineDecision(ctx)\n156: \tif reason == \"\" {\n157: \t\tlog.Info(\"baseline canceled\", \"writer\", \"watchdog\", \"cause\", \"heartbeat_refreshed\")",
+      "within_file": true
+    },
+    {
+      "source_commit": "5c6d6abe6af7ebba4707ef64c56c157362f74b7b",
+      "path": "node/agent/review_r26_test.go",
+      "start": 53,
+      "end": 53,
+      "sha256": "0ce5034bf9096babd63f3cc9317be84ab7ecabd3186339957783e837d1ae4379",
+      "excerpt": "53: func TestR26_Held_AQ1_ServingDeadlineAndKernelCutOff(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/followup42_deadline_test.go",
+      "start": 108,
+      "end": 108,
+      "sha256": "5a6405337e49c42de383838e07c40c8e419318f03370e7fa5472a96bc3d7e191",
+      "excerpt": "108: func TestAT13_F42_WatchdogAcrossSiblingAndLastDeadline(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/followup42_deadline_test.go",
+      "start": 223,
+      "end": 223,
+      "sha256": "5a6405337e49c42de383838e07c40c8e419318f03370e7fa5472a96bc3d7e191",
+      "excerpt": "223: func TestAT13_F42_WholeNodeDeadlineKeepsEveryCap(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/serving.go",
+      "start": 119,
+      "end": 136,
+      "sha256": "08de496e797a4a52bf5a360c56b24c4ba33981ded0ff7307cf1c701a58985ca4",
+      "excerpt": "119: func (e *Engine) expireServing(ctx context.Context) bool {\n120: \tif !e.serving || (e.policyExpires > 0 && e.clock.Mono() < e.policyExpires) {\n121: \t\treturn false\n122: \t}\n123: \te.refreshDesired()\n124: \te.decision = Decide(e.input())\n125: \tif e.policyExpires > 0 && e.decision.Serve {\n126: \t\t// A binding boundary is a wake, not a node withdrawal. Its kernel\n127: \t\t// timeout already stopped admission; enforce applies survivors.\n128: \t\treturn false\n129: \t}\n130: \tcleanup, cancel := context.WithTimeout(localContext(ctx), 5*time.Second)\n131: \tdefer cancel()\n132: \te.withdraw(cleanup)\n133: \te.decision = Decide(e.input())\n134: \te.lastObs = time.Time{}\n135: \treturn true\n136: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 698,
+      "end": 698,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "698: \te.expireServing(ctx)",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/serving.go",
+      "start": 100,
+      "end": 100,
+      "sha256": "08de496e797a4a52bf5a360c56b24c4ba33981ded0ff7307cf1c701a58985ca4",
+      "excerpt": "100: \tif e.expireServing(ctx) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/serving.go",
+      "start": 111,
+      "end": 111,
+      "sha256": "08de496e797a4a52bf5a360c56b24c4ba33981ded0ff7307cf1c701a58985ca4",
+      "excerpt": "111: \tif e.expireServing(ctx) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 1181,
+      "end": 1209,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "1181: \tif !closedRecovery && e.canRetainServing(ctx, d) {\n1182: \t\t// Same installed model, but fresh live evidence is still mandatory.\n1183: \t\t// Failures take the ordinary reject/quarantine/withdraw path; no\n1184: \t\t// cached evidence or elapsed control timeout authorizes a skip.\n1185: \t\tif !e.verifyServingModel(ctx, *e.appliedModel, e.appliedAssignments) ||\n1186: \t\t\te.expireServing(ctx) || !e.checkMemberPath(ctx, *e.appliedModel) {\n1187: \t\t\treturn nil\n1188: \t\t}\n1189: \t\t// Either local read can cross a binding deadline. Rebuild before\n1190: \t\t// skipping; survivors must reach ordinary Apply on this same tick.\n1191: \t\td = Decide(e.input())\n1192: \t\te.decision = d\n1193: \t\tif !d.Serve {\n1194: \t\t\te.withdraw(ctx)\n1195: \t\t\treturn nil\n1196: \t\t}\n1197: \t\tif e.canRetainServing(ctx, d) {\n1198: \t\t\t// A reset may have rotated the head since the last Apply. Persist\n1199: \t\t\t// first; recordUsageIntent publishes memory only after that write.\n1200: \t\t\t// A crash before it retains the older, continuity-scoped intent.\n1201: \t\t\tif err := e.recordUsageIntent(ctx, d.Model); err != nil {\n1202: \t\t\t\te.usagePersist = true\n1203: \t\t\t\te.withdraw(ctx)\n1204: \t\t\t\treturn nil\n1205: \t\t\t}\n1206: \t\t\te.beat()\n1207: \t\t\treturn nil\n1208: \t\t}\n1209: \t}",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/serving.go",
+      "start": 130,
+      "end": 135,
+      "sha256": "08de496e797a4a52bf5a360c56b24c4ba33981ded0ff7307cf1c701a58985ca4",
+      "excerpt": "130: \tcleanup, cancel := context.WithTimeout(localContext(ctx), 5*time.Second)\n131: \tdefer cancel()\n132: \te.withdraw(cleanup)\n133: \te.decision = Decide(e.input())\n134: \te.lastObs = time.Time{}\n135: \treturn true",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 1193,
+      "end": 1195,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "1193: \t\tif !d.Serve {\n1194: \t\t\te.withdraw(ctx)\n1195: \t\t\treturn nil",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 1156,
+      "end": 1156,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "1156: \tif errors.Is(err, nodelock.ErrBusy) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 720,
+      "end": 720,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "720: \t\treturn err",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/serving.go",
+      "start": 174,
+      "end": 194,
+      "sha256": "08de496e797a4a52bf5a360c56b24c4ba33981ded0ff7307cf1c701a58985ca4",
+      "excerpt": "174: func (e *Engine) finishServingStep(ctx context.Context) {\n175: \t// SIGTERM can interrupt control I/O mid-Step. A canceled command is not\n176: \t// a kernel observation: perform the bounded final read independently so\n177: \t// normal process replacement cannot manufacture a foreign-tc quarantine.\n178: \tctx = localContext(ctx)\n179: \tok := e.verifyCurrentServing(ctx)\n180: \tif !e.serving {\n181: \t\te.auditBlocked(ctx)\n182: \t}\n183: \tif !e.serving && e.quarantinePending {\n184: \t\te.quarantine(ctx)\n185: \t\te.decision = Decide(e.input())\n186: \t\tok = false\n187: \t}\n188: \tchanged := e.updateStaleHold()\n189: \te.beat()\n190: \tif !ok || !e.serving || changed || (e.identityFrozen && e.lastObs.IsZero()) {\n191: \t\t_ = e.observe(ctx)\n192: \t\t_ = e.flush(ctx)\n193: \t}\n194: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/allowed_presence.go",
+      "start": 83,
+      "end": 85,
+      "sha256": "491b32b1ad11f553c5761d7aa21aa1ac74dd0ec38b59cf582e4ba0170c5620be",
+      "excerpt": "83: \t\t\tif remaining <= enforce.DeadlineInstallBound+enforce.DeadlineGranularity {\n84: \t\t\t\tcontinue\n85: \t\t\t}",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/observe.go",
+      "start": 425,
+      "end": 435,
+      "sha256": "e8ecf442c9172594c0742b964d3ceefe98124e5e47584c954c0f5892aa790517",
+      "excerpt": "425: func (e *Engine) reportingDecision() Decision {\n426: \td := e.decision\n427: \tif !e.serving && len(d.Reasons) == 0 && len(d.Checks) != 0 {\n428: \t\tcurrent := Decide(e.input())\n429: \t\tif len(current.Reasons) != 0 {\n430: \t\t\tcurrent.Errors = append(current.Errors, d.Errors...)\n431: \t\t\treturn current\n432: \t\t}\n433: \t}\n434: \treturn d\n435: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "5c6d6abe6af7ebba4707ef64c56c157362f74b7b",
+      "path": "node/agent/review_r26_test.go",
+      "start": 196,
+      "end": 196,
+      "sha256": "0ce5034bf9096babd63f3cc9317be84ab7ecabd3186339957783e837d1ae4379",
+      "excerpt": "196: //     context is canceled), finishServingStep verifies the live ruleset",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/followup42_deadline_test.go",
+      "start": 60,
+      "end": 60,
+      "sha256": "5a6405337e49c42de383838e07c40c8e419318f03370e7fa5472a96bc3d7e191",
+      "excerpt": "60: func TestAT13_F42_SiblingDeadlineAppliesWithoutBaseline(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/followup42_deadline_test.go",
+      "start": 203,
+      "end": 203,
+      "sha256": "5a6405337e49c42de383838e07c40c8e419318f03370e7fa5472a96bc3d7e191",
+      "excerpt": "203: func TestAT13_F42_ReportingRefreshesExistingCause(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/review_r25_test.go",
+      "start": 64,
+      "end": 64,
+      "sha256": "da1040476e1c7405d3089b8c4b835c21111e11fab0e1c8fe57c9398d4c4176dc",
+      "excerpt": "64: func TestR25_H1a_SiblingExpiryOnStepEntryTearsDownWholeNodeToBaselineBeforeControlPass(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/review_r25_test.go",
+      "start": 144,
+      "end": 144,
+      "sha256": "da1040476e1c7405d3089b8c4b835c21111e11fab0e1c8fe57c9398d4c4176dc",
+      "excerpt": "144: // sees !e.serving && len(e.decision.Reasons) == 0, writes a corrupt watchdog",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/deadlines.go",
+      "start": 57,
+      "end": 81,
+      "sha256": "5e712fafdee1a4e286c6501de219e8826c02d458b472cce889716d9e5afcbc01",
+      "excerpt": "57: func (e *Engine) onlyExpiredBindingsRemoved(next enforce.Model) bool {\n58: \tif !e.serving || e.appliedModel == nil || e.appliedModel.Generation != next.Generation ||\n59: \t\t!sameUsageBindings(e.meterBindings(), e.appliedModel.Bindings) || len(next.Bindings) == 0 ||\n60: \t\tlen(next.Bindings) >= len(e.appliedModel.Bindings) {\n61: \t\treturn false\n62: \t}\n63: \tremaining := make(map[uuid.UUID]enforce.Binding, len(next.Bindings))\n64: \tfor _, b := range next.Bindings {\n65: \t\tremaining[b.DeviceID] = b\n66: \t}\n67: \tfor _, old := range e.appliedModel.Bindings {\n68: \t\tif b, found := remaining[old.DeviceID]; found {\n69: \t\t\tif !reflect.DeepEqual(old, b) {\n70: \t\t\t\treturn false\n71: \t\t\t}\n72: \t\t\tdelete(remaining, old.DeviceID)\n73: \t\t} else {\n74: \t\t\td := bindingDeadline(*e.appliedModel, old)\n75: \t\t\tif d <= 0 || d > e.clock.Mono() {\n76: \t\t\t\treturn false\n77: \t\t\t}\n78: \t\t}\n79: \t}\n80: \treturn len(remaining) == 0\n81: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/deadlines.go",
+      "start": 83,
+      "end": 96,
+      "sha256": "5e712fafdee1a4e286c6501de219e8826c02d458b472cce889716d9e5afcbc01",
+      "excerpt": "83: func (e *Engine) settleExpiredBindings(ctx context.Context) bool {\n84: \tif !e.verifyServingModel(ctx, *e.appliedModel, e.appliedAssignments) {\n85: \t\treturn false\n86: \t}\n87: \t// The live rules prove retired elements are past their kernel deadlines.\n88: \t// Pause and checkpoint their final deltas before replacing the intent.\n89: \t// Surviving counters may advance: their identities never change here.\n90: \tif e.meter == nil || e.meter.CheckpointForRestart(ctx) != nil {\n91: \t\te.usagePersist = true\n92: \t\te.withdraw(ctx)\n93: \t\treturn false\n94: \t}\n95: \treturn true // ordinary Apply resumes sampling; failure paths withdraw\n96: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/render_nft.go",
+      "start": 140,
+      "end": 140,
+      "sha256": "318b8660769675ba05c780cc7d00ac756d0440f952e55b887498f581e0fe42a3",
+      "excerpt": "140: \t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip saddr != @allowed_v4 counter name %q drop\", in, up, counterUnknown))",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/render_nft.go",
+      "start": 190,
+      "end": 190,
+      "sha256": "318b8660769675ba05c780cc7d00ac756d0440f952e55b887498f581e0fe42a3",
+      "excerpt": "190: \t\trule(&b, \"forward\", fmt.Sprintf(\"iifname %q oifname %q ip daddr != @allowed_v4 counter name %q drop\", up, in, counterUnkDown))",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/internal/meter/delta.go",
+      "start": 98,
+      "end": 125,
+      "sha256": "9270d04978a863b4af434b6e5baf8f9525938d95845e30f43d0d65ec3924ac4d",
+      "excerpt": "98: func usageCounters(obs Observation) []usagestore.Counter {\n99: \tidx := indexBindings(obs.Bindings)\n100: \tnames := make([]string, 0, len(obs.Counters))\n101: \tfor name := range obs.Counters {\n102: \t\tif _, _, ok := parseUsageCounter(name); ok {\n103: \t\t\tnames = append(names, name)\n104: \t\t}\n105: \t}\n106: \tsort.Strings(names)\n107: \tout := make([]usagestore.Counter, 0, len(names))\n108: \tfor _, name := range names {\n109: \t\tdev, dir, _ := parseUsageCounter(name)\n110: \t\tv := obs.Counters[name]\n111: \t\tb := idx.byDevice[dev]\n112: \t\t// Two bindings for one device disagree. The bytes cannot be\n113: \t\t// attributed, so the revision stays zero and the sample becomes\n114: \t\t// a gap (§10.2, §10.7).\n115: \t\tif idx.conflict[dev] {\n116: \t\t\tb = enforce.Binding{}\n117: \t\t}\n118: \t\tout = append(out, usagestore.Counter{\n119: \t\t\tName: name, DeviceID: dev, Direction: dir,\n120: \t\t\tPackets: v.Packets, Bytes: v.Bytes,\n121: \t\t\tMemberID: b.MemberID, BindingRevision: b.BindingRevision,\n122: \t\t})\n123: \t}\n124: \treturn out\n125: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/internal/meter/delta.go",
+      "start": 490,
+      "end": 492,
+      "sha256": "9270d04978a863b4af434b6e5baf8f9525938d95845e30f43d0d65ec3924ac4d",
+      "excerpt": "490: \tfor _, id := range order {\n491: \t\ta := by[id]\n492: \t\tif a.up == 0 && a.down == 0 {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 1251,
+      "end": 1251,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "1251: \t\t\tif !e.settleExpiredBindings(ctx) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 1296,
+      "end": 1296,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "1296: \t\tif err := e.recordUsageIntent(ctx, model); err != nil {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 1310,
+      "end": 1310,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "1310: \tres, err := e.plane.Apply(applyCtx, model, prev)",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 1360,
+      "end": 1360,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "1360: \tif err := e.store.SetMeta(ctx, \"retained_applied\", string(retained)); err != nil {",
+      "within_file": true
+    },
+    {
+      "source_commit": "5c6d6abe6af7ebba4707ef64c56c157362f74b7b",
+      "path": "node/agent/review_r26_test.go",
+      "start": 259,
+      "end": 259,
+      "sha256": "0ce5034bf9096babd63f3cc9317be84ab7ecabd3186339957783e837d1ae4379",
+      "excerpt": "259: \t\t\t}",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/followup42_deadline_test.go",
+      "start": 155,
+      "end": 155,
+      "sha256": "5a6405337e49c42de383838e07c40c8e419318f03370e7fa5472a96bc3d7e191",
+      "excerpt": "155: func TestMTR03_F42_ExpiredRemovalSettlesBytesWithoutClosingInterval(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/followup42_deadline_test.go",
+      "start": 259,
+      "end": 259,
+      "sha256": "5a6405337e49c42de383838e07c40c8e419318f03370e7fa5472a96bc3d7e191",
+      "excerpt": "259: func TestMTR03_F42_ExpiredSettlementFailureKeepsIntentAndCloses(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/retain.go",
+      "start": 48,
+      "end": 62,
+      "sha256": "548e0ac095849bcd99db3e88963d61619ce6a2f25da53624b4f0e1814827796f",
+      "excerpt": "48: \th, err := e.usage.Head(ctx)\n49: \tif err != nil {\n50: \t\treturn false\n51: \t}\n52: \tintent := e.restartIntent\n53: \tif intent == nil || h.OpenEpoch == uuid.Nil || h.BootID != e.bootID.String() ||\n54: \t\tintent.Boot != e.bootID || uint64(intent.Generation) != d.Model.Generation ||\n55: \t\t!sameUsageBindings(intent.bindings(), d.Model.Bindings) {\n56: \t\treturn false\n57: \t}\n58: \tif intent.Epoch == h.OpenEpoch {\n59: \t\treturn true // Head already proves this epoch is open on the current boot\n60: \t}\n61: \tsame, err := e.usage.SameCountingInterval(ctx, intent.Epoch, h.OpenEpoch, e.bootID.String())\n62: \treturn err == nil && same",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/meterreset.go",
+      "start": 255,
+      "end": 263,
+      "sha256": "4b14bcf8c9aad5f9c78b945ea03e647648a3d611a5cbe34c1a922874a8e034e3",
+      "excerpt": "255: // and then failed to commit it.\n256: func (k *kernelSource) rearm() {\n257: \tk.mu.Lock()\n258: \tdefer k.mu.Unlock()\n259: \tk.nudge = true\n260: \tk.switched = true\n261: \tk.pending = true\n262: \tk.external = true\n263: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/internal/meter/delta.go",
+      "start": 374,
+      "end": 429,
+      "sha256": "9270d04978a863b4af434b6e5baf8f9525938d95845e30f43d0d65ec3924ac4d",
+      "excerpt": "374: func planSwitch(head usagestore.Head, obs Observation, cur []usagestore.Counter, now time.Time, opening bool, interval time.Duration) (plan, error) {\n375: \treason := string(api.UsageGapReasonCounterDiscontinuity)\n376: \tdetail := \"counter discontinuity\"\n377: \tif bootChanged(head.BootID, obs.BootID) {\n378: \t\treason = string(api.UsageGapReasonPowerLoss)\n379: \t\tdetail = \"host boot changed\"\n380: \t}\n381: \t// A boot change may have wrapped the counters back up. Apparent\n382: \t// increases are not trustworthy (§10.7). A single counter reset still\n383: \t// reports the other devices' non-negative deltas.\n384: \tvar recs []usagestore.DraftRecord\n385: \tend := now\n386: \testimated := false\n387: \tif !opening && !head.LastSample.IsZero() {\n388: \t\tend, estimated = stampEnd(head.LastSample, now, interval)\n389: \t}\n390: \tstart, end := eventInterval(head.LastSample, end)\n391: \tif !opening && !head.LastSample.IsZero() {\n392: \t\tif !bootChanged(head.BootID, obs.BootID) {\n393: \t\t\trecs, _ = attribute(head, cur, end)\n394: \t\t}\n395: \t}\n396: \tvar last *time.Time\n397: \tif !head.LastSample.IsZero() {\n398: \t\tt := head.LastSample\n399: \t\tlast = &t\n400: \t}\n401: \tid := uuid.Must(uuid.NewV7())\n402: \td := usagestore.Draft{\n403: \t\tEpochID:        head.OpenEpoch,\n404: \t\tStart:          start,\n405: \t\tEnd:            end,\n406: \t\tQuality:        string(api.UsageQualityGap),\n407: \t\tGapReason:      reason,\n408: \t\tLastCheckpoint: last,\n409: \t\tRecords:        recs,\n410: \t\tDetail:         detail,\n411: \t}\n412: \tif estimated {\n413: \t\t// Gap wins over boundary_estimated: missing bytes are the fact\n414: \t\t// the ledger has to keep (§10.7, §10.9).\n415: \t\td.Detail += \"; boundary sample missed\"\n416: \t}\n417: \tboot := obs.BootID\n418: \tif boot == \"\" {\n419: \t\tboot = head.BootID\n420: \t}\n421: \treturn plan{commit: usagestore.Commit{\n422: \t\tEvent:       &d,\n423: \t\tCounters:    cur,\n424: \t\tCloseEpoch:  true,\n425: \t\tCloseReason: reason,\n426: \t\tOpen:        &usagestore.NewEpoch{ID: id, Reason: reason, BootID: boot},\n427: \t\tBootID:      boot,\n428: \t\tSampledAt:   end,\n429: \t}}, nil",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/internal/usagestore/continuity.go",
+      "start": 14,
+      "end": 33,
+      "sha256": "25434d77cc3199eb8ab95cfd16a5866373cd28bcea7e60d80f3b3dbb3e669fa4",
+      "excerpt": "14: func (s *Store) SameCountingInterval(ctx context.Context, from, to uuid.UUID, boot string) (bool, error) {\n15: \tif from == uuid.Nil || to == uuid.Nil || boot == \"\" {\n16: \t\treturn false, nil\n17: \t}\n18: \ts.mu.Lock()\n19: \tdefer s.mu.Unlock()\n20: \tvar ok bool\n21: \terr := s.db.QueryRowContext(ctx, `SELECT EXISTS (\n22: \t\tSELECT 1 FROM epochs AS first, epochs AS last\n23: \t\tWHERE first.epoch_id = ? AND last.epoch_id = ?\n24: \t\tAND first.rowid <= last.rowid AND last.closed_at IS NULL\n25: \t\tAND NOT EXISTS (\n26: \t\t\tSELECT 1 FROM epochs AS e WHERE e.rowid BETWEEN first.rowid AND last.rowid\n27: \t\t\tAND (e.boot_id != ?\n28: \t\t\t\tOR (e.rowid > first.rowid AND e.open_reason != 'counter_discontinuity')\n29: \t\t\t\tOR (e.rowid < last.rowid AND\n30: \t\t\t\t\t(e.closed_at IS NULL OR COALESCE(e.close_reason, '') != 'counter_discontinuity')))\n31: \t\t))`, from.String(), to.String(), boot).Scan(&ok)\n32: \treturn ok, err\n33: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 1197,
+      "end": 1208,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "1197: \t\tif e.canRetainServing(ctx, d) {\n1198: \t\t\t// A reset may have rotated the head since the last Apply. Persist\n1199: \t\t\t// first; recordUsageIntent publishes memory only after that write.\n1200: \t\t\t// A crash before it retains the older, continuity-scoped intent.\n1201: \t\t\tif err := e.recordUsageIntent(ctx, d.Model); err != nil {\n1202: \t\t\t\te.usagePersist = true\n1203: \t\t\t\te.withdraw(ctx)\n1204: \t\t\t\treturn nil\n1205: \t\t\t}\n1206: \t\t\te.beat()\n1207: \t\t\treturn nil\n1208: \t\t}",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/restart_usage.go",
+      "start": 43,
+      "end": 70,
+      "sha256": "9da95d5d9f54129d36b279b265bc2f25c6e2e1ed86d38c2e934b1bb6ade33d66",
+      "excerpt": "43: func (e *Engine) recordUsageIntent(ctx context.Context, model enforce.Model) error {\n44: \tif e.usage == nil || e.meter == nil {\n45: \t\treturn fmt.Errorf(\"usage: no owned meter for admission\")\n46: \t}\n47: \th, err := e.usage.Head(ctx)\n48: \tif err != nil {\n49: \t\treturn err\n50: \t}\n51: \tif h.OpenEpoch == uuid.Nil || h.BootID != e.bootID.String() {\n52: \t\treturn fmt.Errorf(\"usage: no current epoch for admission\")\n53: \t}\n54: \tif old := e.restartIntent; old != nil && old.Boot == e.bootID && old.Epoch == h.OpenEpoch && uint64(old.Generation) == model.Generation && sameUsageBindings(old.bindings(), model.Bindings) {\n55: \t\treturn nil // a same-generation renewal needs no second durable intent\n56: \t}\n57: \tintent := usageIntent{Boot: e.bootID, Epoch: h.OpenEpoch, Generation: decstr.U64(model.Generation)}\n58: \tfor _, b := range model.Bindings {\n59: \t\tintent.Bindings = append(intent.Bindings, usageIdentity{Device: b.DeviceID, Member: b.MemberID, Revision: decstr.U64(b.BindingRevision)})\n60: \t}\n61: \traw, err := json.Marshal(intent)\n62: \tif err != nil {\n63: \t\treturn err\n64: \t}\n65: \tif err := e.store.SetMeta(ctx, usageIntentKey, string(raw)); err != nil {\n66: \t\treturn err\n67: \t}\n68: \te.restartIntent = &intent\n69: \treturn nil\n70: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/restart_usage.go",
+      "start": 65,
+      "end": 65,
+      "sha256": "9da95d5d9f54129d36b279b265bc2f25c6e2e1ed86d38c2e934b1bb6ade33d66",
+      "excerpt": "65: \tif err := e.store.SetMeta(ctx, usageIntentKey, string(raw)); err != nil {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/restart_usage.go",
+      "start": 68,
+      "end": 68,
+      "sha256": "9da95d5d9f54129d36b279b265bc2f25c6e2e1ed86d38c2e934b1bb6ade33d66",
+      "excerpt": "68: \te.restartIntent = &intent",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 1201,
+      "end": 1205,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "1201: \t\t\tif err := e.recordUsageIntent(ctx, d.Model); err != nil {\n1202: \t\t\t\te.usagePersist = true\n1203: \t\t\t\te.withdraw(ctx)\n1204: \t\t\t\treturn nil\n1205: \t\t\t}",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/restart_usage.go",
+      "start": 139,
+      "end": 139,
+      "sha256": "9da95d5d9f54129d36b279b265bc2f25c6e2e1ed86d38c2e934b1bb6ade33d66",
+      "excerpt": "139: \t\tcontinuous, err := st.SameCountingInterval(ctx, p.Epoch, h.OpenEpoch, e.bootID.String())",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/restart_usage.go",
+      "start": 136,
+      "end": 136,
+      "sha256": "9da95d5d9f54129d36b279b265bc2f25c6e2e1ed86d38c2e934b1bb6ade33d66",
+      "excerpt": "136: \t\tif p.Epoch == h.OpenEpoch {",
+      "within_file": true
+    },
+    {
+      "source_commit": "5c6d6abe6af7ebba4707ef64c56c157362f74b7b",
+      "path": "node/agent/review_r26_test.go",
+      "start": 424,
+      "end": 424,
+      "sha256": "0ce5034bf9096babd63f3cc9317be84ab7ecabd3186339957783e837d1ae4379",
+      "excerpt": "424: func TestR26_Held_AQ4_SameCountingIntervalRetentionAndIntentPersistence(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/followup42_epoch_test.go",
+      "start": 37,
+      "end": 37,
+      "sha256": "c300184ec3aea21ad60f1b5dcce748e496adcbb6125da334597922d8ede0c1d6",
+      "excerpt": "37: func TestMTR03_F42_RetainedEpochIntentIsDurable(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/followup42_epoch_test.go",
+      "start": 67,
+      "end": 67,
+      "sha256": "c300184ec3aea21ad60f1b5dcce748e496adcbb6125da334597922d8ede0c1d6",
+      "excerpt": "67: func TestMTR03_F42_RetentionRejectsCountingBoundaries(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/followup42_epoch_test.go",
+      "start": 100,
+      "end": 100,
+      "sha256": "c300184ec3aea21ad60f1b5dcce748e496adcbb6125da334597922d8ede0c1d6",
+      "excerpt": "100: func TestMTR03_F42_IntentRefreshFailureWithdraws(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/review_r25_test.go",
+      "start": 254,
+      "end": 254,
+      "sha256": "da1040476e1c7405d3089b8c4b835c21111e11fab0e1c8fe57c9398d4c4176dc",
+      "excerpt": "254: \t\t\t\t\tbindings: r.eng.meterBindings,",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/sync.go",
+      "start": 264,
+      "end": 277,
+      "sha256": "bb31526ec6ee71ccdaac8f629a1ab910f6906f8f032db529a709e3ed8432d22d",
+      "excerpt": "264: func leadJitter(lead time.Duration, source io.Reader) time.Duration {\n265: \tspan := lead / 10 / time.Millisecond\n266: \tif span <= 0 {\n267: \t\treturn 0\n268: \t}\n269: \tif source == nil {\n270: \t\tsource = rand.Reader\n271: \t}\n272: \tn, err := rand.Int(source, big.NewInt(int64(2*span+1)))\n273: \tif err != nil {\n274: \t\treturn 0\n275: \t}\n276: \treturn (time.Duration(n.Int64()) - span) * time.Millisecond\n277: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 1552,
+      "end": 1561,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "1552: func (e *Engine) renewLead(window time.Duration) time.Duration {\n1553: \tlead := time.Duration(e.cfg.RenewLeadSeconds) * time.Second\n1554: \tif window > 0 && lead > window/2 {\n1555: \t\tlead = window / 2\n1556: \t}\n1557: \tif lead < time.Second {\n1558: \t\tlead = time.Second\n1559: \t}\n1560: \treturn lead\n1561: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/sync.go",
+      "start": 166,
+      "end": 166,
+      "sha256": "bb31526ec6ee71ccdaac8f629a1ab910f6906f8f032db529a709e3ed8432d22d",
+      "excerpt": "166: \treturn timeanchor.Remaining(deadline, e.clock.Mono()) <= e.renewLead(window)+e.renewalJitter(window)",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/sync.go",
+      "start": 286,
+      "end": 295,
+      "sha256": "bb31526ec6ee71ccdaac8f629a1ab910f6906f8f032db529a709e3ed8432d22d",
+      "excerpt": "286: func (e *Engine) renewalJitter(window time.Duration) time.Duration {\n287: \tif !e.leaseJitter.valid || e.leaseJitter.id != e.lease.LeaseId || !e.leaseJitter.issued.Equal(e.lease.IssuedAt) {\n288: \t\te.leaseJitter = renewalJitter{valid: true, id: e.lease.LeaseId, issued: e.lease.IssuedAt,\n289: \t\t\tvalue: leadJitter(e.renewLead(window), e.renewRandom)}\n290: \t}\n291: \t// A configuration change on restart may shrink the base lead. Keep the\n292: \t// saved draw, but never use an offset outside the new base's +/-10% bound.\n293: \tspan := e.renewLead(window) / 10\n294: \treturn max(-span, min(span, e.leaseJitter.value))\n295: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/internal/agentstore/state.go",
+      "start": 341,
+      "end": 361,
+      "sha256": "bdaee99ffd68016b5391bc7bc6ed05a19e1324d119168e0522b843420b2601aa",
+      "excerpt": "341: func (s *Store) SaveLease(ctx context.Context, l Lease) error {\n342: \tif l.ID == uuid.Nil || l.BootID == uuid.Nil || l.MonoSent <= 0 {\n343: \t\treturn errors.New(\"agentstore: incomplete lease\")\n344: \t}\n345: \treturn s.tx(ctx, func(tx *sql.Tx) error {\n346: \t\tif _, err := tx.ExecContext(ctx, `DELETE FROM lease WHERE id = 1`); err != nil {\n347: \t\t\treturn err\n348: \t\t}\n349: \t\t_, err := tx.ExecContext(ctx, `INSERT INTO lease\n350: \t\t\t(id, lease_id, issued_at, expires_at, highest_issued_at, envelope, mono_sent_ns, boot_id)\n351: \t\t\tVALUES (1, ?, ?, ?, ?, ?, ?, ?)`,\n352: \t\t\tl.ID.String(), fmtTime(l.IssuedAt), fmtTime(l.ExpiresAt), fmtTime(l.HighestIssuedAt),\n353: \t\t\tl.Envelope, int64(l.MonoSent), l.BootID.String())\n354: \t\tif err != nil {\n355: \t\t\treturn err\n356: \t\t}\n357: \t\t_, err = tx.ExecContext(ctx, `INSERT INTO meta(key,value) VALUES('lease_renew_jitter_ns',?)\n358: \t\t\tON CONFLICT(key) DO UPDATE SET value=excluded.value`, strconv.FormatInt(int64(l.RenewalJitter), 10))\n359: \t\treturn err\n360: \t})\n361: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/internal/agentstore/state.go",
+      "start": 364,
+      "end": 401,
+      "sha256": "bdaee99ffd68016b5391bc7bc6ed05a19e1324d119168e0522b843420b2601aa",
+      "excerpt": "364: func (s *Store) Lease(ctx context.Context) (Lease, bool, error) {\n365: \tvar l Lease\n366: \tvar id, issued, expires, highest, boot string\n367: \tvar mono int64\n368: \tvar jitter int64\n369: \terr := s.db.QueryRowContext(ctx, `SELECT lease_id, issued_at, expires_at, highest_issued_at, envelope, mono_sent_ns, boot_id,\n370: \t\tCOALESCE((SELECT value FROM meta WHERE key='lease_renew_jitter_ns'), '0') FROM lease WHERE id = 1`).\n371: \t\tScan(&id, &issued, &expires, &highest, &l.Envelope, &mono, &boot, &jitter)\n372: \tif errors.Is(err, sql.ErrNoRows) {\n373: \t\treturn Lease{}, false, nil\n374: \t}\n375: \tif err != nil {\n376: \t\treturn Lease{}, false, err\n377: \t}\n378: \tl.RenewalJitter = time.Duration(jitter)\n379: \tl.ID, err = uuid.Parse(id)\n380: \tif err != nil {\n381: \t\treturn Lease{}, false, err\n382: \t}\n383: \tl.BootID, err = uuid.Parse(boot)\n384: \tif err != nil {\n385: \t\treturn Lease{}, false, err\n386: \t}\n387: \tl.IssuedAt, err = parseTime(issued)\n388: \tif err != nil {\n389: \t\treturn Lease{}, false, err\n390: \t}\n391: \tl.ExpiresAt, err = parseTime(expires)\n392: \tif err != nil {\n393: \t\treturn Lease{}, false, err\n394: \t}\n395: \tl.HighestIssuedAt, err = parseTime(highest)\n396: \tif err != nil {\n397: \t\treturn Lease{}, false, err\n398: \t}\n399: \tl.MonoSent = time.Duration(mono)\n400: \treturn l, true, nil\n401: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "5c6d6abe6af7ebba4707ef64c56c157362f74b7b",
+      "path": "node/agent/review_r26_test.go",
+      "start": 462,
+      "end": 462,
+      "sha256": "0ce5034bf9096babd63f3cc9317be84ab7ecabd3186339957783e837d1ae4379",
+      "excerpt": "462: //     with 1ms resolution.",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/followup42_jitter_test.go",
+      "start": 23,
+      "end": 23,
+      "sha256": "a853c0a74bcde660bec1ea899ae34add053d61fcd0707a3899b3e723efe32abc",
+      "excerpt": "23: func TestAT13_F32_01_UniformMillisecondRenewalJitter(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/followup42_jitter_test.go",
+      "start": 56,
+      "end": 56,
+      "sha256": "a853c0a74bcde660bec1ea899ae34add053d61fcd0707a3899b3e723efe32abc",
+      "excerpt": "56: func TestAT13_F32_01_RenewalDrawOncePerLease(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/followup42_jitter_test.go",
+      "start": 82,
+      "end": 82,
+      "sha256": "a853c0a74bcde660bec1ea899ae34add053d61fcd0707a3899b3e723efe32abc",
+      "excerpt": "82: func TestAT13_F32_01_FailedRandomReadKeepsSafeLead(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/followup42_jitter_test.go",
+      "start": 99,
+      "end": 99,
+      "sha256": "a853c0a74bcde660bec1ea899ae34add053d61fcd0707a3899b3e723efe32abc",
+      "excerpt": "99: func TestAT13_F32_01_LeaseReplayAndRestartKeepDraw(t *testing.T) {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/internal/agentstore/followup42_test.go",
+      "start": 12,
+      "end": 12,
+      "sha256": "db93ab191103f4f636ca3a4756fa16cf536a7b65aef7cd2443d3266ac95ef57b",
+      "excerpt": "12: \ts, err := Open(filepath.Join(t.TempDir(), \"agent.db\"))",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/model.go",
+      "start": 110,
+      "end": 114,
+      "sha256": "0d1cf60ab21f1eaebbf28c7d199959a11c283760d56c22336ae2957b550a221d",
+      "excerpt": "110: \t// DeadlineMono is the absolute CLOCK_MONOTONIC elapsed duration at which\n111: \t// member forwarding must stop. Nil supports legacy callers; a non-nil zero\n112: \t// or negative value is expired. Include member-level signed/local caps;\n113: \t// memberTimeout separately intersects each binding's ValidUntil.\n114: \t// It is not wall time, a relative timeout, or time since process start.",
+      "within_file": true
+    },
+    {
+      "source_commit": "5c6d6abe6af7ebba4707ef64c56c157362f74b7b",
+      "path": "node/agent/review_r26_test.go",
+      "start": 533,
+      "end": 533,
+      "sha256": "0ce5034bf9096babd63f3cc9317be84ab7ecabd3186339957783e837d1ae4379",
+      "excerpt": "533: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/engine.go",
+      "start": 1537,
+      "end": 1540,
+      "sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "excerpt": "1537: \texpires := e.servingDeadline()\n1538: \terr := watchdog.WriteHeartbeat(e.cfg.HeartbeatPath, watchdog.Beat{\n1539: \t\tBootID: e.bootID, Mono: mono, Wall: e.clock.Wall().UTC(),\n1540: \t\tPolicyExpires: expires, BaselineOK: e.baselineOK, Serving: e.serving,",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/boot_heartbeat.go",
+      "start": 17,
+      "end": 27,
+      "sha256": "02d81939e747618b01b9081f65dd98a5c4fa713cbf465c9476cc7b12d226f7ca",
+      "excerpt": "17: \tb := watchdog.Beat{\n18: \t\tBootID: e.bootID, Mono: e.clock.Mono(), Wall: e.clock.Wall().UTC(),\n19: \t\tBaselineOK: e.baselineOK, Reason: \"boot_unverified\",\n20: \t}\n21: \tif e.baselineOK {\n22: \t\tb.Reason = \"boot_baseline\"\n23: \t}\n24: \tif e.serving && ctx.Err() == nil {\n25: \t\tb.Serving, b.Generation, b.PolicyExpires = true, e.appliedGen, e.servingDeadline()\n26: \t\tb.Reason = \"serving\"\n27: \t}",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/deadline.go",
+      "start": 35,
+      "end": 61,
+      "sha256": "5eb45aa470572833c7fc79f6de8e9000b9a9926d1e3961fef1ce6ebf5a790f92",
+      "excerpt": "35: \n36: func memberTimeout(binding Binding, lease MemberLease, m Model) (time.Duration, bool) {\n37: \tdeadline, ok := ForwardingDeadline(lease)\n38: \tif !ok || m.Now.IsZero() || (!binding.ValidFrom.IsZero() && m.Now.Before(binding.ValidFrom)) {\n39: \t\treturn 0, false\n40: \t}\n41: \tif !binding.ValidUntil.IsZero() && binding.ValidUntil.Before(deadline) {\n42: \t\tdeadline = binding.ValidUntil\n43: \t}\n44: \tremaining := deadline.Sub(m.Now)\n45: \tif remaining <= 0 {\n46: \t\treturn 0, false\n47: \t}\n48: \tif lease.TimeoutCeilSeconds > 0 && lease.TimeoutCeilSeconds <= uint64((1<<63-1)/int64(time.Second)) {\n49: \t\tremaining = min(remaining, time.Duration(lease.TimeoutCeilSeconds)*time.Second)\n50: \t}\n51: \tif lease.DeadlineMono != nil {\n52: \t\tif m.NowMono <= 0 || *lease.DeadlineMono <= m.NowMono {\n53: \t\t\treturn 0, false\n54: \t\t}\n55: \t\tremaining = min(remaining, *lease.DeadlineMono-m.NowMono)\n56: \t}\n57: \tif remaining <= m.timeoutReserve {\n58: \t\treturn 0, false\n59: \t}\n60: \tremaining = (remaining - m.timeoutReserve).Truncate(DeadlineGranularity)\n61: \treturn remaining, remaining >= DeadlineGranularity",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/validate.go",
+      "start": 123,
+      "end": 132,
+      "sha256": "25e77fa93cbb097048cfa3035fcc5eaf167a211f464d94a689a87b986d2d352d",
+      "excerpt": "123: \t\tsortAddrs(addrs)\n124: \t\ttimeout, admit := memberTimeout(b, lease, m)\n125: \t\tdev := admittedDevice{Binding: b, Lease: lease, Addrs: addrs, Timeout: timeout}\n126: \t\tif admit {\n127: \t\t\tdevices = append(devices, dev)\n128: \t\t\tmembersNeeded[b.MemberID] = true\n129: \t\t} else {\n130: \t\t\t// Expired or not-yet-valid devices are omitted from the allow set.\n131: \t\t\t// They still need a class only while admitted. Counters stay.\n132: \t\t\tdevices = append(devices, dev)",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/enforce/apply.go",
+      "start": 195,
+      "end": 219,
+      "sha256": "7f7692e9cd76946b2461af267d2318e4d42c09e6b569ead9f4dad428bcf70ac5",
+      "excerpt": "195: \tcancelInstall()\n196: \tif state.Chains == nil {\n197: \t\tstate.Chains = map[string]bool{}\n198: \t}\n199: \tstate.Chains[deadlineGuard] = true\n200: \tif err != nil || timing.InstalledBy < timing.RenderStart || timing.InstalledBy-timing.RenderStart > DeadlineInstallBound {\n201: \t\t_ = installBaseline(ctx, ex, m.Datapath, state)\n202: \t\tif err == nil {\n203: \t\t\terr = checkf(ReasonIsolation, \"deadline installation budget exceeded\")\n204: \t\t}\n205: \t\treturn ApplyResult{Plan: plan, Deadline: timing}, err\n206: \t}\n207: \t// Candidate commit removed all references to retired member classes. Delete\n208: \t// them while the guard is still closed, before release and serving verification.\n209: \t// A crash here leaves only unreferenced classes; the next Apply reclaims them.\n210: \tif plan.TCRetire != \"\" {\n211: \t\tif err := ex.TCBatch(commandPhase(ctx, \"retire\"), plan.TCRetire); err != nil {\n212: \t\t\trollbackErr := installBaseline(ctx, ex, m.Datapath, state)\n213: \t\t\treturn ApplyResult{Plan: plan}, errors.Join(err, rollbackErr)\n214: \t\t}\n215: \t}\n216: \ttiming.ReleaseStart = timingSample()\n217: \terr = releaseDeadlineGuard(commandPhase(ctx, \"release\"), ex)\n218: \ttiming.ReleaseEnd = timingSample()\n219: \tif err != nil {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/watchdog/watch.go",
+      "start": 170,
+      "end": 215,
+      "sha256": "8f9da067c6691c899ac115025d620c13fdccbfde0794bcb54b490f5bfdb987ab",
+      "excerpt": "170: func (w *Watch) baselineDecision(ctx context.Context) (string, Beat, time.Duration) {\n171: \t// Read the atomically replaced heartbeat BEFORE sampling now. Otherwise\n172: \t// a heartbeat written between the two reads looks like a clock rollback.\n173: \tbeat, readErr := ReadHeartbeat(w.Config.HeartbeatPath)\n174: \tmono, err := w.mono()\n175: \tif err != nil || mono <= 0 {\n176: \t\treturn \"clock_unavailable\", beat, mono\n177: \t}\n178: \tif readErr != nil {\n179: \t\treturn \"heartbeat_unreadable\", beat, mono\n180: \t}\n181: \tif w.BootID != uuid.Nil && beat.BootID != w.BootID {\n182: \t\treturn \"boot_changed\", beat, mono\n183: \t}\n184: \tif beat.Mono > mono {\n185: \t\treturn \"heartbeat_in_future\", beat, mono\n186: \t}\n187: \tif mono-beat.Mono > time.Duration(w.Config.WatchdogStaleSeconds)*time.Second {\n188: \t\treturn \"heartbeat_stale\", beat, mono\n189: \t}\n190: \tif !beat.BaselineOK {\n191: \t\treturn \"baseline_unverified\", beat, mono\n192: \t}\n193: \tif beat.PolicyExpires > 0 && mono >= beat.PolicyExpires {\n194: \t\treturn \"policy_expired\", beat, mono\n195: \t}\n196: \tif beat.Serving && beat.PolicyExpires <= 0 {\n197: \t\treturn \"serving_without_deadline\", beat, mono\n198: \t}\n199: \treadCtx, cancel := context.WithTimeout(ctx, time.Second)\n200: \tdefer cancel()\n201: \tok, err := w.Enforce.BaselinePresent(readCtx)\n202: \tif err != nil {\n203: \t\treturn \"baseline_unreadable\", beat, mono\n204: \t}\n205: \tif !ok {\n206: \t\treturn \"baseline_missing\", beat, mono\n207: \t}\n208: \treturn \"\", beat, mono\n209: }\n210: \n211: func (w *Watch) mono() (time.Duration, error) {\n212: \tif w.NowMono != nil {\n213: \t\treturn w.NowMono()\n214: \t}\n215: \tif w.Clock != nil {",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/agent/meterreset.go",
+      "start": 311,
+      "end": 332,
+      "sha256": "4b14bcf8c9aad5f9c78b945ea03e647648a3d611a5cbe34c1a922874a8e034e3",
+      "excerpt": "311: func (e *Engine) switchEpoch(ctx context.Context) {\n312: \tif e.kernel == nil || e.meter == nil || !e.kernel.nudgePending() {\n313: \t\treturn\n314: \t}\n315: \terr := e.meter.Sample(ctx)\n316: \tif errors.Is(err, meter.ErrBusy) {\n317: \t\ttime.Sleep(20 * time.Millisecond)\n318: \t\terr = e.meter.Sample(ctx)\n319: \t}\n320: \tif err == nil || ctx.Err() != nil {\n321: \t\treturn\n322: \t}\n323: \tif errors.Is(err, meter.ErrBusy) {\n324: \t\treturn\n325: \t}\n326: \tif !e.kernel.nudgePending() {\n327: \t\te.kernel.rearm()\n328: \t}\n329: \tif !errors.Is(err, meter.ErrHold) && !errors.Is(err, meter.ErrPaused) {\n330: \t\te.log.Warn(\"meter epoch\", \"err\", err.Error())\n331: \t}\n332: }",
+      "within_file": true
+    },
+    {
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "path": "node/internal/meter/delta.go",
+      "start": 457,
+      "end": 504,
+      "sha256": "9270d04978a863b4af434b6e5baf8f9525938d95845e30f43d0d65ec3924ac4d",
+      "excerpt": "457: \tfor _, c := range cur {\n458: \t\tp, ok := prev[c.Name]\n459: \t\tvar delta uint64\n460: \t\tif !ok {\n461: \t\t\tdelta = c.Bytes\n462: \t\t} else if c.Bytes >= p.Bytes && c.Packets >= p.Packets {\n463: \t\t\tdelta = c.Bytes - p.Bytes\n464: \t\t} else {\n465: \t\t\tcontinue\n466: \t\t}\n467: \t\ta := touch(c.DeviceID)\n468: \t\tif c.Direction == DirUpload {\n469: \t\t\ta.up += delta\n470: \t\t} else {\n471: \t\t\ta.down += delta\n472: \t\t}\n473: \t\tif c.MemberID != uuid.Nil {\n474: \t\t\ta.member = c.MemberID\n475: \t\t\ta.rev = c.BindingRevision\n476: \t\t}\n477: \t\tif ok && (p.MemberID != uuid.Nil || p.BindingRevision != 0) {\n478: \t\t\ta.hadOld = true\n479: \t\t\ta.oldMem = p.MemberID\n480: \t\t\ta.oldRev = p.BindingRevision\n481: \t\t}\n482: \t}\n483: \tsort.Slice(order, func(i, j int) bool { return order[i].String() < order[j].String() })\n484: \tperiod := usagestore.PeriodID(head.LastSample)\n485: \tif head.LastSample.IsZero() {\n486: \t\tperiod = usagestore.PeriodID(end)\n487: \t}\n488: \tvar recs []usagestore.DraftRecord\n489: \tmapping := false\n490: \tfor _, id := range order {\n491: \t\ta := by[id]\n492: \t\tif a.up == 0 && a.down == 0 {\n493: \t\t\tcontinue\n494: \t\t}\n495: \t\tif a.member == uuid.Nil || a.rev == 0 || (a.hadOld && (a.oldMem != a.member || a.oldRev != a.rev)) {\n496: \t\t\tmapping = true\n497: \t\t\tcontinue\n498: \t\t}\n499: \t\trecs = append(recs, usagestore.DraftRecord{\n500: \t\t\tMemberID: a.member, DeviceID: id, BindingRevision: a.rev,\n501: \t\t\tPeriodID: period, Upload: a.up, Download: a.down,\n502: \t\t})\n503: \t}\n504: \treturn recs, mapping",
+      "within_file": true
+    }
+  ],
+  "test_name_checks": [
+    {
+      "name": "TestR26_Held_AQ1_ServingDeadlineAndKernelCutOff",
+      "path": "node/agent/review_r26_test.go",
+      "source_commit": "5c6d6abe6af7ebba4707ef64c56c157362f74b7b",
+      "cited_line": 53,
+      "actual_lines": [
+        53
+      ]
+    },
+    {
+      "name": "TestAT13_F42_WatchdogAcrossSiblingAndLastDeadline",
+      "path": "node/agent/followup42_deadline_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 108,
+      "actual_lines": [
+        108
+      ]
+    },
+    {
+      "name": "TestAT13_F42_WholeNodeDeadlineKeepsEveryCap",
+      "path": "node/agent/followup42_deadline_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 223,
+      "actual_lines": [
+        223
+      ]
+    },
+    {
+      "name": "TestR26_Held_AQ2_SurvivorsApplyAndEarlyReturnTruthfulness",
+      "path": "node/agent/review_r26_test.go",
+      "source_commit": "5c6d6abe6af7ebba4707ef64c56c157362f74b7b",
+      "cited_line": 196,
+      "actual_lines": [
+        206
+      ]
+    },
+    {
+      "name": "TestAT13_F42_SiblingDeadlineAppliesWithoutBaseline",
+      "path": "node/agent/followup42_deadline_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 60,
+      "actual_lines": [
+        60
+      ]
+    },
+    {
+      "name": "TestAT13_F42_ReportingRefreshesExistingCause",
+      "path": "node/agent/followup42_deadline_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 203,
+      "actual_lines": [
+        203
+      ]
+    },
+    {
+      "name": "TestR25_H1a_SiblingExpiryOnStepEntryTearsDownWholeNodeToBaselineBeforeControlPass",
+      "path": "node/agent/review_r25_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 64,
+      "actual_lines": [
+        64
+      ]
+    },
+    {
+      "name": "TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat",
+      "path": "node/agent/review_r25_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 144,
+      "actual_lines": [
+        149
+      ]
+    },
+    {
+      "name": "TestR26_Held_AQ3_ExpiredOnlyRemovalExactnessAndAccounting",
+      "path": "node/agent/review_r26_test.go",
+      "source_commit": "5c6d6abe6af7ebba4707ef64c56c157362f74b7b",
+      "cited_line": 259,
+      "actual_lines": [
+        281
+      ]
+    },
+    {
+      "name": "TestMTR03_F42_ExpiredRemovalSettlesBytesWithoutClosingInterval",
+      "path": "node/agent/followup42_deadline_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 155,
+      "actual_lines": [
+        155
+      ]
+    },
+    {
+      "name": "TestMTR03_F42_ExpiredSettlementFailureKeepsIntentAndCloses",
+      "path": "node/agent/followup42_deadline_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 259,
+      "actual_lines": [
+        259
+      ]
+    },
+    {
+      "name": "TestR26_Held_AQ4_SameCountingIntervalRetentionAndIntentPersistence",
+      "path": "node/agent/review_r26_test.go",
+      "source_commit": "5c6d6abe6af7ebba4707ef64c56c157362f74b7b",
+      "cited_line": 424,
+      "actual_lines": [
+        424
+      ]
+    },
+    {
+      "name": "TestMTR03_F42_RetainedEpochIntentIsDurable",
+      "path": "node/agent/followup42_epoch_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 37,
+      "actual_lines": [
+        37
+      ]
+    },
+    {
+      "name": "TestMTR03_F42_RetentionRejectsCountingBoundaries",
+      "path": "node/agent/followup42_epoch_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 67,
+      "actual_lines": [
+        67
+      ]
+    },
+    {
+      "name": "TestMTR03_F42_IntentRefreshFailureWithdraws",
+      "path": "node/agent/followup42_epoch_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 100,
+      "actual_lines": [
+        100
+      ]
+    },
+    {
+      "name": "TestR25_M1_EpochSwitchDuringServingLeavesIntentEpochStaleAndForcesRedundantApplyOnNext304Tick",
+      "path": "node/agent/review_r25_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 254,
+      "actual_lines": [
+        242
+      ]
+    },
+    {
+      "name": "TestR26_Held_AQ5_RenewalJitterBoundsPersistenceAndClamping",
+      "path": "node/agent/review_r26_test.go",
+      "source_commit": "5c6d6abe6af7ebba4707ef64c56c157362f74b7b",
+      "cited_line": 462,
+      "actual_lines": [
+        470
+      ]
+    },
+    {
+      "name": "TestAT13_F32_01_UniformMillisecondRenewalJitter",
+      "path": "node/agent/followup42_jitter_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 23,
+      "actual_lines": [
+        23
+      ]
+    },
+    {
+      "name": "TestAT13_F32_01_RenewalDrawOncePerLease",
+      "path": "node/agent/followup42_jitter_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 56,
+      "actual_lines": [
+        56
+      ]
+    },
+    {
+      "name": "TestAT13_F32_01_FailedRandomReadKeepsSafeLead",
+      "path": "node/agent/followup42_jitter_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 82,
+      "actual_lines": [
+        82
+      ]
+    },
+    {
+      "name": "TestAT13_F32_01_LeaseReplayAndRestartKeepDraw",
+      "path": "node/agent/followup42_jitter_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 99,
+      "actual_lines": [
+        99
+      ]
+    },
+    {
+      "name": "TestAT13_F42_LeaseAndRenewalJitterCommitTogether",
+      "path": "node/internal/agentstore/followup42_test.go",
+      "source_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+      "cited_line": 12,
+      "actual_lines": [
+        11
+      ]
+    },
+    {
+      "name": "TestR26_Held_AQ6_AQ7_ValidationRecordAndZeroDecisionContract",
+      "path": "node/agent/review_r26_test.go",
+      "source_commit": "5c6d6abe6af7ebba4707ef64c56c157362f74b7b",
+      "cited_line": 533,
+      "actual_lines": [
+        544
+      ]
+    },
+    {
+      "name": "TestR26_Held_AQ6_AQ7_ValidationRecordAndZeroDecisionContract",
+      "path": "node/agent/review_r26_test.go",
+      "source_commit": "5c6d6abe6af7ebba4707ef64c56c157362f74b7b",
+      "cited_line": 533,
+      "actual_lines": [
+        544
+      ]
+    }
+  ],
+  "source_commit": "1b87ab32344fa3be3216df0d5f7b489eb853e011",
+  "review_commit": "5c6d6abe6af7ebba4707ef64c56c157362f74b7b",
+  "reviewed_commit": "8dec4100ce9fba96ea8b0436c41ed8d2b0c75545",
+  "prior_claims_sha256": "56b6ebc36eba66b9f812c97d48f3e33d33075a8b9e9b0f82230d0328d20308a3",
+  "maximum_decision": 144,
+  "sensitive_pattern_hits": 0,
+  "prior_scope_changed_fields": [
+    "/follow_up_1/sources/0/sha256",
+    "/follow_up_1/sources/1/sha256",
+    "/follow_up_2/sources/0/sha256",
+    "/follow_up_2/sources/1/sha256",
+    "/follow_up_3/sources/0/sha256",
+    "/follow_up_3/sources/1/sha256",
+    "/handover_follow_up_3/sources/0/sha256",
+    "/handover_follow_up_3/sources/1/sha256",
+    "/handover_follow_up_3/sources/3/sha256",
+    "/follow_up_4/sources/0/sha256",
+    "/follow_up_4/sources/1/sha256",
+    "/follow_up_5/sources/0/sha256",
+    "/follow_up_5/sources/1/sha256",
+    "/follow_up_6/sources/1/sha256",
+    "/handover_follow_up_6/reviewed_documents/0/sha256",
+    "/handover_follow_up_6/reviewed_documents/1/sha256",
+    "/handover_follow_up_6/reviewed_documents/2/sha256",
+    "/handover_follow_up_6/reviewed_documents/4/sha256",
+    "/handover_follow_up_6/reviewed_documents/5/sha256",
+    "/handover_follow_up_6/reviewed_documents/6/sha256",
+    "/follow_up_7/files/0/sha256",
+    "/follow_up_7/files/1/sha256",
+    "/follow_up_7/files/2/sha256",
+    "/follow_up_7/files/4/sha256",
+    "/handover_follow_up_13/reviewed_documents/0/sha256",
+    "/handover_follow_up_13/reviewed_documents/2/sha256",
+    "/handover_follow_up_13/reviewed_documents/4/sha256",
+    "/handover_follow_up_13/reviewed_documents/5/sha256",
+    "/handover_follow_up_13/reviewed_documents/6/sha256",
+    "/handover_follow_up_13/reviewed_documents/7/sha256",
+    "/handover_follow_up_13/reviewed_documents/8/sha256",
+    "/handover_follow_up_13/reviewed_documents/9/sha256",
+    "/handover_follow_up_14/reviewed_documents/0/sha256",
+    "/handover_follow_up_14/reviewed_documents/2/sha256",
+    "/handover_follow_up_14/reviewed_documents/4/sha256",
+    "/handover_follow_up_14/reviewed_documents/5/sha256",
+    "/handover_follow_up_14/reviewed_documents/6/sha256",
+    "/handover_follow_up_14/reviewed_documents/7/sha256",
+    "/handover_follow_up_14/reviewed_documents/8/sha256",
+    "/handover_follow_up_14/reviewed_documents/9/sha256",
+    "/handover_follow_up_15/reviewed_documents/0/sha256",
+    "/handover_follow_up_15/reviewed_documents/2/sha256",
+    "/handover_follow_up_15/reviewed_documents/3/sha256",
+    "/handover_follow_up_15/reviewed_documents/4/sha256",
+    "/handover_follow_up_15/reviewed_documents/5/sha256",
+    "/handover_follow_up_15/reviewed_documents/6/sha256",
+    "/handover_follow_up_15/reviewed_documents/7/sha256",
+    "/contract_revision_14/updated_documents/2/sha256",
+    "/contract_revision_14/updated_documents/3/sha256",
+    "/contract_revision_14/updated_documents/4/sha256",
+    "/contract_revision_14/updated_documents/5/sha256",
+    "/handover_follow_up_16/reviewed_documents/0/sha256",
+    "/handover_follow_up_16/reviewed_documents/1/sha256",
+    "/handover_follow_up_16/reviewed_documents/2/sha256",
+    "/handover_follow_up_16/reviewed_documents/3/sha256",
+    "/handover_follow_up_16/reviewed_documents/4/sha256",
+    "/handover_follow_up_16/reviewed_documents/5/sha256",
+    "/handover_follow_up_16/reviewed_documents/6/sha256",
+    "/handover_follow_up_16/reviewed_documents/7/sha256",
+    "/handover_follow_up_17/reviewed_documents/0/sha256",
+    "/handover_follow_up_17/reviewed_documents/1/sha256",
+    "/handover_follow_up_17/reviewed_documents/2/sha256",
+    "/handover_follow_up_17/reviewed_documents/3/sha256",
+    "/handover_follow_up_17/reviewed_documents/4/sha256",
+    "/handover_follow_up_17/reviewed_documents/5/sha256",
+    "/handover_follow_up_17/reviewed_documents/6/sha256",
+    "/handover_follow_up_17/reviewed_documents/8/sha256",
+    "/handover_follow_up_17/reviewed_documents/9/sha256",
+    "/handover_follow_up_17/reviewed_documents/10/sha256",
+    "/handover_follow_up_18/reviewed_documents/0/sha256",
+    "/handover_follow_up_18/reviewed_documents/1/sha256",
+    "/handover_follow_up_18/reviewed_documents/2/sha256",
+    "/handover_follow_up_18/reviewed_documents/4/sha256",
+    "/handover_follow_up_18/reviewed_documents/5/sha256",
+    "/handover_follow_up_18/reviewed_documents/6/sha256",
+    "/handover_follow_up_18/reviewed_documents/7/sha256",
+    "/handover_follow_up_18/reviewed_documents/9/sha256",
+    "/handover_follow_up_18/reviewed_documents/10/sha256",
+    "/handover_follow_up_19/reviewed_documents/0/sha256",
+    "/handover_follow_up_19/reviewed_documents/1/sha256",
+    "/handover_follow_up_19/reviewed_documents/2/sha256",
+    "/handover_follow_up_19/reviewed_documents/4/sha256",
+    "/handover_follow_up_19/reviewed_documents/5/sha256",
+    "/handover_follow_up_19/reviewed_documents/6/sha256",
+    "/handover_follow_up_19/reviewed_documents/7/sha256",
+    "/handover_follow_up_19/reviewed_documents/9/sha256",
+    "/handover_follow_up_19/reviewed_documents/10/sha256",
+    "/handover_follow_up_19/reviewed_documents/11/sha256",
+    "/handover_follow_up_20/reviewed_documents/0/sha256",
+    "/handover_follow_up_20/reviewed_documents/1/sha256",
+    "/handover_follow_up_20/reviewed_documents/2/sha256",
+    "/handover_follow_up_20/reviewed_documents/4/sha256",
+    "/handover_follow_up_20/reviewed_documents/5/sha256",
+    "/handover_follow_up_20/reviewed_documents/6/sha256",
+    "/handover_follow_up_20/reviewed_documents/7/sha256",
+    "/handover_follow_up_20/reviewed_documents/9/sha256",
+    "/handover_follow_up_20/reviewed_documents/10/sha256",
+    "/handover_follow_up_20/reviewed_documents/11/sha256",
+    "/handover_follow_up_21/reviewed_documents/0/sha256",
+    "/handover_follow_up_21/reviewed_documents/1/sha256",
+    "/handover_follow_up_21/reviewed_documents/2/sha256",
+    "/handover_follow_up_21/reviewed_documents/4/sha256",
+    "/handover_follow_up_21/reviewed_documents/5/sha256",
+    "/handover_follow_up_21/reviewed_documents/6/sha256",
+    "/handover_follow_up_21/reviewed_documents/7/sha256",
+    "/handover_follow_up_21/reviewed_documents/10/sha256",
+    "/handover_follow_up_21/reviewed_documents/11/sha256",
+    "/handover_follow_up_21/reviewed_documents/12/sha256",
+    "/handover_follow_up_22/reviewed_documents/0/sha256",
+    "/handover_follow_up_22/reviewed_documents/1/sha256",
+    "/handover_follow_up_22/reviewed_documents/2/sha256",
+    "/handover_follow_up_22/reviewed_documents/4/sha256",
+    "/handover_follow_up_22/reviewed_documents/5/sha256",
+    "/handover_follow_up_22/reviewed_documents/6/sha256",
+    "/handover_follow_up_22/reviewed_documents/7/sha256",
+    "/handover_follow_up_22/reviewed_documents/10/sha256",
+    "/handover_follow_up_22/reviewed_documents/11/sha256",
+    "/handover_follow_up_22/reviewed_documents/12/sha256",
+    "/handover_follow_up_23/reviewed_documents/0/sha256",
+    "/handover_follow_up_23/reviewed_documents/1/sha256",
+    "/handover_follow_up_23/reviewed_documents/2/sha256",
+    "/handover_follow_up_23/reviewed_documents/4/sha256",
+    "/handover_follow_up_23/reviewed_documents/5/sha256",
+    "/handover_follow_up_23/reviewed_documents/6/sha256",
+    "/handover_follow_up_23/reviewed_documents/7/sha256",
+    "/handover_follow_up_23/reviewed_documents/10/sha256",
+    "/handover_follow_up_23/reviewed_documents/11/sha256",
+    "/handover_follow_up_23/reviewed_documents/12/sha256",
+    "/handover_follow_up_24/reviewed_documents/0/sha256",
+    "/handover_follow_up_24/reviewed_documents/1/sha256",
+    "/handover_follow_up_24/reviewed_documents/2/sha256",
+    "/handover_follow_up_24/reviewed_documents/4/sha256",
+    "/handover_follow_up_24/reviewed_documents/5/sha256",
+    "/handover_follow_up_24/reviewed_documents/6/sha256",
+    "/handover_follow_up_24/reviewed_documents/7/sha256",
+    "/handover_follow_up_24/reviewed_documents/10/sha256",
+    "/handover_follow_up_24/reviewed_documents/11/sha256",
+    "/handover_follow_up_24/reviewed_documents/12/sha256",
+    "/handover_follow_up_25/reviewed_documents/0/sha256",
+    "/handover_follow_up_25/reviewed_documents/1/sha256",
+    "/handover_follow_up_25/reviewed_documents/2/sha256",
+    "/handover_follow_up_25/reviewed_documents/4/sha256",
+    "/handover_follow_up_25/reviewed_documents/5/sha256",
+    "/handover_follow_up_25/reviewed_documents/6/sha256",
+    "/handover_follow_up_25/reviewed_documents/7/sha256",
+    "/handover_follow_up_25/reviewed_documents/10/sha256",
+    "/handover_follow_up_25/reviewed_documents/11/sha256",
+    "/handover_follow_up_25/reviewed_documents/12/sha256",
+    "/handover_follow_up_26/reviewed_documents/0/sha256",
+    "/handover_follow_up_26/reviewed_documents/1/sha256",
+    "/handover_follow_up_26/reviewed_documents/2/sha256",
+    "/handover_follow_up_26/reviewed_documents/4/sha256",
+    "/handover_follow_up_26/reviewed_documents/5/sha256",
+    "/handover_follow_up_26/reviewed_documents/6/sha256",
+    "/handover_follow_up_26/reviewed_documents/7/sha256",
+    "/handover_follow_up_26/reviewed_documents/10/sha256",
+    "/handover_follow_up_26/reviewed_documents/11/sha256",
+    "/handover_follow_up_26/reviewed_documents/12/sha256",
+    "/handover_follow_up_27/reviewed_documents/0/sha256",
+    "/handover_follow_up_27/reviewed_documents/1/sha256",
+    "/handover_follow_up_27/reviewed_documents/2/sha256",
+    "/handover_follow_up_27/reviewed_documents/4/sha256",
+    "/handover_follow_up_27/reviewed_documents/5/sha256",
+    "/handover_follow_up_27/reviewed_documents/6/sha256",
+    "/handover_follow_up_27/reviewed_documents/7/sha256",
+    "/handover_follow_up_27/reviewed_documents/10/sha256",
+    "/handover_follow_up_27/reviewed_documents/11/sha256",
+    "/handover_follow_up_27/reviewed_documents/12/sha256",
+    "/handover_follow_up_28/reviewed_documents/0/sha256",
+    "/handover_follow_up_28/reviewed_documents/1/sha256",
+    "/handover_follow_up_28/reviewed_documents/2/sha256",
+    "/handover_follow_up_28/reviewed_documents/4/sha256",
+    "/handover_follow_up_28/reviewed_documents/5/sha256",
+    "/handover_follow_up_28/reviewed_documents/6/sha256",
+    "/handover_follow_up_28/reviewed_documents/7/sha256",
+    "/handover_follow_up_28/reviewed_documents/10/sha256",
+    "/handover_follow_up_28/reviewed_documents/11/sha256",
+    "/handover_follow_up_28/reviewed_documents/12/sha256",
+    "/handover_follow_up_29/reviewed_documents/0/sha256",
+    "/handover_follow_up_29/reviewed_documents/1/sha256",
+    "/handover_follow_up_29/reviewed_documents/2/sha256",
+    "/handover_follow_up_29/reviewed_documents/4/sha256",
+    "/handover_follow_up_29/reviewed_documents/5/sha256",
+    "/handover_follow_up_29/reviewed_documents/6/sha256",
+    "/handover_follow_up_29/reviewed_documents/7/sha256",
+    "/handover_follow_up_29/reviewed_documents/10/sha256",
+    "/handover_follow_up_29/reviewed_documents/11/sha256",
+    "/handover_follow_up_29/reviewed_documents/12/sha256",
+    "/handover_follow_up_30/reviewed_documents/0/sha256",
+    "/handover_follow_up_30/reviewed_documents/1/sha256",
+    "/handover_follow_up_30/reviewed_documents/2/sha256",
+    "/handover_follow_up_30/reviewed_documents/4/sha256",
+    "/handover_follow_up_30/reviewed_documents/5/sha256",
+    "/handover_follow_up_30/reviewed_documents/6/sha256",
+    "/handover_follow_up_30/reviewed_documents/7/sha256",
+    "/handover_follow_up_30/reviewed_documents/10/sha256",
+    "/handover_follow_up_30/reviewed_documents/11/sha256",
+    "/handover_follow_up_30/reviewed_documents/12/sha256",
+    "/handover_follow_up_31/reviewed_documents/0/sha256",
+    "/handover_follow_up_31/reviewed_documents/1/sha256",
+    "/handover_follow_up_31/reviewed_documents/2/sha256",
+    "/handover_follow_up_31/reviewed_documents/4/sha256",
+    "/handover_follow_up_31/reviewed_documents/5/sha256",
+    "/handover_follow_up_31/reviewed_documents/6/sha256",
+    "/handover_follow_up_31/reviewed_documents/7/sha256",
+    "/handover_follow_up_31/reviewed_documents/10/sha256",
+    "/handover_follow_up_31/reviewed_documents/11/sha256",
+    "/handover_follow_up_31/reviewed_documents/12/sha256",
+    "/handover_follow_up_32/reviewed_documents/0/sha256",
+    "/handover_follow_up_32/reviewed_documents/1/sha256",
+    "/handover_follow_up_32/reviewed_documents/2/sha256",
+    "/handover_follow_up_32/reviewed_documents/4/sha256",
+    "/handover_follow_up_32/reviewed_documents/5/sha256",
+    "/handover_follow_up_32/reviewed_documents/6/sha256",
+    "/handover_follow_up_32/reviewed_documents/7/sha256",
+    "/handover_follow_up_32/reviewed_documents/10/sha256",
+    "/handover_follow_up_32/reviewed_documents/11/sha256",
+    "/handover_follow_up_32/reviewed_documents/12/sha256",
+    "/handover_follow_up_33/reviewed_documents/0/sha256",
+    "/handover_follow_up_33/reviewed_documents/1/sha256",
+    "/handover_follow_up_33/reviewed_documents/2/sha256",
+    "/handover_follow_up_33/reviewed_documents/4/sha256",
+    "/handover_follow_up_33/reviewed_documents/5/sha256",
+    "/handover_follow_up_33/reviewed_documents/6/sha256",
+    "/handover_follow_up_33/reviewed_documents/7/sha256",
+    "/handover_follow_up_33/reviewed_documents/10/sha256",
+    "/handover_follow_up_33/reviewed_documents/11/sha256",
+    "/handover_follow_up_33/reviewed_documents/12/sha256",
+    "/handover_follow_up_34/reviewed_documents/0/sha256",
+    "/handover_follow_up_34/reviewed_documents/1/sha256",
+    "/handover_follow_up_34/reviewed_documents/2/sha256",
+    "/handover_follow_up_34/reviewed_documents/4/sha256",
+    "/handover_follow_up_34/reviewed_documents/5/sha256",
+    "/handover_follow_up_34/reviewed_documents/6/sha256",
+    "/handover_follow_up_34/reviewed_documents/7/sha256",
+    "/handover_follow_up_34/reviewed_documents/10/sha256",
+    "/handover_follow_up_34/reviewed_documents/11/sha256",
+    "/handover_follow_up_34/reviewed_documents/12/sha256",
+    "/handover_follow_up_35/reviewed_documents/0/sha256",
+    "/handover_follow_up_35/reviewed_documents/1/sha256",
+    "/handover_follow_up_35/reviewed_documents/2/sha256",
+    "/handover_follow_up_35/reviewed_documents/4/sha256",
+    "/handover_follow_up_35/reviewed_documents/5/sha256",
+    "/handover_follow_up_35/reviewed_documents/6/sha256",
+    "/handover_follow_up_35/reviewed_documents/7/sha256",
+    "/handover_follow_up_35/reviewed_documents/10/sha256",
+    "/handover_follow_up_35/reviewed_documents/11/sha256",
+    "/handover_follow_up_35/reviewed_documents/12/sha256",
+    "/handover_follow_up_36/reviewed_documents/0/sha256",
+    "/handover_follow_up_36/reviewed_documents/1/sha256",
+    "/handover_follow_up_36/reviewed_documents/2/sha256",
+    "/handover_follow_up_36/reviewed_documents/4/sha256",
+    "/handover_follow_up_36/reviewed_documents/5/sha256",
+    "/handover_follow_up_36/reviewed_documents/6/sha256",
+    "/handover_follow_up_36/reviewed_documents/7/sha256",
+    "/handover_follow_up_36/reviewed_documents/10/sha256",
+    "/handover_follow_up_36/reviewed_documents/11/sha256",
+    "/handover_follow_up_36/reviewed_documents/12/sha256"
+  ],
+  "prior_scope_digest_changes": 258,
+  "r25_proof": {
+    "path": "node/agent/review_r25_test.go",
+    "sha256": "da1040476e1c7405d3089b8c4b835c21111e11fab0e1c8fe57c9398d4c4176dc",
+    "bytes": 28444,
+    "names": [
+      "TestR25_H1a_SiblingExpiryOnStepEntryTearsDownWholeNodeToBaselineBeforeControlPass",
+      "TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat",
+      "TestR25_M1_EpochSwitchDuringServingLeavesIntentEpochStaleAndForcesRedundantApplyOnNext304Tick",
+      "TestR25_Held_AQ1_RetainedTickVerifiesUnderLockAndBlocksOnAnyPendingGateOrClockSkew",
+      "TestR25_Held_AQ2_PerDeviceDeadlinesAndEdgeCases",
+      "TestR25_Held_AQ3_SameCountingIntervalAndHandoffRecoveryInvariants"
+    ]
+  },
+  "r26_proof": {
+    "path": "node/agent/review_r26_test.go",
+    "sha256": "0ce5034bf9096babd63f3cc9317be84ab7ecabd3186339957783e837d1ae4379",
+    "bytes": 26497,
+    "names": [
+      "TestR26_Held_AQ1_ServingDeadlineAndKernelCutOff",
+      "TestR26_Held_AQ2_SurvivorsApplyAndEarlyReturnTruthfulness",
+      "TestR26_Held_AQ3_ExpiredOnlyRemovalExactnessAndAccounting",
+      "TestR26_Held_AQ4_SameCountingIntervalRetentionAndIntentPersistence",
+      "TestR26_Held_AQ5_RenewalJitterBoundsPersistenceAndClamping",
+      "TestR26_Held_AQ6_AQ7_ValidationRecordAndZeroDecisionContract"
+    ]
+  },
+  "review_proof_line_mismatches": 7,
+  "review_modified_tests_including_main": [
+    "tests/e2e/at/isolation/producer_timing_test.go",
+    "tests/e2e/at/isolation/scheduled_test.go",
+    "tests/handover/handover_test.go"
+  ]
+}
