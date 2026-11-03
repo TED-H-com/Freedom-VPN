@@ -172,7 +172,8 @@ that wall-clock waits stay exact under load.
 Reserved with `reserved for w2-updater until 04:53:58` (local), and
 released with `released w2-updater` right after leg 4. All four legs ran to
 completion. No stop rule fired at run time. Every preflight passed on its
-first attempt, so the preflight wait was 0 s beyond each 35 s vmstat.
+first attempt. Each took 30.1 s: `vmstat 5 7` spans 30 s, not the 35 s
+budgeted above. There was no further wait.
 
 | Leg | Iterations / failures | In-leg samples | Qualification |
 |---|---|---|---|
@@ -209,3 +210,177 @@ only. It is taken at least 10 minutes after the 09:37:15Z release.
 
 Reservation 1's results stand as recorded. Raw logs and window records are
 under `.agent/tmp/f21/` (`r1-*`).
+
+### Reservation 2 (09:47:33Z–09:59:59Z, 746 s held)
+
+The host was free at the first check, 09:47:33Z, 10 min 18 s after the
+first release. Reserved with `reserved for w2-updater until 05:17:33`
+(local), released with `released w2-updater`.
+
+| Leg | Preflights (wait) | Iterations / failures | Qualification |
+|---|---|---|---|
+| quiet baseline | 2 (90.2 s). The first failed vmstat (intervals r = 13 and r = 5); no foreign suite | 200 / 0 | **unqualified**: one in-leg vmstat interval at r = 5, id 75, t = 50 s. Admission `free` and no foreign suite at all 42 samples |
+| quiet corrected | 1 (30.1 s) | 178 completed / **1 failure** (`replaced`), then stopped | **unqualified, stopped:** at 09:57:28.8Z (t = 197.3 s), `go test -v -run ^TestR22_ ./node/agent` from another lane appeared during our reservation, while admission still printed `free`. Both of our processes were terminated. No in-leg vmstat breach |
+| load corrected | 2 (60.2 s). The first saw that same foreign `go test`; the second passed at 09:57:58.9Z | 50 / 0 | **qualified**; 88.8 s active agent load, covering the whole updater process (0–59.1 s) |
+
+The quiet-corrected failure happened at about t = 101–106 s, between
+Recover samples 446 and 469; it was the 462nd. That is about 90 s
+*before* the foreign process was first seen. Every sample up to
+t = 192.2 s was `free` with no foreign suite, and no in-leg vmstat interval
+breached.
+
+```text
+meter_barrier_test.go:285: F20 recover_elapsed_ns=15122804 original_remaining_ns=-283098718
+meter_barrier_test.go:290: failure journal: {... Stage:rolled_back ... ErrorCode:CHECKPOINT_FAILED
+  ErrorStage:final_sample ErrorDetail:meter_checkpoint_timeout ...}
+```
+
+**Reading the failure.** `replaced` expects `meter_checkpoint_uncorrelated`.
+Here the persisted 250 ms deadline had expired 283.1 ms **before**
+`Recover` started. So the test's own setup took about 533 ms from writing
+the wait note to calling `Recover`; normally that takes 10–25 ms. The setup
+here means the simulated crash, closing and reopening SQLite, and writing
+the replacement checkpoint. `Recover` itself took 15.1 ms. The deadline
+was already gone before any checkpoint read, so `waitMeter` correctly
+reported a timeout instead.
+
+The failure is fail-closed. Forwarding stayed blocked and the receipt
+stayed null-usage. Only the detail differed. This is **not** a renewal: a
+renewal would lengthen `Recover` towards one minute, but it took 15 ms. It
+is a second wall-clock dependency in the corrected parent test. The test
+needs its pre-`Recover` setup to finish inside the 250 ms budget. The same
+pre-`Recover` expiry happened twice in `withdrawn`: −991.5 ms (r2 quiet
+corrected, sample 3) and −772.5 ms (r2 load corrected, sample 113). Both
+passed, because the withdrawn gate is reported first. Across all
+3,716 non-`expired` samples (4,644 `Recover` samples in all), these
+three are the only ones that started `Recover` after the deadline.
+
+## 4. Comparison
+
+`Recover` wall time per subcase, in milliseconds. These are nearest-rank
+quantiles. With n = 50, p99 is the maximum. Every leg is listed, qualified
+or not; "Q" marks a qualified leg. Full distributions, original remaining
+budgets, preflight and sample records are in the
+[timing record](node-followup21-timing-2026-11-03.json).
+
+| Window / leg | Q | Iter. / fail | missing min / med / p99 / max | replaced | withdrawn | new_boot | expired |
+|---|---|---|---|---|---|---|---|
+| r1 quiet baseline | no | 200 / 1 | 253.1 / 260.8 / 264.1 / 264.6 | 239.1 / 248.5 / 252.4 / 254.5 | 12.6 / 14.5 / 16.7 / 272.8 | 10.8 / 12.4 / 15.0 / 17.0 | 13.2 / 20.8 / 24.7 / **1443.3** |
+| r1 quiet corrected | no | 200 / 0 | 253.2 / 261.0 / 264.1 / 265.6 | 240.0 / 248.9 / 252.1 / 252.5 | 12.5 / 14.4 / 16.7 / 18.1 | 10.6 / 12.4 / 15.0 / 23.5 | 12.7 / 21.0 / 24.5 / 27.7 |
+| r1 load baseline | **yes** | 50 / 0 | 248.7 / 254.4 / 259.0 / 259.0 | 229.2 / 236.6 / 686.5 / 686.5 | 13.6 / 22.4 / 26.2 / 26.2 | 11.9 / 19.2 / 23.3 / 23.3 | 12.5 / 20.2 / 26.4 / 26.4 |
+| r1 load corrected | no | 50 / 0 | 249.0 / 254.6 / 755.0 / 755.0 | 229.1 / 236.1 / 257.5 / 257.5 | 13.1 / 21.7 / 27.8 / 27.8 | 10.9 / 18.3 / 23.4 / 23.4 | 13.6 / 19.5 / 24.2 / 24.2 |
+| r2 quiet baseline | no | 200 / 0 | 252.3 / 261.0 / 267.7 / 761.8 | 240.4 / 248.9 / 253.2 / 253.5 | 12.4 / 14.2 / 17.0 / 17.8 | 10.8 / 12.2 / 14.8 / 17.0 | 13.4 / 21.0 / 23.7 / 24.6 |
+| r2 quiet corrected (stopped) | no | 178 / **1** | 254.0 / 261.2 / 275.9 / 789.5 | **15.1** / 248.8 / 252.6 / 252.7 | 12.6 / 14.4 / 16.8 / 404.4 | 10.8 / 12.3 / 14.2 / 14.6 | 12.7 / 20.9 / 25.0 / 31.2 |
+| r2 load corrected | **yes** | 50 / 0 | 249.9 / 254.0 / 262.7 / 262.7 | 210.8 / 236.1 / 250.8 / 250.8 | 12.9 / 22.5 / 26.0 / 26.0 | 11.0 / 18.4 / 22.8 / 22.8 | 12.3 / 19.9 / 25.3 / 25.3 |
+
+The r2 quiet-corrected leg has 179 samples for four subcases and 178 for
+`expired`, because it was stopped inside iteration 179.
+
+- **Qualification record.**
+  - Qualified: load baseline (r1) and load corrected (r2).
+  - Not qualified: quiet baseline, twice, each time for one in-leg vmstat
+    interval with our own test running (r = 4 and r = 5). Quiet corrected
+    was disqualified once by vmstat (r1, r = 5) and once by another lane's
+    `go test` (r2, stopped). Load corrected in r1 was disqualified by
+    another lane's `run-gates.sh`.
+  - Neither quiet leg ever qualified. No leg is retried beyond the two
+    reservations allowed.
+- **Active load seconds:** 88.4 (r1 load baseline), 87.6 (r1 load corrected,
+  unqualified), 88.8 (r2 load corrected). Total 264.8 s. In every load leg
+  the updater process (58.8–59.1 s) ran entirely inside the agent suite,
+  so all 250 `Recover` calls ran under load. The agent suite passed each
+  time: `ok node/agent 88.133s / 87.340s / 88.458s`.
+- **The old assertion failed once, on a quiet host, not under load.** In
+  r1 quiet baseline, `expired` took 1443.3 ms. Its persisted deadline had
+  already passed (−1.9 ms) before `Recover` started, so a renewed deadline
+  could not have caused the delay: a renewal would mean a one-minute wait.
+  It did not fail in the qualified load-baseline leg. In fact, the load legs
+  are not heavier for this test: in-leg max r was 1–3 and min id 87–94,
+  while the quiet legs had min id 75–89. With 24 CPUs and `GOMAXPROCS=4`,
+  the agent suite is light load. Whole-`Recover` stalls happen in both conditions.
+  The quiet legs show 0.27–1.44 s outliers (for example, `missing`
+  761.8 ms in r2 quiet baseline). The load legs show 0.69–0.76 s outliers
+  (`replaced` 686.5 ms, `missing` 755.0 ms).
+- **Deterministic budget:** exact both times. Before the window
+  (09:22Z) and after it (10:00:54Z), all 50 iterations of every subcase
+  reported 0 s → 250 ms, 200 ms → 50 ms, 250 ms → 0 s and 1 s → 0 s. Not
+  one sample drifted.
+
+## 5. Verdict on F27-02's fixture-defect reading: **failed** (by the declared rule)
+
+The declaration in §2 says the reading **fails** on any corrected-leg
+failure, qualified or not. The corrected parent test failed once:
+r2 quiet corrected, `replaced`, iteration 93. That happened while the leg
+was still clean, about 90 s before the foreign process stopped it. By the
+rule fixed before measurement, the reading as stated ("the corrected test
+does not fail") **failed**.
+
+What the failure does and does not mean:
+
+- **The original diagnosis is not overturned.** The old one-second
+  assertion fired again on a stall that cannot be a renewal (r1 `expired`,
+  1443 ms, with the deadline already past). Nothing in 4,644 `Recover`
+  samples looked like a renewal. No `Recover` took over 1.5 s, and none
+  came close to the one-minute configuration. The deterministic budget
+  was exact before and after.
+- **But the corrected fixture is not free of wall-clock flakiness.**
+  `TestAT25_FileMeterWaitRestartRechecksCurrentFile/replaced` still needs
+  its setup (crash, SQLite close and reopen, checkpoint replacement) to
+  finish within the 250 ms persisted budget. When the setup stalls for
+  about 0.5 s, the expected detail changes from `uncorrelated` to `timeout`.
+  Product behaviour is fail-closed in both cases. This is new finding
+  **F21-01**.
+- **The quiet-versus-load comparison stays incomplete.** Neither quiet leg
+  qualified in the two permitted reservations. Both load legs qualified.
+  In this window the old assertion's failure rate does not depend on the
+  light agent load.
+
+History stays as recorded: netlab 27's F27-02 stays failed, and
+follow-up 20's four runs stay unqualified. Neither file is edited.
+
+## 6. Known gaps and later work
+
+- **F21-01 (updater-owned, not fixed here; the task was measurement
+  only):** make the corrected parent test independent of wall-clock setup
+  time. Proposed shape:
+  - Give the cases that do not need expiry (`replaced`, `withdrawn`,
+    `new_boot`) a persisted budget long enough that setup cannot consume
+    it, for example 30 s. They return on the first read or validation, so
+    the test does not get slower.
+  - Keep 250 ms only for `missing` and `expired`. Their outcome is a
+    timeout either way.
+  - Keep the exact budget checks in the synctest test.
+  - Then measure again under the same rules. Do not relax the expected
+    detail.
+- **The qualified quiet legs are still missing.**
+  - The fail-closed in-leg vmstat rule (r ≤ 3 and id ≥ 80, own process
+    included) disqualified three of the four quiet attempts. Each time it
+    was a single interval with id still at or above 75.
+  - The orchestrator should confirm whether the brief's thresholds apply
+    in-leg to quiet legs, or only to the preflight.
+  - Under the preflight-only reading, r1 quiet baseline, r1 quiet
+    corrected and r2 quiet baseline would have qualified. This report does
+    **not** relabel them.
+- **The reservation did not keep other lanes out.** During reservation 2,
+  another lane's `go test -v -run ^TestR22_ ./node/agent` ran while
+  admission printed `free`. During reservation 1, a `run-gates.sh` was
+  present, apparently waiting. See the request below.
+- **Not covered:** physical arm64 runs, power-loss durability and
+  worst-case production load. These runs are not a whole-`Recover`
+  wall-time SLO.
+
+## 7. Requests to orchestrator
+
+- **2026-11-03 — host reservation (scheduling, outside updater paths):**
+  during `w2-updater`'s reservation (09:47:33Z–09:59:59Z), a foreign
+  `go test -v -run ^TestR22_ ./node/agent` ran. It was first seen at
+  09:57:28.8Z, was absent at 09:57:23.7Z, and was gone by 09:57:58.9Z. It stopped our quiet-corrected leg. Admission kept printing
+  `free` to us. Please check whether that lane bypassed admission, or
+  whether non-timing-sensitive runs pass a reservation. If a further quiet
+  comparison is scheduled, please also confirm the in-leg vmstat reading.
+- **2026-11-03 — F21-01 scheduling:** the corrected
+  `TestAT25_FileMeterWaitRestartRechecksCurrentFile/replaced` can fail
+  fail-closed with `meter_checkpoint_timeout` when its setup exceeds the
+  250 ms budget. Please schedule the updater-owned fixture fix above and a
+  re-measurement in a later follow-up. Netlab and merge gates may see it
+  as a flaky `replaced` failure in the meantime.
