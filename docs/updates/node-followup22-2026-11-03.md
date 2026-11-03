@@ -177,7 +177,7 @@ setup stall. No timer is involved.
 - Logs: `.agent/tmp/f22/control-*.log`.
 
 After the controls, the tree has no control code: `git grep -n
-f22ControlStall` finds nothing.
+f22ControlStall -- node/` finds nothing.
 
 ## 4. Declaration (committed before any measured run)
 
