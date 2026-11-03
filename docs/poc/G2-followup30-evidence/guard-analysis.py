@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """TEST ONLY exact positive guard log correlation and disclosed observation cost."""
 import gzip
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -46,9 +47,17 @@ for log in logs:
 def stats(values):
     values=sorted(values)
     return dict(count=len(values),min=min(values),median=statistics.median(values),p95=values[min(len(values)-1,int(.95*len(values)))],max=max(values),mean=statistics.mean(values))
-times={k:[] for k in ('install_ns','release_ns','outer_guard_ns','installed_to_release_ns','added_script_bytes')}
+times={k:[] for k in ('install_ns','release_ns','outer_guard_ns','installed_to_release_ns','producer_outer_guard_ns','added_script_bytes')}
+snapshot_cost_ns=0
 for a in applies:
     b={r['kind']:r for r in a['batches']}
+    for batch in a['batches']:
+        if hashlib.sha256(batch['test_only_script'].encode()).hexdigest()!=batch['test_only_sha256']:raise ValueError('executed script hash mismatch')
+    for snap in a.get('test_only_tcp_snapshots',[]):
+        for read in ('conntrack','socket'):
+            snapshot_cost_ns+=int(snap[read]['end']['mono_ns'])-int(snap[read]['start']['mono_ns'])
+    deadline=a['timing']['deadline']
+    times['producer_outer_guard_ns'].append(int(deadline['release_end_ns'])-int(deadline['install_start_ns']))
     i,r=b['guard_install'],b['guard_release']
     times['install_ns'].append(int(i['end']['mono_ns'])-int(i['start']['mono_ns']))
     times['release_ns'].append(int(r['end']['mono_ns'])-int(r['start']['mono_ns']))
@@ -71,6 +80,6 @@ result=dict(test_only=True,historical_B1='FAIL',F27_01='unresolved: this window 
     tcp_summary=tcp['summary'],missing_node_egresses=missing,all_missing_attributed=all(r['attributed'] for r in missing),
     timestamp_precision_ns=sorted(set(r['pcap_precision_ns'] for r in logs)),kernel_timestamp_present=sum('kernel_wall_ns' in r for r in logs),kernel_timestamp_absent=sum('kernel_wall_ns' not in r for r in logs),nflog_sequence_present=sum('nflog_sequence' in r for r in logs),log_ip_bytes=sum(r.get('ip_length',0) for r in logs),derived_log_bytes=len(raw('at10-guard.jsonl').encode()),log_count=len(logs),tcp_log_count=len(rows),exact_matches=sum(r['exact_rule_attribution'] for r in rows),
     logged_tcp_with_egress=sum(bool(r.get('egress_matches')) for r in rows),
-    capture=json.loads(raw('at10-guard.meta.json')),cost={k:stats(v) for k,v in times.items()},
+    capture=json.loads(raw('at10-guard.meta.json')),tcp_snapshot_cost_ns=snapshot_cost_ns,cost={k:stats(v) for k,v in times.items()},
     cost_limit='Diagnostic logging only; incremental overhead is not isolated by a contemporaneous A/B. Production code unchanged.',logs=rows)
 target.write_text(json.dumps(result,indent=2)+'\n');print(json.dumps({k:v for k,v in result.items() if k!='logs'},indent=2))

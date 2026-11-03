@@ -16,3 +16,50 @@
 {"utc": "2026-11-03T11:15:33.449137+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["ps", "--no-trunc", "--format", "{{.ID}} {{.Names}}"]}
 {"utc": "2026-11-03T11:15:37.448584+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["ps", "--no-trunc", "--format", "{{.ID}} {{.Names}}"]}
 {"utc": "2026-11-03T11:15:41.449503+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["ps", "--no-trunc", "--format", "{{.ID}} {{.Names}}"]}
+{"utc": "2026-11-03T11:24:42.356714+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["ps", "--no-trunc", "--format", "{{.ID}} {{.Names}} {{.Image}}"]}
+{"utc": "2026-11-03T11:24:46.355664+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["ps", "--no-trunc", "--format", "{{.ID}} {{.Names}} {{.Image}}"]}
+{"utc": "2026-11-03T11:24:47.433146+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "make", "args": ["-f", "mk/netlab.mk", "netlab-up", "FVPN_LAB_PREFIX=fvpn-w1-netlab-f30"]}
+{"utc": "2026-11-03T11:24:48.397443+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["build", "-t", "fvpn-w1-netlab-f30:lab", "<worktree>/tests/netlab"]}
+{"utc": "2026-11-03T11:24:48.700318+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["rm", "-f", "fvpn-w1-netlab-f30"]}
+{"utc": "2026-11-03T11:24:48.769225+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "make", "args": ["-f", "mk/netlab.mk", "netlab-wipe-scratch", "FVPN_LAB_PREFIX=fvpn-w1-netlab-f30"]}
+{"utc": "2026-11-03T11:24:48.827095+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["rm", "-f", "fvpn-w1-netlab-f30-wipe"]}
+{"utc": "2026-11-03T11:24:48.895314+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["run", "--rm", "--name", "fvpn-w1-netlab-f30-wipe", "--network", "none", "-v", "<worktree>/.agent/tmp/fvpn-w1-netlab-f30-scratch:/scratch", "fvpn-w1-netlab-f30:lab", "find", "/scratch", "-mindepth", "1", "-delete"]}
+{"utc": "2026-11-03T11:24:49.134002+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["network", "inspect", "fvpn-w1-netlab-f30-dns"]}
+{"utc": "2026-11-03T11:24:49.201122+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["network", "create", "fvpn-w1-netlab-f30-dns"]}
+{"utc": "2026-11-03T11:24:49.294110+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["run", "-d", "--name", "fvpn-w1-netlab-f30", "--privileged", "--network", "fvpn-w1-netlab-f30-dns", "--cap-add", "NET_ADMIN", "--cap-add", "SYS_TIME", "-v", "<worktree>:/work:ro", "-v", "<worktree>/.agent/tmp/fvpn-w1-netlab-f30-scratch:/scratch", "fvpn-w1-netlab-f30:lab"]}
+{"utc": "2026-11-03T11:24:49.483800+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["cp", "<worktree>/.agent/tmp/fvpn-w1-netlab-f30-fvpn-netlab", "fvpn-w1-netlab-f30:/usr/local/bin/fvpn-netlab"]}
+{"utc": "2026-11-03T11:24:49.565700+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["exec", "fvpn-w1-netlab-f30", "bash", "/work/tests/netlab/scripts/topology.sh"]}
+{"utc": "2026-11-03T11:24:50.357056+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["ps", "--no-trunc", "--format", "{{.ID}} {{.Names}} {{.Image}}"]}
+{"utc": "2026-11-03T11:24:54.356314+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["ps", "--no-trunc", "--format", "{{.ID}} {{.Names}} {{.Image}}"]}
+{"utc": "2026-11-03T11:24:55.362775+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["exec", "fvpn-w1-netlab-f30", "python3", "-B", "/work/docs/poc/G2-followup30-evidence/collector-check.py"]}
+{"utc": "2026-11-03T11:24:55.866487+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["exec", "fvpn-w1-netlab-f30", "cat", "/scratch/collector.err"]}
+{"utc": "2026-11-03T11:24:55.948477+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["exec", "fvpn-w1-netlab-f30", "cat", "/scratch/collector.jsonl"]}
+{"utc": "2026-11-03T11:24:56.025826+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["exec", "fvpn-w1-netlab-f30", "cat", "/scratch/collector.meta.json"]}
+{"utc": "2026-11-03T11:24:56.104250+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["exec", "fvpn-w1-netlab-f30", "cat", "/scratch/collector-rules.nft"]}
+{"utc": "2026-11-03T11:24:56.183330+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["exec", "fvpn-w1-netlab-f30", "cat", "/scratch/collector-injected.json"]}
+{"utc": "2026-11-03T11:24:56.261065+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["exec", "fvpn-w1-netlab-f30", "cat", "/scratch/collector-readback.json"]}
+{"utc": "2026-11-03T11:24:56.340530+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["exec", "fvpn-w1-netlab-f30", "cat", "/scratch/collector-result.json"]}
+{"utc": "2026-11-03T11:24:56.418931+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "make", "args": ["-f", "mk/netlab.mk", "netlab-down", "FVPN_LAB_PREFIX=fvpn-w1-netlab-f30"]}
+{"utc": "2026-11-03T11:24:56.474642+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["rm", "-f", "fvpn-w1-netlab-f30"]}
+{"utc": "2026-11-03T11:24:56.730037+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["network", "rm", "fvpn-w1-netlab-f30-dns"]}
+{"utc": "2026-11-03T11:24:56.900072+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "make", "args": ["-f", "mk/netlab.mk", "netlab-wipe-scratch", "FVPN_LAB_PREFIX=fvpn-w1-netlab-f30"]}
+{"utc": "2026-11-03T11:24:56.957723+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["rm", "-f", "fvpn-w1-netlab-f30-wipe"]}
+{"utc": "2026-11-03T11:24:57.024596+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["run", "--rm", "--name", "fvpn-w1-netlab-f30-wipe", "--network", "none", "-v", "<worktree>/.agent/tmp/fvpn-w1-netlab-f30-scratch:/scratch", "fvpn-w1-netlab-f30:lab", "find", "/scratch", "-mindepth", "1", "-delete"]}
+{"utc": "2026-11-03T11:24:57.272033+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["ps", "-a", "--format", "{{.Names}}"]}
+{"utc": "2026-11-03T11:24:57.362097+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["image", "ls", "--format", "{{.Repository}}:{{.Tag}}", "--filter", "reference=fvpn-w1-netlab-f30*"]}
+{"utc": "2026-11-03T11:24:57.437064+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["network", "ls", "--format", "{{.Name}}"]}
+{"utc": "2026-11-03T11:24:57.502269+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["volume", "ls", "--format", "{{.Name}}"]}
+{"utc": "2026-11-03T11:24:57.567945+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["image", "rm", "fvpn-w1-netlab-f30:lab"]}
+{"utc": "2026-11-03T11:24:57.668741+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["ps", "-a", "--format", "{{.Names}}"]}
+{"utc": "2026-11-03T11:24:57.757510+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["image", "ls", "--format", "{{.Repository}}:{{.Tag}}", "--filter", "reference=fvpn-w1-netlab-f30*"]}
+{"utc": "2026-11-03T11:24:57.823738+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["network", "ls", "--format", "{{.Name}}"]}
+{"utc": "2026-11-03T11:24:57.889841+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["volume", "ls", "--format", "{{.Name}}"]}
+{"utc": "2026-11-03T11:24:58.356154+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["ps", "--no-trunc", "--format", "{{.ID}} {{.Names}} {{.Image}}"]}
+{"utc": "2026-11-03T11:25:32.337329+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["ps", "-a", "--format", "{{.Names}}"]}
+{"utc": "2026-11-03T11:25:32.435986+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["image", "ls", "--format", "{{.Repository}}:{{.Tag}}", "--filter", "reference=fvpn-w1-netlab-f30*"]}
+{"utc": "2026-11-03T11:25:32.505096+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["network", "ls", "--format", "{{.Name}}"]}
+{"utc": "2026-11-03T11:25:32.573411+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["volume", "ls", "--format", "{{.Name}}"]}
+{"utc": "2026-11-03T11:25:32.642238+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["ps", "-a", "--format", "{{.Names}}"]}
+{"utc": "2026-11-03T11:25:32.732033+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["image", "ls", "--format", "{{.Repository}}:{{.Tag}}", "--filter", "reference=fvpn-w1-netlab-f30*"]}
+{"utc": "2026-11-03T11:25:32.798227+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["network", "ls", "--format", "{{.Name}}"]}
+{"utc": "2026-11-03T11:25:32.862575+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["volume", "ls", "--format", "{{.Name}}"]}

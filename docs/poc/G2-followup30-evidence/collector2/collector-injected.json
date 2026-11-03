@@ -1,0 +1,182 @@
+[
+  {
+    "source": "100.64.1.1",
+    "destination": "203.0.113.10",
+    "source_port": 49030,
+    "destination_port": 49031,
+    "ip_id": 30001,
+    "ip_length": 29,
+    "protocol": 17,
+    "data_length": 1,
+    "expected_log": true,
+    "rule": "iifname",
+    "start": {
+      "wall_ns": "1793705095444314264",
+      "mono_ns": "28537895692009"
+    },
+    "end": {
+      "wall_ns": "1793705095444334638",
+      "mono_ns": "28537895711774"
+    }
+  },
+  {
+    "source": "100.64.1.1",
+    "destination": "203.0.113.10",
+    "source_port": 49030,
+    "destination_port": 49031,
+    "ip_id": 30002,
+    "ip_length": 30,
+    "protocol": 17,
+    "data_length": 2,
+    "expected_log": true,
+    "rule": "iifname",
+    "start": {
+      "wall_ns": "1793705095444339721",
+      "mono_ns": "28537895716678"
+    },
+    "end": {
+      "wall_ns": "1793705095444343971",
+      "mono_ns": "28537895720863"
+    }
+  },
+  {
+    "source": "100.64.1.1",
+    "destination": "203.0.113.10",
+    "source_port": 49030,
+    "destination_port": 49031,
+    "ip_id": 30003,
+    "ip_length": 31,
+    "protocol": 17,
+    "data_length": 3,
+    "expected_log": true,
+    "rule": "iifname",
+    "start": {
+      "wall_ns": "1793705095444346715",
+      "mono_ns": "28537895723576"
+    },
+    "end": {
+      "wall_ns": "1793705095444349849",
+      "mono_ns": "28537895726689"
+    }
+  },
+  {
+    "source": "100.64.1.1",
+    "destination": "203.0.113.10",
+    "source_port": 49030,
+    "destination_port": 49031,
+    "ip_id": 30004,
+    "ip_length": 32,
+    "protocol": 17,
+    "data_length": 4,
+    "expected_log": true,
+    "rule": "iifname",
+    "start": {
+      "wall_ns": "1793705095444351560",
+      "mono_ns": "28537895728396"
+    },
+    "end": {
+      "wall_ns": "1793705095444354615",
+      "mono_ns": "28537895731451"
+    }
+  },
+  {
+    "source": "100.64.1.1",
+    "destination": "203.0.113.10",
+    "source_port": 49030,
+    "destination_port": 49031,
+    "ip_id": 30005,
+    "ip_length": 33,
+    "protocol": 17,
+    "data_length": 5,
+    "expected_log": true,
+    "rule": "iifname",
+    "start": {
+      "wall_ns": "1793705095444355927",
+      "mono_ns": "28537895732742"
+    },
+    "end": {
+      "wall_ns": "1793705095444359463",
+      "mono_ns": "28537895736284"
+    }
+  },
+  {
+    "source": "100.64.1.1",
+    "destination": "203.0.113.10",
+    "source_port": 49030,
+    "destination_port": 49032,
+    "ip_id": 30006,
+    "ip_length": 34,
+    "protocol": 17,
+    "data_length": 6,
+    "expected_log": false,
+    "rule": "iifname",
+    "start": {
+      "wall_ns": "1793705095444360862",
+      "mono_ns": "28537895737683"
+    },
+    "end": {
+      "wall_ns": "1793705095444364144",
+      "mono_ns": "28537895740971"
+    }
+  },
+  {
+    "source": "203.0.113.10",
+    "destination": "100.64.1.1",
+    "source_port": 49031,
+    "destination_port": 49030,
+    "ip_id": 30011,
+    "ip_length": 29,
+    "protocol": 17,
+    "data_length": 1,
+    "expected_log": true,
+    "rule": "oifname",
+    "start": {
+      "wall_ns": "1793705095469583598",
+      "mono_ns": "28537920961089"
+    },
+    "end": {
+      "wall_ns": "1793705095469633418",
+      "mono_ns": "28537921010604"
+    }
+  },
+  {
+    "source": "203.0.113.10",
+    "destination": "100.64.1.1",
+    "source_port": 49031,
+    "destination_port": 49030,
+    "ip_id": 30012,
+    "ip_length": 30,
+    "protocol": 17,
+    "data_length": 2,
+    "expected_log": true,
+    "rule": "oifname",
+    "start": {
+      "wall_ns": "1793705095469639105",
+      "mono_ns": "28537921016013"
+    },
+    "end": {
+      "wall_ns": "1793705095469645022",
+      "mono_ns": "28537921021896"
+    }
+  },
+  {
+    "source": "203.0.113.10",
+    "destination": "100.64.1.1",
+    "source_port": 49031,
+    "destination_port": 49030,
+    "ip_id": 30013,
+    "ip_length": 31,
+    "protocol": 17,
+    "data_length": 3,
+    "expected_log": true,
+    "rule": "oifname",
+    "start": {
+      "wall_ns": "1793705095469647702",
+      "mono_ns": "28537921024550"
+    },
+    "end": {
+      "wall_ns": "1793705095469651617",
+      "mono_ns": "28537921028445"
+    }
+  }
+]

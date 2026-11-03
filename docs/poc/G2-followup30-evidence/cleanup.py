@@ -21,7 +21,7 @@ if inventory['images']:
 inventory={name:[x for x in subprocess.check_output(cmd,text=True).splitlines() if x.startswith(prefix)] for name,cmd in checks.items()}
 assert not any(inventory.values()),inventory
 removed=[]
-for name in (prefix+'-fvpn-netlab',):
+for name in (prefix+'-fvpn-netlab',prefix+'-tools'):
     path=ROOT/'.agent/tmp'/name
     if path.is_dir():shutil.rmtree(path)
     elif path.exists():path.unlink()
