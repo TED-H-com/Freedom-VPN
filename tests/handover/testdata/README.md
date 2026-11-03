@@ -223,3 +223,37 @@ sections only. The r20 review is an exact archive, SHA-256 af15fb7c…, with no
 adopted proof files. The five scheduled workflows at b9439411 are frozen
 (`followup30-workflows.json`) and checked structurally; no run result is read
 or claimed.
+
+## Follow-up 31 (#404–#407)
+
+`followup31-main.json` pins four final roadmap rows at
+`3573f396d60836f3f203ab5f883575c96a0ec45c` (#407), with no extra in-range PR
+or later merge at task start. Agent-core 38 (carrying held 37), updater 20,
+netlab 28 and members 17 are outside the cut.
+
+`followup31-snapshots.json` pins nine byte-exact owned-document slices from
+that commit: follow-up 30's register, seven entrypoint slices (the ops slice
+also holds its old reading guide), and the operator configuration section.
+Only follow-up 30's input paths are redirected; its normalized function hash
+remains `3c4fc87eb6255f28ef46a156d03a7b99db392012828034953cc4871c0288a02d`.
+Earlier snapshots and follow-up 30's cut document are unchanged.
+
+`followup31-nightly.json` pins nine whole-file snapshots at the same commit:
+the two workflows, two expected-blocked lists, isolation's exit mapper,
+summary writer and runner, and e2e's gate library and command. These frozen
+structural inputs permit future owner edits without changing this cut's
+claims. No live workflow, list or implementation is a claims-test input.
+
+`followup31-evidence.json` pins three dated evidence/review documents and
+596 archive/run file checks: isolation follow-up 16's 129 entries, netlab 27's
+446-entry final retention manifest, and 21 dated devstack 30 run files in
+`followup31-devstack30.sha256`. Both compressed and uncompressed hashes are
+checked where the owner manifest provides them. r21 is exactly 29,439 bytes,
+SHA-256 `0fcf888bbb59e8e3032abf041f4d600fcb661525a3c390e15850c61e4df2edc0`.
+
+Living isolation 0ec14b39, members 0ffb355a and usage b8a6e9e1 evidence is
+never an input (D-132). Their statements use final roadmap rows/PR numbers.
+Go proof names are checked as declarations on main; r21's unmerged proof
+names are checked only inside its raw archived review. Follow-up 31 has
+21 claims subtests, 72 findings and the same nine owner requests. Owned
+current-document digests remain a separate live-integrity check.

@@ -1,7 +1,7 @@
 # Freedom VPN
 
-**Current cut — [follow-up 30](docs/handover/follow-up-30.md) (2026-11-03 EST):** Through #403: agent-core 36 refuses same-boot adoption on changed deny / host sets; r20's 2 High / 3 Medium / 1 Low are routed, not yet judged, and the live-drift verifier check stays open with netlab 27. Isolation 16 unqualified on a 3.609 µs overlap; F16-01's fixture disposition merged, its run stays failed. Members 16: AT02 / AT09 fail. The nightly billing failure was a missing runner browser; no scheduled-run result is claimed. D-142–D-144 registered. Nine owner decisions.
-**Previous cut — [follow-up 29](docs/handover/follow-up-29.md):** #391–#396 at d640ce96; 22 subtests, six rows, eight snapshots, 731 checks and 51 findings. Historical failures stay failed.
+**Current cut — [follow-up 31](docs/handover/follow-up-31.md) (2026-11-03 EST):** Through #407: isolation 17 records the first qualified D-140 pass; netlab 27 closes r20 H-2 and live drift. D-144 lists are on main; F30-01 remains routed. r21 returned to agent-core 38 before merge. Historical failures stay failed; nine owner decisions.
+**Previous cut — [follow-up 30](docs/handover/follow-up-30.md):** #397–#403 at b9439411; 23 subtests, seven rows, nine snapshots, 449 checks, six dated documents and 61 findings. See follow-up 31 for timing errata.
 
 Freedom VPN is a member-based, multi-region VPN platform for a small paid community, starting at about 20 members. Every exit node runs the same node package and joins one central control plane, whether it is a pre-installed box, a cloud Ubuntu VM or any other Ubuntu host.
 

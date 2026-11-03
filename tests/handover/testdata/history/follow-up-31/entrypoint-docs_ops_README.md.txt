@@ -44,4 +44,3 @@ Main records no scheduled-run result; this index claims none.
   committed expected-blocked list. No such list is on main at this cutoff, so
   a blocked row still fails its job; devstack 30 (e2e `stack`) and isolation 17
   (at-isolation `accept`) apply it.
-

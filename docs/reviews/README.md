@@ -26,6 +26,7 @@
 | `r18-generation-change-review` | [r18-generation-change-review.md](r18-generation-change-review.md) | 2026-11-01 | `grok/grok-4.7`, base `5bd75102` | D-135 / corrected D-136, agent-core 31 shutdown and D-138 TEST ONLY observation | 5 OPEN: 3 Medium / 2 Low; M-1/M-2/M-3/L-2 → agent-core 32; L-1 → netlab | Only the report is archived; proof files remain on the review branch. |
 | `r19-intersection-design-review` | [r19-intersection-design-review.md](r19-intersection-design-review.md) | 2026-11-01 | `grok/grok-4.7`, base `6eda25d0` | Agent-core 33 option (b) intersection-serving design, D-139 | H-1 → netlab 24; M-2/L-2 → agent-core 34: routed; in progress. Eleven design-only findings → D-141 reconsideration conditions. | Only the report is archived; proof files remain on the review branch. |
 | `r20-adoption-signal-review` | [r20-adoption-signal-review.md](r20-adoption-signal-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `7d34c885` | Agent-core 36 same-boot adoption refusal on changed deny / host sets, signal lifetime through Close, durability and lab proofs | 6 routed, not yet judged: 2 High / 3 Medium / 1 Low; H-1, M-1, M-2, M-3 (pre-existing), L-1 → agent-core 37; H-2 → netlab 27 | Only the report is archived; proof files remain on the review branch (`639eda6b`). |
+| `r21-adoption-fixes-review` | [r21-adoption-fixes-review.md](r21-adoption-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `7b3d7bf8` | Agent-core 37 fixes for r20 H-1, M-1, M-2, M-3 and L-1; D-141 | 0 Critical / 2 High / 2 Medium / 1 Low; returned before merge, none confirmed | Proof branch `47f75c04`; none adopted on main at this cut |
 
 ## What Held Across the Reviews
 
@@ -223,3 +224,34 @@ confirmed.
 What held is the review's statement, not an acceptance result. The lab scenario
 was reviewed statically, and the A,B,A,B timing runs were out of scope.
 Historical failures stay failed.
+
+## r21 dispositions at the follow-up 31 cutoff (2026-11-03 EST)
+
+Exact source: `r21-adoption-fixes-review` worktree's `.agent/REVIEW.md`, with
+proof commit `47f75c04` reviewing agent-core 37's delivered `7b3d7bf8`.
+Reviewer: **agy `gemini-4-argon-high`**. The [raw archive](r21-adoption-fixes-review.md)
+is byte-for-byte: **29,439 bytes**, SHA-256
+`0fcf888bbb59e8e3032abf041f4d600fcb661525a3c390e15850c61e4df2edc0`.
+It carries no host path, username or secret. Findings: **0 Critical, 2 High,
+2 Medium, 1 Low**, each with a proof test on the review branch. None adopted
+onto main. Recommendation: **DO NOT MERGE — Return to agent-core (H-1, H-2,
+M-1, M-2, L-1)**.
+
+**Returned to agent-core 38 before merge.** Agent-core 37 is not on main at
+#407; its fixes travel with 38 after 38 is reviewed. D-141 requires owner
+judgment before fixing; none of r21's findings is recorded as confirmed.
+
+| Finding | Disposition at #407 |
+|---|---|
+| H-1 | Routed, not yet judged — agent-core 38; review reports old-member billing after an Apply/persistence crash. |
+| H-2 | Routed, not yet judged — agent-core 38; review reports new-member billing after failed settlement then rebinding. |
+| M-1 | Routed, not yet judged — agent-core 38; review reports a false mapping-conflict gap after rebinding. |
+| M-2 | Routed, not yet judged — agent-core 38; review reports canceled-boot upload, recovery latch, budgets and exit-status problems. |
+| L-1 | Routed, not yet judged — agent-core 38; review reports an orphan member-path pending flag. |
+
+r20 H-1, M-1, M-2, M-3 and L-1 therefore stay open on main. Separately,
+**r20 H-2 and live drift are closed by netlab 27 (#405)**, including periodic
+withdrawal without another Apply and baseline after an unrecorded Apply.
+The r20 disposition above remains the historical #403 cut. What held in r21
+is the review's statement, not new acceptance evidence. [Follow-up 31](../handover/follow-up-31.md)
+pins this disposition; historical failures stay failed.
