@@ -1,0 +1,26 @@
+{
+  "at": "2026-11-03T19:42:19.314442+00:00",
+  "baseline_commit": "27ff63928222c9642e4f5e180cf225108327a1e5",
+  "main_ref_at_preflight": "27ff63928222c9642e4f5e180cf225108327a1e5",
+  "harness_commit": "b4317bd4e4ad178609b71d3fd4fbb986cb9947db",
+  "gocache": "<home>/.cache/go-build",
+  "gocache_note": "Home directory redacted for publication; exact output retained privately, no cache override",
+  "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  0 3004076 19850768 2877476 154420620   18   67 31968 43551 21116   19  3  2 94  1  0  0\n 0  0 3004076 19842940 2877484 154424636    0    0     0   431 3409 4482  0  1 99  0  0  0\n 1  0 3004076 19829256 2877504 154425580    0    0     0  3439 3368 4326  0  0 99  0  0  0\n 2  0 3004076 19072192 2877512 154426660    0    0     0   556 11034 56088  3  1 96  0  0  0\n 1  0 3004076 19072192 2877520 154427324    0    0     0   432 70388 443654  4  2 94  0  0  0\n 1  0 3004076 19087956 2877528 154427656    0    0     0    78 61368 398650  4  2 94  0  0  0\n 0  0 3004076 19728300 2877536 154427644    0    0     0  2526 15706 84925  2  1 97  0  0  0\n",
+  "suite_wait": {
+    "wait_seconds": 0.025,
+    "waited_for_isolation": false,
+    "polls": [
+      {
+        "elapsed_seconds": 0.025,
+        "other_suites": 0,
+        "isolation_active": false
+      }
+    ]
+  },
+  "commands": [
+    "vmstat 5 7",
+    "pgrep -af 'gates.sh|mk/at-'",
+    "go env GOCACHE"
+  ],
+  "pgrep": "Original output retained privately; admission inventory above is sanitized"
+}

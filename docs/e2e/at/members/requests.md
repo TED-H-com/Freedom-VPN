@@ -1,8 +1,26 @@
+# Follow-up 18 owner assignments — 2026-11-03
+
+### Requests to orchestrator
+
+**1 new request; both follow-up 17 requests and all seven carried groups remain tracked below.** F4-03, F4-04, F4-05/F4-07, F4-06 and F4-10 remain owner-resource rows and are not re-asked. F11-01 remains **OPEN and upstream-dependent (D-148)**; no product change is made here.
+
+**2026-11-03 — finite-expiry failure cleanup:** schedule an acceptance-harness follow-up for `tests/e2e/at/members/finite_grant_test.go` so an early failed-readiness/positive-probe branch reliably performs its normal public-API grant restoration, retaining the failed original assertion. [Run 1's exact member/transition evidence](history/follow-up-18-run1/F18-AT09-precondition.json) proves the restoration was skipped before AT09 lost its admitted-device prerequisite. Orchestrator note 1 authorizes reader compatibility only; this failure branch was not changed. Run 2's actual restoration checks are recorded below. A passing normal path does not exercise cleanup after failure.
+
+Run 2 restoration checks: `[{"name": "finite expiry restoration HTTP", "status": "pass"}, {"name": "finite expiry restored 3/0", "status": "pass"}]`. [Original current precondition/restore records](F18-AT09-precondition.json).
+
+The run-1 reader request is resolved in commit `4eb5d7d3`: only the missing `retire` phase was added; lifecycle validation remains fail-closed. [Value audit and tests](F18-reader-audit.md). The two authorized assembled runs are complete; no third run is requested or performed in this delivery.
+
+The existing F11-03 / agent-core track receives [run 2's original AT09 checks](F18-AT09-subchecks.md) and [restart records](F18-AT09-restart.json). No timing-only attribution to a particular agent-core 37–43 change is made. Original run-1 failures remain in its archive.
+
+The follow-up 17 independent source-address/binding-fault request stays open with devstack. Its archive-navigation request remains tracked below; the target reference is present in the baseline and needed no outside-owned edit here. Historical wording and counts below are retained as carried groups; their measurements describe earlier runs.
+
+---
+
 # Follow-up 17 owner assignments — 2026-11-03
 
 ### Requests to orchestrator
 
-**2 new requests; seven carried groups.** The five F4 resource groups below are unchanged and are not re-asked. Devstack 30 supplied the prior survivor-continuation request; this harness now consumes that API, with its own live qualification recorded in [the survivor row](F17-populated-holds.md#sibling-removal).
+**2 new requests; seven carried groups.** The five F4 resource groups below are unchanged and are not re-asked. Devstack 30 supplied the prior survivor-continuation request; this harness now consumes that API, with its own live qualification recorded in [the survivor row](history/follow-up-17/F17-populated-holds.md#sibling-removal).
 
 **2026-11-03 — devstack, separate source-address-fault hold:** the exported D-102 seam controls matching lease delivery, and supplies no independent source-address fault with deterministic restoration. Please supply a bounded TEST ONLY source-binding/address fault hook that preserves the control channel and records its injection/removal independently of TC failure. The shared export surface `tests/e2e/stack_exports.go` and shared node-side fault helpers are read-only for this lane. The separate source-address row is **not exercised**; TC errors in source_binding do not substitute for it.
 
@@ -20,4 +38,4 @@ The seven entries below retain follow-up 16’s wording and counts; “fresh” 
 
 The primary continuous-stream failed-Apply row is exercised: three failed Applies intersect the original stream, and the unchanged provisional availability predicate fails with measurement_valid=false. All losses count; this is not a passing availability classification. No predicate or historical status changes.
 
-[Results](summary.md), [gates](RUN.md), [prior assignments](history/follow-up-16/requests.md).
+[Results](history/follow-up-17/summary.md), [gates](history/follow-up-17/RUN.md), [prior assignments](history/follow-up-16/requests.md).

@@ -104,6 +104,10 @@ func TestD098_Followup16Archive(t *testing.T) {
 	verifyArchive(t, "follow-up-16", "0ffb355a-945b-4198-a551-3794120a686c", 81)
 }
 
+func TestD098_Followup17Archive(t *testing.T) {
+	verifyArchive(t, "follow-up-17", "81b638e8-be59-4996-9594-14dd402ebb86", 77)
+}
+
 func verifyArchive(t *testing.T, followup, run string, count int) {
 	t.Helper()
 	root := filepath.Join("../../../..", "docs/e2e/at/members/history", followup)

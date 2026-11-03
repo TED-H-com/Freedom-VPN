@@ -87,5 +87,5 @@ def wait_ready():
         print('Waiting for isolation / suite admission:', polls[-1], flush=True)
         time.sleep(60)
     receipt=dict(wait_seconds=round(time.monotonic()-started, 3), waited_for_isolation=isolation_wait, polls=polls)
-    Path('.agent/tmp/f17-admission-wait.json').write_text(json.dumps(receipt, indent=2)+'\n')
+    Path('.agent/tmp/f18-admission-wait.json').write_text(json.dumps(receipt, indent=2)+'\n')
     return receipt

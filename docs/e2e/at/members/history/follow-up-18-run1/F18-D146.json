@@ -1,0 +1,45 @@
+{
+  "run_id": "118271c1-616e-46a2-a744-d67b00fb94fb",
+  "source_commit": "b4317bd4e4ad178609b71d3fd4fbb986cb9947db",
+  "rows": [],
+  "unexercised_rows": [
+    {
+      "row": "native dual MTU 1280",
+      "coverage": "not exercised",
+      "original_steps": [],
+      "original_blockers": [
+        "AT09 native matrix requires an admitted device"
+      ],
+      "interpretation": "No original D-146 qualification was produced. No selected family, handshake, bytes, MSS, outer-size or no-PTB result is inferred."
+    },
+    {
+      "row": "native ipv6 MTU 1280",
+      "coverage": "not exercised",
+      "original_steps": [],
+      "original_blockers": [
+        "AT09 native matrix requires an admitted device"
+      ],
+      "interpretation": "No original D-146 qualification was produced. No selected family, handshake, bytes, MSS, outer-size or no-PTB result is inferred."
+    },
+    {
+      "row": "native ipv4 MTU 1280",
+      "coverage": "not exercised",
+      "original_steps": [],
+      "original_blockers": [
+        "AT09 native matrix requires an admitted device"
+      ],
+      "interpretation": "No original D-146 qualification was produced. No selected family, handshake, bytes, MSS, outer-size or no-PTB result is inferred."
+    }
+  ],
+  "interpretation": "D-146 orchestrator reading: only successful unchanged TCP predicates with complete same-run clamp evidence avoid the D-137 downgrade. No historical status changed.",
+  "remaining_limits": [
+    "receive-only UDP and QUIC without PTB",
+    "MSS control below 1160 not exercised in unchanged native bulk fixture; netlab 34 stands",
+    "clamp at 1280 on relay",
+    "real platforms",
+    "additional encapsulations or IPv6 extension-header budgets",
+    "IPv6 overlay (D-123 IPv6Block)",
+    "physical arm64"
+  ],
+  "historical_analysis": "F18-historical-81b638e8-MSS.json"
+}

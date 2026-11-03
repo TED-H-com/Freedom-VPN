@@ -27,7 +27,7 @@ func validateCommandLifecycle(t *enforce.TimingEvidence) error {
 			return bad()
 		}
 		switch c.Phase {
-		case "prepare", "quarantine", "shape", "install", "release", "verify", "revoke", "rollback":
+		case "prepare", "quarantine", "shape", "install", "retire", "release", "verify", "revoke", "rollback":
 		default:
 			return bad()
 		}

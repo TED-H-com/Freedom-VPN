@@ -1,0 +1,2354 @@
+{
+  "captures": {
+    "member": {
+      "complete": true,
+      "records": 1120,
+      "clock_offsets": {
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "pairs": 162,
+        "offset_lower_ns": "-1793676557548624371",
+        "offset_upper_ns": "-1793676557548622610",
+        "measured_offset_span_ns": "1761",
+        "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+      },
+      "original_statistics_ok": true,
+      "supplement_used": false
+    },
+    "node": {
+      "complete": true,
+      "records": 1816,
+      "clock_offsets": {
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "pairs": 162,
+        "offset_lower_ns": "-1793676557548624000",
+        "offset_upper_ns": "-1793676557548623052",
+        "measured_offset_span_ns": "948",
+        "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+      },
+      "original_statistics_ok": true,
+      "supplement_used": false
+    },
+    "origin": {
+      "complete": true,
+      "records": 198,
+      "clock_offsets": {
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "pairs": 94,
+        "offset_lower_ns": "-1793676557548623792",
+        "offset_upper_ns": "-1793676557548623043",
+        "measured_offset_span_ns": "749",
+        "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+      },
+      "original_statistics_ok": true,
+      "supplement_used": false
+    },
+    "primary": {
+      "complete": true,
+      "records": 285,
+      "clock_offsets": {
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "pairs": 94,
+        "offset_lower_ns": "-1793676557548623774",
+        "offset_upper_ns": "-1793676557548623037",
+        "measured_offset_span_ns": "737",
+        "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+      },
+      "original_statistics_ok": true,
+      "supplement_used": false
+    },
+    "secondary": {
+      "complete": true,
+      "records": 8,
+      "clock_offsets": {
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "pairs": 94,
+        "offset_lower_ns": "-1793676557548623811",
+        "offset_upper_ns": "-1793676557548623047",
+        "measured_offset_span_ns": "764",
+        "assumption": "No intervening wall-clock step; empirical offset envelope, not hardware packet timestamps. Pcap microsecond quantization adds 1000 ns."
+      },
+      "original_statistics_ok": true,
+      "supplement_used": false
+    }
+  },
+  "queries": {
+    "rr": {
+      "result": {
+        "dns_wire_id": 26504,
+        "authority_serial": 0,
+        "dns_trace": {
+          "resolver_observation_boundary": "relay_write_completed_not_client_received",
+          "trace_streams": {
+            "authority": [
+              "c4a33ae0-d271-4125-ab18-fdf901de8936"
+            ],
+            "primary": [
+              "534937fd-34be-4e2c-962a-64a013ce2c54"
+            ]
+          },
+          "started": "2026-11-03T21:40:34.944465662Z",
+          "completed": "2026-11-03T21:40:35.045426033Z",
+          "responder": "primary",
+          "cache_state": "inferred_hit_no_authority_exchange",
+          "trace_complete": true,
+          "resolver_events": [
+            {
+              "query_sha256": "5fb41b02058c2cb787c71b3c62ae82be34632ec709c16f56d9ebb7565ac70d22",
+              "reply_sha256": "27e30691a40e84a719d50c530300622effc4ea501469dc1b1b342e8db85b1f10",
+              "wire_id": 26504,
+              "reply_bytes": 80,
+              "request_id": "98b2547b-4624-445d-b6dc-7b6fcb13ded1",
+              "stream_id": "534937fd-34be-4e2c-962a-64a013ce2c54",
+              "sequence": "4",
+              "phase": "completed",
+              "started": "2026-11-03T21:40:35.041652496Z",
+              "completed": "2026-11-03T21:40:35.042156346Z",
+              "role": "primary",
+              "source_role": "native",
+              "fixture_case": "rr",
+              "rr_type": 1,
+              "protocol": "udp",
+              "rcode": 0,
+              "ttls": [
+                3
+              ],
+              "address_classes": [
+                "other_ipv4"
+              ],
+              "authority_serial": 0,
+              "success": true
+            }
+          ],
+          "authority_events": [
+            {
+              "query_sha256": "e7732c8f1617b2dc0178a3d27379c2753eea04d549d898a74a5378c0918073b9",
+              "reply_sha256": "5932460cbba1e0e01d94498aa92a0c884603229db652ea4a0679f7d49a10b492",
+              "wire_id": 16996,
+              "reply_bytes": 128,
+              "request_id": "3370763d-2169-4550-bbcc-3686f7cf0106",
+              "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+              "sequence": "132",
+              "phase": "completed",
+              "started": "2026-11-03T21:40:33.861278013Z",
+              "completed": "2026-11-03T21:40:33.86153185Z",
+              "role": "authority",
+              "source_role": "primary",
+              "fixture_case": "rr",
+              "rr_type": 1,
+              "protocol": "udp",
+              "rcode": 0,
+              "ttls": [
+                5
+              ],
+              "address_classes": [
+                "other_ipv4"
+              ],
+              "authority_serial": 0,
+              "success": true
+            }
+          ],
+          "authority_history": [
+            {
+              "start": {
+                "query_sha256": "e7732c8f1617b2dc0178a3d27379c2753eea04d549d898a74a5378c0918073b9",
+                "wire_id": 16996,
+                "request_id": "3370763d-2169-4550-bbcc-3686f7cf0106",
+                "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+                "sequence": "131",
+                "phase": "started",
+                "started": "2026-11-03T21:40:33.861278013Z",
+                "completed": "0001-01-01T00:00:00Z",
+                "role": "authority",
+                "source_role": "primary",
+                "fixture_case": "rr",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": -1,
+                "ttls": [],
+                "address_classes": [],
+                "authority_serial": 0,
+                "success": false
+              },
+              "completion": {
+                "query_sha256": "e7732c8f1617b2dc0178a3d27379c2753eea04d549d898a74a5378c0918073b9",
+                "reply_sha256": "5932460cbba1e0e01d94498aa92a0c884603229db652ea4a0679f7d49a10b492",
+                "wire_id": 16996,
+                "reply_bytes": 128,
+                "request_id": "3370763d-2169-4550-bbcc-3686f7cf0106",
+                "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+                "sequence": "132",
+                "phase": "completed",
+                "started": "2026-11-03T21:40:33.861278013Z",
+                "completed": "2026-11-03T21:40:33.86153185Z",
+                "role": "authority",
+                "source_role": "primary",
+                "fixture_case": "rr",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": 0,
+                "ttls": [
+                  5
+                ],
+                "address_classes": [
+                  "other_ipv4"
+                ],
+                "authority_serial": 0,
+                "success": true
+              }
+            }
+          ],
+          "authority_outstanding_at_query_start": [],
+          "authority_outstanding_at_query_completion": [],
+          "authority_outstanding_at_trace_read": [],
+          "trace_read_at": {
+            "authority": "2026-11-03T21:40:35.343227288Z",
+            "primary": "2026-11-03T21:40:35.143677045Z",
+            "secondary": "2026-11-03T21:40:35.242704618Z"
+          },
+          "authority_serial_after_query": 1001,
+          "authority_read_at": "2026-11-03T21:40:35.426004842Z",
+          "answer_ttl_remaining": [
+            3
+          ]
+        },
+        "authority_ttl": 0,
+        "has_soa": false,
+        "available": true,
+        "rcode": 0,
+        "types": [
+          1
+        ],
+        "ttls": [
+          3
+        ],
+        "address_classes": [
+          "other_ipv4"
+        ],
+        "expected_answer": false,
+        "connected": false,
+        "bytes": 0,
+        "milliseconds": 1
+      },
+      "resolver_reply_joins": [
+        {
+          "receipt": {
+            "query_sha256": "5fb41b02058c2cb787c71b3c62ae82be34632ec709c16f56d9ebb7565ac70d22",
+            "reply_sha256": "27e30691a40e84a719d50c530300622effc4ea501469dc1b1b342e8db85b1f10",
+            "wire_id": 26504,
+            "reply_bytes": 80,
+            "request_id": "98b2547b-4624-445d-b6dc-7b6fcb13ded1",
+            "stream_id": "534937fd-34be-4e2c-962a-64a013ce2c54",
+            "sequence": "4",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:35.041652496Z",
+            "completed": "2026-11-03T21:40:35.042156346Z",
+            "role": "primary",
+            "source_role": "native",
+            "fixture_case": "rr",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 0,
+            "ttls": [
+              3
+            ],
+            "address_classes": [
+              "other_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          },
+          "packet_matches": {
+            "member": [
+              {
+                "packet": 171,
+                "timestamp": "1793742035.042221",
+                "mono_lower_ns": "65477493596629",
+                "mono_upper_ns": "65477493599390",
+                "interface": "fvnb0",
+                "packet_type": 0,
+                "src": "addr-0b0ee64a324e66f1",
+                "dst": "addr-bcab55f52b47789e",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 42839,
+                  "length": 88
+                },
+                "dns": {
+                  "fixture_case": "rr",
+                  "wire_id": 26504,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 80,
+                  "message_sha256": "27e30691a40e84a719d50c530300622effc4ea501469dc1b1b342e8db85b1f10"
+                }
+              }
+            ],
+            "node": [
+              {
+                "packet": 192,
+                "timestamp": "1793742035.042067",
+                "mono_lower_ns": "65477493443000",
+                "mono_upper_ns": "65477493444948",
+                "interface": "lo",
+                "packet_type": 0,
+                "src": "addr-12ca17b49af22894",
+                "dst": "addr-12ca17b49af22894",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 53559,
+                  "length": 88
+                },
+                "dns": {
+                  "fixture_case": "rr",
+                  "wire_id": 26504,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 80,
+                  "message_sha256": "27e30691a40e84a719d50c530300622effc4ea501469dc1b1b342e8db85b1f10"
+                }
+              },
+              {
+                "packet": 194,
+                "timestamp": "1793742035.042138",
+                "mono_lower_ns": "65477493514000",
+                "mono_upper_ns": "65477493515948",
+                "interface": "fvup0",
+                "packet_type": 0,
+                "src": "addr-0b0ee64a324e66f1",
+                "dst": "addr-5ae8cd8dcbfe2329",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 42839,
+                  "length": 88
+                },
+                "dns": {
+                  "fixture_case": "rr",
+                  "wire_id": 26504,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 80,
+                  "message_sha256": "27e30691a40e84a719d50c530300622effc4ea501469dc1b1b342e8db85b1f10"
+                }
+              },
+              {
+                "packet": 195,
+                "timestamp": "1793742035.042152",
+                "mono_lower_ns": "65477493528000",
+                "mono_upper_ns": "65477493529948",
+                "interface": "fvmb0",
+                "packet_type": 4,
+                "src": "addr-0b0ee64a324e66f1",
+                "dst": "addr-bcab55f52b47789e",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 42839,
+                  "length": 88
+                },
+                "dns": {
+                  "fixture_case": "rr",
+                  "wire_id": 26504,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 80,
+                  "message_sha256": "27e30691a40e84a719d50c530300622effc4ea501469dc1b1b342e8db85b1f10"
+                }
+              }
+            ],
+            "origin": [],
+            "primary": [
+              {
+                "packet": 8,
+                "timestamp": "1793742035.042135",
+                "mono_lower_ns": "65477493511226",
+                "mono_upper_ns": "65477493512963",
+                "interface": "eth0",
+                "packet_type": 4,
+                "src": "addr-0b0ee64a324e66f1",
+                "dst": "addr-5ae8cd8dcbfe2329",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 42839,
+                  "length": 88
+                },
+                "dns": {
+                  "fixture_case": "rr",
+                  "wire_id": 26504,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 80,
+                  "message_sha256": "27e30691a40e84a719d50c530300622effc4ea501469dc1b1b342e8db85b1f10"
+                }
+              }
+            ],
+            "secondary": []
+          }
+        }
+      ],
+      "observed_client_id_packets": {
+        "member": [
+          {
+            "packet": 167,
+            "timestamp": "1793742035.041352",
+            "mono_lower_ns": "65477492727629",
+            "mono_upper_ns": "65477492730390",
+            "interface": "lo",
+            "packet_type": 0,
+            "src": "addr-bcab55f52b47789e",
+            "dst": "addr-bcab55f52b47789e",
+            "transport": {
+              "src_port": 32893,
+              "dst_port": 53,
+              "length": 44
+            },
+            "dns": {
+              "fixture_case": "rr",
+              "wire_id": 26504,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 0,
+              "length": 36,
+              "message_sha256": "5ba7f224846a8b0c0c813d73dd8f92348d2a2ad2932b53521bd24e3bedc79aed"
+            }
+          },
+          {
+            "packet": 168,
+            "timestamp": "1793742035.041498",
+            "mono_lower_ns": "65477492873629",
+            "mono_upper_ns": "65477492876390",
+            "interface": "fvnb0",
+            "packet_type": 4,
+            "src": "addr-bcab55f52b47789e",
+            "dst": "addr-0b0ee64a324e66f1",
+            "transport": {
+              "src_port": 42839,
+              "dst_port": 53,
+              "length": 55
+            },
+            "dns": {
+              "fixture_case": "rr",
+              "wire_id": 26504,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 47,
+              "message_sha256": "5fb41b02058c2cb787c71b3c62ae82be34632ec709c16f56d9ebb7565ac70d22"
+            }
+          },
+          {
+            "packet": 171,
+            "timestamp": "1793742035.042221",
+            "mono_lower_ns": "65477493596629",
+            "mono_upper_ns": "65477493599390",
+            "interface": "fvnb0",
+            "packet_type": 0,
+            "src": "addr-0b0ee64a324e66f1",
+            "dst": "addr-bcab55f52b47789e",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 42839,
+              "length": 88
+            },
+            "dns": {
+              "fixture_case": "rr",
+              "wire_id": 26504,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 80,
+              "message_sha256": "27e30691a40e84a719d50c530300622effc4ea501469dc1b1b342e8db85b1f10"
+            }
+          },
+          {
+            "packet": 172,
+            "timestamp": "1793742035.042274",
+            "mono_lower_ns": "65477493649629",
+            "mono_upper_ns": "65477493652390",
+            "interface": "lo",
+            "packet_type": 0,
+            "src": "addr-bcab55f52b47789e",
+            "dst": "addr-bcab55f52b47789e",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 32893,
+              "length": 125
+            },
+            "dns": {
+              "fixture_case": "rr",
+              "wire_id": 26504,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 0,
+              "length": 117,
+              "message_sha256": "f33d9b3ed38ced59208c384cec3e7e5e2269682653422d11c69d0e01a4f7cf02"
+            }
+          }
+        ],
+        "node": [
+          {
+            "packet": 188,
+            "timestamp": "1793742035.041570",
+            "mono_lower_ns": "65477492946000",
+            "mono_upper_ns": "65477492947948",
+            "interface": "fvmb0",
+            "packet_type": 0,
+            "src": "addr-bcab55f52b47789e",
+            "dst": "addr-0b0ee64a324e66f1",
+            "transport": {
+              "src_port": 42839,
+              "dst_port": 53,
+              "length": 55
+            },
+            "dns": {
+              "fixture_case": "rr",
+              "wire_id": 26504,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 47,
+              "message_sha256": "5fb41b02058c2cb787c71b3c62ae82be34632ec709c16f56d9ebb7565ac70d22"
+            }
+          },
+          {
+            "packet": 189,
+            "timestamp": "1793742035.041594",
+            "mono_lower_ns": "65477492970000",
+            "mono_upper_ns": "65477492971948",
+            "interface": "fvup0",
+            "packet_type": 4,
+            "src": "addr-5ae8cd8dcbfe2329",
+            "dst": "addr-0b0ee64a324e66f1",
+            "transport": {
+              "src_port": 42839,
+              "dst_port": 53,
+              "length": 55
+            },
+            "dns": {
+              "fixture_case": "rr",
+              "wire_id": 26504,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 47,
+              "message_sha256": "5fb41b02058c2cb787c71b3c62ae82be34632ec709c16f56d9ebb7565ac70d22"
+            }
+          },
+          {
+            "packet": 191,
+            "timestamp": "1793742035.041900",
+            "mono_lower_ns": "65477493276000",
+            "mono_upper_ns": "65477493277948",
+            "interface": "lo",
+            "packet_type": 0,
+            "src": "addr-12ca17b49af22894",
+            "dst": "addr-12ca17b49af22894",
+            "transport": {
+              "src_port": 53559,
+              "dst_port": 53,
+              "length": 55
+            },
+            "dns": {
+              "fixture_case": "rr",
+              "wire_id": 26504,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 47,
+              "message_sha256": "5fb41b02058c2cb787c71b3c62ae82be34632ec709c16f56d9ebb7565ac70d22"
+            }
+          },
+          {
+            "packet": 192,
+            "timestamp": "1793742035.042067",
+            "mono_lower_ns": "65477493443000",
+            "mono_upper_ns": "65477493444948",
+            "interface": "lo",
+            "packet_type": 0,
+            "src": "addr-12ca17b49af22894",
+            "dst": "addr-12ca17b49af22894",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 53559,
+              "length": 88
+            },
+            "dns": {
+              "fixture_case": "rr",
+              "wire_id": 26504,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 80,
+              "message_sha256": "27e30691a40e84a719d50c530300622effc4ea501469dc1b1b342e8db85b1f10"
+            }
+          },
+          {
+            "packet": 194,
+            "timestamp": "1793742035.042138",
+            "mono_lower_ns": "65477493514000",
+            "mono_upper_ns": "65477493515948",
+            "interface": "fvup0",
+            "packet_type": 0,
+            "src": "addr-0b0ee64a324e66f1",
+            "dst": "addr-5ae8cd8dcbfe2329",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 42839,
+              "length": 88
+            },
+            "dns": {
+              "fixture_case": "rr",
+              "wire_id": 26504,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 80,
+              "message_sha256": "27e30691a40e84a719d50c530300622effc4ea501469dc1b1b342e8db85b1f10"
+            }
+          },
+          {
+            "packet": 195,
+            "timestamp": "1793742035.042152",
+            "mono_lower_ns": "65477493528000",
+            "mono_upper_ns": "65477493529948",
+            "interface": "fvmb0",
+            "packet_type": 4,
+            "src": "addr-0b0ee64a324e66f1",
+            "dst": "addr-bcab55f52b47789e",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 42839,
+              "length": 88
+            },
+            "dns": {
+              "fixture_case": "rr",
+              "wire_id": 26504,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 80,
+              "message_sha256": "27e30691a40e84a719d50c530300622effc4ea501469dc1b1b342e8db85b1f10"
+            }
+          }
+        ],
+        "origin": [],
+        "primary": [
+          {
+            "packet": 5,
+            "timestamp": "1793742035.041602",
+            "mono_lower_ns": "65477492978226",
+            "mono_upper_ns": "65477492979963",
+            "interface": "eth0",
+            "packet_type": 0,
+            "src": "addr-5ae8cd8dcbfe2329",
+            "dst": "addr-0b0ee64a324e66f1",
+            "transport": {
+              "src_port": 42839,
+              "dst_port": 53,
+              "length": 55
+            },
+            "dns": {
+              "fixture_case": "rr",
+              "wire_id": 26504,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 47,
+              "message_sha256": "5fb41b02058c2cb787c71b3c62ae82be34632ec709c16f56d9ebb7565ac70d22"
+            }
+          },
+          {
+            "packet": 8,
+            "timestamp": "1793742035.042135",
+            "mono_lower_ns": "65477493511226",
+            "mono_upper_ns": "65477493512963",
+            "interface": "eth0",
+            "packet_type": 4,
+            "src": "addr-0b0ee64a324e66f1",
+            "dst": "addr-5ae8cd8dcbfe2329",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 42839,
+              "length": 88
+            },
+            "dns": {
+              "fixture_case": "rr",
+              "wire_id": 26504,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 80,
+              "message_sha256": "27e30691a40e84a719d50c530300622effc4ea501469dc1b1b342e8db85b1f10"
+            }
+          }
+        ],
+        "secondary": []
+      }
+    },
+    "idna-udp": {
+      "result": {
+        "dns_wire_id": 26987,
+        "authority_serial": 0,
+        "dns_trace": {
+          "resolver_observation_boundary": "relay_write_completed_not_client_received",
+          "trace_streams": {
+            "authority": [
+              "c4a33ae0-d271-4125-ab18-fdf901de8936"
+            ],
+            "primary": [
+              "534937fd-34be-4e2c-962a-64a013ce2c54"
+            ]
+          },
+          "started": "2026-11-03T21:40:50.79292408Z",
+          "completed": "2026-11-03T21:40:50.893517405Z",
+          "responder": "primary",
+          "cache_state": "fetch_authority_request_observed",
+          "trace_complete": true,
+          "resolver_events": [
+            {
+              "query_sha256": "038873c25e7e75086996f5b066cc9e40ce6ae2c4f5c5812948c02c01be3be790",
+              "reply_sha256": "38087356d816972f2616bded99b8d6931cf16b2fef74ac3b85f60a789bc62ce8",
+              "wire_id": 26987,
+              "reply_bytes": 91,
+              "request_id": "3fdd3ce7-3c7d-4e6a-b02b-212ff19ec160",
+              "stream_id": "534937fd-34be-4e2c-962a-64a013ce2c54",
+              "sequence": "64",
+              "phase": "completed",
+              "started": "2026-11-03T21:40:50.890035994Z",
+              "completed": "2026-11-03T21:40:50.890810217Z",
+              "role": "primary",
+              "source_role": "native",
+              "fixture_case": "idna_positive",
+              "rr_type": 1,
+              "protocol": "udp",
+              "rcode": 0,
+              "ttls": [
+                5
+              ],
+              "address_classes": [
+                "other_ipv4"
+              ],
+              "authority_serial": 0,
+              "success": true
+            }
+          ],
+          "authority_events": [
+            {
+              "query_sha256": "633fa447ae4003a8ffedde5f2a1ae7c4b0b614bc9397d4da602e6d25c6aea93e",
+              "reply_sha256": "0485a8b8076c194044e6fabe60edb7a7e03987d8dae81925bbc6561a5fc21911",
+              "wire_id": 26987,
+              "reply_bytes": 150,
+              "request_id": "59d386b2-4da0-4296-ac7a-f273e35daba6",
+              "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+              "sequence": "178",
+              "phase": "completed",
+              "started": "2026-11-03T21:40:50.890437671Z",
+              "completed": "2026-11-03T21:40:50.890677408Z",
+              "role": "authority",
+              "source_role": "primary",
+              "fixture_case": "idna_positive",
+              "rr_type": 1,
+              "protocol": "udp",
+              "rcode": 0,
+              "ttls": [
+                5
+              ],
+              "address_classes": [
+                "other_ipv4"
+              ],
+              "authority_serial": 0,
+              "success": true
+            }
+          ],
+          "authority_history": [
+            {
+              "start": {
+                "query_sha256": "633fa447ae4003a8ffedde5f2a1ae7c4b0b614bc9397d4da602e6d25c6aea93e",
+                "wire_id": 26987,
+                "request_id": "59d386b2-4da0-4296-ac7a-f273e35daba6",
+                "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+                "sequence": "177",
+                "phase": "started",
+                "started": "2026-11-03T21:40:50.890437671Z",
+                "completed": "0001-01-01T00:00:00Z",
+                "role": "authority",
+                "source_role": "primary",
+                "fixture_case": "idna_positive",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": -1,
+                "ttls": [],
+                "address_classes": [],
+                "authority_serial": 0,
+                "success": false
+              },
+              "completion": {
+                "query_sha256": "633fa447ae4003a8ffedde5f2a1ae7c4b0b614bc9397d4da602e6d25c6aea93e",
+                "reply_sha256": "0485a8b8076c194044e6fabe60edb7a7e03987d8dae81925bbc6561a5fc21911",
+                "wire_id": 26987,
+                "reply_bytes": 150,
+                "request_id": "59d386b2-4da0-4296-ac7a-f273e35daba6",
+                "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+                "sequence": "178",
+                "phase": "completed",
+                "started": "2026-11-03T21:40:50.890437671Z",
+                "completed": "2026-11-03T21:40:50.890677408Z",
+                "role": "authority",
+                "source_role": "primary",
+                "fixture_case": "idna_positive",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": 0,
+                "ttls": [
+                  5
+                ],
+                "address_classes": [
+                  "other_ipv4"
+                ],
+                "authority_serial": 0,
+                "success": true
+              }
+            }
+          ],
+          "authority_outstanding_at_query_start": [],
+          "authority_outstanding_at_query_completion": [],
+          "authority_outstanding_at_trace_read": [],
+          "trace_read_at": {
+            "authority": "2026-11-03T21:40:51.19411077Z",
+            "primary": "2026-11-03T21:40:50.994960573Z",
+            "secondary": "2026-11-03T21:40:51.095964271Z"
+          },
+          "authority_serial_after_query": 1001,
+          "authority_read_at": "2026-11-03T21:40:51.276037499Z",
+          "answer_ttl_remaining": [
+            5
+          ]
+        },
+        "authority_ttl": 0,
+        "has_soa": false,
+        "available": true,
+        "rcode": 0,
+        "types": [
+          1
+        ],
+        "ttls": [
+          5
+        ],
+        "address_classes": [
+          "other_ipv4"
+        ],
+        "expected_answer": true,
+        "connected": false,
+        "bytes": 0,
+        "milliseconds": 1
+      },
+      "resolver_reply_joins": [
+        {
+          "receipt": {
+            "query_sha256": "038873c25e7e75086996f5b066cc9e40ce6ae2c4f5c5812948c02c01be3be790",
+            "reply_sha256": "38087356d816972f2616bded99b8d6931cf16b2fef74ac3b85f60a789bc62ce8",
+            "wire_id": 26987,
+            "reply_bytes": 91,
+            "request_id": "3fdd3ce7-3c7d-4e6a-b02b-212ff19ec160",
+            "stream_id": "534937fd-34be-4e2c-962a-64a013ce2c54",
+            "sequence": "64",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:50.890035994Z",
+            "completed": "2026-11-03T21:40:50.890810217Z",
+            "role": "primary",
+            "source_role": "native",
+            "fixture_case": "idna_positive",
+            "rr_type": 1,
+            "protocol": "udp",
+            "rcode": 0,
+            "ttls": [
+              5
+            ],
+            "address_classes": [
+              "other_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          },
+          "packet_matches": {
+            "member": [
+              {
+                "packet": 789,
+                "timestamp": "1793742050.890858",
+                "mono_lower_ns": "65493342233629",
+                "mono_upper_ns": "65493342236390",
+                "interface": "fvnb0",
+                "packet_type": 0,
+                "src": "addr-0b0ee64a324e66f1",
+                "dst": "addr-bcab55f52b47789e",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 52844,
+                  "length": 99
+                },
+                "dns": {
+                  "fixture_case": "idna_positive",
+                  "wire_id": 26987,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 91,
+                  "message_sha256": "38087356d816972f2616bded99b8d6931cf16b2fef74ac3b85f60a789bc62ce8"
+                }
+              }
+            ],
+            "node": [
+              {
+                "packet": 1206,
+                "timestamp": "1793742050.890740",
+                "mono_lower_ns": "65493342116000",
+                "mono_upper_ns": "65493342117948",
+                "interface": "lo",
+                "packet_type": 0,
+                "src": "addr-12ca17b49af22894",
+                "dst": "addr-12ca17b49af22894",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 49250,
+                  "length": 99
+                },
+                "dns": {
+                  "fixture_case": "idna_positive",
+                  "wire_id": 26987,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 91,
+                  "message_sha256": "38087356d816972f2616bded99b8d6931cf16b2fef74ac3b85f60a789bc62ce8"
+                }
+              },
+              {
+                "packet": 1208,
+                "timestamp": "1793742050.890795",
+                "mono_lower_ns": "65493342171000",
+                "mono_upper_ns": "65493342172948",
+                "interface": "fvup0",
+                "packet_type": 0,
+                "src": "addr-0b0ee64a324e66f1",
+                "dst": "addr-5ae8cd8dcbfe2329",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 52844,
+                  "length": 99
+                },
+                "dns": {
+                  "fixture_case": "idna_positive",
+                  "wire_id": 26987,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 91,
+                  "message_sha256": "38087356d816972f2616bded99b8d6931cf16b2fef74ac3b85f60a789bc62ce8"
+                }
+              },
+              {
+                "packet": 1209,
+                "timestamp": "1793742050.890806",
+                "mono_lower_ns": "65493342182000",
+                "mono_upper_ns": "65493342183948",
+                "interface": "fvmb0",
+                "packet_type": 4,
+                "src": "addr-0b0ee64a324e66f1",
+                "dst": "addr-bcab55f52b47789e",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 52844,
+                  "length": 99
+                },
+                "dns": {
+                  "fixture_case": "idna_positive",
+                  "wire_id": 26987,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 91,
+                  "message_sha256": "38087356d816972f2616bded99b8d6931cf16b2fef74ac3b85f60a789bc62ce8"
+                }
+              }
+            ],
+            "origin": [],
+            "primary": [
+              {
+                "packet": 226,
+                "timestamp": "1793742050.890793",
+                "mono_lower_ns": "65493342169226",
+                "mono_upper_ns": "65493342170963",
+                "interface": "eth0",
+                "packet_type": 4,
+                "src": "addr-0b0ee64a324e66f1",
+                "dst": "addr-5ae8cd8dcbfe2329",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 52844,
+                  "length": 99
+                },
+                "dns": {
+                  "fixture_case": "idna_positive",
+                  "wire_id": 26987,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 91,
+                  "message_sha256": "38087356d816972f2616bded99b8d6931cf16b2fef74ac3b85f60a789bc62ce8"
+                }
+              }
+            ],
+            "secondary": []
+          }
+        }
+      ],
+      "observed_client_id_packets": {
+        "member": [
+          {
+            "packet": 785,
+            "timestamp": "1793742050.889741",
+            "mono_lower_ns": "65493341116629",
+            "mono_upper_ns": "65493341119390",
+            "interface": "lo",
+            "packet_type": 0,
+            "src": "addr-bcab55f52b47789e",
+            "dst": "addr-bcab55f52b47789e",
+            "transport": {
+              "src_port": 39835,
+              "dst_port": 53,
+              "length": 55
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 26987,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 0,
+              "length": 47,
+              "message_sha256": "1604248f5b795d44f24d731962e7860f67c4d08d977885a3bc50beb85ece735f"
+            }
+          },
+          {
+            "packet": 786,
+            "timestamp": "1793742050.889908",
+            "mono_lower_ns": "65493341283629",
+            "mono_upper_ns": "65493341286390",
+            "interface": "fvnb0",
+            "packet_type": 4,
+            "src": "addr-bcab55f52b47789e",
+            "dst": "addr-0b0ee64a324e66f1",
+            "transport": {
+              "src_port": 52844,
+              "dst_port": 53,
+              "length": 66
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 26987,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 58,
+              "message_sha256": "038873c25e7e75086996f5b066cc9e40ce6ae2c4f5c5812948c02c01be3be790"
+            }
+          },
+          {
+            "packet": 789,
+            "timestamp": "1793742050.890858",
+            "mono_lower_ns": "65493342233629",
+            "mono_upper_ns": "65493342236390",
+            "interface": "fvnb0",
+            "packet_type": 0,
+            "src": "addr-0b0ee64a324e66f1",
+            "dst": "addr-bcab55f52b47789e",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 52844,
+              "length": 99
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 26987,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 91,
+              "message_sha256": "38087356d816972f2616bded99b8d6931cf16b2fef74ac3b85f60a789bc62ce8"
+            }
+          },
+          {
+            "packet": 790,
+            "timestamp": "1793742050.890905",
+            "mono_lower_ns": "65493342280629",
+            "mono_upper_ns": "65493342283390",
+            "interface": "lo",
+            "packet_type": 0,
+            "src": "addr-bcab55f52b47789e",
+            "dst": "addr-bcab55f52b47789e",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 39835,
+              "length": 147
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 26987,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 0,
+              "length": 139,
+              "message_sha256": "af52f61f884d64f186e66ea8c54c274b694229c947092fb65546e3057d828286"
+            }
+          }
+        ],
+        "node": [
+          {
+            "packet": 1200,
+            "timestamp": "1793742050.889967",
+            "mono_lower_ns": "65493341343000",
+            "mono_upper_ns": "65493341344948",
+            "interface": "fvmb0",
+            "packet_type": 0,
+            "src": "addr-bcab55f52b47789e",
+            "dst": "addr-0b0ee64a324e66f1",
+            "transport": {
+              "src_port": 52844,
+              "dst_port": 53,
+              "length": 66
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 26987,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 58,
+              "message_sha256": "038873c25e7e75086996f5b066cc9e40ce6ae2c4f5c5812948c02c01be3be790"
+            }
+          },
+          {
+            "packet": 1201,
+            "timestamp": "1793742050.889988",
+            "mono_lower_ns": "65493341364000",
+            "mono_upper_ns": "65493341365948",
+            "interface": "fvup0",
+            "packet_type": 4,
+            "src": "addr-5ae8cd8dcbfe2329",
+            "dst": "addr-0b0ee64a324e66f1",
+            "transport": {
+              "src_port": 52844,
+              "dst_port": 53,
+              "length": 66
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 26987,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 58,
+              "message_sha256": "038873c25e7e75086996f5b066cc9e40ce6ae2c4f5c5812948c02c01be3be790"
+            }
+          },
+          {
+            "packet": 1203,
+            "timestamp": "1793742050.890241",
+            "mono_lower_ns": "65493341617000",
+            "mono_upper_ns": "65493341618948",
+            "interface": "lo",
+            "packet_type": 0,
+            "src": "addr-12ca17b49af22894",
+            "dst": "addr-12ca17b49af22894",
+            "transport": {
+              "src_port": 49250,
+              "dst_port": 53,
+              "length": 66
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 26987,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 58,
+              "message_sha256": "038873c25e7e75086996f5b066cc9e40ce6ae2c4f5c5812948c02c01be3be790"
+            }
+          },
+          {
+            "packet": 1204,
+            "timestamp": "1793742050.890394",
+            "mono_lower_ns": "65493341770000",
+            "mono_upper_ns": "65493341771948",
+            "interface": "eth0",
+            "packet_type": 4,
+            "src": "addr-156910cb925246e0",
+            "dst": "addr-860053da230ce92e",
+            "transport": {
+              "src_port": 60911,
+              "dst_port": 53,
+              "length": 66
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 26987,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 58,
+              "message_sha256": "633fa447ae4003a8ffedde5f2a1ae7c4b0b614bc9397d4da602e6d25c6aea93e"
+            }
+          },
+          {
+            "packet": 1205,
+            "timestamp": "1793742050.890671",
+            "mono_lower_ns": "65493342047000",
+            "mono_upper_ns": "65493342048948",
+            "interface": "eth0",
+            "packet_type": 0,
+            "src": "addr-860053da230ce92e",
+            "dst": "addr-156910cb925246e0",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 60911,
+              "length": 158
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 26987,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 150,
+              "message_sha256": "0485a8b8076c194044e6fabe60edb7a7e03987d8dae81925bbc6561a5fc21911"
+            }
+          },
+          {
+            "packet": 1206,
+            "timestamp": "1793742050.890740",
+            "mono_lower_ns": "65493342116000",
+            "mono_upper_ns": "65493342117948",
+            "interface": "lo",
+            "packet_type": 0,
+            "src": "addr-12ca17b49af22894",
+            "dst": "addr-12ca17b49af22894",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 49250,
+              "length": 99
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 26987,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 91,
+              "message_sha256": "38087356d816972f2616bded99b8d6931cf16b2fef74ac3b85f60a789bc62ce8"
+            }
+          },
+          {
+            "packet": 1208,
+            "timestamp": "1793742050.890795",
+            "mono_lower_ns": "65493342171000",
+            "mono_upper_ns": "65493342172948",
+            "interface": "fvup0",
+            "packet_type": 0,
+            "src": "addr-0b0ee64a324e66f1",
+            "dst": "addr-5ae8cd8dcbfe2329",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 52844,
+              "length": 99
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 26987,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 91,
+              "message_sha256": "38087356d816972f2616bded99b8d6931cf16b2fef74ac3b85f60a789bc62ce8"
+            }
+          },
+          {
+            "packet": 1209,
+            "timestamp": "1793742050.890806",
+            "mono_lower_ns": "65493342182000",
+            "mono_upper_ns": "65493342183948",
+            "interface": "fvmb0",
+            "packet_type": 4,
+            "src": "addr-0b0ee64a324e66f1",
+            "dst": "addr-bcab55f52b47789e",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 52844,
+              "length": 99
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 26987,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 91,
+              "message_sha256": "38087356d816972f2616bded99b8d6931cf16b2fef74ac3b85f60a789bc62ce8"
+            }
+          }
+        ],
+        "origin": [],
+        "primary": [
+          {
+            "packet": 223,
+            "timestamp": "1793742050.889994",
+            "mono_lower_ns": "65493341370226",
+            "mono_upper_ns": "65493341371963",
+            "interface": "eth0",
+            "packet_type": 0,
+            "src": "addr-5ae8cd8dcbfe2329",
+            "dst": "addr-0b0ee64a324e66f1",
+            "transport": {
+              "src_port": 52844,
+              "dst_port": 53,
+              "length": 66
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 26987,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 58,
+              "message_sha256": "038873c25e7e75086996f5b066cc9e40ce6ae2c4f5c5812948c02c01be3be790"
+            }
+          },
+          {
+            "packet": 226,
+            "timestamp": "1793742050.890793",
+            "mono_lower_ns": "65493342169226",
+            "mono_upper_ns": "65493342170963",
+            "interface": "eth0",
+            "packet_type": 4,
+            "src": "addr-0b0ee64a324e66f1",
+            "dst": "addr-5ae8cd8dcbfe2329",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 52844,
+              "length": 99
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 26987,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 91,
+              "message_sha256": "38087356d816972f2616bded99b8d6931cf16b2fef74ac3b85f60a789bc62ce8"
+            }
+          }
+        ],
+        "secondary": []
+      }
+    },
+    "idna-tcp": {
+      "result": {
+        "dns_wire_id": 52169,
+        "authority_serial": 0,
+        "dns_trace": {
+          "resolver_observation_boundary": "relay_write_completed_not_client_received",
+          "trace_streams": {
+            "authority": [
+              "c4a33ae0-d271-4125-ab18-fdf901de8936"
+            ],
+            "primary": [
+              "534937fd-34be-4e2c-962a-64a013ce2c54"
+            ]
+          },
+          "started": "2026-11-03T21:40:51.276298001Z",
+          "completed": "2026-11-03T21:40:51.377054319Z",
+          "responder": "primary",
+          "cache_state": "inferred_hit_no_authority_exchange",
+          "trace_complete": true,
+          "resolver_events": [
+            {
+              "query_sha256": "61f6f094cdda735274a757594dab45e6adb74d92e031dd30f0cd94c350d56ce8",
+              "reply_sha256": "a33a2af772b9b4ef0680a9ded5cf77ece98fd8b767bd5cdab8baece427acd8e2",
+              "wire_id": 52169,
+              "reply_bytes": 91,
+              "request_id": "84b777f8-ff44-4aa5-b26b-d9156b040a6d",
+              "stream_id": "534937fd-34be-4e2c-962a-64a013ce2c54",
+              "sequence": "66",
+              "phase": "completed",
+              "started": "2026-11-03T21:40:51.373939904Z",
+              "completed": "2026-11-03T21:40:51.374440885Z",
+              "role": "primary",
+              "source_role": "native",
+              "fixture_case": "idna_positive",
+              "rr_type": 1,
+              "protocol": "tcp",
+              "rcode": 0,
+              "ttls": [
+                4
+              ],
+              "address_classes": [
+                "other_ipv4"
+              ],
+              "authority_serial": 0,
+              "success": true
+            }
+          ],
+          "authority_events": [
+            {
+              "query_sha256": "633fa447ae4003a8ffedde5f2a1ae7c4b0b614bc9397d4da602e6d25c6aea93e",
+              "reply_sha256": "0485a8b8076c194044e6fabe60edb7a7e03987d8dae81925bbc6561a5fc21911",
+              "wire_id": 26987,
+              "reply_bytes": 150,
+              "request_id": "59d386b2-4da0-4296-ac7a-f273e35daba6",
+              "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+              "sequence": "178",
+              "phase": "completed",
+              "started": "2026-11-03T21:40:50.890437671Z",
+              "completed": "2026-11-03T21:40:50.890677408Z",
+              "role": "authority",
+              "source_role": "primary",
+              "fixture_case": "idna_positive",
+              "rr_type": 1,
+              "protocol": "udp",
+              "rcode": 0,
+              "ttls": [
+                5
+              ],
+              "address_classes": [
+                "other_ipv4"
+              ],
+              "authority_serial": 0,
+              "success": true
+            }
+          ],
+          "authority_history": [
+            {
+              "start": {
+                "query_sha256": "633fa447ae4003a8ffedde5f2a1ae7c4b0b614bc9397d4da602e6d25c6aea93e",
+                "wire_id": 26987,
+                "request_id": "59d386b2-4da0-4296-ac7a-f273e35daba6",
+                "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+                "sequence": "177",
+                "phase": "started",
+                "started": "2026-11-03T21:40:50.890437671Z",
+                "completed": "0001-01-01T00:00:00Z",
+                "role": "authority",
+                "source_role": "primary",
+                "fixture_case": "idna_positive",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": -1,
+                "ttls": [],
+                "address_classes": [],
+                "authority_serial": 0,
+                "success": false
+              },
+              "completion": {
+                "query_sha256": "633fa447ae4003a8ffedde5f2a1ae7c4b0b614bc9397d4da602e6d25c6aea93e",
+                "reply_sha256": "0485a8b8076c194044e6fabe60edb7a7e03987d8dae81925bbc6561a5fc21911",
+                "wire_id": 26987,
+                "reply_bytes": 150,
+                "request_id": "59d386b2-4da0-4296-ac7a-f273e35daba6",
+                "stream_id": "c4a33ae0-d271-4125-ab18-fdf901de8936",
+                "sequence": "178",
+                "phase": "completed",
+                "started": "2026-11-03T21:40:50.890437671Z",
+                "completed": "2026-11-03T21:40:50.890677408Z",
+                "role": "authority",
+                "source_role": "primary",
+                "fixture_case": "idna_positive",
+                "rr_type": 1,
+                "protocol": "udp",
+                "rcode": 0,
+                "ttls": [
+                  5
+                ],
+                "address_classes": [
+                  "other_ipv4"
+                ],
+                "authority_serial": 0,
+                "success": true
+              }
+            }
+          ],
+          "authority_outstanding_at_query_start": [],
+          "authority_outstanding_at_query_completion": [],
+          "authority_outstanding_at_trace_read": [],
+          "trace_read_at": {
+            "authority": "2026-11-03T21:40:51.665669225Z",
+            "primary": "2026-11-03T21:40:51.466502506Z",
+            "secondary": "2026-11-03T21:40:51.566658455Z"
+          },
+          "authority_serial_after_query": 1001,
+          "authority_read_at": "2026-11-03T21:40:51.748091983Z",
+          "answer_ttl_remaining": [
+            4
+          ]
+        },
+        "authority_ttl": 0,
+        "has_soa": false,
+        "available": true,
+        "rcode": 0,
+        "types": [
+          1
+        ],
+        "ttls": [
+          4
+        ],
+        "address_classes": [
+          "other_ipv4"
+        ],
+        "expected_answer": true,
+        "connected": false,
+        "bytes": 0,
+        "milliseconds": 1
+      },
+      "resolver_reply_joins": [
+        {
+          "receipt": {
+            "query_sha256": "61f6f094cdda735274a757594dab45e6adb74d92e031dd30f0cd94c350d56ce8",
+            "reply_sha256": "a33a2af772b9b4ef0680a9ded5cf77ece98fd8b767bd5cdab8baece427acd8e2",
+            "wire_id": 52169,
+            "reply_bytes": 91,
+            "request_id": "84b777f8-ff44-4aa5-b26b-d9156b040a6d",
+            "stream_id": "534937fd-34be-4e2c-962a-64a013ce2c54",
+            "sequence": "66",
+            "phase": "completed",
+            "started": "2026-11-03T21:40:51.373939904Z",
+            "completed": "2026-11-03T21:40:51.374440885Z",
+            "role": "primary",
+            "source_role": "native",
+            "fixture_case": "idna_positive",
+            "rr_type": 1,
+            "protocol": "tcp",
+            "rcode": 0,
+            "ttls": [
+              4
+            ],
+            "address_classes": [
+              "other_ipv4"
+            ],
+            "authority_serial": 0,
+            "success": true
+          },
+          "packet_matches": {
+            "member": [
+              {
+                "packet": 809,
+                "timestamp": "1793742051.374460",
+                "mono_lower_ns": "65493825835629",
+                "mono_upper_ns": "65493825838390",
+                "interface": "fvnb0",
+                "packet_type": 0,
+                "src": "addr-0b0ee64a324e66f1",
+                "dst": "addr-bcab55f52b47789e",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 60208,
+                  "seq": 2738517741,
+                  "ack": 813286488,
+                  "flags": 24,
+                  "window": 64,
+                  "header_length": 32,
+                  "length": 93,
+                  "options": [
+                    {
+                      "kind": 8,
+                      "length": 10,
+                      "tsval": 2832102158,
+                      "tsecr": 3225192837
+                    }
+                  ]
+                },
+                "dns": {
+                  "fixture_case": "idna_positive",
+                  "wire_id": 52169,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 91,
+                  "message_sha256": "a33a2af772b9b4ef0680a9ded5cf77ece98fd8b767bd5cdab8baece427acd8e2"
+                }
+              }
+            ],
+            "node": [
+              {
+                "packet": 1255,
+                "timestamp": "1793742051.374367",
+                "mono_lower_ns": "65493825743000",
+                "mono_upper_ns": "65493825744948",
+                "interface": "lo",
+                "packet_type": 0,
+                "src": "addr-12ca17b49af22894",
+                "dst": "addr-12ca17b49af22894",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 37602,
+                  "seq": 3980907324,
+                  "ack": 1488025654,
+                  "flags": 24,
+                  "window": 64,
+                  "header_length": 32,
+                  "length": 93,
+                  "options": [
+                    {
+                      "kind": 8,
+                      "length": 10,
+                      "tsval": 4004736669,
+                      "tsecr": 2639080028
+                    }
+                  ]
+                },
+                "dns": {
+                  "fixture_case": "idna_positive",
+                  "wire_id": 52169,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 91,
+                  "message_sha256": "a33a2af772b9b4ef0680a9ded5cf77ece98fd8b767bd5cdab8baece427acd8e2"
+                }
+              },
+              {
+                "packet": 1260,
+                "timestamp": "1793742051.374429",
+                "mono_lower_ns": "65493825805000",
+                "mono_upper_ns": "65493825806948",
+                "interface": "fvup0",
+                "packet_type": 0,
+                "src": "addr-0b0ee64a324e66f1",
+                "dst": "addr-5ae8cd8dcbfe2329",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 60208,
+                  "seq": 2738517741,
+                  "ack": 813286488,
+                  "flags": 24,
+                  "window": 64,
+                  "header_length": 32,
+                  "length": 93,
+                  "options": [
+                    {
+                      "kind": 8,
+                      "length": 10,
+                      "tsval": 2832102158,
+                      "tsecr": 3225192837
+                    }
+                  ]
+                },
+                "dns": {
+                  "fixture_case": "idna_positive",
+                  "wire_id": 52169,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 91,
+                  "message_sha256": "a33a2af772b9b4ef0680a9ded5cf77ece98fd8b767bd5cdab8baece427acd8e2"
+                }
+              },
+              {
+                "packet": 1261,
+                "timestamp": "1793742051.374437",
+                "mono_lower_ns": "65493825813000",
+                "mono_upper_ns": "65493825814948",
+                "interface": "fvmb0",
+                "packet_type": 4,
+                "src": "addr-0b0ee64a324e66f1",
+                "dst": "addr-bcab55f52b47789e",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 60208,
+                  "seq": 2738517741,
+                  "ack": 813286488,
+                  "flags": 24,
+                  "window": 64,
+                  "header_length": 32,
+                  "length": 93,
+                  "options": [
+                    {
+                      "kind": 8,
+                      "length": 10,
+                      "tsval": 2832102158,
+                      "tsecr": 3225192837
+                    }
+                  ]
+                },
+                "dns": {
+                  "fixture_case": "idna_positive",
+                  "wire_id": 52169,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 91,
+                  "message_sha256": "a33a2af772b9b4ef0680a9ded5cf77ece98fd8b767bd5cdab8baece427acd8e2"
+                }
+              }
+            ],
+            "origin": [],
+            "primary": [
+              {
+                "packet": 232,
+                "timestamp": "1793742051.374428",
+                "mono_lower_ns": "65493825804226",
+                "mono_upper_ns": "65493825805963",
+                "interface": "eth0",
+                "packet_type": 4,
+                "src": "addr-0b0ee64a324e66f1",
+                "dst": "addr-5ae8cd8dcbfe2329",
+                "transport": {
+                  "src_port": 53,
+                  "dst_port": 60208,
+                  "seq": 2738517741,
+                  "ack": 813286488,
+                  "flags": 24,
+                  "window": 64,
+                  "header_length": 32,
+                  "length": 93,
+                  "options": [
+                    {
+                      "kind": 8,
+                      "length": 10,
+                      "tsval": 2832102158,
+                      "tsecr": 3225192837
+                    }
+                  ]
+                },
+                "dns": {
+                  "fixture_case": "idna_positive",
+                  "wire_id": 52169,
+                  "response": true,
+                  "rcode": 0,
+                  "rr_type": 1,
+                  "answers": 1,
+                  "authority": 1,
+                  "additional": 1,
+                  "length": 91,
+                  "message_sha256": "a33a2af772b9b4ef0680a9ded5cf77ece98fd8b767bd5cdab8baece427acd8e2"
+                }
+              }
+            ],
+            "secondary": []
+          }
+        }
+      ],
+      "observed_client_id_packets": {
+        "member": [
+          {
+            "packet": 796,
+            "timestamp": "1793742051.372798",
+            "mono_lower_ns": "65493824173629",
+            "mono_upper_ns": "65493824176390",
+            "interface": "lo",
+            "packet_type": 0,
+            "src": "addr-bcab55f52b47789e",
+            "dst": "addr-bcab55f52b47789e",
+            "transport": {
+              "src_port": 47106,
+              "dst_port": 53,
+              "seq": 343823190,
+              "ack": 2534790150,
+              "flags": 24,
+              "window": 64,
+              "header_length": 32,
+              "length": 49,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 804912624,
+                  "tsecr": 1781370441
+                }
+              ]
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 52169,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 0,
+              "length": 47,
+              "message_sha256": "24d64d2f57ea3c3e588dc36cc765c07918e30e7eacd0c6d0bc0c51f9fe282d65"
+            }
+          },
+          {
+            "packet": 804,
+            "timestamp": "1793742051.373852",
+            "mono_lower_ns": "65493825227629",
+            "mono_upper_ns": "65493825230390",
+            "interface": "fvnb0",
+            "packet_type": 4,
+            "src": "addr-bcab55f52b47789e",
+            "dst": "addr-0b0ee64a324e66f1",
+            "transport": {
+              "src_port": 60208,
+              "dst_port": 53,
+              "seq": 813286428,
+              "ack": 2738517741,
+              "flags": 24,
+              "window": 63,
+              "header_length": 32,
+              "length": 60,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 3225192837,
+                  "tsecr": 2832102158
+                }
+              ]
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 52169,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 58,
+              "message_sha256": "61f6f094cdda735274a757594dab45e6adb74d92e031dd30f0cd94c350d56ce8"
+            }
+          },
+          {
+            "packet": 809,
+            "timestamp": "1793742051.374460",
+            "mono_lower_ns": "65493825835629",
+            "mono_upper_ns": "65493825838390",
+            "interface": "fvnb0",
+            "packet_type": 0,
+            "src": "addr-0b0ee64a324e66f1",
+            "dst": "addr-bcab55f52b47789e",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 60208,
+              "seq": 2738517741,
+              "ack": 813286488,
+              "flags": 24,
+              "window": 64,
+              "header_length": 32,
+              "length": 93,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 2832102158,
+                  "tsecr": 3225192837
+                }
+              ]
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 52169,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 91,
+              "message_sha256": "a33a2af772b9b4ef0680a9ded5cf77ece98fd8b767bd5cdab8baece427acd8e2"
+            }
+          },
+          {
+            "packet": 818,
+            "timestamp": "1793742051.374517",
+            "mono_lower_ns": "65493825892629",
+            "mono_upper_ns": "65493825895390",
+            "interface": "lo",
+            "packet_type": 0,
+            "src": "addr-bcab55f52b47789e",
+            "dst": "addr-bcab55f52b47789e",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 47106,
+              "seq": 2534790150,
+              "ack": 343823239,
+              "flags": 24,
+              "window": 64,
+              "header_length": 32,
+              "length": 141,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 1781370442,
+                  "tsecr": 804912624
+                }
+              ]
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 52169,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 0,
+              "length": 139,
+              "message_sha256": "6bea24479dd95c20a90a6b62435dbaa30086a7d8bf651e0b851d85f652efbedc"
+            }
+          }
+        ],
+        "node": [
+          {
+            "packet": 1245,
+            "timestamp": "1793742051.373877",
+            "mono_lower_ns": "65493825253000",
+            "mono_upper_ns": "65493825254948",
+            "interface": "fvmb0",
+            "packet_type": 0,
+            "src": "addr-bcab55f52b47789e",
+            "dst": "addr-0b0ee64a324e66f1",
+            "transport": {
+              "src_port": 60208,
+              "dst_port": 53,
+              "seq": 813286428,
+              "ack": 2738517741,
+              "flags": 24,
+              "window": 63,
+              "header_length": 32,
+              "length": 60,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 3225192837,
+                  "tsecr": 2832102158
+                }
+              ]
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 52169,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 58,
+              "message_sha256": "61f6f094cdda735274a757594dab45e6adb74d92e031dd30f0cd94c350d56ce8"
+            }
+          },
+          {
+            "packet": 1246,
+            "timestamp": "1793742051.373879",
+            "mono_lower_ns": "65493825255000",
+            "mono_upper_ns": "65493825256948",
+            "interface": "fvup0",
+            "packet_type": 4,
+            "src": "addr-5ae8cd8dcbfe2329",
+            "dst": "addr-0b0ee64a324e66f1",
+            "transport": {
+              "src_port": 60208,
+              "dst_port": 53,
+              "seq": 813286428,
+              "ack": 2738517741,
+              "flags": 24,
+              "window": 63,
+              "header_length": 32,
+              "length": 60,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 3225192837,
+                  "tsecr": 2832102158
+                }
+              ]
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 52169,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 58,
+              "message_sha256": "61f6f094cdda735274a757594dab45e6adb74d92e031dd30f0cd94c350d56ce8"
+            }
+          },
+          {
+            "packet": 1253,
+            "timestamp": "1793742051.374241",
+            "mono_lower_ns": "65493825617000",
+            "mono_upper_ns": "65493825618948",
+            "interface": "lo",
+            "packet_type": 0,
+            "src": "addr-12ca17b49af22894",
+            "dst": "addr-12ca17b49af22894",
+            "transport": {
+              "src_port": 37602,
+              "dst_port": 53,
+              "seq": 1488025594,
+              "ack": 3980907324,
+              "flags": 24,
+              "window": 64,
+              "header_length": 32,
+              "length": 60,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 2639080028,
+                  "tsecr": 4004736669
+                }
+              ]
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 52169,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 58,
+              "message_sha256": "61f6f094cdda735274a757594dab45e6adb74d92e031dd30f0cd94c350d56ce8"
+            }
+          },
+          {
+            "packet": 1255,
+            "timestamp": "1793742051.374367",
+            "mono_lower_ns": "65493825743000",
+            "mono_upper_ns": "65493825744948",
+            "interface": "lo",
+            "packet_type": 0,
+            "src": "addr-12ca17b49af22894",
+            "dst": "addr-12ca17b49af22894",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 37602,
+              "seq": 3980907324,
+              "ack": 1488025654,
+              "flags": 24,
+              "window": 64,
+              "header_length": 32,
+              "length": 93,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 4004736669,
+                  "tsecr": 2639080028
+                }
+              ]
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 52169,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 91,
+              "message_sha256": "a33a2af772b9b4ef0680a9ded5cf77ece98fd8b767bd5cdab8baece427acd8e2"
+            }
+          },
+          {
+            "packet": 1260,
+            "timestamp": "1793742051.374429",
+            "mono_lower_ns": "65493825805000",
+            "mono_upper_ns": "65493825806948",
+            "interface": "fvup0",
+            "packet_type": 0,
+            "src": "addr-0b0ee64a324e66f1",
+            "dst": "addr-5ae8cd8dcbfe2329",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 60208,
+              "seq": 2738517741,
+              "ack": 813286488,
+              "flags": 24,
+              "window": 64,
+              "header_length": 32,
+              "length": 93,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 2832102158,
+                  "tsecr": 3225192837
+                }
+              ]
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 52169,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 91,
+              "message_sha256": "a33a2af772b9b4ef0680a9ded5cf77ece98fd8b767bd5cdab8baece427acd8e2"
+            }
+          },
+          {
+            "packet": 1261,
+            "timestamp": "1793742051.374437",
+            "mono_lower_ns": "65493825813000",
+            "mono_upper_ns": "65493825814948",
+            "interface": "fvmb0",
+            "packet_type": 4,
+            "src": "addr-0b0ee64a324e66f1",
+            "dst": "addr-bcab55f52b47789e",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 60208,
+              "seq": 2738517741,
+              "ack": 813286488,
+              "flags": 24,
+              "window": 64,
+              "header_length": 32,
+              "length": 93,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 2832102158,
+                  "tsecr": 3225192837
+                }
+              ]
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 52169,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 91,
+              "message_sha256": "a33a2af772b9b4ef0680a9ded5cf77ece98fd8b767bd5cdab8baece427acd8e2"
+            }
+          }
+        ],
+        "origin": [],
+        "primary": [
+          {
+            "packet": 230,
+            "timestamp": "1793742051.373880",
+            "mono_lower_ns": "65493825256226",
+            "mono_upper_ns": "65493825257963",
+            "interface": "eth0",
+            "packet_type": 0,
+            "src": "addr-5ae8cd8dcbfe2329",
+            "dst": "addr-0b0ee64a324e66f1",
+            "transport": {
+              "src_port": 60208,
+              "dst_port": 53,
+              "seq": 813286428,
+              "ack": 2738517741,
+              "flags": 24,
+              "window": 63,
+              "header_length": 32,
+              "length": 60,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 3225192837,
+                  "tsecr": 2832102158
+                }
+              ]
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 52169,
+              "response": false,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 0,
+              "authority": 0,
+              "additional": 1,
+              "length": 58,
+              "message_sha256": "61f6f094cdda735274a757594dab45e6adb74d92e031dd30f0cd94c350d56ce8"
+            }
+          },
+          {
+            "packet": 232,
+            "timestamp": "1793742051.374428",
+            "mono_lower_ns": "65493825804226",
+            "mono_upper_ns": "65493825805963",
+            "interface": "eth0",
+            "packet_type": 4,
+            "src": "addr-0b0ee64a324e66f1",
+            "dst": "addr-5ae8cd8dcbfe2329",
+            "transport": {
+              "src_port": 53,
+              "dst_port": 60208,
+              "seq": 2738517741,
+              "ack": 813286488,
+              "flags": 24,
+              "window": 64,
+              "header_length": 32,
+              "length": 93,
+              "options": [
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 2832102158,
+                  "tsecr": 3225192837
+                }
+              ]
+            },
+            "dns": {
+              "fixture_case": "idna_positive",
+              "wire_id": 52169,
+              "response": true,
+              "rcode": 0,
+              "rr_type": 1,
+              "answers": 1,
+              "authority": 1,
+              "additional": 1,
+              "length": 91,
+              "message_sha256": "a33a2af772b9b4ef0680a9ded5cf77ece98fd8b767bd5cdab8baece427acd8e2"
+            }
+          }
+        ],
+        "secondary": []
+      }
+    }
+  },
+  "scope": "Exact DNS-message hashes prove observation at named interfaces, not socket delivery, parsing or cache insertion. Missing TCP messages are not attributed without stream reassembly.",
+  "id": "native-dns-delivery"
+}
