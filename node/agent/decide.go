@@ -651,9 +651,6 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 		}
 		window := timeanchor.Window(in.Lease.IssuedAt, ml.LeaseEnd, ml.EffectiveServiceEnd)
 		window = min(window, nodeWindow)
-		if !b.ValidUntil.IsZero() {
-			window = min(window, b.ValidUntil.Sub(in.Lease.IssuedAt))
-		}
 		deadline, ok := timeanchor.MemberDeadline(in.LeaseMonoSent, window)
 		if !ok {
 			continue
@@ -661,9 +658,13 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 		if timeanchor.Remaining(deadline, in.MonoNow) <= 0 {
 			continue
 		}
-		if deadline < policyExpires {
-			policyExpires = deadline
+		// The watchdog wakes at the first device or member boundary, but a
+		// device limit must never shorten another device's member lease.
+		deviceDeadline := deadline
+		if !b.ValidUntil.IsZero() {
+			deviceDeadline = min(deviceDeadline, in.LeaseMonoSent+b.ValidUntil.Sub(in.Lease.IssuedAt))
 		}
+		policyExpires = min(policyExpires, deviceDeadline)
 		prefs, err := hostPrefixes(b.AllowedIpv4)
 		if err != nil || b.PeerId == "" {
 			return enforce.Model{}, 0, errCapacity
@@ -680,14 +681,10 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 			ValidFrom: b.ValidFrom, ValidUntil: b.ValidUntil,
 		})
 		admitted[b.MemberId] = true
-		if i, exists := leaseIndex[b.MemberId]; exists {
-			// One member lease can cover several devices. Retain the earliest
-			// applicable binding limit, independent of binding iteration order.
-			if deadline < *leases[i].DeadlineMono {
-				leases[i].DeadlineMono = &deadline
-			}
-		} else {
+		if _, exists := leaseIndex[b.MemberId]; !exists {
 			leaseIndex[b.MemberId] = len(leases)
+			// Member limits only. memberTimeout intersects these with each
+			// binding's own ValidUntil using the monotonic-derived model clock.
 			end := in.Lease.IssuedAt.Add(window)
 			leases = append(leases, enforce.MemberLease{
 				MemberID: b.MemberId, EffectiveServiceEnd: end, NodeLeaseEnd: end,
