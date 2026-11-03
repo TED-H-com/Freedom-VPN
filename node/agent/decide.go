@@ -662,7 +662,10 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 		// device limit must never shorten another device's member lease.
 		deviceDeadline := deadline
 		if !b.ValidUntil.IsZero() {
-			deviceDeadline = min(deviceDeadline, in.LeaseMonoSent+b.ValidUntil.Sub(in.Lease.IssuedAt))
+			// Cap before adding the anchor: a distant wall deadline can make
+			// Sub saturate even though the admitted member window is short.
+			deviceWindow := min(window, b.ValidUntil.Sub(in.Lease.IssuedAt))
+			deviceDeadline = in.LeaseMonoSent + deviceWindow
 		}
 		policyExpires = min(policyExpires, deviceDeadline)
 		prefs, err := hostPrefixes(b.AllowedIpv4)
