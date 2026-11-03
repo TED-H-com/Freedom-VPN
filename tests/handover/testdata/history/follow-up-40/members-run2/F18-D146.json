@@ -1,0 +1,432 @@
+{
+  "run_id": "50117c68-d1b3-431d-a2be-cd94d27a2447",
+  "source_commit": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
+  "rows": [
+    {
+      "row": "native dual MTU 1280",
+      "selected_family": "ipv4",
+      "original_transfer_status": "pass",
+      "upload_status": "pass",
+      "evidence_status": "pass",
+      "original_transfer": {
+        "dns_wire_id": 0,
+        "authority_serial": 0,
+        "endpoint": {
+          "at": "2026-11-03T21:52:43.316838476Z",
+          "local_port": 39076,
+          "remote_port": 9446,
+          "read_bytes": 64387,
+          "write_bytes": 64108,
+          "complete_lines": 64,
+          "partial_line_bytes": 0,
+          "error": "none",
+          "tcp_info": {
+            "bytes_acked": 64109,
+            "bytes_received": 64387,
+            "lost": 0,
+            "notsent_bytes": 0,
+            "rcv_mss": 1006,
+            "rcv_space": 12280,
+            "retrans": 0,
+            "rto_us": 201000,
+            "rtt_us": 139,
+            "sacked": 0,
+            "snd_cwnd": 66,
+            "snd_mss": 1148,
+            "snd_wnd": 65536,
+            "state": 1,
+            "total_retrans": 0,
+            "unacked": 0
+          }
+        },
+        "authority_ttl": 0,
+        "has_soa": false,
+        "available": true,
+        "rcode": -1,
+        "types": [],
+        "ttls": [],
+        "address_classes": [],
+        "expected_answer": false,
+        "connected": true,
+        "bytes": 64064,
+        "milliseconds": 1
+      },
+      "qualified": true,
+      "checks": {
+        "complete_captures": true,
+        "no_ptb_any_capture_point": true,
+        "serving_rules_before_new_handshake": true,
+        "both_byte_predicates": true,
+        "selected_family_unchanged_direct": true,
+        "matched_handshake": true,
+        "handshake_after_mtu_and_serving_rules": true,
+        "both_advertisements_clamped": true,
+        "every_reverse_datagram_fits_and_arrives": true
+      },
+      "reasons": [],
+      "endpoint_mss": {
+        "member_syn_sent": [
+          1240
+        ],
+        "origin_syn_received": [
+          1160
+        ],
+        "origin_synack_sent": [
+          1460
+        ],
+        "member_synack_received": [
+          1160
+        ]
+      },
+      "reverse": {
+        "sizes": {
+          "124": {
+            "sent": 9,
+            "arrived": 9,
+            "absent": 0
+          },
+          "1132": {
+            "sent": 64,
+            "arrived": 64,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth0",
+        "receiver_interface": "eth0",
+        "sender_count": 73,
+        "receiver_count": 73,
+        "sender_max_ip_length": 1132,
+        "receiver_max_ip_length": 1132,
+        "ip_families": [
+          4
+        ]
+      },
+      "no_ptb": {
+        "member": {
+          "ipv4_fragmentation_needed": [],
+          "ipv6_packet_too_big": []
+        },
+        "node": {
+          "ipv4_fragmentation_needed": [],
+          "ipv6_packet_too_big": []
+        },
+        "origin": {
+          "ipv4_fragmentation_needed": [],
+          "ipv6_packet_too_big": []
+        }
+      },
+      "input_applied_at": "2026-11-03T21:52:35.947945188Z",
+      "rules_ended_at": "2026-11-03T21:52:43.094199843Z",
+      "bulk_started_at": "2026-11-03T21:52:43.218844692Z",
+      "bulk_ended_at": "2026-11-03T21:52:43.319796618Z",
+      "syn_times": {
+        "member_syn_sent": [
+          "1793742763.315288"
+        ],
+        "origin_syn_received": [
+          "1793742763.315408"
+        ],
+        "origin_synack_sent": [
+          "1793742763.315425"
+        ],
+        "member_synack_received": [
+          "1793742763.315495"
+        ]
+      },
+      "smaller_mss_control": "not exercised: the unchanged bulk fixture has no TCP_MAXSEG input; netlab 34 control stands",
+      "artifact": "history/follow-up-18-captures/50117c68-d1b3-431d-a2be-cd94d27a2447/matrix-dual-1280-d146/analysis.json",
+      "sha256": "d92f2ea376c4427d59be2261a07abf2227e5104b561b4eeb8d7051e560bb2c39",
+      "original_step_index": 45
+    },
+    {
+      "row": "native ipv6 MTU 1280",
+      "selected_family": "ipv6",
+      "original_transfer_status": "pass",
+      "upload_status": "pass",
+      "evidence_status": "pass",
+      "original_transfer": {
+        "dns_wire_id": 0,
+        "authority_serial": 0,
+        "endpoint": {
+          "at": "2026-11-03T21:52:55.927831633Z",
+          "local_port": 33092,
+          "remote_port": 9446,
+          "read_bytes": 64387,
+          "write_bytes": 64108,
+          "complete_lines": 64,
+          "partial_line_bytes": 0,
+          "error": "none",
+          "tcp_info": {
+            "bytes_acked": 64109,
+            "bytes_received": 64387,
+            "lost": 0,
+            "notsent_bytes": 0,
+            "rcv_mss": 1006,
+            "rcv_space": 12280,
+            "retrans": 0,
+            "rto_us": 201000,
+            "rtt_us": 146,
+            "sacked": 0,
+            "snd_cwnd": 66,
+            "snd_mss": 1148,
+            "snd_wnd": 65536,
+            "state": 1,
+            "total_retrans": 0,
+            "unacked": 0
+          }
+        },
+        "authority_ttl": 0,
+        "has_soa": false,
+        "available": true,
+        "rcode": -1,
+        "types": [],
+        "ttls": [],
+        "address_classes": [],
+        "expected_answer": false,
+        "connected": true,
+        "bytes": 64064,
+        "milliseconds": 1
+      },
+      "qualified": true,
+      "checks": {
+        "complete_captures": true,
+        "no_ptb_any_capture_point": true,
+        "serving_rules_before_new_handshake": true,
+        "both_byte_predicates": true,
+        "selected_family_unchanged_direct": true,
+        "matched_handshake": true,
+        "handshake_after_mtu_and_serving_rules": true,
+        "both_advertisements_clamped": true,
+        "every_reverse_datagram_fits_and_arrives": true
+      },
+      "reasons": [],
+      "endpoint_mss": {
+        "member_syn_sent": [
+          1240
+        ],
+        "origin_syn_received": [
+          1160
+        ],
+        "origin_synack_sent": [
+          1460
+        ],
+        "member_synack_received": [
+          1160
+        ]
+      },
+      "reverse": {
+        "sizes": {
+          "144": {
+            "sent": 10,
+            "arrived": 10,
+            "absent": 0
+          },
+          "1152": {
+            "sent": 64,
+            "arrived": 64,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth2",
+        "receiver_interface": "eth1",
+        "sender_count": 74,
+        "receiver_count": 74,
+        "sender_max_ip_length": 1152,
+        "receiver_max_ip_length": 1152,
+        "ip_families": [
+          6
+        ]
+      },
+      "no_ptb": {
+        "member": {
+          "ipv4_fragmentation_needed": [],
+          "ipv6_packet_too_big": []
+        },
+        "node": {
+          "ipv4_fragmentation_needed": [],
+          "ipv6_packet_too_big": []
+        },
+        "origin": {
+          "ipv4_fragmentation_needed": [],
+          "ipv6_packet_too_big": []
+        }
+      },
+      "input_applied_at": "2026-11-03T21:52:48.558159058Z",
+      "rules_ended_at": "2026-11-03T21:52:55.704132501Z",
+      "bulk_started_at": "2026-11-03T21:52:55.830121315Z",
+      "bulk_ended_at": "2026-11-03T21:52:55.930530967Z",
+      "syn_times": {
+        "member_syn_sent": [
+          "1793742775.926073"
+        ],
+        "origin_syn_received": [
+          "1793742775.926197"
+        ],
+        "origin_synack_sent": [
+          "1793742775.926221"
+        ],
+        "member_synack_received": [
+          "1793742775.926296"
+        ]
+      },
+      "smaller_mss_control": "not exercised: the unchanged bulk fixture has no TCP_MAXSEG input; netlab 34 control stands",
+      "artifact": "history/follow-up-18-captures/50117c68-d1b3-431d-a2be-cd94d27a2447/matrix-ipv6-1280-d146/analysis.json",
+      "sha256": "a89c477be1ac667b3cde5277e47059f7a3045a298a0643e13d1f9bd7eeef0502",
+      "original_step_index": 50
+    },
+    {
+      "row": "native ipv4 MTU 1280",
+      "selected_family": "ipv4",
+      "original_transfer_status": "pass",
+      "upload_status": "pass",
+      "evidence_status": "pass",
+      "original_transfer": {
+        "dns_wire_id": 0,
+        "authority_serial": 0,
+        "endpoint": {
+          "at": "2026-11-03T21:53:13.543582769Z",
+          "local_port": 53910,
+          "remote_port": 9446,
+          "read_bytes": 64387,
+          "write_bytes": 64108,
+          "complete_lines": 64,
+          "partial_line_bytes": 0,
+          "error": "none",
+          "tcp_info": {
+            "bytes_acked": 64109,
+            "bytes_received": 64387,
+            "lost": 0,
+            "notsent_bytes": 0,
+            "rcv_mss": 1006,
+            "rcv_space": 12280,
+            "retrans": 0,
+            "rto_us": 201000,
+            "rtt_us": 144,
+            "sacked": 0,
+            "snd_cwnd": 66,
+            "snd_mss": 1148,
+            "snd_wnd": 65536,
+            "state": 1,
+            "total_retrans": 0,
+            "unacked": 0
+          }
+        },
+        "authority_ttl": 0,
+        "has_soa": false,
+        "available": true,
+        "rcode": -1,
+        "types": [],
+        "ttls": [],
+        "address_classes": [],
+        "expected_answer": false,
+        "connected": true,
+        "bytes": 64064,
+        "milliseconds": 1
+      },
+      "qualified": true,
+      "checks": {
+        "complete_captures": true,
+        "no_ptb_any_capture_point": true,
+        "serving_rules_before_new_handshake": true,
+        "both_byte_predicates": true,
+        "selected_family_unchanged_direct": true,
+        "matched_handshake": true,
+        "handshake_after_mtu_and_serving_rules": true,
+        "both_advertisements_clamped": true,
+        "every_reverse_datagram_fits_and_arrives": true
+      },
+      "reasons": [],
+      "endpoint_mss": {
+        "member_syn_sent": [
+          1240
+        ],
+        "origin_syn_received": [
+          1160
+        ],
+        "origin_synack_sent": [
+          1460
+        ],
+        "member_synack_received": [
+          1160
+        ]
+      },
+      "reverse": {
+        "sizes": {
+          "124": {
+            "sent": 8,
+            "arrived": 8,
+            "absent": 0
+          },
+          "1132": {
+            "sent": 64,
+            "arrived": 64,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth0",
+        "receiver_interface": "eth0",
+        "sender_count": 72,
+        "receiver_count": 72,
+        "sender_max_ip_length": 1132,
+        "receiver_max_ip_length": 1132,
+        "ip_families": [
+          4
+        ]
+      },
+      "no_ptb": {
+        "member": {
+          "ipv4_fragmentation_needed": [],
+          "ipv6_packet_too_big": []
+        },
+        "node": {
+          "ipv4_fragmentation_needed": [],
+          "ipv6_packet_too_big": []
+        },
+        "origin": {
+          "ipv4_fragmentation_needed": [],
+          "ipv6_packet_too_big": []
+        }
+      },
+      "input_applied_at": "2026-11-03T21:53:06.172621857Z",
+      "rules_ended_at": "2026-11-03T21:53:13.32488286Z",
+      "bulk_started_at": "2026-11-03T21:53:13.446037138Z",
+      "bulk_ended_at": "2026-11-03T21:53:13.546404997Z",
+      "syn_times": {
+        "member_syn_sent": [
+          "1793742793.542120"
+        ],
+        "origin_syn_received": [
+          "1793742793.542252"
+        ],
+        "origin_synack_sent": [
+          "1793742793.542268"
+        ],
+        "member_synack_received": [
+          "1793742793.542328"
+        ]
+      },
+      "smaller_mss_control": "not exercised: the unchanged bulk fixture has no TCP_MAXSEG input; netlab 34 control stands",
+      "artifact": "history/follow-up-18-captures/50117c68-d1b3-431d-a2be-cd94d27a2447/matrix-ipv4-1280-d146/analysis.json",
+      "sha256": "3cfcf2d256c32aec777037f48266689a10a6dd4d34a4c16f8e4a2f89870f5280",
+      "original_step_index": 58
+    }
+  ],
+  "unexercised_rows": [],
+  "interpretation": "D-146 orchestrator reading: only successful unchanged TCP predicates with complete same-run clamp evidence avoid the D-137 downgrade. No historical status changed.",
+  "remaining_limits": [
+    "receive-only UDP and QUIC without PTB",
+    "MSS control below 1160 not exercised in unchanged native bulk fixture; netlab 34 stands",
+    "clamp at 1280 on relay",
+    "real platforms",
+    "additional encapsulations or IPv6 extension-header budgets",
+    "IPv6 overlay (D-123 IPv6Block)",
+    "physical arm64"
+  ],
+  "historical_analysis": "F18-historical-81b638e8-MSS.json"
+}
