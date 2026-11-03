@@ -1,0 +1,35 @@
+## Summary
+
+Handover follow-up 34: session launched 07:29 EST on 2026-11-03 on #418's roadmap row `cc0ed4ae`, and delivered at 07:42.
+- **Size:** 2 commits, 29 owned files.
+- **Checks:** merge-tree clean on current `main` (`cc0ed4ae`); prepush-scan clean.
+- **Scope:** docs and claims tests only. No container and no reservation; admission and suite waits were 0 s.
+- **The session:** one codex `gpt-6-astra` session.
+
+**The orchestrator's reading.**
+- **The cut:** #416–#418 at `cc0ed4ae` (handover 33, updater 22, netlab 30). No unbriefed PR merged inside the range.
+  - `TestHandover_Followup34Claims` has 14 subtests. It pins three final roadmap rows, ten frozen handover inputs, 312 netlab payload hashes and lengths (including 19 gzip originals), updater 22's two dated documents, three public PR excerpts, 81 findings, 47 decisions and nine owner requests.
+  - **Follow-up 33's claims, kept true:** verified from its actual function and manifests (16 subtests, 512 payload checks with 42 gzip originals). Earlier claims read rewritten files from frozen bytes; their assertions are unchanged.
+- **Updater 22:** recorded as #417 states it.
+  - **F21-01 is fixed in the test fixtures, by its mechanism.** The three short-budget meter fixtures run on a `synctest` bubble clock, with budgets and assertions unchanged, and the parent test detects a deadline renewal deterministically again. No product change.
+  - **Main's CI:** that the fix covers runs 41616194943, 41620760976 and 41625190790 is attributed to the PR; none was re-run.
+  - **The re-measurement:** the quiet leg qualified at 200/0; both load legs were unqualified. F27-02's fixed-test reading stays **undecided**. Updater 21's verdict and netlab 27's F27-02 stay failed.
+- **Netlab 30:**
+  - **The collector passed live,** on its second slot.
+  - **F27-01's guard-drop mechanism is demonstrated.** In AT10's 100-reload window, each of the seven missing node TCP egresses matched exactly one `fv_deadline_guard` drop inside its generation's install bracket. TCP recovered every time; the worst read was 416.7 ms.
+  - **Still open:** B1 stays FAIL and unexplained, and neither live run is host-qualified. The hitless hand-over is netlab 31's design only.
+- **Entrypoints:** all seven point at follow-up 34.
+  - **Reloads:** the operator guide now says that in-flight member TCP segments can be dropped while a ruleset generation installs, and that TCP recovers by retransmission. It promises no bound.
+  - **Still open:** F30-01 stays known behaviour, and r20 H-1's gap stays open on `main`.
+- **Registers:** 81 findings, with only F21-01, F27-02 and F27-01 updated. 47 decisions, nothing after D-144. Nine owner requests are carried. No scheduled-run result is claimed.
+
+**Its new request, answered: #417's control count.**
+- **The correct count is 15.** The retained pre-fix control log fails exactly 15 cases, all with `meter_checkpoint_timeout`, and they are the 15 that the dated document's §3 table and its timing JSON enumerate:
+  - the parent test's `replaced`;
+  - four `FailsClosedWithoutCorrelation` scenarios;
+  - ten `TestD125_Rule*` tests.
+- **Where 16 came from:** the lane's report counted eleven `TestD125_Rule*` tests. #417's row and PR body copied that sum.
+- **26 has a different unit:** it counts test and subtest results. That is 24 cases plus the two parent tests, and all 26 pass after the fix.
+- **Roadmap rows stay final.** The correction is published additively, in updater 23's roadmap row and PR. Handover 35 records it.
+
+**After this cut** (follow-up 35's): this PR and every PR that merges after it, including updater 23, netlab 31, and agent-core 37–39 with review r23.

@@ -1,0 +1,42 @@
+## Summary
+
+Updater follow-up 23: launched 07:05 EST on 2026-11-03 on #417's roadmap row `f50050f3`, and delivered at 07:40.
+- **Two sessions:**
+  - agy `claude-opus-5-5-high` ran 07:05–07:30. It committed the declaration, ran the input checks and both reservations, diagnosed F23-01, ran its controls and parked the fix. Then its model quota ran out (HTTP 429), before it wrote its report.
+  - codex `gpt-6-astra` ran 07:31–07:40 and completed the follow-up from the retained records. It took no reservation and ran no measured leg.
+- **Size:** 3 commits, 3 owned files:
+  - `node/updater/review_d053_test.go`: +10/−1 ignoring whitespace; the rest is re-indentation into the bubble.
+  - the dated doc `docs/updates/node-followup23-2026-11-03.md`;
+  - its timing JSON.
+- **Checks:** merge-tree clean on current `main`; prepush-scan clean.
+- **Scope:** test fixtures and measurement only. No product source changed, and follow-up 20's to 22's docs and JSON are untouched.
+- **Commit order:**
+  - `f770117d`, the declaration, committed before any measured run;
+  - `159329d9`, the F23-01 fix, with its control results in the commit body;
+  - `f011dbfe`, the completed record.
+
+**The orchestrator's reading.**
+- **The load leg was declared first.** The end rule was committed in `f770117d`, before any measured run: the leg ends when the measured test process exits, and foreign CPU after that is recorded only.
+  - **The tree check:** both meter fixture files were byte-identical to updater 22's tip `5eea3f02` before both reservations and after reservation 2.
+- **Reservation 1 is unqualified.** A non-lane `python3` process pushed foreign CPU to 0.996 cores at 10 s, so the leg was stopped at 20/0. It was not retried in that reservation.
+- **Reservation 2 qualified at 50/0.** It was taken 13 min 17 s after the first was released.
+  - **Before it:** the first host-quiet check failed at 0.848 cores, from jobs outside this project. The session waited for them with bounded checks and did not touch them. The next check passed at 0.114 cores.
+  - **During and after:** foreign CPU stayed at or below 0.105 cores until the measured process exited at 23.4 s, and at or below 0.385 cores in the 30 s after. No other lane's suite was seen.
+- **F27-02's fixture-defect reading for the fixed test HOLDS.** This leg is pooled with updater 22's qualified quiet leg (200/0), as D-138 allows. The deterministic budget was exact before and after the window, and in all 352 logged parent `Recover` calls.
+  - **History stays:** updater 21's verdict stays failed, updater 22's stays undecided, and netlab 27's F27-02 run stays failed. Every unqualified run is kept.
+- **Item 2, judged before fixing (D-141): F23-01 is a fixture defect, and it is fixed.**
+  - **The one window that depends on the runner:** `TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires`. The test's own first read and clock calls must finish inside its 80 ms real-clock window, before the scripted rewrite to `passed`.
+  - **Its control:** a 250 ms blocking stall in the test's clock fails it before the fix (`got tunnel_probe="failed", want "passed"`) and passes after.
+  - **The fix:** the test runs on a `synctest` bubble clock, with its 80 ms window, poll interval, TTL and assertion unchanged.
+  - **The fix keeps the test strict:** a mutation that stops polling at the first attestation, the regression this test guards, fails both before and after.
+  - **The other windows:** `useAttest`'s 40 ms window and the 20–30 ms review windows cannot change their results. The scripted agent answers before the window opens, and the TTL runs on the test's fixed clock. A stall control across the whole package passes all 176 tests, with 88 stalls in 28 tests and subtests.
+  - **Recorded, not changed:** the 30 s and longer windows, and `node/internal/updatejournal`'s 1 s snapshot guard (outside `node/updater`).
+- **The completion session agrees with the first.** It recomputed qualification from the raw intervals and reran every control after admission; every outcome matches. That was its only work: no measurement was repeated.
+- **Erratum to #417's control count.** #417's roadmap row and PR said 16 timing-dependent cases failed before the fix; the lane's report had counted eleven `TestD125_Rule*` tests.
+  - **The correct count is 15**, all failing with `meter_checkpoint_timeout`. The retained control log, the dated document's §3 table and the timing JSON all agree:
+    - the parent test's `replaced`;
+    - four `FailsClosedWithoutCorrelation` scenarios;
+    - ten `TestD125_Rule*` tests.
+  - **26 has a different unit:** it counts test and subtest results, 24 cases plus the two parent tests. All 26 pass after the fix.
+  - #417's row stays as merged; this row and this PR carry the correction. Handover 34 asked for it, and handover 35 records it.
+- **Requests:** none.

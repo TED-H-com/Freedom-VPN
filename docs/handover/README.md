@@ -107,12 +107,12 @@ is frozen at #418, with its 81 findings and nine owner requests.
 
 ## Follow-up 34 decisions register (2026-11-03 EST)
 
-Verified against main **cc0ed4ae713f6c8242171f923bdc799a0c07a74c**, through
-**#418**, covering **#416–#418**. [Evidence cut](follow-up-34.md) and
-[acceptance snapshot](../ops/README.md#follow-up-34-acceptance-snapshot-2026-11-03-est).
-`TestHandover_Followup34Claims` pins three final rows, ten frozen handover
-inputs, 312 netlab payloads and two dated updater documents under
-D-098 / D-109 / D-132. Living AT roots remain excluded.
+Verified against main **dff6bdb0ddcf6dfd8392a8db364c0120783a48f3**, through
+**#421**, covering **#419–#421**. [Evidence cut](follow-up-35.md) and
+[acceptance snapshot](../ops/README.md#follow-up-35-acceptance-snapshot-2026-11-03-est).
+`TestHandover_Followup35Claims` pins three final rows, ten frozen handover
+inputs, two dated updater documents, the exact r23 archive and all six netlab
+31 design files under D-098 / D-109 / D-132. Living AT roots remain excluded.
 **No decision was added after D-144 on main.** All 47 decision rows are unchanged.
 **D-135, D-136, D-137, D-138, D-140, D-141, D-142 and D-144 stay provisional.
 D-143 is Ted's decision.** F30-01 remains known behaviour, no merged fix.
@@ -200,9 +200,11 @@ the SQL shortcut stays labelled.
 
 <a id="findings-register-at-the-follow-up-30-cutoff"></a>
 
-## Findings register at the follow-up 34 cutoff
+<a id="findings-register-at-the-follow-up-34-cutoff"></a>
 
-| Finding | Status at #418 | Evidence / next owner |
+## Findings register at the follow-up 35 cutoff
+
+| Finding | Status at #421 | Evidence / next owner |
 |---|---|---|
 | ENR-07 | CLOSED | D-130 #330/#331 plus enrollment #333: AT06 662/0/0, AT07 48/0/0, fresh gap ACK 1 then sequence 2 ACK 2, 908 bytes; planBaseline attribution corrected. |
 | Members F9-01 | CLOSED | #325 / #328 under D-126 / D-128; deliberate cumulative report accepted. Full AT09 fails in #348; provisional acceptance is a separate row. |
@@ -270,8 +272,8 @@ the SQL shortcut stays labelled.
 | r21 M-1 | ROUTED — not yet judged; agent-core 38 | Review reports false mapping-conflict gap on first traffic after rebinding Apply. Proof on review branch only. |
 | r21 M-2 | ROUTED — not yet judged; agent-core 38 | Review reports uncanceled upload, recovery latch, stacked boot budgets and exit 0 on canceled boot failure. Proofs on review branch only. |
 | r21 L-1 | ROUTED — not yet judged; agent-core 38 | Review reports orphan memberPathPending after refused adoption. Proof on review branch only. |
-| Netlab F27-01 / B1 | UNRESOLVED — #418 guard-drop mechanism demonstrated; B1 stays FAIL | Seven missing node egresses match exactly one fv_deadline_guard drop each, inside install-command brackets (1002, 1018, 1019, 1041, 1069, 1070, 1093). All 381 segments correlate; 118 reads recovered, worst 416.7 ms. B1’s 1,501.4 ms failure has no packet trace and stays unexplained. Collector prerequisite passed live; guard window and full suite host-unqualified despite passing functional assertions. No fix; netlab 31 designs a hitless hand-over only. |
-| Netlab F27-02 | FIXED-TEST READING UNDECIDED — updater 22, #417; original reading supported, not closed | F21-01 fixed by its fixture mechanism. Quiet leg qualified 200/0; both load reservations unqualified (33/0, 50/0), stopped by non-lane foreign CPU. Budget exact in 283 iterations. Updater 21’s verdict stays failed; netlab 27’s F27-02 stays failed, updater 20’s four runs stay unqualified. Updater 23 runs the missing bounded-load leg with its end declared at measured-process exit; no old leg requalified. |
+| Netlab F27-01 / B1 | UNRESOLVED — #421 design delivered; owner trade open; B1 stays FAIL | #418 demonstrated seven deadline-guard drops inside install brackets; B1’s 1,501.4 ms failure stays unexplained without its packet trace, both live runs host-unqualified. #421 recommends C1 retained-deadline intersection for design review only: G5/G6 all-member closure versus unchanged old-deadline continuation, with G4/G8 difference. No fix; production keeps the current guard, no hitless hand-over implemented. r24 reviews first; implementation waits for the owner. |
+| Netlab F27-02 | FIXED — fixture defect, #417; fixed-test reading HOLDS by #420 | F21-01’s mechanism: test setup consumed the persisted wall-clock budget, fixed by synctest. Updater 23 predeclared process-exit end rule: r1 20/0 unqualified at 0.996 foreign cores; r2 50/0 qualified (0.105 before exit, 0.385 after), pooled with updater 22’s quiet 200/0; all 352 logged parent Recover calls have exact budgets. Updater 21’s failed verdict, updater 22’s undecided verdict and netlab 27’s failed run stay recorded; every unqualified leg stays unqualified. |
 | Devstack F30-01 | OPEN — reported production defect; agent-core / updater | #406 lease-expiry remains blocked. Known behavior and its limits are stated once in [node update execution](operator-guide.md#f30-01); no fix date or operator procedure promised. |
 | Isolation F17-01 | ACCEPTANCE-COVERAGE GAP — agent-core / wire-nodes | #404 pure stale_generation not exercised: current agent and central classification cannot produce that report without rewriting one. Routed, not yet judged by owners; not classified as a defect. |
 | Isolation 17 D-140 sample | FIRST QUALIFIED PASS — #404 | 0ec14b39, one run/no retry, 2.4 ms from 103 calibration packets; D-142 from packet 166, zero overlaps anywhere; byte-identical EvaluateDeadline passes. Isolation 15/16 and F14-01 stay failed; fresh D-104 26/7 does not close original F16-01. |
@@ -279,24 +281,33 @@ the SQL shortcut stays labelled.
 | Netlab F28-01 | CLOSED — test-isolation defect, netlab 29 #415 | Reproduced +97 upload bytes (15,533 → 15,630): AT10's old admitted TCP flow, 57-byte retransmitted request + 40-byte RST, matched at all four capture points strictly between reads. FIN-WAIT-1 survives node conntrack flush. AT12 destroys/verifies old sockets before probes and baseline; assertion byte-identical, both corrected full suites found old sockets and counted zero deny bytes. Not refused-packet billing. Follow-up 28 gate 2 stays FAIL; original packets not captured. |
 | Devstack F31-01 | ROUTED — not yet judged; agent-core, design first | #412 finds no live source-address verification behind bindingOK, with source_binding coupled to qos / lease. No hook, zero stack attempts; separate source-address populated-hold row not exercised. Genuine independent verification and reporting required before a devstack hook; no claim that packet-level source isolation is absent. |
 | Members 17 D-067 / AT09 | FAIL — #410; no closure | 81b638e8 on #406, no retry: D-067 provisional predicate and combined same-generation restart fail; serving readiness 6.01 s, counted recovery 12.70 s at generation 63. Receive-only dual-MTU blocked. AT09's 401 did not recur after fresh OIDC; follow-up 16 cause unknown. |
-| Updater F21-01 | FIXED — test fixtures only, updater 22 #417 | Persisted wall-clock deadline began at the block; test setup could consume it before the engine’s first read. Parent, FailsClosedWithoutCorrelation and correlatedApply now use synctest; budgets and assertions unchanged, remaining-budget guard and bubble bound detect renewal deterministically. PR reports controls 16 failing before / all 26 passing after; JSON lists 15 failure labels (count clarification requested). No product change. |
+| Updater F21-01 | FIXED — test fixtures only, updater 22 #417 | Persisted wall-clock deadline began at the block; test setup could consume it before the engine’s first read. Parent, FailsClosedWithoutCorrelation and correlatedApply now use synctest; budgets and assertions unchanged, remaining-budget guard and bubble bound detect renewal deterministically. #420 corrects #417’s count to 15 failing cases: replaced, four correlation scenarios, ten Rule tests. 26 counts test/subtest results (24 cases plus two parents); #417’s row stays final. No product change. |
 | r22 H-1 | RETURNED — not yet judged; agent-core 39 before merge | Review reports unsettled generation transitions and failed handoff FinalSample allowing rebinding Apply to misattribute bytes. Proof branch ef78b9b7; none confirmed or adopted on main. |
 | r22 H-2 | RETURNED — not yet judged; agent-core 39 before merge | Review reports captureRestartBindings turning single-binding traffic into false mapping-conflict gaps across five crash windows. Proof branch only; none confirmed. |
 | r22 M-1 | RETURNED — not yet judged; agent-core 39 before merge | Review reports usageOnce wedging retained settlement after a transient Boot meter-open failure. Proof branch only; none confirmed. |
 | r22 M-2 | RETURNED — not yet judged; agent-core 39 before merge | Review reports late-aborted adoption bypassing PreserveClosedEpoch and contaminating the epoch baseline. Proof branch only; none confirmed. |
 | r22 M-3 | RETURNED — not yet judged; agent-core 39 before merge | Review reports failed/timed-out Boot leaving untruthful heartbeats and probe_clear failure consuming the challenge nonce. Proof branch only; none confirmed. |
 
-Every historical failure stays failed. Every other follow-up 33 finding row is unchanged.
-The register retains 81 rows. Only F21-01, F27-02 and F27-01 / B1 changed;
-r22's five findings remain returned to agent-core 39, none confirmed on main.
-Agent-core 39 carries 37/38 and is held for r23 before merge. Its judgments
-are outside this cut; r20 H-1, M-1, M-2, M-3 and L-1 and r21's five findings
-stay open on main. Their older routing labels above remain historical.
+| Updater F23-01 | FIXED — fixture defect, updater 23 #420 | TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires depended on its own work finishing in 80 ms real time. A 250 ms clock stall fails before / passes after the synctest bubble-clock fix; window, poll interval, TTL and assertion unchanged. First-attestation mutation still fails; package stall control passes all 176 tests. No product change. |
+| r23 H-1 | RETURNED — not yet judged; agent-core 40 before merge | Review reports usage_apply_intent left on a superseded epoch, dropping active bindings or creating false mapping_conflict gaps on restart. Proof branch 26ffc36c; none confirmed or adopted on main. |
+| r23 H-2 | RETURNED — not yet judged; agent-core 40 before merge | Review reports interrupted handoff resetting finalDone after epoch closure, skipping PrepareSampling and failing next admission. Proof branch only; none confirmed. |
+| r23 H-3 | RETURNED — not yet judged; agent-core 40 before merge | Review reports pre-Apply handoff failures leaving serving and decision inconsistent, with contradictory observations and dash heartbeats. Proof branch only; none confirmed. |
+| r23 M-1 | RETURNED — not yet judged; agent-core 40 before merge | Review reports withdraw’s second baseline succeeding with an unsettled open epoch and retainedPending false. Proof branch only; none confirmed. |
+| r23 L-1 | RETURNED — not yet judged; agent-core 40 before merge | Review reports inaccurate documentation of checkpoint invalidation ordering. Archive supplies a code trace; no named L-1 proof test in 26ffc36c, clarification requested. None confirmed. |
+
+Every historical failure stays failed. Every other follow-up 34 finding row is unchanged.
+The register has 87 rows: F27-02, F21-01 and F27-01 / B1 updated; F23-01 and
+r23's five added. r22's five stay as follow-up 33 recorded them, none confirmed
+on main. Agent-core 37–39 remain held for the combined merge with 40 after
+its judgments and fixes; r20's five agent-core findings and r21's five remain
+open on main. Their older routing labels above remain historical.
 F30-01 remains known behaviour, no merged fix.
-Nine owner requests remain: D-135 + D-136 confirmation, D-137 hardening,
-D-138 / D-140 / D-141 overturn options, F11-01 repair direction and upstream
-report, RELATED ICMP, and D-142 / D-144 overturn options. AT11 / AT13 operator
-rows, AT29 / AT31 resources, physical arm64, power loss and QUIC remain open.
-Main records no scheduled-run result. No later lane's result enters this #418
-cut. See [the full current evidence and dated requests](follow-up-34.md),
-including the updater control-count clarification outside owned paths.
+Ten owner requests: the previous nine (D-135 + D-136 confirmation, D-137
+hardening, D-138 / D-140 / D-141 overturn options, F11-01 repair direction and
+upstream report, RELATED ICMP, D-142 / D-144 overturn options) plus netlab 31's
+G5/G6 all-member closure versus immutable old-deadline continuation question.
+AT11 / AT13 operator rows, AT29 / AT31 resources, physical arm64, power loss
+and QUIC remain open. Main records no scheduled-run result. Review r24 was
+delivered after the cutoff; its results are excluded. See the
+[full evidence and dated requests](follow-up-35.md), including r23's proof-class
+clarification. #419's control-count request is answered by #420.
