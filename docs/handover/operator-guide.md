@@ -1,7 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 29](follow-up-29.md) (2026-11-01 EST):** Through #396: same-boot deny-set adoption gap open; isolation 15 unqualified on a 3.821 µs interleave, signal-15 cause unproven. Devstack 27 proves the TEST ONLY populated hold; consumer rows remain open. D-120 measurement end fixed; every failed run stays failed. D-135–D-138, D-140 and D-141 remain provisional. Seven owner decisions retained.
-**Previous cut — [follow-up 28](follow-up-28.md):** #386–#390 at aae6763f; 19 subtests, five rows, 16 snapshots, 1,644 checks and 47 findings. Historical failures stay failed.
+**Current cut — [follow-up 30](follow-up-30.md) (2026-11-03 EST):** Through #403: agent-core 36 refuses same-boot adoption on changed deny / host sets; r20's 2 High / 3 Medium / 1 Low are routed, not yet judged, and the live-drift verifier check stays open with netlab 27. Isolation 16 unqualified on a 3.609 µs overlap; F16-01's fixture disposition merged, its run stays failed. Members 16: AT02 / AT09 fail. The nightly billing failure was a missing runner browser; no scheduled-run result is claimed. D-142–D-144 registered. Nine owner decisions.
+**Previous cut — [follow-up 29](follow-up-29.md):** #391–#396 at d640ce96; 22 subtests, six rows, eight snapshots, 731 checks and 51 findings. Historical failures stay failed.
 
 ## Operator changes at #369
 
@@ -334,16 +334,26 @@ Portal pointers: `/admin/groups` lists and creates member groups; `/admin/nodes/
 
 ### 3.2 Updating Node Region, Member Groups, or Capacity (`PATCH /api/v1/admin/nodes/{node_id}`)
 
-**2026-11-01 — Known local configuration behaviour at #396.** After a restart
-with changed `extra_denied_v4` or `host_v4`, same-boot adoption can keep the node
-serving on the previously installed `denied_v4` / `host_v4` until its first
-successful Apply. A larger deny set can therefore leave the old, smaller set
-in force. A busy node lock or control timeout can delay Apply; the verifier
-does not read these sets' elements. SIGHUP does not reload these fields.
-The [agent-core 35 dated hand-off](../node/followup35-diagnostic-and-restart-2026-11-01.md)
-provides no safe procedure and no maximum adoption-to-Apply delay. The fix is
-routed to agent-core 36 (refuse adoption on changed sets), then netlab 26
-(verifier content check); it is open at this cutoff. No workaround is promised.
+**2026-11-03 — Restart with changed deny / host sets, at #403.** With
+agent-core 36 (#401) on main, a restart on the same boot with a changed
+`denied_v4`, `extra_denied_v4` or `host_v4` no longer adopts the previously
+installed sets. Any growth, shrink or replacement refuses same-boot adoption:
+the node takes its baseline, with member forwarding closed, and serves members
+again only after its first full Apply, which installs the configured sets. A
+busy node lock or a control timeout can delay that Apply; the node keeps the
+baseline meanwhile, never the old sets, and no maximum delay is stated.
+Unchanged sets, reordered or duplicated, still adopt. SIGHUP still does not
+reload these fields. See the
+[agent-core 36 dated hand-off](../node/followup36-restart-and-signals-2026-11-01.md).
+Still open: sets changed underneath a running agent (live drift) are not
+detected, because the verifier does not read these sets' elements; that check
+is routed to netlab 27, and no workaround is promised.
+
+**Known behaviour at #403 (r20 H-1, reported and routed, not yet judged).**
+After such a restart, the bytes counted since the last sample before it can be
+recorded as an unattributed `mapping conflict` usage gap instead of member
+usage. See the [archived r20 review](../reviews/r20-adoption-signal-review.md).
+The finding is routed to agent-core 37; no fix date is promised.
 
 First fetch the node (`GET /api/v1/admin/nodes/{node_id}`) and capture the response `ETag` header (`"<resource_version>"`). Supply `If-Match` and `Idempotency-Key` (`428 Precondition Required` if `If-Match` is missing; `412 Precondition Failed` if stale):
 

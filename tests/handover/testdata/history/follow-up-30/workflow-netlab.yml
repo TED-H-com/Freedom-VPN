@@ -1,0 +1,25 @@
+name: netlab
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  netlab:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27.3"
+      - name: short network lab
+        env:
+          FVPN_LAB_PREFIX: fvpn-netlab
+          GOTOOLCHAIN: local
+          CGO_ENABLED: "0"
+        run: make -f mk/netlab.mk netlab-test

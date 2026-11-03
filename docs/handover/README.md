@@ -79,19 +79,24 @@ The [follow-up 27 register](../../tests/handover/testdata/history/follow-up-28/r
 
 The [follow-up 28 register](../../tests/handover/testdata/history/follow-up-29/register28.md) is frozen at #390.
 
-## Follow-up 29 decisions register (2026-11-01 EST)
+<a id="follow-up-29-decisions-register-2026-11-01-est"></a>
 
-Verified against main **d640ce96** through **#396**, covering **#391–#396**.
-[Evidence cut](follow-up-29.md) and
-[acceptance snapshot](../ops/README.md#follow-up-29-acceptance-snapshot-2026-11-01-est).
-`TestHandover_Followup29Claims` pins six final roadmap rows, eight historical
-handover snapshots and 731 archive and run files under D-098 / D-109 / D-132.
-**No new decision since D-141. D-135, D-136, D-137, D-138, D-140 and D-141 stay
-provisional.** No decision row changed. D-141 keeps option (c) in production.
-F11-01's repair direction and upstream report now include devstack 27's `::1`
-evidence. RELATED ICMP remains an open owner question. The operator guide's
-node configuration section records the open same-boot adoption gap; the dated
-hand-off provides no safe procedure. No acceptance predicate changes.
+The [follow-up 29 register](../../tests/handover/testdata/history/follow-up-30/register29.md) is frozen at #396.
+
+## Follow-up 30 decisions register (2026-11-03 EST)
+
+Verified against main **b9439411** through **#403**, covering **#397–#403**.
+[Evidence cut](follow-up-30.md) and
+[acceptance snapshot](../ops/README.md#follow-up-30-acceptance-snapshot-2026-11-03-est).
+`TestHandover_Followup30Claims` pins seven final roadmap rows, ten frozen
+handover snapshots and 449 archive and run files under D-098 / D-109 / D-132.
+No decision was added after D-141 on main before this cut; **this cut registers
+D-142, D-143 and D-144.** Every earlier decision row is unchanged.
+**D-135, D-136, D-137, D-138, D-140, D-141, D-142 and D-144 stay provisional.
+D-143 is Ted's decision.** D-141 keeps option (c) in production. The operator
+guide's node configuration section now describes agent-core 36's refused
+adoption, the open live-drift check and r20 H-1 as known behaviour. No
+acceptance predicate changes.
 
 | Decision | Operator meaning and delivery boundary |
 |---|---|
@@ -139,6 +144,9 @@ hand-off provides no safe procedure. No acceptance predicate changes.
 | D-139 | **06:00 EST, 2026-11-01, orchestrator — provisional design track, now closed by D-141.** Agent-core 33 delivered the option (b) design and test-only reference (#379); r19 reviewed it. The one representation decision is D-141: no implementation on this evidence; option (c) stays in production. The design and reference remain on main as history. |
 | D-140 | **07:42 EST, 2026-11-01, orchestrator — provisional.** Isolation’s whole-node D-104 predicate in tests/e2e/at/isolation/deadline_trace.go stays byte-identical. Only the boundary probe schedule may change: dense probes timed by measured member-send → node-ingress latency around D−101 ms, with the schedule and latencies recorded. A closure interval that still straddles D−101 ms stays failed. Run 56d20530 stays failed; no retry waiver. Isolation F14-01 → isolation 15. Owner overturn option remains; no operator procedure changes. |
 | D-141 | **07:5x EST, 2026-11-01, orchestrator — provisional**, the one D-139 representation decision taken on r19. Option (b) intersection serving is not implemented on this evidence; option (c) stays in production. Agent-core 33’s design note and test-only reference stay on main as history. Grounds: 0 / 80 merged restrictive changes qualify; conservative promotion baseline is the same order as today’s baseline-to-Apply (173.8 / 195.6 ms p50 / p99); missing signed intersection witness, v2 heartbeat, partial-service cause, baseline-on-422 and nft-only revocation transaction. Reconsideration needs a desired-state intersection witness, a measured qualifying share above zero whose promotion costs less than (c), and r19’s design-only findings closed. AT02’s sibling outage on a restrictive generation change rests on the owner’s D-135 / D-136 confirmation or a requirement change. D-139 closed. Owner overturn option remains; no operator procedure changes. |
+| D-142 | **12:5x EST, 2026-11-01, orchestrator — provisional**; isolation 16's request 3. D-140's no-interleaving qualification applies to every adjacent probe pair from the earlier of the last positive and the first drop through the end of the sweep. There, no probe's ingress→egress transit may overlap the next probe's ingress. An overlap between two positives that both come before that point is recorded with both latencies, and does not disqualify. Unchanged: the predicate (tests/e2e/at/isolation/deadline_trace.go, byte-identical), D-140's schedule rule, a closure interval that still straddles D−101 ms stays failed, and no retry. The schedule and the qualification scope are declared before the run. Isolation 15's and 16's samples stay failed qualification, as judged. Next sample: isolation 17. Owner overturn option remains. |
+| D-143 | **23:1x EST, 2026-11-02, Ted.** Coding and review lanes are shared by codex `gpt-6-astra`, agy `claude-opus-5-5-high` and agy `gemini-4-argon-high`. Supersedes D-086's codex-only routing. Every commit's `Agent:` trailer names the session's tool and model. Process decision; no product value or operator procedure changes. |
+| D-144 | **00:25 EST, 2026-11-03, orchestrator — provisional**; the nightly signal, from devstack 29's request 1. A scheduled job fails on any fail, any error or traceback, and any blocked row that is not on the job's committed expected-blocked list. Each list entry names the row, the reason and the owner; a row is listed only once its block is established as expected on GitHub's runner. Listed blocked rows keep the job green; the job summary and the uploaded records name them. A listed row that passes is reported as unblocked, to be removed from the list. Unchanged: acceptance status (the rows stay blocked in records, RUN.md files and roadmap rows), and pull-request and local runs. Why: an always-red nightly hid devstack's real billing failures for four nights. No list is on main at #403; devstack 30 (e2e stack) and isolation 17 (at-isolation accept) apply it. Owner overturn option remains. |
 
 Current contract is revision 14: OpenAPI `1.10.0`, `50` operations (#289).
 Wire-members follow-up 11 (#297) registers `revokeMemberGrant` at
@@ -168,9 +176,11 @@ the SQL shortcut stays labelled.
 
 <a id="findings-register-at-the-follow-up-28-cutoff"></a>
 
-## Findings register at the follow-up 29 cutoff
+<a id="findings-register-at-the-follow-up-29-cutoff"></a>
 
-| Finding | Status at #396 | Evidence / next owner |
+## Findings register at the follow-up 30 cutoff
+
+| Finding | Status at #403 | Evidence / next owner |
 |---|---|---|
 | ENR-07 | CLOSED | D-130 #330/#331 plus enrollment #333: AT06 662/0/0, AT07 48/0/0, fresh gap ACK 1 then sequence 2 ACK 2, 908 bytes; planBaseline attribution corrected. |
 | Members F9-01 | CLOSED | #325 / #328 under D-126 / D-128; deliberate cumulative report accepted. Full AT09 fails in #348; provisional acceptance is a separate row. |
@@ -211,7 +221,7 @@ the SQL shortcut stays labelled.
 | r18 L-2 | FIXED — #376 | D-133 candidate rule fails a leg on any higher or missing member/node ceiling in either direction. |
 | Members F14-01 | OPEN — new #375 | First D-077 re-grant forwarding attempt failed after valid readiness; cause unproven. Routed to devstack 26. |
 | Harness stop-path gap | FIXED — TEST ONLY, #386; adoption #390 | Supervisor waits the shipped 15 s after TERM, PID1 forwards TERM / INT, compose grace 25 s. Parent receipt distinguishes agent outcome from container exit. Updates adopts this support. Historical SIGKILL / exit-137 and missing first-exit observations remain unchanged. |
-| Isolation F14-01 | FAIL — #383, unchanged historical run 56d20530 | Distinct from members F14-01. AT13 5 / 1 / 1: last positive D−162.220 ms; packet 161 scheduled D−101 ms arrived D−97.638 ms and dropped. Closure (D−162.2, D−97.6] ms straddles D−101 ms, undecided and failed; no retry waiver. #392 is a separate unqualified sample; next D-140 sample belongs to isolation 16. |
+| Isolation F14-01 | FAIL — #383, unchanged historical run 56d20530 | Distinct from members F14-01. AT13 5 / 1 / 1: last positive D−162.220 ms; packet 161 scheduled D−101 ms arrived D−97.638 ms and dropped. Closure (D−162.2, D−97.6] ms straddles D−101 ms, undecided and failed; no retry waiver. #392 and #399 are separate unqualified samples; the next D-140 sample is isolation 17's, under D-142. |
 | Members 15 serving-node signature | OPEN — #385; cause unproven | AT01 first selection at generation 5: five member SYNs, zero node or origin packets. AT02: 249 absent ingresses, sequences 1108–1356, 5.0975 s gap, zero capture drops. Together with members F14-01 these are three serving-ready missing-ingress samples. #394 reproduced neither five-SYN failure nor five-second gap; 183 ingress-without-origin losses remain counted. Historical files are byte-identical and members’ rows unchanged; ::1 anomalies establish no common cause. |
 | r19 H-1 | FIXED — #389 | Current denied, host or resolver download sources drop before generic established / related accepts; exact designated-resolver TCP / UDP source-port-53 replies stay ahead. ctdenyd is diagnostic_v1, never usage; exact guards verified on member, serving-probe and baseline-probe paths. |
 | r19 M-2 | FIXED — #388; production-reachable | A due renewal signs h while busy Apply retains g; ACK g carried h’s live refs. Minimal applied snapshot is committed atomically with the ACK; refs reported only when matching the applied generation, including restart; unknown legacy refs stay null. |
@@ -219,19 +229,31 @@ the SQL shortcut stays labelled.
 | r19 design-only | D-141 RECONSIDERATION CONDITIONS | H-2, M-1, M-3–M-8, L-1, L-3 and L-4. Design-only findings must close before reconsidering option (b); no implementation or fix claimed. |
 | Netlab D-120 missing successor | MEASUREMENT END FIXED — #396; failed runs retained | Stream closes after the final guard bracket, at most one lost-tail successor cycle, 15 s parent watchdog fails incomplete evidence. classify_d120 and tests byte-identical. A2, earlier branch attempt and gate2-replay stay failed; replay generation 1087 / sequence 57 still reports (iii): next datagram missing. One quiet-host run: 100 reloads, 101 verified Applies, zero UDP losses / TCP timeouts / extra cycles; lost-tail extension proven offline only. |
 | RELATED ICMP outer source | OPEN OWNER QUESTION — #389 | SpecDeniedV4 includes 10/8, 172.16/12, 192.168/16 and 100.64/10. Fragmentation-needed or time-exceeded errors from a denied outer source drop even when the quoted connection is allowed; no exception. Traceroute has no reply from those hops. Not a defect, not decided, no fix promised. |
-| Agent-core 35 same-boot adoption | OPEN — production-reachable, #393 | Restart with larger extra_denied_v4 / host_v4 can serve on old smaller denied_v4 / host_v4 until first successful Apply; busy lock or control timeout can delay it. Verifier never reads either set’s elements. TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth/same_boot_adoption pins gap and first Apply render. Routed agent-core 36 refusal, then netlab 26 content check; open at #396. |
-| Agent-core 35 live set drift | UNCONFIRMED — verifier blind spot | A set changed live under a serving agent may go undetected. No confirmed live-drift or traffic result; netlab 26 is proving the reading. |
-| Isolation 15 D-140 sample | UNQUALIFIED — failed qualification, #392 | Run 0b9e4510: unchanged EvaluateDeadline passes, last positive D−98.630 ms, first drop D−97.598 ms. Packet 171 egress follows packet 172 ingress by 3.821 µs once; whole-node row stays unqualified. Historical isolation F14-01 stays failed; next sample isolation 16. |
-| Isolation 15 signal-15 receipt | OPEN — cause unproven, #392 | Three agent exits 0; terminal source agent ended by signal 15 with no exit code. Not relabelled cooperative. Routed to agent-core 36. No stale-lease hold formed; populated hold unexercised in this run. |
+| Agent-core 35 same-boot adoption | CLOSED for the restart path — #401; verifier content check OPEN | adoptStoredServing refuses unless DeniedV4 (nil = spec defaults), ExtraDeniedV4 and HostV4 are equal as masked IPv4 prefixes; growth, shrink or replacement takes Boot's baseline, then the first full Apply. Busy lock and control timeout keep the baseline, never the old sets; equal sets adopt. 35's known-gap assertion flipped; lab 0 / 56 then 0 / 12 replies. The verifier's denied_v4 / host_v4 content check stays open, routed to netlab 27 (r20 H-2). |
+| Agent-core 35 live set drift | UNCONFIRMED — verifier blind spot; routed to netlab 27 | A set changed live under a serving agent may go undetected. Agent-core 36's equality compares stored intent with new intent and cannot see it. No confirmed live-drift or traffic result; netlab 27 (r20 H-2) owns the reading. |
+| Isolation 15 D-140 sample | UNQUALIFIED — failed qualification, #392 | Run 0b9e4510: unchanged EvaluateDeadline passes, last positive D−98.630 ms, first drop D−97.598 ms. Packet 171 egress follows packet 172 ingress by 3.821 µs once; whole-node row stays unqualified. Stays failed qualification under D-142. Historical isolation F14-01 stays failed; isolation 16's sample (#399) is also unqualified; next sample isolation 17. |
+| Isolation 15 signal-15 receipt | EXPLAINED AND FIXED — #401; receipt retained | Three agent exits 0; terminal source agent ended by signal 15 with no exit code. Agent-core 36: the old signal windows reproduce signal-15 exits; with NotifyContext before open / Boot / Start and stop after Close, both exit 0. The receipt stays recorded as it was, not relabelled cooperative. No stale-lease hold formed; populated hold unexercised in this run. |
+| r20 H-1 | ROUTED — not yet judged; agent-core 37 | A refused same-boot adoption can turn member bytes counted since the last sample into an unattributed `mapping conflict` usage gap. Failing proof on review branch 639eda6b; none confirmed. |
+| r20 H-2 | ROUTED — not yet judged; netlab 27 | VerifyServing / VerifyBaseline do not check denied_v4 / host_v4 contents or flags; VerifyBaseline does not require allowed_v4 empty. Four concrete requirements: interval normalisation, SNAT /32 in host_v4, set flags, baseline bare vs probe sets. |
+| r20 M-1 | ROUTED — not yet judged; agent-core 37 | SIGTERM during Boot can rewrite the serving heartbeat to not-serving without installing the baseline. |
+| r20 M-2 | ROUTED — not yet judged; agent-core 37 | The set comparison runs after the node lock and evaluate, lengthening the window in which old sets forward during Boot. |
+| r20 M-3 | ROUTED — not yet judged; agent-core 37 (pre-existing) | A failed adoption verification latches the apply error across Boot's baseline; a shutdown hand-off can leave Serving true in the heartbeat file. |
+| r20 L-1 | ROUTED — not yet judged; agent-core 37 | A non-nil empty DeniedV4 compares equal; adoption does not check the installed generation against the applied generation. |
+| Isolation 16 D-140 sample | UNQUALIFIED — failed qualification, #399 | Run 83b457ef, 2.2 ms spacing from 103 calibration packets: unchanged EvaluateDeadline passes, last positive D−99.797 ms, first drop D−97.671 ms. Packet 162 (3.151 ms) left 3.609 µs after packet 163's ingress, both positives at D−106.3 ms; nothing retried. Isolation 15's sample and isolation F14-01 stay failed. Next sample isolation 17, under D-142. |
+| Isolation F16-01 | FIXTURE DISPOSITION MERGED — #403; the original run stays failed | Shared D-104 precision fixture failed before the packet window on one 2 ms expires step. Netlab 26 shows per-element expiry bases and the per-element dump clock; exact 1001–1008 ms read-back kept, each expiry bounded on its own (TEST ONLY). Exact shape not recaptured; run 83b457ef's individual cause unproven. |
+| Isolation 16 120.467 ms install | OBSERVATION — no fix routed | One install exceeded the 100 ms guard in run 83b457ef, with rollback and recovery. Recorded, not waived. |
+| Members 16 run 0ffb355a | FAIL — AT02 and AT09, #400 | 2 pass / 6 blocked / 2 fail, 679 / 6 / 7 subchecks. AT02 fails provisional D-135 / D-136; AT09 fails four reviewed subchecks, no predicate relaxed; AT01's F11-01 first selection misses 5 s (first SYN 5.222 s). F11-01 / F14-01 stay unproven. 17:32:43–17:37:12 UTC contention window stays confounded under D-133. Survivor-hold row not exercised; routed to devstack 30. Measured harness 3a8b6159 = published 5d9e5f04. |
 
-Every historical failure stays failed. Every other follow-up 28 finding is unchanged.
-The register has 51 rows, retaining all 47 prior findings. Members F14-01 stays
-failed historically; its original cause remains unproven. The r19 design-only
-findings remain D-141 reconsideration conditions. #394 proves the shared
-populated-hold fixture, not isolation’s or members’ full consumer rows.
-Owner requests: **D-135 + D-136 confirmation**, **D-137 hardening option**,
-**D-138 / D-140 / D-141 overturn options**, **F11-01 repair direction and upstream
-report** (including #394 request 2), and the **RELATED ICMP question**.
-AT11 / AT13 operator rows, AT29 / AT31 resources, physical arm64, power loss
-and QUIC remain open. No later lane’s results enter this #396 cut. See
-[the full current evidence and dated requests](follow-up-29.md).
+Every historical failure stays failed. Every other follow-up 29 finding is unchanged.
+The register has 61 rows, retaining all 51 prior findings. r20's six findings are
+routed and not yet judged; none is recorded as confirmed. Agent-core 35's same-boot
+adoption gap is closed for the restart path; the verifier content check and the
+live-drift reading stay with netlab 27. Isolation 15's signal-15 receipt is
+explained and stays recorded. F16-01's fixture disposition is merged; run
+83b457ef stays failed. Owner requests: **D-135 + D-136 confirmation**, **D-137
+hardening option**, **D-138 / D-140 / D-141 overturn options**, **F11-01 repair
+direction and upstream report**, the **RELATED ICMP question**, and the **D-142 /
+D-144 overturn options**. AT11 / AT13 operator rows, AT29 / AT31 resources,
+physical arm64, power loss and QUIC remain open. Main records no scheduled-run
+result. No later lane's results enter this #403 cut. See
+[the full current evidence and dated requests](follow-up-30.md).
