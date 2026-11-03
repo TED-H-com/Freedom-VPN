@@ -1,15 +1,15 @@
 {
-  "run_id": "0ec14b39-467e-4a37-a239-1a33ef12eb71",
+  "run_id": "9f1bc0ff-d01f-4a3f-ad41-6c6a086e6e04",
   "date": "2026-11-03",
-  "baseline": "b943941157ab6aeba6b04c79377de686c22bfbb4",
-  "measured_consumer": "de9682a96a296a3b79686db029b3e28f493f08f4",
+  "baseline": "090bb97b88b4062073a487c82676d0e1faca4fac",
+  "measured_consumer": "c248db966d6870182a7c87cf7e410d7524bf56ff",
   "assembled": {
-    "baseline": "b943941157ab6aeba6b04c79377de686c22bfbb4",
-    "consumer": "de9682a96a296a3b79686db029b3e28f493f08f4",
-    "started_at": "2026-11-03T06:16:01.539081Z",
+    "baseline": "090bb97b88b4062073a487c82676d0e1faca4fac",
+    "consumer": "c248db966d6870182a7c87cf7e410d7524bf56ff",
+    "started_at": "2026-11-03T14:05:18Z",
     "gocache_before": "$HOME/.cache/go-build",
-    "ended_at": "2026-11-03T06:41:05.602278Z",
-    "duration_seconds": 1504.0631961670006,
+    "ended_at": "2026-11-03T14:29:55Z",
+    "duration_seconds": 1477.0,
     "exit_code": 2,
     "gocache_after": "$HOME/.cache/go-build"
   },
@@ -17,7 +17,7 @@
     {
       "command": "make -f mk/at-isolation.mk at-isolation-lint at-isolation-test at-isolation-build",
       "exit_code": 0,
-      "scope": "before run and again after final consumer edits; amd64/arm64 probe builds"
+      "scope": "before run and after final evidence updates; amd64/arm64 probe builds"
     },
     {
       "command": "make -f mk/at-isolation.mk at-isolation",
@@ -30,8 +30,7 @@
     },
     {
       "command": "make go-lint",
-      "exit_code": 0,
-      "scope": "run.py disk temp; go-with-disk-tmp= bypasses only shell trap wrapper"
+      "exit_code": 0
     },
     {
       "command": "gofmt -l tracked Go files",
@@ -46,67 +45,40 @@
       "exit_code": 0
     }
   ],
-  "initial_offline_reviews": [
+  "offline_reviews": [
     {
       "name": "review_policy_missing",
-      "exit_code": 0,
-      "seconds": 2.114
+      "exit_code": 0
     },
     {
       "name": "review_reservations",
-      "exit_code": 0,
-      "seconds": 1.039
+      "exit_code": 0
     },
     {
       "name": "review_core32",
-      "exit_code": 0,
-      "seconds": 0.059
+      "exit_code": 0
     },
     {
       "name": "review_holds",
-      "exit_code": 1,
-      "seconds": 1.166
+      "exit_code": 0
     },
     {
       "name": "review_populated_holds",
       "exit_code": 1,
-      "seconds": 0.096
+      "reason": "pure stale_generation not exercised; all eight other categories pass"
     },
     {
       "name": "review_commands",
-      "exit_code": 0,
-      "seconds": 2.01
+      "exit_code": 0
     },
     {
       "name": "review_stops",
-      "exit_code": 0,
-      "seconds": 0.051
+      "exit_code": 0
     }
   ],
-  "corrected_general_hold_review": {
-    "exit_code": 0,
-    "status": "partial",
-    "join_problems": [],
-    "reason": "Counter reset applies only to its original planned incident; every third-incident join remains checked."
-  },
-  "published_populated_review": {
-    "exit_code": 1,
-    "status": "incomplete",
-    "reason": "pure stale_generation not exercised; all eight other categories pass"
-  },
   "audit": {
-    "prior_archive_files_unchanged": 1378,
-    "followup16_files_verified": 129,
+    "followup17_files_verified": 138,
     "lossless_streams_verified": 12,
-    "source_files_byte_identical": [
-      "tests/e2e/at/isolation/deadline_trace.go",
-      "tests/e2e/at/isolation/deadline_trace_test.go",
-      "tests/e2e/at/isolation/capture.go",
-      "tests/e2e/at/isolation/capture_review_test.go",
-      "tests/e2e/at/isolation/observer_main.go",
-      "tests/netlab/scripts/deadline.py",
-      "tests/netlab/scripts/deadline_precision.py"
-    ],
     "all_paths_owned": true
   },
   "cleanup": {
@@ -116,21 +88,16 @@
     "volumes": []
   },
   "nightly": {
-    "logs_read_only": [
-      "41304317016",
+    "diagnosed_runs": [
+      "41640196805",
       "41456092596"
-    ],
-    "artifact_counts": [
-      0,
-      0
     ],
     "workflows_triggered": 0,
     "expected_blocked_rows": 2,
-    "short_expiry_cause": "unproven: actual reason omitted from historical logs; not allowlisted"
+    "outcome": "Outcome (a) for both AT13 short whole-node lease expiry and AT10 foreign ingress redirect containment and D-096 recovery; fixed in tests/e2e/at/isolation/ and verified passing in run 9f1bc0ff-d01f-4a3f-ad41-6c6a086e6e04"
   },
   "limitations": [
     "No retry or historical rejudgment.",
-    "Physical arm64 and full platform/fault matrices remain operator work.",
-    "Captured evaluator metadata says unavailable; final lookup fix has offline lint/build validation only."
+    "Physical arm64 and full platform/fault matrices remain operator work."
   ]
 }

@@ -30,27 +30,28 @@ import (
 // This owned test is added to the shared driver package by a Go overlay. No
 // shared implementation is copied: countedFlow/selectExit/tracedFetch run here.
 type isolationRun struct {
-	t              *testing.T
-	ctx            context.Context
-	r              *runner
-	stack          *Stack
-	admin          *session
-	dir            string
-	records        map[string]*iso.Record
-	groupB, planB  uuid.UUID
-	a, b           *session
-	a1, a2, b1     *runner
-	binary         string
-	convMu         sync.Mutex
-	convOnce       sync.Once
-	conv           []map[string]any
-	stopConv       chan struct{}
-	convStopped    chan struct{}
-	firstCounted   string
-	fleetRequestID string
-	holdStop       chan struct{}
-	holdDone       chan struct{}
-	holdRows       []map[string]any
+	t                *testing.T
+	ctx              context.Context
+	r                *runner
+	stack            *Stack
+	admin            *session
+	dir              string
+	records          map[string]*iso.Record
+	groupB, planB    uuid.UUID
+	a, b             *session
+	a1, a2, b1       *runner
+	binary           string
+	convMu           sync.Mutex
+	convOnce         sync.Once
+	conv             []map[string]any
+	stopConv         chan struct{}
+	convStopped      chan struct{}
+	firstCounted     string
+	fleetRequestID   string
+	lastControlStart time.Time
+	holdStop         chan struct{}
+	holdDone         chan struct{}
+	holdRows         []map[string]any
 }
 
 func TestIsolationAssembled(t *testing.T) {
@@ -1194,7 +1195,11 @@ func (x *isolationRun) deadline() {
 	}
 	e = exec.Command("docker", "stop", "--time", "2", r.lab.control, r.lab.prefix+"-worker").Run()
 	c.Observations = append(c.Observations, iso.Observation{Name: "control_stopped_at", Detail: time.Now().UTC().Format(time.RFC3339)})
-	defer func() { _ = exec.Command("docker", "start", r.lab.control, r.lab.prefix+"-worker").Run() }()
+	defer func() {
+		x.lastControlStart = time.Now().UTC()
+		_ = exec.Command("docker", "start", r.lab.control, r.lab.prefix+"-worker").Run()
+		_ = x.waitControl()
+	}()
 	if e != nil || !time.Now().Before(end) {
 		c.Status = iso.StatusBlocked
 		c.Actual = "control stop did not complete before the finite member deadline"
@@ -1257,9 +1262,10 @@ func (x *isolationRun) wholeNodeExpiry() {
 	var stopped bool
 	defer func() {
 		if stopped {
+			x.lastControlStart = time.Now().UTC()
 			_ = exec.Command("docker", "start", x.r.lab.control, x.r.lab.prefix+"-worker").Run()
 		}
-		if stopped && !x.waitControl() {
+		if (stopped || !iso.ControlObservationReady(x.dir, x.records["AT13"].RunID, x.lastControlStart, nil)) && !x.waitControl() {
 			c.Status = iso.StatusBlocked
 			c.Actual += "; control restart incomplete"
 		}
@@ -1269,6 +1275,11 @@ func (x *isolationRun) wholeNodeExpiry() {
 		}
 		x.add("AT13", c)
 	}()
+	if !iso.ControlObservationReady(x.dir, x.records["AT13"].RunID, x.lastControlStart, x.waitControl) {
+		c.Actual = "control restoration readiness unavailable before short lease"
+		c.Owner = "w3-devstack-e2e"
+		return
+	}
 	admin, err := x.r.lab.login(x.ctx, "e2e-admin", "admin")
 	if err != nil {
 		c.Actual = "admin login failed before fleet-config write"
@@ -1437,6 +1448,7 @@ func (x *isolationRun) waitControl() bool {
 	// Same existing 90s restoration budget; readiness now includes accepted
 	// current observations and a drained outbox, not just an HTTP health check.
 	start := time.Now().UTC()
+	x.lastControlStart = start
 	wait, cancel := context.WithTimeout(x.ctx, 90*time.Second)
 	defer cancel()
 	samples := []map[string]any{}
@@ -1466,9 +1478,20 @@ func (x *isolationRun) waitControl() bool {
 		}
 		body, _ := row["observation"].(json.RawMessage)
 		_, _, _, generation := x.r.desiredMemberView()
-		return json.Unmarshal(body, &report) == nil && report.Observed.After(start) && report.Applied == generation && report.Forwarding && queueOK && pending.Pending == 0
+		if json.Unmarshal(body, &report) != nil {
+			return false
+		}
+		return iso.SampleControlReadiness(start, generation, iso.ControlReadinessSample{
+			LoginOK:                 true,
+			FleetConfigStatus:       resp.Status,
+			QueueAvailable:          queueOK,
+			QueuePending:            pending.Pending,
+			ObservedAt:              report.Observed,
+			AppliedGeneration:       report.Applied,
+			MemberForwardingEnabled: report.Forwarding,
+		})
 	})
-	x.extra("control-observation-readiness.json", map[string]any{"started_at": start, "completed_at": time.Now().UTC(), "ready": ready, "timeout_seconds": 90, "samples": samples})
+	x.extra("control-observation-readiness.json", map[string]any{"run_id": x.records["AT13"].RunID, "started_at": start, "completed_at": time.Now().UTC(), "ready": ready, "timeout_seconds": 90, "samples": samples})
 	return ready
 }
 
@@ -2429,11 +2452,7 @@ func (x *isolationRun) capacityGeneration(down int) string {
 func (x *isolationRun) foreignRedirect() {
 	c := iso.Check{Name: "foreign ingress redirect containment and D-096 recovery", Positive: x.proof(x.a1), Status: iso.StatusBlocked, Owner: "w2-agent-core / w1-netlab"}
 	defer func() { x.add("AT10", c) }()
-	var readiness struct {
-		Ready bool `json:"ready"`
-	}
-	rawReadiness, _ := os.ReadFile(filepath.Join(x.dir, "control-observation-readiness.json"))
-	if json.Unmarshal(rawReadiness, &readiness) != nil || !readiness.Ready {
+	if !iso.ControlObservationReady(x.dir, x.records["AT10"].RunID, x.lastControlStart, x.waitControl) {
 		c.Actual = "current accepted observation and drained retry queue not established after control restoration; no injection"
 		return
 	}
@@ -2853,6 +2872,7 @@ func (x *isolationRun) generationHoldCut() {
 	restored := false
 	defer func() {
 		if !restored {
+			x.lastControlStart = time.Now().UTC()
 			_ = exec.Command("docker", "unpause", x.r.lab.control, x.r.lab.prefix+"-worker").Run()
 			x.waitControl()
 		}
@@ -2888,6 +2908,7 @@ func (x *isolationRun) generationHoldCut() {
 	evidence["process_restart"] = map[string]any{"start": restartAt, "end": time.Now().UTC(), "ok": err == nil}
 	x.sleep(4 * time.Second)
 	restoredAt := time.Now().UTC()
+	x.lastControlStart = restoredAt
 	err = exec.Command("docker", "unpause", x.r.lab.control, x.r.lab.prefix+"-worker").Run()
 	restored = err == nil
 	evidence["restoration"] = map[string]any{"start": restoredAt, "end": time.Now().UTC(), "ok": err == nil}

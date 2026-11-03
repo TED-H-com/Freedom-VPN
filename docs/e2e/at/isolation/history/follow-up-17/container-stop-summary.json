@@ -1,0 +1,102 @@
+{
+  "run_id": "0ec14b39-467e-4a37-a239-1a33ef12eb71",
+  "stops": [
+    {
+      "container": "fvpn-w4-isolation-node",
+      "term": {
+        "action": "kill",
+        "time_ns": "1793687419783755300",
+        "attributes": {
+          "name": "fvpn-w4-isolation-node",
+          "signal": "15"
+        }
+      },
+      "die": {
+        "action": "die",
+        "time_ns": "1793687420484407728",
+        "attributes": {
+          "name": "fvpn-w4-isolation-node",
+          "exitCode": "0"
+        }
+      },
+      "term_to_die_ns": "700652428",
+      "sigkill_events": [],
+      "scope": "Container PID1 lifecycle; cannot qualify the agent cooperative shutdown bound. Join restart/clone/terminal timestamps separately."
+    },
+    {
+      "container": "fvpn-w4-isolation-node",
+      "term": {
+        "action": "kill",
+        "time_ns": "1793687900352971835",
+        "attributes": {
+          "name": "fvpn-w4-isolation-node",
+          "signal": "15"
+        }
+      },
+      "die": {
+        "action": "die",
+        "time_ns": "1793687901099731823",
+        "attributes": {
+          "name": "fvpn-w4-isolation-node",
+          "exitCode": "0"
+        }
+      },
+      "term_to_die_ns": "746759988",
+      "sigkill_events": [],
+      "scope": "Container PID1 lifecycle; cannot qualify the agent cooperative shutdown bound. Join restart/clone/terminal timestamps separately."
+    },
+    {
+      "container": "fvpn-w4-isolation-node",
+      "term": {
+        "action": "kill",
+        "time_ns": "1793688023017198806",
+        "attributes": {
+          "name": "fvpn-w4-isolation-node",
+          "signal": "15"
+        }
+      },
+      "die": {
+        "action": "die",
+        "time_ns": "1793688023975710530",
+        "attributes": {
+          "name": "fvpn-w4-isolation-node",
+          "exitCode": "0"
+        }
+      },
+      "term_to_die_ns": "958511724",
+      "sigkill_events": [],
+      "scope": "Container PID1 lifecycle; cannot qualify the agent cooperative shutdown bound. Join restart/clone/terminal timestamps separately."
+    },
+    {
+      "container": "fvpn-w4-isolation-node-netns",
+      "term": {
+        "action": "kill",
+        "time_ns": "1793688024177552069",
+        "attributes": {
+          "name": "fvpn-w4-isolation-node-netns",
+          "signal": "15"
+        }
+      },
+      "die": {
+        "action": "die",
+        "time_ns": "1793688044298548067",
+        "attributes": {
+          "name": "fvpn-w4-isolation-node-netns",
+          "exitCode": "137"
+        }
+      },
+      "term_to_die_ns": "20120995998",
+      "sigkill_events": [
+        {
+          "action": "kill",
+          "time_ns": "1793688044193051541",
+          "attributes": {
+            "name": "fvpn-w4-isolation-node-netns",
+            "signal": "9"
+          }
+        }
+      ],
+      "scope": "Container PID1 lifecycle; cannot qualify the agent cooperative shutdown bound. Join restart/clone/terminal timestamps separately."
+    }
+  ]
+}

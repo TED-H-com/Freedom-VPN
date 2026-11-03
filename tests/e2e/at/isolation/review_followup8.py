@@ -84,8 +84,10 @@ dirty_reports = [r.get('observation', {}) for r in negative]
 # their original installed/read requirements above and below.
 from candidate_evidence import candidate_rejections
 from producer_timing import read_operations
-dirty_tc = candidate_rejections(transactions, read_operations(root), initial_gen,
-    first('publish dirty newer generation').get('at', start), removal.get('start', end))
+dirty_start = first('publish dirty newer generation').get('at') or injection.get('start')
+dirty_end = removal.get('start') or removal.get('end')
+dirty_tc = (candidate_rejections(transactions, read_operations(root), initial_gen, dirty_start, dirty_end)
+            if dirty_start and dirty_end else [])
 write('candidate-rejection-join.json', dict(run_id=trace.get('run_id'),
     evidence_kind='pre-install only; no substitution for installed-verifier assertions',
     accepted_candidates=dirty_tc))
