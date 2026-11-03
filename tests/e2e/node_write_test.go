@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -226,5 +227,48 @@ func TestAPI01_NodeWriteTotalDeadline(t *testing.T) {
 	elapsed := time.Since(start)
 	if out.accepted(202) || trace.Status != StatusBlocked || trace.Outcome != "time_limit" || len(trace.Attempts) != 1 || trace.Attempts[0].Reread == nil || !trace.Attempts[0].Reread.Transport || elapsed < nodeWriteTimeout || elapsed > nodeWriteTimeout+2*time.Second {
 		t.Fatalf("total deadline: elapsed=%s trace=%+v", elapsed, trace)
+	}
+}
+
+func TestAPI01_NodeWriteNoImplicitReplayOrRedirect(t *testing.T) {
+	for _, mode := range []string{"reused_connection_eof", "redirect"} {
+		t.Run(mode, func(t *testing.T) {
+			var writes atomic.Int32
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method == "GET" {
+					_, _ = io.WriteString(w, `{}`)
+					return
+				}
+				n := writes.Add(1)
+				if n > 1 {
+					w.WriteHeader(202)
+					return
+				}
+				if mode == "redirect" {
+					w.Header().Set("Location", "/redirected")
+					w.WriteHeader(307)
+					return
+				}
+				conn, _, err := w.(http.Hijacker).Hijack()
+				if err == nil {
+					_ = conn.Close()
+				}
+			}))
+			defer server.Close()
+			client := &httpSession{http: server.Client()}
+			// Warm the original connection. Default net/http may replay a keyed
+			// PATCH when this reused connection closes before its first byte.
+			if _, err := client.call(t.Context(), "GET", server.URL+"/node", nil, nil); err != nil {
+				t.Fatal(err)
+			}
+			var trace nodeWriteTrace
+			out := client.writeNode(t.Context(), "PATCH", server.URL+"/node", server.URL+"/node", map[string]string{"name": "TEST ONLY"}, `"1"`, revokedNode, []int{202}, func(_, raw string) { _ = json.Unmarshal([]byte(raw), &trace) })
+			if out.accepted(202) || writes.Load() != 1 || len(trace.Attempts) != 1 || trace.Attempts[0].Reread != nil {
+				t.Fatalf("unrecorded/retried request: writes=%d trace=%+v", writes.Load(), trace)
+			}
+			if mode == "redirect" && out.Reply.Status != 307 || mode == "reused_connection_eof" && out.Err == nil {
+				t.Fatalf("unexpected result: %+v", out)
+			}
+		})
 	}
 }

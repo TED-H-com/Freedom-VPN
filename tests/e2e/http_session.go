@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-// Calls remain single-shot; only writeNode handles version conflicts.
+// Shared HTTP call behavior for live callers and ordinary stub-server tests.
 type httpSession struct {
 	http *http.Client
 	csrf string

@@ -62,7 +62,11 @@ without hiding persistent contention. One ten-second context covers writes and
 re-reads together, shorter than the ordinary 30-second HTTP timeout. There is no
 backoff or run-level retry. Every conflict gets one re-read, including the last
 allowed write; matching desired values can end that command successfully.
-Otherwise the third conflict or the time bound stops as blocked. Failed GETs,
+Otherwise the third conflict or the time bound stops as blocked. The helper
+uses a private HTTP/1 transport with keep-alives disabled and refuses redirect
+following: Go otherwise allows implicit keyed-request replays on reused
+connections. Both implicit replay and redirects have focused stub coverage.
+Other callers retain the original HTTP transport. Failed GETs,
 missing/invalid fresh ETags, other 412 codes and every other status stop.
 
 For already-intended publication the harness reads the latest real `node.publish`

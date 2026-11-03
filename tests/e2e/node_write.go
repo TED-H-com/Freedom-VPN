@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
+	"net/http"
 	"net/url"
 	"reflect"
 	"strconv"
@@ -90,6 +92,28 @@ func (s *httpSession) writeNode(ctx context.Context, method, writeURL, readURL s
 	}()
 	bounded, cancel := context.WithTimeout(ctx, nodeWriteTimeout)
 	defer cancel()
+	// net/http can silently replay keyed requests on a reused connection, and
+	// Client normally follows redirects. Neither is an allowed extra attempt.
+	// Use private HTTP/1 connections for this command only, preserving the lab
+	// dial/TLS settings, cookies and CSRF. Other callers retain their client.
+	base := s.http.Transport
+	if base == nil {
+		base = http.DefaultTransport
+	}
+	transport, ok := base.(*http.Transport)
+	if !ok {
+		out.Err, trace.Outcome = errors.New("node write requires an HTTP transport"), "unsupported_transport"
+		return
+	}
+	private := transport.Clone()
+	private.DisableKeepAlives = true
+	private.Protocols = new(http.Protocols)
+	private.Protocols.SetHTTP1(true)
+	defer private.CloseIdleConnections()
+	client := *s.http
+	client.Transport = private
+	client.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
+	once := &httpSession{http: &client, csrf: s.csrf}
 	key := uuid.NewString()
 	for attempt := 0; attempt < nodeWriteAttempts; attempt++ {
 		if bounded.Err() != nil {
@@ -97,7 +121,7 @@ func (s *httpSession) writeNode(ctx context.Context, method, writeURL, readURL s
 			return
 		}
 		row := nodeWriteAttempt{Method: method, Path: evidencePath(writeURL), IfMatch: etag, IdempotencyKey: key, StartedAt: time.Now().UTC()}
-		out.Reply, out.Err = s.call(bounded, method, writeURL, body, map[string]string{"If-Match": etag, "Idempotency-Key": key})
+		out.Reply, out.Err = once.call(bounded, method, writeURL, body, map[string]string{"If-Match": etag, "Idempotency-Key": key})
 		row.FinishedAt, row.Status, row.ErrorCode = time.Now().UTC(), out.Reply.Status, out.Reply.Code
 		row.Transport = out.Err != nil
 		var env struct {
@@ -130,7 +154,7 @@ func (s *httpSession) writeNode(ctx context.Context, method, writeURL, readURL s
 			return
 		}
 		read := &nodeWriteRead{Method: "GET", Path: evidencePath(readURL), StartedAt: time.Now().UTC()}
-		got, err := s.call(bounded, "GET", readURL, nil, nil)
+		got, err := once.call(bounded, "GET", readURL, nil, nil)
 		read.FinishedAt, read.Status, read.ErrorCode, read.ETag, read.Transport = time.Now().UTC(), got.Status, got.Code, got.Header.Get("ETag"), err != nil
 		trace.Attempts[len(trace.Attempts)-1].Reread = read
 		if err != nil || got.Status != 200 {

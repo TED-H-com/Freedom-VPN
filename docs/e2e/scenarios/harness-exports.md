@@ -733,8 +733,10 @@ such handle to call.
 The shared publisher preserves its capacity values, publication request, step
 order and downstream operation/observed-state predicates. Its two conditional
 writes now use the shared `session.writeNode` helper. Owned capacity/revoke
-helpers use it too; `session.call` and `Stack.Call` remain single-shot for all
-other callers. There is no global HTTP retry policy.
+helpers use it too; `session.call` and `Stack.Call` retain their original
+behavior for all other callers. The helper uses private HTTP/1 connections
+and rejects redirects so net/http cannot silently replay a keyed request on
+a reused connection. There is no global HTTP retry policy.
 
 Only HTTP 412 with `RESOURCE_VERSION_CONFLICT` triggers a GET of the node. All
 intended desired fields must match to stop without another write; otherwise a
