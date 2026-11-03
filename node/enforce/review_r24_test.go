@@ -2,15 +2,14 @@ package enforce
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 	"testing"
 	"time"
 )
 
-// TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen proves
-// Finding H-4 against main:
+// Historical r24 name retained. The fixed assertions require self-contained
+// rollback and an independent cleanup context. The original defects were:
 //  1. When Apply starts from a cold table (state == State{}) and fails in
 //     verifyServing after releaseDeadlineGuard has already opened the candidate,
 //     a transient loadState failure inside installBaselineModel causes
@@ -61,10 +60,12 @@ func TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen(t *testing
 		if len(batches) != 3 {
 			t.Fatalf("expected 3 nft batches (install, release, rollback), got %d", len(batches))
 		}
+		if tableListing != 1 {
+			t.Fatal("rollback still depends on a fresh table read")
+		}
 		rollback := batches[2]
 		if !strings.Contains(rollback, "delete chain inet fvpn forward\n") || !strings.Contains(rollback, "flush set inet fvpn allowed_v4\n") {
-			// TODO(review r24): H-4 — installBaselineModel ignored loadState's error and fell back to the pre-install cold State{}, so RenderBaseline omitted `delete chain inet fvpn forward` and `flush set inet fvpn allowed_v4`, appending baseline drops after the candidate's live accept rules.
-			t.Fatalf("TODO(review r24): H-4: post-release rollback rendered against stale cold State{} omitted `delete chain inet fvpn forward` and `flush set inet fvpn allowed_v4`:\n%s", rollback)
+			t.Fatalf("H-4: post-release rollback rendered against stale cold State{} omitted `delete chain inet fvpn forward` and `flush set inet fvpn allowed_v4`:\n%s", rollback)
 		}
 	})
 
@@ -104,8 +105,7 @@ func TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen(t *testing
 			}
 		}
 		if !hasRollback {
-			// TODO(review r24): H-4 — Apply passes its expired ctx directly into installBaseline after releaseDeadlineGuard has already opened the candidate, so rollback fails with context.Canceled without executing an nft baseline batch.
-			t.Fatalf("TODO(review r24): H-4: guard was released (batches=%d, GuardReleased=%v) and verification failed on canceled ctx, but installBaseline reused the canceled ctx and executed no baseline rollback batch",
+			t.Fatalf("H-4: guard was released (batches=%d, GuardReleased=%v) and verification failed on canceled ctx, but installBaseline reused the canceled ctx and executed no baseline rollback batch",
 				len(batches), res.Deadline.GuardReleased)
 		}
 	})
@@ -173,15 +173,14 @@ func TestR24_H2_OrphanMemberTCClassDeletedBeforeNftBatch(t *testing.T) {
 	if _, err := Apply(context.Background(), ex, m2, nil); err != nil {
 		t.Fatalf("Apply failed: %v", err)
 	}
-	if len(events) >= 2 && events[0] == "tc_delete_member_class:"+removedHandle && events[1] == "nft_guarded_install" {
-		// TODO(review r24): H-2 — Apply deletes orphan member HTB classes in TCBatch before NftBatch removes their `meta priority set` rules from `forward`, directing packets of the removed member into HTB root `default fffe` (HTBDefaultMinor) until NftBatch commits.
-		t.Fatalf("TODO(review r24): H-2: orphan member HTB class %s was deleted in TCBatch before NftBatch replaced forward (order=%v), routing packets with meta priority 0x%x into HTB default class 1:%x (HTBDefaultMinor)",
+	if len(events) != 2 || events[0] != "nft_guarded_install" || events[1] != "tc_delete_member_class:"+removedHandle {
+		t.Fatalf("H-2: orphan member HTB class %s was deleted in TCBatch before NftBatch replaced forward (order=%v), routing packets with meta priority 0x%x into HTB default class 1:%x (HTBDefaultMinor)",
 			removedHandle, events, ClassID(removedMinor), HTBDefaultMinor)
 	}
 }
 
-// TestR24_M2_PostShapeClockCheckSkipsBaselineInApply proves Finding M-2
-// against main: Apply checks `timing.RenderStart < anchor` (`m.NowMono`) at
+// Historical r24 name retained. The fixed assertion requires baseline:
+// the original defect was that Apply checks `timing.RenderStart < anchor` (`m.NowMono`) at
 // apply.go:164 *after* executing `ex.TCBatch` at apply.go:151, and returns
 // `ReasonIsolation` ("monotonic clock must not move backwards") without
 // calling `installBaseline` (unlike the adjacent error paths at lines 152 and
@@ -224,93 +223,8 @@ func TestR24_M2_PostShapeClockCheckSkipsBaselineInApply(t *testing.T) {
 		}
 	}
 	if !hasBaseline {
-		// TODO(review r24): M-2 — Apply checked `timing.RenderStart < anchor` only after mutating live TC in `TCBatch` (apply.go:151 vs 164) and returned an error without calling `installBaseline`.
-		t.Fatalf("TODO(review r24): M-2: Apply mutated live TC (tcBatches=%d) then failed at apply.go:164 (%v) without calling installBaseline (nftBatches=%d)",
+		t.Fatalf("M-2: Apply mutated live TC (tcBatches=%d) then failed at apply.go:164 (%v) without calling installBaseline (nftBatches=%d)",
 			len(tcBatches), err, len(nftBatches))
-	}
-}
-
-// TestR24_M3_NetlabTraceAndGuardLogRejectC1Scripts proves Finding M-3:
-// the netlab trace recognizer (`traceExecutor.NftBatch` in
-// `tests/netlab/cmd/fvpn-netlab/trace.go:72-89`) and the NFLOG group-29
-// decorator (`guardLogScript` in `trace.go:157-177`) both fail on the exact
-// C1.2 install and C1.4 release scripts specified in
-// `docs/poc/G2-followup31-design/candidates.md`.
-func TestR24_M3_NetlabTraceAndGuardLogRejectC1Scripts(t *testing.T) {
-	c1Install := strings.Join([]string{
-		"add table inet fvpn",
-		"delete set inet fvpn fv_allow_g0",
-		"create set inet fvpn fv_allow_g1 { type ipv4_addr; flags timeout; }",
-		"add element inet fvpn fv_allow_g1 { 100.64.1.1 timeout 3599900ms }",
-		"create set inet fvpn fv_eligible_g1 { type ipv4_addr; }",
-		"add element inet fvpn fv_eligible_g1 { 100.64.1.1 }",
-		"create set inet fvpn fv_token_g1 { type ipv4_addr; }",
-		"add chain inet fvpn fv_deadline_guard { type filter hook forward priority -151; policy accept; }",
-		"flush chain inet fvpn fv_deadline_guard",
-		`add rule inet fvpn fv_deadline_guard iifname "fv-fh" oifname "fv-ih" meta nfproto ipv4 ip saddr @fv_eligible_g1 ip saddr @fv_allow_g0 return`,
-		`add rule inet fvpn fv_deadline_guard iifname "fv-ih" oifname "fv-fh" meta nfproto ipv4 ip daddr @fv_eligible_g1 ip daddr @fv_allow_g0 return`,
-		`add rule inet fvpn fv_deadline_guard iifname "fv-fh" drop`,
-		`add rule inet fvpn fv_deadline_guard oifname "fv-fh" drop`,
-	}, "\n")
-
-	c1Release := strings.Join([]string{
-		"delete set inet fvpn fv_token_g1",
-		"delete chain inet fvpn fv_deadline_guard",
-		"delete set inet fvpn fv_eligible_g1",
-	}, "\n")
-
-	// Exact recognizer logic from tests/netlab/cmd/fvpn-netlab/trace.go:73-81.
-	classifyTraceBatch := func(script string) string {
-		kind := "other"
-		if strings.Contains(script, "add chain inet fvpn fv_deadline_guard ") {
-			kind = "guard_install"
-		}
-		if strings.TrimSpace(script) == "delete chain inet fvpn fv_deadline_guard" {
-			kind = "guard_release"
-		}
-		if strings.Contains(script, "fvpn_generation=0") {
-			kind = "baseline"
-		}
-		return kind
-	}
-
-	// Exact NFLOG decorator logic from tests/netlab/cmd/fvpn-netlab/trace.go:157-177.
-	guardLogScript := func(script string, generation uint64) (string, error) {
-		lines := strings.Split(script, "\n")
-		seen := map[string]bool{}
-		for i, line := range lines {
-			for _, direction := range []string{"iifname", "oifname"} {
-				prefix := "add rule inet fvpn fv_deadline_guard " + direction + " "
-				if !strings.HasPrefix(line, prefix) {
-					continue
-				}
-				if seen[direction] || !strings.HasSuffix(line, " drop") {
-					return "", errors.New("TEST ONLY unexpected guard drop shape")
-				}
-				seen[direction] = true
-				lines[i] = strings.TrimSuffix(line, " drop") + fmt.Sprintf(" log prefix \"f29g%d-%s\" group 29 snaplen 128 queue-threshold 1 drop", generation, direction)
-			}
-		}
-		if len(seen) != 2 {
-			return "", errors.New("TEST ONLY expected two guard drops")
-		}
-		return strings.Join(lines, "\n"), nil
-	}
-
-	if got := classifyTraceBatch(c1Install); got != "guard_install" {
-		t.Fatalf("expected C1.2 install to classify as guard_install, got %q", got)
-	}
-	// Proves M-3 part 1: C1.4 multi-line fenced release is misclassified as "other",
-	// which causes reload_analysis.py:55 (`incomplete guard brackets`) and
-	// requireProducerTiming (`reload_trace_test.go:125`) to fail every C1 run.
-	if got := classifyTraceBatch(c1Release); got != "other" {
-		t.Fatalf("expected current trace.go recognizer to misclassify C1.4 release as \"other\", got %q", got)
-	}
-	// Proves M-3 part 2: guardLogScript rejects C1.2's 4-rule guard because the
-	// first two rules start with `add rule inet fvpn fv_deadline_guard iifname `
-	// and end with ` return` rather than ` drop`.
-	if _, err := guardLogScript(c1Install, 1001); err == nil || err.Error() != "TEST ONLY unexpected guard drop shape" {
-		t.Fatalf("expected current guardLogScript to fail on C1.2 return rules, got err=%v", err)
 	}
 }
 
@@ -322,7 +236,7 @@ func TestR24_M3_NetlabTraceAndGuardLogRejectC1Scripts(t *testing.T) {
 //     (100ms) and refuses to release the guard when InstalledBy - RenderStart
 //     exceeds 100ms;
 //   - verifyAllowedLifetimes enforces elem.timeout <= expected and
-//     elem.expires <= max(expected - elapsed, 0) + 250ms;
+//     elem.expires <= max(expected - elapsed, 0), with no added tolerance;
 //   - Render preserves existing device counters without emitting `delete counter`.
 func TestR24_Held_Q1_GuardInstallBoundLifetimeCeilingAndCounterContinuity(t *testing.T) {
 	m := smallModel()
