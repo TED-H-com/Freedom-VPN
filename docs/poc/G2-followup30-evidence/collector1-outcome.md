@@ -8,7 +8,7 @@ The preflight classified `fvpn-pg` as a foreign lane container because it reject
 every non-owned `fvpn-*` name. The task's wording excludes **other lanes'**
 containers; the identity of this persistent service needs clarification. It was
 not stopped or modified. All measured foreign CPU intervals were below 0.5 cores
-(maximum 0.272657); no other suite was detected. The preflight was interrupted
+(maximum 0.272657); six early checks also detected another lane’s Go test; later checks had no suite process. The preflight was interrupted
 and its reservation released at 11:15:44 UTC. The qualification is false.
 
 This attempt is retained and conservatively consumes the first of three slots.

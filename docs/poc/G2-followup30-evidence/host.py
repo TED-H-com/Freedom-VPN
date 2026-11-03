@@ -15,7 +15,8 @@ PREFIX='fvpn-w1-netlab-f30'
 HZ=os.sysconf('SC_CLK_TCK')
 
 def public(s):
-    return s.replace(str(HOLD),'<admission-script>').replace(str(ROOT),'<worktree>').replace(str(Path.home()),'<home>')
+    s=s.replace(str(HOLD),'<admission-script>').replace(str(ROOT),'<worktree>').replace(str(Path.home()),'<home>')
+    return re.sub(r"<home>/[^\s\"'<>]+", lambda m:'go' if m.group().endswith('/bin/go') else '<private-location>', s)
 
 def utc():return datetime.datetime.now(datetime.timezone.utc).isoformat()
 
