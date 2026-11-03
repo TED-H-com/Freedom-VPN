@@ -92,10 +92,13 @@ Cadence and exposure figures are corrected as recorded below.
 The revision calls L-1 confirmed and changes the lock location, but **that
 location does not match main**: agent configuration, shared nodelock, updater
 layout and installer layout use `/var/lib/vpn-node/update.lock`; protocol.md
-claims `/var/lib/vpn-node/update-journal/update.lock`. The archive also cites
-an updater config file absent on main. This discrepancy is returned for an
-additive correction; neither immutable source is edited here. The empty-set
-design correction remains recorded.
+claims `/var/lib/vpn-node/update-journal/update.lock`. The follow-up 31 line
+L-1 cites names no lock path: current-guarantees.md:27 begins the guard's timing
+definition. The design states no lock location, so L-1's lock-path premise has
+no source. The archive also cites an updater config file absent on main. Both
+the premise and the replacement path are returned for additive correction;
+neither immutable source is edited here. The empty-set design correction
+remains recorded.
 
 **History:** follow-ups **25–31 are byte-identical**, all **1,830 files**;
 **B1 stays FAIL and unexplained**; netlab 30's runs stay **host-unqualified**.
@@ -231,12 +234,16 @@ Still undecided. This is the existing tenth request, not an eleventh. Production
 keeps the current guard until the owner decides; r24's recommendation to accept
 is the reviewer's, not a decision.
 
-2026-11-03 — **Lock-path discrepancy, outside owned paths:** request an additive
-correction from netlab to docs/poc/G2-followup32-design/protocol.md and its L-1
-judgment context in revision.md. They claim update-journal/update.lock, while
-main's node/agent/config.go, node/nodelock/lock.go, node/updater/layout.go and
-packaging/installer/layout.go default to /var/lib/vpn-node/update.lock. The
-archive's node/updater/config.go citation is absent. No foreign document or
+2026-11-03 — **Lock-path discrepancy, outside owned paths:** request new
+additive text from netlab, at a location its owner chooses, correcting both
+protocol.md's path and the L-1 judgment's premise in revision.md under
+docs/poc/G2-followup32-design/. The cited follow-up 31 line names no lock path;
+the premise of a path correction has no source. The replacement path,
+update-journal/update.lock, contradicts main's node/agent/config.go,
+node/nodelock/lock.go, node/updater/layout.go and packaging/installer/layout.go,
+which default to /var/lib/vpn-node/update.lock. The archive's
+node/updater/config.go citation is absent. Netlab 32's files stay byte-identical.
+No foreign document or
 archive byte is edited; only that correction is held for its owner.
 
 2026-11-03 — **Existing routing, no new owner question:** agent-core 41 judges

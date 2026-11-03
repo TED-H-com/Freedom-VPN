@@ -460,6 +460,11 @@ failure stays failed. See [follow-up 36](../handover/follow-up-36.md).
   [updater layout](../../node/updater/layout.go) and
   [installer layout](../../packaging/installer/layout.go) instead default to
   `/var/lib/vpn-node/update.lock`. The archive's node/updater/config.go does
-  not exist. The original follow-up 31 lock path matches main. An additive
+  not exist. The follow-up 31 line L-1 cites names no lock path.
+  current-guarantees.md:27 begins the guard's timing definition, “Let `R` be
+  the final monotonic render sample, …”. No file in the follow-up 31 design
+  names a lock location; at reviewed tree 52a7e59b, no file under docs/poc/
+  names update.lock or /var/lib/vpn-node either. L-1's lock-path premise has
+  no source, and its replacement contradicts main. An additive
   correction to the netlab revision is requested; its immutable files and the
   review archive stay unchanged. This does not undo the empty-set correction.
