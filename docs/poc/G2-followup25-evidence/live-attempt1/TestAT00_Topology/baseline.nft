@@ -1,0 +1,157 @@
+table inet fvpn {
+	counter ctbase {
+		packets 6 bytes 475
+	}
+
+	counter ctv6 {
+		packets 0 bytes 0
+	}
+
+	counter ctin {
+		packets 0 bytes 0
+	}
+
+	counter ctbadns {
+		packets 0 bytes 0
+	}
+
+	counter ctdeny {
+		packets 16 bytes 880
+	}
+
+	counter ctdenyd {
+		packets 12 bytes 348
+	}
+
+	counter cthost {
+		packets 0 bytes 0
+	}
+
+	counter ctinv {
+		packets 0 bytes 0
+	}
+
+	counter ctnodn {
+		packets 0 bytes 0
+	}
+
+	counter ctunkd {
+		packets 0 bytes 0
+	}
+
+	counter ctunku {
+		packets 5 bytes 249
+	}
+
+	counter d_019a00000000700080000000000000a1 {
+		packets 7 bytes 422
+	}
+
+	counter d_019a00000000700080000000000000a2 {
+		packets 3 bytes 224
+	}
+
+	counter d_019a00000000700080000000000000b1 {
+		packets 0 bytes 0
+	}
+
+	counter nd_019a00000000700080000000000000a1 {
+		packets 3 bytes 183
+	}
+
+	counter nd_019a00000000700080000000000000a2 {
+		packets 0 bytes 0
+	}
+
+	counter nd_019a00000000700080000000000000b1 {
+		packets 0 bytes 0
+	}
+
+	counter nu_019a00000000700080000000000000a1 {
+		packets 5 bytes 271
+	}
+
+	counter nu_019a00000000700080000000000000a2 {
+		packets 0 bytes 0
+	}
+
+	counter nu_019a00000000700080000000000000b1 {
+		packets 0 bytes 0
+	}
+
+	counter probe_down {
+		packets 20 bytes 1210
+	}
+
+	counter probe_up {
+		packets 30 bytes 1530
+	}
+
+	counter u_019a00000000700080000000000000a1 {
+		packets 10 bytes 494
+	}
+
+	counter u_019a00000000700080000000000000a2 {
+		packets 5 bytes 244
+	}
+
+	counter u_019a00000000700080000000000000b1 {
+		packets 0 bytes 0
+	}
+
+	set allowed_v4 {
+		type ipv4_addr
+		flags timeout
+	}
+
+	set denied_v4 {
+		type ipv4_addr
+		flags interval
+		auto-merge
+		elements = { 0.0.0.0/8, 10.0.0.0/8,
+			     100.64.0.0/10, 127.0.0.0/8,
+			     169.254.0.0/16, 172.16.0.0/12,
+			     192.0.0.0/24, 192.0.2.0/24,
+			     192.88.99.0/24, 192.168.0.0/16,
+			     198.18.0.0/15, 198.51.100.0/24,
+			     203.0.113.10, 224.0.0.0/3 }
+	}
+
+	set host_v4 {
+		type ipv4_addr
+		flags interval
+		auto-merge
+		elements = { 192.0.2.33, 192.0.2.37,
+			     192.168.0.1 }
+	}
+
+	set resolver_v4 {
+		type ipv4_addr
+		elements = { 198.51.100.53 }
+	}
+
+	chain forward {
+		type filter hook forward priority mangle; policy drop;
+		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1"
+		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=019a0000-0000-7000-8000-00000000000a:2f"
+		ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment "fvpn_class=019a0000-0000-7000-8000-00000000000b:30"
+		iifname "fv-fh" counter name "ctbase" drop
+		oifname "fv-fh" counter name "ctbase" drop
+		iifname "fv-fh" meta nfproto ipv6 counter name "ctv6" drop
+		oifname "fv-fh" meta nfproto ipv6 counter name "ctv6" drop
+	}
+
+	chain input {
+		type filter hook input priority mangle; policy accept;
+		iifname "fv-fh" counter name "ctin" drop
+		ip saddr 100.64.0.0/10 counter name "ctin" drop
+	}
+
+	chain output {
+		type filter hook output priority mangle; policy accept;
+	}
+
+	chain postrouting {
+		type nat hook postrouting priority srcnat; policy accept;
+	}
+}

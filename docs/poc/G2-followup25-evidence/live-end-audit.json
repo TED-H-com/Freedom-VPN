@@ -1,0 +1,57 @@
+{
+  "live_attempts": 1,
+  "reloads": 100,
+  "applies": 101,
+  "datagrams": 62,
+  "udp_losses": 0,
+  "tcp_timeouts": 0,
+  "d120_passed": true,
+  "missing_successor_sequences": [],
+  "final_guard_generation": "1100",
+  "final_guard_release_mono_ns": "131563748689141",
+  "stop_request_mono_ns": "131563946588066",
+  "trace_end_mono_ns": "131564026937118",
+  "extra_cycles": 0,
+  "end_reason": "complete",
+  "tail_extension_exercised_live": false,
+  "tail_extension_exercised_offline": true,
+  "summary": {
+    "apply_count": 101,
+    "verified_applies": 101,
+    "datagrams": 62,
+    "udp_timeouts": 0,
+    "timeouts_by_node_ingress": {},
+    "timeouts_by_send": {},
+    "timeouts_without_node_egress": 0,
+    "tcp_timeouts": 0,
+    "unobserved_node_ingress": 0,
+    "incomplete_udp_reads": 0,
+    "mismatched_echoes": 0,
+    "guard_lower_ns": {
+      "min": 3572,
+      "median": 8647,
+      "p95": 13178,
+      "max": 23757
+    },
+    "guard_upper_ns": {
+      "min": 18994080,
+      "median": 31115331,
+      "p95": 44778610,
+      "max": 51260124
+    },
+    "render_to_installed_ns": {
+      "min": 9761260,
+      "median": 15800549,
+      "p95": 24930313,
+      "max": 30796864
+    },
+    "guard_upper_over_100ms": 0,
+    "install_over_100ms": 0,
+    "capture_packets": {
+      "origin": 126,
+      "node": 252,
+      "responder": 126
+    },
+    "max_wall_mono_elapsed_difference_ns": 847
+  }
+}

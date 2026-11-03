@@ -181,6 +181,22 @@ func Read(ctx context.Context, target, origin string) (Snapshot, error) {
 		out.Routes[name] = rows
 	}
 	route("origin_route", origin)
+	// Full route tables complement route-get's single selected path. Keep only
+	// the existing metadata shape; tokenize addresses before public export.
+	for _, family := range []string{"4", "6"} {
+		name := "route_table" + family
+		var rows []Route
+		if json.Unmarshal(run(name, "ip", "-j", "-"+family, "route", "show", "table", "all"), &rows) == nil {
+			for i := range rows {
+				if rows[i].Destination != "default" {
+					rows[i].Destination = Token(rows[i].Destination)
+				}
+				rows[i].Gateway = Token(rows[i].Gateway)
+				rows[i].Source = Token(rows[i].Source)
+			}
+			out.Routes[name] = rows
+		}
+	}
 	if target != "" {
 		rawStatus := run("peer_status", "netbird", "status", "--json")
 		var status Status

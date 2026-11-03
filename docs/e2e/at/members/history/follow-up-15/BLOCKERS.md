@@ -1,0 +1,15 @@
+# Follow-up 15 limits
+
+**2 PASS / 6 BLOCKED / 2 FAIL**, with **644 passed / 6 blocked / 2 failed subchecks**. One assembled ten-case run; live make exit **2**.
+
+AT02 retains **93 successful Applies, zero failed Applies**, with command lifecycle records. All **65 baseline calls** are paired to a successful recovery Apply; ten brackets overlap the continuous capture. The stream records **4,131 attempts / 3,882 node ingresses / 3,854 egresses**. All **277 attempts without observed egress** count: **249 absent at node ingress**, plus **28 observed ingress-without-egress (12 inside completed guards / 16 outside)**. The missing ingress sequences are **1108–1356**; their send times and guard placement are unavailable. The 28 located losses are not the full loss total. Capture reports zero kernel drops/read errors, but the missing-ingress gap makes `measurement_valid=false`; the original D-135/D-136 row remains **FAIL**. All covered brackets retain a post-Apply egress; overlapping brackets are never summed as unique losses. Cause remains unproven.
+
+[Original recovery accounting](F15-AT02-recovery.json.gz), [missing-ingress receipts](F15-AT02-missing-ingress.json), [policy-missing windows](F15-AT02-policy-missing.json.gz). Corrected D-136 remains baseline → ACK → renew → Apply → verify → heartbeat for ordinary stale leases. Only a retained Apply error enables the verified deny-all candidate. There is no finite outage ceiling. D-139 option (b) is a design track, absent from this baseline; no loss waiver. F11-03 remains blocked on no failed Apply observed.
+
+**682d4434 is now live-qualified:** the forced relay row passes with **Relayed=2 / Direct=0**, followed by same-socket relay-to-direct recovery. The routed hop is added only afterward. Follow-up 14's relay FAIL remains recorded and confounded; it is not reclassified.
+
+The routed IPv6 row passes **64,064 bytes in 1 ms**, with one oversized ingress, one type-2/code-0 PTB seen at router and sender, learned PMTU 1280, and **16** router fragment egresses received. The routed IPv4 row passes **64,064 bytes in 1 ms**: **25 DF=0 oversized datagrams → 50 fragments / 25 groups**, all received, no PTB. The known-PMTU IPv6 row separately passes **64,064 bytes in 1 ms**.
+
+Receive-only rows remain limitations: dual-underlay MTU 1280 is **FAIL**, with **12,012 bytes in 12,011 ms**; IPv6 receive-only transfers **64,064 bytes in 1 ms** but remains **BLOCKED**. Neither is upgraded to a supported-PMTU pass. [Original independent rows](F15-D137-native-paths.json), [packet analyses](history/follow-up-15-captures/e80bb592-27ed-4ab5-a8c3-6433e7278938/analysis.json). Historical F8-02 failures remain unattributed; IPv4 overlay payloads do not prove IPv6 overlay support (D-123).
+
+The five F4 owner-resource groups and existing F11-01/F14-01 native investigation and D-139 design track remain as recorded in [requests](requests.md). Sole-member/sibling hold termination, retained-safety precedence during a hold, and alarm triggering were not exercised; control I/O after cancellation is not observable here. Physical arm64 and platform acceptance are not supplied by cross-builds.

@@ -1,0 +1,136 @@
+{
+  "events": [
+    {
+      "event": "tcp_send",
+      "sequence": 1,
+      "wall_ns": "1793546545290893075",
+      "mono_ns": "130082807264680"
+    },
+    {
+      "event": "tcp_read",
+      "sequence": 1,
+      "wall_ns": "1793546545290901688",
+      "mono_ns": "130082807273142",
+      "size": 3
+    },
+    {
+      "event": "udp_send",
+      "sequence": 1,
+      "wall_ns": "1793546545290906997",
+      "mono_ns": "130082807278382",
+      "send_wall_ns": "1793546545290905337",
+      "send_mono_ns": "130082807276655",
+      "source_port": 40000,
+      "size": 3
+    },
+    {
+      "event": "udp_read",
+      "sequence": 1,
+      "wall_ns": "1793546545290922453",
+      "mono_ns": "130082807293863",
+      "outcome": "TimeoutError"
+    },
+    {
+      "event": "tcp_send",
+      "sequence": 2,
+      "wall_ns": "1793546545290940529",
+      "mono_ns": "130082807311928"
+    },
+    {
+      "event": "tcp_read",
+      "sequence": 2,
+      "wall_ns": "1793546545290943626",
+      "mono_ns": "130082807314959",
+      "size": 3
+    },
+    {
+      "event": "udp_send",
+      "sequence": 2,
+      "wall_ns": "1793546545290946851",
+      "mono_ns": "130082807318254",
+      "send_wall_ns": "1793546545290945819",
+      "send_mono_ns": "130082807317130",
+      "source_port": 40000,
+      "size": 3
+    },
+    {
+      "event": "udp_read",
+      "sequence": 2,
+      "wall_ns": "1793546545290950182",
+      "mono_ns": "130082807321555",
+      "outcome": "ok",
+      "response_matches": false
+    },
+    {
+      "event": "trace_end",
+      "sequence": 2,
+      "wall_ns": "1793546545290963643",
+      "mono_ns": "130082807335017",
+      "end_reason": "missing",
+      "extra_cycles": 1
+    }
+  ],
+  "old_end": {
+    "passed": false,
+    "verdict": "AT10 FAIL",
+    "reloads": 100,
+    "udp_losses": 1,
+    "errors": [],
+    "losses": [
+      {
+        "sequence": 1,
+        "generation": "1100",
+        "bracket_start_ns": "1000000000",
+        "bracket_end_ns": "1030000000",
+        "upper_ns": 30000000,
+        "render_to_installed_ns": 20000000,
+        "classification": "inside",
+        "next_datagram": "missing",
+        "failures": [
+          "(iii): next datagram missing"
+        ]
+      }
+    ]
+  },
+  "new_end": {
+    "passed": false,
+    "verdict": "AT10 FAIL",
+    "reloads": 100,
+    "udp_losses": 2,
+    "errors": [],
+    "losses": [
+      {
+        "sequence": 1,
+        "generation": "1100",
+        "bracket_start_ns": "1000000000",
+        "bracket_end_ns": "1030000000",
+        "upper_ns": 30000000,
+        "render_to_installed_ns": 20000000,
+        "classification": "inside",
+        "next_datagram": "failed",
+        "failures": [
+          "(iii): next datagram failed"
+        ]
+      },
+      {
+        "sequence": 2,
+        "generation": "1100",
+        "bracket_start_ns": "1000000000",
+        "bracket_end_ns": "1030000000",
+        "upper_ns": 30000000,
+        "render_to_installed_ns": 20000000,
+        "classification": "inside",
+        "next_datagram": "missing",
+        "failures": [
+          "UDP failure is not a lost echo (timeout)",
+          "(iii): next datagram missing"
+        ]
+      }
+    ]
+  },
+  "done": {
+    "end_reason": "missing",
+    "extra_cycles": 1,
+    "sequence": 2
+  }
+}

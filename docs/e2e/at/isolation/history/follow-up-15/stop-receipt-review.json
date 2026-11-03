@@ -1,0 +1,240 @@
+{
+  "run_id": "0b9e4510-776f-4c51-9e66-500404ce9f7e",
+  "all_parent_receipts_matched": true,
+  "stops": [
+    {
+      "label": "whole_container",
+      "source": "restart-lifecycle.json",
+      "identity": {
+        "available": true,
+        "captured_at": "2026-11-01T15:02:59.337164884Z",
+        "launch_id": "b4cbae3d-af7e-4ebc-a77d-de2df877b2f5",
+        "pid": 1175,
+        "start_ticks": "12833165"
+      },
+      "parent_wait_receipt": {
+        "id": "b4cbae3d-af7e-4ebc-a77d-de2df877b2f5",
+        "pid": 1175,
+        "start_ticks": "12833165",
+        "started_at": "2026-11-01T14:53:14.139902499Z",
+        "wait_observed_at": "2026-11-01T15:02:59.588172436Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "parent_identity_matched": true,
+      "attempted_escalation": null,
+      "container_events": [
+        {
+          "action": "kill",
+          "time_ns": "1793545379386656611",
+          "attributes": {
+            "name": "fvpn-w4-isolation-node",
+            "signal": "15"
+          }
+        },
+        {
+          "action": "stop",
+          "time_ns": "1793545379853646730",
+          "attributes": {
+            "name": "fvpn-w4-isolation-node"
+          }
+        },
+        {
+          "action": "die",
+          "time_ns": "1793545379856329897",
+          "attributes": {
+            "name": "fvpn-w4-isolation-node",
+            "exitCode": "0"
+          }
+        }
+      ],
+      "container_state_at_read": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-11-01T14:53:08.604573797Z",
+        "FinishedAt": "2026-11-01T15:02:59.832391244Z"
+      },
+      "agent_budget_seconds": 15,
+      "container_grace_seconds": 25,
+      "command_start": "2026-11-01T15:02:59.361552387Z",
+      "command_end": "2026-11-01T15:02:59.858729352Z",
+      "container_term_to_agent_parent_wait_ns": "201515825",
+      "agent_exit_code": 0,
+      "agent_signal": null,
+      "cooperative_exit": true
+    },
+    {
+      "label": "clone_source",
+      "source": "identity-freeze.json",
+      "identity": {
+        "available": true,
+        "captured_at": "2026-11-01T15:10:46.262101171Z",
+        "launch_id": "c553797b-15b0-40fb-a629-bde73543e624",
+        "pid": 924,
+        "start_ticks": "12891785"
+      },
+      "parent_wait_receipt": {
+        "id": "c553797b-15b0-40fb-a629-bde73543e624",
+        "pid": 924,
+        "start_ticks": "12891785",
+        "started_at": "2026-11-01T15:03:00.335307142Z",
+        "wait_observed_at": "2026-11-01T15:10:46.533486583Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "parent_identity_matched": true,
+      "attempted_escalation": null,
+      "container_events": [
+        {
+          "action": "kill",
+          "time_ns": "1793545846361034506",
+          "attributes": {
+            "name": "fvpn-w4-isolation-node",
+            "signal": "15"
+          }
+        },
+        {
+          "action": "stop",
+          "time_ns": "1793545846843130127",
+          "attributes": {
+            "name": "fvpn-w4-isolation-node"
+          }
+        },
+        {
+          "action": "die",
+          "time_ns": "1793545846845155308",
+          "attributes": {
+            "name": "fvpn-w4-isolation-node",
+            "exitCode": "0"
+          }
+        },
+        {
+          "action": "start",
+          "time_ns": "1793545848264020980",
+          "attributes": {
+            "name": "fvpn-w4-isolation-node"
+          }
+        }
+      ],
+      "container_state_at_read": {
+        "Status": "running",
+        "Running": true,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 3217218,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-11-01T15:10:48.207124664Z",
+        "FinishedAt": "2026-11-01T15:10:46.812929952Z"
+      },
+      "agent_budget_seconds": 15,
+      "container_grace_seconds": 25,
+      "command_start": "2026-11-01T15:10:46.287955545Z",
+      "command_end": "2026-11-01T15:10:48.26614299Z",
+      "container_term_to_agent_parent_wait_ns": "172452077",
+      "agent_exit_code": 0,
+      "agent_signal": null,
+      "cooperative_exit": true
+    },
+    {
+      "label": "direct_agent",
+      "container": "fvpn-w4-isolation-node",
+      "source": "receiver-closure.json",
+      "identity": {
+        "launch_id": "e3b4b9cd-51e0-4e50-b0b7-7901104b265c",
+        "pid": 901,
+        "start_ticks": "12938608"
+      },
+      "parent_wait_receipt": {
+        "id": "e3b4b9cd-51e0-4e50-b0b7-7901104b265c",
+        "pid": 901,
+        "start_ticks": "12938608",
+        "started_at": "2026-11-01T15:10:48.570546932Z",
+        "wait_observed_at": "2026-11-01T15:10:52.913515766Z",
+        "wait_status": 15,
+        "exit_code": null,
+        "signal": 15,
+        "core_dump": false
+      },
+      "parent_identity_matched": true,
+      "attempted_escalation": null,
+      "signal_start": {
+        "mono_ns": "129390358287819",
+        "wall": "2026-11-01T15:10:52.841917494Z"
+      },
+      "signal_return": {
+        "mono_ns": "129390358293453",
+        "wall": "2026-11-01T15:10:52.841922408Z"
+      },
+      "exit_sample": {
+        "mono_ns": "129390429841135",
+        "wall": "2026-11-01T15:10:52.913479463Z"
+      },
+      "signal_to_exit_upper_ns": "71529909",
+      "within_15s": true,
+      "agent_budget_seconds": 15,
+      "stored_lease_survived": true,
+      "step_cancel": "not observable here",
+      "agent_exit_code": null,
+      "agent_signal": 15,
+      "cooperative_exit": false
+    },
+    {
+      "label": "direct_agent",
+      "container": "fvpn-w4-isolation-node-clone",
+      "source": "receiver-closure.json",
+      "identity": {
+        "launch_id": "5b83396c-00b2-4972-852f-7b643174341f",
+        "pid": 1139,
+        "start_ticks": "12938614"
+      },
+      "parent_wait_receipt": {
+        "id": "5b83396c-00b2-4972-852f-7b643174341f",
+        "pid": 1139,
+        "start_ticks": "12938614",
+        "started_at": "2026-11-01T15:10:48.624113116Z",
+        "wait_observed_at": "2026-11-01T15:10:53.295451181Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "parent_identity_matched": true,
+      "attempted_escalation": null,
+      "signal_start": {
+        "mono_ns": "129390805460818",
+        "wall": "2026-11-01T15:10:53.289090504Z"
+      },
+      "signal_return": {
+        "mono_ns": "129390805466174",
+        "wall": "2026-11-01T15:10:53.289095126Z"
+      },
+      "exit_sample": {
+        "mono_ns": "129390811767019",
+        "wall": "2026-11-01T15:10:53.295399069Z"
+      },
+      "signal_to_exit_upper_ns": "6304797",
+      "within_15s": true,
+      "agent_budget_seconds": 15,
+      "stored_lease_survived": true,
+      "step_cancel": "not observable here",
+      "agent_exit_code": 0,
+      "agent_signal": null,
+      "cooperative_exit": true
+    }
+  ],
+  "scope": "Each original stop only. Parent wait receipts supply actual agent exit code/signal. Container exit means PID1 handler completion. Escalation sidecars are intent only. Receipt and pidfd times are observation bounds, not exact kernel exit instants; Step cancellation is unavailable. Historical 10.087s/20.153s exit-137 rows are unchanged."
+}

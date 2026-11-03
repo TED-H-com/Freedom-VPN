@@ -203,6 +203,7 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 		defer capture.stop()
 	}
 	capture.sample("before-selection")
+	l.regrantCapture.sample("before-selection-" + fmt.Sprint(l.probeSequence+1))
 	o.RouteBefore = l.routeObservation(service)
 	// Native distribution can lag central publication; poll the advertised
 	// network before selecting it. Negative peers are probed once, never enrolled.
@@ -231,6 +232,7 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 		o.RouteSelected = selectRoute()
 	}
 	capture.sample("after-selection")
+	l.regrantCapture.sample("after-selection-" + fmt.Sprint(l.probeSequence+1))
 	time.Sleep(2 * time.Second)
 	o.RouteAfter = l.routeObservation(service)
 	status, _ := l.inside(service, "netbird", "status", "--json")
@@ -267,8 +269,10 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 	probeID := uuid.NewString()
 	armed := l.request(nil, "PUT", "https://releases.example.invalid/e2e/traffic", map[string]string{"id": probeID}, map[string]string{"X-E2E-Secret": l.secret("origin.secret")})
 	capture.sample("before-transfer")
+	l.regrantCapture.sample("before-transfer-" + port)
 	raw, err := l.inside(service, "/tmp/at-members-probe", "transfer", probeID, port)
 	capture.sample("after-transfer")
+	l.regrantCapture.sample("after-transfer-" + port)
 	if err != nil || !json.Valid(raw) {
 		raw = []byte(`{"origin_receipt":false,"probe_error":true}`)
 	}

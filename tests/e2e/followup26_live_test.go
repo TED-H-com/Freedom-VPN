@@ -64,7 +64,7 @@ func (r *runner) exportCentral26(ctx context.Context) {
 	if tx.Commit(ctx) != nil {
 		return
 	}
-	private := filepath.Join(r.lab.root, ".agent/tmp/followup26", r.runID, "producer.jsonl")
+	private := filepath.Join(r.lab.root, ".agent/tmp", nativeCampaignDirectory(), r.runID, "producer.jsonl")
 	receipt, e := (&Stack{lab: r.lab}).ExportContainerFile(ctx, "node", "/var/lib/vpn-node/e2e/enforcement-timing.jsonl", private)
 	noteJSON(&rec, "producer_receipt", receipt)
 	if e == nil {

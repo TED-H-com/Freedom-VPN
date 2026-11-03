@@ -175,7 +175,7 @@ def review(root):
         matching=[r for r in producer.values() if r.get('lease',{}).get('lease_id')==hold['lease_id']]
         hold['producer_baselines']=[dict(**identity(r),baseline=r['baseline'],anchor=r['anchor']) for r in matching if r.get('baseline',{}).get('cause')=='policy_missing']
         hold['producer_heartbeats']=[dict(**identity(r),heartbeat=r['heartbeat'],anchor=r['anchor']) for r in matching if r.get('heartbeat',{}).get('reason')=='policy_missing']
-        hold['independent_packet_coverage']='not exercised for this hold unless separately retained in generation-hold-control-cut.json; report forwarding=false is not independent packet evidence'
+        hold['independent_packet_coverage']='See incident-specific packets in populated-holds.json or generation-hold-control-cut.json; report forwarding=false is not independent packet evidence'
     joined = []
     for w in windows:
         if not w['stale_populated_lease_candidate']:
@@ -193,7 +193,8 @@ def review(root):
             packet_coverage=w['packets'], later_recovery=w['recovery'], wall_join='producer wall/monotonic anchor, no allowance'))
     result['populated_generation_windows'] = joined
     cut = read(root, 'generation-hold-control-cut.json')
-    retention = dict(status='not exercised', kernel_reboot='not exercised: AT13 operator matrix', cut_status=cut['status'])
+    retention = dict(status='not exercised', scope='Original opportunistic control-cut only; populated seam attempts are separate.',
+        kernel_reboot='not exercised: AT13 operator matrix', cut_status=cut['status'])
     if cut.get('direct_stop'):
         hid = cut['incident_id']
         snapshots = {}
@@ -212,6 +213,20 @@ def review(root):
             direct_stop=cut['direct_stop'], process_restart=cut['process_restart'])
         if retention['status'] == 'fail':
             result['problems'].append(dict(incident_id=hid, problem='incident/first_seen lost across direct stop'))
+    populated_retention = []
+    if (root/'populated-holds.json').exists() or (root/'populated-holds.json.gz').exists():
+        from review_populated_holds import retention as review_retention
+        populated = read(root, 'populated-holds.json')
+        if populated['run_id'] != central['run_id']:
+            raise ValueError('populated hold attempts belong to another run')
+        for attempt in populated['attempts']:
+            if not attempt.get('stop'):
+                continue
+            checked = review_retention(attempt, populated['final']['samples'])
+            populated_retention.append(dict(incident_id=attempt['incident_id'], **checked))
+            if checked['status'] != 'pass':
+                result['problems'].append(dict(incident_id=attempt['incident_id'], problem='populated active-stop retention failed'))
+    result['populated_hold_retention'] = populated_retention
     result['applied_equals_delivered_desired']=sum(h['applied_equals_delivered_desired'] for h in result['holds'])
     result.update(run_id=central['run_id'], status='fail' if result['problems'] else 'pass', retention=retention,
         accepted_hold_count=len(result['holds']), applied_equals_desired_at_read=sum(h['applied_equals_desired_at_read'] for h in result['holds']),
@@ -222,7 +237,8 @@ def review(root):
         stale_generation_before_generic_causes='pass' if any(h['classification']=='stale_generation' for h in result['holds']) else 'not exercised',
         applied_equals_desired='observed against the node latest delivered signed desired state' if result['applied_equals_delivered_desired'] else 'did not occur',
         unrelated_failure_precedence='pass' if any(h['unrelated_failure'] for h in result['holds']) and not result['problems'] else 'not exercised',
-        active_hold_direct_stop_and_local_counter_reset='pass' if retention.get('local_counters_reset')=='observed' and retention['status']=='observed' else 'not exercised',
+        active_hold_direct_stop_and_local_counter_reset='pass' if any(r['status']=='pass' for r in populated_retention) or
+            (retention.get('local_counters_reset')=='observed' and retention['status']=='observed') else 'not exercised',
         matching_lease_end='pass' if result['matching_ends'] and not result['problems'] else 'not exercised',
         later_new_incident='pass' if any(e['later_distinct_incident_ids'] for e in result['matching_ends']) else 'not exercised',
         one_escalation='pass' if result['escalations'] and not result['problems'] else 'not exercised',

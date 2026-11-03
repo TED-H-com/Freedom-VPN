@@ -1245,3 +1245,114 @@ This localizes the fresh delay to native handshake/data delivery, separately
 from the first-selection node-tracer closure. NetBird/native transport and
 members owners should assess the transition against 258ba504's full population;
 the historical cause and Ted's transport choice remain open.
+
+## isolation 14 / members 15 — 2026-11-01 (follow-up 27, D-102)
+
+> ## Follow-up 14 requests — 2026-11-01
+>
+> # Follow-up 15 owner assignments — 2026-11-01
+
+**Isolation request 4 / wire-nodes 34 request 1, and members' populated-hold
+rows:** the TEST ONLY transport seam is available through `labstack.Stack`.
+[Exact arming/release sequence and export fields](scenarios/harness-exports.md#follow-up-27--bounded-populated-generation-hold-test-only).
+The matching lease arrives only on `POST /api/v1/agent/lease-renewals`, not in
+the desired-state envelope. After the real capacity command, the proxy forwards
+desired g+1 and all observations, returning prompt 503s only for successful
+renewal responses whose signed generation matches that new desired document.
+It never edits, saves for replay, or synthesizes a signed lease or report.
+At release it forwards the next genuine central-issued matching response.
+
+Rebuild the ordinary node image; establish the real populated serving lease;
+save its report/node/incarnation/lease IDs and generation string; call
+`ArmMatchingLeaseHold(ctx, "node", generation, 90*time.Second)` once; perform
+the genuine node PATCH with the current ETag and idempotency key. Poll
+`MatchingLeaseHold` and `GenerationHoldSnapshot` for accepted applied g+1 /
+old lease g and its exact incident. After the required observation window,
+call `ReleaseMatchingLeaseHold`, then join the forwarded lease, accepted
+matching report and incident ending. `LocalLeaseReadback` supplies the stored
+lease digest inside the node. Use a fresh arm UUID for each later incident.
+The 90-second example is a TEST ONLY duration; the measured proof uses 45.
+The bounded hold does not require stopping the agent or holding desired state.
+
+[Final fresh proof and all attempts](runs/2026-11-01/followup27/hold-fixture.md):
+**13 / 0 / 0**, two members, applied 8 / signed lease 7, incident **50.000298 s**.
+The node's Step-3 report has `elapsed_ms=9891`, `alarm=true`. Central escalates
+once at incident age **9.887144 s**, so **the reported alarm triggered it**;
+central's 30-second age fallback did not. A later alarm sample adds no second
+audit. The matching-generation report ends the same incident
+`generation_matched`, and the actual local lease body equals the forwarded
+central response. The two earlier original runner failures stay failed (host
+permission, then helper build directory); separate read-only supplements retain
+their exact local-byte proof. No product defect was demonstrated.
+
+The final joins are:
+
+- Node `01a197a3-6e35-7ad4-b222-6a74240ce7b5`, incarnation
+  `01a197a3-7148-769d-8dc7-65242aac1194`;
+  arm `141d6ebb-f2f0-48bf-a540-5ad27e7c2595`.
+- Old populated lease `6bcc30f4-b55b-4111-9e62-08c94c0906a9`, generation 7;
+  incident `01a197a5-5b5d-76c7-a866-c359da0703a8`.
+- Hold reports `01a197a5-5b57-79bb-a1bb-0db65382757c` (Step 1),
+  `01a197a5-81f4-7284-8fc3-5e2c8712547f` (Step 3/alarm), and
+  `01a197a6-0aab-706a-8a3a-949162e94f16` (Step 10/alarm).
+- Single audit `01a197a5-81fd-7151-b4ab-d77111a39d0b`;
+  released generation-8 lease `d6075d26-1b48-4bfc-b0fa-4b93f4b9fd2c`;
+  matching report `01a197a6-1ea5-78a5-845e-01ac2ab5e520`.
+
+[The immutable joins](runs/2026-11-01/followup27/hold-joins.json) include first /
+last seen, end reason, every accepted hold sample, all lease/member windows and
+the audit. Join samples by node/incarnation/report and incident, and audit by
+its `incident_id`. Recovery is a distinct accepted report, not a fabricated
+extra hold sample. An agent-only supervised stop keeps the proxy armed while
+local counters reset; restarting the proxy itself releases the test seam.
+
+Isolation and members still own their original unrelated-failure precedence,
+active-stop retention/counter reset, matching-recovery acceptance, distinct
+later incident, and members' sole-member `members_revoked` rows. The fixture
+proof does not pass those combinations. A sole-member row must use its own
+one-member populated lease and original real member revocation; one revoked
+device or one revoked member among surviving members is insufficient.
+
+## 2026-11-01 — Follow-up 27 response to members 15's serving-node samples (D-102)
+
+Request: measure F15-F11-01's first selection after proven serving and
+F15-AT02's 249 missing ingresses / 5.0975 s gap, per IPv4 and IPv6, with the
+corrected member-only observer. Keep archived F14-01 `cause_status: unproven`.
+
+[All attempts and attribution limits](runs/2026-11-01/followup27/analysis.md)
+and [machine-readable joins](runs/2026-11-01/followup27/campaign.json) are ready.
+The predeclared **four fresh stacks per family** each retain first contact,
+first selection, and a 150-second stream. IPv4: 4/4 first selections, 29,300
+sends, zero missing node ingress; IPv6: 4/4, 29,319, zero missing node ingress.
+The largest consecutive ingress gap is 27.761 ms. The 93 IPv4 and 90 IPv6
+packets with ingress but no origin receipt remain losses; sender completion
+is not AT02 acceptance. No five-SYN failure or five-second ingress gap reproduced.
+
+The IPv6 joins distinguish three events:
+
+- `0876ef42`: eight `::1`-source **type-4 data** messages at both underlay ends,
+  with eight member header errors. Valid-source data resumes on the same
+  receiver index without an intervening handshake; member→node ingress continues.
+- `ae1a2829`: one `::1`-source **type-2 response** and one header error, arriving
+  after the concurrent node-originated handshake had already carried the first
+  request. The next member initiation is 15.600070 s later. The sustained stream
+  starts after that handshake, so the preceding idle interval is not a
+  continuous-forwarding proof.
+- `1ecee8fe`: another such response after the successful first request, with one
+  header error. No further member initiation is captured; the next initiation
+  is the node's normal rekey about 120 s later.
+
+Each run's `initiation-origins.json` supplies the direction-qualified origin
+join. It supersedes an earlier convenience list that also counted incoming
+loopback copies; original packets, timestamps and measured outcomes are intact.
+Full route tables, endpoint/status samples, both-end handshake hashes and every
+socket-write→ingress interval remain in the pinned archive. Private receipts,
+zero capture drops/read errors and member-only tracing were checked. No node
+ruleset observer was added.
+
+These fresh rows do not attribute a common cause to historical F15-F11-01,
+F15-AT02 or F14-01; all three historical files remain byte-identical. Members
+16's original send-time capture and the consumers' full loss attribution remain
+theirs. Ted retains the F11-01 repair choice. No transport, NAT, kernel, member
+validation, probe behavior or NetBird pin changed. The populated-hold arming
+sequence and exact consumer joins are in the preceding Follow-up 27 reply.

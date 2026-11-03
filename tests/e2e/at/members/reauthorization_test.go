@@ -188,6 +188,11 @@ func (l *live) reauthorization(r *record, b *browser, id uuid.UUID, service stri
 	l.forwardingGate(r)
 	before := l.traceForwarding(r, service, id)
 	r.check("D-077 admitted positive control", "counted forwarding before fence", fmt.Sprintf("device_id=%s; counted=%t", id, before), "same native device and controlled HTTPS origin", before)
+	capture := l.startNativeCapture(r, service, "regrant-"+id.String())
+	l.regrantCapture = capture
+	capture.sample("before-fence")
+	stopSamples := capture.periodic()
+	defer func() { l.regrantCapture = nil; stopSamples(); capture.sample("after-regrant"); capture.stop() }()
 	l.holdSnapshot("before D-077 fence withdrawal")
 	if !l.fenceInsert(r, id) {
 		return
@@ -262,6 +267,11 @@ func (l *live) reauthorizationLimit(r *record, id, revoked uuid.UUID, service st
 	})
 	r.check("D-081 limit precondition", "two authorized of limit two; replacement pending", fmt.Sprintf("ready=%t", pending), "real plan downgrade -> entitlement worker reconciliation; no row fixtures", pending)
 	l.traceForwarding(r, "member", l.awaitDevice(l.nativePeer))
+	capture := l.startNativeCapture(r, service, "regrant-"+id.String())
+	l.regrantCapture = capture
+	capture.sample("before-fence")
+	stopSamples := capture.periodic()
+	defer func() { l.regrantCapture = nil; stopSamples(); capture.sample("after-regrant"); capture.stop() }()
 	l.holdSnapshot("before D-077 fence withdrawal")
 	if !l.fenceInsert(r, id) {
 		return

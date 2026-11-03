@@ -1,0 +1,10 @@
+{
+  "command": [
+    "sh",
+    "-c",
+    "test -z \"$(gofmt -l $(git ls-files \"*.go\"))\""
+  ],
+  "exit": 0,
+  "elapsed_seconds": 0.10959861299488693,
+  "public_output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

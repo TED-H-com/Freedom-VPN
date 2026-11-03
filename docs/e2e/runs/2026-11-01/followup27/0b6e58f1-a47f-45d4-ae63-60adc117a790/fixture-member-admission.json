@@ -1,0 +1,67 @@
+{
+  "id": "fixture-member-admission",
+  "title": "Native identity, finite grant, selected exit and counted forwarding",
+  "spec": [
+    "§8",
+    "AT02",
+    "AT12"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "grant",
+      "detail": "202"
+    },
+    {
+      "name": "portal_issuer",
+      "detail": "https://netbird.example.invalid/oauth2"
+    },
+    {
+      "name": "portal_sub",
+      "detail": "[redacted]"
+    },
+    {
+      "name": "join",
+      "detail": "embedded IdP native user; exact peer user id compared with portal subject"
+    },
+    {
+      "name": "same_subject",
+      "detail": "true"
+    },
+    {
+      "name": "device_authorized",
+      "detail": "true"
+    },
+    {
+      "name": "member_netbird",
+      "detail": "netbird_up"
+    },
+    {
+      "name": "devices",
+      "detail": "200 authorized 1 of 1"
+    },
+    {
+      "name": "device_authorized",
+      "detail": "true"
+    },
+    {
+      "name": "binding_revision",
+      "detail": "1"
+    },
+    {
+      "name": "binding_valid_from",
+      "detail": "2026-11-01T15:13:42Z"
+    },
+    {
+      "name": "binding_valid_until",
+      "detail": "2026-11-01T16:13:26Z"
+    },
+    {
+      "name": "binding",
+      "detail": "projected"
+    }
+  ],
+  "at": "2026-11-01T15:16:54Z",
+  "run_id": "0b6e58f1-a47f-45d4-ae63-60adc117a790",
+  "source_commit": "fcf04fd5dcd5fbba91a7c0c635822c26636fcd12"
+}

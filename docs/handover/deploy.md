@@ -1,7 +1,7 @@
 # Production Deployment Runbook (`docs/handover/deploy.md`)
 
-**Current cut — [follow-up 27](follow-up-27.md) (2026-11-01 EST):** Through #385: isolation F14-01 fails the D-104 boundary; members 15 adds serving-node ingress gaps; r19 archived with routed findings. D-140 permits boundary scheduling only. D-141 closes D-139: option (b) is not implemented; option (c) stays. Historical failures stay failed. No new operator guidance.
-**Previous cut — [follow-up 26](follow-up-26.md) (2026-11-01 EST):** Through #382, including the #381 row correction: r18 fixes landed; ISO-F6-01 fixed and AT10 passes; F11-01 closed-node cause unproven; members F14-01 new; members F13-01 origin unproven; updates receipt delivered. D-139 is a provisional design track, option (c) stays in production. Historical failures stay failed.
+**Current cut — [follow-up 29](follow-up-29.md) (2026-11-01 EST):** Through #396: same-boot deny-set adoption gap open; isolation 15 unqualified on a 3.821 µs interleave, signal-15 cause unproven. Devstack 27 proves the TEST ONLY populated hold; consumer rows remain open. D-120 measurement end fixed; every failed run stays failed. D-135–D-138, D-140 and D-141 remain provisional. Seven owner decisions retained.
+**Previous cut — [follow-up 28](follow-up-28.md):** #386–#390 at aae6763f; 19 subtests, five rows, 16 snapshots, 1,644 checks and 47 findings. Historical failures stay failed.
 
 Installer 7 reporting inputs are required: a validated HTTPS control origin
 (`--control-url`) and its readable server CA bundle (`--server-ca`). Generated

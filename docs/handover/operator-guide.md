@@ -1,7 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 27](follow-up-27.md) (2026-11-01 EST):** Through #385: isolation F14-01 fails the D-104 boundary; members 15 adds serving-node ingress gaps; r19 archived with routed findings. D-140 permits boundary scheduling only. D-141 closes D-139: option (b) is not implemented; option (c) stays. Historical failures stay failed. No new operator guidance.
-**Previous cut — [follow-up 26](follow-up-26.md) (2026-11-01 EST):** Through #382, including the #381 row correction: r18 fixes landed; ISO-F6-01 fixed and AT10 passes; F11-01 closed-node cause unproven; members F14-01 new; members F13-01 origin unproven; updates receipt delivered. D-139 is a provisional design track, option (c) stays in production. Historical failures stay failed.
+**Current cut — [follow-up 29](follow-up-29.md) (2026-11-01 EST):** Through #396: same-boot deny-set adoption gap open; isolation 15 unqualified on a 3.821 µs interleave, signal-15 cause unproven. Devstack 27 proves the TEST ONLY populated hold; consumer rows remain open. D-120 measurement end fixed; every failed run stays failed. D-135–D-138, D-140 and D-141 remain provisional. Seven owner decisions retained.
+**Previous cut — [follow-up 28](follow-up-28.md):** #386–#390 at aae6763f; 19 subtests, five rows, 16 snapshots, 1,644 checks and 47 findings. Historical failures stay failed.
 
 ## Operator changes at #369
 
@@ -334,6 +334,17 @@ Portal pointers: `/admin/groups` lists and creates member groups; `/admin/nodes/
 
 ### 3.2 Updating Node Region, Member Groups, or Capacity (`PATCH /api/v1/admin/nodes/{node_id}`)
 
+**2026-11-01 — Known local configuration behaviour at #396.** After a restart
+with changed `extra_denied_v4` or `host_v4`, same-boot adoption can keep the node
+serving on the previously installed `denied_v4` / `host_v4` until its first
+successful Apply. A larger deny set can therefore leave the old, smaller set
+in force. A busy node lock or control timeout can delay Apply; the verifier
+does not read these sets' elements. SIGHUP does not reload these fields.
+The [agent-core 35 dated hand-off](../node/followup35-diagnostic-and-restart-2026-11-01.md)
+provides no safe procedure and no maximum adoption-to-Apply delay. The fix is
+routed to agent-core 36 (refuse adoption on changed sets), then netlab 26
+(verifier content check); it is open at this cutoff. No workaround is promised.
+
 First fetch the node (`GET /api/v1/admin/nodes/{node_id}`) and capture the response `ETag` header (`"<resource_version>"`). Supply `If-Match` and `Idempotency-Key` (`428 Precondition Required` if `If-Match` is missing; `412 Precondition Failed` if stale):
 
 `[Verified on dev/test stack]`
@@ -435,6 +446,23 @@ Each node's observation report (`POST /api/v1/agent/observations`) includes thre
 - **Sanitized `NodeCheck.detail` and `probe_omitted` precedence (`D-058b`, `#168`, `#171`, `docs/node/README.md`, `node/agent/probeexc.go`, `node/agent/attest.go`)**: `NodeCheck.detail` is bounded to `1..500` single-line printable ASCII characters and sanitized on both agent and central ingest so URLs, tokens, secret keys, file paths, SQL, and stack traces never enter `node_observations` or the Admin Portal. Normally, `tunnel_probe.detail` reports which egress probe source ran (`"Egress probe used the signed targets."`, `"Egress probe used the local target."`, `"Egress probe used no extra target."`, or `"Signed egress probe was rejected."`). When a live matching `health-challenge.json` carries `probe_omitted {peer_id, reason}` (`#168`, `#171`, because the updater's D-063 issuer refused the configured `probe_peer`), `tunnel_probe.detail` instead reports `"probe_omitted: <reason>"` (taking precedence over the `ProbeSource` sentence, never containing the peer ID or any address, and retained across sidecar removal or consumption until a later challenge carrying `probe` or `probe_omitted` replaces it), while `tunnel_probe` remains `status: "not_run"` and `data_health` remains `"unknown"` with member forwarding closed (`ProbeRan = false`).
 
 Node detail also includes typed `dns_policy_evidence` from the selected current-incarnation observation. The admin node page labels it as node-reported and shows document ID, digest, generation, outcome, applied time, error code and per-feed evidence. `null` means not reported; neither a newer desired policy nor successful document delivery is substituted as proof of apply. Members see the explanation at `/member/dns-protection`; support must inspect the admin evidence for them.
+
+**2026-11-01 — Node diagnostics (#386).** Adding a trace, or another foreign
+nft table or rule, to a node closes that node by design when it fails the
+fail-closed verifier: `ISOLATION_POLICY_INVALID` makes the agent install the
+deny baseline until the rule is removed and serving verification succeeds.
+The TEST ONLY unscoped `meta nftrace set 1` in a foreign `mangle` table caused
+this in devstack 25; it was harness interference, not a product defect.
+Diagnose from the member side, or capture packets without touching the node's
+ruleset. See the [dated devstack 26 analysis](../e2e/runs/2026-11-01/followup26/analysis.md).
+
+**Known traceroute behaviour (#389).** The fail-closed download source guard
+drops RELATED ICMP errors (fragmentation needed or time exceeded) whose outer
+source is in the spec deny list, even when the quoted connection is allowed.
+That list includes 10/8, 172.16/12, 192.168/16 and 100.64/10. A member's
+traceroute therefore shows no reply for on-path hops with those addresses.
+No exception exists; the [owner question remains open](follow-up-28.md).
+This records current behaviour and promises no fix.
 
 ### 3.5 Revoking (`POST .../revoke`), Retiring (`DELETE /api/v1/admin/nodes/{node_id}`), Incarnation History (`GET /api/v1/admin/nodes/{node_id}/incarnations`), and Cloned-Identity Conflict Runbook (`D-072`, `#211`, `#213`, `#217`, `#223`)
 

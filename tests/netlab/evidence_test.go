@@ -1,10 +1,13 @@
 package netlab
 
 import (
+	"bytes"
+	"compress/gzip"
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -87,10 +90,18 @@ func TestCommittedEvidenceFiles_ValidAndHygieneClean(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		contentPath := path
+		if strings.HasSuffix(path, ".gz") {
+			b, err = gunzipEvidence(b)
+			if err != nil {
+				t.Fatalf("gzip evidence %s: %v", path, err)
+			}
+			contentPath = strings.TrimSuffix(path, ".gz")
+		}
 		// This original G2 artifact is a Go struct dump despite its suffix.
 		// Preserve that historical evidence; still scan its complete text.
 		legacyText := path == "docs/poc/G2-evidence/TestAT12_ISO01_ISO04_AllowDeny/counters.json" && strings.HasPrefix(string(b), "{Counters:map[")
-		if filepath.Ext(path) == ".json" && !legacyText && !json.Valid(b) {
+		if filepath.Ext(contentPath) == ".json" && !legacyText && !json.Valid(b) {
 			t.Errorf("invalid JSON: %s", path)
 		}
 		if strings.HasSuffix(path, "-pins.json") || filepath.Base(path) == "archive.json" {
@@ -112,9 +123,11 @@ func TestCommittedEvidenceFiles_ValidAndHygieneClean(t *testing.T) {
 func verifyEvidencePins(tree fs.FS, manifestPath string, raw []byte) error {
 	var manifest struct {
 		Files []struct {
-			Path   string `json:"path"`
-			SHA256 string `json:"sha256"`
-			Bytes  *int   `json:"bytes"`
+			Path               string `json:"path"`
+			SHA256             string `json:"sha256"`
+			Bytes              *int   `json:"bytes"`
+			UncompressedSHA256 string `json:"uncompressed_sha256"`
+			UncompressedBytes  *int   `json:"uncompressed_bytes"`
 		} `json:"files"`
 	}
 	if err := json.Unmarshal(raw, &manifest); err != nil {
@@ -152,8 +165,58 @@ func verifyEvidencePins(tree fs.FS, manifestPath string, raw []byte) error {
 		if pin.Bytes != nil && len(b) != *pin.Bytes {
 			failures = append(failures, fmt.Errorf("byte length mismatch: %s: got %d, want %d", target, len(b), *pin.Bytes))
 		}
+		if pin.UncompressedSHA256 != "" || pin.UncompressedBytes != nil {
+			if !strings.HasSuffix(target, ".gz") || pin.UncompressedSHA256 == "" || pin.UncompressedBytes == nil {
+				failures = append(failures, fmt.Errorf("incomplete gzip pins: %s", target))
+				continue
+			}
+			raw, err := gunzipEvidence(b)
+			if err != nil {
+				failures = append(failures, fmt.Errorf("gzip pin %s: %w", target, err))
+				continue
+			}
+			if fmt.Sprintf("%x", sha256.Sum256(raw)) != pin.UncompressedSHA256 || len(raw) != *pin.UncompressedBytes {
+				failures = append(failures, fmt.Errorf("uncompressed pin mismatch: %s", target))
+			}
+		}
 	}
 	return errors.Join(failures...)
+}
+
+func gunzipEvidence(b []byte) ([]byte, error) {
+	r, err := gzip.NewReader(bytes.NewReader(b))
+	if err != nil {
+		return nil, err
+	}
+	raw, readErr := io.ReadAll(r)
+	return raw, errors.Join(readErr, r.Close())
+}
+
+func TestD098_GzipPins(t *testing.T) {
+	raw := []byte("{\"test_only\":true}\n")
+	var compressed bytes.Buffer
+	w := gzip.NewWriter(&compressed)
+	if _, err := w.Write(raw); err != nil {
+		t.Fatal(err)
+	}
+	if err := w.Close(); err != nil {
+		t.Fatal(err)
+	}
+	const name = "docs/poc/G2-example-evidence/row.json.gz"
+	tree := fstest.MapFS{name: &fstest.MapFile{Data: compressed.Bytes()}}
+	manifest := fmt.Sprintf(`{"files":[{"path":"row.json.gz","bytes":%d,"sha256":"%x","uncompressed_bytes":%d,"uncompressed_sha256":"%x"}]}`, compressed.Len(), sha256.Sum256(compressed.Bytes()), len(raw), sha256.Sum256(raw))
+	const pins = "docs/poc/G2-example-evidence/retention-pins.json"
+	if err := verifyEvidencePins(tree, pins, []byte(manifest)); err != nil {
+		t.Fatal(err)
+	}
+	bad := strings.Replace(manifest, fmt.Sprintf("%x", sha256.Sum256(raw)), strings.Repeat("0", 64), 1)
+	if err := verifyEvidencePins(tree, pins, []byte(bad)); err == nil || !strings.Contains(err.Error(), "uncompressed pin mismatch") {
+		t.Fatalf("changed uncompressed pin: %v", err)
+	}
+	truncated := compressed.Bytes()[:compressed.Len()-1]
+	if _, err := gunzipEvidence(truncated); err == nil {
+		t.Fatal("truncated gzip accepted")
+	}
 }
 
 func immutableEvidencePath(target string) bool {

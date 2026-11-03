@@ -82,7 +82,9 @@ func TestE2E_Followup18Native(t *testing.T) {
 	r.desired(ctx)
 	r.publish(ctx, admin, r.nodeID)
 	r.fixtureServingMember(ctx, admin)
-	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
+	if os.Getenv("FVPN_E2E_FOLLOWUP27") == "hold" {
+		r.populatedHold27(ctx, s, admin)
+	} else if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" && os.Getenv("FVPN_E2E_FOLLOWUP27") == "" {
 		r.servingGate26(ctx, "post-capture-recovery")
 		r.regrant26(ctx, admin)
 	}
@@ -397,6 +399,9 @@ func (r *runner) nativeMTU18(ctx context.Context, s *Stack) {
 }
 
 func nativeCampaignDirectory() string {
+	if os.Getenv("FVPN_E2E_FOLLOWUP27") != "" {
+		return "followup27"
+	}
 	if os.Getenv("FVPN_E2E_FOLLOWUP26") == "1" {
 		return "followup26"
 	}
@@ -532,6 +537,9 @@ func (r *runner) finishNativeCapture22(ctx context.Context, rec *Record, c *Nati
 	}
 	out := filepath.Join(r.dir, "headers", rec.ID)
 	args := []string{filepath.Join(r.lab.root, "tests/e2e/decode_capture.py"), "--stable-addresses", "--wireguard-headers", "--dns-headers", "--out", out}
+	if os.Getenv("FVPN_E2E_FOLLOWUP27") != "" {
+		args = append(args, "--fixture-sequences")
+	}
 	for _, role := range c.roles() {
 		args = append(args, filepath.Join(private, role+".pcap"))
 	}
