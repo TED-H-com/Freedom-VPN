@@ -1,0 +1,136 @@
+{
+  "run_id": "81b638e8-be59-4996-9594-14dd402ebb86",
+  "source_commit": "3ba0856487288b9be3cf81f3e3afa37b0fa43a47",
+  "cases": [
+    {
+      "case": "AT05",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 31
+      },
+      "failures": []
+    },
+    {
+      "case": "AT01",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 23
+      },
+      "failures": []
+    },
+    {
+      "case": "AT02",
+      "status": "fail",
+      "subchecks": {
+        "pass": 190,
+        "fail": 3
+      },
+      "failures": [
+        {
+          "name": "D-077 re-grant counted forwarding",
+          "status": "fail",
+          "at": "2026-11-03T08:11:36Z",
+          "expected": "origin HTTP receipt and both device counters increase",
+          "command": "CA-verified HTTPS through fvmb0 with named device counter attribution"
+        },
+        {
+          "name": "D-135 D-136 node-wide baseline transitions (provisional)",
+          "status": "fail",
+          "at": "2026-11-03T08:25:15Z",
+          "expected": "every baseline to next successful Apply retained; every sibling loss counted; recovery required; no guard or baseline exclusion waives loss",
+          "command": "original producer stream and continuous sibling capture; command bounds, not kernel commits"
+        },
+        {
+          "name": "F11-03 D-135 admitted sibling recovery",
+          "status": "fail",
+          "at": "2026-11-03T08:25:17Z",
+          "expected": "revoked source dropped; every sibling loss counted; baseline-to-next-successful-Apply bracket reported; forwarding returns after that Apply",
+          "command": "same boot/run/sequence producer records and continuous node ingress/egress; diagnostic labels never waive failures"
+        }
+      ]
+    },
+    {
+      "case": "AT03",
+      "status": "pass",
+      "subchecks": {
+        "pass": 98
+      },
+      "failures": []
+    },
+    {
+      "case": "AT04",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 113
+      },
+      "failures": []
+    },
+    {
+      "case": "AT08",
+      "status": "pass",
+      "subchecks": {
+        "pass": 35
+      },
+      "failures": []
+    },
+    {
+      "case": "AT20",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 89
+      },
+      "failures": []
+    },
+    {
+      "case": "AT21",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 13
+      },
+      "failures": []
+    },
+    {
+      "case": "AT22",
+      "status": "blocked",
+      "subchecks": {
+        "pass": 40
+      },
+      "failures": []
+    },
+    {
+      "case": "AT09",
+      "status": "fail",
+      "subchecks": {
+        "pass": 59,
+        "fail": 2,
+        "blocked": 7
+      },
+      "failures": [
+        {
+          "name": "D-067 revision 11 provisional lease observation",
+          "status": "fail",
+          "at": "2026-11-03T08:51:48Z",
+          "expected": "provisional observations report awaiting_member_grants (never lease_expired); each failed lease/qos/source_binding check carries AWAITING_MEMBER_GRANTS or, with safety_check_failed, its active enforcement safety code (D-126); exactly one stage=lease error retains the provisional cause",
+          "command": "inspect post-restart provisional api.ObservationReport rows and GET /admin/nodes/{node2}"
+        },
+        {
+          "name": "same-generation D-067 restart recovery and lease sequence",
+          "status": "fail",
+          "at": "2026-11-03T08:51:48Z",
+          "expected": "forwarding restored on unchanged desired generation within bounded schedule; provisional renewal yields populated lease and counted fvmb0 transfer",
+          "command": "GET /admin/nodes/{node2} before/during/after restart; SELECT serving_leases and contiguous node_observations; verify counted member transfer"
+        }
+      ]
+    }
+  ],
+  "subchecks": {
+    "pass": 691,
+    "fail": 5,
+    "blocked": 7
+  },
+  "complete_cases": {
+    "blocked": 6,
+    "fail": 2,
+    "pass": 2
+  }
+}
