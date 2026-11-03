@@ -612,8 +612,8 @@ latches `recovery_required` with no member serving for the life of that
 process. The updated node does not serve members until its agent is restarted.
 This is a production defect, owned by agent-core with the updater as co-owner;
 no fix date is promised. Devstack 30's #406 report and main's
-`node/updater/{apply,engine}.go` and `node/agent/{engine,decide}.go` establish
-this path. The devstack `node-restart` observation is not a verified production
+`node/updater/apply.go`, `node/updater/engine.go`, `node/agent/engine.go` and
+`node/agent/decide.go` establish this path. The devstack `node-restart` observation is not a verified production
 operator procedure; none is promised. The nightly `lease-expiry` listing
 keeps this defect visible and does not accept the behavior.
 
