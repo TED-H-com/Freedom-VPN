@@ -1,0 +1,50 @@
+{
+  "id": "run-result",
+  "title": "Original forced-conflict invocation failed before enrollment",
+  "spec": [
+    "\u00a714.5",
+    "API01"
+  ],
+  "status": "fail",
+  "observations": [
+    {
+      "name": "go_test_exit",
+      "detail": "1"
+    },
+    {
+      "name": "test_only_stale_etag",
+      "detail": "true"
+    },
+    {
+      "name": "failure",
+      "detail": "underlay requires a running fresh node waiting for enrollment"
+    },
+    {
+      "name": "cause",
+      "detail": "The local admission wrapper printed free before docker stdout. lab.stage expects one JSON document and rejected the prefixed status. The wrapper was fixed after this invocation ended."
+    },
+    {
+      "name": "diagnostic_readback",
+      "detail": "At 2026-11-03T23:07:56.240904Z, the corrected wrapper returned {\"stage\":\"waiting_token\"} from the same node."
+    },
+    {
+      "name": "publisher_reached",
+      "detail": "false"
+    },
+    {
+      "name": "real_conflict_attempts",
+      "detail": "0"
+    },
+    {
+      "name": "retry",
+      "detail": "false; the no-run-retry instruction is honored. The required live forced-conflict proof remains not exercised."
+    },
+    {
+      "name": "original_summary_scope",
+      "detail": "acceptance-summary.md contains the one completed admin-login record only; the original go test invocation failed at its next setup step."
+    }
+  ],
+  "at": "2026-11-03T23:06:41.422688Z",
+  "run_id": "e22872b7-1112-4082-8e2b-235275f4a659",
+  "source_commit": "fff680c6c2cd539b77cc534ce9d090f8ad9a8ec3"
+}

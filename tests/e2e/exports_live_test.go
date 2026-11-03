@@ -349,11 +349,10 @@ func (r *runner) reconcileClone(ctx context.Context, admin *session, fixture *Cl
 		note("revoke_get", httpDetail(detail, err))
 		return false
 	}
-	rev, err := admin.call(ctx, "POST", r.lab.public+"/api/v1/admin/nodes/"+r.nodeID.String()+"/revoke", api.ReasonRequest{Reason: "e2e clone conflict reconcile"}, map[string]string{
-		"Idempotency-Key": uuid.NewString(), "If-Match": detail.Header.Get("ETag"),
-	})
-	note("revoke", httpDetail(rev, err))
-	if err != nil || rev.Status != 202 {
+	nodeURL := r.lab.public + "/api/v1/admin/nodes/" + r.nodeID.String()
+	result := admin.writeNode(ctx, "POST", nodeURL+"/revoke", nodeURL, api.ReasonRequest{Reason: "e2e clone conflict reconcile"}, detail.Header.Get("ETag"), revokedNode, []int{202}, note)
+	note("revoke", httpDetail(result.Reply, result.Err))
+	if !result.accepted(202) {
 		note("owner", "w3-wire-nodes: revoke of a frozen node")
 		return false
 	}
