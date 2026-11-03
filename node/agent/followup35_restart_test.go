@@ -123,16 +123,11 @@ func TestAT13_F35_RestartFirstApplyRendersConfiguredDenyGrowth(t *testing.T) {
 			if len(p.models) != before {
 				t.Fatal("Boot unexpectedly ran a full Apply")
 			}
-			if next.serving != adopt || mustBeat(t, r).Serving != adopt {
-				t.Fatalf("unexpected adoption: serving=%v errors=%v", next.serving, next.decision.Errors)
+			if next.serving || mustBeat(t, r).Serving || !next.baselineOK {
+				t.Fatalf("changed sets adopted: serving=%v errors=%v", next.serving, next.decision.Errors)
 			}
-			if adopt {
-				// Known gap: the real verifier accepts the old set contents.
-				// This documents current behavior, not a safe-adoption guarantee.
-				if slices.Contains(p.ex.table.sets["denied_v4"].elems, "203.0.113.9/32") || slices.Contains(p.ex.table.sets["host_v4"].elems, "198.51.100.9/32") {
-					t.Fatal("fixture did not retain old sets across adoption")
-				}
-				t.Log("known gap: Boot resumed serving on old sets before the first Step")
+			if len(p.ex.table.sets["allowed_v4"].elems) != 0 {
+				t.Fatal("failed adoption did not install the baseline")
 			}
 			stepOK(t, r) // Run calls Step immediately after Boot.
 			if len(p.models) <= before || !p.results[before].Verified || !next.serving {

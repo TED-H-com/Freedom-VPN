@@ -1,0 +1,190 @@
+{
+  "test_only": true,
+  "scenario": "TestLabF36_AT13_RestartChangedSetsStopsEstablishedFlow",
+  "production_commit": "6715bf46",
+  "raw_sha256": "7d2fefde77ae1835092768fef78105b7748f5d1e6365fb53a29b96fad54186eb",
+  "passed": true,
+  "scope": "Same-kernel established UDP restart mechanism; no physical arm64 or AT timing qualification. Times are CLOCK_MONOTONIC decimal strings.",
+  "timeline": {
+    "restart_ns": "134004269799715",
+    "baseline_completed_ns": "134004317327987",
+    "baseline_observed_ns": "134004297360005",
+    "release_ns": "134008701359856",
+    "applied_ns": "134008852376909"
+  },
+  "flow": {
+    "before_baseline": {
+      "sent": 102,
+      "received": 101
+    },
+    "baseline_through_apply_observation": {
+      "sent": 56,
+      "received": 0
+    },
+    "after_apply_observation": {
+      "sent": 12,
+      "received": 0
+    },
+    "source_ports": [
+      53770
+    ]
+  },
+  "conntrack_before": "udp      17 120 src=100.64.1.1 dst=203.0.113.11 sport=53770 dport=9000 src=203.0.113.11 dst=192.0.2.37 sport=9000 dport=53770 [ASSURED] mark=0 use=1\n",
+  "conntrack_after": "udp      17 119 src=100.64.1.1 dst=203.0.113.11 sport=53770 dport=9000 src=203.0.113.11 dst=192.0.2.37 sport=9000 dport=53770 [ASSURED] mark=0 use=1\n",
+  "rules": {
+    "retained_rules": {
+      "sha256": "1a430f58e692e15d08fd7a3280addfe88be59471a1d53416b57dd854bf6a6d5f",
+      "baseline": false,
+      "new_denial": false
+    },
+    "baseline_rules": {
+      "sha256": "8275fbcd327b72b13d5826df048d8e7fcc8cd315241090bd9760e9031cc8bfa7",
+      "baseline": true,
+      "new_denial": false
+    },
+    "blocked_rules": {
+      "sha256": "ef59ac3e857f51a44e5cd03ec38121df2a18bbfdda944417c768543671283649",
+      "baseline": true,
+      "new_denial": false
+    },
+    "applied_rules": {
+      "sha256": "cc49f393cfa4f25bb1ba0b307e81ff35890f1236179ec1d07c336fe47aa05157",
+      "baseline": false,
+      "new_denial": true
+    }
+  },
+  "boot_baseline": [
+    {
+      "cause": "boot_unverified",
+      "start_ns": "134004277403865",
+      "end_ns": "134004317327987",
+      "succeeded": true
+    }
+  ],
+  "heartbeat": [
+    {
+      "mono_ns": "134004325693910",
+      "policy_expires_mono_ns": "0",
+      "generation": "3",
+      "baseline_ok": true,
+      "serving": false,
+      "reason": "lease_expired",
+      "written": true
+    },
+    {
+      "mono_ns": "134006416957429",
+      "policy_expires_mono_ns": "0",
+      "generation": "3",
+      "baseline_ok": true,
+      "serving": false,
+      "reason": "lease_expired",
+      "written": true
+    },
+    {
+      "mono_ns": "134008477085817",
+      "policy_expires_mono_ns": "0",
+      "generation": "3",
+      "baseline_ok": true,
+      "serving": false,
+      "reason": "lease_expired",
+      "written": true
+    },
+    {
+      "mono_ns": "134008844184404",
+      "policy_expires_mono_ns": "137608267474341",
+      "generation": "3",
+      "baseline_ok": true,
+      "serving": true,
+      "reason": "serving",
+      "written": true
+    },
+    {
+      "mono_ns": "134008881920005",
+      "policy_expires_mono_ns": "137608267474341",
+      "generation": "3",
+      "baseline_ok": true,
+      "serving": true,
+      "reason": "serving",
+      "written": true
+    },
+    {
+      "mono_ns": "134008884009908",
+      "policy_expires_mono_ns": "137608267474341",
+      "generation": "3",
+      "baseline_ok": true,
+      "serving": true,
+      "reason": "serving",
+      "written": true
+    },
+    {
+      "mono_ns": "134009509600993",
+      "policy_expires_mono_ns": "137608267474341",
+      "generation": "3",
+      "baseline_ok": true,
+      "serving": true,
+      "reason": "serving",
+      "written": true
+    },
+    {
+      "mono_ns": "134009657612166",
+      "policy_expires_mono_ns": "137608486919857",
+      "generation": "3",
+      "baseline_ok": true,
+      "serving": true,
+      "reason": "serving",
+      "written": true
+    },
+    {
+      "mono_ns": "134009687759369",
+      "policy_expires_mono_ns": "137608486919857",
+      "generation": "3",
+      "baseline_ok": true,
+      "serving": true,
+      "reason": "serving",
+      "written": true
+    },
+    {
+      "mono_ns": "134009689869160",
+      "policy_expires_mono_ns": "137608486919857",
+      "generation": "3",
+      "baseline_ok": true,
+      "serving": true,
+      "reason": "serving",
+      "written": true
+    }
+  ],
+  "first_apply": {
+    "sequence": "13",
+    "anchor": {
+      "mono_before_ns": "134008803192841",
+      "wall": "2026-11-01T16:27:51.286821755Z",
+      "mono_after_ns": "134008803193091"
+    },
+    "timing": {
+      "version": 1,
+      "clock": "CLOCK_MONOTONIC",
+      "operation": "apply",
+      "candidate_generation": "3",
+      "start_ns": "134008718175539",
+      "end_ns": "134008803086431",
+      "succeeded": true,
+      "verified": true,
+      "deadline": {
+        "granularity_ns": "1000000",
+        "install_bound_ns": "100000000",
+        "apply_start_ns": "134008718175539",
+        "render_start_ns": "134008738341646",
+        "install_start_ns": "134008738895968",
+        "installed_by_ns": "134008755651194",
+        "install_ok": true,
+        "release_start_ns": "134008755658558",
+        "release_end_ns": "134008771694532",
+        "guard_released": true
+      }
+    },
+    "timing_detail_omitted": [
+      "commands",
+      "verifications"
+    ]
+  }
+}

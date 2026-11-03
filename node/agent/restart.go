@@ -2,8 +2,11 @@ package agent
 
 import (
 	"context"
+	"maps"
+	"net/netip"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/node/watchdog"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -55,6 +58,12 @@ func (e *Engine) adoptStoredServing(ctx context.Context) bool {
 	// Rebuild all authorization fields above; only reuse the sample, and only
 	// when it belongs to this same-boot lease anchor.
 	installed := e.appliedModel
+	// Adoption never installs the candidate. Any changed deny/host set,
+	// including a shrink, requires Boot's baseline followed by a full Apply.
+	// Compare with retained_applied before replacing that installed model.
+	if !sameRestartSets(*installed, d.Model) {
+		return false
+	}
 	if installed.NowMono < e.leaseMono || installed.NowMono > now ||
 		!installed.Now.Equal(e.lease.IssuedAt.Add(installed.NowMono-e.leaseMono)) {
 		return false
@@ -83,6 +92,33 @@ func (e *Engine) adoptStoredServing(ctx context.Context) bool {
 	e.leaseRefreshPending = true // try central promptly, retain authorization on an outage
 	e.log.Info("serving rules adopted", "generation", e.appliedGen, "policy_expires_mono_ns", int64(e.policyExpires))
 	return true
+}
+
+func sameRestartSets(installed, candidate enforce.Model) bool {
+	// nil DeniedV4 means the spec defaults, not an empty deny set.
+	if installed.DeniedV4 == nil {
+		installed.DeniedV4 = enforce.SpecDeniedV4()
+	}
+	if candidate.DeniedV4 == nil {
+		candidate.DeniedV4 = enforce.SpecDeniedV4()
+	}
+	return sameRestartPrefixes(installed.DeniedV4, candidate.DeniedV4) &&
+		sameRestartPrefixes(installed.ExtraDeniedV4, candidate.ExtraDeniedV4) &&
+		sameRestartPrefixes(installed.HostV4, candidate.HostV4)
+}
+
+func sameRestartPrefixes(a, b []netip.Prefix) bool {
+	sets := [2]map[netip.Prefix]bool{}
+	for i, prefixes := range [][]netip.Prefix{a, b} {
+		sets[i] = make(map[netip.Prefix]bool, len(prefixes))
+		for _, p := range prefixes {
+			if !p.IsValid() || !p.Addr().Is4() {
+				return false
+			}
+			sets[i][p.Masked()] = true
+		}
+	}
+	return maps.Equal(sets[0], sets[1])
 }
 
 // An ordinary process replacement leaves the live, expiring rules and open
