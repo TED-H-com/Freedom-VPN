@@ -1,0 +1,8 @@
+{
+  "test_only": true,
+  "attempt": "initial parser unit run",
+  "exit_code": 1,
+  "result": "5 tests passed; bad_headers case 2 did not raise",
+  "cause": "The test mutated only the low timestamp byte, leaving a valid nanosecond value. Corrected the fixture to set its high byte, exceeding 999999999; parser behavior unchanged.",
+  "live_attempt": false
+}

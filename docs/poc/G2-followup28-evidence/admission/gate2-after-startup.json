@@ -1,0 +1,50 @@
+{
+  "test_only": true,
+  "wait_seconds": 0.14387250800064066,
+  "admitted": true,
+  "ignore_first_since_boot_row": true,
+  "rows": [
+    {
+      "hold": {
+        "utc": "2026-11-03T07:56:33.959907+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2627323 /bin/sh -c TMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' GOTMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n2627324 <home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n2631695 /bin/sh -c set -eu; \\ status=0; \\ make -f mk/netlab.mk netlab-up FVPN_LAB_PREFIX='fvpn-w1-netlab-f28' || status=$?; \\ if [ $status -eq 0 ]; then \\ ?cd <worktree> && python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX='fvpn-w1-netlab-f28' \\ ??go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$?; \\ fi; \\ make -f mk/netlab.mk netlab-down FVPN_LAB_PREFIX='fvpn-w1-netlab-f28' || true; \\ exit $status\n2632758 python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w1-netlab-f28 go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n2632759 python3 <worktree>/.agent/tmp/fvpn-w1-netlab-f28-tools/go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2627324,
+            "ppid": 2627323,
+            "args": "<home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": []
+      },
+      "after": {
+        "pgrep": "2627323 /bin/sh -c TMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' GOTMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n2627324 <home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n2631695 /bin/sh -c set -eu; \\ status=0; \\ make -f mk/netlab.mk netlab-up FVPN_LAB_PREFIX='fvpn-w1-netlab-f28' || status=$?; \\ if [ $status -eq 0 ]; then \\ ?cd <worktree> && python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX='fvpn-w1-netlab-f28' \\ ??go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab || status=$?; \\ fi; \\ make -f mk/netlab.mk netlab-down FVPN_LAB_PREFIX='fvpn-w1-netlab-f28' || true; \\ exit $status\n2632758 python3 tests/netlab/scripts/disktmp.py env FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w1-netlab-f28 go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n2632759 python3 <worktree>/.agent/tmp/fvpn-w1-netlab-f28-tools/go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 -v ./tests/netlab\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2627324,
+            "ppid": 2627323,
+            "args": "<home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": []
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:56:34.070516+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    }
+  ]
+}
