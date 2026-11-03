@@ -138,6 +138,21 @@ func (l *lab) secret(name string) (string, error) {
 	return s, nil
 }
 
+type session struct {
+	http     *http.Client
+	csrf     string
+	role     string
+	memberID string
+}
+
+func (s *session) call(ctx context.Context, method, url string, body any, headers map[string]string) (reply, error) {
+	return (&httpSession{http: s.http, csrf: s.csrf}).call(ctx, method, url, body, headers)
+}
+
+func (s *session) writeNode(ctx context.Context, method, writeURL, readURL string, body any, etag string, intended func([]byte) bool, success []int, note func(string, string)) nodeWriteResult {
+	return (&httpSession{http: s.http, csrf: s.csrf}).writeNode(ctx, method, writeURL, readURL, body, etag, intended, success, note)
+}
+
 func (l *lab) newSession() (*session, error) {
 	jar, err := cookiejar.New(nil)
 	if err != nil {

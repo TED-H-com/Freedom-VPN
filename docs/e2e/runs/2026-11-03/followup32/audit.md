@@ -28,9 +28,10 @@ central liveness sweep can still advance it.
 | `tests/e2e/feed_scenario_test.go:68` | policy activation POST | No | Unchanged. |
 | `tests/e2e/followup30_live_test.go:285` (baseline 290) | member suspension PATCH | No, for accepted node observations | Unchanged. Member versions can separately change under admin/entitlement work (`internal/entitlement/store.go:124,151`); node report completion changes the member operation, not `members.resource_version`. |
 
-`http_session.go` is an exact extraction of `session`, `reply`, `session.call`
-and `errorCode` from the tagged harness so ordinary non-stack stub tests call
-the actual HTTP client. Its behavior and every other `session.call` /
+`http_session.go` extracts `reply`, the HTTP call body and `errorCode`
+from the tagged harness into `httpSession`, so ordinary non-stack stub tests
+call the actual HTTP client. Tagged `session` keeps its login metadata and
+delegates to that implementation. Its behavior and every other `session.call` /
 `Stack.Call` caller are unchanged. `node_write.go` is the only retry loop added.
 Synthetic stub write sites in `node_write_test.go` deliberately induce conflicts;
 they are tests of the helper, not further live conditional-write sites.
@@ -39,7 +40,7 @@ No owned pre-existing test expected a node 412 as its successful result.
 ## Contract and key trace
 
 - OpenAPI `IfMatch` (`contracts/openapi.yaml:2788`) requires the last-read strong
-  ETag. `ResourceVersionConflict` (`:2990`) instructs re-reading and provides
+  ETag. `PreconditionFailed` (`:2990`) instructs re-reading and provides
   `details.current_resource_version`. NodeDetail `usage_outbox` (`:3876`)
   explicitly documents observations advancing the shared node ETag.
 - OpenAPI `IdempotencyKey` (`:2762`) and spec §14.5 scope a UUID to principal,
@@ -48,7 +49,7 @@ No owned pre-existing test expected a node 412 as its successful result.
 - `internal/httpapi/commands.go:142-181` hashes the body, reserves the key and
   executes the handler in the same transaction. Handler errors return before
   `CompleteIdempotent`; `internal/db/tx.go:67-84` rolls back. `SetResult` only
-  accepts durable 2xx results (`commands.go:65-69`). A 412 is **not stored**.
+  accepts durable 2xx results (`commands.go:69-70`). A 412 is **not stored**.
 - Capacity is routed through `internal/nodes/httpwire/handlers.go:240`;
   publication through `internal/nodes/httpwire/state.go:210`. Both use that
   command boundary (`internal/nodes/commandtx/transaction.go:47-58` suppresses

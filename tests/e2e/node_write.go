@@ -81,7 +81,7 @@ func (r nodeWriteResult) accepted(statuses ...int) bool {
 // failed write's transaction (including its key reservation) is rolled back by
 // httpapi.Commands; the body hash excludes If-Match. Keep one key and body for
 // this logical command. No other response or transport failure is retried.
-func (s *session) writeNode(ctx context.Context, method, writeURL, readURL string, body any, etag string, intended func([]byte) bool, success []int, note func(string, string)) (out nodeWriteResult) {
+func (s *httpSession) writeNode(ctx context.Context, method, writeURL, readURL string, body any, etag string, intended func([]byte) bool, success []int, note func(string, string)) (out nodeWriteResult) {
 	trace := nodeWriteTrace{StartedAt: time.Now().UTC(), MaxAttempts: nodeWriteAttempts, LimitSeconds: int(nodeWriteTimeout / time.Second), Status: StatusBlocked}
 	defer func() {
 		trace.FinishedAt = time.Now().UTC()

@@ -92,7 +92,7 @@ func TestAPI01_NodeWriteConflict(t *testing.T) {
 						}
 					}))
 					defer server.Close()
-					client := &session{http: server.Client()}
+					client := &httpSession{http: server.Client()}
 					var trace nodeWriteTrace
 					notes := 0
 					out := client.writeNode(t.Context(), command.method, server.URL+path+command.suffix, server.URL+path, command.body, `"1"`, command.matches, []int{202}, func(name, raw string) {
@@ -183,7 +183,7 @@ func TestAPI01_NodeWriteStopsOnReadOrTransportFailure(t *testing.T) {
 			}
 			var trace nodeWriteTrace
 			start := time.Now()
-			out := (&session{http: server.Client()}).writeNode(ctx, "PATCH", server.URL+"/node", server.URL+"/node", map[string]string{"name": "TEST ONLY"}, `"1"`, nodeFieldsMatch(map[string]string{"name": "TEST ONLY"}), []int{202}, func(_, raw string) { _ = json.Unmarshal([]byte(raw), &trace) })
+			out := (&httpSession{http: server.Client()}).writeNode(ctx, "PATCH", server.URL+"/node", server.URL+"/node", map[string]string{"name": "TEST ONLY"}, `"1"`, nodeFieldsMatch(map[string]string{"name": "TEST ONLY"}), []int{202}, func(_, raw string) { _ = json.Unmarshal([]byte(raw), &trace) })
 			if out.accepted(202) || trace.Status != StatusBlocked || len(trace.Attempts) != 1 || time.Since(start) > 2*time.Second {
 				t.Fatalf("result %+v trace %+v", out, trace)
 			}
@@ -222,7 +222,7 @@ func TestAPI01_NodeWriteTotalDeadline(t *testing.T) {
 	defer server.Close()
 	var trace nodeWriteTrace
 	start := time.Now()
-	out := (&session{http: server.Client()}).writeNode(t.Context(), "PATCH", server.URL+"/node", server.URL+"/node", nil, `"1"`, revokedNode, []int{202}, func(_, raw string) { _ = json.Unmarshal([]byte(raw), &trace) })
+	out := (&httpSession{http: server.Client()}).writeNode(t.Context(), "PATCH", server.URL+"/node", server.URL+"/node", nil, `"1"`, revokedNode, []int{202}, func(_, raw string) { _ = json.Unmarshal([]byte(raw), &trace) })
 	elapsed := time.Since(start)
 	if out.accepted(202) || trace.Status != StatusBlocked || trace.Outcome != "time_limit" || len(trace.Attempts) != 1 || trace.Attempts[0].Reread == nil || !trace.Attempts[0].Reread.Transport || elapsed < nodeWriteTimeout || elapsed > nodeWriteTimeout+2*time.Second {
 		t.Fatalf("total deadline: elapsed=%s trace=%+v", elapsed, trace)

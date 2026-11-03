@@ -9,11 +9,9 @@ import (
 )
 
 // Calls remain single-shot; only writeNode handles version conflicts.
-type session struct {
-	http     *http.Client
-	csrf     string
-	role     string
-	memberID string
+type httpSession struct {
+	http *http.Client
+	csrf string
 }
 
 type reply struct {
@@ -23,7 +21,7 @@ type reply struct {
 	Code   string
 }
 
-func (s *session) call(ctx context.Context, method, url string, body any, headers map[string]string) (reply, error) {
+func (s *httpSession) call(ctx context.Context, method, url string, body any, headers map[string]string) (reply, error) {
 	var reader io.Reader
 	if body != nil {
 		raw, err := json.Marshal(body)

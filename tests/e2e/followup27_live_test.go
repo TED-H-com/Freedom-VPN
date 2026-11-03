@@ -8,8 +8,6 @@ import (
 	"os"
 	"testing"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 func TestE2E_Followup27(t *testing.T) {
