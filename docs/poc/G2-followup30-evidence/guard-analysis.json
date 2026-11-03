@@ -1,0 +1,803 @@
+{
+  "test_only": true,
+  "historical_B1": "FAIL",
+  "F27_01": "unresolved: this window does not recover B1 packets",
+  "tcp_summary": {
+    "applies": 101,
+    "verified": 101,
+    "tcp_reads": 118,
+    "tcp_failures": 0,
+    "segments": 381,
+    "retransmissions": 7,
+    "repeat_acks": 1,
+    "node_guard_overlap_segments": 28,
+    "guard_boundary_crossing_segments": [
+      121,
+      182,
+      311
+    ],
+    "capture_packets": {
+      "origin": 381,
+      "node": 755,
+      "responder": 374
+    },
+    "unmatched_observations": 0,
+    "max_apply_wall_mono_drift_ns": 310
+  },
+  "missing_node_egresses": [
+    {
+      "wall_ns": "1793705327074245277",
+      "seq": 622216375,
+      "ack": 3301956698,
+      "data_length": 3,
+      "since_original_ns": null,
+      "since_previous_overlapping_ns": null,
+      "segment": 29,
+      "direction": "request",
+      "kind": "data",
+      "retransmission": false,
+      "ingress": 57,
+      "exact_guard_logs": [
+        1
+      ],
+      "attributed": true
+    },
+    {
+      "wall_ns": "1793705330715609211",
+      "seq": 622216442,
+      "ack": 3301956765,
+      "data_length": 4,
+      "since_original_ns": null,
+      "since_previous_overlapping_ns": null,
+      "segment": 81,
+      "direction": "request",
+      "kind": "data",
+      "retransmission": false,
+      "ingress": 160,
+      "exact_guard_logs": [
+        2
+      ],
+      "attributed": true
+    },
+    {
+      "wall_ns": "1793705330923763678",
+      "seq": 622216442,
+      "ack": 3301956765,
+      "data_length": 4,
+      "since_original_ns": 208154467,
+      "since_previous_overlapping_ns": 208154467,
+      "segment": 82,
+      "direction": "request",
+      "kind": "data",
+      "retransmission": true,
+      "ingress": 161,
+      "exact_guard_logs": [
+        3
+      ],
+      "attributed": true
+    },
+    {
+      "wall_ns": "1793705335777011975",
+      "seq": 622216534,
+      "ack": 3301956857,
+      "data_length": 4,
+      "since_original_ns": null,
+      "since_previous_overlapping_ns": null,
+      "segment": 152,
+      "direction": "request",
+      "kind": "data",
+      "retransmission": false,
+      "ingress": 300,
+      "exact_guard_logs": [
+        4
+      ],
+      "attributed": true
+    },
+    {
+      "wall_ns": "1793705344722082506",
+      "seq": 622216706,
+      "ack": 3301957029,
+      "data_length": 4,
+      "since_original_ns": null,
+      "since_previous_overlapping_ns": null,
+      "segment": 282,
+      "direction": "request",
+      "kind": "data",
+      "retransmission": false,
+      "ingress": 559,
+      "exact_guard_logs": [
+        15
+      ],
+      "attributed": true
+    },
+    {
+      "wall_ns": "1793705344932635452",
+      "seq": 622216710,
+      "ack": 3301957033,
+      "data_length": 0,
+      "since_original_ns": null,
+      "since_previous_overlapping_ns": null,
+      "segment": 285,
+      "direction": "request",
+      "kind": "ACK",
+      "retransmission": false,
+      "ingress": 564,
+      "exact_guard_logs": [
+        16
+      ],
+      "attributed": true
+    },
+    {
+      "wall_ns": "1793705350070162285",
+      "seq": 622216788,
+      "ack": 3301957111,
+      "data_length": 5,
+      "since_original_ns": null,
+      "since_previous_overlapping_ns": null,
+      "segment": 339,
+      "direction": "request",
+      "kind": "data",
+      "retransmission": false,
+      "ingress": 671,
+      "exact_guard_logs": [
+        18
+      ],
+      "attributed": true
+    }
+  ],
+  "all_missing_attributed": true,
+  "timestamp_precision_ns": [
+    1000
+  ],
+  "kernel_timestamp_present": 18,
+  "kernel_timestamp_absent": 0,
+  "nflog_sequence_present": 0,
+  "log_ip_bytes": 1044,
+  "derived_log_bytes": 9975,
+  "log_count": 18,
+  "tcp_log_count": 7,
+  "exact_matches": 7,
+  "logged_tcp_with_egress": 0,
+  "capture": {
+    "test_only": true,
+    "start": {
+      "wall_ns": "1793705325251582003",
+      "mono_ns": "28767702959927"
+    },
+    "group": 29,
+    "ready": {
+      "wall_ns": "1793705325262650279",
+      "mono_ns": "28767714030215"
+    },
+    "end": {
+      "wall_ns": "1793705352358504164",
+      "mono_ns": "28794809881925"
+    },
+    "stats": {
+      "captured": 18,
+      "received_by_filter": 18,
+      "dropped_by_kernel": 0
+    },
+    "raw_bytes": 3664,
+    "completeness_limit": "Positive logs identify a rule; absence alone is not proof of no drop. Match all missing TCP segments independently."
+  },
+  "tcp_snapshot_cost_ns": 5367775832,
+  "cost": {
+    "install_ns": {
+      "count": 101,
+      "min": 8514403,
+      "median": 13684706,
+      "p95": 24470368,
+      "max": 69025183,
+      "mean": 15856344.594059406
+    },
+    "release_ns": {
+      "count": 101,
+      "min": 7931815,
+      "median": 13153761,
+      "p95": 22889335,
+      "max": 35959668,
+      "mean": 14823568.633663366
+    },
+    "outer_guard_ns": {
+      "count": 101,
+      "min": 17883058,
+      "median": 28471576,
+      "p95": 43438670,
+      "max": 94665010,
+      "mean": 30684813.504950494
+    },
+    "installed_to_release_ns": {
+      "count": 101,
+      "min": 1888,
+      "median": 5087,
+      "p95": 8232,
+      "max": 14273,
+      "mean": 4900.277227722772
+    },
+    "producer_outer_guard_ns": {
+      "count": 101,
+      "min": 17905167,
+      "median": 28493114,
+      "p95": 43459978,
+      "max": 94684882,
+      "mean": 30704514.94059406
+    },
+    "added_script_bytes": {
+      "count": 101,
+      "min": 138,
+      "median": 138,
+      "p95": 138,
+      "max": 138,
+      "mean": 138
+    }
+  },
+  "cost_limit": "Diagnostic logging only; incremental overhead is not isolated by a contemporaneous A/B. Production code unchanged.",
+  "logs": [
+    {
+      "log": {
+        "ethertype": 2048,
+        "captured_length": 55,
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "ip_length": 55,
+        "ip_id": 2354,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 50494,
+        "destination_port": 9001,
+        "seq": 622216375,
+        "ack": 3301956698,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "data_length": 3,
+        "tcp_header_length": 32,
+        "packet": 1,
+        "pcap_wall_ns": "1793705327075706000",
+        "pcap_precision_ns": 1000,
+        "generation": "1002",
+        "rule": "iifname",
+        "verdict": "drop",
+        "group": 29,
+        "hook": 2,
+        "kernel_wall_ns": "1793705327075669000",
+        "input_index": 14,
+        "output_index": 16
+      },
+      "ingress_matches": [
+        {
+          "packet": 57,
+          "wall_ns": "1793705327075669031",
+          "interface": "fv-fh",
+          "direction": "in",
+          "source": "100.64.1.1",
+          "destination": "203.0.113.10",
+          "source_port": 50494,
+          "destination_port": 9001,
+          "seq": 622216375,
+          "ack": 3301956698,
+          "flags": 24,
+          "flags_text": [
+            "PSH",
+            "ACK"
+          ],
+          "ip_id": 2354,
+          "ip_length": 55,
+          "data_length": 3,
+          "window": 64,
+          "tsval": 1701668501,
+          "tsecr": 751979954
+        }
+      ],
+      "install": {
+        "wall_ns": "1793705327058382772",
+        "mono_ns": "28769509759360"
+      },
+      "installed_by": {
+        "wall_ns": "1793705327090154036",
+        "mono_ns": "28769541530593"
+      },
+      "release_start": {
+        "wall_ns": "1793705327090157066",
+        "mono_ns": "28769541533704"
+      },
+      "release_end": {
+        "wall_ns": "1793705327124029781",
+        "mono_ns": "28769575406354"
+      },
+      "exact_rule_attribution": true,
+      "egress_matches": [],
+      "timing_basis": "NFLOG kernel timestamp, microsecond resolution, plus matched ingress",
+      "kernel_timestamp_in_outer_bracket": true,
+      "kernel_bracket": "install",
+      "ingress_bracket": "install"
+    },
+    {
+      "log": {
+        "ethertype": 2048,
+        "captured_length": 56,
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "ip_length": 56,
+        "ip_id": 2389,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 50494,
+        "destination_port": 9001,
+        "seq": 622216442,
+        "ack": 3301956765,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "data_length": 4,
+        "tcp_header_length": 32,
+        "packet": 2,
+        "pcap_wall_ns": "1793705330715939000",
+        "pcap_precision_ns": 1000,
+        "generation": "1018",
+        "rule": "iifname",
+        "verdict": "drop",
+        "group": 29,
+        "hook": 2,
+        "kernel_wall_ns": "1793705330715915000",
+        "input_index": 14,
+        "output_index": 16
+      },
+      "ingress_matches": [
+        {
+          "packet": 160,
+          "wall_ns": "1793705330715915552",
+          "interface": "fv-fh",
+          "direction": "in",
+          "source": "100.64.1.1",
+          "destination": "203.0.113.10",
+          "source_port": 50494,
+          "destination_port": 9001,
+          "seq": 622216442,
+          "ack": 3301956765,
+          "flags": 24,
+          "flags_text": [
+            "PSH",
+            "ACK"
+          ],
+          "ip_id": 2389,
+          "ip_length": 56,
+          "data_length": 4,
+          "window": 64,
+          "tsval": 1701672142,
+          "tsecr": 751983596
+        }
+      ],
+      "install": {
+        "wall_ns": "1793705330698378814",
+        "mono_ns": "28773149755393"
+      },
+      "installed_by": {
+        "wall_ns": "1793705330715950940",
+        "mono_ns": "28773167327491"
+      },
+      "release_start": {
+        "wall_ns": "1793705330715954693",
+        "mono_ns": "28773167331332"
+      },
+      "release_end": {
+        "wall_ns": "1793705330724058924",
+        "mono_ns": "28773175435470"
+      },
+      "exact_rule_attribution": true,
+      "egress_matches": [],
+      "timing_basis": "NFLOG kernel timestamp, microsecond resolution, plus matched ingress",
+      "kernel_timestamp_in_outer_bracket": true,
+      "kernel_bracket": "install",
+      "ingress_bracket": "install"
+    },
+    {
+      "log": {
+        "ethertype": 2048,
+        "captured_length": 56,
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "ip_length": 56,
+        "ip_id": 2390,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 50494,
+        "destination_port": 9001,
+        "seq": 622216442,
+        "ack": 3301956765,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "data_length": 4,
+        "tcp_header_length": 32,
+        "packet": 3,
+        "pcap_wall_ns": "1793705330924106000",
+        "pcap_precision_ns": 1000,
+        "generation": "1019",
+        "rule": "iifname",
+        "verdict": "drop",
+        "group": 29,
+        "hook": 2,
+        "kernel_wall_ns": "1793705330924006000",
+        "input_index": 14,
+        "output_index": 16
+      },
+      "ingress_matches": [
+        {
+          "packet": 161,
+          "wall_ns": "1793705330924006060",
+          "interface": "fv-fh",
+          "direction": "in",
+          "source": "100.64.1.1",
+          "destination": "203.0.113.10",
+          "source_port": 50494,
+          "destination_port": 9001,
+          "seq": 622216442,
+          "ack": 3301956765,
+          "flags": 24,
+          "flags_text": [
+            "PSH",
+            "ACK"
+          ],
+          "ip_id": 2390,
+          "ip_length": 56,
+          "data_length": 4,
+          "window": 64,
+          "tsval": 1701672351,
+          "tsecr": 751983596
+        }
+      ],
+      "install": {
+        "wall_ns": "1793705330917003184",
+        "mono_ns": "28773368379781"
+      },
+      "installed_by": {
+        "wall_ns": "1793705330932029485",
+        "mono_ns": "28773383405670"
+      },
+      "release_start": {
+        "wall_ns": "1793705330932032210",
+        "mono_ns": "28773383408843"
+      },
+      "release_end": {
+        "wall_ns": "1793705330944023862",
+        "mono_ns": "28773395400353"
+      },
+      "exact_rule_attribution": true,
+      "egress_matches": [],
+      "timing_basis": "NFLOG kernel timestamp, microsecond resolution, plus matched ingress",
+      "kernel_timestamp_in_outer_bracket": true,
+      "kernel_bracket": "install",
+      "ingress_bracket": "install"
+    },
+    {
+      "log": {
+        "ethertype": 2048,
+        "captured_length": 56,
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "ip_length": 56,
+        "ip_id": 2437,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 50494,
+        "destination_port": 9001,
+        "seq": 622216534,
+        "ack": 3301956857,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "data_length": 4,
+        "tcp_header_length": 32,
+        "packet": 4,
+        "pcap_wall_ns": "1793705335777540000",
+        "pcap_precision_ns": 1000,
+        "generation": "1041",
+        "rule": "iifname",
+        "verdict": "drop",
+        "group": 29,
+        "hook": 2,
+        "kernel_wall_ns": "1793705335777417000",
+        "input_index": 14,
+        "output_index": 16
+      },
+      "ingress_matches": [
+        {
+          "packet": 300,
+          "wall_ns": "1793705335777417643",
+          "interface": "fv-fh",
+          "direction": "in",
+          "source": "100.64.1.1",
+          "destination": "203.0.113.10",
+          "source_port": 50494,
+          "destination_port": 9001,
+          "seq": 622216534,
+          "ack": 3301956857,
+          "flags": 24,
+          "flags_text": [
+            "PSH",
+            "ACK"
+          ],
+          "ip_id": 2437,
+          "ip_length": 56,
+          "data_length": 4,
+          "window": 64,
+          "tsval": 1701677204,
+          "tsecr": 751988656
+        }
+      ],
+      "install": {
+        "wall_ns": "1793705335771022545",
+        "mono_ns": "28778222399142"
+      },
+      "installed_by": {
+        "wall_ns": "1793705335781047502",
+        "mono_ns": "28778232423776"
+      },
+      "release_start": {
+        "wall_ns": "1793705335781054102",
+        "mono_ns": "28778232430550"
+      },
+      "release_end": {
+        "wall_ns": "1793705335792903815",
+        "mono_ns": "28778244280427"
+      },
+      "exact_rule_attribution": true,
+      "egress_matches": [],
+      "timing_basis": "NFLOG kernel timestamp, microsecond resolution, plus matched ingress",
+      "kernel_timestamp_in_outer_bracket": true,
+      "kernel_bracket": "install",
+      "ingress_bracket": "install"
+    },
+    {
+      "log": {
+        "ethertype": 2048,
+        "captured_length": 56,
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "ip_length": 56,
+        "ip_id": 2524,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 50494,
+        "destination_port": 9001,
+        "seq": 622216706,
+        "ack": 3301957029,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "data_length": 4,
+        "tcp_header_length": 32,
+        "packet": 15,
+        "pcap_wall_ns": "1793705344722658000",
+        "pcap_precision_ns": 1000,
+        "generation": "1069",
+        "rule": "iifname",
+        "verdict": "drop",
+        "group": 29,
+        "hook": 2,
+        "kernel_wall_ns": "1793705344722442000",
+        "input_index": 14,
+        "output_index": 16
+      },
+      "ingress_matches": [
+        {
+          "packet": 559,
+          "wall_ns": "1793705344722442494",
+          "interface": "fv-fh",
+          "direction": "in",
+          "source": "100.64.1.1",
+          "destination": "203.0.113.10",
+          "source_port": 50494,
+          "destination_port": 9001,
+          "seq": 622216706,
+          "ack": 3301957029,
+          "flags": 24,
+          "flags_text": [
+            "PSH",
+            "ACK"
+          ],
+          "ip_id": 2524,
+          "ip_length": 56,
+          "data_length": 4,
+          "window": 64,
+          "tsval": 1701686149,
+          "tsecr": 751997601
+        }
+      ],
+      "install": {
+        "wall_ns": "1793705344713986600",
+        "mono_ns": "28787165363197"
+      },
+      "installed_by": {
+        "wall_ns": "1793705344725212352",
+        "mono_ns": "28787176588629"
+      },
+      "release_start": {
+        "wall_ns": "1793705344725218924",
+        "mono_ns": "28787176595377"
+      },
+      "release_end": {
+        "wall_ns": "1793705344741035434",
+        "mono_ns": "28787192411951"
+      },
+      "exact_rule_attribution": true,
+      "egress_matches": [],
+      "timing_basis": "NFLOG kernel timestamp, microsecond resolution, plus matched ingress",
+      "kernel_timestamp_in_outer_bracket": true,
+      "kernel_bracket": "install",
+      "ingress_bracket": "install"
+    },
+    {
+      "log": {
+        "ethertype": 2048,
+        "captured_length": 52,
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "ip_length": 52,
+        "ip_id": 2526,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 50494,
+        "destination_port": 9001,
+        "seq": 622216710,
+        "ack": 3301957033,
+        "flags": 16,
+        "flags_text": [
+          "ACK"
+        ],
+        "data_length": 0,
+        "tcp_header_length": 32,
+        "packet": 16,
+        "pcap_wall_ns": "1793705344933157000",
+        "pcap_precision_ns": 1000,
+        "generation": "1070",
+        "rule": "iifname",
+        "verdict": "drop",
+        "group": 29,
+        "hook": 2,
+        "kernel_wall_ns": "1793705344933009000",
+        "input_index": 14,
+        "output_index": 16
+      },
+      "ingress_matches": [
+        {
+          "packet": 564,
+          "wall_ns": "1793705344933009903",
+          "interface": "fv-fh",
+          "direction": "in",
+          "source": "100.64.1.1",
+          "destination": "203.0.113.10",
+          "source_port": 50494,
+          "destination_port": 9001,
+          "seq": 622216710,
+          "ack": 3301957033,
+          "flags": 16,
+          "flags_text": [
+            "ACK"
+          ],
+          "ip_id": 2526,
+          "ip_length": 52,
+          "data_length": 0,
+          "window": 64,
+          "tsval": 1701686360,
+          "tsecr": 751998013
+        }
+      ],
+      "install": {
+        "wall_ns": "1793705344930213603",
+        "mono_ns": "28787381590197"
+      },
+      "installed_by": {
+        "wall_ns": "1793705344946071457",
+        "mono_ns": "28787397448034"
+      },
+      "release_start": {
+        "wall_ns": "1793705344946074225",
+        "mono_ns": "28787397450854"
+      },
+      "release_end": {
+        "wall_ns": "1793705344958996561",
+        "mono_ns": "28787410373034"
+      },
+      "exact_rule_attribution": true,
+      "egress_matches": [],
+      "timing_basis": "NFLOG kernel timestamp, microsecond resolution, plus matched ingress",
+      "kernel_timestamp_in_outer_bracket": true,
+      "kernel_bracket": "install",
+      "ingress_bracket": "install"
+    },
+    {
+      "log": {
+        "ethertype": 2048,
+        "captured_length": 57,
+        "source": "100.64.1.1",
+        "destination": "203.0.113.10",
+        "ip_length": 57,
+        "ip_id": 2562,
+        "protocol": 6,
+        "fragment": 0,
+        "source_port": 50494,
+        "destination_port": 9001,
+        "seq": 622216788,
+        "ack": 3301957111,
+        "flags": 24,
+        "flags_text": [
+          "PSH",
+          "ACK"
+        ],
+        "data_length": 5,
+        "tcp_header_length": 32,
+        "packet": 18,
+        "pcap_wall_ns": "1793705350070425000",
+        "pcap_precision_ns": 1000,
+        "generation": "1093",
+        "rule": "iifname",
+        "verdict": "drop",
+        "group": 29,
+        "hook": 2,
+        "kernel_wall_ns": "1793705350070400000",
+        "input_index": 14,
+        "output_index": 16
+      },
+      "ingress_matches": [
+        {
+          "packet": 671,
+          "wall_ns": "1793705350070400839",
+          "interface": "fv-fh",
+          "direction": "in",
+          "source": "100.64.1.1",
+          "destination": "203.0.113.10",
+          "source_port": 50494,
+          "destination_port": 9001,
+          "seq": 622216788,
+          "ack": 3301957111,
+          "flags": 24,
+          "flags_text": [
+            "PSH",
+            "ACK"
+          ],
+          "ip_id": 2562,
+          "ip_length": 57,
+          "data_length": 5,
+          "window": 64,
+          "tsval": 1701691497,
+          "tsecr": 752002950
+        }
+      ],
+      "install": {
+        "wall_ns": "1793705350051360904",
+        "mono_ns": "28792502737539"
+      },
+      "installed_by": {
+        "wall_ns": "1793705350072088438",
+        "mono_ns": "28792523465045"
+      },
+      "release_start": {
+        "wall_ns": "1793705350072091096",
+        "mono_ns": "28792523467753"
+      },
+      "release_end": {
+        "wall_ns": "1793705350091260446",
+        "mono_ns": "28792542637007"
+      },
+      "exact_rule_attribution": true,
+      "egress_matches": [],
+      "timing_basis": "NFLOG kernel timestamp, microsecond resolution, plus matched ingress",
+      "kernel_timestamp_in_outer_bracket": true,
+      "kernel_bracket": "install",
+      "ingress_bracket": "install"
+    }
+  ]
+}
