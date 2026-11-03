@@ -1,0 +1,18 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-count=1",
+    "-v",
+    "./node/agent",
+    "-run",
+    "^TestAT13_F32_Simulator"
+  ],
+  "exit": 0,
+  "seconds": 1.409,
+  "fixture_sha256": {
+    "node/agent/followup12_test.go": "c0535ca3e5b4f1709c1a8dfee3e626d41becefc20d0994d574629e37384978b8",
+    "node/agent/revocation_executor_test.go": "a148442ef33369791e3e391908b3d681b7d01a07c3a819f4750f6a65d9097287"
+  },
+  "source_commit": "64a5d48c5ea51e86754db60c2f0e3c09d674c7cb"
+}

@@ -1,5 +1,12 @@
 # Follow-up 32: enforcement fixes and C1 revision
 
+**2026-11-03 continuation:** the authorized test-only simulator repair resolves
+the consumer blocker. The unchanged node/installer gate passes; see the
+[additive hand-off update](consumer-handoff.md#2026-11-03--0903-est-continuation-owned-consumer-fixture-repair)
+and [new gate receipts](consumer-gates.json). Production and the original lab
+artifacts are unchanged. The original delivery record below is retained as
+history, including its then-blocked status.
+
 **Enforcement implementation and focused/live proofs delivered; complete consumer
 verification is blocked on agent test-fixture compatibility. C1 remains docs
 only and production retains the current unconditional guard.**
