@@ -51,26 +51,27 @@ ValueError: UTC nanosecond timestamp required
      "status": 200
    }
    ```
-   In `tests/e2e/at/isolation/driver.go.txt` (`configureShortOfflineLease`, lines `1237`–`1251`), this recorded `x.fleetChangeStatus = 200` and `x.fleetRequestID = "01a1a181-b816-7bfc-a507-09ad7d2aab97"`.
+   In `tests/e2e/at/isolation/driver.go.txt` (`prepare()`, lines `262`–`269` on `487c698e`), `x.putFleet(60, "TEST ONLY D-087 fixed offline window before enrollment")` returned `status == 200`, recorded `x.fleetRequestID = "01a1a181-b816-7bfc-a507-09ad7d2aab97"`, and wrote `fleet-before-enrollment.json`.
 
 2. **Preceding row `lease member expiry under control loss` (`deadline()`) stopped `fvpn-w4-isolation-control` and `fvpn-w4-isolation-worker`, and restarted them in a `defer` without waiting for control readiness.**
-   In `tests/e2e/at/isolation/driver.go.txt` (`deadline()`, lines `1122`–`1235`):
+   In `tests/e2e/at/isolation/driver.go.txt` (`deadline()`, lines `1122`–`1235` on `487c698e`):
    - Line `1123` registered `defer x.wholeNodeExpiry()` first (so in LIFO defer order, `wholeNodeExpiry()` runs last when `deadline()` returns).
-   - Line `1196` stopped control and worker (`exec.Command("docker", "stop", r.lab.control, r.lab.prefix+"-worker").Run()`) at `13:18:54Z`.
+   - Line `1195` stopped control and worker (`exec.Command("docker", "stop", "--time", "2", r.lab.control, r.lab.prefix+"-worker").Run()`) at `13:18:54Z`.
    - Line `1197` registered `defer func() { _ = exec.Command("docker", "start", r.lab.control, r.lab.prefix+"-worker").Run() }()` **without calling `x.waitControl()`** (unlike `wholeNodeExpiry()` at line `1262` and `generationHoldCut()` at lines `2857`/`2894`).
    - In `.agent/nightly-records/AT13.json` (line `1041`), `deadline()` completed its last post-deadline probe at `2026-11-03T13:19:22.526098782Z` and logged `AT13 lease member expiry under control loss: pass` at `2026-11-03T13:19:22.5917021Z`.
    - Returning from `deadline()` executed `docker start fvpn-w4-isolation-control fvpn-w4-isolation-worker` and immediately invoked `wholeNodeExpiry()`.
 
 3. **Where admin login failed, and why on the GitHub runner vs. local assembled runs.**
-   At the entry of `wholeNodeExpiry()` (`tests/e2e/at/isolation/driver.go.txt`, lines `1272`–`1276` on `487c698e`):
+   At the entry of `wholeNodeExpiry()` (`tests/e2e/at/isolation/driver.go.txt`, lines `1272`–`1277` on `487c698e`):
    ```go
    admin, err := x.r.lab.login(x.ctx, "e2e-admin", "admin")
-   if err != nil || x.fleetChangeStatus != 200 {
-       x.add("AT13", c)
+   if err != nil {
+       c.Actual = "admin login failed before fleet-config write"
+       c.Owner = "w3-devstack-e2e"
        return
    }
    ```
-   `x.r.lab.login` (`tests/e2e/at/isolation/driver.go.txt:199`) calls `idplogin.PortalLogin(ctx, l.urls.Gateway, l.urls.IDP, sub, role)`, which sends `GET /auth/login` through `fvpn-w4-isolation-gateway` (`nginx/1.30.0`) to upstream `fvpn-control:8080`.
+   `x.r.lab.login` (`tests/e2e/at/isolation/driver.go.txt:210` on `487c698e`) calls `idplogin.PortalLogin(ctx, l.urls.Gateway, l.urls.IDP, sub, role)`, which sends `GET /auth/login` through `fvpn-w4-isolation-gateway` (`nginx/1.30.0`) to upstream `fvpn-control:8080`.
    Because `docker start` returns as soon as the container process is spawned — before `fvpn-control` finishes starting its HTTP listener inside the container — `x.r.lab.login` hit `nginx` while `fvpn-control:8080` was still unreachable, receiving HTTP `502 Bad Gateway` and returning an error in **`406.6 ms`** (`13:19:22.5917021Z` -> `13:19:22.9982753Z`).
 
    The agent and receiver records prove when `fvpn-control` actually became reachable after that `docker start`:
@@ -86,34 +87,33 @@ ValueError: UTC nanosecond timestamp required
    - By contrast, in Follow-up 17's local assembled run (`0ec14b39-467e-4a37-a239-1a33ef12eb71`, archived at `docs/e2e/at/isolation/history/follow-up-17/AT13.json`, lines `1041` and `1061`), `deadline()` completed its last probe at `2026-11-03T06:33:53.438240828Z` and `fvpn-control` came up fast enough on the local host after `docker start` for `x.r.lab.login` to succeed immediately, so `wholeNodeExpiry()` proceeded to its positive control (`06:35:19Z`), stopped control for the 60 s whole-node expiry window (`06:35:09.37Z`–`06:36:09.37Z`), and passed at `06:36:31Z`.
 
 4. **Why `"pre-enrollment fleet audit missing"` is a direct consequence of the same unawaited `docker start` and failed login (not a separate cause).**
-   In `tests/e2e/at/isolation/driver.go.txt` (lines `1254`–`1271` on `487c698e`):
+   In `tests/e2e/at/isolation/driver.go.txt` (lines `1256`–`1271` on `487c698e`):
    ```go
-   c := Check{
-       Name: "short whole-node lease expiry", Status: blocked, At: now(),
-       Actual: "admin login failed before fleet-config write",
-       Owner:  "w3-devstack-e2e",
-   }
-   stopped := false
+   c := iso.Check{Name: "short whole-node lease expiry", Status: iso.StatusBlocked, Owner: "w2-agent-core", Actual: "not measured"}
+   var stopped bool
    defer func() {
-       if stopped && !x.waitControl() {
-           ...
+       if stopped {
+           _ = exec.Command("docker", "start", x.r.lab.control, x.r.lab.prefix+"-worker").Run()
        }
-       if !x.fleetAudits(&c, x.fleetRequestID) && c.Status == pass {
-           c.Status = blocked
-           c.Actual = "fleet_config audit evidence missing for pre-enrollment write"
-       } else if !strings.Contains(c.Actual, "fleet_audit") && len(c.Observations) > 0 && c.Observations[len(c.Observations)-1].Name == "fleet_audit_"+x.fleetRequestID && !strings.HasPrefix(c.Observations[len(c.Observations)-1].Detail, "200 ") {
+       if stopped && !x.waitControl() {
+           c.Status = iso.StatusBlocked
+           c.Actual += "; control restart incomplete"
+       }
+       if !x.fleetAudits(&c, x.fleetRequestID) {
+           c.Status = iso.StatusBlocked
            c.Actual += "; pre-enrollment fleet audit missing"
        }
+       x.add("AT13", c)
    }()
    ```
-   Because `x.r.lab.login` failed at line `1273` before `stopped = true` (line `1339`), the `defer` skipped `if stopped && !x.waitControl()` at line `1262` and immediately called `x.fleetAudits(&c, "01a1a181-b816-7bfc-a507-09ad7d2aab97")`, which issued `GET /api/v1/admin/audit-events?resource_type=fleet_config&request_id=01a1a181-b816-7bfc-a507-09ad7d2aab97` through `fvpn-w4-isolation-gateway` using the pre-outage `x.r.lab.admin` session. Because `fvpn-control` was still booting (`~400 ms` after `docker start`), `nginx` returned `502 Bad Gateway`, recorded in `.agent/nightly-records/AT13.json` (lines `1070`–`1072`) and `.agent/nightly-records/boundary-review.json` (lines `23`–`25`):
+   Because `x.r.lab.login` failed at line `1273` before `stopped = true` (line `1339`), the `defer` skipped `if stopped && !x.waitControl()` at line `1262` and immediately called `x.fleetAudits(&c, x.fleetRequestID)` (`lines 1475–1491` on `487c698e`), which issued `GET /api/v1/admin/audit-events?request_id=01a1a181-b816-7bfc-a507-09ad7d2aab97&limit=5` through `fvpn-w4-isolation-gateway` using the pre-outage `x.admin` session and checked `err != nil || resp.Status != 200 || !strings.Contains(string(resp.Body), "fleet_config.update")`. Because `fvpn-control` was still booting (`~400 ms` after `docker start`), `nginx` returned `502 Bad Gateway`, recorded in `.agent/nightly-records/AT13.json` (lines `1070`–`1072`) and `.agent/nightly-records/boundary-review.json` (lines `23`–`25`):
    ```json
    {
      "name": "fleet_audit_01a1a181-b816-7bfc-a507-09ad7d2aab97",
      "detail": "502 <html>\r\n<head><title>502 Bad Gateway</title></head>\r\n<body>\r\n<center><h1>502 Bad Gateway</h1></center>\r\n<hr><center>nginx/1.30.0</center>\r\n</body>\r\n</html>"
    }
    ```
-   Seeing a non-`200 ` observation detail on `fleet_audit_01a1a181-b816-7bfc-a507-09ad7d2aab97`, the `else if` branch at line `1268` appended `"; pre-enrollment fleet audit missing"` to `"admin login failed before fleet-config write"`. Both halves of the reason string were caused by `GET` requests hitting `fvpn-w4-isolation-gateway` (`502 Bad Gateway`) ~400 ms after `deadline()` ran `docker start` without waiting for `fvpn-control`.
+   Because `x.fleetAudits` returned `false` on `resp.Status == 502`, line `1266` (`if !x.fleetAudits(&c, x.fleetRequestID)`) appended `"; pre-enrollment fleet audit missing"` to `c.Actual` (`"admin login failed before fleet-config write"`). Both halves of the reason string were caused by `GET` requests hitting `fvpn-w4-isolation-gateway` (`502 Bad Gateway`) ~400 ms after `deadline()` ran `docker start` without waiting for `fvpn-control`.
 
 ---
 
@@ -122,11 +122,11 @@ ValueError: UTC nanosecond timestamp required
 ### 3.1 Evidence chain (`41640196805`, `run_id` `775bc692-e6ef-4490-8056-ba6cfa818b69`)
 
 1. **What the harness waited for after control restoration, and for how long: 0 seconds.**
-   - In `tests/e2e/at/isolation/driver.go.txt`, `x.waitControl()` (`lines 1528–1596`) is the only function that writes `control-observation-readiness.json`.
+   - In `tests/e2e/at/isolation/driver.go.txt` on `487c698e`, `x.waitControl()` (`lines 1436–1473`) is the only function that writes `control-observation-readiness.json`.
    - In `41640196805`, `x.waitControl()` was **never called**:
      - `deadline()` restarted `control` and `worker` in its `defer` without calling `x.waitControl()`.
      - `wholeNodeExpiry()` returned at line `1276` before `stopped = true` (line `1339`), so its `defer` (`if stopped && !x.waitControl()`, line `1262`) did not call `x.waitControl()`.
-     - Next, `generationHoldCut()` (`lines 2746–2864`) ran its positive control probe at `13:19:32Z` (`generation-hold-control-cut.json`, line `165`: `serving 1`, `generation 32`), polled 15 s (`13:19:32Z`–`13:19:47Z`) for an open generation hold, found none, and returned `"not exercised"` at line `2848` before stopping control:
+     - Next, `generationHoldCut()` (`lines 2746–2898` on `487c698e`) ran its positive control probe at `13:19:32Z` (`generation-hold-control-cut.json`, line `165`: `serving 1`, `generation 32`), polled 15 s (`13:19:32Z`–`13:19:47Z`) for an open generation hold, found none, and returned `"not exercised"` at line `2848` before pausing control:
        ```json
        {
          "reason": "no new accepted open hold in the single 15-second attempt; no transport seam or retry added",
@@ -135,14 +135,15 @@ ValueError: UTC nanosecond timestamp required
        }
        ```
    - Consequently, `.agent/nightly-records/control-observation-readiness.json` was **never created** in `41640196805`.
-   - When `foreignRedirect()` (`lines 2409–2560`) ran next:
-     - Its positive control probe (`x.proof(memberA, ...)`) succeeded between `13:19:47Z` and `13:19:57.297Z` (`.agent/nightly-records/AT10.json`, lines `1181`–`1190` and `1357`: `controlled_origin_http_200_and_counted: "true"`, `serving 1`, `generation 33`).
-     - Then at lines `2434`–`2441`, `foreignRedirect()` performed a one-shot file read without calling `x.waitControl()`:
+   - When `foreignRedirect()` (`lines 2429–2581` on `487c698e`) ran next:
+     - Its positive control probe (`x.proof(x.a1)`) succeeded between `13:19:47Z` and `13:19:57.297Z` (`.agent/nightly-records/AT10.json`, lines `1181`–`1190` and `1357`: `controlled_origin_http_200_and_counted: "true"`, `serving 1`, `generation 33`).
+     - Then at lines `2432`–`2439`, `foreignRedirect()` performed a one-shot file read without calling `x.waitControl()`:
        ```go
-       var ready struct {
+       var readiness struct {
            Ready bool `json:"ready"`
        }
-       if raw, err := os.ReadFile(filepath.Join(x.dir, "control-observation-readiness.json")); err != nil || json.Unmarshal(raw, &ready) != nil || !ready.Ready {
+       rawReadiness, _ := os.ReadFile(filepath.Join(x.dir, "control-observation-readiness.json"))
+       if json.Unmarshal(rawReadiness, &readiness) != nil || !readiness.Ready {
            c.Actual = "current accepted observation and drained retry queue not established after control restoration; no injection"
            return
        }
@@ -171,7 +172,7 @@ ValueError: UTC nanosecond timestamp required
 
 3. **Classification: harness defect, plus a secondary review-script defect when `foreignRedirect()` does not inject.**
    - This is a **harness defect** in `tests/e2e/at/isolation/driver.go.txt`, not runner slowness or an agent/netlab defect: the agent's observation pipeline and retry queue were completely healthy and drained by `13:19:40.23Z`, 17.2 s before `foreignRedirect()` ran at `13:19:57.43Z`, but `foreignRedirect()` only checked whether an earlier step had written `control-observation-readiness.json` and never invoked `x.waitControl()` when that file was absent or stale.
-   - In addition, when `foreignRedirect()` returned early with `no injection`, `finish()` still invoked `tests/e2e/at/isolation/review_followup8.py` (`driver.go.txt:183, 2581`), which searched `AT10.json` for `"injected_foreign"` / `"removed_foreign"` observations, defaulted `inject_start = '9999'` when absent, and crashed in `candidate_evidence.py:wall_ns('9999')` (`ValueError: UTC nanosecond timestamp required`, `run.log:2060–2069`).
+   - In addition, when `foreignRedirect()` returned early with `no injection`, `finish()` still invoked `tests/e2e/at/isolation/review_followup8.py` (`driver.go.txt:183, 2583` on `487c698e`), which read `foreign-redirect.json` (`trace = read('foreign-redirect.json', {})`), looked up `injection = first('inject clsact mirred')` and `removal = first('remove all injected objects')`, defaulted `start, end = injection.get('start', '9999'), removal.get('end', '9999')` (`line 68`), and passed `first('publish dirty newer generation').get('at', start)` (`'9999'`) and `removal.get('start', end)` (`'9999'`) into `candidate_rejections(...)` -> `candidate_evidence.py:wall_ns('9999')` (`ValueError: UTC nanosecond timestamp required`, `run.log:2060–2069`).
 
 ---
 
@@ -196,19 +197,20 @@ Current expiry measurement unavailable; refusing inherited packet evidence
 ### What can and cannot be told from `41456092596`:
 
 1. **Row 1 (`AT13 short whole-node lease expiry`):**
-   - **What cannot be told from the status-only line alone:** Because `a6d56cff` logged only `AT13 short whole-node lease expiry: blocked (positive=false)` without `c.Actual` or uploaded JSON records, the status line by itself could not distinguish between the pre-`proof` early returns in `wholeNodeExpiry()` (`lab.login` at line `1273`, `memberRoute` at line `1280`, capacity patch `202` at line `1294`, or lease renewal wait at line `1332`), other than ruling out any return after `x.proof()` (`positive=false`).
+   - **What cannot be told from the status-only line alone:** Because `a6d56cff` logged only `AT13 short whole-node lease expiry: blocked (positive=false)` without `c.Actual` or uploaded JSON records, the status line by itself could not distinguish between the pre-`proof` early returns in `wholeNodeExpiry()` (`lab.login` at line `1273`, `member route via fvnb0` at line `1285`, lease renewal wait at line `1313`, or `docker stop` at line `1334` on `487c698e`), other than ruling out any return after `x.proof()` (`positive=false`).
    - **Why `41456092596` is completely consistent with the exact same cause as `41640196805`:**
      - In `41456092596`, `AT13 short whole-node lease expiry: blocked (positive=false)` was logged at `14:06:09.7621571Z`, **`337.7 ms`** after `AT13 lease member expiry under control loss: pass` (`14:06:09.4244519Z`).
      - In `41640196805`, the same gap was **`406.6 ms`** (`13:19:22.5917021Z` -> `13:19:22.9982753Z`).
-     - The lease-renewal wait loop (`driver.go.txt:1303`) has a 45 s budget and takes >=1 s; the only path that exits in `337`–`407 ms` immediately after `deadline()`'s `docker start` is the immediate gateway `502 Bad Gateway` on `x.r.lab.login` (followed by `x.fleetAudits` in the `defer`).
-     - Furthermore, `review_followup10.py` on `41456092596` printed `Current expiry measurement unavailable; refusing inherited packet evidence`, confirming `wholeNodeExpiry()` returned before writing `whole-node-expiry-packets.json`.
+     - The lease-renewal wait loop (`driver.go.txt:1297` on `487c698e`) has a 90 s budget (`context.WithTimeout(x.ctx, 90*time.Second)`) and polls every 1 s; the only path that exits in `337`–`407 ms` immediately after `deadline()`'s `docker start` is the immediate gateway `502 Bad Gateway` on `x.r.lab.login` (followed by `x.fleetAudits` in the `defer`).
+     - Furthermore, `review_followup10.py` on `41456092596` printed `Current expiry measurement unavailable; refusing inherited packet evidence`, confirming `wholeNodeExpiry()` returned before writing `whole-node-packets.json`.
 
 2. **Row 2 (`AT10 foreign ingress redirect containment and D-096 recovery`):**
    - **Crucial difference between `41456092596` (`a6d56cff`) and `41640196805` (`487c698e`):**
-     - In `41456092596`, the final `TestIsolationAssembled` summary at `14:08:23.003Z` (`isolation_owned_test.go:203`) reported **only `AT11: blocked` and `AT13: blocked`** — `AT10` **passed** in `41456092596`!
+     - In `41456092596`, the final `TestIsolationAssembled` summary at `14:08:23.003Z` (`isolation_owned_test.go:203`) reported **only `AT11: blocked` and `AT13: blocked`** — `AT10` **passed** in `41456092596`.
      - Why did `41456092596` log `AT10 foreign ingress redirect containment and D-096 recovery: blocked (positive=true)` at `14:07:59.6065268Z` (`109.8 s` after `AT13 short whole-node lease expiry`) and then finish with `AT10: pass`?
-     - Because `foreignRedirect()` initializes `c.Status = blocked` (`driver.go.txt:2410`) with `Actual: "foreign tc redirect contained and removed; D-096 recovery evidence recorded; final pass requires six-assertion review after receiver export"` (`line 2528`), logs `c` via `defer x.add("AT10", c)` (`line 2418`), and then `finish()` runs `x.reviewFollowup8()` (`driver.go.txt:183, 2580–2609`), which evaluates `recovery-verdict.json` and upgrades `AT10` to `pass`!
-     - Why did `foreignRedirect()` execute its ~110 s injection and D-096 recovery in `41456092596` (`a6d56cff`) even though `wholeNodeExpiry()` had failed to run `x.waitControl()`? Because on `a6d56cff`, the scheduled workflow wrote directly into `docs/e2e/at/isolation/`, where `docs/e2e/at/isolation/control-observation-readiness.json` (`"ready": true`, committed in Follow-up 16) already existed on disk from `git checkout`! `foreignRedirect()` read that checkout-inherited file at line `2435`, saw `"ready": true`, and proceeded to run the full foreign-redirect injection and recovery on the GitHub runner — which **passed all 6 assertions**.
+     - Because `foreignRedirect()` initializes `c.Status = iso.StatusBlocked` (`driver.go.txt:2430` on `487c698e`) with `c.Actual = "foreign tc redirect contained and removed; D-096 recovery evidence recorded; final pass requires six-assertion review after receiver export"` (`line 2560`), logs `c` via `defer func() { x.add("AT10", c) }()` (`line 2431`), and then `finish()` runs `x.reviewFollowup8()` (`driver.go.txt:183, 2583–2611` on `487c698e`), which evaluates `recovery-verdict.json` and upgrades `AT10` to `pass`.
+     - Why did `foreignRedirect()` execute its ~110 s injection and D-096 recovery in `41456092596` (`a6d56cff`) even though `wholeNodeExpiry()` had failed to run `x.waitControl()`? Because on `a6d56cff`, the scheduled workflow wrote directly into `docs/e2e/at/isolation/`, where `docs/e2e/at/isolation/control-observation-readiness.json` (`"ready": true`, committed in Follow-up 16) already existed on disk from `git checkout`. `foreignRedirect()` read that checkout-inherited file at line `2435`, saw `"ready": true`, and proceeded to run the foreign-redirect injection and recovery on the GitHub runner.
+     - **That pass is not a qualified result.** Its readiness precondition came from a file in the checkout (`docs/e2e/at/isolation/control-observation-readiness.json`), committed by follow-up 16, not from that run. **No acceptance status changes.** No record on `main` came from that run.
      - When Follow-up 17 (`487c698e`) isolated scheduled runs into a clean `.agent/nightly-records` directory (`FVPN_ISOLATION_OUT=.agent/nightly-records`) so no committed `docs/e2e/at/isolation/` file could be inherited, the missing `x.waitControl()` call after `deadline()` exposed the latent defect: `.agent/nightly-records/control-observation-readiness.json` was never written, causing `foreignRedirect()` to abort before injection in `41640196805`.
 
 ---
@@ -219,23 +221,30 @@ Both unlisted rows are **Outcome (a): harness defects in owned paths (`tests/e2e
 
 ### 5.1 Fixes in `tests/e2e/at/isolation/`
 
-1. **`tests/e2e/at/isolation/scheduled.go`:**
-   - Added `ControlReadinessSample`, `SampleControlReadiness(startedAt, desiredGeneration, sample)`, and `ControlObservationReady(dir, runID, afterControlStart, wait)`:
-     - `SampleControlReadiness` enforces the unchanged post-restoration predicate: `observation.observed_at` must be strictly after `startedAt`, `applied_config_generation` must match `desiredGeneration` when non-empty, `member_forwarding_enabled` must be `true`, `safety_status` must be `"passed"`, `forwarding_block_reasons` must be empty, `queueAvailable` must be `true` with `pending == 0`, and `kernel_ruleset` must be non-baseline with `serving 1` in `readback`.
-     - `ControlObservationReady` checks `control-observation-readiness.json` in `dir` and requires `ready == true`, a matching current `run_id` (when non-empty), and `completed_at >= afterControlStart`; if absent, stale, or from another run/outage, it invokes `wait()` (`x.waitControl`).
+1. **`tests/e2e/at/isolation/scheduled.go` (`lines 32–89`):**
+   - Added `ControlReadinessSample`, `SampleControlReadiness(startedAt, desiredGeneration, s)`, and `ControlObservationReady(dir, runID, afterControlStart, wait)`:
+     - `SampleControlReadiness` requires:
+       - non-zero `startedAt` (`!startedAt.IsZero()`) and non-empty `desiredGeneration` (`desiredGeneration != ""`);
+       - admin login (`s.LoginOK`);
+       - `GET /api/v1/admin/fleet-config` returns HTTP 200 (`s.FleetConfigStatus == 200`);
+       - an available observation queue with 0 pending (`s.QueueAvailable && s.QueuePending == 0`);
+       - an accepted observation strictly after the wait's start (`s.ObservedAt.After(startedAt)`), whose applied generation equals the desired generation (`s.AppliedGeneration == desiredGeneration`), with member forwarding enabled (`s.MemberForwardingEnabled`).
+       This is `main`'s `waitControl` predicate (`driver.go.txt:1443–1470` on `487c698e`) unchanged, plus one new requirement: the desired generation is non-empty (`desiredGeneration != ""`). Neither `SampleControlReadiness` (`scheduled.go`) nor `waitControl` (`driver.go.txt`) checks `safety_status`, `forwarding_block_reasons`, `kernel_ruleset`, or `readback`.
+     - `ControlObservationReady` reads `control-observation-readiness.json` in `dir` and requires `ready == true`, rejects a different `run_id` only when both `runID` and the record's `run_id` are non-empty (`runID != "" && v.RunID != "" && v.RunID != runID`), and requires that the record's `started_at` is not before `afterControlStart` (`!afterControlStart.IsZero() && v.StartedAt.Before(afterControlStart)` is rejected). If absent, unready, from another `run_id`, or started before `afterControlStart`, it invokes `wait()` (`x.waitControl`) when non-nil and re-reads the persisted record.
 
 2. **`tests/e2e/at/isolation/driver.go.txt`:**
-   - In `deadline()` (`lines 1197–1200`), the deferred `docker start` now records `x.lastControlStart = time.Now().UTC()` and calls `_ = x.waitControl()` before `defer x.wholeNodeExpiry()` executes.
-   - In `wholeNodeExpiry()` (`lines 1264, 1277`), `iso.ControlObservationReady(x.dir, x.records["AT13"].RunID, x.lastControlStart, x.waitControl)` is enforced both before `x.r.lab.login(x.ctx, "e2e-admin", "admin")` and in `wholeNodeExpiry()`'s `defer` before `x.fleetAudits(&c, x.fleetRequestID)` (even if `wholeNodeExpiry()` returns before setting `stopped = true`).
-   - In `waitControl()` (`lines 1532, 1574–1596`), `x.lastControlStart` is updated on entry, `iso.SampleControlReadiness` evaluates each poll sample, and `"run_id": x.records["AT13"].RunID` is written into `control-observation-readiness.json`.
-   - In `foreignRedirect()` (`line 2441`), the one-shot `os.ReadFile` is replaced with `iso.ControlObservationReady(x.dir, x.records["AT10"].RunID, x.lastControlStart, x.waitControl)`, so if an earlier step skipped `waitControl()` or restarted control more recently than `completed_at`, `foreignRedirect()` waits for readiness instead of blocking immediately, and never trusts an inherited file from a different `run_id`.
+   - In `deadline()` (`lines 1198–1202`), the deferred `docker start` now sets `x.lastControlStart = time.Now().UTC()` and calls `_ = x.waitControl()` before `defer x.wholeNodeExpiry()` executes.
+   - In `wholeNodeExpiry()` (`lines 1264–1282`), `iso.ControlObservationReady(x.dir, x.records["AT13"].RunID, x.lastControlStart, x.waitControl)` is verified at entry before `x.r.lab.login(x.ctx, "e2e-admin", "admin")`, and in `wholeNodeExpiry()`'s `defer`, `if (stopped || !iso.ControlObservationReady(x.dir, x.records["AT13"].RunID, x.lastControlStart, nil)) && !x.waitControl()` ensures `x.waitControl()` runs before `x.fleetAudits(&c, x.fleetRequestID)` even when `wholeNodeExpiry()` returns before setting `stopped = true`.
+   - In `waitControl()` (`lines 1447–1496`), `start := time.Now().UTC()` updates `x.lastControlStart = start` on entry, `iso.SampleControlReadiness` evaluates each poll sample (`lines 1484–1492`), and `"run_id": x.records["AT13"].RunID` is written into `control-observation-readiness.json` (`line 1494`).
+   - In `foreignRedirect()` (`line 2455`), the one-shot `os.ReadFile` is replaced with `iso.ControlObservationReady(x.dir, x.records["AT10"].RunID, x.lastControlStart, x.waitControl)`, so if an earlier step skipped `waitControl()` or restarted control after the record's `started_at`, `foreignRedirect()` waits for readiness instead of blocking immediately, and rejects an inherited file from a different non-empty `run_id`.
+   - In `generationHoldCut()` (`lines 2875, 2911`), `x.lastControlStart` is updated when `docker unpause` restores control and worker.
 
-3. **`tests/e2e/at/isolation/review_followup8.py`:**
-   - If `AT10` / `foreign ingress redirect containment and D-096 recovery` did not execute injection (`inject_start` or `remove_end` missing from observations), `review_followup8.py` writes a current-run blocked `recovery-verdict.json` (`passed: false`, `status: "blocked"`, `reason: check.actual`) and exits `1` with a single-line message instead of passing `'9999'` to `wall_ns()` and raising a Python traceback.
+3. **`tests/e2e/at/isolation/review_followup8.py` (`lines 87–93, 122–130`):**
+   - `review_followup8.py` computes `dirty_start = first('publish dirty newer generation').get('at') or injection.get('start')` and `dirty_end = removal.get('start') or removal.get('end')`, and skips the `candidate_rejections(...)` join when the dirty window's start or end is missing (`dirty_tc = candidate_rejections(transactions, read_operations(root), initial_gen, dirty_start, dirty_end) if dirty_start and dirty_end else []`), writing `accepted_candidates: []` to `candidate-rejection-join.json`. The unchanged six assertions in `checks` then write `passed: false` and `status: "blocked"` to `recovery-verdict.json`, and the script exits `0` instead of passing `'9999'` to `wall_ns()` and raising a Python traceback.
 
 4. **Regression tests added:**
-   - `TestAT13_AT10_Nightly41640196805ControlRestorationSequence` in `tests/e2e/at/isolation/scheduled_test.go`: replays the exact `41640196805` timestamp sequence (`docker start` at `13:19:22.5917021Z`, gateway `502` until `13:19:30.47655856Z`, queue pending `6 -> 1 -> 0` through `13:19:40.222691621Z`) and verifies that `SampleControlReadiness` and `ControlObservationReady` wait through the `502` / queue-drain window, establish readiness at `13:19:40.222691621Z`, and reject stale or foreign-`run_id` `control-observation-readiness.json` files.
-   - `test_unexecuted_foreign_redirect_writes_blocked_verdict_without_traceback` in `tests/e2e/at/isolation/nightly_test.py`: verifies that `review_followup8.py` on an unexecuted `foreignRedirect` check writes a clean blocked verdict (`passed: false`, `status: "blocked"`, `inherited_evidence_used: false`) and exits `1` without a `ValueError` traceback.
+   - `TestAT13_AT10_Nightly41640196805ControlRestorationSequence` in `tests/e2e/at/isolation/scheduled_test.go` (`lines 42–195`): replays the `41640196805` timestamp sequence (`docker start` at `13:19:22.5917021Z`, gateway `502` on `GET /api/v1/admin/fleet-config`, queued outage report before `controlStart`, post-start report with `QueuePending: 1` at `13:19:38.423577389Z`, and first current drained report at `13:19:40.218635399Z`) and verifies that `SampleControlReadiness` and `ControlObservationReady` wait through the `502` / queue-drain window, reject missing readiness (`wait == nil`), reject foreign-`run_id` readiness (`"run_id": "83b457ef-ea16-490b-9923-1fea0df86b36"`, `"started_at": controlStart.Add(time.Second)`), reject pre-restart readiness (`"started_at": controlStart.Add(-time.Second)`), establish readiness via `waitFn` (`"started_at": controlStart`), and reuse the persisted record on subsequent checks without re-polling.
+   - `test_unexecuted_foreign_redirect_writes_blocked_verdict_without_traceback` in `tests/e2e/at/isolation/nightly_test.py` (`lines 51–59`): runs `review_followup8.py` on a temporary directory with `receiver-capture.json` and no injection rows, and asserts `result.returncode == 0`, `verdict['passed'] == False`, and `verdict['status'] == 'blocked'`.
 
 ### 5.2 Local assembled verification (`9f1bc0ff-d01f-4a3f-ad41-6c6a086e6e04`)
 
