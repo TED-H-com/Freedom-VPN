@@ -1,0 +1,34 @@
+{
+  "source_commit": "77626af4016443c509f3b14e06cfd4f00f74fb49",
+  "previous_cut": "792e3e4186d00db72aaaf0ee309e6716332b8dd3",
+  "merged_prs": [
+    427
+  ],
+  "rows": [
+    {
+      "pr": 427,
+      "lane": "w4-handover follow-up 37",
+      "row": "| w4-handover follow-up 37 | Cut #424–#426 at `792e3e41` (isolation 18, handover 36, netlab 33). `TestHandover_Followup37Claims`: 16 subtests, three final roadmap rows, ten frozen #426 inputs, three public PR excerpts, two immutable documents (isolation's dated diagnosis and netlab 33's corrections), all 138 payloads of isolation's follow-up 17 archive and a separate frozen source audit; follow-up 36's counts verified from its function and manifests, earlier assertions unchanged. Isolation 18 recorded as #424 states it: scheduled run 41640196805 failed as D-144 requires, its two unlisted blocks one harness defect (a control restart with no readiness wait), fixed in the harness with expected-blocked.json unchanged; local run 9f1bc0ff blocks only the two listed operator rows; the previous night's AT10 pass is not a qualified result; the runner's first exercise is pending. Netlab 33 recorded as #426 states it: the lock path is /var/lib/vpn-node/update.lock in every main default, r24 L-1 confirmed in part, and r24 M-3's B1 characterization unsourced with the no-transport-change constraint kept; linked from r24's entry in the reviews index, with additive L-1 and M-3 errata. D-132: isolation's living root is now run 9f1bc0ff. Findings register at 97 rows (r24 L-1 and M-3 updated; Isolation F18-01 added, FIXED by #424); 47 decisions, nothing after D-144; ten owner requests, the G5/G6 trade still undecided. Review r25 recorded as running at briefing. Codex gpt-6-astra. | done (#427) |",
+      "sha256": "ee4be728c94df27a4f4f4e96a5a3a0f430097bb6d213d60e3217d30563665dc8"
+    }
+  ],
+  "pr_excerpts": [
+    {
+      "number": 427,
+      "url": "https://github.com/TED-H-com/Freedom-VPN/pull/427",
+      "merged_at": "2026-11-03T16:42:51Z",
+      "merge_commit": "fed560f5832d608f8a19b68b6caffd1921d6b837",
+      "head": "5e09e1db32b8656d4d5fe84dbacd0991186e0fc0",
+      "commits": 2,
+      "changed_files": 30,
+      "path": "tests/handover/testdata/history/follow-up-38/pr427-excerpt.json",
+      "sha256": "d3d32087101d648b790709287e90275db07b7a850a2fac3b2783a5025fc45506",
+      "decoded_sha256": "40b8c5a15a67e2155fc5ffe31e6a4e5328d77318acd6451dc920a2bcc58d9e0d",
+      "length": 4639
+    }
+  ],
+  "history": [
+    "77626af4016443c509f3b14e06cfd4f00f74fb49 roadmap: w4-handover follow-up 37 merged (#427)",
+    "fed560f5832d608f8a19b68b6caffd1921d6b837 handover: follow-up 37 — cut #424–#426 (isolation 18, handover 36, netlab 33): isolation's harness readiness fix recorded, netlab 33's corrections linked, r24 L-1/M-3 updated, Isolation F18-01 registered (w4-handover follow-up 37) (#427)"
+  ]
+}
