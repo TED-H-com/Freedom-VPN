@@ -1381,3 +1381,48 @@ sequence and exact consumer joins are in the preceding Follow-up 27 reply.
   - Real sibling suspension (`operation_id=01a1a02f-6675-713d-98b1-22190987579d`, completed `2026-11-03T06:53:43.415287241Z`) advanced desired state to generation `11`; proxy recorded `continuation_started` on generation `11` at `2026-11-03T06:53:47.941470275Z` and withheld generation-`11` survivor-only lease `53dd9d93-50d3-4d7e-bce7-72a5ba53888e`.
   - Accepted post-command survivor hold report `01a1a02f-785d-79f2-a660-7a99fc16c580` (Step 4, `applied_generation=11`, `lease_generation=8`, `reported_alarm=true`, received `2026-11-03T06:53:48.003245+00:00` while incident remained open).
   - Explicit release at `2026-11-03T06:53:52.925435523Z` forwarded generation-`11` survivor lease `b36b4be7-84c2-4728-8e36-7049d5523c48` (matching local durable lease `bec6929bb25334fc7a4082e2cb6a908718207e3ebb8a85a064fe935067c7c2ee`), and recovery serving report `01a1a02f-8c27-7587-b6fe-96f8b865a6db` closed the incident `generation_matched` at `2026-11-03T06:53:53.070299+00:00`.
+
+## members 17 — 2026-11-03 (follow-up 31, source-binding feasibility and archive navigation)
+
+**Source-address populated hold: not exercised; hook unavailable.** This item
+stopped at the requested feasibility condition. No new Stack option, bounds,
+state mutation or release behavior is advertised. Existing D-102 callers are
+unchanged. There were zero stack attempts or injections, and no accepted-report
+or central-classification evidence was generated for this row.
+
+The node computes `bindingOK` in `Decide` from signed binding/lease model
+construction. Model errors and zero admitted bindings fail qos too. Live nft
+or member-path failures become a retained Apply error, which overrides lease,
+qos and source_binding together. During the hold, `leaseOK=false` already fails
+both source_binding and qos; the blocked audit promotes TC errors, not an
+independent nft source-rule failure. A TC-free namespace mutation therefore
+cannot satisfy the requested independent source-binding failure and passing
+restoration. See the [complete source trace and rejected mechanisms](runs/2026-11-03/followup31/source-binding.md).
+
+**2026-11-03 hand-off to orchestrator / w2-agent-core:** supply a genuine,
+cause-specific source-binding verifier that runs against a defined binding
+expectation while forwarding is held, and distinguish its result from shared
+Apply/qos and lease-dependent statuses. Specify the checked node state and
+restoration contract; route contract or central changes to their owners.
+This requires changes outside this lane. No report-field override or synthetic
+signed document is a substitute.
+
+Once that exists, the devstack hook must be opt-in and scoped to one node role
+(and member/device where applicable), expire at a hard maximum duration, release
+on explicit removal and test/handle cleanup, and verify idempotent removal by
+state read-back. Consumers must retain commands, exits, before/after state and
+UTC bounds for injection and removal, including every failed attempt; join the
+node/incarnation, populated lease/member IDs, hold arm, incident, accepted report
+and audit IDs; and record central's actual classification. These are future
+acceptance requirements, **not an implemented API**. The separate source-address
+row remains open for members' next follow-up after the owner prerequisite.
+
+**Archive navigation: repaired.** Added
+[`docs/e2e/at/poc/G1-app-checklist.md`](at/poc/G1-app-checklist.md) as a relative
+symlink to `../../../poc/G1-app-checklist.md`. It opens the real checklist and
+preserves every byte-pinned archive. All **14** archived `OPERATORS.md` files
+carrying this link in members commit
+`1019e9591c68a3d8f9323dd51259d94d1e5e5bf8` (follow-ups 3–16) resolve to
+`docs/poc/G1-app-checklist.md`; the
+[per-file verification](runs/2026-11-03/followup31/archive-links.md) records each
+source file, source digest and successful target/byte comparison.

@@ -1,0 +1,28 @@
+{
+  "start_utc": "2026-11-03T07:55:08.113388+00:00",
+  "elapsed_seconds": 39.624554968000666,
+  "command": [
+    "env",
+    "FVPN_NETLAB=1",
+    "FVPN_NETLAB_TCP_OBSERVE=1",
+    "FVPN_LAB_PREFIX=fvpn-w1-netlab-f28-window",
+    "FVPN_NETLAB_EVIDENCE_DIR=docs/poc/G2-followup28-evidence/window/reload",
+    "go",
+    "test",
+    "-tags",
+    "netlab",
+    "-count=1",
+    "-timeout",
+    "10m",
+    "-p",
+    "1",
+    "-parallel",
+    "1",
+    "-v",
+    "./tests/netlab",
+    "-run",
+    "^TestAT10_AT13_ReloadRevokeBaseline$"
+  ],
+  "exit_code": 0,
+  "output_sha256": "8623c6c893a3d6a5b57b2db5135d2a0407808fab0388b6c1ab7ec25e0df71149"
+}

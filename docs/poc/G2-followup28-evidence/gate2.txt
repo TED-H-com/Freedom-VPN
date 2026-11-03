@@ -1,0 +1,471 @@
+make[1]: Entering directory '<worktree>'
+docker build -t fvpn-w1-netlab-f28:lab <worktree>/tests/netlab
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 965B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 171.98kB done
+#4 DONE 0.0s
+
+#5 [1/4] FROM docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#5 resolve docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852 0.0s done
+#5 DONE 0.0s
+
+#6 [2/4] RUN apt-get update     && apt-get install -y --no-install-recommends         nftables         iproute2         wireguard-tools         conntrack         iperf3         tcpdump         ethtool         python3         iputils-ping         procps         ca-certificates     && rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [3/4] RUN cp -a /usr/bin/wg /usr/local/bin/wg
+#7 CACHED
+
+#8 [4/4] COPY scripts/ /opt/netlab/scripts/
+#8 CACHED
+
+#9 exporting to image
+#9 exporting layers done
+#9 exporting manifest sha256:3e6930d7691fd93d199389647b32d21ca0f05936bd9878a34d078d51d5440029 done
+#9 exporting config sha256:8c52dcd4c2449a292aa7f68ec824870685ead4b1708bd7e39cde0a8d40fc5239 done
+#9 exporting attestation manifest sha256:79df820bea9fc4a66b12afea0046d11cf149011f19cc06fbcae55a31940c4b9a 0.0s done
+#9 exporting manifest list sha256:2e9e441ce8e204b06f4eec92ec950b5e8b138ac21c5506cab13f62574d689a5c
+#9 exporting manifest list sha256:2e9e441ce8e204b06f4eec92ec950b5e8b138ac21c5506cab13f62574d689a5c 0.0s done
+#9 naming to docker.io/library/fvpn-w1-netlab-f28:lab done
+#9 unpacking to docker.io/library/fvpn-w1-netlab-f28:lab 0.0s done
+#9 DONE 0.1s
+docker rm -f fvpn-w1-netlab-f28 >/dev/null 2>&1 || true
+make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w1-netlab-f28'
+make[2]: Entering directory '<worktree>'
+mkdir -p <worktree>/.agent/tmp/fvpn-w1-netlab-f28-scratch
+docker rm -f fvpn-w1-netlab-f28-wipe >/dev/null 2>&1 || true
+docker run --rm --name fvpn-w1-netlab-f28-wipe --network none \
+	-v <worktree>/.agent/tmp/fvpn-w1-netlab-f28-scratch:/scratch fvpn-w1-netlab-f28:lab \
+	find /scratch -mindepth 1 -delete
+make[2]: Leaving directory '<worktree>'
+docker network inspect fvpn-w1-netlab-f28-dns >/dev/null 2>&1 || docker network create fvpn-w1-netlab-f28-dns
+477037a919345a1c8c617a16dc18e514c0a47ea25d38ad56897176c6662b5b79
+docker run -d --name fvpn-w1-netlab-f28 --privileged --network fvpn-w1-netlab-f28-dns \
+	--cap-add NET_ADMIN --cap-add SYS_TIME \
+	-v <worktree>:/work:ro \
+	-v <worktree>/.agent/tmp/fvpn-w1-netlab-f28-scratch:/scratch \
+	fvpn-w1-netlab-f28:lab
+06cd2d318c340e15dd2d1c44ef0a062c0d1c5e151de34eb8654b21b0832172f4
+docker cp <worktree>/.agent/tmp/fvpn-w1-netlab-f28-fvpn-netlab fvpn-w1-netlab-f28:/usr/local/bin/fvpn-netlab
+docker exec fvpn-w1-netlab-f28 bash /work/tests/netlab/scripts/topology.sh
+topology: forwarding off before any path exists
+topology: underlay and transit links
+topology: routes
+topology: wireguard keys in /scratch (not the repo)
+topology: boot baseline before forwarding (§8.2)
+topology: listeners
+topology: wireguard handshakes
+topology: ready
+make[1]: Leaving directory '<worktree>'
+admission/gate2-after-startup: wait=0.1s admitted=True actual=1 quiet=None
+=== RUN   TestD098_Followup18ArchivePins
+    evidence_test.go:73: D-098: 122 byte/SHA-256 pins match
+--- PASS: TestD098_Followup18ArchivePins (0.00s)
+=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean
+--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (2.18s)
+=== RUN   TestD098_GzipPins
+--- PASS: TestD098_GzipPins (0.00s)
+=== RUN   TestD098_EvidencePinValidation
+=== RUN   TestD098_EvidencePinValidation/history_snapshot
+=== RUN   TestD098_EvidencePinValidation/run-ID_snapshot
+=== RUN   TestD098_EvidencePinValidation/owned_source
+=== RUN   TestD098_EvidencePinValidation/relative_retention
+=== RUN   TestD098_EvidencePinValidation/relative_archive
+=== RUN   TestD098_EvidencePinValidation/mutable_matching_bytes
+=== RUN   TestD098_EvidencePinValidation/dated_directory_alone
+=== RUN   TestD098_EvidencePinValidation/history_lookalike
+=== RUN   TestD098_EvidencePinValidation/history_lacks_snapshot
+=== RUN   TestD098_EvidencePinValidation/changed_source
+=== RUN   TestD098_EvidencePinValidation/changed_retained_bytes
+=== RUN   TestD098_EvidencePinValidation/missing_target
+=== RUN   TestD098_EvidencePinValidation/traversal
+=== RUN   TestD098_EvidencePinValidation/relative_traversal
+=== RUN   TestD098_EvidencePinValidation/absolute_path
+=== RUN   TestD098_EvidencePinValidation/empty_manifest
+=== RUN   TestD098_EvidencePinValidation/malformed_JSON
+=== RUN   TestD098_EvidencePinValidation/wrong_byte_length
+=== RUN   TestD098_EvidencePinValidation/duplicate_target
+=== RUN   TestD098_EvidencePinValidation/checks_later_entries
+--- PASS: TestD098_EvidencePinValidation (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/history_snapshot (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/run-ID_snapshot (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/owned_source (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/relative_retention (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/relative_archive (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/mutable_matching_bytes (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/dated_directory_alone (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/history_lookalike (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/history_lacks_snapshot (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/changed_source (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/changed_retained_bytes (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/missing_target (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/traversal (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/relative_traversal (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/absolute_path (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/empty_manifest (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/malformed_JSON (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/wrong_byte_length (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/duplicate_target (0.00s)
+    --- PASS: TestD098_EvidencePinValidation/checks_later_entries (0.00s)
+=== RUN   TestAT13_ProbeDownloadDestinationDeny
+=== RUN   TestAT13_ProbeDownloadDestinationDeny/baseline=false
+probe download controls
+name                             ns       proto  dst                    port   expect   observed       ok
+probe-sibling                    fv-probe tcp    203.0.113.20           80     allow    connected      true
+probe-dns-udp                    fv-probe dns    198.51.100.53          53     allow    reply          true
+probe-dns-tcp                    fv-probe tcp    198.51.100.53          53     allow    connected      true
+probes=3 failed=0
+=== RUN   TestAT13_ProbeDownloadDestinationDeny/baseline=true
+probe download controls
+name                             ns       proto  dst                    port   expect   observed       ok
+probe-sibling                    fv-probe tcp    203.0.113.20           80     allow    connected      true
+probe-dns-udp                    fv-probe dns    198.51.100.53          53     allow    reply          true
+probe-dns-tcp                    fv-probe tcp    198.51.100.53          53     allow    connected      true
+probes=3 failed=0
+--- PASS: TestAT13_ProbeDownloadDestinationDeny (7.51s)
+    --- PASS: TestAT13_ProbeDownloadDestinationDeny/baseline=false (3.70s)
+    --- PASS: TestAT13_ProbeDownloadDestinationDeny/baseline=true (3.73s)
+=== RUN   TestMechanismForLinkType
+--- PASS: TestMechanismForLinkType (0.00s)
+=== RUN   TestUDPPacketChecksum
+--- PASS: TestUDPPacketChecksum (0.00s)
+=== RUN   TestReviewR15_TcMirredAndPolicyRoutingBypass
+=== RUN   TestReviewR15_TcMirredAndPolicyRoutingBypass/tc_clsact_mirred
+    review_r15_q8_bypass_test.go:62: tc mirred: ctunku=0 uplink="07:56:45.360661 IP 100.64.9.9.40000 > 203.0.113.10.39997: UDP, length 1\n\n"
+    review_r15_q8_bypass_test.go:66: D090 before quarantine: verify_exit=3 reason=TC_FOREIGN_FILTER uplink_packets=1 ctunku_delta=0
+    review_r15_q8_bypass_test.go:74: D090 quarantine: {"quarantined":true,"recorded":true,"links":[{"interface":"fv-fh","before":{"admin_up":true,"operstate":"UP"},"after":{"admin_up":false,"operstate":"DOWN"}}],"baseline":{"installed":true,"verified":true}}
+    review_r15_q8_bypass_test.go:94: D090 contained: verify_exit=3 reason=TC_FOREIGN_FILTER quarantined=true uplink_packets=0 ctunku_before=1 ctunku_after=1 control=control-ok
+    review_r15_q8_bypass_test.go:119: D090 clean Apply: member_admin_up=true uplink_admin_up=true verify_exit=0 quarantined=false
+SUMMARY AT00 handshakes=5 forward=1 baseline=1
+SUMMARY D090 post-Apply injection verify=3 TC_FOREIGN_FILTER; pre-quarantine uplink=1 ctunku_delta=0; quarantined uplink=0 ctunku_delta=0 control=pass; repeated quarantine=pass; clean Apply links=up verify=0; topology routes reconciled=2 ipv6_address=1 member=pass AT00=pass
+=== RUN   TestReviewR15_TcMirredAndPolicyRoutingBypass/ip_rule
+    review_r15_q8_bypass_test.go:161: ip rule: ctunku=1 uplink="\n"
+--- PASS: TestReviewR15_TcMirredAndPolicyRoutingBypass (9.42s)
+    --- PASS: TestReviewR15_TcMirredAndPolicyRoutingBypass/tc_clsact_mirred (6.21s)
+    --- PASS: TestReviewR15_TcMirredAndPolicyRoutingBypass/ip_rule (2.17s)
+=== RUN   TestReviewR15_TCFilterAttachments
+=== RUN   TestReviewR15_TCFilterAttachments/fv-fh_1:
+=== RUN   TestReviewR15_TCFilterAttachments/fv-fh_1:1
+=== RUN   TestReviewR15_TCFilterAttachments/fv-fh_1:fffe
+=== RUN   TestReviewR15_TCFilterAttachments/fv-fh_1:2f
+=== RUN   TestReviewR15_TCFilterAttachments/fv-fh_2f:
+=== RUN   TestReviewR15_TCFilterAttachments/fv-fh_egress
+=== RUN   TestReviewR15_TCFilterAttachments/fv-ih_1:
+=== RUN   TestReviewR15_TCFilterAttachments/fv-ih_1:1
+=== RUN   TestReviewR15_TCFilterAttachments/fv-ih_1:fffe
+=== RUN   TestReviewR15_TCFilterAttachments/fv-ih_1:2f
+=== RUN   TestReviewR15_TCFilterAttachments/fv-ih_2f:
+=== RUN   TestReviewR15_TCFilterAttachments/fv-ih_egress
+--- PASS: TestReviewR15_TCFilterAttachments (5.38s)
+    --- PASS: TestReviewR15_TCFilterAttachments/fv-fh_1: (0.42s)
+    --- PASS: TestReviewR15_TCFilterAttachments/fv-fh_1:1 (0.42s)
+    --- PASS: TestReviewR15_TCFilterAttachments/fv-fh_1:fffe (0.43s)
+    --- PASS: TestReviewR15_TCFilterAttachments/fv-fh_1:2f (0.41s)
+    --- PASS: TestReviewR15_TCFilterAttachments/fv-fh_2f: (0.44s)
+    --- PASS: TestReviewR15_TCFilterAttachments/fv-fh_egress (0.51s)
+    --- PASS: TestReviewR15_TCFilterAttachments/fv-ih_1: (0.41s)
+    --- PASS: TestReviewR15_TCFilterAttachments/fv-ih_1:1 (0.42s)
+    --- PASS: TestReviewR15_TCFilterAttachments/fv-ih_1:fffe (0.41s)
+    --- PASS: TestReviewR15_TCFilterAttachments/fv-ih_1:2f (0.43s)
+    --- PASS: TestReviewR15_TCFilterAttachments/fv-ih_2f: (0.41s)
+    --- PASS: TestReviewR15_TCFilterAttachments/fv-ih_egress (0.49s)
+=== RUN   TestReviewR19_Q4_EstablishedDownloadSurvivesDestinationDeny
+destination deny controls
+name                             ns       proto  dst                    port   expect   observed       ok
+a2-other-destination             fv-a2    tcp    203.0.113.20           80     allow    connected      true
+resolver-udp                     fv-a1    dns    198.51.100.53          53     allow    reply          true
+resolver-tcp                     fv-a1    tcp    198.51.100.53          53     allow    connected      true
+probes=3 failed=0
+    review_r19_destination_test.go:86: DESTINATION-DENY serving=4201 conntrack_kept=1 uplink=0 return=0 ctdeny=4 ctdenyd=4 injected=4 sibling=allow dns_udp=allow dns_tcp=allow
+--- PASS: TestReviewR19_Q4_EstablishedDownloadSurvivesDestinationDeny (5.44s)
+=== RUN   TestAT00_Topology
+SUMMARY AT00 handshakes=5 forward=1 baseline=1
+--- PASS: TestAT00_Topology (0.39s)
+=== RUN   TestAT10_AT13_ReloadRevokeBaseline
+AT10 regen 1025 a1=4321 a2=244
+AT10 regen 1050 a1=6981 a2=244
+AT10 regen 1075 a1=11181 a2=244
+AT10 regen 1100 a1=14121 a2=244
+    scenario_at10_test.go:101: ISO-F6-03: 101 Apply/guard/verifier/precision producer snapshots match executor brackets
+    scenario_at10_test.go:101:
+        AT10 PASS under D-120
+        datagram | generation | bracket start ns | bracket end ns | upper ms | render-installed ms | classification | next datagram | failures
+        (no UDP losses)
+
+AT10 after kill
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-stays-revoked                 fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+a2-stays-up                      fv-a2    tcp    203.0.113.10           80     allow    connected      true
+lan-stays-denied                 fv-a2    tcp    10.1.2.10              80     deny     timeout        true
+probes=3 failed=0
+AT10 baseline
+name                             ns       proto  dst                    port   expect   observed       ok
+baseline-a2                      fv-a2    tcp    203.0.113.10           80     deny     timeout        true
+baseline-a1                      fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+probes=2 failed=0
+SUMMARY AT10 regens=100 revoke_stop=1.776s deny_loops=25 hits=0 baseline_forwarding=off
+--- PASS: TestAT10_AT13_ReloadRevokeBaseline (32.17s)
+=== RUN   TestAT11_IPv6Blocked
+AT11 native
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-v6-global-tcp                 fv-a1    tcp6   2001:db8:203::10       80     deny     timeout        true
+a1-v6-global-icmp                fv-a1    icmp6  2001:db8:203::10       0      deny     timeout        true
+a1-v6-ula                        fv-a1    icmp6  fd00:db8:ffff::10      0      deny     timeout        true
+a1-v6-doc                        fv-a1    icmp6  2001:db8::10           0      deny     timeout        true
+a1-v6-linklocal                  fv-a1    icmp6  fe80::10               0      deny     timeout        true
+a1-v6-mapped-inet                fv-a1    tcp6   ::ffff:203.0.113.10    80     deny     unreachable    true
+a1-v6-mapped-lan                 fv-a1    tcp6   ::ffff:10.1.2.10       80     deny     unreachable    true
+probes=7 failed=0
+AT11 raw6
+name                             ns       proto  dst                    port   expect   observed       ok
+raw-global                       fv-fwd   raw6   2001:db8:203::10       9      sent     sent           true
+raw-ula                          fv-fwd   raw6   fd00:db8:ffff::10      9      sent     sent           true
+raw-linklocal                    fv-fwd   raw6   fe80::10               9      sent     sent           true
+raw-mapped-lan                   fv-fwd   raw6   ::ffff:10.1.2.10       9      sent     sent           true
+probes=4 failed=0
+SUMMARY AT11 ctv6_delta=3 targets_empty=1 mode=block
+--- PASS: TestAT11_IPv6Blocked (4.04s)
+=== RUN   TestAT12_ISO01_ISO04_AllowDeny
+AT12 deny
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-to-a2                         fv-a1    tcp    100.64.1.2             8080   deny     timeout        true
+a1-to-b1                         fv-a1    tcp    100.64.2.1             8080   deny     timeout        true
+a1-to-overlay                    fv-a1    tcp    100.64.5.5             80     deny     timeout        true
+a1-ssh                           fv-a1    tcp    192.0.2.33             2222   deny     timeout        true
+a1-api                           fv-a1    tcp    192.0.2.37             8443   deny     timeout        true
+a1-lan-gw                        fv-a1    tcp    192.168.0.1            80     deny     timeout        true
+a1-rfc1918-192                   fv-a1    tcp    192.168.10.10          80     deny     timeout        true
+a1-rfc1918-10                    fv-a1    tcp    10.1.2.10              80     deny     timeout        true
+a1-rfc1918-172                   fv-a1    tcp    172.16.5.10            80     deny     timeout        true
+a1-metadata                      fv-a1    tcp    169.254.169.254        80     deny     timeout        true
+a1-linklocal                     fv-a1    tcp    169.254.1.50           80     deny     timeout        true
+a1-public-prefix-private         fv-a1    tcp    192.0.2.200            80     deny     timeout        true
+a1-resolver-http                 fv-a1    tcp    198.51.100.53          8080   deny     timeout        true
+a1-resolver-icmp                 fv-a1    icmp   198.51.100.53          0      deny     timeout        true
+rogue-internet                   fv-rogue tcp    203.0.113.10           80     deny     timeout        true
+spoof-internet                   fv-fwd   icmp   203.0.113.10           0      deny     timeout        true
+loopback-inject                  fv-fwd   raw4   127.0.0.1              9      sent     sent           true
+probes=17 failed=0
+    scenario_at12_test.go:77: denied traffic counted as usage: before 16243 after 16340
+--- FAIL: TestAT12_ISO01_ISO04_AllowDeny (5.55s)
+=== RUN   TestAT14_MTR01_MTR02_CountOnce
+metering=forward_admission_v1 dns=dns_service_v1 diagnostic=diagnostic_v1
+reference=tcpdump -v on member fv-wg0, sum of IP total length (inner). ip -s link on fv-wg0 counts ciphertext on this kernel and is not the inner layer. underlay fv-a1u is not usage.
+udp payload_sent=480000 payload_got=480000 nft_up=491200 inner_up=491200 pkts_up=400 dev_up=0.0000 nft_down=491200 inner_down=491200 pkts_down=400 dev_down=0.0000 wg_up=505600 wg_down=505600 underlay_tx=522400
+tcp payload_sent=80000 payload_got=80000 nft_up=84376 inner_up=84376 pkts_up=84 dev_up=0.0000 nft_down=83960 inner_down=83960 pkts_down=76 dev_down=0.0000 wg_up=87372 wg_down=86616 underlay_tx=90900
+dns_upload_delta=381 usage_upload_delta=0
+deny_ctdeny_delta=0
+host_control_usage_delta=0
+reset_reported=u_019a00000000700080000000000000a1 reason=METER_EPOCH_CHANGE
+SUMMARY AT14 udp_up_dev=0.0000 udp_down_dev=0.0000 tcp_up_dev=0.0000 tcp_down_dev=0.0000 dns_separate=1 reset_reported=1
+--- PASS: TestAT14_MTR01_MTR02_CountOnce (6.96s)
+=== RUN   TestSumInnerLengths
+--- PASS: TestSumInnerLengths (0.00s)
+=== RUN   TestAT18_FUP02_QoS
+TEST ONLY R=20Mbit C=20Mbit warm=5s measure=20s reps=1
+shared_upload rep=1 mbps=20.00 ratio=1.000 drops=0 cpu=0.9 host_mbps=0.00
+shared_download rep=1 mbps=20.00 ratio=1.000 drops=0 cpu=1.3
+shared_both rep=1 up_mbps=20.00 up_ratio=1.000 down_mbps=19.99 down_ratio=1.000
+contend rep=1 a=0.500 b=0.500 sum=1.000 drops=0 cpu=1.0
+rate_change minor_a=1:2f minor_b=1:30 bytes_kept=178312053
+member_removed orphan_minor=1:30 absent=1
+SUMMARY AT18 qos windows passed R=20Mbit
+--- PASS: TestAT18_FUP02_QoS (120.42s)
+=== RUN   TestAT29_LeaseTimeout
+=== RUN   TestAT29_LeaseTimeout/offline_cap_is_earliest
+=== RUN   TestAT29_LeaseTimeout/timeout_ceil_clamps_backward_clock
+=== RUN   TestAT29_LeaseTimeout/kernel_set_timeout
+stop_after=8.815s admitted=3
+clock_step=skipped reason=child time namespace is not an isolated clock container=time:[4026534076] child=time:[4026533250]
+SUMMARY AT29 stop_after=8.815s resume=1
+--- PASS: TestAT29_LeaseTimeout (10.60s)
+    --- PASS: TestAT29_LeaseTimeout/offline_cap_is_earliest (0.00s)
+    --- PASS: TestAT29_LeaseTimeout/timeout_ceil_clamps_backward_clock (0.00s)
+    --- PASS: TestAT29_LeaseTimeout/kernel_set_timeout (10.59s)
+=== RUN   TestD104_AT13_DeadlineContinuity
+    scenario_deadline_test.go:78: D104: granularity=1ms bound=100ms Apply->installed<=28.340645ms render->installed<=15.908853ms last_positive=-100.681117ms first_drop=-715.692µs positives=26 drops=7 precise_read=1.259014ms
+--- PASS: TestD104_AT13_DeadlineContinuity (3.94s)
+=== RUN   TestProbe_DNSAcceptBound
+probe dns accept
+name                             ns       proto  dst                    port   expect   observed       ok
+dns-udp                          fv-probe dns    198.51.100.53          53     allow    reply          true
+dns-tcp                          fv-probe tcp    198.51.100.53          53     allow    connected      true
+resolver-tcp-80                  fv-probe tcp    198.51.100.53          80     deny     timeout        true
+resolver-udp-853                 fv-probe udp    198.51.100.53          853    deny     timeout        true
+lan-tcp-53                       fv-probe tcp    10.1.2.10              53     deny     timeout        true
+lan-tcp-9                        fv-probe tcp    10.1.2.10              9      deny     timeout        true
+lan-udp-53                       fv-probe dns    10.1.2.10              53     deny     timeout        true
+sixto4-tcp-53                    fv-probe tcp    192.88.99.1            53     deny     timeout        true
+sixto4-udp-80                    fv-probe udp    192.88.99.1            80     deny     timeout        true
+sibling-dns                      fv-probe dns    198.51.100.53          53     deny     timeout        true
+probes=10 failed=0
+probe dns while live
+name                             ns       proto  dst                    port   expect   observed       ok
+dns-while-live                   fv-probe dns    198.51.100.53          53     allow    reply          true
+probes=1 failed=0
+probe dns after expiry
+name                             ns       proto  dst                    port   expect   observed       ok
+dns-after-expiry                 fv-probe dns    198.51.100.53          53     deny     timeout        true
+dns-tcp-after-expiry             fv-probe tcp    198.51.100.53          53     deny     timeout        true
+probes=2 failed=0
+SUMMARY DNS-ACCEPT tcp53=1 udp53=1 other_port=2 other_denied=5 sibling=1 expired=1 ruleset_narrow=1 capture=0
+--- PASS: TestProbe_DNSAcceptBound (16.80s)
+=== RUN   TestF21_AT02_RollbackSibling
+    scenario_f21_test.go:32: set FVPN_NETLAB_F21=1 on a fresh topology for follow-up 21 diagnostics
+--- SKIP: TestF21_AT02_RollbackSibling (0.07s)
+=== RUN   TestF21_AT09_IPv6Underlay
+    scenario_f21_test.go:50: set FVPN_NETLAB_F21=1 on a fresh topology for follow-up 21 diagnostics
+--- SKIP: TestF21_AT09_IPv6Underlay (0.07s)
+=== RUN   TestF22_D133_AT02_CommandLifecycle
+    scenario_f22_test.go:14: set FVPN_NETLAB_F22=1 on a fresh topology
+--- SKIP: TestF22_D133_AT02_CommandLifecycle (0.07s)
+=== RUN   TestISO01_F27_LiveSetDrift
+=== RUN   TestISO01_F27_LiveSetDrift/denied_v4/add
+=== RUN   TestISO01_F27_LiveSetDrift/denied_v4/remove
+=== RUN   TestISO01_F27_LiveSetDrift/denied_v4/replace
+=== RUN   TestISO01_F27_LiveSetDrift/host_v4/add
+=== RUN   TestISO01_F27_LiveSetDrift/host_v4/remove
+=== RUN   TestISO01_F27_LiveSetDrift/host_v4/replace
+--- PASS: TestISO01_F27_LiveSetDrift (3.84s)
+    --- PASS: TestISO01_F27_LiveSetDrift/denied_v4/add (0.60s)
+    --- PASS: TestISO01_F27_LiveSetDrift/denied_v4/remove (0.62s)
+    --- PASS: TestISO01_F27_LiveSetDrift/denied_v4/replace (0.65s)
+    --- PASS: TestISO01_F27_LiveSetDrift/host_v4/add (0.62s)
+    --- PASS: TestISO01_F27_LiveSetDrift/host_v4/remove (0.64s)
+    --- PASS: TestISO01_F27_LiveSetDrift/host_v4/replace (0.64s)
+=== RUN   TestISO01_F27_RenderedCoverage
+=== RUN   TestISO01_F27_RenderedCoverage/spec/serving
+=== RUN   TestISO01_F27_RenderedCoverage/spec/serving_probe
+=== RUN   TestISO01_F27_RenderedCoverage/spec/baseline_probe
+=== RUN   TestISO01_F27_RenderedCoverage/overlap/serving
+=== RUN   TestISO01_F27_RenderedCoverage/overlap/serving_probe
+=== RUN   TestISO01_F27_RenderedCoverage/overlap/baseline_probe
+--- PASS: TestISO01_F27_RenderedCoverage (3.22s)
+    --- PASS: TestISO01_F27_RenderedCoverage/spec/serving (0.57s)
+    --- PASS: TestISO01_F27_RenderedCoverage/spec/serving_probe (0.56s)
+    --- PASS: TestISO01_F27_RenderedCoverage/spec/baseline_probe (0.46s)
+    --- PASS: TestISO01_F27_RenderedCoverage/overlap/serving (0.54s)
+    --- PASS: TestISO01_F27_RenderedCoverage/overlap/serving_probe (0.55s)
+    --- PASS: TestISO01_F27_RenderedCoverage/overlap/baseline_probe (0.46s)
+=== RUN   TestISO01_F27_VerifyCost
+    scenario_f27_test.go:114: set FVPN_NETLAB_F27_COST=1 for the predeclared comparison
+--- SKIP: TestISO01_F27_VerifyCost (0.07s)
+=== RUN   TestAT09_F802_MTU1280Measurement
+    scenario_f802_test.go:17: F8-02: set FVPN_NETLAB_MTU=1 on a fresh topology for the MTU measurement
+--- SKIP: TestAT09_F802_MTU1280Measurement (0.07s)
+=== RUN   TestForeign_TableBeforeFvpn
+    scenario_foreign_test.go:92: SUMMARY FOREIGN accept_ctunku=1 accept_uplink=0 verdict=ISOLATION_POLICY_INVALID mangle_exit=3 table_kept=1 recovered=1
+SUMMARY FOREIGN accept_ctunku=1 accept_uplink=0 verdict=ISOLATION_POLICY_INVALID mangle_exit=3 table_kept=1 recovered=1
+--- PASS: TestForeign_TableBeforeFvpn (3.42s)
+=== RUN   TestIngress_InjectedMemberFrames
+SUMMARY INGRESS fv-fh=veth-mirred type=1 nonadmitted_ctunku=1 nonadmitted_uplink=0 admitted_u_019a00000000700080000000000000a1=1 admitted_uplink=1 afpacket_ctunku=0 raw_tun=1 raw_veth=1 wg_separate=2 wg_ctunku=0
+--- PASS: TestIngress_InjectedMemberFrames (8.53s)
+=== RUN   TestISO_F6_InterfaceApply
+--- PASS: TestISO_F6_InterfaceApply (6.21s)
+=== RUN   TestDockerDNS_LoopbackScopedServes
+    scenario_loopback_test.go:74: SUMMARY LOOPBACK dns=1 serving=1 class=loopback_scoped postrouting_saddr=2 postrouting_daddr=1 ctunku=1 uplink=0
+SUMMARY LOOPBACK dns=1 serving=1 class=loopback_scoped postrouting_saddr=2 postrouting_daddr=1 ctunku=1 uplink=0
+--- PASS: TestDockerDNS_LoopbackScopedServes (2.13s)
+=== RUN   TestNetBird_InterferenceFailClosed
+netbird accept-all inner
+name                             ns       proto  dst                    port   expect   observed       ok
+nb-allow                         fv-a1    tcp    203.0.113.10           80     allow    connected      true
+nb-member                        fv-a1    tcp    100.64.1.2             8080   deny     timeout        true
+nb-lan                           fv-a1    tcp    10.1.2.10              80     deny     timeout        true
+nb-meta                          fv-a1    tcp    169.254.169.254        80     deny     timeout        true
+nb-rogue                         fv-rogue tcp    203.0.113.10           80     deny     timeout        true
+probes=5 failed=0
+netbird masquerade
+name                             ns       proto  dst                    port   expect   observed       ok
+masq-a1                          fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+masq-b1                          fv-b1    icmp   203.0.113.10           0      deny     timeout        true
+probes=2 failed=0
+netbird off
+name                             ns       proto  dst                    port   expect   observed       ok
+restored                         fv-a1    tcp    203.0.113.10           80     allow    connected      true
+probes=1 failed=0
+netbird accept-all inner
+name                             ns       proto  dst                    port   expect   observed       ok
+nb-allow                         fv-a1    tcp    203.0.113.10           80     allow    connected      true
+nb-member                        fv-a1    tcp    100.64.1.2             8080   deny     timeout        true
+nb-lan                           fv-a1    tcp    10.1.2.10              80     deny     timeout        true
+nb-meta                          fv-a1    tcp    169.254.169.254        80     deny     timeout        true
+nb-rogue                         fv-rogue tcp    203.0.113.10           80     deny     timeout        true
+probes=5 failed=0
+netbird masquerade
+name                             ns       proto  dst                    port   expect   observed       ok
+masq-a1                          fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+masq-b1                          fv-b1    icmp   203.0.113.10           0      deny     timeout        true
+probes=2 failed=0
+netbird off
+name                             ns       proto  dst                    port   expect   observed       ok
+restored                         fv-a1    tcp    203.0.113.10           80     allow    connected      true
+probes=1 failed=0
+mark_pre=5 mark_post=5 preserved=1
+SUMMARY NetBird inner_accept_blocked=1 masquerade_fail_closed=1 marks=mark_pre=5 mark_post=5 preserved=1
+--- PASS: TestNetBird_InterferenceFailClosed (4.53s)
+=== RUN   TestProbe_BaselineException
+probe positive
+name                             ns       proto  dst                    port   expect   observed       ok
+probe-ok                         fv-probe tcp    203.0.113.10           80     allow    connected      true
+probes=1 failed=0
+probe negative
+name                             ns       proto  dst                    port   expect   observed       ok
+neg-a-sibling                    fv-probe tcp    203.0.113.10           80     deny     timeout        true
+neg-b-dest                       fv-probe tcp    203.0.113.20           80     deny     timeout        true
+neg-b-port                       fv-probe tcp    203.0.113.10           9001   deny     timeout        true
+neg-c-admin                      fv-probe tcp    192.0.2.37             22     deny     timeout        true
+probes=4 failed=0
+probe expired
+name                             ns       proto  dst                    port   expect   observed       ok
+neg-d-expired                    fv-probe tcp    203.0.113.10           80     deny     timeout        true
+probes=1 failed=0
+probe dns
+name                             ns       proto  dst                    port   expect   observed       ok
+dns-udp                          fv-probe dns    198.51.100.53          53     allow    reply          true
+dns-tcp                          fv-probe tcp    198.51.100.53          53     allow    connected      true
+dns-other-port                   fv-probe tcp    198.51.100.53          80     deny     timeout        true
+dns-other-dest                   fv-probe tcp    203.0.113.10           53     deny     timeout        true
+dns-other-udp                    fv-probe dns    203.0.113.10           53     deny     timeout        true
+probes=5 failed=0
+SUMMARY PROBE snat=1 up=5 down=3 neg=4 expired=1 dns_only_53=1
+--- PASS: TestProbe_BaselineException (15.31s)
+=== RUN   TestRevoke_RulesetStopsEstablished
+revoke flow neighbors
+name                             ns       proto  dst                    port   expect   observed       ok
+a2-still                         fv-a2    tcp    203.0.113.10           80     allow    connected      true
+a1-denied                        fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+probes=2 failed=0
+SUMMARY REVOKE-FLOW decision=ruleset-stops serving=4101 conntrack_kept=1 uplink=0 return=0 ctunku=4 ctunkd=4 injected=4 sport=45900 reply=45900
+--- PASS: TestRevoke_RulesetStopsEstablished (6.00s)
+=== RUN   TestISO_F6_01_ForeignRemovalNewGeneration
+    scenario_tc_recovery_test.go:138: 31 rejected 2026-11-03T08:01:19.105680034Z -> foreign removed: GENERATION_MISMATCH -> Apply 32 verified 2026-11-03T08:01:20.749808885Z; TC_FOREIGN_FILTER absent, marker cleared, member probe passed after lab route reconciliation
+--- PASS: TestISO_F6_01_ForeignRemovalNewGeneration (3.50s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/netlab	287.799s
+FAIL
+make[1]: Entering directory '<worktree>'
+docker rm -f fvpn-w1-netlab-f28 >/dev/null 2>&1 || true
+docker network rm fvpn-w1-netlab-f28-dns >/dev/null 2>&1 || true
+make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w1-netlab-f28'
+make[2]: Entering directory '<worktree>'
+mkdir -p <worktree>/.agent/tmp/fvpn-w1-netlab-f28-scratch
+docker rm -f fvpn-w1-netlab-f28-wipe >/dev/null 2>&1 || true
+docker run --rm --name fvpn-w1-netlab-f28-wipe --network none \
+	-v <worktree>/.agent/tmp/fvpn-w1-netlab-f28-scratch:/scratch fvpn-w1-netlab-f28:lab \
+	find /scratch -mindepth 1 -delete
+make[2]: Leaving directory '<worktree>'
+rmdir <worktree>/.agent/tmp/fvpn-w1-netlab-f28-scratch 2>/dev/null || true
+make[1]: Leaving directory '<worktree>'
+make: *** [mk/netlab.mk:80: netlab-test] Error 1

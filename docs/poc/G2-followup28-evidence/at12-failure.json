@@ -1,0 +1,31 @@
+{
+  "test_only": true,
+  "gate": "gate2",
+  "status": "FAIL",
+  "test": "TestAT12_ISO01_ISO04_AllowDeny",
+  "file": "tests/netlab/scenario_at12_test.go",
+  "line": 77,
+  "message": "denied traffic counted as usage: before 16243 after 16340",
+  "before_bytes": 16243,
+  "after_bytes": 16340,
+  "delta_bytes": 97,
+  "test_source_unchanged": true,
+  "test_source_sha256": "e8a1025f2b0a6951d5371eee336c79984ea2a8ff902a907a086f11309fd45254",
+  "production_unchanged": true,
+  "tcp_observation_enabled": false,
+  "cause": "unresolved; counter delta alone does not identify the packets",
+  "retry": false,
+  "receipt": {
+    "start_utc": "2026-11-03T07:56:25.796249+00:00",
+    "elapsed_seconds": 297.0552625519995,
+    "command": [
+      "make",
+      "-f",
+      "mk/netlab.mk",
+      "netlab-test",
+      "FVPN_LAB_PREFIX=fvpn-w1-netlab-f28"
+    ],
+    "exit_code": 2,
+    "output_sha256": "f8d3efa0bd2d7351592d84a1da41fdaac506afa765496322d2df1e1309807c3f"
+  }
+}

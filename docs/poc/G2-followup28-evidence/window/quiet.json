@@ -1,0 +1,1289 @@
+{
+  "test_only": true,
+  "wait_seconds": 1292.4206802999997,
+  "admitted": true,
+  "ignore_first_since_boot_row": true,
+  "rows": [
+    {
+      "hold": {
+        "utc": "2026-11-03T07:33:35.635987+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2510875 bash bin/gates.sh w3-devstack-e2e\n2517537 go test -count=1 -p 4 -tags integration github.com/TED-H-com/Freedom-VPN/apps/control github.com/TED-H-com/Freedom-VPN/apps/control/cmd/fvpn-control github.com/TED-H-com/Freedom-VPN/apps/portal/node_modules/flatted/golang/pkg/flatted github.com/TED-H-com/Freedom-VPN/apps/worker github.com/TED-H-com/Freedom-VPN/apps/worker/cmd/fvpn-worker github.com/TED-H-com/Freedom-VPN/contracts github.com/TED-H-com/Freedom-VPN/contracts/internal/cmd/contractsgen github.com/TED-H-com/Freedom-VPN/contracts/internal/gen github.com/TED-H-com/Freedom-VPN/db/migrations github.com/TED-H-com/Freedom-VPN/internal/audit github.com/TED-H-com/Freedom-VPN/internal/auth github.com/TED-H-com/Freedom-VPN/internal/billing github.com/TED-H-com/Freedom-VPN/internal/config github.com/TED-H-com/Freedom-VPN/internal/db github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-db-sweep github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-migrate github.com/TED-H-com/Freedom-VPN/internal/db/dbtest github.com/TED-H-com/Freedom-VPN/internal/desiredstate github.com/TED-H-com/Freedom-VPN/internal/devices github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds github.com/TED-H-com/Freedom-VPN/internal/dnspolicy github.com/TED-H-com/Freedom-VPN/internal/dnspolicy/cmd/bootstrap github.com/TED-H-com/Freedom-VPN/internal/dnspublish github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation github.com/TED-H-com/Freedom-VPN/internal/dnspublish/store github.com/TED-H-com/Freedom-VPN/internal/enrollment github.com/TED-H-com/Freedom-VPN/internal/entitlement github.com/TED-H-com/Freedom-VPN/internal/exits github.com/TED-H-com/Freedom-VPN/internal/fleetupdate github.com/TED-H-com/Freedom-VPN/internal/fup github.com/TED-H-com/Freedom-VPN/internal/httpapi github.com/TED-H-com/Freedom-VPN/internal/httpapi/cmd/controlgen github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen github.com/TED-H-com/Freedom-VPN/internal/installerjob github.com/TED-H-com/Freedom-VPN/internal/leases github.com/TED-H-com/Freedom-VPN/internal/members github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter github.com/TED-H-com/Freedom-VPN/internal/members/issuer github.com/TED-H-com/Freedom-VPN/internal/members/runtime github.com/TED-H-com/Freedom-VPN/internal/netbird github.com/TED-H-com/Freedom-VPN/internal/nodes github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest github.com/TED-H-com/Freedom-VPN/internal/operations github.com/TED-H-com/Freedom-VPN/internal/pki github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest github.com/TED-H-com/Freedom-VPN/internal/policies github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest github.com/TED-H-com/Freedom-VPN/internal/releases github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest github.com/TED-H-com/Freedom-VPN/internal/signing github.com/TED-H-com/Freedom-VPN/internal/usage github.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest github.com/TED-H-com/Freedom-VPN/node/agent github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent github.com/TED-H-com/Freedom-VPN/node/dns github.com/TED-H-com/Freedom-VPN/node/enforce github.com/TED-H-com/Freedom-VPN/node/internal/agentstore github.com/TED-H-com/Freedom-VPN/node/internal/controlclient github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol github.com/TED-H-com/Freedom-VPN/node/internal/healthattest github.com/TED-H-com/Freedom-VPN/node/internal/meter github.com/TED-H-com/Freedom-VPN/node/internal/nodelock github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal github.com/TED-H-com/Freedom-VPN/node/internal/usagestore github.com/TED-H-com/Freedom-VPN/node/internal/usageupload github.com/TED-H-com/Freedom-VPN/node/nodelock github.com/TED-H-com/Freedom-VPN/node/updater github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater github.com/TED-H-com/Freedom-VPN/node/updater/fsutil github.com/TED-H-com/Freedom-VPN/node/watchdog github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog github.com/TED-H-com/Freedom-VPN/packaging/installer github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install github.com/TED-H-com/Freedom-VPN/packaging/release github.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release github.com/TED-H-com/Freedom-VPN/pkg/api github.com/TED-H-com/Freedom-VPN/pkg/api/presence github.com/TED-H-com/Freedom-VPN/pkg/apierr github.com/TED-H-com/Freedom-VPN/pkg/canonjson github.com/TED-H-com/Freedom-VPN/pkg/decstr github.com/TED-H-com/Freedom-VPN/pkg/envelope github.com/TED-H-com/Freedom-VPN/tests/e2e github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve github.com/TED-H-com/Freedom-VPN/tests/e2e/at/usage github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-control github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-fixture-probe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-lease-read github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-native-observe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nightly-gate github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-stream github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/agentwait github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats github.com/TED-H-com/Freedom-VPN/tests/handover github.com/TED-H-com/Freedom-VPN/tests/netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/at github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2510875,
+            "ppid": 2509001,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2510875,
+            "ppid": 2509001,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          }
+        ]
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 5  0 207956 2778368 1941764 170997296    3   20 122459 117971 24075   20  3  2 94  1  0  0\n 2  1 207956 3753424 1941920 171012024    0    0    30 114250 73806 285612 11  7 79  3  0  0\n 3  0 207956 3282132 1941960 171183632    0    0     3 65432 119762 74304 10  4 82  4  0  0\n 4  0 207956 3648256 1941984 171075384    0    0     3 104998 37822 86605  6  6 86  3  0  0\n 0  2 207956 3679380 1942000 171068312    0    0    24 109602 37041 98162  6  5 86  3  0  0\n 0  6 207956 3707744 1942012 171061124    0    0     1 75763 24500 62624  4  4 87  5  0  0\n 4  0 207956 3748772 1942020 171064416    0    0     0 119267 37627 104061  7  6 84  4  0  0\n",
+      "current": [
+        {
+          "r": 2,
+          "idle": 79
+        },
+        {
+          "r": 3,
+          "idle": 82
+        },
+        {
+          "r": 4,
+          "idle": 86
+        },
+        {
+          "r": 0,
+          "idle": 86
+        },
+        {
+          "r": 0,
+          "idle": 87
+        },
+        {
+          "r": 4,
+          "idle": 84
+        }
+      ],
+      "quiet": false,
+      "after": {
+        "pgrep": "2510875 bash bin/gates.sh w3-devstack-e2e\n2517537 go test -count=1 -p 4 -tags integration github.com/TED-H-com/Freedom-VPN/apps/control github.com/TED-H-com/Freedom-VPN/apps/control/cmd/fvpn-control github.com/TED-H-com/Freedom-VPN/apps/portal/node_modules/flatted/golang/pkg/flatted github.com/TED-H-com/Freedom-VPN/apps/worker github.com/TED-H-com/Freedom-VPN/apps/worker/cmd/fvpn-worker github.com/TED-H-com/Freedom-VPN/contracts github.com/TED-H-com/Freedom-VPN/contracts/internal/cmd/contractsgen github.com/TED-H-com/Freedom-VPN/contracts/internal/gen github.com/TED-H-com/Freedom-VPN/db/migrations github.com/TED-H-com/Freedom-VPN/internal/audit github.com/TED-H-com/Freedom-VPN/internal/auth github.com/TED-H-com/Freedom-VPN/internal/billing github.com/TED-H-com/Freedom-VPN/internal/config github.com/TED-H-com/Freedom-VPN/internal/db github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-db-sweep github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-migrate github.com/TED-H-com/Freedom-VPN/internal/db/dbtest github.com/TED-H-com/Freedom-VPN/internal/desiredstate github.com/TED-H-com/Freedom-VPN/internal/devices github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds github.com/TED-H-com/Freedom-VPN/internal/dnspolicy github.com/TED-H-com/Freedom-VPN/internal/dnspolicy/cmd/bootstrap github.com/TED-H-com/Freedom-VPN/internal/dnspublish github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation github.com/TED-H-com/Freedom-VPN/internal/dnspublish/store github.com/TED-H-com/Freedom-VPN/internal/enrollment github.com/TED-H-com/Freedom-VPN/internal/entitlement github.com/TED-H-com/Freedom-VPN/internal/exits github.com/TED-H-com/Freedom-VPN/internal/fleetupdate github.com/TED-H-com/Freedom-VPN/internal/fup github.com/TED-H-com/Freedom-VPN/internal/httpapi github.com/TED-H-com/Freedom-VPN/internal/httpapi/cmd/controlgen github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen github.com/TED-H-com/Freedom-VPN/internal/installerjob github.com/TED-H-com/Freedom-VPN/internal/leases github.com/TED-H-com/Freedom-VPN/internal/members github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter github.com/TED-H-com/Freedom-VPN/internal/members/issuer github.com/TED-H-com/Freedom-VPN/internal/members/runtime github.com/TED-H-com/Freedom-VPN/internal/netbird github.com/TED-H-com/Freedom-VPN/internal/nodes github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest github.com/TED-H-com/Freedom-VPN/internal/operations github.com/TED-H-com/Freedom-VPN/internal/pki github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest github.com/TED-H-com/Freedom-VPN/internal/policies github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest github.com/TED-H-com/Freedom-VPN/internal/releases github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest github.com/TED-H-com/Freedom-VPN/internal/signing github.com/TED-H-com/Freedom-VPN/internal/usage github.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest github.com/TED-H-com/Freedom-VPN/node/agent github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent github.com/TED-H-com/Freedom-VPN/node/dns github.com/TED-H-com/Freedom-VPN/node/enforce github.com/TED-H-com/Freedom-VPN/node/internal/agentstore github.com/TED-H-com/Freedom-VPN/node/internal/controlclient github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol github.com/TED-H-com/Freedom-VPN/node/internal/healthattest github.com/TED-H-com/Freedom-VPN/node/internal/meter github.com/TED-H-com/Freedom-VPN/node/internal/nodelock github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal github.com/TED-H-com/Freedom-VPN/node/internal/usagestore github.com/TED-H-com/Freedom-VPN/node/internal/usageupload github.com/TED-H-com/Freedom-VPN/node/nodelock github.com/TED-H-com/Freedom-VPN/node/updater github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater github.com/TED-H-com/Freedom-VPN/node/updater/fsutil github.com/TED-H-com/Freedom-VPN/node/watchdog github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog github.com/TED-H-com/Freedom-VPN/packaging/installer github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install github.com/TED-H-com/Freedom-VPN/packaging/release github.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release github.com/TED-H-com/Freedom-VPN/pkg/api github.com/TED-H-com/Freedom-VPN/pkg/api/presence github.com/TED-H-com/Freedom-VPN/pkg/apierr github.com/TED-H-com/Freedom-VPN/pkg/canonjson github.com/TED-H-com/Freedom-VPN/pkg/decstr github.com/TED-H-com/Freedom-VPN/pkg/envelope github.com/TED-H-com/Freedom-VPN/tests/e2e github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve github.com/TED-H-com/Freedom-VPN/tests/e2e/at/usage github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-control github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-fixture-probe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-lease-read github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-native-observe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nightly-gate github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-stream github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/agentwait github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats github.com/TED-H-com/Freedom-VPN/tests/handover github.com/TED-H-com/Freedom-VPN/tests/netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/at github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2510875,
+            "ppid": 2509001,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2510875,
+            "ppid": 2509001,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          }
+        ]
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:34:05.765436+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T07:35:05.801307+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2510875 bash bin/gates.sh w3-devstack-e2e\n2517537 go test -count=1 -p 4 -tags integration github.com/TED-H-com/Freedom-VPN/apps/control github.com/TED-H-com/Freedom-VPN/apps/control/cmd/fvpn-control github.com/TED-H-com/Freedom-VPN/apps/portal/node_modules/flatted/golang/pkg/flatted github.com/TED-H-com/Freedom-VPN/apps/worker github.com/TED-H-com/Freedom-VPN/apps/worker/cmd/fvpn-worker github.com/TED-H-com/Freedom-VPN/contracts github.com/TED-H-com/Freedom-VPN/contracts/internal/cmd/contractsgen github.com/TED-H-com/Freedom-VPN/contracts/internal/gen github.com/TED-H-com/Freedom-VPN/db/migrations github.com/TED-H-com/Freedom-VPN/internal/audit github.com/TED-H-com/Freedom-VPN/internal/auth github.com/TED-H-com/Freedom-VPN/internal/billing github.com/TED-H-com/Freedom-VPN/internal/config github.com/TED-H-com/Freedom-VPN/internal/db github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-db-sweep github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-migrate github.com/TED-H-com/Freedom-VPN/internal/db/dbtest github.com/TED-H-com/Freedom-VPN/internal/desiredstate github.com/TED-H-com/Freedom-VPN/internal/devices github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds github.com/TED-H-com/Freedom-VPN/internal/dnspolicy github.com/TED-H-com/Freedom-VPN/internal/dnspolicy/cmd/bootstrap github.com/TED-H-com/Freedom-VPN/internal/dnspublish github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation github.com/TED-H-com/Freedom-VPN/internal/dnspublish/store github.com/TED-H-com/Freedom-VPN/internal/enrollment github.com/TED-H-com/Freedom-VPN/internal/entitlement github.com/TED-H-com/Freedom-VPN/internal/exits github.com/TED-H-com/Freedom-VPN/internal/fleetupdate github.com/TED-H-com/Freedom-VPN/internal/fup github.com/TED-H-com/Freedom-VPN/internal/httpapi github.com/TED-H-com/Freedom-VPN/internal/httpapi/cmd/controlgen github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen github.com/TED-H-com/Freedom-VPN/internal/installerjob github.com/TED-H-com/Freedom-VPN/internal/leases github.com/TED-H-com/Freedom-VPN/internal/members github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter github.com/TED-H-com/Freedom-VPN/internal/members/issuer github.com/TED-H-com/Freedom-VPN/internal/members/runtime github.com/TED-H-com/Freedom-VPN/internal/netbird github.com/TED-H-com/Freedom-VPN/internal/nodes github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest github.com/TED-H-com/Freedom-VPN/internal/operations github.com/TED-H-com/Freedom-VPN/internal/pki github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest github.com/TED-H-com/Freedom-VPN/internal/policies github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest github.com/TED-H-com/Freedom-VPN/internal/releases github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest github.com/TED-H-com/Freedom-VPN/internal/signing github.com/TED-H-com/Freedom-VPN/internal/usage github.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest github.com/TED-H-com/Freedom-VPN/node/agent github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent github.com/TED-H-com/Freedom-VPN/node/dns github.com/TED-H-com/Freedom-VPN/node/enforce github.com/TED-H-com/Freedom-VPN/node/internal/agentstore github.com/TED-H-com/Freedom-VPN/node/internal/controlclient github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol github.com/TED-H-com/Freedom-VPN/node/internal/healthattest github.com/TED-H-com/Freedom-VPN/node/internal/meter github.com/TED-H-com/Freedom-VPN/node/internal/nodelock github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal github.com/TED-H-com/Freedom-VPN/node/internal/usagestore github.com/TED-H-com/Freedom-VPN/node/internal/usageupload github.com/TED-H-com/Freedom-VPN/node/nodelock github.com/TED-H-com/Freedom-VPN/node/updater github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater github.com/TED-H-com/Freedom-VPN/node/updater/fsutil github.com/TED-H-com/Freedom-VPN/node/watchdog github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog github.com/TED-H-com/Freedom-VPN/packaging/installer github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install github.com/TED-H-com/Freedom-VPN/packaging/release github.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release github.com/TED-H-com/Freedom-VPN/pkg/api github.com/TED-H-com/Freedom-VPN/pkg/api/presence github.com/TED-H-com/Freedom-VPN/pkg/apierr github.com/TED-H-com/Freedom-VPN/pkg/canonjson github.com/TED-H-com/Freedom-VPN/pkg/decstr github.com/TED-H-com/Freedom-VPN/pkg/envelope github.com/TED-H-com/Freedom-VPN/tests/e2e github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve github.com/TED-H-com/Freedom-VPN/tests/e2e/at/usage github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-control github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-fixture-probe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-lease-read github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-native-observe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nightly-gate github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-stream github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/agentwait github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats github.com/TED-H-com/Freedom-VPN/tests/handover github.com/TED-H-com/Freedom-VPN/tests/netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/at github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\n2522900 /bin/sh -c TMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' GOTMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n2522901 <home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2510875,
+            "ppid": 2509001,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          },
+          {
+            "pid": 2522901,
+            "ppid": 2522900,
+            "args": "<home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2510875,
+            "ppid": 2509001,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          }
+        ]
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 2  2 207956 3013388 1942692 171136588    3   20 121711 117967 24245   20  3  2 94  1  0  0\n 4  0 207956 2520588 1942708 171100928    0    0     1 55232 41578 72872 11  4 82  3  0  0\n 2  2 207956 1709136 1942716 171112220    0    0    17 35970 38313 59576 11  4 83  2  0  0\n 4  1 207956 2483836 1942736 171134600    0    0     0 72294 52463 80625 10  5 81  4  0  0\n 1  1 207956 2883872 1942748 171097524    0    0     5 52657 54873 71385  5  5 87  3  0  0\n 0  1 207956 3351544 1942760 171086848    0    0     2 30362 12412 32797  2  1 95  2  0  0\n 1  0 207956 3596704 1942768 171090800    0    0     0 22065 13461 40306  2  2 96  1  0  0\n",
+      "current": [
+        {
+          "r": 4,
+          "idle": 82
+        },
+        {
+          "r": 2,
+          "idle": 83
+        },
+        {
+          "r": 4,
+          "idle": 81
+        },
+        {
+          "r": 1,
+          "idle": 87
+        },
+        {
+          "r": 0,
+          "idle": 95
+        },
+        {
+          "r": 1,
+          "idle": 96
+        }
+      ],
+      "quiet": false,
+      "after": {
+        "pgrep": "2510875 bash bin/gates.sh w3-devstack-e2e\n2517537 go test -count=1 -p 4 -tags integration github.com/TED-H-com/Freedom-VPN/apps/control github.com/TED-H-com/Freedom-VPN/apps/control/cmd/fvpn-control github.com/TED-H-com/Freedom-VPN/apps/portal/node_modules/flatted/golang/pkg/flatted github.com/TED-H-com/Freedom-VPN/apps/worker github.com/TED-H-com/Freedom-VPN/apps/worker/cmd/fvpn-worker github.com/TED-H-com/Freedom-VPN/contracts github.com/TED-H-com/Freedom-VPN/contracts/internal/cmd/contractsgen github.com/TED-H-com/Freedom-VPN/contracts/internal/gen github.com/TED-H-com/Freedom-VPN/db/migrations github.com/TED-H-com/Freedom-VPN/internal/audit github.com/TED-H-com/Freedom-VPN/internal/auth github.com/TED-H-com/Freedom-VPN/internal/billing github.com/TED-H-com/Freedom-VPN/internal/config github.com/TED-H-com/Freedom-VPN/internal/db github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-db-sweep github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-migrate github.com/TED-H-com/Freedom-VPN/internal/db/dbtest github.com/TED-H-com/Freedom-VPN/internal/desiredstate github.com/TED-H-com/Freedom-VPN/internal/devices github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds github.com/TED-H-com/Freedom-VPN/internal/dnspolicy github.com/TED-H-com/Freedom-VPN/internal/dnspolicy/cmd/bootstrap github.com/TED-H-com/Freedom-VPN/internal/dnspublish github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation github.com/TED-H-com/Freedom-VPN/internal/dnspublish/store github.com/TED-H-com/Freedom-VPN/internal/enrollment github.com/TED-H-com/Freedom-VPN/internal/entitlement github.com/TED-H-com/Freedom-VPN/internal/exits github.com/TED-H-com/Freedom-VPN/internal/fleetupdate github.com/TED-H-com/Freedom-VPN/internal/fup github.com/TED-H-com/Freedom-VPN/internal/httpapi github.com/TED-H-com/Freedom-VPN/internal/httpapi/cmd/controlgen github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen github.com/TED-H-com/Freedom-VPN/internal/installerjob github.com/TED-H-com/Freedom-VPN/internal/leases github.com/TED-H-com/Freedom-VPN/internal/members github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter github.com/TED-H-com/Freedom-VPN/internal/members/issuer github.com/TED-H-com/Freedom-VPN/internal/members/runtime github.com/TED-H-com/Freedom-VPN/internal/netbird github.com/TED-H-com/Freedom-VPN/internal/nodes github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest github.com/TED-H-com/Freedom-VPN/internal/operations github.com/TED-H-com/Freedom-VPN/internal/pki github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest github.com/TED-H-com/Freedom-VPN/internal/policies github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest github.com/TED-H-com/Freedom-VPN/internal/releases github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest github.com/TED-H-com/Freedom-VPN/internal/signing github.com/TED-H-com/Freedom-VPN/internal/usage github.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest github.com/TED-H-com/Freedom-VPN/node/agent github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent github.com/TED-H-com/Freedom-VPN/node/dns github.com/TED-H-com/Freedom-VPN/node/enforce github.com/TED-H-com/Freedom-VPN/node/internal/agentstore github.com/TED-H-com/Freedom-VPN/node/internal/controlclient github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol github.com/TED-H-com/Freedom-VPN/node/internal/healthattest github.com/TED-H-com/Freedom-VPN/node/internal/meter github.com/TED-H-com/Freedom-VPN/node/internal/nodelock github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal github.com/TED-H-com/Freedom-VPN/node/internal/usagestore github.com/TED-H-com/Freedom-VPN/node/internal/usageupload github.com/TED-H-com/Freedom-VPN/node/nodelock github.com/TED-H-com/Freedom-VPN/node/updater github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater github.com/TED-H-com/Freedom-VPN/node/updater/fsutil github.com/TED-H-com/Freedom-VPN/node/watchdog github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog github.com/TED-H-com/Freedom-VPN/packaging/installer github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install github.com/TED-H-com/Freedom-VPN/packaging/release github.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release github.com/TED-H-com/Freedom-VPN/pkg/api github.com/TED-H-com/Freedom-VPN/pkg/api/presence github.com/TED-H-com/Freedom-VPN/pkg/apierr github.com/TED-H-com/Freedom-VPN/pkg/canonjson github.com/TED-H-com/Freedom-VPN/pkg/decstr github.com/TED-H-com/Freedom-VPN/pkg/envelope github.com/TED-H-com/Freedom-VPN/tests/e2e github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve github.com/TED-H-com/Freedom-VPN/tests/e2e/at/usage github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-control github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-fixture-probe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-lease-read github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-native-observe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nightly-gate github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-stream github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/agentwait github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats github.com/TED-H-com/Freedom-VPN/tests/handover github.com/TED-H-com/Freedom-VPN/tests/netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/at github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\n2522900 /bin/sh -c TMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' GOTMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n2522901 <home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2510875,
+            "ppid": 2509001,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          },
+          {
+            "pid": 2522901,
+            "ppid": 2522900,
+            "args": "<home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2510875,
+            "ppid": 2509001,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          }
+        ]
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:35:35.928771+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T07:36:35.963936+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2537396 /bin/sh -c TMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' GOTMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test -count=1 -tags integration ./node/agent/...\n2537397 <home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2537397,
+            "ppid": 2537396,
+            "args": "<home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2537397,
+            "ppid": 2537396,
+            "args": "<home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...",
+            "suite": false,
+            "go_test": true
+          }
+        ]
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  1 207956 3756612 1947268 171143972    3   20 120971 117432 24414   20  3  2 94  1  0  0\n 0  1 207956 3792616 1947276 171143960    0    0     0 45810 10468 21970  1  1 95  4  0  0\n 0  1 207956 3760440 1947300 171144200    0    0     2 41471 10203 21939  0  0 95  4  0  0\n 0  1 207956 3780452 1947312 171144248    0    0     2 46200 11089 22223  0  1 94  4  0  0\n 1  0 207956 3822456 1947336 171144328    0    0     3 47544 11861 27184  1  1 95  3  0  0\n 0  1 207956 3844584 1947344 171144380    0    0     0 29524 10378 22918  1  0 96  3  0  0\n 0  0 207956 3541388 1947420 171144804    0    0     0 18018 19508 60102  2  1 95  2  0  0\n",
+      "current": [
+        {
+          "r": 0,
+          "idle": 95
+        },
+        {
+          "r": 0,
+          "idle": 95
+        },
+        {
+          "r": 0,
+          "idle": 94
+        },
+        {
+          "r": 1,
+          "idle": 95
+        },
+        {
+          "r": 0,
+          "idle": 96
+        },
+        {
+          "r": 0,
+          "idle": 95
+        }
+      ],
+      "quiet": true,
+      "after": {
+        "pgrep": "2537396 /bin/sh -c TMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' GOTMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test -count=1 -tags integration ./node/agent/...\n2537397 <home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2537397,
+            "ppid": 2537396,
+            "args": "<home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2537397,
+            "ppid": 2537396,
+            "args": "<home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...",
+            "suite": false,
+            "go_test": true
+          }
+        ]
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:37:06.080279+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T07:38:06.118575+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2537396 /bin/sh -c TMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' GOTMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test -count=1 -tags integration ./node/agent/...\n2537397 <home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2537397,
+            "ppid": 2537396,
+            "args": "<home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2537397,
+            "ppid": 2537396,
+            "args": "<home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...",
+            "suite": false,
+            "go_test": true
+          }
+        ]
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  0 208376 4505852 1947144 170240852    3   20 120241 116852 24333   20  3  2 94  1  0  0\n 0  0 208376 4515720 1947160 170194992    0    0     1 12622 10994 14486  2  1 96  1  0  0\n 0  0 208376 4542616 1947168 170195184    0    0     0   359 2823 3702  0  0 99  0  0  0\n 0  0 208808 4988108 1947040 169743212    0   86     0 11892 3338 3696  0  0 99  0  0  0\n 1  0 208808 4547088 1947064 169742808    0    0     4 17444 7140 96385  6  4 90  0  0  0\n 1  0 208808 4281948 1947072 169742872    0    0     3   972 15972 95525  6  7 87  0  0  0\n 0  0 208808 4389516 1947080 169744224    0    0    15   589 14893 73307  2  1 97  0  0  0\n",
+      "current": [
+        {
+          "r": 0,
+          "idle": 96
+        },
+        {
+          "r": 0,
+          "idle": 99
+        },
+        {
+          "r": 0,
+          "idle": 99
+        },
+        {
+          "r": 1,
+          "idle": 90
+        },
+        {
+          "r": 1,
+          "idle": 87
+        },
+        {
+          "r": 0,
+          "idle": 97
+        }
+      ],
+      "quiet": true,
+      "after": {
+        "pgrep": "",
+        "pgrep_exit": 1,
+        "actual": [],
+        "suites": []
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:38:36.235276+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T07:39:36.282901+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2541560 go test -overlay=<home>/projects/freedom-vpn/wt/w2-updater/.agent/tmp/f20/before-overlay.json -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater\n2543550 bash bin/gates.sh w4-handover\n2545722 go test -count=1 ./...\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2541560,
+            "ppid": 2541555,
+            "args": "go test -overlay=<home>/projects/freedom-vpn/wt/w2-updater/.agent/tmp/f20/before-overlay.json -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater",
+            "suite": false,
+            "go_test": true
+          },
+          {
+            "pid": 2543550,
+            "ppid": 2541904,
+            "args": "bash bin/gates.sh w4-handover",
+            "suite": true,
+            "go_test": false
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2543550,
+            "ppid": 2541904,
+            "args": "bash bin/gates.sh w4-handover",
+            "suite": true,
+            "go_test": false
+          }
+        ]
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n33  0 208808 1876852 1948472 170401544    3   20 119537 116205 24361   20  3  2 94  1  0  0\n 3  0 208804 1703012 1948864 170374640   54    0 14546 23388 153550 158776 35  9 54  1  0  0\n 2  1 208800 1891360 1948884 170358400    1    0  3622 11734 51637 54152 16  5 78  1  0  0\n11  0 208800 2491192 1949036 170349540    6    0    44 13309 30501 39567  8  4 88  1  0  0\n 1  2 208796 3199472 1949224 170411340    1    0    94 24160 24979 27257  6  1 90  2  0  0\n 3  0 208704 3502152 1949368 170412260    0    0    17 77696 25897 41099  3  1 91  5  0  0\n 0  0 208704 3786384 1949424 170392152    0    0    34 55228 19963 32476  2  1 94  4  0  0\n",
+      "current": [
+        {
+          "r": 3,
+          "idle": 54
+        },
+        {
+          "r": 2,
+          "idle": 78
+        },
+        {
+          "r": 11,
+          "idle": 88
+        },
+        {
+          "r": 1,
+          "idle": 90
+        },
+        {
+          "r": 3,
+          "idle": 91
+        },
+        {
+          "r": 0,
+          "idle": 94
+        }
+      ],
+      "quiet": false,
+      "after": {
+        "pgrep": "2541560 go test -overlay=<home>/projects/freedom-vpn/wt/w2-updater/.agent/tmp/f20/before-overlay.json -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater\n2543550 bash bin/gates.sh w4-handover\n2545722 go test -count=1 ./...\n2549791 /usr/bin/python3 .agent/f38/gate.py consumers go test -count=1 ./node/updater/... ./packaging/installer/...\n2549798 <home>/.local/go/bin/go test -count=1 ./node/updater/... ./packaging/installer/...\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2541560,
+            "ppid": 2541555,
+            "args": "go test -overlay=<home>/projects/freedom-vpn/wt/w2-updater/.agent/tmp/f20/before-overlay.json -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater",
+            "suite": false,
+            "go_test": true
+          },
+          {
+            "pid": 2543550,
+            "ppid": 2541904,
+            "args": "bash bin/gates.sh w4-handover",
+            "suite": true,
+            "go_test": false
+          },
+          {
+            "pid": 2549798,
+            "ppid": 2549791,
+            "args": "<home>/.local/go/bin/go test -count=1 ./node/updater/... ./packaging/installer/...",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2543550,
+            "ppid": 2541904,
+            "args": "bash bin/gates.sh w4-handover",
+            "suite": true,
+            "go_test": false
+          }
+        ]
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:40:06.427946+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T07:41:06.465173+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2541560 go test -overlay=<home>/projects/freedom-vpn/wt/w2-updater/.agent/tmp/f20/before-overlay.json -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater\n2543550 bash bin/gates.sh w4-handover\n2550456 go test -count=1 -p 4 -tags integration github.com/TED-H-com/Freedom-VPN/apps/control github.com/TED-H-com/Freedom-VPN/apps/control/cmd/fvpn-control github.com/TED-H-com/Freedom-VPN/apps/worker github.com/TED-H-com/Freedom-VPN/apps/worker/cmd/fvpn-worker github.com/TED-H-com/Freedom-VPN/contracts github.com/TED-H-com/Freedom-VPN/contracts/internal/cmd/contractsgen github.com/TED-H-com/Freedom-VPN/contracts/internal/gen github.com/TED-H-com/Freedom-VPN/db/migrations github.com/TED-H-com/Freedom-VPN/internal/audit github.com/TED-H-com/Freedom-VPN/internal/auth github.com/TED-H-com/Freedom-VPN/internal/billing github.com/TED-H-com/Freedom-VPN/internal/config github.com/TED-H-com/Freedom-VPN/internal/db github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-db-sweep github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-migrate github.com/TED-H-com/Freedom-VPN/internal/db/dbtest github.com/TED-H-com/Freedom-VPN/internal/desiredstate github.com/TED-H-com/Freedom-VPN/internal/devices github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds github.com/TED-H-com/Freedom-VPN/internal/dnspolicy github.com/TED-H-com/Freedom-VPN/internal/dnspolicy/cmd/bootstrap github.com/TED-H-com/Freedom-VPN/internal/dnspublish github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation github.com/TED-H-com/Freedom-VPN/internal/dnspublish/store github.com/TED-H-com/Freedom-VPN/internal/enrollment github.com/TED-H-com/Freedom-VPN/internal/entitlement github.com/TED-H-com/Freedom-VPN/internal/exits github.com/TED-H-com/Freedom-VPN/internal/fleetupdate github.com/TED-H-com/Freedom-VPN/internal/fup github.com/TED-H-com/Freedom-VPN/internal/httpapi github.com/TED-H-com/Freedom-VPN/internal/httpapi/cmd/controlgen github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen github.com/TED-H-com/Freedom-VPN/internal/installerjob github.com/TED-H-com/Freedom-VPN/internal/leases github.com/TED-H-com/Freedom-VPN/internal/members github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter github.com/TED-H-com/Freedom-VPN/internal/members/issuer github.com/TED-H-com/Freedom-VPN/internal/members/runtime github.com/TED-H-com/Freedom-VPN/internal/netbird github.com/TED-H-com/Freedom-VPN/internal/nodes github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest github.com/TED-H-com/Freedom-VPN/internal/operations github.com/TED-H-com/Freedom-VPN/internal/pki github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest github.com/TED-H-com/Freedom-VPN/internal/policies github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest github.com/TED-H-com/Freedom-VPN/internal/releases github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest github.com/TED-H-com/Freedom-VPN/internal/signing github.com/TED-H-com/Freedom-VPN/internal/usage github.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest github.com/TED-H-com/Freedom-VPN/node/agent github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent github.com/TED-H-com/Freedom-VPN/node/dns github.com/TED-H-com/Freedom-VPN/node/enforce github.com/TED-H-com/Freedom-VPN/node/internal/agentstore github.com/TED-H-com/Freedom-VPN/node/internal/controlclient github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol github.com/TED-H-com/Freedom-VPN/node/internal/healthattest github.com/TED-H-com/Freedom-VPN/node/internal/meter github.com/TED-H-com/Freedom-VPN/node/internal/nodelock github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal github.com/TED-H-com/Freedom-VPN/node/internal/usagestore github.com/TED-H-com/Freedom-VPN/node/internal/usageupload github.com/TED-H-com/Freedom-VPN/node/nodelock github.com/TED-H-com/Freedom-VPN/node/updater github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater github.com/TED-H-com/Freedom-VPN/node/updater/fsutil github.com/TED-H-com/Freedom-VPN/node/watchdog github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog github.com/TED-H-com/Freedom-VPN/packaging/installer github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install github.com/TED-H-com/Freedom-VPN/packaging/release github.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release github.com/TED-H-com/Freedom-VPN/pkg/api github.com/TED-H-com/Freedom-VPN/pkg/api/presence github.com/TED-H-com/Freedom-VPN/pkg/apierr github.com/TED-H-com/Freedom-VPN/pkg/canonjson github.com/TED-H-com/Freedom-VPN/pkg/decstr github.com/TED-H-com/Freedom-VPN/pkg/envelope github.com/TED-H-com/Freedom-VPN/tests/e2e github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve github.com/TED-H-com/Freedom-VPN/tests/e2e/at/usage github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-control github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-fixture-probe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-lease-read github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-native-observe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-stream github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/agentwait github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats github.com/TED-H-com/Freedom-VPN/tests/handover github.com/TED-H-com/Freedom-VPN/tests/netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/at github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2541560,
+            "ppid": 2541555,
+            "args": "go test -overlay=<home>/projects/freedom-vpn/wt/w2-updater/.agent/tmp/f20/before-overlay.json -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater",
+            "suite": false,
+            "go_test": true
+          },
+          {
+            "pid": 2543550,
+            "ppid": 2541904,
+            "args": "bash bin/gates.sh w4-handover",
+            "suite": true,
+            "go_test": false
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2543550,
+            "ppid": 2541904,
+            "args": "bash bin/gates.sh w4-handover",
+            "suite": true,
+            "go_test": false
+          }
+        ]
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  5 208704 3240820 1953972 170747856    3   20 118842 116098 24548   20  3  2 94  1  0  0\n19  0 208704 2961588 1954064 170804956    0    0     6 137696 97647 132918 11  7 78  4  0  0\n 3  2 208704 3340064 1954196 170791956    0    0    24 136601 73739 113838 13  6 78  4  0  0\n 0  1 208704 3523572 1954296 170827636    0    0  2850 129657 38373 102029  6  5 85  4  0  0\n 4  3 208704 3545148 1954352 170810800    0    0  1811 141178 41385 103930  7  6 83  5  0  0\n 4  1 208704 3493648 1954408 170876464    0    0  1306 122853 95684 104719 10  5 81  4  0  0\n 3  0 208704 3539196 1954428 170862888    0    0     0 115032 41434 104389  6  5 85  4  0  0\n",
+      "current": [
+        {
+          "r": 19,
+          "idle": 78
+        },
+        {
+          "r": 3,
+          "idle": 78
+        },
+        {
+          "r": 0,
+          "idle": 85
+        },
+        {
+          "r": 4,
+          "idle": 83
+        },
+        {
+          "r": 4,
+          "idle": 81
+        },
+        {
+          "r": 3,
+          "idle": 85
+        }
+      ],
+      "quiet": false,
+      "after": {
+        "pgrep": "2541560 go test -overlay=<home>/projects/freedom-vpn/wt/w2-updater/.agent/tmp/f20/before-overlay.json -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater\n2543550 bash bin/gates.sh w4-handover\n2550456 go test -count=1 -p 4 -tags integration github.com/TED-H-com/Freedom-VPN/apps/control github.com/TED-H-com/Freedom-VPN/apps/control/cmd/fvpn-control github.com/TED-H-com/Freedom-VPN/apps/worker github.com/TED-H-com/Freedom-VPN/apps/worker/cmd/fvpn-worker github.com/TED-H-com/Freedom-VPN/contracts github.com/TED-H-com/Freedom-VPN/contracts/internal/cmd/contractsgen github.com/TED-H-com/Freedom-VPN/contracts/internal/gen github.com/TED-H-com/Freedom-VPN/db/migrations github.com/TED-H-com/Freedom-VPN/internal/audit github.com/TED-H-com/Freedom-VPN/internal/auth github.com/TED-H-com/Freedom-VPN/internal/billing github.com/TED-H-com/Freedom-VPN/internal/config github.com/TED-H-com/Freedom-VPN/internal/db github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-db-sweep github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-migrate github.com/TED-H-com/Freedom-VPN/internal/db/dbtest github.com/TED-H-com/Freedom-VPN/internal/desiredstate github.com/TED-H-com/Freedom-VPN/internal/devices github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds github.com/TED-H-com/Freedom-VPN/internal/dnspolicy github.com/TED-H-com/Freedom-VPN/internal/dnspolicy/cmd/bootstrap github.com/TED-H-com/Freedom-VPN/internal/dnspublish github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation github.com/TED-H-com/Freedom-VPN/internal/dnspublish/store github.com/TED-H-com/Freedom-VPN/internal/enrollment github.com/TED-H-com/Freedom-VPN/internal/entitlement github.com/TED-H-com/Freedom-VPN/internal/exits github.com/TED-H-com/Freedom-VPN/internal/fleetupdate github.com/TED-H-com/Freedom-VPN/internal/fup github.com/TED-H-com/Freedom-VPN/internal/httpapi github.com/TED-H-com/Freedom-VPN/internal/httpapi/cmd/controlgen github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen github.com/TED-H-com/Freedom-VPN/internal/installerjob github.com/TED-H-com/Freedom-VPN/internal/leases github.com/TED-H-com/Freedom-VPN/internal/members github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter github.com/TED-H-com/Freedom-VPN/internal/members/issuer github.com/TED-H-com/Freedom-VPN/internal/members/runtime github.com/TED-H-com/Freedom-VPN/internal/netbird github.com/TED-H-com/Freedom-VPN/internal/nodes github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest github.com/TED-H-com/Freedom-VPN/internal/operations github.com/TED-H-com/Freedom-VPN/internal/pki github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest github.com/TED-H-com/Freedom-VPN/internal/policies github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest github.com/TED-H-com/Freedom-VPN/internal/releases github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest github.com/TED-H-com/Freedom-VPN/internal/signing github.com/TED-H-com/Freedom-VPN/internal/usage github.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest github.com/TED-H-com/Freedom-VPN/node/agent github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent github.com/TED-H-com/Freedom-VPN/node/dns github.com/TED-H-com/Freedom-VPN/node/enforce github.com/TED-H-com/Freedom-VPN/node/internal/agentstore github.com/TED-H-com/Freedom-VPN/node/internal/controlclient github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol github.com/TED-H-com/Freedom-VPN/node/internal/healthattest github.com/TED-H-com/Freedom-VPN/node/internal/meter github.com/TED-H-com/Freedom-VPN/node/internal/nodelock github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal github.com/TED-H-com/Freedom-VPN/node/internal/usagestore github.com/TED-H-com/Freedom-VPN/node/internal/usageupload github.com/TED-H-com/Freedom-VPN/node/nodelock github.com/TED-H-com/Freedom-VPN/node/updater github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater github.com/TED-H-com/Freedom-VPN/node/updater/fsutil github.com/TED-H-com/Freedom-VPN/node/watchdog github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog github.com/TED-H-com/Freedom-VPN/packaging/installer github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install github.com/TED-H-com/Freedom-VPN/packaging/release github.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release github.com/TED-H-com/Freedom-VPN/pkg/api github.com/TED-H-com/Freedom-VPN/pkg/api/presence github.com/TED-H-com/Freedom-VPN/pkg/apierr github.com/TED-H-com/Freedom-VPN/pkg/canonjson github.com/TED-H-com/Freedom-VPN/pkg/decstr github.com/TED-H-com/Freedom-VPN/pkg/envelope github.com/TED-H-com/Freedom-VPN/tests/e2e github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve github.com/TED-H-com/Freedom-VPN/tests/e2e/at/usage github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-control github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-fixture-probe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-lease-read github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-native-observe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-stream github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/agentwait github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats github.com/TED-H-com/Freedom-VPN/tests/handover github.com/TED-H-com/Freedom-VPN/tests/netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/at github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2541560,
+            "ppid": 2541555,
+            "args": "go test -overlay=<home>/projects/freedom-vpn/wt/w2-updater/.agent/tmp/f20/before-overlay.json -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater",
+            "suite": false,
+            "go_test": true
+          },
+          {
+            "pid": 2543550,
+            "ppid": 2541904,
+            "args": "bash bin/gates.sh w4-handover",
+            "suite": true,
+            "go_test": false
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2543550,
+            "ppid": 2541904,
+            "args": "bash bin/gates.sh w4-handover",
+            "suite": true,
+            "go_test": false
+          }
+        ]
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:41:36.593090+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T07:42:36.629022+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2541560 go test -overlay=<home>/projects/freedom-vpn/wt/w2-updater/.agent/tmp/f20/before-overlay.json -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater\n2543550 bash bin/gates.sh w4-handover\n2550456 go test -count=1 -p 4 -tags integration github.com/TED-H-com/Freedom-VPN/apps/control github.com/TED-H-com/Freedom-VPN/apps/control/cmd/fvpn-control github.com/TED-H-com/Freedom-VPN/apps/worker github.com/TED-H-com/Freedom-VPN/apps/worker/cmd/fvpn-worker github.com/TED-H-com/Freedom-VPN/contracts github.com/TED-H-com/Freedom-VPN/contracts/internal/cmd/contractsgen github.com/TED-H-com/Freedom-VPN/contracts/internal/gen github.com/TED-H-com/Freedom-VPN/db/migrations github.com/TED-H-com/Freedom-VPN/internal/audit github.com/TED-H-com/Freedom-VPN/internal/auth github.com/TED-H-com/Freedom-VPN/internal/billing github.com/TED-H-com/Freedom-VPN/internal/config github.com/TED-H-com/Freedom-VPN/internal/db github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-db-sweep github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-migrate github.com/TED-H-com/Freedom-VPN/internal/db/dbtest github.com/TED-H-com/Freedom-VPN/internal/desiredstate github.com/TED-H-com/Freedom-VPN/internal/devices github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds github.com/TED-H-com/Freedom-VPN/internal/dnspolicy github.com/TED-H-com/Freedom-VPN/internal/dnspolicy/cmd/bootstrap github.com/TED-H-com/Freedom-VPN/internal/dnspublish github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation github.com/TED-H-com/Freedom-VPN/internal/dnspublish/store github.com/TED-H-com/Freedom-VPN/internal/enrollment github.com/TED-H-com/Freedom-VPN/internal/entitlement github.com/TED-H-com/Freedom-VPN/internal/exits github.com/TED-H-com/Freedom-VPN/internal/fleetupdate github.com/TED-H-com/Freedom-VPN/internal/fup github.com/TED-H-com/Freedom-VPN/internal/httpapi github.com/TED-H-com/Freedom-VPN/internal/httpapi/cmd/controlgen github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen github.com/TED-H-com/Freedom-VPN/internal/installerjob github.com/TED-H-com/Freedom-VPN/internal/leases github.com/TED-H-com/Freedom-VPN/internal/members github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter github.com/TED-H-com/Freedom-VPN/internal/members/issuer github.com/TED-H-com/Freedom-VPN/internal/members/runtime github.com/TED-H-com/Freedom-VPN/internal/netbird github.com/TED-H-com/Freedom-VPN/internal/nodes github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest github.com/TED-H-com/Freedom-VPN/internal/operations github.com/TED-H-com/Freedom-VPN/internal/pki github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest github.com/TED-H-com/Freedom-VPN/internal/policies github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest github.com/TED-H-com/Freedom-VPN/internal/releases github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest github.com/TED-H-com/Freedom-VPN/internal/signing github.com/TED-H-com/Freedom-VPN/internal/usage github.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest github.com/TED-H-com/Freedom-VPN/node/agent github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent github.com/TED-H-com/Freedom-VPN/node/dns github.com/TED-H-com/Freedom-VPN/node/enforce github.com/TED-H-com/Freedom-VPN/node/internal/agentstore github.com/TED-H-com/Freedom-VPN/node/internal/controlclient github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol github.com/TED-H-com/Freedom-VPN/node/internal/healthattest github.com/TED-H-com/Freedom-VPN/node/internal/meter github.com/TED-H-com/Freedom-VPN/node/internal/nodelock github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal github.com/TED-H-com/Freedom-VPN/node/internal/usagestore github.com/TED-H-com/Freedom-VPN/node/internal/usageupload github.com/TED-H-com/Freedom-VPN/node/nodelock github.com/TED-H-com/Freedom-VPN/node/updater github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater github.com/TED-H-com/Freedom-VPN/node/updater/fsutil github.com/TED-H-com/Freedom-VPN/node/watchdog github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog github.com/TED-H-com/Freedom-VPN/packaging/installer github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install github.com/TED-H-com/Freedom-VPN/packaging/release github.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release github.com/TED-H-com/Freedom-VPN/pkg/api github.com/TED-H-com/Freedom-VPN/pkg/api/presence github.com/TED-H-com/Freedom-VPN/pkg/apierr github.com/TED-H-com/Freedom-VPN/pkg/canonjson github.com/TED-H-com/Freedom-VPN/pkg/decstr github.com/TED-H-com/Freedom-VPN/pkg/envelope github.com/TED-H-com/Freedom-VPN/tests/e2e github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve github.com/TED-H-com/Freedom-VPN/tests/e2e/at/usage github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-control github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-fixture-probe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-lease-read github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-native-observe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-stream github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/agentwait github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats github.com/TED-H-com/Freedom-VPN/tests/handover github.com/TED-H-com/Freedom-VPN/tests/netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/at github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2541560,
+            "ppid": 2541555,
+            "args": "go test -overlay=<home>/projects/freedom-vpn/wt/w2-updater/.agent/tmp/f20/before-overlay.json -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater",
+            "suite": false,
+            "go_test": true
+          },
+          {
+            "pid": 2543550,
+            "ppid": 2541904,
+            "args": "bash bin/gates.sh w4-handover",
+            "suite": true,
+            "go_test": false
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2543550,
+            "ppid": 2541904,
+            "args": "bash bin/gates.sh w4-handover",
+            "suite": true,
+            "go_test": false
+          }
+        ]
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  1 208704 3128804 1954656 170770540    3   20 118139 115952 24703   20  3  2 94  1  0  0\n 1  0 208704 3465800 1954664 170775324    0    0    17 44959 18117 47467  2  2 94  2  0  0\n 0  1 208704 3853676 1954672 170775776    0    0     0 37933 19773 51413  3  3 92  2  0  0\n 7  0 208704 2493904 1954804 170916212    0    0    12 60993 55517 83672 14  5 78  3  0  0\n 6  0 264276 3098292 1947836 170717652    0 11058   180 107669 136877 77901 23  8 68  1  0  0\n 5  0 348676 3213544 1939684 170084488    0 16795   263 273413 219411 46953 17  6 77  0  0  0\n 0  0 348676 4227400 1941888 170103812    0    0   410 569214 113905 52789  9  3 88  1  0  0\n",
+      "current": [
+        {
+          "r": 1,
+          "idle": 94
+        },
+        {
+          "r": 0,
+          "idle": 92
+        },
+        {
+          "r": 7,
+          "idle": 78
+        },
+        {
+          "r": 6,
+          "idle": 68
+        },
+        {
+          "r": 5,
+          "idle": 77
+        },
+        {
+          "r": 0,
+          "idle": 88
+        }
+      ],
+      "quiet": false,
+      "after": {
+        "pgrep": "2543550 bash bin/gates.sh w4-handover\n2565422 make -f mk/at-usage.mk at-usage-lint\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2543550,
+            "ppid": 2541904,
+            "args": "bash bin/gates.sh w4-handover",
+            "suite": true,
+            "go_test": false
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2543550,
+            "ppid": 2541904,
+            "args": "bash bin/gates.sh w4-handover",
+            "suite": true,
+            "go_test": false
+          }
+        ]
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:43:06.748967+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T07:44:06.785236+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2574019 go test -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2574019,
+            "ppid": 2562797,
+            "args": "go test -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": []
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  0 348676 4632184 1951872 170192688    3   29 117444 115676 24886   20  3  2 94  1  0  0\n 0  1 348676 4648516 1951880 170194452    0    0     0 10841 6208 10537  1  0 98  1  0  0\n 1  1 348676 4739100 1951888 170195072    0    0     0 12661 20632 22816  2  1 96  1  0  0\n 1  0 348676 4737720 1951900 170195156    0    0     1 11874 6784 11127  0  0 98  1  0  0\n 0  1 348676 4667304 1951920 170203484    0    0  1347 13529 8113 13203  1  1 97  1  0  0\n 0  1 348676 3898900 1951928 170413252    0    0 41817 14334 14166 22495  2  1 94  4  0  0\n 3  1 348676 3294732 1951940 170707876    0    0 58639 13166 33166 122488  3  1 93  3  0  0\n",
+      "current": [
+        {
+          "r": 0,
+          "idle": 98
+        },
+        {
+          "r": 1,
+          "idle": 96
+        },
+        {
+          "r": 1,
+          "idle": 98
+        },
+        {
+          "r": 0,
+          "idle": 97
+        },
+        {
+          "r": 0,
+          "idle": 94
+        },
+        {
+          "r": 3,
+          "idle": 93
+        }
+      ],
+      "quiet": true,
+      "after": {
+        "pgrep": "2574019 go test -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2574019,
+            "ppid": 2562797,
+            "args": "go test -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": []
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:44:36.903643+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T07:45:36.939723+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2574019 go test -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2574019,
+            "ppid": 2562797,
+            "args": "go test -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": []
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  1 348668 3604384 1953008 170994696    3   28 116803 115079 24846   20  3  2 94  1  0  0\n 0  0 348668 3624812 1953024 170995128    0    0     6 12822 7157 11382  0  0 98  1  0  0\n 1  0 348668 3644100 1953040 170995440    0    0     2 12710 7739 11645  1  1 97  1  0  0\n 0  0 348668 3653820 1953060 170997652    0    0     0 12070 7447 11906  0  1 97  1  0  0\n 0  1 348668 3671932 1953068 170997544    0    0     0 11024 6901 11561  0  0 98  1  0  0\n 0  1 348668 3711244 1953076 170970244    0    0     0 12604 6988 11489  1  0 98  1  0  0\n 0  0 348668 3709436 1953084 170970528    0    0     0 12042 7308 12377  1  0 98  1  0  0\n",
+      "current": [
+        {
+          "r": 0,
+          "idle": 98
+        },
+        {
+          "r": 1,
+          "idle": 97
+        },
+        {
+          "r": 0,
+          "idle": 97
+        },
+        {
+          "r": 0,
+          "idle": 98
+        },
+        {
+          "r": 0,
+          "idle": 98
+        },
+        {
+          "r": 0,
+          "idle": 98
+        }
+      ],
+      "quiet": true,
+      "after": {
+        "pgrep": "2574019 go test -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2574019,
+            "ppid": 2562797,
+            "args": "go test -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": []
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:46:07.057067+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T07:47:07.092701+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2574019 go test -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater\n2576652 /bin/sh -c TMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' GOTMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n2576653 <home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2574019,
+            "ppid": 2562797,
+            "args": "go test -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater",
+            "suite": false,
+            "go_test": true
+          },
+          {
+            "pid": 2576653,
+            "ppid": 2576652,
+            "args": "<home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": []
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  1 348668 3819372 1953512 171063540    3   28 116122 114533 24768   20  3  2 94  1  0  0\n 0  1 348668 3802512 1953528 171064772    0    0     2 61570 14164 26734  1  1 95  4  0  0\n 0  1 348668 3810440 1953536 171066616    0    0     0 45758 14113 28051  1  1 95  4  0  0\n 1  0 348668 3804168 1953556 171067224    0    0     2 40631 15767 31986  1  1 94  4  0  0\n 0  0 348668 3823800 1953564 171069044    0    0     0 35760 15165 29257  1  1 94  4  0  0\n 0  1 348668 3823480 1953584 171069828    0    0     0 26271 11938 22907  1  0 96  3  0  0\n 0  1 348668 3809388 1953596 171072284    0    0     0 25160 12589 22819  1  0 96  3  0  0\n",
+      "current": [
+        {
+          "r": 0,
+          "idle": 95
+        },
+        {
+          "r": 0,
+          "idle": 95
+        },
+        {
+          "r": 1,
+          "idle": 94
+        },
+        {
+          "r": 0,
+          "idle": 94
+        },
+        {
+          "r": 0,
+          "idle": 96
+        },
+        {
+          "r": 0,
+          "idle": 96
+        }
+      ],
+      "quiet": true,
+      "after": {
+        "pgrep": "2574019 go test -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater\n2576652 /bin/sh -c TMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' GOTMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n2576653 <home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2574019,
+            "ppid": 2562797,
+            "args": "go test -v -run ^TestAT25_FileMeterWaitRestartRechecksCurrentFile$ -count=200 ./node/updater",
+            "suite": false,
+            "go_test": true
+          },
+          {
+            "pid": 2576653,
+            "ppid": 2576652,
+            "args": "<home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": []
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:47:37.211934+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T07:48:37.249976+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2576652 /bin/sh -c TMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' GOTMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n2576653 <home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\n2577995 bash bin/gates.sh w3-devstack-e2e\n2583425 go test -count=1 -p 4 -tags integration github.com/TED-H-com/Freedom-VPN/apps/control github.com/TED-H-com/Freedom-VPN/apps/control/cmd/fvpn-control github.com/TED-H-com/Freedom-VPN/apps/portal/node_modules/flatted/golang/pkg/flatted github.com/TED-H-com/Freedom-VPN/apps/worker github.com/TED-H-com/Freedom-VPN/apps/worker/cmd/fvpn-worker github.com/TED-H-com/Freedom-VPN/contracts github.com/TED-H-com/Freedom-VPN/contracts/internal/cmd/contractsgen github.com/TED-H-com/Freedom-VPN/contracts/internal/gen github.com/TED-H-com/Freedom-VPN/db/migrations github.com/TED-H-com/Freedom-VPN/internal/audit github.com/TED-H-com/Freedom-VPN/internal/auth github.com/TED-H-com/Freedom-VPN/internal/billing github.com/TED-H-com/Freedom-VPN/internal/config github.com/TED-H-com/Freedom-VPN/internal/db github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-db-sweep github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-migrate github.com/TED-H-com/Freedom-VPN/internal/db/dbtest github.com/TED-H-com/Freedom-VPN/internal/desiredstate github.com/TED-H-com/Freedom-VPN/internal/devices github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds github.com/TED-H-com/Freedom-VPN/internal/dnspolicy github.com/TED-H-com/Freedom-VPN/internal/dnspolicy/cmd/bootstrap github.com/TED-H-com/Freedom-VPN/internal/dnspublish github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation github.com/TED-H-com/Freedom-VPN/internal/dnspublish/store github.com/TED-H-com/Freedom-VPN/internal/enrollment github.com/TED-H-com/Freedom-VPN/internal/entitlement github.com/TED-H-com/Freedom-VPN/internal/exits github.com/TED-H-com/Freedom-VPN/internal/fleetupdate github.com/TED-H-com/Freedom-VPN/internal/fup github.com/TED-H-com/Freedom-VPN/internal/httpapi github.com/TED-H-com/Freedom-VPN/internal/httpapi/cmd/controlgen github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen github.com/TED-H-com/Freedom-VPN/internal/installerjob github.com/TED-H-com/Freedom-VPN/internal/leases github.com/TED-H-com/Freedom-VPN/internal/members github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter github.com/TED-H-com/Freedom-VPN/internal/members/issuer github.com/TED-H-com/Freedom-VPN/internal/members/runtime github.com/TED-H-com/Freedom-VPN/internal/netbird github.com/TED-H-com/Freedom-VPN/internal/nodes github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest github.com/TED-H-com/Freedom-VPN/internal/operations github.com/TED-H-com/Freedom-VPN/internal/pki github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest github.com/TED-H-com/Freedom-VPN/internal/policies github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest github.com/TED-H-com/Freedom-VPN/internal/releases github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest github.com/TED-H-com/Freedom-VPN/internal/signing github.com/TED-H-com/Freedom-VPN/internal/usage github.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest github.com/TED-H-com/Freedom-VPN/node/agent github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent github.com/TED-H-com/Freedom-VPN/node/dns github.com/TED-H-com/Freedom-VPN/node/enforce github.com/TED-H-com/Freedom-VPN/node/internal/agentstore github.com/TED-H-com/Freedom-VPN/node/internal/controlclient github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol github.com/TED-H-com/Freedom-VPN/node/internal/healthattest github.com/TED-H-com/Freedom-VPN/node/internal/meter github.com/TED-H-com/Freedom-VPN/node/internal/nodelock github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal github.com/TED-H-com/Freedom-VPN/node/internal/usagestore github.com/TED-H-com/Freedom-VPN/node/internal/usageupload github.com/TED-H-com/Freedom-VPN/node/nodelock github.com/TED-H-com/Freedom-VPN/node/updater github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater github.com/TED-H-com/Freedom-VPN/node/updater/fsutil github.com/TED-H-com/Freedom-VPN/node/watchdog github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog github.com/TED-H-com/Freedom-VPN/packaging/installer github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install github.com/TED-H-com/Freedom-VPN/packaging/release github.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release github.com/TED-H-com/Freedom-VPN/pkg/api github.com/TED-H-com/Freedom-VPN/pkg/api/presence github.com/TED-H-com/Freedom-VPN/pkg/apierr github.com/TED-H-com/Freedom-VPN/pkg/canonjson github.com/TED-H-com/Freedom-VPN/pkg/decstr github.com/TED-H-com/Freedom-VPN/pkg/envelope github.com/TED-H-com/Freedom-VPN/tests/e2e github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve github.com/TED-H-com/Freedom-VPN/tests/e2e/at/usage github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-control github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-fixture-probe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-lease-read github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-native-observe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nightly-gate github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-stream github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/agentwait github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats github.com/TED-H-com/Freedom-VPN/tests/handover github.com/TED-H-com/Freedom-VPN/tests/netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/at github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2576653,
+            "ppid": 2576652,
+            "args": "<home>/.local/go/bin/go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...",
+            "suite": false,
+            "go_test": true
+          },
+          {
+            "pid": 2577995,
+            "ppid": 2577652,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2577995,
+            "ppid": 2577652,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          }
+        ]
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 5  1 360956 3625756 1953372 170288360    3   29 115450 114049 24791   20  3  2 94  1  0  0\n 5  0 360956 3760552 1954952 170334108    0    0    10 123379 35663 72040  8  5 81  6  0  0\n 2  2 360956 4023504 1954964 170373356    0    0     1 178641 42227 120812  7  6 81  6  0  0\n 1  1 360956 4062452 1954972 170349100    0    0   430 136718 34014 92797  5  5 83  6  0  0\n 4  1 360956 4084488 1954992 170339716    0    0     3 164658 38913 112652  6  6 84  4  0  0\n 5  1 360956 4140768 1955020 170355204    0    0     1 144875 32692 100953  4  4 85  6  0  0\n 2  2 360956 4156908 1955052 170394296    0    0     0 142298 37058 116902  5  5 84  6  0  0\n",
+      "current": [
+        {
+          "r": 5,
+          "idle": 81
+        },
+        {
+          "r": 2,
+          "idle": 81
+        },
+        {
+          "r": 1,
+          "idle": 83
+        },
+        {
+          "r": 4,
+          "idle": 84
+        },
+        {
+          "r": 5,
+          "idle": 85
+        },
+        {
+          "r": 2,
+          "idle": 84
+        }
+      ],
+      "quiet": false,
+      "after": {
+        "pgrep": "2577995 bash bin/gates.sh w3-devstack-e2e\n2583425 go test -count=1 -p 4 -tags integration github.com/TED-H-com/Freedom-VPN/apps/control github.com/TED-H-com/Freedom-VPN/apps/control/cmd/fvpn-control github.com/TED-H-com/Freedom-VPN/apps/portal/node_modules/flatted/golang/pkg/flatted github.com/TED-H-com/Freedom-VPN/apps/worker github.com/TED-H-com/Freedom-VPN/apps/worker/cmd/fvpn-worker github.com/TED-H-com/Freedom-VPN/contracts github.com/TED-H-com/Freedom-VPN/contracts/internal/cmd/contractsgen github.com/TED-H-com/Freedom-VPN/contracts/internal/gen github.com/TED-H-com/Freedom-VPN/db/migrations github.com/TED-H-com/Freedom-VPN/internal/audit github.com/TED-H-com/Freedom-VPN/internal/auth github.com/TED-H-com/Freedom-VPN/internal/billing github.com/TED-H-com/Freedom-VPN/internal/config github.com/TED-H-com/Freedom-VPN/internal/db github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-db-sweep github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-migrate github.com/TED-H-com/Freedom-VPN/internal/db/dbtest github.com/TED-H-com/Freedom-VPN/internal/desiredstate github.com/TED-H-com/Freedom-VPN/internal/devices github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds github.com/TED-H-com/Freedom-VPN/internal/dnspolicy github.com/TED-H-com/Freedom-VPN/internal/dnspolicy/cmd/bootstrap github.com/TED-H-com/Freedom-VPN/internal/dnspublish github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation github.com/TED-H-com/Freedom-VPN/internal/dnspublish/store github.com/TED-H-com/Freedom-VPN/internal/enrollment github.com/TED-H-com/Freedom-VPN/internal/entitlement github.com/TED-H-com/Freedom-VPN/internal/exits github.com/TED-H-com/Freedom-VPN/internal/fleetupdate github.com/TED-H-com/Freedom-VPN/internal/fup github.com/TED-H-com/Freedom-VPN/internal/httpapi github.com/TED-H-com/Freedom-VPN/internal/httpapi/cmd/controlgen github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen github.com/TED-H-com/Freedom-VPN/internal/installerjob github.com/TED-H-com/Freedom-VPN/internal/leases github.com/TED-H-com/Freedom-VPN/internal/members github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter github.com/TED-H-com/Freedom-VPN/internal/members/issuer github.com/TED-H-com/Freedom-VPN/internal/members/runtime github.com/TED-H-com/Freedom-VPN/internal/netbird github.com/TED-H-com/Freedom-VPN/internal/nodes github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest github.com/TED-H-com/Freedom-VPN/internal/operations github.com/TED-H-com/Freedom-VPN/internal/pki github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest github.com/TED-H-com/Freedom-VPN/internal/policies github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest github.com/TED-H-com/Freedom-VPN/internal/releases github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest github.com/TED-H-com/Freedom-VPN/internal/signing github.com/TED-H-com/Freedom-VPN/internal/usage github.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest github.com/TED-H-com/Freedom-VPN/node/agent github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent github.com/TED-H-com/Freedom-VPN/node/dns github.com/TED-H-com/Freedom-VPN/node/enforce github.com/TED-H-com/Freedom-VPN/node/internal/agentstore github.com/TED-H-com/Freedom-VPN/node/internal/controlclient github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol github.com/TED-H-com/Freedom-VPN/node/internal/healthattest github.com/TED-H-com/Freedom-VPN/node/internal/meter github.com/TED-H-com/Freedom-VPN/node/internal/nodelock github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal github.com/TED-H-com/Freedom-VPN/node/internal/usagestore github.com/TED-H-com/Freedom-VPN/node/internal/usageupload github.com/TED-H-com/Freedom-VPN/node/nodelock github.com/TED-H-com/Freedom-VPN/node/updater github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater github.com/TED-H-com/Freedom-VPN/node/updater/fsutil github.com/TED-H-com/Freedom-VPN/node/watchdog github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog github.com/TED-H-com/Freedom-VPN/packaging/installer github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install github.com/TED-H-com/Freedom-VPN/packaging/release github.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release github.com/TED-H-com/Freedom-VPN/pkg/api github.com/TED-H-com/Freedom-VPN/pkg/api/presence github.com/TED-H-com/Freedom-VPN/pkg/apierr github.com/TED-H-com/Freedom-VPN/pkg/canonjson github.com/TED-H-com/Freedom-VPN/pkg/decstr github.com/TED-H-com/Freedom-VPN/pkg/envelope github.com/TED-H-com/Freedom-VPN/tests/e2e github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve github.com/TED-H-com/Freedom-VPN/tests/e2e/at/usage github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-control github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-fixture-probe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-lease-read github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-native-observe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nightly-gate github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-stream github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/agentwait github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats github.com/TED-H-com/Freedom-VPN/tests/handover github.com/TED-H-com/Freedom-VPN/tests/netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/at github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\n2584066 /bin/sh -c TMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' GOTMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test -count=1 -tags integration ./node/agent/...\n2584067 <home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2577995,
+            "ppid": 2577652,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          },
+          {
+            "pid": 2584067,
+            "ppid": 2584066,
+            "args": "<home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2577995,
+            "ppid": 2577652,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          },
+          {
+            "pid": 2584067,
+            "ppid": 2584066,
+            "args": "<home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...",
+            "suite": false,
+            "go_test": true
+          }
+        ]
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:49:07.373345+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T07:50:07.411182+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2577995 bash bin/gates.sh w3-devstack-e2e\n2583425 go test -count=1 -p 4 -tags integration github.com/TED-H-com/Freedom-VPN/apps/control github.com/TED-H-com/Freedom-VPN/apps/control/cmd/fvpn-control github.com/TED-H-com/Freedom-VPN/apps/portal/node_modules/flatted/golang/pkg/flatted github.com/TED-H-com/Freedom-VPN/apps/worker github.com/TED-H-com/Freedom-VPN/apps/worker/cmd/fvpn-worker github.com/TED-H-com/Freedom-VPN/contracts github.com/TED-H-com/Freedom-VPN/contracts/internal/cmd/contractsgen github.com/TED-H-com/Freedom-VPN/contracts/internal/gen github.com/TED-H-com/Freedom-VPN/db/migrations github.com/TED-H-com/Freedom-VPN/internal/audit github.com/TED-H-com/Freedom-VPN/internal/auth github.com/TED-H-com/Freedom-VPN/internal/billing github.com/TED-H-com/Freedom-VPN/internal/config github.com/TED-H-com/Freedom-VPN/internal/db github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-db-sweep github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-migrate github.com/TED-H-com/Freedom-VPN/internal/db/dbtest github.com/TED-H-com/Freedom-VPN/internal/desiredstate github.com/TED-H-com/Freedom-VPN/internal/devices github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds github.com/TED-H-com/Freedom-VPN/internal/dnspolicy github.com/TED-H-com/Freedom-VPN/internal/dnspolicy/cmd/bootstrap github.com/TED-H-com/Freedom-VPN/internal/dnspublish github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation github.com/TED-H-com/Freedom-VPN/internal/dnspublish/store github.com/TED-H-com/Freedom-VPN/internal/enrollment github.com/TED-H-com/Freedom-VPN/internal/entitlement github.com/TED-H-com/Freedom-VPN/internal/exits github.com/TED-H-com/Freedom-VPN/internal/fleetupdate github.com/TED-H-com/Freedom-VPN/internal/fup github.com/TED-H-com/Freedom-VPN/internal/httpapi github.com/TED-H-com/Freedom-VPN/internal/httpapi/cmd/controlgen github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen github.com/TED-H-com/Freedom-VPN/internal/installerjob github.com/TED-H-com/Freedom-VPN/internal/leases github.com/TED-H-com/Freedom-VPN/internal/members github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter github.com/TED-H-com/Freedom-VPN/internal/members/issuer github.com/TED-H-com/Freedom-VPN/internal/members/runtime github.com/TED-H-com/Freedom-VPN/internal/netbird github.com/TED-H-com/Freedom-VPN/internal/nodes github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest github.com/TED-H-com/Freedom-VPN/internal/operations github.com/TED-H-com/Freedom-VPN/internal/pki github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest github.com/TED-H-com/Freedom-VPN/internal/policies github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest github.com/TED-H-com/Freedom-VPN/internal/releases github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest github.com/TED-H-com/Freedom-VPN/internal/signing github.com/TED-H-com/Freedom-VPN/internal/usage github.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest github.com/TED-H-com/Freedom-VPN/node/agent github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent github.com/TED-H-com/Freedom-VPN/node/dns github.com/TED-H-com/Freedom-VPN/node/enforce github.com/TED-H-com/Freedom-VPN/node/internal/agentstore github.com/TED-H-com/Freedom-VPN/node/internal/controlclient github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol github.com/TED-H-com/Freedom-VPN/node/internal/healthattest github.com/TED-H-com/Freedom-VPN/node/internal/meter github.com/TED-H-com/Freedom-VPN/node/internal/nodelock github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal github.com/TED-H-com/Freedom-VPN/node/internal/usagestore github.com/TED-H-com/Freedom-VPN/node/internal/usageupload github.com/TED-H-com/Freedom-VPN/node/nodelock github.com/TED-H-com/Freedom-VPN/node/updater github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater github.com/TED-H-com/Freedom-VPN/node/updater/fsutil github.com/TED-H-com/Freedom-VPN/node/watchdog github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog github.com/TED-H-com/Freedom-VPN/packaging/installer github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install github.com/TED-H-com/Freedom-VPN/packaging/release github.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release github.com/TED-H-com/Freedom-VPN/pkg/api github.com/TED-H-com/Freedom-VPN/pkg/api/presence github.com/TED-H-com/Freedom-VPN/pkg/apierr github.com/TED-H-com/Freedom-VPN/pkg/canonjson github.com/TED-H-com/Freedom-VPN/pkg/decstr github.com/TED-H-com/Freedom-VPN/pkg/envelope github.com/TED-H-com/Freedom-VPN/tests/e2e github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve github.com/TED-H-com/Freedom-VPN/tests/e2e/at/usage github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-control github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-fixture-probe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-lease-read github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-native-observe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nightly-gate github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-stream github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/agentwait github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats github.com/TED-H-com/Freedom-VPN/tests/handover github.com/TED-H-com/Freedom-VPN/tests/netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/at github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\n2584066 /bin/sh -c TMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' GOTMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test -count=1 -tags integration ./node/agent/...\n2584067 <home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...\n2589202 /bin/bash -c python3 - <<'PY' from pathlib import Path import json p=Path('docs/updates/node-followup20-2026-11-03.md');s=p.read_text() data=json.loads(Path('docs/updates/node-followup20-timing-2026-11-03.json').read_text()) lines=['### Recorded distributions and admission gap','', 'Every row below has 200 `Recover` samples for **missing**, from a complete', \"`-run '^TestAT25_FileMeterWaitRestartRechecksCurrentFile$' -count=200` run.\", 'Values are milliseconds; quantiles use nearest rank. The', '[timing record](node-followup20-timing-2026-11-03.json) also records all other', 'subcases and original remaining budgets. These runs are **unqualified** for a', 'quiet-versus-controlled-load comparison. They are not evidence of a performance', 'improvement or a whole-Recover wall-time guarantee.', '', '| Run | p50 | p95 | p99 | Max | Missing > 1 s | Overall result |', '|---|---:|---:|---:|---:|---:|---|'] for key,label,result in [('before-initial-unqualified','Before 1','FAIL: new_boot'),('before-monitored-unqualified','Before 2','FAIL: missing'),('before-third-unqualified','Before 3','PASS'),('after-monitored-unqualified','After','PASS')]:  x=data['runs'][key]['cases']['missing']['recover_elapsed']  lines.append(f\"| {label} | {x['p50']:.3f} | {x['p95']:.3f} | {x['p99']:.3f} | {x['max']:.3f} | {x['over_one_second']} | {result} |\") lines += ['', 'The corrected 200-iteration run also encountered another lane after admission', '(13/46 observations include pre-admission waiting or foreign suites), so its', 'PASS remains unqualified. The monitored runners checked `hold.sh` and', \"`pgrep -af 'gates.sh|mk/at-|go test'` every five seconds while running, and\", 'waited 60 seconds between blocked admission checks. The third baseline used', 'a Go overlay containing only the elapsed-time logging change; the first two', 'used that same instrumented source directly. The final committed source was', 'restored unchanged. All runs used disk scratch, CGO disabled, the local', 'toolchain, `GOMAXPROCS=4` and `GOFLAGS=-p=4`.', '', '**Unfinished measurement:** no fully qualified quiet 200-iteration leg was', 'obtained. The intentional parallel load leg never started because other lane', 'suites repeatedly occupied admission. Its active duration is **0 s**, within', 'the 15-minute ceiling. No mixed run is relabeled as the requested load leg.', 'After the final test completed, the owned admission waiter was stopped; no', 'test or background command was left running. A coordinated window is requested', 'below. The fixture mechanism and controlled before-fail/after-pass are proved,', 'but the requested qualified quiet/load comparison remains open.'] s=s.replace('<!-- Qualified before/after distributions are added after the campaign. -->','\\n'.join(lines)) needle='### Requests to orchestrator\\n\\n' req='''- **2026-11-03 \u2014 host scheduling / F27-02 measurement (open):** reserve a   roughly 12-minute window with no other lane suite. Three baseline runs and   one corrected run each completed 200 iterations, but none could be qualified   as quiet; the monitored runs were joined by other lanes despite `hold.sh`   remaining free. Run the qualified before/after quiet and bounded parallel   comparison using the retained instrumentation/commands, with the unchanged   full agent suite as the sole intentional load and a combined 15-minute   active-load ceiling. Preserve all four existing runs and the historical   failure. This scheduling item is outside updater-owned paths; the code,   controlled proof, facts and required gates are delivered independently. ''' s=s.replace(needle,needle+req) p.write_text(s) p=Path('.agent/REPORT.md');s=p.read_text().replace('Before/after measurement campaign results are in the dated doc and timing JSON.','Four complete 200-iteration runs (three baseline, one corrected) are retained, but none qualified as quiet. No intentional parallel load started (0 s active load); that requested comparison remains OPEN pending an orchestrator-reserved window. All child tests completed; the owned admission waiter was then stopped. Before/after unqualified distributions and controlled delay results are in the dated doc and timing JSON.') s=s.replace('### Known gaps and later work\\n\\n','### Known gaps and later work\\n\\n- Required qualified quiet/controlled-load comparison remains open: four 200-iteration runs could not be qualified, and no intentional load was admitted. The orchestrator must coordinate the window; no noisy pass is reported as a qualified one.\\n') s=s.replace('### Requests to orchestrator\\n\\n','### Requests to orchestrator\\n\\n- **2026-11-03 \u2014 host scheduling, F27-02 (blocking measurement only):** reserve roughly 12 minutes with no other lane suite, then complete the qualified baseline/corrected 200-iteration quiet legs and bounded parallel agent/updater legs (combined active load at most 15 minutes). Three baseline and one corrected 200-iteration runs were retained but unqualified; agent-core/handover/devstack suites repeatedly joined while hold.sh remained free. An async scheduling request received no reply during this task. No intentional load started. Use the retained logging/overlay/commands, preserve all failures, and keep this comparison open until actually measured. Code, controlled proof, F30 facts and all required gates are delivered.\\n') p.write_text(s) PY git diff --check test -z \"$(gofmt -l $(git ls-files '*.go'))\" git status --short\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2577995,
+            "ppid": 2577652,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          },
+          {
+            "pid": 2584067,
+            "ppid": 2584066,
+            "args": "<home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2577995,
+            "ppid": 2577652,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          },
+          {
+            "pid": 2584067,
+            "ppid": 2584066,
+            "args": "<home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...",
+            "suite": false,
+            "go_test": true
+          }
+        ]
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n13  1 360956 2720024 1956488 170861116    3   29 114812 114184 24995   21  3  2 93  1  0  0\n 3  1 360956 2910836 1956508 170845408    0    0     2 106795 91893 428732 11  6 80  3  0  0\n 0  1 360956 3553784 1956520 170889836    0    0     1 99411 38640 155438  6  5 87  2  0  0\n 1  2 360956 3213196 1956548 170865696    0    0     1 109671 63009 103199  7  5 82  6  0  0\n 3  4 360956 1757940 1957312 170843108    0    0     1 83500 70483 104301 14  7 70  9  0  0\n 3  2 369488 2201580 1957308 170409824    0 1686     0 117798 70533 120502 17  7 72  5  0  0\n 2  0 369488 3491252 1957324 170361896    0    0     2 52221 60582 85204 10  5 83  1  0  0\n",
+      "current": [
+        {
+          "r": 3,
+          "idle": 80
+        },
+        {
+          "r": 0,
+          "idle": 87
+        },
+        {
+          "r": 1,
+          "idle": 82
+        },
+        {
+          "r": 3,
+          "idle": 70
+        },
+        {
+          "r": 3,
+          "idle": 72
+        },
+        {
+          "r": 2,
+          "idle": 83
+        }
+      ],
+      "quiet": false,
+      "after": {
+        "pgrep": "2577995 bash bin/gates.sh w3-devstack-e2e\n2583425 go test -count=1 -p 4 -tags integration github.com/TED-H-com/Freedom-VPN/apps/control github.com/TED-H-com/Freedom-VPN/apps/control/cmd/fvpn-control github.com/TED-H-com/Freedom-VPN/apps/portal/node_modules/flatted/golang/pkg/flatted github.com/TED-H-com/Freedom-VPN/apps/worker github.com/TED-H-com/Freedom-VPN/apps/worker/cmd/fvpn-worker github.com/TED-H-com/Freedom-VPN/contracts github.com/TED-H-com/Freedom-VPN/contracts/internal/cmd/contractsgen github.com/TED-H-com/Freedom-VPN/contracts/internal/gen github.com/TED-H-com/Freedom-VPN/db/migrations github.com/TED-H-com/Freedom-VPN/internal/audit github.com/TED-H-com/Freedom-VPN/internal/auth github.com/TED-H-com/Freedom-VPN/internal/billing github.com/TED-H-com/Freedom-VPN/internal/config github.com/TED-H-com/Freedom-VPN/internal/db github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-db-sweep github.com/TED-H-com/Freedom-VPN/internal/db/cmd/fvpn-migrate github.com/TED-H-com/Freedom-VPN/internal/db/dbtest github.com/TED-H-com/Freedom-VPN/internal/desiredstate github.com/TED-H-com/Freedom-VPN/internal/devices github.com/TED-H-com/Freedom-VPN/internal/dnsfeeds github.com/TED-H-com/Freedom-VPN/internal/dnspolicy github.com/TED-H-com/Freedom-VPN/internal/dnspolicy/cmd/bootstrap github.com/TED-H-com/Freedom-VPN/internal/dnspublish github.com/TED-H-com/Freedom-VPN/internal/dnspublish/operation github.com/TED-H-com/Freedom-VPN/internal/dnspublish/store github.com/TED-H-com/Freedom-VPN/internal/enrollment github.com/TED-H-com/Freedom-VPN/internal/entitlement github.com/TED-H-com/Freedom-VPN/internal/exits github.com/TED-H-com/Freedom-VPN/internal/fleetupdate github.com/TED-H-com/Freedom-VPN/internal/fup github.com/TED-H-com/Freedom-VPN/internal/httpapi github.com/TED-H-com/Freedom-VPN/internal/httpapi/cmd/controlgen github.com/TED-H-com/Freedom-VPN/internal/httpapi/gen github.com/TED-H-com/Freedom-VPN/internal/installerjob github.com/TED-H-com/Freedom-VPN/internal/leases github.com/TED-H-com/Freedom-VPN/internal/members github.com/TED-H-com/Freedom-VPN/internal/members/httpadapter github.com/TED-H-com/Freedom-VPN/internal/members/issuer github.com/TED-H-com/Freedom-VPN/internal/members/runtime github.com/TED-H-com/Freedom-VPN/internal/netbird github.com/TED-H-com/Freedom-VPN/internal/nodes github.com/TED-H-com/Freedom-VPN/internal/nodes/commandtx github.com/TED-H-com/Freedom-VPN/internal/nodes/httpwire github.com/TED-H-com/Freedom-VPN/internal/nodes/nodestest github.com/TED-H-com/Freedom-VPN/internal/operations github.com/TED-H-com/Freedom-VPN/internal/pki github.com/TED-H-com/Freedom-VPN/internal/pki/pkitest github.com/TED-H-com/Freedom-VPN/internal/policies github.com/TED-H-com/Freedom-VPN/internal/policies/policiestest github.com/TED-H-com/Freedom-VPN/internal/releases github.com/TED-H-com/Freedom-VPN/internal/releases/releasetest github.com/TED-H-com/Freedom-VPN/internal/signing github.com/TED-H-com/Freedom-VPN/internal/usage github.com/TED-H-com/Freedom-VPN/internal/usage/cmd/fvpn-usage-admin github.com/TED-H-com/Freedom-VPN/internal/usage/usagetest github.com/TED-H-com/Freedom-VPN/node/agent github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent github.com/TED-H-com/Freedom-VPN/node/dns github.com/TED-H-com/Freedom-VPN/node/enforce github.com/TED-H-com/Freedom-VPN/node/internal/agentstore github.com/TED-H-com/Freedom-VPN/node/internal/controlclient github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol github.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol github.com/TED-H-com/Freedom-VPN/node/internal/healthattest github.com/TED-H-com/Freedom-VPN/node/internal/meter github.com/TED-H-com/Freedom-VPN/node/internal/nodelock github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal github.com/TED-H-com/Freedom-VPN/node/internal/usagestore github.com/TED-H-com/Freedom-VPN/node/internal/usageupload github.com/TED-H-com/Freedom-VPN/node/nodelock github.com/TED-H-com/Freedom-VPN/node/updater github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater github.com/TED-H-com/Freedom-VPN/node/updater/fsutil github.com/TED-H-com/Freedom-VPN/node/watchdog github.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog github.com/TED-H-com/Freedom-VPN/packaging/installer github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install github.com/TED-H-com/Freedom-VPN/packaging/release github.com/TED-H-com/Freedom-VPN/packaging/release/cmd/fvpn-release github.com/TED-H-com/Freedom-VPN/pkg/api github.com/TED-H-com/Freedom-VPN/pkg/api/presence github.com/TED-H-com/Freedom-VPN/pkg/apierr github.com/TED-H-com/Freedom-VPN/pkg/canonjson github.com/TED-H-com/Freedom-VPN/pkg/decstr github.com/TED-H-com/Freedom-VPN/pkg/envelope github.com/TED-H-com/Freedom-VPN/tests/e2e github.com/TED-H-com/Freedom-VPN/tests/e2e/at/enrollment github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve github.com/TED-H-com/Freedom-VPN/tests/e2e/at/usage github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-control github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-fixture-probe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-idp github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-lease-read github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-member-session github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-native-observe github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nbbootstrap github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nightly-gate github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-nodeconfig github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-origin github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-payment github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-prepare github.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-stream github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/agentwait github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats github.com/TED-H-com/Freedom-VPN/tests/handover github.com/TED-H-com/Freedom-VPN/tests/netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/at github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\n2584066 /bin/sh -c TMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' GOTMPDIR='<home>/projects/freedom-vpn/wt/w2-agent-core/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test -count=1 -tags integration ./node/agent/...\n2584067 <home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2577995,
+            "ppid": 2577652,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          },
+          {
+            "pid": 2584067,
+            "ppid": 2584066,
+            "args": "<home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2577995,
+            "ppid": 2577652,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          },
+          {
+            "pid": 2584067,
+            "ppid": 2584066,
+            "args": "<home>/.local/go/bin/go test -count=1 -tags integration ./node/agent/...",
+            "suite": false,
+            "go_test": true
+          }
+        ]
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:50:37.554297+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T07:51:37.590533+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2577995 bash bin/gates.sh w3-devstack-e2e\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2577995,
+            "ppid": 2577652,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          }
+        ],
+        "suites": [
+          {
+            "pid": 2577995,
+            "ppid": 2577652,
+            "args": "bash bin/gates.sh w3-devstack-e2e",
+            "suite": true,
+            "go_test": false
+          }
+        ]
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  0 369488 4390692 1957688 170275192    3   29 114155 113813 25146   21  3  2 93  1  0  0\n 1  0 369488 4453744 1957696 170277208    0    0     0 15035 67252 75348  6  2 92  0  0  0\n 1  2 369488 4255080 1957704 170278620    0    0     1   805 60891 53133  5  3 92  0  0  0\n 0  0 369488 4467812 1957720 170278880    0    0     2   170 67301 71963  6  3 91  0  0  0\n 0  0 369488 4392664 1958016 170271372    0    0     1   472 33304 38656  3  1 95  0  0  0\n 0  0 369488 4485892 1958032 170271400    0    0     2  5778 2885 4270  0  1 99  0  0  0\n 0  0 369488 4295224 1958180 170271492    0    0    27  4407 14836 55802  2  1 97  0  0  0\n",
+      "current": [
+        {
+          "r": 1,
+          "idle": 92
+        },
+        {
+          "r": 1,
+          "idle": 92
+        },
+        {
+          "r": 0,
+          "idle": 91
+        },
+        {
+          "r": 0,
+          "idle": 95
+        },
+        {
+          "r": 0,
+          "idle": 99
+        },
+        {
+          "r": 0,
+          "idle": 97
+        }
+      ],
+      "quiet": true,
+      "after": {
+        "pgrep": "",
+        "pgrep_exit": 1,
+        "actual": [],
+        "suites": []
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:52:07.711322+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T07:53:07.748274+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "2605662 /usr/bin/python3 .agent/f38/gate.py consumers-merged go test -count=1 ./node/updater/... ./packaging/installer/...\n2605668 <home>/.local/go/bin/go test -count=1 ./node/updater/... ./packaging/installer/...\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2605668,
+            "ppid": 2605662,
+            "args": "<home>/.local/go/bin/go test -count=1 ./node/updater/... ./packaging/installer/...",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": []
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  0 369488 4576436 1958860 170319560    3   29 113505 113205 25130   21  3  2 93  1  0  0\n 0  1 369488 4878988 1959032 170319180    0    0    24 17474 9553 15135  1  0 97  2  0  0\n 0  1 369488 4567704 1959048 170336732    0    0     5 39930 24344 108418  3  2 92  4  0  0\n 0  0 369488 4621212 1959096 170322048    0    0     1 13870 19081 58601  3  1 95  1  0  0\n 1  0 369488 4648076 1959108 170322052    0    0     1   796 3213 4171  0  1 99  0  0  0\n 0  0 369488 4356960 1959932 170381208    0    0  1091 19184 13767 31502  2  1 95  2  0  0\n 1  1 369488 4344340 1959940 170380816    0    0     0  3518 4102 6500  0  0 99  0  0  0\n",
+      "current": [
+        {
+          "r": 0,
+          "idle": 97
+        },
+        {
+          "r": 0,
+          "idle": 92
+        },
+        {
+          "r": 0,
+          "idle": 95
+        },
+        {
+          "r": 1,
+          "idle": 99
+        },
+        {
+          "r": 0,
+          "idle": 95
+        },
+        {
+          "r": 1,
+          "idle": 99
+        }
+      ],
+      "quiet": true,
+      "after": {
+        "pgrep": "2606506 /usr/bin/python3 .agent/f38/gate.py reviews-merged go test -count=1 ./node/agent ./node/enforce -run ^TestReviewR1[6-9]_\n2606512 <home>/.local/go/bin/go test -count=1 ./node/agent ./node/enforce -run ^TestReviewR1[6-9]_\n",
+        "pgrep_exit": 0,
+        "actual": [
+          {
+            "pid": 2606512,
+            "ppid": 2606506,
+            "args": "<home>/.local/go/bin/go test -count=1 ./node/agent ./node/enforce -run ^TestReviewR1[6-9]_",
+            "suite": false,
+            "go_test": true
+          }
+        ],
+        "suites": []
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:53:37.869854+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    },
+    {
+      "hold": {
+        "utc": "2026-11-03T07:54:37.905801+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      },
+      "before": {
+        "pgrep": "",
+        "pgrep_exit": 1,
+        "actual": [],
+        "suites": []
+      },
+      "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  0 475576 3839864 1942468 171321016    3   35 112881 112940 25080   21  3  2 93  1  0  0\n 0  0 475576 3356736 1942672 171456136    0    0   856 26548 34362 27756  8  2 90  0  0  0\n 0  0 475576 3458116 1942688 171457348    0    0   120   232 3789 5279  0  0 99  0  0  0\n 1  0 475576 3418580 1943616 171518692    0    0  1103   932 21195 29252  4  3 93  0  0  0\n 1  0 475576 3355672 1943728 171655212    0    0   620  1731 13051 20245  2  1 94  3  0  0\n 0  0 475576 3447504 1943740 171656380    0    0   327   558 8969 14270  1  1 98  0  0  0\n 0  0 475576 3494884 1943916 171656344    0    0    34    54 2390 3342  0  0 99  0  0  0\n",
+      "current": [
+        {
+          "r": 0,
+          "idle": 90
+        },
+        {
+          "r": 0,
+          "idle": 99
+        },
+        {
+          "r": 1,
+          "idle": 93
+        },
+        {
+          "r": 1,
+          "idle": 94
+        },
+        {
+          "r": 0,
+          "idle": 98
+        },
+        {
+          "r": 0,
+          "idle": 99
+        }
+      ],
+      "quiet": true,
+      "after": {
+        "pgrep": "",
+        "pgrep_exit": 1,
+        "actual": [],
+        "suites": []
+      },
+      "hold_after": {
+        "utc": "2026-11-03T07:55:08.020356+00:00",
+        "exit_code": 0,
+        "output": "free\n",
+        "free": true
+      }
+    }
+  ]
+}
