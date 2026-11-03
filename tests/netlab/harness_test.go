@@ -218,6 +218,9 @@ func applyPrev(t *testing.T, m enforce.Model, prevPath string) applyDoc {
 		if os.Getenv("FVPN_NETLAB_TCP_OBSERVE") == "1" {
 			args = append(args, "-tcp-observe")
 		}
+		if os.Getenv("FVPN_NETLAB_GUARD_LOG") == "1" {
+			args = append(args, "-guard-log")
+		}
 	}
 	if prevPath != "" {
 		args = append(args, "-prev", prevPath)

@@ -55,6 +55,9 @@ def admission(name, quiet=False):
     assert not target.exists(), 'never overwrite a preflight'
     rows=[]; start=time.monotonic()
     while True:
+        expires = float(os.environ.get('FVPN_F29_RESERVATION_EXPIRES', 'inf'))
+        if time.time() > expires - 480:
+            raise RuntimeError('reservation has fewer than eight minutes remaining; no measured run')
         row=dict(hold=hold(), before=processes())
         if quiet:
             row['vmstat']=subprocess.check_output(['vmstat','5','7'],text=True)

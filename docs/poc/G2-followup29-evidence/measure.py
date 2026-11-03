@@ -11,6 +11,8 @@ sys.dont_write_bytecode = True
 import host
 
 name = sys.argv[1]
+mode = sys.argv[2] if len(sys.argv)>2 else 'full'
+assert mode in ('full','guard')
 claim = host.DEST/(name+'-claim.json')
 assert not claim.exists(), 'never retry a measurement'
 claim.write_text(json.dumps(dict(start=datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -24,7 +26,7 @@ for attempt in range(30):
     admission.append(dict(utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),exit_code=p.returncode,output=host.public(p.stdout+p.stderr)))
     (host.DEST/(name+'-reservation.json')).write_text(json.dumps(dict(wait_seconds=time.monotonic()-started,attempts=admission),indent=2)+'\n')
     if p.returncode==0:
-        reserved=True; break
+        reserved=True; os.environ['FVPN_F29_RESERVATION_EXPIRES']=str(time.time()+20*60); break
     print('Reservation unavailable; waiting 60 seconds',flush=True); time.sleep(60)
 if not reserved: raise RuntimeError('bounded reservation wait exhausted; no run')
 code=1
@@ -35,7 +37,11 @@ try:
     env=dict(os.environ,FVPN_F29_MEASURE='1',FVPN_F29_RUN=name,
              FVPN_LAB_PREFIX='fvpn-w1-netlab-f29',FVPN_NETLAB_AT12_OBSERVE='1',
              FVPN_NETLAB_EVIDENCE_DIR='docs/poc/G2-followup29-evidence/'+name)
-    code=subprocess.run([sys.executable,str(host.DEST/'run.py'),name,'make','-f','mk/netlab.mk','netlab-test','FVPN_LAB_PREFIX=fvpn-w1-netlab-f29'],env=env).returncode
+    command=['make','-f','mk/netlab.mk','netlab-test','FVPN_LAB_PREFIX=fvpn-w1-netlab-f29']
+    if mode=='guard':
+        env.update(FVPN_NETLAB_AT12_OBSERVE='0', FVPN_NETLAB_TCP_OBSERVE='1', FVPN_NETLAB_GUARD_LOG='1')
+        command=[sys.executable,str(host.DEST/'guard-window.py')]
+    code=subprocess.run([sys.executable,str(host.DEST/'run.py'),name,*command],env=env).returncode
 finally:
     p=subprocess.run(['bash',str(host.HOLD),'--release'],text=True,capture_output=True)
     (host.DEST/(name+'-release.json')).write_text(json.dumps(dict(utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),exit_code=p.returncode,output=host.public(p.stdout+p.stderr)),indent=2)+'\n')

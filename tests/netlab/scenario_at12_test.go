@@ -12,6 +12,7 @@ import (
 func TestAT12_ISO01_ISO04_AllowDeny(t *testing.T) {
 	skipLab(t)
 	observeAT12Start(t)
+	isolateAT12PriorTCP(t)
 	flushConntrack(t)
 	_, _, _ = dockerExec("ip", "netns", "exec", "fv-fwd", "ip", "addr", "del", "100.64.7.7/32", "dev", "fv-ff")
 	mustExec(t, "ip", "netns", "exec", "fv-fwd", "ip", "addr", "add", "100.64.7.7/32", "dev", "fv-ff")
@@ -113,6 +114,26 @@ func TestAT12_ISO01_ISO04_AllowDeny(t *testing.T) {
 	save(t, "matrix.txt", table)
 	save(t, "counters.json", pretty(final))
 	noteSummary(fmt.Sprintf("AT12 deny_diag=%d dns_upload=%d a1_upload=%d admitted=%d", diag-diagBefore, sampleBytes(final.Samples, devA1, "dns_upload"), sampleBytes(final.Samples, devA1, "upload"), doc.Admitted))
+}
+
+// Earlier scenarios can leave FIN-WAIT-1 sockets retransmitting after their
+// client process exits. Flushing the node's conntrack does not close them.
+// Destroy only already-connected IPv4 sockets in this lab-owned namespace,
+// before starting any AT12 probe or reading its baseline. No bytes are deducted
+// from the deny-phase sample: even one subsequently counted byte still fails.
+func isolateAT12PriorTCP(t *testing.T) {
+	t.Helper()
+	read := []string{"ip", "netns", "exec", "fv-a1", "ss", "-4", "-H", "-n", "-t", "-o", "state", "connected"}
+	before := mustExec(t, read...)
+	destroyed := mustExec(t, "ip", "netns", "exec", "fv-a1", "ss", "-4", "-H", "-K", "-n", "-t", "state", "connected")
+	after := mustExec(t, read...)
+	save(t, "prior-socket-isolation.json", string(mustJSON(map[string]any{
+		"test_only": true, "before": before, "destroyed": destroyed, "after": after,
+		"scope": "already-connected IPv4 TCP sockets in fv-a1 before AT12 probes",
+	}))+"\n")
+	if strings.TrimSpace(after) != "" {
+		t.Fatal("prior TCP sockets remain in fv-a1; deny phase cannot start")
+	}
 }
 
 func pretty(v any) string {
