@@ -220,5 +220,6 @@ follow-up 29's note in place, so older guide-body checks remove either note.
 Living roots (isolation 83b457ef, members 0ffb355a, usage b8a6e9e1) are never
 read by claims. Agent-core 36's dated hand-off is pinned by tokens from its own
 sections only. The r20 review is an exact archive, SHA-256 af15fb7c…, with no
-adopted proof files. Scheduled workflows are checked structurally; no run
-result is read or claimed.
+adopted proof files. The five scheduled workflows at b9439411 are frozen
+(`followup30-workflows.json`) and checked structurally; no run result is read
+or claimed.

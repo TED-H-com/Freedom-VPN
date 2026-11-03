@@ -7912,8 +7912,19 @@ func TestHandover_Followup30Claims(t *testing.T) {
 		}
 	})
 	t.Run("scheduled_workflows_structure_and_nightly_upload", func(t *testing.T) {
-		// Structural workflow checks, not mutable text pins: which jobs are
-		// scheduled and which one uploads records. No run result is read.
+		// Structural workflow checks over the frozen #403 workflow snapshots:
+		// which jobs are scheduled and which one uploads records. No run result is read.
+		checkHash(t, fixture+"followup30-workflows.json", "17a1664422d05e1778a9cfa952b557e88244c2956c3138c27c10f1ef054bff04")
+		var pins []struct {
+			Name, Path, Source, SHA256 string
+			Commit                     string `json:"source_commit"`
+			SourceSHA                  string `json:"source_sha256"`
+			Offset, Length             int
+		}
+		readJSON(t, fixture+"followup30-workflows.json", &pins)
+		if len(pins) != 5 {
+			t.Fatalf("workflow snapshot count %d", len(pins))
+		}
 		type step struct {
 			Uses string         `yaml:"uses"`
 			If   string         `yaml:"if"`
@@ -7930,23 +7941,32 @@ func TestHandover_Followup30Claims(t *testing.T) {
 			} `yaml:"jobs"`
 		}
 		uploads := map[string]int{}
-		for _, name := range []string{"e2e", "at-isolation", "dns", "netbird-integration", "netlab"} {
+		wantNames := []string{"e2e", "at-isolation", "dns", "netbird-integration", "netlab"}
+		for i, p := range pins {
+			if p.Name != wantNames[i] || p.Path != frozen+"workflow-"+p.Name+".yml" || p.Source != ".github/workflows/"+p.Name+".yml" || p.Commit != cut || p.SourceSHA != p.SHA256 || len(p.SHA256) != 64 || p.Offset != 0 || p.Length <= 0 {
+				t.Fatalf("invalid workflow snapshot provenance: %+v", p)
+			}
+			checkHash(t, p.Path, p.SHA256)
+			raw := readOwnedDoc(t, root, p.Path)
+			if len(raw) != p.Length {
+				t.Errorf("workflow snapshot length: %s", p.Path)
+			}
 			var wf workflow
-			if err := yaml.Unmarshal([]byte(readOwnedDoc(t, root, ".github/workflows/"+name+".yml")), &wf); err != nil {
-				t.Fatalf("%s: %v", name, err)
+			if err := yaml.Unmarshal([]byte(raw), &wf); err != nil {
+				t.Fatalf("%s: %v", p.Name, err)
 			}
 			if len(wf.On.Schedule) != 1 || wf.On.Schedule[0].Cron == "" {
-				t.Errorf("%s: not a scheduled workflow", name)
+				t.Errorf("%s: not a scheduled workflow", p.Name)
 			}
 			for job, j := range wf.Jobs {
 				for _, s := range j.Steps {
 					if !strings.HasPrefix(s.Uses, "actions/upload-artifact@") {
 						continue
 					}
-					uploads[name+"/"+job]++
+					uploads[p.Name+"/"+job]++
 					paths, _ := s.With["path"].(string)
-					if name+"/"+job != "e2e/stack" || s.If != "always()" || fmt.Sprint(s.With["retention-days"]) != "7" || !strings.Contains(paths, "docs/e2e/runs/*/nightly/*.json") || !strings.Contains(paths, "docs/e2e/runs/*/nightly/*.md") {
-						t.Errorf("unexpected scheduled upload: %s/%s %+v", name, job, s)
+					if p.Name+"/"+job != "e2e/stack" || s.If != "always()" || fmt.Sprint(s.With["retention-days"]) != "7" || !strings.Contains(paths, "docs/e2e/runs/*/nightly/*.json") || !strings.Contains(paths, "docs/e2e/runs/*/nightly/*.md") {
+						t.Errorf("unexpected scheduled upload: %s/%s %+v", p.Name, job, s)
 					}
 				}
 			}
