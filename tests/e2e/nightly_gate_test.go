@@ -277,3 +277,44 @@ func TestD144_MissingOrUnreadableSummaryFails(t *testing.T) {
 		t.Fatalf("expected malformed summary with totals mismatch to fail gate, got ok=%v err=%v", repBad.OK, errBad)
 	}
 }
+
+func TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails(t *testing.T) {
+	runDir := t.TempDir()
+	summaryPath := writeSummaryFixture(t, runDir, []SummaryRow{
+		{ID: "admin-login", Status: StatusPass},
+	})
+
+	// Missing expected-blocked list file.
+	missingList := filepath.Join(t.TempDir(), "does-not-exist.json")
+	repMissing, errMissing := EvaluateNightlyGateWithListFile(summaryPath, missingList, NightlyGateOptions{})
+	if errMissing == nil || repMissing.OK || repMissing.Verdict != "fail" || repMissing.ErrorCount == 0 {
+		t.Fatalf("expected missing expected-blocked list to fail gate, got ok=%v verdict=%q err=%v", repMissing.OK, repMissing.Verdict, errMissing)
+	}
+
+	// Unreadable expected-blocked list (path is a directory).
+	dirAsList := t.TempDir()
+	repDir, errDir := EvaluateNightlyGateWithListFile(summaryPath, dirAsList, NightlyGateOptions{})
+	if errDir == nil || repDir.OK || repDir.Verdict != "fail" || repDir.ErrorCount == 0 {
+		t.Fatalf("expected directory expected-blocked list path to fail gate, got ok=%v verdict=%q err=%v", repDir.OK, repDir.Verdict, errDir)
+	}
+
+	// Malformed expected-blocked list (wrong schema / missing required fields / duplicate IDs / invalid JSON).
+	for name, body := range map[string]string{
+		"invalid_json":    `{not-json`,
+		"wrong_schema":    `{"schema":"wrong","entries":[]}`,
+		"missing_owner":   `{"schema":"fvpn.e2e.nightly-expected-blocked.v1","entries":[{"id":"member-ipv6","owner":"","reason":"x","established_from":"y"}]}`,
+		"missing_reason":  `{"schema":"fvpn.e2e.nightly-expected-blocked.v1","entries":[{"id":"member-ipv6","owner":"o","reason":"","established_from":"y"}]}`,
+		"duplicate_entry": `{"schema":"fvpn.e2e.nightly-expected-blocked.v1","entries":[{"id":"member-ipv6","owner":"o","reason":"x","established_from":"y"},{"id":"member-ipv6","owner":"o","reason":"x","established_from":"y"}]}`,
+	} {
+		t.Run(name, func(t *testing.T) {
+			badList := filepath.Join(t.TempDir(), "bad-list.json")
+			if err := os.WriteFile(badList, []byte(body), 0o644); err != nil {
+				t.Fatalf("WriteFile %s: %v", name, err)
+			}
+			repBad, errBad := EvaluateNightlyGateWithListFile(summaryPath, badList, NightlyGateOptions{})
+			if errBad == nil || repBad.OK || repBad.Verdict != "fail" || repBad.ErrorCount == 0 {
+				t.Fatalf("expected %s expected-blocked list to fail gate, got ok=%v verdict=%q err=%v", name, repBad.OK, repBad.Verdict, errBad)
+			}
+		})
+	}
+}

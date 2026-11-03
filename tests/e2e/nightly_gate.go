@@ -2,7 +2,6 @@ package e2e
 
 import (
 	"bufio"
-	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,9 +12,6 @@ import (
 	"strings"
 	"time"
 )
-
-//go:embed nightly_expected_blocked.json
-var embeddedNightlyExpectedBlocked []byte
 
 const NightlyExpectedBlockedSchema = "fvpn.e2e.nightly-expected-blocked.v1"
 
@@ -83,11 +79,42 @@ type NightlyGateReport struct {
 	Errors            []string                    `json:"errors"`
 }
 
+func DefaultNightlyExpectedBlockedListPath() (string, error) {
+	wd, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("getwd for expected-blocked list: %w", err)
+	}
+	dir := wd
+	for {
+		if info, statErr := os.Stat(filepath.Join(dir, "go.mod")); statErr == nil && !info.IsDir() {
+			return filepath.Join(dir, "tests", "e2e", "nightly_expected_blocked.json"), nil
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+	return filepath.Join("tests", "e2e", "nightly_expected_blocked.json"), nil
+}
+
 func DefaultNightlyExpectedBlockedList() (NightlyExpectedBlockedList, error) {
-	return ParseNightlyExpectedBlockedList(embeddedNightlyExpectedBlocked)
+	path, err := DefaultNightlyExpectedBlockedListPath()
+	if err != nil {
+		return NightlyExpectedBlockedList{}, err
+	}
+	return LoadNightlyExpectedBlockedList(path)
 }
 
 func LoadNightlyExpectedBlockedList(path string) (NightlyExpectedBlockedList, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return NightlyExpectedBlockedList{}, fmt.Errorf("stat expected-blocked list: %w", err)
+	}
+	if info.IsDir() {
+		return NightlyExpectedBlockedList{}, fmt.Errorf("expected-blocked list path %q is a directory", path)
+	}
+	// Read at run time instead of go:embed because isolation's lint copies only tests/e2e/*.go into a temp dir.
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return NightlyExpectedBlockedList{}, fmt.Errorf("read expected-blocked list: %w", err)
@@ -277,6 +304,37 @@ func parseSummaryTableRow(line string) (AcceptanceSummaryRow, error) {
 		Status: Status(status),
 		Detail: detail,
 	}, nil
+}
+
+func EvaluateNightlyGateWithListFile(summaryPath, listPath string, opts NightlyGateOptions) (NightlyGateReport, error) {
+	var list NightlyExpectedBlockedList
+	var err error
+	if strings.TrimSpace(listPath) != "" {
+		list, err = LoadNightlyExpectedBlockedList(listPath)
+	} else {
+		list, err = DefaultNightlyExpectedBlockedList()
+	}
+	if err != nil {
+		rep := NightlyGateReport{
+			Schema:            "fvpn.e2e.nightly-gate-report.v1",
+			EvaluatedAt:       time.Now().UTC().Format(time.RFC3339),
+			SummaryPath:       summaryPath,
+			OK:                false,
+			Verdict:           "fail",
+			ExpectedBlocked:   []NightlyBlockedDisposition{},
+			Unblocked:         []NightlyBlockedDisposition{},
+			UnexpectedBlocked: []NightlyBlockedDisposition{},
+			Failed:            []NightlyBlockedDisposition{},
+			Errors:            []string{fmt.Sprintf("expected-blocked list unreadable or invalid: %v", err)},
+			ErrorCount:        1,
+		}
+		if strings.TrimSpace(opts.RunnerError) != "" {
+			rep.Errors = append(rep.Errors, strings.TrimSpace(opts.RunnerError))
+			rep.ErrorCount++
+		}
+		return rep, err
+	}
+	return EvaluateNightlyGate(summaryPath, list, opts)
 }
 
 func EvaluateNightlyGate(summaryPath string, list NightlyExpectedBlockedList, opts NightlyGateOptions) (NightlyGateReport, error) {

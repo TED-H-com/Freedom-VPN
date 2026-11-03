@@ -21,7 +21,7 @@ func run(args []string) error {
 	summary := fs.String("summary", "", "Path to acceptance-summary.md (overrides -runs-root/-label)")
 	runsRoot := fs.String("runs-root", "docs/e2e/runs", "Root directory for acceptance runs")
 	label := fs.String("label", "nightly", "Run label subdirectory")
-	listPath := fs.String("list", "", "Optional path to expected-blocked JSON (defaults to embedded tests/e2e/nightly_expected_blocked.json)")
+	listPath := fs.String("list", "", "Optional path to expected-blocked JSON (defaults to tests/e2e/nightly_expected_blocked.json)")
 	testExitCode := fs.Int("test-exit-code", 0, "Exit code of make e2e-test")
 	testLogPath := fs.String("test-log", "", "Optional path to captured e2e-test log")
 	stepSummary := fs.String("step-summary", os.Getenv("GITHUB_STEP_SUMMARY"), "Path to GitHub Actions step summary file")
@@ -29,17 +29,7 @@ func run(args []string) error {
 		return err
 	}
 
-	var list e2e.NightlyExpectedBlockedList
 	var err error
-	if *listPath != "" {
-		list, err = e2e.LoadNightlyExpectedBlockedList(*listPath)
-	} else {
-		list, err = e2e.DefaultNightlyExpectedBlockedList()
-	}
-	if err != nil {
-		return err
-	}
-
 	summaryPath := *summary
 	if summaryPath == "" {
 		summaryPath, err = e2e.ResolveNightlySummaryPath(*runsRoot, *label)
@@ -57,7 +47,7 @@ func run(args []string) error {
 		testLog = string(rawLog)
 	}
 
-	rep, evalErr := e2e.EvaluateNightlyGate(summaryPath, list, e2e.NightlyGateOptions{
+	rep, evalErr := e2e.EvaluateNightlyGateWithListFile(summaryPath, *listPath, e2e.NightlyGateOptions{
 		TestExitCode: *testExitCode,
 		TestLog:      testLog,
 	})
