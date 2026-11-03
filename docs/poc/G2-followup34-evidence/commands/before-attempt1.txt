@@ -1,0 +1,29 @@
+=== RUN   TestAT09_AT13_D146_D147
+=== RUN   TestAT09_AT13_D146_D147/receive
+    scenario_f34_test.go:34: measurement: exit status 1
+        Traceback (most recent call last):
+          File "/work/tests/netlab/scripts/f34_paths.py", line 288, in <module>
+            measure(mode)
+          File "/work/tests/netlab/scripts/f34_paths.py", line 258, in measure
+            rows.append(phase(mode+'-'+direction, roles, 'fv-a1', 'python3', '-B', script, 'client', dst, direction))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          File "/work/tests/netlab/scripts/f34_paths.py", line 203, in phase
+            raise RuntimeError('incomplete capture '+stem)
+        RuntimeError: incomplete capture receive-upload-member
+=== RUN   TestAT09_AT13_D146_D147/router
+    scenario_f34_test.go:34: measurement: exit status 1
+        Traceback (most recent call last):
+          File "/work/tests/netlab/scripts/f34_paths.py", line 288, in <module>
+            measure(mode)
+          File "/work/tests/netlab/scripts/f34_paths.py", line 258, in measure
+            rows.append(phase(mode+'-'+direction, roles, 'fv-a1', 'python3', '-B', script, 'client', dst, direction))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          File "/work/tests/netlab/scripts/f34_paths.py", line 203, in phase
+            raise RuntimeError('incomplete capture '+stem)
+        RuntimeError: incomplete capture router-upload-member
+--- FAIL: TestAT09_AT13_D146_D147 (1.70s)
+    --- FAIL: TestAT09_AT13_D146_D147/receive (0.73s)
+    --- FAIL: TestAT09_AT13_D146_D147/router (0.95s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/netlab	1.703s
+FAIL

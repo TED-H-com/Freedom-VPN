@@ -1,0 +1,37 @@
+{
+  "baseline_enforcement_commit": "1b87ab32344fa3be3216df0d5f7b489eb853e011",
+  "baseline_binary_sha256": "8489497ae690962e463787bec955a4ba7159fd05ff8b572014581dc2807a4a06",
+  "after_enforcement_commit": "4c2a8b90",
+  "gate_source_commit": "60070b6b96c434d13f4a88ddb106e5bb6628e4fb",
+  "sources": [
+    {
+      "path": "node/enforce/render_nft.go",
+      "sha256": "727db12d536ae9ce93f2841fa53a1aeed881902f02010c723bf65fc789a81765"
+    },
+    {
+      "path": "node/enforce/parse_nft.go",
+      "sha256": "ebf50db7e94109011e262c543fac88d38eb21d8b42c609a60ef1523b01c15119"
+    },
+    {
+      "path": "node/enforce/verify.go",
+      "sha256": "c01812ea1fd82ddac63df65b0d75f00dbc03061700fa48fdf2fad3fda48dbd2c"
+    },
+    {
+      "path": "tests/netlab/scenario_f34_test.go",
+      "sha256": "a25beccaa0c7eaecb4200591e1496aece92152955fcb8eeb08b4396c4a6b6e57"
+    },
+    {
+      "path": "tests/netlab/scripts/f34_paths.py",
+      "sha256": "c21314458dd195d9fc840e437be99c2f8b6cc2c3d3bd91beda6ce5fdd0f3b0b9"
+    },
+    {
+      "path": "tests/netlab/scripts/f34_check.py",
+      "sha256": "3e9107e04fb632b9dc601978242f48e6afa4710ecdb47b8397038d2b6d0dc1ab"
+    }
+  ],
+  "notes": [
+    "Baseline binary was built before production edits and retained through before-final.",
+    "Before-final collector differs from delivered collector only by the later private-address upload route and evidence filtering/check integration; its denied-upload row is not isolation evidence.",
+    "No reservation or D-133 A,B,A,B comparison was run."
+  ]
+}

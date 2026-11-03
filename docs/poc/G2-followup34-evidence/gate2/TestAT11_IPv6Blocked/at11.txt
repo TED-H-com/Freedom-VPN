@@ -1,0 +1,22 @@
+AT11 native
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-v6-global-tcp                 fv-a1    tcp6   2001:db8:203::10       80     deny     timeout        true
+a1-v6-global-icmp                fv-a1    icmp6  2001:db8:203::10       0      deny     timeout        true
+a1-v6-ula                        fv-a1    icmp6  fd00:db8:ffff::10      0      deny     timeout        true
+a1-v6-doc                        fv-a1    icmp6  2001:db8::10           0      deny     timeout        true
+a1-v6-linklocal                  fv-a1    icmp6  fe80::10               0      deny     timeout        true
+a1-v6-mapped-inet                fv-a1    tcp6   ::ffff:203.0.113.10    80     deny     unreachable    true
+a1-v6-mapped-lan                 fv-a1    tcp6   ::ffff:10.1.2.10       80     deny     unreachable    true
+probes=7 failed=0
+AT11 raw6
+name                             ns       proto  dst                    port   expect   observed       ok
+raw-global                       fv-fwd   raw6   2001:db8:203::10       9      sent     sent           true
+raw-ula                          fv-fwd   raw6   fd00:db8:ffff::10      9      sent     sent           true
+raw-linklocal                    fv-fwd   raw6   fe80::10               9      sent     sent           true
+raw-mapped-lan                   fv-fwd   raw6   ::ffff:10.1.2.10       9      sent     sent           true
+probes=4 failed=0
+ctv6_packets=3
+inet_capture_empty=1
+lan_capture_empty=1
+ipv6_mode=block
+mapped_v4_note=tcp6 with IPV6_V6ONLY saw no connected session; a mapped address that the kernel rewrites onto the IPv4 path is the IPv4 policy, not an IPv6 bypass.

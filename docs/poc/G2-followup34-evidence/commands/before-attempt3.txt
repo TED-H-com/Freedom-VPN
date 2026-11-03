@@ -1,0 +1,19 @@
+=== RUN   TestAT09_AT13_D146_D147
+=== RUN   TestAT09_AT13_D146_D147/receive
+=== RUN   TestAT09_AT13_D146_D147/router
+    scenario_f34_test.go:34: measurement: exit status 1
+        Traceback (most recent call last):
+          File "/work/tests/netlab/scripts/f34_paths.py", line 289, in <module>
+            measure(mode)
+          File "/work/tests/netlab/scripts/f34_paths.py", line 262, in measure
+            rows.append(phase('router-unsolicited', roles, 'fv-inet', 'python3', '-B', script, 'unsolicited'))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          File "/work/tests/netlab/scripts/f34_paths.py", line 203, in phase
+            raise RuntimeError('incomplete capture '+stem)
+        RuntimeError: incomplete capture router-unsolicited-node
+--- FAIL: TestAT09_AT13_D146_D147 (17.12s)
+    --- PASS: TestAT09_AT13_D146_D147/receive (9.02s)
+    --- FAIL: TestAT09_AT13_D146_D147/router (8.08s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/netlab	17.119s
+FAIL

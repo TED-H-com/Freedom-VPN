@@ -1,0 +1,86 @@
+docker build -t fvpn-w1-netlab-f34-focused:lab $WORKTREE/tests/netlab
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 965B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 20.85kB done
+#4 DONE 0.0s
+
+#5 [1/4] FROM docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#5 resolve docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852 0.0s done
+#5 DONE 0.0s
+
+#6 [2/4] RUN apt-get update     && apt-get install -y --no-install-recommends         nftables         iproute2         wireguard-tools         conntrack         iperf3         tcpdump         ethtool         python3         iputils-ping         procps         ca-certificates     && rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [3/4] RUN cp -a /usr/bin/wg /usr/local/bin/wg
+#7 CACHED
+
+#8 [4/4] COPY scripts/ /opt/netlab/scripts/
+#8 DONE 0.0s
+
+#9 exporting to image
+#9 exporting layers 0.1s done
+#9 exporting manifest sha256:b0ef87e1dba44137c5d4c67cd043a8ab05185f85fb2ee082913ca5d9c97f401d done
+#9 exporting config sha256:5b5363048731c377d13fb54696ad0ce4528b41128e86cd185b1ddde264844325 done
+#9 exporting attestation manifest sha256:ff45649fd47ede9c2774118d871022beb4868bedf28eb5b0202a37cba6a33297 0.0s done
+#9 exporting manifest list sha256:f76a00dac7082efe82d1099f951ec61831bcc92fbfeaf2607a33e64cb421f472 done
+#9 naming to docker.io/library/fvpn-w1-netlab-f34-focused:lab done
+#9 unpacking to docker.io/library/fvpn-w1-netlab-f34-focused:lab 0.0s done
+#9 DONE 0.1s
+docker rm -f fvpn-w1-netlab-f34-focused >/dev/null 2>&1 || true
+make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w1-netlab-f34-focused'
+make[1]: Entering directory '$WORKTREE'
+mkdir -p $WORKTREE/.agent/tmp/fvpn-w1-netlab-f34-focused-scratch
+docker rm -f fvpn-w1-netlab-f34-focused-wipe >/dev/null 2>&1 || true
+docker run --rm --name fvpn-w1-netlab-f34-focused-wipe --network none \
+	-v $WORKTREE/.agent/tmp/fvpn-w1-netlab-f34-focused-scratch:/scratch fvpn-w1-netlab-f34-focused:lab \
+	find /scratch -mindepth 1 -delete
+make[1]: Leaving directory '$WORKTREE'
+docker network inspect fvpn-w1-netlab-f34-focused-dns >/dev/null 2>&1 || docker network create fvpn-w1-netlab-f34-focused-dns
+f66d6093bc2804af294fe7c0ec102689b12e009e74708d768a4eac45e34d3629
+docker run -d --name fvpn-w1-netlab-f34-focused --privileged --network fvpn-w1-netlab-f34-focused-dns \
+	--cap-add NET_ADMIN --cap-add SYS_TIME \
+	-v $WORKTREE:/work:ro \
+	-v $WORKTREE/.agent/tmp/fvpn-w1-netlab-f34-focused-scratch:/scratch \
+	fvpn-w1-netlab-f34-focused:lab
+6f3a8db4e7105ad250517ca415369a7d2d21bcab9025f24a81fea9e2f87ee218
+docker cp $WORKTREE/.agent/tmp/fvpn-w1-netlab-f34-focused-fvpn-netlab fvpn-w1-netlab-f34-focused:/usr/local/bin/fvpn-netlab
+docker exec fvpn-w1-netlab-f34-focused bash /work/tests/netlab/scripts/topology.sh
+topology: forwarding off before any path exists
+topology: underlay and transit links
+topology: routes
+topology: wireguard keys in /scratch (not the repo)
+topology: boot baseline before forwarding (§8.2)
+topology: listeners
+topology: wireguard handshakes
+topology: ready
+=== RUN   TestAT09_AT13_D146_D147
+=== RUN   TestAT09_AT13_D146_D147/receive
+=== RUN   TestAT09_AT13_D146_D147/router
+--- PASS: TestAT09_AT13_D146_D147 (9.77s)
+    --- PASS: TestAT09_AT13_D146_D147/receive (3.79s)
+    --- PASS: TestAT09_AT13_D146_D147/router (5.96s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/netlab	9.769s
+docker rm -f fvpn-w1-netlab-f34-focused >/dev/null 2>&1 || true
+docker network rm fvpn-w1-netlab-f34-focused-dns >/dev/null 2>&1 || true
+make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w1-netlab-f34-focused'
+make[1]: Entering directory '$WORKTREE'
+mkdir -p $WORKTREE/.agent/tmp/fvpn-w1-netlab-f34-focused-scratch
+docker rm -f fvpn-w1-netlab-f34-focused-wipe >/dev/null 2>&1 || true
+docker run --rm --name fvpn-w1-netlab-f34-focused-wipe --network none \
+	-v $WORKTREE/.agent/tmp/fvpn-w1-netlab-f34-focused-scratch:/scratch fvpn-w1-netlab-f34-focused:lab \
+	find /scratch -mindepth 1 -delete
+make[1]: Leaving directory '$WORKTREE'
+rmdir $WORKTREE/.agent/tmp/fvpn-w1-netlab-f34-focused-scratch 2>/dev/null || true
