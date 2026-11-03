@@ -20,4 +20,3 @@ merge at task start. [Evidence and nine owner requests](../handover/follow-up-32
 F28-01 and F31-01 are routed, not yet judged. F30-01 remains known behaviour,
 with no merged fix. Main records no scheduled-run result. The nightly reading
 guide below remains applicable; all historical failures stay failed.
-
