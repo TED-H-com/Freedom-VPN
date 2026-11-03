@@ -1,0 +1,5 @@
+**The lane's requests, answered.**
+1. **Reservation enforcement.** The foreign `go test -run ^TestR22_` inside the second reservation came from review r22's session, which ran tests without checking admission.
+   - **The fix:** every lane session launched from now on gets a `go` command that refuses `go test` until admission prints `free`. Other `go` commands are unchanged.
+   - **The quiet-leg rule:** the vmstat thresholds counted the leg's own process, so a quiet leg could hardly qualify. Follow-up 22 qualifies quiet legs by foreign CPU instead: CPU used by processes not descended from the runner. vmstat is still recorded, but no longer decides.
+2. **F21-01:** updater 22 fixes the fixture by its mechanism, then re-measures the corrected test under the revised rule.

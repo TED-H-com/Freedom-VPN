@@ -1,7 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 32](follow-up-32.md) (2026-11-03 EST):** Through #412: F27-02 fixture defect, qualified comparison open; first live D-102 survivor continuation; B1 unresolved. F28-01 and F31-01 routed, not yet judged. AT02 / AT09 stay failed; F30-01 has no merged fix. Nine owner requests.
-**Previous cut — [follow-up 31](follow-up-31.md):** #404–#407 at 3573f396; 21 subtests, four rows, nine handover snapshots, nine nightly inputs, 596 checks, three dated documents and 72 findings.
+**Current cut — [follow-up 33](follow-up-33.md) (2026-11-03 EST):** Through #415: F27-02's declared fixture reading failed (F21-01); original reading supported, not closed. F28-01 closed as test isolation; B1 stays FAIL. r22 returned to agent-core 39, none confirmed. F30-01 and r20 H-1 remain open. Nine owner requests.
+**Previous cut — [follow-up 32](follow-up-32.md):** #408–#412 at b7449ec1; 20 subtests, five rows, nine frozen inputs, 301 payload checks, seven documents, 19 symlinks, 14 navigation sources and 75 findings.
 
 ## Restart measurements at #412
 
@@ -372,6 +372,14 @@ recorded as an unattributed `mapping conflict` usage gap instead of member
 usage. See the [archived r20 review](../reviews/r20-adoption-signal-review.md).
 Agent-core 37's fixes were held after r21 and go with reviewed agent-core 38;
 the finding remains open on main. No fix date is promised.
+
+**2026-11-03 — Restart warning at #415.** r20 H-1's mapping-conflict usage
+gap stays open on main while agent-core 37–39 are held. Review r22 returned
+38's delivered tip (carrying 37) to 39 before merge; 39 judges the findings
+under D-141 and must be reviewed before the combined merge. None is confirmed.
+F30-01 remains the known behaviour in §4.3, with no merged fix or verified
+production restart procedure. See [follow-up 33](follow-up-33.md) and the
+[r22 disposition](../reviews/README.md#r22-dispositions-at-the-follow-up-33-cutoff-2026-11-03-est).
 
 First fetch the node (`GET /api/v1/admin/nodes/{node_id}`) and capture the response `ETag` header (`"<resource_version>"`). Supply `If-Match` and `Idempotency-Key` (`428 Precondition Required` if `If-Match` is missing; `412 Precondition Failed` if stale):
 

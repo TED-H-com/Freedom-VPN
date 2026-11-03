@@ -1,7 +1,7 @@
 # Production Deployment Runbook (`docs/handover/deploy.md`)
 
-**Current cut — [follow-up 32](follow-up-32.md) (2026-11-03 EST):** Through #412: F27-02 fixture defect, qualified comparison open; first live D-102 survivor continuation; B1 unresolved. F28-01 and F31-01 routed, not yet judged. AT02 / AT09 stay failed; F30-01 has no merged fix. Nine owner requests.
-**Previous cut — [follow-up 31](follow-up-31.md):** #404–#407 at 3573f396; 21 subtests, four rows, nine handover snapshots, nine nightly inputs, 596 checks, three dated documents and 72 findings.
+**Current cut — [follow-up 33](follow-up-33.md) (2026-11-03 EST):** Through #415: F27-02's declared fixture reading failed (F21-01); original reading supported, not closed. F28-01 closed as test isolation; B1 stays FAIL. r22 returned to agent-core 39, none confirmed. F30-01 and r20 H-1 remain open. Nine owner requests.
+**Previous cut — [follow-up 32](follow-up-32.md):** #408–#412 at b7449ec1; 20 subtests, five rows, nine frozen inputs, 301 payload checks, seven documents, 19 symlinks, 14 navigation sources and 75 findings.
 
 Installer 7 reporting inputs are required: a validated HTTPS control origin
 (`--control-url`) and its readable server CA bundle (`--server-ca`). Generated
