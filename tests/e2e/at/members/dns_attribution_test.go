@@ -104,7 +104,7 @@ func (l *live) cacheArtifact(value any) {
 	if err != nil {
 		l.t.Fatal(err)
 	}
-	if err = writeEvidence(filepath.Join(l.root, "docs/e2e/at/members/F16-AT20-cache.json"), append(raw, '\n')); err != nil {
+	if err = writeEvidence(filepath.Join(l.root, "docs/e2e/at/members/F17-AT20-cache.json"), append(raw, '\n')); err != nil {
 		l.t.Fatal(err)
 	}
 }
@@ -146,7 +146,7 @@ func (l *live) dnsLifecycle(label string) map[string]any {
 func (l *live) originalDNSArtifact(r *record, original *labstack.FixtureProbeResult, capture json.RawMessage, before, after map[string]any) {
 	value := map[string]any{"run_id": l.runID, "source_commit": l.build.Source, "original_query": original, "native_capture": capture, "lifecycle_before": before, "lifecycle_after": after, "cause_status": "unproven", "historical_F12_04": "5,001 ms SERVFAIL remains failed and unattributed; this is the new original query, never a replacement"}
 	raw, e := json.MarshalIndent(value, "", "  ")
-	if e != nil || writeEvidence(filepath.Join(l.root, "docs/e2e/at/members/F16-F12-04-original-dns.json"), append(raw, '\n')) != nil {
+	if e != nil || writeEvidence(filepath.Join(l.root, "docs/e2e/at/members/F17-F12-04-original-dns.json"), append(raw, '\n')) != nil {
 		l.t.Fatal("write original DNS evidence")
 	}
 	r.jsonCheck("F12-04 original query evidence", "original one-shot RR query and both resolver lifecycles retained; capture completion is separate", value, "StartNativeDNSCapture after two-resolver configuration, before readiness and original RR/listener/cache sequence", original != nil && before != nil && after != nil && capture != nil)

@@ -70,6 +70,7 @@ func (l *live) restoreHoldMember(r *record, reason string) {
 		r.block("Hold cleanup member state unavailable; no mutation inferred")
 		return
 	}
+	r.jsonCheck("conditional hold restoration "+reason, "mutate only an actually suspended member", map[string]any{"member_id": l.b.member, "suspended_before": suspended, "mutation_needed": suspended}, "read original member state; no no-op PATCH", true)
 	if suspended {
 		l.patchMember(r, l.b, map[string]any{"admin_suspended": false, "suspension_reason": reason})
 	}
@@ -94,7 +95,7 @@ func (l *live) populatedHold(r *record, name string, count, capacity int) {
 		ev["producer_records"], ev["producer_receipt"], ev["producer_available"] = rows, receipt, e == nil
 		ev["incident_id"], ev["finished_at"] = incident, time.Now().UTC()
 		raw, _ := json.MarshalIndent(ev, "", "  ")
-		if writeEvidence(filepath.Join(l.root, "docs/e2e/at/members/F16-hold-"+name+".json"), append(raw, '\n')) != nil {
+		if writeEvidence(filepath.Join(l.root, "docs/e2e/at/members/F17-hold-"+name+".json"), append(raw, '\n')) != nil {
 			l.t.Fatal("hold evidence write")
 		}
 	}()
@@ -117,7 +118,12 @@ func (l *live) populatedHold(r *record, name string, count, capacity int) {
 		r.block(name + " hold not exercised: local lease does not join accepted report")
 		return
 	}
-	arm, e = l.hook.ArmMatchingLeaseHold(l.ctx, role, gen, 90*time.Second)
+	if name == "sibling-removal" {
+		ev["survivor_member_id"], ev["sibling_member_id"] = l.a.member, l.b.member
+		arm, e = l.hook.ArmMatchingLeaseHoldSurvivor(l.ctx, role, gen, l.a.member, 90*time.Second)
+	} else {
+		arm, e = l.hook.ArmMatchingLeaseHold(l.ctx, role, gen, 90*time.Second)
+	}
 	ev["arm"] = arm
 	if e != nil {
 		r.block(name + " hold not exercised: arm unavailable")
@@ -137,6 +143,9 @@ func (l *live) populatedHold(r *record, name string, count, capacity int) {
 		r.block(name + " hold not exercised: no accepted incident for retained populated lease")
 		return
 	}
+	var initialTarget, entryReport string
+	_ = l.pool.QueryRow(l.ctx, `SELECT s.applied_generation::text,s.report_id::text FROM node_generation_hold_reports s JOIN node_observations o USING(node_id,incarnation_id,report_id) WHERE s.hold_id=$1 ORDER BY o.received_at,s.report_id LIMIT 1`, incident).Scan(&initialTarget, &entryReport)
+	ev["initial_target_generation"], ev["entry_hold_report_id"] = initialTarget, entryReport
 	during, _ := l.hook.GenerationHoldSnapshot(l.ctx, node)
 	ev["at_entry"] = during
 	ev["coverage"] = "accepted populated hold; individual assertions require final ID joins"
@@ -144,6 +153,10 @@ func (l *live) populatedHold(r *record, name string, count, capacity int) {
 	alarm := l.wait(25*time.Second, func() bool {
 		return l.count(`SELECT count(*) FROM node_generation_hold_reports WHERE hold_id=$1 AND summary_valid AND reported_alarm`, incident) > 0 && l.count(`SELECT count(*) FROM audit_events WHERE action='node.generation_hold.escalated' AND after_diff->>'incident_id'=$1`, incident) == 1
 	})
+	var alarmReport, auditID string
+	_ = l.pool.QueryRow(l.ctx, `SELECT report_id::text FROM node_generation_hold_reports WHERE hold_id=$1 AND summary_valid AND reported_alarm ORDER BY report_id LIMIT 1`, incident).Scan(&alarmReport)
+	_ = l.pool.QueryRow(l.ctx, `SELECT id::text FROM audit_events WHERE action='node.generation_hold.escalated' AND after_diff->>'incident_id'=$1 ORDER BY occurred_at,id LIMIT 1`, incident).Scan(&auditID)
+	ev["alarm_hold_report_id"], ev["escalation_audit_id"] = alarmReport, auditID
 	ev["alarm_and_single_escalation"] = alarm
 	r.check("populated hold alarm and central escalation "+name, "accepted alarm with exactly one audit joined by incident_id", fmt.Sprintf("incident_id=%s; alarm_and_single=%t", incident, alarm), "GenerationHoldSnapshot and exact audit after_diff incident join", alarm)
 	if name == "sibling-removal" || name == "sole-member" {
@@ -161,8 +174,13 @@ func (l *live) populatedHold(r *record, name string, count, capacity int) {
 		} else {
 			// A later matching generation may legitimately close the incident; require
 			// an original post-revocation hold sample before claiming survivor coverage.
-			held := l.wait(12*time.Second, func() bool {
-				return l.count(`SELECT count(*) FROM node_generation_holds h JOIN node_generation_hold_reports s ON s.hold_id=h.id JOIN node_observations o ON o.node_id=s.node_id AND o.incarnation_id=s.incarnation_id AND o.report_id=s.report_id WHERE h.id=$1 AND h.ended_at IS NULL AND o.received_at>$2 AND EXISTS(SELECT 1 FROM serving_lease_members lm JOIN members m ON m.id=lm.member_id WHERE lm.lease_id=s.lease_id AND m.id<>$3 AND m.status NOT IN ('suspended','closed') AND NOT m.admin_suspended)`, incident, completed, l.b.member) > 0
+			held := l.wait(25*time.Second, func() bool {
+				var accepted json.RawMessage
+				err := l.pool.QueryRow(l.ctx, `SELECT jsonb_build_object('report_id',s.report_id,'received_at',o.received_at,'applied_generation',s.applied_generation::text,'lease_id',s.lease_id,'incident_id',h.id,'incident_open',h.ended_at IS NULL,'first_seen_at',h.first_seen_at,'last_seen_at',h.last_seen_at) FROM node_generation_holds h JOIN node_generation_hold_reports s ON s.hold_id=h.id JOIN node_observations o ON o.node_id=s.node_id AND o.incarnation_id=s.incarnation_id AND o.report_id=s.report_id WHERE h.id=$1 AND h.ended_at IS NULL AND o.received_at>$2 AND s.summary_valid AND s.reported_alarm AND s.applied_generation>$5::numeric AND s.lease_id=$6::uuid AND EXISTS(SELECT 1 FROM serving_lease_members lm JOIN members m ON m.id=lm.member_id WHERE lm.lease_id=s.lease_id AND m.id=$4::uuid AND m.status NOT IN ('suspended','closed') AND NOT m.admin_suspended) AND EXISTS(SELECT 1 FROM serving_lease_members lm JOIN members m ON m.id=lm.member_id WHERE lm.lease_id=s.lease_id AND m.id=$3::uuid AND m.admin_suspended) ORDER BY o.received_at LIMIT 1`, incident, completed, l.b.member, l.a.member, initialTarget, lease).Scan(&accepted)
+				if err == nil {
+					ev["accepted_post_command_survivor"] = accepted
+				}
+				return err == nil
 			})
 			ev["survivor_hold_observed"] = held
 			if !held {
@@ -212,10 +230,15 @@ func (l *live) populatedHold(r *record, name string, count, capacity int) {
 		}
 	}
 	ev["forwarded_body_matches_local"] = matched
-	if name == "alarm-recovery" {
+	if name == "alarm-recovery" || name == "sibling-removal" {
 		closed := l.count(`SELECT count(*) FROM node_generation_holds WHERE id=$1 AND end_reason='generation_matched'`, incident) == 1
 		serving := l.wait(20*time.Second, func() bool {
-			return l.count(`SELECT count(*) FROM (SELECT member_forwarding_enabled FROM node_observations WHERE node_id=$1 ORDER BY received_at DESC,id DESC LIMIT 1)o WHERE member_forwarding_enabled`, node) == 1
+			var report json.RawMessage
+			err := l.pool.QueryRow(l.ctx, `SELECT jsonb_build_object('report_id',report_id,'received_at',received_at,'applied_generation',applied_generation::text,'lease_id',report_payload->'lease'->>'lease_id') FROM node_observations WHERE node_id=$1 AND member_forwarding_enabled AND received_at>$2 ORDER BY received_at DESC,id DESC LIMIT 1`, node, ev["release_requested_at"]).Scan(&report)
+			if err == nil {
+				ev["recovery_serving_report"] = report
+			}
+			return err == nil
 		})
 		ev["separate_serving_report_observed"] = serving
 		r.check("populated matching recovery", "generation_matched, genuine forwarded local lease, separate serving report", fmt.Sprintf("closed=%t; exact_local=%t; serving=%t", closed, matched, serving), "incident closure is checked separately from service", closed && matched && serving)

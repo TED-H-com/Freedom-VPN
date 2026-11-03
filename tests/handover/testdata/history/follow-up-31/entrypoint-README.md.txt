@@ -1,0 +1,4 @@
+# Freedom VPN
+
+**Current cut — [follow-up 30](docs/handover/follow-up-30.md) (2026-11-03 EST):** Through #403: agent-core 36 refuses same-boot adoption on changed deny / host sets; r20's 2 High / 3 Medium / 1 Low are routed, not yet judged, and the live-drift verifier check stays open with netlab 27. Isolation 16 unqualified on a 3.609 µs overlap; F16-01's fixture disposition merged, its run stays failed. Members 16: AT02 / AT09 fail. The nightly billing failure was a missing runner browser; no scheduled-run result is claimed. D-142–D-144 registered. Nine owner decisions.
+**Previous cut — [follow-up 29](docs/handover/follow-up-29.md):** #391–#396 at d640ce96; 22 subtests, six rows, eight snapshots, 731 checks and 51 findings. Historical failures stay failed.

@@ -203,3 +203,57 @@ never copied or read by claims. D-098 includes dated devstack runs and the
 per-follow-up netlab tree. D-109 implementation claims name Go tests; dated
 hand-offs and merged-PR excerpts supply immutable context. Earlier claims,
 decisions and historical failures remain intact.
+
+## Follow-up 30 provenance
+
+Main b9439411 through #403: seven exact final roadmap rows
+(`followup30-main.json`), nine frozen follow-up 29 inputs with source digest /
+offset / length (`followup30-snapshots.json`), and 449 archive/run file checks
+(`followup30-evidence.json`: 123 isolation follow-up 15, 64 members follow-up
+15, 165 netlab 26 and 97 devstack 29 files). Devstack 29's dated run has no
+owner manifest, so `followup30-devstack29.sha256` lists its 97 files from main.
+Follow-up 29's register, entrypoints, operator-guide §3.2 and ops snapshot are
+frozen under `history/follow-up-30/`; its whole-function hash is checked after
+reversing only those redirects. The revised node-configuration note replaces
+follow-up 29's note in place, so older guide-body checks remove either note.
+
+Living roots (isolation 83b457ef, members 0ffb355a, usage b8a6e9e1) are never
+read by claims. Agent-core 36's dated hand-off is pinned by tokens from its own
+sections only. The r20 review is an exact archive, SHA-256 af15fb7c…, with no
+adopted proof files. The five scheduled workflows at b9439411 are frozen
+(`followup30-workflows.json`) and checked structurally; no run result is read
+or claimed.
+
+## Follow-up 31 (#404–#407)
+
+`followup31-main.json` pins four final roadmap rows at
+`3573f396d60836f3f203ab5f883575c96a0ec45c` (#407), with no extra in-range PR
+or later merge at task start. Agent-core 38 (carrying held 37), updater 20,
+netlab 28 and members 17 are outside the cut.
+
+`followup31-snapshots.json` pins nine byte-exact owned-document slices from
+that commit: follow-up 30's register, seven entrypoint slices (the ops slice
+also holds its old reading guide), and the operator configuration section.
+Only follow-up 30's input paths are redirected; its normalized function hash
+remains `3c4fc87eb6255f28ef46a156d03a7b99db392012828034953cc4871c0288a02d`.
+Earlier snapshots and follow-up 30's cut document are unchanged.
+
+`followup31-nightly.json` pins nine whole-file snapshots at the same commit:
+the two workflows, two expected-blocked lists, isolation's exit mapper,
+summary writer and runner, and e2e's gate library and command. These frozen
+structural inputs permit future owner edits without changing this cut's
+claims. No live workflow, list or implementation is a claims-test input.
+
+`followup31-evidence.json` pins three dated evidence/review documents and
+596 archive/run file checks: isolation follow-up 16's 129 entries, netlab 27's
+446-entry final retention manifest, and 21 dated devstack 30 run files in
+`followup31-devstack30.sha256`. Both compressed and uncompressed hashes are
+checked where the owner manifest provides them. r21 is exactly 29,439 bytes,
+SHA-256 `0fcf888bbb59e8e3032abf041f4d600fcb661525a3c390e15850c61e4df2edc0`.
+
+Living isolation 0ec14b39, members 0ffb355a and usage b8a6e9e1 evidence is
+never an input (D-132). Their statements use final roadmap rows/PR numbers.
+Go proof names are checked as declarations on main; r21's unmerged proof
+names are checked only inside its raw archived review. Follow-up 31 has
+21 claims subtests, 72 findings and the same nine owner requests. Owned
+current-document digests remain a separate live-integrity check.

@@ -399,6 +399,9 @@ func (r *runner) nativeMTU18(ctx context.Context, s *Stack) {
 }
 
 func nativeCampaignDirectory() string {
+	if os.Getenv("FVPN_E2E_FOLLOWUP30") == "1" {
+		return "followup30"
+	}
 	if os.Getenv("FVPN_E2E_FOLLOWUP27") != "" {
 		return "followup27"
 	}

@@ -4,6 +4,7 @@ import subprocess
 import sys
 import time
 import json
+import shlex
 from pathlib import Path
 
 
@@ -30,16 +31,28 @@ def suite_roots(matches, parents, own_pid):
 
 
 def inventory():
-    found = subprocess.run(['pgrep', '-af', 'gates.sh|mk/at-'], text=True, capture_output=True)
+    found = subprocess.run(['pgrep', '-af', 'gates.sh|mk/at-|node-test-netlab|mk/netlab|test.*tags.*netlab'], text=True, capture_output=True)
     if found.returncode not in (0, 1):
         raise RuntimeError('suite inventory unavailable')
     parents = {}
     for line in subprocess.check_output(['ps', '-eo', 'pid=,ppid='], text=True).splitlines():
         pid, parent = map(int, line.split())
         parents[pid] = parent
-    matches = {int(line.split(maxsplit=1)[0]): line for line in found.stdout.splitlines()}
+    matches = {}
+    for line in found.stdout.splitlines():
+        pid, command = line.split(maxsplit=1)
+        args = shlex.split(command)
+        # Ignore orchestration shells containing quoted command text.
+        if any(a in ('-c', '-lc', '-ec') for a in args[:3]):
+            continue
+        if args and Path(args[0]).name != 'pgrep':
+            matches[int(pid)] = line
     roots = suite_roots(matches, parents, os.getpid())
     return matches, roots
+
+
+def priority(matches, roots):
+    return any(any(term in matches[p] for term in ('mk/at-isolation.mk', 'node-test-netlab', 'mk/netlab', '-tags netlab')) for p in roots)
 
 
 def check():
@@ -48,7 +61,7 @@ def check():
     for pid in roots:
         # Keep the raw process command in private run logs only.
         print(matches[pid], flush=True)
-    if len(roots) >= 2 or any("mk/at-isolation.mk" in matches[p] for p in roots):
+    if len(roots) >= 2 or priority(matches, roots):
         print('HARD STOP: isolation active or two other suites; no test launched', flush=True)
         return 75
     return 0
@@ -64,7 +77,7 @@ def wait_ready():
     polls = []
     while True:
         matches, roots = inventory()
-        isolation = any('mk/at-isolation.mk' in matches[p] for p in roots)
+        isolation = priority(matches, roots) or any('gates.sh' in matches[p] for p in roots)
         isolation_wait = isolation_wait or isolation
         polls.append(dict(elapsed_seconds=round(time.monotonic()-started, 3), other_suites=len(roots), isolation_active=isolation))
         if not isolation and len(roots) < 2:
@@ -72,7 +85,7 @@ def wait_ready():
         if time.monotonic()-started >= 90*60:
             raise RuntimeError('90-minute suite admission wait exhausted; no run started')
         print('Waiting for isolation / suite admission:', polls[-1], flush=True)
-        time.sleep(15)
+        time.sleep(60)
     receipt=dict(wait_seconds=round(time.monotonic()-started, 3), waited_for_isolation=isolation_wait, polls=polls)
-    Path('.agent/tmp/f16-admission-wait.json').write_text(json.dumps(receipt, indent=2)+'\n')
+    Path('.agent/tmp/f17-admission-wait.json').write_text(json.dumps(receipt, indent=2)+'\n')
     return receipt

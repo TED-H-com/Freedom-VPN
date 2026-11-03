@@ -282,6 +282,7 @@ func (l *live) devices(r *record) {
 		entries := strings.Count(string(raw), "src=")
 		r.check("revoked source conntrack", "no entries for revoked overlay source", fmt.Sprintf("read_ok=%t; tuple_fields=%d", e == nil, entries), "conntrack -L scoped to former peer source; emit count only", e == nil && entries == 0)
 	}
+	l.siblingApplyFault(r, siblingCapture)
 	l.finishSibling(r, siblingCapture)
 	l.reauthorizationLimit(r, replacement, second, loserService)
 	r.check("AT02 assertion boundary", "quota, owner isolation, strict post-withdrawal fvmb0 ingress drop (ctunku +1, zero forwarded bytes), sibling/replacement counted flows, empty revoked conntrack and continuous agent PID", "Revoked UDP/9 source is asserted independently; sibling UDP/9 outcome and continuous UDP/40002 attempts/ingress/egress are retained; D-135 recovery verdict joins the full producer stream", "Stack.ObserveMemberIngress through tests/e2e/internal/labstack; §19 AT02", true)

@@ -426,3 +426,20 @@ The stream records every attempted write with monotonic/UTC before/after times, 
 Run-derived scripts, from the repository root with `python3 -B`, are `followup16_index.py`, `followup16_evidence.py`, `followup16_receipts.py`, `followup16_transitions.py`, `followup16_review.py`, `followup16_native_sessions.py`, then `followup16_resume.py` and `followup16_resume.py contention`, all in `tests/e2e/at/members/`. They consume retained cases, original private pcaps and producer exports; they send no traffic. Keep original signed documents, measured outcomes and prior archives unchanged. Run the contention index last after other JSON derivation; it pins uncompressed source bytes and resolves serialized `actual` JSON using `@json` pointers. Archive capture manifests pin the payload-free headers and analyses; raw packets stay private.
 
 The November 2 resume does **not** repeat the assembled run. Before each offline `go test`, `make` or Docker command, use the orchestrator's host admission script and start only on `free`, checking held admission every 60 seconds. All gates are foreground, sequential, and use `disktmp.py` for disk TMPDIR/GOTMPDIR; obtain GOCACHE from `go env GOCACHE`. Follow the exact gate order in RUN.md. The three future harness corrections (skip no-op unsuspension, include member.patch audits, re-authenticate before AT09) do not alter 0ffb355a's verdicts.
+
+## Follow-up 17 retained evidence
+
+After the single assembled run and owned teardown, derive only from retained files:
+
+```sh
+python3 -B tests/e2e/at/members/followup17_index.py
+python3 -B tests/e2e/at/members/followup17_evidence.py
+python3 -B tests/e2e/at/members/followup17_receipts.py
+python3 -B tests/e2e/at/members/followup17_transitions.py
+python3 -B tests/e2e/at/members/followup17_native_sessions.py
+python3 -B tests/e2e/at/members/followup17_review.py
+python3 -B tests/e2e/at/members/followup17_qualification.py
+python3 -B tests/e2e/at/members/followup17_first_selection.py
+```
+
+Private producer streams and raw pcaps remain under `.agent/tmp`; only payload-free headers/hashes and joined records are published. Files over 20,000,000 bytes use lossless gzip with both SHA-256 forms. Rebuild the new capture manifest after compression. Earlier archives and their manifests are immutable. The local foreground gate wrapper applies the authorized private hold script before every make, go test and Docker invocation, including nested calls; its location and raw command arguments are not public evidence. Do not rerun a completed assembled campaign to repair a failed predicate.
