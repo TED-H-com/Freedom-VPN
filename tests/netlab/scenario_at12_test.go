@@ -11,6 +11,7 @@ import (
 
 func TestAT12_ISO01_ISO04_AllowDeny(t *testing.T) {
 	skipLab(t)
+	observeAT12Start(t)
 	flushConntrack(t)
 	_, _, _ = dockerExec("ip", "netns", "exec", "fv-fwd", "ip", "addr", "del", "100.64.7.7/32", "dev", "fv-ff")
 	mustExec(t, "ip", "netns", "exec", "fv-fwd", "ip", "addr", "add", "100.64.7.7/32", "dev", "fv-ff")
@@ -50,7 +51,7 @@ func TestAT12_ISO01_ISO04_AllowDeny(t *testing.T) {
 		{"loopback-inject", "fv-fwd", "raw4", "127.0.0.1", 9, "", "sent", 800, "100.64.1.1", srcMAC, dstMAC, "fv-ff", 0},
 	}
 
-	before := readCounters(t, m)
+	before := observeAT12Counters(t, m, "before")
 	lanLog := logLines(t, "/scratch/svc-lan.log")
 	hostLog := logLines(t, "/scratch/svc-host.log")
 	memberLog := logLines(t, "/scratch/svc-member.log")
@@ -72,7 +73,7 @@ func TestAT12_ISO01_ISO04_AllowDeny(t *testing.T) {
 	if logLines(t, "/scratch/svc-lan.log") != lanLog || logLines(t, "/scratch/svc-host.log") != hostLog || logLines(t, "/scratch/svc-member.log") != memberLog {
 		t.Fatal("a denied target accepted a connection")
 	}
-	mid := readCounters(t, m)
+	mid := observeAT12Counters(t, m, "mid")
 	if sampleBytes(mid.Samples, devA1, "upload") != sampleBytes(before.Samples, devA1, "upload") {
 		t.Fatalf("denied traffic counted as usage: before %d after %d", sampleBytes(before.Samples, devA1, "upload"), sampleBytes(mid.Samples, devA1, "upload"))
 	}
