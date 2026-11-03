@@ -63,3 +63,5 @@
 {"utc": "2026-11-03T11:25:32.732033+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["image", "ls", "--format", "{{.Repository}}:{{.Tag}}", "--filter", "reference=fvpn-w1-netlab-f30*"]}
 {"utc": "2026-11-03T11:25:32.798227+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["network", "ls", "--format", "{{.Name}}"]}
 {"utc": "2026-11-03T11:25:32.862575+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "docker", "args": ["volume", "ls", "--format", "{{.Name}}"]}
+{"utc": "2026-11-03T11:26:08.106254+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "make", "args": ["-f", "mk/netlab.mk", "netlab-lint", "netlab-unit", "netlab-integration", "netlab-build"]}
+{"utc": "2026-11-03T11:26:09.490222+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "go", "args": ["test", "./node/enforce/...", "./tests/netlab"]}

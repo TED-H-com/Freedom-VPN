@@ -1,0 +1,9 @@
+ok  	github.com/TED-H-com/Freedom-VPN/node/enforce	1.289s
+--- FAIL: TestCommittedEvidenceFiles_ValidAndHygieneClean (2.54s)
+    evidence_test.go:109: docs/poc/G2-followup30-evidence/collector-source-pins.json: read pin docs/poc/G2-followup30-evidence/tests/netlab/scripts/guard_observe.py: open docs/poc/G2-followup30-evidence/tests/netlab/scripts/guard_observe.py: no such file or directory
+        read pin docs/poc/G2-followup30-evidence/tests/netlab/cmd/fvpn-netlab/main.go: open docs/poc/G2-followup30-evidence/tests/netlab/cmd/fvpn-netlab/main.go: no such file or directory
+        read pin docs/poc/G2-followup30-evidence/tests/netlab/cmd/fvpn-netlab/trace.go: open docs/poc/G2-followup30-evidence/tests/netlab/cmd/fvpn-netlab/trace.go: no such file or directory
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/netlab	2.549s
+FAIL
+make: *** [mk/netlab.mk:34: netlab-unit] Error 1
