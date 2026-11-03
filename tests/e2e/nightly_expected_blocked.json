@@ -1,0 +1,17 @@
+{
+  "schema": "fvpn.e2e.nightly-expected-blocked.v1",
+  "entries": [
+    {
+      "id": "member-ipv6",
+      "owner": "w3-devstack-e2e / platform operators",
+      "reason": "Default native member container joins with --disable-ipv6 (DisableIPv6: true) and no IPv6 underlay or per-platform route/capture campaign is provisioned in the default devstack acceptance run (transport_scenario_test.go memberIPv6).",
+      "established_from": "docs/e2e/runs/2026-11-03/followup29/after-full/member-ipv6.md; deploy/devstack/entrypoint-member.sh; tests/e2e/transport_scenario_test.go:185-205"
+    },
+    {
+      "id": "lease-expiry",
+      "owner": "w2-agent-core",
+      "reason": "Candidate fvpn-agent started by fvpn-updater during update-good stepStart runs boot-time recoverOnce() while parent fvpn-updater still holds /var/lib/vpn-node/update.lock, hitting UPDATE_BUSY and latching recoverBlocked=true (reason recovery_required, serving 0) in memory until node-restart restarts the agent, so countedFlow finds no device admission counters during the 90s readiness poll.",
+      "established_from": "docs/e2e/runs/2026-11-03/followup29/after-full/lease-expiry.md; docs/e2e/runs/2026-11-03/followup29/analysis.md; node/updater/apply.go:200; node/updater/engine.go:148; node/agent/engine.go:432,884-909; node/agent/decide.go:143; tests/e2e/member_admit_test.go:175-210"
+    }
+  ]
+}
