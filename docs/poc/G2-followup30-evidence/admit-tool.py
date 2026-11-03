@@ -25,6 +25,9 @@ if name in ('make','docker') or (name=='go' and sys.argv[1:2]==['test']):
         print('Waiting 60 seconds for host admission: '+name,file=sys.stderr,flush=True)
         time.sleep(60)
     else: raise RuntimeError('bounded host admission wait exhausted')
+if name=='go' and sys.argv[1:2]==['test'] and os.environ.get('FVPN_NETLAB')=='1' and os.environ.get('FVPN_F30_MODE')=='full':
+    import full_quiet
+    sys.exit(full_quiet.run(real,sys.argv[1:]))
 if name=='go' and sys.argv[1:2]==['test'] and os.environ.get('FVPN_NETLAB')=='1' and os.environ.get('FVPN_F30_RUN'):
     target=host.DEST/(os.environ['FVPN_F30_RUN']+'-quiet.jsonl')
     entered=time.monotonic()

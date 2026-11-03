@@ -49,11 +49,15 @@ try:
         if ready:break
         if elapsed>120:raise RuntimeError('quiet preflight not met in 120 seconds; no launch')
     (host.DEST/(name+'-preflight.json')).write_text(json.dumps(dict(wait_seconds=elapsed,settle_seconds=60),indent=2)+'\n')
-    env=dict(os.environ,FVPN_F30_RUN=name,FVPN_LAB_PREFIX=host.PREFIX,FVPN_NETLAB_EVIDENCE_DIR='docs/poc/G2-followup30-evidence/'+name,
+    env=dict(os.environ,FVPN_F30_MODE=mode,FVPN_F30_RUNNER_PID=str(os.getpid()),FVPN_F30_RUN=name,FVPN_LAB_PREFIX=host.PREFIX,FVPN_NETLAB_EVIDENCE_DIR='docs/poc/G2-followup30-evidence/'+name,
              FVPN_NETLAB_AT12_OBSERVE='0',FVPN_NETLAB_TCP_OBSERVE='1' if mode=='guard' else '0',FVPN_NETLAB_GUARD_LOG='1' if mode=='guard' else '0')
     if mode=='collector':cmd=[sys.executable,str(host.DEST/'collector-run.py'),name]
     elif mode=='guard':cmd=[sys.executable,str(host.DEST/'guard-window.py')]
     else:cmd=['make','-f','mk/netlab.mk','netlab-test','FVPN_LAB_PREFIX='+host.PREFIX]
+    if mode=='full':
+        # The suite's admitted go wrapper owns its continuous monitor. A
+        # sibling monitor is correctly refused by the caller-based hold.
+        stop.set();thread.join()
     code=subprocess.run([sys.executable,'-B',str(host.DEST/'run.py'),name,*cmd],env=env).returncode
     if mode!='collector':
         cleanup=subprocess.run([sys.executable,'-B',str(host.DEST/'run.py'),name+'-cleanup',sys.executable,'-B',str(host.DEST/'cleanup.py'),name+'-inventory'],env=env).returncode
@@ -61,7 +65,7 @@ try:
 finally:
     # Finish a full sampling interval after the foreground run so the last
     # few seconds of traffic cannot escape CPU/process accounting.
-    if 'thread' in locals():
+    if 'thread' in locals() and thread.is_alive():
         with lock:last_count=len(records)
         until=time.monotonic()+6
         while time.monotonic()<until:
@@ -71,7 +75,7 @@ finally:
     stop.set()
     if 'thread' in locals():thread.join()
     measured=[r for r in records if 'interval_seconds' in r]
-    (host.DEST/(name+'-qualification.json')).write_text(json.dumps(dict(test_only=True,checks=len(records),qualified=bool(measured) and all(r['quiet'] and r.get('interval_seconds',0)<=5 for r in records[1:]),max_check_interval_seconds=max((r['interval_seconds'] for r in measured),default=None),max_foreign_cpu=max((r['cpu_cores']['foreign'] for r in measured),default=None),exit_code=code,
+    (host.DEST/(name+'-qualification.json')).write_text(json.dumps(dict(test_only=True,scope='pre-startup only; full suite has its own qualification' if mode=='full' else 'continuous reservation monitor',checks=len(records),qualified=bool(measured) and all(r['quiet'] and r.get('interval_seconds',0)<=5 for r in records[1:]),max_check_interval_seconds=max((r['interval_seconds'] for r in measured),default=None),max_foreign_cpu=max((r['cpu_cores']['foreign'] for r in measured),default=None),exit_code=code,
        accounting='utime+stime differences for each PID/start-time pair. New PIDs use their accumulated ticks when born in the interval. Processes that exit between snapshots cannot be recovered from proc; disappeared PIDs are retained. Excluded classes are reported separately.'),indent=2)+'\n')
     p=subprocess.run(['bash',str(host.HOLD),'--release'],capture_output=True,text=True)
     (host.DEST/(name+'-release.json')).write_text(json.dumps(dict(utc=host.utc(),exit_code=p.returncode,output=host.public(p.stdout+p.stderr)),indent=2)+'\n')
