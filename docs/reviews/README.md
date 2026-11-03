@@ -28,6 +28,7 @@
 | `r20-adoption-signal-review` | [r20-adoption-signal-review.md](r20-adoption-signal-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `7d34c885` | Agent-core 36 same-boot adoption refusal on changed deny / host sets, signal lifetime through Close, durability and lab proofs | 6 routed, not yet judged: 2 High / 3 Medium / 1 Low; H-1, M-1, M-2, M-3 (pre-existing), L-1 → agent-core 37; H-2 → netlab 27 | Only the report is archived; proof files remain on the review branch (`639eda6b`). |
 | `r21-adoption-fixes-review` | [r21-adoption-fixes-review.md](r21-adoption-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `7b3d7bf8` | Agent-core 37 fixes for r20 H-1, M-1, M-2, M-3 and L-1; D-141 | 0 Critical / 2 High / 2 Medium / 1 Low; returned before merge, none confirmed | Proof branch `47f75c04`; none adopted on main at this cut |
 | `r22-attribution-fixes-review` | [r22-attribution-fixes-review.md](r22-attribution-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `31862b3a` | Agent-core 38 carrying 37: r20 fixes and r21 H-1, H-2, M-1, M-2, L-1 fixes; D-141 | 0 Critical / 2 High / 3 Medium / 0 Low; returned to agent-core 39 before merge, none confirmed | Proof branch `ef78b9b7`; none adopted on main at this cut |
+| `r23-intent-fixes-review` | [r23-intent-fixes-review.md](r23-intent-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `99f93112` | Agent-core 37–39, r20/r21/r22 fixes | 5 (0 Critical, 3 High, 1 Medium, 1 Low); returned to agent-core 40 before merge, none confirmed | None; proofs on `26ffc36c` for four findings, L-1 code trace; exact archive only. |
 
 ## What Held Across the Reviews
 
@@ -308,3 +309,66 @@ returned to agent-core 39, none confirmed on main; the raw archive and
 stop-budget erratum are unchanged. r20 H-1, M-1, M-2, M-3 and L-1 and
 r21's five findings stay open on main. [Follow-up 34](../handover/follow-up-34.md)
 imports no result from r23. Every historical failure stays failed.
+
+## r23 dispositions at the follow-up 35 cutoff (2026-11-03 EST)
+
+Exact source: `r23-intent-fixes-review` worktree's `.agent/REVIEW.md`.
+Reviewer **agy `gemini-4-argon-high`** reviewed agent-core 39's delivered
+**99f93112** before merge, carrying 37's r20 fixes, 38's r21 fixes and
+39's r22 fixes. The [raw archive](r23-intent-fixes-review.md) is byte-for-byte:
+**41,791 bytes**, SHA-256
+**23f899f8e0b834994785e8c8a1f774b5aeb1a18309bf35439ba1a4f3261b25d0**.
+It carries no host path, username or secret. Findings: **0 Critical, 3 High,
+1 Medium, 1 Low**. Proof branch **r23-intent-fixes-review**, **26ffc36c**.
+H-1, H-2, H-3 and M-1 have executable proof tests. **L-1 is a code trace,
+not a named proof test** in the delivered commit; the brief's statement that
+all five have proof tests is referred back for clarification.
+
+Recommendation: **Do not merge follow-ups 37, 38, and 39 as they are; merge after
+`agent-core` fixes `H-1` (`R23-H-1`), `H-2` (`R23-H-2`), `H-3` (`R23-H-3`),
+`M-1` (`R23-M-1`), and `L-1` (`R23-L-1`).**
+
+**Returned to agent-core 40 before merge**, following delivery at **08:07 EST**.
+Agent-core 37–39 are not on main at #421; they merge together with 40 after
+its fixes. D-141 requires 40 to judge each finding before fixing it;
+**none is confirmed**. No proof files are adopted by this handover.
+
+| Finding | Disposition at #421 |
+|---|---|
+| H-1 | RETURNED — not yet judged; agent-core 40 before merge. Review reports epoch changes leaving usage_apply_intent on a superseded epoch, losing active bindings or producing false mapping_conflict gaps. |
+| H-2 | RETURNED — not yet judged; agent-core 40 before merge. Review reports handoff resetting finalDone after epoch closure, preventing preparation before next admission. |
+| H-3 | RETURNED — not yet judged; agent-core 40 before merge. Review reports pre-Apply handoff failures leaving serving/decision inconsistent and observations untruthful. |
+| M-1 | RETURNED — not yet judged; agent-core 40 before merge. Review reports a successful second baseline with an unsettled epoch and retainedPending false. |
+| L-1 | RETURNED — not yet judged; agent-core 40 before merge. Review reports inaccurate checkpoint-invalidation ordering in the follow-up 39 document; code-trace evidence. |
+
+r20 H-1, M-1, M-2, M-3 and L-1 and r21's five remain open on main.
+r22's five stay as follow-up 33 recorded them, returned to 39 and none
+confirmed on main. Those older routing labels are historical. Agent-core
+39/40 judgments are excluded; What held is review evidence, not acceptance.
+Review r24 delivered after the cutoff; its results are outside this cut.
+[Follow-up 35](../handover/follow-up-35.md) pins these boundaries.
+Every historical failure stays failed.
+
+**Errata to r23's What held (archive unchanged), verified on main at #421:**
+
+- **Renderer:** the cited node/enforce/nft.go and node/enforce/nft_test.go do
+  not exist. The renderer is [render_nft.go](../../node/enforce/render_nft.go).
+- **Generation marker:** the forward chain carries the marker rule
+  `fvpn_generation=<G> fvpn_metering=<V>` in that renderer, read by
+  `forwardGeneration` in [parse_nft.go](../../node/enforce/parse_nft.go).
+  There is no fvpn_meta_v1 comment. The cited TestRenderApply_Golden and
+  TestNftPlane_RestartInspection do not exist. The candidate and marker are
+  rendered into the same nft batch; the invented table-comment description
+  supplies no evidence for that property.
+- **Counters:** a render never deletes counters. `TestRender_SecondPassKeepsCounters`
+  in [render_test.go](../../node/enforce/render_test.go) rejects a render
+  emitting `delete counter` or `delete table`. The archive's claim that a
+  device's counters are deleted when it leaves the binding set is false,
+  as is its baseline table-deletion claim. The removed/re-added-device
+  argument rests only on the epoch baseline, which agent-core 40 checks.
+- **Stop budget:** `TestPKG01_AT07ShippedAgentStopBudget` is in
+  [packaging/installer/followup9_test.go](../../packaging/installer/followup9_test.go),
+  not under packaging/Linux/. The shipped agent unit still sets 15 s.
+- **Proof names:** several r20–r22 proof names cited in What held do not
+  exist on reviewed tip 99f93112. No absent names are reproduced here.
+  Passing proofs and owner judgments on held branches are not main's results.
