@@ -129,6 +129,22 @@ that variable the scenario test skips, so `go test ./...` stays offline.
 Pull requests run `e2e-lint` and `docker compose config`. The stack itself
 runs on `workflow_dispatch` and the nightly schedule.
 
+Between `e2e-up` and the tests, `e2e-test` runs `e2e-browser`: it installs the
+Playwright headless Chromium pinned by `apps/portal/package-lock.json`, which
+`portal-billing-return` launches through `deploy/devstack/probe-portal.mjs`. It
+is a no-op when that revision is cached, honours `PLAYWRIGHT_BROWSERS_PATH`,
+never removes other cached revisions and never uses sudo. A fresh machine also
+needs Chromium's system libraries; the nightly job installs them with
+`playwright install --with-deps`. Without the browser the scenario fails with
+`probe_error.stage` `launch` (follow-up 29).
+
+`FVPN_E2E_RUN_LABEL` selects the record directory
+`docs/e2e/runs/<UTC date>/<label>` (default `followup15`). The runner also
+writes `acceptance-summary.md` there. The nightly job uses `nightly` and
+uploads only that directory's `*.json` and `*.md` as a 7-day artifact.
+`FVPN_E2E_PORTAL_BILLING=1` with `-run '^TestE2E_PortalBilling$'` reruns just
+`portal-billing-return` and `billing` with their prerequisites on a fresh stack.
+
 ## Two stacks
 
 A second prefix can run while the first is still up only on a legal base that
