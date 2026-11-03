@@ -12486,7 +12486,7 @@ func TestHandover_Followup39Claims(t *testing.T) {
 				t.Fatal("missing cited test")
 			}
 		}
-		requireHandoverClaimTokens(t, root, index, "19,545 bytes", "12:28:35 EST", "0 Critical, 0 High, 0 Medium, 0 Low", "reviewer's recommendation", "37–43 as #429 under provisional D-150", "AQ1", "AQ2", "AQ3", "AQ4", "AQ5", "AQ6", "AQ7", "Not examined by r26", "central Go packages", "no portal validation", "Additive citation errata to r26", "no deviceDeadlines helper", "Equality to 100 ms", "does not reject a future binding", "no watchdog Check function", "meterreset.go:311–332", "206", "281", "470", "544", "149", "242")
+		requireHandoverClaimTokens(t, root, index, "19,545 bytes", "12:28:35 EST", "0 Critical, 0 High, 0 Medium, 0 Low", "reviewer's recommendation", "37–43 as #429 under provisional D-150", "AQ1", "AQ2", "AQ3", "AQ4", "AQ5", "AQ6", "AQ7", "Not examined by r26", "central Go packages", "no portal validation", "Additive citation errata to r26", "no deviceDeadlines helper", "Equality to 100 ms", "does not reject a future binding", "no watchdog Check function", "delta.go:98–125 is usageCounters", "starts at 171", "attribute starts at 432", "meterreset.go:311–332", "206", "281", "470", "544", "149", "242")
 	})
 	t.Run("43_windows_legs_and_zero_qualified_pools", func(t *testing.T) {
 		var results struct {

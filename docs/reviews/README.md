@@ -677,6 +677,9 @@ recommendation:
   Baseline. A non-serving heartbeat with a verified baseline already present
   need not trigger another Baseline. The rules are unchanged; the archive's
   unconditional `!hb.Serving` description is too broad.
+- AQ3's delta.go:98–125 is usageCounters, not planContinuity; the latter
+  starts at 171. attribute starts at 432, and the cited 457–504 range is
+  inside it; the zero-delta skip at 492–493 precedes its mapping check.
 - AQ4's switchEpoch is meterreset.go:311–332, not 255–263 (rearm). It consumes
   a pending nudge through the meter sample; the cited planSwitch and
   SameCountingInterval mechanisms are present.
