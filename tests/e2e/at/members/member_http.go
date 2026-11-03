@@ -3,20 +3,9 @@ package members
 import (
 	"encoding/json"
 	"strings"
-	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e"
 )
-
-type memberHTTPRecord struct {
-	Method      string    `json:"method"`
-	Path        string    `json:"path"`
-	Started     time.Time `json:"started_at"`
-	Completed   time.Time `json:"completed_at"`
-	Status      int       `json:"status"`
-	Code        string    `json:"error_code,omitempty"`
-	BodyExcerpt string    `json:"scrubbed_body_excerpt,omitempty"`
-}
 
 // Retain the error reason, omitting arbitrary details and all response headers.
 // Scrub before truncation so a truncated credential cannot evade redaction.

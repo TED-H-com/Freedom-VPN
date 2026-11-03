@@ -44,6 +44,16 @@ type browser struct {
 	csrf, member string
 	cred         idplogin.Cred
 }
+type memberHTTPRecord struct {
+	Method      string    `json:"method"`
+	Path        string    `json:"path"`
+	Started     time.Time `json:"started_at"`
+	Completed   time.Time `json:"completed_at"`
+	Status      int       `json:"status"`
+	Code        string    `json:"error_code,omitempty"`
+	BodyExcerpt string    `json:"scrubbed_body_excerpt,omitempty"`
+}
+
 type response struct {
 	status  int
 	headers http.Header
