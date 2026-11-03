@@ -1,0 +1,1766 @@
+{
+  "scope": "TEST ONLY same-host D-133/D-138; timestamp-only overlays; nearest-rank percentiles.",
+  "sources": {
+    "A": {
+      "commit": "567080be1969bf22782617e78c7605c2c92a52a2",
+      "tree": "a75453f25ecdef31da6941dd08a4dc45c178156e",
+      "archive_sha256": "3b0c7791dcdd4a8e0c79819bc4c55c67963805f69e775ab04c38d41f690134b9",
+      "verified_blobs": 18889,
+      "mismatches": []
+    },
+    "B": {
+      "commit": "38420dadef6ae9d0236288eef533bc1ddee0da53",
+      "tree": "6cdb55b1ef780a290f6f1331912df0f16d5f0eb9",
+      "archive_sha256": "5933e9a86278143e841e5316fdf3a8c025c6f7a24ce0d27a9356f9e8226b74fe",
+      "verified_blobs": 18939,
+      "mismatches": []
+    }
+  },
+  "window": {
+    "created": "2026-11-03T22:45:12.152947+00:00",
+    "A": "567080be1969bf22782617e78c7605c2c92a52a2",
+    "B": "38420dadef6ae9d0236288eef533bc1ddee0da53",
+    "windows": {
+      "1": [
+        "A1",
+        "B1",
+        "A2",
+        "B2"
+      ],
+      "2": [
+        "A3",
+        "B3",
+        "A4",
+        "B4"
+      ]
+    },
+    "prefix": "fvpn-w2-agent-core-f45",
+    "interval_seconds": 4.0,
+    "reservation_minutes": 30,
+    "maximum_reservations": 2,
+    "minimum_retained_whole_step_fraction": 0.5,
+    "rule": "foreign CPU >0.5 marks interval; other qualification unchanged"
+  },
+  "overlays": {
+    "A": {
+      "engine.go": "2da977908daf24ecddde341582251c9a33a3e61cc895202bc13484a780e35b1f",
+      "followup43_spans.go": "bea36a4ad8059002f6f16d2d11d9c04f80844c4a1016937a31f47bd52fedb22f",
+      "original_engine_sha256": "d3177df609bc773d27d7155a83611dfffe4138d00a59fb6017b6923064001e22"
+    },
+    "B": {
+      "engine.go": "e31a711a319ba2cf3c5dcafa1b6f43a20aadd89e7a85150cd2e363f89cd29667",
+      "followup43_spans.go": "bea36a4ad8059002f6f16d2d11d9c04f80844c4a1016937a31f47bd52fedb22f",
+      "original_engine_sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1"
+    }
+  },
+  "reservations": [
+    {
+      "window": 1,
+      "utc": "2026-11-03T22:46:49.312845+00:00",
+      "waited_seconds": 0.07151031000830699,
+      "exit": 0,
+      "stdout": "reserved for w2-agent-core until 18:16:49\n",
+      "stderr": ""
+    },
+    {
+      "window": 2,
+      "utc": "2026-11-03T22:57:53.615841+00:00",
+      "waited_seconds": 0.07001621299423277,
+      "exit": 0,
+      "stdout": "reserved for w2-agent-core until 18:27:53\n",
+      "stderr": ""
+    }
+  ],
+  "releases": [
+    {
+      "utc": "2026-11-03T22:47:53.544637+00:00",
+      "window": 1,
+      "exit": 0,
+      "stdout": "released w2-agent-core\n",
+      "stderr": ""
+    },
+    {
+      "utc": "2026-11-03T22:59:12.410622+00:00",
+      "window": 2,
+      "exit": 0,
+      "stdout": "released w2-agent-core\n",
+      "stderr": ""
+    }
+  ],
+  "completion": {
+    "utc": "2026-11-03T22:59:12.410726+00:00",
+    "stop": "suite failure outside marked operation, clock mismatch, or repeated pooled B failure",
+    "windows_attempted": 2,
+    "pooled_legs": [],
+    "production_gate": false
+  },
+  "legs": [
+    {
+      "leg": "A1",
+      "arm": "A",
+      "source": "567080be1969bf22782617e78c7605c2c92a52a2",
+      "window": 1,
+      "qualified": false,
+      "reason": "preflight failed",
+      "exit": null,
+      "utc": "2026-11-03T22:47:53.506685+00:00",
+      "evidence": ".agent/f45/timing/window1/A1",
+      "measurement": {
+        "excluded_counts": {
+          "outer_guard": 0,
+          "install_command": 0,
+          "render_to_installed": 0,
+          "whole_serving_step": 0,
+          "pre_apply_accounting": 0
+        },
+        "excluded_spans": [],
+        "clock": null,
+        "metrics": {
+          "outer_guard": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "install_command": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "render_to_installed": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "whole_serving_step": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "pre_apply_accounting": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          }
+        },
+        "values_ns": {
+          "outer_guard": [],
+          "install_command": [],
+          "render_to_installed": [],
+          "whole_serving_step": [],
+          "pre_apply_accounting": []
+        },
+        "failed_operations": [],
+        "snapshots": 0,
+        "spans": 0,
+        "sequence_gaps": [],
+        "packets": {},
+        "binaries": null,
+        "image": null,
+        "raw_pins": {
+          "result.json": {
+            "sha256": "32c3976f3328bf07666b08dd63bf455c8758f018024b275f3656b3d872786c51",
+            "bytes": 264
+          }
+        }
+      },
+      "marked_intervals": [
+        {
+          "start_ns": "69511919110913",
+          "end_ns": "69515936286803",
+          "utc": "2026-11-03T22:47:53.503300+00:00",
+          "foreign_cores": 1.3442279222693885,
+          "processes": [
+            {
+              "pid": 2836578,
+              "comm": "python3",
+              "ticks": 495
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 25
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 5
+            },
+            {
+              "pid": 2834949,
+              "comm": "agy",
+              "ticks": 2
+            },
+            {
+              "pid": 831,
+              "comm": "systemd-journal",
+              "ticks": 1
+            }
+          ]
+        }
+      ],
+      "qualification_samples": [
+        {
+          "utc": "2026-11-03T22:47:53.503300+00:00",
+          "clock": "CLOCK_MONOTONIC",
+          "mono_ns": "69515936286803",
+          "interval_start_ns": "69511919110913",
+          "interval_end_ns": "69515936286803",
+          "label": "A1",
+          "seconds": 4.017175889995997,
+          "cpu_ticks": {
+            "foreign": 540,
+            "runner_descendants": 2,
+            "own_containers": 0,
+            "kernel_threads": 3,
+            "container_runtime": 1
+          },
+          "cpu_cores": {
+            "foreign": 1.3442279222693885,
+            "runner_descendants": 0.004978621934331068,
+            "own_containers": 0.0,
+            "kernel_threads": 0.007467932901496602,
+            "container_runtime": 0.002489310967165534
+          },
+          "foreign_cpu_processes": [
+            {
+              "pid": 831,
+              "comm": "systemd-journal",
+              "ticks": 1
+            },
+            {
+              "pid": 2304,
+              "comm": "rsyslogd",
+              "ticks": 1
+            },
+            {
+              "pid": 2322,
+              "comm": "NetworkManager",
+              "ticks": 1
+            },
+            {
+              "pid": 3192,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3196,
+              "comm": "python3",
+              "ticks": 1
+            },
+            {
+              "pid": 3205,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3208,
+              "comm": "hermes",
+              "ticks": 1
+            },
+            {
+              "pid": 3224,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3991,
+              "comm": "MainThread",
+              "ticks": 1
+            },
+            {
+              "pid": 4344,
+              "comm": "grafana",
+              "ticks": 1
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 5
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 25
+            },
+            {
+              "pid": 609504,
+              "comm": "codex",
+              "ticks": 1
+            },
+            {
+              "pid": 2239763,
+              "comm": "python3",
+              "ticks": 1
+            },
+            {
+              "pid": 2834129,
+              "comm": "codex",
+              "ticks": 1
+            },
+            {
+              "pid": 2834949,
+              "comm": "agy",
+              "ticks": 2
+            },
+            {
+              "pid": 2836578,
+              "comm": "python3",
+              "ticks": 495
+            }
+          ],
+          "running_containers": [
+            {
+              "id": "157163aa0ee8eed96c1f63fbb3d4bcd2a595af36f17ff4f9abc69d587dade406",
+              "name": "fvpn-pg"
+            },
+            {
+              "id": "2380751cd16f768235d67fb22747f18b276830130234f1c53238b07de82b3117",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "bd1818a3a004002e79d72529f29ce648d8925055a08a4db32ed26fb1ec0aef49",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "99cadc3104d6427a7e98ed35673b91995689d8c4de4bb4ef1d058270c20d927c",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "945f25a22e1beb3b0ce6138ff56cfa490418e3d0058f3b81f2d83b2737fa6adb",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "b14d490d2ff9a8e1a4bffad8fff6e39c04246cf8a2eedf5d783331a244dacc7e",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "8e7b2b4f4c2451a716c8233274b5657ec76202576c4329f2e2dea8bb397fb5a0",
+              "name": "foreign-non-lane-container"
+            }
+          ],
+          "foreign_containers": [],
+          "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  0 2997632 19520028 2987060 153486256   16   57 27161 37754 22328   20  3  2 94  1  0  0\n",
+          "unreadable": [],
+          "departed_pids": [],
+          "marked": true,
+          "top_foreign_processes": [
+            {
+              "pid": 2836578,
+              "comm": "python3",
+              "ticks": 495
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 25
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 5
+            },
+            {
+              "pid": 2834949,
+              "comm": "agy",
+              "ticks": 2
+            },
+            {
+              "pid": 831,
+              "comm": "systemd-journal",
+              "ticks": 1
+            }
+          ],
+          "qualified": false,
+          "foreign_suite_count": 1
+        }
+      ]
+    },
+    {
+      "leg": "A3",
+      "arm": "A",
+      "source": "567080be1969bf22782617e78c7605c2c92a52a2",
+      "window": 2,
+      "started": "2026-11-03T22:58:57.819684+00:00",
+      "completed": "2026-11-03T22:59:11.811698+00:00",
+      "seconds": 13.992013965005754,
+      "exit": 2,
+      "qualified": true,
+      "reason": "",
+      "samples": 4,
+      "evidence": ".agent/f45/timing/window2/A3",
+      "timing_runner_sha256": "d452a2e16757e6c3b2261dbf3b63c31affcd00e3b50d3565925c5617c72e79b9",
+      "passed_scenarios": [],
+      "failed_scenarios": [],
+      "d087_d104_failed": false,
+      "inventory": {
+        "containers": [],
+        "images": [],
+        "networks": [],
+        "volumes": []
+      },
+      "pooled": false,
+      "pool_reason": "no whole-serving-Step spans",
+      "retained_whole_steps": 0,
+      "excluded_whole_steps": 0,
+      "scenario_failures": [],
+      "stop_item": true,
+      "measurement": {
+        "excluded_counts": {
+          "outer_guard": 0,
+          "install_command": 0,
+          "render_to_installed": 0,
+          "whole_serving_step": 0,
+          "pre_apply_accounting": 0
+        },
+        "excluded_spans": [],
+        "clock": {
+          "clock": "CLOCK_MONOTONIC",
+          "matched": true,
+          "measurements": [
+            {
+              "utc": "2026-11-03T22:59:09.333447+00:00",
+              "host_before_ns": "70191699408664",
+              "host_after_ns": "70191784819417",
+              "host_time_namespace": "time:[4026531834]",
+              "host_timens_offsets": "monotonic           0         0\nboottime            0         0\n",
+              "probe": {
+                "after_ns": "70191783499930",
+                "before_ns": "70191783499188",
+                "mono_ns": "70191783499787",
+                "time_namespace": "time:[4026534099]",
+                "timens_offsets": "monotonic           0         0\nboottime            0         0\n"
+              },
+              "matched": true
+            },
+            {
+              "utc": "2026-11-03T22:59:09.419207+00:00",
+              "host_before_ns": "70191784909686",
+              "host_after_ns": "70191870580992",
+              "host_time_namespace": "time:[4026531834]",
+              "host_timens_offsets": "monotonic           0         0\nboottime            0         0\n",
+              "probe": {
+                "after_ns": "70191868939437",
+                "before_ns": "70191868938587",
+                "mono_ns": "70191868939289",
+                "time_namespace": "time:[4026534099]",
+                "timens_offsets": "monotonic           0         0\nboottime            0         0\n"
+              },
+              "matched": true
+            },
+            {
+              "utc": "2026-11-03T22:59:09.504494+00:00",
+              "host_before_ns": "70191870678941",
+              "host_after_ns": "70191955866822",
+              "host_time_namespace": "time:[4026531834]",
+              "host_timens_offsets": "monotonic           0         0\nboottime            0         0\n",
+              "probe": {
+                "after_ns": "70191954113843",
+                "before_ns": "70191954113195",
+                "mono_ns": "70191954113686",
+                "time_namespace": "time:[4026534099]",
+                "timens_offsets": "monotonic           0         0\nboottime            0         0\n"
+              },
+              "matched": true
+            }
+          ]
+        },
+        "metrics": {
+          "outer_guard": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "install_command": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "render_to_installed": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "whole_serving_step": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          },
+          "pre_apply_accounting": {
+            "count": 0,
+            "p50_ns": null,
+            "p90_ns": null,
+            "p99_ns": null,
+            "max_ns": null
+          }
+        },
+        "values_ns": {
+          "outer_guard": [],
+          "install_command": [],
+          "render_to_installed": [],
+          "whole_serving_step": [],
+          "pre_apply_accounting": []
+        },
+        "failed_operations": [],
+        "snapshots": 0,
+        "spans": 0,
+        "sequence_gaps": [],
+        "packets": {},
+        "binaries": {
+          "fvpn-agent": "27e9e592c1176b325d5ca4ad7c07a806bcaef65ca28157f9fdf9402ea1b11d8d",
+          "fvpn-watchdog": "80088179cc80f963b15984e77b1a88a3972877f22dee7187ad3406790c894313",
+          "fvpn-labcontrol": "336faca23e599da379baef3d957877bbe148a40eceb5b9c109818aceaaf6fef8"
+        },
+        "image": {
+          "image_id": "sha256:c29b1327c64eae3681a520fc180b8de051a34c621ec7108764e2f57a3867c878"
+        },
+        "raw_pins": {
+          "binaries.json": {
+            "sha256": "5fdb90659dfaf19aa09c55dbb0db4a07d947f13c00f05beede9ffa0557ef7204",
+            "bytes": 263
+          },
+          "clock.json": {
+            "sha256": "4b505a640f990603f9612819b45f18ec023cdb07e65e436ddb902aecdfd3d525",
+            "bytes": 1870
+          },
+          "fixture-image.json": {
+            "sha256": "06c55aef738d93d44cdb01ae38016956261f3feccab18614500cd19631903247",
+            "bytes": 92
+          },
+          "result.json": {
+            "sha256": "806431bed09055c8204a3a8247fda802561933618c9af6a15e9040553a782153",
+            "bytes": 796
+          },
+          "span-capture.json": {
+            "sha256": "331dd85020eaf7c911e3417ee78f7ff17a0d1257e2a5c310696fc702d1c3f16f",
+            "bytes": 16
+          },
+          "spans.jsonl": {
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "bytes": 0
+          },
+          "suite.log": {
+            "sha256": "ce1ab9abd8ecab23037e10658faaacfac796c71dfe8e2e20d4a5b833f807bdc8",
+            "bytes": 5968
+          }
+        }
+      },
+      "marked_intervals": [
+        {
+          "start_ns": "70192287273182",
+          "end_ns": "70194241303721",
+          "utc": "2026-11-03T22:59:11.808304+00:00",
+          "foreign_cores": 0.5271156102408292,
+          "processes": [
+            {
+              "pid": 2854297,
+              "comm": "python3",
+              "ticks": 76
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 3
+            },
+            {
+              "pid": 2834949,
+              "comm": "agy",
+              "ticks": 3
+            },
+            {
+              "pid": 1,
+              "comm": "systemd",
+              "ticks": 2
+            },
+            {
+              "pid": 3013,
+              "comm": "systemd",
+              "ticks": 2
+            }
+          ]
+        }
+      ],
+      "qualification_samples": [
+        {
+          "utc": "2026-11-03T22:58:57.814853+00:00",
+          "clock": "CLOCK_MONOTONIC",
+          "mono_ns": "70180248559292",
+          "interval_start_ns": "70176230447559",
+          "interval_end_ns": "70180248559292",
+          "label": "A3",
+          "seconds": 4.018111732992111,
+          "cpu_ticks": {
+            "foreign": 37,
+            "runner_descendants": 3,
+            "own_containers": 0,
+            "kernel_threads": 1,
+            "container_runtime": 0
+          },
+          "cpu_cores": {
+            "foreign": 0.09208305407786092,
+            "runner_descendants": 0.007466193573880615,
+            "own_containers": 0.0,
+            "kernel_threads": 0.0024887311912935384,
+            "container_runtime": 0.0
+          },
+          "foreign_cpu_processes": [
+            {
+              "pid": 1,
+              "comm": "systemd",
+              "ticks": 1
+            },
+            {
+              "pid": 2125,
+              "comm": "dbus-daemon",
+              "ticks": 1
+            },
+            {
+              "pid": 2142,
+              "comm": "polkitd",
+              "ticks": 1
+            },
+            {
+              "pid": 2152,
+              "comm": "prometheus-node",
+              "ticks": 5
+            },
+            {
+              "pid": 2984,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3192,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3208,
+              "comm": "hermes",
+              "ticks": 2
+            },
+            {
+              "pid": 3224,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3235,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3474,
+              "comm": "bat-server",
+              "ticks": 1
+            },
+            {
+              "pid": 3991,
+              "comm": "MainThread",
+              "ticks": 1
+            },
+            {
+              "pid": 4344,
+              "comm": "grafana",
+              "ticks": 2
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 3
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 8
+            },
+            {
+              "pid": 610690,
+              "comm": "codex",
+              "ticks": 1
+            },
+            {
+              "pid": 696768,
+              "comm": "agy",
+              "ticks": 1
+            },
+            {
+              "pid": 2239763,
+              "comm": "python3",
+              "ticks": 1
+            },
+            {
+              "pid": 2834129,
+              "comm": "codex",
+              "ticks": 1
+            },
+            {
+              "pid": 2834949,
+              "comm": "agy",
+              "ticks": 4
+            }
+          ],
+          "running_containers": [
+            {
+              "id": "157163aa0ee8eed96c1f63fbb3d4bcd2a595af36f17ff4f9abc69d587dade406",
+              "name": "fvpn-pg"
+            },
+            {
+              "id": "2380751cd16f768235d67fb22747f18b276830130234f1c53238b07de82b3117",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "bd1818a3a004002e79d72529f29ce648d8925055a08a4db32ed26fb1ec0aef49",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "99cadc3104d6427a7e98ed35673b91995689d8c4de4bb4ef1d058270c20d927c",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "945f25a22e1beb3b0ce6138ff56cfa490418e3d0058f3b81f2d83b2737fa6adb",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "b14d490d2ff9a8e1a4bffad8fff6e39c04246cf8a2eedf5d783331a244dacc7e",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "8e7b2b4f4c2451a716c8233274b5657ec76202576c4329f2e2dea8bb397fb5a0",
+              "name": "foreign-non-lane-container"
+            }
+          ],
+          "foreign_containers": [],
+          "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  0 3006568 23075732 2996660 150671520   15   57 27059 37520 22258   20  3  2 94  1  0  0\n",
+          "unreadable": [],
+          "departed_pids": [],
+          "marked": false,
+          "top_foreign_processes": [
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 8
+            },
+            {
+              "pid": 2152,
+              "comm": "prometheus-node",
+              "ticks": 5
+            },
+            {
+              "pid": 2834949,
+              "comm": "agy",
+              "ticks": 4
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 3
+            },
+            {
+              "pid": 3208,
+              "comm": "hermes",
+              "ticks": 2
+            }
+          ],
+          "qualified": true,
+          "foreign_suite_count": 0
+        },
+        {
+          "utc": "2026-11-03T22:59:01.828553+00:00",
+          "clock": "CLOCK_MONOTONIC",
+          "mono_ns": "70184260694446",
+          "interval_start_ns": "70180248559292",
+          "interval_end_ns": "70184260694446",
+          "label": "A3",
+          "seconds": 4.012135154000134,
+          "cpu_ticks": {
+            "foreign": 32,
+            "runner_descendants": 57,
+            "own_containers": 0,
+            "kernel_threads": 57,
+            "container_runtime": 0
+          },
+          "cpu_cores": {
+            "foreign": 0.07975803100275851,
+            "runner_descendants": 0.14206899272366358,
+            "own_containers": 0.0,
+            "kernel_threads": 0.14206899272366358,
+            "container_runtime": 0.0
+          },
+          "foreign_cpu_processes": [
+            {
+              "pid": 2537,
+              "comm": "tailscaled",
+              "ticks": 1
+            },
+            {
+              "pid": 3192,
+              "comm": "cloudflared",
+              "ticks": 2
+            },
+            {
+              "pid": 3196,
+              "comm": "python3",
+              "ticks": 2
+            },
+            {
+              "pid": 3205,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3224,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3474,
+              "comm": "bat-server",
+              "ticks": 1
+            },
+            {
+              "pid": 3475,
+              "comm": "python",
+              "ticks": 1
+            },
+            {
+              "pid": 3611,
+              "comm": "gnome-shell",
+              "ticks": 1
+            },
+            {
+              "pid": 3991,
+              "comm": "MainThread",
+              "ticks": 1
+            },
+            {
+              "pid": 4344,
+              "comm": "grafana",
+              "ticks": 2
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 2
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 12
+            },
+            {
+              "pid": 938588,
+              "comm": "python",
+              "ticks": 1
+            },
+            {
+              "pid": 2831393,
+              "comm": "codex",
+              "ticks": 1
+            },
+            {
+              "pid": 2834562,
+              "comm": "codex",
+              "ticks": 1
+            },
+            {
+              "pid": 2834949,
+              "comm": "agy",
+              "ticks": 2
+            }
+          ],
+          "running_containers": [
+            {
+              "id": "157163aa0ee8eed96c1f63fbb3d4bcd2a595af36f17ff4f9abc69d587dade406",
+              "name": "fvpn-pg"
+            },
+            {
+              "id": "2380751cd16f768235d67fb22747f18b276830130234f1c53238b07de82b3117",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "bd1818a3a004002e79d72529f29ce648d8925055a08a4db32ed26fb1ec0aef49",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "99cadc3104d6427a7e98ed35673b91995689d8c4de4bb4ef1d058270c20d927c",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "945f25a22e1beb3b0ce6138ff56cfa490418e3d0058f3b81f2d83b2737fa6adb",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "b14d490d2ff9a8e1a4bffad8fff6e39c04246cf8a2eedf5d783331a244dacc7e",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "8e7b2b4f4c2451a716c8233274b5657ec76202576c4329f2e2dea8bb397fb5a0",
+              "name": "foreign-non-lane-container"
+            }
+          ],
+          "foreign_containers": [],
+          "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  0 3006568 22438048 2996752 150830628   15   57 27058 37518 22259   20  3  2 94  1  0  0\n",
+          "unreadable": [],
+          "departed_pids": [],
+          "marked": false,
+          "top_foreign_processes": [
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 12
+            },
+            {
+              "pid": 3192,
+              "comm": "cloudflared",
+              "ticks": 2
+            },
+            {
+              "pid": 3196,
+              "comm": "python3",
+              "ticks": 2
+            },
+            {
+              "pid": 4344,
+              "comm": "grafana",
+              "ticks": 2
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 2
+            }
+          ],
+          "qualified": true,
+          "foreign_suite_count": 0
+        },
+        {
+          "utc": "2026-11-03T22:59:05.843373+00:00",
+          "clock": "CLOCK_MONOTONIC",
+          "mono_ns": "70188274905654",
+          "interval_start_ns": "70184260694446",
+          "interval_end_ns": "70188274905654",
+          "label": "A3",
+          "seconds": 4.0142112080066,
+          "cpu_ticks": {
+            "foreign": 47,
+            "runner_descendants": 6,
+            "own_containers": 2,
+            "kernel_threads": 5,
+            "container_runtime": 56
+          },
+          "cpu_cores": {
+            "foreign": 0.11708402364642773,
+            "runner_descendants": 0.014946896635714179,
+            "own_containers": 0.004982298878571393,
+            "kernel_threads": 0.012455747196428484,
+            "container_runtime": 0.139504368599999
+          },
+          "foreign_cpu_processes": [
+            {
+              "pid": 1,
+              "comm": "systemd",
+              "ticks": 2
+            },
+            {
+              "pid": 831,
+              "comm": "systemd-journal",
+              "ticks": 1
+            },
+            {
+              "pid": 888,
+              "comm": "systemd-udevd",
+              "ticks": 1
+            },
+            {
+              "pid": 2125,
+              "comm": "dbus-daemon",
+              "ticks": 2
+            },
+            {
+              "pid": 2164,
+              "comm": "accounts-daemon",
+              "ticks": 1
+            },
+            {
+              "pid": 2174,
+              "comm": "udisksd",
+              "ticks": 2
+            },
+            {
+              "pid": 2322,
+              "comm": "NetworkManager",
+              "ticks": 1
+            },
+            {
+              "pid": 2537,
+              "comm": "tailscaled",
+              "ticks": 6
+            },
+            {
+              "pid": 3013,
+              "comm": "systemd",
+              "ticks": 1
+            },
+            {
+              "pid": 3102,
+              "comm": "systemd",
+              "ticks": 2
+            },
+            {
+              "pid": 3192,
+              "comm": "cloudflared",
+              "ticks": 2
+            },
+            {
+              "pid": 3196,
+              "comm": "python3",
+              "ticks": 1
+            },
+            {
+              "pid": 3201,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3204,
+              "comm": "uvicorn",
+              "ticks": 1
+            },
+            {
+              "pid": 3205,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3208,
+              "comm": "hermes",
+              "ticks": 2
+            },
+            {
+              "pid": 3474,
+              "comm": "bat-server",
+              "ticks": 1
+            },
+            {
+              "pid": 4344,
+              "comm": "grafana",
+              "ticks": 1
+            },
+            {
+              "pid": 5363,
+              "comm": "gsd-sharing",
+              "ticks": 1
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 4
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 8
+            },
+            {
+              "pid": 2834129,
+              "comm": "codex",
+              "ticks": 1
+            },
+            {
+              "pid": 2834562,
+              "comm": "codex",
+              "ticks": 1
+            },
+            {
+              "pid": 2834949,
+              "comm": "agy",
+              "ticks": 2
+            },
+            {
+              "pid": 3509037,
+              "comm": "sshd-session",
+              "ticks": 1
+            }
+          ],
+          "running_containers": [
+            {
+              "id": "157163aa0ee8eed96c1f63fbb3d4bcd2a595af36f17ff4f9abc69d587dade406",
+              "name": "fvpn-pg"
+            },
+            {
+              "id": "2380751cd16f768235d67fb22747f18b276830130234f1c53238b07de82b3117",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "bd1818a3a004002e79d72529f29ce648d8925055a08a4db32ed26fb1ec0aef49",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "99cadc3104d6427a7e98ed35673b91995689d8c4de4bb4ef1d058270c20d927c",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "945f25a22e1beb3b0ce6138ff56cfa490418e3d0058f3b81f2d83b2737fa6adb",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "b14d490d2ff9a8e1a4bffad8fff6e39c04246cf8a2eedf5d783331a244dacc7e",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "8e7b2b4f4c2451a716c8233274b5657ec76202576c4329f2e2dea8bb397fb5a0",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "3008a0ecdad49559ae33ac0bfc931d9a18e06438a47551db53c89f230d45c882",
+              "name": "fvpn-w2-agent-core-f45"
+            }
+          ],
+          "foreign_containers": [],
+          "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  0 3006568 22466428 2996780 150813504   15   57 27056 37518 22258   20  3  2 94  1  0  0\n",
+          "unreadable": [],
+          "departed_pids": [
+            2852716,
+            2852717,
+            2852718,
+            2852877,
+            2852878,
+            2853032
+          ],
+          "marked": false,
+          "top_foreign_processes": [
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 8
+            },
+            {
+              "pid": 2537,
+              "comm": "tailscaled",
+              "ticks": 6
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 4
+            },
+            {
+              "pid": 1,
+              "comm": "systemd",
+              "ticks": 2
+            },
+            {
+              "pid": 2125,
+              "comm": "dbus-daemon",
+              "ticks": 2
+            }
+          ],
+          "qualified": true,
+          "foreign_suite_count": 0
+        },
+        {
+          "utc": "2026-11-03T22:59:09.855348+00:00",
+          "clock": "CLOCK_MONOTONIC",
+          "mono_ns": "70192287273182",
+          "interval_start_ns": "70188274905654",
+          "interval_end_ns": "70192287273182",
+          "label": "A3",
+          "seconds": 4.012367527990136,
+          "cpu_ticks": {
+            "foreign": 40,
+            "runner_descendants": 26,
+            "own_containers": 0,
+            "kernel_threads": 1,
+            "container_runtime": 10
+          },
+          "cpu_cores": {
+            "foreign": 0.09969176482702892,
+            "runner_descendants": 0.06479964713756879,
+            "own_containers": 0.0,
+            "kernel_threads": 0.002492294120675723,
+            "container_runtime": 0.02492294120675723
+          },
+          "foreign_cpu_processes": [
+            {
+              "pid": 884,
+              "comm": "systemd-oomd",
+              "ticks": 1
+            },
+            {
+              "pid": 888,
+              "comm": "systemd-udevd",
+              "ticks": 1
+            },
+            {
+              "pid": 2984,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3192,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3195,
+              "comm": "python3",
+              "ticks": 1
+            },
+            {
+              "pid": 3205,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3235,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3474,
+              "comm": "bat-server",
+              "ticks": 1
+            },
+            {
+              "pid": 4344,
+              "comm": "grafana",
+              "ticks": 2
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 3
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 11
+            },
+            {
+              "pid": 2239763,
+              "comm": "python3",
+              "ticks": 12
+            },
+            {
+              "pid": 2831393,
+              "comm": "codex",
+              "ticks": 2
+            },
+            {
+              "pid": 2834562,
+              "comm": "codex",
+              "ticks": 2
+            }
+          ],
+          "running_containers": [
+            {
+              "id": "157163aa0ee8eed96c1f63fbb3d4bcd2a595af36f17ff4f9abc69d587dade406",
+              "name": "fvpn-pg"
+            },
+            {
+              "id": "2380751cd16f768235d67fb22747f18b276830130234f1c53238b07de82b3117",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "bd1818a3a004002e79d72529f29ce648d8925055a08a4db32ed26fb1ec0aef49",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "99cadc3104d6427a7e98ed35673b91995689d8c4de4bb4ef1d058270c20d927c",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "945f25a22e1beb3b0ce6138ff56cfa490418e3d0058f3b81f2d83b2737fa6adb",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "b14d490d2ff9a8e1a4bffad8fff6e39c04246cf8a2eedf5d783331a244dacc7e",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "8e7b2b4f4c2451a716c8233274b5657ec76202576c4329f2e2dea8bb397fb5a0",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "3008a0ecdad49559ae33ac0bfc931d9a18e06438a47551db53c89f230d45c882",
+              "name": "fvpn-w2-agent-core-f45"
+            }
+          ],
+          "foreign_containers": [],
+          "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  0 3006568 22579816 2996784 150856440   15   57 27055 37516 22258   20  3  2 94  1  0  0\n",
+          "unreadable": [],
+          "departed_pids": [
+            2852712,
+            2853239,
+            2853249,
+            2853324,
+            2853325,
+            2853327,
+            2853328,
+            2853329,
+            2853330,
+            2853331,
+            2853332,
+            2853334,
+            2853335,
+            2853336,
+            2853337,
+            2853338,
+            2853340,
+            2853341,
+            2853342,
+            2853343,
+            2853344,
+            2853346,
+            2853347,
+            2853348,
+            2853349,
+            2853350,
+            2853352,
+            2853353,
+            2853354,
+            2853355,
+            2853356,
+            2853358,
+            2853359,
+            2853360,
+            2853361,
+            2853362,
+            2853364,
+            2853365,
+            2853366,
+            2853367,
+            2853368,
+            2853369,
+            2853370,
+            2853371,
+            2853373,
+            2853374,
+            2853375,
+            2853376,
+            2853377,
+            2853398,
+            2853421,
+            2853741
+          ],
+          "marked": false,
+          "top_foreign_processes": [
+            {
+              "pid": 2239763,
+              "comm": "python3",
+              "ticks": 12
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 11
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 3
+            },
+            {
+              "pid": 4344,
+              "comm": "grafana",
+              "ticks": 2
+            },
+            {
+              "pid": 2831393,
+              "comm": "codex",
+              "ticks": 2
+            }
+          ],
+          "qualified": true,
+          "foreign_suite_count": 0
+        },
+        {
+          "utc": "2026-11-03T22:59:11.808304+00:00",
+          "clock": "CLOCK_MONOTONIC",
+          "mono_ns": "70194241303721",
+          "interval_start_ns": "70192287273182",
+          "interval_end_ns": "70194241303721",
+          "label": "A3",
+          "seconds": 1.9540305390110007,
+          "cpu_ticks": {
+            "foreign": 103,
+            "runner_descendants": 4,
+            "own_containers": 0,
+            "kernel_threads": 2,
+            "container_runtime": 15
+          },
+          "cpu_cores": {
+            "foreign": 0.5271156102408292,
+            "runner_descendants": 0.02047050913556618,
+            "own_containers": 0.0,
+            "kernel_threads": 0.01023525456778309,
+            "container_runtime": 0.07676440925837318
+          },
+          "foreign_cpu_processes": [
+            {
+              "pid": 1,
+              "comm": "systemd",
+              "ticks": 2
+            },
+            {
+              "pid": 888,
+              "comm": "systemd-udevd",
+              "ticks": 1
+            },
+            {
+              "pid": 2125,
+              "comm": "dbus-daemon",
+              "ticks": 1
+            },
+            {
+              "pid": 2322,
+              "comm": "NetworkManager",
+              "ticks": 1
+            },
+            {
+              "pid": 2537,
+              "comm": "tailscaled",
+              "ticks": 1
+            },
+            {
+              "pid": 3013,
+              "comm": "systemd",
+              "ticks": 2
+            },
+            {
+              "pid": 3102,
+              "comm": "systemd",
+              "ticks": 1
+            },
+            {
+              "pid": 3192,
+              "comm": "cloudflared",
+              "ticks": 1
+            },
+            {
+              "pid": 3208,
+              "comm": "hermes",
+              "ticks": 1
+            },
+            {
+              "pid": 3474,
+              "comm": "bat-server",
+              "ticks": 1
+            },
+            {
+              "pid": 3611,
+              "comm": "gnome-shell",
+              "ticks": 2
+            },
+            {
+              "pid": 34216,
+              "comm": "claude",
+              "ticks": 1
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 3
+            },
+            {
+              "pid": 2831393,
+              "comm": "codex",
+              "ticks": 2
+            },
+            {
+              "pid": 2832075,
+              "comm": "codex-code-mode",
+              "ticks": 1
+            },
+            {
+              "pid": 2834129,
+              "comm": "codex",
+              "ticks": 2
+            },
+            {
+              "pid": 2834949,
+              "comm": "agy",
+              "ticks": 3
+            },
+            {
+              "pid": 2854297,
+              "comm": "python3",
+              "ticks": 76
+            },
+            {
+              "pid": 3509037,
+              "comm": "sshd-session",
+              "ticks": 1
+            }
+          ],
+          "running_containers": [
+            {
+              "id": "157163aa0ee8eed96c1f63fbb3d4bcd2a595af36f17ff4f9abc69d587dade406",
+              "name": "fvpn-pg"
+            },
+            {
+              "id": "2380751cd16f768235d67fb22747f18b276830130234f1c53238b07de82b3117",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "bd1818a3a004002e79d72529f29ce648d8925055a08a4db32ed26fb1ec0aef49",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "99cadc3104d6427a7e98ed35673b91995689d8c4de4bb4ef1d058270c20d927c",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "945f25a22e1beb3b0ce6138ff56cfa490418e3d0058f3b81f2d83b2737fa6adb",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "b14d490d2ff9a8e1a4bffad8fff6e39c04246cf8a2eedf5d783331a244dacc7e",
+              "name": "foreign-non-lane-container"
+            },
+            {
+              "id": "8e7b2b4f4c2451a716c8233274b5657ec76202576c4329f2e2dea8bb397fb5a0",
+              "name": "foreign-non-lane-container"
+            }
+          ],
+          "foreign_containers": [],
+          "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 1  0 3006568 22426028 2996808 150759628   15   57 27054 37516 22258   20  3  2 94  1  0  0\n",
+          "unreadable": [],
+          "departed_pids": [
+            2852421,
+            2852601,
+            2852607,
+            2853291,
+            2853313,
+            2853585,
+            2853592,
+            2853593,
+            2853594,
+            2853595,
+            2853596,
+            2853601,
+            2853604,
+            2853612,
+            2853615,
+            2853622,
+            2853625,
+            2853632,
+            2853635,
+            2853642,
+            2853645,
+            2853700,
+            2853701,
+            2853702,
+            2853703,
+            2853704,
+            2853705,
+            2853706,
+            2853707,
+            2853708,
+            2853709,
+            2853710,
+            2853712,
+            2853713,
+            2853716,
+            2853718,
+            2853720,
+            2853812,
+            2853928,
+            2853965
+          ],
+          "marked": true,
+          "top_foreign_processes": [
+            {
+              "pid": 2854297,
+              "comm": "python3",
+              "ticks": 76
+            },
+            {
+              "pid": 601179,
+              "comm": "MainThread",
+              "ticks": 3
+            },
+            {
+              "pid": 2834949,
+              "comm": "agy",
+              "ticks": 3
+            },
+            {
+              "pid": 1,
+              "comm": "systemd",
+              "ticks": 2
+            },
+            {
+              "pid": 3013,
+              "comm": "systemd",
+              "ticks": 2
+            }
+          ],
+          "qualified": true,
+          "foreign_suite_count": 0
+        }
+      ]
+    }
+  ],
+  "pooled": {
+    "A": {
+      "pooled_legs": [],
+      "metrics": {
+        "outer_guard": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "install_command": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "render_to_installed": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "whole_serving_step": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "pre_apply_accounting": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        }
+      },
+      "excluded_counts": {
+        "outer_guard": 0,
+        "install_command": 0,
+        "render_to_installed": 0,
+        "whole_serving_step": 0,
+        "pre_apply_accounting": 0
+      },
+      "all_leg_excluded_counts": {
+        "outer_guard": 0,
+        "install_command": 0,
+        "render_to_installed": 0,
+        "whole_serving_step": 0,
+        "pre_apply_accounting": 0
+      },
+      "failed_operations": []
+    },
+    "B": {
+      "pooled_legs": [],
+      "metrics": {
+        "outer_guard": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "install_command": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "render_to_installed": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "whole_serving_step": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        },
+        "pre_apply_accounting": {
+          "count": 0,
+          "p50_ns": null,
+          "p90_ns": null,
+          "p99_ns": null,
+          "max_ns": null
+        }
+      },
+      "excluded_counts": {
+        "outer_guard": 0,
+        "install_command": 0,
+        "render_to_installed": 0,
+        "whole_serving_step": 0,
+        "pre_apply_accounting": 0
+      },
+      "all_leg_excluded_counts": {
+        "outer_guard": 0,
+        "install_command": 0,
+        "render_to_installed": 0,
+        "whole_serving_step": 0,
+        "pre_apply_accounting": 0
+      },
+      "failed_operations": []
+    }
+  },
+  "monitoring_pins": {
+    "admission.jsonl": {
+      "sha256": "7e476cbe3c5f502e78ff7ef9a8cb83e948a37e1321a066a1af49613d0a260a51",
+      "bytes": 5548
+    },
+    "container-events.jsonl": {
+      "sha256": "aa0efddc3932f26de16516c624ac7746a13fbf88d1a9dcea49585b4700d2a7c3",
+      "bytes": 20051
+    },
+    "input-verification.jsonl": {
+      "sha256": "e457ad3cb8f72c5e238ba79180a011ee4f767386c33f267f17b1b656c5dcb185",
+      "bytes": 351
+    },
+    "releases.jsonl": {
+      "sha256": "789d136aa8f5b69efffb1288633b0cbc503dc6016eae29af54434d44d8a239e6",
+      "bytes": 240
+    },
+    "reservations.jsonl": {
+      "sha256": "ea5f9d6b6c70ccf17ca0537d8734e4c3015b68cb2de396f489cc8d802199e222",
+      "bytes": 356
+    },
+    "samples.jsonl": {
+      "sha256": "7856ffb2a4d44ecca8b6730ad3de0588b458a935b1af92568cd60e1b9b00880d",
+      "bytes": 21059
+    },
+    "windows.jsonl": {
+      "sha256": "1587b4f04db688d6410bd802753f496eeb74300c496dde4fef121e285f1e9a00",
+      "bytes": 114
+    }
+  },
+  "monitoring_limit": "Successive /proc PID/start samples cannot reconstruct CPU for processes that start and exit entirely between samples; departed PIDs are retained."
+}

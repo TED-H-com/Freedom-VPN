@@ -35,6 +35,7 @@ func (l *live) startSibling(r *record) *siblingCapture {
 	})
 	for _, role := range []string{"member", "node"} {
 		if _, e := l.inside(role, "rm", "-f", "/tmp/fvpn-members-sibling-stop"); e != nil {
+			stopSiblingEarly(&c.finished, c.stopSamples, func() { c.native.stop() })
 			return nil
 		}
 	}
@@ -61,6 +62,7 @@ func (l *live) startSibling(r *record) *siblingCapture {
 	c.observer, c.observe, err = start("node", "sibling-observe")
 	if err != nil {
 		r.block("D-135 node recorder unavailable")
+		stopSiblingEarly(&c.finished, c.stopSamples, func() { c.native.stop() })
 		return nil
 	}
 	l.t.Cleanup(func() {

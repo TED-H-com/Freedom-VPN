@@ -24,6 +24,8 @@ Orchestrator note 1 (2026-11-03 15:58 EST) authorized this second run after arch
 
 [Complete results](summary.md), [each qualification condition](F18-D146.json). F11-01 remains OPEN/upstream-dependent; owner-resource groups and all historical statuses remain unchanged.
 
+**2026-11-03 (Follow-up 19, after run `50117c68`, commits `6186fd60` / `306a1969`):** `finiteExpiry` (`tests/e2e/at/members/finite_grant_test.go`, `tests/e2e/at/members/grant_restore.go`) now restores member `A` (`3 authorized, 0 pending`) via `POST /api/v1/admin/members/{id}/grants` on both early-return paths (after failed `replaceFiniteGrant` and after failed `traceForwarding`), keeping the original failed check unchanged, recording `"finite expiry early-return restoration HTTP"` and `"finite expiry early-return restored 3/0"`, and leaving the normal path's single restoration unchanged. Audited early-return restorations in `tests/e2e/at/members/reauthorization_test.go`, `tests/e2e/at/members/populated_hold_test.go`, `tests/e2e/at/members/devices_billing_test.go`, and `tests/e2e/at/members/sibling_live_test.go` are covered offline by `tests/e2e/at/members/grant_restore_test.go`. Committed run records for run 1 (`118271c1`) and run 2 (`50117c68`) are unchanged; no assembled run was performed in Follow-up 19.
+
 ---
 
 # Follow-up 16 limits

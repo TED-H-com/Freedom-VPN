@@ -1,0 +1,38 @@
+{
+  "window": 2,
+  "declaration_commit": "2bc7083e",
+  "reservations": [
+    {
+      "window": 2,
+      "utc": "2026-11-03T22:57:53.615841+00:00",
+      "waited_seconds": 0.07001621299423277,
+      "exit": 0,
+      "stdout": "reserved for w2-agent-core until 18:27:53\n",
+      "stderr": ""
+    }
+  ],
+  "releases": [
+    {
+      "utc": "2026-11-03T22:59:12.410622+00:00",
+      "window": 2,
+      "exit": 0,
+      "stdout": "released w2-agent-core\n",
+      "stderr": ""
+    }
+  ],
+  "gap_after_previous_release_seconds": 600.071204,
+  "cause": "Frozen harness CombinedOutput combines wrapper stderr free with Docker stdout true; prepareLab rejects running state before scenarios.",
+  "production_failure": false,
+  "clock_matched": true,
+  "synthetic_probe": {
+    "scope": "TEST ONLY synthetic executables; no Docker or scenarios",
+    "separate": {
+      "stdout": "true\n",
+      "stderr": "free\n"
+    },
+    "combined": "free\ntrue\n",
+    "frozen_harness_accepts": false,
+    "runner_sha256": "d452a2e16757e6c3b2261dbf3b63c31affcd00e3b50d3565925c5617c72e79b9"
+  },
+  "raw_driver_sha256": "67b23d3cd0eefe67fb13d24a9852097d6675109d6a354ba993f641ebe78b7a31"
+}
