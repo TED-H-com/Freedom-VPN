@@ -1,0 +1,104 @@
+docker build -t fvpn-w1-netlab-f30:lab <worktree>/tests/netlab
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 965B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 1.72kB done
+#4 DONE 0.0s
+
+#5 [1/4] FROM docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#5 resolve docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852 0.0s done
+#5 DONE 0.0s
+
+#6 [2/4] RUN apt-get update     && apt-get install -y --no-install-recommends         nftables         iproute2         wireguard-tools         conntrack         iperf3         tcpdump         ethtool         python3         iputils-ping         procps         ca-certificates     && rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [3/4] RUN cp -a /usr/bin/wg /usr/local/bin/wg
+#7 CACHED
+
+#8 [4/4] COPY scripts/ /opt/netlab/scripts/
+#8 CACHED
+
+#9 exporting to image
+#9 exporting layers done
+#9 exporting manifest sha256:2e5ea132a9b70432b0a521cd8f947829327718c474db175bf5aa7190c018655b done
+#9 exporting config sha256:f03c5ab190d77c694c3face126731d0576e4f9eded61df443ce24e3feef8d97f done
+#9 exporting attestation manifest sha256:626288546bd122cb738dde0f3c99b579c9b5948d839a8f180c1eb85164769b95 done
+#9 exporting manifest list sha256:d59faad73b73228875325ec916e055ed7df499931e8b6f6918d091c005042c0b done
+#9 naming to docker.io/library/fvpn-w1-netlab-f30:lab done
+#9 unpacking to docker.io/library/fvpn-w1-netlab-f30:lab 0.0s done
+#9 DONE 0.1s
+docker rm -f fvpn-w1-netlab-f30 >/dev/null 2>&1 || true
+make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w1-netlab-f30'
+make[1]: Entering directory '<worktree>'
+mkdir -p <worktree>/.agent/tmp/fvpn-w1-netlab-f30-scratch
+docker rm -f fvpn-w1-netlab-f30-wipe >/dev/null 2>&1 || true
+docker run --rm --name fvpn-w1-netlab-f30-wipe --network none \
+	-v <worktree>/.agent/tmp/fvpn-w1-netlab-f30-scratch:/scratch fvpn-w1-netlab-f30:lab \
+	find /scratch -mindepth 1 -delete
+make[1]: Leaving directory '<worktree>'
+docker network inspect fvpn-w1-netlab-f30-dns >/dev/null 2>&1 || docker network create fvpn-w1-netlab-f30-dns
+f4374d51847bf2abca7c98eb15e66b1858b562bafa5a78acff8e6642a7310ab0
+docker run -d --name fvpn-w1-netlab-f30 --privileged --network fvpn-w1-netlab-f30-dns \
+	--cap-add NET_ADMIN --cap-add SYS_TIME \
+	-v <worktree>:/work:ro \
+	-v <worktree>/.agent/tmp/fvpn-w1-netlab-f30-scratch:/scratch \
+	fvpn-w1-netlab-f30:lab
+84a88738432ea7e9fe0c661f36fe6a80ed155a61bfbaa103a582411f30c34e7b
+docker cp <worktree>/.agent/tmp/fvpn-w1-netlab-f30-fvpn-netlab fvpn-w1-netlab-f30:/usr/local/bin/fvpn-netlab
+docker exec fvpn-w1-netlab-f30 bash /work/tests/netlab/scripts/topology.sh
+topology: forwarding off before any path exists
+topology: underlay and transit links
+topology: routes
+topology: wireguard keys in /scratch (not the repo)
+topology: boot baseline before forwarding (§8.2)
+topology: listeners
+topology: wireguard handshakes
+topology: ready
+=== RUN   TestAT10_AT13_ReloadRevokeBaseline
+AT10 regen 1025 a1=4434 a2=0
+AT10 regen 1050 a1=8214 a2=0
+AT10 regen 1075 a1=12954 a2=0
+AT10 regen 1100 a1=16348 a2=0
+    scenario_at10_test.go:101: ISO-F6-03: 101 Apply/guard/verifier/precision producer snapshots match executor brackets
+    scenario_at10_test.go:101:
+        AT10 PASS under D-120
+        datagram | generation | bracket start ns | bracket end ns | upper ms | render-installed ms | classification | next datagram | failures
+        92 | 1070 | 1793705344930213603 | 1793705344958996561 | 28.782837 | 15.974900 | boundary | ok | none
+
+AT10 after kill
+name                             ns       proto  dst                    port   expect   observed       ok
+a1-stays-revoked                 fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+a2-stays-up                      fv-a2    tcp    203.0.113.10           80     allow    connected      true
+lan-stays-denied                 fv-a2    tcp    10.1.2.10              80     deny     timeout        true
+probes=3 failed=0
+AT10 baseline
+name                             ns       proto  dst                    port   expect   observed       ok
+baseline-a2                      fv-a2    tcp    203.0.113.10           80     deny     timeout        true
+baseline-a1                      fv-a1    tcp    203.0.113.10           80     deny     timeout        true
+probes=2 failed=0
+SUMMARY AT10 regens=100 revoke_stop=1.819s deny_loops=32 hits=0 baseline_forwarding=off
+--- PASS: TestAT10_AT13_ReloadRevokeBaseline (40.69s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/netlab	40.699s
+docker rm -f fvpn-w1-netlab-f30 >/dev/null 2>&1 || true
+docker network rm fvpn-w1-netlab-f30-dns >/dev/null 2>&1 || true
+make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w1-netlab-f30'
+make[1]: Entering directory '<worktree>'
+mkdir -p <worktree>/.agent/tmp/fvpn-w1-netlab-f30-scratch
+docker rm -f fvpn-w1-netlab-f30-wipe >/dev/null 2>&1 || true
+docker run --rm --name fvpn-w1-netlab-f30-wipe --network none \
+	-v <worktree>/.agent/tmp/fvpn-w1-netlab-f30-scratch:/scratch fvpn-w1-netlab-f30:lab \
+	find /scratch -mindepth 1 -delete
+make[1]: Leaving directory '<worktree>'
+rmdir <worktree>/.agent/tmp/fvpn-w1-netlab-f30-scratch 2>/dev/null || true

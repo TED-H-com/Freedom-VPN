@@ -1,0 +1,12 @@
+{
+  "test_only": true,
+  "synthetic": true,
+  "not_a_measurement": true,
+  "cases": [
+    "11 synthetic positive logs map one-to-one to the 11 retained missing egresses",
+    "missing log leaves missing segment unattributed",
+    "duplicate logs cannot silently become one attribution",
+    "reverse DNAT identity matches; contradictory egress remains explicit"
+  ],
+  "passed": 4
+}

@@ -1,0 +1,8 @@
+{
+  "utc": "2026-11-03T11:23:41.972659+00:00",
+  "test_only": true,
+  "observed_name": "fvpn-pg",
+  "observed_image": "postgres:17-alpine",
+  "classification": "shared PostgreSQL, not another lane container; CPU remains foreign",
+  "basis": "Task excludes other lane containers. Engineering contract names shared PostgreSQL 17; persistent unprefixed service matches that role. Read-only inventory, no exec or mutation."
+}

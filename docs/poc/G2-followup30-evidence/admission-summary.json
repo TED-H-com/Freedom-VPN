@@ -1,0 +1,283 @@
+{
+  "test_only": true,
+  "runs": [
+    {
+      "run": "collector1",
+      "reservation": {
+        "wait_seconds": 0.03543522399922949,
+        "attempts": [
+          {
+            "utc": "2026-11-03T11:13:33.411334+00:00",
+            "exit_code": 0,
+            "output": "reserved for w1-netlab until 06:23:33\n"
+          }
+        ]
+      },
+      "qualification": {
+        "test_only": true,
+        "checks": 18,
+        "qualified": false,
+        "max_check_interval_seconds": 4.010030471999926,
+        "max_foreign_cpu": 0.27265616750074084,
+        "exit_code": 1,
+        "accounting": "utime+stime differences for each PID/start-time pair. New PIDs use their accumulated ticks when born in the interval. Processes that exit between snapshots cannot be recovered from proc; disappeared PIDs are retained. Excluded classes are reported separately."
+      },
+      "release": {
+        "utc": "2026-11-03T11:15:44.207921+00:00",
+        "exit_code": 0,
+        "output": "released w1-netlab\n"
+      },
+      "quiet": {
+        "checks": 18,
+        "foreign_cpu_breaches": 0,
+        "foreign_suite_checks": 6,
+        "errors": 0,
+        "max_foreign_cpu": 0.27265616750074084,
+        "max_interval_seconds": 4.010030471999926
+      }
+    },
+    {
+      "run": "collector2",
+      "reservation": {
+        "wait_seconds": 0.036162895001325523,
+        "attempts": [
+          {
+            "utc": "2026-11-03T11:23:42.318075+00:00",
+            "exit_code": 0,
+            "output": "reserved for w1-netlab until 06:33:42\n"
+          }
+        ]
+      },
+      "preflight": {
+        "wait_seconds": 5.000926944998355,
+        "settle_seconds": 60
+      },
+      "qualification": {
+        "test_only": true,
+        "checks": 5,
+        "qualified": true,
+        "max_check_interval_seconds": 4.002594625999336,
+        "max_foreign_cpu": 0.14490600577748744,
+        "exit_code": 1,
+        "accounting": "utime+stime differences for each PID/start-time pair. New PIDs use their accumulated ticks when born in the interval. Processes that exit between snapshots cannot be recovered from proc; disappeared PIDs are retained. Excluded classes are reported separately."
+      },
+      "release": {
+        "utc": "2026-11-03T11:24:58.447540+00:00",
+        "exit_code": 0,
+        "output": "released w1-netlab\n"
+      },
+      "quiet": {
+        "checks": 5,
+        "foreign_cpu_breaches": 0,
+        "foreign_suite_checks": 0,
+        "errors": 0,
+        "max_foreign_cpu": 0.14490600577748744,
+        "max_interval_seconds": 4.002594625999336
+      }
+    },
+    {
+      "run": "guard-window",
+      "reservation": {
+        "wait_seconds": 0.03595739299998968,
+        "attempts": [
+          {
+            "utc": "2026-11-03T11:27:18.382866+00:00",
+            "exit_code": 0,
+            "output": "reserved for w1-netlab until 06:47:18\n"
+          }
+        ]
+      },
+      "preflight": {
+        "wait_seconds": 5.000966896997852,
+        "settle_seconds": 60
+      },
+      "qualification": {
+        "test_only": true,
+        "checks": 18,
+        "qualified": false,
+        "max_check_interval_seconds": 4.006514168999274,
+        "max_foreign_cpu": 2.4784980259454197,
+        "exit_code": 0,
+        "accounting": "utime+stime differences for each PID/start-time pair. New PIDs use their accumulated ticks when born in the interval. Processes that exit between snapshots cannot be recovered from proc; disappeared PIDs are retained. Excluded classes are reported separately."
+      },
+      "binary": {
+        "sha256": "cd6cb2a9d3010cbd75dd3f314d36bcc419e6d55b1b03db809af92bec348ba08c",
+        "quiet_check_utc": "2026-11-03T11:28:42.461616+00:00",
+        "wait_seconds": 12.10259179300192
+      },
+      "release": {
+        "utc": "2026-11-03T11:29:26.558580+00:00",
+        "exit_code": 0,
+        "output": "released w1-netlab\n"
+      },
+      "quiet": {
+        "checks": 18,
+        "foreign_cpu_breaches": 5,
+        "foreign_suite_checks": 0,
+        "errors": 0,
+        "max_foreign_cpu": 2.4784980259454197,
+        "max_interval_seconds": 4.006514168999274
+      }
+    },
+    {
+      "run": "final-gate2-run",
+      "reservation": {
+        "wait_seconds": 0.035194156000216026,
+        "attempts": [
+          {
+            "utc": "2026-11-03T11:44:06.972120+00:00",
+            "exit_code": 0,
+            "output": "reserved for w1-netlab until 07:04:06\n"
+          }
+        ]
+      },
+      "preflight": {
+        "wait_seconds": 21.00312457200198,
+        "settle_seconds": 60
+      },
+      "qualification": {
+        "test_only": true,
+        "checks": 29,
+        "qualified": false,
+        "max_check_interval_seconds": 92.0202404829979,
+        "max_foreign_cpu": 1.5491454379942917,
+        "exit_code": 241,
+        "accounting": "utime+stime differences for each PID/start-time pair. New PIDs use their accumulated ticks when born in the interval. Processes that exit between snapshots cannot be recovered from proc; disappeared PIDs are retained. Excluded classes are reported separately."
+      },
+      "release": {
+        "utc": "2026-11-03T11:46:59.176075+00:00",
+        "exit_code": 0,
+        "output": "released w1-netlab\n"
+      },
+      "quiet": {
+        "checks": 29,
+        "foreign_cpu_breaches": 4,
+        "foreign_suite_checks": 0,
+        "errors": 22,
+        "max_foreign_cpu": 1.5491454379942917,
+        "max_interval_seconds": 92.0202404829979
+      }
+    },
+    {
+      "run": "final-gate2-complete",
+      "reservation": {
+        "wait_seconds": 0.03926664099708432,
+        "attempts": [
+          {
+            "utc": "2026-11-03T11:50:33.777470+00:00",
+            "exit_code": 0,
+            "output": "reserved for w1-netlab until 07:10:33\n"
+          }
+        ]
+      },
+      "preflight": {
+        "wait_seconds": 5.000943944000028,
+        "settle_seconds": 60
+      },
+      "qualification": {
+        "test_only": true,
+        "scope": "pre-startup only; full suite has its own qualification",
+        "checks": 2,
+        "qualified": true,
+        "max_check_interval_seconds": 4.001003068999125,
+        "max_foreign_cpu": 0.03998997182474667,
+        "exit_code": 0,
+        "accounting": "utime+stime differences for each PID/start-time pair. New PIDs use their accumulated ticks when born in the interval. Processes that exit between snapshots cannot be recovered from proc; disappeared PIDs are retained. Excluded classes are reported separately."
+      },
+      "suite-qualification": {
+        "test_only": true,
+        "scope": "actual full-suite process, with fresh preflight and a final covering interval",
+        "runner_pid": 882092,
+        "monitor_pid": 883423,
+        "suite_began_monotonic": 30153.514196848,
+        "suite_ended_monotonic": 30446.272714445,
+        "checks": 74,
+        "qualified": false,
+        "exit_code": 0,
+        "max_foreign_cpu": 4.310364982476154,
+        "max_interval_seconds": 4.103480120000313
+      },
+      "binary": {
+        "sha256": "64691a6ef28a60b33e429650cc7b5a3aa6392ee168bd13bd8e401a09ed6c4918",
+        "quiet_check_utc": "2026-11-03T11:51:50.830308+00:00",
+        "wait_seconds": 4.32797084199774
+      },
+      "release": {
+        "utc": "2026-11-03T11:56:48.670318+00:00",
+        "exit_code": 0,
+        "output": "released w1-netlab\n"
+      },
+      "quiet": {
+        "checks": 2,
+        "foreign_cpu_breaches": 0,
+        "foreign_suite_checks": 0,
+        "errors": 0,
+        "max_foreign_cpu": 0.03998997182474667,
+        "max_interval_seconds": 4.001003068999125
+      },
+      "suite-quiet": {
+        "checks": 76,
+        "foreign_cpu_breaches": 11,
+        "foreign_suite_checks": 0,
+        "errors": 0,
+        "max_foreign_cpu": 4.310364982476154,
+        "max_interval_seconds": 4.103480120000313
+      }
+    }
+  ],
+  "unsuccessful_reservation_wait": {
+    "wait_seconds": 540.5706814699988,
+    "attempts": [
+      {
+        "utc": "2026-11-03T11:32:53.151425+00:00",
+        "exit_code": 1,
+        "output": "reserved for w2-updater until 07:00:45 (updater f22 F21-01 re-measure)\n"
+      },
+      {
+        "utc": "2026-11-03T11:33:53.189731+00:00",
+        "exit_code": 1,
+        "output": "reserved for w2-agent-core until 07:03:44 (agent-core f39 A,B,A,B)\n"
+      },
+      {
+        "utc": "2026-11-03T11:34:53.225260+00:00",
+        "exit_code": 1,
+        "output": "777080 /usr/bin/make -f mk/node.mk node-test-netlab FVPN_LAB_PREFIX=fvpn-w2-agent-core-f39 MAKE=<private-location>\nreserved for w2-agent-core until 07:03:44 (agent-core f39 A,B,A,B)\n"
+      },
+      {
+        "utc": "2026-11-03T11:35:53.459377+00:00",
+        "exit_code": 1,
+        "output": "777080 /usr/bin/make -f mk/node.mk node-test-netlab FVPN_LAB_PREFIX=fvpn-w2-agent-core-f39 MAKE=<private-location>\nreserved for w2-agent-core until 07:03:44 (agent-core f39 A,B,A,B)\n"
+      },
+      {
+        "utc": "2026-11-03T11:36:53.496924+00:00",
+        "exit_code": 1,
+        "output": "777080 /usr/bin/make -f mk/node.mk node-test-netlab FVPN_LAB_PREFIX=fvpn-w2-agent-core-f39 MAKE=<private-location>\nreserved for w2-agent-core until 07:03:44 (agent-core f39 A,B,A,B)\n"
+      },
+      {
+        "utc": "2026-11-03T11:37:53.534755+00:00",
+        "exit_code": 1,
+        "output": "reserve refused: merge-queue gates running\n802872 bash bin/gates.sh w4-handover\n"
+      },
+      {
+        "utc": "2026-11-03T11:38:53.574547+00:00",
+        "exit_code": 1,
+        "output": "808489 /usr/bin/make -f mk/node.mk node-test-netlab FVPN_LAB_PREFIX=fvpn-w2-agent-core-f39 MAKE=<private-location>\n"
+      },
+      {
+        "utc": "2026-11-03T11:39:53.612523+00:00",
+        "exit_code": 1,
+        "output": "808489 /usr/bin/make -f mk/node.mk node-test-netlab FVPN_LAB_PREFIX=fvpn-w2-agent-core-f39 MAKE=<private-location>\n"
+      },
+      {
+        "utc": "2026-11-03T11:40:53.648106+00:00",
+        "exit_code": 1,
+        "output": "808489 /usr/bin/make -f mk/node.mk node-test-netlab FVPN_LAB_PREFIX=fvpn-w2-agent-core-f39 MAKE=<private-location>\n"
+      },
+      {
+        "utc": "2026-11-03T11:41:53.685590+00:00",
+        "exit_code": 1,
+        "output": "808489 /usr/bin/make -f mk/node.mk node-test-netlab FVPN_LAB_PREFIX=fvpn-w2-agent-core-f39 MAKE=<private-location>\n"
+      }
+    ]
+  }
+}
