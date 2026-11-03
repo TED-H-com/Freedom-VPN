@@ -151,7 +151,8 @@ func TestAT13_D147RelatedFragNeeded(t *testing.T) {
 		}
 	}
 	if err != nil {
-		fail(t, &rec, "d147 runner failed: %v; see lab-AT13-d147-detail.json; stderr=%s", err, clipOne(errOut))
+		_ = isolation.WriteExtra(evidenceDir(), "lab-AT13-d147-error.txt", errOut)
+		fail(t, &rec, "d147 runner failed: %v; see lab-AT13-d147-detail.json or lab-AT13-d147-error.txt; stderr=%s", err, clipOne(errOut))
 	}
 	var report d147Report
 	if err := json.Unmarshal([]byte(out), &report); err != nil {

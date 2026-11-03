@@ -38,7 +38,7 @@ COUNTERS = (
     "cthost",
     "ctdenyd",
     "ctinv",
-    "ctnodown",
+    "ctnodn",
     "ctunkd",
 )
 
