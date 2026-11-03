@@ -1,25 +1,13 @@
-# Isolation follow-up 18 requests — 2026-11-03
+# Isolation follow-up 19 requests — 2026-11-03
 
-Three carried items and zero new requests.
-Run `9f1bc0ff-d01f-4a3f-ad41-6c6a086e6e04`; [evidence](summary.md), [dated nightly diagnosis](nightly-diagnosis-2026-11-03.md).
+**Two new requests, three carried.** One assembled run `70beb28e-4766-4004-932b-510fd01f986a`; no retry. [Findings](follow-up-19-findings.json), [summary](summary.md), [D-147 evidence](d147-related-frag-needed-2026-11-03.md).
 
-1. **Carried — AT11 platform/operator assignment.** Full native member-platform
-   route/capture matrix stays blocked. No renewed ask.
-2. **Carried — AT13 acceptance/operator assignment.** Full continuous crash,
-   NetBird restart, kernel reboot, updater and physical-arm64 matrix stays blocked.
-   Six exit-0 receipts do not close it. No renewed ask.
-3. **Carried — w3-wire-nodes / w2-agent-core, F17-01: pure `stale_generation`.**
-   The 13 accepted holds in run `9f1bc0ff-d01f-4a3f-ad41-6c6a086e6e04` classify
-   **10 check_failed / 3 isolation_unconfirmed**; pure classification remains
-   **not exercised** ([raw checks/errors](follow-up-18-findings.json)). No renewed ask.
+1. **F19-01 — orchestrator / w1-netlab: confirm the upload-negative counter expectation.** Current production drops resolver-only `203.0.113.53` at `ctbadns`, host-only `203.0.113.33` at `cthost`, and denied-only / denied+host at `ctdeny`. All have node-ingress proof, absent egress/router packets, and zero Internet/DNS upload usage. The brief's literal `ctdeny` is not exercised for the exclusive resolver/host sources; putting either in `denied_v4` would violate their exclusive membership. Confirm the observed counters as intended or define a different authorized contract. No production rule or predicate was weakened. [Verified rules](history/follow-up-19-lab-final/lab-AT13-d147-ruleset.nft), [four rows](history/follow-up-19-lab-final/lab-AT13-d147-detail.json).
+2. **F19-02 — w3-devstack-e2e / shared publisher, coordinating w3-wire-nodes and w2-agent-core: handle the initial capacity ETag conflict and verify bootstrap.** [Publish support record](support/publish.json) records `412 RESOURCE_VERSION_CONFLICT` at 22:10:56Z. `tests/e2e/publish_test.go` reads one ETag, sends one capacity PATCH, and returns on 412. This file and the seam are read-only for isolation. The subsequent isolation PUT was 202, but [publication](AT10.json) stayed running over the unchanged 150-second wait: agent_policy succeeded; data_path_probe remained pending with `NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed (forwarding_disabled)`; route read-back pending; desired/applied 3, observed publication absent. All 12 recorded acceptance checks are blocked. Request owner-reviewed fresh-ETag conflict handling and verification of the downstream bootstrap. The initial window overlaps members' gates (D-133); no host-causality inference, no production attribution beyond the evidence, no retry, and no expected-blocked addition.
+3. **Carried — AT11 platform/operator assignment.** Full native member-platform route/capture matrix stays blocked. No renewed ask.
+4. **Carried — AT13 acceptance/operator assignment.** Full continuous crash, NetBird restart, kernel reboot, updater and physical-arm64 matrix stays blocked. Mechanism passes do not close it. No renewed ask.
+5. **Carried — w3-wire-nodes / w2-agent-core, F17-01: pure stale_generation.** Not exercised in this setup-blocked run. Prior classification evidence is retained at [follow-up 18](history/follow-up-18/follow-up-18-findings.json). No renewed ask.
 
-Both unlisted blocked rows from scheduled run **`41640196805`** (`AT13 short
-whole-node lease expiry` and `AT10 foreign ingress redirect containment and D-096
-recovery`) were caused by a single owned harness defect in
-`tests/e2e/at/isolation/` (`Outcome (a)`), are fixed on this branch, and pass in
-the local assembled verification run (`9f1bc0ff-d01f-4a3f-ad41-6c6a086e6e04`).
-Neither row requires a request to another task (`Outcome (b)`) or addition to
-`expected-blocked.json` (`Outcome (c)`).
+Secondary owned diagnostics, not extra outside-owner requests: the populated-hold reviewer raised a missing-input FileNotFoundError because setup returned before the experiment; clone export likewise found no clone. The generic recovery verdict is blocked/run_id null and does not prove an injection. These remain visible under [findings](follow-up-19-findings.json); a future owned change can emit a clean unavailable review on this early-abort path without changing acceptance predicates.
 
-All owned Docker inventories are zero. No install exceeded the 100 ms bound in
-this run. No outside-owned edit or handover pin change was needed.
+All owned Docker inventories are zero. D-144's expected-blocked list and workflow are unchanged. No handover claims edit was needed: the existing claims already read immutable artifacts. Historical follow-up-18 requests remain [archived](history/follow-up-18/requests.md).

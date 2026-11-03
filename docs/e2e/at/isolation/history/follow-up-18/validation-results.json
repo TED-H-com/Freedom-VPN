@@ -1,0 +1,103 @@
+{
+  "run_id": "9f1bc0ff-d01f-4a3f-ad41-6c6a086e6e04",
+  "date": "2026-11-03",
+  "baseline": "090bb97b88b4062073a487c82676d0e1faca4fac",
+  "measured_consumer": "c248db966d6870182a7c87cf7e410d7524bf56ff",
+  "assembled": {
+    "baseline": "090bb97b88b4062073a487c82676d0e1faca4fac",
+    "consumer": "c248db966d6870182a7c87cf7e410d7524bf56ff",
+    "started_at": "2026-11-03T14:05:18Z",
+    "gocache_before": "$HOME/.cache/go-build",
+    "ended_at": "2026-11-03T14:29:55Z",
+    "duration_seconds": 1477.0,
+    "exit_code": 2,
+    "gocache_after": "$HOME/.cache/go-build"
+  },
+  "gates": [
+    {
+      "command": "make -f mk/at-isolation.mk at-isolation-lint at-isolation-test at-isolation-build",
+      "exit_code": 0,
+      "scope": "before run and after final evidence updates; amd64/arm64 probe builds"
+    },
+    {
+      "command": "make -f mk/at-isolation.mk at-isolation",
+      "exit_code": 2,
+      "reason": "AT11 and AT13 operator matrices blocked; populated hold review remains incomplete for pure stale_generation"
+    },
+    {
+      "command": "go test -count=1 ./tests/handover/...",
+      "exit_code": 0
+    },
+    {
+      "command": "make go-lint",
+      "exit_code": 0
+    },
+    {
+      "command": "gofmt -l tracked Go files",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "TestCommittedEvidenceFiles_ValidAndHygieneClean",
+      "exit_code": 0
+    }
+  ],
+  "offline_reviews": [
+    {
+      "name": "review_policy_missing",
+      "exit_code": 0
+    },
+    {
+      "name": "review_reservations",
+      "exit_code": 0
+    },
+    {
+      "name": "review_core32",
+      "exit_code": 0
+    },
+    {
+      "name": "review_holds",
+      "exit_code": 0
+    },
+    {
+      "name": "review_populated_holds",
+      "exit_code": 1,
+      "reason": "pure stale_generation not exercised; all eight other categories pass"
+    },
+    {
+      "name": "review_commands",
+      "exit_code": 0
+    },
+    {
+      "name": "review_stops",
+      "exit_code": 0
+    }
+  ],
+  "audit": {
+    "followup17_files_verified": 138,
+    "lossless_streams_verified": 12,
+    "all_paths_owned": true
+  },
+  "cleanup": {
+    "containers": [],
+    "images": [],
+    "networks": [],
+    "volumes": []
+  },
+  "nightly": {
+    "diagnosed_runs": [
+      "41640196805",
+      "41456092596"
+    ],
+    "workflows_triggered": 0,
+    "expected_blocked_rows": 2,
+    "outcome": "Outcome (a) for both AT13 short whole-node lease expiry and AT10 foreign ingress redirect containment and D-096 recovery; fixed in tests/e2e/at/isolation/ and verified passing in run 9f1bc0ff-d01f-4a3f-ad41-6c6a086e6e04"
+  },
+  "limitations": [
+    "No retry or historical rejudgment.",
+    "Physical arm64 and full platform/fault matrices remain operator work."
+  ]
+}

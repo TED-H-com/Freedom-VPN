@@ -2430,6 +2430,7 @@ func (x *isolationRun) networkSnapshot(label string) map[string]any {
 	row := map[string]any{"label": label, "read_start": start.UTC().Format(time.RFC3339Nano), "read_end": time.Now().UTC().Format(time.RFC3339Nano), "readback": string(raw)}
 	rules, _ := x.r.lab.docker(x.r.lab.node, "nft", "list", "table", "inet", "fvpn")
 	row["kernel_ruleset"] = string(rules)
+	row["forward_view"] = iso.ParseForwardChain(string(rules))
 	conn, err := x.r.lab.db(x.ctx)
 	if err == nil {
 		defer conn.Close(x.ctx)

@@ -255,6 +255,27 @@ class CorrelationTests(unittest.TestCase):
                     c[k] = dict(ns='0', available=False)
                 p.validate_operations(rows)
 
+    def test_successful_apply_with_tc_retire_after_nft_install_parses_and_unknown_phase_raises(self):
+        rows = fixture()
+        rows[0]['timing']['deadline'].update(release_start_ns='140', release_end_ns='150')
+        install_cmd = command(phase='install', kind='nft', base=115)
+        for side in ('before', 'after'):
+            install_cmd[side].update(skip_reason='install_bound', bracket=dict(
+                before=dict(ns='0', available=False), after=dict(ns='0', available=False)))
+        retire_cmd = command(phase='retire', kind='tc', base=130)
+        release_cmd = command(phase='release', kind='nft', base=140)
+        rows[0]['timing']['commands'] = [install_cmd, retire_cmd, release_cmd]
+        validated = p.validate_operations(rows)
+        lifecycle = validated['applies'][0]['command_lifecycle']
+        self.assertEqual(lifecycle['status'], 'available')
+        self.assertEqual([entry['phase'] for entry in lifecycle['phases']], ['install', 'retire', 'release'])
+        self.assertEqual(lifecycle['phases'][1]['command_indices'], [1])
+        self.assertIn('tc: started=True, ok=True', lifecycle['phases'][1]['description'])
+        bad = copy.deepcopy(rows)
+        bad[0]['timing']['commands'][1]['phase'] = 'unknown_phase'
+        with self.assertRaises(ValueError):
+            p.validate_operations(bad)
+
     def test_successful_install_command_over_100ms_still_fails_closed(self):
         rows = failed_install(); del rows[0]['host']
         t = rows[0]['timing']; t['commands'] = [command()]

@@ -1,39 +1,84 @@
 {
-  "run_id": "9f1bc0ff-d01f-4a3f-ad41-6c6a086e6e04",
-  "date": "2026-11-03",
-  "baseline": "090bb97b88b4062073a487c82676d0e1faca4fac",
-  "measured_consumer": "c248db966d6870182a7c87cf7e410d7524bf56ff",
-  "assembled": {
-    "baseline": "090bb97b88b4062073a487c82676d0e1faca4fac",
-    "consumer": "c248db966d6870182a7c87cf7e410d7524bf56ff",
-    "started_at": "2026-11-03T14:05:18Z",
-    "gocache_before": "$HOME/.cache/go-build",
-    "ended_at": "2026-11-03T14:29:55Z",
-    "duration_seconds": 1477.0,
-    "exit_code": 2,
-    "gocache_after": "$HOME/.cache/go-build"
-  },
-  "gates": [
+  "follow_up": 19,
+  "baseline": "27ff63928222c9642e4f5e180cf225108327a1e5",
+  "measured_build": "458b7a89f07c22dd4e66f839195b6549db4b883d",
+  "checks": [
+    {
+      "command": "python3 -B tests/e2e/at/isolation/producer_timing_test.py",
+      "exit_code": 0,
+      "output_tail": [
+        ".......................",
+        "----------------------------------------------------------------------",
+        "Ran 23 tests in 1.454s",
+        "",
+        "OK"
+      ]
+    },
     {
       "command": "make -f mk/at-isolation.mk at-isolation-lint at-isolation-test at-isolation-build",
       "exit_code": 0,
-      "scope": "before run and after final evidence updates; amd64/arm64 probe builds"
+      "output_tail": [
+        "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "+ go vet -tags netlab ./tests/netlab/at/...",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...",
+        "+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
+        "+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t14.392s",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]",
+        "+ python3 tests/e2e/at/isolation/driver.py build",
+        "+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
+      ]
+    },
+    {
+      "command": "fresh lab: go test -tags netlab -count=1 -v -timeout 40m -p 1 -parallel 1 ./tests/netlab/at",
+      "exit_code": 0,
+      "build": "3e12f913418e6ee87cee5d43e4dcb93d86331237",
+      "output_tail": [
+        "=== RUN   TestAT13_D147RelatedFragNeeded",
+        "--- PASS: TestAT13_D147RelatedFragNeeded (24.49s)",
+        "=== RUN   TestAT10_HostAndUpstream",
+        "--- PASS: TestAT10_HostAndUpstream (7.38s)",
+        "=== RUN   TestAT11_IPv6Metadata",
+        "--- PASS: TestAT11_IPv6Metadata (2.95s)",
+        "=== RUN   TestAT12_CrossMemberDNS",
+        "--- PASS: TestAT12_CrossMemberDNS (4.56s)",
+        "=== RUN   TestAT13_RevokeAndCrash",
+        "--- PASS: TestAT13_RevokeAndCrash (5.64s)",
+        "PASS",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t45.018s"
+      ]
     },
     {
       "command": "make -f mk/at-isolation.mk at-isolation",
       "exit_code": 2,
-      "reason": "AT11 and AT13 operator matrices blocked; populated hold review remains incomplete for pure stale_generation"
+      "run_id": "70beb28e-4766-4004-932b-510fd01f986a",
+      "output_tail": [
+        " Network fvpn-w4-isolation Removed ",
+        "e2e stack is down",
+        "owned-prefix inventory: {\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}",
+        "at-isolation lab=0 stack=1",
+        "make: *** [mk/at-isolation.mk:57: at-isolation] Error 2"
+      ]
     },
     {
-      "command": "go test -count=1 ./tests/handover/...",
-      "exit_code": 0
+      "command": "go test -count=1 ./tests/handover/... (after publication)",
+      "exit_code": 0,
+      "output_tail": [
+        "+ go test -count=1 ./tests/handover/...",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t3.546s"
+      ]
     },
     {
-      "command": "make go-lint",
-      "exit_code": 0
+      "command": "make go-lint go-with-disk-tmp= (disk runner)",
+      "exit_code": 0,
+      "output_tail": [
+        "+ make go-lint go-with-disk-tmp="
+      ]
     },
     {
-      "command": "gofmt -l tracked Go files",
+      "command": "test -z \"$(gofmt -l $(git ls-files '*.go'))\"",
       "exit_code": 0
     },
     {
@@ -41,63 +86,33 @@
       "exit_code": 0
     },
     {
-      "command": "TestCommittedEvidenceFiles_ValidAndHygieneClean",
-      "exit_code": 0
+      "command": "go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation",
+      "exit_code": 0,
+      "output_tail": [
+        "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation",
+        "=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean",
+        "--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (11.09s)",
+        "PASS",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t11.100s"
+      ]
+    },
+    {
+      "command": "D-098/retained archive SHA-256 and new-evidence size audit",
+      "exit_code": 0,
+      "archive_files_verified": 223,
+      "earlier_archives_unchanged": true,
+      "new_evidence_over_20MB_uncompressed": 0
+    },
+    {
+      "command": "git diff main...HEAD hygiene scan",
+      "exit_code": 0,
+      "matches": 0
     }
   ],
-  "offline_reviews": [
-    {
-      "name": "review_policy_missing",
-      "exit_code": 0
-    },
-    {
-      "name": "review_reservations",
-      "exit_code": 0
-    },
-    {
-      "name": "review_core32",
-      "exit_code": 0
-    },
-    {
-      "name": "review_holds",
-      "exit_code": 0
-    },
-    {
-      "name": "review_populated_holds",
-      "exit_code": 1,
-      "reason": "pure stale_generation not exercised; all eight other categories pass"
-    },
-    {
-      "name": "review_commands",
-      "exit_code": 0
-    },
-    {
-      "name": "review_stops",
-      "exit_code": 0
-    }
-  ],
-  "audit": {
-    "followup17_files_verified": 138,
-    "lossless_streams_verified": 12,
-    "all_paths_owned": true
-  },
-  "cleanup": {
-    "containers": [],
-    "images": [],
-    "networks": [],
-    "volumes": []
-  },
-  "nightly": {
-    "diagnosed_runs": [
-      "41640196805",
-      "41456092596"
-    ],
-    "workflows_triggered": 0,
-    "expected_blocked_rows": 2,
-    "outcome": "Outcome (a) for both AT13 short whole-node lease expiry and AT10 foreign ingress redirect containment and D-096 recovery; fixed in tests/e2e/at/isolation/ and verified passing in run 9f1bc0ff-d01f-4a3f-ad41-6c6a086e6e04"
-  },
-  "limitations": [
-    "No retry or historical rejudgment.",
-    "Physical arm64 and full platform/fault matrices remain operator work."
+  "notes": [
+    "No assembled retry; serving setup blocked and initial window confounded under D-133.",
+    "The continuation reservation wait lasted 30 seconds; no reservation requested.",
+    "All gates used disk scratch and Python bytecode disabled.",
+    "main advanced during the continuation to b246832b (#433); the inherited branch and measured baseline were retained without resync."
   ]
 }

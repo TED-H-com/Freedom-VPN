@@ -122,7 +122,7 @@ def host_context(row):
     return result
 
 
-COMMAND_PHASES = ('prepare', 'shape', 'install', 'release', 'verify', 'quarantine', 'revoke', 'rollback')
+COMMAND_PHASES = ('prepare', 'shape', 'install', 'retire', 'release', 'verify', 'quarantine', 'revoke', 'rollback')
 COMMAND_STAMPS = ('start_attempt', 'start_return', 'child_started_by', 'child_start_exact',
                   'cancel_observed', 'wait_return')
 

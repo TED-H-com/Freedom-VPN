@@ -1,3 +1,26 @@
+# Isolation run procedure — Follow-up 19 (2026-11-03)
+
+One assembled invocation only, after the D-147 and unchanged lab rows. Baseline main `27ff6392`; measured source `458b7a89`. No rebase, reset, branch recreation, reservation, GitHub workflow, push or tag.
+
+## Procedure and receipts
+
+1. D-098 archive first: `f5a5a425`, [140 byte-identical files](history/follow-up-18/archive.json). Check the inherited note 1 separation and unchanged `memberAcceptRule`; run the 23 reader tests and commit note 2's `retire` addition.
+2. Diagnose and retain the inherited failed D-147 record; commit all embedded runner changes before each retained build. Recreate the owned lab after inherited captures and between standalone attempts. The final focused lab on `3e12f913` passes all five tests, with the existing four unchanged and in the same session. [Dated detail](d147-related-frag-needed-2026-11-03.md).
+3. Run `make -f mk/at-isolation.mk at-isolation-lint at-isolation-test at-isolation-build`. Invoke Python with `-B` or `PYTHONDONTWRITEBYTECODE=1`; use `.agent/tmp` for TMPDIR and GOTMPDIR, and discover GOCACHE with `go env GOCACHE`.
+4. Before every Go test, make or Docker command, run `bash "$FVPN_HOLD_SH"`; wait up to 90 minutes for free. Check `pgrep -af 'gates.sh|mk/at-'` before startup and again afterward; never start with two other suite roots. Record `vmstat 5 7` before the assembled invocation. Use only owned `fvpn-w4-isolation-*` objects.
+5. Run `make -f mk/at-isolation.mk at-isolation` exactly once, with `FVPN_AT_EVIDENCE_DIR` pointing to a fresh empty disk directory. This invocation includes its own separate mechanism rerun. Retain all outcomes and overlap receipts; make no retry under D-133. Publish only after it completes and teardown reports zero owned inventory.
+6. Run handover tests, root `make go-lint` with the disk runner and `go-with-disk-tmp=` (no shell trap), gofmt, diff check and committed-evidence hygiene. Preserve all failed records and archive pins. Update the dated document, requests and `.agent/REPORT.md` / `.agent/last.md`; commit without pushing.
+
+## Recorded outcome
+
+[Receipt](follow-up-19-run-receipt.json): run `70beb28e-4766-4004-932b-510fd01f986a`, **22:08:56.001043Z–22:13:50.863036Z**, **294.862 s**, exit **2**. Source dirty false. Lab including D-147 passes. Assembled AT10/11/12/13 are **blocked**, with respectively **0/2/0, 0/2/0, 0/3/0, 0/5/0** pass/blocked/fail checks. The shared capacity PATCH returned 412; serving publication did not complete. The real-node expiry schedule was not executed and no historical result was substituted.
+
+Admission was free (0.038 / 0.037 s checks); an earlier lab reservation wait lasted 30 s. Initial members-gate overlap is **confounded under D-133**; [samples](suite-overlap-monitor.jsonl), [preflight](host-preflight.json). No retry. [Inventory](cleanup-inventory.json) is zero. [All observed rows and limits](summary.md), [owner handoffs](requests.md).
+
+## Retained follow-up 18 procedure
+
+The following procedure/outcome is historical; links point into its archive. D-140/D-142 predicates remain unchanged, but no such sweep occurred in follow-up 19.
+
 # Isolation run procedure — Follow-up 18
 
 Baseline **`090bb97b88b4062073a487c82676d0e1faca4fac`** (including isolation 17 #410,
@@ -35,7 +58,7 @@ Both rows share a single owned harness defect (`Outcome (a)` in
 `x.waitControl()` after `deadline()`'s `docker start` and verifying current
 post-start `ControlObservationReady` before `wholeNodeExpiry()` login, before
 `wholeNodeExpiry()`'s deferred `fleetAudits`, and in `foreignRedirect()`. See
-[dated nightly diagnosis](nightly-diagnosis-2026-11-03.md).
+[dated nightly diagnosis](history/follow-up-18/nightly-diagnosis-2026-11-03.md).
 
 ## Predeclared D-140 schedule and D-142 scope
 
@@ -68,4 +91,4 @@ with **zero overlaps**. D-142 qualification and unchanged evaluator pass
 ingress redirect containment and D-096 recovery` **pass**. D-104 mechanism passes;
 all original seven hold categories and central-age fallback pass. Pure
 classification remains not exercised. AT11/AT13 remain operator-blocked on the
-two listed rows. Six agent exits are 0; no install overrun. [Full result](summary.md).
+two listed rows. Six agent exits are 0; no install overrun. [Full result](history/follow-up-18/summary.md).
