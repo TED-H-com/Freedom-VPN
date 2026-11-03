@@ -404,3 +404,11 @@ correction and the 138-file follow-up 17 archive; follow-up 36's complete
 netlab 32 inventory remains sealed. The separate source audit records code
 readings and commit-scoped searches. Living isolation 9f1bc0ff, members
 81b638e8 and usage b8a6e9e1 roots are never claims inputs.
+
+Follow-up 38 seals #427 only at 77626af4. Ten #427 slices preserve every
+follow-up 37 assertion; its normalized claims function remains exact. The
+main manifest has one final row and one lossless public PR excerpt. r25 is
+sealed byte-for-byte, with proof names pinned only inside the archive. The
+separate frozen audit records source readings at 8cc27609 and proof metadata
+at 1afecb29, neither on main, and verifies #427's 258 digest-only changes.
+The proof file is never copied. No living lane evidence is a claims input.
