@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"testing/synctest"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
@@ -55,69 +56,77 @@ func TestUPD_D053_Review_RevokedCurrentRollbackIssuesChallengeAndReportsTruth(t 
 
 func TestUPD_D053_Review_PollBreaksOnTransientFailedCheckBeforeWaitExpires(t *testing.T) {
 	// Regression proof from the D-053 adversarial review.
-	w := newWorld(t)
-	next := w.makeRelease("new", 1, []int{1})
-	touchPersistent(t, w.layout)
+	// Follow-up 23: the Wait window is a context timeout on the clock. On the
+	// wall clock, a stall in the first read longer than Wait (80 ms) ended the
+	// poll before the candidate's rewrite, so the expected pass depended on
+	// the runner's speed. Inside a synctest bubble the clock advances only
+	// when the bubble is durably blocked; disk and scheduler stalls take real
+	// time but none of the window. Wait, Poll and every assertion are unchanged.
+	synctest.Test(t, func(t *testing.T) {
+		w := bubbleWorld(t)
+		next := w.makeRelease("new", 1, []int{1})
+		touchPersistent(t, w.layout)
 
-	w.eng.Sleep = nil
-	w.eng.Attest = AttestWindow{Wait: 80 * time.Millisecond, Poll: 10 * time.Millisecond, TTL: 2 * time.Second}
-	nc := &NodeChecks{Journal: w.layout.Journal, Node: w.node, rt: &checkRT{}}
-	w.eng.Health = nc
+		w.eng.Sleep = nil
+		w.eng.Attest = AttestWindow{Wait: 80 * time.Millisecond, Poll: 10 * time.Millisecond, TTL: 2 * time.Second}
+		nc := &NodeChecks{Journal: w.layout.Journal, Node: w.node, rt: &checkRT{}}
+		w.eng.Health = nc
 
-	ch, err := healthattest.Issue(healthattest.Input{
-		TxnID:         uuid.Must(uuid.NewV7()).String(),
-		ReleaseID:     next.id.String(),
-		NodeID:        w.node.ID.String(),
-		IncarnationID: w.node.Incarnation.String(),
-		BootID:        w.node.BootID.String(),
-		Now:           w.now,
-		TTL:           2 * time.Second,
-		Components: healthattest.Components{
-			NodeAgent:   "1.0.0",
-			Netbird:     "0.28.0",
-			NodeUpdater: "1.0.0",
-			Enforcement: "1.0.0",
-		},
+		ch, err := healthattest.Issue(healthattest.Input{
+			TxnID:         uuid.Must(uuid.NewV7()).String(),
+			ReleaseID:     next.id.String(),
+			NodeID:        w.node.ID.String(),
+			IncarnationID: w.node.Incarnation.String(),
+			BootID:        w.node.BootID.String(),
+			Now:           w.now,
+			TTL:           2 * time.Second,
+			Components: healthattest.Components{
+				NodeAgent:   "1.0.0",
+				Netbird:     "0.28.0",
+				NodeUpdater: "1.0.0",
+				Enforcement: "1.0.0",
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		prior, err := healthattest.ObserveAttestation(w.layout.Journal)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := healthattest.WriteChallenge(w.layout.Journal, ch); err != nil {
+			t.Fatal(err)
+		}
+		nc.Now = func() time.Time { return w.now.Add(10 * time.Millisecond) }
+		nc.Wait = 80 * time.Millisecond
+		nc.Poll = 10 * time.Millisecond
+
+		// First attestation written by candidate agent during warm-up has tunnel_probe=failed.
+		warming := goodAttest(ch, api.PublicationIntentUnpublished)
+		warming.Checks.TunnelProbe.Status = api.HealthCheckStatusFailed
+		warming.Checks.TunnelProbe.Reason = "overlay_down"
+		if err := healthattest.WriteAttestation(w.layout.Journal, warming); err != nil {
+			t.Fatal(err)
+		}
+
+		// On the first poll sleep (10ms into an 80ms wait window), the candidate's
+		// tunnel comes up and it rewrites health-attest.json with all checks passed.
+		nc.Sleep = func(_ context.Context, _ time.Duration) error {
+			ready := goodAttest(ch, api.PublicationIntentUnpublished)
+			ready.GeneratedAt = ch.IssuedAt.Add(5 * time.Millisecond)
+			return healthattest.WriteAttestation(w.layout.Journal, ready)
+		}
+		nc.Bind(ch, prior, "candidate")
+
+		view := w.eng.viewFor(context.Background(), next.id.String(), &next.manifest)
+		st, err := nc.TunnelProbe(context.Background(), view)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st != api.HealthCheckStatusPassed {
+			t.Fatalf("NodeChecks.poll aborted on initial warm-up attestation instead of polling within Wait window: got tunnel_probe=%q, want %q", st, api.HealthCheckStatusPassed)
+		}
 	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	prior, err := healthattest.ObserveAttestation(w.layout.Journal)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := healthattest.WriteChallenge(w.layout.Journal, ch); err != nil {
-		t.Fatal(err)
-	}
-	nc.Now = func() time.Time { return w.now.Add(10 * time.Millisecond) }
-	nc.Wait = 80 * time.Millisecond
-	nc.Poll = 10 * time.Millisecond
-
-	// First attestation written by candidate agent during warm-up has tunnel_probe=failed.
-	warming := goodAttest(ch, api.PublicationIntentUnpublished)
-	warming.Checks.TunnelProbe.Status = api.HealthCheckStatusFailed
-	warming.Checks.TunnelProbe.Reason = "overlay_down"
-	if err := healthattest.WriteAttestation(w.layout.Journal, warming); err != nil {
-		t.Fatal(err)
-	}
-
-	// On the first poll sleep (10ms into an 80ms wait window), the candidate's
-	// tunnel comes up and it rewrites health-attest.json with all checks passed.
-	nc.Sleep = func(_ context.Context, _ time.Duration) error {
-		ready := goodAttest(ch, api.PublicationIntentUnpublished)
-		ready.GeneratedAt = ch.IssuedAt.Add(5 * time.Millisecond)
-		return healthattest.WriteAttestation(w.layout.Journal, ready)
-	}
-	nc.Bind(ch, prior, "candidate")
-
-	view := w.eng.viewFor(context.Background(), next.id.String(), &next.manifest)
-	st, err := nc.TunnelProbe(context.Background(), view)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if st != api.HealthCheckStatusPassed {
-		t.Fatalf("NodeChecks.poll aborted on initial warm-up attestation instead of polling within Wait window: got tunnel_probe=%q, want %q", st, api.HealthCheckStatusPassed)
-	}
 }
 
 func TestUPD_D053_Review_PollDeadlineIgnoresInjectedClock(t *testing.T) {
