@@ -1,7 +1,7 @@
 # Production Deployment Runbook (`docs/handover/deploy.md`)
 
-**Current cut — [follow-up 31](follow-up-31.md) (2026-11-03 EST):** Through #407: isolation 17 records the first qualified D-140 pass; netlab 27 closes r20 H-2 and live drift. D-144 lists are on main; F30-01 remains routed. r21 returned to agent-core 38 before merge. Historical failures stay failed; nine owner decisions.
-**Previous cut — [follow-up 30](follow-up-30.md):** #397–#403 at b9439411; 23 subtests, seven rows, nine snapshots, 449 checks, six dated documents and 61 findings. See follow-up 31 for timing errata.
+**Current cut — [follow-up 32](follow-up-32.md) (2026-11-03 EST):** Through #412: F27-02 fixture defect, qualified comparison open; first live D-102 survivor continuation; B1 unresolved. F28-01 and F31-01 routed, not yet judged. AT02 / AT09 stay failed; F30-01 has no merged fix. Nine owner requests.
+**Previous cut — [follow-up 31](follow-up-31.md):** #404–#407 at 3573f396; 21 subtests, four rows, nine handover snapshots, nine nightly inputs, 596 checks, three dated documents and 72 findings.
 
 Installer 7 reporting inputs are required: a validated HTTPS control origin
 (`--control-url`) and its readable server CA bundle (`--server-ca`). Generated
