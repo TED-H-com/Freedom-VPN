@@ -33,11 +33,12 @@ func (l *live) nativeMatrix(r *record) {
 	for _, row := range []struct {
 		family string
 		mtu    int
-	}{{"ipv4", 1500}, {"ipv6", 1500}, {"dual", 1500}, {"dual", 1280}, {"ipv6", 1280}} {
+	}{{"ipv4", 1500}, {"ipv6", 1500}, {"dual", 1500}, {"dual", 1280}, {"ipv6", 1280}, {"ipv4", 1280}} {
 		label := fmt.Sprintf("native %s MTU %d", row.family, row.mtu)
 		capture := l.startNativeCapture(r, "member", fmt.Sprintf("matrix-%s-%d", row.family, row.mtu))
 		capture.sample("before-input")
 		selection, e := l.hook.ApplyNativeInputs(l.ctx, labstack.NativeFixtureInputs{Underlay: row.family, MTU: row.mtu, Protocol: "tcp", Platform: "linux"})
+		inputAppliedAt := time.Now().UTC()
 		r.jsonCheck(label+" input", "available", selection, "ApplyNativeInputs isolated member interfaces", e == nil && selection.Available)
 		if e != nil {
 			capture.stop()
@@ -58,21 +59,39 @@ func (l *live) nativeMatrix(r *record) {
 			return (p.Family == "ipv4" || p.Family == "ipv6") && (row.family == "dual" || p.Family == row.family)
 		}
 		before, be := l.hook.DeviceByteCounters(l.ctx, id)
+		var clampRules map[string]any
+		if row.mtu == 1280 {
+			clampRules = l.d146Rules(id)
+		}
 		capture.sample("before-bulk")
+		bulkStartedAt := time.Now().UTC()
 		got, ge := l.fixture("member", "-mode", "bulk", "-addr", l.originIP()+":9446", "-device", id.String())
+		bulkEndedAt := time.Now().UTC()
 		capture.sample("after-bulk")
 		capEvidence := capture.stop()
 		after, ae := l.hook.DeviceByteCounters(l.ctx, id)
 		afterPath, ape := l.hook.ObserveNativeUnderlay(l.ctx)
 		chosenAfter, caErr := l.selectedNativePath()
-		r.jsonCheck(label+" transfer", "IPv4 overlay: 64064 TCP bytes and upload/download counters increase; selected underlay family recorded; D-123 IPv6Block, no IPv6 end-to-end MTU/PMTU claim", map[string]any{"decision": "under provisional D-137", "native_capture": capEvidence, "scope": map[bool]string{true: "receive-only 1280 without PTB; PMTU black-hole limitation, never a supported-path PASS", false: "1500 baseline"}[row.mtu == 1280], "overlay_family": "ipv4", "ipv6_mode": "block", "ipv6_no_leak_evidence": "docs/poc/G2-f802-mtu1280-2026-10-31.md (independent netlab measurement; ctv6 drops in both directions, no member class dequeue)", "selection": selection, "before_path": beforePath, "after_path": afterPath, "selected_exit_before": chosenBefore, "selected_exit_after": chosenAfter, "before_counters": before, "after_counters": after, "transfer": got}, "native down/up; ObserveNativeUnderlay; fixture bulk; DeviceByteCounters", familyOK(chosenBefore) && familyOK(chosenAfter) && cbErr == nil && caErr == nil && chosenBefore.Connected && chosenAfter.Connected && down == nil && up == nil && ready && pe == nil && be == nil && ge == nil && ae == nil && ape == nil && got.Available && got.Bytes == 64064 && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download)
+		r.jsonCheck(label+" transfer", "IPv4 overlay: 64064 TCP bytes and upload/download counters increase; selected underlay family recorded; D-123 IPv6Block, no IPv6 end-to-end MTU/PMTU claim", map[string]any{"decision": "under provisional D-137", "native_capture": capEvidence, "scope": map[bool]string{true: "receive-only 1280 without PTB; D-146 TCP qualification requires the separate clamp evidence", false: "1500 baseline"}[row.mtu == 1280], "overlay_family": "ipv4", "ipv6_mode": "block", "ipv6_no_leak_evidence": "docs/poc/G2-f802-mtu1280-2026-10-31.md (independent netlab measurement; ctv6 drops in both directions, no member class dequeue)", "selection": selection, "before_path": beforePath, "after_path": afterPath, "selected_exit_before": chosenBefore, "selected_exit_after": chosenAfter, "before_counters": before, "after_counters": after, "transfer": got}, "native down/up; ObserveNativeUnderlay; fixture bulk; DeviceByteCounters", familyOK(chosenBefore) && familyOK(chosenAfter) && cbErr == nil && caErr == nil && chosenBefore.Connected && chosenAfter.Connected && down == nil && up == nil && ready && pe == nil && be == nil && ge == nil && ae == nil && ape == nil && got.Available && got.Bytes == 64064 && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download)
 		if row.mtu == 1280 {
-			// Retain the actual byte assertion on failure. Even a complete transfer
-			// through this asymmetric fixture cannot certify supported PMTU.
-			if r.Steps[len(r.Steps)-1].Status == "pass" {
-				r.Steps[len(r.Steps)-1].Status = "blocked"
+			// The original byte/counter/family predicate above is unchanged.
+			// Only its former unconditional D-137 downgrade is conditional now.
+			original := len(r.Steps) - 1
+			uploadOK := d146Upload(got, id)
+			r.jsonCheck(label+" upload", "64064 upload bytes accepted by origin, verified by 64 exact echoes; original bulk connection", map[string]any{"endpoint": got.Endpoint, "payload_bytes": got.Bytes, "protocol_overhead": "44-byte MEMBER greeting upload; 3-byte OK plus 5-byte ECHO prefix per line download"}, "unmodified bulk fixture; endpoint WriteBytes and complete echo validation", uploadOK)
+			qualified := l.d146Qualification(r, capture, map[string]any{
+				"run_id": l.runID, "source_commit": l.build.Source, "row": label, "device_id": id,
+				"capture": capEvidence, "rules": clampRules, "input_applied_at": inputAppliedAt,
+				"bulk_started_at": bulkStartedAt, "bulk_ended_at": bulkEndedAt,
+				"selected_before": chosenBefore, "selected_after": chosenAfter,
+				"transfer": got, "upload_predicate": uploadOK, "original_byte_predicate": r.Steps[original].Status == "pass",
+			})
+			if !qualified {
+				if r.Steps[original].Status == "pass" {
+					r.Steps[original].Status = "blocked"
+				}
+				r.block("D-137 / D-146: receive-only 1280 TCP lacks complete clamp qualification; measured bytes retained. UDP/QUIC without PTB remain limitations.")
 			}
-			r.block("D-137 provisional limitation: receive-only 1280 without PTB is a PMTU black hole; measured bytes retained, never a supported-path PASS")
 		}
 		if row.family == "ipv6" && row.mtu == 1280 {
 			l.knownPMTU1280(r, id)

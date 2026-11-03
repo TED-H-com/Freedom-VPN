@@ -1,74 +1,89 @@
-# Follow-up 17 run ledger
+# Follow-up 18 run ledger
 
-Run `81b638e8-be59-4996-9594-14dd402ebb86`, measured harness `3ba0856487288b9be3cf81f3e3afa37b0fa43a47`, baseline `a7497ddf0b08805e4cddfc0e3b5f47399205054e` (the assigned #406 tree, including #400/#401/#403/#406).
+Run `50117c68-d1b3-431d-a2be-cd94d27a2447`, measured harness `4eb5d7d32c449da7689e749fd8ecb208657937dd`, baseline `27ff63928222c9642e4f5e180cf225108327a1e5` (#432). Main at preflight: `27ff63928222c9642e4f5e180cf225108327a1e5`. The measured source was not rebased or changed during the live run.
 
-**2 PASS / 6 BLOCKED / 2 FAIL**, **691 passed / 7 blocked / 5 failed subchecks**. One assembled ten-case run; live make exit **2**.
+**2 PASS / 6 BLOCKED / 2 FAIL**, **699 passed / 5 blocked / 4 failed subchecks**. Second authorized assembled ten-case run, live wrapper exit **2**; no third run. [Original case results](F18-results.json), [all AT09 subchecks](F18-AT09-subchecks.md).
 
-Main advanced during admission to `3573f396d60836f3f203ab5f883575c96a0ec45c` (#407 handover). Its 34-file delta is documentation, handover fixtures/tests and secops scope evidence; no runtime source changed. The running tree was not rebased. Build records honestly retain `source_dirty=true` from generated evidence; no measured Go source changed during the assembled run.
+The foreground wrapper ran **2026-11-03T21:05:48.316204+00:00–2026-11-03T21:55:03.324790+00:00**, **2955.009 s**, including admission, startup and teardown. Its initial host-admission wait was **0.036 s**, below the 90-minute limit. The separate suite-admission receipt is retained below. No reservation was taken. The hold script was invoked as `bash "$FVPN_HOLD_SH"` before every make, go test and Docker command, including nested calls; held checks polled every 60 seconds. Admission was checked again after stack startup.
 
-The foreground wrapper ran **2026-11-03T08:06:07.607781Z–08:55:03.714784Z**, **2936.107 s**, including admission, startup and teardown. The live test took **2758.08 s**, package **2767.176 s**. All ten cases belong to this one run; none was retried. Teardown exited 0; independent inventory at **08:56:06.916900Z** found zero owned containers, networks, volumes or images. Shared Postgres and other lanes were untouched. [Admission/cleanup receipts](F17-admission-and-cleanup.json).
+```json
+{
+  "wait_seconds": 0.027,
+  "waited_for_isolation": false,
+  "polls": [
+    {
+      "elapsed_seconds": 0.027,
+      "other_suites": 0,
+      "isolation_active": false
+    }
+  ]
+}
+```
 
-Area lint's initial host hold waited **120.113 s**, polling at 60 seconds; a netlab timing suite was observed then. After final source preparation, area lint passed again. The assembled runner then waited **60.055 s** for the active handover chain to finish. The priority/concurrency check admitted zero other suites, sampled `vmstat 5 7`, checked `pgrep -af 'gates.sh|mk/at-'`, and checked again after startup. Scheduling used observed process state and the authorized hold script, not an assumed owner completion time. Every make, go test and Docker command, including nested calls, checked that the script printed `free`; none was held during the live period.
+The five-second monitor retained **573 samples** with **0 external-suite samples** after separating this runner's own child make. No external-suite overlap observed; five-second sampling cannot exclude processes entirely between samples. [Original process monitor](F18-process-monitor.json), [admission and cleanup receipts](F18-admission-and-cleanup.json).
 
-The [five-second process monitor](F17-process-monitor.json) has **557 samples**, zero chain-gate-active samples. Its suite count can include this runner's own child make; the chain-gate flag is separate. No chain overlap was observed, and no confounded interval is fabricated. This sampling does not exclude a process entirely between samples. Historical follow-up 16's contention window is unchanged.
+No separate diagnostic command was attempted during run 2. Run 1's canceled diagnostic remains historical in its archive. No other lane's process was touched.
 
-`go env GOCACHE` returned `${HOME}/.cache/go-build` (home-relative publication). Exact output and raw pgrep remain private. No cache override. Scratch uses disk under `.agent/tmp` via Python `TemporaryDirectory`; no shell cleanup trap was introduced. Prefix `fvpn-w4-members-`, port base `24000`.
+`go env GOCACHE` returned `<home>/.cache/go-build` (home-relative publication); no cache override. Exact output stays private. Scratch uses disk under `.agent/tmp` via Python `TemporaryDirectory`; no shell cleanup trap was introduced. Prefix `fvpn-w4-members-`, port base `24000`. Owned teardown and the subsequent inventory are recorded in the receipts; shared Postgres and other lanes were untouched.
 
-Preflight **2026-11-03T08:07:07.699127+00:00** ([original receipt](F17-host-preflight.json)):
+Preflight **2026-11-03T21:05:48.415486+00:00** ([original receipt](F18-host-preflight.json)):
 
 ```text
 procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------
  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu
- 2  0 521060 2638636 1915920 171170352    3   37 107944 109473 25339   21  3  2 93  1  0  0
- 0  0 521060 3349308 1915928 171170864    0    0     0 14483 23372 136491  2  1 93  3  0  0
- 1  0 521060 3349112 1915936 171170452    0    0     0  8061 4868 8763  0  0 99  1  0  0
- 4  0 579580 1428224 1880132 171420172    0 11606     1 43060 67461 35594  5  3 90  2  0  0
- 3  0 607700 2677828 1815296 171610172    0 5615    49  8474 71139 36551  8  5 87  0  0  0
- 2  0 607700 3689696 1803224 170928276    0    0   836 435802 38543 83128  6  4 89  0  0  0
- 0  1 607700 3625824 1803540 170928808    0    0    59 259930 17142 84836  2  1 96  0  0  0
+ 0  0 2944476 18497164 2900256 155685272   17   62 29446 40430 22306   20  3  2 94  1  0  0
+ 0  0 2944476 18496584 2900264 155684856    0    0     0   188 3141 4447  0  1 99  0  0  0
+ 0  0 2944476 18495868 2900272 155684872    0    0     0    38 2852 4877  0  0 99  0  0  0
+ 1  0 2944476 18525192 2900284 155652684    0    0     0   420 2824 4312  0  0 100  0  0  0
+ 0  0 2944476 18524700 2900292 155652688    0    0     0   306 2744 4367  0  0 100  0  0  0
+ 1  0 2944476 18520804 2900300 155652692    0    0     0   273 2942 4533  0  0 100  0  0  0
+ 0  0 2944476 18518372 2900312 155655332    0    0     0    48 2755 4057  0  0 99  0  0  0
 ```
+
+`pgrep -af 'gates.sh|mk/at-'` returned empty stdout immediately before the run; its SHA-256 is retained in the admission receipt.
 
 Live output tail:
 
 ```text
---- FAIL: TestATMembers_Live (2758.08s)
-    --- FAIL: TestATMembers_Live/AT05 (16.25s)
-    --- FAIL: TestATMembers_Live/AT01 (76.08s)
-    --- FAIL: TestATMembers_Live/AT02 (926.85s)
-    --- PASS: TestATMembers_Live/AT03 (215.73s)
-    --- FAIL: TestATMembers_Live/AT04 (583.10s)
-    --- PASS: TestATMembers_Live/AT08 (111.65s)
-    --- FAIL: TestATMembers_Live/AT20 (98.73s)
-    --- FAIL: TestATMembers_Live/AT21 (36.25s)
-    --- FAIL: TestATMembers_Live/AT22 (370.27s)
-    --- FAIL: TestATMembers_Live/AT09 (313.92s)
-FAIL github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members 2767.176s
+--- FAIL: TestATMembers_Live (2828.59s)
+    --- FAIL: TestATMembers_Live/AT05 (15.72s)
+    --- FAIL: TestATMembers_Live/AT01 (56.10s)
+    --- FAIL: TestATMembers_Live/AT02 (967.08s)
+    --- PASS: TestATMembers_Live/AT03 (214.36s)
+    --- FAIL: TestATMembers_Live/AT04 (600.58s)
+    --- PASS: TestATMembers_Live/AT08 (111.40s)
+    --- FAIL: TestATMembers_Live/AT20 (101.10s)
+    --- FAIL: TestATMembers_Live/AT21 (34.70s)
+    --- FAIL: TestATMembers_Live/AT22 (370.82s)
+    --- FAIL: TestATMembers_Live/AT09 (347.53s)
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members	2847.732s
 Private producer export node exit: 0
 Private producer export node2 exit: 0
 Owned stack teardown exit: 0
 ```
 
-The required foreground gate order is area lint; live at-members (above, exit 2); members offline tests; uncached handover tests; root Go lint; root vet; gofmt; diff check; amd64/arm64 helper builds; committed-evidence hygiene. The root invocation uses `make go-lint go-with-disk-tmp=` inside the Python disk wrapper to disable the root Makefile's shell cleanup trap without skipping checks. Final offline receipts follow below.
+Required gate order: area lint; live at-members; offline members; uncached handover; root Go lint; root vet; gofmt; diff check; amd64/arm64 helper builds; committed-evidence hygiene. The root lint invocation is `make go-lint go-with-disk-tmp=` within the Python disk wrapper, disabling the root shell cleanup trap while retaining its checks. [Every attempt and real output tail](F18-gates.json).
 
-[Results](summary.md), [archive](history/follow-up-16/INDEX.md), [commit mapping](history/follow-up-16/PUBLISHED-COMMITS.md), [derivation commands](PROCEDURES.md#follow-up-17-retained-evidence).
+| Gate | Exit | Elapsed seconds | Initial host wait seconds |
+|---|---:|---:|---:|
+| 01-run2-area-lint | 0 | 1.651 | 0.035 |
+| 01b-run2-reader-tests | 1 | 0.497 | 0.035 |
+| 01c-run2-area-lint | 0 | 1.608 | 0.035 |
+| 01d-run2-reader-tests | 0 | 0.513 | 0.034 |
+| 02-assembled | 2 | 2955.009 | 0.036 |
+| 03-offline-members | 0 | 21.592 | 0.036 |
+| 04-handover | 0 | 4.538 | 0.035 |
+| 05-root-lint | 0 | 4.616 | 0.037 |
+| 06-vet | 0 | 0.462 | 0.037 |
+| 07-gofmt | 0 | 0.178 | 0.037 |
+| 08-diff | 0 | 0.58 | 0.036 |
+| 09-helper-builds | 0 | 3.331 | 0.036 |
+| 10-hygiene | 0 | 19.43 | 0.037 |
+| 11-final-handover | 0 | 3.886 | 0.035 |
+| 12-final-hygiene | 0 | 19.344 | 0.036 |
 
-Post-run root lint initially rejected the live-only `memberHTTPRecord` declaration as unused in the untagged build (`U1000`). Commit `05c5798d` moves the identical declaration into the existing `e2e`-tagged test file and removes the now-unused import. It changes no behavior or predicate. The live measurement remains pinned to `3ba08564`; both build modes are rechecked without repeating the run. The initial failed lint receipt is retained.
+D-098 archive commit `50f4403b` precedes the harness commit. All 77 original root files from run 81b638e8, including gzip and pin files, are preserved byte-for-byte under [follow-up 17](history/follow-up-17/INDEX.md); all earlier archives remain unchanged. No handover claims test reads a moved living-root file, so no D-132 test-pointer edit was needed.
 
-Final gate receipts ([all attempts and real output tails](F17-gates.json)):
+Orchestrator note 1 (2026-11-03 15:58 EST) authorized the reader correction and this second run. The reader now accepts the production retire phase with all lifecycle checks unchanged. D-146 qualification remains as committed before run 1: successful receive-only TCP bytes avoid the former D-137 downgrade only with complete same-run clamp, handshake, outer-packet and no-PTB evidence. Original failures, D-135/D-136 predicates and historical results remain unchanged. Postprocessing only indexes retained records. [Results](summary.md), [limitations](BLOCKERS.md), [requests](requests.md).
 
-| Gate | Exit | Elapsed seconds |
-|---|---:|---:|
-| Area lint | 0 | 1.448 |
-| One assembled run | 2 | 2936.107 |
-| Offline members (recheck) | 0 | 253.650 |
-| Uncached handover (recheck) | 0 | 2.730 |
-| Root go-lint (recheck) | 0 | 1.379 |
-| Root go vet | 0 | 0.373 |
-| Exact gofmt assertion | 0 | 0.114 |
-| Diff whitespace | 0 | 0.305 |
-| Five helpers × amd64/arm64 | 0 | 3.037 |
-| Committed-evidence hygiene | 0 | 11.698 |
-
-The offline recheck waited **240.181 s** for host admission, then passed. The initial gofmt shell assertion contained one extra literal `)` and returned 1 without a formatting finding; the exact corrected assertion returned 0. The initial lint U1000 and this invocation error remain in the ledger. Committed-evidence hygiene scanned **220 acceptance JSON records and 416 Markdown documents**, including lossless gzip bytes and pins. No failed live predicate was retried.
-
-Archive/link verification: all 81 original archive files still match baseline bytes and SHA-256. Across current root documents, the new archive and additive references, **336** Markdown targets were checked. One original operator-checklist reference resolves outside owned paths and is listed in [requests](requests.md); the archive index supplies a working direct link. Other checked targets resolve, and plain AT02 remains present. Earlier archives remain untouched.
+Run 1 (`118271c1`, harness `b4317bd4`) is frozen in archive commit `71dc60ac`: [72 original root files and pins](history/follow-up-18-run1/INDEX.md). Its observed result remains 0 PASS / 3 BLOCKED / 7 FAIL and 442 / 0 / 35 subchecks. The proven retire rejection and 16 original export-prefix matches explain the joined reader failures; no other historical verdict is rewritten. [Reader value audit and tests](F18-reader-audit.md). The first synthetic test attempt passed its synthetic cases but failed to frame the indented archived reproduction as JSONL; compacting that test input fixed the reproduction, with no parser relaxation.

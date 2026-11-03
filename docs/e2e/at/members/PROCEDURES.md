@@ -443,3 +443,27 @@ python3 -B tests/e2e/at/members/followup17_first_selection.py
 ```
 
 Private producer streams and raw pcaps remain under `.agent/tmp`; only payload-free headers/hashes and joined records are published. Files over 20,000,000 bytes use lossless gzip with both SHA-256 forms. Rebuild the new capture manifest after compression. Earlier archives and their manifests are immutable. The local foreground gate wrapper applies the authorized private hold script before every make, go test and Docker invocation, including nested calls; its location and raw command arguments are not public evidence. Do not rerun a completed assembled campaign to repair a failed predicate.
+
+## Follow-up 18 retained evidence
+
+Archive the preceding root evidence first. The measured harness adds an IPv4-only receive-only 1280 row alongside the existing dual and IPv6 rows. The original bulk fixture and transfer predicate stay unchanged. A separate upload check verifies its 64,064 payload bytes and all exact echoes. Before that connection, retain the applied-input timestamp and the serving node's adjacent clamp/accept statements; then qualify the original endpoint headers and underlay datagrams under D-146. Missing evidence retains the D-137 downgrade. The fixture cannot advertise a smaller MSS, so that control is explicitly not exercised.
+
+Orchestrator note 1 (2026-11-03 15:58 EST) authorized one second assembled run after retaining run 1 in its immutable archive. After run 2 and owned teardown, derive from its retained files:
+
+```sh
+python3 -B tests/e2e/at/members/followup18_index.py
+python3 -B tests/e2e/at/members/followup18_evidence.py
+python3 -B tests/e2e/at/members/followup18_receipts.py
+python3 -B tests/e2e/at/members/followup18_transitions.py
+python3 -B tests/e2e/at/members/followup18_native_sessions.py
+python3 -B tests/e2e/at/members/followup18_review.py
+python3 -B tests/e2e/at/members/followup18_qualification.py
+python3 -B tests/e2e/at/members/followup18_first_selection.py
+python3 -B tests/e2e/at/members/followup18_d146_index.py
+python3 -B tests/e2e/at/members/followup18_precondition.py
+python3 -B tests/e2e/at/members/followup18_historical.py
+```
+
+These scripts send no traffic and replace no original verdict. The historical script reads the immutable follow-up 17 headers solely to explain their small reverse datagrams; all historical F8-02 outcomes remain unchanged. Header correlation permits an above-1160 MSS advertisement to become 1160 while retaining every other decoded TCP field. That correlation alone does not prove a clamp rule executed. The D-146 qualifier additionally requires serving-rule evidence, both endpoint rewrites, unchanged byte predicates, complete reverse datagram delivery within 1280, and no PTB at any capture point. Receive-only UDP and QUIC without PTB remain limitations.
+
+`followup18_lifecycle.py` is a historical replay bound to the frozen run-1 archive and measured harness `b4317bd4`. Its old phase list demonstrates the original rejection; it is not the current validator. It writes only a private replay under `.agent/tmp/f18-run1`, without rewriting either run. `followup18_precondition.py` indexes the current run’s original finite-grant, restoration and AT09 prerequisite records without inferring success from missing observations.

@@ -1,6 +1,6 @@
 # Physical and native-client runs
 
-Current follow-up 17 results and limits are in [summary](summary.md), [hold joins](F17-populated-holds.md) and [qualification](F17-qualification.json). The detailed follow-up 16 observations below remain historical and link to their frozen archive.
+Current follow-up 18 results and limits are in [summary](summary.md), [hold joins](F18-populated-hold-joins.json) and [qualification](F18-qualification.json). The detailed follow-up 16 observations below remain historical and link to their frozen archive.
 
 Status for every row below: **needs operator run**. No platform, physical arm64
 or second-NAT capability is claimed by the live Linux lab tests.

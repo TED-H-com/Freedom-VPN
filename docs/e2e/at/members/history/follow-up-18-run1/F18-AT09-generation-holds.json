@@ -1,0 +1,161 @@
+{
+  "case": "AT09",
+  "checks": [],
+  "classification_scope": "Replay original accepted reports through PublicationDataPathFailure at their receipt time; current signed-lease identity lookup. This is not a captured operation transition.",
+  "control_io_after_cancel": "not observable here",
+  "interpretation": "Node-wide hold; the observation contract has no per-member hold field. Grant or device withdrawal while members remain eligible cannot prove members_revoked. Incident closure is not service recovery.",
+  "joined": null,
+  "run_id": "118271c1-616e-46a2-a744-d67b00fb94fb",
+  "snapshots": [
+    {
+      "at": "2026-11-03T20:46:07.599166446Z",
+      "available": true,
+      "label": "AT09 start",
+      "snapshot": {
+        "members": [
+          {
+            "status": "expired",
+            "member_id": "01a1a2f0-5f81-722a-853a-3415090acdd1",
+            "updated_at": "2026-11-03T20:01:21.520472+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "expired",
+            "effective_service_end": "2026-11-03T20:01:12+00:00"
+          },
+          {
+            "status": "expired",
+            "member_id": "01a1a2f0-625d-70d5-99cd-afc4a3887bf5",
+            "updated_at": "2026-11-03T20:45:44.892937+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "expired",
+            "effective_service_end": "2026-11-03T20:45:37.348144+00:00"
+          },
+          {
+            "status": "expired",
+            "member_id": "01a1a2f0-6532-7666-8893-6f2a01f89d36",
+            "updated_at": "2026-11-03T20:20:54.754612+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "expired",
+            "effective_service_end": null
+          },
+          {
+            "status": "active",
+            "member_id": "01a1a309-e637-75e8-9e3f-3860fd459e24",
+            "updated_at": "2026-11-03T20:11:43.678535+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "active",
+            "effective_service_end": "2026-11-03T21:11:38+00:00"
+          },
+          {
+            "status": "active",
+            "member_id": "01a1a30a-1a97-7193-baa5-0d72db697b95",
+            "updated_at": "2026-11-03T20:11:57.771226+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "active",
+            "effective_service_end": "2026-11-03T21:11:51+00:00"
+          },
+          {
+            "status": "active",
+            "member_id": "01a1a30a-4ef2-7d2e-a402-f8e81a6d96c0",
+            "updated_at": "2026-11-03T20:12:10.849117+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "active",
+            "effective_service_end": "2026-11-03T21:12:04+00:00"
+          },
+          {
+            "status": "active",
+            "member_id": "01a1a30a-8338-775e-ba7e-ed2f7a833fa9",
+            "updated_at": "2026-11-03T20:12:23.939458+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "active",
+            "effective_service_end": "2026-11-03T21:12:18+00:00"
+          },
+          {
+            "status": "active",
+            "member_id": "01a1a30a-b78d-7cc4-9f07-5846454760be",
+            "updated_at": "2026-11-03T20:12:38.075046+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "active",
+            "effective_service_end": "2026-11-03T21:12:31+00:00"
+          },
+          {
+            "status": "active",
+            "member_id": "01a1a30a-ebf8-752c-b553-ea7f93781416",
+            "updated_at": "2026-11-03T20:12:51.163569+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "active",
+            "effective_service_end": "2026-11-03T21:12:45+00:00"
+          },
+          {
+            "status": "expired",
+            "member_id": "01a1a312-e4c3-700a-89a6-dc8fd06af563",
+            "updated_at": "2026-11-03T20:24:05.84277+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "expired",
+            "effective_service_end": "2026-11-03T20:23:57+00:00"
+          },
+          {
+            "status": "suspended",
+            "member_id": "01a1a316-05d0-7a76-99ac-5c4c3d4479d1",
+            "updated_at": "2026-11-03T20:24:59.014489+00:00",
+            "admin_suspended": true,
+            "entitlement_state": "suspended",
+            "effective_service_end": "2026-11-03T21:24:54+00:00"
+          },
+          {
+            "status": "suspended",
+            "member_id": "01a1a316-27b1-74fe-9ac1-cfa0827b1e66",
+            "updated_at": "2026-11-03T20:28:23.400761+00:00",
+            "admin_suspended": true,
+            "entitlement_state": "suspended",
+            "effective_service_end": "2026-11-03T21:25:01+00:00"
+          }
+        ],
+        "incidents": [
+          {
+            "id": "01a1a302-c3d1-7a99-9d0a-f083536bbf68",
+            "node_id": "01a1a302-4b7a-7864-989b-df4fd4d7f221",
+            "ended_at": "2026-11-03T20:28:34.790412+00:00",
+            "end_reason": "generation_matched",
+            "escalated_at": "2026-11-03T20:04:20.559101+00:00",
+            "last_seen_at": "2026-11-03T20:28:29.802477+00:00",
+            "first_seen_at": "2026-11-03T20:03:49.840917+00:00",
+            "incarnation_id": "01a1a302-4bc3-7273-b067-1f8bd49c96b2",
+            "latest_report_id": "01a1a319-58e3-74ca-b369-833ed00d5acf",
+            "first_observed_at": "2026-11-03T20:03:49.835897+00:00"
+          },
+          {
+            "id": "01a1a31e-0057-742f-8c61-e0b91970d34d",
+            "node_id": "01a1a302-4b7a-7864-989b-df4fd4d7f221",
+            "ended_at": "2026-11-03T20:33:39.804918+00:00",
+            "end_reason": "generation_matched",
+            "escalated_at": null,
+            "last_seen_at": "2026-11-03T20:33:34.805674+00:00",
+            "first_seen_at": "2026-11-03T20:33:34.805674+00:00",
+            "incarnation_id": "01a1a302-4bc3-7273-b067-1f8bd49c96b2",
+            "latest_report_id": "01a1a31e-004e-7519-a2b7-26ee1f6b7a68",
+            "first_observed_at": "2026-11-03T20:33:34.798315+00:00"
+          },
+          {
+            "id": "01a1a328-c3bc-794c-9944-791b030b1f35",
+            "node_id": "01a1a302-4b7a-7864-989b-df4fd4d7f221",
+            "ended_at": "2026-11-03T20:45:25.186007+00:00",
+            "end_reason": "generation_matched",
+            "escalated_at": null,
+            "last_seen_at": "2026-11-03T20:45:20.187593+00:00",
+            "first_seen_at": "2026-11-03T20:45:20.187593+00:00",
+            "incarnation_id": "01a1a302-4bc3-7273-b067-1f8bd49c96b2",
+            "latest_report_id": "01a1a328-c3b5-7c92-b7bb-23fd3015726f",
+            "first_observed_at": "2026-11-03T20:45:20.181805+00:00"
+          }
+        ]
+      }
+    },
+    {
+      "at": "2026-11-03T20:53:41.022307891Z",
+      "available": false,
+      "label": "AT09 complete",
+      "snapshot": null
+    }
+  ],
+  "source_commit": "b4317bd4e4ad178609b71d3fd4fbb986cb9947db"
+}

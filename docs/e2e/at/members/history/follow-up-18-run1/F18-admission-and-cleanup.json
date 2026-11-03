@@ -1,0 +1,83 @@
+{
+  "baseline_commit": "27ff63928222c9642e4f5e180cf225108327a1e5",
+  "suite_wait": {
+    "wait_seconds": 0.025,
+    "waited_for_isolation": false,
+    "polls": [
+      {
+        "elapsed_seconds": 0.025,
+        "other_suites": 0,
+        "isolation_active": false
+      }
+    ]
+  },
+  "gate_initial_host_waits": [
+    {
+      "gate": "01-area-lint",
+      "seconds": 0.035
+    },
+    {
+      "gate": "01b-area-lint",
+      "seconds": 0.035
+    },
+    {
+      "gate": "02-assembled",
+      "seconds": 0.035
+    }
+  ],
+  "nested_admission_checks": 4050,
+  "held_checks": [
+    {
+      "at": "2026-11-03T20:09:57.636909+00:00",
+      "command": "docker",
+      "free": false,
+      "wait_seconds": 0.039
+    },
+    {
+      "at": "2026-11-03T20:10:57.676291+00:00",
+      "command": "docker",
+      "free": false,
+      "wait_seconds": 60.079
+    },
+    {
+      "at": "2026-11-03T20:11:57.715750+00:00",
+      "command": "docker",
+      "free": false,
+      "wait_seconds": 120.118
+    },
+    {
+      "at": "2026-11-03T20:12:57.755655+00:00",
+      "command": "docker",
+      "free": false,
+      "wait_seconds": 180.158
+    },
+    {
+      "at": "2026-11-03T20:13:57.795265+00:00",
+      "command": "docker",
+      "free": false,
+      "wait_seconds": 240.198
+    }
+  ],
+  "optional_diagnostic": {
+    "at": "2026-11-03T20:14:29.699268+00:00",
+    "action": "Canceled only the optional deferred container diagnostic and its admission wrapper; the assembled runner remains active.",
+    "container_read_started": false,
+    "reason": "Admission correctly held the external diagnostic against our own active run; avoid a teardown race."
+  },
+  "optional_diagnostic_hold_note": "The separate external diagnostic was held against our own active at-members make (exact hold output retained privately). It was canceled before a container read. These held polls do not establish another suite or a hold on the runner.",
+  "preflight_pgrep": {
+    "stdout": "",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "process_samples": 846,
+  "sample_interval_seconds": 5,
+  "external_suite_samples": [],
+  "contention": "No external-suite overlap observed; five-second sampling cannot exclude processes entirely between samples.",
+  "cleanup": {
+    "at": "2026-11-03T20:54:47.180630+00:00",
+    "containers": [],
+    "networks": [],
+    "volumes": [],
+    "images": []
+  }
+}
