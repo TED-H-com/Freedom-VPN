@@ -14,8 +14,9 @@ import (
 )
 
 // Beat is one agent heartbeat (§16.3). Mono is CLOCK_MONOTONIC, shared with
-// this process. PolicyExpires is the monotonic instant member forwarding must
-// already have stopped; zero means the agent is not serving.
+// this process. PolicyExpires is the monotonic instant all installed member
+// admission expires, capped by node limits. Earlier bindings expire through
+// their own kernel element timeouts. Zero means the agent is not serving.
 type Beat struct {
 	BootID        uuid.UUID
 	Mono          time.Duration

@@ -120,6 +120,13 @@ func (e *Engine) expireServing(ctx context.Context) bool {
 	if !e.serving || (e.policyExpires > 0 && e.clock.Mono() < e.policyExpires) {
 		return false
 	}
+	e.refreshDesired()
+	e.decision = Decide(e.input())
+	if e.policyExpires > 0 && e.decision.Serve {
+		// A binding boundary is a wake, not a node withdrawal. Its kernel
+		// timeout already stopped admission; enforce applies survivors.
+		return false
+	}
 	cleanup, cancel := context.WithTimeout(localContext(ctx), 5*time.Second)
 	defer cancel()
 	e.withdraw(cleanup)

@@ -691,8 +691,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	if !e.enrolled {
 		return nil
 	}
-	// Re-decide on this tick after a planned deadline withdrawal. Surviving
-	// siblings must not wait another poll merely because one device expired.
+	// Re-decide at a binding boundary; only a non-serving decision withdraws.
 	e.expireServing(ctx)
 	// Do not replace persisted desired provenance or bindings while a restart
 	// delta is pending. A held sample retries with forwarding still withdrawn.
@@ -1179,11 +1178,22 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		// Same installed model, but fresh live evidence is still mandatory.
 		// Failures take the ordinary reject/quarantine/withdraw path; no
 		// cached evidence or elapsed control timeout authorizes a skip.
-		if e.verifyServingModel(ctx, *e.appliedModel, e.appliedAssignments) &&
-			!e.expireServing(ctx) && e.checkMemberPath(ctx, *e.appliedModel) {
-			e.beat()
+		if !e.verifyServingModel(ctx, *e.appliedModel, e.appliedAssignments) ||
+			e.expireServing(ctx) || !e.checkMemberPath(ctx, *e.appliedModel) {
+			return nil
 		}
-		return nil
+		// Either local read can cross a binding deadline. Rebuild before
+		// skipping; survivors must reach ordinary Apply on this same tick.
+		d = Decide(e.input())
+		e.decision = d
+		if !d.Serve {
+			e.withdraw(ctx)
+			return nil
+		}
+		if e.canRetainServing(ctx, d) {
+			e.beat()
+			return nil
+		}
 	}
 	if !closedRecovery {
 		if err := e.invalidateMeterCheckpoint(); err != nil {
@@ -1225,14 +1235,20 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	}
 	wasServing := e.expectServing.Load()
 	if !closedRecovery && !e.epochClosed && len(e.meterBindings()) != 0 && !sameUsageBindings(e.meterBindings(), model.Bindings) {
-		// A sample while the old rules still forward leaves a race before
-		// Apply. Withdraw first, then commit every outgoing delta (r22 H-1).
-		e.handoff(ctx)
-		if !e.epochClosed || e.retainedPending || e.usagePersist || !e.baselineOK {
-			if !e.baselineOK {
-				_ = e.baseline(ctx) // keep the fail-closed retry on this call site too
+		if e.onlyExpiredBindingsRemoved(model) {
+			if !e.settleExpiredBindings(ctx) {
+				return nil
 			}
-			return nil
+		} else {
+			// A sample while the old rules still forward leaves a race before
+			// Apply. Withdraw first, then commit every outgoing delta (r22 H-1).
+			e.handoff(ctx)
+			if !e.epochClosed || e.retainedPending || e.usagePersist || !e.baselineOK {
+				if !e.baselineOK {
+					_ = e.baseline(ctx) // keep the fail-closed retry on this call site too
+				}
+				return nil
+			}
 		}
 	}
 	if !closedRecovery && e.meter != nil && e.epochClosed {
@@ -1494,10 +1510,11 @@ func (e *Engine) beat() {
 		return
 	}
 	reason := "-"
+	d := e.reportingDecision()
 	if e.serving {
 		reason = "serving"
-	} else if len(e.decision.Reasons) > 0 {
-		reason = string(e.decision.Reasons[0])
+	} else if len(d.Reasons) > 0 {
+		reason = string(d.Reasons[0])
 	}
 	if e.memberPathPending && !e.quarantinePending && e.applyError != nil && e.applyError.Message == "member_path_unconfigured" {
 		reason = "member_path_unconfigured"
@@ -1505,13 +1522,14 @@ func (e *Engine) beat() {
 	if e.identityFrozen {
 		reason = "identity_frozen"
 	}
+	expires := e.servingDeadline()
 	err := watchdog.WriteHeartbeat(e.cfg.HeartbeatPath, watchdog.Beat{
 		BootID: e.bootID, Mono: mono, Wall: e.clock.Wall().UTC(),
-		PolicyExpires: e.policyExpires, BaselineOK: e.baselineOK, Serving: e.serving,
+		PolicyExpires: expires, BaselineOK: e.baselineOK, Serving: e.serving,
 		Generation: e.appliedGen, Reason: reason, Evidence: e.containmentJSON(),
 	})
 	e.writeMeasurement(Measurement{Source: "heartbeat", Heartbeat: &MeasurementHeartbeat{
-		Mono: mono, PolicyExpires: e.policyExpires, Generation: decstr.U64(e.appliedGen),
+		Mono: mono, PolicyExpires: expires, Generation: decstr.U64(e.appliedGen),
 		BaselineOK: e.baselineOK, Serving: e.serving, Reason: reason, Written: err == nil,
 	}})
 	if err != nil {

@@ -658,8 +658,9 @@ func buildModel(in Input) (enforce.Model, time.Duration, error) {
 		if timeanchor.Remaining(deadline, in.MonoNow) <= 0 {
 			continue
 		}
-		// The watchdog wakes at the first device or member boundary, but a
-		// device limit must never shorten another device's member lease.
+		// Wake the agent at the first device or member boundary. The watchdog
+		// uses the last installed binding's deadline; each kernel element
+		// still expires independently of its siblings.
 		deviceDeadline := deadline
 		if !b.ValidUntil.IsZero() {
 			// Cap before adding the anchor: a distant wall deadline can make

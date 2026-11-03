@@ -91,15 +91,16 @@ func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationRepor
 		exp = presence.NewNullableWithValue(e.lease.ExpiresAt.UTC())
 		lid = presence.NewNullableWithValue(e.lease.LeaseId)
 	}
-	reasons := e.decision.Reasons
+	d := e.reportingDecision()
+	reasons := d.Reasons
 	if reasons == nil {
 		reasons = []api.ForwardingBlockReason{}
 	}
-	errs := slices.Clone(e.decision.Errors)
+	errs := slices.Clone(d.Errors)
 	if errs == nil {
 		errs = []api.NodeError{}
 	}
-	checks := slices.Clone(e.decision.Checks)
+	checks := slices.Clone(d.Checks)
 	if checks == nil {
 		checks = []api.NodeCheck{}
 	}
@@ -118,7 +119,7 @@ func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationRepor
 		BootId:                  e.bootID,
 		Checks:                  checks,
 		CurrentReleaseId:        release,
-		DataHealth:              reportedHealth(e.decision.DataHealth),
+		DataHealth:              reportedHealth(d.DataHealth),
 		Errors:                  errs,
 		ForwardingBlockReasons:  reasons,
 		LastGoodReleaseId:       lastGood,
@@ -126,9 +127,9 @@ func (e *Engine) report(ctx context.Context, at time.Time) (api.ObservationRepor
 		NodeId:                  e.nodeID,
 		NodeIncarnationId:       e.incID,
 		ObservedAt:              at,
-		ProvisioningState:       e.decision.Provisioning,
+		ProvisioningState:       d.Provisioning,
 		ReportId:                id,
-		SafetyStatus:            e.decision.Safety,
+		SafetyStatus:            d.Safety,
 	}
 	rep.Lease.ExpiresAt = exp
 	rep.Lease.LeaseId = lid
@@ -376,7 +377,7 @@ func observationJitter(wait time.Duration) time.Duration {
 // Timestamps and read-at detail change every tick. The semantic transition
 // includes every check status/code and block reason, including provisional.
 func (e *Engine) observationState() string {
-	d := e.decision
+	d := e.reportingDecision()
 	type check struct {
 		Name   api.NodeCheckName
 		Status api.HealthCheckStatus
@@ -416,4 +417,19 @@ func (e *Engine) observationState() string {
 type failedCandidate struct {
 	Generation uint64
 	Error      api.NodeError
+}
+
+// A cached serving decision can precede a failed local persistence/withdrawal.
+// Report the current cause when one exists. The zero decision before the first
+// evaluation has no checks and legitimately retains the heartbeat's "-".
+func (e *Engine) reportingDecision() Decision {
+	d := e.decision
+	if !e.serving && len(d.Reasons) == 0 && len(d.Checks) != 0 {
+		current := Decide(e.input())
+		if len(current.Reasons) != 0 {
+			current.Errors = append(current.Errors, d.Errors...)
+			return current
+		}
+	}
+	return d
 }

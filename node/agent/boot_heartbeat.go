@@ -22,7 +22,7 @@ func (e *Engine) bootHeartbeat(parent context.Context) error {
 		b.Reason = "boot_baseline"
 	}
 	if e.serving && ctx.Err() == nil {
-		b.Serving, b.Generation, b.PolicyExpires = true, e.appliedGen, e.policyExpires
+		b.Serving, b.Generation, b.PolicyExpires = true, e.appliedGen, e.servingDeadline()
 		b.Reason = "serving"
 	}
 	return watchdog.WriteHeartbeatContext(ctx, e.cfg.HeartbeatPath, b)
