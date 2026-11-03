@@ -155,3 +155,52 @@ sampler, and another restart; late adoption refusal with no premature usage
 mutation; failed probe clear and a successful retry without nonce extension;
 and the unreachable static-datapath validation guard. The actual 13-second
 blocking matrix is retained.
+
+## Follow-up 40 corrections — 2026-11-03
+
+This section corrects the delivered 39 record without replacing its text.
+See [r23 judgments](followup40-r23-judgments-2026-11-03.md) for D-141 verdicts,
+fixture limits, main comparisons and the implemented mechanisms.
+
+- H-1: the statement that an epoch-mismatching intent cannot label the new
+  interval was too broad. Regular Sample can switch epochs while the same
+  generation serves, and enforce's repair nudge can do so after publishing
+  intent. Those reset successors retain the same counting identities. A
+  settled final-sample boundary does not. Follow-up 40 proves that distinction
+  from the ledger's epoch history and loads intent even after a transient
+  live-marker read failure. The original single-candidate promise therefore
+  needed a fix. No real reset is reclassified as gap-free: r23 H-1a's reset
+  itself remains a counter_discontinuity gap.
+- H-1b: r23's absent-idle-counter proof is retained as a guard, not claimed as
+  a healthy production renderer state. The renderer creates zero counters;
+  reset sampling records their metadata even before their first packet.
+  Follow-up 40 additionally covers zero counters and the actual enforce
+  switchEpoch path after repair. No measured production switch frequency is
+  available; switching is incident driven, not a periodic sampling action.
+- H-2: finalDone did not reliably mean the ledger was closed. It was cleared
+  before barrier read-back/publication, so an interrupted publication could
+  skip preparation and generate a false Apply health-check failure. Epoch
+  closure now has its own flag; barrier identity and completion stay separate.
+- H-3/M-1: “a failure keeps the pending gate set” did not cover Baseline or
+  checkpoint-invalidation failures before the latch. Nor did the deferred
+  decision watch all usage/serving changes. Follow-up 40 latches before those
+  operations, withdraws on invalidation failure, recomputes reports, and
+  retains the second Baseline attempt. A failed kernel withdrawal is reported
+  as unverified, never as verified serving. Normal verified withdrawal and
+  persistence-failure traces show both reports agreeing with generation zero.
+- L-1 ordering clarification: latch removes orphan meter.checkpoint evidence
+  when no barrier is active, both before adoption and under the node lock.
+  It is not deferred until adoption's final verification. The delayed work is
+  setting live meter bindings and activateUsage (including uploader/restore).
+  ExistingEpochOnly prepares the meter without ledger mutation. The sentence
+  quoted by r23 and its prepareAdoptionUsage/resumeAdoptionUsage names do not
+  occur in the delivered file/source; this clarification records actual calls.
+
+The real renderer is `node/enforce/render_nft.go`. Its forward-chain marker
+is `fvpn_generation=<G> fvpn_metering=<V>`; ParseState obtains Generation via
+forwardGeneration. Neither serving nor Baseline rendering deletes named
+counters or the table. TestRender_Golden and the renderer's deletion guard are
+the real tests. The removed/re-added counter argument must use final settlement
+and the next unbound baseline, not counter deletion. Follow-up 40 verifies this
+with real renderer calls supplied the preserved counter State and restart.
+The shipped stop-budget test is in packaging/installer/followup9_test.go.

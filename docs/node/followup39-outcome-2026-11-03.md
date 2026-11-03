@@ -102,3 +102,28 @@ activity kept below the threshold for the measured intervals. Keep the
 0.5-core rule and the retained
 failed attempts. This lane makes no comparative performance claim and takes
 no further reservation under follow-up 39.
+
+## Follow-up 40 corrections — 2026-11-03
+
+The passing 39 gates above did not establish completeness. Review r23 exposed
+additional failure paths. The claim that the r22 accounting fixes were complete
+is superseded by [follow-up 40's judgments](followup40-r23-judgments-2026-11-03.md):
+intent became stale on serving epoch changes (H-1a/c, with H-1b's absent-counter
+fixture qualified); interrupted barrier publication could leave no open epoch
+for admission (H-2); early hand-off failures could leave stale decisions,
+unverified serving claims or live forwarding after checkpoint I/O failed
+(H-3a/b/b′); the second Baseline could succeed without a pending settlement
+latch (M-1). The genuine counter-reset gap remains required. The renderer
+preserves named counters, so remove/re-add depends on settlement and the
+unbound baseline rather than deletion.
+
+L-1 clarification: orphan checkpoint invalidation occurs in latch before
+adoption's final gate. Live bindings, activateUsage and upload are delayed;
+no statement here should imply the orphan-file removal is delayed too. The
+review's quoted sentence and helper names are not present in delivered 39.
+
+Follow-up 40 adds regressions and functional validation; it takes no reservation
+and runs no comparative timing measurement. The old failed attempts, frozen
+sources and reservation history remain unchanged. D-133 A,B,A,B is still owed;
+its [draft successor declaration](followup40-timing-draft-2026-11-03.md) is
+explicitly not yet run. No performance conclusion follows from functional gates.
