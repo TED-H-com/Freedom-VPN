@@ -1,0 +1,46 @@
+=== RUN   TestISO01_PendingConntrackDeleteKeepsServingAndRetries
+--- PASS: TestISO01_PendingConntrackDeleteKeepsServingAndRetries (0.32s)
+=== RUN   TestAT13_F32_SimulatorNFTTransactions
+    followup12_test.go:1558: add preserves objects and expiry; bare chains supported; failed warm/cold batches commit nothing; repeated baseline verified
+--- PASS: TestAT13_F32_SimulatorNFTTransactions (0.00s)
+=== RUN   TestAT13_F32_SimulatorTCCommitAndCrashCut
+=== RUN   TestAT13_F32_SimulatorTCCommitAndCrashCut/complete
+    followup12_test.go:1707: complete: observed [prepare commit retire release]; old classes survive preparation/commit; referenced classes intact; orphan reclaimed
+=== RUN   TestAT13_F32_SimulatorTCCommitAndCrashCut/restart_apply
+    followup12_test.go:1707: restart_apply: observed [prepare commit]; old classes survive preparation/commit; referenced classes intact; orphan reclaimed
+=== RUN   TestAT13_F32_SimulatorTCCommitAndCrashCut/baseline
+    followup12_test.go:1707: baseline: observed [prepare commit]; old classes survive preparation/commit; referenced classes intact; orphan reclaimed
+--- PASS: TestAT13_F32_SimulatorTCCommitAndCrashCut (0.39s)
+    --- PASS: TestAT13_F32_SimulatorTCCommitAndCrashCut/complete (0.13s)
+    --- PASS: TestAT13_F32_SimulatorTCCommitAndCrashCut/restart_apply (0.13s)
+    --- PASS: TestAT13_F32_SimulatorTCCommitAndCrashCut/baseline (0.13s)
+=== RUN   TestAT13_F32_SimulatorTCPartialFailureAndRootCleanup
+--- PASS: TestAT13_F32_SimulatorTCPartialFailureAndRootCleanup (0.00s)
+=== RUN   TestAT09_AT13_F34_SimulatorTCPAndICMPExpressions
+=== RUN   TestAT09_AT13_F34_SimulatorTCPAndICMPExpressions/mss
+=== RUN   TestAT09_AT13_F34_SimulatorTCPAndICMPExpressions/literal-values
+=== RUN   TestAT09_AT13_F34_SimulatorTCPAndICMPExpressions/pmtu
+=== RUN   TestAT09_AT13_F34_SimulatorTCPAndICMPExpressions/not-related
+--- PASS: TestAT09_AT13_F34_SimulatorTCPAndICMPExpressions (0.00s)
+    --- PASS: TestAT09_AT13_F34_SimulatorTCPAndICMPExpressions/mss (0.00s)
+    --- PASS: TestAT09_AT13_F34_SimulatorTCPAndICMPExpressions/literal-values (0.00s)
+    --- PASS: TestAT09_AT13_F34_SimulatorTCPAndICMPExpressions/pmtu (0.00s)
+    --- PASS: TestAT09_AT13_F34_SimulatorTCPAndICMPExpressions/not-related (0.00s)
+=== RUN   TestAT13_F34_SimulatorRejectsUnknownStatementAtomically
+=== RUN   TestAT13_F34_SimulatorRejectsUnknownStatementAtomically/meta_nftrace_set_1
+=== RUN   TestAT13_F34_SimulatorRejectsUnknownStatementAtomically/tcp_option_timestamp_size_set_1160
+=== RUN   TestAT13_F34_SimulatorRejectsUnknownStatementAtomically/tcp_option_maxseg_size_set
+=== RUN   TestAT13_F34_SimulatorRejectsUnknownStatementAtomically/tcp_option_maxseg_size_set_65536
+=== RUN   TestAT13_F34_SimulatorRejectsUnknownStatementAtomically/tcp_flags_|_syn_==_syn
+=== RUN   TestAT13_F34_SimulatorRejectsUnknownStatementAtomically/tcp_mystery_1
+=== RUN   TestAT13_F34_SimulatorRejectsUnknownStatementAtomically/icmp_mystery_frag-needed
+--- PASS: TestAT13_F34_SimulatorRejectsUnknownStatementAtomically (0.00s)
+    --- PASS: TestAT13_F34_SimulatorRejectsUnknownStatementAtomically/meta_nftrace_set_1 (0.00s)
+    --- PASS: TestAT13_F34_SimulatorRejectsUnknownStatementAtomically/tcp_option_timestamp_size_set_1160 (0.00s)
+    --- PASS: TestAT13_F34_SimulatorRejectsUnknownStatementAtomically/tcp_option_maxseg_size_set (0.00s)
+    --- PASS: TestAT13_F34_SimulatorRejectsUnknownStatementAtomically/tcp_option_maxseg_size_set_65536 (0.00s)
+    --- PASS: TestAT13_F34_SimulatorRejectsUnknownStatementAtomically/tcp_flags_|_syn_==_syn (0.00s)
+    --- PASS: TestAT13_F34_SimulatorRejectsUnknownStatementAtomically/tcp_mystery_1 (0.00s)
+    --- PASS: TestAT13_F34_SimulatorRejectsUnknownStatementAtomically/icmp_mystery_frag-needed (0.00s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	0.721s
