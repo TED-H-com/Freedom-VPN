@@ -12212,7 +12212,7 @@ func TestHandover_Followup39Claims(t *testing.T) {
 	checkHash("tests/handover/testdata/history/follow-up-39/source-audit.json", "d74fb642043f9cce0d4c1a335f6bc68d1b6b48a4db1316695dafdf3d69ba5d76")
 	t.Run("53_decisions_eight_status_only_confirmations", func(t *testing.T) {
 		old := readOwnedDoc(t, root, frozen+"register38.md")
-		current := readOwnedDoc(t, root, "docs/handover/README.md")
+		current := readOwnedDoc(t, root, fixture+"history/follow-up-40/register39.md")
 		re := regexp.MustCompile(`(?m)^\| D-[0-9]{3} \|.*$`)
 		before, after := re.FindAllString(old, -1), re.FindAllString(current, -1)
 		if len(before) != 47 || len(after) != 53 || !strings.HasPrefix(before[46], "| D-144 |") {
@@ -12258,8 +12258,8 @@ func TestHandover_Followup39Claims(t *testing.T) {
 	}
 	const cut = "1b87ab32344fa3be3216df0d5f7b489eb853e011"
 	const doc = "docs/handover/follow-up-39.md"
-	const index = "docs/reviews/README.md"
-	const register = "docs/handover/README.md"
+	const index = fixture + "history/follow-up-40/reviews-index39.md.txt"
+	const register = fixture + "history/follow-up-40/register39.md"
 	t.Run("two_final_rows_two_PRs_ten_frozen_428_inputs", func(t *testing.T) {
 		var m struct {
 			Commit   string `json:"source_commit"`
@@ -12556,12 +12556,12 @@ func TestHandover_Followup39Claims(t *testing.T) {
 	checkHash("tests/handover/testdata/followup39-evidence.json", "145a6fc5054ea01ece65380abc4e243d6968c89aaec4efcb67dd7f0340193ff3")
 	t.Run("seven_entrypoints_and_current_operator_behavior", func(t *testing.T) {
 		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
-			lines := strings.Split(readOwnedDoc(t, root, path), "\n")
+			lines := strings.Split(readOwnedDoc(t, root, fixture+"history/follow-up-40/entrypoint-"+strings.ReplaceAll(path, "/", "_")+".txt"), "\n")
 			if len(lines) < 4 || !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-39.md") || !strings.Contains(lines[2], "#428–#429") || !strings.Contains(lines[3], "follow-up-38.md") || !strings.Contains(lines[3], "#427") {
 				t.Errorf("entrypoint drift: %s", path)
 			}
 		}
-		const op = "docs/handover/operator-guide.md"
+		const op = fixture + "history/follow-up-40/operator-guide39.md.txt"
 		requireHandoverClaimTokens(t, root, op, "Refused-restart accounting fixed in #429", "Settlement\nfailure keeps forwarding closed", "r24 H-1 fixed", "under the node lock", "freshly verifies", "304 poll no longer", "Lease renewals", "pending revocations", "same tick", "current guard under **D-145**", "No hitless hand-over is implemented and no C1 benefit is promised", "C1 stays unimplemented", "field complaints or measured member-visible impact", "D-146", "no lower\ntunnel MTU", "not on main at this cut", "UDP and QUIC", "without PTB", "RELATED ICMP decision", "type 3, code 4", "Time-exceeded", "Netlab 34", "no date is promised", "F11-01 (D-148) remains OPEN and upstream-dependent", "no\nproduct, pin, daemon or architecture change", "https://github.com/netbirdio/netbird/discussions/8473")
 		content := readOwnedDoc(t, root, op)
 		if strings.Count(content, followup31Update) != 1 {
@@ -12572,7 +12572,7 @@ func TestHandover_Followup39Claims(t *testing.T) {
 				t.Errorf("stale/operator-inapplicable guidance %q", stale)
 			}
 		}
-		requireHandoverClaimTokens(t, root, "docs/ops/README.md", "## Follow-up 39 acceptance snapshot", "30 rows updated, 69 byte-identical", "53 decisions", "Earlier snapshot sections below describe their own cuts")
+		requireHandoverClaimTokens(t, root, fixture+"history/follow-up-40/entrypoint-docs_ops_README.md.txt", "## Follow-up 39 acceptance snapshot", "30 rows updated, 69 byte-identical", "53 decisions", "Earlier snapshot sections below describe their own cuts")
 	})
 	checkHash("docs/handover/follow-up-39.md", "ecc47633cb533b397a7df7cdd1d898d68d8e3813831528fde316230a95a30877")
 
