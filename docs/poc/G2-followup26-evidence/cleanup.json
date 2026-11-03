@@ -1,0 +1,33 @@
+{
+  "test_only": true,
+  "removed": [
+    [
+      "image",
+      "fvpn-w1-netlab-f26:lab"
+    ],
+    [
+      "image",
+      "fvpn-w1-netlab-f26-mechanism:lab"
+    ]
+  ],
+  "remaining": {
+    "containers": [],
+    "networks": [],
+    "volumes": [],
+    "images": []
+  },
+  "known_build_manifests": [
+    {
+      "ref": "sha256:4dbf3176d34598c89d9bde0a642c12830d40b9c458d1c3e3722d64a754a5c0e9",
+      "status": "absent"
+    },
+    {
+      "ref": "sha256:62f91ce28fdde133bdded5e291a4241ed0bcbf3e42b74fa52706c209d1af8058",
+      "status": "absent"
+    },
+    {
+      "ref": "sha256:67833ec9b4b3df67a186f250223097e72b2c611b2ae65bfa37d986c2292c293b",
+      "status": "absent"
+    }
+  ]
+}

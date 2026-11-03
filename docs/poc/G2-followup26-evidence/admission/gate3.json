@@ -1,0 +1,151 @@
+{
+  "waited_seconds": 240.34341061400028,
+  "quiet_required": false,
+  "qualified": true,
+  "required_windows": 0,
+  "interval_seconds": 60,
+  "polls": [
+    {
+      "elapsed_seconds": 0.0654422630004774,
+      "consecutive_free_60s_windows": 0,
+      "utc": "2026-11-03T05:33:25Z",
+      "hold_command": [
+        "bash",
+        "<admission-script>"
+      ],
+      "hold_exit": 0,
+      "hold_output": "free",
+      "hold_raw_sha256": "0cf9340d8bc2f1f7836e0ce6e2178d5fd382bde7fc50dc845dbf228dee3713b4",
+      "other_runs": [
+        {
+          "pid": 903527,
+          "kind": "gates-suite"
+        },
+        {
+          "pid": 910331,
+          "kind": "go-test"
+        }
+      ],
+      "own_runs": [],
+      "ready": false,
+      "pgrep_command": [
+        "pgrep",
+        "-af",
+        "gates.sh|mk/at-|go test"
+      ],
+      "pgrep_exit": 0,
+      "pgrep_raw_sha256": "a67d996516fe458053764b0b3b0f70eaa88c70a941d7ea2904dce7628b6982fb"
+    },
+    {
+      "elapsed_seconds": 60.13397714700022,
+      "consecutive_free_60s_windows": 0,
+      "utc": "2026-11-03T05:34:25Z",
+      "hold_command": [
+        "bash",
+        "<admission-script>"
+      ],
+      "hold_exit": 0,
+      "hold_output": "free",
+      "hold_raw_sha256": "0cf9340d8bc2f1f7836e0ce6e2178d5fd382bde7fc50dc845dbf228dee3713b4",
+      "other_runs": [
+        {
+          "pid": 903527,
+          "kind": "gates-suite"
+        },
+        {
+          "pid": 910331,
+          "kind": "go-test"
+        }
+      ],
+      "own_runs": [],
+      "ready": false,
+      "pgrep_command": [
+        "pgrep",
+        "-af",
+        "gates.sh|mk/at-|go test"
+      ],
+      "pgrep_exit": 0,
+      "pgrep_raw_sha256": "a67d996516fe458053764b0b3b0f70eaa88c70a941d7ea2904dce7628b6982fb"
+    },
+    {
+      "elapsed_seconds": 120.2041099550006,
+      "consecutive_free_60s_windows": 0,
+      "utc": "2026-11-03T05:35:25Z",
+      "hold_command": [
+        "bash",
+        "<admission-script>"
+      ],
+      "hold_exit": 0,
+      "hold_output": "free",
+      "hold_raw_sha256": "0cf9340d8bc2f1f7836e0ce6e2178d5fd382bde7fc50dc845dbf228dee3713b4",
+      "other_runs": [
+        {
+          "pid": 903527,
+          "kind": "gates-suite"
+        },
+        {
+          "pid": 910331,
+          "kind": "go-test"
+        }
+      ],
+      "own_runs": [],
+      "ready": false,
+      "pgrep_command": [
+        "pgrep",
+        "-af",
+        "gates.sh|mk/at-|go test"
+      ],
+      "pgrep_exit": 0,
+      "pgrep_raw_sha256": "a67d996516fe458053764b0b3b0f70eaa88c70a941d7ea2904dce7628b6982fb"
+    },
+    {
+      "elapsed_seconds": 180.27955351800028,
+      "consecutive_free_60s_windows": 0,
+      "utc": "2026-11-03T05:36:25Z",
+      "hold_command": [
+        "bash",
+        "<admission-script>"
+      ],
+      "hold_exit": 0,
+      "hold_output": "free",
+      "hold_raw_sha256": "0cf9340d8bc2f1f7836e0ce6e2178d5fd382bde7fc50dc845dbf228dee3713b4",
+      "other_runs": [
+        {
+          "pid": 903527,
+          "kind": "gates-suite"
+        }
+      ],
+      "own_runs": [],
+      "ready": false,
+      "pgrep_command": [
+        "pgrep",
+        "-af",
+        "gates.sh|mk/at-|go test"
+      ],
+      "pgrep_exit": 0,
+      "pgrep_raw_sha256": "083a4578f8930fbe66b1fc550a807f99e7fd846e8f6380765e2d70125a517970"
+    },
+    {
+      "elapsed_seconds": 240.34341061400028,
+      "consecutive_free_60s_windows": 0,
+      "utc": "2026-11-03T05:37:25Z",
+      "hold_command": [
+        "bash",
+        "<admission-script>"
+      ],
+      "hold_exit": 0,
+      "hold_output": "free",
+      "hold_raw_sha256": "0cf9340d8bc2f1f7836e0ce6e2178d5fd382bde7fc50dc845dbf228dee3713b4",
+      "other_runs": [],
+      "own_runs": [],
+      "ready": true,
+      "pgrep_command": [
+        "pgrep",
+        "-af",
+        "gates.sh|mk/at-|go test"
+      ],
+      "pgrep_exit": 1,
+      "pgrep_raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

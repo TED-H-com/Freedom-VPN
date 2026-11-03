@@ -9,6 +9,8 @@ import subprocess
 import sys
 import time
 
+from deadline_precision import check_precision
+
 
 def run(*args, **kwargs):
     return subprocess.check_output(args, text=True, **kwargs)
@@ -31,8 +33,7 @@ try:
 finally:
     run("nft", "delete", "set", "inet", "fvpn", "fv_granularity")
 values = [(duration(a), duration(b)) for a, b in re.findall(r"timeout (\w+) expires (\w+)", text_listing)]
-assert len(values) == 8 and [a for a, _ in values] == list(range(1001, 1009)), values
-assert all(values[i+1][1]-values[i][1] == 1 for i in range(7)), values
+check_precision(values)
 
 # Open the peer transmitter in the routing namespace, then keep its socket
 # while returning to root for both captures. No tc injection or third-party I/O.

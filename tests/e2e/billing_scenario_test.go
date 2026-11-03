@@ -91,21 +91,48 @@ func (r *runner) portal(ctx context.Context, member *session) bool {
 		page.Body.Close()
 		portalOK = page.StatusCode == 200 && strings.Contains(string(body), `id="root"`) && strings.Contains(string(body), "/assets/")
 		note("billing_return_http", itoa(page.StatusCode))
+	} else {
+		note("billing_return_error", err.Error())
 	}
 	note("built_portal_spa", boolText(portalOK))
 	if !portalOK {
 		return false
 	}
 	portalURL, _ := url.Parse(r.lab.public)
-	input, _ := json.Marshal(map[string]any{"port": r.lab.ports["control"], "cookies": member.http.Jar.Cookies(portalURL)})
+	cookies := member.http.Jar.Cookies(portalURL)
+	input, _ := json.Marshal(map[string]any{"port": r.lab.ports["control"], "cookies": cookies})
 	browserCtx, stop := context.WithTimeout(ctx, 40*time.Second)
 	defer stop()
 	browser := exec.CommandContext(browserCtx, "node", filepath.Join(r.lab.root, "deploy/devstack/probe-portal.mjs"))
 	browser.Stdin = bytes.NewReader(input)
-	browserOut, browserErr := browser.Output()
-	note("browser_probe", strings.TrimSpace(string(browserOut)))
+	var browserStdout, browserStderr bytes.Buffer
+	browser.Stdout, browser.Stderr = &browserStdout, &browserStderr
+	browserErr := browser.Run()
+	secrets := make([]string, 0, len(cookies))
+	probeOut := strings.TrimSpace(browserStdout.String())
+	for _, c := range cookies {
+		secrets = append(secrets, c.Value)
+		if c.Value != "" {
+			probeOut = strings.ReplaceAll(probeOut, c.Value, "[redacted]")
+		}
+	}
+	if len(probeOut) > 4096 {
+		probeOut = probeOut[:4096] + " [truncated]"
+	}
+	note("browser_probe", probeOut)
 	if browserErr != nil {
-		note("browser_error", "billing page did not render successfully")
+		// The probe reports its own failing stage on stdout. stderr and the
+		// process error explain a probe that could not report (no node, a
+		// timeout); cookie values and host paths are removed first.
+		cause := browserErr.Error()
+		if browserCtx.Err() != nil {
+			cause = "probe timed out after 40s"
+		}
+		note("browser_error", "billing page did not render successfully: "+cause)
+		home, _ := os.UserHomeDir()
+		if detail := ProbeFailureDetail(browserStderr.Bytes(), secrets, r.lab.root, home); detail != "" {
+			note("browser_stderr", detail)
+		}
 		return false
 	}
 	rec.Status = StatusPass
