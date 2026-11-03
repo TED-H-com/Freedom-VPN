@@ -283,3 +283,11 @@ r.srv.SetClock(func() time.Time { return signedAt })
 - **2026-11-03 — Timing:** schedule the later quiet D-133 A,B,A,B for 37–41
   with fresh main/B freezes. Prior unrun drafts/evidence are historical; do
   not reuse an old B pin. No reservation or measurement was taken here.
+
+
+Final reference audit — 2026-11-03: main subsequently advanced to e54700f9
+through isolation follow-up 18 (#424) and its ROADMAP entry. Those additional
+changes are confined to documentation and tests/e2e/at/isolation; no production
+node/control code changed. The single requested main merge remains c98ea61c,
+and final lab source remains f1ed8f3b. Hygiene against current main still lists
+only owned paths. No validation of the later isolation harness is claimed.
