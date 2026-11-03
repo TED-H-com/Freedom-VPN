@@ -1,0 +1,1689 @@
+{
+  "test_only": true,
+  "date": "2026-11-03",
+  "base": "63a30c41",
+  "declaration_commit": "a5338b39",
+  "measurement": "time.Since(start) immediately after Recover and its ErrMembersBlocked check (the F20 recover_elapsed_ns log line); excludes test setup",
+  "units": "milliseconds",
+  "quantile_method": "nearest rank ceil(p*n), minimum for p=0",
+  "environment": "CGO_ENABLED=0 GOTOOLCHAIN=local GOMAXPROCS=4 GOFLAGS=-p=4; 24 logical CPUs; worktree disk scratch",
+  "verdict": "failed by the declared rule: the corrected parent test failed once (r2 quiet-corrected, replaced, meter_checkpoint_timeout; persisted deadline expired 283.1 ms before Recover started). No renewal observed; deterministic budget exact before and after; quiet legs never qualified.",
+  "findings": {
+    "F21-01": "corrected TestAT25_FileMeterWaitRestartRechecksCurrentFile/replaced depends on pre-Recover setup finishing inside the 250 ms persisted budget"
+  },
+  "deterministic_budget": {
+    "inputs-deadline": {
+      "0s": {
+        "elapsed=250ms remaining=250ms": 50
+      },
+      "200ms": {
+        "elapsed=50ms remaining=50ms": 50
+      },
+      "250ms": {
+        "elapsed=0s remaining=0s": 50
+      },
+      "1s": {
+        "elapsed=0s remaining=0s": 50
+      }
+    },
+    "post-deadline": {
+      "0s": {
+        "elapsed=250ms remaining=250ms": 50
+      },
+      "200ms": {
+        "elapsed=50ms remaining=50ms": 50
+      },
+      "250ms": {
+        "elapsed=0s remaining=0s": 50
+      },
+      "1s": {
+        "elapsed=0s remaining=0s": 50
+      }
+    }
+  },
+  "windows": {
+    "r1": {
+      "reserve": {
+        "at": "2026-11-03T09:23:58.169720Z",
+        "exit": 0,
+        "out": "reserved for w2-updater until 04:53:58",
+        "err": ""
+      },
+      "release": {
+        "at": "2026-11-03T09:37:15.534602Z",
+        "t_s": 797.365,
+        "exit": 0,
+        "out": "released w2-updater",
+        "err": ""
+      },
+      "legs": {
+        "quiet-baseline": {
+          "kind": "quiet",
+          "status": "completed",
+          "watchdog_s": 360,
+          "preflight_wait_s": 30.118,
+          "started_at": "2026-11-03T09:25:28.288062Z",
+          "ended_at": "2026-11-03T09:29:05.716356Z",
+          "elapsed_s": 217.428,
+          "in_leg_vmstat_ok": false,
+          "active_load_s": null,
+          "agent_updater_overlap_s": null,
+          "preflights": [
+            {
+              "at": "2026-11-03T09:24:58.226895Z",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [],
+              "vmstat": {
+                "rows": [
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 1,
+                    "id": 98
+                  },
+                  {
+                    "r": 1,
+                    "id": 97
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  }
+                ],
+                "ok": true
+              },
+              "hold_after": "free",
+              "foreign_after": [],
+              "ok": true
+            }
+          ],
+          "qualified_as_recorded": false,
+          "reclassified_foreign_suite": {
+            "samples": 0,
+            "first_t_s": null,
+            "commands": []
+          },
+          "qualified": false,
+          "in_leg_samples": {
+            "count": 42,
+            "max_gap_s": 5.064,
+            "all_hold_free": true,
+            "foreign_suite_samples": 0,
+            "non_suite_match_samples": 0
+          },
+          "in_leg_vmstat": {
+            "intervals": 43,
+            "max_r": 4,
+            "min_id": 88,
+            "breaches": 1
+          },
+          "processes": [
+            {
+              "name": "updater",
+              "start_s": 0.001,
+              "end_s": 215.546,
+              "exit": 1
+            }
+          ],
+          "iterations": {
+            "completed": 200,
+            "passed": 199,
+            "failed": 1
+          },
+          "recover_calls": 1000,
+          "failures": [
+            {
+              "subcase": "expired",
+              "message": "meter_barrier_test.go:286: restart renewed the original wait deadline",
+              "recover_elapsed_ms": 1443.278,
+              "original_remaining_at_start_ms": -1.872
+            }
+          ],
+          "cases": {
+            "missing": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 253.11,
+                "median": 260.757,
+                "p99": 264.063,
+                "max": 264.558,
+                "mean": 260.485,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": 238.684,
+                "median": 240.522,
+                "p99": 241.53,
+                "max": 241.905,
+                "mean": 240.569,
+                "over_one_second": 0
+              }
+            },
+            "replaced": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 239.117,
+                "median": 248.476,
+                "p99": 252.358,
+                "max": 254.46,
+                "mean": 248.162,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": 224.018,
+                "median": 228.512,
+                "p99": 230.721,
+                "max": 230.785,
+                "mean": 228.486,
+                "over_one_second": 0
+              }
+            },
+            "withdrawn": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 12.552,
+                "median": 14.515,
+                "p99": 16.742,
+                "max": 272.821,
+                "mean": 15.688,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": 237.742,
+                "median": 239.644,
+                "p99": 240.738,
+                "max": 240.886,
+                "mean": 239.669,
+                "over_one_second": 0
+              }
+            },
+            "new_boot": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 10.816,
+                "median": 12.426,
+                "p99": 14.969,
+                "max": 16.988,
+                "mean": 12.392,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": 238.913,
+                "median": 240.666,
+                "p99": 241.709,
+                "max": 242.007,
+                "mean": 240.707,
+                "over_one_second": 0
+              }
+            },
+            "expired": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 13.222,
+                "median": 20.823,
+                "p99": 24.674,
+                "max": 1443.278,
+                "mean": 27.657,
+                "over_one_second": 1
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": -2.158,
+                "median": -1.594,
+                "p99": -1.015,
+                "max": -1.007,
+                "mean": -1.579,
+                "over_one_second": 0
+              }
+            }
+          },
+          "go_test_tail": [
+            "FAIL",
+            "FAIL\tgithub.com/TED-H-com/Freedom-VPN/node/updater\t215.084s",
+            "FAIL"
+          ]
+        },
+        "quiet-corrected": {
+          "kind": "quiet",
+          "status": "completed",
+          "watchdog_s": 360,
+          "preflight_wait_s": 30.118,
+          "started_at": "2026-11-03T09:29:35.835030Z",
+          "ended_at": "2026-11-03T09:33:13.283825Z",
+          "elapsed_s": 217.449,
+          "in_leg_vmstat_ok": false,
+          "active_load_s": null,
+          "agent_updater_overlap_s": null,
+          "preflights": [
+            {
+              "at": "2026-11-03T09:29:05.773571Z",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [],
+              "vmstat": {
+                "rows": [
+                  {
+                    "r": 0,
+                    "id": 100
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 100
+                  }
+                ],
+                "ok": true
+              },
+              "hold_after": "free",
+              "foreign_after": [],
+              "ok": true
+            }
+          ],
+          "qualified_as_recorded": false,
+          "reclassified_foreign_suite": {
+            "samples": 0,
+            "first_t_s": null,
+            "commands": []
+          },
+          "qualified": false,
+          "in_leg_samples": {
+            "count": 42,
+            "max_gap_s": 5.062,
+            "all_hold_free": true,
+            "foreign_suite_samples": 0,
+            "non_suite_match_samples": 0
+          },
+          "in_leg_vmstat": {
+            "intervals": 43,
+            "max_r": 5,
+            "min_id": 88,
+            "breaches": 1
+          },
+          "processes": [
+            {
+              "name": "updater",
+              "start_s": 0.001,
+              "end_s": 214.369,
+              "exit": 0
+            }
+          ],
+          "iterations": {
+            "completed": 200,
+            "passed": 200,
+            "failed": 0
+          },
+          "recover_calls": 1000,
+          "failures": [],
+          "cases": {
+            "missing": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 253.177,
+                "median": 260.95,
+                "p99": 264.145,
+                "max": 265.61,
+                "mean": 260.785,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": 238.8,
+                "median": 240.634,
+                "p99": 241.835,
+                "max": 241.997,
+                "mean": 240.628,
+                "over_one_second": 0
+              }
+            },
+            "replaced": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 240.015,
+                "median": 248.857,
+                "p99": 252.094,
+                "max": 252.525,
+                "mean": 248.368,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": 223.891,
+                "median": 228.57,
+                "p99": 231.004,
+                "max": 231.516,
+                "mean": 228.543,
+                "over_one_second": 0
+              }
+            },
+            "withdrawn": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 12.5,
+                "median": 14.4,
+                "p99": 16.715,
+                "max": 18.129,
+                "mean": 14.418,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": 236.657,
+                "median": 239.732,
+                "p99": 240.759,
+                "max": 241.04,
+                "mean": 239.702,
+                "over_one_second": 0
+              }
+            },
+            "new_boot": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 10.647,
+                "median": 12.366,
+                "p99": 14.954,
+                "max": 23.46,
+                "mean": 12.373,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": 234.595,
+                "median": 240.763,
+                "p99": 242.02,
+                "max": 242.024,
+                "mean": 240.725,
+                "over_one_second": 0
+              }
+            },
+            "expired": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 12.744,
+                "median": 21.04,
+                "p99": 24.476,
+                "max": 27.663,
+                "mean": 20.421,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": -2.203,
+                "median": -1.629,
+                "p99": -1.029,
+                "max": -1.016,
+                "mean": -1.592,
+                "over_one_second": 0
+              }
+            }
+          },
+          "go_test_tail": [
+            "    --- PASS: TestAT25_FileMeterWaitRestartRechecksCurrentFile/expired (0.30s)",
+            "PASS",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t214.109s"
+          ]
+        },
+        "load-baseline": {
+          "kind": "load",
+          "status": "completed",
+          "watchdog_s": 300,
+          "preflight_wait_s": 30.119,
+          "started_at": "2026-11-03T09:33:43.403146Z",
+          "ended_at": "2026-11-03T09:35:14.392876Z",
+          "elapsed_s": 90.99,
+          "in_leg_vmstat_ok": true,
+          "active_load_s": 88.445,
+          "agent_updater_overlap_s": 58.868,
+          "preflights": [
+            {
+              "at": "2026-11-03T09:33:13.341660Z",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [],
+              "vmstat": {
+                "rows": [
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 98
+                  },
+                  {
+                    "r": 0,
+                    "id": 100
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  }
+                ],
+                "ok": true
+              },
+              "hold_after": "free",
+              "foreign_after": [],
+              "ok": true
+            }
+          ],
+          "qualified_as_recorded": true,
+          "reclassified_foreign_suite": {
+            "samples": 0,
+            "first_t_s": null,
+            "commands": []
+          },
+          "qualified": true,
+          "in_leg_samples": {
+            "count": 17,
+            "max_gap_s": 5.061,
+            "all_hold_free": true,
+            "foreign_suite_samples": 0,
+            "non_suite_match_samples": 0
+          },
+          "in_leg_vmstat": {
+            "intervals": 18,
+            "max_r": 1,
+            "min_id": 94,
+            "breaches": 0
+          },
+          "processes": [
+            {
+              "name": "agent",
+              "start_s": 0.001,
+              "end_s": 88.446,
+              "exit": 0
+            },
+            {
+              "name": "updater",
+              "start_s": 0.002,
+              "end_s": 58.87,
+              "exit": 0
+            }
+          ],
+          "iterations": {
+            "completed": 50,
+            "passed": 50,
+            "failed": 0
+          },
+          "recover_calls": 250,
+          "failures": [],
+          "cases": {
+            "missing": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 248.708,
+                "median": 254.366,
+                "p99": 258.961,
+                "max": 258.961,
+                "mean": 254.519,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": 232.56,
+                "median": 235.166,
+                "p99": 241.336,
+                "max": 241.336,
+                "mean": 235.927,
+                "over_one_second": 0
+              }
+            },
+            "replaced": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 229.224,
+                "median": 236.618,
+                "p99": 686.542,
+                "max": 686.542,
+                "mean": 245.629,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": 212.5,
+                "median": 216.615,
+                "p99": 230.066,
+                "max": 230.066,
+                "mean": 217.919,
+                "over_one_second": 0
+              }
+            },
+            "withdrawn": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 13.563,
+                "median": 22.374,
+                "p99": 26.227,
+                "max": 26.227,
+                "mean": 21.879,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": 230.655,
+                "median": 233.87,
+                "p99": 239.911,
+                "max": 239.911,
+                "mean": 234.131,
+                "over_one_second": 0
+              }
+            },
+            "new_boot": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 11.921,
+                "median": 19.15,
+                "p99": 23.286,
+                "max": 23.286,
+                "mean": 18.452,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": 229.755,
+                "median": 235.067,
+                "p99": 241.207,
+                "max": 241.207,
+                "mean": 235.824,
+                "over_one_second": 0
+              }
+            },
+            "expired": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 12.541,
+                "median": 20.172,
+                "p99": 26.35,
+                "max": 26.35,
+                "mean": 19.781,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": -2.173,
+                "median": -1.74,
+                "p99": -1.006,
+                "max": -1.006,
+                "mean": -1.604,
+                "over_one_second": 0
+              }
+            }
+          },
+          "go_test_tail": [
+            "    --- PASS: TestAT25_FileMeterWaitRestartRechecksCurrentFile/expired (0.32s)",
+            "PASS",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t58.604s"
+          ],
+          "under_agent_load": {
+            "recover_calls_lower_bound": 250,
+            "note": "first k Recover calls in log order completed while the agent suite was still running (5 s sample granularity)",
+            "cases": {
+              "missing": {
+                "n": 50,
+                "min": 248.708,
+                "median": 254.366,
+                "p99": 258.961,
+                "max": 258.961,
+                "mean": 254.519,
+                "over_one_second": 0
+              },
+              "replaced": {
+                "n": 50,
+                "min": 229.224,
+                "median": 236.618,
+                "p99": 686.542,
+                "max": 686.542,
+                "mean": 245.629,
+                "over_one_second": 0
+              },
+              "withdrawn": {
+                "n": 50,
+                "min": 13.563,
+                "median": 22.374,
+                "p99": 26.227,
+                "max": 26.227,
+                "mean": 21.879,
+                "over_one_second": 0
+              },
+              "new_boot": {
+                "n": 50,
+                "min": 11.921,
+                "median": 19.15,
+                "p99": 23.286,
+                "max": 23.286,
+                "mean": 18.452,
+                "over_one_second": 0
+              },
+              "expired": {
+                "n": 50,
+                "min": 12.541,
+                "median": 20.172,
+                "p99": 26.35,
+                "max": 26.35,
+                "mean": 19.781,
+                "over_one_second": 0
+              }
+            }
+          },
+          "agent_tail": [
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t88.133s",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent\t0.213s"
+          ]
+        },
+        "load-corrected": {
+          "kind": "load",
+          "status": "completed",
+          "watchdog_s": 300,
+          "preflight_wait_s": 30.119,
+          "started_at": "2026-11-03T09:35:44.512400Z",
+          "ended_at": "2026-11-03T09:37:15.498686Z",
+          "elapsed_s": 90.986,
+          "in_leg_vmstat_ok": true,
+          "active_load_s": 87.626,
+          "agent_updater_overlap_s": 58.804,
+          "preflights": [
+            {
+              "at": "2026-11-03T09:35:14.450699Z",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [],
+              "vmstat": {
+                "rows": [
+                  {
+                    "r": 1,
+                    "id": 99
+                  },
+                  {
+                    "r": 1,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 100
+                  },
+                  {
+                    "r": 2,
+                    "id": 94
+                  },
+                  {
+                    "r": 1,
+                    "id": 90
+                  }
+                ],
+                "ok": true
+              },
+              "hold_after": "free",
+              "foreign_after": [],
+              "ok": true
+            }
+          ],
+          "qualified_as_recorded": true,
+          "reclassified_foreign_suite": {
+            "samples": 15,
+            "first_t_s": 15.175,
+            "commands": [
+              "bash .agent/tmp/followup31/run-gates.sh"
+            ]
+          },
+          "qualified": false,
+          "in_leg_samples": {
+            "count": 17,
+            "max_gap_s": 5.061,
+            "all_hold_free": true,
+            "foreign_suite_samples": 0,
+            "non_suite_match_samples": 15
+          },
+          "in_leg_vmstat": {
+            "intervals": 18,
+            "max_r": 3,
+            "min_id": 87,
+            "breaches": 0
+          },
+          "processes": [
+            {
+              "name": "agent",
+              "start_s": 0.002,
+              "end_s": 87.628,
+              "exit": 0
+            },
+            {
+              "name": "updater",
+              "start_s": 0.002,
+              "end_s": 58.806,
+              "exit": 0
+            }
+          ],
+          "iterations": {
+            "completed": 50,
+            "passed": 50,
+            "failed": 0
+          },
+          "recover_calls": 250,
+          "failures": [],
+          "cases": {
+            "missing": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 249.006,
+                "median": 254.64,
+                "p99": 754.97,
+                "max": 754.97,
+                "mean": 265.33,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": 232.262,
+                "median": 235.385,
+                "p99": 240.976,
+                "max": 240.976,
+                "mean": 236.128,
+                "over_one_second": 0
+              }
+            },
+            "replaced": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 229.135,
+                "median": 236.075,
+                "p99": 257.46,
+                "max": 257.46,
+                "mean": 237.422,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": 212.01,
+                "median": 217.261,
+                "p99": 230.856,
+                "max": 230.856,
+                "mean": 218.27,
+                "over_one_second": 0
+              }
+            },
+            "withdrawn": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 13.05,
+                "median": 21.718,
+                "p99": 27.812,
+                "max": 27.812,
+                "mean": 21.388,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": 231.186,
+                "median": 234.103,
+                "p99": 240.304,
+                "max": 240.304,
+                "mean": 234.546,
+                "over_one_second": 0
+              }
+            },
+            "new_boot": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 10.891,
+                "median": 18.329,
+                "p99": 23.366,
+                "max": 23.366,
+                "mean": 17.897,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": 230.61,
+                "median": 235.022,
+                "p99": 241.36,
+                "max": 241.36,
+                "mean": 235.747,
+                "over_one_second": 0
+              }
+            },
+            "expired": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 13.594,
+                "median": 19.505,
+                "p99": 24.207,
+                "max": 24.207,
+                "mean": 19.434,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": -2.152,
+                "median": -1.621,
+                "p99": -1.011,
+                "max": -1.011,
+                "mean": -1.565,
+                "over_one_second": 0
+              }
+            }
+          },
+          "go_test_tail": [
+            "    --- PASS: TestAT25_FileMeterWaitRestartRechecksCurrentFile/expired (0.32s)",
+            "PASS",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t58.524s"
+          ],
+          "under_agent_load": {
+            "recover_calls_lower_bound": 250,
+            "note": "first k Recover calls in log order completed while the agent suite was still running (5 s sample granularity)",
+            "cases": {
+              "missing": {
+                "n": 50,
+                "min": 249.006,
+                "median": 254.64,
+                "p99": 754.97,
+                "max": 754.97,
+                "mean": 265.33,
+                "over_one_second": 0
+              },
+              "replaced": {
+                "n": 50,
+                "min": 229.135,
+                "median": 236.075,
+                "p99": 257.46,
+                "max": 257.46,
+                "mean": 237.422,
+                "over_one_second": 0
+              },
+              "withdrawn": {
+                "n": 50,
+                "min": 13.05,
+                "median": 21.718,
+                "p99": 27.812,
+                "max": 27.812,
+                "mean": 21.388,
+                "over_one_second": 0
+              },
+              "new_boot": {
+                "n": 50,
+                "min": 10.891,
+                "median": 18.329,
+                "p99": 23.366,
+                "max": 23.366,
+                "mean": 17.897,
+                "over_one_second": 0
+              },
+              "expired": {
+                "n": 50,
+                "min": 13.594,
+                "median": 19.505,
+                "p99": 24.207,
+                "max": 24.207,
+                "mean": 19.434,
+                "over_one_second": 0
+              }
+            }
+          },
+          "agent_tail": [
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t87.340s",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent\t0.210s"
+          ]
+        }
+      }
+    },
+    "r2": {
+      "reserve": {
+        "at": "2026-11-03T09:47:33.648915Z",
+        "exit": 0,
+        "out": "reserved for w2-updater until 05:17:33",
+        "err": ""
+      },
+      "release": {
+        "at": "2026-11-03T09:59:59.958144Z",
+        "t_s": 746.309,
+        "exit": 0,
+        "out": "released w2-updater",
+        "err": ""
+      },
+      "legs": {
+        "quiet-baseline": {
+          "kind": "quiet",
+          "status": "completed",
+          "watchdog_s": 360,
+          "preflight_wait_s": 90.237,
+          "started_at": "2026-11-03T09:50:03.886076Z",
+          "ended_at": "2026-11-03T09:53:41.368219Z",
+          "elapsed_s": 217.482,
+          "in_leg_vmstat_ok": false,
+          "active_load_s": null,
+          "agent_updater_overlap_s": null,
+          "preflights": [
+            {
+              "at": "2026-11-03T09:48:33.706337Z",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [],
+              "vmstat": {
+                "rows": [
+                  {
+                    "r": 1,
+                    "id": 95
+                  },
+                  {
+                    "r": 13,
+                    "id": 92
+                  },
+                  {
+                    "r": 1,
+                    "id": 95
+                  },
+                  {
+                    "r": 5,
+                    "id": 98
+                  },
+                  {
+                    "r": 0,
+                    "id": 96
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  }
+                ],
+                "ok": false
+              },
+              "hold_after": "free",
+              "foreign_after": [
+                "360104 go test -run ^TestR20_|^TestR21_ ./node/agent"
+              ],
+              "ok": false
+            },
+            {
+              "at": "2026-11-03T09:49:33.824932Z",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [],
+              "vmstat": {
+                "rows": [
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 100
+                  },
+                  {
+                    "r": 1,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 1,
+                    "id": 99
+                  }
+                ],
+                "ok": true
+              },
+              "hold_after": "free",
+              "foreign_after": [],
+              "ok": true
+            }
+          ],
+          "qualified_as_recorded": false,
+          "reclassified_foreign_suite": {
+            "samples": 0,
+            "first_t_s": null,
+            "commands": []
+          },
+          "qualified": false,
+          "in_leg_samples": {
+            "count": 42,
+            "max_gap_s": 5.063,
+            "all_hold_free": true,
+            "foreign_suite_samples": 0,
+            "non_suite_match_samples": 0
+          },
+          "in_leg_vmstat": {
+            "intervals": 43,
+            "max_r": 5,
+            "min_id": 75,
+            "breaches": 1
+          },
+          "processes": [
+            {
+              "name": "updater",
+              "start_s": 0.001,
+              "end_s": 214.126,
+              "exit": 0
+            }
+          ],
+          "iterations": {
+            "completed": 200,
+            "passed": 200,
+            "failed": 0
+          },
+          "recover_calls": 1000,
+          "failures": [],
+          "cases": {
+            "missing": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 252.277,
+                "median": 261.001,
+                "p99": 267.652,
+                "max": 761.814,
+                "mean": 263.05,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": 236.314,
+                "median": 240.689,
+                "p99": 241.586,
+                "max": 242.12,
+                "mean": 240.657,
+                "over_one_second": 0
+              }
+            },
+            "replaced": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 240.411,
+                "median": 248.892,
+                "p99": 253.175,
+                "max": 253.478,
+                "mean": 248.528,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": 224.443,
+                "median": 228.678,
+                "p99": 230.764,
+                "max": 231.144,
+                "mean": 228.623,
+                "over_one_second": 0
+              }
+            },
+            "withdrawn": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 12.442,
+                "median": 14.234,
+                "p99": 16.992,
+                "max": 17.843,
+                "mean": 14.301,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": 236.748,
+                "median": 239.767,
+                "p99": 240.87,
+                "max": 241.063,
+                "mean": 239.764,
+                "over_one_second": 0
+              }
+            },
+            "new_boot": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 10.845,
+                "median": 12.246,
+                "p99": 14.836,
+                "max": 17.025,
+                "mean": 12.302,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": 237.328,
+                "median": 240.718,
+                "p99": 241.584,
+                "max": 241.845,
+                "mean": 240.739,
+                "over_one_second": 0
+              }
+            },
+            "expired": {
+              "recover_elapsed_ms": {
+                "n": 200,
+                "min": 13.372,
+                "median": 21.001,
+                "p99": 23.712,
+                "max": 24.577,
+                "mean": 20.464,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 200,
+                "min": -2.246,
+                "median": -1.608,
+                "p99": -1.012,
+                "max": -1.01,
+                "mean": -1.565,
+                "over_one_second": 0
+              }
+            }
+          },
+          "go_test_tail": [
+            "    --- PASS: TestAT25_FileMeterWaitRestartRechecksCurrentFile/expired (0.32s)",
+            "PASS",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t213.863s"
+          ]
+        },
+        "quiet-corrected": {
+          "kind": "quiet",
+          "status": "stopped_foreign_suite",
+          "watchdog_s": 360,
+          "preflight_wait_s": 30.119,
+          "started_at": "2026-11-03T09:54:11.487281Z",
+          "ended_at": "2026-11-03T09:57:28.763413Z",
+          "elapsed_s": 197.276,
+          "in_leg_vmstat_ok": true,
+          "active_load_s": null,
+          "agent_updater_overlap_s": null,
+          "preflights": [
+            {
+              "at": "2026-11-03T09:53:41.426915Z",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [],
+              "vmstat": {
+                "rows": [
+                  {
+                    "r": 0,
+                    "id": 100
+                  },
+                  {
+                    "r": 1,
+                    "id": 98
+                  },
+                  {
+                    "r": 1,
+                    "id": 95
+                  },
+                  {
+                    "r": 1,
+                    "id": 94
+                  },
+                  {
+                    "r": 0,
+                    "id": 95
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  }
+                ],
+                "ok": true
+              },
+              "hold_after": "free",
+              "foreign_after": [],
+              "ok": true
+            }
+          ],
+          "qualified_as_recorded": false,
+          "reclassified_foreign_suite": {
+            "samples": 0,
+            "first_t_s": null,
+            "commands": []
+          },
+          "qualified": false,
+          "in_leg_samples": {
+            "count": 39,
+            "max_gap_s": 5.062,
+            "all_hold_free": true,
+            "foreign_suite_samples": 1,
+            "non_suite_match_samples": 0
+          },
+          "in_leg_vmstat": {
+            "intervals": 39,
+            "max_r": 2,
+            "min_id": 89,
+            "breaches": 0
+          },
+          "processes": [
+            {
+              "name": "updater",
+              "start_s": 0.001,
+              "end_s": 197.273,
+              "exit": -15
+            }
+          ],
+          "iterations": {
+            "completed": 178,
+            "passed": 177,
+            "failed": 1
+          },
+          "recover_calls": 894,
+          "failures": [
+            {
+              "subcase": "replaced",
+              "message": "meter_barrier_test.go:290: failure journal: {TxnID:01a1a0d6-3690-70d1-ac54-8b8c515f1b9d JobID:2ab5cf75-e54e-559e-ba6c-4bf98e4ab724 Attempt:1 Generation:1 ReleaseID:01a1a0d6-3677-7f33-b950-58044a01c062 ManifestSHA256:a120f3fcbc8f74815e852b81431d085286f292a60945810e8e5d50eaa1a924dc PreviousReleaseID:01a1a0d6-3670-7c3e-b9c9-0adbb814e901 LastGoodReleaseID:01a1a0d6-3670-7c3e-b9c9-0adbb814e901 StateSchemaFrom:1 StateSchemaTo:1 MigrationID: Stage:rolled_back Destructive:false CheckAttempts:0 RollbackAttempts:1 ErrorCode:CHECKPOINT_FAILED ErrorStage:final_sample ErrorDetail:meter_checkpoint_timeout Checkpoint:null Health:null CandidateHealth:null RollbackReleaseID: StartedAt:2026-10-28 15:00:00 +0000 UTC UpdatedAt:2026-10-28 15:00:00 +0000 UTC FinishedAt:2026-10-28 15:00:00 +0000 UTC} <nil>",
+              "recover_elapsed_ms": 15.123,
+              "original_remaining_at_start_ms": -283.099
+            }
+          ],
+          "cases": {
+            "missing": {
+              "recover_elapsed_ms": {
+                "n": 179,
+                "min": 254.022,
+                "median": 261.201,
+                "p99": 275.896,
+                "max": 789.534,
+                "mean": 263.879,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 179,
+                "min": 179.764,
+                "median": 240.619,
+                "p99": 241.688,
+                "max": 241.756,
+                "mean": 240.282,
+                "over_one_second": 0
+              }
+            },
+            "replaced": {
+              "recover_elapsed_ms": {
+                "n": 179,
+                "min": 15.123,
+                "median": 248.83,
+                "p99": 252.649,
+                "max": 252.704,
+                "mean": 246.545,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 179,
+                "min": -283.099,
+                "median": 228.493,
+                "p99": 230.98,
+                "max": 231.047,
+                "mean": 224.851,
+                "over_one_second": 0
+              }
+            },
+            "withdrawn": {
+              "recover_elapsed_ms": {
+                "n": 179,
+                "min": 12.552,
+                "median": 14.382,
+                "p99": 16.766,
+                "max": 404.353,
+                "mean": 16.487,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 179,
+                "min": -991.539,
+                "median": 239.744,
+                "p99": 240.933,
+                "max": 240.933,
+                "mean": 232.811,
+                "over_one_second": 0
+              }
+            },
+            "new_boot": {
+              "recover_elapsed_ms": {
+                "n": 179,
+                "min": 10.794,
+                "median": 12.285,
+                "p99": 14.236,
+                "max": 14.556,
+                "mean": 12.218,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 179,
+                "min": 234.882,
+                "median": 240.762,
+                "p99": 242.003,
+                "max": 242.017,
+                "mean": 240.782,
+                "over_one_second": 0
+              }
+            },
+            "expired": {
+              "recover_elapsed_ms": {
+                "n": 178,
+                "min": 12.713,
+                "median": 20.874,
+                "p99": 25.044,
+                "max": 31.248,
+                "mean": 20.469,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 178,
+                "min": -1310.844,
+                "median": -1.545,
+                "p99": -1.012,
+                "max": -1.005,
+                "mean": -8.885,
+                "over_one_second": 0
+              }
+            }
+          },
+          "go_test_tail": [
+            "=== RUN   TestAT25_FileMeterWaitRestartRechecksCurrentFile/new_boot",
+            "    meter_barrier_test.go:285: F20 recover_elapsed_ns=12608414 original_remaining_ns=240941914",
+            "=== RUN   TestAT25_FileMeterWaitRestartRechecksCurrentFile/expired"
+          ]
+        },
+        "load-corrected": {
+          "kind": "load",
+          "status": "completed",
+          "watchdog_s": 300,
+          "preflight_wait_s": 60.177,
+          "started_at": "2026-11-03T09:58:28.940597Z",
+          "ended_at": "2026-11-03T09:59:59.921867Z",
+          "elapsed_s": 90.981,
+          "in_leg_vmstat_ok": true,
+          "active_load_s": 88.773,
+          "agent_updater_overlap_s": 59.135,
+          "preflights": [
+            {
+              "at": "2026-11-03T09:57:28.822872Z",
+              "hold": "free",
+              "foreign": [
+                "365207 go test -v -run ^TestR22_ ./node/agent"
+              ],
+              "non_suite_matches": [],
+              "vmstat": null,
+              "hold_after": null,
+              "foreign_after": null,
+              "ok": false
+            },
+            {
+              "at": "2026-11-03T09:57:58.880859Z",
+              "hold": "free",
+              "foreign": [],
+              "non_suite_matches": [],
+              "vmstat": {
+                "rows": [
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 0,
+                    "id": 100
+                  },
+                  {
+                    "r": 0,
+                    "id": 100
+                  },
+                  {
+                    "r": 0,
+                    "id": 99
+                  },
+                  {
+                    "r": 1,
+                    "id": 99
+                  },
+                  {
+                    "r": 1,
+                    "id": 98
+                  }
+                ],
+                "ok": true
+              },
+              "hold_after": "free",
+              "foreign_after": [],
+              "ok": true
+            }
+          ],
+          "qualified_as_recorded": true,
+          "reclassified_foreign_suite": {
+            "samples": 0,
+            "first_t_s": null,
+            "commands": []
+          },
+          "qualified": true,
+          "in_leg_samples": {
+            "count": 17,
+            "max_gap_s": 5.06,
+            "all_hold_free": true,
+            "foreign_suite_samples": 0,
+            "non_suite_match_samples": 0
+          },
+          "in_leg_vmstat": {
+            "intervals": 18,
+            "max_r": 3,
+            "min_id": 92,
+            "breaches": 0
+          },
+          "processes": [
+            {
+              "name": "agent",
+              "start_s": 0.001,
+              "end_s": 88.774,
+              "exit": 0
+            },
+            {
+              "name": "updater",
+              "start_s": 0.002,
+              "end_s": 59.137,
+              "exit": 0
+            }
+          ],
+          "iterations": {
+            "completed": 50,
+            "passed": 50,
+            "failed": 0
+          },
+          "recover_calls": 250,
+          "failures": [],
+          "cases": {
+            "missing": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 249.9,
+                "median": 254.011,
+                "p99": 262.666,
+                "max": 262.666,
+                "mean": 255.083,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": 231.737,
+                "median": 235.673,
+                "p99": 240.91,
+                "max": 240.91,
+                "mean": 236.316,
+                "over_one_second": 0
+              }
+            },
+            "replaced": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 210.754,
+                "median": 236.147,
+                "p99": 250.76,
+                "max": 250.76,
+                "mean": 236.238,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": 190.952,
+                "median": 216.93,
+                "p99": 230.658,
+                "max": 230.658,
+                "mean": 217.35,
+                "over_one_second": 0
+              }
+            },
+            "withdrawn": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 12.861,
+                "median": 22.525,
+                "p99": 26.0,
+                "max": 26.0,
+                "mean": 21.536,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": -772.486,
+                "median": 234.125,
+                "p99": 240.617,
+                "max": 240.617,
+                "mean": 214.604,
+                "over_one_second": 0
+              }
+            },
+            "new_boot": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 10.952,
+                "median": 18.375,
+                "p99": 22.832,
+                "max": 22.832,
+                "mean": 17.695,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": 231.154,
+                "median": 235.094,
+                "p99": 241.842,
+                "max": 241.842,
+                "mean": 236.005,
+                "over_one_second": 0
+              }
+            },
+            "expired": {
+              "recover_elapsed_ms": {
+                "n": 50,
+                "min": 12.287,
+                "median": 19.928,
+                "p99": 25.302,
+                "max": 25.302,
+                "mean": 19.89,
+                "over_one_second": 0
+              },
+              "original_remaining_at_start_ms": {
+                "n": 50,
+                "min": -2.123,
+                "median": -1.575,
+                "p99": -1.008,
+                "max": -1.008,
+                "mean": -1.562,
+                "over_one_second": 0
+              }
+            }
+          },
+          "go_test_tail": [
+            "    --- PASS: TestAT25_FileMeterWaitRestartRechecksCurrentFile/expired (0.31s)",
+            "PASS",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/updater\t58.878s"
+          ],
+          "under_agent_load": {
+            "recover_calls_lower_bound": 250,
+            "note": "first k Recover calls in log order completed while the agent suite was still running (5 s sample granularity)",
+            "cases": {
+              "missing": {
+                "n": 50,
+                "min": 249.9,
+                "median": 254.011,
+                "p99": 262.666,
+                "max": 262.666,
+                "mean": 255.083,
+                "over_one_second": 0
+              },
+              "replaced": {
+                "n": 50,
+                "min": 210.754,
+                "median": 236.147,
+                "p99": 250.76,
+                "max": 250.76,
+                "mean": 236.238,
+                "over_one_second": 0
+              },
+              "withdrawn": {
+                "n": 50,
+                "min": 12.861,
+                "median": 22.525,
+                "p99": 26.0,
+                "max": 26.0,
+                "mean": 21.536,
+                "over_one_second": 0
+              },
+              "new_boot": {
+                "n": 50,
+                "min": 10.952,
+                "median": 18.375,
+                "p99": 22.832,
+                "max": 22.832,
+                "mean": 17.695,
+                "over_one_second": 0
+              },
+              "expired": {
+                "n": 50,
+                "min": 12.287,
+                "median": 19.928,
+                "p99": 25.302,
+                "max": 25.302,
+                "mean": 19.89,
+                "over_one_second": 0
+              }
+            }
+          },
+          "agent_tail": [
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t88.458s",
+            "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent\t0.209s"
+          ]
+        }
+      }
+    }
+  }
+}
