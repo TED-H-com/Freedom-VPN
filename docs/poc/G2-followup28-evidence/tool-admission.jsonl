@@ -1,0 +1,3 @@
+{"utc": "2026-11-03T07:32:27.650253+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "make", "args": ["-f", "mk/netlab.mk", "netlab-lint", "netlab-unit", "netlab-integration", "netlab-build", "FVPN_LAB_PREFIX=fvpn-w1-netlab-f28"]}
+{"utc": "2026-11-03T07:32:29.370641+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "go", "args": ["test", "./node/enforce/...", "./tests/netlab"]}
+{"utc": "2026-11-03T07:32:33.398392+00:00", "exit_code": 0, "output": "free\n", "free": true, "tool": "go", "args": ["test", "-tags", "netlab", "./tests/netlab", "./tests/netlab/at", "./tests/netlab/agent"]}

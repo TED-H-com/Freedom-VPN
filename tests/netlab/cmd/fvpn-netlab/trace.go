@@ -10,6 +10,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"os/exec"
 	"os/signal"
 	"strings"
 	"syscall"
@@ -47,7 +48,8 @@ type traceBatch struct {
 }
 type traceExecutor struct {
 	enforce.System
-	Batches []traceBatch
+	Batches    []traceBatch
+	ObserveTCP bool
 	// TEST ONLY: fail one real verifier read after a completed release. The
 	// candidate, guard and rollback still execute in the real kernel.
 	FailVerificationRead bool
@@ -92,9 +94,16 @@ func tracedApplyExecutor(ctx context.Context, ex *traceExecutor, m enforce.Model
 	}
 	var capture enforce.ApplyCaptureForTest
 	ctx = enforce.WithApplyCaptureForTest(enforce.WithCommandLifecycleForTest(ctx), &capture)
+	var tcpSnapshots []tcpSnapshot
+	if ex.ObserveTCP {
+		tcpSnapshots = append(tcpSnapshots, readTCPState("before_apply"))
+	}
 	start := traceNow()
 	res, err := enforce.Apply(ctx, ex, m, prev)
 	end := traceNow()
+	if ex.ObserveTCP {
+		tcpSnapshots = append(tcpSnapshots, readTCPState("after_apply"))
+	}
 	// Hash/encode only after the operation, never inside an installed guard.
 	for i := range ex.Batches {
 		ex.Batches[i].SHA256 = fmt.Sprintf("%x", sha256.Sum256([]byte(ex.Batches[i].Script)))
@@ -124,11 +133,46 @@ func tracedApplyExecutor(ctx context.Context, ex *traceExecutor, m enforce.Model
 		TestRender        json.RawMessage          `json:"test_only_render"`
 		TestFaultObserved *traceStamp              `json:"test_only_fault_observed,omitempty"`
 		TestRenderSHA256  string                   `json:"test_only_render_sha256"`
-	}{"apply", m.Generation, start, end, res.Verified, reason, res.Deadline, ex.Batches, res.Evidence.TimingEvidence(), ex.FaultInjected, input, fmt.Sprintf("%x", sha256.Sum256(input)), rendered, ex.FaultObserved, fmt.Sprintf("%x", sha256.Sum256(rendered))}
+		TCPSnapshots      []tcpSnapshot            `json:"test_only_tcp_snapshots,omitempty"`
+	}{"apply", m.Generation, start, end, res.Verified, reason, res.Deadline, ex.Batches, res.Evidence.TimingEvidence(), ex.FaultInjected, input, fmt.Sprintf("%x", sha256.Sum256(input)), rendered, ex.FaultObserved, fmt.Sprintf("%x", sha256.Sum256(rendered)), tcpSnapshots}
 	if logErr := json.NewEncoder(dst).Encode(row); err == nil && logErr != nil {
 		return res, logErr
 	}
 	return res, err
+}
+
+// TEST ONLY read-only snapshots enclose Apply; no extra command executes
+// between guard installation and release. Empty stdout means absence only
+// when OK is true. Errors remain explicit diagnostic evidence.
+type tcpRead struct {
+	Start  traceStamp `json:"start"`
+	End    traceStamp `json:"end"`
+	OK     bool       `json:"ok"`
+	Output string     `json:"output"`
+	Error  string     `json:"error,omitempty"`
+}
+type tcpSnapshot struct {
+	Phase     string  `json:"phase"`
+	Conntrack tcpRead `json:"conntrack"`
+	Socket    tcpRead `json:"socket"`
+}
+
+func readTCPCommand(name string, args ...string) tcpRead {
+	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+	defer cancel()
+	r := tcpRead{Start: traceNow()}
+	out, err := exec.CommandContext(ctx, name, args...).Output()
+	r.End, r.OK, r.Output = traceNow(), err == nil, string(out)
+	if err != nil {
+		r.Error = err.Error()
+	}
+	return r
+}
+func readTCPState(phase string) tcpSnapshot {
+	return tcpSnapshot{Phase: phase,
+		Conntrack: readTCPCommand("conntrack", "-L", "-f", "ipv4", "-p", "tcp", "--orig-src", "100.64.1.1", "--orig-dst", "203.0.113.10", "--dport", "9001", "-o", "extended,id"),
+		Socket:    readTCPCommand("ip", "netns", "exec", "fv-a1", "ss", "-H", "-O", "-n", "-t", "-i", "-o", "dst", "203.0.113.10:9001"),
+	}
 }
 
 type tracePlane struct {
