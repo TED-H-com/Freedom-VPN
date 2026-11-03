@@ -78,3 +78,24 @@ member deadline. The existing implementation already intersects each binding's
 ValidUntil independently; the comment should describe member-level caps and
 that separate binding intersection. No enforcement runtime change is needed
 for H-3.
+
+## Before-fix receipts and H-1 fixture discrepancy — 2026-11-03
+
+After admission became free, the deleted-element case failed with
+`drift not withdrawn: true <nil>` using real SystemPlane verification.
+The two legacy D-104 assertions failed exactly as judged above. Initial
+supplemental development runs also exposed diagnostic-only and emulated-chain
+fixture panics; those runs are retained as failures, not product verdicts.
+
+The original H-1 file remains unchanged. A complete-model comparator reduces
+its three extra Applies to one, correctly: fakecontrol.signDesired re-signs
+on every poll, so these responses are HTTP 200, not the claimed 304. The
+setup issues two leases at one frozen manual instant; fakecontrol advances
+the second issuance by 1ms, while the initial desired expiry remains at the
+older instant. The first later poll extends that desired expiry and therefore
+the effective member deadline by 1ms. The task expressly requires applying
+policy-expiry changes, so ignoring this difference to satisfy the zero-Apply
+assertion would be wrong. A setup-only correction to produce actual 304s was
+asked of the orchestrator because the prompt restricts original-proof
+adaptations to API changes. Independent proofs use explicit stable windows
+and retain all assertions. No production workaround discards an expiry change.
