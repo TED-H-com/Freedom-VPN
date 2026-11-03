@@ -299,3 +299,12 @@ checks only **bootLocalBudget + closeLocalBudget == 13s**; those constants
 are on agent-core's unmerged branch. It does not check the shipped unit or
 a defaultStopTimeout. This prose correction adds no acceptance claim and
 changes no byte of the review archive.
+
+## Follow-up 34 review boundary (2026-11-03 EST)
+
+At #418, agent-core 39 (carrying 37 and 38) is held for r23 before merge.
+Its judgments are not on main. All five r22 dispositions above remain
+returned to agent-core 39, none confirmed on main; the raw archive and
+stop-budget erratum are unchanged. r20 H-1, M-1, M-2, M-3 and L-1 and
+r21's five findings stay open on main. [Follow-up 34](../handover/follow-up-34.md)
+imports no result from r23. Every historical failure stays failed.

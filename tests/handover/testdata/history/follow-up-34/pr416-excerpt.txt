@@ -1,0 +1,24 @@
+## Summary
+
+Handover follow-up 33: session launched 06:20 EST on 2026-11-03 on #415's roadmap row `339db172`, and delivered at 06:32.
+- **Size:** 2 commits, 30 owned files.
+- **Checks:** merge-tree clean on current `main` (`339db172`); prepush-scan clean. The archived review is byte-identical to r22's report.
+- **Scope:** docs and claims tests only. No container and no reservation.
+- **The session:** one codex `gpt-6-astra` session. Its first gate launch, at 06:28 EST, was refused by admission during netlab 30's reservation. It waited 1 min 48 s and ran no test inside that reservation.
+
+**The orchestrator's reading.**
+- **The cut:** #413–#415 at `339db172` (updater 21, handover 32, netlab 29). No unbriefed PR merged inside the range.
+  - `TestHandover_Followup33Claims` has 16 subtests. It pins three final roadmap rows, ten frozen handover inputs, 512 netlab payload checks (including 42 gzip originals), three documents (updater 21's two dated documents and the raw r22 review), three public PR excerpts, 81 findings and nine owner requests.
+  - **Follow-up 32's claims, kept true:** verified from its actual function and manifests (20 subtests, 301 payload checks), and pinned by its normalized function hash `ad4e9f28…`. Earlier claims now read rewritten files from #415's frozen bytes; their assertions are unchanged.
+- **Updater 21:** recorded as #413 states it. F27-02's fixture-defect reading **failed** by its own predeclared rule.
+  - **F21-01 is the mechanism:** the replaced setup consumed about 533 ms of a 250 ms meter budget. Recover took 15.1 ms and correctly timed out instead of reporting uncorrelated.
+  - Neither quiet leg qualified; both load legs did. The original F27-02 reading is supported, not closed. Every older failure and unqualified run is kept.
+- **Netlab 29:** F28-01 is closed as test isolation. AT12's 97 bytes were AT10's admitted socket (a 57-byte retransmitted request and a 40-byte RST), matched at all four points strictly between reads. AT12's deny assertion stays byte-identical.
+  - Follow-up 28's gate 2 stays FAIL, and its original packets stay unavailable.
+  - **F27-01 and B1:** unresolved and FAIL. The single NFLOG diagnostic failed at startup and was not retried; the parser correction is offline only. Netlab 30 owns the live collector check and the window.
+- **r22, archived and returned:** the raw review is byte-for-byte, 37,600 bytes, SHA-256 `05e7806a…`. It went back to agent-core 39 before merge. None of its five findings (0 Critical, 2 High, 3 Medium, 0 Low) is confirmed, and no proof file is adopted.
+  - **The erratum, in the reviews index only:** r22's "What held" item 6 cites a stop-budget unit and constant that do not exist on `main`. The shipped unit is `deploy/node/systemd/fvpn-agent.service` with `TimeoutStopSec=15s`, pinned by `TestPKG01_AT07ShippedAgentStopBudget`. The review branch's held test checks only the unmerged 13 s local budget.
+  - Agent-core 37 and 38 stay off `main` and merge with 39 after its review. r20's and r21's findings stay open on `main`.
+- **Findings register:** 81 rows. F21-01 and r22's five unconfirmed findings are added; only F27-02, F28-01 and F27-01/B1 changed. The 47 decision rows are unchanged, with no decision after D-144. Nine owner requests are carried verbatim. No scheduled-run result is claimed.
+
+**After this cut** (follow-up 34's): this PR and every PR that merges after it, including updater 22, netlab 30, and agent-core 37–39 with reviews r22 and r23.
