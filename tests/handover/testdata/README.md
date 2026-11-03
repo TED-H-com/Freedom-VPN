@@ -203,3 +203,22 @@ never copied or read by claims. D-098 includes dated devstack runs and the
 per-follow-up netlab tree. D-109 implementation claims name Go tests; dated
 hand-offs and merged-PR excerpts supply immutable context. Earlier claims,
 decisions and historical failures remain intact.
+
+## Follow-up 30 provenance
+
+Main b9439411 through #403: seven exact final roadmap rows
+(`followup30-main.json`), nine frozen follow-up 29 inputs with source digest /
+offset / length (`followup30-snapshots.json`), and 449 archive/run file checks
+(`followup30-evidence.json`: 123 isolation follow-up 15, 64 members follow-up
+15, 165 netlab 26 and 97 devstack 29 files). Devstack 29's dated run has no
+owner manifest, so `followup30-devstack29.sha256` lists its 97 files from main.
+Follow-up 29's register, entrypoints, operator-guide §3.2 and ops snapshot are
+frozen under `history/follow-up-30/`; its whole-function hash is checked after
+reversing only those redirects. The revised node-configuration note replaces
+follow-up 29's note in place, so older guide-body checks remove either note.
+
+Living roots (isolation 83b457ef, members 0ffb355a, usage b8a6e9e1) are never
+read by claims. Agent-core 36's dated hand-off is pinned by tokens from its own
+sections only. The r20 review is an exact archive, SHA-256 af15fb7c…, with no
+adopted proof files. Scheduled workflows are checked structurally; no run
+result is read or claimed.
