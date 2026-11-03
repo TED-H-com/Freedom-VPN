@@ -41,6 +41,8 @@ func TestISO01_F41_RendererChangesAlwaysApply(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			r := newRig(t)
 			alignControlClock(r)
+			r.eng.cfg.TestMode = true
+			r.eng.cfg.TestExemptV4 = []string{"203.0.113.0/24"}
 			serveBoundGeneration(t, r)
 			r.manualUsage(t)
 			r.clock.Advance(time.Second)

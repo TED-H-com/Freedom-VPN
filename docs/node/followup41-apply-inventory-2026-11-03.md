@@ -66,3 +66,28 @@ health and kernel epoch nudge all remain gates. Boot's adoption/settlement
 worker and close ownership are unchanged; Step does not race Boot or Close.
 A reset-only contiguous intent remains valid restart evidence (40), but an
 ordinary retained tick must not silently postpone a changed active epoch.
+
+## Implementation clarification — 2026-11-03
+
+The locked retain branch is inside `enforce`, after existing conntrack gates
+and the updater latch, before pre-Apply work. `latch` still removes an orphan
+meter checkpoint on every pass; the inventory's checkpoint row refers only
+to skipping the redundant pre-admission invalidation. Active-epoch equality
+adds a read-only usage Head lookup; it does not sample or write a new intent
+on an unchanged tick. Thus 40's historical statement of no extra healthy-pass
+SQL read does not describe 41. Pending epoch/intent work uses normal Apply.
+
+`SystemPlane.VerifyServing` now wraps its executor with
+`servingPresenceExecutor`: the existing nft JSON snapshot is retained for an
+allow-element completeness check when the existing precise lifetime read is
+reached. It adds no command or write, preserves prior nft/TC failure precedence,
+and records completeness failure as a failed deadline verification. Elements
+within the existing 101ms early-expiry allowance may legitimately be absent.
+`enforce.VerifyServing` itself is unchanged. Failed live reads still withdraw
+or repair using existing rules; foreign tc remains owned by its installer.
+
+The first expired-device/member boundary still takes the existing conservative
+node withdrawal and usage settlement, then redecides on that same Step. It does
+not defer surviving devices to the next poll. C1 or hitless boundary transitions
+are not implemented. End-of-Step verification, watchdog expiry and measurement
+records remain independent of whether Apply ran. No Apply record is fabricated.

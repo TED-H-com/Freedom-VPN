@@ -99,7 +99,7 @@ func (p SystemPlane) Apply(ctx context.Context, m enforce.Model, prev map[string
 
 // VerifyServing checks live nft and tc state without changing networking.
 func (p SystemPlane) VerifyServing(ctx context.Context, m enforce.Model, assignments map[uuid.UUID]uint16) (enforce.ServingEvidence, error) {
-	return enforce.VerifyServing(ctx, p.executor(), m, assignments)
+	return enforce.VerifyServing(ctx, &servingPresenceExecutor{Executor: p.executor(), model: m}, m, assignments)
 }
 
 // Baseline installs the fail-closed boot ruleset. The probe exception is not

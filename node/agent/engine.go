@@ -670,7 +670,6 @@ func (e *Engine) Step(ctx context.Context) error {
 	ctx, cancelLocal := newLocalBudget(ctx, e.controlPassTimeout()+5*time.Second)
 	defer cancelLocal()
 	defer e.finishServingStep(ctx)
-	previousDesired, previousLease := e.desired, e.lease
 	e.staleHold.counted = false
 	e.leaseAttempted = false
 	if err := caller.Err(); err != nil {
@@ -692,6 +691,9 @@ func (e *Engine) Step(ctx context.Context) error {
 	if !e.enrolled {
 		return nil
 	}
+	// Re-decide on this tick after a planned deadline withdrawal. Surviving
+	// siblings must not wait another poll merely because one device expired.
+	e.expireServing(ctx)
 	// Do not replace persisted desired provenance or bindings while a restart
 	// delta is pending. A held sample retries with forwarding still withdrawn.
 	if e.retainedPending {
@@ -762,19 +764,8 @@ func (e *Engine) Step(ctx context.Context) error {
 		e.outboxFull = len(pending) >= 32
 	}
 	e.evaluate(ctx)
-	// A timed-out control pass did not authorize a new policy. Keep the
-	// just-verified generation instead of re-installing the same expiring
-	// allowset on each outage retry. No guard/timeout is reset by this path.
-	retain := ioCtx.Err() != nil && e.serving && e.decision.Serve && e.applyError == nil &&
-		previousDesired == e.desired && previousLease == e.lease && e.appliedModel != nil &&
-		e.appliedGen == e.decision.Model.Generation && e.policyExpires == e.decision.PolicyExpires &&
-		len(e.pendingRevoke) == 0 && !e.memberPathPending && !e.quarantinePending
-	if retain {
-		e.checkMemberPath(ctx, *e.appliedModel)
-	} else {
-		if err := e.enforce(ctx, e.decision); err != nil && ctx.Err() != nil {
-			return err
-		}
+	if err := e.enforce(ctx, e.decision); err != nil && ctx.Err() != nil {
+		return err
 	}
 	// The generation this step just applied is visible only after enforce.
 	// The matching lease is requested before heartbeat and observation.
@@ -1182,6 +1173,18 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		e.withdraw(ctx)
 		return nil
 	}
+	e.planeLocked = true
+	defer func() { e.planeLocked = false }()
+	if !closedRecovery && e.canRetainServing(ctx, d) {
+		// Same installed model, but fresh live evidence is still mandatory.
+		// Failures take the ordinary reject/quarantine/withdraw path; no
+		// cached evidence or elapsed control timeout authorizes a skip.
+		if e.verifyServingModel(ctx, *e.appliedModel, e.appliedAssignments) &&
+			!e.expireServing(ctx) && e.checkMemberPath(ctx, *e.appliedModel) {
+			e.beat()
+		}
+		return nil
+	}
 	if !closedRecovery {
 		if err := e.invalidateMeterCheckpoint(); err != nil {
 			e.usagePersist = true
@@ -1189,8 +1192,6 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 			return err
 		}
 	}
-	e.planeLocked = true
-	defer func() { e.planeLocked = false }()
 	model := d.Model
 	queued := planRevokes(e.pendingRevoke, e.addresses, model.Bindings)
 	model.Revoke = queued

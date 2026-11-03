@@ -80,7 +80,9 @@ func TestAT13_F41_TimeDrivenModelChanges(t *testing.T) {
 			if kind == "member_expiry" {
 				b.MemberId = uuid.Must(uuid.NewV7())
 			}
-			if kind == "valid_from" {
+			if kind == "member_expiry" {
+				b.ValidUntil = a.ValidUntil
+			} else if kind == "valid_from" {
 				b.ValidFrom = now.Add(20 * time.Second)
 			} else {
 				b.ValidUntil = now.Add(20 * time.Second)
@@ -89,11 +91,12 @@ func TestAT13_F41_TimeDrivenModelChanges(t *testing.T) {
 			if kind == "valid_until" {
 				bindings = []api.DeviceBinding{b}
 			}
-			r.srv.SetFixture(fixtureWithBindings(3, bindings))
+			f := fixtureWithBindings(3, bindings)
+			f.TTL = 2 * time.Hour
+			r.srv.SetFixture(f)
 			stepOK(t, r)
 			// Exercise an actual shorter member grant separately from binding expiry.
 			if kind == "member_expiry" {
-				r.eng.desired.DeviceBindings[1].ValidUntil = a.ValidUntil
 				for i := range r.eng.lease.Members {
 					if r.eng.lease.Members[i].MemberId == b.MemberId {
 						r.eng.lease.Members[i].LeaseEnd = now.Add(20 * time.Second)
