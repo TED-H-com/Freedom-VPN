@@ -25,15 +25,23 @@ func (e *Engine) recoveryRenewalEligible() bool {
 // Bind to a newly queued report from this recovery. An old queued report, even
 // at the same generation, cannot arm a later recovery's opportunity.
 func (e *Engine) noteRecoveryReport(rep api.ObservationReport) {
+	if e.canBindRecoveryReport(rep) {
+		e.closedRecoveryRenewal.reportID = rep.ReportId
+	}
+}
+
+// The pending-outbox exception and the binding use this exact predicate. An
+// armed recovery can remain unbindable; it must not disable ordinary dedup.
+func (e *Engine) canBindRecoveryReport(rep api.ObservationReport) bool {
 	r := &e.closedRecoveryRenewal
 	if !r.armed || r.reportID != uuid.Nil || !e.recoveryRenewalEligible() {
-		return
+		return false
 	}
 	gen, err := rep.AppliedConfigGeneration.Get()
 	if err != nil || uint64(gen) != e.appliedGen || rep.MemberForwardingEnabled ||
 		rep.SafetyStatus != api.SafetyStatusPassed || rep.ProvisioningState != api.ProvisioningStateReady ||
 		rep.Netbird.Backend != api.ObservationReportNetbirdBackendKernel || !rep.Netbird.PeerId.IsNull() {
-		return
+		return false
 	}
 	// These are central's synchronous readiness evidence requirements. A failed
 	// meter path is never the D-067 awaiting-grants exception.
@@ -46,18 +54,16 @@ func (e *Engine) noteRecoveryReport(rep api.ObservationReport) {
 			internet = check.Status == api.HealthCheckStatusPassed
 		}
 		if check.Name == api.NodeCheckNameMeterPath && check.Status == api.HealthCheckStatusFailed {
-			return
+			return false
 		}
 	}
 	for _, err := range rep.Errors {
 		switch err.Code {
 		case api.ErrorCodeISOLATIONPOLICYINVALID, api.ErrorCodeISOLATIONBASELINEMISSING, api.ErrorCodeMETERPATHINVALID:
-			return
+			return false
 		}
 	}
-	if internet && awaiting {
-		r.reportID = rep.ReportId
-	}
+	return internet && awaiting
 }
 
 func (e *Engine) acceptRecoveryReport(rep api.ObservationReport, accepted api.ObservationAccepted) {
