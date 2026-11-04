@@ -28,6 +28,7 @@ type counterObservation struct {
 	Counters          map[string]decstr.U64 `json:"diagnostic_bytes"`
 }
 type forwardingObservation struct {
+	UnderlayCapture     json.RawMessage            `json:"underlay_capture,omitempty"`
 	NativeCapture       json.RawMessage            `json:"native_capture,omitempty"`
 	Node                string                     `json:"node_container_role"`
 	NodeIncarnation     string                     `json:"node_incarnation"`
@@ -317,6 +318,7 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 		o.FirstUnconfirmedHop = "none: origin HTTP response and both device admission counters increased"
 	}
 	o.NativeCapture = capture.stop()
+	o.UnderlayCapture = l.retainUnderlayCapture(capture)
 	r.Forwarding = append(r.Forwarding, o)
 	encoded, _ := json.Marshal(o)
 	r.check("bounded member transfer observation", "record selected route, node counters, packet hops and origin receipt", string(encoded), "netbird routes select; ip -j route get controlled origin; concurrent 9-second AF_PACKET aggregate observers; bounded CA-verified HTTPS GET; nft counters before/after", true)
@@ -343,6 +345,7 @@ func (l *live) transferPeerViews(member string) json.RawMessage {
 		"started_at": start, "ended_at": nodeAt, "member_read_at": memberAt, "node_read_at": nodeAt,
 		"member_view_of_selected_node": nativePeerView(memberRaw, nativeAddress(nodeRaw), "0.0.0.0/0", memberAt),
 		"node_view_of_member":          nativePeerView(nodeRaw, nativeAddress(memberRaw), "0.0.0.0/0", nodeAt),
+		"underlay":                     l.transferPathViews(member, memberRaw, nodeRaw),
 	})
 	return out
 }
@@ -398,6 +401,8 @@ func (l *live) routedPMTU1280(r *record, id uuid.UUID) {
 	}
 	for _, family := range []string{"ipv6", "ipv4"} {
 		func() {
+			window := l.startNativeRow(r, "D-137 routed "+family+" 1280", "routed-1280")
+			defer window.stop()
 			err := hop.Select(l.ctx, family)
 			r.check("D-137 routed "+family+" selection", "peer UDP uses routed hop", safeError(err), "NativeRouter1280.Select", err == nil)
 			if err != nil {

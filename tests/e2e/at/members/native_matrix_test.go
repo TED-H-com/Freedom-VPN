@@ -36,6 +36,7 @@ func (l *live) nativeMatrix(r *record) {
 		mtu    int
 	}{{"ipv4", 1500}, {"ipv6", 1500}, {"dual", 1500}, {"dual", 1280}, {"ipv6", 1280}, {"ipv4", 1280}} {
 		label := fmt.Sprintf("native %s MTU %d", row.family, row.mtu)
+		window := l.startNativeRow(r, label, fmt.Sprintf("receive-only-%d", row.mtu))
 		capture := l.startNativeCapture(r, "member", fmt.Sprintf("matrix-%s-%d", row.family, row.mtu))
 		capture.sample("before-input")
 		selection, e := l.hook.ApplyNativeInputs(l.ctx, labstack.NativeFixtureInputs{Underlay: row.family, MTU: row.mtu, Protocol: "tcp", Platform: "linux"})
@@ -43,6 +44,7 @@ func (l *live) nativeMatrix(r *record) {
 		r.jsonCheck(label+" input", "available", selection, "ApplyNativeInputs isolated member interfaces", e == nil && selection.Available)
 		if e != nil {
 			capture.stop()
+			window.stop()
 			continue
 		}
 		capture.sample("before-reconnect")
@@ -96,6 +98,7 @@ func (l *live) nativeMatrix(r *record) {
 				r.block("D-137 / D-146: receive-only 1280 TCP lacks complete clamp qualification; measured bytes retained. UDP/QUIC without PTB remain limitations.")
 			}
 		}
+		window.stop()
 		if row.family == "ipv6" && row.mtu == 1280 {
 			l.knownPMTU1280(r, id)
 		}
@@ -163,6 +166,8 @@ func (l *live) selectedNativePath() (selectedPath, error) {
 // D-137 supported scope: prior knowledge at the selected sender, without a
 // reconnect, global MTU/MSS change, or an invented reactive-PTB observation.
 func (l *live) knownPMTU1280(r *record, id uuid.UUID) {
+	window := l.startNativeRow(r, "D-137 supported known-PMTU 1280", "known-pmtu1280")
+	defer window.stop()
 	capture := l.startNativeCapture(r, "member", "known-pmtu1280")
 	defer capture.stop()
 	capture.sample("before-route-constraint")
