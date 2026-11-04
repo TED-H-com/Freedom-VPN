@@ -13176,7 +13176,7 @@ func TestHandover_Followup41Claims(t *testing.T) {
 	checkHash("tests/handover/testdata/followup41-snapshots.json", "c2e4f3b9565f20096d7f05238e7b30a975a850a98bd91f84a8987049b8e5dfb7")
 	checkHash("tests/handover/testdata/followup41-decisions.json", "df9686392bb9dc91924979cad467bd47638f51fd5cf1a02bfa84ff134217e1b9")
 	checkHash("tests/handover/testdata/followup41-findings.json", "9219f4ee94b7bbbf4f10043aeae25b182afb4bf7879f2308f3fb1731ace38083")
-	checkHash("tests/handover/testdata/followup41-evidence.json", "6294e4df0722c7859a37687c5bf4f0ba7d3ff482e92f921e44f93d96371024bc")
+	checkHash("tests/handover/testdata/followup41-evidence.json", "ccd16c56ded0a0a7c31725c21c0521e560585fb7a3318039ece3f5433127fe4a")
 	checkHash("tests/handover/testdata/history/follow-up-41/source-audit.json", "bfaa3b9d4361e546e6987aa9be7b9ff01fac5fc9a969dcf00baa370ead323bb3")
 	checkHash("tests/handover/testdata/history/follow-up-41/product-source-audit.json", "5dd6032e201e54a56721a5427decf020e64459e4f6e3e5b3438591520958a6ad")
 	checkHash("tests/handover/testdata/history/follow-up-41/members19-snapshots.json", "2197b7597dc3ad8d6ec0644a5ce6e39c58da935a935377c53f96e72b24e264ca")
@@ -13340,10 +13340,11 @@ func TestHandover_Followup41Claims(t *testing.T) {
 				Bytes        int
 				Commit       string `json:"source_commit"`
 			}
-			Proofs []struct{ Path, Name string }
+			Proofs         []struct{ Path, Name string }
+			TokenSnapshots []snapshot `json:"token_snapshots"`
 		}
 		readJSON(fixture+"followup41-evidence.json", &e)
-		if e.Commit != cut || len(e.Documents) != 101 || len(e.Proofs) != 36 {
+		if e.Commit != cut || len(e.Documents) != 101 || len(e.Proofs) != 36 || len(e.TokenSnapshots) != 7 {
 			t.Fatal("evidence inventory")
 		}
 		for _, r := range e.Documents {
@@ -13355,6 +13356,22 @@ func TestHandover_Followup41Claims(t *testing.T) {
 				t.Fatal("evidence length")
 			}
 		}
+		for _, s := range e.TokenSnapshots {
+			if s.Commit != cut || s.Offset != 0 || !strings.HasPrefix(s.Path, frozen) || s.SHA256 != s.SourceSHA || len(readOwnedDoc(t, root, s.Path)) != s.Length {
+				t.Fatal("producer token snapshot provenance")
+			}
+			checkHash(s.Path, s.SHA256)
+			found := false
+			for _, d := range e.Documents {
+				if d.Path == s.Source && d.SHA256 == s.SHA256 && d.Bytes == s.Length {
+					found = true
+				}
+			}
+			if !found {
+				t.Fatal("token snapshot lacks pinned producer source")
+			}
+		}
+
 		for _, p := range e.Proofs {
 			if !regexp.MustCompile(`(?m)^func ` + regexp.QuoteMeta(p.Name) + `\(t \*testing.T\)`).MatchString(readOwnedDoc(t, root, p.Path)) {
 				t.Fatalf("missing Go declaration: %s", p.Name)
@@ -13459,7 +13476,7 @@ func TestHandover_Followup41Claims(t *testing.T) {
 			}
 		}
 		require(frozen+"pr436-excerpt.json", "14.0 s", "parent shell", "combined stdout and stderr", "Both are harness failures", "not product or clock failures", "all three A3 samples", "no third")
-		require(nodebase+"outcome-2026-11-03.md", "13.992014 seconds", "free\\ntrue\\n", "No comparison is permitted")
+		require(frozen+"agent45-outcome.md.txt", "13.992014 seconds", "free\\ntrue\\n", "No comparison is permitted")
 		require(doc, "Both are harness failures, not product or clock failures", "44 and 45 with no comparison", "46\nrepeats it", "Its substance and all other measurement rules stay unchanged")
 	})
 	t.Run("45_functional_13_scenarios_expiry_true_renewal_zero_loss_false", func(t *testing.T) {
@@ -13505,9 +13522,9 @@ func TestHandover_Followup41Claims(t *testing.T) {
 	})
 	t.Run("publisher_exact_code_bounds_same_key_audit", func(t *testing.T) {
 		require(frozen+"pr438-excerpt.json", "On exactly HTTP 412", "same `Idempotency-Key` and the same body", "at most three writes and ten seconds", "A 412 rolls both back", "only durable successes are stored", "eight owned node writes", "Four writes")
-		require(runbase+"audit.md", "Every conflict gets one re-read, including the last", "matching desired values can end", "Failed GETs", "missing/invalid fresh ETags", "implicit keyed-request replays", "refuses redirect", "412 is **not stored**", "command boundary", "No operation is fabricated")
+		require(frozen+"devstack32-audit.md.txt", "Every conflict gets one re-read, including the last", "matching desired values can end", "Failed GETs", "missing/invalid fresh ETags", "implicit keyed-request replays", "refuses redirect", "412 is **not stored**", "command boundary", "No operation is fabricated")
 		for _, site := range []string{"publish_test.go:88", "publish_test.go:105", "followup18_native_test.go:226", "followup27_live_test.go:93", "followup30_live_test.go:231", "scenarios_test.go:832", "exports_live_test.go:353", "installer_exports_test.go:274", "followup20_live_test.go:49", "serving.go:225", "feed_scenario_test.go:68", "followup30_live_test.go:285"} {
-			require(runbase+"audit.md", site)
+			require(frozen+"devstack32-audit.md.txt", site)
 		}
 		require(doc, "only HTTP 412 RESOURCE_VERSION_CONFLICT", "without\nanother write", "same\nIdempotency-Key and body", "three writes, ten seconds per command", "412 rolls both back", "only durable successes are stored", "eight converted sites", "Four unchanged writes", "when present", "a 202 alone is not completion")
 		var a struct {
@@ -13545,7 +13562,7 @@ func TestHandover_Followup41Claims(t *testing.T) {
 		}
 		for _, run := range runs {
 			prefix := runbase + run.ID + "/"
-			require(prefix+"acceptance-summary.md", run.Counts, "run="+run.ID)
+			require(frozen+"devstack32-"+run.ID+"-summary.md.txt", run.Counts, "run="+run.ID)
 			pub, proof := readRecord(prefix+"publish.json"), readRecord(prefix+"publisher-retry-proof.json")
 			if pub.Run != run.ID || pub.Status != "pass" || proof.Status != run.Proof || !slices.Equal(observation(pub, "operation_status"), []string{"succeeded"}) || !slices.Contains(observation(pub, "publication_observed"), "active") {
 				t.Fatalf("publisher/proof outcome: %s", run.ID)
@@ -13631,7 +13648,7 @@ func TestHandover_Followup41Claims(t *testing.T) {
 				}
 			}
 		}
-		require(runbase+"resume.md", "The publisher retry implementation did not change", "This run remains blocked", "one further forced invocation", "not another publisher invocation")
+		require(frozen+"devstack32-resume.md.txt", "The publisher retry implementation did not change", "This run remains blocked", "one further forced invocation", "not another publisher invocation")
 		require(doc, "e22872b7", "c52b760c", "af726b13", "95fb7eab", "3ad796d4", "5 pass / 1 blocked", "one real 412, one re-read and one same-key, same-body retry returning 202", "One durable accepted operation row per key")
 	})
 	t.Run("zero_header_detail_limit_and_open_owner_request", func(t *testing.T) {
@@ -13655,7 +13672,7 @@ func TestHandover_Followup41Claims(t *testing.T) {
 		if envelope.Error.Code != "RESOURCE_VERSION_CONFLICT" || envelope.Error.Details == nil || len(envelope.Error.Details) != 0 {
 			t.Fatal("zero-header response")
 		}
-		require(runbase+"resume.md", "rejects zero", "before looking up the resource version", "OpenAPI's header pattern", "allows zero", "does not establish that an agent observation caused", "nonzero-version lookup branch", "original isolation 19 race", "plausible and unproven")
+		require(frozen+"devstack32-resume.md.txt", "rejects zero", "before looking up the resource version", "OpenAPI's header pattern", "allows zero", "does not establish that an agent observation caused", "nonzero-version lookup branch", "original isolation 19 race", "plausible and unproven")
 		require(frozen+"product-source-audit.json", "uint64(u) == 0", "details.current_resource_version", "(0|[1-9][0-9]*)")
 		require(doc, "before any version lookup", "empty details", "not a\nsixth publisher invocation", "isolation 19's observation\nrace is not reproduced", "Isolation 20's assembled run is pending")
 	})

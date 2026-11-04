@@ -469,3 +469,7 @@ zero-header proof upgrades a historical failure or establishes the observation
 race. Only D-150's status changes: 55 decisions, 105 findings (three updated,
 three added, 99 unchanged). No living members/isolation/usage evidence root
 is a claims input. TEST ONLY — all run IDs and keys here identify lab fixtures.
+
+Seven producer prose inputs are also copied byte-identically into the owned
+follow-up-41 archive for token checks; their hashes join the 101 pinned source
+records. The existing D-109 token allowlist stays unchanged.
