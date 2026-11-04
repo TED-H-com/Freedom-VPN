@@ -417,6 +417,7 @@ func TestHandover_FVPnBinaries(t *testing.T) {
 		"fvpn-postgres-entrypoint":    "backup-postgres-entrypoint-script",
 		"fvpn-oidc":                   "devstack-oidc-container-name",
 		"fvpn-nb-login":               "devstack-netbird-login-temp-log-prefix (/var/run/fvpn-nb-login-*.log)",
+		"fvpn-clone-2":                "at03-clone-node-fixture-name",
 	}
 
 	tokenRE := regexp.MustCompile(`\b(fvpn-[a-z0-9-]+)(\.service)?\b`)
