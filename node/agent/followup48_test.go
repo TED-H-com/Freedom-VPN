@@ -141,3 +141,59 @@ func TestF48_SystemPlaneInterfaceInventory(t *testing.T) {
 		}
 	}
 }
+
+func TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate(t *testing.T) {
+	r := newRig(t)
+	alignControlClock(r)
+	r.eng.cfg.HeartbeatSeconds = 5
+	r.eng.cfg.PollSeconds = 1
+	serveBoundGeneration(t, r)
+	r.manualUsage(t)
+	p := &r27BootMissingInterfacePlane{memPlane: r.plane, foreignTC: true}
+	r.eng.plane = p
+	stepOK(t, r)
+	p.foreignTC = false
+	r.srv.SetMemberGrantsReady(false)
+	r.srv.SetFixture(generationFixture(3, oneBinding(r.clock.Wall())))
+	stepOK(t, r)
+	if !r.eng.closedRecoveryHeld || r.eng.applyError != nil || r.eng.serving {
+		t.Fatalf("no closed recovery: %+v", r.eng.decision)
+	}
+	baseline := p.baselineCalls
+	renewals := r.srv.LeaseRenewals()
+	slot := r.eng.provisionalRetryAt
+	sent := r.eng.leaseAttemptAt
+	if slot-sent != 5*time.Second {
+		t.Fatalf("first renewal gap=%s", slot-sent)
+	}
+	for r.clock.Mono() < slot-time.Second {
+		r.clock.Advance(time.Second)
+		stepOK(t, r)
+		if p.baselineCalls != baseline || r.srv.LeaseRenewals() != renewals || r.eng.serving {
+			t.Fatal("redundant baseline, early renewal or serving during wait")
+		}
+	}
+	r.clock.Advance(slot - r.clock.Mono())
+	stepOK(t, r)
+	if r.srv.LeaseRenewals() != renewals+1 || r.eng.provisionalRetryAt-slot != 10*time.Second {
+		t.Fatal("grant-less backoff changed")
+	}
+	if p.baselineCalls != baseline {
+		d, _ := recoveryDecision(r.eng.input())
+		t.Fatalf("baseline at empty renewal; applied=%+v candidate=%+v", r.eng.appliedModel, d.Model)
+	}
+	// Retry-After remains an independent lower bound, even after recovery.
+	r.eng.leaseRetryAt = r.clock.Mono() + 20*time.Second
+	renewals = r.srv.LeaseRenewals()
+	r.srv.SetMemberGrantsReady(true)
+	r.clock.Advance(10 * time.Second)
+	stepOK(t, r)
+	if r.srv.LeaseRenewals() != renewals || p.baselineCalls != baseline || r.eng.serving {
+		t.Fatalf("Retry-After or deny-all retention changed: renewals=%d want=%d baseline=%d want=%d held=%v decision=%+v", r.srv.LeaseRenewals(), renewals, p.baselineCalls, baseline, r.eng.closedRecoveryHeld, r.eng.decision)
+	}
+	r.clock.Advance(10 * time.Second)
+	stepOK(t, r)
+	if !r.eng.serving || r.srv.LeaseRenewals() != renewals+1 || p.baselineCalls != baseline {
+		t.Fatal("scheduled populated lease failed to recover directly")
+	}
+}

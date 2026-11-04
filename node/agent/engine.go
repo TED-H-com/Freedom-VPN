@@ -74,6 +74,8 @@ type Engine struct {
 	meterSource meter.Source
 	ownStore    bool
 
+	closedRecoveryHeld bool // verified deny-all Apply, awaiting scheduled grants
+
 	usage           *usagestore.Store
 	meter           *meter.Meter
 	kernel          *kernelSource
@@ -615,7 +617,7 @@ func (e *Engine) Run(ctx context.Context) error {
 		if signaled(hup) {
 			e.reloadResolvers()
 		}
-		timer := time.NewTimer(min(e.nextStepDelay(interval), e.remainingStepDelay(started, interval)))
+		timer := time.NewTimer(e.runStepDelay(started, interval))
 		select {
 		case <-ctx.Done():
 			timer.Stop()
@@ -1061,6 +1063,7 @@ func (e *Engine) recoverOnce(ctx context.Context) {
 }
 
 func (e *Engine) baseline(ctx context.Context) error {
+	e.closedRecoveryHeld = false
 	// A planned baseline is not an external meter reset. Clear this before
 	// FinalSample reads the counters.
 	e.expectServing.Store(false)
@@ -1142,6 +1145,9 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		}
 	}
 	if !d.Serve {
+		if e.retainClosedRecovery(ctx) {
+			return nil
+		}
 		e.handoff(ctx)
 		e.serving = false
 		e.policyExpires = 0
@@ -1309,6 +1315,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 			return nil
 		}
 	}
+	e.closedRecoveryHeld = false
 	res, err := e.plane.Apply(applyCtx, model, prev)
 	host.finish(err)
 	e.measureTiming(res.Evidence, "apply", host)
@@ -1375,6 +1382,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	} else if !e.checkMemberPath(ctx, model) {
 		return nil
 	}
+	e.closedRecoveryHeld = closedRecovery
 	e.serving = !closedRecovery
 	e.applyError = nil
 	e.expectServing.Store(!closedRecovery)

@@ -320,7 +320,8 @@ func TestR27_M1_ProvisionalTimerRaceAndClosedRecoveryDelayPopulatedLease(t *test
 
 	// Engine.Run sleeps min(nextStepDelay(5s), remainingStepDelay(started, 5s)).
 	interval := 5 * time.Second
-	sleep := min(r.eng.nextStepDelay(interval), r.eng.remainingStepDelay(started, interval))
+	// Call the production Run timer calculation, rather than copying its formula.
+	sleep := r.eng.runStepDelay(started, interval)
 	r.clock.Advance(sleep)
 	stepOK(t, r)
 

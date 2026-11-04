@@ -21,6 +21,16 @@ func (e *Engine) remainingStepDelay(started, interval time.Duration) time.Durati
 	return max(0, interval-max(0, e.clock.Mono()-started))
 }
 
+// Serving retains its start-anchored watchdog cadence. Grant-less steps are
+// already closed: use the renewal deadline directly rather than racing it
+// against a poll anchored before that request was sent.
+func (e *Engine) runStepDelay(started, interval time.Duration) time.Duration {
+	if e.leaseGrantless() && !e.serving {
+		return e.nextStepDelay(interval)
+	}
+	return min(e.nextStepDelay(interval), e.remainingStepDelay(started, interval))
+}
+
 // Each read gets at most half the shorter heartbeat/poll cadence, capped at
 // one second. Slow or canceled reads cannot refresh a cached serving claim.
 func (e *Engine) servingReadTimeout() time.Duration {
