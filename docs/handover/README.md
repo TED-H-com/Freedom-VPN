@@ -117,21 +117,23 @@ is frozen at #418, with its 81 findings and nine owner requests.
 
 <a id="follow-up-41-decisions-register-2026-11-03-est"></a>
 
-## Follow-up 42 decisions register (2026-11-03 EST)
+<a id="follow-up-42-decisions-register-2026-11-03-est"></a>
 
-Verified against main **5a942aa1d6782b333983bbd230e97f44963e4d94**, through
-**#445**: **#439–#445**, immediately after #438. Exactly seven briefed PRs;
-no unbriefed PR. [Evidence cut](follow-up-42.md) and
-[acceptance snapshot](../ops/README.md#follow-up-42-acceptance-snapshot-2026-11-03-est).
-Main had **55 decisions**, with none after D-152. This cut records D-153 and
-D-154: **57 decisions**. D-150 is closed by D-153; its original substance is
-retained as history, including 47's suite-program ruling. D-151 and D-152 are
-byte-identical, as are all other existing decisions. Both new rulings are
-provisional; the owner may overturn them.
+## Follow-up 43 decisions register (2026-11-04 EST)
+
+Verified against main **04d31ea5cd10cb90527e0b4efc10b42522dd9569**, through
+**#456**: **#446–#456**, immediately after #445 / 5a942aa1. Exactly eleven
+briefed PRs; no unbriefed PR. [Evidence cut](follow-up-43.md) and
+[acceptance snapshot](../ops/README.md#follow-up-43-acceptance-snapshot-2026-11-04-est).
+Main had **57 decisions**, with none after D-154. This cut adds **D-155,
+D-156 and D-157: 60 decisions**. Every earlier row is byte-identical.
+All three are the orchestrator's provisional decisions; the owner may overturn
+them. D-155's code halves are merged; acceptance closure remains pending.
+D-156 is merged. D-157 has no merged implementation at this cutoff.
 All ten earlier owner requests remain answered; their original text stays in
 [follow-up 38](follow-up-38.md#requests-to-orchestrator), with answers in
 [follow-up 39](follow-up-39.md#owner-answers). Current routing is in
-[follow-up 42](follow-up-42.md#requests-to-orchestrator).
+[follow-up 43](follow-up-43.md#requests-to-orchestrator).
 
 | Decision | Operator meaning and delivery boundary |
 |---|---|
@@ -192,6 +194,9 @@ All ten earlier owner requests remain answered; their original text stays in
 | D-152 | **2026-11-03 EST, orchestrator — provisional; the owner may overturn.** Answers isolation 19’s F19-01: judge D-147’s upload negative at production’s applicable destination-deny rule: `ctbadns` for a resolver-only source; `cthost` for a host-only source; `ctdeny` for a denied source and for a source in both denied and host sets. The isolation brief’s literal `ctdeny` meant that applicable rule. No rule order changes. The requirement is unchanged: the member’s upload to the source is dropped, with zero upload usage. |
 | D-153 | **20:4x EST, 2026-11-03, orchestrator — provisional; the owner may overturn.** D-150 closes with no comparison. D-133 owes an attribution only for a failed live timing gate, and none exists. Four attempts, agent-core 44–47, produced no comparison: harness failures in 44–46 and a frozen-arm scenario failure in 47. The ordinary main lab passes 13/13, functional evidence only. Nothing is claimed about 37–43's timing, and no further A/B attempt is scheduled. Frozen A's TestLabExternalMeterReset failure goes to agent-core 48 as a code reading, for the record only. |
 | D-154 | **19:4x EST, 2026-11-03, orchestrator — provisional; the owner may overturn.** `If-Match: "0"` is compared like any other version. Spec §14.5 and the contract give zero no special meaning and set no minimum version. A row at version 0 matches `"0"` and is written; every other row gets ordinary HTTP 412 `RESOURCE_VERSION_CONFLICT` with `details.current_resource_version`. No schema change, positive-version invariant or contract change. Replaces the orchestrator's first ruling for wire-nodes 35, which assumed no resource could hold version 0. Implemented in #443. |
+| D-155 | **21:0x EST, 2026-11-03, orchestrator — provisional; the owner may overturn.** F30-01 is fixed by review r29's Option B. `fvpn-updater` exits `3` (`ExitBusy`) only for a live same-boot `update.lock` holder: `UPDATE_BUSY` with detail exactly `lock`. Stale-holder details stay `1`; `ErrMembersBlocked` stays `2` and wins. The agent defers boot recovery while the live lock is held or on exit `3`, retries at the top of Step as one tracked background recovery with a short first wait (r29 M-1); exit `0` clears, exits `1` and `2` stay terminal. Rejected: A, exit `0` on busy, breaks invariants 2 and 6; C, a narrower lock; D1, a restart after seal, conflicts with D-053; D2, a completion marker, breaks invariant 2. Updater half #446, agent half #454. F30-01 remains open until an acceptance run passes `lease-expiry` with the nightly quarantine entry removed; devstack 34 running at the cutoff. |
+| D-156 | **21:3x EST, 2026-11-03, orchestrator — provisional; the owner may overturn.** A same-boot process replacement keeps a verified retained ruleset until the successor adopts or refuses it. Startup uncertainty must not let the watchdog withdraw rules the successor has not judged. A stalled successor remains bounded by the predecessor's watchdog staleness limit and kernel timeout at D; r22 M-3's protection is kept. Agent-core 49 #454 fixes F48-01 with a pending-adoption receipt retaining the original age and deadline without a serving claim. See the [agent/watchdog release rule](operator-guide.md#d156-release-rule). |
+| D-157 | **00:2x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** After a closed recovery, send the node's first renewal as soon as central holds every input its grant decision reads, rather than at D-067's next provisional slot. At most once per closed recovery. D-067's cadence is unchanged for every other grant-less lease, including a grant-less answer to that early renewal. The trigger must be something the agent observes. If central moves readiness in a job the agent cannot observe, stop and route the change; no polling faster than D-067. Answers members 21's AT02 deny-all interval; diagnosis first in agent-core 50, running at the cutoff, no merged fix. See [known behaviour](operator-guide.md#at02-closed-recovery). |
 
 Current contract is revision 14: OpenAPI `1.10.0`, `50` operations (#289).
 Wire-members follow-up 11 (#297) registers `revokeMemberGrant` at
