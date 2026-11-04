@@ -1,0 +1,281 @@
+[
+  {
+    "name": "457_counts_session_and_members_routing",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-44/pr457-excerpt.json",
+        "tokens": [
+          "16 subtests",
+          "35 frozen inputs",
+          "36 earlier claims functions",
+          "60",
+          "124 rows",
+          "11 updated, 11 added, 102 byte-identical",
+          "01:02 EST",
+          "01:32",
+          "6 commits and 69 owned files",
+          "+74,808/−328",
+          "re-routed both to members 22"
+        ]
+      },
+      {
+        "path": "docs/handover/follow-up-44.md",
+        "tokens": [
+          "60 decisions and 124\nfindings rows",
+          "16 subtests",
+          "60 Go test declarations",
+          "16 archived code readings",
+          "seven input-expression redirects",
+          "members' own"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "458_acceptance_busy_before_candidate_and_other_answers",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-44/pr458-excerpt.json",
+        "tokens": [
+          "af4c130b",
+          "31 pass, 2 blocked, 0 fail",
+          "0.43 s and 0.86 s",
+          "every 5 s",
+          "80 ms",
+          "candidate never started",
+          "confounded under D-133",
+          "stale citations leave",
+          "publisherTrace32",
+          "after #443"
+        ]
+      },
+      {
+        "path": "tests/handover/testdata/history/follow-up-44/docs_e2e_runs_2026-11-04_followup34_analysis.md.txt",
+        "tokens": [
+          "af4c130b",
+          "31 pass",
+          "update-good",
+          "ExitBusy",
+          "D-133"
+        ]
+      },
+      {
+        "path": "docs/handover/follow-up-44.md",
+        "tokens": [
+          "before it started a candidate",
+          "D-155 was never\nexercised",
+          "candidate serves members; `lease-expiry` passes afterward",
+          "r29 L-2 is answered"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "463_revised_lock_wait_and_second_holder_proofs",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-44/pr463-excerpt.json",
+        "tokens": [
+          "one 10 s budget",
+          "every 20 ms",
+          "fvpn-updater: updater: UPDATE_BUSY: lock",
+          "five attempts 20 ms apart",
+          "counted from the first stale answer",
+          "unreadable metadata stays a live holder",
+          "only after a missed first attempt",
+          "600 ms holder",
+          "81 ms before",
+          "617 ms after",
+          "10.006 s",
+          "about 10 s",
+          "2 s bound was not supported"
+        ]
+      },
+      {
+        "path": "tests/handover/testdata/history/follow-up-44/docs_updates_node-followup25-2026-11-04.md.txt",
+        "tokens": [
+          "TestD158_CommandsProceedAfter600msHolder",
+          "617.335",
+          "617.479",
+          "664.315",
+          "615.934",
+          "10.006258811",
+          "TestD158_StaleWindowStartsAtFirstStaleAnswer"
+        ]
+      },
+      {
+        "path": "docs/handover/follow-up-44.md",
+        "tokens": [
+          "one 10 s budget",
+          "five attempts 20 ms apart",
+          "One JSON record",
+          "first stale answer",
+          "unreadable metadata stays a live holder",
+          "F30-01 stays open"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "459_fresh_renewal_first_live_pass_and_F22",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-44/pr459-excerpt.json",
+        "tokens": [
+          "fresh-renewal anchor",
+          "Proofs, offline",
+          "27 pass, 2 blocked, 0 fail",
+          "26.3 s later",
+          "all five member requests timed out",
+          "passes D-140 and qualifies under D-142",
+          "15 commands in 16 attempts",
+          "second PUT",
+          "got 202",
+          "sequence 101",
+          "All 101 Applies verified"
+        ]
+      },
+      {
+        "path": "tests/handover/testdata/history/follow-up-44/docs_e2e_at_isolation_followup22-2026-11-04.md.txt",
+        "tokens": [
+          "TestAT13_MemberScheduleFollowup21RenewalReplay",
+          "26.328240",
+          "F22-01"
+        ]
+      },
+      {
+        "path": "docs/handover/follow-up-44.md",
+        "tokens": [
+          "five requests after it timed out under a serving node",
+          "15 commands in 16 attempts",
+          "clause (iv)",
+          "historical failure stays failed"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "460_F16_answered_F17_open_AT29_failed_confounded",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-44/pr460-excerpt.json",
+        "tokens": [
+          "cap before admission",
+          "b2de46c8",
+          "bef669a3",
+          "One agent identity",
+          "D − 0.94 s",
+          "Confounded under D-133",
+          "Two 60 s admission holds",
+          "60.7 s after",
+          "harness's timing, not a product deadline violation",
+          "Guest clock rollback stays blocked"
+        ]
+      },
+      {
+        "path": "tests/handover/testdata/history/follow-up-44/docs_e2e_at_secops_2026-11-04-follow-up-17.md.txt",
+        "tokens": [
+          "SECOPS-F16-01",
+          "SECOPS-F17-01",
+          "b2de46c8",
+          "bef669a3",
+          "confounded"
+        ]
+      },
+      {
+        "path": "docs/handover/follow-up-44.md",
+        "tokens": [
+          "AT29 stays failed",
+          "two 60 s admission holds inside the case",
+          "D-160",
+          "guest_clock_rollback"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "461_D157_one_renewal_F48_approved_lab_not_AT02",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-44/pr461-excerpt.json",
+        "tokens": [
+          "One opportunity per verified closed Apply",
+          "consumed on dispatch",
+          "including a failed request or an empty answer",
+          "baseline or a replacement Apply",
+          "5, 10 and 20 s to about 0, 10 and 20 s",
+          "orchestrator approved it as drafted",
+          "Every other F48 invariant stays",
+          "13/13",
+          "not an AT02 timing"
+        ]
+      },
+      {
+        "path": "tests/handover/testdata/history/follow-up-44/docs_node_followup50-2026-11-04.md.txt",
+        "tokens": [
+          "TestD157_AT02_ClosedRecoveryRenewsAfterAcceptedReadyReport",
+          "TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate",
+          "approved F48"
+        ]
+      },
+      {
+        "path": "docs/handover/follow-up-44.md",
+        "tokens": [
+          "consumed on dispatch",
+          "baseline or replacement\nApply discards it",
+          "No live run has measured",
+          "4.968 s and 241 losses"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "462_unproven_attribution_unchanged_cadence_captures_attempts",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-44/pr462-excerpt.json",
+        "tokens": [
+          "timing-compatible, not proven",
+          "Neither run retained TCP packets",
+          "no positive minimum Apply spacing",
+          "binding-deadline wake-ups",
+          "zero remaining Step delay",
+          "second Apply in the same Step",
+          "three collectors",
+          "match, EOF, stale or mismatch",
+          "UDP input",
+          "Attempt 1",
+          "Attempts 2 to 5",
+          "205 to 209 ms",
+          "Attempts 3 to 5 are conservatively confounded",
+          "all 13 agent scenarios pass",
+          "historical failures"
+        ]
+      },
+      {
+        "path": "tests/handover/testdata/history/follow-up-44/docs_poc_G2-followup35-2026-11-04.md.txt",
+        "tokens": [
+          "D-159",
+          "D-145",
+          "TCP",
+          "splitter",
+          "13",
+          "confounded"
+        ]
+      },
+      {
+        "path": "docs/handover/follow-up-44.md",
+        "tokens": [
+          "combined TCP/UDP header captures",
+          "checked UDP projections",
+          "first failed",
+          "Attempts 3 to 5 are\nconfounded",
+          "within both 100 ms bounds",
+          "longest TCP stall",
+          "guard-attributed TCP drops",
+          "nothing is merged"
+        ]
+      }
+    ]
+  }
+]
