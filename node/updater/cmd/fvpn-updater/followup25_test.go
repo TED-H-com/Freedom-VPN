@@ -110,9 +110,7 @@ func TestD158_CLIWaitRecordAndExactErrorLine(t *testing.T) {
 				t.Fatalf("exit=%d stdout=%q stderr=%s", code, &stdout, &stderr)
 			}
 			if tc.name == "uncontended" {
-				if stderr.Len() != 0 {
-					t.Fatalf("uncontended stderr changed: %s", &stderr)
-				}
+				d158AbsentLog(t, stderr.String())
 				return
 			}
 			if tc.name == "real default budget" && (elapsed < 10*time.Second || elapsed > 12*time.Second) {
@@ -134,6 +132,10 @@ func TestD158_CLIWaitRecordAndExactErrorLine(t *testing.T) {
 				t.Fatalf("budget returned early: %v", record)
 			}
 			wantError := ""
+			if code == 0 {
+				d158AbsentLog(t, remaining)
+				return
+			}
 			if code != 0 {
 				wantError = "fvpn-updater: updater: UPDATE_BUSY: lock"
 				if tc.detail != "" {
@@ -145,5 +147,16 @@ func TestD158_CLIWaitRecordAndExactErrorLine(t *testing.T) {
 				t.Fatalf("error line changed or extra records: %q, want %q", remaining, wantError)
 			}
 		})
+	}
+}
+
+// The pre-D-158 no-work diagnostic stays exactly one JSON line. Only its
+// wall-clock timestamp varies between CLI invocations.
+func d158AbsentLog(t *testing.T, text string) {
+	t.Helper()
+	var r map[string]any
+	if json.Unmarshal([]byte(text), &r) != nil || len(r) != 3 || r["level"] != "INFO" || r["msg"] != "desired-state file is absent" ||
+		!strings.HasPrefix(text, `{"time":"`) || !strings.HasSuffix(text, `,"level":"INFO","msg":"desired-state file is absent"}`+"\n") {
+		t.Fatalf("existing stderr changed or wait record added: %q", text)
 	}
 }
