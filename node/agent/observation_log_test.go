@@ -150,6 +150,9 @@ func TestF52_ObservationSubmissionRecords(t *testing.T) {
 				t.Fatal(err)
 			}
 			flush()
+			if tc.name == "accepted" {
+				stepOK(t, r) // An actual idle Step emits neither receipt.
+			}
 			if len(f52Records(t, buf, observationSubmission)) != 1 || len(f52Records(t, buf, observationEnqueued)) != 1 {
 				t.Fatal("idle call logged a record")
 			}

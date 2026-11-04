@@ -178,6 +178,15 @@ func TestR31_M1_UnbindableClosedRecoveryFloodsPendingObservationOutbox(t *testin
 			t.Fatalf("expected armed ineligible closed recovery with leaseBehindApplied, got held=%v renewal=%+v eligible=%v",
 				r.eng.closedRecoveryHeld, r.eng.closedRecoveryRenewal, r.eng.recoveryRenewalEligible())
 		}
+		// The existing 30s stale-lease alarm is a real observation transition,
+		// not a duplicate. Establish it before comparing unchanged pending state.
+		r.clock.Advance(staleHoldDuration)
+		if err := r.eng.observe(context.Background()); err != nil {
+			t.Fatal(err)
+		}
+		if !r.eng.staleHold.alarm {
+			t.Fatal("stale-lease alarm transition was not observed")
+		}
 		beforePending, err := r.eng.store.Pending(context.Background())
 		if err != nil {
 			t.Fatal(err)

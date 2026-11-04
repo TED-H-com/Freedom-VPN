@@ -87,9 +87,14 @@ func TestD157_F52_IsolationLatchStepsOutlast32Intervals(t *testing.T) {
 	}
 	r.srv.SetObservationRetryAfter(0, 0)
 	r.clock.Advance(max(0, r.eng.observationRetryAt-r.clock.Mono()))
+	renewals := r.srv.LeaseRenewals()
 	stepOK(t, r)
-	if !r.eng.closedRecoveryRenewal.accepted {
-		t.Fatal("own report acceptance did not arm recovery")
+	accepted := slices.ContainsFunc(r.srv.ObservationReports(), func(rep api.ObservationReport) bool { return rep.ReportId == id })
+	// Step's pre-sync flush can accept the report and the later syncLease
+	// can consume its one-shot in this same Step, before returning here.
+	consumed := !r.eng.closedRecoveryRenewal.armed && r.srv.LeaseRenewals() == renewals+1
+	if !accepted || !r.eng.closedRecoveryHeld || (!r.eng.closedRecoveryRenewal.accepted && !consumed) {
+		t.Fatal("own report neither accepted and armed nor consumed once in the accepting Step")
 	}
 }
 
@@ -117,6 +122,13 @@ func TestD157_F52_StaleLeaseStepsOutlast32Intervals(t *testing.T) {
 			stepOK(t, r)
 			if r.eng.closedRecoveryHeld || r.eng.closedRecoveryRenewal.armed || r.eng.serving {
 				t.Fatal("stale recovery retained across enforcement")
+			}
+			// The third failed convergence (or 30s) raises a real diagnostic
+			// alarm. Preserve its own report, then compare unchanged state.
+			r.clock.Advance(staleHoldDuration)
+			stepOK(t, r)
+			if !r.eng.staleHold.alarm {
+				t.Fatal("missing stale-lease alarm")
 			}
 			pending, state := f52Pending(t, r), r.eng.lastObservationState
 			for range 35 {
