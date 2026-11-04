@@ -48,6 +48,25 @@ An explicit zero insert is therefore a counterexample to the precondition,
 not evidence that a deployed node currently has that version. No shared or
 production resource data was inspected.
 
+An isolated `dbtest.New` database with all current migrations confirmed this
+on 2026-11-03. The local diagnostic `TestAPI01_ZeroVersionPreconditionProbe`
+passed in 1.07 seconds:
+
+```text
+Current migrated schema accepted explicit inserts: nodes=0 exits=0
+GetNode exposes resource_version="0" and ETag="0" for the inserted node
+UpdateWithVersion(expected=0) matched the node and advanced its version to 1;
+probe transaction rolled back
+```
+
+The probe used explicit `INSERT INTO nodes(id,resource_version) VALUES($1,0)`
+and the corresponding exit insert. It exercised the existing `GetNode` and
+`db.UpdateWithVersion` functions without changing `ParseIfMatch`. The update
+was rolled back and dbtest dropped the isolated database without a cleanup
+error. This diagnostic proves the precondition failure; it is not the deferred
+route-level regression suite or evidence that a zero-header HTTP write
+currently succeeds.
+
 ## Conditional routes and all parser callers
 
 | HTTP route | Parser caller and comparison | Follow-up disposition |
@@ -83,6 +102,8 @@ changes. No consumer files or historical evidence were edited.
 - **2026-11-03 — Zero-version invariant blocks the parser change.**
   `nodes.resource_version` permits an initial zero, which is the comparison
   target of every guarded route. `exits.resource_version` also permits zero.
+  The isolated migrated-database probe above confirmed both the insert and
+  successful ordinary version comparison.
   Decide whether to establish a strictly positive node-version invariant with
   an authorized forward migration and a policy for any existing zero rows, or
   revise the provisional premise to allow zero to match an actual zero-version
