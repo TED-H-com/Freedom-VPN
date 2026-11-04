@@ -227,3 +227,116 @@ failures or successful proofs. Existing regression results and the required
 gates are recorded below after completion. **F30-01 remains open** until a
 future acceptance run reaches the real candidate path and passes. No live run,
 container, reservation or physical arm64 measurement is part of this delivery.
+
+## Decisions and remaining work
+
+- §13.5 exclusion and §13.11 bounded contention remain intact. The diagnosis
+  relates to UPD02/UPD03/UPD05 (§4) and the AT25/AT26 (§19) regression paths;
+  it supplies no new live acceptance coverage.
+- A revised D-158 decision must select between a 10 s acquisition policy tied
+  to the cooperative ordinary Step allowance and an explicitly empirical 2 s
+  policy tied only to the sampled holds. Neither should claim a maximum lock
+  occupancy or guaranteed acquisition. Polling at 20 ms is the proposal, not
+  an implemented constant.
+- The separate updater JSON log stream can carry elapsed wait and acquisition
+  outcome without changing the fixed error line. The current CLI routes both
+  kinds of records to stderr; no separate log file is opened by the updater.
+- No agent critical section was shown to hold the lock longer than its required
+  work. Latch rechecks, usage attribution, topology/serving verification, durable
+  applied state and the final heartbeat all have ordering obligations under
+  this lock. In particular `engine.go:1441` intentionally publishes the renewed
+  expiry before release. No agent-core shortening request is justified here.
+- Spec question: §13.11 permits waiting or bounded retries but supplies no
+  numeric acquisition budget. D-158's revised duration and the treatment of
+  overlapping standalone `seed`/`apply`/`flush` therefore remain policy decisions.
+- The sample trace is not a lock-duration benchmark; D-133 confounding is
+  recorded in `run34/analysis.md:35–39`. A larger retry budget alone cannot
+  supply the missing candidate-start, deferred-recovery-clearance and first
+  candidate-service evidence.
+
+### Requests to orchestrator
+
+2026-11-04:
+
+1. Resolve D-158's budget before scheduling implementation: proposed **10 s**
+   for `run`, with 20 ms polling, on the source evidence above. If retaining
+   **2 s**, explicitly scope it to covering the sampled ordinary holds rather
+   than the code's full cooperative allowance. Preserve D-155's prompt
+   `recover`, L-1, exact stderr/exit meanings and nested ownership. Decide
+   whether to include `seed` (automated production overlap), and explicit
+   `apply`/standalone `flush`, using the entry-point table.
+2. For devstack's next authorized run: **this delivery adds no wait record**.
+   Do not expect one yet or describe the acquisition budget as changed. After
+   implementation, retain each invocation's complete `updater.out` before the
+   next invocation overwrites it (`entrypoint-node.sh:171`). Suggested future
+   JSON slog record: `msg="update lock wait"`, `command="run"`,
+   `waited_ms=<elapsed monotonic milliseconds>`, `acquired=<boolean>` and
+   `budget_ms=<selected budget in milliseconds>`. This is a proposed interface,
+   not emitted output. Record invocation start/end and correlate it with lock
+   PID/comm/start ticks so the next run can identify a second holder. Keep
+   the unchanged error line separately. The orchestrator schedules acceptance;
+   no run is initiated here, and F30-01 stays open until the candidate is reached
+   and passes.
+3. For handover, exact current operator-guide sentence requested:
+   **“`fvpn-updater run` currently makes five lock attempts 20 ms apart (80 ms
+   of retry delays); D-158's longer acquisition budget is deferred pending
+   the follow-up 25 duration decision, and a live holder still yields exit 3.”**
+   If the proposed 10 s change is later implemented and verified, the replacement
+   sentence would be: **“`fvpn-updater run` waits up to a 10-second acquisition
+   budget for `update.lock`, then returns exit 3 if a live holder remains;
+   `recover` retains its prompt five-attempt, 20 ms retry window.”** Do not
+   publish the latter as current behavior before that implementation.
+
+## Validation on the unchanged runtime
+
+Every gate was preceded by a separate `bash "$FVPN_HOLD_SH"` command returning
+`free`. No admission deferral, reservation or harness rerun occurred. Commands
+used `CGO_ENABLED=0`, `GOTOOLCHAIN=local`, and worktree-local `.agent/tmp` for
+both `TMPDIR` and `GOTMPDIR`. GOCACHE was read with `go env GOCACHE` and was not
+overridden. Root lint used `make go-lint go-with-disk-tmp=` to retain the selected
+disk scratch directory without invoking the makefile's cleanup trap.
+
+| Command | Result |
+|---|---|
+| `go test -count=1 ./node/updater/... ./node/nodelock/... ./node/internal/updatejournal/... ./node/internal/nodelock/... ./node/internal/healthattest/...` | Exit 0; output below. Includes all four unchanged r29 proofs and all five follow-up 24 `TestD155_` tests. |
+| `go test -count=1 ./node/agent/... ./packaging/installer/... ./tests/e2e/at/updates/...` | Exit 0; output below. |
+| `go test -count=1 ./tests/handover/...` | Exit 0; output below. |
+| `make go-lint go-with-disk-tmp=` | Exit 0; no output. Uses the existing pinned staticcheck v0.8.2. |
+| `go vet ./...` | Exit 0; no output. |
+| `test -z "$(gofmt -l $(git ls-files '*.go'))"` | Exit 0; no output. |
+| `git diff --check` | Exit 0; no output. |
+| `make updater-build` | Exit 0; updater and release binaries compile for linux/amd64 and linux/arm64. |
+
+Real test output:
+
+```text
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater	19.859s
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater	1.599s
+?   	github.com/TED-H-com/Freedom-VPN/node/updater/fsutil	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/node/nodelock	0.032s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal	0.713s
+?   	github.com/TED-H-com/Freedom-VPN/node/internal/nodelock	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/healthattest	0.051s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	198.232s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent	0.309s
+ok  	github.com/TED-H-com/Freedom-VPN/packaging/installer	9.067s
+?   	github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates	0.026s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve	0.083s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/handover	3.939s
+```
+
+Real cross-build output:
+
+```text
+CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o bin/linux_amd64/fvpn-updater ./node/updater/cmd/fvpn-updater
+CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=arm64 go build -trimpath -o bin/linux_arm64/fvpn-updater ./node/updater/cmd/fvpn-updater
+CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o bin/linux_amd64/fvpn-release ./packaging/release/cmd/fvpn-release
+CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=arm64 go build -trimpath -o bin/linux_arm64/fvpn-release ./packaging/release/cmd/fvpn-release
+```
+
+No outside-path gate failed, so no main-only failure comparison was needed.
+Only this new dated note and `docs/updates/node-updater.md` are changed;
+production code, tests, dependencies, earlier follow-up documents and other
+lanes' files are unchanged. The public-hygiene pattern check has no matches.
+Cross-compilation is not evidence of an arm64 device run or live F30-01 closure.

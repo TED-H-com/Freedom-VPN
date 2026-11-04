@@ -29,9 +29,25 @@ fvpn-updater version
 | 1 | Any other failure, including a config that does not load and `flush` without `result_url`. |
 | 64 | Usage, an unknown command, a bad flag, or missing required flags. `seed -h` and `seed --help` print seed-specific flag help and exit 64. |
 
+Acquisition timing does not change these exit meanings. As of follow-up 25,
+`run` still uses five attempts 20 ms apart (80 ms of retry delays), just like
+`recover`. D-158's proposed longer `run` budget is **not implemented**: the
+diagnosis found that ordinary agent Apply has a cooperative allowance of up to
+10 s, so the brief's stop condition applies to the proposed 2 s budget. A live
+holder after the current window still produces exit 3. See
+[follow-up 25](node-followup25-2026-11-04.md) for the proposed 10 s replacement
+and evidence limits; neither duration is a new shipped setting.
+
 `run` holds the node lock, calls `recover`, applies an installer pending release when that file exists, then takes the current desired state. `apply` holds the same lock, calls `recover`, and applies the `-pending` file. It does not also read desired state. `flush` posts pending results and does not start an update. `flush` requires `result_url`. `Run`, `ApplyPending`, `Seed`, `Recover`, `Flush` and `Retain` take the node lock at entry, before they supersede an older job, claim, download or install.
 
 D-155 orders lock acquisition before layout setup and opening or migrating `journal.db` in `Run`, `Recover`, `ApplyPending`, `Seed` and `Flush`. `Retain` checks the lock before pruning an attached journal or returning with no journal; it never opens one. The lock library may create the lock's parent directory and open the lock file before attempting `flock`. Argument/configuration validation and `ApplyPending`'s absolute-path resolution also precede the lock; none opens the journal. Nested calls on the same engine keep the existing holder (`Run`'s inner `Recover`, `Flush` during seal, and `Retain`). Read-only `status` takes no update lock and keeps reading the existing journal during contention; a missing journal remains an error and is not created.
+
+D-158 remains pending a revised acquisition-budget decision. The current wait
+is bounded by attempt count and context cancellation; individual filesystem
+operations and scheduling can add elapsed time. All entry points retain their
+current window, including stale-holder retries, and no acquisition-wait log
+record has been added. The follow-up 25 audit also identifies serving-agent
+overlap for installer `seed`, explicit `apply`, and standalone `flush`.
 
 | Command | Can return live-holder `UPDATE_BUSY: lock`? | Exit before D-155 | Exit after D-155 |
 |---|---|---|---|
@@ -42,7 +58,7 @@ D-155 orders lock acquisition before layout setup and opening or migrating `jour
 | `flush` | Yes, through `Flush` with a configured result sink | 1 | 3 |
 | `status` | No; uses a read-only snapshot without the update lock | 0 on a successful read, 1 on failure | Unchanged |
 
-The stale-holder details `lock boot id`, `lock pid`, `lock process` and `lock start time` remain exit 1. Usage errors remain 64 (D-034g). Stderr formatting is unchanged: live contention prints `fvpn-updater: updater: UPDATE_BUSY: lock`. The updater half of F30-01 is complete; the agent's deferral/retry work is pending in agent-core. F30-01 stays open until that half lands and acceptance passes without the nightly `lease-expiry` quarantine entry. See [follow-up 24](node-followup24-2026-11-03.md) for proofs and the consumer audit.
+The stale-holder details `lock boot id`, `lock pid`, `lock process` and `lock start time` remain exit 1. Usage errors remain 64 (D-034g). Stderr formatting is unchanged: live contention prints `fvpn-updater: updater: UPDATE_BUSY: lock`. Both D-155 halves merged in #446 and #454. F30-01 stays open: devstack 34's `update-good` exited 3 before candidate start, so its passing `lease-expiry` row does not prove candidate recovery. Closure requires an acceptance run that reaches the candidate and passes. See [follow-up 24](node-followup24-2026-11-03.md) for the existing proofs and consumer audit, and [follow-up 25](node-followup25-2026-11-04.md) for the contention diagnosis.
 
 The config file holds paths and ids. It does not hold the release private key. `allow_loopback` is TEST ONLY and must stay false on a node. `allowed_artifact_origins` is a list of `scheme://host[:port]` origins (D-046). An artifact, manifest or `result_url` whose origin matches an entry is exempt from the private and CGNAT address guard for that origin only, and the dial is pinned to the first address that host resolved to. Link-local, multicast, unspecified and metadata names stay refused. The default is empty, so the guard stands. `allow_loopback` does not allow private addresses. A compose dev stack sets the release and result origins explicitly. An entry has no user, path, query or fragment. An entry matches a URL when the scheme, host and effective port are equal. The effective port of a URL or entry without an explicit port is the scheme default: 443 for https and 80 for http. Stock health checks (`NodeChecks`) compare the release tree, the identity directory, and an immutable record of the pointers and the state-schema marker. They do not hash the mutable state directory. Isolation, DNS and the tunnel probe come from a challenge-bound attestation written by the candidate agent (D-053, §13.9). Without a valid attestation those three checks fail. A config field, an environment variable or a file that was already in the journal cannot mark them passed. The file contract is [`node-health-attestation.md`](node-health-attestation.md). An empty stop or start command fails closed. The updater does not guess systemd. `Config.Engine` installs a migrator that refuses a schema change, so a release that needs one fails before services stop when no real migrator was supplied.
 
