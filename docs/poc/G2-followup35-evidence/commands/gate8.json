@@ -1,0 +1,28 @@
+{
+  "command": [
+    "bash",
+    "-c",
+    "test -z \"$(gofmt -l $(git ls-files \"*.go\"))\""
+  ],
+  "exit": 0,
+  "started": "2026-11-04T07:43:55.065189+00:00",
+  "ended": "2026-11-04T07:43:55.202220+00:00",
+  "samples": [
+    {
+      "wall_ns": "1793778235065308902",
+      "foreign": [
+        {
+          "pid": 2669101,
+          "comm": "python3",
+          "ticks": 1
+        },
+        {
+          "pid": 2669105,
+          "comm": "make",
+          "ticks": 0
+        }
+      ]
+    }
+  ],
+  "confounded": true
+}

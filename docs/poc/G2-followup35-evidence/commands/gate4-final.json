@@ -1,0 +1,25 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-count=1",
+    "./tests/netlab",
+    "-run",
+    "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
+    "-v"
+  ],
+  "exit": 0,
+  "started": "2026-11-04T07:46:42.689676+00:00",
+  "ended": "2026-11-04T07:46:46.478913+00:00",
+  "samples": [
+    {
+      "wall_ns": "1793778402690076178",
+      "foreign": []
+    },
+    {
+      "wall_ns": "1793778404706300466",
+      "foreign": []
+    }
+  ],
+  "confounded": false
+}

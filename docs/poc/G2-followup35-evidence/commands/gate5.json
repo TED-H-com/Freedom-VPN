@@ -1,0 +1,38 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-count=1",
+    "./tests/handover/..."
+  ],
+  "exit": 0,
+  "started": "2026-11-04T07:41:28.160846+00:00",
+  "ended": "2026-11-04T07:41:34.107090+00:00",
+  "samples": [
+    {
+      "wall_ns": "1793778088161058597",
+      "foreign": []
+    },
+    {
+      "wall_ns": "1793778090178003077",
+      "foreign": [
+        {
+          "pid": 2661661,
+          "comm": "gh",
+          "ticks": 4
+        }
+      ]
+    },
+    {
+      "wall_ns": "1793778092194907087",
+      "foreign": [
+        {
+          "pid": 2661661,
+          "comm": "gh",
+          "ticks": 4
+        }
+      ]
+    }
+  ],
+  "confounded": true
+}

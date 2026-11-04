@@ -1,0 +1,6 @@
+table inet fvpn {
+	set resolver_v4 {
+		type ipv4_addr
+		elements = { 198.51.100.53 }
+	}
+}

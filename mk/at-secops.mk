@@ -89,3 +89,7 @@ at-secops-followup15:
 .PHONY: at-secops-followup16
 at-secops-followup16:
 	FVPN_SECOPS_EVIDENCE_FOLLOWUP=16 FVPN_SECOPS_FOLLOWUP11=transports FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/followup11_run.py
+
+.PHONY: at-secops-followup17
+at-secops-followup17:
+	FVPN_SECOPS_EVIDENCE_FOLLOWUP=17 FVPN_SECOPS_FOLLOWUP11=transports FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/followup11_run.py

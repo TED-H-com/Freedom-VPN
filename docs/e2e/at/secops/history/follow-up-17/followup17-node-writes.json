@@ -1,0 +1,61 @@
+{
+  "run_id": "b2de46c8-7611-4b7c-8863-2345ff2b0240",
+  "receipts": [
+    {
+      "source": "$.checks[13].node_write_receipt",
+      "outcome": "accepted",
+      "attempts": [
+        {
+          "method": "PATCH",
+          "path": "/api/v1/admin/nodes/01a1a53f-c331-7644-838e-989f2e9dac86",
+          "if_match": "\"7\"",
+          "idempotency_key": "5fb61b7f-d046-4aaa-beaa-905497fb3618",
+          "body_sha256": "4939d40789ac64dedacaf0576b0f088ab48bf3b256d2263b70a3aa36ef39b67d",
+          "started_at": "2026-11-04T06:29:53.948322103Z",
+          "finished_at": "2026-11-04T06:29:53.954572344Z",
+          "status": 202,
+          "error_code": "",
+          "transport_error": false
+        }
+      ]
+    },
+    {
+      "source": "$.checks[16].node_write_receipt",
+      "outcome": "accepted",
+      "attempts": [
+        {
+          "method": "PUT",
+          "path": "/api/v1/admin/nodes/01a1a53f-c331-7644-838e-989f2e9dac86/publication",
+          "if_match": "\"20\"",
+          "idempotency_key": "4065f7e5-6d99-49ae-ae69-2090f0229d9f",
+          "body_sha256": "863398a695f3a4d4afaafb52760a8718cd77c922b142618447aab7c6b8a4c4cf",
+          "started_at": "2026-11-04T06:30:22.969582542Z",
+          "finished_at": "2026-11-04T06:30:22.976888012Z",
+          "status": 202,
+          "error_code": "",
+          "transport_error": false
+        }
+      ]
+    },
+    {
+      "source": "$.publication_request.node_write_receipt",
+      "outcome": "accepted",
+      "attempts": [
+        {
+          "method": "PUT",
+          "path": "/api/v1/admin/nodes/01a1a53f-c331-7644-838e-989f2e9dac86/publication",
+          "if_match": "\"20\"",
+          "idempotency_key": "4065f7e5-6d99-49ae-ae69-2090f0229d9f",
+          "body_sha256": "863398a695f3a4d4afaafb52760a8718cd77c922b142618447aab7c6b8a4c4cf",
+          "started_at": "2026-11-04T06:30:22.969582542Z",
+          "finished_at": "2026-11-04T06:30:22.976888012Z",
+          "status": 202,
+          "error_code": "",
+          "transport_error": false
+        }
+      ]
+    }
+  ],
+  "conflicts": 0,
+  "unique_command_receipts": 2
+}

@@ -1,0 +1,397 @@
+{
+  "run_id": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
+  "status": "incomplete",
+  "attempts": [
+    {
+      "attempt": 1,
+      "arm_id": "c6f9b79b-5e65-492a-9b87-3f0f9f17c6f0",
+      "incident_id": "01a1a52b-a70f-7af8-97f0-bbeaadcfa145",
+      "status": "partial",
+      "reason": null,
+      "coverage": {
+        "populated_hold": "pass",
+        "independent_denial": "pass",
+        "alarm_single_escalation": "pass",
+        "unrelated_failure_precedence": "pass",
+        "active_stop_retention": "pass",
+        "matching_recovery": "pass",
+        "distinct_later_incident": "not exercised",
+        "pure_stale_generation": "not exercised"
+      },
+      "retention": {
+        "status": "pass",
+        "incident_snapshots": [
+          {
+            "id": "01a1a52b-a70f-7af8-97f0-bbeaadcfa145",
+            "node_id": "01a1a527-e4a0-7bd8-aeab-c050db6c950c",
+            "ended_at": null,
+            "end_reason": null,
+            "escalated_at": "2026-11-04T06:07:45.798783+00:00",
+            "last_seen_at": "2026-11-04T06:07:49.788508+00:00",
+            "first_seen_at": "2026-11-04T06:07:43.887064+00:00",
+            "incarnation_id": "01a1a527-e78f-736a-92b5-c256755a8e99",
+            "latest_report_id": "01a1a52b-be16-73e3-ac3b-f76d2889def9",
+            "first_observed_at": "2026-11-04T06:07:43.882511+00:00"
+          },
+          {
+            "id": "01a1a52b-a70f-7af8-97f0-bbeaadcfa145",
+            "node_id": "01a1a527-e4a0-7bd8-aeab-c050db6c950c",
+            "ended_at": null,
+            "end_reason": null,
+            "escalated_at": "2026-11-04T06:07:45.798783+00:00",
+            "last_seen_at": "2026-11-04T06:07:49.788508+00:00",
+            "first_seen_at": "2026-11-04T06:07:43.887064+00:00",
+            "incarnation_id": "01a1a527-e78f-736a-92b5-c256755a8e99",
+            "latest_report_id": "01a1a52b-be16-73e3-ac3b-f76d2889def9",
+            "first_observed_at": "2026-11-04T06:07:43.882511+00:00"
+          },
+          {
+            "id": "01a1a52b-a70f-7af8-97f0-bbeaadcfa145",
+            "node_id": "01a1a527-e4a0-7bd8-aeab-c050db6c950c",
+            "ended_at": null,
+            "end_reason": null,
+            "escalated_at": "2026-11-04T06:07:45.798783+00:00",
+            "last_seen_at": "2026-11-04T06:07:51.204192+00:00",
+            "first_seen_at": "2026-11-04T06:07:43.887064+00:00",
+            "incarnation_id": "01a1a527-e78f-736a-92b5-c256755a8e99",
+            "latest_report_id": "01a1a52b-c39d-7e0a-8d72-99e1b10487b4",
+            "first_observed_at": "2026-11-04T06:07:43.882511+00:00"
+          }
+        ],
+        "last_before": {
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "hold_id": "01a1a52b-a70f-7af8-97f0-bbeaadcfa145",
+          "node_id": "01a1a527-e4a0-7bd8-aeab-c050db6c950c",
+          "lease_id": "29073aae-06a3-4005-824a-e792afca125f",
+          "report_id": "01a1a52b-be16-73e3-ac3b-f76d2889def9",
+          "observed_at": "2026-11-04T06:07:49.782234+00:00",
+          "received_at": "2026-11-04T06:07:49.788508+00:00",
+          "summary_valid": true,
+          "incarnation_id": "01a1a527-e78f-736a-92b5-c256755a8e99",
+          "reported_alarm": true,
+          "reported_steps": "7",
+          "lease_generation": "15",
+          "applied_generation": "16",
+          "reported_elapsed_ms": "5903"
+        },
+        "first_after": {
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "hold_id": "01a1a52b-a70f-7af8-97f0-bbeaadcfa145",
+          "node_id": "01a1a527-e4a0-7bd8-aeab-c050db6c950c",
+          "lease_id": "29073aae-06a3-4005-824a-e792afca125f",
+          "report_id": "01a1a52b-c39d-7e0a-8d72-99e1b10487b4",
+          "observed_at": "2026-11-04T06:07:51.19789+00:00",
+          "received_at": "2026-11-04T06:07:51.204192+00:00",
+          "summary_valid": true,
+          "incarnation_id": "01a1a527-e78f-736a-92b5-c256755a8e99",
+          "reported_alarm": false,
+          "reported_steps": "1",
+          "lease_generation": "15",
+          "applied_generation": "16",
+          "reported_elapsed_ms": "0"
+        },
+        "local_counters_reset": true,
+        "stop_receipt": {
+          "id": "552dd6f7-357e-4d20-9e0b-42d3f593a65e",
+          "pid": 1205,
+          "start_ticks": "9566080",
+          "started_at": "2026-11-04T06:03:38.35383311Z",
+          "wait_observed_at": "2026-11-04T06:07:50.413444195Z",
+          "wait_status": 0,
+          "exit_code": 0,
+          "signal": null,
+          "core_dump": false
+        },
+        "stop_identity_matched": true,
+        "proxy_still_armed": true
+      },
+      "node_id": "01a1a527-e4a0-7bd8-aeab-c050db6c950c",
+      "incarnation_id": "01a1a527-e78f-736a-92b5-c256755a8e99",
+      "first_seen_at": "2026-11-04T06:07:43.887064+00:00",
+      "last_seen_at": "2026-11-04T06:07:51.204192+00:00",
+      "ended_at": "2026-11-04T06:07:52.212785+00:00",
+      "end_reason": "generation_matched",
+      "report_ids": [
+        "01a1a52b-a70a-77ff-baee-747eaf9acfa5",
+        "01a1a52b-ae80-79ab-9c85-4a3d647c0e90",
+        "01a1a52b-b64c-740f-8ada-10cae6c3afb2",
+        "01a1a52b-ba35-76f5-be32-a14a19c6eedd",
+        "01a1a52b-be16-73e3-ac3b-f76d2889def9",
+        "01a1a52b-c39d-7e0a-8d72-99e1b10487b4"
+      ],
+      "audit_ids": [
+        "01a1a52b-ae88-799b-8fb2-5d43f291a619"
+      ],
+      "alarm_report_ids": [
+        "01a1a52b-ae80-79ab-9c85-4a3d647c0e90",
+        "01a1a52b-b64c-740f-8ada-10cae6c3afb2",
+        "01a1a52b-ba35-76f5-be32-a14a19c6eedd",
+        "01a1a52b-be16-73e3-ac3b-f76d2889def9"
+      ],
+      "escalation": {
+        "incident_id": "01a1a52b-a70f-7af8-97f0-bbeaadcfa145",
+        "audit": {
+          "id": "01a1a52b-ae88-799b-8fb2-5d43f291a619",
+          "action": "node.generation_hold.escalated",
+          "result": "succeeded",
+          "evidence": {
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "node_id": "01a1a527-e4a0-7bd8-aeab-c050db6c950c",
+            "lease_id": "29073aae-06a3-4005-824a-e792afca125f",
+            "report_id": "01a1a52b-ae80-79ab-9c85-4a3d647c0e90",
+            "incident_id": "01a1a52b-a70f-7af8-97f0-bbeaadcfa145",
+            "last_seen_at": "2026-11-04T06:07:45.798783Z",
+            "first_seen_at": "2026-11-04T06:07:43.887064Z",
+            "summary_valid": true,
+            "incarnation_id": "01a1a527-e78f-736a-92b5-c256755a8e99",
+            "reported_alarm": true,
+            "reported_steps": "3",
+            "alarm_report_id": "01a1a52b-ae80-79ab-9c85-4a3d647c0e90",
+            "lease_generation": "15",
+            "applied_generation": "16",
+            "reported_elapsed_ms": "1914"
+          },
+          "occurred_at": "2026-11-04T06:07:45.797415+00:00"
+        },
+        "trigger": "reported_alarm",
+        "age_ns": "1910351000"
+      },
+      "matching_report_ids": [
+        "01a1a52b-c78f-726e-bf36-1e33ed1b81d8"
+      ],
+      "accepted_local_matching_report_ids": [
+        "01a1a52b-c78f-726e-bf36-1e33ed1b81d8"
+      ],
+      "forwarded_local_lease_events": [
+        {
+          "kind": "matching_lease_forwarded",
+          "at": "2026-11-04T06:07:52.155341238Z",
+          "generation": "16",
+          "lease_id": "7cb54407-7b81-4c35-8d09-816e538c925d",
+          "body_sha256": "d842617c4099c2751653b8ceacff262a00abda7c27f3465a0b495b710eefe165",
+          "bytes": 571,
+          "upstream_status": 200,
+          "downstream_status": 200
+        }
+      ],
+      "unrelated_report_ids": [
+        "01a1a52b-be16-73e3-ac3b-f76d2889def9"
+      ],
+      "unrelated_classifications": [
+        "check_failed"
+      ]
+    },
+    {
+      "attempt": 2,
+      "arm_id": "69d1ce33-d44b-4ea5-bf0e-eab733017ee0",
+      "incident_id": "01a1a52c-4528-71ce-a97a-9fb48fa28730",
+      "status": "partial",
+      "reason": null,
+      "coverage": {
+        "populated_hold": "pass",
+        "independent_denial": "pass",
+        "alarm_single_escalation": "pass",
+        "unrelated_failure_precedence": "not exercised",
+        "active_stop_retention": "not exercised",
+        "matching_recovery": "pass",
+        "distinct_later_incident": "pass",
+        "pure_stale_generation": "not exercised"
+      },
+      "node_id": "01a1a527-e4a0-7bd8-aeab-c050db6c950c",
+      "incarnation_id": "01a1a527-e78f-736a-92b5-c256755a8e99",
+      "first_seen_at": "2026-11-04T06:08:24.359487+00:00",
+      "last_seen_at": "2026-11-04T06:08:29.246766+00:00",
+      "ended_at": "2026-11-04T06:08:30.346203+00:00",
+      "end_reason": "generation_matched",
+      "report_ids": [
+        "01a1a52c-4522-78b4-bdaf-76ff5f6809b2",
+        "01a1a52c-4c75-7dc1-90ca-14e327d22bc6",
+        "01a1a52c-5061-7f36-ba77-5bd63dba384c",
+        "01a1a52c-544e-77aa-b767-03993e8f056d",
+        "01a1a52c-5837-7907-9d44-74de2a774d19"
+      ],
+      "audit_ids": [
+        "01a1a52c-4c7f-7671-b910-a7b9bd72c803"
+      ],
+      "alarm_report_ids": [
+        "01a1a52c-4c75-7dc1-90ca-14e327d22bc6",
+        "01a1a52c-5061-7f36-ba77-5bd63dba384c",
+        "01a1a52c-544e-77aa-b767-03993e8f056d",
+        "01a1a52c-5837-7907-9d44-74de2a774d19"
+      ],
+      "escalation": {
+        "incident_id": "01a1a52c-4528-71ce-a97a-9fb48fa28730",
+        "audit": {
+          "id": "01a1a52c-4c7f-7671-b910-a7b9bd72c803",
+          "action": "node.generation_hold.escalated",
+          "result": "succeeded",
+          "evidence": {
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "node_id": "01a1a527-e4a0-7bd8-aeab-c050db6c950c",
+            "lease_id": "674f4f54-91d8-48b1-944d-73106cee221f",
+            "report_id": "01a1a52c-4c75-7dc1-90ca-14e327d22bc6",
+            "incident_id": "01a1a52c-4528-71ce-a97a-9fb48fa28730",
+            "last_seen_at": "2026-11-04T06:08:26.23671Z",
+            "first_seen_at": "2026-11-04T06:08:24.359487Z",
+            "summary_valid": true,
+            "incarnation_id": "01a1a527-e78f-736a-92b5-c256755a8e99",
+            "reported_alarm": true,
+            "reported_steps": "3",
+            "alarm_report_id": "01a1a52c-4c75-7dc1-90ca-14e327d22bc6",
+            "lease_generation": "16",
+            "applied_generation": "17",
+            "reported_elapsed_ms": "1879"
+          },
+          "occurred_at": "2026-11-04T06:08:26.235454+00:00"
+        },
+        "trigger": "reported_alarm",
+        "age_ns": "1875967000"
+      },
+      "matching_report_ids": [
+        "01a1a52c-5c84-7d1c-9742-ce7758495b01"
+      ],
+      "accepted_local_matching_report_ids": [
+        "01a1a52c-5c84-7d1c-9742-ce7758495b01"
+      ],
+      "forwarded_local_lease_events": [
+        {
+          "kind": "matching_lease_forwarded",
+          "at": "2026-11-04T06:08:30.182205007Z",
+          "generation": "17",
+          "lease_id": "07ba054c-bcbb-44ec-a364-a7c0d044cbf3",
+          "body_sha256": "65060198c45eeb2ee6180293996a64acd1895a78c3a22c148c2228614cab23ae",
+          "bytes": 928,
+          "upstream_status": 200,
+          "downstream_status": 200
+        }
+      ],
+      "unrelated_report_ids": [],
+      "unrelated_classifications": []
+    },
+    {
+      "attempt": 3,
+      "arm_id": "85126ff6-e6ca-497a-a0be-f62c09c5db50",
+      "incident_id": "01a1a52c-d5a7-7311-8bba-c8906e16bd6d",
+      "status": "partial",
+      "reason": null,
+      "coverage": {
+        "populated_hold": "pass",
+        "independent_denial": "pass",
+        "alarm_single_escalation": "not exercised",
+        "unrelated_failure_precedence": "not exercised",
+        "active_stop_retention": "not exercised",
+        "matching_recovery": "pass",
+        "distinct_later_incident": "pass",
+        "central_30s_fallback": "pass",
+        "pure_stale_generation": "not exercised"
+      },
+      "fallback_audits": [
+        {
+          "id": "01a1a52d-4b29-719b-8098-43fcda41d5bd",
+          "action": "node.generation_hold.escalated",
+          "result": "succeeded",
+          "evidence": {
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "node_id": "01a1a527-e4a0-7bd8-aeab-c050db6c950c",
+            "lease_id": "494184cd-f631-4206-9459-18ee865bc5e4",
+            "report_id": "01a1a52c-d5a1-7894-9662-1ea5c2e9126e",
+            "incident_id": "01a1a52c-d5a7-7311-8bba-c8906e16bd6d",
+            "last_seen_at": "2026-11-04T06:09:01.350238Z",
+            "first_seen_at": "2026-11-04T06:09:01.350238Z",
+            "summary_valid": true,
+            "incarnation_id": "01a1a527-e78f-736a-92b5-c256755a8e99",
+            "reported_alarm": false,
+            "reported_steps": "1",
+            "alarm_report_id": null,
+            "lease_generation": "17",
+            "applied_generation": "18",
+            "reported_elapsed_ms": "3"
+          },
+          "resource": "node:01a1a527-e4a0-7bd8-aeab-c050db6c950c",
+          "occurred_at": "2026-11-04T06:09:31.431682+00:00"
+        }
+      ],
+      "node_id": "01a1a527-e4a0-7bd8-aeab-c050db6c950c",
+      "incarnation_id": "01a1a527-e78f-736a-92b5-c256755a8e99",
+      "first_seen_at": "2026-11-04T06:09:01.350238+00:00",
+      "last_seen_at": "2026-11-04T06:09:35.056291+00:00",
+      "ended_at": "2026-11-04T06:09:36.053282+00:00",
+      "end_reason": "generation_matched",
+      "report_ids": [
+        "01a1a52c-d5a1-7894-9662-1ea5c2e9126e",
+        "01a1a52d-4d7f-715b-b6e7-1f04b913b5ac",
+        "01a1a52d-517f-7b2d-ab6f-df8de0330722",
+        "01a1a52d-5552-72e6-b865-b4869b975482",
+        "01a1a52d-594a-766c-b5e1-4a6a52f745f0"
+      ],
+      "audit_ids": [
+        "01a1a52d-4b29-719b-8098-43fcda41d5bd"
+      ],
+      "alarm_report_ids": [
+        "01a1a52d-5552-72e6-b865-b4869b975482",
+        "01a1a52d-594a-766c-b5e1-4a6a52f745f0"
+      ],
+      "escalation": {
+        "incident_id": "01a1a52c-d5a7-7311-8bba-c8906e16bd6d",
+        "audit": {
+          "id": "01a1a52d-4b29-719b-8098-43fcda41d5bd",
+          "action": "node.generation_hold.escalated",
+          "result": "succeeded",
+          "evidence": {
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "node_id": "01a1a527-e4a0-7bd8-aeab-c050db6c950c",
+            "lease_id": "494184cd-f631-4206-9459-18ee865bc5e4",
+            "report_id": "01a1a52c-d5a1-7894-9662-1ea5c2e9126e",
+            "incident_id": "01a1a52c-d5a7-7311-8bba-c8906e16bd6d",
+            "last_seen_at": "2026-11-04T06:09:01.350238Z",
+            "first_seen_at": "2026-11-04T06:09:01.350238Z",
+            "summary_valid": true,
+            "incarnation_id": "01a1a527-e78f-736a-92b5-c256755a8e99",
+            "reported_alarm": false,
+            "reported_steps": "1",
+            "alarm_report_id": null,
+            "lease_generation": "17",
+            "applied_generation": "18",
+            "reported_elapsed_ms": "3"
+          },
+          "occurred_at": "2026-11-04T06:09:31.431682+00:00"
+        },
+        "trigger": "central_age_30s",
+        "age_ns": "30081444000"
+      },
+      "matching_report_ids": [
+        "01a1a52d-5d2e-7cf3-a7ca-db81b6b27b3a"
+      ],
+      "accepted_local_matching_report_ids": [
+        "01a1a52d-5d2e-7cf3-a7ca-db81b6b27b3a"
+      ],
+      "forwarded_local_lease_events": [
+        {
+          "kind": "matching_lease_forwarded",
+          "at": "2026-11-04T06:09:36.004187183Z",
+          "generation": "18",
+          "lease_id": "8fb0c055-d3a8-4fce-bf7b-54a76115acf5",
+          "body_sha256": "f48c24756dac7aceaa1b263f92646356881e0f8ba1e4a431365e385e35564a53",
+          "bytes": 571,
+          "upstream_status": 200,
+          "downstream_status": 200
+        }
+      ],
+      "unrelated_report_ids": [],
+      "unrelated_classifications": []
+    }
+  ],
+  "coverage": {
+    "populated_hold": "pass",
+    "independent_denial": "pass",
+    "alarm_single_escalation": "pass",
+    "unrelated_failure_precedence": "pass",
+    "active_stop_retention": "pass",
+    "matching_recovery": "pass",
+    "distinct_later_incident": "pass",
+    "pure_stale_generation": "not exercised",
+    "central_30s_fallback": "pass"
+  },
+  "join_problems": [],
+  "scope": "Only original accepted reports, own signed leases, exact central incidents and incident-keyed audits. Missing rows remain not exercised. Parent wait exit/signal is observed, never inferred cooperative."
+}

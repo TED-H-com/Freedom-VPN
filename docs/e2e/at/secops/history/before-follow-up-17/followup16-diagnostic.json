@@ -1,0 +1,46 @@
+{
+  "kind": "one read-only lease helper invocation after failed case; not a sub-case rerun",
+  "captured_at": "2026-11-04T04:40:34.759048Z",
+  "exit_code": 0,
+  "result": {
+    "signed": {
+      "authorization_generation": "3",
+      "config_generation": "25",
+      "expires_at": "2026-11-05T04:39:45.744221675Z",
+      "issued_at": "2026-11-04T04:39:45.744221675Z",
+      "lease_id": "2e6f5123-29fc-449c-9596-a170d2802212",
+      "max_offline_seconds": 86400,
+      "members": [
+        {
+          "effective_service_end": "2026-11-04T04:49:40Z",
+          "entitlement_revision": "3",
+          "lease_end": "2026-11-04T04:49:40Z",
+          "member_id": "01a1a4ce-ead3-7525-8dca-edce0410f827"
+        },
+        {
+          "effective_service_end": "2026-11-04T04:59:45Z",
+          "entitlement_revision": "1",
+          "lease_end": "2026-11-04T04:59:45Z",
+          "member_id": "01a1a4d1-f443-7893-a59d-6ff0300cbe09"
+        },
+        {
+          "effective_service_end": "2026-11-04T05:01:58Z",
+          "entitlement_revision": "1",
+          "lease_end": "2026-11-04T05:01:58Z",
+          "member_id": "01a1a4d3-fb99-794f-907a-7f61ef67aa16"
+        },
+        {
+          "effective_service_end": "2026-11-04T05:06:55Z",
+          "entitlement_revision": "1",
+          "lease_end": "2026-11-04T05:06:55Z",
+          "member_id": "01a1a4d8-8306-7165-a70b-8dcf8c78cc11"
+        }
+      ],
+      "node_id": "01a1a4ce-8793-773e-ab2f-72d815343097",
+      "node_incarnation_id": "01a1a4ce-8b85-7180-b930-202abc06e3cf",
+      "schema_version": 1
+    },
+    "request_monotonic_ns": "90628191024440"
+  },
+  "limit": "This later lease is not the failed prerequisite sample; use AT29.actual.control_lost_agent_alive.lease_before_fault for that sample."
+}
