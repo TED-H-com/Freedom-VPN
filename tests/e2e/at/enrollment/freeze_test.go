@@ -59,31 +59,7 @@ func (p *probe) prepareFreezeSource(node uuid.UUID) bool {
 	if fup == uuid.Nil || rules == uuid.Nil || profile == uuid.Nil || plan == uuid.Nil {
 		return false
 	}
-	path := "/api/v1/admin/nodes/" + node.String()
-	mutate := func(method, suffix string, body any) bool {
-		get, e := p.call("GET", path, nil)
-		if e != nil || get.Status != 200 {
-			return false
-		}
-		r, e := p.callHeaders(method, path+suffix, body, map[string]string{"If-Match": get.Header.Get("ETag")})
-		detail[method+suffix] = safeResponse(r, e)
-		return e == nil && (r.Status == 200 || r.Status == 202)
-	}
-	if !mutate("PATCH", "", map[string]any{"capacity": map[string]any{"down_bps": 200000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}) {
-		return false
-	}
-	// Ready is a real accepted agent projection, never seeded by this harness.
-	until := time.Now().Add(90 * time.Second)
-	for time.Now().Before(until) && p.ctx.Err() == nil {
-		v := p.identityProjection(node)
-		if v["provisioning_state"] == "ready" && v["safety_status"] == "passed" {
-			break
-		}
-		if !waitRetry(p.ctx, "2") {
-			return false
-		}
-	}
-	if !mutate("PUT", "/publication", api.PublicationRequest{PublicationIntent: api.PublicationIntentPublished, GroupIds: &[]uuid.UUID{group.GroupId}, Reason: "TEST ONLY serving freeze"}) {
+	if !p.prepareFreezeNode(node, group.GroupId, detail) {
 		return false
 	}
 	member, err := p.stack.Login(p.ctx, "e2e-member", "member")
@@ -103,7 +79,7 @@ func (p *probe) prepareFreezeSource(node uuid.UUID) bool {
 		return false
 	}
 	p.servingGroup, p.servingMember, p.servingDevice = group.GroupId, member, peer.DeviceID
-	until = time.Now().Add(120 * time.Second)
+	until := time.Now().Add(120 * time.Second)
 	for time.Now().Before(until) && p.ctx.Err() == nil {
 		snap := p.freezeSnapshot(node)
 		detail["positive_control"] = snap
@@ -116,6 +92,29 @@ func (p *probe) prepareFreezeSource(node uuid.UUID) bool {
 		}
 	}
 	return ok
+}
+
+// Keep readiness and the later signed-lease/heartbeat positive control separate
+// from command acceptance. This setup is also exercised with offline HTTP stubs.
+func (p *probe) prepareFreezeNode(node, group uuid.UUID, detail map[string]any) bool {
+	if !p.writeServingCapacity(node, detail).Accepted(200, 202) {
+		return false
+	}
+	// Ready is a real accepted agent projection, never seeded by this harness.
+	until := time.Now().Add(90 * time.Second)
+	for time.Now().Before(until) && p.ctx.Err() == nil {
+		v := p.identityProjection(node)
+		if v["provisioning_state"] == "ready" && v["safety_status"] == "passed" {
+			break
+		}
+		if !waitRetry(p.ctx, "2") {
+			return false
+		}
+	}
+	if !p.writePublication(node, group, "TEST ONLY serving freeze", detail).Accepted(200, 202) {
+		return false
+	}
+	return true
 }
 
 type freezeSample struct {
