@@ -1,0 +1,12 @@
+{
+  "renames": [
+    {
+      "original": "runs/gate2/TestAT12_ISO01_ISO04_AllowDeny/counters.json",
+      "retained": "runs/gate2/TestAT12_ISO01_ISO04_AllowDeny/counters.txt",
+      "sha256": "5dae5e6289b0a1f59f803845171061465a5532ec5fecc0f3d23773bf33462633",
+      "reason": "Go struct dump, not JSON; bytes unchanged"
+    }
+  ],
+  "console": "Host paths redacted only in command-console exports; packet and scenario artifacts retained losslessly.",
+  "compression": "Whitespace-bearing artifacts are losslessly gzipped; retention-pins.json records compressed and uncompressed SHA-256 and lengths."
+}
