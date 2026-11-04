@@ -246,7 +246,9 @@ is frozen at #428: 99 findings, 47 decisions and ten then-open owner requests.
 The [follow-up 39 register](../../tests/handover/testdata/history/follow-up-40/register39.md)
 is frozen from #430: 99 findings and 53 decisions, all ten owner requests answered.
 
-## Findings register at the follow-up 40 cutoff
+<a id="findings-register-at-the-follow-up-40-cutoff"></a>
+
+## Findings register at the follow-up 41 cutoff
 
 | Finding | Status at #434 | Evidence / next owner |
 |---|---|---|
@@ -316,7 +318,7 @@ is frozen from #430: 99 findings and 53 decisions, all ten owner requests answer
 | r21 M-1 | FIXED — #429 | Both confirmed: open-head rebinding gap pre-existed; restoring retired identities into a closed epoch was a 37 regression. Close the old interval, clear identities and prepare an unbound baseline before new traffic. Original proof’s pre-Apply traffic and nil-binding close were corrected; the old r20 retained-ahead assertion was corrected too. Proof: `TestR21_M1_RefusedAdoptionLeavesOpenRetainedBindingCausingFalseConflictOnRebind`; [full record and proofs](../reviews/README.md#r20-to-r25-dispositions-at-the-follow-up-39-cutoff-2026-11-03-est). |
 | r21 M-2 | FIXED — #429 | All four confirmed: uploader cancellation pre-existed (37 exposed entry-canceled/lock wait); canceled recovery latch pre-existed; stacked phases were 37’s design with older cleanup/Run-to-Step paths; false exit zero/stale failure heartbeat pre-existed. Caller-bound upload/lock, shared 10 s Boot worker plus 3 s Close, no spurious recovery latch, nonzero ErrBoot and failure receipts; 39’s correction publishes conservative receipts before blocking work. Proof: `TestR21_M2_BootUnderSIGTERMUncanceledUploadAndRecoverBlocked`; [full record and proofs](../reviews/README.md#r20-to-r25-dispositions-at-the-follow-up-39-cutoff-2026-11-03-est). |
 | r21 L-1 | FIXED — #429 | Confirmed 37 orphan reason; earlier main retained the actual error. Keep pending topology evidence, but heartbeat override requires a current member-path error. Non-serving decision/heartbeat agree; later serving attempts still verify and eventual repair clears it. Proof: `TestR21_L1_RefusedAdoptionMemberPathLeavesOrphanMemberPathPending`; [full record and proofs](../reviews/README.md#r20-to-r25-dispositions-at-the-follow-up-39-cutoff-2026-11-03-est). |
-| Netlab F27-01 / B1 | UNRESOLVED — no fix; B1 FAIL and unexplained | #423 revises C1 as documents only. D-145 keeps the production guard; no C1 or hitless hand-over. Netlab 30 remains host-unqualified; historical B1 is not explained or upgraded. Under provisional D-150, agent-core 37–43 merged as #429 without a qualified D-133 comparison. Agent-core 44 (#431) attempted the same A 567080be / B 38420dad arms: window 1 stopped at the foreign-container preflight, window 2’s clock-reader wrapper failed before scenarios; zero pooled legs per arm, no comparison. Wrapper repaired; 45 repeats with the corrected same-clock condition. C1 reopening still requires D-145’s field complaints or measured member-visible impact after r24 H-1’s fix. |
+| Netlab F27-01 / B1 | UNRESOLVED — no fix; B1 FAIL and unexplained | #423 revises C1 as documents only. D-145 keeps the production guard; no C1 or hitless hand-over. Netlab 30 remains host-unqualified; historical B1 is not explained or upgraded. Under provisional D-150, agent-core 37–43 merged as #429 without a qualified D-133 comparison. Agent-core 44 (#431) attempted the same A 567080be / B 38420dad arms: window 1 stopped at the foreign-container preflight, window 2’s clock-reader wrapper failed before scenarios; zero pooled legs per arm, no comparison. Agent-core 45 (#436) also has zero pooled legs and no comparison: the corrected clock condition passed, but A1 self-matched the parent shell at preflight and A3 stopped on combined Docker output before scenarios. Both are harness failures, not product or clock failures. Agent-core 46 repeats D-150 (third attempt), running at briefing; status only. C1 reopening still requires D-145’s field complaints or measured member-visible impact after r24 H-1’s fix. |
 | Netlab F27-02 | FIXED — fixture defect, #417; fixed-test reading HOLDS by #420 | F21-01’s mechanism: test setup consumed the persisted wall-clock budget, fixed by synctest. Updater 23 predeclared process-exit end rule: r1 20/0 unqualified at 0.996 foreign cores; r2 50/0 qualified (0.105 before exit, 0.385 after), pooled with updater 22’s quiet 200/0; all 352 logged parent Recover calls have exact budgets. Updater 21’s failed verdict, updater 22’s undecided verdict and netlab 27’s failed run stay recorded; every unqualified leg stays unqualified. |
 | Devstack F30-01 | OPEN — reported production defect; agent-core / updater | #406 lease-expiry remains blocked. Known behavior and its limits are stated once in [node update execution](operator-guide.md#f30-01); no fix date or operator procedure promised. |
 | Isolation F17-01 | ACCEPTANCE-COVERAGE GAP — agent-core / wire-nodes | #404 pure stale_generation not exercised: current agent and central classification cannot produce that report without rewriting one. Routed, not yet judged by owners; not classified as a defect. |
@@ -351,30 +353,34 @@ is frozen from #430: 99 findings and 53 decisions, all ten owner requests answer
 | r25 M-1 | FIXED — #429 | Confirmed 41 strict retention equality for both post-Apply switch and sampler discontinuity. SameCountingInterval proves continuity; persist refreshed intent before memory. Real final-sample/boot/closed-epoch boundaries reject, and failed durable refresh withdraws. Restart can interpret either side of the write. Proof: `TestR25_M1_EpochSwitchDuringServingLeavesIntentEpochStaleAndForcesRedundantApplyOnNext304Tick`; [full record and proofs](../reviews/README.md#r20-to-r25-dispositions-at-the-follow-up-39-cutoff-2026-11-03-est). |
 
 | Isolation F19-01 | ANSWERED — provisional D-152 | #434’s literal ctdeny subcase was not exercised for resolver-only / host-only sources; actual upload denial passed at ctbadns / cthost with zero usage. D-152 confirms those applicable production rules; denied-only and denied+host use ctdeny. No rule order or requirement changes, and no historical record is rewritten. |
-| Isolation F19-02 | OPEN — routed to devstack 32, running at briefing | #434 assembled run 70beb28e: capacity PATCH 412 RESOURCE_VERSION_CONFLICT, publication never reached serving; all 12 checks blocked and real-node D-147 not exercised. PR #434 records a one-shot read-ETag/PATCH path; a concurrent observation update is probable, cause unproven. Devstack 32 owns re-read/retry on 412 with every attempt retained. No result from that running lane enters this cut; no date promised. |
-| Members 18 grant restoration | OPEN — routed to members 19, running at briefing | #433 requests public-API grant restoration on finite-grant early failed-readiness and positive-probe returns, retaining the failed assertion. Run 1 skipped restoration before AT09 lost its admitted-device prerequisite. Run 2’s normal restoration passes but does not exercise failed-path cleanup. Members 19 owns the follow-up; status only, no result or date promised. |
+| Isolation F19-02 | ANSWERED publisher side — #438; assembled run pending, isolation 20 running | #434 run 70beb28e and all 12 blocked checks stay unchanged. Devstack 32 re-reads only on 412 RESOURCE_VERSION_CONFLICT, succeeds without another write if intended values already match, otherwise retries with the fresh ETag and same key/body, at most three writes in ten seconds with complete receipts. Forced 95fb7eab passes 8/8 with two real 412→GET→202 sequences; ordinary c52b760c and 3ad796d4 pass 8/8. e22872b7 failed before enrollment; af726b13 stays blocked on its proof check. Zero If-Match is rejected before lookup: the suspected observation race is not reproduced and its cause remains unproven. Isolation 20 owns six conversions and its independent assembled run; no result enters this cut. |
+| Members 18 grant restoration | ANSWERED — members 19 #437; offline proof only | finiteExpiry restores member A to 3 authorized / 0 pending on both failed-replacement and failed-forwarding-trace returns through the public grants API on the same plan revision. The original failed check and normal path's single restoration/two checks stay unchanged; early cleanup has separate checks. Six additional owned sites fixed. Offline tests pass with and without e2e; no assembled run, all committed run records and AT02/AT09 failures unchanged. Shared-helper rollback is a separate open row. |
 
-Every historical failure stays failed. The register has **102 rows**:
-**four existing rows updated, three added, 95 byte-identical**. The prior
-r20–r25 judgments and all unrelated rows retain their exact #430 text.
-Historical labels in those rows describe their original evidence; current
-decision status is in the table above and new observations in
-[follow-up 40](follow-up-40.md).
+| Shared e2e helpers early returns | OPEN — routed to devstack | Members 19 #437 requests helper-level cleanup: Stack.ReplaceFiniteGrant revokes live grants before creating/verifying the replacement and can return without a live grant; Stack.PrepareNativeRouter1280 returns on a midway setup failure without rolling back earlier mutations. Members callers now restore their grants; shared helper changes remain outside this cut. |
+| AT-owned node-write sites | OPEN — routed to isolation, secops, enrollment, members, usage and updates | Devstack 32 #438 audit identifies AT-owned observation/version races. Adopt exact-code conflict handling, intended-value read-back, fresh ETag with same key/body, three-write/ten-second bounds and complete receipts; retain expected-error cases and acceptance predicates. Isolation's six sites are assigned to isolation 20, running; every owner's result remains pending here. |
+| Zero If-Match contract detail | OPEN — routed to contract and node-API owners | Devstack 32 #438: the header pattern permits "0" and the contract describes details.current_resource_version on 412. The server rejects "0" before any version lookup with empty details; the retained diagnostic proves it. Real zero-header retries do not reproduce isolation 19's observation race or test the nonzero-version lookup branch. No product or contract change in this cut. |
 
-D-146 and D-147 are on `main` (#432), with members 18’s qualified TCP rows
-and isolation 19’s four passing mechanism rows recorded separately from
-their failed/blocked overall acceptance. Standard WireGuard headers, IPv4
-forwarding, new handshakes and the UDP/QUIC receive-only limitation still
-bound the clamp. Agent-core 44 attempted D-150 without a comparison; 45
-repeats it. F19-01 is answered by provisional D-152; F19-02 and finite-grant
-restoration remain open with devstack 32 and members 19. Those lanes and
-agent-core 45 were running at briefing; no results enter this cut.
+Every historical failure stays failed. The register has **105 rows**:
+**three existing rows updated, three added, 99 byte-identical**. Every other
+row retains its exact #435 bytes. Historical labels describe their original
+evidence; current decision status is in the table above and this cut in
+[follow-up 41](follow-up-41.md).
+
+D-150 was attempted in 44 and 45 without a comparison; agent-core 46 repeats
+it. Members 18's grant-restoration request is answered by #437, with offline
+coverage only. F19-02 is answered on the publisher side by #438; isolation 20's
+independent assembled run is pending. Isolation 20, agent-core 46 and the
+orchestrator's read-only r27 diagnosis were running at briefing. Status only:
+no results from them enter this cut, and r27 is not archived here.
+
+D-151/D-152 stay unchanged; D-146/D-147 remain on main (#432). Members AT02/AT09
+and isolation's historical blocked assembled checks retain their verdicts.
+Nothing in this cut changes what an operator or a member sees. No date is
+promised for unmerged work.
 
 F30-01 stays known behaviour with no merged fix. D-145 keeps the current
 guard and C1 remains unimplemented. D-148 leaves Members F11-01 open and
-upstream-dependent; D-149’s development dependency disposition is unchanged.
-
-All ten owner requests are answered and the open owner-request list is empty.
-AT11 / AT13 operator rows, Isolation F17-01, AT29 / AT31 resources, physical
-arm64, power loss and QUIC remain carried. The cut adds no scheduled exercise
-of #424's at-isolation fix. See [the dated cut and routing](follow-up-39.md).
+upstream-dependent; D-149's development dependency disposition is unchanged.
+All ten earlier owner requests remain answered. AT11 / AT13 operator rows,
+Isolation F17-01, AT29 / AT31 resources, physical arm64, power loss and QUIC
+remain carried; no scheduled-run acceptance is added by this cut.
