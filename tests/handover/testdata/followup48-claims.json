@@ -1,0 +1,451 @@
+[
+  {
+    "name": "previous_cut_session_and_counts",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-48/pr-479-excerpt.json",
+        "tokens": [
+          "11:32 EST",
+          "11:55",
+          "four minutes",
+          "gpt-6-astra",
+          "9 commits and 45 owned files, +12,104/−309",
+          "17 subtests",
+          "13 byte-identical frozen documents",
+          "20 Go test declarations on main",
+          "20 frozen source readings",
+          "92 archived artifacts",
+          "38 exact JSON values",
+          "40 earlier claims functions",
+          "Decisions: 66",
+          "136 rows",
+          "238 digest values",
+          "Isolation 25 merged after the cutoff (#478)"
+        ]
+      },
+      {
+        "path": "docs/handover/follow-up-48.md",
+        "tokens": [
+          "#479",
+          "8a50c36c84628cce8b7c56e02d9123165d03ce84",
+          "8f4374d3a6932d845317c994d6cd3de634cde37c",
+          "1c39a0e73825dbcf911dfd2bec6e75aed64c979b",
+          "17 subtests",
+          "13 byte-identical frozen inputs",
+          "20 Go test declarations on main",
+          "20 frozen source readings",
+          "92 archived artifacts",
+          "38 exact JSON values",
+          "40 earlier claims functions",
+          "66 decisions",
+          "136 findings rows",
+          "238 digest values",
+          "11:32 EST",
+          "11:55 EST",
+          "9 commits and 45 owned files, +12,104/−309"
+        ]
+      },
+      {
+        "path": "docs/ops/README.md",
+        "tokens": [
+          "Handover 47 #479",
+          "#474–#477 / 1c39a0e7: 17 subtests, 13 snapshots, 20 main declarations, 20 source readings, 92 artifacts, 38 exact values; 66 decisions and 136 findings; 238 scope-review.json digests refreshed."
+        ]
+      }
+    ]
+  },
+  {
+    "name": "isolation_25_diagnosis_planner_replay_and_scheduled_pass",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-48/pr-478-excerpt.json",
+        "tokens": [
+          "213 root, support and reload-stream files",
+          "df9dbad7",
+          "The diagnosis (D-141) confirms the orchestrator's arithmetic",
+          "Packet 56's capture-read transit was 15.176 ms",
+          "0.167 ms",
+          "33.2 ms",
+          "all 14 candidates were excluded",
+          "The independent tcpdump capture shows packet 56 crossing the node in 23 µs",
+          "capture-read delay, not datapath transit",
+          "The sample is kept, with no discount",
+          "boundaryplan.Plan",
+          "added_scheduled_mono_ns is always an array",
+          "328ab9e0 and the 11-04 runner give added schedules byte-identical to their originals, 31 and 49 probes",
+          "bd73d7a4 on 4c495c3b",
+          "27 pass, 2 blocked, 0 fail. Exit 0, and the scheduled job passes.",
+          "103 samples, a maximum transit of 1.074 ms, spacing 5.5 ms",
+          "34 added probes were planned and observed, 236 in all",
+          "164 positives and 72 drops",
+          "D − 99.869 ms",
+          "D − 94.561 ms",
+          "zero overlaps in the judged tail and none anywhere",
+          "A + 22.1 s",
+          "2,629",
+          "15.5 s",
+          "58 TCP reads and zero TCP timeouts",
+          "seven lost transmissions, each attributed to a guard",
+          "one UDP loss",
+          "210.6 ms",
+          "15 commands in 15 attempts. Zero conflicts.",
+          "F24-01 closes for the planning record and the reviewer's crash only."
+        ]
+      },
+      {
+        "path": "tests/handover/testdata/history/follow-up-48/docs_e2e_at_isolation_followup25-2026-11-04.md.txt",
+        "tokens": [
+          "Single run bd73d7a4: scheduled pass, exit 0; 27 acceptance rows pass, two operator rows blocked, zero fail",
+          "213 tracked root/support/reload-stream files",
+          "Packet 56 has send→ingress 1.190251 ms",
+          "15.175703 ms",
+          "0.167079 ms",
+          "33.2 ms",
+          "22.974 µs",
+          "61.175 µs",
+          "0.481150 ms before",
+          "bd73d7a4-03f1-4b17-97c2-9c25a39ac0db",
+          "4c495c3b1516022e1de8db2f864432a8a8d171c5",
+          "5.5 ms",
+          "34 planned / 34 observed, total 236",
+          "-99868939 / -94561348 ns",
+          "0 judged overlaps / 0 total overlaps"
+        ]
+      },
+      {
+        "path": "docs/handover/follow-up-48.md",
+        "tokens": [
+          "#478",
+          "014b59ab15288dc6bc053932104e26a8f3327e9e",
+          "df61fd68add1678729ef32ae1ef93719124035e3",
+          "213",
+          "docs/e2e/at/isolation/history/follow-up-24/archive.json",
+          "df9dbad7-27ad-4895-8bd3-74108db12e87",
+          "15.175703 ms",
+          "22.974 µs",
+          "33.2 ms",
+          "boundaryplan/plan.go",
+          "review_boundary.py",
+          "bd73d7a4-03f1-4b17-97c2-9c25a39ac0db",
+          "27 pass, 2 blocked, 0 fail",
+          "pure_stale_generation",
+          "103 calibration samples",
+          "5.5 ms",
+          "34 planned / 34 observed added probes",
+          "236 total probes",
+          "164 positives",
+          "72 drops",
+          "-99868939 ns",
+          "-94561348 ns",
+          "2,629",
+          "210.638 ms",
+          "closes Isolation F24-01"
+        ]
+      },
+      {
+        "path": "docs/handover/README.md",
+        "tokens": [
+          "Isolation F24-01",
+          "CLOSED — #478",
+          "bd73d7a4",
+          "103 samples",
+          "5.5 ms spacing",
+          "-99.869 ms",
+          "-94.561 ms"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "isolation_26_assist_retry_and_d162_reach_audit",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-48/pr-480-excerpt.json",
+        "tokens": [
+          "assist.py:22 now lives in assist.go.txt",
+          "shared writeNode with nodeFieldsMatch",
+          "The evidence keeps the helper's receipt under node_write",
+          "api_ok is corrected.",
+          "Five fake-server cases, with no Docker and no lab",
+          "RESOURCE_VERSION_CONFLICT",
+          "already intended, with http_status left at 412",
+          "An AST check confirms that assist.go.txt makes exactly one node write and no bypass",
+          "the main agent's runtime stays 1 s for heartbeat, poll and observation",
+          "only the enrollment files carry D-162's 5 s",
+          "port 9445",
+          "9444",
+          "This is a static concern only, with no measured failure and no re-score.",
+          "12:05",
+          "Selected model is at capacity",
+          "4 commits and 16 owned files, +1,229/−25"
+        ]
+      },
+      {
+        "path": "tests/handover/testdata/history/follow-up-48/docs_e2e_at_isolation_followup26-2026-11-04.md.txt",
+        "tokens": [
+          "assist.go.txt",
+          "assist_offline_test.go.txt",
+          "TestAPI01_IsolationAssist",
+          "conflict_then_accepted",
+          "non_conflict",
+          "wrong_412_code",
+          "already_intended",
+          "208000000 / 200000000 capacity and 100000000 per-member caps",
+          "Command acceptance is not observed-state completion.",
+          "Check changes: none."
+        ]
+      },
+      {
+        "path": "docs/handover/follow-up-48.md",
+        "tokens": [
+          "#480",
+          "1d67b3ec4f4cc34a801daa84fb04084a8f44386c",
+          "36b4c632edeed91a7c0a55e936a031340b01e0fd",
+          "writeNode",
+          "RESOURCE_VERSION_CONFLICT",
+          "nodeFieldsMatch",
+          "208000000",
+          "200000000",
+          "100000000",
+          "TestAPI01_IsolationAssist",
+          "TestAPI01_AssistNodeWriteUsesSharedHelper",
+          "configureObservation()",
+          "second_exit.go",
+          "9445",
+          "9444",
+          "w3-devstack-e2e"
+        ]
+      },
+      {
+        "path": "docs/handover/README.md",
+        "tokens": [
+          "Clone receiver port wiring (fvpn-clone-2:9445 vs 9444)",
+          "OPEN — routed to w3-devstack-e2e",
+          "observer_main.go:95",
+          "proxy.go:140"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "members_24_archive_observation_records_and_dee8492f",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-48/pr-481-excerpt.json",
+        "tokens": [
+          "run 6a25221b's 145 root records are archived under history/follow-up-23/",
+          "observation_records_test.py: 3 tests, OK",
+          "One pre-check retry, as the brief allows.",
+          "waited 660 s for admission",
+          "D-160: 311 timed sections are recorded, with no admission wait inside any of them.",
+          "dee8492f, measured source 55588821 on baseline df61fd68",
+          "3 pass, 7 blocked, 0 fail; 708 passed, 6 blocked and 0 failed subchecks.",
+          "two subchecks changed from blocked to pass, AT09's dual 1280 indexes 44 and 46",
+          "F22-D146 is answered for the cadence, under D-162.",
+          "18 stored observations, with 18 enqueues and 18 accepted attempts",
+          "0.740 s (dual), 6.849 s (IPv6) and 1.442 s (IPv4)",
+          "closed Apply 540, renewal against it 545, a populated generation-14 lease, then serving Apply 546",
+          "deny-all for 187.3 ms, with seven lost probes",
+          "closed_recovery_binding, and accepted on attempt 1, 8 ms later",
+          "Node writes: 30, all accepted with 202 on the first attempt. Zero 412s.",
+          "F11-01 stays open under D-148"
+        ]
+      },
+      {
+        "path": "tests/handover/testdata/history/follow-up-48/docs_e2e_at_members_followup24-2026-11-04.md.txt",
+        "tokens": [
+          "Run dee8492f-4a7e-4f3c-9063-3ab27f66dcec",
+          "55588821291e335ef72fbd7fe1f5ff052dea92bf",
+          "145 regular root records",
+          "0.739651 s",
+          "6.849400 s",
+          "1.441758 s",
+          "All nine native windows retain 18 stored observations, 18 enqueues and 18 submission attempts; every stored report has its enqueue and accepted attempt, and no in-window enqueue is absent from storage.",
+          "producer 9879ce69-34b6-4fa6-9165-cb4619bc9fde: closed Apply 540, renewal request 545, populated generation-14 lease 4b88acc1-5ff1-4618-9f40-6f1a4f06064c, serving Apply 546.",
+          "The renewal starts 66.406460 ms after closed Apply ends; exactly one request and zero baseline writes lie before serving.",
+          "Closed report 01a1a782-6b90-74a8-bcd6-c9a06650a2ec is enqueued at 17:01:44.722Z, observed at 17:01:44.720284884Z, with closed_recovery_binding.",
+          "Its attempt 1 finishes accepted at 17:01:44.730Z (duration 6 ms; enqueue to completion 8 ms).",
+          "The deny-all interval after closed Apply is 187.308830 ms / seven losses; Apply plus wait is 304.961112 ms / 13 losses."
+        ]
+      },
+      {
+        "path": "docs/handover/follow-up-48.md",
+        "tokens": [
+          "#481",
+          "884565c8dd973c2d9b16082556a7a3d5c77387ea",
+          "b921c75f180beb6c0051d585a86d6651b2c8d71a",
+          "145",
+          "docs/e2e/at/members/history/follow-up-23/SHA256SUMS",
+          "6a25221b-1dcf-4f4d-b866-cd04f57f58f6",
+          "dee8492f-4a7e-4f3c-9063-3ab27f66dcec",
+          "708 pass",
+          "72 pass / 6 blocked / 0 fail",
+          "0.739651 s",
+          "6.849400 s",
+          "1.441758 s",
+          "01a1a7a4-9e50-71b3-9208-14a317374722",
+          "01a1a7a4-c56c-7004-9663-6d72540f6e22",
+          "01a1a7a5-3aa2-7f41-afce-32e62cea41cf",
+          "01a1a782-6b90-74a8-bcd6-c9a06650a2ec",
+          "closed_recovery_binding",
+          "9879ce69-34b6-4fa6-9165-cb4619bc9fde",
+          "4b88acc1-5ff1-4618-9f40-6f1a4f06064c",
+          "66.406460 ms",
+          "187.308830 ms",
+          "304.961112 ms",
+          "F22-D146",
+          "F22-AT01",
+          "F11-01"
+        ]
+      },
+      {
+        "path": "docs/handover/README.md",
+        "tokens": [
+          "Members F22-D146",
+          "ANSWERED — #481 under D-162",
+          "0.740 s",
+          "6.849 s",
+          "1.442 s",
+          "dee8492f",
+          "18 stored observations, 18 observation enqueued records and 18 accepted observation submission attempts"
+        ]
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "tokens": [
+          "Known behaviour at #481 — AT02 deny-all after a closed recovery.",
+          "9879ce69-34b6-4fa6-9165-cb4619bc9fde",
+          "4b88acc1-5ff1-4618-9f40-6f1a4f06064c",
+          "66.406460 ms",
+          "187.308830 ms / seven losses",
+          "304.961112 ms / 13 losses",
+          "All nine native windows retain 18 stored observations, 18 enqueues and 18 submission attempts; every stored report has its enqueue and accepted attempt, and no in-window enqueue is absent from storage",
+          "01a1a782-6b90-74a8-bcd6-c9a06650a2ec",
+          "17:01:44.722Z",
+          "17:01:44.720284884Z",
+          "17:01:44.730Z"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "review_r32_fidelity_and_dispositions",
+    "records": [
+      {
+        "path": "docs/reviews/r32-dedup-records-review.md",
+        "tokens": [
+          "agy/gemini-4-argon-high",
+          "Critical: 0",
+          "High: 0",
+          "Medium: 0",
+          "Low: 0",
+          "canBindRecoveryReport(rep)",
+          "observation enqueued",
+          "observation submission",
+          "Invariant 1 (D-157's renewal)",
+          "Invariant 6 (Records are exact)"
+        ]
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "tokens": [
+          "r32 dispositions at the follow-up 48 cutoff (2026-11-04 EST)",
+          "r32-dedup-records-review.md",
+          "21e59029934a34f7125805e116a2ffaaf61b60cb",
+          "1c39a0e73825dbcf911dfd2bec6e75aed64c979b",
+          "5b7ec63eecbe64e278e16bf24ef3a8e9ea3e625d6bde701d6d0c0e5735e1960f",
+          "341d099a6ebeeac5221275d6db748a6b3bfdc94d",
+          "agy/gemini-4-argon-high",
+          "committed by Ted H",
+          "201 lines",
+          "31,981 bytes",
+          "0 Critical, 0 High, 0 Medium, 0 Low",
+          "canBindRecoveryReport(rep)",
+          "8625fecccc518a49c10551bbd63d26be2807dc60b558816855182cb5d7ad999a",
+          "TestR32_Held_Q1_Q2_DedupExceptionAndRebuildCost",
+          "TestR32_Held_Q3_Q4_SubmitObservationBranchesAndDiagnosticMap",
+          "TestR32_Held_Q5_Q6_ObservationRecordFieldsAndErrorClasses",
+          "TestR32_Held_Q7_RecoveryInteractionLateBindAndSingleEarlyRenewal",
+          "present_on_main: false"
+        ]
+      },
+      {
+        "path": "docs/handover/follow-up-48.md",
+        "tokens": [
+          "../reviews/r32-dedup-records-review.md",
+          "21e59029934a34f7125805e116a2ffaaf61b60cb",
+          "5b7ec63eecbe64e278e16bf24ef3a8e9ea3e625d6bde701d6d0c0e5735e1960f",
+          "8625fecccc518a49c10551bbd63d26be2807dc60b558816855182cb5d7ad999a",
+          "TestR32_Held_Q1_Q2_DedupExceptionAndRebuildCost",
+          "TestR32_Held_Q3_Q4_SubmitObservationBranchesAndDiagnosticMap",
+          "TestR32_Held_Q5_Q6_ObservationRecordFieldsAndErrorClasses",
+          "TestR32_Held_Q7_RecoveryInteractionLateBindAndSingleEarlyRenewal"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "current_cut_decisions_findings_and_handoffs",
+    "records": [
+      {
+        "path": "docs/handover/follow-up-48.md",
+        "tokens": [
+          "#478–#481",
+          "b921c75f180beb6c0051d585a86d6651b2c8d71a",
+          "four merges and four final roadmap rows",
+          "Running at briefing, status only",
+          "agent-core 53",
+          "w2-agent-core",
+          "41782791081",
+          "41787173794",
+          "41794009264",
+          "41808885873",
+          "41871089749",
+          "TestD155_CrashedTransactionsKeepAgentRunning/blocked",
+          "TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery",
+          "TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat",
+          "TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption",
+          "TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample/delivered_ACK",
+          "D-098 / D-109 / D-132",
+          "66 decisions",
+          "138 findings rows: 6 updated, 2 added, 130 byte-identical",
+          "Nothing else in this cut changes",
+          "TEST ONLY",
+          "Requests to orchestrator",
+          "No outside-owned pin needs changing"
+        ]
+      },
+      {
+        "path": "docs/handover/README.md",
+        "tokens": [
+          "66 decisions",
+          "138 rows",
+          "6 existing rows updated, 2 added, 130 byte-identical",
+          "Node workflow agent test failures",
+          "OPEN — routed to w2-agent-core (follow-up 53)",
+          "41782791081",
+          "41787173794",
+          "41794009264",
+          "41808885873",
+          "41871089749",
+          "Every historical failure stays failed"
+        ]
+      },
+      {
+        "path": "docs/ops/README.md",
+        "tokens": [
+          "Follow-up 48 acceptance snapshot",
+          "66 decisions / 138 findings: 6 updated, 2 added, 130 unchanged findings.",
+          "Agent-core 53 (w2-agent-core) is running at briefing, status",
+          "41782791081",
+          "41787173794",
+          "41794009264",
+          "41808885873",
+          "41871089749",
+          "no delivered or merged PR at the initial check. Later results",
+          "No date is promised; no other operator or member procedure changes."
+        ]
+      }
+    ]
+  }
+]

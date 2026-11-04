@@ -8,12 +8,15 @@ final roadmap rows**: **#478, #479, #480, #481**; no unbriefed PR merged
 inside the range.
 
 **Running at briefing, status only:** **agent-core 53** (`w2-agent-core`),
-launched with this cut to diagnose and fix the `node/agent` wall-clock and
-deadline sensitivity observed under CPU load in GitHub Actions `Node` workflow
-runs **41782791081, 41787173794, 41794009264, 41808885873, and 41871089749**.
-No delivered or merged PR was present at the initial read-only check
-(`w2-agent-core` was at `main` `b921c75f` with no new commits or PR). Later
-results are **after the cutoff** and do not enter this cut. No date is promised.
+launched with this cut to diagnose first and fix the `node/agent` test failures
+observed in GitHub Actions `Node` workflow runs **41782791081, 41787173794,
+41794009264, 41808885873, and 41871089749**, and to write **F17-01's and
+F31-01's design notes** with no product change for those. A codex session
+started it at **13:36 EST** and stopped at **13:38 EST** on its usage limit,
+before any commit; it was relaunched at **13:40 EST** on agy
+`gemini-4-argon-high`. No delivered or merged PR was present at the initial
+read-only check (`w2-agent-core` had no PR). Later results are **after the
+cutoff** and do not enter this cut. No date is promised.
 
 **D-098 / D-109 / D-132:** `TestHandover_Followup48Claims` pins the four final
 roadmap rows, verbatim PR excerpts, 23 frozen snapshots (nine #479 documents,
@@ -359,19 +362,22 @@ admission wait):
     `attempt_numbers: [1]`, `attempt_scope: "process"`):
     1. Dual-stack (`index 44` transfer / `index 46` clamp): observation age
        **`0.739651 s` (`0.740 s` `< 15 s`)** on report
-       `cf8f027e-ca91-4510-b122-4ef916a3f03d` (`observed_at:
-       2026-11-04T17:38:08.587777293Z`, `received_at:
-       2026-11-04T17:38:08.591928Z`, `read_at: 2026-11-04T17:38:09.331579Z`);
+       `01a1a7a4-9e50-71b3-9208-14a317374722` (`observed_at:
+       2026-11-04T17:39:05.935900591Z`, `received_at:
+       2026-11-04T17:39:05.943199+00:00`, `read_at:
+       2026-11-04T17:39:06.68285+00:00`);
     2. IPv6 (`index 49` transfer / `index 51` clamp): observation age
        **`6.849400 s` (`6.849 s` `< 15 s`)** on report
-       `cb71f4f6-82be-41c0-87e1-3baad34824f5` (`observed_at:
-       2026-11-04T17:38:28.600317972Z`, `received_at:
-       2026-11-04T17:38:28.604178Z`, `read_at: 2026-11-04T17:38:35.453578Z`);
+       `01a1a7a4-c56c-7004-9663-6d72540f6e22` (`observed_at:
+       2026-11-04T17:39:15.947788636Z`, `received_at:
+       2026-11-04T17:39:15.95358+00:00`, `read_at:
+       2026-11-04T17:39:22.80298+00:00`);
     3. IPv4 (`index 57` transfer / `index 59` clamp): observation age
        **`1.441758 s` (`1.442 s` `< 15 s`)** on report
-       `2965978d-e2ef-4d02-a309-c68e4d4ad42a` (`observed_at:
-       2026-11-04T17:39:08.622666996Z`, `received_at:
-       2026-11-04T17:39:08.626668Z`, `read_at: 2026-11-04T17:39:10.068426Z`).
+       `01a1a7a5-3aa2-7f41-afce-32e62cea41cf` (`observed_at:
+       2026-11-04T17:39:45.954861061Z`, `received_at:
+       2026-11-04T17:39:45.960666+00:00`, `read_at:
+       2026-11-04T17:39:47.402424+00:00`).
   - Across all **nine native MTU windows** (indices `35`, `38`, `41`, `44`,
     `49`, `54`, `57`, `73`, `76`, with stored report counts `2, 1, 3, 2, 2, 1,
     3, 2, 2`): **18 stored `node_observations` rows**, **18 `observation
@@ -476,41 +482,41 @@ tests: `TestR32_Held_Q1_Q2_DedupExceptionAndRebuildCost`,
 [The r32 dispositions](../reviews/README.md#r32-dispositions-at-the-follow-up-48-cutoff-2026-11-04-est)
 preserve the r31 dispositions section byte-identical.
 
-**GitHub Actions `Node` workflow failures (`node/agent` wall-clock sensitivity
-under CPU load,
+**GitHub Actions `Node` workflow failures (`node/agent`,
 `tests/handover/testdata/history/follow-up-48/node-workflow-failures.json`):**
-across `#476`–`#480`, five `Node` workflow runs (`node-test-unit`) failed in
-`node/agent`:
-1. Run **`41782791081`** (`#476` merge `94198d39`):
-   `TestF48_R23_BootHeartbeatUsesOneBudget` (`boot_heartbeat_budget_test.go:154:
-   Boot failed when 250ms stall fits inside 400ms Boot budget: agent: boot
-   interrupted by caller: context deadline exceeded`);
-2. Run **`41787173794`** (`#477` branch `341d099a`):
-   `TestEngine_Step_FairUseAckedByCentral` (`engine_test.go:473: Serve() =
-   false, want true (reasons=[safety_check_failed])`) and
-   `TestD096_MemberRouteMismatchQuarantinesAndBlocksGrants`
-   (`followup22_test.go:208: expected baseline serves safely, got Serving=false
-   Reasons=[safety_check_failed]`);
-3. Run **`41794009264`** (`#478` merge `014b59ab`):
-   `TestD155_CrashedTransactionsKeepAgentRunning` /
-   `TestD155_CrashedTransactionsKeepAgentRunning/blocked`
-   (`review_r29_test.go:258: Serving = false, want true after background
-   recovery succeeds (decision={Serving:false
-   Reasons:[safety_check_failed]})`);
-4. Run **`41808885873`** (`#479` branch `b2321dc6`):
-   `TestEngine_Step_AppliesAndVerify` (`engine_test.go:240: Serve() = false,
-   want true (decision: {Serving:false Reasons:[safety_check_failed]})`) and
-   `TestReviewR14_M1_ProvisionalGrantlessLeaseRenewsAtHeartbeatWithoutFallbackOrTightLoop`
-   (`review_r14_m1_test.go:286: provisional lease wait must not fall back to
-   baseline or re-apply; applyCalls=2 baselineCalls=2`);
-5. Run **`41871089749`** (`#480` branch `fe17e0d0`):
-   `TestR21_H1_CrashBetweenApplyAndRetainedAppliedMisattributesToPreviousMember`
-   (`review_r21_test.go:142: setup: first serving step failed: Serving=false
-   Reasons=[safety_check_failed]`) and
-   `TestR25_H1a_SiblingExpiryOnStepEntryTearsDownWholeNodeToBaselineBeforeControlPass`
-   (`review_r25_test.go:93: step 1: expected Serving=true, got {Serving:false
-   Reasons:[safety_check_failed]}`).
-Routed to **`w2-agent-core` follow-up 53**, running at the cutoff.
+since `#447` (`agent-core 48`), the `Node` workflow has failed five times in
+`node/agent`, and no run was retried. Three were `main` pushes after merges that
+change no node code (`#456` `0cf5a5d`, `#464` `48ee50e` and `#478` `014b59a`),
+and the next `main` push passed each time. Three signatures appear across the
+five runs:
+- **Per-test Boot budget exhaustion** (`TestD155_CrashedTransactionsKeepAgentRunning/blocked`,
+  `TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery`, and
+  the first subtest of `TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat`):
+  1. Run **`41782791081`** (`main` push `0cf5a5d` after `#456`):
+     `TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat/term_after_baseline_with_ledger_timeout_leaves_stale_serving_true_heartbeat`
+     (`review_r22_test.go:880: expected context.Canceled on TERM after baseline,
+     got agent: boot failed: local deadline: context deadline exceeded`);
+  2. Run **`41794009264`** (`w2-agent-core` push `84e7198`):
+     `TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery`
+     (`review_r29_test.go:187: agent: boot failed: local deadline: context
+     deadline exceeded`);
+  3. Run **`41871089749`** (`main` push `014b59a` after `#478`):
+     `TestD155_CrashedTransactionsKeepAgentRunning/blocked`
+     (`followup49_transaction_test.go:258: agent: boot failed: local deadline:
+     context deadline exceeded`).
+- **Refused same-boot adoption:**
+  4. Run **`41808885873`** (`main` push `48ee50e` after `#464`):
+     `TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption`
+     (`review_r23_test.go:196: same-boot adoption was refused after switchEpoch
+     left usage_apply_intent on E1`).
+- **Second final-sample post:**
+  5. Run **`41787173794`** (`w4-handover` push `eea0abd`):
+     `TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample/delivered_ACK`
+     (`followup25_usage_test.go:108: retired posts=2, accepted batches=1,
+     accepted events=1`).
+`#479`'s body records only the failure on `#478`'s merge and stands as written;
+the fuller list is recorded in the register row. Routed to **`w2-agent-core`
+follow-up 53**, running at the cutoff.
 
 ## Decisions, register and operator boundary
 
@@ -535,8 +541,11 @@ Seven entrypoints point here. In `docs/handover/operator-guide.md`, only lines
 3–4, `#at02-closed-recovery` (heading updated from `#473` to `#481` plus one
 sentence for `dee8492f` quoted from the frozen copy) and `#observation-records`
 (one sentence for `#481`'s live reading across all nine native MTU windows and
-the AT02 closed recovery quoted from the frozen copy) change; every other line
-is byte-identical. Changed owned documents have refreshed digest values only in
+the AT02 closed recovery quoted from the frozen copy) change; the `#f30-01` and
+`#tcp-reload-guard` anchors and every other line stay byte-identical. Nothing
+else in this cut changes what an operator or a member sees: the assist and the
+boundary planner are harness code, and D-162 is `TEST ONLY`. Changed owned
+documents have refreshed digest values only in
 `docs/e2e/at/secops/scope-review.json`.
 
 ### Requests to orchestrator
@@ -544,11 +553,11 @@ is byte-identical. Changed owned documents have refreshed digest values only in
 **2026-11-04 EST:** follow-up 47's requests are answered by **isolation 25
 #478**, **isolation 26 #480** (answering `tests/e2e/at/isolation/assist.py:22`
 via `tests/e2e/at/isolation/assist.go.txt`), **members 24 #481** and **review
-r32** (`0` findings, `0` owner questions).
+r32** (`0` findings, `0` owner questions). No outside-owned pin needs changing.
 1. **Carry `w2-agent-core` follow-up 53** (running at cutoff, status only) for
-   the `Node` workflow `node/agent` wall-clock and deadline sensitivity across
-   runs `41782791081`, `41787173794`, `41794009264`, `41808885873` and
-   `41871089749`.
+   the `Node` workflow `node/agent` test failures across runs `41782791081`,
+   `41787173794`, `41794009264`, `41808885873` and `41871089749`, plus
+   `F17-01`'s and `F31-01`'s design notes.
 2. **Route shared second-exit clone receiver wiring (`:9445` vs `:9444`) to
    `w3-devstack-e2e` (static concern from #480):** `tests/e2e/second_exit.go:59,72`
    copies the source container's `agent-run.json` (`control_url:
