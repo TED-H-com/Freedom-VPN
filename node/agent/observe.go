@@ -56,6 +56,7 @@ func (e *Engine) observe(ctx context.Context) error {
 		e.storageOK = false
 		return err
 	}
+	e.noteRecoveryReport(rep)
 	e.lastObs = wall
 	e.lastServing = e.serving
 	e.lastObservationState = state
@@ -320,6 +321,7 @@ func (e *Engine) flush(ctx context.Context) error {
 					return nil
 				}
 			}
+			e.acceptRecoveryReport(rep, accepted)
 			if serr := e.store.MarkAccepted(ctx, item.ReportID, e.clock.Wall().UTC()); serr != nil {
 				e.storageOK = false
 			}

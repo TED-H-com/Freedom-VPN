@@ -1,0 +1,3377 @@
+{
+  "schema_version": 1,
+  "scope": "Repository-local review of README, member guide draft, portal member texts and the current checkout of Wave 4/dev-stack evidence. External upstream product claims were not reverified.",
+  "spec": [
+    "§1",
+    "§7.3",
+    "§16.3",
+    "§19 AT32"
+  ],
+  "findings": [
+    {
+      "id": "DOC01",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §3.2 and Part II en §3.2)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "3.2 / AT09 (both languages)",
+      "claim": "Guarantees no local ISP fallback when the tunnel fails.",
+      "actual": "Spec §7.3 and portal member.gettingStarted.killSwitchWarningBody explicitly exclude a complete client kill switch. Server-side fail closed is not endpoint routing protection.",
+      "requested_change": "Replace the guarantee with the portal limitation; record disconnect, sleep and network-switch behavior per platform.",
+      "evidence": [
+        "apps/portal/src/i18n/zh-TW.ts",
+        "apps/portal/src/i18n/en.ts",
+        "docs/spec/PROJECT_SPEC.zh-TW.md"
+      ]
+    },
+    {
+      "id": "DOC02",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §2.2 A–D and Part II en §2.2 A–D)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "2.2 (all four platform sequences)",
+      "claim": "Tells members to click Authorize Device in the portal.",
+      "actual": "MemberDevicesPage implements list and revoke only. The 41-endpoint contract has no member authorize command; authorization is a central entitlement/device-sync action (§7.3).",
+      "requested_change": "Describe automatic central authorization and pending/authorized status; do not invent a button or endpoint.",
+      "evidence": [
+        "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "contracts/openapi.yaml"
+      ]
+    },
+    {
+      "id": "DOC03",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §3.2, §4 and Part II en §3.2, §4)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "3.2 (zh-TW), 4 (both languages)",
+      "claim": "Promises forwarding off within 30 seconds on disable/switch and describes immediate revocation.",
+      "actual": "§16.3 uses the earliest lease/service deadline; §16.5 online revocation target starts at 60 seconds and is not an offline guarantee. Prior lease-expiry run had no serving flow.",
+      "requested_change": "Distinguish watchdog staleness from online revocation and offline deadline; label timings unmeasured until AT29 runs.",
+      "evidence": [
+        "docs/spec/PROJECT_SPEC.zh-TW.md",
+        "docs/e2e/runs/2026-10-29/lease-expiry.json"
+      ]
+    },
+    {
+      "id": "DOC04",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §1, §2.2C, §3.1, §3.3 and Part II en §1, §2.2C, §3.1, §3.3)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "1, 2.2C, 3.1, 3.3 (both languages)",
+      "claim": "Calls native versions verified and Linux checks Verified on dev/test stack; tells iOS users to install build 2 from App Store.",
+      "actual": "docs/netbird/VERSIONS.md labels all native candidates needs measurement and describes iOS build 2 as TestFlight with App Store availability unasserted. The current checkout has no matching four-platform evidence.",
+      "requested_change": "Use candidate versions and needs operator run; link dated evidence only after actual device runs.",
+      "evidence": [
+        "docs/netbird/VERSIONS.md",
+        "docs/e2e/README.md"
+      ]
+    },
+    {
+      "id": "DOC05",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §3.1 and Part II en §3.1)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "3.1 (zh-TW exit-IP claim and both language commands)",
+      "claim": "Uses GET /member/me to verify exit IP and a bare curl to an authenticated endpoint.",
+      "actual": "The response is account/entitlement information, not an egress reflection. No session cookie is supplied. A failed ping alone also lacks a reachable control test.",
+      "requested_change": "Use the controlled lab origin observed source IP with a positive reachability control; use a protected session config for authenticated API reads.",
+      "evidence": [
+        "contracts/openapi.yaml",
+        "tests/e2e/scenarios_test.go"
+      ]
+    },
+    {
+      "id": "DOC06",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §6.1 and Part II en §6.1)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "6.1 (both languages)",
+      "claim": "Claims all port-53 traffic is DNAT redirected to two fixed overlay resolvers.",
+      "actual": "RenderServing allows configured resolver addresses but has no DNS DNAT; arbitrary external DNS handling is a selected policy decision in §12.6. The guide presents example addresses as operational guarantees.",
+      "requested_change": "Describe configured resolver use and the measured external-DNS policy, remove unsupported universal interception.",
+      "evidence": [
+        "node/enforce/render_nft.go",
+        "docs/spec/PROJECT_SPEC.zh-TW.md"
+      ]
+    },
+    {
+      "id": "DOC07",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §6.2 and Part II en §6.2)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "6.2 (zh-TW)",
+      "claim": "Equates DoT with DNS carried over HTTPS port 443.",
+      "actual": "§12.6 distinguishes DoT/DoQ from DoH over ordinary HTTPS; portal copy groups bypass cases without this transport equivalence.",
+      "requested_change": "Separate protocols and state that actual behavior depends on selected policy and platform.",
+      "evidence": [
+        "docs/spec/PROJECT_SPEC.zh-TW.md",
+        "apps/portal/src/i18n/zh-TW.ts"
+      ]
+    },
+    {
+      "id": "DOC08",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §7.2 and Part II en §7.2)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "7.2 (both languages)",
+      "claim": "Promises allow overrides take effect for every member within 60 seconds because blocked_ttl_seconds=60.",
+      "actual": "§12.5–12.6 includes publication/ACK, resolver caches, app caches and existing connections; TTL is configurable and is not an end-to-end SLA.",
+      "requested_change": "State configured TTL and measured publication delay separately; remove universal 60-second promise.",
+      "evidence": [
+        "contracts/openapi.yaml",
+        "apps/portal/src/i18n/en.ts",
+        "docs/spec/PROJECT_SPEC.zh-TW.md"
+      ]
+    },
+    {
+      "id": "DOC09",
+      "status": "resolved",
+      "resolved_in": "README.md (Status and §What it does)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "README.md",
+      "section": "What it does",
+      "claim": "Describes absolute isolation, working ledger/shaping and signed fleet rollback in the present tense.",
+      "actual": "README already says early development, but prior published run records still block forwarding, usage and update-good. The feature list does not identify these acceptance gaps.",
+      "requested_change": "Label intended capabilities and link the acceptance matrix; qualify absolute host/LAN reachability claims by the supported server path.",
+      "evidence": [
+        "docs/e2e/runs/2026-10-29/forwarding.json",
+        "docs/e2e/runs/2026-10-29/usage.json",
+        "docs/e2e/runs/2026-10-29/update-good.json"
+      ]
+    },
+    {
+      "id": "DOC10",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §5.1 and Part II en §5.1)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "5.1 (both languages)",
+      "claim": "Describes admitted IPv4/IPv6 bytes without saying IPv6 forwarding is blocked in v1.",
+      "actual": "node/enforce only implements IPv6Block and the renderer drops member IPv6. No supported IPv6 Internet path is established.",
+      "requested_change": "State the current IPv6-block mode and distinguish the ledger format from available forwarding.",
+      "evidence": [
+        "node/enforce/model.go",
+        "node/enforce/render_nft.go"
+      ]
+    },
+    {
+      "id": "DOC11",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §5.3 and Part II en §5.3)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "5.3 (both languages)",
+      "claim": "Treats minimum_rate as a guaranteed delivered bandwidth floor and never-disconnect promise.",
+      "actual": "§11.5–11.7 require a usable configured shaping floor, not unlimited delivered throughput; lease, isolation, meter or storage failure still stops forwarding.",
+      "requested_change": "Describe the configured floor and shared-capacity limits; retain mandatory fail-closed exceptions.",
+      "evidence": [
+        "docs/spec/PROJECT_SPEC.zh-TW.md",
+        "node/enforce/model.go"
+      ]
+    },
+    {
+      "id": "DOC12",
+      "status": "resolved",
+      "resolution": "Relabeled member.devices.col.overlayIp in zh-TW.ts and en.ts to Device ID (裝置識別碼 (Device ID) / Device ID) matching the contract-supported MemberDevice.device_id rendered by MemberDevicesPage.tsx.",
+      "type": "documentation_change_request",
+      "owner": "portal",
+      "file": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+      "section": "member.devices.col.overlayIp table cell",
+      "claim": "Column label says allocated address / Peer ID.",
+      "actual": "The cell renders dev.device_id, an internal UUID, rather than an overlay address or peer ID.",
+      "requested_change": "Relabel as device ID or render contract-supported observed peer information; keep implementation details out of member guidance.",
+      "evidence": [
+        "apps/portal/src/i18n/en.ts",
+        "apps/portal/src/i18n/zh-TW.ts"
+      ]
+    },
+    {
+      "id": "DOC13",
+      "status": "resolved",
+      "resolved_in": "docs/handover/member-guide.md (all sections in Part I zh-TW and Part II en, plus aligned citations in docs/handover/{README,deploy,calibration,restore-drill,operator-guide}.md)",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "spec/AT references throughout",
+      "claim": "Uses §7.5, ISO03/ISO04, AT03 for revoke, AT18 for UTC reset, and AT17 for tiering.",
+      "actual": "The authoritative spec has §7.1–7.3 and ISO01/ISO02; AT03 is payments, AT18 is combined shaping, AT17 is month/late/quality and AT19 is tiers/reset.",
+      "requested_change": "Audit section and requirement references against the actual catalogue; map the guide to AT01/02/04/09/19/21/29 as appropriate.",
+      "evidence": [
+        "docs/spec/PROJECT_SPEC.zh-TW.md"
+      ]
+    },
+    {
+      "id": "DOC14",
+      "status": "resolved",
+      "type": "documentation_change_request",
+      "owner": "documentation",
+      "file": "docs/handover/member-guide.md",
+      "section": "Part II 2.2",
+      "claim": "Current contract described as OpenAPI 1.1.1.",
+      "actual": "contracts/openapi.yaml info.version is 1.2.0 on tested revision f7281ec; endpoint count remains 44.",
+      "requested_change": "Update or remove the stale version reference; retain the automatic device admission and unmeasured-platform qualifications.",
+      "evidence": [
+        "contracts/openapi.yaml",
+        "docs/handover/member-guide.md"
+      ],
+      "resolved_in": "docs/handover/member-guide.md Part II 2.2; tests/handover/handover_test.go TestHandover_OpenAPIClaims",
+      "resolution": "Guide now states OpenAPI 1.3.0 from info.version on the handover review base; parsed contract still has 44 operations. The test requires the current version and checks stated versions/counts. Historical source revisions and hashes below are retained."
+    }
+  ],
+  "unified_model_review": [
+    {
+      "area": "schema",
+      "evidence": "TestAT32_UnifiedNodeContractSurface",
+      "result": "executed by acceptance runner"
+    },
+    {
+      "area": "three delivery origins",
+      "evidence": "internal/enrollment/service_integration_test.go:TestAT05_UniformDeliveryMetadataAndPlatforms",
+      "result": "component test only; physical source comparison needs operator run"
+    },
+    {
+      "area": "lifecycle",
+      "evidence": "internal/nodes/nodes_integration_test.go:TestAT32_CentralEnrollConfigureObserveLifecycle",
+      "result": "component test only"
+    },
+    {
+      "area": "notes",
+      "evidence": "contracts/openapi.yaml NodeDetail.notes; internal/enrollment/service.go Create; internal/nodes/nodes.go",
+      "result": "notes documented as metadata; no full runtime source/notes authorization comparison claimed"
+    }
+  ],
+  "follow_up_1": {
+    "reviewed_at": "2026-10-30T02:08:34.805456+00:00",
+    "source_revision": "eebdbf7175f46ca21000b176afdc3808f8a8e58c",
+    "findings_rechecked": 13,
+    "unresolved_documentation_findings": 0,
+    "physical_acceptance": "needs operator run",
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "a4bee9d40cd7936efd2ba1c8f44199324d30497a56d113c307624635775f5822"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "514e173e208328586f3a07b963705efab4481196da3ed363c625a917d448f9d5"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "3a01fb7a6082f84357453beccef3d065aafad5b91a49c1f4d88e7383a5c19646"
+      },
+      {
+        "path": "docs/netbird/VERSIONS.md",
+        "sha256": "2396c3b2594b4324335fec8fe4659d170a1a50915c45011f7f047df36ee84140"
+      }
+    ],
+    "conclusion": "Resolved copy now qualifies intended capabilities and unmeasured platform/flow behavior. Native admission and synthetic ledger replay do not establish forwarding, hardware capacity or client kill-switch guarantees."
+  },
+  "follow_up_2": {
+    "reviewed_at": "2026-10-30T03:53:49.106412Z",
+    "source_revision": "e48c6af582a599447e90afc446ca56f5bcd8c5ba",
+    "method": "Compare current source hashes with Follow-up 1 and inspect git diff 125a761..HEAD for changed public text",
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "a4bee9d40cd7936efd2ba1c8f44199324d30497a56d113c307624635775f5822"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "514e173e208328586f3a07b963705efab4481196da3ed363c625a917d448f9d5"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "3a01fb7a6082f84357453beccef3d065aafad5b91a49c1f4d88e7383a5c19646"
+      },
+      {
+        "path": "docs/netbird/VERSIONS.md",
+        "sha256": "2396c3b2594b4324335fec8fe4659d170a1a50915c45011f7f047df36ee84140"
+      }
+    ],
+    "changed_public_text": [
+      "Member guide endpoint count corrected to 44; device admission still automatic",
+      "Portal adds admin update evidence detail labels; member copy unchanged"
+    ],
+    "new_mismatches": [],
+    "physical_acceptance": "needs operator run",
+    "conclusion": "Prior DOC01–DOC13 resolutions remain applicable. This run proves native admission and the isolated physical ledger/grant/audit restore boundary, not member platform kill-switch behavior, serving availability, real node archive recovery, or capacity."
+  },
+  "follow_up_3": {
+    "reviewed_at": "2026-10-30T04:50:26.068612Z",
+    "source_revision": "f7281ec96ead10747e9908bc6a7894a6efd5a46c",
+    "method": "Inspect public text delta from 1773ae4 to f7281ec; preserve previous DOC01-DOC13 review and physical operator gates. No new full UI or platform run.",
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "a4bee9d40cd7936efd2ba1c8f44199324d30497a56d113c307624635775f5822"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "514e173e208328586f3a07b963705efab4481196da3ed363c625a917d448f9d5"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "3a01fb7a6082f84357453beccef3d065aafad5b91a49c1f4d88e7383a5c19646"
+      },
+      {
+        "path": "contracts/openapi.yaml",
+        "sha256": "0894285c536a334fda5869c7b531afc48deb8cd5e975d68896bdacc98cb785c2"
+      }
+    ],
+    "new_mismatches": [
+      "DOC14"
+    ],
+    "physical_acceptance": "needs operator run",
+    "conclusion": "New text continues to qualify unmeasured forwarding, platform and propagation behavior; native authorization is observed here. Contract version reference is stale; no full serving, client platform, or UI-render acceptance is claimed."
+  },
+  "handover_follow_up_3": {
+    "reviewed_at": "2026-10-30T05:20:20.920146Z",
+    "source_revision": "d28ec914b74d54354c88c78cbde667659f69a229",
+    "method": "Read merged PR bodies #108-#133 and verify operator/member claims against source files at the review base; compare DOC01-DOC13 statuses with secops requests.md; resolve DOC14 with a contract-parsing handover check.",
+    "findings_rechecked": 14,
+    "unresolved_documentation_findings": 0,
+    "contract_version": "1.3.0",
+    "operation_count": 44,
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "contracts/openapi.yaml",
+        "sha256": "0894285c536a334fda5869c7b531afc48deb8cd5e975d68896bdacc98cb785c2"
+      },
+      {
+        "path": "tests/handover/handover_test.go",
+        "sha256": "e74b9b594f15166dbceb7c10607f13d15ad564ffb8dc7503fb15a3743ae9be85"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/requests.md",
+        "sha256": "b7b2d922b1b2a48f80a8afdc514d77b78105914b0b775e7bf43217f2e54fbf3b"
+      }
+    ],
+    "physical_acceptance": "needs operator run",
+    "conclusion": "DOC01-DOC13 remain resolved and DOC14 is corrected. The member guide retains platform, forwarding and propagation qualifications. Typed DNS evidence is admin-only. This documentation review makes no new serving, platform, UI or physical acceptance claim."
+  },
+  "follow_up_4": {
+    "reviewed_at": "2026-10-30T06:51:58.202463+00:00",
+    "source_revision": "9b17127c888f94191d759617c99fe1225078a092",
+    "method": "Read public-text delta from f7281ec to current #148; recheck DOC14 with TestHandover_OpenAPIClaims; preserve historical review sections.",
+    "findings_rechecked": 14,
+    "unresolved_documentation_findings": 0,
+    "new_mismatches": [],
+    "resolved_prs": [
+      138
+    ],
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "a4bee9d40cd7936efd2ba1c8f44199324d30497a56d113c307624635775f5822"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "514e173e208328586f3a07b963705efab4481196da3ed363c625a917d448f9d5"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "3a01fb7a6082f84357453beccef3d065aafad5b91a49c1f4d88e7383a5c19646"
+      },
+      {
+        "path": "docs/netbird/VERSIONS.md",
+        "sha256": "2396c3b2594b4324335fec8fe4659d170a1a50915c45011f7f047df36ee84140"
+      },
+      {
+        "path": "contracts/openapi.yaml",
+        "sha256": "0894285c536a334fda5869c7b531afc48deb8cd5e975d68896bdacc98cb785c2"
+      }
+    ],
+    "physical_acceptance": "needs operator run",
+    "conclusion": "DOC01–DOC14 remain resolved. Current README and guide qualify unmeasured flow cutoffs, native platforms, DNS propagation and hardware capacity. Member identity/quota text tracks #134/#139; admin typed DNS evidence is not promised in member views. Publication, native admission and limiter results do not certify traffic or capacity. Current live verdicts are in AT28–AT32 records."
+  },
+  "follow_up_5": {
+    "reviewed_at": "2026-10-30T09:29:11.712304Z",
+    "source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
+    "method": "Read member-guide changed sections since prior measured main plus existing role/scope/claim sources; retain physical platform qualifications. Compare current measurements once completed.",
+    "resolved_prior_findings": "DOC01–DOC14 remain attributed to their owner fixes; new source texts still correctly qualify real member platforms.",
+    "new_mismatches": [
+      {
+        "id": "DOC15",
+        "owner": "w4-handover and w3-devstack-e2e",
+        "files": [
+          "docs/handover/member-guide.md:121",
+          "docs/handover/member-guide.md:353",
+          "docs/e2e/RUN.md:207"
+        ],
+        "actual": "Current prose still cites missing conntrack or lease refresh as the current serving gate; #153 includes conntrack and this run already proves selected counted forwarding. Historical records remain valid but need explicit historical attribution.",
+        "request": "Link current counted-flow and post-revoke/deadline records, retaining unmeasured platform/clock/transport qualifications.",
+        "status": "documentation change requested"
+      }
+    ],
+    "sources": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "a4bee9d40cd7936efd2ba1c8f44199324d30497a56d113c307624635775f5822"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "514e173e208328586f3a07b963705efab4481196da3ed363c625a917d448f9d5"
+      },
+      {
+        "path": "apps/portal/src/pages/member/MemberDevicesPage.tsx",
+        "sha256": "3a01fb7a6082f84357453beccef3d065aafad5b91a49c1f4d88e7383a5c19646"
+      },
+      {
+        "path": "docs/netbird/VERSIONS.md",
+        "sha256": "2396c3b2594b4324335fec8fe4659d170a1a50915c45011f7f047df36ee84140"
+      },
+      {
+        "path": "contracts/openapi.yaml",
+        "sha256": "0894285c536a334fda5869c7b531afc48deb8cd5e975d68896bdacc98cb785c2"
+      },
+      {
+        "path": "docs/e2e/RUN.md",
+        "sha256": "d3c1a2daef8ff801670e10ffbb573467bec66a6ca1692f6e7d66db4fac616d52"
+      }
+    ]
+  },
+  "follow_up_6": {
+    "source_revision": "00e1d0c",
+    "review": "Admission and control diagnostics after #170/#169; no new mixed-traffic or physical certification",
+    "previous": "history/follow-up-5/scope-review.json",
+    "DOC15": {
+      "status": "resolved by handover #163",
+      "evidence": "docs/e2e/RUN.md SECOPS-04 now requires measured counted prerequisites; member-guide attributes earlier blockers historically"
+    },
+    "remaining": "operator physical origins/platforms; no new source-based privilege or workflow",
+    "sources": [
+      {
+        "path": "docs/e2e/RUN.md",
+        "sha256": "d3c1a2daef8ff801670e10ffbb573467bec66a6ca1692f6e7d66db4fac616d52"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      }
+    ]
+  },
+  "handover_follow_up_6": {
+    "reviewed_at": "2026-10-30T22:15:00Z",
+    "base_main_commit": "a8998cdecc02c0984f7435d478a19362a2751728",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/calibration.md",
+        "sha256": "4e9f3f278fde58188de441b1aea62c69e39c0845baf137716dc5abb94c7c114a"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      }
+    ],
+    "doc15_handover_half": {
+      "id": "DOC15",
+      "files": [
+        "docs/handover/member-guide.md:121",
+        "docs/handover/member-guide.md:353"
+      ],
+      "status": "resolved in w4-handover follow-up 6",
+      "resolution": "docs/handover/member-guide.md attributes the prior blocked AT02/AT03/AT04/AT08 records historically to members follow-up 3 (#151) and early devstack follow-up 9 (#153), links the current scoped evidence in security-ops follow-up 5 (#165: counted-flow.json, post-revoke.json, deadlines.json, capacity.json) and devstack follow-up 10 (#170: device-revoke.md, second-exit hook), and preserves the grace, clock, platform, and transport qualifications. docs/e2e/RUN.md:207 remains w3-devstack-e2e's half."
+    }
+  },
+  "follow_up_7": {
+    "reviewed_at": "2026-10-30T22:15:00Z",
+    "application_base": "a8998cd",
+    "scope": "Read public README/member guide/operator guide, changed handover claims, and portal i18n text after #185/#188/#191/#200/#203/#204..#231 (D-065 fleet configuration operator view, contract revision 11, D-067/D-068/D-070/D-071/D-072/D-073/D-074/D-075/D-076/D-078, SECOPS-19, fvpn-agent usage snapshot #225, control follow-up 19/20, whole-ruleset nftables read-back #220, Fair-Use enforcement reach #222, AT30 second half #221, and DOC16 follow-up 5 history pin). Physical platform and candidate-hardware rows stay needs operator run.",
+    "files": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/calibration.md",
+        "sha256": "4e9f3f278fde58188de441b1aea62c69e39c0845baf137716dc5abb94c7c114a"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "apps/portal/src/i18n/en.ts",
+        "sha256": "514e173e208328586f3a07b963705efab4481196da3ed363c625a917d448f9d5"
+      },
+      {
+        "path": "apps/portal/src/i18n/zh-TW.ts",
+        "sha256": "a4bee9d40cd7936efd2ba1c8f44199324d30497a56d113c307624635775f5822"
+      }
+    ],
+    "decisions": [
+      "D-065 fleet API and finite-grace preparation are now inputs; only measured signed/counted cutoff is a pass.",
+      "D-066 protected transient credentials are a separate class from ordinary logs/captures/readable files.",
+      "60 native admissions and dev-host numbers cannot certify production hardware or forced relay."
+    ],
+    "evidence": [
+      "capacity.json",
+      "deadlines.json",
+      "limiter.json",
+      "secret-scan.json"
+    ],
+    "new_requests": [
+      {
+        "id": "DOC16",
+        "owner": "w4-handover",
+        "status": "resolved in w4-handover follow-up 8",
+        "resolved_in": "docs/handover/member-guide.md (Part I zh-TW §3.2 and Part II en §3.2); tests/handover/handover_test.go",
+        "file": "docs/handover/member-guide.md",
+        "section": "Measurement status, both languages",
+        "reason": "#180/#188 cites mutable secops counted-flow/deadlines/capacity paths as Follow-up 5 evidence with fixed two-device numbers; those root records change each run. Pin the cited #165 values to history/follow-up-5/ (or the exact commit). Keep guest wall-clock rollback distinct from component clock tests."
+      }
+    ]
+  },
+  "follow_up_8": {
+    "reviewed_at": "2026-10-30T22:10:16Z",
+    "application_base": "6b98422",
+    "source_revision": "6350853010054cf656465e5e677c60dc29553cb5",
+    "scope": "AT30 second half: live central database restore to T0 while node, payment provider, and NetBird hold T1 state; measured fail-safe negative, 5-step fvpn-usage-admin protocol, retained-node replay, provider reconciliation, and peer/revocation reconciliation.",
+    "evidence": [
+      "restore-reconcile.json",
+      "restore-reconcile.md",
+      "AT30.json",
+      "AT30.md"
+    ],
+    "new_requests": [
+      {
+        "id": "SECOPS-18",
+        "owner": "w2-members",
+        "status": "open",
+        "file": "internal/devices/worker.go",
+        "section": "SyncDevice (lines 72-93) / members.reconcile",
+        "reason": "After restoring central DB to T0, a device revoked in T0..T1 (peerM2D2) has member_devices.status='authorized' in T0 DB while NetBird N1 has withdrawn it from fvpn-paid-<group_id>. SyncDevice treats T0 status='authorized' as authoritative and calls SetAuthorization(peer, true), silently re-authorizing the revoked peer in NetBird and resuming counted member traffic."
+      }
+    ]
+  },
+  "follow_up_9": {
+    "reviewed_at": "2026-10-31T01:46:57Z",
+    "application_base": "205633f",
+    "source_revision": "205633f0de8b3befbd563a092b856c0bc089e9c9",
+    "scope": "AT30 second half re-measured on #231 with D-076 restore authorization fence (#227), SECOPS-19 live UsageOutboxStatus in observations (#226), and read-only fvpn-agent usage snapshot (#225); AT30 passed. Scope review pins refreshed for own records only.",
+    "evidence": [
+      "restore-reconcile.json",
+      "restore-reconcile.md",
+      "AT30.json",
+      "AT30.md"
+    ],
+    "records": [
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/restore-reconcile.json",
+        "sha256": "6d98d28e669e5830951d886348ce69bb02654d87128fbf96a6cb3159825950b3"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/restore-reconcile.md",
+        "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT30.json",
+        "sha256": "fcac5bfb6df5848f96e9e4ef62dc5d6b7a1e472277cc26676e060113083fc7a6"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT30.md",
+        "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup9-live.json",
+        "sha256": "dcf634111def2bbc35f287e786c1bca312277debe3b84769fd13b9448cec6271"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup9-run.json",
+        "sha256": "2ed5272633b342cddaeef691615b5b18072d12db7e662b0a08f446f0dc4fd06d"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup9-verdict.json",
+        "sha256": "0b0b50c47c7f57c7f3b273514357e338954ed6354eda982ec6003b3406b8e37e"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/live.json",
+        "sha256": "2fda5545545817a77d910a8be732cba977cb1d75b1411fd39a3fde33529997ca"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/cleanup.json",
+        "sha256": "af055acebed32b6e782f7e86b43eaa48abc992223aff5358b08e690490cf90c3"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/dependencies.json",
+        "sha256": "4cfb3be3e7403a85271fcef28bea57f4eb8527afced7ca75d07b110ffd239a9d"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/requests.md",
+        "sha256": "b7b2d922b1b2a48f80a8afdc514d77b78105914b0b775e7bf43217f2e54fbf3b"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/summary.md",
+        "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/RUN.md",
+        "sha256": "f32de04f41f345e16e803466f1106532982def1c739d75a37b0cc1c350649338"
+      }
+    ],
+    "closed_requests": [
+      "SECOPS-05",
+      "SECOPS-18",
+      "SECOPS-19"
+    ],
+    "new_requests": [
+      "SECOPS-20",
+      "SECOPS-21"
+    ]
+  },
+  "follow_up_10": {
+    "reviewed_at": "2026-10-31T04:23:47Z",
+    "source_revision": "319c5259344347e7eef50eb5becb2645785d1047",
+    "scope": "Own Follow-up 10 records only; historical pins remain tied to their historical records. No broader AT or hardware promotion.",
+    "records": [
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT28.json",
+        "sha256": "0ffbb027a2f5a7b825fe8f147803a949d21ddc7e70ae0797afac68919e21f632"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT28.md",
+        "sha256": "28c956e495111706e2372359e9e240344ae1967ad4598f31f470344d05ca3cdf"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT29.json",
+        "sha256": "f140cff3bcb68a7634b90d6a1b7d233ec3324fcb58615d8a4225bbb2650074c6"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT29.md",
+        "sha256": "828cc5b73bc47a52afde75ae590308057292be3e8588b07df8f79875296c18fa"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT30.json",
+        "sha256": "fbd072fed76c83eae424c05bc6f1f6dba7912e21aea2c1b18daf9339d4153779"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT30.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT31.json",
+        "sha256": "4fc0fab7abf8c116df38a03b70115fe1a729e09fce3f1edbd1bc24378010ce11"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT31.md",
+        "sha256": "b31629f6407694bf25f0538d5eeecf78cf2254eeec225865528aafb094e59b4d"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT32.json",
+        "sha256": "a6c613bc4b096d61815ce13fb9e9f17557278f29642d325ba5d911cf1a2a7ab3"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/AT32.md",
+        "sha256": "d653c872db4654bb9955ba123c025e2957483b3c59aa9e6849db37d57e9c57ef"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/D-077.json",
+        "sha256": "5a7b380105decb6bb4dcbb80033bc0758c11c46fab43a26dbab877b69e4b7751"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/README.md",
+        "sha256": "378954f252db25060c2f6604e071cc50acc4ec60535eb0275e0f677012bf0832"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/RUN.md",
+        "sha256": "5d7f78b6988639ae361001f44b496aba265d8f78846c0c4860409420e7ac9ffb"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/SECOPS-16.json",
+        "sha256": "82755a36d47f9483eeb8560fbb9fb1493a84c71b850fd2757fd1d38ad73a5806"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/SECOPS-17.json",
+        "sha256": "d6687a7d35ba0ba5ff7c6214a891fec7a25c2635bbfd5c160d8d39599bd7523a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/SECOPS-18.json",
+        "sha256": "bb6389028780d10be33e5d9b63548e15f0b63dd492d06261b5d3d6d0bd1291cf"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/SECOPS-19.json",
+        "sha256": "d373e94fc45db9fd61d751e709f4efbafa240a9e72056256b6612e1816ca97df"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/SECOPS-20.json",
+        "sha256": "d2f46f3ffff3a674db2aaea9c423e7ae56d450ae2783e77b90286657a8a25d2f"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/SECOPS-21.json",
+        "sha256": "baacd10857d584942e839b1f3a9f284888d98d2d4909590f8d263dcb897aed67"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/cleanup.json",
+        "sha256": "70fbacd9950c28cd54051056a829e241c56fef219ce6b9d5eef473b046ecb164"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/dependencies.json",
+        "sha256": "4cfb3be3e7403a85271fcef28bea57f4eb8527afced7ca75d07b110ffd239a9d"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/followup10-attempt1-live.json",
+        "sha256": "20444597edfc106f959a55154c2d62c706a07a4316df74e637c79321e2fb8134"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/followup10-attempt1-run.json",
+        "sha256": "e86e0e1c8b6d696be520f145f12eb357f4af112598d0ed385e0b3aebfd43df2e"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/followup10-attempt1-verdict.json",
+        "sha256": "04037e172ece9f72ac1c4eed629bf6517dc789728f154408fc09962f1cb1c995"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/followup10-attempts.json",
+        "sha256": "e697ccebb1f54603d1a2f3964f72c978fe32321d523ca9456a625aee2f9f0404"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/followup10-live.json",
+        "sha256": "bc4d3c87a76a102d6671e0cd52e8aebc660e6d0a8f7c165ec18ccbbffb901f8e"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/followup10-run.json",
+        "sha256": "dc1821f575454b804b175130e62cddac9e30a9acd789aab17667a7108542c8d0"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/followup10-verdict.json",
+        "sha256": "7103060bbc89d7410c5dda5d923ac1d5fe17e9248abc1f0e3a27e559746c1935"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/live.json",
+        "sha256": "97c3743cfd41efd42b24b07b06807dec82950af0ebb496078aa6ca54ad652461"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/requests.md",
+        "sha256": "a6ec7a05049a121929a30214bb77909cf698e07ea22f627fb901716436c8dbc3"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/restore-reconcile.json",
+        "sha256": "df7ba138d937846c6168c063c01152be78c44f0a246ae63279b2e55a23b9a053"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/restore-reconcile.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/secret-scan.json",
+        "sha256": "82755a36d47f9483eeb8560fbb9fb1493a84c71b850fd2757fd1d38ad73a5806"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/secret-scan.md",
+        "sha256": "3433cb1e4327a02d56f29bd00d7137da6a4733e4e740abe402309cbb441bb184"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/summary.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-10/validation.json",
+        "sha256": "5296b1e81d40fdec3fb0df056bd06f3c5083a8b7dcbfedcb17f7cfd1d567a774"
+      }
+    ],
+    "requests": {
+      "SECOPS-17": "closed",
+      "SECOPS-18": "closed",
+      "SECOPS-19": "closed",
+      "SECOPS-20": "closed",
+      "SECOPS-21": "open",
+      "SECOPS-16": "closed"
+    }
+  },
+  "handover_follow_up_13": {
+    "reviewed_at": "2026-10-31T03:44:42.187567Z",
+    "base_main_commit": "d9e28f895a62aa3eb2c18ab9a647c7bdde27a348",
+    "scope": "D-077/D-081 restore re-authorization, SECOPS-19 projection and migration 00189, SECOPS-21 generation floor (#245), browser calibration (#233), usage-agent pure reads (#232), installer (#239), D-079, r14/r15 archives and dated acceptance evidence. No new live acceptance claimed.",
+    "reviewed_documents": [
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/calibration.md",
+        "sha256": "4e9f3f278fde58188de441b1aea62c69e39c0845baf137716dc5abb94c7c114a"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "docs/reviews/r13-r12-fixes-review.md",
+        "sha256": "7c7041cff51c69e90225bd3ae8222c73961ce35ee6d37135901df08c59e914e4"
+      },
+      {
+        "path": "docs/reviews/r14-d067-d070-review.md",
+        "sha256": "56a6fb8e36d0564accd73712ef1e49331402c3e1f9479955015bb18dd7493416"
+      },
+      {
+        "path": "docs/reviews/r15-d072-d075-review.md",
+        "sha256": "4a97f1400b5d88aebe0e16269e6934b324352f60effb3aa247ba807b2726bdb9"
+      }
+    ]
+  },
+  "handover_follow_up_14": {
+    "reviewed_at": "2026-10-31T06:11:58.123389Z",
+    "base_main_commit": "c6e3eca92d3813aeec4a4c212b204fd32648ca5a",
+    "scope": "Revision 13 producer/consumer boundaries; D-084 clamp; D-085/D-087/D-090; D-083/D-078; D-089 seed and pending acceptance; D-091/D-095/D-099; D-093/D-097/D-098/D-100; r15 closures and dated owner measurements. No new live acceptance run.",
+    "reviewed_documents": [
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/calibration.md",
+        "sha256": "4e9f3f278fde58188de441b1aea62c69e39c0845baf137716dc5abb94c7c114a"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "docs/reviews/r15-d072-d075-review.md",
+        "sha256": "4a97f1400b5d88aebe0e16269e6934b324352f60effb3aa247ba807b2726bdb9"
+      }
+    ]
+  },
+  "follow_up_11": {
+    "reviewed_at": "2026-10-31T08:09:15Z",
+    "scope": "Scoped established transports, bounded relay and restore regression; every changed live document pinned; archived snapshots immutable. scope-review.json excludes its own recursive hash.",
+    "records": [
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/AT29.json",
+        "sha256": "f140cff3bcb68a7634b90d6a1b7d233ec3324fcb58615d8a4225bbb2650074c6"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/AT29.md",
+        "sha256": "828cc5b73bc47a52afde75ae590308057292be3e8588b07df8f79875296c18fa"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/AT30.json",
+        "sha256": "fbd072fed76c83eae424c05bc6f1f6dba7912e21aea2c1b18daf9339d4153779"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/AT30.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/AT31.json",
+        "sha256": "4fc0fab7abf8c116df38a03b70115fe1a729e09fce3f1edbd1bc24378010ce11"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/AT31.md",
+        "sha256": "b31629f6407694bf25f0538d5eeecf78cf2254eeec225865528aafb094e59b4d"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/SECOPS-21.json",
+        "sha256": "baacd10857d584942e839b1f3a9f284888d98d2d4909590f8d263dcb897aed67"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/restore-reconcile.json",
+        "sha256": "df7ba138d937846c6168c063c01152be78c44f0a246ae63279b2e55a23b9a053"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/restore-reconcile.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/summary.md",
+        "sha256": "32df96204bd650920343864421f9d2ca3d025c51ea364f25b6a41bb6fda0922a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/README.md",
+        "sha256": "378954f252db25060c2f6604e071cc50acc4ec60535eb0275e0f677012bf0832"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/RUN.md",
+        "sha256": "5d7f78b6988639ae361001f44b496aba265d8f78846c0c4860409420e7ac9ffb"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/requests.md",
+        "sha256": "bd82b2a5a1bee3e6ab3aa5be8da795aa0f61547310ed63ca21c9446e55be7de2"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/2026-10-31-follow-up-11-handover.md",
+        "sha256": "2eac1990c49bc45004e3d564c5c00b5d74c3f62018319969a405bd09642cd191"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-11/validation.json",
+        "sha256": "5296b1e81d40fdec3fb0df056bd06f3c5083a8b7dcbfedcb17f7cfd1d567a774"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/index.json",
+        "sha256": "9a287259b6e354c60575fc6644a572f4deb4df5d37f19acee02b8248d460eba4"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/README.md",
+        "sha256": "2492a5d6ec5a1d593373442f4b67c46d288becb518c51c053742fbfa40142e7f"
+      }
+    ]
+  },
+  "follow_up_12": {
+    "reviewed_at": "2026-10-31T09:53:21Z",
+    "scope": "Scoped established transports, bounded relay and restore regression; every changed live document pinned; archived snapshots immutable. scope-review.json excludes its own recursive hash.",
+    "records": [
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT29.json",
+        "sha256": "43def1ade8a6fd846e02bad607036deef27db2c183f6095acf16cfd71ab3ecd4"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT29.md",
+        "sha256": "0220d7375b70ab5e685987f438f9eb6fa4020cac201cc2e977c19d42f9fae2ae"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT30.json",
+        "sha256": "fcac5bfb6df5848f96e9e4ef62dc5d6b7a1e472277cc26676e060113083fc7a6"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT30.md",
+        "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT31.json",
+        "sha256": "00895a135743f6de1b842577b237f15288a074e779c5647bd51b45910418ac99"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/AT31.md",
+        "sha256": "3a37a35c98fa1e17fa2ac8e9b5f9b9381bbb469a5fa6e60acbb3ed1a3cde5146"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/SECOPS-21.json",
+        "sha256": "c2cc2166a9d6e0a2ca7be9bfc8ec5e8b102eee4f5cd4d7411166a70ba4bd1129"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/restore-reconcile.json",
+        "sha256": "6d98d28e669e5830951d886348ce69bb02654d87128fbf96a6cb3159825950b3"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/restore-reconcile.md",
+        "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/summary.md",
+        "sha256": "20589ef24428e15fe431f065be7c9bc19636cf139e45614aa3cf22b215014584"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/README.md",
+        "sha256": "6a4b9a6818f2db2b9d6dc559374347c4c0c1d903afcc794f4597d3726574c25f"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/RUN.md",
+        "sha256": "f32de04f41f345e16e803466f1106532982def1c739d75a37b0cc1c350649338"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/requests.md",
+        "sha256": "b7b2d922b1b2a48f80a8afdc514d77b78105914b0b775e7bf43217f2e54fbf3b"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/live.json",
+        "sha256": "2fda5545545817a77d910a8be732cba977cb1d75b1411fd39a3fde33529997ca"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/cleanup.json",
+        "sha256": "af055acebed32b6e782f7e86b43eaa48abc992223aff5358b08e690490cf90c3"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/2026-10-31-follow-up-12-handover.md",
+        "sha256": "18f357bc5d993168a450eb98d722ff3374085315d5bfb6ca2b6a3f04d4654991"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-transports-live.json",
+        "sha256": "39aa566d92e0613c48c1f1a4f07406673774b1b6d1904f89ab9cedc755d0702f"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-transports-run.json",
+        "sha256": "8f312496a17fc0d8e0f7ed699013b8976d5988e18918e88d3ca48f6cf94e0e0c"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-restore-live.json",
+        "sha256": "9d6d04f67334223e8961ad3962df5952dc20343d2685a1fa544cdbe5b5fe0117"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-restore-run.json",
+        "sha256": "e3fec85639847bebb9f4fdadc17e837ae8570b97c5b1daaa038aefa1661f9329"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-verdict.json",
+        "sha256": "665c0a929e4033097b03eaf358fdf8f9d6dfa9627b4149ada1753f850f09fc58"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/validation.json",
+        "sha256": "aa6019801c00fc0bc997f478663a6f487591138ce5eecddd056e0a99537400b2"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-lab-preflight.json",
+        "sha256": "d21702a791f10b63bb96f2bbfe59b867120cf79a1c7d7dc54365a702bfa29b40"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-prerequisites.json",
+        "sha256": "f45630751542f6796b72e5137e18b3a08e215d0dcf43e364f35aec4988e05144"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-attempts.json",
+        "sha256": "a5b62511fd5b0a086184461e4129e19e064f34cea5b014a8aa1299adce7056bb"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-transports-attempt1-live.json",
+        "sha256": "6b1abf18047295fa14b5d66b0ad6abb46a0417a611e6624f1bbae866f0d916e7"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-transports-attempt1-run.json",
+        "sha256": "072f24242a51b459f0de5329b9b14a6ee3f270b332da673c8854c74dcc3dba0f"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-transports-attempt2-live.json",
+        "sha256": "3d8b52d4ed99763738cdf0bdaefdfcec60f48b450a137c228f68c451f68b8cc3"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/followup12-transports-attempt2-run.json",
+        "sha256": "7e06ae56ba0e33a1a2685f20200668691aa86a43e29a256f64f0d98bb7953323"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/index.json",
+        "sha256": "9a287259b6e354c60575fc6644a572f4deb4df5d37f19acee02b8248d460eba4"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/README.md",
+        "sha256": "2492a5d6ec5a1d593373442f4b67c46d288becb518c51c053742fbfa40142e7f"
+      }
+    ]
+  },
+  "handover_follow_up_15": {
+    "reviewed_at": "2026-10-31T07:48:41.417628+00:00",
+    "base_main_commit": "b79ee236821bbf8d2c47c43c1146b9be9006e26f",
+    "scope": "D-098 final archives and dated acceptance; D-099 clarified, D-101 through D-111; D-109 pin ownership; byte-identical r16 report and owner dispositions. No new live acceptance run. Resumed through #290: enrollment follow-up 6 immutable run and follow-up 5 archive, revision 14 contracts, D-104 renderer delivery; consumers and assembled AT13 remain open.",
+    "reviewed_documents": [
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "docs/reviews/r15-d072-d075-review.md",
+        "sha256": "4a97f1400b5d88aebe0e16269e6934b324352f60effb3aa247ba807b2726bdb9"
+      },
+      {
+        "path": "docs/reviews/r16-rev13-d089-d099-review.md",
+        "sha256": "aa1e3fd95905d85975a43ecf304673d993d5fbbfc9817110635fc183c5f081fb"
+      }
+    ]
+  },
+  "contract_revision_14": {
+    "revision": 14,
+    "info_version": "1.10.0",
+    "operations": 50,
+    "implemented_operations": 49,
+    "pending_handler": "revokeMemberGrant",
+    "scope": "Contract-only pins; D-105 and D-106 adoption and AT29 withdrawal remain with runtime/acceptance owners. No new live acceptance run.",
+    "updated_documents": [
+      {
+        "path": "contracts/openapi.yaml",
+        "sha256": "0894285c536a334fda5869c7b531afc48deb8cd5e975d68896bdacc98cb785c2"
+      },
+      {
+        "path": "docs/contracts/README.md",
+        "sha256": "ea401ef899594d5824fe15f4b9ec155f89e629f403b40191878cfc94d064ba6b"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      }
+    ]
+  },
+  "handover_follow_up_16": {
+    "reviewed_at": "2026-10-31",
+    "source_commit": "982c209e3f1fb6603138e0bc2a6ee4a5191b4e89",
+    "scope": "Merged #291–#303 operator reconciliation; live-document integrity only. Dated claims use separate immutable archives/run-ID snapshots. No new live acceptance.",
+    "reviewed_documents": [
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/handover_test.go",
+        "sha256": "e74b9b594f15166dbceb7c10607f13d15ad564ffb8dc7503fb15a3743ae9be85"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "tests/handover/testdata/followup14-snapshots.json",
+        "sha256": "1cadd6eb40b13d99d59f5d17f513862f1a3e2bd6c23833b87aaee0a5f0640090"
+      },
+      {
+        "path": "tests/handover/testdata/followup15-snapshots.json",
+        "sha256": "e2247c4b28daf0b3f44e9b73648b1764b69ad0afa1559cd499d2d0b3e8659e40"
+      },
+      {
+        "path": "tests/handover/testdata/followup16-main.json",
+        "sha256": "166f8e305d8721d1b3f6fa85e88911175d2de24436ce5892168061678359d84f"
+      },
+      {
+        "path": "tests/handover/testdata/followup16-snapshots.json",
+        "sha256": "12d86e86d17892a1646f52dacf5304e33033b5d6123e86c924c50c9fcb2d71f1"
+      }
+    ]
+  },
+  "follow_up_13": {
+    "reviewed_at": "2026-10-31T12:00:53Z",
+    "scope": "Restore-only first-delivery proof; AT29/AT31 retained blocked; immutable Follow-up 12 archive.",
+    "records": [
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/AT29.json",
+        "sha256": "d9ce638657b7ab213e9de3ef77543c78df2a6cfb882a322d70cd64c7f9f3d16e"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/AT29.md",
+        "sha256": "8a769303b287778f26fc0ae58a861bfcd6225f80e6bf5455ccbca5ff4fd951a6"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/AT30.json",
+        "sha256": "b66149ea2f330fe5773f627f23a7fae24224392a88c874a5d034f54855b8ab33"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/AT30.md",
+        "sha256": "ff8a49a6f782e00bda172d31bc902e53b7d97a772407cecf9c50e2fedcff67ec"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/AT31.json",
+        "sha256": "e78c680b86348231ab0e98dc5ad887932ac5f6bdd982b7a27dd0af040bcd9566"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/AT31.md",
+        "sha256": "9db0b039b983dd52f835873bc151f567b4cbe6164cf2bfbfcb1c7d415e5ffae7"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/SECOPS-21.json",
+        "sha256": "ede087efa2193bebdddd11f7e7b840ba9fc1e546bcfd3d80bf29ad3ffc356343"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/restore-reconcile.json",
+        "sha256": "d8b4b87867d26860315bb1886ccf761306b1fe6ae27e00c01076e36be1c0a82e"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/restore-reconcile.md",
+        "sha256": "ff8a49a6f782e00bda172d31bc902e53b7d97a772407cecf9c50e2fedcff67ec"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/summary.md",
+        "sha256": "65003422e73c1800867102b79220cbc7a50fcf2e65bd3190bca1f5e13780a68c"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/README.md",
+        "sha256": "65003422e73c1800867102b79220cbc7a50fcf2e65bd3190bca1f5e13780a68c"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/RUN.md",
+        "sha256": "57209042727053d134d8a3aca6bc2c8d44d5054d2bc44ca620da246e3e05b755"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/requests.md",
+        "sha256": "e94470a93c55dd845325ad25c2683564653c973fcfae9dc3ffb973b295f16eae"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/live.json",
+        "sha256": "9f96b016aa305223ca72c77373fe22c6a253f0a7ccb1840cb069dc83f7433488"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/cleanup.json",
+        "sha256": "d60f51f15ec2b0965e7cb5a9cab1102922fb093281be48b10a192926e6023ba0"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/validation.json",
+        "sha256": "7cdc86f0a8efcad0f2625396183dddb313868db7bbd77dd61c6ea14811b133db"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/2026-10-31-follow-up-13-handover.md",
+        "sha256": "05be7da9d2e61afcc55c265ed75991706006b97681af583369a927cb799216ee"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/followup13-restore-live.json",
+        "sha256": "50fb59ca1aec179447dbe3ac5ce81a6e560dc17f674f749de28720bb47526597"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/followup13-restore-run.json",
+        "sha256": "aa1cfe898763bda9f1780d342d0c78999d949da38d0c881db078dd57066fe13d"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/followup13-verdict.json",
+        "sha256": "40e4371ea07f1a5ac60fc45339da395d036d96884b94d6ddef1bd231b6e7ae94"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/followup13-lab-preflight.json",
+        "sha256": "71d41c92d24ab2bc82fb6419a86a99a59f2dd727408768ee268cb77472b8adf7"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/followup13-restore-attempt1-run.json",
+        "sha256": "0cbb960166b6f9ee81c7a1c616a1be83c0c83bc743f1749313295d5dcdd4aa51"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-15/followup13-restore-attempt1-failure.json",
+        "sha256": "edf924a22f782b60017dc4c3b69a9888b1123c45600536193ed263187ef1e464"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/index.json",
+        "sha256": "9a287259b6e354c60575fc6644a572f4deb4df5d37f19acee02b8248d460eba4"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/README.md",
+        "sha256": "2492a5d6ec5a1d593373442f4b67c46d288becb518c51c053742fbfa40142e7f"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/follow-up-12/archive-index.json",
+        "sha256": "d33b2671341ec2a9659c148fce724f8dfadf5f74c0e97e4bb0ac8d5f8d7ba182"
+      }
+    ]
+  },
+  "handover_follow_up_17": {
+    "reviewed_at": "2026-10-31",
+    "source_commit": "7e044c71ecf1d07f63e89721bd213db6611a6a47",
+    "scope": "Live handover document integrity only; dated owner evidence is frozen separately under D-098 / D-109. No new live acceptance run.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-17.md",
+        "sha256": "7051d4031c8016571deb47b4e172b7664c8cabcd33ed249d6b728ef9cc0bfe2e"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "tests/handover/testdata/followup17-main.json",
+        "sha256": "00b1bfd3ac7ec16f65d79710fcc87ceff4f6efbc471a038229f0c9bb55f7dcee"
+      },
+      {
+        "path": "tests/handover/testdata/followup17-snapshots.json",
+        "sha256": "8e61cde609c0acd5cad1d1f5a944447d4896b3c0fdc94c1b588ba85af7f8c5bf"
+      }
+    ]
+  },
+  "handover_follow_up_18": {
+    "reviewed_at": "2026-10-31",
+    "source_commit": "6d0022d83345ae78d26aaaf31c64f026d38dea3b",
+    "scope": "Follow-up 18: #316–#324; D-125–D-128 operator boundaries, D-124 process-only; r17 exact branch archive; no new live acceptance. Historical evidence is pinned separately in followup18-snapshots.json.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-18.md",
+        "sha256": "31da300177e8de654b1f2189ded329ff06d552802e047cc7986893b8266965d4"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "docs/reviews/r17-rev14-d104-d117-review.md",
+        "sha256": "3e2078550ddf24d365881dcee1399da474ae642bf76899f484a8c8ec60d787f7"
+      }
+    ]
+  },
+  "handover_follow_up_19": {
+    "reviewed_at": "2026-10-31",
+    "source_commit": "57a8cc9fc2ddb8178d3166642536dad6a1c3b95b",
+    "scope": "Follow-up 19 through #337: D-129–D-132, ENR-07 closure and ISO-F6-03 OPEN; 37 immutable source pins kept separately; no new live acceptance.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-19.md",
+        "sha256": "28b71b67b141849eea9b9715f0ffe066aa200485ac4da6ba16ef4ef18e10925b"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      }
+    ]
+  },
+  "handover_follow_up_20": {
+    "reviewed_at": "2026-10-31",
+    "source_commit": "96ec0630e4834e13a3a14d65553ba8108bb5da55",
+    "scope": "Follow-up 20 through #344: D-133 attribution; updates F10-02, F10-01 shared side and D-087 central seam closed; four acceptance sessions pending. 38 immutable inputs kept separately; no new live acceptance.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-19.md",
+        "sha256": "28b71b67b141849eea9b9715f0ffe066aa200485ac4da6ba16ef4ef18e10925b"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      }
+    ]
+  },
+  "handover_follow_up_21": {
+    "reviewed_at": "2026-10-31",
+    "source_commit": "6d1e320dd7dee7b8a520f116a347e9f6f2d28d8e",
+    "scope": "Follow-up 21 through #351: regular AT23–AT27 and real D-087 AT10 pass; artifact-origin question closed by measurement; new findings and historical failures distinguished; no new decision. Seven roadmap rows and 13 immutable inputs are separate from this live document-integrity inventory.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      }
+    ]
+  },
+  "handover_follow_up_22": {
+    "reviewed_at": "2026-10-31",
+    "source_commit": "45209609d33d567c5f04d49441799cdd3efac59b",
+    "scope": "Follow-up 22 through #356: five exact roadmap rows, 22 immutable snapshots, D-134 and provisional D-135; historical failures remain failed. This live owned-document inventory is separate from dated claims.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      }
+    ]
+  },
+  "handover_follow_up_23": {
+    "reviewed_at": "2026-11-01",
+    "source_commit": "bc011b6f0fb8324d78ad5540c698a15f568fa079",
+    "scope": "Follow-up 23 through #362: six exact roadmap rows, 18 immutable snapshots and 421 owner-archive/run files; D-136 / D-137 provisional, D-135 still provisional. Live owned-document integrity only; historical failures retained.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      },
+      {
+        "path": "docs/handover/follow-up-23.md",
+        "sha256": "647c9d4e23ed2f8d7964fab7118444c14843ae9a422f96b0a67cffa5bc8276d9"
+      }
+    ]
+  },
+  "handover_follow_up_24": {
+    "reviewed_at": "2026-11-01",
+    "source_commit": "5bd751026073444087b32ac2a7115f8566104f8b",
+    "scope": "Follow-up 24 through #369: seven exact roadmap rows, 21 immutable snapshots and 357 owner archive/run files; 21 claims subtests. D-136 corrected, D-138 registered; D-135 through D-138 provisional. Live owned-document integrity only; historical failures retained.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      },
+      {
+        "path": "docs/handover/follow-up-23.md",
+        "sha256": "647c9d4e23ed2f8d7964fab7118444c14843ae9a422f96b0a67cffa5bc8276d9"
+      },
+      {
+        "path": "docs/handover/follow-up-24.md",
+        "sha256": "6ad3d9738155536861a56c98fc120dfce5025293d1805d4b60676f4ad6804485"
+      }
+    ]
+  },
+  "handover_follow_up_25": {
+    "reviewed_at": "2026-11-01",
+    "source_commit": "9cd7a0531819d17163d81c524bc5539bb3edc014",
+    "scope": "Follow-up 25 through #373: four exact roadmap rows, 15 immutable snapshots and 270 owner archive/run files; 18 claims subtests. Exact r18 archive; findings and provisional decisions retained. Live owned-document integrity only, no new operator guidance or acceptance.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      },
+      {
+        "path": "docs/handover/follow-up-23.md",
+        "sha256": "647c9d4e23ed2f8d7964fab7118444c14843ae9a422f96b0a67cffa5bc8276d9"
+      },
+      {
+        "path": "docs/handover/follow-up-24.md",
+        "sha256": "6ad3d9738155536861a56c98fc120dfce5025293d1805d4b60676f4ad6804485"
+      },
+      {
+        "path": "docs/handover/follow-up-25.md",
+        "sha256": "8103922e0f29d3008b909589831240c3794bee6ca3d490f3d780a851aba7da2d"
+      },
+      {
+        "path": "docs/reviews/r18-generation-change-review.md",
+        "sha256": "f266a0705292975f5416bda5a082a3f7e779f45e82cb9b9ce54843ce0cb8e33d"
+      }
+    ]
+  },
+  "handover_follow_up_26": {
+    "reviewed_at": "2026-11-01",
+    "source_commit": "9dde5eeb60a6cb6b9b10974c3100ef1ea1352698",
+    "scope": "Follow-up 26 through #382 including 5f4b455c: 21 claims subtests, nine exact roadmap rows, 17 immutable snapshots and 1075 owner archive/run files. D-139 design only; r18 fixes with assembled alarm/escalation pending; historical failures retained. Live owned-document integrity only; one dated installer note.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      },
+      {
+        "path": "docs/handover/follow-up-23.md",
+        "sha256": "647c9d4e23ed2f8d7964fab7118444c14843ae9a422f96b0a67cffa5bc8276d9"
+      },
+      {
+        "path": "docs/handover/follow-up-24.md",
+        "sha256": "6ad3d9738155536861a56c98fc120dfce5025293d1805d4b60676f4ad6804485"
+      },
+      {
+        "path": "docs/handover/follow-up-25.md",
+        "sha256": "8103922e0f29d3008b909589831240c3794bee6ca3d490f3d780a851aba7da2d"
+      },
+      {
+        "path": "docs/reviews/r18-generation-change-review.md",
+        "sha256": "f266a0705292975f5416bda5a082a3f7e779f45e82cb9b9ce54843ce0cb8e33d"
+      },
+      {
+        "path": "docs/handover/follow-up-26.md",
+        "sha256": "07c369f855d3282d0a48966bff5bbb54524cb4bb0ef0c32a54f5f832160447ea"
+      }
+    ]
+  },
+  "handover_follow_up_27": {
+    "reviewed_at": "2026-11-01",
+    "source_commit": "37db5405ee70730fe6a709d983f95f2460136c34",
+    "scope": "Follow-up 27 through #385: 19 claims subtests, three exact roadmap rows, 14 immutable snapshots and 182 owner archive files. Exact r19 archive; D-140 boundary schedule only; D-141 closes D-139, option (b) unimplemented and option (c) retained. Historical failures retained. Live owned-document integrity only; no new operator guidance.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      },
+      {
+        "path": "docs/handover/follow-up-23.md",
+        "sha256": "647c9d4e23ed2f8d7964fab7118444c14843ae9a422f96b0a67cffa5bc8276d9"
+      },
+      {
+        "path": "docs/handover/follow-up-24.md",
+        "sha256": "6ad3d9738155536861a56c98fc120dfce5025293d1805d4b60676f4ad6804485"
+      },
+      {
+        "path": "docs/handover/follow-up-25.md",
+        "sha256": "8103922e0f29d3008b909589831240c3794bee6ca3d490f3d780a851aba7da2d"
+      },
+      {
+        "path": "docs/reviews/r18-generation-change-review.md",
+        "sha256": "f266a0705292975f5416bda5a082a3f7e779f45e82cb9b9ce54843ce0cb8e33d"
+      },
+      {
+        "path": "docs/handover/follow-up-26.md",
+        "sha256": "07c369f855d3282d0a48966bff5bbb54524cb4bb0ef0c32a54f5f832160447ea"
+      },
+      {
+        "path": "docs/handover/follow-up-27.md",
+        "sha256": "74f0dec53f7da87425811797cea67a8fb2944ce8ee719da25a7772cfcdf3bee4"
+      },
+      {
+        "path": "docs/reviews/r19-intersection-design-review.md",
+        "sha256": "14caf0193b256d6f090e8d53ff77e0d5a5c9dab4d025794a6812e15e83228913"
+      }
+    ]
+  },
+  "handover_follow_up_28": {
+    "reviewed_at": "2026-11-01",
+    "source_commit": "aae6763f9dd662091835f9219205b882e4382bfe",
+    "scope": "Follow-up 28 through #390: 19 claims subtests, five exact roadmap rows, 16 immutable snapshots and 1644 archive/run file checks. r19 H-1/M-2/L-2 fixed; native delay and RELATED ICMP owner question open; updates receipt adoption is a new sample. Decisions through D-141 and historical failures retained. Live owned-document integrity only; node diagnostics guidance added.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      },
+      {
+        "path": "docs/handover/follow-up-23.md",
+        "sha256": "647c9d4e23ed2f8d7964fab7118444c14843ae9a422f96b0a67cffa5bc8276d9"
+      },
+      {
+        "path": "docs/handover/follow-up-24.md",
+        "sha256": "6ad3d9738155536861a56c98fc120dfce5025293d1805d4b60676f4ad6804485"
+      },
+      {
+        "path": "docs/handover/follow-up-25.md",
+        "sha256": "8103922e0f29d3008b909589831240c3794bee6ca3d490f3d780a851aba7da2d"
+      },
+      {
+        "path": "docs/reviews/r18-generation-change-review.md",
+        "sha256": "f266a0705292975f5416bda5a082a3f7e779f45e82cb9b9ce54843ce0cb8e33d"
+      },
+      {
+        "path": "docs/handover/follow-up-26.md",
+        "sha256": "07c369f855d3282d0a48966bff5bbb54524cb4bb0ef0c32a54f5f832160447ea"
+      },
+      {
+        "path": "docs/handover/follow-up-27.md",
+        "sha256": "74f0dec53f7da87425811797cea67a8fb2944ce8ee719da25a7772cfcdf3bee4"
+      },
+      {
+        "path": "docs/reviews/r19-intersection-design-review.md",
+        "sha256": "14caf0193b256d6f090e8d53ff77e0d5a5c9dab4d025794a6812e15e83228913"
+      },
+      {
+        "path": "docs/handover/follow-up-28.md",
+        "sha256": "8f47177abd4cca06b38454b8c6a9fd5a8dfc791e7bafb532fc9b440365bdd2df"
+      }
+    ]
+  },
+  "handover_follow_up_29": {
+    "reviewed_at": "2026-11-01",
+    "source_commit": "d640ce96d9145e57a60e04e5875e049070f30b96",
+    "scope": "Follow-up 29 through #396: 22 claims subtests, six exact roadmap rows, eight immutable handover snapshots, 731 archive/run file checks and 51 findings. Adoption gap open; live drift unconfirmed; isolation sample unqualified and signal-15 cause unproven; TEST ONLY hold fixture does not pass consumer rows; D-120 measurement end fixed without changing failed verdicts. Seven owner decisions retained. Live owned-document integrity only.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      },
+      {
+        "path": "docs/handover/follow-up-23.md",
+        "sha256": "647c9d4e23ed2f8d7964fab7118444c14843ae9a422f96b0a67cffa5bc8276d9"
+      },
+      {
+        "path": "docs/handover/follow-up-24.md",
+        "sha256": "6ad3d9738155536861a56c98fc120dfce5025293d1805d4b60676f4ad6804485"
+      },
+      {
+        "path": "docs/handover/follow-up-25.md",
+        "sha256": "8103922e0f29d3008b909589831240c3794bee6ca3d490f3d780a851aba7da2d"
+      },
+      {
+        "path": "docs/reviews/r18-generation-change-review.md",
+        "sha256": "f266a0705292975f5416bda5a082a3f7e779f45e82cb9b9ce54843ce0cb8e33d"
+      },
+      {
+        "path": "docs/handover/follow-up-26.md",
+        "sha256": "07c369f855d3282d0a48966bff5bbb54524cb4bb0ef0c32a54f5f832160447ea"
+      },
+      {
+        "path": "docs/handover/follow-up-27.md",
+        "sha256": "74f0dec53f7da87425811797cea67a8fb2944ce8ee719da25a7772cfcdf3bee4"
+      },
+      {
+        "path": "docs/reviews/r19-intersection-design-review.md",
+        "sha256": "14caf0193b256d6f090e8d53ff77e0d5a5c9dab4d025794a6812e15e83228913"
+      },
+      {
+        "path": "docs/handover/follow-up-28.md",
+        "sha256": "8f47177abd4cca06b38454b8c6a9fd5a8dfc791e7bafb532fc9b440365bdd2df"
+      },
+      {
+        "path": "docs/handover/follow-up-29.md",
+        "sha256": "0e18821e55fdc61ad36406528a3c2df976f4b8fd2c009b669569c79b58062cf4"
+      }
+    ]
+  },
+  "handover_follow_up_30": {
+    "reviewed_at": "2026-11-03",
+    "source_commit": "b943941157ab6aeba6b04c79377de686c22bfbb4",
+    "scope": "Follow-up 30 through #403: 23 claims subtests, seven exact roadmap rows, nine frozen handover snapshots, five frozen scheduled-workflow snapshots, 449 archive/run file checks and 61 findings. Agent-core 36 refuses same-boot adoption on changed deny / host sets; verifier content check and live drift stay with netlab 27. r20 archived byte-for-byte, six findings routed, none confirmed. Isolation 16 sample unqualified; F16-01 fixture disposition merged, run stays failed. Members 16 AT02 / AT09 fail; measured harness 3a8b6159 = published 5d9e5f04. Devstack 29 nightly browser fix; no scheduled-run result claimed. D-142, D-143 and D-144 registered; nine owner decisions. Live owned-document integrity only.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      },
+      {
+        "path": "docs/handover/follow-up-23.md",
+        "sha256": "647c9d4e23ed2f8d7964fab7118444c14843ae9a422f96b0a67cffa5bc8276d9"
+      },
+      {
+        "path": "docs/handover/follow-up-24.md",
+        "sha256": "6ad3d9738155536861a56c98fc120dfce5025293d1805d4b60676f4ad6804485"
+      },
+      {
+        "path": "docs/handover/follow-up-25.md",
+        "sha256": "8103922e0f29d3008b909589831240c3794bee6ca3d490f3d780a851aba7da2d"
+      },
+      {
+        "path": "docs/reviews/r18-generation-change-review.md",
+        "sha256": "f266a0705292975f5416bda5a082a3f7e779f45e82cb9b9ce54843ce0cb8e33d"
+      },
+      {
+        "path": "docs/handover/follow-up-26.md",
+        "sha256": "07c369f855d3282d0a48966bff5bbb54524cb4bb0ef0c32a54f5f832160447ea"
+      },
+      {
+        "path": "docs/handover/follow-up-27.md",
+        "sha256": "74f0dec53f7da87425811797cea67a8fb2944ce8ee719da25a7772cfcdf3bee4"
+      },
+      {
+        "path": "docs/reviews/r19-intersection-design-review.md",
+        "sha256": "14caf0193b256d6f090e8d53ff77e0d5a5c9dab4d025794a6812e15e83228913"
+      },
+      {
+        "path": "docs/handover/follow-up-28.md",
+        "sha256": "8f47177abd4cca06b38454b8c6a9fd5a8dfc791e7bafb532fc9b440365bdd2df"
+      },
+      {
+        "path": "docs/handover/follow-up-29.md",
+        "sha256": "0e18821e55fdc61ad36406528a3c2df976f4b8fd2c009b669569c79b58062cf4"
+      },
+      {
+        "path": "docs/reviews/r20-adoption-signal-review.md",
+        "sha256": "af15fb7c42e86eb7269fd9e8bd1396a730cb5ba51643e52e7f6f1c34738a0f1a"
+      },
+      {
+        "path": "docs/handover/follow-up-30.md",
+        "sha256": "5d1d6fcf7ca7419a58250ef3d3c6f41ab0b60ec8d0eac20b1d8ccf5f860ed6b9"
+      }
+    ]
+  },
+  "handover_follow_up_31": {
+    "reviewed_at": "2026-11-03",
+    "source_commit": "3573f396d60836f3f203ab5f883575c96a0ec45c",
+    "scope": "Follow-up 31 through #407: 21 claims subtests, four final rows, nine owned snapshots, nine nightly snapshots, 596 archive/run checks, three dated documents, 72 findings and nine unchanged owner requests. First qualified D-140 pass; netlab 27 closes r20 H-2 and live drift; D-144 lists delivered, no scheduled result claimed. r21 returned to agent-core 38 before merge, findings not confirmed; F30-01 reported/routed. Historical failures retained. Live owned-document integrity only.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      },
+      {
+        "path": "docs/handover/follow-up-23.md",
+        "sha256": "647c9d4e23ed2f8d7964fab7118444c14843ae9a422f96b0a67cffa5bc8276d9"
+      },
+      {
+        "path": "docs/handover/follow-up-24.md",
+        "sha256": "6ad3d9738155536861a56c98fc120dfce5025293d1805d4b60676f4ad6804485"
+      },
+      {
+        "path": "docs/handover/follow-up-25.md",
+        "sha256": "8103922e0f29d3008b909589831240c3794bee6ca3d490f3d780a851aba7da2d"
+      },
+      {
+        "path": "docs/reviews/r18-generation-change-review.md",
+        "sha256": "f266a0705292975f5416bda5a082a3f7e779f45e82cb9b9ce54843ce0cb8e33d"
+      },
+      {
+        "path": "docs/handover/follow-up-26.md",
+        "sha256": "07c369f855d3282d0a48966bff5bbb54524cb4bb0ef0c32a54f5f832160447ea"
+      },
+      {
+        "path": "docs/handover/follow-up-27.md",
+        "sha256": "74f0dec53f7da87425811797cea67a8fb2944ce8ee719da25a7772cfcdf3bee4"
+      },
+      {
+        "path": "docs/reviews/r19-intersection-design-review.md",
+        "sha256": "14caf0193b256d6f090e8d53ff77e0d5a5c9dab4d025794a6812e15e83228913"
+      },
+      {
+        "path": "docs/handover/follow-up-28.md",
+        "sha256": "8f47177abd4cca06b38454b8c6a9fd5a8dfc791e7bafb532fc9b440365bdd2df"
+      },
+      {
+        "path": "docs/handover/follow-up-29.md",
+        "sha256": "0e18821e55fdc61ad36406528a3c2df976f4b8fd2c009b669569c79b58062cf4"
+      },
+      {
+        "path": "docs/reviews/r20-adoption-signal-review.md",
+        "sha256": "af15fb7c42e86eb7269fd9e8bd1396a730cb5ba51643e52e7f6f1c34738a0f1a"
+      },
+      {
+        "path": "docs/handover/follow-up-30.md",
+        "sha256": "5d1d6fcf7ca7419a58250ef3d3c6f41ab0b60ec8d0eac20b1d8ccf5f860ed6b9"
+      },
+      {
+        "path": "docs/handover/follow-up-31.md",
+        "sha256": "6cb6442f32227e640748a9a7043205465bb07d2a0d0704cfb54641c5d454933f"
+      },
+      {
+        "path": "docs/reviews/r21-adoption-fixes-review.md",
+        "sha256": "0fcf888bbb59e8e3032abf041f4d600fcb661525a3c390e15850c61e4df2edc0"
+      }
+    ]
+  },
+  "handover_follow_up_32": {
+    "reviewed_at": "2026-11-03",
+    "source_commit": "b7449ec1931a5cc954862908690969cb8bb2305d",
+    "scope": "Follow-up 32 through #412: 20 claims subtests, five final rows, nine frozen handover inputs, 301 archive files, seven dated/additive documents, 19 symlinks, 14 archive navigation sources, 75 findings and nine unchanged owner requests. F27-02 fixture defect; qualified comparison open; first live D-102 survivor continuation; B1 unresolved; F28-01 and F31-01 routed, not yet judged. AT02 / AT09 failed, F30-01 unchanged, no scheduled result. Live owned-document integrity only.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      },
+      {
+        "path": "docs/handover/follow-up-23.md",
+        "sha256": "647c9d4e23ed2f8d7964fab7118444c14843ae9a422f96b0a67cffa5bc8276d9"
+      },
+      {
+        "path": "docs/handover/follow-up-24.md",
+        "sha256": "6ad3d9738155536861a56c98fc120dfce5025293d1805d4b60676f4ad6804485"
+      },
+      {
+        "path": "docs/handover/follow-up-25.md",
+        "sha256": "8103922e0f29d3008b909589831240c3794bee6ca3d490f3d780a851aba7da2d"
+      },
+      {
+        "path": "docs/reviews/r18-generation-change-review.md",
+        "sha256": "f266a0705292975f5416bda5a082a3f7e779f45e82cb9b9ce54843ce0cb8e33d"
+      },
+      {
+        "path": "docs/handover/follow-up-26.md",
+        "sha256": "07c369f855d3282d0a48966bff5bbb54524cb4bb0ef0c32a54f5f832160447ea"
+      },
+      {
+        "path": "docs/handover/follow-up-27.md",
+        "sha256": "74f0dec53f7da87425811797cea67a8fb2944ce8ee719da25a7772cfcdf3bee4"
+      },
+      {
+        "path": "docs/reviews/r19-intersection-design-review.md",
+        "sha256": "14caf0193b256d6f090e8d53ff77e0d5a5c9dab4d025794a6812e15e83228913"
+      },
+      {
+        "path": "docs/handover/follow-up-28.md",
+        "sha256": "8f47177abd4cca06b38454b8c6a9fd5a8dfc791e7bafb532fc9b440365bdd2df"
+      },
+      {
+        "path": "docs/handover/follow-up-29.md",
+        "sha256": "0e18821e55fdc61ad36406528a3c2df976f4b8fd2c009b669569c79b58062cf4"
+      },
+      {
+        "path": "docs/reviews/r20-adoption-signal-review.md",
+        "sha256": "af15fb7c42e86eb7269fd9e8bd1396a730cb5ba51643e52e7f6f1c34738a0f1a"
+      },
+      {
+        "path": "docs/handover/follow-up-30.md",
+        "sha256": "5d1d6fcf7ca7419a58250ef3d3c6f41ab0b60ec8d0eac20b1d8ccf5f860ed6b9"
+      },
+      {
+        "path": "docs/handover/follow-up-31.md",
+        "sha256": "6cb6442f32227e640748a9a7043205465bb07d2a0d0704cfb54641c5d454933f"
+      },
+      {
+        "path": "docs/reviews/r21-adoption-fixes-review.md",
+        "sha256": "0fcf888bbb59e8e3032abf041f4d600fcb661525a3c390e15850c61e4df2edc0"
+      },
+      {
+        "path": "docs/handover/follow-up-32.md",
+        "sha256": "2efe96fa190c193a64f7863bc083564b255050a989d96c91985dc4fa6f924052"
+      }
+    ]
+  },
+  "handover_follow_up_33": {
+    "reviewed_at": "2026-11-03",
+    "source_commit": "339db17215db583330a2395f0484f2bdad9681e7",
+    "scope": "Follow-up 33 through #415: 16 claims subtests, three final rows, ten frozen inputs, 512 netlab payloads, three documents and three public PR excerpts. F27-02 declared fixture reading failed (F21-01); original reading supported, not closed. F28-01 closed as test isolation; F27-01 unresolved, B1 FAIL. r22 returned to agent-core 39, none confirmed; additive erratum. 81 findings, 47 decisions unchanged, nine owner requests. No scheduled result; live owned-document integrity only.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      },
+      {
+        "path": "docs/handover/follow-up-23.md",
+        "sha256": "647c9d4e23ed2f8d7964fab7118444c14843ae9a422f96b0a67cffa5bc8276d9"
+      },
+      {
+        "path": "docs/handover/follow-up-24.md",
+        "sha256": "6ad3d9738155536861a56c98fc120dfce5025293d1805d4b60676f4ad6804485"
+      },
+      {
+        "path": "docs/handover/follow-up-25.md",
+        "sha256": "8103922e0f29d3008b909589831240c3794bee6ca3d490f3d780a851aba7da2d"
+      },
+      {
+        "path": "docs/reviews/r18-generation-change-review.md",
+        "sha256": "f266a0705292975f5416bda5a082a3f7e779f45e82cb9b9ce54843ce0cb8e33d"
+      },
+      {
+        "path": "docs/handover/follow-up-26.md",
+        "sha256": "07c369f855d3282d0a48966bff5bbb54524cb4bb0ef0c32a54f5f832160447ea"
+      },
+      {
+        "path": "docs/handover/follow-up-27.md",
+        "sha256": "74f0dec53f7da87425811797cea67a8fb2944ce8ee719da25a7772cfcdf3bee4"
+      },
+      {
+        "path": "docs/reviews/r19-intersection-design-review.md",
+        "sha256": "14caf0193b256d6f090e8d53ff77e0d5a5c9dab4d025794a6812e15e83228913"
+      },
+      {
+        "path": "docs/handover/follow-up-28.md",
+        "sha256": "8f47177abd4cca06b38454b8c6a9fd5a8dfc791e7bafb532fc9b440365bdd2df"
+      },
+      {
+        "path": "docs/handover/follow-up-29.md",
+        "sha256": "0e18821e55fdc61ad36406528a3c2df976f4b8fd2c009b669569c79b58062cf4"
+      },
+      {
+        "path": "docs/reviews/r20-adoption-signal-review.md",
+        "sha256": "af15fb7c42e86eb7269fd9e8bd1396a730cb5ba51643e52e7f6f1c34738a0f1a"
+      },
+      {
+        "path": "docs/handover/follow-up-30.md",
+        "sha256": "5d1d6fcf7ca7419a58250ef3d3c6f41ab0b60ec8d0eac20b1d8ccf5f860ed6b9"
+      },
+      {
+        "path": "docs/handover/follow-up-31.md",
+        "sha256": "6cb6442f32227e640748a9a7043205465bb07d2a0d0704cfb54641c5d454933f"
+      },
+      {
+        "path": "docs/reviews/r21-adoption-fixes-review.md",
+        "sha256": "0fcf888bbb59e8e3032abf041f4d600fcb661525a3c390e15850c61e4df2edc0"
+      },
+      {
+        "path": "docs/handover/follow-up-32.md",
+        "sha256": "2efe96fa190c193a64f7863bc083564b255050a989d96c91985dc4fa6f924052"
+      },
+      {
+        "path": "docs/handover/follow-up-33.md",
+        "sha256": "38d48de73c0b93710075fcd0756bab4b240a157fadaf7a5457607a45d0f4b528"
+      },
+      {
+        "path": "docs/reviews/r22-attribution-fixes-review.md",
+        "sha256": "05e7806a1f5dfec8388e4fe2cbe0e5e1ed11ec1d4c291f3bb5236d7c0fe43c02"
+      }
+    ]
+  },
+  "handover_follow_up_34": {
+    "reviewed_at": "2026-11-03",
+    "source_commit": "cc0ed4ae713f6c8242171f923bdc799a0c07a74c",
+    "scope": "Follow-up 34 through #418: 14 claims subtests, three final rows, ten frozen inputs, 312 netlab payloads (19 gzip originals), two dated documents and three PR excerpts. F21-01 fixed in fixtures; fixed-test F27-02 reading undecided; F27-01 guard-drop mechanism demonstrated, unresolved, B1 FAIL. Both netlab live runs host-unqualified despite functional passes. 81 findings, 47 decisions and nine owner requests retained. Control-count clarification requested. No scheduled result; live owned-document integrity only.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      },
+      {
+        "path": "docs/handover/follow-up-23.md",
+        "sha256": "647c9d4e23ed2f8d7964fab7118444c14843ae9a422f96b0a67cffa5bc8276d9"
+      },
+      {
+        "path": "docs/handover/follow-up-24.md",
+        "sha256": "6ad3d9738155536861a56c98fc120dfce5025293d1805d4b60676f4ad6804485"
+      },
+      {
+        "path": "docs/handover/follow-up-25.md",
+        "sha256": "8103922e0f29d3008b909589831240c3794bee6ca3d490f3d780a851aba7da2d"
+      },
+      {
+        "path": "docs/reviews/r18-generation-change-review.md",
+        "sha256": "f266a0705292975f5416bda5a082a3f7e779f45e82cb9b9ce54843ce0cb8e33d"
+      },
+      {
+        "path": "docs/handover/follow-up-26.md",
+        "sha256": "07c369f855d3282d0a48966bff5bbb54524cb4bb0ef0c32a54f5f832160447ea"
+      },
+      {
+        "path": "docs/handover/follow-up-27.md",
+        "sha256": "74f0dec53f7da87425811797cea67a8fb2944ce8ee719da25a7772cfcdf3bee4"
+      },
+      {
+        "path": "docs/reviews/r19-intersection-design-review.md",
+        "sha256": "14caf0193b256d6f090e8d53ff77e0d5a5c9dab4d025794a6812e15e83228913"
+      },
+      {
+        "path": "docs/handover/follow-up-28.md",
+        "sha256": "8f47177abd4cca06b38454b8c6a9fd5a8dfc791e7bafb532fc9b440365bdd2df"
+      },
+      {
+        "path": "docs/handover/follow-up-29.md",
+        "sha256": "0e18821e55fdc61ad36406528a3c2df976f4b8fd2c009b669569c79b58062cf4"
+      },
+      {
+        "path": "docs/reviews/r20-adoption-signal-review.md",
+        "sha256": "af15fb7c42e86eb7269fd9e8bd1396a730cb5ba51643e52e7f6f1c34738a0f1a"
+      },
+      {
+        "path": "docs/handover/follow-up-30.md",
+        "sha256": "5d1d6fcf7ca7419a58250ef3d3c6f41ab0b60ec8d0eac20b1d8ccf5f860ed6b9"
+      },
+      {
+        "path": "docs/handover/follow-up-31.md",
+        "sha256": "6cb6442f32227e640748a9a7043205465bb07d2a0d0704cfb54641c5d454933f"
+      },
+      {
+        "path": "docs/reviews/r21-adoption-fixes-review.md",
+        "sha256": "0fcf888bbb59e8e3032abf041f4d600fcb661525a3c390e15850c61e4df2edc0"
+      },
+      {
+        "path": "docs/handover/follow-up-32.md",
+        "sha256": "2efe96fa190c193a64f7863bc083564b255050a989d96c91985dc4fa6f924052"
+      },
+      {
+        "path": "docs/handover/follow-up-33.md",
+        "sha256": "38d48de73c0b93710075fcd0756bab4b240a157fadaf7a5457607a45d0f4b528"
+      },
+      {
+        "path": "docs/reviews/r22-attribution-fixes-review.md",
+        "sha256": "05e7806a1f5dfec8388e4fe2cbe0e5e1ed11ec1d4c291f3bb5236d7c0fe43c02"
+      },
+      {
+        "path": "docs/handover/follow-up-34.md",
+        "sha256": "a14dc62e6e7ba58ead30b428cc2134609538168646e8a026a20b5097a9b65f58"
+      }
+    ]
+  },
+  "handover_follow_up_35": {
+    "reviewed_at": "2026-11-03",
+    "source_commit": "dff6bdb0ddcf6dfd8392a8db364c0120783a48f3",
+    "scope": "Follow-up 35 through #421: 16 claims subtests, three final rows, ten frozen inputs, two dated updater documents, exact r23 archive, six design files and three PR excerpts. F27-02 fixed-test reading holds; F23-01 fixture fixed; #417 count corrected. C1 design only, owner G5/G6 trade open; production keeps current guard. r23 returned to agent-core 40, none confirmed; L-1 code-trace clarification requested. 87 findings, 47 decisions, ten owner requests. No scheduled result; live owned-document integrity only.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      },
+      {
+        "path": "docs/handover/follow-up-23.md",
+        "sha256": "647c9d4e23ed2f8d7964fab7118444c14843ae9a422f96b0a67cffa5bc8276d9"
+      },
+      {
+        "path": "docs/handover/follow-up-24.md",
+        "sha256": "6ad3d9738155536861a56c98fc120dfce5025293d1805d4b60676f4ad6804485"
+      },
+      {
+        "path": "docs/handover/follow-up-25.md",
+        "sha256": "8103922e0f29d3008b909589831240c3794bee6ca3d490f3d780a851aba7da2d"
+      },
+      {
+        "path": "docs/reviews/r18-generation-change-review.md",
+        "sha256": "f266a0705292975f5416bda5a082a3f7e779f45e82cb9b9ce54843ce0cb8e33d"
+      },
+      {
+        "path": "docs/handover/follow-up-26.md",
+        "sha256": "07c369f855d3282d0a48966bff5bbb54524cb4bb0ef0c32a54f5f832160447ea"
+      },
+      {
+        "path": "docs/handover/follow-up-27.md",
+        "sha256": "74f0dec53f7da87425811797cea67a8fb2944ce8ee719da25a7772cfcdf3bee4"
+      },
+      {
+        "path": "docs/reviews/r19-intersection-design-review.md",
+        "sha256": "14caf0193b256d6f090e8d53ff77e0d5a5c9dab4d025794a6812e15e83228913"
+      },
+      {
+        "path": "docs/handover/follow-up-28.md",
+        "sha256": "8f47177abd4cca06b38454b8c6a9fd5a8dfc791e7bafb532fc9b440365bdd2df"
+      },
+      {
+        "path": "docs/handover/follow-up-29.md",
+        "sha256": "0e18821e55fdc61ad36406528a3c2df976f4b8fd2c009b669569c79b58062cf4"
+      },
+      {
+        "path": "docs/reviews/r20-adoption-signal-review.md",
+        "sha256": "af15fb7c42e86eb7269fd9e8bd1396a730cb5ba51643e52e7f6f1c34738a0f1a"
+      },
+      {
+        "path": "docs/handover/follow-up-30.md",
+        "sha256": "5d1d6fcf7ca7419a58250ef3d3c6f41ab0b60ec8d0eac20b1d8ccf5f860ed6b9"
+      },
+      {
+        "path": "docs/handover/follow-up-31.md",
+        "sha256": "6cb6442f32227e640748a9a7043205465bb07d2a0d0704cfb54641c5d454933f"
+      },
+      {
+        "path": "docs/reviews/r21-adoption-fixes-review.md",
+        "sha256": "0fcf888bbb59e8e3032abf041f4d600fcb661525a3c390e15850c61e4df2edc0"
+      },
+      {
+        "path": "docs/handover/follow-up-32.md",
+        "sha256": "2efe96fa190c193a64f7863bc083564b255050a989d96c91985dc4fa6f924052"
+      },
+      {
+        "path": "docs/handover/follow-up-33.md",
+        "sha256": "38d48de73c0b93710075fcd0756bab4b240a157fadaf7a5457607a45d0f4b528"
+      },
+      {
+        "path": "docs/reviews/r22-attribution-fixes-review.md",
+        "sha256": "05e7806a1f5dfec8388e4fe2cbe0e5e1ed11ec1d4c291f3bb5236d7c0fe43c02"
+      },
+      {
+        "path": "docs/handover/follow-up-34.md",
+        "sha256": "a14dc62e6e7ba58ead30b428cc2134609538168646e8a026a20b5097a9b65f58"
+      },
+      {
+        "path": "docs/handover/follow-up-35.md",
+        "sha256": "f4fef2692dfcfc28a809ea495cb28d6658aaa7af4263be91f78866a639fb5c5d"
+      },
+      {
+        "path": "docs/reviews/r23-intent-fixes-review.md",
+        "sha256": "23f899f8e0b834994785e8c8a1f774b5aeb1a18309bf35439ba1a4f3261b25d0"
+      }
+    ]
+  },
+  "handover_follow_up_36": {
+    "reviewed_at": "2026-11-03",
+    "source_commit": "d7867928d48a7f75259f84abf1b29a9e37675fcb",
+    "scope": "Follow-up 36 through #423: 16 claims subtests, two final rows, ten frozen inputs, exact r24 archive, 174 netlab design/evidence files (12 gzip originals), two PR excerpts and separate source audit. D-141 enforcement fixes merged, C1 documents only, owner G5/G6 trade undecided; production keeps current guard. H-1/H-3 returned to agent-core 41, jitter routed after 41; lock-path discrepancy returned for additive correction. 96 findings, 47 decisions, ten owner requests. No scheduled result; live owned-document integrity only.",
+    "reviewed_documents": [
+      {
+        "path": "README.md",
+        "sha256": "7e900500092fb19b111650d5e6dd44f54316d0bb344033ad9283a29c4dbe7bb3"
+      },
+      {
+        "path": "docs/handover/README.md",
+        "sha256": "7a6057b3cc09c4ba19151fb8a13397dda5e2fe9f680c5462d16523810b6370ee"
+      },
+      {
+        "path": "docs/handover/00-index.md",
+        "sha256": "7b58900ca60fbec9ddf7e5aa1826e380f33c12f223f4ed06f57eedab0faea5ac"
+      },
+      {
+        "path": "docs/handover/11-database-and-retention.md",
+        "sha256": "0397c53a1a8d2db516c6bb2ff73c1b15c986d75c1a1be39b45e49fe2c128e381"
+      },
+      {
+        "path": "docs/handover/deploy.md",
+        "sha256": "511022170beb6ff5ffa07d417d8499dd07bd4918af7da943e30f9e0a9c9009d5"
+      },
+      {
+        "path": "docs/handover/operator-guide.md",
+        "sha256": "24b09caacf6846b49ed8adcd6a79cd00ee8a6cbe62324162364eaeca4b5a35d7"
+      },
+      {
+        "path": "docs/handover/member-guide.md",
+        "sha256": "2debe93fbfe296adc0800a9abb496efc69a025052d7e4eeec5cef239b859667c"
+      },
+      {
+        "path": "docs/handover/restore-drill.md",
+        "sha256": "0c0752a083ec394758c8cc4ae8a245c58ec4bf3cfe21192c2f21e2615f534d0f"
+      },
+      {
+        "path": "docs/handover/follow-up-20.md",
+        "sha256": "cd1cb05eac979753e558552fe3bf8f4ee8c65313532d4bbf2750fdaca2e0ab26"
+      },
+      {
+        "path": "docs/handover/follow-up-21.md",
+        "sha256": "5985ca5618e973fcb3c862c084f59ef6e5dd414db9f51148322636aefbb206bd"
+      },
+      {
+        "path": "docs/ops/README.md",
+        "sha256": "073f12ea1f8524280ff1a71b9519427a4d3720986413a354b613cbb40a42852e"
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "sha256": "ccf246749ff42068184e46a86de7d09c04ef2282d2b7ee45daf8704b221db37d"
+      },
+      {
+        "path": "tests/handover/testdata/README.md",
+        "sha256": "3f8b5797e63290dc4297bd85f02287afa6f75e7a51ab4a13b16f215af4c30f8d"
+      },
+      {
+        "path": "docs/handover/follow-up-22.md",
+        "sha256": "75a867f182d16337c2767de319d499240448d3c667ea5dd8b8f679e848aa3e56"
+      },
+      {
+        "path": "docs/handover/follow-up-23.md",
+        "sha256": "647c9d4e23ed2f8d7964fab7118444c14843ae9a422f96b0a67cffa5bc8276d9"
+      },
+      {
+        "path": "docs/handover/follow-up-24.md",
+        "sha256": "6ad3d9738155536861a56c98fc120dfce5025293d1805d4b60676f4ad6804485"
+      },
+      {
+        "path": "docs/handover/follow-up-25.md",
+        "sha256": "8103922e0f29d3008b909589831240c3794bee6ca3d490f3d780a851aba7da2d"
+      },
+      {
+        "path": "docs/reviews/r18-generation-change-review.md",
+        "sha256": "f266a0705292975f5416bda5a082a3f7e779f45e82cb9b9ce54843ce0cb8e33d"
+      },
+      {
+        "path": "docs/handover/follow-up-26.md",
+        "sha256": "07c369f855d3282d0a48966bff5bbb54524cb4bb0ef0c32a54f5f832160447ea"
+      },
+      {
+        "path": "docs/handover/follow-up-27.md",
+        "sha256": "74f0dec53f7da87425811797cea67a8fb2944ce8ee719da25a7772cfcdf3bee4"
+      },
+      {
+        "path": "docs/reviews/r19-intersection-design-review.md",
+        "sha256": "14caf0193b256d6f090e8d53ff77e0d5a5c9dab4d025794a6812e15e83228913"
+      },
+      {
+        "path": "docs/handover/follow-up-28.md",
+        "sha256": "8f47177abd4cca06b38454b8c6a9fd5a8dfc791e7bafb532fc9b440365bdd2df"
+      },
+      {
+        "path": "docs/handover/follow-up-29.md",
+        "sha256": "0e18821e55fdc61ad36406528a3c2df976f4b8fd2c009b669569c79b58062cf4"
+      },
+      {
+        "path": "docs/reviews/r20-adoption-signal-review.md",
+        "sha256": "af15fb7c42e86eb7269fd9e8bd1396a730cb5ba51643e52e7f6f1c34738a0f1a"
+      },
+      {
+        "path": "docs/handover/follow-up-30.md",
+        "sha256": "5d1d6fcf7ca7419a58250ef3d3c6f41ab0b60ec8d0eac20b1d8ccf5f860ed6b9"
+      },
+      {
+        "path": "docs/handover/follow-up-31.md",
+        "sha256": "6cb6442f32227e640748a9a7043205465bb07d2a0d0704cfb54641c5d454933f"
+      },
+      {
+        "path": "docs/reviews/r21-adoption-fixes-review.md",
+        "sha256": "0fcf888bbb59e8e3032abf041f4d600fcb661525a3c390e15850c61e4df2edc0"
+      },
+      {
+        "path": "docs/handover/follow-up-32.md",
+        "sha256": "2efe96fa190c193a64f7863bc083564b255050a989d96c91985dc4fa6f924052"
+      },
+      {
+        "path": "docs/handover/follow-up-33.md",
+        "sha256": "38d48de73c0b93710075fcd0756bab4b240a157fadaf7a5457607a45d0f4b528"
+      },
+      {
+        "path": "docs/reviews/r22-attribution-fixes-review.md",
+        "sha256": "05e7806a1f5dfec8388e4fe2cbe0e5e1ed11ec1d4c291f3bb5236d7c0fe43c02"
+      },
+      {
+        "path": "docs/handover/follow-up-34.md",
+        "sha256": "a14dc62e6e7ba58ead30b428cc2134609538168646e8a026a20b5097a9b65f58"
+      },
+      {
+        "path": "docs/handover/follow-up-35.md",
+        "sha256": "f4fef2692dfcfc28a809ea495cb28d6658aaa7af4263be91f78866a639fb5c5d"
+      },
+      {
+        "path": "docs/reviews/r23-intent-fixes-review.md",
+        "sha256": "23f899f8e0b834994785e8c8a1f774b5aeb1a18309bf35439ba1a4f3261b25d0"
+      },
+      {
+        "path": "docs/handover/follow-up-36.md",
+        "sha256": "38f7b5863ef1f3d9aefa5565564460a0d1c2534b676f6a4abf57a603a736ffc0"
+      },
+      {
+        "path": "docs/reviews/r24-hitless-guard-review.md",
+        "sha256": "7ed69f029bb12b526130e26608474f1b1cb15ac6346c3bdab6a7cc875af437f8"
+      }
+    ]
+  },
+  "follow_up_15": {
+    "scope": "AT29 transports and shared node-write adoption; earlier campaigns retained",
+    "records": [
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-16/AT29.json",
+        "sha256": "99d5b41b978b76b5013d6a9c9065f36108c54bb3ce8e6aca651e7e83237df0bf"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-16/AT29.md",
+        "sha256": "1d2d8360c7b1957ccbca7c9edc4b71f4a6bc117b0371281d8e86e8bf499b451d"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-16/AT31.json",
+        "sha256": "5035dd24c0a2ae38644f1ce77ee8894e33b71b310764d4637f69675baab91b76"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-16/AT31.md",
+        "sha256": "2fa2d37103e8e815b9c82e5d18625c1eec3fd7529a5d7f1d11605607123dcbfd"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-16/followup15-transports-live.json",
+        "sha256": "c243a28e9550d70061bc085a5eda35b800c8ab5437c2195501d2a6a8d24a8aed"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-16/followup15-transports-run.json",
+        "sha256": "fa4bbe48f9e235d19bc193ea8489e6850892c304caa42a9fe3195e234218e626"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-16/followup15-preflight.json",
+        "sha256": "084bffcd2185832daec011562c80b84477cd04718699d4e12ecd99d91e4e1f23"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-16/followup15-cleanup.json",
+        "sha256": "a4af8660bc38767c53b462639197ef068ed53603742aca26c38bfba5dca1faf6"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-16/2026-11-03-follow-up-15.md",
+        "sha256": "a70149dfc3a646b99c59d3965de71b60958a16dae7cdfe1a48d37b7ee99b2fc7"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-16/RUN.md",
+        "sha256": "a1c41508fec4319709a72791aa5cb1ae5ea82efd8a691732e76cb39275517a4e"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-16/requests.md",
+        "sha256": "60b5b827a30afdf6a1bee01ad0ac1cafde4386cc18cd1114f408111b78b4ed7a"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-16/README.md",
+        "sha256": "baa873369265737ff0c051fdb0474d91b76f46cb5dbc2e8141c39daac5765218"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-16/summary.md",
+        "sha256": "baa873369265737ff0c051fdb0474d91b76f46cb5dbc2e8141c39daac5765218"
+      },
+      {
+        "path": "docs/e2e/at/secops/history/before-follow-up-16/followup15-gates.json",
+        "sha256": "388bf34e0e91045a55c417659873b151b0944d42d71b5eae83357387fc90de61"
+      }
+    ]
+  },
+  "follow_up_16": {
+    "scope": "AT29 live-agent continuity and transport run; earlier campaigns retained",
+    "records": [
+      {
+        "path": "docs/e2e/at/secops/AT29.json",
+        "sha256": "feb7c2f6b727c57283a5b054278e2dce6cc673e0d6174f856990ce65ba4e8208"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT29.md",
+        "sha256": "a35999e79aa7d2d5943afbb0c1b644b4efa0378c969bada492728df2871eca39"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT31.json",
+        "sha256": "ea789c67dd900553027a68b67c920db7b6b4c111780a634b97d9fe7469b2a1bb"
+      },
+      {
+        "path": "docs/e2e/at/secops/AT31.md",
+        "sha256": "946a18cecbddf57f3ae3adb7d9068aec19d623e3a1f6f8b01c7ea9901490d211"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup16-transports-run.json",
+        "sha256": "6de488965a1dbb890de0d1c9d4e557ecaaeec8806620213137a813854428875f"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup16-transports-live.json",
+        "sha256": "ade584b0f997805102a84413841c92c0eba07af006e3c85a093206d49b792cba"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup16-preflight.json",
+        "sha256": "fdd1102e761ba1ccef7370b4389649366f459a37003631cae438bf8dcc681113"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup16-cleanup.json",
+        "sha256": "3af5bab631eb44a7795ae5b2566bcd4ea41e001013acab08c507c68a892eacab"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup16-admission.json",
+        "sha256": "e9f7ec4c988aa6efd4d190e16223e0f3d8003a9ba5029ed29f3c7aae1ac0efbf"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup16-diagnostic.json",
+        "sha256": "45f7072f8e715fbe1c2947ae8a559e074e2ad6666f05bb9c596043f3141613bd"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup16-finding.json",
+        "sha256": "c0563653e14a4826f5274d7d483da210b8173b1e45c0b60d5f68fef58839be33"
+      },
+      {
+        "path": "docs/e2e/at/secops/2026-11-03-follow-up-16.md",
+        "sha256": "bf77152e2067ed5f021cb71ee070aeded5dfcc777b1d49675d0a713bf8711a3c"
+      },
+      {
+        "path": "docs/e2e/at/secops/RUN.md",
+        "sha256": "8e94e847a1c2adae85393242c7aed3170de55f8736a4107d24ed72c4a2838e3b"
+      },
+      {
+        "path": "docs/e2e/at/secops/followup16-gates.json",
+        "sha256": "00a60e565c62944a05fffae7b16f3188ef4f566ffceb34222460e27511201471"
+      }
+    ]
+  }
+}

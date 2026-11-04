@@ -1,0 +1,1473 @@
+{
+  "run_id": "b2de46c8-7611-4b7c-8863-2345ff2b0240",
+  "secops_f16_01": "answered",
+  "confounded": true,
+  "lease": {
+    "signed": {
+      "authorization_generation": "4",
+      "config_generation": "16",
+      "expires_at": "2026-11-04T06:37:52.273355057Z",
+      "issued_at": "2026-11-04T06:36:52.273355057Z",
+      "lease_id": "bef669a3-1141-45af-86c6-8fc823a4b84a",
+      "max_offline_seconds": 60,
+      "members": [
+        {
+          "effective_service_end": "2026-11-04T06:53:21Z",
+          "entitlement_revision": "4",
+          "lease_end": "2026-11-04T06:37:52.273355057Z",
+          "member_id": "01a1a540-231c-7381-b978-31673afdaa5e"
+        },
+        {
+          "effective_service_end": "2026-11-04T07:03:25Z",
+          "entitlement_revision": "1",
+          "lease_end": "2026-11-04T06:37:52.273355057Z",
+          "member_id": "01a1a543-2d3b-7b42-b5f0-f65f7337c166"
+        },
+        {
+          "effective_service_end": "2026-11-04T07:06:39Z",
+          "entitlement_revision": "1",
+          "lease_end": "2026-11-04T06:37:52.273355057Z",
+          "member_id": "01a1a546-2111-7ca9-9b44-28a8f05b8a0d"
+        }
+      ],
+      "node_id": "01a1a53f-c331-7644-838e-989f2e9dac86",
+      "node_incarnation_id": "01a1a53f-c34c-7e64-90f8-d3cfcb5801f6",
+      "schema_version": 1
+    },
+    "request_monotonic_ns": "97654722408396",
+    "deadline_monotonic_ns": "97714722408396",
+    "lease_id": "bef669a3-1141-45af-86c6-8fc823a4b84a",
+    "generation": "16",
+    "issued_at": "2026-11-04T06:36:52.273355057Z",
+    "expires_at": "2026-11-04T06:37:52.273355057Z",
+    "max_offline_seconds": 60,
+    "members": [
+      {
+        "member_id": "01a1a540-231c-7381-b978-31673afdaa5e",
+        "lease_end": "2026-11-04T06:37:52.273355057Z"
+      },
+      {
+        "member_id": "01a1a543-2d3b-7b42-b5f0-f65f7337c166",
+        "lease_end": "2026-11-04T06:37:52.273355057Z"
+      },
+      {
+        "member_id": "01a1a546-2111-7ca9-9b44-28a8f05b8a0d",
+        "lease_end": "2026-11-04T06:37:52.273355057Z"
+      }
+    ]
+  },
+  "cap_setup": {
+    "cap_changed_at": "2026-11-04T06:36:39.168528Z",
+    "design": "cap before member admission: public grant and device binding generate fresh desired state before outage",
+    "required_max_offline_seconds": 60
+  },
+  "control_loss_started_at": "2026-11-04T06:36:59.780338318Z",
+  "control_stop_completed_at": "2026-11-04T06:37:00.22454808Z",
+  "bounds": {
+    "control_loss_monotonic_seconds": 6.346154743,
+    "deadline_monotonic_seconds": 58.836847201,
+    "continuity_end_monotonic_seconds": 57.735847201,
+    "step_interval_seconds": 5,
+    "control_budget_seconds": 5,
+    "watchdog_stale_seconds": 30
+  },
+  "verdict": {
+    "passed": true,
+    "errors": [],
+    "boundary_observations": {
+      "TCP": {
+        "first_quiet_observed_after_D": 59.896036496,
+        "last_reply_observed_before_D": 57.898372696
+      },
+      "UDP": {
+        "first_quiet_observed_after_D": 59.896036496,
+        "last_reply_observed_before_D": 57.898372696
+      }
+    },
+    "continuity_window_seconds": 51.389692458,
+    "transport_stop_points": {
+      "TCP": {
+        "last_reply_observed_monotonic_seconds": 58.899314277,
+        "first_quiet_monotonic_seconds": 59.896036496,
+        "deadline_monotonic_seconds": 61.836847201,
+        "passed": true
+      },
+      "UDP": {
+        "last_reply_observed_monotonic_seconds": 58.899314277,
+        "first_quiet_monotonic_seconds": 59.896036496,
+        "deadline_monotonic_seconds": 61.836847201,
+        "passed": true
+      }
+    }
+  },
+  "transport_boundary_offsets": {
+    "TCP": {
+      "first_quiet_observed_after_D": 59.896036496,
+      "last_reply_observed_before_D": 57.898372696,
+      "last_reply_before_D_offset_seconds": -0.938474504999995,
+      "first_quiet_after_D_offset_seconds": 1.059189295000003
+    },
+    "UDP": {
+      "first_quiet_observed_after_D": 59.896036496,
+      "last_reply_observed_before_D": 57.898372696,
+      "last_reply_before_D_offset_seconds": -0.938474504999995,
+      "first_quiet_after_D_offset_seconds": 1.059189295000003
+    }
+  },
+  "sample_count": 67,
+  "agent_identities": [
+    "107426 9763935"
+  ],
+  "all_samples_agent_alive": true,
+  "final_continuity_sample": {
+    "transport": {
+      "utc": "2026-11-04T06:37:51.332555974Z",
+      "monotonic_elapsed_seconds": 57.898372696,
+      "status": {
+        "read_diagnostic": {
+          "started": "2026-11-04T06:37:51.170646004Z",
+          "completed": "2026-11-04T06:37:51.256043555Z",
+          "stage": "member_status_read",
+          "category": "none"
+        },
+        "tcp_echoes": 114,
+        "udp_replies": 114,
+        "tcp_attempts": 114,
+        "udp_attempts": 114,
+        "running": true,
+        "error": ""
+      },
+      "counters": {
+        "upload_bytes": "22530",
+        "download_bytes": "17529",
+        "Present": true,
+        "kernel_generation": "16",
+        "read_diagnostic": {
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "read_start_mono_ns": "97713777413190",
+          "read_end_mono_ns": "97713780561673",
+          "enforcement_before": {
+            "available": false,
+            "error": "timing_not_enabled_or_unreadable"
+          },
+          "enforcement_after": {
+            "available": false,
+            "error": "timing_not_enabled_or_unreadable"
+          },
+          "started": "2026-11-04T06:37:51.32599242Z",
+          "completed": "2026-11-04T06:37:51.329185159Z",
+          "stage": "nft_read",
+          "category": "none",
+          "exit": 0,
+          "heartbeat_before": {
+            "read_at": "2026-11-04T06:37:51.326018443Z",
+            "wall_unix_ns": "1793774268392951501",
+            "serving": true,
+            "read_ok": true
+          },
+          "heartbeat_after": {
+            "read_at": "2026-11-04T06:37:51.329185298Z",
+            "wall_unix_ns": "1793774268392951501",
+            "serving": true,
+            "read_ok": true
+          }
+        }
+      },
+      "status_read_ok": true,
+      "counter_read_ok": true
+    },
+    "read_start_monotonic_seconds": 57.736459292,
+    "read_end_monotonic_seconds": 57.96538343,
+    "clock_monotonic_ns": "97713850943086",
+    "heartbeat": {
+      "baseline_ok": "1",
+      "generation": "16",
+      "mono_ns": "97710844326946",
+      "policy_expires_mono_ns": "97714722408396",
+      "reason": "serving",
+      "serving": "1",
+      "wall_unix_ns": "1793774268392951501"
+    },
+    "agent_pid_start_ticks": "107426 9763935",
+    "agent_alive": true
+  },
+  "first_quiet_after_D": {
+    "transport": {
+      "utc": "2026-11-04T06:37:53.330219819Z",
+      "monotonic_elapsed_seconds": 59.896036496,
+      "status": {
+        "read_diagnostic": {
+          "started": "2026-11-04T06:37:53.170644532Z",
+          "completed": "2026-11-04T06:37:53.256698701Z",
+          "stage": "member_status_read",
+          "category": "none"
+        },
+        "tcp_echoes": 116,
+        "udp_replies": 116,
+        "tcp_attempts": 117,
+        "udp_attempts": 118,
+        "running": true,
+        "error": ""
+      },
+      "counters": {
+        "upload_bytes": "22902",
+        "download_bytes": "17807",
+        "Present": true,
+        "kernel_generation": "0",
+        "read_diagnostic": {
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "read_start_mono_ns": "97715777975816",
+          "read_end_mono_ns": "97715780006168",
+          "enforcement_before": {
+            "available": false,
+            "error": "timing_not_enabled_or_unreadable"
+          },
+          "enforcement_after": {
+            "available": false,
+            "error": "timing_not_enabled_or_unreadable"
+          },
+          "started": "2026-11-04T06:37:53.326553091Z",
+          "completed": "2026-11-04T06:37:53.328629918Z",
+          "stage": "nft_read",
+          "category": "none",
+          "exit": 0,
+          "heartbeat_before": {
+            "read_at": "2026-11-04T06:37:53.326580389Z",
+            "wall_unix_ns": "1793774268392951501",
+            "serving": true,
+            "read_ok": true
+          },
+          "heartbeat_after": {
+            "read_at": "2026-11-04T06:37:53.328630222Z",
+            "wall_unix_ns": "1793774268392951501",
+            "serving": true,
+            "read_ok": true
+          }
+        }
+      },
+      "status_read_ok": true,
+      "counter_read_ok": true
+    },
+    "read_start_monotonic_seconds": 59.736457905,
+    "read_end_monotonic_seconds": 59.964909614,
+    "clock_monotonic_ns": "97715850469096",
+    "heartbeat": {
+      "baseline_ok": "1",
+      "generation": "16",
+      "mono_ns": "97710844326946",
+      "policy_expires_mono_ns": "97714722408396",
+      "reason": "serving",
+      "serving": "1",
+      "wall_unix_ns": "1793774268392951501"
+    },
+    "agent_pid_start_ticks": "107426 9763935",
+    "agent_alive": true
+  },
+  "post_deadline_heartbeat": {
+    "baseline_ok": "1",
+    "generation": "16",
+    "mono_ns": "97725909450163",
+    "policy_expires_mono_ns": "0",
+    "reason": "lease_expired",
+    "serving": "0",
+    "wall_unix_ns": "1793774283458074399"
+  },
+  "agent_after_recovery": {
+    "transport": {
+      "utc": "2026-11-04T06:38:09.774106158Z",
+      "monotonic_elapsed_seconds": 76.339922815,
+      "status": {
+        "read_diagnostic": {
+          "started": "2026-11-04T06:38:09.607236669Z",
+          "completed": "2026-11-04T06:38:09.69394418Z",
+          "stage": "member_status_read",
+          "category": "none"
+        },
+        "tcp_echoes": 116,
+        "udp_replies": 116,
+        "tcp_attempts": 134,
+        "udp_attempts": 151,
+        "running": true,
+        "error": ""
+      },
+      "counters": {
+        "upload_bytes": "24122",
+        "download_bytes": "19321",
+        "Present": true,
+        "kernel_generation": "16",
+        "read_diagnostic": {
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "read_start_mono_ns": "97732218834810",
+          "read_end_mono_ns": "97732221886634",
+          "enforcement_before": {
+            "available": false,
+            "error": "timing_not_enabled_or_unreadable"
+          },
+          "enforcement_after": {
+            "available": false,
+            "error": "timing_not_enabled_or_unreadable"
+          },
+          "started": "2026-11-04T06:38:09.767406152Z",
+          "completed": "2026-11-04T06:38:09.770510371Z",
+          "stage": "nft_read",
+          "category": "none",
+          "exit": 0,
+          "heartbeat_before": {
+            "read_at": "2026-11-04T06:38:09.76743275Z",
+            "wall_unix_ns": "1793774288810243065",
+            "serving": true,
+            "read_ok": true
+          },
+          "heartbeat_after": {
+            "read_at": "2026-11-04T06:38:09.770510777Z",
+            "wall_unix_ns": "1793774288810243065",
+            "serving": true,
+            "read_ok": true
+          }
+        }
+      },
+      "status_read_ok": true,
+      "counter_read_ok": true
+    },
+    "read_start_monotonic_seconds": 76.17305221,
+    "read_end_monotonic_seconds": 76.411329275,
+    "clock_monotonic_ns": "97732296889051",
+    "heartbeat": {
+      "baseline_ok": "1",
+      "generation": "16",
+      "mono_ns": "97731261618574",
+      "policy_expires_mono_ns": "98254187280526",
+      "reason": "serving",
+      "serving": "1",
+      "wall_unix_ns": "1793774288810243065"
+    },
+    "agent_pid_start_ticks": "107426 9763935",
+    "agent_alive": true
+  },
+  "timeout_lines": [
+    "time=2026-11-04T06:37:07.122Z level=WARN msg=\"desired state\" err=\"control request ended\"",
+    "time=2026-11-04T06:37:12.225Z level=WARN msg=\"desired state\" err=\"control request ended\"",
+    "time=2026-11-04T06:37:17.323Z level=WARN msg=\"desired state\" err=\"control request ended\"",
+    "time=2026-11-04T06:37:22.422Z level=WARN msg=\"desired state\" err=\"control request ended\"",
+    "time=2026-11-04T06:37:27.771Z level=WARN msg=\"desired state\" err=\"control request ended\"",
+    "time=2026-11-04T06:37:37.964Z level=WARN msg=\"desired state\" err=\"control request ended\""
+  ],
+  "watchdog": {
+    "source_file": "watchdog.log",
+    "numbered_lines": [
+      {
+        "line": 1,
+        "text": "{\"time\":\"2026-11-04T06:29:41.877755288Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":97224329118845,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+      },
+      {
+        "line": 2,
+        "text": "{\"time\":\"2026-11-04T06:29:41.877821795Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":97224329197186,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+      },
+      {
+        "line": 3,
+        "text": "{\"time\":\"2026-11-04T06:29:41.89503416Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":97224346406149,\"succeeded\":true}"
+      },
+      {
+        "line": 4,
+        "text": "{\"time\":\"2026-11-04T06:33:07.482324315Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"policy_expired\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":97429933694040,\"heartbeat_mono_ns\":97405117386354,\"policy_expires_mono_ns\":97428448295116,\"generation\":8,\"serving\":true,\"baseline_ok\":true}"
+      },
+      {
+        "line": 5,
+        "text": "{\"time\":\"2026-11-04T06:33:07.482363773Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"policy_expired\",\"mono_ns\":97429933739056,\"heartbeat_mono_ns\":97405117386354,\"policy_expires_mono_ns\":97428448295116,\"generation\":8}"
+      },
+      {
+        "line": 6,
+        "text": "{\"time\":\"2026-11-04T06:33:07.521726141Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"policy_expired\",\"mono_ns\":97429973099862,\"succeeded\":true}"
+      },
+      {
+        "line": 7,
+        "text": "{\"time\":\"2026-11-04T06:33:12.523854618Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"policy_expired\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":97434975223359,\"heartbeat_mono_ns\":97405117386354,\"policy_expires_mono_ns\":97428448295116,\"generation\":8,\"serving\":true,\"baseline_ok\":true}"
+      },
+      {
+        "line": 8,
+        "text": "{\"time\":\"2026-11-04T06:33:12.523899298Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"policy_expired\",\"mono_ns\":97434975274993,\"heartbeat_mono_ns\":97405117386354,\"policy_expires_mono_ns\":97428448295116,\"generation\":8}"
+      },
+      {
+        "line": 9,
+        "text": "{\"time\":\"2026-11-04T06:33:12.552065707Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"policy_expired\",\"mono_ns\":97435003439729,\"succeeded\":true}"
+      },
+      {
+        "line": 10,
+        "text": "{\"time\":\"2026-11-04T06:33:17.554514971Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_stale\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":97440005884734,\"heartbeat_mono_ns\":97405117386354,\"policy_expires_mono_ns\":97428448295116,\"generation\":8,\"serving\":true,\"baseline_ok\":true}"
+      },
+      {
+        "line": 11,
+        "text": "{\"time\":\"2026-11-04T06:33:17.554547341Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_stale\",\"mono_ns\":97440005922869,\"heartbeat_mono_ns\":97405117386354,\"policy_expires_mono_ns\":97428448295116,\"generation\":8}"
+      },
+      {
+        "line": 12,
+        "text": "{\"time\":\"2026-11-04T06:33:17.580779276Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_stale\",\"mono_ns\":97440032151997,\"succeeded\":true}"
+      },
+      {
+        "line": 13,
+        "text": "{\"time\":\"2026-11-04T06:37:53.11098811Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"policy_expired\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":97715562357736,\"heartbeat_mono_ns\":97710844326946,\"policy_expires_mono_ns\":97714722408396,\"generation\":16,\"serving\":true,\"baseline_ok\":true}"
+      },
+      {
+        "line": 14,
+        "text": "{\"time\":\"2026-11-04T06:37:53.111024908Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"policy_expired\",\"mono_ns\":97715562400370,\"heartbeat_mono_ns\":97710844326946,\"policy_expires_mono_ns\":97714722408396,\"generation\":16}"
+      },
+      {
+        "line": 15,
+        "text": "{\"time\":\"2026-11-04T06:37:53.154082141Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"policy_expired\",\"mono_ns\":97715605455551,\"succeeded\":true}"
+      }
+    ],
+    "decision_count": 5
+  },
+  "agent_restart_excerpts": [
+    {
+      "snapshot": "control_lost_agent_alive-after-agent.log",
+      "lines": [
+        {
+          "line": 2,
+          "text": "time=2026-11-04T06:36:37.101Z level=INFO msg=\"serving rules adopted\" generation=14 policy_expires_mono_ns=97658778490379 next_binding_expiry_mono_ns=97658778490379"
+        },
+        {
+          "line": 5,
+          "text": "time=2026-11-04T06:36:42.164Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97644615806446 generation=14"
+        },
+        {
+          "line": 6,
+          "text": "time=2026-11-04T06:36:42.211Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97644663305518 succeeded=true"
+        },
+        {
+          "line": 8,
+          "text": "time=2026-11-04T06:36:42.216Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97644667932862 generation=14"
+        },
+        {
+          "line": 9,
+          "text": "time=2026-11-04T06:36:42.245Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97644696407087 succeeded=true"
+        },
+        {
+          "line": 10,
+          "text": "time=2026-11-04T06:36:42.264Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97644715784896 generation=14"
+        },
+        {
+          "line": 11,
+          "text": "time=2026-11-04T06:36:42.292Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97644744164708 succeeded=true"
+        },
+        {
+          "line": 13,
+          "text": "time=2026-11-04T06:36:52.162Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97654614104655 generation=15"
+        },
+        {
+          "line": 14,
+          "text": "time=2026-11-04T06:36:52.199Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97654651361365 succeeded=true"
+        },
+        {
+          "line": 16,
+          "text": "time=2026-11-04T06:36:52.203Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97654654879613 generation=15"
+        },
+        {
+          "line": 17,
+          "text": "time=2026-11-04T06:36:52.226Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97654678118090 succeeded=true"
+        },
+        {
+          "line": 18,
+          "text": "time=2026-11-04T06:36:52.244Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97654695868143 generation=15"
+        },
+        {
+          "line": 19,
+          "text": "time=2026-11-04T06:36:52.269Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97654721107743 succeeded=true"
+        },
+        {
+          "line": 42,
+          "text": "time=2026-11-04T06:37:53.358Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97715809758654 generation=16"
+        },
+        {
+          "line": 43,
+          "text": "time=2026-11-04T06:37:53.382Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97715833493054 succeeded=true"
+        },
+        {
+          "line": 45,
+          "text": "time=2026-11-04T06:37:53.386Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97715838229340 generation=16"
+        },
+        {
+          "line": 46,
+          "text": "time=2026-11-04T06:37:53.413Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97715865341168 succeeded=true"
+        },
+        {
+          "line": 47,
+          "text": "time=2026-11-04T06:37:53.429Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97715880866540 generation=16"
+        },
+        {
+          "line": 48,
+          "text": "time=2026-11-04T06:37:53.458Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97715909965505 succeeded=true"
+        },
+        {
+          "line": 51,
+          "text": "time=2026-11-04T06:37:58.492Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97720943966964 generation=16"
+        },
+        {
+          "line": 52,
+          "text": "time=2026-11-04T06:37:58.523Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97720974924138 succeeded=true"
+        },
+        {
+          "line": 56,
+          "text": "time=2026-11-04T06:38:03.420Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97725871559037 generation=16"
+        },
+        {
+          "line": 57,
+          "text": "time=2026-11-04T06:38:03.448Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97725899453407 succeeded=true"
+        },
+        {
+          "line": 60,
+          "text": "time=2026-11-04T06:38:06.762Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97729213650690 generation=16"
+        },
+        {
+          "line": 61,
+          "text": "time=2026-11-04T06:38:06.789Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97729240796552 succeeded=true"
+        }
+      ]
+    },
+    {
+      "snapshot": "control_lost_agent_alive-before-agent.log",
+      "lines": [
+        {
+          "line": 2,
+          "text": "time=2026-11-04T06:36:37.101Z level=INFO msg=\"serving rules adopted\" generation=14 policy_expires_mono_ns=97658778490379 next_binding_expiry_mono_ns=97658778490379"
+        }
+      ]
+    },
+    {
+      "snapshot": "device_revoke-after-agent.log",
+      "lines": [
+        {
+          "line": 2,
+          "text": "time=2026-11-04T06:36:37.101Z level=INFO msg=\"serving rules adopted\" generation=14 policy_expires_mono_ns=97658778490379 next_binding_expiry_mono_ns=97658778490379"
+        },
+        {
+          "line": 5,
+          "text": "time=2026-11-04T06:36:42.164Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97644615806446 generation=14"
+        },
+        {
+          "line": 6,
+          "text": "time=2026-11-04T06:36:42.211Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97644663305518 succeeded=true"
+        },
+        {
+          "line": 8,
+          "text": "time=2026-11-04T06:36:42.216Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97644667932862 generation=14"
+        },
+        {
+          "line": 9,
+          "text": "time=2026-11-04T06:36:42.245Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97644696407087 succeeded=true"
+        },
+        {
+          "line": 10,
+          "text": "time=2026-11-04T06:36:42.264Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97644715784896 generation=14"
+        },
+        {
+          "line": 11,
+          "text": "time=2026-11-04T06:36:42.292Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97644744164708 succeeded=true"
+        },
+        {
+          "line": 13,
+          "text": "time=2026-11-04T06:36:52.162Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97654614104655 generation=15"
+        },
+        {
+          "line": 14,
+          "text": "time=2026-11-04T06:36:52.199Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97654651361365 succeeded=true"
+        },
+        {
+          "line": 16,
+          "text": "time=2026-11-04T06:36:52.203Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97654654879613 generation=15"
+        },
+        {
+          "line": 17,
+          "text": "time=2026-11-04T06:36:52.226Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97654678118090 succeeded=true"
+        },
+        {
+          "line": 18,
+          "text": "time=2026-11-04T06:36:52.244Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97654695868143 generation=15"
+        },
+        {
+          "line": 19,
+          "text": "time=2026-11-04T06:36:52.269Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97654721107743 succeeded=true"
+        },
+        {
+          "line": 42,
+          "text": "time=2026-11-04T06:37:53.358Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97715809758654 generation=16"
+        },
+        {
+          "line": 43,
+          "text": "time=2026-11-04T06:37:53.382Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97715833493054 succeeded=true"
+        },
+        {
+          "line": 45,
+          "text": "time=2026-11-04T06:37:53.386Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97715838229340 generation=16"
+        },
+        {
+          "line": 46,
+          "text": "time=2026-11-04T06:37:53.413Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97715865341168 succeeded=true"
+        },
+        {
+          "line": 47,
+          "text": "time=2026-11-04T06:37:53.429Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97715880866540 generation=16"
+        },
+        {
+          "line": 48,
+          "text": "time=2026-11-04T06:37:53.458Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97715909965505 succeeded=true"
+        },
+        {
+          "line": 51,
+          "text": "time=2026-11-04T06:37:58.492Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97720943966964 generation=16"
+        },
+        {
+          "line": 52,
+          "text": "time=2026-11-04T06:37:58.523Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97720974924138 succeeded=true"
+        },
+        {
+          "line": 56,
+          "text": "time=2026-11-04T06:38:03.420Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97725871559037 generation=16"
+        },
+        {
+          "line": 57,
+          "text": "time=2026-11-04T06:38:03.448Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97725899453407 succeeded=true"
+        },
+        {
+          "line": 60,
+          "text": "time=2026-11-04T06:38:06.762Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97729213650690 generation=16"
+        },
+        {
+          "line": 61,
+          "text": "time=2026-11-04T06:38:06.789Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97729240796552 succeeded=true"
+        },
+        {
+          "line": 63,
+          "text": "time=2026-11-04T06:38:13.596Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97736047908383 generation=16"
+        },
+        {
+          "line": 64,
+          "text": "time=2026-11-04T06:38:13.634Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97736086304565 succeeded=true"
+        },
+        {
+          "line": 66,
+          "text": "time=2026-11-04T06:38:13.638Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97736089953606 generation=16"
+        },
+        {
+          "line": 67,
+          "text": "time=2026-11-04T06:38:13.664Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97736115989855 succeeded=true"
+        },
+        {
+          "line": 68,
+          "text": "time=2026-11-04T06:38:13.680Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97736131972994 generation=16"
+        },
+        {
+          "line": 69,
+          "text": "time=2026-11-04T06:38:13.707Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97736158697333 succeeded=true"
+        },
+        {
+          "line": 72,
+          "text": "time=2026-11-04T06:38:18.593Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97741044457142 generation=17"
+        },
+        {
+          "line": 73,
+          "text": "time=2026-11-04T06:38:18.634Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97741086032792 succeeded=true"
+        },
+        {
+          "line": 75,
+          "text": "time=2026-11-04T06:38:18.638Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97741089497074 generation=17"
+        },
+        {
+          "line": 76,
+          "text": "time=2026-11-04T06:38:18.661Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97741113212287 succeeded=true"
+        },
+        {
+          "line": 77,
+          "text": "time=2026-11-04T06:38:18.677Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97741129368032 generation=17"
+        },
+        {
+          "line": 78,
+          "text": "time=2026-11-04T06:38:18.704Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97741155512462 succeeded=true"
+        },
+        {
+          "line": 80,
+          "text": "time=2026-11-04T06:38:23.593Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97746044631248 generation=18"
+        },
+        {
+          "line": 81,
+          "text": "time=2026-11-04T06:38:23.654Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97746105920891 succeeded=true"
+        },
+        {
+          "line": 83,
+          "text": "time=2026-11-04T06:38:23.658Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97746109907294 generation=18"
+        },
+        {
+          "line": 84,
+          "text": "time=2026-11-04T06:38:23.686Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97746138105249 succeeded=true"
+        },
+        {
+          "line": 85,
+          "text": "time=2026-11-04T06:38:23.702Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97746153394791 generation=18"
+        },
+        {
+          "line": 86,
+          "text": "time=2026-11-04T06:38:23.752Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97746203891552 succeeded=true"
+        },
+        {
+          "line": 88,
+          "text": "time=2026-11-04T06:39:03.625Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97786076397935 generation=19"
+        },
+        {
+          "line": 89,
+          "text": "time=2026-11-04T06:39:03.679Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97786130666836 succeeded=true"
+        },
+        {
+          "line": 91,
+          "text": "time=2026-11-04T06:39:03.683Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97786134928812 generation=19"
+        },
+        {
+          "line": 92,
+          "text": "time=2026-11-04T06:39:03.710Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97786161838455 succeeded=true"
+        },
+        {
+          "line": 93,
+          "text": "time=2026-11-04T06:39:03.727Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97786179343616 generation=19"
+        },
+        {
+          "line": 94,
+          "text": "time=2026-11-04T06:39:03.762Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97786213799588 succeeded=true"
+        },
+        {
+          "line": 97,
+          "text": "time=2026-11-04T06:39:18.621Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97801072852350 generation=20"
+        },
+        {
+          "line": 98,
+          "text": "time=2026-11-04T06:39:18.666Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97801118245524 succeeded=true"
+        },
+        {
+          "line": 100,
+          "text": "time=2026-11-04T06:39:18.672Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97801123811371 generation=20"
+        },
+        {
+          "line": 101,
+          "text": "time=2026-11-04T06:39:18.703Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97801155274130 succeeded=true"
+        },
+        {
+          "line": 102,
+          "text": "time=2026-11-04T06:39:18.719Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97801171311633 generation=20"
+        },
+        {
+          "line": 103,
+          "text": "time=2026-11-04T06:39:18.744Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97801195851485 succeeded=true"
+        }
+      ]
+    },
+    {
+      "snapshot": "device_revoke-before-agent.log",
+      "lines": [
+        {
+          "line": 2,
+          "text": "time=2026-11-04T06:36:37.101Z level=INFO msg=\"serving rules adopted\" generation=14 policy_expires_mono_ns=97658778490379 next_binding_expiry_mono_ns=97658778490379"
+        },
+        {
+          "line": 5,
+          "text": "time=2026-11-04T06:36:42.164Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97644615806446 generation=14"
+        },
+        {
+          "line": 6,
+          "text": "time=2026-11-04T06:36:42.211Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97644663305518 succeeded=true"
+        },
+        {
+          "line": 8,
+          "text": "time=2026-11-04T06:36:42.216Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97644667932862 generation=14"
+        },
+        {
+          "line": 9,
+          "text": "time=2026-11-04T06:36:42.245Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97644696407087 succeeded=true"
+        },
+        {
+          "line": 10,
+          "text": "time=2026-11-04T06:36:42.264Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97644715784896 generation=14"
+        },
+        {
+          "line": 11,
+          "text": "time=2026-11-04T06:36:42.292Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97644744164708 succeeded=true"
+        },
+        {
+          "line": 13,
+          "text": "time=2026-11-04T06:36:52.162Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97654614104655 generation=15"
+        },
+        {
+          "line": 14,
+          "text": "time=2026-11-04T06:36:52.199Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97654651361365 succeeded=true"
+        },
+        {
+          "line": 16,
+          "text": "time=2026-11-04T06:36:52.203Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97654654879613 generation=15"
+        },
+        {
+          "line": 17,
+          "text": "time=2026-11-04T06:36:52.226Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97654678118090 succeeded=true"
+        },
+        {
+          "line": 18,
+          "text": "time=2026-11-04T06:36:52.244Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97654695868143 generation=15"
+        },
+        {
+          "line": 19,
+          "text": "time=2026-11-04T06:36:52.269Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97654721107743 succeeded=true"
+        },
+        {
+          "line": 42,
+          "text": "time=2026-11-04T06:37:53.358Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97715809758654 generation=16"
+        },
+        {
+          "line": 43,
+          "text": "time=2026-11-04T06:37:53.382Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97715833493054 succeeded=true"
+        },
+        {
+          "line": 45,
+          "text": "time=2026-11-04T06:37:53.386Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97715838229340 generation=16"
+        },
+        {
+          "line": 46,
+          "text": "time=2026-11-04T06:37:53.413Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97715865341168 succeeded=true"
+        },
+        {
+          "line": 47,
+          "text": "time=2026-11-04T06:37:53.429Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97715880866540 generation=16"
+        },
+        {
+          "line": 48,
+          "text": "time=2026-11-04T06:37:53.458Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97715909965505 succeeded=true"
+        },
+        {
+          "line": 51,
+          "text": "time=2026-11-04T06:37:58.492Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97720943966964 generation=16"
+        },
+        {
+          "line": 52,
+          "text": "time=2026-11-04T06:37:58.523Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97720974924138 succeeded=true"
+        },
+        {
+          "line": 56,
+          "text": "time=2026-11-04T06:38:03.420Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97725871559037 generation=16"
+        },
+        {
+          "line": 57,
+          "text": "time=2026-11-04T06:38:03.448Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97725899453407 succeeded=true"
+        },
+        {
+          "line": 60,
+          "text": "time=2026-11-04T06:38:06.762Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97729213650690 generation=16"
+        },
+        {
+          "line": 61,
+          "text": "time=2026-11-04T06:38:06.789Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97729240796552 succeeded=true"
+        }
+      ]
+    },
+    {
+      "snapshot": "grant_expiry-after-agent.log",
+      "lines": [
+        {
+          "line": 1,
+          "text": "time=2026-11-04T06:33:21.146Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=97443597768668 generation=8"
+        },
+        {
+          "line": 2,
+          "text": "time=2026-11-04T06:33:21.176Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=97443627581186 succeeded=true"
+        }
+      ]
+    },
+    {
+      "snapshot": "grant_expiry-before-agent.log",
+      "lines": [
+        {
+          "line": 1,
+          "text": "time=2026-11-04T06:29:41.954Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=97224406091569 generation=0"
+        },
+        {
+          "line": 2,
+          "text": "time=2026-11-04T06:29:41.968Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=97224420286569 succeeded=true"
+        },
+        {
+          "line": 6,
+          "text": "time=2026-11-04T06:29:42.188Z level=INFO msg=\"baseline write\" writer=agent cause=not_published phase=begin mono_ns=97224639951479 generation=0"
+        },
+        {
+          "line": 7,
+          "text": "time=2026-11-04T06:29:42.205Z level=INFO msg=\"baseline write\" writer=agent cause=not_published phase=end mono_ns=97224657119905 succeeded=true"
+        },
+        {
+          "line": 10,
+          "text": "time=2026-11-04T06:29:47.066Z level=INFO msg=\"baseline write\" writer=agent cause=not_published phase=begin mono_ns=97229517941098 generation=1"
+        },
+        {
+          "line": 11,
+          "text": "time=2026-11-04T06:29:47.089Z level=INFO msg=\"baseline write\" writer=agent cause=not_published phase=end mono_ns=97229540540548 succeeded=true"
+        },
+        {
+          "line": 12,
+          "text": "time=2026-11-04T06:29:52.118Z level=INFO msg=\"baseline write\" writer=agent cause=not_published phase=begin mono_ns=97234570127564 generation=1"
+        },
+        {
+          "line": 13,
+          "text": "time=2026-11-04T06:29:52.145Z level=INFO msg=\"baseline write\" writer=agent cause=not_published phase=end mono_ns=97234596889546 succeeded=true"
+        },
+        {
+          "line": 14,
+          "text": "time=2026-11-04T06:29:57.106Z level=INFO msg=\"baseline write\" writer=agent cause=not_published phase=begin mono_ns=97239557925634 generation=1"
+        },
+        {
+          "line": 15,
+          "text": "time=2026-11-04T06:29:57.140Z level=INFO msg=\"baseline write\" writer=agent cause=not_published phase=end mono_ns=97239591418890 succeeded=true"
+        },
+        {
+          "line": 16,
+          "text": "time=2026-11-04T06:30:02.192Z level=INFO msg=\"baseline write\" writer=agent cause=not_published phase=begin mono_ns=97244644075171 generation=2"
+        },
+        {
+          "line": 17,
+          "text": "time=2026-11-04T06:30:02.215Z level=INFO msg=\"baseline write\" writer=agent cause=not_published phase=end mono_ns=97244666458756 succeeded=true"
+        }
+      ]
+    },
+    {
+      "snapshot": "lease_expiry-after-agent.log",
+      "lines": [
+        {
+          "line": 2,
+          "text": "time=2026-11-04T06:36:37.101Z level=INFO msg=\"serving rules adopted\" generation=14 policy_expires_mono_ns=97658778490379 next_binding_expiry_mono_ns=97658778490379"
+        }
+      ]
+    },
+    {
+      "snapshot": "lease_expiry-before-agent.log",
+      "lines": [
+        {
+          "line": 1,
+          "text": "time=2026-11-04T06:33:21.146Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=97443597768668 generation=8"
+        },
+        {
+          "line": 2,
+          "text": "time=2026-11-04T06:33:21.176Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=97443627581186 succeeded=true"
+        }
+      ]
+    },
+    {
+      "snapshot": "manual_grant_withdrawal-after-agent.log",
+      "lines": [
+        {
+          "line": 2,
+          "text": "time=2026-11-04T06:41:56.775Z level=INFO msg=\"serving rules adopted\" generation=24 policy_expires_mono_ns=98475050909508 next_binding_expiry_mono_ns=98475050909508"
+        },
+        {
+          "line": 4,
+          "text": "time=2026-11-04T06:41:56.855Z level=INFO msg=\"baseline write\" writer=agent cause=non_serving phase=begin mono_ns=97959307116504 generation=24"
+        },
+        {
+          "line": 5,
+          "text": "time=2026-11-04T06:41:56.899Z level=INFO msg=\"baseline write\" writer=agent cause=non_serving phase=end mono_ns=97959350549843 succeeded=true"
+        },
+        {
+          "line": 10,
+          "text": "time=2026-11-04T06:42:01.833Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97964284532233 generation=25"
+        },
+        {
+          "line": 11,
+          "text": "time=2026-11-04T06:42:01.879Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97964330586231 succeeded=true"
+        },
+        {
+          "line": 13,
+          "text": "time=2026-11-04T06:42:01.882Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97964334342283 generation=25"
+        },
+        {
+          "line": 14,
+          "text": "time=2026-11-04T06:42:01.905Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97964356990510 succeeded=true"
+        },
+        {
+          "line": 15,
+          "text": "time=2026-11-04T06:42:01.922Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97964374059944 generation=25"
+        },
+        {
+          "line": 16,
+          "text": "time=2026-11-04T06:42:01.946Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97964398058480 succeeded=true"
+        }
+      ]
+    },
+    {
+      "snapshot": "manual_grant_withdrawal-before-agent.log",
+      "lines": [
+        {
+          "line": 2,
+          "text": "time=2026-11-04T06:36:37.101Z level=INFO msg=\"serving rules adopted\" generation=14 policy_expires_mono_ns=97658778490379 next_binding_expiry_mono_ns=97658778490379"
+        },
+        {
+          "line": 5,
+          "text": "time=2026-11-04T06:36:42.164Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97644615806446 generation=14"
+        },
+        {
+          "line": 6,
+          "text": "time=2026-11-04T06:36:42.211Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97644663305518 succeeded=true"
+        },
+        {
+          "line": 8,
+          "text": "time=2026-11-04T06:36:42.216Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97644667932862 generation=14"
+        },
+        {
+          "line": 9,
+          "text": "time=2026-11-04T06:36:42.245Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97644696407087 succeeded=true"
+        },
+        {
+          "line": 10,
+          "text": "time=2026-11-04T06:36:42.264Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97644715784896 generation=14"
+        },
+        {
+          "line": 11,
+          "text": "time=2026-11-04T06:36:42.292Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97644744164708 succeeded=true"
+        },
+        {
+          "line": 13,
+          "text": "time=2026-11-04T06:36:52.162Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97654614104655 generation=15"
+        },
+        {
+          "line": 14,
+          "text": "time=2026-11-04T06:36:52.199Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97654651361365 succeeded=true"
+        },
+        {
+          "line": 16,
+          "text": "time=2026-11-04T06:36:52.203Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97654654879613 generation=15"
+        },
+        {
+          "line": 17,
+          "text": "time=2026-11-04T06:36:52.226Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97654678118090 succeeded=true"
+        },
+        {
+          "line": 18,
+          "text": "time=2026-11-04T06:36:52.244Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97654695868143 generation=15"
+        },
+        {
+          "line": 19,
+          "text": "time=2026-11-04T06:36:52.269Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97654721107743 succeeded=true"
+        },
+        {
+          "line": 42,
+          "text": "time=2026-11-04T06:37:53.358Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97715809758654 generation=16"
+        },
+        {
+          "line": 43,
+          "text": "time=2026-11-04T06:37:53.382Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97715833493054 succeeded=true"
+        },
+        {
+          "line": 45,
+          "text": "time=2026-11-04T06:37:53.386Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97715838229340 generation=16"
+        },
+        {
+          "line": 46,
+          "text": "time=2026-11-04T06:37:53.413Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97715865341168 succeeded=true"
+        },
+        {
+          "line": 47,
+          "text": "time=2026-11-04T06:37:53.429Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97715880866540 generation=16"
+        },
+        {
+          "line": 48,
+          "text": "time=2026-11-04T06:37:53.458Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97715909965505 succeeded=true"
+        },
+        {
+          "line": 51,
+          "text": "time=2026-11-04T06:37:58.492Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97720943966964 generation=16"
+        },
+        {
+          "line": 52,
+          "text": "time=2026-11-04T06:37:58.523Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97720974924138 succeeded=true"
+        },
+        {
+          "line": 56,
+          "text": "time=2026-11-04T06:38:03.420Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97725871559037 generation=16"
+        },
+        {
+          "line": 57,
+          "text": "time=2026-11-04T06:38:03.448Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97725899453407 succeeded=true"
+        },
+        {
+          "line": 60,
+          "text": "time=2026-11-04T06:38:06.762Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=begin mono_ns=97729213650690 generation=16"
+        },
+        {
+          "line": 61,
+          "text": "time=2026-11-04T06:38:06.789Z level=INFO msg=\"baseline write\" writer=agent cause=lease_expired phase=end mono_ns=97729240796552 succeeded=true"
+        },
+        {
+          "line": 63,
+          "text": "time=2026-11-04T06:38:13.596Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97736047908383 generation=16"
+        },
+        {
+          "line": 64,
+          "text": "time=2026-11-04T06:38:13.634Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97736086304565 succeeded=true"
+        },
+        {
+          "line": 66,
+          "text": "time=2026-11-04T06:38:13.638Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97736089953606 generation=16"
+        },
+        {
+          "line": 67,
+          "text": "time=2026-11-04T06:38:13.664Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97736115989855 succeeded=true"
+        },
+        {
+          "line": 68,
+          "text": "time=2026-11-04T06:38:13.680Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97736131972994 generation=16"
+        },
+        {
+          "line": 69,
+          "text": "time=2026-11-04T06:38:13.707Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97736158697333 succeeded=true"
+        },
+        {
+          "line": 72,
+          "text": "time=2026-11-04T06:38:18.593Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97741044457142 generation=17"
+        },
+        {
+          "line": 73,
+          "text": "time=2026-11-04T06:38:18.634Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97741086032792 succeeded=true"
+        },
+        {
+          "line": 75,
+          "text": "time=2026-11-04T06:38:18.638Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97741089497074 generation=17"
+        },
+        {
+          "line": 76,
+          "text": "time=2026-11-04T06:38:18.661Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97741113212287 succeeded=true"
+        },
+        {
+          "line": 77,
+          "text": "time=2026-11-04T06:38:18.677Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97741129368032 generation=17"
+        },
+        {
+          "line": 78,
+          "text": "time=2026-11-04T06:38:18.704Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97741155512462 succeeded=true"
+        },
+        {
+          "line": 80,
+          "text": "time=2026-11-04T06:38:23.593Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97746044631248 generation=18"
+        },
+        {
+          "line": 81,
+          "text": "time=2026-11-04T06:38:23.654Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97746105920891 succeeded=true"
+        },
+        {
+          "line": 83,
+          "text": "time=2026-11-04T06:38:23.658Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97746109907294 generation=18"
+        },
+        {
+          "line": 84,
+          "text": "time=2026-11-04T06:38:23.686Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97746138105249 succeeded=true"
+        },
+        {
+          "line": 85,
+          "text": "time=2026-11-04T06:38:23.702Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97746153394791 generation=18"
+        },
+        {
+          "line": 86,
+          "text": "time=2026-11-04T06:38:23.752Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97746203891552 succeeded=true"
+        },
+        {
+          "line": 88,
+          "text": "time=2026-11-04T06:39:03.625Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97786076397935 generation=19"
+        },
+        {
+          "line": 89,
+          "text": "time=2026-11-04T06:39:03.679Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97786130666836 succeeded=true"
+        },
+        {
+          "line": 91,
+          "text": "time=2026-11-04T06:39:03.683Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97786134928812 generation=19"
+        },
+        {
+          "line": 92,
+          "text": "time=2026-11-04T06:39:03.710Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97786161838455 succeeded=true"
+        },
+        {
+          "line": 93,
+          "text": "time=2026-11-04T06:39:03.727Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97786179343616 generation=19"
+        },
+        {
+          "line": 94,
+          "text": "time=2026-11-04T06:39:03.762Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97786213799588 succeeded=true"
+        },
+        {
+          "line": 97,
+          "text": "time=2026-11-04T06:39:18.621Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97801072852350 generation=20"
+        },
+        {
+          "line": 98,
+          "text": "time=2026-11-04T06:39:18.666Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97801118245524 succeeded=true"
+        },
+        {
+          "line": 100,
+          "text": "time=2026-11-04T06:39:18.672Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97801123811371 generation=20"
+        },
+        {
+          "line": 101,
+          "text": "time=2026-11-04T06:39:18.703Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97801155274130 succeeded=true"
+        },
+        {
+          "line": 102,
+          "text": "time=2026-11-04T06:39:18.719Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=97801171311633 generation=20"
+        },
+        {
+          "line": 103,
+          "text": "time=2026-11-04T06:39:18.744Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=97801195851485 succeeded=true"
+        }
+      ]
+    }
+  ],
+  "restart_identities": [
+    {
+      "case_boundary": "grant_expiry before",
+      "captured_at": "2026-11-04T06:30:05.961359107Z",
+      "agent_pid_start_ticks_state": "1136 9722437 S"
+    },
+    {
+      "case_boundary": "grant_expiry after",
+      "captured_at": "2026-11-04T06:33:24.989032615Z",
+      "agent_pid_start_ticks_state": "58821 9744357 S"
+    },
+    {
+      "case_boundary": "lease_expiry before",
+      "captured_at": "2026-11-04T06:33:25.186303118Z",
+      "agent_pid_start_ticks_state": "58821 9744357 S"
+    },
+    {
+      "case_boundary": "lease_expiry after",
+      "captured_at": "2026-11-04T06:36:38.258742049Z",
+      "agent_pid_start_ticks_state": "107426 9763935 S"
+    },
+    {
+      "case_boundary": "control_lost_agent_alive before",
+      "captured_at": "2026-11-04T06:36:38.592699026Z",
+      "agent_pid_start_ticks_state": "107426 9763935 S"
+    },
+    {
+      "case_boundary": "control_lost_agent_alive after",
+      "captured_at": "2026-11-04T06:38:09.845569317Z",
+      "agent_pid_start_ticks_state": "107426 9763935 S"
+    },
+    {
+      "case_boundary": "device_revoke before",
+      "captured_at": "2026-11-04T06:38:11.458843418Z",
+      "agent_pid_start_ticks_state": "107426 9763935 S"
+    },
+    {
+      "case_boundary": "device_revoke after",
+      "captured_at": "2026-11-04T06:40:13.670051715Z",
+      "agent_pid_start_ticks_state": "107426 9763935 S"
+    },
+    {
+      "case_boundary": "manual_grant_withdrawal before",
+      "captured_at": "2026-11-04T06:40:13.885338322Z",
+      "agent_pid_start_ticks_state": "107426 9763935 S"
+    },
+    {
+      "case_boundary": "manual_grant_withdrawal after",
+      "captured_at": "2026-11-04T06:42:09.243660192Z",
+      "agent_pid_start_ticks_state": "191465 9795909 S"
+    }
+  ],
+  "f48_01_signature_observed": false,
+  "control_case_foreign_samples": [
+    {
+      "at": "2026-11-04T06:37:03Z",
+      "active_processes": [
+        {
+          "pid": 2106936,
+          "comm": "bash",
+          "ticks": "0"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-04T06:37:08Z",
+      "active_processes": [
+        {
+          "pid": 2106936,
+          "comm": "bash",
+          "ticks": "0"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-04T06:37:13Z",
+      "active_processes": [
+        {
+          "pid": 2106936,
+          "comm": "bash",
+          "ticks": "0"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-04T06:37:18Z",
+      "active_processes": [
+        {
+          "pid": 2106936,
+          "comm": "bash",
+          "ticks": "0"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-04T06:37:23Z",
+      "active_processes": [
+        {
+          "pid": 2106936,
+          "comm": "bash",
+          "ticks": "0"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-04T06:37:28Z",
+      "active_processes": [
+        {
+          "pid": 2106936,
+          "comm": "bash",
+          "ticks": "0"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-04T06:37:33Z",
+      "active_processes": [
+        {
+          "pid": 2106936,
+          "comm": "bash",
+          "ticks": "0"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-04T06:37:38Z",
+      "active_processes": [
+        {
+          "pid": 2106936,
+          "comm": "bash",
+          "ticks": "0"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-04T06:37:43Z",
+      "active_processes": [
+        {
+          "pid": 2106936,
+          "comm": "bash",
+          "ticks": "0"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-04T06:37:48Z",
+      "active_processes": [
+        {
+          "pid": 2106936,
+          "comm": "bash",
+          "ticks": "0"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-04T06:37:53Z",
+      "active_processes": [
+        {
+          "pid": 2106936,
+          "comm": "bash",
+          "ticks": "0"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-04T06:37:58Z",
+      "active_processes": [
+        {
+          "pid": 2106936,
+          "comm": "bash",
+          "ticks": "0"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-04T06:38:03Z",
+      "active_processes": [
+        {
+          "pid": 2106936,
+          "comm": "bash",
+          "ticks": "0"
+        }
+      ]
+    }
+  ],
+  "failed_lease_expiry": {
+    "status": "failed",
+    "reason": "established sender cutoff not proved",
+    "recorded_lease": {
+      "members": [
+        {
+          "lease_end": "2026-11-04T06:35:21.397505296Z",
+          "member_id": "01a1a540-231c-7381-b978-31673afdaa5e",
+          "entitlement_revision": "4",
+          "effective_service_end": "2026-11-04T06:53:21Z"
+        },
+        {
+          "lease_end": "2026-11-04T06:35:21.397505296Z",
+          "member_id": "01a1a543-2d3b-7b42-b5f0-f65f7337c166",
+          "entitlement_revision": "1",
+          "effective_service_end": "2026-11-04T07:03:25Z"
+        }
+      ],
+      "issued_at": "2026-11-04T06:34:21.397505+00:00",
+      "expires_at": "2026-11-04T06:35:21.397505+00:00",
+      "generation": "14"
+    },
+    "action_started_at": "2026-11-04T06:36:22.059987198Z",
+    "seconds_action_after_recorded_deadline": 60.662482,
+    "heartbeat_deadline_monotonic_ns": "97658778490379",
+    "cutoff_samples": [
+      {
+        "utc": "2026-11-04T06:36:26.006219887Z",
+        "status": {
+          "read_diagnostic": {
+            "started": "2026-11-04T06:36:25.855432624Z",
+            "completed": "2026-11-04T06:36:25.93467253Z",
+            "stage": "member_status_read",
+            "category": "none"
+          },
+          "tcp_echoes": 322,
+          "udp_replies": 322,
+          "tcp_attempts": 322,
+          "udp_attempts": 322,
+          "running": true,
+          "error": ""
+        },
+        "read_end_mono_ns": "97628453277989",
+        "seconds_before_heartbeat_deadline": 30.32521239
+      },
+      {
+        "utc": "2026-11-04T06:36:36.221762235Z",
+        "status": {
+          "read_diagnostic": {
+            "started": "2026-11-04T06:36:36.014660137Z",
+            "completed": "2026-11-04T06:36:36.119692289Z",
+            "stage": "member_status_read",
+            "category": "none"
+          },
+          "tcp_echoes": 342,
+          "udp_replies": 342,
+          "tcp_attempts": 343,
+          "udp_attempts": 343,
+          "running": true,
+          "error": ""
+        },
+        "read_end_mono_ns": "97638661325849",
+        "seconds_before_heartbeat_deadline": 20.11716453
+      }
+    ],
+    "interpretation": "Admission delayed pre-fault sampling while control could renew. Both quiet samples precede the accepted heartbeat deadline; this retained failure is not proof of forwarding beyond the node deadline. No predicate changed and no rerun."
+  }
+}

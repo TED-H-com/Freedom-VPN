@@ -115,6 +115,10 @@ func (e *Engine) syncLease(ctx context.Context) error {
 	if e.lease != nil && e.lease.LeaseId != uuid.Nil {
 		req.CurrentLeaseId = presence.NewNullableWithValue(e.lease.LeaseId)
 	}
+	// Consume the one-shot on dispatch, including failed or grant-less replies.
+	if e.earlyRecoveryRenewal() {
+		e.closedRecoveryRenewal = recoveryRenewal{}
+	}
 	e.leaseRefreshPending = false
 	e.leaseAttempted = true
 	e.leaseAttemptAt = mono
@@ -149,6 +153,9 @@ func (e *Engine) syncLease(ctx context.Context) error {
 }
 
 func (e *Engine) needRenew() bool {
+	if e.earlyRecoveryRenewal() {
+		return true
+	}
 	if e.leaseRefreshPending || e.leaseRetryAt > 0 || !e.leaseFresh || e.lease == nil || e.leaseMono <= 0 || !e.anchorOK || (!e.identityFrozen && ((e.applyError == nil && e.leaseBehindApplied()) || (e.applyError != nil && e.leaseBehindDesired()))) {
 		return true
 	}

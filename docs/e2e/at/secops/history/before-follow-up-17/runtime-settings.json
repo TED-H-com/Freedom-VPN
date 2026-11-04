@@ -1,0 +1,39 @@
+{
+  "utc": "2026-10-30T06:51:19.457266+00:00",
+  "source_revision": "9b17127c888f94191d759617c99fe1225078a092",
+  "prepared_config": {
+    "ingress_rate": "omitted: config.Defaults applies",
+    "browser_rate": "omitted: config.Defaults applies",
+    "agent_rate": "omitted: config.Defaults applies",
+    "heartbeat_rate": "omitted: config.Defaults applies",
+    "lease_rate": "omitted: config.Defaults applies",
+    "usage_rate": "omitted: config.Defaults applies",
+    "anonymous_rate": "omitted: config.Defaults applies",
+    "login_rate": "omitted: config.Defaults applies",
+    "login_subject_per_minute": "omitted: config.Defaults applies",
+    "agent_body_bytes": "omitted: config.Defaults applies",
+    "usage_body_bytes": "omitted: config.Defaults applies",
+    "webhook_body_bytes": "omitted: config.Defaults applies",
+    "max_concurrent": "omitted: config.Defaults applies"
+  },
+  "environment_overrides": {
+    "FVPN_INGRESS_RATE": null,
+    "FVPN_BROWSER_RATE": null,
+    "FVPN_AGENT_RATE": null,
+    "FVPN_HEARTBEAT_RATE": null,
+    "FVPN_LEASE_RATE": null,
+    "FVPN_USAGE_RATE": null,
+    "FVPN_ANONYMOUS_RATE": null,
+    "FVPN_LOGIN_RATE": null,
+    "FVPN_LOGIN_SUBJECT_PER_MINUTE": null,
+    "FVPN_AGENT_BODY_BYTES": null,
+    "FVPN_USAGE_BODY_BYTES": null,
+    "FVPN_WEBHOOK_BODY_BYTES": null,
+    "FVPN_MAX_CONCURRENT": null
+  },
+  "commands": [
+    "read only selected non-secret fields from prepared central.json",
+    "docker exec fvpn-w4-secops-control printenv <named FVPN limiter setting>"
+  ],
+  "stack_binding": "w4-secops / 30000"
+}

@@ -5,6 +5,7 @@ package secops
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,21 +18,6 @@ import (
 	"github.com/google/uuid"
 	"golang.org/x/sys/unix"
 )
-
-type nodeLease16 struct {
-	Signed     json.RawMessage `json:"signed"`
-	Sent       int64           `json:"request_monotonic_ns,string"`
-	Deadline   int64           `json:"deadline_monotonic_ns,string"`
-	ID         string          `json:"lease_id"`
-	Generation string          `json:"generation"`
-	Issued     time.Time       `json:"issued_at"`
-	Expires    time.Time       `json:"expires_at"`
-	Max        int             `json:"max_offline_seconds"`
-	Members    []struct {
-		ID  string    `json:"member_id"`
-		End time.Time `json:"lease_end"`
-	} `json:"members"`
-}
 
 func mono16() int64 {
 	var ts unix.Timespec
@@ -208,6 +194,32 @@ func (p *liveProbe) liveAgentExpiry16(stack *labstack.Stack, node uuid.UUID, row
 	}
 	// Register before any public mutation or fault, including failed requests.
 	t.Cleanup(restore)
+	fleet, err := stack.Call(t.Context(), admin, "GET", "/api/v1/admin/fleet-config", nil, nil)
+	var config struct {
+		Maximum int `json:"max_offline_lease_seconds"`
+	}
+	if err != nil || fleet.Status != 200 || json.Unmarshal(fleet.Body, &config) != nil || config.Maximum <= 0 {
+		t.Error("original fleet cap unavailable")
+		return
+	}
+	originalFleet = config.Maximum
+	row["original_fleet_maximum"] = originalFleet
+	fleetChanged = true
+	capReceipt := p.fleetMaximum(60)
+	row["fleet_set_60"] = capReceipt
+	capBytes, _ := json.Marshal(capReceipt["readback"])
+	var appliedCap api.FleetConfig
+	if capReceipt["put_status"] != 200 || json.Unmarshal(capBytes, &appliedCap) != nil || appliedCap.MaxOfflineLeaseSeconds != 60 || appliedCap.UpdatedAt.IsZero() {
+		t.Error("60-second fleet cap was not confirmed")
+		return
+	}
+	capChangedAt := appliedCap.UpdatedAt
+	row["lease_setup"] = map[string]any{
+		"design":                       "cap before member admission: public grant and device binding generate fresh desired state before outage",
+		"cap_changed_at":               capChangedAt,
+		"required_max_offline_seconds": 60,
+	}
+
 	initial := map[string]any{}
 	row["initial_grant"] = initial
 	if _, err := grantCommand15(t.Context(), stack, admin, "/api/v1/admin/members/"+m.member+"/grants", body, initial); err != nil {
@@ -266,18 +278,6 @@ func (p *liveProbe) liveAgentExpiry16(stack *labstack.Stack, node uuid.UUID, row
 		return
 	}
 	row["agent_cadence"] = cfg
-	fleet, err := stack.Call(t.Context(), admin, "GET", "/api/v1/admin/fleet-config", nil, nil)
-	var config struct {
-		Maximum int `json:"max_offline_lease_seconds"`
-	}
-	if err != nil || fleet.Status != 200 || json.Unmarshal(fleet.Body, &config) != nil || config.Maximum <= 0 {
-		t.Error("original fleet cap unavailable")
-		return
-	}
-	originalFleet = config.Maximum
-	row["original_fleet_maximum"] = originalFleet
-	fleetChanged = true
-	row["fleet_set_60"] = p.fleetMaximum(60)
 	binary := filepath.Join(p.root, ".agent/tmp/secops-leaseprobe")
 	build := exec.CommandContext(t.Context(), "go", "build", "-o", binary, "./tests/e2e/at/secops/leaseprobe")
 	build.Dir = p.root
@@ -291,21 +291,22 @@ func (p *liveProbe) liveAgentExpiry16(stack *labstack.Stack, node uuid.UUID, row
 		return
 	}
 	var lease nodeLease16
+	var setupErr error
+	qualified := false
 	for until := time.Now().Add(90 * time.Second); time.Now().Before(until); {
 		lease, err = p.nodeLease16()
-		member := false
-		for _, v := range lease.Members {
-			member = member || (v.ID == m.member && !v.End.Before(lease.Expires))
-		}
-		hb := p.heartbeatView()
-		if err == nil && lease.Max == 60 && member && lease.Deadline-mono16() > int64(4*time.Duration(min(cfg.Heartbeat, cfg.Poll))*time.Second) && hb["serving"] == "1" && hb["policy_expires_mono_ns"] == strconv.FormatInt(lease.Deadline, 10) {
+		setupErr = shortLeaseSetup17(lease, capChangedAt, m.member, mono16(), 4*time.Duration(min(cfg.Heartbeat, cfg.Poll))*time.Second, p.heartbeatView())
+		if err == nil && setupErr == nil {
+			qualified = true
 			break
 		}
 		time.Sleep(time.Second)
 	}
 	row["lease_before_fault"] = lease
-	if err != nil || lease.Max != 60 {
-		t.Error("no locally accepted short lease")
+	row["lease_setup_qualified"] = qualified
+	if !qualified {
+		row["lease_setup_error"] = fmt.Sprintf("local read: %v; qualification: %v", err, setupErr)
+		t.Errorf("no locally accepted post-cap short lease: %s", row["lease_setup_error"])
 		return
 	}
 	row["before_kernel_timeout"] = p.timeoutView()
@@ -344,7 +345,7 @@ func (p *liveProbe) liveAgentExpiry16(stack *labstack.Stack, node uuid.UUID, row
 	for _, v := range lease.Members {
 		member = member || (v.ID == m.member && !v.End.Before(lease.Expires))
 	}
-	if !member || lease.Max != 60 || first.Heartbeat["policy_expires_mono_ns"] != strconv.FormatInt(lease.Deadline, 10) || bounds.End-bounds.Loss < 3*bounds.Step {
+	if !member || shortLeaseFields17(lease, capChangedAt) != nil || first.Heartbeat["policy_expires_mono_ns"] != strconv.FormatInt(lease.Deadline, 10) || bounds.End-bounds.Loss < 3*bounds.Step {
 		row["samples"] = samples
 		t.Error("lease/heartbeat deadline or minimum continuity window not qualified")
 		return

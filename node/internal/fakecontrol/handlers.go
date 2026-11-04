@@ -365,6 +365,9 @@ func (s *Server) lease(w http.ResponseWriter, r *http.Request) {
 		apierr.Write(w, r, apierr.New(apierr.IdentityRevoked, "Identity does not match the certificate."))
 		return
 	}
+	s.mu.Lock()
+	s.leaseRequests = append(s.leaseRequests, req)
+	s.mu.Unlock()
 	raw, _, err := s.signLease(node, inc)
 	if err != nil {
 		apierr.Write(w, r, apierr.New(apierr.InternalError, "Internal error."))
