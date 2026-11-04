@@ -24,7 +24,6 @@ import (
 // fail with ExitBusy (exit 3, UPDATE_BUSY: lock) after ~80ms instead of waiting
 // up to the 10s live lock budget.
 func TestR30_H2_StaleThenLiveLockMetadataAbortsEarlyWithExitBusy(t *testing.T) {
-	// TODO(review r30): H-2
 	e := d158Engine(t)
 	release := d158Holder(t, e.Layout.Lock)
 
@@ -60,7 +59,6 @@ func TestR30_H2_StaleThenLiveLockMetadataAbortsEarlyWithExitBusy(t *testing.T) {
 // "update lock wait" structured log record, violating D-158 / Invariant 8
 // ("when and only when the first lock attempt missed").
 func TestR30_M1_NonBusyFirstLockErrorEmitsSpuriousWaitLog(t *testing.T) {
-	// TODO(review r30): M-1
 	e := d158Engine(t)
 
 	// Make the lock path a directory so the very first open fails with EISDIR
