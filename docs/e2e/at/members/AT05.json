@@ -1,6 +1,6 @@
 {
   "node_incarnations": {
-    "node": "01a1a33d-0cf5-7555-be0a-6ae079700a69"
+    "node": "01a1a495-e051-7b0c-9e12-a61e03dc7619"
   },
   "complete": true,
   "id": "AT05",
@@ -142,83 +142,83 @@
     },
     {
       "name": "provenance",
-      "detail": "source=4eb5d7d32c449da7689e749fd8ecb208657937dd; applied generation=1; incarnation=01a1a33d-0cf5-7555-be0a-6ae079700a69; image/binary digests in JSON"
+      "detail": "source=dbfccc6fc7d076ec73f4f8575eb27efe39337a23; applied generation=1; incarnation=01a1a495-e051-7b0c-9e12-a61e03dc7619; image/binary digests in JSON"
     },
     {
       "name": "operator",
       "detail": "needs operator run; see OPERATORS.md"
     }
   ],
-  "at": "2026-11-03T21:07:16Z",
-  "run_id": "50117c68-d1b3-431d-a2be-cd94d27a2447",
-  "source_commit": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
+  "at": "2026-11-04T03:23:54Z",
+  "run_id": "5715939e-3943-48f1-8bd5-c869bf7c91c2",
+  "source_commit": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
   "release_digests": {
-    "artifact_sha256_0.1.0_amd64": "713820ef887a67dcfdf8422add4f23cf510c593da936726db5832156f14cbbde",
-    "artifact_sha256_0.1.0_arm64": "d6aba34ec4b229c3c342861dd803ba832c4961a2c61b554a21b56b909a83a4ae",
-    "manifest_sha256_0.1.0": "8d18e0e710dad86b2d77949b2ef789aa985dab4e6e3ddfad07f9b688c5fb0faa",
-    "signed_manifest_sha256_0.1.0": "76b7caceb7b9b7d0915a67d6c8f132e55c914d9ba541d3cba8c18e37d46525b1"
+    "artifact_sha256_0.1.0_amd64": "7ebb0fd4ac60c2bc83439a94a1cfa47fef62283afe584867a3dde6623b6401c1",
+    "artifact_sha256_0.1.0_arm64": "d141266765ef944d999f816699d4175a991c16d20b304795966ec9e08a02e528",
+    "manifest_sha256_0.1.0": "2a2c03b350b1023755a9d56bcc568d0bcd56663686f8c2d3b744db9aec7a8fa4",
+    "signed_manifest_sha256_0.1.0": "57f319ac78d6944edfc7845a5b2ca88b862d5e043c4fb61a5746023e0033b4a7"
   },
   "build": {
-    "test_binary_sha256": "ea35e81e4ac817105bb6475a01329845be94e758178bd51e1900db5e095a342e",
-    "source_commit": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
-    "source_dirty": true,
+    "test_binary_sha256": "455cdbb9794776a99e97064945f2d8f6114e7d7cd6704ac64305f9f1c0ccd7d4",
+    "source_commit": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+    "source_dirty": false,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:d9fb3357a0592dbc0a8c6104c22ab3b076593a452ede0159117e37c511be2355",
+      "control": "sha256:b8a96ff56fd370ec72ee3208d2c72e583733c0c70c23470dc0aba744f14acef6",
       "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
       "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:cb2313f9c4771e028c062bca35b7efafa4e928f9f872006ba4ebbfba63c4b8af",
-      "member": "sha256:3f46d1ccea48d811934f49aadb1f7b9bb29c28222a5c04a8093e19275809e7d6",
+      "idp": "sha256:0758d88636e7bb7222704b27c8d0f38cbd812001f16ffca57887fabd221d5bcb",
+      "member": "sha256:2a71faa3f8b6996dd1c76801e29a02412bb4e460ce8cc51091521ba42a617d45",
       "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:3f46d1ccea48d811934f49aadb1f7b9bb29c28222a5c04a8093e19275809e7d6",
-      "node-netns": "sha256:3f46d1ccea48d811934f49aadb1f7b9bb29c28222a5c04a8093e19275809e7d6",
-      "origin": "sha256:cb326d9a327a967e7c1e17055d2fbf1ed7a363079cf4d1fad43ef8ac971ba034",
-      "payment": "sha256:36de81e2b8a2ed04bc645184f1124181a22e0c9570b77caf93f0b3b507baa3b1",
-      "postgres": "sha256:11c41597e304e839e4826b2879355a48ade294001e6bd6cb5357319b7cea7078",
-      "worker": "sha256:aef7db30a26f08a755e998b22faf87ba0e2b34c0609de3f836b8bb10b239bc08"
+      "node": "sha256:2a71faa3f8b6996dd1c76801e29a02412bb4e460ce8cc51091521ba42a617d45",
+      "node-netns": "sha256:2a71faa3f8b6996dd1c76801e29a02412bb4e460ce8cc51091521ba42a617d45",
+      "origin": "sha256:539a0ddba04aafab8d86abdaaf3ee14c8d8e2107fd71c22b02fbd8553ecbd3c5",
+      "payment": "sha256:e03ab8e74d9b81e473683247fe2b75275d7aef0d01d25d2720255b469392faf5",
+      "postgres": "sha256:ed6b2d4068d655bea6fd0ffb5a05d99fb7ce595431c35c40948631d10c3be774",
+      "worker": "sha256:62fccbe5edf377fb666dae0c8d5da013fc8ec068a5c06f4dbb707a039fa860ab"
     },
     "binary_sha256": {
-      "fvpn-agent": "054502d29710fd3889988fbe93f3ae0983a119b221365ad0ce1c4020c0d438a7",
-      "fvpn-control": "26e21b7ceae56f49ba1145ff1b3653b4654df1b362950dda19ac1cce638d1a5c",
-      "fvpn-updater": "b03fb778acd493571f519e9e34048406f23f54af85527c01f27149d955952438",
-      "fvpn-worker": "c7a7f5d60922384b025ea1fbec69ad844e435921cfca96b7c154d80af380a7f6"
+      "fvpn-agent": "c066d05df30d53e9b1e99187b59881034ffbde4aba4a0b77445d0e26a6472631",
+      "fvpn-control": "74716e229d95fc731c35b57613a7764482461a46d4e60ce0303cf94d471f6241",
+      "fvpn-updater": "0c56e2f1bcf313a30869bc2efc38fcae4dca9cfa67be76930b80ea7099bd37cd",
+      "fvpn-worker": "9fc02e52b0136eea985c82a093297d80fd45072e219632b126a50338526e0ae4"
     },
     "binary_vcs": {
       "fvpn-agent": {
         "go_version": "go1.27.3",
-        "vcs.modified": "true",
-        "vcs.revision": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
-        "vcs.time": "2026-11-03T21:05:48Z"
+        "vcs.modified": "false",
+        "vcs.revision": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+        "vcs.time": "2026-11-04T02:48:49Z"
       },
       "fvpn-control": {
         "go_version": "go1.27.3",
-        "vcs.modified": "true",
-        "vcs.revision": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
-        "vcs.time": "2026-11-03T21:05:48Z"
+        "vcs.modified": "false",
+        "vcs.revision": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+        "vcs.time": "2026-11-04T02:48:49Z"
       },
       "fvpn-updater": {
         "go_version": "go1.27.3",
-        "vcs.modified": "true",
-        "vcs.revision": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
-        "vcs.time": "2026-11-03T21:05:48Z"
+        "vcs.modified": "false",
+        "vcs.revision": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+        "vcs.time": "2026-11-04T02:48:49Z"
       },
       "fvpn-worker": {
         "go_version": "go1.27.3",
-        "vcs.modified": "true",
-        "vcs.revision": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
-        "vcs.time": "2026-11-03T21:05:48Z"
+        "vcs.modified": "false",
+        "vcs.revision": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+        "vcs.time": "2026-11-04T02:48:49Z"
       }
     }
   },
   "policy_revision": "1",
   "active_policy_revisions": {
-    "dns_profile": "01a1a33c-fbe4-7af3-812a-5484aec8ec96",
-    "domain_rule_set": "01a1a33c-f725-77e9-831d-0893c4140c40",
-    "fair_use": "01a1a33c-f259-7ac9-89e0-3c44fc526bf6",
-    "plan": "01a1a33d-056a-73ec-b980-04ba39612afa",
-    "release_support": "01a1a33c-eb13-702b-8bec-f7b9cd6944cb"
+    "dns_profile": "01a1a495-ce11-784e-99b8-2239cf62cd49",
+    "domain_rule_set": "01a1a495-c94a-7993-a0d9-5e51a13bc22d",
+    "fair_use": "01a1a495-c481-7116-82ae-c4409175ae43",
+    "plan": "01a1a495-d79d-734c-bb3a-3ebd01f0fad2",
+    "release_support": "01a1a495-bd2c-7057-8ff5-2de389ed4ec7"
   },
-  "node_incarnation": "01a1a33d-0cf5-7555-be0a-6ae079700a69",
+  "node_incarnation": "01a1a495-e051-7b0c-9e12-a61e03dc7619",
   "steps": [
     {
       "name": "devstack f14 restart policy worker",
@@ -226,7 +226,7 @@
       "expected": "unless-stopped",
       "actual": "unless-stopped",
       "command": "docker inspect own container HostConfig.RestartPolicy.Name",
-      "at": "2026-11-03T21:07:17Z"
+      "at": "2026-11-04T03:23:55Z"
     },
     {
       "name": "devstack f14 restart policy control",
@@ -234,7 +234,7 @@
       "expected": "unless-stopped",
       "actual": "unless-stopped",
       "command": "docker inspect own container HostConfig.RestartPolicy.Name",
-      "at": "2026-11-03T21:07:17Z"
+      "at": "2026-11-04T03:23:55Z"
     },
     {
       "name": "devstack f14 restart policy netbird",
@@ -242,7 +242,7 @@
       "expected": "unless-stopped",
       "actual": "unless-stopped",
       "command": "docker inspect own container HostConfig.RestartPolicy.Name",
-      "at": "2026-11-03T21:07:17Z"
+      "at": "2026-11-04T03:23:55Z"
     },
     {
       "name": "shared serving baseline",
@@ -250,7 +250,7 @@
       "expected": "verified tree-built amd64/arm64 boot and active nonempty release policy",
       "actual": "prepared=true; boot_present=true; artifact_digests=4",
       "command": "e2e.PrepareServingBaseline(ctx, admin.Client, csrf, false)",
-      "at": "2026-11-03T21:07:21Z"
+      "at": "2026-11-04T03:23:59Z"
     },
     {
       "name": "D-057 group A",
@@ -258,7 +258,7 @@
       "expected": "201",
       "actual": "HTTP 201 ",
       "command": "POST /admin/groups",
-      "at": "2026-11-03T21:07:21Z"
+      "at": "2026-11-04T03:23:59Z"
     },
     {
       "name": "D-057 group B",
@@ -266,7 +266,7 @@
       "expected": "201",
       "actual": "HTTP 201 ",
       "command": "POST /admin/groups",
-      "at": "2026-11-03T21:07:22Z"
+      "at": "2026-11-04T03:24:00Z"
     },
     {
       "name": "create fair_use",
@@ -274,7 +274,7 @@
       "expected": "201",
       "actual": "HTTP 201 ",
       "command": "POST /admin/policies",
-      "at": "2026-11-03T21:07:22Z"
+      "at": "2026-11-04T03:24:01Z"
     },
     {
       "name": "activate fair_use",
@@ -282,7 +282,7 @@
       "expected": "202 pending",
       "actual": "HTTP 202 ",
       "command": "POST /admin/policies/{id}/activate",
-      "at": "2026-11-03T21:07:23Z"
+      "at": "2026-11-04T03:24:01Z"
     },
     {
       "name": "active fair_use",
@@ -290,7 +290,7 @@
       "expected": "active_revision_id matches issued revision",
       "actual": "converged=true",
       "command": "poll product policy_definitions projection",
-      "at": "2026-11-03T21:07:23Z"
+      "at": "2026-11-04T03:24:01Z"
     },
     {
       "name": "create domain_rule_set",
@@ -298,7 +298,7 @@
       "expected": "201",
       "actual": "HTTP 201 ",
       "command": "POST /admin/policies",
-      "at": "2026-11-03T21:07:24Z"
+      "at": "2026-11-04T03:24:02Z"
     },
     {
       "name": "activate domain_rule_set",
@@ -306,7 +306,7 @@
       "expected": "202 pending",
       "actual": "HTTP 202 ",
       "command": "POST /admin/policies/{id}/activate",
-      "at": "2026-11-03T21:07:24Z"
+      "at": "2026-11-04T03:24:02Z"
     },
     {
       "name": "active domain_rule_set",
@@ -314,7 +314,7 @@
       "expected": "active_revision_id matches issued revision",
       "actual": "converged=true",
       "command": "poll product policy_definitions projection",
-      "at": "2026-11-03T21:07:24Z"
+      "at": "2026-11-04T03:24:02Z"
     },
     {
       "name": "create dns_profile",
@@ -322,7 +322,7 @@
       "expected": "201",
       "actual": "HTTP 201 ",
       "command": "POST /admin/policies",
-      "at": "2026-11-03T21:07:25Z"
+      "at": "2026-11-04T03:24:03Z"
     },
     {
       "name": "activate dns_profile",
@@ -330,7 +330,7 @@
       "expected": "202 pending",
       "actual": "HTTP 202 ",
       "command": "POST /admin/policies/{id}/activate",
-      "at": "2026-11-03T21:07:25Z"
+      "at": "2026-11-04T03:24:04Z"
     },
     {
       "name": "active dns_profile",
@@ -338,7 +338,7 @@
       "expected": "active_revision_id matches issued revision",
       "actual": "converged=true",
       "command": "poll product policy_definitions projection",
-      "at": "2026-11-03T21:07:25Z"
+      "at": "2026-11-04T03:24:04Z"
     },
     {
       "name": "create plan",
@@ -346,7 +346,7 @@
       "expected": "201",
       "actual": "HTTP 201 ",
       "command": "POST /admin/policies",
-      "at": "2026-11-03T21:07:26Z"
+      "at": "2026-11-04T03:24:04Z"
     },
     {
       "name": "activate plan",
@@ -354,7 +354,7 @@
       "expected": "202 pending",
       "actual": "HTTP 202 ",
       "command": "POST /admin/policies/{id}/activate",
-      "at": "2026-11-03T21:07:27Z"
+      "at": "2026-11-04T03:24:05Z"
     },
     {
       "name": "active plan",
@@ -362,7 +362,7 @@
       "expected": "active_revision_id matches issued revision",
       "actual": "converged=true",
       "command": "poll product policy_definitions projection",
-      "at": "2026-11-03T21:07:27Z"
+      "at": "2026-11-04T03:24:05Z"
     },
     {
       "name": "create plan",
@@ -370,7 +370,7 @@
       "expected": "201",
       "actual": "HTTP 201 ",
       "command": "POST /admin/policies",
-      "at": "2026-11-03T21:07:27Z"
+      "at": "2026-11-04T03:24:05Z"
     },
     {
       "name": "activate plan",
@@ -378,7 +378,7 @@
       "expected": "202 pending",
       "actual": "HTTP 202 ",
       "command": "POST /admin/policies/{id}/activate",
-      "at": "2026-11-03T21:07:28Z"
+      "at": "2026-11-04T03:24:06Z"
     },
     {
       "name": "active plan",
@@ -386,7 +386,7 @@
       "expected": "active_revision_id matches issued revision",
       "actual": "converged=true",
       "command": "poll product policy_definitions projection",
-      "at": "2026-11-03T21:07:28Z"
+      "at": "2026-11-04T03:24:06Z"
     },
     {
       "name": "projected catalogue",
@@ -394,7 +394,7 @@
       "expected": "two active finite plans, distinct exit groups, no SQL fixtures",
       "actual": "plan_projected=true",
       "command": "read worker plan_revisions projection after API activation",
-      "at": "2026-11-03T21:07:28Z"
+      "at": "2026-11-04T03:24:06Z"
     },
     {
       "name": "installer reservation",
@@ -402,7 +402,7 @@
       "expected": "201, one-time secret, no-store",
       "actual": "HTTP 201 ; secret_present=true; no_store=true",
       "command": "POST /admin/enrollments",
-      "at": "2026-11-03T21:07:28Z"
+      "at": "2026-11-04T03:24:07Z"
     },
     {
       "name": "installer idempotent replay",
@@ -410,7 +410,7 @@
       "expected": "same node, secret null",
       "actual": "HTTP 201 ; same_node=true; secret_available=false",
       "command": "repeat POST with same Idempotency-Key",
-      "at": "2026-11-03T21:07:29Z"
+      "at": "2026-11-04T03:24:07Z"
     },
     {
       "name": "installer enrollment",
@@ -418,7 +418,7 @@
       "expected": "node-owned mTLS incarnation appears",
       "actual": "incarnation_present=true",
       "command": "node entrypoint: fvpn-agent enroll; SELECT current_incarnation_id",
-      "at": "2026-11-03T21:07:30Z"
+      "at": "2026-11-04T03:24:08Z"
     },
     {
       "name": "preinstalled reservation",
@@ -426,7 +426,7 @@
       "expected": "201, one-time secret, no-store",
       "actual": "HTTP 201 ; secret_present=true; no_store=true",
       "command": "POST /admin/enrollments",
-      "at": "2026-11-03T21:07:31Z"
+      "at": "2026-11-04T03:24:09Z"
     },
     {
       "name": "preinstalled idempotent replay",
@@ -434,7 +434,7 @@
       "expected": "same node, secret null",
       "actual": "HTTP 201 ; same_node=true; secret_available=false",
       "command": "repeat POST with same Idempotency-Key",
-      "at": "2026-11-03T21:07:31Z"
+      "at": "2026-11-04T03:24:09Z"
     },
     {
       "name": "auto-report is unpublished",
@@ -442,7 +442,7 @@
       "expected": "unpublished",
       "actual": "unpublished",
       "command": "SELECT publication_intent FROM nodes",
-      "at": "2026-11-03T21:07:31Z"
+      "at": "2026-11-04T03:24:09Z"
     },
     {
       "name": "empty release allowlist rejected",
@@ -450,7 +450,7 @@
       "expected": "422; at least one serving release required by contract",
       "actual": "HTTP 422 VALIDATION_FAILED",
       "command": "POST /admin/policies release_support (empty negative control)",
-      "at": "2026-11-03T21:07:32Z"
+      "at": "2026-11-04T03:24:10Z"
     },
     {
       "name": "runtime inventory",
@@ -458,7 +458,7 @@
       "expected": "one actual node image",
       "actual": "node_image_inspected=true; node_containers=1",
       "command": "docker inspect fvpn-w4-members-node",
-      "at": "2026-11-03T21:07:32Z"
+      "at": "2026-11-04T03:24:10Z"
     },
     {
       "name": "r18 M-3 accepted hold and central ID join",
@@ -466,7 +466,7 @@
       "expected": "retain incidents, exact reports, lease members, revocation and escalation IDs; markers and retained safety precedence when exercised",
       "actual": "samples=0; valid=true; details=F18-AT05-generation-holds.json; no matching scenario is not exercised",
       "command": "read-only own-stack durable holds/audits; replay publication classification, no new observation",
-      "at": "2026-11-03T21:07:32Z"
+      "at": "2026-11-04T03:24:10Z"
     }
   ],
   "blockers": [

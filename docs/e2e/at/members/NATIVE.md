@@ -1,3 +1,5 @@
+Current follow-up 21: [results](summary.md), [dated evidence note](followup21-2026-11-03.md). The text below is historical follow-up 18 evidence; its outcomes remain unchanged.
+
 # Follow-up 18 run 2 native evidence
 
 Run 2 `50117c68-d1b3-431d-a2be-cd94d27a2447`, measured harness `4eb5d7d32c449da7689e749fd8ecb208657937dd`, baseline `27ff63928222c9642e4f5e180cf225108327a1e5`. **2 PASS / 6 BLOCKED / 2 FAIL; 699 passed / 5 blocked / 4 failed subchecks.**
@@ -18,4 +20,4 @@ Receive-only UDP and QUIC without PTB remain documented limitations. The smaller
 
 **native ipv4 MTU 1280**: input applied `2026-11-03T21:53:06.172621857Z`, serving-rule read ended `2026-11-03T21:53:13.32488286Z`, bulk command began `2026-11-03T21:53:13.446037138Z`. Original SYN epoch timestamps: `{"member_syn_sent": ["1793742793.542120"], "member_synack_received": ["1793742793.542328"], "origin_syn_received": ["1793742793.542252"], "origin_synack_sent": ["1793742793.542268"]}`. PTB counts at each point: `{"member": {"ipv4_fragmentation_needed": 0, "ipv6_packet_too_big": 0}, "node": {"ipv4_fragmentation_needed": 0, "ipv6_packet_too_big": 0}, "origin": {"ipv4_fragmentation_needed": 0, "ipv6_packet_too_big": 0}}`. Qualification failures: `[]`. Exact adjacent clamp/accept statements, both endpoint advertisements, capture completeness and reverse datagram hashes/multiplicity are retained in [the original analysis](history/follow-up-18-captures/50117c68-d1b3-431d-a2be-cd94d27a2447/matrix-ipv4-1280-d146/analysis.json).
 
-[Original AT09 checks](F18-AT09-subchecks.md), [D-146 inventory](F18-D146.json), [run 1](history/follow-up-18-run1/INDEX.md).
+[Original AT09 checks](history/follow-up-18-run2/F18-AT09-subchecks.md), [D-146 inventory](history/follow-up-18-run2/F18-D146.json), [run 1](history/follow-up-18-run1/INDEX.md).

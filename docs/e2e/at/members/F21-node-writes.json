@@ -1,0 +1,879 @@
+{
+  "run_id": "5715939e-3943-48f1-8bd5-c869bf7c91c2",
+  "source_commit": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+  "distinct_receipts": 30,
+  "conflicting_receipts": 0,
+  "conflict_attempts": 0,
+  "receipts": [
+    {
+      "sha256": "c7918d3b990aeee79a749a71e589527dc66e183346c2a4837b34c8f418009463",
+      "receipt": {
+        "started_at": "2026-11-04T03:24:19.633413165Z",
+        "finished_at": "2026-11-04T03:24:19.64288603Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a495-dc6a-791b-989f-e5122ccd9877",
+            "if_match": "\"7\"",
+            "idempotency_key": "6b8f9e5a-d2ba-4897-8627-ad5d0aaaac66",
+            "body_sha256": "6c6ec814cb1ecd0d4787bf2a4cd1800c6e48ebf169f26d23bdef898dfdbec2e4",
+            "started_at": "2026-11-04T03:24:19.633426177Z",
+            "finished_at": "2026-11-04T03:24:19.642881482Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT01/steps/1/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "610c463ddcff4925438e67f3de50533999ef15f3c6cce972f6146d885be88775",
+      "receipt": {
+        "started_at": "2026-11-04T03:24:20.254920099Z",
+        "finished_at": "2026-11-04T03:24:20.262301495Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a495-dc6a-791b-989f-e5122ccd9877/publication",
+            "if_match": "\"8\"",
+            "idempotency_key": "99b991c4-a718-4917-9749-6830a6e6064a",
+            "body_sha256": "a5f8db432a3ab084bf532a8fc0cfb21a799b10eddbf59de708d6769521d4d548",
+            "started_at": "2026-11-04T03:24:20.254928745Z",
+            "finished_at": "2026-11-04T03:24:20.262295595Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT01/steps/2/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "7699b039675a7c4a6608bd5ac35c8f55edd13bdb96fc258340f43904a9d85b18",
+      "receipt": {
+        "started_at": "2026-11-04T03:30:32.141889316Z",
+        "finished_at": "2026-11-04T03:30:32.148345444Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a495-dc6a-791b-989f-e5122ccd9877",
+            "if_match": "\"54\"",
+            "idempotency_key": "8405acce-d4ac-4cfe-bee1-790648a86876",
+            "body_sha256": "f8fdd418df35f0ac36a2c523d006e9d86568905f9e9a62125cd832a498d199d5",
+            "started_at": "2026-11-04T03:30:32.141897398Z",
+            "finished_at": "2026-11-04T03:30:32.148339804Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/81/actual/clean_generation_node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "69ceb9e9211dec303ba90ba75cc623d57aa214f8bcbffee1355e5d691bc5e2e0",
+      "receipt": {
+        "started_at": "2026-11-04T03:34:10.153940555Z",
+        "finished_at": "2026-11-04T03:34:10.162888701Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f",
+            "if_match": "\"7\"",
+            "idempotency_key": "20f83331-6f9b-4ebb-8db1-3db8d7ecddbf",
+            "body_sha256": "6c6ec814cb1ecd0d4787bf2a4cd1800c6e48ebf169f26d23bdef898dfdbec2e4",
+            "started_at": "2026-11-04T03:34:10.153950733Z",
+            "finished_at": "2026-11-04T03:34:10.162881844Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/146/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "7bb43667680ad7431c78e3f3f3cde5d97c3b34a8dd106cdcb67ced385e4b279c",
+      "receipt": {
+        "started_at": "2026-11-04T03:34:10.768992794Z",
+        "finished_at": "2026-11-04T03:34:10.776381129Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f/publication",
+            "if_match": "\"8\"",
+            "idempotency_key": "13f7c352-e45c-4bc5-8836-998317f5c493",
+            "body_sha256": "a5f8db432a3ab084bf532a8fc0cfb21a799b10eddbf59de708d6769521d4d548",
+            "started_at": "2026-11-04T03:34:10.76900204Z",
+            "finished_at": "2026-11-04T03:34:10.776375029Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/147/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "e62aff6804d00873d34f93dfb10bc4ba9d26ef4c42b63445871aad37eed7dbcf",
+      "receipt": {
+        "started_at": "2026-11-04T03:34:21.08799608Z",
+        "finished_at": "2026-11-04T03:34:21.096297184Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f",
+            "if_match": "\"14\"",
+            "idempotency_key": "fb1386fb-5fbf-484b-8738-82763741b8bc",
+            "body_sha256": "6c6ec814cb1ecd0d4787bf2a4cd1800c6e48ebf169f26d23bdef898dfdbec2e4",
+            "started_at": "2026-11-04T03:34:21.088002828Z",
+            "finished_at": "2026-11-04T03:34:21.096291822Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/150/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "5d21d05ad16d5dca58285154ec4356b34719ce957acbce617a1bc449f1352723",
+      "receipt": {
+        "started_at": "2026-11-04T03:34:21.701482463Z",
+        "finished_at": "2026-11-04T03:34:21.708135597Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f/publication",
+            "if_match": "\"15\"",
+            "idempotency_key": "d2e1cc67-49d0-473d-a852-69973a621764",
+            "body_sha256": "69f7093bb613b72e7c7d5ca11e44dad666730f1e6707fe2daed68e308d3ebdc1",
+            "started_at": "2026-11-04T03:34:21.701487601Z",
+            "finished_at": "2026-11-04T03:34:21.70813025Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/151/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "6e6779dce369f07c4790754862d5a4692f3f9a38b0949a9b34b1474bd234b3db",
+      "receipt": {
+        "started_at": "2026-11-04T03:35:32.081424941Z",
+        "finished_at": "2026-11-04T03:35:32.088083194Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f",
+            "if_match": "\"23\"",
+            "idempotency_key": "3da96cb8-425d-4536-8a57-7e363bd870af",
+            "body_sha256": "cbfd9d0ed7ba2522fb46151cfb9463a9caf5758dd06f91e842d8055b242d3c1b",
+            "started_at": "2026-11-04T03:35:32.081436185Z",
+            "finished_at": "2026-11-04T03:35:32.088077874Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/154/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "eb062a064f93515cbd64e54adc5320f36de7de16c87ee137f4bd04823c3b66b2",
+      "receipt": {
+        "started_at": "2026-11-04T03:35:51.144154156Z",
+        "finished_at": "2026-11-04T03:35:51.14943547Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f",
+            "if_match": "\"31\"",
+            "idempotency_key": "8b41d2b3-8943-44fa-b776-be6c86cf87a6",
+            "body_sha256": "6c6ec814cb1ecd0d4787bf2a4cd1800c6e48ebf169f26d23bdef898dfdbec2e4",
+            "started_at": "2026-11-04T03:35:51.144160746Z",
+            "finished_at": "2026-11-04T03:35:51.149429501Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/158/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "272d6bca207dcdaf368885df43fdca2ab1cc3b9e83591d87195dbe58b675ac79",
+      "receipt": {
+        "started_at": "2026-11-04T03:35:51.754188678Z",
+        "finished_at": "2026-11-04T03:35:51.761490457Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f/publication",
+            "if_match": "\"32\"",
+            "idempotency_key": "6ec82dc5-9cea-432e-9834-9df2aab4f70f",
+            "body_sha256": "69f7093bb613b72e7c7d5ca11e44dad666730f1e6707fe2daed68e308d3ebdc1",
+            "started_at": "2026-11-04T03:35:51.754194258Z",
+            "finished_at": "2026-11-04T03:35:51.761484344Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/159/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "936eb132ffc42daf03e470d38a801d8529d1d80f0615dce30255ba85ba4d5856",
+      "receipt": {
+        "started_at": "2026-11-04T03:37:00.942509351Z",
+        "finished_at": "2026-11-04T03:37:00.953087571Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f",
+            "if_match": "\"40\"",
+            "idempotency_key": "ea52d3d1-86c7-4ab4-8a79-1c0c3ecc9b9c",
+            "body_sha256": "1da14b595b4b05588e1982c5071fd726309a87a612fe8db5bca552c954104f31",
+            "started_at": "2026-11-04T03:37:00.942518189Z",
+            "finished_at": "2026-11-04T03:37:00.953081292Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/162/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "46b34061eadc83bb26f4f2a661227f674a58568a1ca91dc028482a9366b871b4",
+      "receipt": {
+        "started_at": "2026-11-04T03:37:28.815761674Z",
+        "finished_at": "2026-11-04T03:37:28.820529773Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f",
+            "if_match": "\"53\"",
+            "idempotency_key": "0c5fc36b-f64f-4ad0-83c5-878e38459cf3",
+            "body_sha256": "6c6ec814cb1ecd0d4787bf2a4cd1800c6e48ebf169f26d23bdef898dfdbec2e4",
+            "started_at": "2026-11-04T03:37:28.815768518Z",
+            "finished_at": "2026-11-04T03:37:28.820525719Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/168/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "b073126df8797db6597be92525f3a4079151a1256192a3d5f057a723b0d8a8ec",
+      "receipt": {
+        "started_at": "2026-11-04T03:37:29.425170044Z",
+        "finished_at": "2026-11-04T03:37:29.432372027Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f/publication",
+            "if_match": "\"56\"",
+            "idempotency_key": "2100ed58-f0f8-4dd4-86c0-4e311e46b71d",
+            "body_sha256": "5b07f5e4021d4eec1627a490eea6323585d65f3b375320491619e0029e2a4793",
+            "started_at": "2026-11-04T03:37:29.425178503Z",
+            "finished_at": "2026-11-04T03:37:29.432366565Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/169/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "958e9a76c1003481aec6f06cf29571bb898a1ec1950ba88c38efab04498665b9",
+      "receipt": {
+        "started_at": "2026-11-04T03:38:41.604688759Z",
+        "finished_at": "2026-11-04T03:38:41.613876787Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f",
+            "if_match": "\"64\"",
+            "idempotency_key": "0a79e023-36c3-4746-a1ed-b94ee2d305b2",
+            "body_sha256": "4dc52a7f454dafd89574ca154a6a53eb8d9ead9ac8450164923188cdef8d58de",
+            "started_at": "2026-11-04T03:38:41.604699723Z",
+            "finished_at": "2026-11-04T03:38:41.613870857Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/172/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "3ee74819bb27665218fc8a22b6e31cee4c313fbf2732f5fe47747f5a0865f186",
+      "receipt": {
+        "started_at": "2026-11-04T03:39:01.568363442Z",
+        "finished_at": "2026-11-04T03:39:01.57799359Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f",
+            "if_match": "\"75\"",
+            "idempotency_key": "24a0b69b-97c9-431f-b9a8-6aa097312d71",
+            "body_sha256": "6c6ec814cb1ecd0d4787bf2a4cd1800c6e48ebf169f26d23bdef898dfdbec2e4",
+            "started_at": "2026-11-04T03:39:01.568370809Z",
+            "finished_at": "2026-11-04T03:39:01.577987866Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/178/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "00900a9cd756b7166cb5f885ef4777604b3f366024a0ebbc866e9ebf4f5f23ae",
+      "receipt": {
+        "started_at": "2026-11-04T03:39:02.183826415Z",
+        "finished_at": "2026-11-04T03:39:02.190395666Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f/publication",
+            "if_match": "\"76\"",
+            "idempotency_key": "a813943b-4bd2-4ddd-a090-8bd9feb0c2a3",
+            "body_sha256": "69f7093bb613b72e7c7d5ca11e44dad666730f1e6707fe2daed68e308d3ebdc1",
+            "started_at": "2026-11-04T03:39:02.183834179Z",
+            "finished_at": "2026-11-04T03:39:02.190390474Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/179/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "1377afcfcba1fb1b0ece2caedbaaddcd8f85da90bc8cb6f1562ff68f0e8476d2",
+      "receipt": {
+        "started_at": "2026-11-04T03:40:16.383629948Z",
+        "finished_at": "2026-11-04T03:40:16.390993981Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f",
+            "if_match": "\"86\"",
+            "idempotency_key": "b32a16c5-5a34-422c-bf96-f035de914aef",
+            "body_sha256": "88a2569f3aaa712b5983efd5941f964dbc92480fd4dd5c35725f1135b4b4eb4e",
+            "started_at": "2026-11-04T03:40:16.383638166Z",
+            "finished_at": "2026-11-04T03:40:16.39098921Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/182/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "1f34ded57641023bd6fe5e8ce11ab68abf5f9b1afa1f709f9f1e69b16f2b4156",
+      "receipt": {
+        "started_at": "2026-11-04T03:40:51.727029995Z",
+        "finished_at": "2026-11-04T03:40:51.736472499Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f",
+            "if_match": "\"98\"",
+            "idempotency_key": "e9d4a526-514c-4867-a547-d5c89b3178bf",
+            "body_sha256": "6c6ec814cb1ecd0d4787bf2a4cd1800c6e48ebf169f26d23bdef898dfdbec2e4",
+            "started_at": "2026-11-04T03:40:51.727044647Z",
+            "finished_at": "2026-11-04T03:40:51.736466404Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/185/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "c0263b05118629e5e0b6079c266df1faee008b70fc3886d8cc1724aa4228fb6c",
+      "receipt": {
+        "started_at": "2026-11-04T03:40:52.348439634Z",
+        "finished_at": "2026-11-04T03:40:52.354286787Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f/publication",
+            "if_match": "\"99\"",
+            "idempotency_key": "55a4dbf4-7d7d-4ec8-b6f5-318337c5499a",
+            "body_sha256": "a5f8db432a3ab084bf532a8fc0cfb21a799b10eddbf59de708d6769521d4d548",
+            "started_at": "2026-11-04T03:40:52.348449945Z",
+            "finished_at": "2026-11-04T03:40:52.354279542Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT02/steps/186/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "6112247698e5a685607e9ce73d7b27277c1000cdbc2f434b59cdefe977a27081",
+      "receipt": {
+        "started_at": "2026-11-04T03:54:17.470935235Z",
+        "finished_at": "2026-11-04T03:54:17.477526784Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f/publication",
+            "if_match": "\"220\"",
+            "idempotency_key": "54829eae-26bd-42f9-9fd0-d881c45a7e0f",
+            "body_sha256": "7558516a4443e3f653882509ec2d8912b19c149b07dd6a0db949ffacb4ac8175",
+            "started_at": "2026-11-04T03:54:17.470947295Z",
+            "finished_at": "2026-11-04T03:54:17.477519784Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT04/steps/109/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "bfd7b0f2039681bcb37e09e337d4e4ff3fd3db577545f0a2925c59f0cac7527a",
+      "receipt": {
+        "started_at": "2026-11-04T03:54:24.044217936Z",
+        "finished_at": "2026-11-04T03:54:24.050620151Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a495-dc6a-791b-989f-e5122ccd9877",
+            "if_match": "\"240\"",
+            "idempotency_key": "e1491000-968c-403a-bed5-34c61047d940",
+            "body_sha256": "6c6ec814cb1ecd0d4787bf2a4cd1800c6e48ebf169f26d23bdef898dfdbec2e4",
+            "started_at": "2026-11-04T03:54:24.044226531Z",
+            "finished_at": "2026-11-04T03:54:24.050615327Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT08/steps/0/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "7955aeb45680b4137cb895c20db1f566b7ad7d8451f6401f71498f44cc369a4f",
+      "receipt": {
+        "started_at": "2026-11-04T03:54:24.661707351Z",
+        "finished_at": "2026-11-04T03:54:24.668913681Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a495-dc6a-791b-989f-e5122ccd9877/publication",
+            "if_match": "\"241\"",
+            "idempotency_key": "7f0ce750-afa2-4237-973b-d06029565d70",
+            "body_sha256": "a5f8db432a3ab084bf532a8fc0cfb21a799b10eddbf59de708d6769521d4d548",
+            "started_at": "2026-11-04T03:54:24.66171443Z",
+            "finished_at": "2026-11-04T03:54:24.66890734Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT08/steps/1/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "63f9f6b87f11f108d45b087f0aadec71c33ad67761200b329e8c2b645764a7c9",
+      "receipt": {
+        "started_at": "2026-11-04T03:54:57.635004592Z",
+        "finished_at": "2026-11-04T03:54:57.640260508Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a495-dc6a-791b-989f-e5122ccd9877/publication",
+            "if_match": "\"245\"",
+            "idempotency_key": "b2a042e6-2059-4fa5-a969-8da6c8428df1",
+            "body_sha256": "5b07f5e4021d4eec1627a490eea6323585d65f3b375320491619e0029e2a4793",
+            "started_at": "2026-11-04T03:54:57.635011215Z",
+            "finished_at": "2026-11-04T03:54:57.640255185Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT08/steps/10/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "18c3133aea1868caf01ab36e0d9dd511d4a34209be397c0b21384fb370ce4642",
+      "receipt": {
+        "started_at": "2026-11-04T03:55:32.086191657Z",
+        "finished_at": "2026-11-04T03:55:32.093574434Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a495-dc6a-791b-989f-e5122ccd9877/publication",
+            "if_match": "\"249\"",
+            "idempotency_key": "92feb97f-160c-4852-be73-0aba2546377e",
+            "body_sha256": "bc2aa5de23bd32a8fe1c7ea1cca37b7c8782c1ab4817ac4e9523c4c624ff5251",
+            "started_at": "2026-11-04T03:55:32.086197953Z",
+            "finished_at": "2026-11-04T03:55:32.093561496Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT08/steps/19/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "535752fe4220a136cc60296722de5556f683f03f22a066c22f7f7e608b0f4d3e",
+      "receipt": {
+        "started_at": "2026-11-04T03:56:03.906481147Z",
+        "finished_at": "2026-11-04T03:56:03.912833466Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a495-dc6a-791b-989f-e5122ccd9877",
+            "if_match": "\"256\"",
+            "idempotency_key": "d4cddec8-8056-44f3-ba25-5490cbc72f1f",
+            "body_sha256": "6c6ec814cb1ecd0d4787bf2a4cd1800c6e48ebf169f26d23bdef898dfdbec2e4",
+            "started_at": "2026-11-04T03:56:03.90649534Z",
+            "finished_at": "2026-11-04T03:56:03.912825965Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT08/steps/30/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "7442128c7451b5663aa70e2216def2914239d341b1d914cb7dfadb95292fd111",
+      "receipt": {
+        "started_at": "2026-11-04T03:56:04.524418829Z",
+        "finished_at": "2026-11-04T03:56:04.532599132Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a495-dc6a-791b-989f-e5122ccd9877/publication",
+            "if_match": "\"257\"",
+            "idempotency_key": "d8c7fa4f-9613-4ef5-a998-bfacf5d52493",
+            "body_sha256": "a5f8db432a3ab084bf532a8fc0cfb21a799b10eddbf59de708d6769521d4d548",
+            "started_at": "2026-11-04T03:56:04.524429734Z",
+            "finished_at": "2026-11-04T03:56:04.532592918Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT08/steps/31/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "b85d47d48a8ecaf06f74e87abd7ac36eac0dc57297d07ec31b71241e8592af9d",
+      "receipt": {
+        "started_at": "2026-11-04T04:04:37.138583095Z",
+        "finished_at": "2026-11-04T04:04:37.145265708Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a495-dc6a-791b-989f-e5122ccd9877",
+            "if_match": "\"306\"",
+            "idempotency_key": "cc4bd4be-022e-4ab7-bfdc-a7826ef9a769",
+            "body_sha256": "6c6ec814cb1ecd0d4787bf2a4cd1800c6e48ebf169f26d23bdef898dfdbec2e4",
+            "started_at": "2026-11-04T04:04:37.138594994Z",
+            "finished_at": "2026-11-04T04:04:37.145259087Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT09/steps/1/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "086e72958fd020a722e9b4f3cc9050043a049695a18e8245246ea1f5adc89d76",
+      "receipt": {
+        "started_at": "2026-11-04T04:04:37.749483457Z",
+        "finished_at": "2026-11-04T04:04:37.756812465Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a495-dc6a-791b-989f-e5122ccd9877/publication",
+            "if_match": "\"307\"",
+            "idempotency_key": "bef224d0-3af6-41c3-82b2-6c2d39dc73ae",
+            "body_sha256": "a5f8db432a3ab084bf532a8fc0cfb21a799b10eddbf59de708d6769521d4d548",
+            "started_at": "2026-11-04T04:04:37.749493933Z",
+            "finished_at": "2026-11-04T04:04:37.756807189Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT09/steps/2/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "c9686b8f8dd19327b9b5fdc7016181ffebc9dbee6fc8561e14ec4403d344f1b1",
+      "receipt": {
+        "started_at": "2026-11-04T04:04:40.373347182Z",
+        "finished_at": "2026-11-04T04:04:40.37919857Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f",
+            "if_match": "\"276\"",
+            "idempotency_key": "485a916b-3ed6-4aae-9f70-82830fcfce99",
+            "body_sha256": "6c6ec814cb1ecd0d4787bf2a4cd1800c6e48ebf169f26d23bdef898dfdbec2e4",
+            "started_at": "2026-11-04T04:04:40.373357923Z",
+            "finished_at": "2026-11-04T04:04:40.379192375Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT09/steps/5/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    },
+    {
+      "sha256": "b670830f854d5c0de1a7eb5ce00d27a126b8e5d3af6fc3ddfa8d051ad58f5110",
+      "receipt": {
+        "started_at": "2026-11-04T04:04:40.98357347Z",
+        "finished_at": "2026-11-04T04:04:40.989424148Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a49e-e32c-778d-bdf5-cae3c8b38e2f/publication",
+            "if_match": "\"277\"",
+            "idempotency_key": "07b2f667-5816-4da4-865b-010f826e9695",
+            "body_sha256": "a5f8db432a3ab084bf532a8fc0cfb21a799b10eddbf59de708d6769521d4d548",
+            "started_at": "2026-11-04T04:04:40.983583364Z",
+            "finished_at": "2026-11-04T04:04:40.98941758Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "locations": [
+        "AT09/steps/6/actual/node_write"
+      ],
+      "conflict_attempt_indexes": []
+    }
+  ]
+}

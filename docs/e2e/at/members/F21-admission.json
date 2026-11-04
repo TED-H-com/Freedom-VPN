@@ -1,0 +1,186 @@
+{
+  "run_id": "5715939e-3943-48f1-8bd5-c869bf7c91c2",
+  "source_commit": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+  "suite_wait": {
+    "polls": [
+      {
+        "at": "2026-11-04T02:50:12.483668+00:00",
+        "stage": "preflight",
+        "elapsed_seconds": 0.059,
+        "hold_free": true,
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T03:17:43.709122+00:00",
+        "stage": "after-vmstat",
+        "elapsed_seconds": 0.055,
+        "hold_free": true,
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T03:18:19.591004+00:00",
+        "stage": "after-startup",
+        "elapsed_seconds": 0.066,
+        "hold_free": true,
+        "foreign_processes": [
+          {
+            "pid": 1757838,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T03:19:19.661444+00:00",
+        "stage": "after-startup",
+        "elapsed_seconds": 60.137,
+        "hold_free": true,
+        "foreign_processes": [
+          {
+            "pid": 1757838,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 1771458,
+            "comm": "go",
+            "ticks": 64
+          },
+          {
+            "pid": 1773000,
+            "comm": "make",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T03:20:19.729527+00:00",
+        "stage": "after-startup",
+        "elapsed_seconds": 120.205,
+        "hold_free": true,
+        "foreign_processes": [
+          {
+            "pid": 1757838,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 1771458,
+            "comm": "go",
+            "ticks": 102
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T03:21:19.801031+00:00",
+        "stage": "after-startup",
+        "elapsed_seconds": 180.276,
+        "hold_free": true,
+        "foreign_processes": [
+          {
+            "pid": 1757838,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 1771458,
+            "comm": "go",
+            "ticks": 120
+          },
+          {
+            "pid": 1785346,
+            "comm": "make",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T03:22:19.867621+00:00",
+        "stage": "after-startup",
+        "elapsed_seconds": 240.343,
+        "hold_free": true,
+        "foreign_processes": [
+          {
+            "pid": 1757838,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T03:23:19.935023+00:00",
+        "stage": "after-startup",
+        "elapsed_seconds": 300.41,
+        "hold_free": true,
+        "foreign_processes": []
+      }
+    ],
+    "wait_seconds": 300
+  },
+  "wrapper_waiters": [
+    {
+      "pid": 927160,
+      "command": "go",
+      "exit": 0,
+      "wait_seconds": 1621.105
+    },
+    {
+      "pid": 3428560,
+      "command": "docker",
+      "exit": 0,
+      "wait_seconds": 120.12
+    }
+  ],
+  "initial_hold_seconds": 1621.105,
+  "post_startup_wait_seconds": 300.41,
+  "total_pre_acceptance_wait_seconds": 1921.515,
+  "cleanup_hold_seconds": 120.12,
+  "windows": [
+    {
+      "first_sample": "2026-11-04T03:17:53.757682+00:00",
+      "last_sample": "2026-11-04T03:22:20.310659+00:00",
+      "samples": 54,
+      "pids": [
+        1757838,
+        1770226,
+        1771458,
+        1773000,
+        1774868,
+        1782760,
+        1785346,
+        1788877,
+        1790039,
+        1797219
+      ],
+      "classification": "D-133 confounded startup/admission window"
+    },
+    {
+      "first_sample": "2026-11-04T04:10:37.395929+00:00",
+      "last_sample": "2026-11-04T04:10:57.505936+00:00",
+      "samples": 5,
+      "pids": [
+        3425058,
+        3427548
+      ],
+      "classification": "D-133 confounded teardown window"
+    },
+    {
+      "first_sample": "2026-11-04T04:11:17.615306+00:00",
+      "last_sample": "2026-11-04T04:11:22.640882+00:00",
+      "samples": 2,
+      "pids": [
+        3440263
+      ],
+      "classification": "D-133 confounded teardown window"
+    }
+  ],
+  "acceptance_command_started_at": "2026-11-04T03:23:19.935023+00:00",
+  "last_acceptance_check_at": "2026-11-04T04:09:58Z",
+  "interpretation": "Observed overlap windows remain confounded; no retry. No external-suite sample intersects acceptance checks. Five-second samples cannot exclude activity entirely between samples. No full CPU qualification or A/B attribution is claimed.",
+  "admission": "bash \"$FVPN_HOLD_SH\"; separate private stream before every make/Go/Docker invocation; no reservation"
+}
