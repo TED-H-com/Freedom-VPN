@@ -82,6 +82,17 @@ func escapedPublication() { admin.call(ctx, "PUT", nodePath+"/publication", body
 	}
 }
 
+func TestAPI01_AssistNodeWriteUsesSharedHelper(t *testing.T) {
+	source, err := os.ReadFile("assist.go.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	writes, bypasses, err := nodeWriteBypasses(source)
+	if err != nil || writes != 1 || len(bypasses) != 0 {
+		t.Fatalf("writes=%d bypasses=%v err=%v", writes, bypasses, err)
+	}
+}
+
 func TestF20_EarlyAbortCloneClosure(t *testing.T) {
 	raw, err := os.ReadFile("testdata/early-abort.json")
 	if err != nil {

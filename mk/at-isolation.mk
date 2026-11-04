@@ -27,7 +27,7 @@ LINT_TARGETS += at-isolation-lint
 at-isolation-disk = python3 tests/e2e/at/isolation/run.py
 
 at-isolation-lint:
-	@test -z "$$(gofmt -l tests/e2e/at/isolation tests/netlab/at tests/e2e/at/isolation/driver.go.txt)" || { echo 'gofmt required'; exit 1; }
+	@test -z "$$(gofmt -l tests/e2e/at/isolation tests/netlab/at tests/e2e/at/isolation/*.go.txt)" || { echo 'gofmt required'; exit 1; }
 	@$(at-isolation-disk) go vet $(AT_PACKAGES)
 	@$(at-isolation-disk) go vet -tags netlab ./tests/netlab/at/...
 	@$(at-isolation-disk) go run $(AT_STATICCHECK) $(AT_PACKAGES)
@@ -48,6 +48,7 @@ at-isolation-lab-down:
 
 at-isolation-test:
 	@$(at-isolation-disk) go test -count=1 $(AT_PACKAGES)
+	@$(at-isolation-disk) python3 tests/e2e/at/isolation/driver.py test-assist
 
 at-isolation-build:
 	@$(at-isolation-disk) python3 tests/e2e/at/isolation/driver.py build

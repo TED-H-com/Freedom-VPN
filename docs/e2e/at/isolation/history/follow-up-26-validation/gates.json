@@ -1,0 +1,677 @@
+[
+  {
+    "command": [
+      "python3",
+      "-B",
+      "tests/e2e/at/isolation/driver.py",
+      "test-assist"
+    ],
+    "exit_code": 0,
+    "admission_wait_seconds": 0.038,
+    "elapsed_seconds": 1.313,
+    "name": "assist",
+    "admission_checks": [
+      {
+        "at": "2026-11-04T16:51:52Z",
+        "exit_code": 0,
+        "state": "free"
+      }
+    ],
+    "log": "assist.log.txt",
+    "log_sha256": "fa213327130558a2c600c47a32ed98a7f56ada2a91fa8e38bcfac1b59d7b617c"
+  },
+  {
+    "command": [
+      "make",
+      "-f",
+      "mk/at-isolation.mk",
+      "at-isolation-lint",
+      "at-isolation-test",
+      "at-isolation-build"
+    ],
+    "exit_code": 0,
+    "admission_wait_seconds": 0.038,
+    "elapsed_seconds": 26.529,
+    "name": "lane",
+    "admission_checks": [
+      {
+        "at": "2026-11-04T16:52:11Z",
+        "exit_code": 0,
+        "state": "free"
+      }
+    ],
+    "log": "lane.log.txt",
+    "log_sha256": "f45634b4203424a07df80e332a84c8dbe41f0a45555c98e7fb56342ae9057971"
+  },
+  {
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-lint"
+    ],
+    "exit_code": 0,
+    "admission_wait_seconds": 0.039,
+    "elapsed_seconds": 1.732,
+    "name": "e2e-lint",
+    "admission_checks": [
+      {
+        "at": "2026-11-04T16:52:52Z",
+        "exit_code": 0,
+        "state": "free"
+      }
+    ],
+    "log": "e2e-lint.log.txt",
+    "log_sha256": "84d13e25630a12994130d73110b6d81cc691a5f177e085d33ee8967bbed065d8"
+  },
+  {
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/handover/..."
+    ],
+    "exit_code": 0,
+    "admission_wait_seconds": 0.04,
+    "elapsed_seconds": 4.972,
+    "name": "handover",
+    "admission_checks": [
+      {
+        "at": "2026-11-04T16:53:12Z",
+        "exit_code": 0,
+        "state": "free"
+      }
+    ],
+    "log": "handover.log.txt",
+    "log_sha256": "68bc29b8555c91e722c74aa964464ec33097bf9ea5cc9f260d11eeac23a55c2a"
+  },
+  {
+    "command": [
+      "make",
+      "go-lint",
+      "go-with-disk-tmp="
+    ],
+    "exit_code": 0,
+    "admission_wait_seconds": 0.039,
+    "elapsed_seconds": 1.893,
+    "name": "root-go-lint",
+    "admission_checks": [
+      {
+        "at": "2026-11-04T16:53:30Z",
+        "exit_code": 0,
+        "state": "free"
+      }
+    ],
+    "log": "root-go-lint.log.txt",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "-v",
+      "-run",
+      "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
+      "./tests/e2e/at/isolation"
+    ],
+    "exit_code": 0,
+    "admission_wait_seconds": 2673.775,
+    "elapsed_seconds": 2689.797,
+    "name": "hygiene",
+    "admission_checks": [
+      {
+        "at": "2026-11-04T16:55:59Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T16:56:29Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T16:56:59Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T16:57:30Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T16:58:00Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T16:58:30Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T16:59:00Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T16:59:30Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:00:00Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:00:30Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:01:00Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:01:30Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:02:00Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:02:30Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:03:00Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:03:30Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:04:00Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:04:30Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:05:00Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:07:47Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:08:17Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:08:47Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:09:17Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:09:47Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:10:18Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:10:48Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:11:18Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:11:48Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:12:18Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:12:48Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:13:18Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:13:48Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:14:18Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:14:48Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:15:18Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:15:48Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:16:18Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:16:48Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:17:18Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:17:48Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:18:18Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:18:48Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:19:18Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:19:48Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:20:18Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:20:48Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:21:18Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:21:48Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:22:19Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:22:49Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:23:19Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:23:49Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:24:19Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:24:49Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:25:19Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:25:49Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:26:19Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:26:49Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:27:19Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:27:49Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:28:19Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:28:49Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:29:19Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:29:49Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:30:19Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:30:49Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:31:19Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:31:49Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:32:19Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:32:49Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:33:19Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:33:49Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:34:20Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:34:50Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:35:20Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:35:50Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:36:20Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:36:50Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:37:20Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:37:50Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:38:20Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:38:50Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:39:20Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:39:50Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:40:20Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:40:50Z",
+        "exit_code": 1,
+        "state": "held"
+      },
+      {
+        "at": "2026-11-04T17:41:20Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:41:50Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:42:20Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:42:50Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:43:20Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:43:50Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:44:20Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:44:50Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:45:20Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:45:50Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:46:21Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:46:51Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:47:21Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:47:51Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:48:21Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:48:51Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:49:21Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:49:51Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:50:21Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:50:51Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:51:21Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:51:51Z",
+        "exit_code": 1,
+        "state": "reserved"
+      },
+      {
+        "at": "2026-11-04T17:52:21Z",
+        "exit_code": 0,
+        "state": "free"
+      }
+    ],
+    "admission_interruption": {
+      "prior_checks": 19,
+      "test_started_before_interruption": false,
+      "reason": "Model service interruption while waiting; resumed the admission loop, not the test. Wait/elapsed duration fields cover the resumed invocation only."
+    },
+    "log": "hygiene.log.txt",
+    "log_sha256": "3a9b5718459499492c35a5cea3f3e2ca6084091756b4c790c704316aa360a2ff"
+  }
+]

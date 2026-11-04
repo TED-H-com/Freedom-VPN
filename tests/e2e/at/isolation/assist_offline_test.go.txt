@@ -1,0 +1,155 @@
+//go:build e2e
+
+package e2e
+
+import (
+	"crypto/sha256"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"reflect"
+	"sync"
+	"testing"
+	"time"
+)
+
+func TestAPI01_IsolationAssist(t *testing.T) {
+	for _, tc := range []struct {
+		name, code, outcome string
+		status, writes      int
+		already, accepted   bool
+	}{
+		{"accepted", "", "accepted", 202, 1, false, true},
+		{"conflict_then_accepted", "RESOURCE_VERSION_CONFLICT", "accepted", 412, 2, false, true},
+		{"non_conflict", "INTERNAL_ERROR", "non_conflict_response", 500, 1, false, false},
+		{"wrong_412_code", "PRECONDITION_FAILED", "non_conflict_response", 412, 1, false, false},
+		{"already_intended", "RESOURCE_VERSION_CONFLICT", "already_intended", 412, 1, true, true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			const path = "/api/v1/admin/nodes/test-only"
+			const capacity = `{"capacity":{"down_bps":208000000,"member_down_bps_cap":100000000,"member_up_bps_cap":100000000,"up_bps":200000000}}`
+			var mu sync.Mutex
+			var methods, bodies, keys, tags []string
+			reads, writes := 0, 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				mu.Lock()
+				defer mu.Unlock()
+				methods = append(methods, r.Method)
+				if r.URL.Path != path {
+					t.Errorf("unexpected path %q", r.URL.Path)
+				}
+				if r.Method == "GET" {
+					reads++
+					w.Header().Set("ETag", fmt.Sprintf(`"%d"`, reads))
+					if reads > 1 && tc.already {
+						_, _ = io.WriteString(w, capacity)
+					} else {
+						// Partial desired state must not satisfy nodeFieldsMatch.
+						_, _ = io.WriteString(w, `{"capacity":{"down_bps":208000000}}`)
+					}
+					return
+				}
+				if r.Method != "PATCH" {
+					t.Errorf("unexpected method %s", r.Method)
+				}
+				writes++
+				raw, _ := io.ReadAll(r.Body)
+				bodies = append(bodies, string(raw))
+				keys = append(keys, r.Header.Get("Idempotency-Key"))
+				tags = append(tags, r.Header.Get("If-Match"))
+				if writes == 1 && tc.status != 202 {
+					w.WriteHeader(tc.status)
+					_, _ = fmt.Fprintf(w, `{"error":{"code":%q,"details":{"current_resource_version":"2"}}}`, tc.code)
+					return
+				}
+				w.WriteHeader(202)
+				_, _ = io.WriteString(w, `{"operation_id":"TEST ONLY"}`)
+			}))
+			defer server.Close()
+			restored := 0
+			evidence, err := isolationAssist(t.Context(), &session{http: server.Client()}, server.URL+path, func() ([]byte, error) {
+				restored++
+				return []byte("TEST ONLY restore stub"), nil
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			raw, err := json.Marshal(evidence)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var got struct {
+				At          time.Time       `json:"at"`
+				CompletedAt time.Time       `json:"completed_at"`
+				Action      string          `json:"action"`
+				APIOK       bool            `json:"api_ok"`
+				Assisted    bool            `json:"assisted"`
+				RestoreOK   bool            `json:"restore_ok"`
+				RestoreOut  string          `json:"restore_output"`
+				Status      int             `json:"http_status"`
+				Response    json.RawMessage `json:"response"`
+				Receipt     nodeWriteTrace  `json:"node_write"`
+			}
+			if err := json.Unmarshal(raw, &got); err != nil {
+				t.Fatal(err)
+			}
+			mu.Lock()
+			defer mu.Unlock()
+			if restored != 1 || !got.RestoreOK || got.RestoreOut != "TEST ONLY restore stub" || !got.Assisted || got.APIOK != tc.accepted {
+				t.Fatalf("assist classification/acceptance/restore: %s", raw)
+			}
+			if got.Action != "Extra clean capacity generation (208000000) after recovery stalled; restore saved lab member addresses/routes again. No row or observation edits." || got.At.IsZero() || got.CompletedAt.Before(got.At) {
+				t.Fatalf("changed action/time evidence: %s", raw)
+			}
+			trace := got.Receipt
+			if trace.Outcome != tc.outcome || trace.MaxAttempts != 3 || trace.LimitSeconds != 10 || len(trace.Attempts) != tc.writes || writes != tc.writes {
+				t.Fatalf("missing/bad receipt: %s", raw)
+			}
+			wantTraceStatus := StatusBlocked
+			if tc.accepted {
+				wantTraceStatus = StatusPass
+			}
+			if trace.Status != wantTraceStatus {
+				t.Fatalf("receipt status: %s", raw)
+			}
+			wantMethods := []string{"GET"}
+			previous := trace.StartedAt
+			if previous.Before(got.At) {
+				t.Fatal("logical command start moved after helper start")
+			}
+			for i, attempt := range trace.Attempts {
+				wantMethods = append(wantMethods, "PATCH")
+				if attempt.Method != "PATCH" || attempt.Path != path || attempt.IfMatch != tags[i] || tags[i] != fmt.Sprintf(`"%d"`, i+1) || attempt.IdempotencyKey == "" || attempt.IdempotencyKey != keys[i] || keys[i] != keys[0] || bodies[i] != capacity || attempt.BodySHA256 != fmt.Sprintf("%x", sha256.Sum256([]byte(bodies[i]))) {
+					t.Fatalf("write/key/body/ETag evidence %d: %s", i, raw)
+				}
+				status := 202
+				if i == 0 {
+					status = tc.status
+				}
+				if attempt.Status != status || attempt.StartedAt.Before(previous) || attempt.FinishedAt.Before(attempt.StartedAt) {
+					t.Fatalf("attempt status/time %d: %s", i, raw)
+				}
+				previous = attempt.FinishedAt
+				if i == 0 && tc.code == "RESOURCE_VERSION_CONFLICT" {
+					wantMethods = append(wantMethods, "GET")
+					read := attempt.Reread
+					if attempt.ErrorCode != tc.code || read == nil || read.Method != "GET" || read.Path != path || read.Status != 200 || read.ETag != `"2"` || read.Intended != tc.already || read.StartedAt.Before(previous) || read.FinishedAt.Before(read.StartedAt) {
+						t.Fatalf("missing/bad reread: %s", raw)
+					}
+					previous = read.FinishedAt
+				} else if attempt.Reread != nil {
+					t.Fatalf("unexpected reread: %s", raw)
+				}
+			}
+			if trace.FinishedAt.Before(previous) || got.CompletedAt.Before(trace.FinishedAt) || !reflect.DeepEqual(methods, wantMethods) || reads != len(wantMethods)-writes {
+				t.Fatalf("request order/time: %v expected %v; %s", methods, wantMethods, raw)
+			}
+			if got.Status != trace.Attempts[len(trace.Attempts)-1].Status || !json.Valid(got.Response) {
+				t.Fatalf("last response not retained: %s", raw)
+			}
+			t.Logf("TEST ONLY fake-server evidence: %s", raw)
+		})
+	}
+}
