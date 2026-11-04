@@ -173,15 +173,15 @@ once for each submission call, and reset on process restart. Correlate them with
 `boot_id` and `process_id`; correlate queueing and Central acceptance by report
 ID across restarts. `attempt_scope=process` makes that scope explicit. The outbox's
 existing durable uncertainty counter is not a submission count (a retryable
-failure writes it twice) and is unchanged. The in-memory diagnostic counts retain
-only pending IDs.
+failure writes it twice) and is unchanged. At each flush, the in-memory diagnostic counts are pruned
+against pending IDs.
 
 `started_at` and non-null `next_retry_at` are UTC RFC 3339 timestamps. Duration
 uses elapsed monotonic time and is truncated to milliseconds. `next_retry_at`
 is the wall-clock projection of the existing monotonic backoff deadline at the
 end of the call, not a promise that transport will run at exactly that time.
-It is null when this response schedules no retry. `retry_after_ms` is the parsed
-Retry-After duration in milliseconds (0 when absent); existing jitter/backoff
+It is `null` in JSON or `<nil>` in CLI text when this response schedules no retry.
+`retry_after_ms` is the parsed Retry-After duration in milliseconds (0 when absent); existing jitter/backoff
 and Retry-After precedence are unchanged.
 
 `outcome` is `accepted`, `rejected` for an HTTP failure, `transport_error`, or
