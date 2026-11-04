@@ -1,0 +1,69 @@
+{
+  "gates": [
+    {
+      "gate": 1,
+      "command": "make -f mk/at-secops.mk at-secops-lint",
+      "exit_code": 0,
+      "seconds": 1.566,
+      "tail": "python3 -B tests/e2e/at/secops/diskexec.py go vet -tags e2e,integration ./tests/e2e/at/secops/...\npython3 -B tests/e2e/at/secops/diskexec.py go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e,integration ./tests/e2e/at/secops/..."
+    },
+    {
+      "gate": 2,
+      "command": "make -f mk/at-secops.mk at-secops-test",
+      "exit_code": 0,
+      "seconds": 4.409,
+      "tail": "python3 -B tests/e2e/at/secops/diskexec.py go test -tags e2e -p 1 -parallel 2 ./tests/e2e/at/secops/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t3.608s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/leaseprobe\t[no test files]\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe\t[no test files]\npython3 -B tests/e2e/at/secops/diskexec.py python3 -B -m unittest discover -s tests/e2e/at/secops -p 'test_*.py'\n......................................\n----------------------------------------------------------------------\nRan 38 tests in 0.009s\n\nOK"
+    },
+    {
+      "gate": 3,
+      "command": "make -f mk/at-secops.mk at-secops-build",
+      "exit_code": 0,
+      "seconds": 2.827,
+      "tail": "GOOS=linux GOARCH=amd64 python3 -B tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/amd64.test ./tests/e2e/at/secops\nGOOS=linux GOARCH=arm64 python3 -B tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/arm64.test ./tests/e2e/at/secops\nGOOS=linux GOARCH=amd64 python3 -B tests/e2e/at/secops/diskexec.py go build -o .agent/secops/build/leaseprobe-amd64 ./tests/e2e/at/secops/leaseprobe\nGOOS=linux GOARCH=arm64 python3 -B tests/e2e/at/secops/diskexec.py go build -o .agent/secops/build/leaseprobe-arm64 ./tests/e2e/at/secops/leaseprobe"
+    },
+    {
+      "gate": 4,
+      "command": "make -f mk/e2e.mk e2e-lint",
+      "exit_code": 0,
+      "seconds": 1.814,
+      "tail": "cd <worktree> && go vet ./tests/e2e/...\ncd <worktree> && go vet -tags e2e ./tests/e2e/...\ncd <worktree> && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/...\ncd <worktree> && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e ./tests/e2e/..."
+    },
+    {
+      "gate": 5,
+      "command": "go test -count=1 ./tests/handover/...",
+      "exit_code": 0,
+      "seconds": 4.066,
+      "tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t3.669s"
+    },
+    {
+      "gate": 6,
+      "command": "make go-lint go-with-disk-tmp=",
+      "exit_code": 0,
+      "seconds": 1.5,
+      "tail": ""
+    },
+    {
+      "gate": 7,
+      "command": "bash -c test -z \"$(gofmt -l $(git ls-files '*.go'))\"",
+      "exit_code": 0,
+      "seconds": 0.158,
+      "tail": ""
+    },
+    {
+      "gate": 8,
+      "command": "git diff --check",
+      "exit_code": 0,
+      "seconds": 0.036,
+      "tail": ""
+    },
+    {
+      "gate": 9,
+      "command": "go test -count=1 -run TestCommitted.*HygieneClean ./tests/e2e ./tests/netlab",
+      "exit_code": 0,
+      "seconds": 8.991,
+      "tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e\t8.692s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t3.069s"
+    }
+  ],
+  "note": "Actual output tails; absolute worktree path redacted. Gates ran sequentially after admission; root go-lint disabled its shell cleanup trap and used disk TMPDIR/GOTMPDIR.",
+  "post_run_gate_admission_wait_seconds": 60.0
+}

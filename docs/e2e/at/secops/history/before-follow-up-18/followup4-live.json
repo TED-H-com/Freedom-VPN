@@ -1,0 +1,5014 @@
+{
+  "agent_node_incarnation": "01a18b93-00a7-70c8-9b9b-625644c11271",
+  "audit_rows_scanned": 1011,
+  "authorized_devices": 1,
+  "checks": [
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /admin/audit-events",
+      "passed": true,
+      "utc": "2026-10-30T06:49:59.052976449Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin GET /admin/audit-events",
+      "passed": true,
+      "utc": "2026-10-30T06:49:59.054280614Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /admin/enrollments",
+      "passed": true,
+      "utc": "2026-10-30T06:49:59.606198624Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin POST /admin/enrollments",
+      "passed": true,
+      "utc": "2026-10-30T06:49:59.607252569Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /admin/enrollments/{enrollment_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:00.159987303Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin GET /admin/enrollments/{enrollment_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:00.1618475Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /admin/enrollments/{enrollment_id}/revoke",
+      "passed": true,
+      "utc": "2026-10-30T06:50:00.714686044Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin POST /admin/enrollments/{enrollment_id}/revoke",
+      "passed": true,
+      "utc": "2026-10-30T06:50:00.716609023Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /admin/groups",
+      "passed": true,
+      "utc": "2026-10-30T06:50:01.269834296Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin GET /admin/groups",
+      "passed": true,
+      "utc": "2026-10-30T06:50:01.271515204Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /admin/groups",
+      "passed": true,
+      "utc": "2026-10-30T06:50:01.827251946Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin POST /admin/groups",
+      "passed": true,
+      "utc": "2026-10-30T06:50:01.828836853Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /admin/members",
+      "passed": true,
+      "utc": "2026-10-30T06:50:02.381469229Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin GET /admin/members",
+      "passed": true,
+      "utc": "2026-10-30T06:50:02.382617112Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /admin/members/{member_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:02.935645506Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin GET /admin/members/{member_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:02.937172607Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous PATCH /admin/members/{member_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:03.490602275Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin PATCH /admin/members/{member_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:03.492310314Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /admin/members/{member_id}/grants",
+      "passed": true,
+      "utc": "2026-10-30T06:50:04.045468112Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin POST /admin/members/{member_id}/grants",
+      "passed": true,
+      "utc": "2026-10-30T06:50:04.047037448Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /admin/nodes",
+      "passed": true,
+      "utc": "2026-10-30T06:50:04.598571835Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin GET /admin/nodes",
+      "passed": true,
+      "utc": "2026-10-30T06:50:04.599350231Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /admin/nodes/{node_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:05.151719776Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin GET /admin/nodes/{node_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:05.152927129Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous PATCH /admin/nodes/{node_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:05.705809942Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin PATCH /admin/nodes/{node_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:05.70716982Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous DELETE /admin/nodes/{node_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:06.259426176Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin DELETE /admin/nodes/{node_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:06.261900754Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous PUT /admin/nodes/{node_id}/publication",
+      "passed": true,
+      "utc": "2026-10-30T06:50:06.814491272Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin PUT /admin/nodes/{node_id}/publication",
+      "passed": true,
+      "utc": "2026-10-30T06:50:06.815734903Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /admin/nodes/{node_id}/revoke",
+      "passed": true,
+      "utc": "2026-10-30T06:50:07.368220627Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin POST /admin/nodes/{node_id}/revoke",
+      "passed": true,
+      "utc": "2026-10-30T06:50:07.36929626Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /admin/operations/{operation_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:07.921737691Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin GET /admin/operations/{operation_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:07.922812929Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /admin/policies",
+      "passed": true,
+      "utc": "2026-10-30T06:50:08.475027575Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin GET /admin/policies",
+      "passed": true,
+      "utc": "2026-10-30T06:50:08.476035753Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /admin/policies",
+      "passed": true,
+      "utc": "2026-10-30T06:50:09.029135054Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin POST /admin/policies",
+      "passed": true,
+      "utc": "2026-10-30T06:50:09.030569066Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /admin/policies/{definition_id}/activate",
+      "passed": true,
+      "utc": "2026-10-30T06:50:09.583534281Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin POST /admin/policies/{definition_id}/activate",
+      "passed": true,
+      "utc": "2026-10-30T06:50:09.585037205Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /admin/releases",
+      "passed": true,
+      "utc": "2026-10-30T06:50:10.137173515Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin GET /admin/releases",
+      "passed": true,
+      "utc": "2026-10-30T06:50:10.138460143Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /admin/releases",
+      "passed": true,
+      "utc": "2026-10-30T06:50:10.691614358Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin POST /admin/releases",
+      "passed": true,
+      "utc": "2026-10-30T06:50:10.693401285Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /admin/update-batches",
+      "passed": true,
+      "utc": "2026-10-30T06:50:11.245849463Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin POST /admin/update-batches",
+      "passed": true,
+      "utc": "2026-10-30T06:50:11.247082496Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /admin/update-batches/{batch_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:11.799035765Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin GET /admin/update-batches/{batch_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:11.800091424Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /admin/update-batches/{batch_id}/retry",
+      "passed": true,
+      "utc": "2026-10-30T06:50:12.352832837Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "member to admin POST /admin/update-batches/{batch_id}/retry",
+      "passed": true,
+      "utc": "2026-10-30T06:50:12.354474921Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /agent/bootstrap",
+      "passed": true,
+      "utc": "2026-10-30T06:50:12.907139884Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /agent/certificates/renew",
+      "passed": true,
+      "utc": "2026-10-30T06:50:13.459447743Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /agent/desired-state",
+      "passed": true,
+      "utc": "2026-10-30T06:50:14.011982115Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /agent/lease-renewals",
+      "passed": true,
+      "utc": "2026-10-30T06:50:14.564864309Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /agent/observations",
+      "passed": true,
+      "utc": "2026-10-30T06:50:15.117776871Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /agent/resolver-documents/{document_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:15.670886086Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /agent/update-results",
+      "passed": true,
+      "utc": "2026-10-30T06:50:16.223337119Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /agent/usage-batches",
+      "passed": true,
+      "utc": "2026-10-30T06:50:16.776028708Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /agent/usage-checkpoint",
+      "passed": true,
+      "utc": "2026-10-30T06:50:17.3294508Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /member/billing-portal-sessions",
+      "passed": true,
+      "utc": "2026-10-30T06:50:17.88205219Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "admin to member POST /member/billing-portal-sessions",
+      "passed": true,
+      "utc": "2026-10-30T06:50:17.883212228Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous POST /member/checkout-sessions",
+      "passed": true,
+      "utc": "2026-10-30T06:50:18.436458521Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "admin to member POST /member/checkout-sessions",
+      "passed": true,
+      "utc": "2026-10-30T06:50:18.437972953Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /member/devices",
+      "passed": true,
+      "utc": "2026-10-30T06:50:18.990714335Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "admin to member GET /member/devices",
+      "passed": true,
+      "utc": "2026-10-30T06:50:18.992644961Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous DELETE /member/devices/{device_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:19.546924399Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "admin to member DELETE /member/devices/{device_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:19.548147927Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /member/exits",
+      "passed": true,
+      "utc": "2026-10-30T06:50:20.100650167Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "admin to member GET /member/exits",
+      "passed": true,
+      "utc": "2026-10-30T06:50:20.102588619Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /member/me",
+      "passed": true,
+      "utc": "2026-10-30T06:50:20.655935403Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "admin to member GET /member/me",
+      "passed": true,
+      "utc": "2026-10-30T06:50:20.659081854Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /member/operations/{operation_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:21.212132322Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "admin to member GET /member/operations/{operation_id}",
+      "passed": true,
+      "utc": "2026-10-30T06:50:21.213423049Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "anonymous GET /member/usage",
+      "passed": true,
+      "utc": "2026-10-30T06:50:21.766679926Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "UNAUTHENTICATED",
+      "expected_status": 401,
+      "name": "admin to member GET /member/usage",
+      "passed": true,
+      "utc": "2026-10-30T06:50:21.768720404Z"
+    },
+    {
+      "actual_code": "CSRF_TOKEN_INVALID",
+      "actual_status": 403,
+      "expected_code": "",
+      "expected_status": 403,
+      "name": "CSRF missing",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.329948936Z"
+    },
+    {
+      "actual_code": "CSRF_TOKEN_INVALID",
+      "actual_status": 403,
+      "expected_code": "",
+      "expected_status": 403,
+      "name": "CSRF invalid",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.332277879Z"
+    },
+    {
+      "actual_code": "CSRF_TOKEN_INVALID",
+      "actual_status": 403,
+      "expected_code": "",
+      "expected_status": 403,
+      "name": "CSRF cross-origin",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.33511823Z"
+    },
+    {
+      "actual_code": "UNAUTHENTICATED",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "invalid bearer",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.336662394Z"
+    },
+    {
+      "actual_code": "ENROLLMENT_TOKEN_INVALID",
+      "actual_status": 401,
+      "expected_code": "",
+      "expected_status": 401,
+      "name": "invalid enrollment credential",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.339843795Z"
+    },
+    {
+      "actual_code": "PAYLOAD_TOO_LARGE",
+      "actual_status": 413,
+      "expected_code": "",
+      "expected_status": 413,
+      "name": "oversize body",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.345946816Z"
+    },
+    {
+      "actual_code": "VALIDATION_FAILED",
+      "actual_status": 422,
+      "expected_code": "",
+      "expected_status": 422,
+      "name": "schema invalid",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.348457413Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create member group input",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.352675863Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create fair_use policy input",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.360609746Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "activate fair_use policy input",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.367516755Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create domain_rule_set policy input",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.374369578Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "activate domain_rule_set policy input",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.381149214Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create dns_profile policy input",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.3863277Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "activate dns_profile policy input",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.39385707Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create plan policy input",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.401161484Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "activate plan policy input",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.406698391Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 00 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.416758991Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 01 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.582052239Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 02 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.746758653Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 03 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:22.90987745Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 04 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:23.069632642Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 05 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:23.233616205Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 06 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:23.390446696Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 07 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:23.547195815Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 08 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:23.71094993Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 09 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:23.875034372Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 10 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:24.031304482Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 11 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:24.190167529Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 12 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:24.347425601Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 13 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:24.504627144Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 14 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:24.661129298Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 15 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:24.81789327Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 16 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:24.973506584Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 17 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:25.129493847Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 18 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:25.292453589Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 19 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T06:50:25.449206409Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create enrollment secops-agent",
+      "passed": true,
+      "utc": "2026-10-30T06:50:28.643535762Z"
+    },
+    {
+      "actual_code": "no-store",
+      "actual_status": 201,
+      "expected_code": "no-store",
+      "expected_status": 201,
+      "name": "enrollment secret no-store",
+      "passed": true,
+      "utc": "2026-10-30T06:50:28.643587959Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "enrollment duplicate",
+      "passed": true,
+      "utc": "2026-10-30T06:50:28.646900803Z"
+    },
+    {
+      "actual_code": "IDEMPOTENCY_CONFLICT",
+      "actual_status": 409,
+      "expected_code": "IDEMPOTENCY_CONFLICT",
+      "expected_status": 409,
+      "name": "enrollment idempotency conflict",
+      "passed": true,
+      "utc": "2026-10-30T06:50:28.649699198Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create enrollment secops-node-b",
+      "passed": true,
+      "utc": "2026-10-30T06:50:29.700645181Z"
+    },
+    {
+      "actual_code": "no-store",
+      "actual_status": 201,
+      "expected_code": "no-store",
+      "expected_status": 201,
+      "name": "enrollment secret no-store",
+      "passed": true,
+      "utc": "2026-10-30T06:50:29.700675516Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "enrollment duplicate",
+      "passed": true,
+      "utc": "2026-10-30T06:50:29.705679002Z"
+    },
+    {
+      "actual_code": "IDEMPOTENCY_CONFLICT",
+      "actual_status": 409,
+      "expected_code": "IDEMPOTENCY_CONFLICT",
+      "expected_status": 409,
+      "name": "enrollment idempotency conflict",
+      "passed": true,
+      "utc": "2026-10-30T06:50:29.708167811Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "node B certificate enrollment",
+      "passed": true,
+      "utc": "2026-10-30T06:50:29.712830183Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "node B CSR replay",
+      "passed": true,
+      "utc": "2026-10-30T06:50:29.721634727Z"
+    },
+    {
+      "actual_code": "TRANSPORT_REFUSED",
+      "actual_status": 0,
+      "expected_code": "TRANSPORT_REFUSED",
+      "expected_status": 0,
+      "name": "expired certificate actual TLS",
+      "passed": true,
+      "utc": "2026-10-30T06:50:29.72350969Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "node A certificate keeps own configuration",
+      "passed": true,
+      "utc": "2026-10-30T06:50:29.775123653Z"
+    },
+    {
+      "actual_code": "TRANSPORT_REFUSED",
+      "actual_status": 0,
+      "expected_code": "TRANSPORT_REFUSED",
+      "expected_status": 0,
+      "name": "certificate required",
+      "passed": true,
+      "utc": "2026-10-30T06:50:29.776195724Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "desired state forged header 01a18b92-fda1-73c2-a734-8e2250b96216",
+      "passed": true,
+      "utc": "2026-10-30T06:50:29.78193827Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "desired state forged header 01a18b93-01c2-7350-95e5-b41801d102ff",
+      "passed": true,
+      "utc": "2026-10-30T06:50:29.785388662Z"
+    },
+    {
+      "actual_code": "INCARNATION_MISMATCH",
+      "actual_status": 403,
+      "expected_code": "",
+      "expected_status": 403,
+      "name": "forged usage node_id",
+      "passed": true,
+      "utc": "2026-10-30T06:50:29.786120161Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "node B bootstrap once",
+      "passed": true,
+      "utc": "2026-10-30T06:50:30.80101804Z"
+    },
+    {
+      "actual_code": "no-store",
+      "actual_status": 200,
+      "expected_code": "no-store",
+      "expected_status": 200,
+      "name": "bootstrap secret no-store",
+      "passed": true,
+      "utc": "2026-10-30T06:50:30.801032822Z"
+    },
+    {
+      "actual_code": "BOOTSTRAP_CONSUMED",
+      "actual_status": 410,
+      "expected_code": "BOOTSTRAP_CONSUMED",
+      "expected_status": 410,
+      "name": "node B bootstrap consumed",
+      "passed": true,
+      "utc": "2026-10-30T06:50:30.803717215Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "enrolled node detail",
+      "passed": true,
+      "utc": "2026-10-30T06:51:00.943657061Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "finite node capacity input",
+      "passed": true,
+      "utc": "2026-10-30T06:52:34.613761986Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "enrolled node detail",
+      "passed": true,
+      "utc": "2026-10-30T06:52:46.710135909Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 00 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:06.284412203Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 01 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:06.84475711Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 02 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:07.405639677Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 03 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:07.966142817Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 04 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:08.527843011Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 05 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:09.081262905Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 06 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:09.642013867Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 07 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:10.19644168Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 08 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:10.757206518Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 09 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:11.310960247Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 10 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:11.871183751Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 11 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:12.431849268Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 12 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:12.99304034Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 13 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:13.55355741Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 14 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:14.114469626Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 15 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:14.676849673Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 16 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:15.237961793Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 17 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:15.798392486Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 18 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:16.358530811Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "member 19 own devices",
+      "passed": true,
+      "utc": "2026-10-30T06:54:16.919476652Z"
+    },
+    {
+      "actual_code": "RESOURCE_NOT_FOUND",
+      "actual_status": 404,
+      "expected_code": "",
+      "expected_status": 404,
+      "name": "foreign device revoke",
+      "passed": true,
+      "utc": "2026-10-30T06:54:17.481550855Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "usage remains caller scoped with foreign query",
+      "passed": true,
+      "utc": "2026-10-30T06:54:17.48588188Z"
+    },
+    {
+      "actual_code": "PRECONDITION_REQUIRED",
+      "actual_status": 428,
+      "expected_code": "",
+      "expected_status": 428,
+      "name": "member PATCH needs If-Match",
+      "passed": true,
+      "utc": "2026-10-30T06:54:17.488104173Z"
+    },
+    {
+      "actual_code": "RESOURCE_VERSION_CONFLICT",
+      "actual_status": 412,
+      "expected_code": "",
+      "expected_status": 412,
+      "name": "member PATCH stale ETag",
+      "passed": true,
+      "utc": "2026-10-30T06:54:17.49071229Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "enrolled node detail",
+      "passed": true,
+      "utc": "2026-10-30T06:54:17.493765482Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "usage body size 1048576",
+      "passed": true,
+      "utc": "2026-10-30T06:55:26.499714293Z"
+    },
+    {
+      "actual_code": "MALFORMED_REQUEST",
+      "actual_status": 400,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "usage body size 1048577",
+      "passed": false,
+      "utc": "2026-10-30T06:55:27.503362462Z"
+    },
+    {
+      "actual_code": "MALFORMED_REQUEST",
+      "actual_status": 400,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "usage body size 8388608",
+      "passed": false,
+      "utc": "2026-10-30T06:55:28.527162605Z"
+    },
+    {
+      "actual_code": "PAYLOAD_TOO_LARGE",
+      "actual_status": 413,
+      "expected_code": "",
+      "expected_status": 413,
+      "name": "usage body size 8388609",
+      "passed": true,
+      "utc": "2026-10-30T06:55:29.548889613Z"
+    }
+  ],
+  "concurrent_sign_in": {
+    "attempts": 20,
+    "authenticated": 20,
+    "barrier_started": true,
+    "issuer": "embedded Dex, separate cookie jars; no shared assume slot",
+    "last_login_http_status": {
+      "200": 20
+    },
+    "login_wall_ms": [
+      450.846,
+      449.911,
+      468.317,
+      464.14,
+      468.289,
+      406.126,
+      464.97,
+      450.506,
+      368.265,
+      469.908,
+      472.885,
+      413.407,
+      448.528,
+      384.513,
+      443.392,
+      424.977,
+      373.248,
+      465.137,
+      441.27,
+      231.479
+    ],
+    "metrics_after": {
+      "address": 0,
+      "subject": 0
+    },
+    "metrics_before": {
+      "address": 0,
+      "subject": 0
+    },
+    "requests_by_identity": [
+      [
+        {
+          "utc": "2026-10-30T06:56:10.711051932Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35cf-79e5-8797-60760041b3b1"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.148385247Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-3756-71dd-bcc9-9f908b5c4d06"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.150435918Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-378d-734e-a54b-9bddeb259abf"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.711636786Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35ce-7496-85fb-f16d76a1fcfe"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.147501782Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-3749-7b43-a1e7-104805b9c15c"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.150411561Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-378c-73b7-92c6-93ea74bc2833"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.711237118Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35cf-7d26-a33d-c333207e5052"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.165901069Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-3763-73cc-b88c-b63fb1866b6f"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.168581647Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-379e-7ef8-94e3-3b323e000b9b"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.713738876Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35d4-7056-90dc-e0e2711589bf"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.161702958Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-3716-7623-8f80-fafbb2e1631e"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.16405505Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-379a-7a97-b7d6-6082d925f0a3"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.714013742Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35d4-76d6-b014-60a7850e330f"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.166020685Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-3735-74cd-a1be-2516fd97ae80"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.168886266Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-379f-7557-9228-b5763298d562"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.713810273Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35d4-7c8b-b3d0-89c23b7cdd08"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.103474837Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-36c6-7f02-a990-dce7a2b33b45"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.106367542Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-3761-7016-85a7-8c9169aca52d"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.713937911Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35d3-7976-9a94-2c7eb3c6f894"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.162492299Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-3737-7129-bd49-0cb165ff62bc"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.166570566Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-379b-7e8b-9cc0-378e864095eb"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.713849582Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35d3-761a-a365-5d3b8f1bb98b"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.14833125Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-36e0-7321-9466-64774f58d89d"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.15048925Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-378c-7f2d-8c3d-f6afbb0e5f7b"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.711147846Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35cd-7b0b-ac40-64b9890ecd1d"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.065617484Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-36a6-7092-9765-eab1b111db68"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.068267454Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-373a-7b5d-807c-91f3ac2916f6"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.711211979Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35ce-70bb-bdb4-0525eebc624e"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.167474424Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-36e2-7ca9-b8b2-f2117df98fa6"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.169600579Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-37a0-7796-b965-1419cd7caf77"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.711983211Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35d0-7a1a-bc2e-1bfb2e1e0568"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.170486554Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-376d-723c-b4e3-a9724613c978"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.172298397Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-37a3-7757-9d85-128b43335699"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.711223863Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35cf-703c-9f48-f8737b2762a0"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.110687351Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-36f5-7d71-b1e2-3147993c45f9"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.113376146Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-3767-7f2a-853c-06008d687a84"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.713898922Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35d2-762f-9ba9-53d0b251d17c"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.14616814Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-36f0-7cb7-8cae-73021a34011d"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.149552286Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-378b-73b3-ada6-9d15c1ff2e58"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.711037254Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35ce-7c15-b93c-17a089787d48"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.08199203Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-36ca-70f1-85e9-68591a47510b"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.08445112Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-374a-7d4d-9802-6afc5f72f18c"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.713976569Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35d5-70a6-931b-bac22444e9d6"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.141062055Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-371b-70dc-a9ed-1dd206526ac1"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.1436661Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-3786-71dd-ac61-cb2a4e3bca08"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.713739783Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35d1-7644-a714-6045f135f412"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.122557559Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-372a-78d4-b7e2-c581ce5078b9"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.12416364Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-3773-7571-b162-3183907f5a79"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.711133008Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35cf-757e-9f87-bd1191a8dcbe"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.070702067Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-36ee-76d8-99cc-d12bf11340b5"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.073001198Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-373f-77ba-80e0-181355fd67c9"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.713767677Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35d1-7db8-840a-6a2ebd2dfe8e"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.162492054Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-3741-74bf-a8ef-e11cbbae191a"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.166042351Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-379b-7b22-a700-19ef04b49bae"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.711079627Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35d0-7465-ba9a-719105437f34"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.138262553Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-370e-7a66-9a8d-a1175f159750"
+        },
+        {
+          "utc": "2026-10-30T06:56:11.143128636Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-3783-7c7b-8915-774d77f675b8"
+        }
+      ],
+      [
+        {
+          "utc": "2026-10-30T06:56:10.708646181Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b98-35cb-7586-ad19-cb71d9b3fbc0"
+        },
+        {
+          "utc": "2026-10-30T06:56:10.928851352Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b98-362d-7277-8a10-e51554636fef"
+        },
+        {
+          "utc": "2026-10-30T06:56:10.931602644Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b98-36b2-7275-9f1b-a999b8129f23"
+        }
+      ]
+    ],
+    "session_http_status": {
+      "200": 20
+    },
+    "supersedes": "followup1-login.json; D-060 / PR #106",
+    "wrong_member": 0,
+    "zero_status": "login walker did not complete; not a measured session HTTP response"
+  },
+  "configured_updater_recovery_file_present": true,
+  "counted_flow": false,
+  "device_fixture": "native NetBird user device flow; production devices.discover writes admission/binding",
+  "finished_at": "2026-10-30T07:09:11.646895146Z",
+  "flow_probe": {
+    "admitted_bytes_delta": "0",
+    "after_bytes": {
+      "d_01a18b95d54a766393199d3721404c75": "0",
+      "u_01a18b95d54a766393199d3721404c75": "0"
+    },
+    "before_bytes": {
+      "d_01a18b95d54a766393199d3721404c75": "0",
+      "u_01a18b95d54a766393199d3721404c75": "0"
+    },
+    "command": [
+      "docker",
+      "exec",
+      "fvpn-w4-secops-member",
+      "wget",
+      "--timeout=3",
+      "--tries=1",
+      "--ca-certificate=/etc/vpn-node/ca.pem",
+      "-q",
+      "-O",
+      "/dev/null",
+      "https://releases.example.invalid/healthz"
+    ],
+    "counted_flow": false,
+    "counter_reads_ok": true,
+    "device_counter_count": 2,
+    "networks_read_ok": true,
+    "no_native_networks": false,
+    "node_serving": true,
+    "note": "Controlled-origin reachability alone can be a direct lab bridge path; it is not VPN throughput.",
+    "request_succeeded": false
+  },
+  "follow_up": 4,
+  "forward_baseline_generation_zero": false,
+  "forward_chain_observed": true,
+  "go_test_failed": true,
+  "grant_projection": {
+    "active_members": 20,
+    "commands": 20,
+    "finite_end": "2026-10-30T07:50:22Z",
+    "writes": "admin grants only; projected tables read-only"
+  },
+  "grant_survived_two_device_sweeps": true,
+  "hardware": "shared development host; not candidate hardware",
+  "image_digests": [
+    {
+      "image_id": "sha256:a680945078c4343b63f36902000807cd0ab61f0d5fb112a35b675710aaae769b",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:263ebda4d921cb783a2a5eb2cfe887b1ca8137de4b8e3c80bdc5679e8f7e4d6d",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:7cc5e6683541e475eafd2abc1ff2b3c25d41f7f7d8f09c152513b6f00812d22e",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:2a097fd81544c6228c0c5370d99b0f84c768285ac21e805b920981020f721f6d",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:e5310d1b54ae0bf3fdabac32f783a7c3fccc8d351d1fb4177720c190506df1a7",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:274e7c37268cfaddfad906d9b3b2895757d3835fd13fe419a876c58ca8f3da96",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "node-netns"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u16-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u16-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u16-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u15-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u15-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u15-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u14-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u14-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u14-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u13-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u13-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u13-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u12-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u12-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u12-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u11-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u11-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u11-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u10-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u10-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u10-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u09-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u09-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u09-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u08-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u08-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u08-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u07-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u07-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u07-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u06-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u06-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u06-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u05-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u05-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u05-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u04-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u04-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u04-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u03-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u03-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u03-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u02-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u02-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u02-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u01-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u01-p2"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u01-p1"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u00-p3"
+    },
+    {
+      "image_id": "sha256:56f6a732dfc0a1eba65fa2d1a51bb687501f041b6ec4ce1640e8d500d51271f2",
+      "service": "member-secops-u00-p2"
+    }
+  ],
+  "known_secret_canaries": 104,
+  "ledger_binding_source": "read-only device_bindings produced by devices.discover; not a serving-policy assertion",
+  "login_settings": {
+    "login_rate": {
+      "per_second": 1,
+      "burst": 40
+    },
+    "login_subject_per_minute": 10,
+    "max_concurrent": 128,
+    "mutated": false,
+    "source": "prepared central.json plus named container environment overrides"
+  },
+  "member_accept_rules": 6,
+  "members_authenticated": 20,
+  "native_device_login": {
+    "completed": true,
+    "flow_path": "/oauth2/device",
+    "initial_http_status": 200
+  },
+  "native_projection": {
+    "bindings": 1,
+    "devices": 1,
+    "same_public_subject": true,
+    "user_bindings": 1
+  },
+  "native_scale": {
+    "attempted_new_peers": 50,
+    "blocker": "member device list did not contain exactly three authorized peers",
+    "elapsed_seconds": 772.424477875,
+    "hook": "StartNativePeer + JoinNativeMember",
+    "new_authorized_peers": 50,
+    "new_identity_matches": 50,
+    "projector_writes": false,
+    "requested_peers": 60,
+    "requested_users": 20,
+    "users": [
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 0
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 1
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 2
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 3
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 4
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 5
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 6
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 7
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 8
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 9
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 10
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 11
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 12
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 13
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 14
+      },
+      {
+        "authorized": 3,
+        "http_status": 200,
+        "user_index": 15
+      },
+      {
+        "authorized": 0,
+        "http_status": 0,
+        "user_index": 16
+      }
+    ]
+  },
+  "node_after_publication": {
+    "config_generation": {
+      "applied": "9",
+      "desired": "9"
+    },
+    "data_health": "healthy",
+    "observed_publication": "active",
+    "provisioning": "ready",
+    "publication": "published"
+  },
+  "node_incarnation": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+  "node_service_precondition": {
+    "config_generation": {
+      "applied": "7",
+      "desired": "7"
+    },
+    "data_health": "healthy",
+    "lifecycle": "registered",
+    "management_peer_bound": true,
+    "observed_publication": "active",
+    "provisioning": "ready",
+    "publication": "published",
+    "safety": "passed"
+  },
+  "observed_lease_generation": {
+    "applied_generation": "9",
+    "desired_generation": "9",
+    "expires_at": "2026-10-31T06:54:18.429038Z",
+    "issued_at": "2026-10-30T06:54:18.429038Z",
+    "lease_generation": "9",
+    "matches_applied": true,
+    "read_ok": true,
+    "source": "lease ID from current immutable agent observation"
+  },
+  "policy_revision": "1",
+  "probe_source_sha256": "a4cba1800eedd63667ba6ad2fc25f3c9beaf241f5bd805e2a24bfa6c24f404d2",
+  "projected_bindings": 1,
+  "projector_owned_rows_written": [],
+  "publication_empty_bindings": {
+    "counted_flow": false,
+    "flow_probe": {
+      "admitted_bytes_delta": "0",
+      "after_bytes": {},
+      "before_bytes": {},
+      "command": [
+        "docker",
+        "exec",
+        "fvpn-w4-secops-member",
+        "wget",
+        "--timeout=3",
+        "--tries=1",
+        "--ca-certificate=/etc/vpn-node/ca.pem",
+        "-q",
+        "-O",
+        "/dev/null",
+        "https://releases.example.invalid/healthz"
+      ],
+      "counted_flow": false,
+      "counter_reads_ok": true,
+      "device_counter_count": 0,
+      "networks_read_ok": false,
+      "no_native_networks": false,
+      "node_serving": true,
+      "note": "Controlled-origin reachability alone can be a direct lab bridge path; it is not VPN throughput.",
+      "request_succeeded": false
+    },
+    "node_after_publication": {
+      "config_generation": {
+        "applied": "6",
+        "desired": "6"
+      },
+      "data_health": "healthy",
+      "observed_publication": "active",
+      "provisioning": "ready",
+      "publication": "published"
+    },
+    "observed_lease_generation": {
+      "applied_generation": "6",
+      "desired_generation": "6",
+      "expires_at": "2026-10-31T06:52:51.575602Z",
+      "issued_at": "2026-10-30T06:52:51.575602Z",
+      "lease_generation": "6",
+      "matches_applied": true,
+      "read_ok": true,
+      "source": "lease ID from current immutable agent observation"
+    },
+    "publication_negative": {
+      "expected": "failed data_path_probe: NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed",
+      "owner_fix": "wire-nodes follow-up 12 / PR #109",
+      "passed": false
+    },
+    "publication_observation_after": {
+      "applied_config_generation": "6",
+      "available": true,
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "status": "not_run"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "qos",
+          "status": "not_run"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "status": "not_run"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "tunnel_probe",
+          "status": "passed"
+        }
+      ],
+      "data_health": "healthy",
+      "forwarding_evidence_satisfied": false,
+      "lease": {
+        "expires_at": "2026-10-31T06:52:51.575602846Z",
+        "lease_id": "aad78289-7f45-4146-8f44-94ff5de96553"
+      },
+      "member_forwarding_enabled": true,
+      "observed_at": "2026-10-30T06:53:06.817552841Z",
+      "provisioning_state": "ready",
+      "report_id": "01a18b95-6781-7876-849c-8a9b11e39d8e",
+      "safety_status": "passed"
+    },
+    "publication_observation_before": {
+      "applied_config_generation": "4",
+      "available": true,
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "status": "not_run"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "qos",
+          "status": "not_run"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "status": "not_run"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "tunnel_probe",
+          "status": "passed"
+        }
+      ],
+      "data_health": "healthy",
+      "forwarding_evidence_satisfied": false,
+      "lease": {
+        "expires_at": "2026-10-31T06:52:36.28967649Z",
+        "lease_id": "54ba6a03-6b68-4904-8d62-f3bbb8909bb7"
+      },
+      "member_forwarding_enabled": true,
+      "observed_at": "2026-10-30T06:52:36.346977685Z",
+      "provisioning_state": "ready",
+      "report_id": "01a18b94-f07a-7ef4-8c77-c0192196b406",
+      "safety_status": "passed"
+    },
+    "publication_operation": {
+      "operation_id": "4de6dc7e-9df2-411b-a17f-177f9b03d891",
+      "status": "succeeded",
+      "steps": [
+        {
+          "error_code": null,
+          "message": null,
+          "name": "agent_policy",
+          "observed_at": "2026-10-30T06:53:11.78489812Z",
+          "required": true,
+          "status": "succeeded"
+        },
+        {
+          "error_code": null,
+          "message": null,
+          "name": "data_path_probe",
+          "observed_at": "2026-10-30T06:53:11.78489812Z",
+          "required": true,
+          "status": "succeeded"
+        },
+        {
+          "error_code": null,
+          "message": null,
+          "name": "netbird_route_readback",
+          "observed_at": "2026-10-30T06:53:11.78489812Z",
+          "required": true,
+          "status": "succeeded"
+        }
+      ]
+    },
+    "publication_request": {
+      "code": "",
+      "status": 202
+    },
+    "serving_checks": [
+      {
+        "error_code": null,
+        "name": "dns_policy",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "internet_only",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "lease",
+        "status": "not_run"
+      },
+      {
+        "error_code": null,
+        "name": "meter_path",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "policy_signature",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "qos",
+        "status": "not_run"
+      },
+      {
+        "error_code": null,
+        "name": "release_supported",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "source_binding",
+        "status": "not_run"
+      },
+      {
+        "error_code": null,
+        "name": "storage",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "tunnel_probe",
+        "status": "passed"
+      }
+    ],
+    "signed_device_bindings": 0,
+    "signed_generation": "6",
+    "signed_input_read_ok": true,
+    "signed_publication_intent": "published",
+    "utc": "2026-10-30T06:53:16.026049471Z",
+    "watchdog_state": {
+      "baseline_ok": "1",
+      "generation": "6",
+      "mono_ns": "698231091765343",
+      "policy_expires_mono_ns": "784610771037345",
+      "reason": "serving",
+      "serving": "1",
+      "wall_unix_ns": "1793343191894944036"
+    }
+  },
+  "publication_negative": {
+    "expected": "failed data_path_probe: NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed",
+    "owner_fix": "wire-nodes follow-up 12 / PR #109",
+    "passed": false
+  },
+  "publication_observation_after": {
+    "applied_config_generation": "9",
+    "available": true,
+    "checks": [
+      {
+        "error_code": null,
+        "name": "dns_policy",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "internet_only",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "lease",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "meter_path",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "policy_signature",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "qos",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "release_supported",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "source_binding",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "storage",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "tunnel_probe",
+        "status": "passed"
+      }
+    ],
+    "data_health": "healthy",
+    "forwarding_evidence_satisfied": true,
+    "lease": {
+      "expires_at": "2026-10-31T06:54:18.429038954Z",
+      "lease_id": "bf4ec513-ea2d-4cc1-84b8-db60ba88c78e"
+    },
+    "member_forwarding_enabled": true,
+    "observed_at": "2026-10-30T06:54:38.787793334Z",
+    "provisioning_state": "ready",
+    "report_id": "01a18b96-cec3-7c24-acf0-4d1f030f729f",
+    "safety_status": "passed"
+  },
+  "publication_observation_before": {
+    "applied_config_generation": "7",
+    "available": true,
+    "checks": [
+      {
+        "error_code": null,
+        "name": "dns_policy",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "internet_only",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "lease",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "meter_path",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "policy_signature",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "qos",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "release_supported",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "source_binding",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "storage",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "tunnel_probe",
+        "status": "passed"
+      }
+    ],
+    "data_health": "healthy",
+    "forwarding_evidence_satisfied": true,
+    "lease": {
+      "expires_at": "2026-10-31T06:53:37.246792607Z",
+      "lease_id": "60cab85c-9d9c-41c0-bc1e-a527de0557c1"
+    },
+    "member_forwarding_enabled": true,
+    "observed_at": "2026-10-30T06:54:08.228139922Z",
+    "provisioning_state": "ready",
+    "report_id": "01a18b96-5764-7228-a304-23a8119354f0",
+    "safety_status": "passed"
+  },
+  "publication_operation": {
+    "operation_id": "19d124f2-04eb-4463-8809-dc190a6a7a46",
+    "status": "succeeded",
+    "steps": [
+      {
+        "error_code": null,
+        "message": null,
+        "name": "agent_policy",
+        "observed_at": "2026-10-30T06:54:45.215536224Z",
+        "required": true,
+        "status": "succeeded"
+      },
+      {
+        "error_code": null,
+        "message": null,
+        "name": "data_path_probe",
+        "observed_at": "2026-10-30T06:54:45.215536224Z",
+        "required": true,
+        "status": "succeeded"
+      },
+      {
+        "error_code": null,
+        "message": null,
+        "name": "netbird_route_readback",
+        "observed_at": "2026-10-30T06:54:45.215536224Z",
+        "required": true,
+        "status": "succeeded"
+      }
+    ]
+  },
+  "publication_request": {
+    "code": "",
+    "status": 202
+  },
+  "publication_with_device": {
+    "counted_flow": false,
+    "flow_probe": {
+      "admitted_bytes_delta": "0",
+      "after_bytes": {
+        "d_01a18b95d54a766393199d3721404c75": "0",
+        "u_01a18b95d54a766393199d3721404c75": "0"
+      },
+      "before_bytes": {
+        "d_01a18b95d54a766393199d3721404c75": "0",
+        "u_01a18b95d54a766393199d3721404c75": "0"
+      },
+      "command": [
+        "docker",
+        "exec",
+        "fvpn-w4-secops-member",
+        "wget",
+        "--timeout=3",
+        "--tries=1",
+        "--ca-certificate=/etc/vpn-node/ca.pem",
+        "-q",
+        "-O",
+        "/dev/null",
+        "https://releases.example.invalid/healthz"
+      ],
+      "counted_flow": false,
+      "counter_reads_ok": true,
+      "device_counter_count": 2,
+      "networks_read_ok": true,
+      "no_native_networks": false,
+      "node_serving": true,
+      "note": "Controlled-origin reachability alone can be a direct lab bridge path; it is not VPN throughput.",
+      "request_succeeded": false
+    },
+    "node_after_publication": {
+      "config_generation": {
+        "applied": "9",
+        "desired": "9"
+      },
+      "data_health": "healthy",
+      "observed_publication": "active",
+      "provisioning": "ready",
+      "publication": "published"
+    },
+    "observed_lease_generation": {
+      "applied_generation": "9",
+      "desired_generation": "9",
+      "expires_at": "2026-10-31T06:54:18.429038Z",
+      "issued_at": "2026-10-30T06:54:18.429038Z",
+      "lease_generation": "9",
+      "matches_applied": true,
+      "read_ok": true,
+      "source": "lease ID from current immutable agent observation"
+    },
+    "publication_negative": {
+      "expected": "failed data_path_probe: NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed",
+      "owner_fix": "wire-nodes follow-up 12 / PR #109",
+      "passed": false
+    },
+    "publication_observation_after": {
+      "applied_config_generation": "9",
+      "available": true,
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "qos",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "tunnel_probe",
+          "status": "passed"
+        }
+      ],
+      "data_health": "healthy",
+      "forwarding_evidence_satisfied": true,
+      "lease": {
+        "expires_at": "2026-10-31T06:54:18.429038954Z",
+        "lease_id": "bf4ec513-ea2d-4cc1-84b8-db60ba88c78e"
+      },
+      "member_forwarding_enabled": true,
+      "observed_at": "2026-10-30T06:54:38.787793334Z",
+      "provisioning_state": "ready",
+      "report_id": "01a18b96-cec3-7c24-acf0-4d1f030f729f",
+      "safety_status": "passed"
+    },
+    "publication_observation_before": {
+      "applied_config_generation": "7",
+      "available": true,
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "qos",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "tunnel_probe",
+          "status": "passed"
+        }
+      ],
+      "data_health": "healthy",
+      "forwarding_evidence_satisfied": true,
+      "lease": {
+        "expires_at": "2026-10-31T06:53:37.246792607Z",
+        "lease_id": "60cab85c-9d9c-41c0-bc1e-a527de0557c1"
+      },
+      "member_forwarding_enabled": true,
+      "observed_at": "2026-10-30T06:54:08.228139922Z",
+      "provisioning_state": "ready",
+      "report_id": "01a18b96-5764-7228-a304-23a8119354f0",
+      "safety_status": "passed"
+    },
+    "publication_operation": {
+      "operation_id": "19d124f2-04eb-4463-8809-dc190a6a7a46",
+      "status": "succeeded",
+      "steps": [
+        {
+          "error_code": null,
+          "message": null,
+          "name": "agent_policy",
+          "observed_at": "2026-10-30T06:54:45.215536224Z",
+          "required": true,
+          "status": "succeeded"
+        },
+        {
+          "error_code": null,
+          "message": null,
+          "name": "data_path_probe",
+          "observed_at": "2026-10-30T06:54:45.215536224Z",
+          "required": true,
+          "status": "succeeded"
+        },
+        {
+          "error_code": null,
+          "message": null,
+          "name": "netbird_route_readback",
+          "observed_at": "2026-10-30T06:54:45.215536224Z",
+          "required": true,
+          "status": "succeeded"
+        }
+      ]
+    },
+    "publication_request": {
+      "code": "",
+      "status": 202
+    },
+    "serving_checks": [
+      {
+        "error_code": null,
+        "name": "dns_policy",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "internet_only",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "lease",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "meter_path",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "policy_signature",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "qos",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "release_supported",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "source_binding",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "storage",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "tunnel_probe",
+        "status": "passed"
+      }
+    ],
+    "signed_device_bindings": 1,
+    "signed_generation": "9",
+    "signed_input_read_ok": true,
+    "signed_publication_intent": "published",
+    "utc": "2026-10-30T06:54:48.875931422Z",
+    "watchdog_state": {
+      "baseline_ok": "1",
+      "generation": "9",
+      "mono_ns": "698323058779243",
+      "policy_expires_mono_ns": "701661193313542",
+      "reason": "serving",
+      "serving": "1",
+      "wall_unix_ns": "1793343283861958069"
+    }
+  },
+  "publication_without_capacity": {
+    "counted_flow": false,
+    "flow_probe": {
+      "admitted_bytes_delta": "0",
+      "after_bytes": {},
+      "before_bytes": {},
+      "command": [
+        "docker",
+        "exec",
+        "fvpn-w4-secops-member",
+        "wget",
+        "--timeout=3",
+        "--tries=1",
+        "--ca-certificate=/etc/vpn-node/ca.pem",
+        "-q",
+        "-O",
+        "/dev/null",
+        "https://releases.example.invalid/healthz"
+      ],
+      "counted_flow": false,
+      "counter_reads_ok": true,
+      "device_counter_count": 0,
+      "networks_read_ok": false,
+      "no_native_networks": false,
+      "node_serving": false,
+      "note": "Controlled-origin reachability alone can be a direct lab bridge path; it is not VPN throughput.",
+      "request_succeeded": false
+    },
+    "node_after_publication": {
+      "config_generation": {
+        "applied": "3",
+        "desired": "3"
+      },
+      "data_health": "healthy",
+      "observed_publication": "error",
+      "provisioning": "ready",
+      "publication": "published"
+    },
+    "observed_lease_generation": {
+      "applied_generation": "3",
+      "desired_generation": "3",
+      "expires_at": "2026-10-31T06:51:05.148045Z",
+      "issued_at": "2026-10-30T06:51:05.148045Z",
+      "lease_generation": "3",
+      "matches_applied": true,
+      "read_ok": true,
+      "source": "lease ID from current immutable agent observation"
+    },
+    "publication_negative": {
+      "expected": "failed data_path_probe: NODE_NOT_SERVICEABLE / member_forwarding_unconfirmed",
+      "owner_fix": "wire-nodes follow-up 12 / PR #109",
+      "passed": false
+    },
+    "publication_observation_after": {
+      "applied_config_generation": "3",
+      "available": true,
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "status": "not_run"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "qos",
+          "status": "not_run"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "status": "not_run"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "tunnel_probe",
+          "status": "passed"
+        }
+      ],
+      "data_health": "healthy",
+      "forwarding_evidence_satisfied": false,
+      "lease": {
+        "expires_at": "2026-10-31T06:51:05.148045932Z",
+        "lease_id": "e09ad4be-8d61-4902-a02f-6b6d37dedf22"
+      },
+      "member_forwarding_enabled": false,
+      "observed_at": "2026-10-30T06:52:31.20673725Z",
+      "provisioning_state": "ready",
+      "report_id": "01a18b94-dc66-7b47-8aa5-3c1c68e3511e",
+      "safety_status": "passed"
+    },
+    "publication_observation_before": {
+      "applied_config_generation": "1",
+      "available": true,
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "status": "not_run"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "qos",
+          "status": "not_run"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "status": "not_run"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "tunnel_probe",
+          "status": "passed"
+        }
+      ],
+      "data_health": "healthy",
+      "forwarding_evidence_satisfied": false,
+      "lease": {
+        "expires_at": "2026-10-31T06:50:29.536053961Z",
+        "lease_id": "c97faa7a-b005-4e1c-85b6-a8fb91ae652f"
+      },
+      "member_forwarding_enabled": false,
+      "observed_at": "2026-10-30T06:51:00.069869211Z",
+      "provisioning_state": "ready",
+      "report_id": "01a18b93-7865-7d48-b6cf-e7522958afbc",
+      "safety_status": "passed"
+    },
+    "publication_operation": {
+      "operation_id": "f2d000d2-3b2d-437c-8b2e-3c63def3c52c",
+      "status": "running",
+      "steps": [
+        {
+          "error_code": null,
+          "message": null,
+          "name": "agent_policy",
+          "observed_at": "2026-10-30T06:52:27.627702225Z",
+          "required": true,
+          "status": "succeeded"
+        },
+        {
+          "error_code": "NODE_NOT_SERVICEABLE",
+          "message": "member_forwarding_unconfirmed",
+          "name": "data_path_probe",
+          "observed_at": null,
+          "required": true,
+          "status": "failed"
+        },
+        {
+          "error_code": null,
+          "message": null,
+          "name": "netbird_route_readback",
+          "observed_at": "2026-10-30T06:52:27.627702225Z",
+          "required": true,
+          "status": "succeeded"
+        }
+      ]
+    },
+    "publication_request": {
+      "code": "",
+      "status": 202
+    },
+    "serving_checks": [
+      {
+        "error_code": null,
+        "name": "dns_policy",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "internet_only",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "lease",
+        "status": "not_run"
+      },
+      {
+        "error_code": null,
+        "name": "meter_path",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "policy_signature",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "qos",
+        "status": "not_run"
+      },
+      {
+        "error_code": null,
+        "name": "release_supported",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "source_binding",
+        "status": "not_run"
+      },
+      {
+        "error_code": null,
+        "name": "storage",
+        "status": "passed"
+      },
+      {
+        "error_code": null,
+        "name": "tunnel_probe",
+        "status": "passed"
+      }
+    ],
+    "signed_device_bindings": 0,
+    "signed_generation": "3",
+    "signed_input_read_ok": true,
+    "signed_publication_intent": "published",
+    "utc": "2026-10-30T06:52:34.597045276Z",
+    "watchdog_state": {
+      "baseline_ok": "1",
+      "generation": "3",
+      "mono_ns": "698190416217795",
+      "policy_expires_mono_ns": "0",
+      "reason": "safety_check_failed",
+      "serving": "0",
+      "wall_unix_ns": "1793343151219396732"
+    }
+  },
+  "rate_classes": {
+    "anonymous_shared": {
+      "actual_first_rejection": 11,
+      "elapsed_seconds": 0.009014037,
+      "expected_first_rejection": 11,
+      "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
+      "first_error_code": "RATE_LIMITED",
+      "first_retry_after": "1",
+      "metric_delta": 1,
+      "metrics_after": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 3,
+        "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+        "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+      },
+      "metrics_before": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 2,
+        "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+        "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+      },
+      "passed": true,
+      "requests": [
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 1,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:19.309044595Z"
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 2,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:19.309938649Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 3,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:19.310977845Z"
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 4,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:19.311652445Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 5,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:19.312327689Z"
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 6,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:19.312994908Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 7,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:19.31367279Z"
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 8,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:19.314342541Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 9,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:19.315009476Z"
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 10,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:19.315764387Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 11,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T06:55:19.316561188Z"
+        }
+      ]
+    },
+    "enrollment": {
+      "actual_first_rejection": 11,
+      "elapsed_seconds": 0.012018429,
+      "expected_first_rejection": 11,
+      "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
+      "first_error_code": "RATE_LIMITED",
+      "first_retry_after": "1",
+      "metric_delta": 1,
+      "metrics_after": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 1,
+        "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+        "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+      },
+      "metrics_before": {
+        "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+        "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+      },
+      "passed": true,
+      "requests": [
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 1,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:07.112531028Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 2,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:07.113664081Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 3,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:07.114694145Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 4,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:07.1157017Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 5,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:07.116635663Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 6,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:07.117567753Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 7,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:07.119037088Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 8,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:07.120042586Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 9,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:07.120840641Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 10,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:55:07.121595742Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 11,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T06:55:07.122256002Z"
+        }
+      ]
+    },
+    "heartbeat": {
+      "actual_first_rejection": 6,
+      "elapsed_seconds": 0.003177168,
+      "expected_first_rejection": 6,
+      "expected_metric": "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}",
+      "first_error_code": "RATE_LIMITED",
+      "first_retry_after": "1",
+      "metric_delta": 1,
+      "metrics_after": {
+        "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1
+      },
+      "metrics_before": {},
+      "passed": true,
+      "requests": [
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 1,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:54:54.923530797Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 2,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:54:54.923849351Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 3,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:54:54.924133634Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 4,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:54:54.924349368Z"
+        },
+        {
+          "code": "VALIDATION_FAILED",
+          "index": 5,
+          "retry_after": "",
+          "status": 422,
+          "utc": "2026-10-30T06:54:54.924623701Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 6,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T06:54:54.924821909Z"
+        }
+      ]
+    },
+    "ipv6": {
+      "lab_network_ipv6": "false",
+      "network_read_ok": true,
+      "reason": "This live transport dials assigned IPv4 loopback ports. No IPv6-origin experiment or host/network changes; owner component tests cover /64 and invalid RemoteAddr.",
+      "status": "needs operator run"
+    },
+    "lease": {
+      "actual_first_rejection": 6,
+      "elapsed_seconds": 0.007659705,
+      "expected_first_rejection": 6,
+      "expected_metric": "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}",
+      "first_error_code": "RATE_LIMITED",
+      "first_retry_after": "1",
+      "metric_delta": 1,
+      "metrics_after": {
+        "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+        "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+      },
+      "metrics_before": {
+        "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1
+      },
+      "passed": true,
+      "requests": [
+        {
+          "code": "",
+          "index": 1,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:01.017341033Z"
+        },
+        {
+          "code": "",
+          "index": 2,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:01.018669647Z"
+        },
+        {
+          "code": "",
+          "index": 3,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:01.01968373Z"
+        },
+        {
+          "code": "",
+          "index": 4,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:01.020722101Z"
+        },
+        {
+          "code": "",
+          "index": 5,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:01.021779127Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 6,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T06:55:01.022533282Z"
+        }
+      ]
+    },
+    "ledger": {
+      "actual_rows": 1,
+      "expected_rows": 1,
+      "kernel_flow": false,
+      "read_ok": true,
+      "synthetic": true
+    },
+    "observation_payload": "{} deliberately schema-invalid: no projected observation rows written",
+    "settings": "unmodified D-060 defaults after #145; ingress 20/s burst60 per class/address; heartbeat and lease 1/s burst5; usage and anonymous 2/s burst10",
+    "source": "one host transport address; node B certificate; real agent uses node A identity",
+    "usage": {
+      "actual_first_rejection": 11,
+      "elapsed_seconds": 0.035695213,
+      "expected_first_rejection": 11,
+      "expected_metric": "fvpn_control_rate_limited_total{class=\"usage\",limiter=\"subject\"}",
+      "first_error_code": "RATE_LIMITED",
+      "first_retry_after": "1",
+      "metric_delta": 1,
+      "metrics_after": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 3,
+        "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+        "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1,
+        "fvpn_control_rate_limited_total{class=\"usage\",limiter=\"subject\"}": 1
+      },
+      "metrics_before": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 3,
+        "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+        "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+      },
+      "passed": true,
+      "requests": [
+        {
+          "code": "",
+          "index": 1,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:25.417003821Z"
+        },
+        {
+          "code": "",
+          "index": 2,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:25.421072541Z"
+        },
+        {
+          "code": "",
+          "index": 3,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:25.423704699Z"
+        },
+        {
+          "code": "",
+          "index": 4,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:25.426472687Z"
+        },
+        {
+          "code": "",
+          "index": 5,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:25.430137688Z"
+        },
+        {
+          "code": "",
+          "index": 6,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:25.43255315Z"
+        },
+        {
+          "code": "",
+          "index": 7,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:25.434504651Z"
+        },
+        {
+          "code": "",
+          "index": 8,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:25.436769414Z"
+        },
+        {
+          "code": "",
+          "index": 9,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:25.439107964Z"
+        },
+        {
+          "code": "",
+          "index": 10,
+          "retry_after": "",
+          "status": 200,
+          "utc": "2026-10-30T06:55:25.44138195Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 11,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T06:55:25.442024288Z"
+        }
+      ]
+    },
+    "usage_acknowledgements": [
+      {
+        "blocked_seq": null,
+        "highest_contiguous_seq": "1",
+        "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+        "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+        "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+        "received_at": "2026-10-30T06:55:25.40773147Z",
+        "results": [
+          {
+            "error": null,
+            "event_seq": "1",
+            "status": "accepted"
+          }
+        ]
+      },
+      {
+        "blocked_seq": null,
+        "highest_contiguous_seq": "1",
+        "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+        "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+        "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+        "received_at": "2026-10-30T06:55:25.417993678Z",
+        "results": [
+          {
+            "error": null,
+            "event_seq": "1",
+            "status": "duplicate"
+          }
+        ]
+      },
+      {
+        "blocked_seq": null,
+        "highest_contiguous_seq": "1",
+        "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+        "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+        "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+        "received_at": "2026-10-30T06:55:25.421659896Z",
+        "results": [
+          {
+            "error": null,
+            "event_seq": "1",
+            "status": "duplicate"
+          }
+        ]
+      },
+      {
+        "blocked_seq": null,
+        "highest_contiguous_seq": "1",
+        "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+        "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+        "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+        "received_at": "2026-10-30T06:55:25.424386145Z",
+        "results": [
+          {
+            "error": null,
+            "event_seq": "1",
+            "status": "duplicate"
+          }
+        ]
+      },
+      {
+        "blocked_seq": null,
+        "highest_contiguous_seq": "1",
+        "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+        "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+        "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+        "received_at": "2026-10-30T06:55:25.427843283Z",
+        "results": [
+          {
+            "error": null,
+            "event_seq": "1",
+            "status": "duplicate"
+          }
+        ]
+      },
+      {
+        "blocked_seq": null,
+        "highest_contiguous_seq": "1",
+        "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+        "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+        "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+        "received_at": "2026-10-30T06:55:25.430571502Z",
+        "results": [
+          {
+            "error": null,
+            "event_seq": "1",
+            "status": "duplicate"
+          }
+        ]
+      },
+      {
+        "blocked_seq": null,
+        "highest_contiguous_seq": "1",
+        "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+        "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+        "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+        "received_at": "2026-10-30T06:55:25.432843804Z",
+        "results": [
+          {
+            "error": null,
+            "event_seq": "1",
+            "status": "duplicate"
+          }
+        ]
+      },
+      {
+        "blocked_seq": null,
+        "highest_contiguous_seq": "1",
+        "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+        "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+        "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+        "received_at": "2026-10-30T06:55:25.434808234Z",
+        "results": [
+          {
+            "error": null,
+            "event_seq": "1",
+            "status": "duplicate"
+          }
+        ]
+      },
+      {
+        "blocked_seq": null,
+        "highest_contiguous_seq": "1",
+        "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+        "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+        "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+        "received_at": "2026-10-30T06:55:25.437233923Z",
+        "results": [
+          {
+            "error": null,
+            "event_seq": "1",
+            "status": "duplicate"
+          }
+        ]
+      },
+      {
+        "blocked_seq": null,
+        "highest_contiguous_seq": "1",
+        "ledger_epoch": "19e797db-f0ed-4234-aafa-6221296186a3",
+        "node_id": "01a18b93-01c2-7350-95e5-b41801d102ff",
+        "node_incarnation_id": "74561fdc-bb3f-4143-9cdc-dc4827a54e64",
+        "received_at": "2026-10-30T06:55:25.439416644Z",
+        "results": [
+          {
+            "error": null,
+            "event_seq": "1",
+            "status": "duplicate"
+          }
+        ]
+      }
+    ],
+    "usage_body_limits": [
+      {
+        "actual_status": 200,
+        "bytes": 1048576,
+        "code": "",
+        "expected_status": 200,
+        "fixture": "identical valid one-event batch padded with legal JSON trailing whitespace; optional idempotency header omitted",
+        "passed": true,
+        "valid_json": true
+      },
+      {
+        "actual_status": 400,
+        "bytes": 1048577,
+        "code": "MALFORMED_REQUEST",
+        "expected_status": 200,
+        "fixture": "identical valid one-event batch padded with legal JSON trailing whitespace; optional idempotency header omitted",
+        "passed": false,
+        "valid_json": true
+      },
+      {
+        "actual_status": 400,
+        "bytes": 8388608,
+        "code": "MALFORMED_REQUEST",
+        "expected_status": 200,
+        "fixture": "identical valid one-event batch padded with legal JSON trailing whitespace; optional idempotency header omitted",
+        "passed": false,
+        "valid_json": true
+      },
+      {
+        "actual_status": 413,
+        "bytes": 8388609,
+        "code": "PAYLOAD_TOO_LARGE",
+        "expected_status": 413,
+        "fixture": "identical valid one-event batch padded with legal JSON trailing whitespace; optional idempotency header omitted",
+        "passed": true,
+        "valid_json": true
+      }
+    ],
+    "webhook": {
+      "actual_first_rejection": 11,
+      "elapsed_seconds": 0.009414603,
+      "expected_first_rejection": 11,
+      "expected_metric": "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}",
+      "first_error_code": "RATE_LIMITED",
+      "first_retry_after": "1",
+      "metric_delta": 1,
+      "metrics_after": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 2,
+        "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+        "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+      },
+      "metrics_before": {
+        "fvpn_control_rate_limited_total{class=\"anonymous\",limiter=\"address\"}": 1,
+        "fvpn_control_rate_limited_total{class=\"heartbeat\",limiter=\"subject\"}": 1,
+        "fvpn_control_rate_limited_total{class=\"lease\",limiter=\"subject\"}": 1
+      },
+      "passed": true,
+      "requests": [
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 1,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:13.214228185Z"
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 2,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:13.215336807Z"
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 3,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:13.216138947Z"
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 4,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:13.216864868Z"
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 5,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:13.217630937Z"
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 6,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:13.218341961Z"
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 7,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:13.219029401Z"
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 8,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:13.219658932Z"
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 9,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:13.220323306Z"
+        },
+        {
+          "code": "WEBHOOK_SIGNATURE_INVALID",
+          "index": 10,
+          "retry_after": "",
+          "status": 401,
+          "utc": "2026-10-30T06:55:13.22098151Z"
+        },
+        {
+          "code": "RATE_LIMITED",
+          "index": 11,
+          "retry_after": "1",
+          "status": 429,
+          "utc": "2026-10-30T06:55:13.22164719Z"
+        }
+      ]
+    }
+  },
+  "requested_devices": 60,
+  "secret_scan": [
+    {
+      "bytes": 5533,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "postgres stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "idp stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "payment stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "origin stdout/stderr"
+    },
+    {
+      "bytes": 69470,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "netbird stdout/stderr"
+    },
+    {
+      "bytes": 63264,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "gateway stdout/stderr"
+    },
+    {
+      "bytes": 124,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "coredns stdout/stderr"
+    },
+    {
+      "bytes": 3424,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "adguard stdout/stderr"
+    },
+    {
+      "bytes": 229942,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "control stdout/stderr"
+    },
+    {
+      "bytes": 31621,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "worker stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node-netns stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u16-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u16-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u16-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u15-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u15-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u15-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u14-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u14-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u14-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u13-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u13-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u13-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u12-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u12-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u12-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u11-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u11-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u11-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u10-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u10-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u10-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u09-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u09-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u09-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u08-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u08-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u08-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u07-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u07-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u07-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u06-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u06-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u06-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u05-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u05-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u05-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u04-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u04-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u04-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u03-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u03-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u03-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u02-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u02-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u02-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u01-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u01-p2 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u01-p1 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u00-p3 stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u00-p2 stdout/stderr"
+    },
+    {
+      "bytes": 18432,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node file /var/lib/vpn-node/e2e/agent.log"
+    },
+    {
+      "bytes": 21849,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node file /var/lib/vpn-node/e2e/watchdog.log"
+    },
+    {
+      "bytes": 10,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node file /var/lib/vpn-node/e2e/netbird-up.log"
+    },
+    {
+      "bytes": 16855,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 103,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member file /var/lib/vpn-node/e2e/netbird-up.log"
+    },
+    {
+      "bytes": 3751,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u16-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 4267,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u16-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 4337,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u16-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 5508,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u15-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 5853,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u15-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 5143,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u15-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 5143,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u14-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 5783,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u14-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 6073,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u14-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 6011,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u13-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 6721,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u13-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 6268,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u13-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 6879,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u12-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 6231,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u12-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 6879,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u12-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 7136,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u11-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 7527,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u11-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 7747,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u11-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 8395,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u10-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 8529,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u10-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 8395,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u10-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 8029,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u09-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 9043,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u09-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 8615,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u09-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 9255,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u08-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 9263,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u08-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 9903,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u08-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 8835,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u07-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 9483,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u07-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 9483,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u07-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 10779,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u06-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 9823,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u06-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 10779,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u06-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 10999,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u05-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 10351,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u05-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 11159,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u05-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 12295,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u04-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 11867,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u04-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 11929,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u04-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 13129,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u03-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 12087,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u03-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 11867,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u03-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 12087,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u02-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 13609,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u02-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 12735,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u02-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 14031,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u01-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 14313,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u01-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 13295,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u01-p1 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 14251,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u00-p3 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 14899,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member-secops-u00-p2 file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 517346,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "audit_events"
+    }
+  ],
+  "security_matrix_complete": true,
+  "serving_baseline": {
+    "Boot": "01a18b92-f903-706c-ad88-3f84117f6fcc",
+    "Good": "00000000-0000-0000-0000-000000000000",
+    "Bad": "00000000-0000-0000-0000-000000000000",
+    "SupportRevision": "01a18b92-fd77-7c38-a5f6-82952a14006e",
+    "Digests": {
+      "artifact_sha256_0.1.0_amd64": "01a4ad746a8737e46d38776e3c40b6b04c4b65ccb46e2664b2f054fee9be78aa",
+      "artifact_sha256_0.1.0_arm64": "ccaaa1d372362a30640943a54214203893c5e99f7694acc6d7add7bb83a023f2",
+      "manifest_sha256_0.1.0": "712256a2cf8da04b7174540737970e66f15005d79c4da859a7b437fd73ff9a13",
+      "signed_manifest_sha256_0.1.0": "c53d5dd3306ddbd19ceb56c549f74365e7177e6ccc677bed92f85a42a093b786"
+    }
+  },
+  "serving_blocker": "No counted serving flow; w3-devstack-e2e follow-up 9 hop-by-hop trace is the gate. Outage/deadline and mixed-load assertions cannot start.",
+  "serving_checks": [
+    {
+      "error_code": null,
+      "name": "dns_policy",
+      "status": "passed"
+    },
+    {
+      "error_code": null,
+      "name": "internet_only",
+      "status": "passed"
+    },
+    {
+      "error_code": null,
+      "name": "lease",
+      "status": "passed"
+    },
+    {
+      "error_code": null,
+      "name": "meter_path",
+      "status": "passed"
+    },
+    {
+      "error_code": null,
+      "name": "policy_signature",
+      "status": "passed"
+    },
+    {
+      "error_code": null,
+      "name": "qos",
+      "status": "passed"
+    },
+    {
+      "error_code": null,
+      "name": "release_supported",
+      "status": "passed"
+    },
+    {
+      "error_code": null,
+      "name": "source_binding",
+      "status": "passed"
+    },
+    {
+      "error_code": null,
+      "name": "storage",
+      "status": "passed"
+    },
+    {
+      "error_code": null,
+      "name": "tunnel_probe",
+      "status": "passed"
+    }
+  ],
+  "serving_probe": "API state is insufficient: require admitted device, timed member allowset, selected native exit, and increasing node forward-admission counter for the controlled flow.",
+  "source_revision": "9b17127c888f94191d759617c99fe1225078a092",
+  "sql_input_fixtures": [],
+  "started_at": "2026-10-30T06:49:36.469735179Z",
+  "watchdog_heartbeat_present": true,
+  "watchdog_state": {
+    "baseline_ok": "1",
+    "generation": "9",
+    "mono_ns": "698323058779243",
+    "policy_expires_mono_ns": "701661193313542",
+    "reason": "serving",
+    "serving": "1",
+    "wall_unix_ns": "1793343283861958069"
+  },
+  "superseded_legacy_scale_note": "deploy/devstack/entrypoint-member.sh exposes one fixed daemon/interface and one user-auth trigger. Need a documented 20-user/3-native-peer-per-user fixture hook before claiming 60 devices.",
+  "device_scale_hook": "Available after #143; actual combined/isolated admission counts remain qualified.",
+  "serving_flow_positive": {
+    "counted_flow": false,
+    "owner": "w3-devstack-e2e follow-up 9",
+    "precondition": "real agent forwarding observation passes PublicationForwardingEvidence; watchdog serving=1; admitted device counter advances",
+    "reason": "No serving fixture or forged agent observation is permitted (D-050).",
+    "status": "blocked",
+    "scope": "Counted forwarding prerequisite; distinct from the successful publication operations."
+  }
+}
