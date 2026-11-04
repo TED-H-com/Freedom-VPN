@@ -1,0 +1,475 @@
+{
+  "run_id": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
+  "recorded_logical_commands": 15,
+  "recorded_attempts": 15,
+  "conflict_commands": 0,
+  "commands": [
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:15:16.102933328Z",
+        "finished_at": "2026-11-04T14:15:16.108980258Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd",
+            "if_match": "\"595\"",
+            "idempotency_key": "73f90d5d-f5d9-4dab-967e-d0848ae6769b",
+            "body_sha256": "4be9c3c6be8c08f1ca4df4b133a76a2ba4ea577de3565b18f6413f088721f901",
+            "started_at": "2026-11-04T14:15:16.102940061Z",
+            "finished_at": "2026-11-04T14:15:16.108974235Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "AT10.json",
+          "pointer": "/checks/7/observations/0"
+        }
+      ]
+    },
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:25:45.281146269Z",
+        "finished_at": "2026-11-04T14:25:45.288080913Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd",
+            "if_match": "\"1262\"",
+            "idempotency_key": "b10b70a4-e9ae-44d1-a2ee-c91aa9220124",
+            "body_sha256": "69d7d3fe3f19255e3ed128a2a2a11e2e0c879e8f7cc7d7df67de64c7636b3646",
+            "started_at": "2026-11-04T14:25:45.281152237Z",
+            "finished_at": "2026-11-04T14:25:45.288067547Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "AT10.json",
+          "pointer": "/checks/8/observations/0"
+        }
+      ]
+    },
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:25:46.594861171Z",
+        "finished_at": "2026-11-04T14:25:46.600306758Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd",
+            "if_match": "\"1265\"",
+            "idempotency_key": "572faf5e-cc00-48dd-9d13-ba8d9ceef0ae",
+            "body_sha256": "a69691dff1ace299304681193c82cf9df851782671b0a0e0ca7575bc13ef8e90",
+            "started_at": "2026-11-04T14:25:46.594868412Z",
+            "finished_at": "2026-11-04T14:25:46.600282037Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "AT10.json",
+          "pointer": "/checks/8/observations/1"
+        }
+      ]
+    },
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:07:42.450582059Z",
+        "finished_at": "2026-11-04T14:07:42.455331827Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd/publication",
+            "if_match": "\"16\"",
+            "idempotency_key": "f55aca4d-af8a-4557-9d69-3151aef45efb",
+            "body_sha256": "65f18948e809edb9dd2db2b27a68013f172c9c5dda39aa3c16ab7a63bdd80134",
+            "started_at": "2026-11-04T14:07:42.450593224Z",
+            "finished_at": "2026-11-04T14:07:42.455305276Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "AT10.json",
+          "pointer": "/observations/1"
+        }
+      ]
+    },
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:18:47.168708688Z",
+        "finished_at": "2026-11-04T14:18:47.175249052Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd/publication",
+            "if_match": "\"868\"",
+            "idempotency_key": "0d5bc1e8-4a35-426b-a9a4-6f6f42a5c826",
+            "body_sha256": "266489b0523afae6b5854c72f670c0bb4018f263a288961bcc3e1ea8a30bcadd",
+            "started_at": "2026-11-04T14:18:47.16871459Z",
+            "finished_at": "2026-11-04T14:18:47.17523752Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "AT10.json",
+          "pointer": "/observations/7"
+        },
+        {
+          "path": "AT12.json",
+          "pointer": "/checks/9/observations/0"
+        }
+      ]
+    },
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:19:07.257031578Z",
+        "finished_at": "2026-11-04T14:19:07.26214328Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd/publication",
+            "if_match": "\"894\"",
+            "idempotency_key": "9ab530f9-848b-419e-8543-cfa716a6ac00",
+            "body_sha256": "65f18948e809edb9dd2db2b27a68013f172c9c5dda39aa3c16ab7a63bdd80134",
+            "started_at": "2026-11-04T14:19:07.257039919Z",
+            "finished_at": "2026-11-04T14:19:07.262132916Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "AT10.json",
+          "pointer": "/observations/8"
+        },
+        {
+          "path": "AT12.json",
+          "pointer": "/checks/9/observations/12"
+        }
+      ]
+    },
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:19:20.502478935Z",
+        "finished_at": "2026-11-04T14:19:20.508353738Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd/publication",
+            "if_match": "\"910\"",
+            "idempotency_key": "5e3253bd-8f86-42af-b226-ed358d7a3b5c",
+            "body_sha256": "37f912f20aea8e8043958664910535075ed13923ac8d6c5fcc7cee712aca57e3",
+            "started_at": "2026-11-04T14:19:20.502484435Z",
+            "finished_at": "2026-11-04T14:19:20.508348508Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "AT10.json",
+          "pointer": "/observations/9"
+        },
+        {
+          "path": "AT13.json",
+          "pointer": "/checks/0/observations/0"
+        }
+      ]
+    },
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:19:23.218642029Z",
+        "finished_at": "2026-11-04T14:19:23.224056236Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd/publication",
+            "if_match": "\"916\"",
+            "idempotency_key": "53443adc-4a9d-41f4-b271-87d43502aa51",
+            "body_sha256": "65f18948e809edb9dd2db2b27a68013f172c9c5dda39aa3c16ab7a63bdd80134",
+            "started_at": "2026-11-04T14:19:23.218649913Z",
+            "finished_at": "2026-11-04T14:19:23.22404985Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "AT10.json",
+          "pointer": "/observations/10"
+        },
+        {
+          "path": "AT13.json",
+          "pointer": "/checks/0/observations/13"
+        }
+      ]
+    },
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:22:41.063142197Z",
+        "finished_at": "2026-11-04T14:22:41.070271114Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd",
+            "if_match": "\"1122\"",
+            "idempotency_key": "a72257f8-8507-45ed-8e1b-cc99cdd6bf94",
+            "body_sha256": "6ca3e9e81354474a521dfa591afce12699de554e1547cc7e818bce6304d2b93e",
+            "started_at": "2026-11-04T14:22:41.063151026Z",
+            "finished_at": "2026-11-04T14:22:41.070264016Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "AT13.json",
+          "pointer": "/checks/6/observations/1"
+        }
+      ]
+    },
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:25:19.930418099Z",
+        "finished_at": "2026-11-04T14:25:19.937517553Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd",
+            "if_match": "\"1231\"",
+            "idempotency_key": "66ba557c-b44a-413f-a07a-1dc53ef9bdb6",
+            "body_sha256": "a2b69037ef37753f5e20d2e16c415afd673db0758ec73affe1af24931f0fde2c",
+            "started_at": "2026-11-04T14:25:19.930426473Z",
+            "finished_at": "2026-11-04T14:25:19.937511763Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "generation-hold-control-cut.json",
+          "pointer": "/observations/0"
+        }
+      ]
+    },
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:11:44.761569604Z",
+        "finished_at": "2026-11-04T14:11:44.766163548Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd",
+            "if_match": "\"343\"",
+            "idempotency_key": "9c6b1da7-b9d8-42b5-97b7-a64128781043",
+            "body_sha256": "0d766864fef7486899fb8b98fedfab03ee50980335766c1c0cfb2bc3db2136e5",
+            "started_at": "2026-11-04T14:11:44.761575627Z",
+            "finished_at": "2026-11-04T14:11:44.766157936Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "populated-holds.json",
+          "pointer": "/attempts/0/observations/0"
+        }
+      ]
+    },
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:12:25.673001186Z",
+        "finished_at": "2026-11-04T14:12:25.681293822Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd",
+            "if_match": "\"400\"",
+            "idempotency_key": "75fa8308-dce9-4b5e-94cf-fec75091a8b2",
+            "body_sha256": "3434fc25933fe6a98b182dc2fc2f065790f07d1bb7511f9698d3fafd1c2d8caf",
+            "started_at": "2026-11-04T14:12:25.673009755Z",
+            "finished_at": "2026-11-04T14:12:25.681287306Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "populated-holds.json",
+          "pointer": "/attempts/1/observations/0"
+        }
+      ]
+    },
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:13:05.730408637Z",
+        "finished_at": "2026-11-04T14:13:05.737102213Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd",
+            "if_match": "\"458\"",
+            "idempotency_key": "f322301c-cc24-4b11-8ec1-02185d54194d",
+            "body_sha256": "02008662424a1f66c72043be0e9e62208f141d99ff56be0bc066ba5de6e056b6",
+            "started_at": "2026-11-04T14:13:05.73041907Z",
+            "finished_at": "2026-11-04T14:13:05.737096557Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "populated-holds.json",
+          "pointer": "/attempts/2/observations/0"
+        }
+      ]
+    },
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:07:38.307349754Z",
+        "finished_at": "2026-11-04T14:07:38.314153243Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PATCH",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd",
+            "if_match": "\"7\"",
+            "idempotency_key": "0c743403-92ac-4080-8dd1-9fe5eb1d2b45",
+            "body_sha256": "4939d40789ac64dedacaf0576b0f088ab48bf3b256d2263b70a3aa36ef39b67d",
+            "started_at": "2026-11-04T14:07:38.307354336Z",
+            "finished_at": "2026-11-04T14:07:38.314130152Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "support/publish.json",
+          "pointer": "/observations/21"
+        }
+      ]
+    },
+    {
+      "trace": {
+        "started_at": "2026-11-04T14:07:38.31725917Z",
+        "finished_at": "2026-11-04T14:07:38.326163799Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd/publication",
+            "if_match": "\"8\"",
+            "idempotency_key": "74ea7877-b48a-4249-8ef9-fa44b207e7c7",
+            "body_sha256": "494d9077fddddd25f0efe682e907c585cac6b549a1aba5318d70522ff9c2c0ad",
+            "started_at": "2026-11-04T14:07:38.317264426Z",
+            "finished_at": "2026-11-04T14:07:38.326156657Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      },
+      "sources": [
+        {
+          "path": "support/publish.json",
+          "pointer": "/observations/25"
+        }
+      ]
+    }
+  ],
+  "conflicts": []
+}

@@ -1,0 +1,535 @@
+{
+  "run_id": "c52bea6c-cd91-4086-a779-656b01277dcc",
+  "source": "receiver-capture.json",
+  "scope": "Original queued observations from the first safety baseline interval; indices refer to the retained unmodified receiver transaction array.",
+  "reports": [
+    {
+      "transaction_index": 1876,
+      "received_at": "2026-11-04T00:26:02.458301674Z",
+      "status": 502,
+      "report_id": "01a1a3f2-d348-7e6a-b504-05024baed066",
+      "observed_at": "2026-11-04T00:26:02.440936034Z",
+      "generation": "33",
+      "forwarding": false,
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "detail": "read_at=2026-11-04T00:25:57.393343227Z source=live candidate=33 verified=true {\"generation\":\"33\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"7bc082300f8eb94193a4a6b0dc4476035265d0688fabae74aeef44d1992e2677\"}",
+          "error_code": null,
+          "name": "qos",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "detail": "Egress probe used no extra target.",
+          "error_code": "HEALTH_CHECK_FAILED",
+          "name": "tunnel_probe",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "failed"
+        }
+      ],
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "message": "tunnel_probe",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "stage": "probe"
+        }
+      ],
+      "reasons": [
+        "safety_check_failed"
+      ],
+      "lease": {
+        "expires_at": "2026-11-04T00:26:43.406500722Z",
+        "lease_id": "72fd35da-5c75-432c-be6b-f4e21cb81939"
+      }
+    },
+    {
+      "transaction_index": 1878,
+      "received_at": "2026-11-04T00:26:12.556496326Z",
+      "status": 502,
+      "report_id": "01a1a3f2-d348-7e6a-b504-05024baed066",
+      "observed_at": "2026-11-04T00:26:02.440936034Z",
+      "generation": "33",
+      "forwarding": false,
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "detail": "read_at=2026-11-04T00:25:57.393343227Z source=live candidate=33 verified=true {\"generation\":\"33\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"7bc082300f8eb94193a4a6b0dc4476035265d0688fabae74aeef44d1992e2677\"}",
+          "error_code": null,
+          "name": "qos",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "detail": "Egress probe used no extra target.",
+          "error_code": "HEALTH_CHECK_FAILED",
+          "name": "tunnel_probe",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "failed"
+        }
+      ],
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "message": "tunnel_probe",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "stage": "probe"
+        }
+      ],
+      "reasons": [
+        "safety_check_failed"
+      ],
+      "lease": {
+        "expires_at": "2026-11-04T00:26:43.406500722Z",
+        "lease_id": "72fd35da-5c75-432c-be6b-f4e21cb81939"
+      }
+    },
+    {
+      "transaction_index": 1880,
+      "received_at": "2026-11-04T00:26:22.764565105Z",
+      "status": 502,
+      "report_id": "01a1a3f2-d348-7e6a-b504-05024baed066",
+      "observed_at": "2026-11-04T00:26:02.440936034Z",
+      "generation": "33",
+      "forwarding": false,
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "detail": "read_at=2026-11-04T00:25:57.393343227Z source=live candidate=33 verified=true {\"generation\":\"33\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"7bc082300f8eb94193a4a6b0dc4476035265d0688fabae74aeef44d1992e2677\"}",
+          "error_code": null,
+          "name": "qos",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "detail": "Egress probe used no extra target.",
+          "error_code": "HEALTH_CHECK_FAILED",
+          "name": "tunnel_probe",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "failed"
+        }
+      ],
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "message": "tunnel_probe",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "stage": "probe"
+        }
+      ],
+      "reasons": [
+        "safety_check_failed"
+      ],
+      "lease": {
+        "expires_at": "2026-11-04T00:26:43.406500722Z",
+        "lease_id": "72fd35da-5c75-432c-be6b-f4e21cb81939"
+      }
+    },
+    {
+      "transaction_index": 1882,
+      "received_at": "2026-11-04T00:26:32.87005508Z",
+      "status": 502,
+      "report_id": "01a1a3f2-d348-7e6a-b504-05024baed066",
+      "observed_at": "2026-11-04T00:26:02.440936034Z",
+      "generation": "33",
+      "forwarding": false,
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "detail": "read_at=2026-11-04T00:25:57.393343227Z source=live candidate=33 verified=true {\"generation\":\"33\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"7bc082300f8eb94193a4a6b0dc4476035265d0688fabae74aeef44d1992e2677\"}",
+          "error_code": null,
+          "name": "qos",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "detail": "Egress probe used no extra target.",
+          "error_code": "HEALTH_CHECK_FAILED",
+          "name": "tunnel_probe",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "failed"
+        }
+      ],
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "message": "tunnel_probe",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "stage": "probe"
+        }
+      ],
+      "reasons": [
+        "safety_check_failed"
+      ],
+      "lease": {
+        "expires_at": "2026-11-04T00:26:43.406500722Z",
+        "lease_id": "72fd35da-5c75-432c-be6b-f4e21cb81939"
+      }
+    },
+    {
+      "transaction_index": 1885,
+      "received_at": "2026-11-04T00:26:49.011020316Z",
+      "status": 502,
+      "report_id": "01a1a3f2-d348-7e6a-b504-05024baed066",
+      "observed_at": "2026-11-04T00:26:02.440936034Z",
+      "generation": "33",
+      "forwarding": false,
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "detail": "read_at=2026-11-04T00:25:57.393343227Z source=live candidate=33 verified=true {\"generation\":\"33\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"7bc082300f8eb94193a4a6b0dc4476035265d0688fabae74aeef44d1992e2677\"}",
+          "error_code": null,
+          "name": "qos",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "detail": "Egress probe used no extra target.",
+          "error_code": "HEALTH_CHECK_FAILED",
+          "name": "tunnel_probe",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "failed"
+        }
+      ],
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "message": "tunnel_probe",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "stage": "probe"
+        }
+      ],
+      "reasons": [
+        "safety_check_failed"
+      ],
+      "lease": {
+        "expires_at": "2026-11-04T00:26:43.406500722Z",
+        "lease_id": "72fd35da-5c75-432c-be6b-f4e21cb81939"
+      }
+    },
+    {
+      "transaction_index": 1896,
+      "received_at": "2026-11-04T00:27:08.675408565Z",
+      "status": 202,
+      "report_id": "01a1a3f2-d348-7e6a-b504-05024baed066",
+      "observed_at": "2026-11-04T00:26:02.440936034Z",
+      "generation": "33",
+      "forwarding": false,
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "detail": "read_at=2026-11-04T00:25:57.393343227Z source=live candidate=33 verified=true {\"generation\":\"33\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"7bc082300f8eb94193a4a6b0dc4476035265d0688fabae74aeef44d1992e2677\"}",
+          "error_code": null,
+          "name": "qos",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "passed"
+        },
+        {
+          "detail": "Egress probe used no extra target.",
+          "error_code": "HEALTH_CHECK_FAILED",
+          "name": "tunnel_probe",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "status": "failed"
+        }
+      ],
+      "errors": [
+        {
+          "code": "HEALTH_CHECK_FAILED",
+          "message": "tunnel_probe",
+          "observed_at": "2026-11-04T00:26:02.444006315Z",
+          "stage": "probe"
+        }
+      ],
+      "reasons": [
+        "safety_check_failed"
+      ],
+      "lease": {
+        "expires_at": "2026-11-04T00:26:43.406500722Z",
+        "lease_id": "72fd35da-5c75-432c-be6b-f4e21cb81939"
+      }
+    }
+  ]
+}
