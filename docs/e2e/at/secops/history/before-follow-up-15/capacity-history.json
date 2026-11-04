@@ -1,0 +1,227 @@
+{
+  "purpose": "Historical diagnostics only. Pre-D-050 SQL-projected fixtures are invalid as acceptance/capacity evidence; retained to avoid hiding prior results. Current product-input run is in live.json.",
+  "samples": [
+    {
+      "started_at": "2026-10-29T23:34:45.831714338Z",
+      "finished_at": "2026-10-29T23:36:23.092084818Z",
+      "capacity_subset": {
+        "duration_seconds": 12.505825865,
+        "http_status_counts": {
+          "200": 200
+        },
+        "policy_latency_seconds": null,
+        "profile": "20 already authenticated members; 10 concurrent rounds, one read/member/second; 60 SQL authorized device rows",
+        "read_p50_ms": 11.13,
+        "read_p95_ms": 379.531,
+        "read_p99_ms": 380.032,
+        "relay_load": false,
+        "requests": 200,
+        "resource_snapshot_after_load": [
+          {
+            "BlockIO": "0B / 0B",
+            "CPUPerc": "0.21%",
+            "MemPerc": "0.02%",
+            "MemUsage": "30.8MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-control",
+            "NetIO": "2.14MB / 1.63MB",
+            "PIDs": "28"
+          },
+          {
+            "BlockIO": "0B / 0B",
+            "CPUPerc": "0.21%",
+            "MemPerc": "0.01%",
+            "MemUsage": "16.87MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-worker",
+            "NetIO": "688kB / 964kB",
+            "PIDs": "21"
+          },
+          {
+            "BlockIO": "500kB / 148MB",
+            "CPUPerc": "0.72%",
+            "MemPerc": "0.05%",
+            "MemUsage": "101MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-postgres",
+            "NetIO": "1.79MB / 1.09MB",
+            "PIDs": "23"
+          },
+          {
+            "BlockIO": "8.19kB / 1.52MB",
+            "CPUPerc": "1.43%",
+            "MemPerc": "0.02%",
+            "MemUsage": "38.98MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-node",
+            "NetIO": "86.1kB / 127kB",
+            "PIDs": "44"
+          }
+        ],
+        "simultaneous_oidc": false,
+        "usage_latency_seconds": null,
+        "wrong_member_responses": 0
+      },
+      "context": "Root/area lint and cross-compilation were running concurrently on this shared development host.",
+      "acceptance_valid": false,
+      "invalidated_by": "D-050: manually seeded projected entitlements/devices; not reproducible product state"
+    },
+    {
+      "started_at": "2026-10-29T23:38:57.982116062Z",
+      "finished_at": "2026-10-29T23:40:34.772569147Z",
+      "capacity_subset": {
+        "duration_seconds": 12.098381422,
+        "http_status_counts": {
+          "200": 200
+        },
+        "policy_latency_seconds": null,
+        "profile": "20 already authenticated members; 10 concurrent rounds, one read/member/second; 60 SQL authorized device rows",
+        "read_p50_ms": 5.868,
+        "read_p95_ms": 14.093,
+        "read_p99_ms": 14.357,
+        "relay_load": false,
+        "requests": 200,
+        "resource_snapshot_after_load": [
+          {
+            "BlockIO": "0B / 0B",
+            "CPUPerc": "0.49%",
+            "MemPerc": "0.02%",
+            "MemUsage": "33.11MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-control",
+            "NetIO": "2.1MB / 1.59MB",
+            "PIDs": "26"
+          },
+          {
+            "BlockIO": "0B / 0B",
+            "CPUPerc": "0.18%",
+            "MemPerc": "0.01%",
+            "MemUsage": "16.93MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-worker",
+            "NetIO": "697kB / 969kB",
+            "PIDs": "21"
+          },
+          {
+            "BlockIO": "319kB / 149MB",
+            "CPUPerc": "1.23%",
+            "MemPerc": "0.05%",
+            "MemUsage": "100.4MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-postgres",
+            "NetIO": "1.78MB / 1.08MB",
+            "PIDs": "23"
+          },
+          {
+            "BlockIO": "0B / 1.29MB",
+            "CPUPerc": "0.45%",
+            "MemPerc": "0.02%",
+            "MemUsage": "38.17MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-node",
+            "NetIO": "83.9kB / 125kB",
+            "PIDs": "49"
+          }
+        ],
+        "simultaneous_oidc": false,
+        "usage_latency_seconds": null,
+        "wrong_member_responses": 0
+      },
+      "context": "Final verification of unchanged live Go probes. Shared development host; prior sample retained, no best-run selection.",
+      "acceptance_valid": false,
+      "invalidated_by": "D-050: manually seeded projected entitlements/devices; not reproducible product state"
+    },
+    {
+      "started_at": "2026-10-30T01:58:06.072189122Z",
+      "finished_at": "2026-10-30T02:02:11.807828496Z",
+      "capacity_subset": {
+        "capacity_claim": false,
+        "duration_seconds": 12.110335669,
+        "http_status_counts": {
+          "200": 200
+        },
+        "policy_latency_seconds": null,
+        "profile": "20 already authenticated members; 10 concurrent rounds, one read/member/second; product-admitted device count recorded separately",
+        "read_p50_ms": 6.776,
+        "read_p95_ms": 11.221,
+        "read_p99_ms": 11.374,
+        "relay_load": false,
+        "requests": 200,
+        "resource_snapshot_after_load": [
+          {
+            "BlockIO": "0B / 0B",
+            "CPUPerc": "0.00%",
+            "MemPerc": "0.02%",
+            "MemUsage": "33.04MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-control",
+            "NetIO": "2.9MB / 2.59MB",
+            "PIDs": "28"
+          },
+          {
+            "BlockIO": "0B / 0B",
+            "CPUPerc": "0.11%",
+            "MemPerc": "0.01%",
+            "MemUsage": "18.95MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-worker",
+            "NetIO": "3.12MB / 3.36MB",
+            "PIDs": "20"
+          },
+          {
+            "BlockIO": "16.4kB / 241MB",
+            "CPUPerc": "0.08%",
+            "MemPerc": "0.06%",
+            "MemUsage": "122.1MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-postgres",
+            "NetIO": "4.77MB / 3.08MB",
+            "PIDs": "24"
+          },
+          {
+            "BlockIO": "0B / 2.29MB",
+            "CPUPerc": "2.61%",
+            "MemPerc": "0.02%",
+            "MemUsage": "45.95MiB / 183.7GiB",
+            "Name": "fvpn-w4-secops-node",
+            "NetIO": "158kB / 218kB",
+            "PIDs": "49"
+          }
+        ],
+        "simultaneous_oidc": true,
+        "usage_latency_seconds": null,
+        "wrong_member_responses": 0
+      },
+      "concurrent_sign_in": {
+        "attempts": 20,
+        "authenticated": 0,
+        "issuer": "embedded Dex, separate cookie jars; no shared assume slot",
+        "login_wall_ms": [
+          181.393,
+          2.402,
+          2.774,
+          189.054,
+          2.79,
+          229.456,
+          3.081,
+          206.464,
+          203.709,
+          2.361,
+          2.766,
+          222.635,
+          215.612,
+          183.76,
+          198.908,
+          3.129,
+          2.653,
+          2.377,
+          2.645,
+          194.614
+        ],
+        "session_http_status": {
+          "0": 20
+        },
+        "wrong_member": 0,
+        "zero_status": "login walker did not complete; not a measured session HTTP response"
+      },
+      "authorized_devices": 1,
+      "grant_projection": {
+        "active_members": 20,
+        "commands": 20,
+        "finite_end": "2026-10-30T02:59:10Z",
+        "writes": "admin grants only; projected tables read-only"
+      },
+      "context": "Follow-up development probe on main 125a761, before final verification. Product grants and one native admission; no counted serving flow. Concurrent login refusal causes not yet instrumented.",
+      "acceptance_valid": false
+    }
+  ]
+}
