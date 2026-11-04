@@ -1,3 +1,19 @@
+# Follow-up 16 — AT29 live-agent continuity prerequisite failed
+
+AT29 is **failed**, previously blocked. Run `1bfd5cff-e593-481b-a4d2-94ca08cf7c3d`
+passed the four existing runnable cases. The new `control_lost_agent_alive`
+case failed to obtain a locally accepted 60-second lease before its outage.
+Control loss was not injected, so live evidence for agent-core 48 remains missing.
+Guest clock rollback remains blocked. One attempt, no rerun; zero owned Docker
+inventory after cleanup. The bounded AT31 relay row passed again.
+
+See [the dated hand-off](2026-11-03-follow-up-16.md), [AT29](AT29.json),
+[SECOPS-F16-01](followup16-finding.json), and [the pre-run archive](history/before-follow-up-16/archive-index.json).
+
+---
+
+The following text is historical; its results belong to the archived earlier runs:
+
 # Follow-up 15 — AT29 grant withdrawal
 
 Run `35116d25-122c-4724-adfe-5a06d623c04f` passed all four runnable AT29

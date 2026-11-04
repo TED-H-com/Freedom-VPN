@@ -1,3 +1,15 @@
+# Follow-up 21 — 2026-11-03
+
+### Requests to orchestrator
+
+- **F21-AT08 — devstack/native investigation:** retain the blocked initial publication transfer at 03:54:29Z: route selected, five member-interface packets, no node/origin packet, zero origin requests and unchanged device upload/download counters. [Original forwarding](F21-AT08-forwarding.json). Later success does not repair it. Cause and merged-change attribution remain unproven; no common cause with F11-01/F14-01 is assigned. Shared native fixtures and product paths are read-only here.
+- **F21-D146 — review the missing serving-read qualification:** IPv6 receive-only 1280 indexes 49/51 remain blocked. All bytes, MSS rewrites, reverse datagrams and no-PTB checks pass, but the original rule read records `serving_read_ok=false`. Preserve this result; any follow-up diagnostics or predicate decision require an orchestrator assignment. [Original qualification](F21-native-MTU.json). No predicate or product change is made.
+- **Archive navigation outside ownership:** add `docs/e2e/at/poc/G2-followup34-2026-11-03.md` as an alias/reference to `docs/poc/G2-followup34-2026-11-03.md`. Three byte-pinned archived documents use `../../../poc/G2-followup34-2026-11-03.md`, which resolves there after relocation. [Working direct link and scope](history/follow-up-18-run2/INDEX.md). This outside-owned item is left to the orchestrator; no pinned byte is changed.
+
+F4-03, F4-04, F4-05/F4-07, F4-06 and F4-10 stay owner-resource rows, not new requests. **F11-01 remains OPEN and upstream-dependent (D-148), with no product change.** The carried groups below keep their wording and historical outcomes. F48-01 remains assigned to agent-core 49; no matching `baseline_unverified`/`GENERATION_MISMATCH` signature is demonstrated by this run's retained restart logs, and no closure is claimed.
+
+---
+
 # Follow-up 19 owner assignments — 2026-11-03
 
 ### Requests to orchestrator
@@ -6,7 +18,7 @@
 
 **2026-11-03 — shared e2e helper early-return cleanup: ANSWERED by devstack 33 (#441).** Both Follow-up 19 requests are resolved: `Stack.ReplaceFiniteGrant` now restores successfully revoked originals through the public API after a later failure, and `Stack.PrepareNativeRouter1280` rolls back completed setup steps in reverse order. See the dated [shared-owner adoption notes](../../RESPONSES.md#2026-11-03--members-19-finite-grant-early-return-recovery-follow-up-33). Follow-up 20 retains the explicitly permitted same-plan fallback, including its possible one-hour extension and additional grant/audit, and keeps all device, worker-operation and fence verification. Normal expiry restoration and the successful downgrade's later return remain necessary. No new live proof is claimed.
 
-**2026-11-03 — Follow-up 20 routing after r27 (already assigned):** agent-core owns H-1 (false restart `TC_FOREIGN_FILTER`), M-1 (closed-recovery renewal delay) and L-1 (repeated quarantine/baseline writes). The members predicates and offline proof are documented in [F20-r27-predicates.md](F20-r27-predicates.md). The new restart foreign-filter check fails on run `50117c68` evidence. The next assembled run remains for the orchestrator to schedule after H-1 and M-1 merge; this follow-up performs none.
+**2026-11-03 — Follow-up 20 routing after r27 (already assigned):** agent-core owns H-1 (false restart `TC_FOREIGN_FILTER`), M-1 (closed-recovery renewal delay) and L-1 (repeated quarantine/baseline writes). The members predicates and offline proof are documented in [F20-r27-predicates.md](history/follow-up-18-run2/F20-r27-predicates.md). The new restart foreign-filter check fails on run `50117c68` evidence. The next assembled run remains for the orchestrator to schedule after H-1 and M-1 merge; this follow-up performs none.
 
 ---
 
@@ -18,11 +30,11 @@
 
 **2026-11-03 — finite-expiry failure cleanup (ANSWERED in Follow-up 19, commits `6186fd60` / `306a1969` after run `50117c68`):** schedule an acceptance-harness follow-up for `tests/e2e/at/members/finite_grant_test.go` so an early failed-readiness/positive-probe branch reliably performs its normal public-API grant restoration, retaining the failed original assertion. [Run 1's exact member/transition evidence](history/follow-up-18-run1/F18-AT09-precondition.json) proves the restoration was skipped before AT09 lost its admitted-device prerequisite. Orchestrator note 1 authorizes reader compatibility only; this failure branch was not changed. Run 2's actual restoration checks are recorded below. A passing normal path does not exercise cleanup after failure. *Resolution (Follow-up 19, 2026-11-03, commits `6186fd60` / `306a1969`):* `finiteExpiry` now restores member `A` (`3 authorized, 0 pending`) via `POST /api/v1/admin/members/{id}/grants` on both early-return paths (after failed `replaceFiniteGrant` and after failed `traceForwarding`), keeping the original failed check failed, recording `"finite expiry early-return restoration HTTP"` and `"finite expiry early-return restored 3/0"`, and preserving the normal path's single restoration (`"finite expiry restoration HTTP"` and `"finite expiry restored 3/0"`), with offline unit tests in `tests/e2e/at/members/grant_restore_test.go`.
 
-Run 2 restoration checks: `[{"name": "finite expiry restoration HTTP", "status": "pass"}, {"name": "finite expiry restored 3/0", "status": "pass"}]`. [Original current precondition/restore records](F18-AT09-precondition.json).
+Run 2 restoration checks: `[{"name": "finite expiry restoration HTTP", "status": "pass"}, {"name": "finite expiry restored 3/0", "status": "pass"}]`. [Original current precondition/restore records](history/follow-up-18-run2/F18-AT09-precondition.json).
 
-The run-1 reader request is resolved in commit `4eb5d7d3`: only the missing `retire` phase was added; lifecycle validation remains fail-closed. [Value audit and tests](F18-reader-audit.md). The two authorized assembled runs are complete; no third run is requested or performed in this delivery.
+The run-1 reader request is resolved in commit `4eb5d7d3`: only the missing `retire` phase was added; lifecycle validation remains fail-closed. [Value audit and tests](history/follow-up-18-run2/F18-reader-audit.md). The two authorized assembled runs are complete; no third run is requested or performed in this delivery.
 
-The existing F11-03 / agent-core track receives [run 2's original AT09 checks](F18-AT09-subchecks.md) and [restart records](F18-AT09-restart.json). No timing-only attribution to a particular agent-core 37–43 change is made. Original run-1 failures remain in its archive.
+The existing F11-03 / agent-core track receives [run 2's original AT09 checks](history/follow-up-18-run2/F18-AT09-subchecks.md) and [restart records](history/follow-up-18-run2/F18-AT09-restart.json). No timing-only attribution to a particular agent-core 37–43 change is made. Original run-1 failures remain in its archive.
 
 The follow-up 17 independent source-address/binding-fault request stays open with devstack. Its archive-navigation request remains tracked below; the target reference is present in the baseline and needed no outside-owned edit here. Historical wording and counts below are retained as carried groups; their measurements describe earlier runs.
 

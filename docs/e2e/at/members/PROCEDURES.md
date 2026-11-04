@@ -1,7 +1,7 @@
 # Follow-up 14 execution note
 
 One assembled ten-case run uses compiled harness `e9a215f3`, product baseline
-`8f3055b9` (#369 and #370). See [RUN.md](RUN.md) for the final rows and gates.
+`8f3055b9` (#369 and #370). See [RUN.md](history/follow-up-18-run2/RUN.md) for the final rows and gates.
 The subsequent harness correction moves the new routed hop after the existing
 eth0-only relay fault; it is not live-qualified by this run. No second run is
 claimed or authorized here.
@@ -34,7 +34,7 @@ to change parser or acceptance predicates.
 
 The JSON records are the authority for executed subchecks. These procedures
 specify full acceptance, including steps blocked by the observed prerequisites
-in [requests.md](requests.md). They do not authorize editing the shared lab or
+in [requests.md](history/follow-up-18-run2/requests.md). They do not authorize editing the shared lab or
 substituting mock identity, payment or forwarding evidence.
 
 ## Common setup and evidence (§19.1)
@@ -94,7 +94,7 @@ IdP and `/auth/login?role=member|admin`, never invented `/api/v1/auth` routes.
 6. `docker pause fvpn-w4-members-member`, wait 10 seconds, then
    `docker unpause fvpn-w4-members-member`; install cleanup before pausing.
    Record recovery time and the same checks. Container pause is only a Linux
-   simulation; run [OPERATORS.md](OPERATORS.md) on all four real platforms.
+   simulation; run [OPERATORS.md](history/follow-up-18-run2/OPERATORS.md) on all four real platforms.
 
 ## AT02 — final slot, ownership and revoke (§9.4)
 
@@ -333,7 +333,7 @@ counts. Delete private test scratch after exit. No other task's stack is touched
 6. Produce a pending device through the real two-slot plan downgrade fixture, add its restore fence, and require **409 DEVICE_LIMIT_REACHED** with the fence retained (D-081). Restore the original finite grant; verify that alone does not clear the fence. Re-authorize through HTTP and confirm counted forwarding.
 7. Repeat the fence/withdraw/re-grant/traffic cycle on the paid member after authoritative billing reconciliation. Keep payment events, entitlement sources and device confirmation distinct.
 
-The exported `ReplaceFiniteGrant` hook from devstack #284 retires live grants through the production domain command, creates/replays via HTTP, and waits for the worker. Full wire responses, operation identities and fence counts are indexed in [D077.md](D077.md). This is not a PITR drill or a rendered portal-state test. Preserve every failed attempt; never relabel a primary failure as blocked during later readback.
+The exported `ReplaceFiniteGrant` hook from devstack #284 retires live grants through the production domain command, creates/replays via HTTP, and waits for the worker. Full wire responses, operation identities and fence counts are indexed in [D077.md](history/follow-up-18-run2/D077.md). This is not a PITR drill or a rendered portal-state test. Preserve every failed attempt; never relabel a primary failure as blocked during later readback.
 
 
 ## Follow-up 8 native fixtures
@@ -378,9 +378,9 @@ file is absent, validating both byte pins. Historical
 archives remain byte-identical. To inspect a large artifact directly, use
 `gzip -dc <artifact>.gz`; do not replace the retained file.
 
-[AT02.md](AT02.md) is a small navigation document marked
+[AT02.md](history/follow-up-18-run2/AT02.md) is a small navigation document marked
 `<!-- at-members: document-index -->`, separate from the pinned original
-[Markdown capture](AT02.md.gz) and [JSON capture](AT02.json.gz). The readers
+[Markdown capture](history/follow-up-18-run2/AT02.md.gz) and [JSON capture](history/follow-up-18-run2/AT02.json.gz). The readers
 reject a document index as evidence: use the explicit `.md.gz` path for the
 capture. The hygiene test scans plain Markdown as documentation and separately
 decompresses and verifies gzip captures. The index has no capture pin; its

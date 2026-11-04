@@ -1,3 +1,5 @@
+Current follow-up 21: [results](summary.md), [dated evidence note](followup21-2026-11-03.md). The text below is historical follow-up 18 evidence; its outcomes remain unchanged.
+
 # Forwarding observations — follow-up 15
 
 Run `e80bb592-27ed-4ab5-a8c3-6433e7278938`, compiled harness `cc6e0298a791ed6c41b268f1634f543446f8c562`, baseline `9dde5eeb60a6cb6b9b10974c3100ef1ea1352698` (current main at admission; #375, #376, #377, #381 and #382 included).

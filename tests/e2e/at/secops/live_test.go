@@ -681,6 +681,9 @@ func (p *liveProbe) revoke(admin, node *liveSession, b api.EnrollResponse) {
 	p.check("revoked certificate refuses desired state", p.call(node, "GET", liveAgent+"/api/v1/agent/desired-state", nil, nil), 403, "IDENTITY_REVOKED")
 }
 func (p *liveProbe) finish() {
+	if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "16" {
+		p.metadata["follow_up"] = 16
+	}
 	if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "12" {
 		p.metadata["follow_up"] = 12
 	}
@@ -840,7 +843,7 @@ func (p *liveProbe) finish() {
 	}
 	if phase := os.Getenv("FVPN_SECOPS_FOLLOWUP11"); phase == "restore" || phase == "transports" {
 		name = "followup11-" + phase + "-live.json"
-		if followup := os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP"); followup == "12" || followup == "13" || followup == "15" {
+		if followup := os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP"); followup == "12" || followup == "13" || followup == "15" || followup == "16" {
 			name = "followup" + followup + "-" + phase + "-live.json"
 		}
 	}

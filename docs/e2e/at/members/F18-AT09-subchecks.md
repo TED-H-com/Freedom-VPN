@@ -1,6 +1,6 @@
 # Follow-up 18 AT09 subchecks
 
-Run `50117c68-d1b3-431d-a2be-cd94d27a2447`, measured harness `4eb5d7d32c449da7689e749fd8ecb208657937dd`. All original statuses below come from [AT09](AT09.json). Only D-146 qualifies the former receive-only TCP downgrade; no other predicate changes.
+Run `50117c68-d1b3-431d-a2be-cd94d27a2447`, measured harness `4eb5d7d32c449da7689e749fd8ecb208657937dd`. All original statuses below come from [AT09](history/follow-up-18-run2/AT09.json). Only D-146 qualifies the former receive-only TCP downgrade; no other predicate changes.
 
 | Index | Original check | Observed status |
 |---:|---|---|
@@ -82,6 +82,6 @@ Run `50117c68-d1b3-431d-a2be-cd94d27a2447`, measured harness `4eb5d7d32c449da768
 | 75 | D-137 routed ipv4 1280 transfer | pass |
 | 76 | r18 M-3 accepted hold and central ID join | pass |
 
-The original JSON retains each expected value, actual measurement, command and timestamp. [D-146 joins](F18-D146.json) and [restart rows](F18-AT09-restart.json) are additive indexes.
+The original JSON retains each expected value, actual measurement, command and timestamp. [D-146 joins](history/follow-up-18-run2/F18-D146.json) and [restart rows](history/follow-up-18-run2/F18-AT09-restart.json) are additive indexes.
 
 Historical e80bb592, 0ffb355a and 81b638e8 outcomes stay unchanged. UDP/QUIC receive-only no-PTB remains a limitation; D-123, D-135 and D-136 remain in force.

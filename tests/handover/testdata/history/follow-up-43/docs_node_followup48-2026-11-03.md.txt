@@ -1,0 +1,212 @@
+# Follow-up 48: r27/r28 and the R23 boot heartbeat deadline
+
+2026-11-03 EST. Base `ff5efb69`; no reservation, frozen-arm execution,
+timing measurement or timing comparison. D-150 remains provisionally closed by D-153.
+
+## Judgments and fixes
+
+| Finding | Verdict / production reachability | Introduced by | Fix | Proof before → after |
+|---|---|---|---|---|
+| r28 H-1 / F20-01 | Confirmed High product defect; hung central requests exhaust the control budget before the local tunnel probe | `28e9e41c` (#429), `refreshProbe` changed to `controlContext` while implementing Boot cancellation | `12ced44a`: separate Boot caller lifetime from HTTP budget; local Step probe and usage-store identity lock use local work context | `TestR28_ControlOutageDoesNotFailTunnelProbeBeforeLeaseExpiry`: FAIL → PASS; all three WhatHeld tests PASS → PASS; Boot `adoption_probe` PASS |
+| r27 H-1 | Confirmed High product defect; restart before NetBird creates member ingress | `bde266ce` (#272), blocked audit treats any foreign-tc-classified read as containment evidence | `0d04972d`: on a rejected member-interface `read_failed`, require a successful independent link inventory to establish absence; remain blocked without foreign-filter latch, D-106 record or quarantine | Original H1 FAIL → PASS; extended next-clean-interface Apply serves; present/unreadable inventory and actual filter remain contained |
+| r27 M-1 | Confirmed Medium product defect; closed recovery receives no grants and request send follows poll start | `2df26aca` (#260) adds the competing start-anchored poll timer; `cd005acd` adds the closed recovery path with the existing schedule | `fbabb131`: production `runStepDelay` uses the grant-less deadline without the earlier poll-start timer; freshly verify and retain the unchanged deny-all recovery model while waiting | Original M1 FAIL (11 ms early) → PASS; unchanged D-067 tests and added backoff/Retry-After/no-extra-baseline proof PASS |
+| r27 L-1 | Confirmed Low product defect; rejection followed by deferred blocked audit in the same Step | `bde266ce` (#272), deferred audit re-arms quarantine; withdrawal also repeats handoff's baseline | `543106ca`: one containment attempt per local pass, including Apply's quarantine; reuse only its verified baseline until another rules mutation | Original L1 FAIL (2 Quarantine / 4 baseline) → PASS (1 / 1); next Step rechecks and contains again |
+| R23 heartbeat flake | Confirmed product sub-budget defect; ordinary filesystem or scheduler load can exhaust it | `28e9e41c` (#429), `boot_heartbeat.go` adds a 100 ms child deadline | `ad0894a2`: heartbeat uses the enclosing Boot deadline, with the existing pre-rename expiry check | New deterministic deadline-identity proof FAIL → PASS; unchanged `TestR23_H2_InterruptedCheckpointPreparesNextEpoch` and Boot cancellation tests PASS |
+
+These are correctness and functional results. F20-01 is a product defect fixed
+by this follow-up when merged. Isolation 20's failed run remains failed; its
+member-expiry predicate belongs to isolation. Members' r27 M-2/M-3 predicates
+remain with members. No acceptance consumer was changed.
+
+## Imported proofs
+
+Commit `2f46b486` imports exactly these files unchanged from the two review refs:
+
+- `node/agent/review_r28_test.go`
+- `node/agent/review_r27_test.go`
+- `node/enforce/review_r27_test.go`
+
+On the base, all four TODO cases fail and all six Held/WhatHeld cases pass
+(five agent cases, one enforce case). The before log is retained privately in
+`.agent/f48/proofs-before.log`; the public validation record contains sanitized
+output and hashes. No production fix preceded this run.
+
+After the import, M1's copied Run timer formula was replaced with a call to
+`runStepDelay`, the same method `Run` uses. Its scenario and serving expectation
+remain unchanged. H1's fake plane now exposes independent interface-existence
+evidence, matching the new production read, and its assertion extends through
+clean-interface recovery. L1 additionally asserts exactly one baseline and
+checks the following Step. The r28 and enforce files remain byte-identical to
+the imported versions. No TODO expectation was weakened.
+
+The first full node gate exposed three pre-existing assertions tied to duplicate
+containment work. `5882ebff` updates these owned tests faithfully: R15 now checks
+Apply's verified quarantine, the rendered empty admission set and lowered link;
+F31's cancellation fake actually installs the baseline it claimed in its
+quarantine evidence; F32 requires one attempt and the same bounded allowance
+through repeat calls. R15 also rejects a redundant post-Apply baseline. All four
+targeted containment assertions then pass. The original full-gate failure and
+an intermediate test-edit compilation error are retained in the validation
+record, followed by the corrected run. The R23 test was never retried to hide
+a deadline failure.
+
+
+## Context audit
+
+Every production `controlContext(ctx)` use on the base was read. Line numbers
+below refer to `ff5efb69` before this follow-up.
+
+| Base use | Verdict and disposition |
+|---|---|
+| `engine.go:948`, `refreshProbe` | Defect: local status and egress checks consumed HTTP budget. Now `localWorkContext`: Step local allowance; Boot caller cancellation. |
+| `usage.go:280`, `openUsage` identity-adoption lock | Same latent defect for local work after a timed-out request. Now `localWorkContext`; Boot still follows TERM. |
+| `engine.go:492`, Boot caller reference | Correct cancellation intent, misleading budget identity. Now uses the explicit Boot caller context. |
+| `restart.go:71`, adoption lock | Boot-only, must stop on TERM. Now explicit local-work/Boot caller context; not Step's HTTP budget. |
+| `restart.go:87,118`, adoption cancellation checks | Boot-only adoption guards are required. Now check the explicit Boot caller context. |
+| `sync.go:32`, desired-state GET | Network request: keep control budget. Parsing and persistence receive the local caller context. |
+| `sync.go:126`, single lease request | Network request: keep control budget. Acceptance, lease/anchor persistence and cleanup receive local context. |
+| `sync.go:376`, certificate renewal | Network request: keep control budget. Local key/CSR/certificate work does not inherit it. |
+| `sync.go:461`, bootstrap request | Network request: keep control budget. Durable bootstrap state uses local context. |
+| `observe.go:296`, early control-expiry guard | Correct: skip outbound delivery after its budget; does not fail persistence or safety. |
+| `observe.go:314`, observation POST | Network request: keep control budget. Outbox persistence receives local context. |
+| `usage.go:35,39`, upload/checkpoint transports | Network requests: keep control budget. Boot-created background uploads already follow the process lifetime. |
+| `resolver.go:129`, resolver document GET | Network request: keep control budget. Verified document handling and local DNS apply retain their caller context. |
+
+`controlContext`'s definition is only a lookup. No remaining production call
+passes its result to local probe, verification, Apply, persistence or cleanup.
+Boot records its caller-bound context separately under `bootCallerKey`; the
+independent local budget remains available for safe cleanup after TERM.
+Repeated hung requests preserve local safety and serving before D, and the
+manual-clock unit proof stops at exactly D. Signed/kernel deadlines are not
+extended. A real local check failure still fails closed.
+
+## Closed recovery schedule and containment
+
+A closed recovery flushes the existing truthful ready/provisional observation.
+The next grant request remains at its existing D-067 slot. For the reviewed
+5-second heartbeat scenario, that is 5 seconds after the previous request send,
+minus time already spent recovering. General local waiting is at most 60 seconds
+from that send, reduced by the lease renewal lead. Retry-After is an independent
+lower bound and can exceed 60 seconds. Ongoing bounded work, request latency and
+central eligibility are not a guarantee of serving within that local wait.
+
+There is no immediate extra request or schedule reset. For newly issued leases,
+the minimum normal grant-less interval is `min(heartbeat, 60s, time to renewal
+lead)`; with supported heartbeat values and a fresh minimum 60-second lease it
+is at least 1 second, and is 5 seconds in the reviewed fixture. Subsequent waits
+double to the existing 60-second cap. Replayed leases past their lead and failed
+requests retain the existing cadence/Retry-After rules. Existing generation,
+identity-freeze and first-lease exceptions are unchanged; this is not a new
+global rate limiter. There is at most the existing one renewal attempt per Step
+outside those previously defined exceptions.
+
+`runStepDelay` no longer combines the due grant-less slot with an earlier
+start-anchored poll tick. Longer waits still allow ordinary closed-state polls.
+Those polls freshly verify the unchanged empty recovery model under the node
+lock, and do not reinstall a baseline. Both bindings and leases are empty, no
+probe exception exists, and signed inputs and other safety gates still qualify.
+Every other model input is compared. Only clock samples are normalized because
+this empty model has no admission timeout. Drift, changed configuration or a
+new failure takes the ordinary fail-closed path. A populated lease still needs
+a fresh full Apply and verification before serving. D-067 revision 11 and D-126
+reporting are unchanged.
+
+A quarantine attempt and its verified baseline are scoped to the Step's local
+budget. Apply's own quarantine counts. A failed containment baseline can still
+be repaired by withdrawal; successful repair is reused for the rest of that
+pass. Apply and probe-rule mutation invalidate baseline reuse. The following
+Step gets a fresh budget and containment audit. No enforce production file was
+changed, and D-090/D-106 held proofs continue to pass.
+
+## R23 boot heartbeat
+
+The reported `agent: boot failed: heartbeat: context deadline exceeded` names
+`bootHeartbeat`'s 100 ms child deadline. Follow-up 47's retained excerpt reports
+the entire failing subcase at 0.54 seconds, excluding exhaustion of Boot's
+10-second parent budget. `WriteHeartbeatContext` creates a file,
+writes, chmods, fsyncs and closes it before checking the context immediately
+before rename. Disk latency or scheduler delay can exhaust that child even
+while Boot's 10-second allowance remains live. The old log does not identify
+which of Boot's three heartbeat calls or which syscall was delayed; those
+finer details are not asserted.
+
+The fix removes the second deadline rather than increasing a timeout or
+retrying. Boot still has one 10-second local budget; Close retains its separate
+3-second allowance. No expired heartbeat may be atomically published. A writer
+seam lets the new test assert exact equality with the parent deadline and then
+prove canceled publication leaves the prior receipt untouched. It uses no
+sleep. The original eight interrupted-checkpoint cases are unchanged.
+
+## D-150 code reading only
+
+**Not determined.** No frozen arm was run. The frozen `567080be` code already
+calls `kernel.rejectedGeneration` before generation repair/withdrawal
+(`node/agent/serving.go:71` and `:133`), and the counter-discontinuity mechanism
+in `meterreset.go` remains present in `28e9e41c`. Follow-ups 37–43 did replace
+the `finalDone` gate at `567080be:node/agent/engine.go:1060` with independent
+`epochClosed` preparation at `28e9e41c:node/agent/engine.go:1266`, and added
+settlement tracking in `usage.go:322`. That change addresses interrupted closed
+epoch recovery, but the supplied snapshot already has an open
+`after_final_sample` epoch and generation 3 with no discontinuity. It does not
+identify that interruption or establish why the discontinuity is missing.
+
+No specific replaced change can be attributed from this code reading and the
+supplied final snapshot. The failed frozen scenario remains failed. Nothing is
+claimed about 37–43's timing or about the difference between the two supplied
+run durations.
+
+## Functional lab and validation
+
+The single ordinary lab **failed: 12 passed, 1 failed, 1 optional skip**.
+`TestLabD087_D104_GrantRenewalExpiryCorrelation` reached the existing assertion
+at `tests/netlab/agent/timing-analysis.py:117`: the last-positive lower bound was
+false, while the first-drop upper bound was true. No rerun was made. No cause or
+attribution to these changes is assigned. Automatic scenario captures are
+retained in `.agent/f48/lab-capture`; their hashes and the failed output are in
+the validation record. This is a failed functional gate, not a timing comparison.
+The optional D116 installer-marker scenario skipped with its opt-in unset.
+Owned Docker inventory after cleanup is empty in all four object classes.
+The pre-lab suite check found no concurrent assembled run: zero wait (the check
+itself took 0.015 seconds).
+
+Admission audit limitation: all top-level commands and PATH-resolved Go/Docker
+commands used isolated admission checks, but GNU Make selected `/usr/bin/make`
+for internal recursive Make launches in the lab. Those launches inherited the
+admitted run rather than receiving separate wrapper checks. This is recorded as
+a process-compliance gap, not claimed as complete per-command admission. The
+remaining driver explicitly pins `MAKE` to the admission wrapper. No reservation
+was acquired, and the failed scenario was not rerun to change this record.
+
+
+Results are recorded after the gates in
+`followup48-validation-2026-11-03.json`. The ordinary lab uses only
+`FVPN_LAB_PREFIX=fvpn-w2-agent-core-f48`; no measurement reservation or paired
+run is involved. All owned containers, images, networks and volumes are checked
+for removal afterward.
+
+No ordinary scenario stops the whole central control plane with desired-state
+requests hanging. The lab does have held lease-renewal requests: fakecontrol's
+lease handler waits for `/release` or request cancellation (`handlers.go:350`),
+used by restart/kernel-expiry cases. That is narrower than F20-01's hung
+desired-state request consuming the budget before the local probe. The r28 and
+new repeated-hang unit proofs are the evidence for that boundary.
+
+## Known gaps and requests
+
+- 2026-11-03 — Request to orchestrator: retain and route the failed ordinary
+  D087/D104 deadline-predicate scenario for investigation, using the preserved
+  `.agent/f48/lab-capture` evidence and public hashes. Do not promote this gate
+  to pass or infer a cause from its final predicate. No rerun was made.
+- 2026-11-03 — Request to netlab via orchestrator: add a whole-control outage
+  scenario whose desired-state/observation requests hang through the control
+  budget while local NetBird status/tunnels remain healthy; prove sibling
+  forwarding until D, no safety baseline before D, and denial at D. Existing
+  held-renewal scenarios do not establish that combination.
+- NetBird management loss while tunnels remain healthy should be assessed
+  separately against §17.1's degraded behavior. `judgeProbe`'s management
+  predicate is unchanged by this follow-up.
+- Isolation owns r28 M-1; members owns r27 M-2/M-3 and their new restart check.
+  Re-run their affected acceptance cases after merge without rewriting old
+  failures. No enforce production change is requested.
+- F30-01 remains with r29; F31-01 and F17-01 remain carried. Physical arm64 and
+  field-network validation remain unmeasured; cross-builds are functional only.
