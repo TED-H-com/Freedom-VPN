@@ -1,0 +1,126 @@
+{
+  "driver_run_id": "af67be8e-3c40-4728-95e2-159e2aa5a3f6",
+  "source_revision": "6350853010054cf656465e5e677c60dc29553cb5",
+  "started_at": "2026-10-30T22:00:15Z",
+  "expected": "AT30 live central DB restore to T0 while node, payment provider, and NetBird hold T1 state; 2-minute fail-safe negative before freeze/begin-recovery; 5-step fvpn-usage-admin restore protocol; retained-node usage replay (0 lost, 0 double-counted); provider and peer/revocation reconciliation; measured RPO/RTO",
+  "prepare": {
+    "reset": true,
+    "prefix": "w4-secops",
+    "port_base": "30000"
+  },
+  "inventory_before": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "up": {
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-up"
+    ],
+    "started_at": "2026-10-30T22:00:15Z",
+    "finished_at": "2026-10-30T22:00:39Z",
+    "elapsed_seconds": 24.166,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup8-e2e-up",
+      "bytes": 20147,
+      "findings": []
+    }
+  },
+  "live": {
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "35m",
+      "-run",
+      "^TestAT30_Followup8_LiveRestoreReconcile$",
+      "./tests/e2e/at/secops"
+    ],
+    "started_at": "2026-10-30T22:00:39Z",
+    "finished_at": "2026-10-30T22:09:34Z",
+    "elapsed_seconds": 535.026,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup8-live",
+      "bytes": 3710,
+      "findings": []
+    },
+    "status": "passed",
+    "required_tests": [
+      "TestAT30_Followup8_LiveRestoreReconcile"
+    ],
+    "missing": [],
+    "skipped": [],
+    "tests": [
+      {
+        "name": "TestAT30_Followup8_LiveRestoreReconcile",
+        "result": "pass",
+        "elapsed_seconds": 534.1
+      }
+    ],
+    "package_results": {
+      "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "pass"
+    }
+  },
+  "down": {
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
+    ],
+    "started_at": "2026-10-30T22:09:35Z",
+    "finished_at": "2026-10-30T22:10:15Z",
+    "elapsed_seconds": 40.852,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup8-e2e-down",
+      "bytes": 3039,
+      "findings": []
+    }
+  },
+  "inventory_after": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "finished_at": "2026-10-30T22:10:16Z"
+}

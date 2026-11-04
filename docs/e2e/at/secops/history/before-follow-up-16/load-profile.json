@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "label": "TEST ONLY \u2014 initial dev-host profile, not candidate hardware",
+  "executed": false,
+  "members": 20,
+  "authorized_devices": 60,
+  "devices_per_member": 3,
+  "nodes": 2,
+  "warmup_seconds": 60,
+  "measurement_seconds": 300,
+  "repetitions": 1,
+  "concurrent_signins": 20,
+  "heartbeat_interval_seconds": 30,
+  "sampling_interval_seconds": 10,
+  "portal_reads_per_member_per_second": 1,
+  "policy_change_offsets_seconds": [
+    60,
+    180
+  ],
+  "paths": [
+    "direct",
+    "forced relay"
+  ],
+  "flows_per_device": {
+    "tcp_upload": 1,
+    "tcp_download": 1,
+    "udp_echo": 1
+  },
+  "controlled_targets_only": true,
+  "targets": {
+    "read_p95_ms": 500,
+    "policy_apply_seconds": 60,
+    "usage_visible_seconds": 120
+  },
+  "requirements": [
+    "No authorization mistakes",
+    "No missing or duplicated ledger events",
+    "Record all non-2xx responses; separate 429 from latency",
+    "Measure all requests, report p50/p95/p99 and error rate",
+    "Measure policy commit to final ACK plus dataplane check",
+    "Measure sampling interval end to usage visible with correct total",
+    "Record CPU, memory, IO, bytes and forced-relay proof",
+    "Do not retune the run after seeing results"
+  ],
+  "operator_hardware": [
+    "candidate hardware",
+    "physical arm64",
+    "second physical NAT",
+    "Windows",
+    "macOS",
+    "iOS",
+    "Android"
+  ],
+  "fixture_protocol": "D-050: admin grants for 20 real member sessions, 3 native user peers per member admitted by devices.discover; never hand-write projected tables",
+  "current_lab_hook_limit": 60,
+  "required_scale_hook": "Available in #143: tests/e2e/native_exports.go StartNativePeer/JoinNativeMember (20 users \u00d7 3 peers); actual admission counts in live.json.native_scale, not inferred from the hook bound.",
+  "follow_up_5": {
+    "full_profile_executed": false,
+    "measured_subset": "capacity.json",
+    "portal_readers": 20,
+    "counted_native_devices": 2,
+    "requested_measurement_seconds": 300,
+    "warmup_seconds": 60,
+    "unchanged_20x3_gate": "devstack follow-up 10 absent from measured 446b6b0; historical 50/60 result retained",
+    "relay_udp_candidate_hardware": "not measured"
+  },
+  "follow_up_6": {
+    "sequential_profile": {
+      "users": 20,
+      "devices_per_user": 3,
+      "join_order": "unchanged sequential",
+      "eligibility": "finite API grants, 1 hour",
+      "max_join_seconds": 2400
+    },
+    "exported_helper": {
+      "users": 20,
+      "devices_per_user": 3,
+      "join_order": "3 per user concurrent, users sequential",
+      "fresh_stack": true,
+      "eligibility": "finite API grants, 1 hour"
+    },
+    "control_reads": {
+      "readers": 20,
+      "per_reader": 30,
+      "interval_seconds": 1,
+      "endpoint": "GET /api/v1/member/devices"
+    },
+    "gateway": {
+      "worker_processes": 2,
+      "worker_connections": 4096,
+      "sampler_interval_seconds": 30
+    },
+    "serving_flow_count": 0,
+    "node_process_cgroup_telemetry": null,
+    "claim": "Admission and control diagnostics only; full mixed-flow profile remains unrun"
+  }
+}
