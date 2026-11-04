@@ -110,3 +110,68 @@ changes. No consumer files or historical evidence were edited.
   resource. The schema owner must decide; this task does not authorize a new
   migration or a changed response contract. After resolution, implement the
   parser change and all four route-level no-write/same-key retry tests.
+
+## 2026-11-03 — Resume 1: revised ruling and implementation
+
+The orchestrator withdrew the no-zero precondition. Project Spec §14.5 and the
+existing OpenAPI contract assign zero no special meaning and impose no minimum
+stored version. A client that reads ETag `"0"` may send `If-Match: "0"` and write
+that same version. Against a positive current version, `"0"` is an ordinary
+mismatch: HTTP 412 `RESOURCE_VERSION_CONFLICT`, with the current decimal-string
+version in `details.current_resource_version`. The earlier counterexample and
+stop record above remain accurate history; this revised ruling resolves their
+blocking request. No positive-version invariant is introduced.
+
+`nodes.ParseIfMatch` now accepts zero through its existing decimal parser. All
+six audited callers retain their existing comparisons and transaction paths.
+Missing/empty headers still produce 428; other malformed values retain their
+previous parser responses. Non-zero comparisons, the schema, production's
+default version of 1, the contract and its version are unchanged.
+
+For a fresh command, `exits.SetPublication` now accepts `"0"` at its initial
+validation and delegates to `SetPublicationTx` for the locked node comparison.
+A zero mismatch returns the current version and rolls back its idempotency
+reservation. As with other well-formed versions, an already accepted key/body
+returns the original operation through the existing idempotent replay path.
+The alternate node service revoke/retire entry points likewise use their
+ordinary conditional updates.
+
+Added coverage under API01 (Project Spec §14.5, §14.6):
+
+- `TestAPI01_ParseIfMatchZero` accepts `"0"` and preserves surrounding whitespace
+  handling. `TestParseIfMatchAndFormatETag` retains every other existing bad
+  value and the empty-header 428 check, and adds weak/list tags, leading zeros,
+  unquoted/empty values, non-integers and overflow as malformed regressions.
+- `TestAPI01_HTTPZeroIfMatchConflictAndSameKeyRetry` covers
+  `PATCH /api/v1/admin/nodes/{node_id}`,
+  `POST /api/v1/admin/nodes/{node_id}/revoke`,
+  `DELETE /api/v1/admin/nodes/{node_id}`, and
+  `PUT /api/v1/admin/nodes/{node_id}/publication` through the real HTTP command
+  boundary. Each positive-version resource rejects both zero and a non-zero
+  stale version with the exact current version. Complete node/exit/identity
+  row snapshots and operation/audit/outbox/idempotency counts stay unchanged;
+  credentials remain usable. Changing only the header to the correct ETag
+  accepts the same key/body once, with one operation, audit, outbox event and
+  idempotency record and the intended state change.
+- `TestAPI01_HTTPIfMatchZeroRowMatches` inserts a test node at zero, reads its
+  ETag and PATCHes notes using `"0"`. The response is 200, the version becomes
+  1, and replay performs no additional write. A version-1 case runs the same
+  checks and advances to 2. These explicit inserts are TEST ONLY fixtures.
+- `TestAPI01_StandaloneZeroIfMatchConflictAndSameKeyRetry` covers the alternate
+  node revoke/retire service entry points and the `exits.SetPublication` wrapper:
+  zero conflict details, no durable effects, same-key retry and accepted-key
+  replay. Together with the HTTP tests this exercises all six parser callers.
+
+Consumer behavior remains compatible: devstack re-reads and retries with the
+same key/body, and its proof accepts either empty or populated conflict details.
+No consumer requiring empty details was found. No files under `tests/e2e/`
+changed. Its proof-helper comment still describes the old zero rejection;
+devstack owns that comment update.
+
+### Resume 1 request to orchestrator
+
+- **2026-11-03 — Devstack documentation follow-up (nonblocking).** Update the
+  comment above `publisherTrace32` in `tests/e2e/publisher_proof_test.go`, which
+  says zero is rejected before lookup. The existing test intentionally covers
+  both error-detail shapes and needs no behavioral change to consume this fix.
+  Historical devstack evidence remains unchanged.
