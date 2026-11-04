@@ -21,7 +21,7 @@ func (e *Engine) Seed(ctx context.Context, manifestPath, tree string) error {
 	if strings.TrimSpace(manifestPath) == "" || strings.TrimSpace(tree) == "" {
 		return permanent(apierr.ValidationFailed, "seed requires manifest and tree")
 	}
-	return e.withLock(ctx, func() error {
+	return e.withLockFor(ctx, "seed", func() error {
 		if err := e.open(ctx); err != nil {
 			return err
 		}
