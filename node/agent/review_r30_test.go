@@ -31,7 +31,6 @@ import (
 // true`) without ever invoking `fvpn-updater recover` (even when UpdaterConfig
 // is empty, which must fail closed with recovery_required).
 func TestR30_H1_CanceledBootContextSkipsRecoverAndAdmitsServing(t *testing.T) {
-	// TODO(review r30): H-1
 	r := newRig(t)
 	serveBoundGeneration(t, r)
 	cfg, boot, log := r.eng.cfg, r.eng.bootID, r.eng.log
@@ -70,7 +69,6 @@ func TestR30_H1_CanceledBootContextSkipsRecoverAndAdmitsServing(t *testing.T) {
 // without retrying `fvpn-updater recover`, wedging `recovery_required` forever
 // even after update.lock is released.
 func TestR30_H1_PerCallBootContextWedgesStepRecovery(t *testing.T) {
-	// TODO(review r30): H-1
 	r := newRig(t)
 	serveBoundGeneration(t, r)
 	marker := filepath.Join(t.TempDir(), "recovered")
@@ -99,6 +97,8 @@ func TestR30_H1_PerCallBootContextWedgesStepRecovery(t *testing.T) {
 	}
 
 	// Now the update lock is free (recover script exits 0).
+	// The rig uses a manual clock: honor D-155's existing child retry floor.
+	r.clock.Advance(recoverRetryInterval)
 	if err := os.WriteFile(marker, []byte("ok"), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -122,7 +122,6 @@ func TestR30_H1_PerCallBootContextWedgesStepRecovery(t *testing.T) {
 // (`Reasons = [policy_missing]`) for the rest of the step so noteRecoveryReport
 // refuses to arm D-157's early recovery renewal on that recovery step.
 func TestR30_M2_PreEnforceLeaseAttemptBlocksPostRecoveryRenewal(t *testing.T) {
-	// TODO(review r30): M-2
 	r, p := f50Rig(t)
 
 	// Enter grant-less state at generation 14 and record a retained Apply failure.
@@ -163,7 +162,6 @@ func TestR30_M2_PreEnforceLeaseAttemptBlocksPostRecoveryRenewal(t *testing.T) {
 // report and leaves `closedRecoveryRenewal.reportID == uuid.Nil`, violating
 // engine.go:1384 ("each recovery needs its own report, even at the same generation").
 func TestR30_M3_PendingOutboxDedupSkipsNewClosedRecoveryReport(t *testing.T) {
-	// TODO(review r30): M-3
 	r, p := f50Rig(t)
 	r.srv.SetObservationRetryAfter(1, 5)
 	f50Recovery(t, r, p, 14)

@@ -94,3 +94,19 @@ func (s *Server) ObservationReports() []api.ObservationReport {
 	_ = json.Unmarshal(raw, &out)
 	return out
 }
+
+// HoldNextUsageUntilCanceled exposes the next held HTTP request's context.
+// TEST ONLY: assert caller cancellation reaches an in-flight upload before Close.
+func (s *Server) HoldNextUsageUntilCanceled() (<-chan context.Context, func()) {
+	ready, resume := make(chan context.Context, 1), make(chan struct{})
+	s.mu.Lock()
+	s.usageResponseHold = func(ctx context.Context) {
+		ready <- ctx
+		select {
+		case <-resume:
+		case <-ctx.Done():
+		}
+	}
+	s.mu.Unlock()
+	return ready, sync.OnceFunc(func() { close(resume) })
+}

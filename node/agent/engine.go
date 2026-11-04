@@ -95,7 +95,8 @@ type Engine struct {
 	restartBindings []enforce.Binding
 	restartIntent   *usageIntent
 	retainedPending bool
-	runCtx          context.Context
+	runCtx          context.Context // Run process lifetime, never a per-call Boot/Step context
+	uploadParent    context.Context // Preserve Boot caller ownership of the upload loop
 	usageOutbox     bool
 	usageDisk       bool
 	usagePersist    bool
@@ -185,6 +186,7 @@ type Engine struct {
 	leaseRetryAt         time.Duration
 	leaseAttempted       bool
 	leaseAttemptAt       time.Duration
+	leaseAttemptGen      uint64 // ACK sent by the last attempt; zero means null
 	staleHold            staleLeaseHold
 	provisionalStreak    int
 	provisionalRetryAt   time.Duration
@@ -468,7 +470,7 @@ func (e *Engine) Boot(caller context.Context) error {
 // that fails to honor cancellation. Ownership stays with the worker until it
 // finishes or the process exits; Close waits instead of closing its stores.
 func (e *Engine) bootWithBudget(caller context.Context, timeout time.Duration) error {
-	e.runCtx = caller
+	e.uploadParent = caller
 	ctx, cancel := bootLocal(caller, timeout)
 	e.bootDone = make(chan struct{})
 	e.bootSafe.Store(false)
@@ -601,6 +603,9 @@ func (e *Engine) boot(ctx context.Context) (bootErr error) {
 
 // Run boots, then steps until ctx ends.
 func (e *Engine) Run(ctx context.Context) error {
+	// Run owns recovery shutdown. Retain this immutable context even on a
+	// bounded Boot return: its worker may still be finishing until Close.
+	e.runCtx = ctx
 	defer e.stopRecovery()
 	if err := e.Boot(ctx); err != nil {
 		return err
@@ -937,7 +942,7 @@ func (e *Engine) input() Input {
 		Now: now, MonoNow: e.clock.Mono(), Datapath: dp,
 		Desired: e.desired, DesiredOK: e.desiredOK, DesiredExpired: e.desiredExpired,
 		Lease: e.lease, LeaseFresh: e.leaseFresh && e.lease != nil, LeaseMonoSent: e.leaseMono,
-		AnchorOK: e.anchorOK, LatchBlocked: e.latchBlocked, RecoverBlocked: e.recoverBlocked,
+		AnchorOK: e.anchorOK, LatchBlocked: e.latchBlocked, RecoverBlocked: e.recoverBlocked || (e.cfg.UpdaterRecover != "" && !e.recovered),
 		Backend: e.cfg.NetbirdBackend, ReleaseID: e.cfg.ReleaseUUID(), Assignments: e.assignments,
 		TestMode: e.cfg.TestMode, ExemptV4: exempt, ExtraDenied: extra, HostV4: host,
 		IdentityFrozen: e.identityFrozen,

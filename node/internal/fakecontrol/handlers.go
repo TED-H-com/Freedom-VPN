@@ -491,7 +491,10 @@ func (s *Server) signLease(node, inc uuid.UUID) ([]byte, string, error) {
 func (s *Server) observe(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	s.observationPosts++
-	retry := s.observationRetryN > 0
+	retry := s.observationRetryN > 0 && s.observationPassN == 0
+	if s.observationPassN > 0 {
+		s.observationPassN--
+	}
 	wait := s.observationRetryFor
 	if retry {
 		s.observationRetryN--
