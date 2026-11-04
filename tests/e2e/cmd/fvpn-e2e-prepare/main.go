@@ -393,7 +393,9 @@ func writeAgentConfigs(state, originPrefix string) error {
 		// TEST ONLY rate. The agent requires the field and has no product default (D-034).
 		"host_reserve_bps": 1000000, "netbird_backend": "kernel",
 		"heartbeat_seconds": 5, "poll_seconds": 5, "watchdog_stale_seconds": 30, "watchdog_interval_seconds": 5,
-		"boot_id_file": "/etc/vpn-node/boot-id", "test_mode": true,
+		// TEST ONLY D-162: match the lab heartbeat/poll cadence; product default stays 30 s.
+		"observation_seconds": 5,
+		"boot_id_file":        "/etc/vpn-node/boot-id", "test_mode": true,
 		"updater_recover": "/usr/local/bin/fvpn-updater", "updater_config": "/etc/vpn-node/updater-recover.json",
 	}
 	enroll := cloneMap(base)
