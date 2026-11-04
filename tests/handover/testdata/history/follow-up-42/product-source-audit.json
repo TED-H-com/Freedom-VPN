@@ -1,0 +1,95 @@
+{
+  "source_commit": "5a942aa1d6782b333983bbd230e97f44963e4d94",
+  "excerpts": [
+    {
+      "source": "node/agent/engine.go",
+      "source_sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "first_line": 660,
+      "last_line": 675,
+      "excerpt": "// Step is one control pass. A 304 does not move the lease (§14.7). Member\n// forwarding stays off unless every gate in Decide passes.\nfunc (e *Engine) Step(ctx context.Context) error {\n\tcaller := ctx\n\t// Leave time for live verification and heartbeat even during a control\n\t// outage. A 30s HTTP timeout previously exceeded the watchdog's stale\n\t// threshold before the next heartbeat (ISO-F6-03).\n\tioCtx, cancelIO := context.WithTimeout(ctx, e.controlPassTimeout())\n\tdefer cancelIO()\n\tctx = context.WithValue(ctx, controlBudgetKey{}, ioCtx)\n\t// One local allowance starts at entry, including the initial/final reads,\n\t// quarantine, baseline, persistence and observation. Nested cleanup may\n\t// shorten it but cannot discard it or start another quarantine allowance.\n\tctx, cancelLocal := newLocalBudget(ctx, e.controlPassTimeout()+5*time.Second)\n\tdefer cancelLocal()\n\tdefer e.finishServingStep(ctx)\n",
+      "sha256": "1b7892bcf948b4f4ba07c5ab13f829f9d85fe61eda9f4b968719ced310645695"
+    },
+    {
+      "source": "node/agent/engine.go",
+      "source_sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1",
+      "first_line": 940,
+      "last_line": 963,
+      "excerpt": "\t\tp := e.prober\n\t\tif p == nil {\n\t\t\tnb := newNetbirdProber(e.cfg)\n\t\t\tp = nb\n\t\t}\n\t\tpublished := e.desired != nil && e.desired.PublicationIntent == api.PublicationIntentPublished\n\t\ttargets, timeout, source, bad := egressTargets(e.desired, e.desiredOK, e.cfg.EgressProbeTarget)\n\t\te.probeSource = probeSourceDetail(source, bad)\n\t\te.lastProbe = p.Probe(controlContext(ctx), ProbeRequest{\n\t\t\tPublished: published,\n\t\t\tTargets:   targets,\n\t\t\tTimeout:   timeout,\n\t\t\tRejected:  bad,\n\t\t\tIngress:   e.cfg.Datapath.MemberIngress,\n\t\t\tUplink:    e.cfg.Datapath.Uplink,\n\t\t})\n\t\te.probeAt = e.trustedNow().UTC()\n\t\tif !e.anchorOK {\n\t\t\te.probeAt = time.Time{}\n\t\t}\n\t})\n\te.noteProbeOmission()\n}\n\n",
+      "sha256": "ff577acb5c4b33945ce549c87ebe9666ba7af4c7ca15059ecebcbb3cf6bd2fb3"
+    },
+    {
+      "source": "internal/nodes/nodes.go",
+      "source_sha256": "a9a4d37712ae215c86bbd320e5c9ff066b5e98c7554276a91da5dcb4495ce788",
+      "first_line": 87,
+      "last_line": 111,
+      "excerpt": "func ParseIfMatch(ifMatch string) (string, error) {\n\ttrimmed := strings.TrimSpace(ifMatch)\n\tif trimmed == \"\" {\n\t\treturn \"\", apierr.New(apierr.PreconditionRequired, \"If-Match header is required for this mutation\")\n\t}\n\tif len(trimmed) < 3 || trimmed[0] != '\"' || trimmed[len(trimmed)-1] != '\"' {\n\t\treturn \"\", apierr.New(apierr.ResourceVersionConflict, \"Strong If-Match required\")\n\t}\n\tunquoted := trimmed[1 : len(trimmed)-1]\n\tif _, err := decstr.Parse(unquoted); err != nil {\n\t\treturn \"\", apierr.New(apierr.ResourceVersionConflict, \"If-Match header does not match a valid resource_version\")\n\t}\n\treturn unquoted, nil\n}\n\n// MapDBPublicationObserved maps the database exits.publication_observed value\n// (`inactive`, `applying`, `active`, `drifted`, `error`) onto api.PublicationObserved.\nfunc MapDBPublicationObserved(dbVal string) api.PublicationObserved {\n\tswitch dbVal {\n\tcase \"active\":\n\t\treturn api.PublicationObservedActive\n\tcase \"applying\":\n\t\treturn api.PublicationObservedApplying\n\tcase \"error\", \"drifted\":\n\t\treturn api.PublicationObservedError\n",
+      "sha256": "9c820b243edfa1ca941b75a556e0c0be5c7afe38394fb286ae874699b41cfad3"
+    },
+    {
+      "source": "docs/spec/PROJECT_SPEC.zh-TW.md",
+      "source_sha256": "7136096d6eec758234dbb7ff5f22f7298b8a18b042ebf3cd5d729ba76844389a",
+      "first_line": 1714,
+      "last_line": 1760,
+      "excerpt": "\n- 外部 return URL、artifact URL、DNS feed URL 使用受控來源；阻止 SSRF 連到 metadata 或內部服務。release 不接受由會員提供的任意下載位置。\n\n- 裝置名稱、備註與網域規則視為不可信輸入；前端依 context 編碼，後端不組成 shell 指令。資料庫使用參數化查詢。\n\n- Agent 對普通設定與高權限網路操作分界；僅提供具 schema 的操作。第一版不提供通用遠端 shell 或讓後台傳入任意 root 指令。\n\n- 付款回呼驗證 raw body，先保存可信事件再處理；敏感卡片資料留在支付商託管介面，平台只存必要參照與金額。[S18][S19]\n\n## 16.3 服務資格與離線租約\n\n建議預設：每次服務租約最長 24 小時。這是控制服務失聯時正常節點可繼續使用最後有效政策的上限，並非會員資格延長 24 小時。租約 expires_at 不得超過 effective_service_end；該截止由付款、已核准 grant 及有限 grace 計算，paid_through 不因寬限而改寫。Node 租約與每會員授權均須有效，實際允許值取最早截止。\n\n```text\neffective_service_end = entitlement.effective_service_end\nmember_lease_end = min(\n  signed_server_time + configured_max_offline_lease,\n  effective_service_end,\n  node_lease_end\n)\nforwarding_deadline = min(effective_service_end, member_lease_end)\n# paid_through remains a billing fact.\n# Only approved, finite grant/grace can extend effective_service_end.\n# Lease renewal never edits any entitlement source deadline.\n```\n\n節點必須對每一包會員轉送執行有效身分與租約檢查，位置先於可能廣泛放行 established／related 的規則。以帶 timeout 的 kernel allowset 或等效到期機制承載允許項目，再以獨立 watchdog 檢查 Agent 活性、政策與基線。只靠 Agent 定時執行刪除指令不合格；Agent 卡住後仍須能自動到期。\n\n- 租約到達時，以可信伺服器時間、剩餘有效期間及保守時差處理計算本機期限；同一 lease 重播不能重設完整 24 小時。\n\n- 執行期限須以不可被一般 wall-clock 倒退延長的 elapsed-time 機制追蹤；watchdog 重啟也不能重新起算。\n\n- 重開機、失去可信時間錨點、偵測時鐘異常或 VM 還原時，預設保持會員轉送關閉，取得新的有效租約與時間後再恢復。\n\n- Agent 故障由獨立 watchdog 處理；若 Agent 與 watchdog 同時失效，kernel timeout 仍須限制到期。POC 必須檢查實際核心、暫停及恢復行為。\n\n- 控制面在線時主動撤權，目標依 NFR 參數；控制面失聯時不能承諾立即獲知新發生的停權，最長容忍由既有租約約束。\n\n- 上述是本產品受支援程式與核心執行環境的保證；軟體不能宣稱能阻止持有 root／hypervisor 的人改寫核心或所有驗證程式。這不改變統一節點流程及政策。\n\n## 16.4 資料最小化與保留\n\n| 資料 | 建議預設 | 處理要求 |\n|---|---|---|\n| 原始 usage 事件 payload | 35 日 | 只含計量與身分映射所需內容；到期前完成彙總，去重及還原證據另依壓縮策略保存。 |\n| 會員月用量彙總 | 13 個月 | 保存 period、bytes、級距與估算／gap 標記；不含瀏覽目的地。 |\n| 一般服務 log | 7 日 | 排除秘密、完整封包、完整 DNS／瀏覽歷史；限制可識別 metadata。 |\n",
+      "sha256": "365bd696083481c22cb76c3507eee8d6aa46712b551f41e67599582553d8489a"
+    },
+    {
+      "source": "docs/spec/PROJECT_SPEC.zh-TW.md",
+      "source_sha256": "7136096d6eec758234dbb7ff5f22f7298b8a18b042ebf3cd5d729ba76844389a",
+      "first_line": 1791,
+      "last_line": 1808,
+      "excerpt": "## 17.1 故障行為矩陣\n\n| 故障 | 資料面行為 | 控制／恢復行為 |\n|---|---|---|\n| 自家 Control API 暫時不可用 | 正常節點可在現有租約內服務；已知有效服務截止仍自行生效。 | 不能新註冊、改資格、發新版或續租。Agent 退避重連，不改發布意圖。 |\n| NetBird management／signal 不可用 | 部分既有直連可能延續；不能保證新增 peer 或重建路徑正常。 | 按鎖定版本測試。不得把自家 API 正常當成 NetBird 連線控制正常。[S09][S27] |\n| Relay 不可用 | 依賴該 Relay 的路徑可能中斷；直接路徑不一定受影響。 | 記錄路徑及回復結果；可用替代 Relay 的切換行為須實測。[S09] |\n| Agent 卡住或退出 | 獨立 watchdog 與 kernel timeout 控制；不永久保留授權。 | systemd 可重啟程式，使用既有身分與 durable state；回報故障及 gap。 |\n| 租約／可信時間失效 | 停止會員轉送，保留必要控制通道。 | 取得有效新租約／時間後重新檢查；不能重用舊 lease 重設 TTL。 |\n| DNS resolver 不可用 | 使用同政策的已配置備援；全部失效時依既定 DNS 行為失敗。 | 不得靜默改用沒有安全政策的公開 resolver，造成宣稱與行為不一致。 |\n| usage 上報斷線 | 先持久保存；達保護條件依第 10 章停止或限制轉送。 | 重連後原樣重播事件；不能刪除未 ACK 資料假裝已完成。 |\n| 節點磁碟滿 | 不能可靠計量／保存安全狀態時，依保護規則停止會員轉送。 | 保留可取得的診斷與控制能力；不可無限擴增 log 擠掉 outbox。 |\n| 套件下載或簽章失敗 | 安全且受支援的現有版本可繼續服務。 | 回報失敗；不執行未驗證套件，也不把 desired 寫成 current。 |\n| 版本切換後檢查失敗 | 進入已定義恢復流程；受支援 last_good 通過檢查後才服務。 | 實際回復版本及失敗原因可見；publication_intent 不變。 |\n| 支付 Webhook 遺失或亂序 | 依已知有效資格及截止執行，不任意延長。 | 以 provider 對帳修補 inbox／snapshot／entitlement，再同步權限。[S18][S19] |\n| DB 還原到較早時間 | 啟動受控復原；舊授權／新版狀態不可未經對帳直接回流。 | 更換 ledger_epoch、驗證事件重播、對帳支付及 NetBird／Agent 觀測。 |\n\n自家控制服務、NetBird 及 Relay 是不同故障域。既有流量是否持續取決於哪些元件仍運作、當前連線路徑及租約；文件不承諾控制面停機時所有會員皆可正常新增連線。伺服器停止轉送也不等於原生 App 必然具備完整 kill switch，此限制見第 7 章。[S06]\n",
+      "sha256": "08d77ff36ccb2c3a04c8565ce5a34617690398d3334dea3e8c67d9bf7e64fef0"
+    }
+  ],
+  "review_proofs": [
+    {
+      "source_commit": "62146ff1",
+      "path": "tests/e2e/at/members/review_r27_test.go",
+      "sha256": "81230dcb5a7a3714c4e240e3b0c859c814b5d271154d41ad0fa0cf0949df7cc2",
+      "declarations": [
+        "TestR27_M2_AT09_RestartProvisionalPredicateAndTimelineScope",
+        "TestR27_M3_AT02_SiblingRecoveryBracketAndQuarantinePredicates",
+        "TestR27_Held_AT09_RestartRecoveryConjunctsAndTimelineTrace",
+        "TestR27_Held_AT02_CapturedRecoveryPacketAndBracketAccounting"
+      ]
+    },
+    {
+      "source_commit": "62146ff1",
+      "path": "node/agent/review_r27_test.go",
+      "sha256": "aebe4cbd48d868f62d67417d6ce06409ed27d9431bedbdc77c87fdf3d7cff6e3",
+      "declarations": [
+        "TestR27_H1_AuditBlockedMissingInterfaceAtBootLatchesFalseTCForeignFilter",
+        "TestR27_M1_ProvisionalTimerRaceAndClosedRecoveryDelayPopulatedLease",
+        "TestR27_L1_ForeignTCQuarantineStepRedundantBaselinesAndReQuarantine",
+        "TestR27_Held_SameGenerationRestartRenewsBeforeObserveAndSkipsProvisionalWhenPopulated",
+        "TestR27_Held_D106ContainmentRetainsFirstRejectionAcrossGenerationsUntilRestart"
+      ]
+    },
+    {
+      "source_commit": "62146ff1",
+      "path": "node/enforce/review_r27_test.go",
+      "sha256": "3a6857f7e2053c9c2b510640c8d6e3a7f42e53e8079b9f5c0b4c3a4e3055b43c",
+      "declarations": [
+        "TestR27_Held_LoadTCAndVerifyServingClassifyReadFailedAsTCForeignFilter"
+      ]
+    },
+    {
+      "source_commit": "34a8d61f",
+      "path": "node/agent/review_r28_test.go",
+      "sha256": "c2451efc0b68bbcd0901da74cef5a229b346143cccfc82c2d277eea1bef4b139",
+      "declarations": [
+        "TestR28_ControlOutageDoesNotFailTunnelProbeBeforeLeaseExpiry",
+        "TestR28_WhatHeld_RefreshProbeAndNetbirdProberContextPropagation",
+        "TestR28_WhatHeld_FastControlRefusalPreservesServingUntilDeadline",
+        "TestR28_WhatHeld_PostDeadlineReasonOrderingInDecideAndBaseline"
+      ]
+    }
+  ],
+  "members_import_commit": "e0844864",
+  "members_import_sha256": "81230dcb5a7a3714c4e240e3b0c859c814b5d271154d41ad0fa0cf0949df7cc2",
+  "members_held_sha256": {
+    "TestR27_Held_AT09_RestartRecoveryConjunctsAndTimelineTrace": "281f4e874c1516aebabc4b38d1ad683cb67b6836853fc1544cb19058f303e011",
+    "TestR27_Held_AT02_CapturedRecoveryPacketAndBracketAccounting": "ca5fedef3003d930d032984fc5e7ebd2a802faf128a4f2345f6da90d1d2abfa5"
+  }
+}
