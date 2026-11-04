@@ -26,3 +26,8 @@ func TryAcquire(path string) (*Lock, error) { return real.TryAcquire(path) }
 func Acquire(ctx context.Context, path string, attempts int, interval time.Duration) (*Lock, error) {
 	return real.Acquire(ctx, path, attempts, interval)
 }
+
+// AcquireWithBootID uses fallback only if the kernel boot ID is unreadable.
+func AcquireWithBootID(ctx context.Context, path string, attempts int, interval time.Duration, fallback string) (*Lock, error) {
+	return real.AcquireWithBootID(ctx, path, attempts, interval, fallback)
+}

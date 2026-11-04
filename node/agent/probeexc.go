@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"errors"
 	"net/netip"
 	"strings"
 	"time"
@@ -59,7 +58,7 @@ func (e *Engine) withProbeException(ctx context.Context, run func()) {
 	run()
 }
 
-// updateLockHeld never waits for or keeps the lock. Only contention is
+// updateLockHeld never retries or keeps the lock. Only live contention is
 // authority for D-064; a missing or inaccessible lock is not an update.
 // While this process itself holds the exclusive node lock (same-boot
 // adoption), the updater cannot hold it: our own descriptor's contention is
@@ -68,12 +67,15 @@ func (e *Engine) updateLockHeld() bool {
 	if e.planeLocked {
 		return false
 	}
-	lock, err := nodelock.TryAcquire(e.cfg.LockPath)
+	lock, err := nodelock.AcquireWithBootID(context.Background(), e.cfg.LockPath, 1, 0, e.bootID.String())
 	if err == nil {
 		lock.Release()
 		return false
 	}
-	return errors.Is(err, nodelock.ErrBusy)
+	// Stale-holder diagnostics wrap ErrBusy; only the bare sentinel maps to
+	// updater ExitBusy. Unreadable metadata retains the lock library's same
+	// conservative classification on both sides (D-155).
+	return err == nodelock.ErrBusy
 }
 
 func (e *Engine) installProbeException(ctx context.Context, ch healthattest.Challenge) (func(), bool) {

@@ -1,0 +1,47 @@
+{
+  "reads": [
+    {
+      "chain": {
+        "Present": true,
+        "Policy": "drop",
+        "Baseline": true,
+        "Generation": 0,
+        "MemberAccept": 0,
+        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a3e1-48ff-768a-ad77-0524791db351:4d89\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a3e1-c457-7afa-bb08-c96c4c32c9ae:8c3d\" | iifnam"
+      },
+      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 75440710027938\nwall_unix_ns 1793751998258651698\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 33\nreason safety_check_failed",
+      "heartbeat_read_end": "2026-11-04T00:26:43.079063781Z",
+      "read_end": "2026-11-04T00:26:43.001998494Z",
+      "read_start": "2026-11-04T00:26:42.923797284Z"
+    },
+    {
+      "chain": {
+        "Present": true,
+        "Policy": "drop",
+        "Baseline": true,
+        "Generation": 0,
+        "MemberAccept": 0,
+        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a3e1-48ff-768a-ad77-0524791db351:4d89\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a3e1-c457-7afa-bb08-c96c4c32c9ae:8c3d\" | iifnam"
+      },
+      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 75445750945534\nwall_unix_ns 1793752003299569470\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 33\nreason safety_check_failed",
+      "heartbeat_read_end": "2026-11-04T00:26:43.43759126Z",
+      "read_end": "2026-11-04T00:26:43.361457995Z",
+      "read_start": "2026-11-04T00:26:43.280201465Z"
+    },
+    {
+      "chain": {
+        "Present": true,
+        "Policy": "drop",
+        "Baseline": true,
+        "Generation": 0,
+        "MemberAccept": 0,
+        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a3e1-48ff-768a-ad77-0524791db351:4d89\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a3e1-c457-7afa-bb08-c96c4c32c9ae:8c3d\" | iifnam"
+      },
+      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 75445750945534\nwall_unix_ns 1793752003299569470\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 33\nreason safety_check_failed",
+      "heartbeat_read_end": "2026-11-04T00:26:43.796114813Z",
+      "read_end": "2026-11-04T00:26:43.718621794Z",
+      "read_start": "2026-11-04T00:26:43.638211995Z"
+    }
+  ],
+  "signed_deadline": "2026-11-04T00:26:43.406500722Z"
+}

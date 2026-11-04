@@ -1,0 +1,71 @@
+{
+  "run_id": "7599576e-339c-49c9-8bf5-0f710818cbda",
+  "scope": "Targeted search of retained agent/watchdog log snapshots; absence here is not proof the product race is fixed.",
+  "logs": [
+    {
+      "path": "agent-before-clone.log.txt",
+      "lines": 113
+    },
+    {
+      "path": "agent-before-populated-hold-stop.log.txt",
+      "lines": 137
+    },
+    {
+      "path": "agent-before-restart.log.txt",
+      "lines": 85
+    },
+    {
+      "path": "agent-final.log.txt",
+      "lines": 306
+    },
+    {
+      "path": "agent.log.txt",
+      "lines": 641
+    },
+    {
+      "path": "watchdog-before-clone.log.txt",
+      "lines": 0
+    },
+    {
+      "path": "watchdog-before-populated-hold-stop.log.txt",
+      "lines": 3
+    },
+    {
+      "path": "watchdog-before-restart.log.txt",
+      "lines": 0
+    },
+    {
+      "path": "watchdog-final.log.txt",
+      "lines": 0
+    },
+    {
+      "path": "watchdog.log.txt",
+      "lines": 3
+    }
+  ],
+  "matches": [
+    {
+      "path": "agent-before-clone.log.txt",
+      "line": 113,
+      "text": "time=2026-11-04T03:14:12.884Z level=INFO msg=\"serving rules retained for restart\" generation=37 policy_expires_mono_ns=85545299770014 next_binding_expiry_mono_ns=85545299770014"
+    },
+    {
+      "path": "agent-before-restart.log.txt",
+      "line": 85,
+      "text": "time=2026-11-04T03:07:01.653Z level=INFO msg=\"serving rules retained for restart\" generation=28 policy_expires_mono_ns=85109536810976 next_binding_expiry_mono_ns=85109536810976"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 222,
+      "text": "time=2026-11-04T03:07:01.653Z level=INFO msg=\"serving rules retained for restart\" generation=28 policy_expires_mono_ns=85109536810976 next_binding_expiry_mono_ns=85109536810976"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 335,
+      "text": "time=2026-11-04T03:14:12.884Z level=INFO msg=\"serving rules retained for restart\" generation=37 policy_expires_mono_ns=85545299770014 next_binding_expiry_mono_ns=85545299770014"
+    }
+  ],
+  "baseline_unverified_lines": 0,
+  "generation_mismatch_lines": 0,
+  "conclusion": "F48-01 paired signature not observed in retained logs; agent-core 49/D-156 remains separate."
+}

@@ -1,0 +1,956 @@
+{
+  "run_id": "50117c68-d1b3-431d-a2be-cd94d27a2447",
+  "source_commit": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
+  "conditional_restoration": {
+    "records": [
+      {
+        "original": {
+          "name": "conditional hold restoration TEST ONLY next independent hold",
+          "status": "pass",
+          "expected": "mutate only an actually suspended member",
+          "actual": "{\"member_id\":\"01a1a33c-d547-7c4d-82f3-f0a129d8a196\",\"mutation_needed\":false,\"suspended_before\":false}",
+          "command": "read original member state; no no-op PATCH",
+          "at": "2026-11-03T21:19:20Z"
+        },
+        "member_state": {
+          "member_id": "01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+          "mutation_needed": false,
+          "suspended_before": false
+        },
+        "immediately_following_patch": null,
+        "consistent": true
+      },
+      {
+        "original": {
+          "name": "conditional hold restoration TEST ONLY next independent hold",
+          "status": "pass",
+          "expected": "mutate only an actually suspended member",
+          "actual": "{\"member_id\":\"01a1a33c-d547-7c4d-82f3-f0a129d8a196\",\"mutation_needed\":true,\"suspended_before\":true}",
+          "command": "read original member state; no no-op PATCH",
+          "at": "2026-11-03T21:20:56Z"
+        },
+        "member_state": {
+          "member_id": "01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+          "mutation_needed": true,
+          "suspended_before": true
+        },
+        "immediately_following_patch": {
+          "name": "conditional suspension update",
+          "status": "pass",
+          "expected": "fresh If-Match; at most three attempts on 412 only; final 202",
+          "actual": "[{\"body\":{\"completed_at\":null,\"created_at\":\"2026-11-03T21:20:58.484932Z\",\"desired_generation\":\"4\",\"error\":null,\"kind\":\"member.unsuspend\",\"observed_generation\":null,\"operation_id\":\"01a1a349-6477-7ea5-a698-2d2c60cd8f09\",\"request_id\":\"01a1a349-646d-7506-9110-d2a7ce559fca\",\"resource\":{\"id\":\"01a1a33c-d547-7c4d-82f3-f0a129d8a196\",\"type\":\"member\"},\"resource_version\":null,\"status\":\"pending\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"netbird\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"},{\"error_code\":null,\"message\":null,\"name\":\"nodes\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"}],\"updated_at\":\"2026-11-03T21:20:58.484932Z\"},\"error_code\":\"\",\"if_match\":\"\\\"6\\\"\",\"status\":202}]",
+          "command": "GET member version; PATCH; a 412 cannot mutate and is reissued with a fresh ETag/key",
+          "at": "2026-11-03T21:20:58Z"
+        },
+        "consistent": true
+      },
+      {
+        "original": {
+          "name": "conditional hold restoration TEST ONLY next independent hold",
+          "status": "pass",
+          "expected": "mutate only an actually suspended member",
+          "actual": "{\"member_id\":\"01a1a33c-d547-7c4d-82f3-f0a129d8a196\",\"mutation_needed\":true,\"suspended_before\":true}",
+          "command": "read original member state; no no-op PATCH",
+          "at": "2026-11-03T21:22:29Z"
+        },
+        "member_state": {
+          "member_id": "01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+          "mutation_needed": true,
+          "suspended_before": true
+        },
+        "immediately_following_patch": {
+          "name": "conditional suspension update",
+          "status": "pass",
+          "expected": "fresh If-Match; at most three attempts on 412 only; final 202",
+          "actual": "[{\"body\":{\"completed_at\":null,\"created_at\":\"2026-11-03T21:22:31.2545Z\",\"desired_generation\":\"6\",\"error\":null,\"kind\":\"member.unsuspend\",\"observed_generation\":null,\"operation_id\":\"01a1a34a-ced9-77b7-b7ff-741c36f5b643\",\"request_id\":\"01a1a34a-cece-7730-8fe3-b382fd25b012\",\"resource\":{\"id\":\"01a1a33c-d547-7c4d-82f3-f0a129d8a196\",\"type\":\"member\"},\"resource_version\":null,\"status\":\"pending\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"netbird\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"},{\"error_code\":null,\"message\":null,\"name\":\"nodes\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"}],\"updated_at\":\"2026-11-03T21:22:31.2545Z\"},\"error_code\":\"\",\"if_match\":\"\\\"10\\\"\",\"status\":202}]",
+          "command": "GET member version; PATCH; a 412 cannot mutate and is reissued with a fresh ETag/key",
+          "at": "2026-11-03T21:22:31Z"
+        },
+        "consistent": true
+      },
+      {
+        "original": {
+          "name": "conditional hold restoration TEST ONLY hold cleanup",
+          "status": "pass",
+          "expected": "mutate only an actually suspended member",
+          "actual": "{\"member_id\":\"01a1a33c-d547-7c4d-82f3-f0a129d8a196\",\"mutation_needed\":false,\"suspended_before\":false}",
+          "command": "read original member state; no no-op PATCH",
+          "at": "2026-11-03T21:24:22Z"
+        },
+        "member_state": {
+          "member_id": "01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+          "mutation_needed": false,
+          "suspended_before": false
+        },
+        "immediately_following_patch": null,
+        "consistent": true
+      }
+    ],
+    "consistent": true
+  },
+  "member_patch_query": {
+    "original_live_audits": [
+      {
+        "id": "01a1a349-372c-7c4c-818b-984c20729a43",
+        "action": "member.patch",
+        "result": "succeeded",
+        "resource": "member:01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+        "member_id": "01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+        "occurred_at": "2026-11-03T21:20:46.889993+00:00",
+        "operation_id": "01a1a349-372c-776d-bbf7-a5726bb9566c",
+        "after_suspended": true,
+        "before_suspended": false
+      },
+      {
+        "id": "01a1a349-6478-72f2-aa09-c173c9aaa675",
+        "action": "member.patch",
+        "result": "succeeded",
+        "resource": "member:01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+        "member_id": "01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+        "occurred_at": "2026-11-03T21:20:58.484932+00:00",
+        "operation_id": "01a1a349-6477-7ea5-a698-2d2c60cd8f09",
+        "after_suspended": false,
+        "before_suspended": true
+      },
+      {
+        "id": "01a1a34a-bda3-7ada-98d1-a204f279e07f",
+        "action": "member.patch",
+        "result": "succeeded",
+        "resource": "member:01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+        "member_id": "01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+        "occurred_at": "2026-11-03T21:22:26.849774+00:00",
+        "operation_id": "01a1a34a-bda3-7745-ade8-4f59ed2625f0",
+        "after_suspended": true,
+        "before_suspended": false
+      },
+      {
+        "id": "01a1a34a-ced9-7a2b-93df-850684889eff",
+        "action": "member.patch",
+        "result": "succeeded",
+        "resource": "member:01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+        "member_id": "01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+        "occurred_at": "2026-11-03T21:22:31.2545+00:00",
+        "operation_id": "01a1a34a-ced9-77b7-b7ff-741c36f5b643",
+        "after_suspended": false,
+        "before_suspended": true
+      }
+    ],
+    "no_supplement_used": true
+  },
+  "AT09_reauthentication": {
+    "records": [
+      {
+        "name": "AT09 member OIDC reauthentication",
+        "status": "pass",
+        "expected": "fresh authenticated member session before member endpoints",
+        "actual": "{\"completed_at\":\"2026-11-03T21:48:29.959894851Z\",\"member_id\":\"01a1a33c-d268-74de-a87b-c6d3dbe2a3c3\",\"started_at\":\"2026-11-03T21:48:29.275486178Z\"}",
+        "command": "real OIDC redirects and GET auth/session validated by login",
+        "at": "2026-11-03T21:48:29Z"
+      }
+    ],
+    "member_responses": [
+      {
+        "method": "GET",
+        "path": "/api/v1/member/exits",
+        "started_at": "2026-11-03T21:48:51.603741127Z",
+        "completed_at": "2026-11-03T21:48:52.214791634Z",
+        "status": 200
+      }
+    ],
+    "non2xx": [],
+    "unauthorized_count": 0
+  },
+  "all_member_endpoint_non2xx": [
+    {
+      "case": "AT02",
+      "response": {
+        "method": "DELETE",
+        "path": "/api/v1/member/devices/01a1a33e-83cb-70a1-8e3e-513379a820c2",
+        "started_at": "2026-11-03T21:09:06.36353655Z",
+        "completed_at": "2026-11-03T21:09:06.974814452Z",
+        "status": 404,
+        "error_code": "RESOURCE_NOT_FOUND",
+        "scrubbed_body_excerpt": "{\"error\":{\"code\":\"RESOURCE_NOT_FOUND\",\"message\":\"Resource not found.\",\"retryable\":false}}"
+      }
+    }
+  ],
+  "AT09_original_failed_steps": [
+    {
+      "name": "D-067 revision 11 provisional lease observation",
+      "status": "fail",
+      "expected": "provisional observations report awaiting_member_grants (never lease_expired); each failed lease/qos/source_binding check carries AWAITING_MEMBER_GRANTS or, with safety_check_failed, its active enforcement safety code (D-126); exactly one stage=lease error retains the provisional cause",
+      "actual": "{\"all_match_revision_11\":false,\"observations\":[{\"applied_config_generation\":\"66\",\"errors\":[{\"code\":\"HEALTH_CHECK_FAILED\",\"message\":\"tunnel_probe\",\"observed_at\":\"2026-11-03T21:49:53.408063977Z\",\"stage\":\"probe\"}],\"errors_count\":1,\"forwarding_block_reasons\":[\"safety_check_failed\"],\"lease_detail\":\"\",\"lease_error_code\":\"\",\"lease_stage_errors_count\":0,\"matches_d067_revision11\":false,\"qos_error_code\":\"\",\"received_at\":\"2026-11-03T16:49:53.427228-05:00\",\"safety_status\":\"failed\",\"source_binding_error_code\":\"\"},{\"applied_config_generation\":\"66\",\"errors\":[{\"code\":\"HEALTH_CHECK_FAILED\",\"message\":\"tunnel_probe\",\"observed_at\":\"2026-11-03T21:49:53.472516535Z\",\"stage\":\"probe\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"TC_FOREIGN_FILTER\",\"observed_at\":\"2026-11-03T21:49:53.438707931Z\",\"stage\":\"apply\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"candidate_generation\\\":\\\"66\\\",\\\"read_at\\\":\\\"2026-11-03T21:49:53.438740305Z\\\",\\\"source\\\":\\\"rejected\\\"}\",\"observed_at\":\"2026-11-03T21:49:53.438740305Z\",\"stage\":\"tc_evidence\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":null,\\\"error\\\":\\\"read_failed\\\"}\",\"observed_at\":\"2026-11-03T21:49:53.438740305Z\",\"stage\":\"tc_evidence\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:49:53.467915821Z\",\"stage\":\"initial_quarantine\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:49:53.467915821Z\",\"stage\":\"quarantine\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"\\\"quarantine_incomplete\\\"\",\"observed_at\":\"2026-11-03T21:49:53.467915821Z\",\"stage\":\"quarantine\"}],\"errors_count\":7,\"forwarding_block_reasons\":[\"safety_check_failed\"],\"lease_detail\":\"\",\"lease_error_code\":\"TC_FOREIGN_FILTER\",\"lease_stage_errors_count\":0,\"matches_d067_revision11\":false,\"qos_error_code\":\"TC_FOREIGN_FILTER\",\"received_at\":\"2026-11-03T16:49:53.474757-05:00\",\"safety_status\":\"failed\",\"source_binding_error_code\":\"TC_FOREIGN_FILTER\"}],\"provisional_admin_node\":{\"applied_generation\":\"66\",\"desired_generation\":\"66\",\"lease_check\":{\"detail\":\"\",\"error_code\":\"TC_FOREIGN_FILTER\",\"observed_at\":\"2026-11-03T21:49:53.472516535Z\",\"status\":\"failed\"},\"member_forwarding_observed\":false,\"provisioning_state\":\"applying\",\"publication_intent\":\"published\",\"publication_observed\":\"active\",\"qos_check\":{\"detail\":\"\",\"error_code\":\"TC_FOREIGN_FILTER\",\"observed_at\":\"2026-11-03T21:49:53.472516535Z\",\"status\":\"failed\"},\"recent_errors\":[{\"code\":\"HEALTH_CHECK_FAILED\",\"message\":\"tunnel_probe\",\"observed_at\":\"2026-11-03T21:49:53.472516535Z\",\"stage\":\"probe\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"TC_FOREIGN_FILTER\",\"observed_at\":\"2026-11-03T21:49:53.438707931Z\",\"stage\":\"apply\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"candidate_generation\\\":\\\"66\\\",\\\"read_at\\\":\\\"2026-11-03T21:49:53.438740305Z\\\",\\\"source\\\":\\\"rejected\\\"}\",\"observed_at\":\"2026-11-03T21:49:53.438740305Z\",\"stage\":\"tc_evidence\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":null,\\\"error\\\":\\\"read_failed\\\"}\",\"observed_at\":\"2026-11-03T21:49:53.438740305Z\",\"stage\":\"tc_evidence\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:49:53.467915821Z\",\"stage\":\"initial_quarantine\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:49:53.467915821Z\",\"stage\":\"quarantine\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"\\\"quarantine_incomplete\\\"\",\"observed_at\":\"2026-11-03T21:49:53.467915821Z\",\"stage\":\"quarantine\"}],\"safety_status\":\"failed\",\"source_binding_check\":{\"detail\":\"\",\"error_code\":\"TC_FOREIGN_FILTER\",\"observed_at\":\"2026-11-03T21:49:53.472516535Z\",\"status\":\"failed\"}},\"provisional_observations\":2,\"saw_lease_expired\":false}",
+      "command": "inspect post-restart provisional api.ObservationReport rows and GET /admin/nodes/{node2}",
+      "at": "2026-11-03T21:51:24Z"
+    },
+    {
+      "name": "same-generation D-067 restart recovery and lease sequence",
+      "status": "fail",
+      "expected": "forwarding restored on unchanged desired generation within bounded schedule; provisional renewal yields populated lease and counted fvmb0 transfer",
+      "actual": "{\"applied_after\":\"66\",\"applied_before\":\"66\",\"desired_after\":\"66\",\"desired_before\":\"66\",\"first_counted_byte_at\":\"2026-11-03T21:50:05.120403465Z\",\"first_counted_byte_seconds\":12.548980167,\"leases\":[{\"issued_at\":\"2026-11-03T21:46:39.654046+00:00\",\"expires_at\":\"2026-11-04T21:46:39.654046+00:00\",\"generation\":\"63\",\"member_grants\":0},{\"issued_at\":\"2026-11-03T21:47:39.65552+00:00\",\"expires_at\":\"2026-11-04T21:47:39.65552+00:00\",\"generation\":\"63\",\"member_grants\":0},{\"issued_at\":\"2026-11-03T21:47:44.65333+00:00\",\"expires_at\":\"2026-11-04T21:47:44.65333+00:00\",\"generation\":\"64\",\"member_grants\":0},{\"issued_at\":\"2026-11-03T21:48:44.654469+00:00\",\"expires_at\":\"2026-11-04T21:48:44.654469+00:00\",\"generation\":\"65\",\"member_grants\":7},{\"issued_at\":\"2026-11-03T21:48:49.664978+00:00\",\"expires_at\":\"2026-11-04T21:48:49.664978+00:00\",\"generation\":\"66\",\"member_grants\":7},{\"issued_at\":\"2026-11-03T21:49:53.374125+00:00\",\"expires_at\":\"2026-11-04T21:49:53.374125+00:00\",\"generation\":\"66\",\"member_grants\":7}],\"observations\":[{\"errors\":[{\"code\":\"STALE_GENERATION\",\"stage\":\"lease\",\"message\":\"Serving lease is not for the desired generation.\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"candidate_generation\\\":\\\"21\\\",\\\"read_at\\\":\\\"2026-11-03T21:24:04.383003045Z\\\",\\\"source\\\":\\\"rejected\\\"}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"clsact\\\",\\\"handle\\\":\\\"ffff:\\\",\\\"parent\\\":\\\"ffff:fff1\\\"}]}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"ingress\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"flower\\\",\\\"handle\\\":\\\"1\\\",\\\"actions\\\":[\\\"gact\\\"]}]}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"ingress\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"flower\\\"}]}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvup0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"noqueue\\\",\\\"handle\\\":\\\"0:\\\",\\\"root\\\":true}]}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"initial_quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":true,\\\"operstate\\\":\\\"UNKNOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"apply_quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"STALE_GENERATION\",\"stage\":\"lease\",\"message\":\"Serving lease generation hold: applied=66 lease=65 steps=1 elapsed_ms=0 alarm=false.\"}],\"last_at\":\"2026-11-03T21:48:44.725565+00:00\",\"reasons\":[\"policy_missing\"],\"first_at\":\"2026-11-03T21:48:44.725565+00:00\",\"qos_check\":{\"detail\":\"read_at=2026-11-03T21:38:09.177748801Z source=live candidate=56 verified=true {\\\"generation\\\":\\\"56\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\\\"}\",\"status\":\"failed\",\"error_code\":\"VALIDATION_FAILED\"},\"forwarding\":false,\"generation\":\"66\",\"lease_check\":{\"detail\":\"Serving lease is not for the applied generation.\",\"status\":\"failed\",\"error_code\":\"STALE_GENERATION\"},\"observations\":1,\"safety_status\":\"passed\",\"source_binding_check\":{\"detail\":\"No member binding was admitted.\",\"status\":\"failed\",\"error_code\":\"VALIDATION_FAILED\"}},{\"errors\":[{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"candidate_generation\\\":\\\"21\\\",\\\"read_at\\\":\\\"2026-11-03T21:24:04.383003045Z\\\",\\\"source\\\":\\\"rejected\\\"}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"clsact\\\",\\\"handle\\\":\\\"ffff:\\\",\\\"parent\\\":\\\"ffff:fff1\\\"}]}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"ingress\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"flower\\\",\\\"handle\\\":\\\"1\\\",\\\"actions\\\":[\\\"gact\\\"]}]}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"ingress\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"flower\\\"}]}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvup0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"noqueue\\\",\\\"handle\\\":\\\"0:\\\",\\\"root\\\":true}]}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"initial_quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":true,\\\"operstate\\\":\\\"UNKNOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"apply_quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"}],\"last_at\":\"2026-11-03T21:48:49.824737+00:00\",\"reasons\":[],\"first_at\":\"2026-11-03T21:48:49.824737+00:00\",\"qos_check\":{\"detail\":\"read_at=2026-11-03T21:48:49.801535491Z source=live candidate=66 verified=true {\\\"generation\\\":\\\"66\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\\\"}\",\"status\":\"passed\",\"error_code\":null},\"forwarding\":true,\"generation\":\"66\",\"lease_check\":{\"detail\":null,\"status\":\"passed\",\"error_code\":null},\"observations\":1,\"safety_status\":\"passed\",\"source_binding_check\":{\"detail\":null,\"status\":\"passed\",\"error_code\":null}},{\"errors\":[{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"candidate_generation\\\":\\\"21\\\",\\\"read_at\\\":\\\"2026-11-03T21:24:04.383003045Z\\\",\\\"source\\\":\\\"rejected\\\"}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"clsact\\\",\\\"handle\\\":\\\"ffff:\\\",\\\"parent\\\":\\\"ffff:fff1\\\"}]}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"ingress\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"flower\\\",\\\"handle\\\":\\\"1\\\",\\\"actions\\\":[\\\"gact\\\"]}]}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"ingress\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"flower\\\"}]}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvup0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"noqueue\\\",\\\"handle\\\":\\\"0:\\\",\\\"root\\\":true}]}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"initial_quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":true,\\\"operstate\\\":\\\"UNKNOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"apply_quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"}],\"last_at\":\"2026-11-03T21:49:24.767551+00:00\",\"reasons\":[],\"first_at\":\"2026-11-03T21:49:24.767551+00:00\",\"qos_check\":{\"detail\":\"read_at=2026-11-03T21:49:24.754470486Z source=live candidate=66 verified=true {\\\"generation\\\":\\\"66\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\\\"}\",\"status\":\"passed\",\"error_code\":null},\"forwarding\":true,\"generation\":\"66\",\"lease_check\":{\"detail\":null,\"status\":\"passed\",\"error_code\":null},\"observations\":1,\"safety_status\":\"passed\",\"source_binding_check\":{\"detail\":null,\"status\":\"passed\",\"error_code\":null}},{\"errors\":[{\"code\":\"HEALTH_CHECK_FAILED\",\"stage\":\"probe\",\"message\":\"tunnel_probe\"}],\"last_at\":\"2026-11-03T21:49:53.427228+00:00\",\"reasons\":[\"safety_check_failed\"],\"first_at\":\"2026-11-03T21:49:53.427228+00:00\",\"qos_check\":{\"detail\":null,\"status\":\"passed\",\"error_code\":null},\"forwarding\":false,\"generation\":\"66\",\"lease_check\":{\"detail\":null,\"status\":\"passed\",\"error_code\":null},\"observations\":1,\"safety_status\":\"failed\",\"source_binding_check\":{\"detail\":null,\"status\":\"passed\",\"error_code\":null}},{\"errors\":[{\"code\":\"HEALTH_CHECK_FAILED\",\"stage\":\"probe\",\"message\":\"tunnel_probe\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"apply\",\"message\":\"TC_FOREIGN_FILTER\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"candidate_generation\\\":\\\"66\\\",\\\"read_at\\\":\\\"2026-11-03T21:49:53.438740305Z\\\",\\\"source\\\":\\\"rejected\\\"}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":null,\\\"error\\\":\\\"read_failed\\\"}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"initial_quarantine\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"\\\"quarantine_incomplete\\\"\"}],\"last_at\":\"2026-11-03T21:49:53.474757+00:00\",\"reasons\":[\"safety_check_failed\"],\"first_at\":\"2026-11-03T21:49:53.474757+00:00\",\"qos_check\":{\"detail\":null,\"status\":\"failed\",\"error_code\":\"TC_FOREIGN_FILTER\"},\"forwarding\":false,\"generation\":\"66\",\"lease_check\":{\"detail\":null,\"status\":\"failed\",\"error_code\":\"TC_FOREIGN_FILTER\"},\"observations\":1,\"safety_status\":\"failed\",\"source_binding_check\":{\"detail\":null,\"status\":\"failed\",\"error_code\":\"TC_FOREIGN_FILTER\"}},{\"errors\":[{\"code\":\"METER_EPOCH_CHANGE\",\"stage\":\"meter\",\"message\":\"ruleset was reset outside the agent\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"candidate_generation\\\":\\\"66\\\",\\\"read_at\\\":\\\"2026-11-03T21:49:53.438740305Z\\\",\\\"source\\\":\\\"rejected\\\"}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":null,\\\"error\\\":\\\"read_failed\\\"}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"initial_quarantine\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"\\\"quarantine_incomplete\\\"\"}],\"last_at\":\"2026-11-03T21:49:58.59267+00:00\",\"reasons\":[],\"first_at\":\"2026-11-03T21:49:58.59267+00:00\",\"qos_check\":{\"detail\":\"read_at=2026-11-03T21:49:58.563758731Z source=live candidate=66 verified=true {\\\"generation\\\":\\\"66\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\\\"}\",\"status\":\"passed\",\"error_code\":null},\"forwarding\":true,\"generation\":\"66\",\"lease_check\":{\"detail\":null,\"status\":\"passed\",\"error_code\":null},\"observations\":1,\"safety_status\":\"passed\",\"source_binding_check\":{\"detail\":null,\"status\":\"passed\",\"error_code\":null}},{\"errors\":[{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"candidate_generation\\\":\\\"66\\\",\\\"read_at\\\":\\\"2026-11-03T21:49:53.438740305Z\\\",\\\"source\\\":\\\"rejected\\\"}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":null,\\\"error\\\":\\\"read_failed\\\"}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"initial_quarantine\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"\\\"quarantine_incomplete\\\"\"}],\"last_at\":\"2026-11-03T21:50:33.477226+00:00\",\"reasons\":[],\"first_at\":\"2026-11-03T21:50:33.477226+00:00\",\"qos_check\":{\"detail\":\"read_at=2026-11-03T21:50:33.463736744Z source=live candidate=66 verified=true {\\\"generation\\\":\\\"66\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\\\"}\",\"status\":\"passed\",\"error_code\":null},\"forwarding\":true,\"generation\":\"66\",\"lease_check\":{\"detail\":null,\"status\":\"passed\",\"error_code\":null},\"observations\":1,\"safety_status\":\"passed\",\"source_binding_check\":{\"detail\":null,\"status\":\"passed\",\"error_code\":null}},{\"errors\":[{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"candidate_generation\\\":\\\"66\\\",\\\"read_at\\\":\\\"2026-11-03T21:49:53.438740305Z\\\",\\\"source\\\":\\\"rejected\\\"}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":null,\\\"error\\\":\\\"read_failed\\\"}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"initial_quarantine\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"\\\"quarantine_incomplete\\\"\"}],\"last_at\":\"2026-11-03T21:51:03.494837+00:00\",\"reasons\":[],\"first_at\":\"2026-11-03T21:51:03.494837+00:00\",\"qos_check\":{\"detail\":\"read_at=2026-11-03T21:51:03.482386781Z source=live candidate=66 verified=true {\\\"generation\\\":\\\"66\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\\\"}\",\"status\":\"passed\",\"error_code\":null},\"forwarding\":true,\"generation\":\"66\",\"lease_check\":{\"detail\":null,\"status\":\"passed\",\"error_code\":null},\"observations\":1,\"safety_status\":\"passed\",\"source_binding_check\":{\"detail\":null,\"status\":\"passed\",\"error_code\":null}}],\"provisional_admin_node\":{\"applied_generation\":\"66\",\"desired_generation\":\"66\",\"lease_check\":{\"detail\":\"\",\"error_code\":\"TC_FOREIGN_FILTER\",\"observed_at\":\"2026-11-03T21:49:53.472516535Z\",\"status\":\"failed\"},\"member_forwarding_observed\":false,\"provisioning_state\":\"applying\",\"publication_intent\":\"published\",\"publication_observed\":\"active\",\"qos_check\":{\"detail\":\"\",\"error_code\":\"TC_FOREIGN_FILTER\",\"observed_at\":\"2026-11-03T21:49:53.472516535Z\",\"status\":\"failed\"},\"recent_errors\":[{\"code\":\"HEALTH_CHECK_FAILED\",\"message\":\"tunnel_probe\",\"observed_at\":\"2026-11-03T21:49:53.472516535Z\",\"stage\":\"probe\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"TC_FOREIGN_FILTER\",\"observed_at\":\"2026-11-03T21:49:53.438707931Z\",\"stage\":\"apply\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"candidate_generation\\\":\\\"66\\\",\\\"read_at\\\":\\\"2026-11-03T21:49:53.438740305Z\\\",\\\"source\\\":\\\"rejected\\\"}\",\"observed_at\":\"2026-11-03T21:49:53.438740305Z\",\"stage\":\"tc_evidence\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":null,\\\"error\\\":\\\"read_failed\\\"}\",\"observed_at\":\"2026-11-03T21:49:53.438740305Z\",\"stage\":\"tc_evidence\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:49:53.467915821Z\",\"stage\":\"initial_quarantine\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:49:53.467915821Z\",\"stage\":\"quarantine\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"\\\"quarantine_incomplete\\\"\",\"observed_at\":\"2026-11-03T21:49:53.467915821Z\",\"stage\":\"quarantine\"}],\"safety_status\":\"failed\",\"source_binding_check\":{\"detail\":\"\",\"error_code\":\"TC_FOREIGN_FILTER\",\"observed_at\":\"2026-11-03T21:49:53.472516535Z\",\"status\":\"failed\"}},\"recovered_admin_node\":{\"applied_generation\":\"66\",\"desired_generation\":\"66\",\"lease_check\":{\"detail\":\"\",\"error_code\":\"\",\"observed_at\":\"2026-11-03T21:51:03.492789478Z\",\"status\":\"passed\"},\"member_forwarding_observed\":true,\"provisioning_state\":\"ready\",\"publication_intent\":\"published\",\"publication_observed\":\"active\",\"qos_check\":{\"detail\":\"read_at=2026-11-03T21:51:03.482386781Z source=live candidate=66 verified=true {\\\"generation\\\":\\\"66\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\\\"}\",\"error_code\":\"\",\"observed_at\":\"2026-11-03T21:51:03.492789478Z\",\"status\":\"passed\"},\"recent_errors\":[{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"candidate_generation\\\":\\\"66\\\",\\\"read_at\\\":\\\"2026-11-03T21:49:53.438740305Z\\\",\\\"source\\\":\\\"rejected\\\"}\",\"observed_at\":\"2026-11-03T21:49:53.438740305Z\",\"stage\":\"tc_evidence\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":null,\\\"error\\\":\\\"read_failed\\\"}\",\"observed_at\":\"2026-11-03T21:49:53.438740305Z\",\"stage\":\"tc_evidence\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:51:03.488155666Z\",\"stage\":\"initial_quarantine\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"{\\\"quarantined\\\":false,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"error\\\":\\\"down_verify_failed\\\"}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:51:03.488155666Z\",\"stage\":\"quarantine\"},{\"code\":\"TC_FOREIGN_FILTER\",\"message\":\"\\\"quarantine_incomplete\\\"\",\"observed_at\":\"2026-11-03T21:51:03.488155666Z\",\"stage\":\"quarantine\"}],\"safety_status\":\"passed\",\"source_binding_check\":{\"detail\":\"\",\"error_code\":\"\",\"observed_at\":\"2026-11-03T21:51:03.492789478Z\",\"status\":\"passed\"}},\"resumed_at\":\"2026-11-03T21:49:52.571423298Z\",\"same_desired_generation\":true,\"serving_ready_at\":\"2026-11-03T21:49:58.59267Z\",\"serving_ready_seconds\":6.021246702}",
+      "command": "GET /admin/nodes/{node2} before/during/after restart; SELECT serving_leases and contiguous node_observations; verify counted member transfer",
+      "at": "2026-11-03T21:51:24Z"
+    }
+  ],
+  "AT09_restart_sets": {
+    "records": [
+      {
+        "transition": "agent transition selected namespace stop",
+        "side": "stored_lease_before",
+        "read_at": "2026-11-03T21:49:41.700287863Z",
+        "sets": {
+          "denied_v4": null,
+          "extra_denied_v4": null,
+          "host_v4": null,
+          "nil_denied_means_spec_defaults": true
+        }
+      },
+      {
+        "transition": "agent transition selected namespace stop",
+        "side": "stored_lease_after",
+        "read_at": "2026-11-03T21:49:47.950312682Z",
+        "sets": {
+          "denied_v4": null,
+          "extra_denied_v4": null,
+          "host_v4": null,
+          "nil_denied_means_spec_defaults": true
+        }
+      },
+      {
+        "transition": "agent transition selected namespace restart and 90-second observation",
+        "side": "stored_lease_before",
+        "read_at": "2026-11-03T21:49:47.950312682Z",
+        "sets": {
+          "denied_v4": null,
+          "extra_denied_v4": null,
+          "host_v4": null,
+          "nil_denied_means_spec_defaults": true
+        }
+      },
+      {
+        "transition": "agent transition selected namespace restart and 90-second observation",
+        "side": "stored_lease_after",
+        "read_at": "2026-11-03T21:51:23.992431236Z",
+        "sets": {
+          "denied_v4": null,
+          "extra_denied_v4": null,
+          "host_v4": null,
+          "nil_denied_means_spec_defaults": true
+        }
+      }
+    ],
+    "all_four_record_sides_present": true,
+    "distinct_read_times": 3,
+    "sets_unchanged": true,
+    "scope": "Retained installed sets immediately before stop, after stop and after restart; the stopped read is reused on both adjacent transition records. Compare masked prefix sets; nil DeniedV4 retains spec-default semantics. This readback does not instrument the exact Boot decision."
+  },
+  "hold_rows": [
+    {
+      "row": "alarm-recovery",
+      "arm": {
+        "id": "2344db5d-0482-4742-aafe-188ef37c2688",
+        "base_generation": "5",
+        "hold_seconds": 90,
+        "armed_at": "2026-11-03T21:19:00.902363461Z",
+        "expires_at": "2026-11-03T21:22:00.902363461Z"
+      },
+      "incident": {
+        "id": "01a1a347-a687-7574-a39d-b27eaa8a9c57",
+        "node_id": "01a1a346-3167-789e-ad28-3c15132348f8",
+        "ended_at": "2026-11-03T21:19:19.338805+00:00",
+        "end_reason": "generation_matched",
+        "escalated_at": "2026-11-03T21:19:14.223802+00:00",
+        "last_seen_at": "2026-11-03T21:19:14.223802+00:00",
+        "first_seen_at": "2026-11-03T21:19:04.326694+00:00",
+        "incarnation_id": "01a1a346-31b2-7acc-8165-0a04d85ab291",
+        "latest_report_id": "01a1a347-cd2a-732a-9fc2-bfa0c5ca11c3",
+        "first_observed_at": "2026-11-03T21:19:04.320897+00:00"
+      },
+      "entry_hold_report_id": "01a1a347-a680-7de4-8f94-f7aaf8e05332",
+      "alarm_hold_report_id": "01a1a347-cd2a-732a-9fc2-bfa0c5ca11c3",
+      "escalation_audit_id": "01a1a347-cd30-7f40-afd9-c060da630e36",
+      "member_revocation": null,
+      "post_command_report": null,
+      "initial_target_generation": "6",
+      "proxy": {
+        "arm": {
+          "id": "2344db5d-0482-4742-aafe-188ef37c2688",
+          "base_generation": "5",
+          "hold_seconds": 90,
+          "armed_at": "2026-11-03T21:19:00.902363461Z",
+          "expires_at": "2026-11-03T21:22:00.902363461Z"
+        },
+        "target_generation": "6",
+        "hold_started_at": "2026-11-03T21:19:04.320560149Z",
+        "hold_until": "2026-11-03T21:20:34.320560149Z",
+        "released_at": "2026-11-03T21:19:19.164665156Z",
+        "events": [
+          {
+            "kind": "armed",
+            "at": "2026-11-03T21:19:00.902363461Z"
+          },
+          {
+            "kind": "arm_consumed",
+            "at": "2026-11-03T21:19:04.191008107Z"
+          },
+          {
+            "kind": "desired_forwarded",
+            "at": "2026-11-03T21:19:04.191008107Z",
+            "generation": "6",
+            "body_sha256": "c9db61693ce452e146e1d133b51edc724d2f4907b95ea0e998013b7e24c2a6de",
+            "bytes": 3245,
+            "upstream_status": 200,
+            "downstream_status": 200
+          },
+          {
+            "kind": "hold_started",
+            "at": "2026-11-03T21:19:04.320560149Z",
+            "generation": "6"
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:19:04.320560149Z",
+            "generation": "6",
+            "lease_id": "b22458ec-2b42-4bdd-8aeb-30ae0e7e4f02",
+            "body_sha256": "d0b2300bcf74255c942ed584bdc03476c4a19831dcd363890572444f2edd4759",
+            "bytes": 926,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:19:09.16478527Z",
+            "generation": "6",
+            "lease_id": "0fb35fce-c3f9-4696-a1a2-b02061f87440",
+            "body_sha256": "debc4e4d1620d2dbd380f391bf08532e8dadaf6ace87c106e6f92f24822b8316",
+            "bytes": 926,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:19:14.167997254Z",
+            "generation": "6",
+            "lease_id": "248aed69-e391-4dc4-bf1b-ab92d7743e14",
+            "body_sha256": "da85a0aaba77d47ca968e00dc7e796e2f8189ee056bedd7749445f9d87fe8113",
+            "bytes": 926,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "released",
+            "at": "2026-11-03T21:19:19.164665156Z",
+            "reason": "explicit_release"
+          },
+          {
+            "kind": "matching_lease_forwarded",
+            "at": "2026-11-03T21:19:19.168329942Z",
+            "generation": "6",
+            "lease_id": "a971f6d0-09a7-4cda-bb34-07a424545283",
+            "body_sha256": "e722e2a786838f2bbb808c0eae1b3504125642af8950de3b04b6bc72f8d430b5",
+            "bytes": 926,
+            "upstream_status": 200,
+            "downstream_status": 200
+          }
+        ]
+      },
+      "local_recovery": {
+        "lease_id": "a971f6d0-09a7-4cda-bb34-07a424545283",
+        "body_sha256": "e722e2a786838f2bbb808c0eae1b3504125642af8950de3b04b6bc72f8d430b5",
+        "bytes": 926,
+        "read_at": "2026-11-03T21:19:19.710080579Z"
+      },
+      "recovery_serving_report": {
+        "lease_id": "a971f6d0-09a7-4cda-bb34-07a424545283",
+        "report_id": "01a1a347-e124-77f2-b926-1f989c3c5a71",
+        "received_at": "2026-11-03T21:19:19.338805+00:00",
+        "applied_generation": "6"
+      },
+      "survivor_generation_join": false,
+      "forwarded_body_matches_local": true,
+      "original_retained_lease": {
+        "lease_id": "bc4f6c18-7249-409a-897f-7bc54d491299",
+        "body_sha256": "200f80f6b6d7bdf393f15685cc5ca1d7ce42b660b7fc87962fa88d80e7942514",
+        "bytes": 926,
+        "read_at": "2026-11-03T21:19:00.741697406Z"
+      },
+      "original_before": {
+        "members": [
+          "01a1a33c-d268-74de-a87b-c6d3dbe2a3c3",
+          "01a1a33c-d547-7c4d-82f3-f0a129d8a196"
+        ],
+        "node_id": "01a1a346-3167-789e-ad28-3c15132348f8",
+        "lease_id": "bc4f6c18-7249-409a-897f-7bc54d491299",
+        "report_id": "01a1a347-92ae-7c2b-8dc0-f85e9bc6bb1b",
+        "expires_at": "2026-11-04T21:17:54.261304+00:00",
+        "generation": "5",
+        "received_at": "2026-11-03T21:18:59.252269+00:00",
+        "incarnation_id": "01a1a346-31b2-7acc-8165-0a04d85ab291",
+        "applied_generation": "5",
+        "desired_generation": "5"
+      }
+    },
+    {
+      "row": "sibling-removal",
+      "arm": {
+        "id": "160fbea0-aeb5-4a4d-aad6-82e255867bf9",
+        "base_generation": "8",
+        "hold_seconds": 90,
+        "survivor_member_id": "01a1a33c-d268-74de-a87b-c6d3dbe2a3c3",
+        "max_continued_generations": 1,
+        "armed_at": "2026-11-03T21:20:30.589566398Z",
+        "expires_at": "2026-11-03T21:23:30.589566398Z"
+      },
+      "incident": {
+        "id": "01a1a349-064e-7598-a202-ff6da79d5608",
+        "node_id": "01a1a346-3167-789e-ad28-3c15132348f8",
+        "ended_at": "2026-11-03T21:20:54.398483+00:00",
+        "end_reason": "generation_matched",
+        "escalated_at": "2026-11-03T21:20:44.275248+00:00",
+        "last_seen_at": "2026-11-03T21:20:49.277918+00:00",
+        "first_seen_at": "2026-11-03T21:20:34.381767+00:00",
+        "incarnation_id": "01a1a346-31b2-7acc-8165-0a04d85ab291",
+        "latest_report_id": "01a1a349-4078-7532-968c-a87145dff6f8",
+        "first_observed_at": "2026-11-03T21:20:34.377532+00:00"
+      },
+      "entry_hold_report_id": "01a1a349-0649-7859-925b-5fbc5cd85bc3",
+      "alarm_hold_report_id": "01a1a349-2cec-75de-ba10-e48f35fc9cde",
+      "escalation_audit_id": "01a1a349-2cf4-76c4-8f12-8316884d6e8b",
+      "member_revocation": {
+        "body": {
+          "completed_at": null,
+          "created_at": "2026-11-03T21:20:46.889993Z",
+          "desired_generation": "3",
+          "error": null,
+          "kind": "member.suspend",
+          "observed_generation": null,
+          "operation_id": "01a1a349-372c-776d-bbf7-a5726bb9566c",
+          "request_id": "01a1a349-3728-7e37-8f68-ba1874df318c",
+          "resource": {
+            "id": "01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+            "type": "member"
+          },
+          "resource_version": null,
+          "status": "pending",
+          "steps": [
+            {
+              "error_code": null,
+              "message": null,
+              "name": "netbird",
+              "observed_at": null,
+              "required": true,
+              "status": "pending"
+            },
+            {
+              "error_code": null,
+              "message": null,
+              "name": "nodes",
+              "observed_at": null,
+              "required": true,
+              "status": "pending"
+            }
+          ],
+          "updated_at": "2026-11-03T21:20:46.889993Z"
+        },
+        "completed_at": "2026-11-03T21:20:46.894339105Z",
+        "member_id": "01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+        "started_at": "2026-11-03T21:20:44.997931357Z",
+        "status": 202
+      },
+      "post_command_report": {
+        "lease_id": "862ab3bc-d8ed-40c2-8534-8bb607251216",
+        "report_id": "01a1a349-4078-7532-968c-a87145dff6f8",
+        "incident_id": "01a1a349-064e-7598-a202-ff6da79d5608",
+        "received_at": "2026-11-03T21:20:49.277918+00:00",
+        "last_seen_at": "2026-11-03T21:20:49.277918+00:00",
+        "first_seen_at": "2026-11-03T21:20:34.381767+00:00",
+        "incident_open": true,
+        "applied_generation": "11"
+      },
+      "initial_target_generation": "9",
+      "proxy": {
+        "arm": {
+          "id": "160fbea0-aeb5-4a4d-aad6-82e255867bf9",
+          "base_generation": "8",
+          "hold_seconds": 90,
+          "survivor_member_id": "01a1a33c-d268-74de-a87b-c6d3dbe2a3c3",
+          "max_continued_generations": 1,
+          "armed_at": "2026-11-03T21:20:30.589566398Z",
+          "expires_at": "2026-11-03T21:23:30.589566398Z"
+        },
+        "target_generation": "9",
+        "continued_generation": "11",
+        "continued_at": "2026-11-03T21:20:49.22311848Z",
+        "hold_started_at": "2026-11-03T21:20:34.377235656Z",
+        "hold_until": "2026-11-03T21:22:04.377235656Z",
+        "released_at": "2026-11-03T21:20:54.217988619Z",
+        "events": [
+          {
+            "kind": "armed",
+            "at": "2026-11-03T21:20:30.589566398Z"
+          },
+          {
+            "kind": "arm_consumed",
+            "at": "2026-11-03T21:20:34.246584948Z"
+          },
+          {
+            "kind": "desired_forwarded",
+            "at": "2026-11-03T21:20:34.246584948Z",
+            "generation": "9",
+            "body_sha256": "5f3089554396271150af51b6cb5ce1dd65d5a21fd2ad760f8f9d626463ff8974",
+            "bytes": 3245,
+            "upstream_status": 200,
+            "downstream_status": 200
+          },
+          {
+            "kind": "hold_started",
+            "at": "2026-11-03T21:20:34.377235656Z",
+            "generation": "9"
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:20:34.377235656Z",
+            "generation": "9",
+            "lease_id": "41c36fa4-7e0e-4b5e-862c-ac75695d8d45",
+            "body_sha256": "58cf6bb84057d5c91c20f2cfc13938174d4252bd228c35378138c98703ecbb7b",
+            "bytes": 926,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:20:39.212164579Z",
+            "generation": "9",
+            "lease_id": "eab908ad-9c9f-4eea-a6fa-32d790e8205a",
+            "body_sha256": "c70c4647f03656a9fb05d1db180d8cc9d2ababac8a87ffcb4b34eb198e5ff9c7",
+            "bytes": 926,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:20:44.219515455Z",
+            "generation": "9",
+            "lease_id": "9649c1f1-439c-405a-8cc7-db4a8ac0b739",
+            "body_sha256": "197c318ab7da7329c722088db79ec48aa63fb7829e2ef147c0fe58ed93e1753b",
+            "bytes": 926,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "desired_forwarded",
+            "at": "2026-11-03T21:20:49.215252654Z",
+            "generation": "11",
+            "body_sha256": "2816c7504bf880303cb514c3132a9df6433fa56255794bab5be93756e7f9fed9",
+            "bytes": 2667,
+            "upstream_status": 200,
+            "downstream_status": 200
+          },
+          {
+            "kind": "continuation_started",
+            "at": "2026-11-03T21:20:49.22311848Z",
+            "generation": "11"
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:20:49.22311848Z",
+            "generation": "11",
+            "lease_id": "d918b084-1fe9-409e-9c53-50a023854018",
+            "body_sha256": "09691914ab3bc45451d53aa47306a085f09fb3c198eae0c6415154b6c8d024a5",
+            "bytes": 751,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "released",
+            "at": "2026-11-03T21:20:54.217988619Z",
+            "reason": "explicit_release"
+          },
+          {
+            "kind": "matching_lease_forwarded",
+            "at": "2026-11-03T21:20:54.223956125Z",
+            "generation": "11",
+            "lease_id": "86f9d569-d457-49e7-8708-97bd983c82ee",
+            "body_sha256": "0b67c352e05beb2c2c87d393d68c4f3cbc3155d2ebb516762df1754b709f8e60",
+            "bytes": 751,
+            "upstream_status": 200,
+            "downstream_status": 200
+          }
+        ]
+      },
+      "local_recovery": {
+        "lease_id": "86f9d569-d457-49e7-8708-97bd983c82ee",
+        "body_sha256": "0b67c352e05beb2c2c87d393d68c4f3cbc3155d2ebb516762df1754b709f8e60",
+        "bytes": 751,
+        "read_at": "2026-11-03T21:20:55.296740412Z"
+      },
+      "recovery_serving_report": {
+        "lease_id": "86f9d569-d457-49e7-8708-97bd983c82ee",
+        "report_id": "01a1a349-5479-717f-ba95-d71b69f27b46",
+        "received_at": "2026-11-03T21:20:54.398483+00:00",
+        "applied_generation": "11"
+      },
+      "survivor_generation_join": true,
+      "forwarded_body_matches_local": true,
+      "original_retained_lease": {
+        "lease_id": "862ab3bc-d8ed-40c2-8534-8bb607251216",
+        "body_sha256": "7b981d8cc6bfb302f251ab419029845f2706fed45636b75f6d28db787d356749",
+        "bytes": 926,
+        "read_at": "2026-11-03T21:20:30.430082629Z"
+      },
+      "original_before": {
+        "members": [
+          "01a1a33c-d268-74de-a87b-c6d3dbe2a3c3",
+          "01a1a33c-d547-7c4d-82f3-f0a129d8a196"
+        ],
+        "node_id": "01a1a346-3167-789e-ad28-3c15132348f8",
+        "lease_id": "862ab3bc-d8ed-40c2-8534-8bb607251216",
+        "report_id": "01a1a348-f278-79d7-9415-213c73a84098",
+        "expires_at": "2026-11-04T21:19:24.33575+00:00",
+        "generation": "8",
+        "received_at": "2026-11-03T21:20:29.310265+00:00",
+        "incarnation_id": "01a1a346-31b2-7acc-8165-0a04d85ab291",
+        "applied_generation": "8",
+        "desired_generation": "8"
+      }
+    },
+    {
+      "row": "sole-member",
+      "arm": {
+        "id": "367af44e-7376-4742-81b0-00ce7402aa8f",
+        "base_generation": "14",
+        "hold_seconds": 90,
+        "armed_at": "2026-11-03T21:22:10.550395047Z",
+        "expires_at": "2026-11-03T21:25:10.550395047Z"
+      },
+      "incident": {
+        "id": "01a1a34a-8cff-7796-b03c-a3a19cd99d70",
+        "node_id": "01a1a346-3167-789e-ad28-3c15132348f8",
+        "ended_at": "2026-11-03T21:22:26.955326+00:00",
+        "end_reason": "members_revoked",
+        "escalated_at": "2026-11-03T21:22:24.32658+00:00",
+        "last_seen_at": "2026-11-03T21:22:24.32658+00:00",
+        "first_seen_at": "2026-11-03T21:22:14.398634+00:00",
+        "incarnation_id": "01a1a346-31b2-7acc-8165-0a04d85ab291",
+        "latest_report_id": "01a1a34a-b3c0-7902-b6ae-b4a0bd4a5ad1",
+        "first_observed_at": "2026-11-03T21:22:14.392995+00:00"
+      },
+      "entry_hold_report_id": "01a1a34a-8cf9-701d-9c41-391f52c3f6dd",
+      "alarm_hold_report_id": "01a1a34a-b3c0-7902-b6ae-b4a0bd4a5ad1",
+      "escalation_audit_id": "01a1a34a-b3c7-7e22-8b34-b259646a95c3",
+      "member_revocation": {
+        "body": {
+          "completed_at": null,
+          "created_at": "2026-11-03T21:22:26.849774Z",
+          "desired_generation": "5",
+          "error": null,
+          "kind": "member.suspend",
+          "observed_generation": null,
+          "operation_id": "01a1a34a-bda3-7745-ade8-4f59ed2625f0",
+          "request_id": "01a1a34a-bda0-7d15-b51e-051af908451b",
+          "resource": {
+            "id": "01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+            "type": "member"
+          },
+          "resource_version": null,
+          "status": "pending",
+          "steps": [
+            {
+              "error_code": null,
+              "message": null,
+              "name": "netbird",
+              "observed_at": null,
+              "required": true,
+              "status": "pending"
+            },
+            {
+              "error_code": null,
+              "message": null,
+              "name": "nodes",
+              "observed_at": null,
+              "required": true,
+              "status": "pending"
+            }
+          ],
+          "updated_at": "2026-11-03T21:22:26.849774Z"
+        },
+        "completed_at": "2026-11-03T21:22:26.853102346Z",
+        "member_id": "01a1a33c-d547-7c4d-82f3-f0a129d8a196",
+        "started_at": "2026-11-03T21:22:24.958468805Z",
+        "status": 202
+      },
+      "post_command_report": null,
+      "initial_target_generation": "15",
+      "proxy": {
+        "arm": {
+          "id": "367af44e-7376-4742-81b0-00ce7402aa8f",
+          "base_generation": "14",
+          "hold_seconds": 90,
+          "armed_at": "2026-11-03T21:22:10.550395047Z",
+          "expires_at": "2026-11-03T21:25:10.550395047Z"
+        },
+        "target_generation": "15",
+        "hold_started_at": "2026-11-03T21:22:14.392687518Z",
+        "hold_until": "2026-11-03T21:23:44.392687518Z",
+        "events": [
+          {
+            "kind": "armed",
+            "at": "2026-11-03T21:22:10.550395047Z"
+          },
+          {
+            "kind": "arm_consumed",
+            "at": "2026-11-03T21:22:14.287733184Z"
+          },
+          {
+            "kind": "desired_forwarded",
+            "at": "2026-11-03T21:22:14.287733184Z",
+            "generation": "15",
+            "body_sha256": "faa95346fd4567bd06457f36344318eb322844323f585e88a2bff133a408cd93",
+            "bytes": 2068,
+            "upstream_status": 200,
+            "downstream_status": 200
+          },
+          {
+            "kind": "hold_started",
+            "at": "2026-11-03T21:22:14.392687518Z",
+            "generation": "15"
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:22:14.392687518Z",
+            "generation": "15",
+            "lease_id": "f53ff25a-f932-4606-85ad-26ddf506907c",
+            "body_sha256": "95e0c2dddc62687d3be0f0fcc40ba924ecbb60d563c71644db32977124d451b0",
+            "bytes": 749,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:22:19.274810087Z",
+            "generation": "15",
+            "lease_id": "7081349c-0dda-49c0-8ff8-4093326b91ad",
+            "body_sha256": "37de0a403a799d489d73733f769b7102eb8f861faf629f93b3eae7261d153824",
+            "bytes": 749,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:22:24.273932215Z",
+            "generation": "15",
+            "lease_id": "bff67fef-567f-4ab6-9294-d9fb563c1866",
+            "body_sha256": "589f46d31a2b3562a2c1ae95f8656f70925febb6482f62b870b78460f899bab9",
+            "bytes": 749,
+            "upstream_status": 200,
+            "downstream_status": 503
+          }
+        ]
+      },
+      "local_recovery": {
+        "lease_id": "cbd6e973-c259-40e3-9092-5f44a5ec11f3",
+        "body_sha256": "6991fcbeefcb981bb6202617432d8d3ebafc60fd56b252391a73baef6d57e8c8",
+        "bytes": 749,
+        "read_at": "2026-11-03T21:22:28.24892188Z"
+      },
+      "recovery_serving_report": null,
+      "survivor_generation_join": false,
+      "forwarded_body_matches_local": false,
+      "original_retained_lease": {
+        "lease_id": "cbd6e973-c259-40e3-9092-5f44a5ec11f3",
+        "body_sha256": "6991fcbeefcb981bb6202617432d8d3ebafc60fd56b252391a73baef6d57e8c8",
+        "bytes": 749,
+        "read_at": "2026-11-03T21:22:10.388707275Z"
+      },
+      "original_before": {
+        "members": [
+          "01a1a33c-d547-7c4d-82f3-f0a129d8a196"
+        ],
+        "node_id": "01a1a346-3167-789e-ad28-3c15132348f8",
+        "lease_id": "cbd6e973-c259-40e3-9092-5f44a5ec11f3",
+        "report_id": "01a1a34a-7933-7aeb-a399-b6175ec1e0f5",
+        "expires_at": "2026-11-04T21:21:04.372103+00:00",
+        "generation": "14",
+        "received_at": "2026-11-03T21:22:09.336904+00:00",
+        "incarnation_id": "01a1a346-31b2-7acc-8165-0a04d85ab291",
+        "applied_generation": "14",
+        "desired_generation": "14"
+      }
+    },
+    {
+      "row": "retained-safety",
+      "arm": {
+        "id": "476a0f94-5692-45e4-938a-70cfe71e514a",
+        "base_generation": "21",
+        "hold_seconds": 90,
+        "armed_at": "2026-11-03T21:23:45.544272522Z",
+        "expires_at": "2026-11-03T21:26:45.544272522Z"
+      },
+      "incident": {
+        "id": "01a1a34c-006d-79db-a61a-c527128bfc49",
+        "node_id": "01a1a346-3167-789e-ad28-3c15132348f8",
+        "ended_at": "2026-11-03T21:24:19.50647+00:00",
+        "end_reason": "generation_matched",
+        "escalated_at": "2026-11-03T21:23:59.363963+00:00",
+        "last_seen_at": "2026-11-03T21:24:14.481839+00:00",
+        "first_seen_at": "2026-11-03T21:23:49.48494+00:00",
+        "incarnation_id": "01a1a346-31b2-7acc-8165-0a04d85ab291",
+        "latest_report_id": "01a1a34c-620c-7740-b82a-f5aef28410e9",
+        "first_observed_at": "2026-11-03T21:23:49.479474+00:00"
+      },
+      "entry_hold_report_id": "01a1a34c-0067-7772-8f49-375cbbcd5dd6",
+      "alarm_hold_report_id": "01a1a34c-26fe-7460-9ff0-f5941aa9414e",
+      "escalation_audit_id": "01a1a34c-2704-7dfe-a976-54e5817e94e2",
+      "member_revocation": null,
+      "post_command_report": null,
+      "initial_target_generation": "22",
+      "proxy": {
+        "arm": {
+          "id": "476a0f94-5692-45e4-938a-70cfe71e514a",
+          "base_generation": "21",
+          "hold_seconds": 90,
+          "armed_at": "2026-11-03T21:23:45.544272522Z",
+          "expires_at": "2026-11-03T21:26:45.544272522Z"
+        },
+        "target_generation": "22",
+        "hold_started_at": "2026-11-03T21:23:49.479162123Z",
+        "hold_until": "2026-11-03T21:25:19.479162123Z",
+        "released_at": "2026-11-03T21:24:19.313751682Z",
+        "events": [
+          {
+            "kind": "armed",
+            "at": "2026-11-03T21:23:45.544272522Z"
+          },
+          {
+            "kind": "arm_consumed",
+            "at": "2026-11-03T21:23:49.35100786Z"
+          },
+          {
+            "kind": "desired_forwarded",
+            "at": "2026-11-03T21:23:49.35100786Z",
+            "generation": "22",
+            "body_sha256": "bfe56d5873dfaf58a343cda2fe1f2230a264d7ac0b523d3334824f645b57fd27",
+            "bytes": 3246,
+            "upstream_status": 200,
+            "downstream_status": 200
+          },
+          {
+            "kind": "hold_started",
+            "at": "2026-11-03T21:23:49.479162123Z",
+            "generation": "22"
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:23:49.479162123Z",
+            "generation": "22",
+            "lease_id": "6811e0d9-df4c-40da-a27f-cc8509ebdd26",
+            "body_sha256": "b5bebb2b734bc98ff0caaa1d759b443916c3815db8ecdd55644a28b80d914674",
+            "bytes": 927,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:23:54.323418839Z",
+            "generation": "22",
+            "lease_id": "c341cbf1-0524-47b6-bf1f-06284408b3bc",
+            "body_sha256": "48c01d2f2351feabc651489d4c52009eb79811723e8e0b0aeaf80e2111b6d239",
+            "bytes": 927,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:23:59.317796731Z",
+            "generation": "22",
+            "lease_id": "df1267cc-c01e-4781-9670-30861bb49342",
+            "body_sha256": "8355860d8838f8061c5b080f86ff778a90f1790de9072cf0489d94aee3135142",
+            "bytes": 927,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:24:04.323602648Z",
+            "generation": "22",
+            "lease_id": "28ca90c1-0444-4741-866b-a5a320b899fc",
+            "body_sha256": "a87400420e32c4c789421cd190cd10af23747ab6f96a31304f327d9c25c3db93",
+            "bytes": 927,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:24:09.322821838Z",
+            "generation": "22",
+            "lease_id": "9975c600-b6e3-4a3b-91fb-f6313cfa1456",
+            "body_sha256": "7925d783dc9a7e5dbcf78fe7fc08ef50a2c054bc8225c81cc049bc1563fcc616",
+            "bytes": 574,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "withheld",
+            "at": "2026-11-03T21:24:14.325311991Z",
+            "generation": "22",
+            "lease_id": "8ffd770e-ed00-41ad-9230-7c8352cd2049",
+            "body_sha256": "45bab905be9537e473f40357cd5b4f934e1f9d57082f646b9741f370195b9b74",
+            "bytes": 574,
+            "upstream_status": 200,
+            "downstream_status": 503
+          },
+          {
+            "kind": "released",
+            "at": "2026-11-03T21:24:19.313751682Z",
+            "reason": "explicit_release"
+          },
+          {
+            "kind": "matching_lease_forwarded",
+            "at": "2026-11-03T21:24:19.317836426Z",
+            "generation": "22",
+            "lease_id": "49aabe05-bf2c-4522-bd47-e92c0e668967",
+            "body_sha256": "45fbba412e84c30ab43e44f9af2965077e5d464fbd91ee696d284ca960ea6573",
+            "bytes": 574,
+            "upstream_status": 200,
+            "downstream_status": 200
+          }
+        ]
+      },
+      "local_recovery": {
+        "lease_id": "49aabe05-bf2c-4522-bd47-e92c0e668967",
+        "body_sha256": "45fbba412e84c30ab43e44f9af2965077e5d464fbd91ee696d284ca960ea6573",
+        "bytes": 574,
+        "read_at": "2026-11-03T21:24:20.602888779Z"
+      },
+      "recovery_serving_report": null,
+      "survivor_generation_join": false,
+      "forwarded_body_matches_local": true,
+      "original_retained_lease": {
+        "lease_id": "5be72973-93c8-4ee0-b344-3041076a3178",
+        "body_sha256": "789522cbeafdd8d22bb3f862a446c1a27655e735e22edf9fb5e2c79bdd94aaad",
+        "bytes": 927,
+        "read_at": "2026-11-03T21:23:45.387098526Z"
+      },
+      "original_before": {
+        "members": [
+          "01a1a33c-d268-74de-a87b-c6d3dbe2a3c3",
+          "01a1a33c-d547-7c4d-82f3-f0a129d8a196"
+        ],
+        "node_id": "01a1a346-3167-789e-ad28-3c15132348f8",
+        "lease_id": "5be72973-93c8-4ee0-b344-3041076a3178",
+        "report_id": "01a1a34b-ec91-77e2-98aa-a7bce2069170",
+        "expires_at": "2026-11-04T21:22:39.284396+00:00",
+        "generation": "21",
+        "received_at": "2026-11-03T21:23:44.409247+00:00",
+        "incarnation_id": "01a1a346-31b2-7acc-8165-0a04d85ab291",
+        "applied_generation": "21",
+        "desired_generation": "21"
+      }
+    }
+  ],
+  "source_address_fault_hold": {
+    "coverage": "not exercised",
+    "needed": "Owner-provided independent source-address/binding fault hook with bounded cleanup; TC fault cannot substitute."
+  },
+  "historical_scope": "Historical F16/F17 failures unchanged. D-135/D-136 provisional; F11-01/F14-01 causes unproven; Only the D-137 receive-only TCP downgrade changes under complete D-146 evidence."
+}

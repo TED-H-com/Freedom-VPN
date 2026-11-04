@@ -1,0 +1,121 @@
+{
+  "date": "2026-11-03 EST",
+  "run_id": "c52bea6c-cd91-4086-a779-656b01277dcc",
+  "measured_commit": "037f44187aaac256c82682de01af2ef61bbb90f0",
+  "post_run_recording_fix": "4fc47dd1",
+  "gates": [
+    {
+      "gate": "initial lane gates",
+      "exit_code": 2,
+      "tail": [
+        "        - unavailable",
+        "        + blocked",
+        "        ",
+        "        ",
+        "        ----------------------------------------------------------------------",
+        "        Ran 4 tests in 0.087s",
+        "        ",
+        "        FAILED (failures=1)",
+        "FAIL",
+        "FAIL\tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t13.706s",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]",
+        "FAIL",
+        "make: *** [mk/at-isolation.mk:50: at-isolation-test] Error 1"
+      ]
+    },
+    {
+      "gate": "pre-run lane lint/test/build",
+      "exit_code": 0,
+      "tail": [
+        "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "+ go vet -tags netlab ./tests/netlab/at/...",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...",
+        "+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
+        "+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t13.751s",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]",
+        "+ python3 tests/e2e/at/isolation/driver.py build",
+        "+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
+      ]
+    },
+    {
+      "gate": "post-run six synthetic diagnostics",
+      "exit_code": 0,
+      "tail": [
+        "......",
+        "----------------------------------------------------------------------",
+        "Ran 6 tests in 0.276s",
+        "",
+        "OK",
+        "Retained 0 operation snapshots; owned database unavailable; last successful snapshot retained"
+      ]
+    },
+    {
+      "gate": "post-run lane lint/test/build",
+      "exit_code": 0,
+      "tail": [
+        "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "+ go vet -tags netlab ./tests/netlab/at/...",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...",
+        "+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
+        "+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t14.314s",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]",
+        "+ python3 tests/e2e/at/isolation/driver.py build",
+        "+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
+      ]
+    },
+    {
+      "gate": "handover after evidence publication",
+      "exit_code": 0,
+      "tail": [
+        "+ go test -count=1 ./tests/handover/...",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t3.829s"
+      ]
+    },
+    {
+      "gate": "root make go-lint",
+      "exit_code": 0,
+      "tail": [
+        "+ make go-lint go-with-disk-tmp="
+      ]
+    },
+    {
+      "gate": "committed-evidence hygiene after lossless log publication",
+      "exit_code": 0,
+      "tail": [
+        "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation",
+        "=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean",
+        "--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (13.61s)",
+        "PASS",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t13.613s"
+      ]
+    }
+  ],
+  "assembled": {
+    "exit_code": 2,
+    "passed": 26,
+    "blocked": 2,
+    "failed": 1,
+    "retry": false
+  },
+  "static_checks": {
+    "gofmt_exit": 0,
+    "diff_check_exit": 0,
+    "owned_paths_only": true,
+    "earlier_archives_untouched": true,
+    "root_lab_records_unchanged": true,
+    "archive_files_verified": 199,
+    "uncompressed_evidence_over_20MB": 0,
+    "diff_hygiene_matches": 0
+  },
+  "notes": [
+    "Initial lane gate failed because the existing nightly synthetic expected the old blocked diagnostic; updated to unavailable with unchanged no-pass assertion.",
+    "Original command log is lossless gzip to retain Docker trailing spaces while satisfying diff whitespace checks.",
+    "The one assembled invocation retains the collector failure and lost setup-publication trace. Post-run fixes are verified offline only."
+  ]
+}

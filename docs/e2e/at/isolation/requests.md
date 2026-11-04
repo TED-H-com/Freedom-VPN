@@ -26,3 +26,12 @@ F19-02's shared helper fix is merged in devstack 32. This lane has migrated its 
 2. **Orchestrator — later recording proof if required:** the original companion collector depended on the skipped lab record, and successful setup discarded one publication trace. Both are fixed offline in `4fc47dd1`, but this run's missing operation history and setup attempts remain unavailable. The main driver completed acceptance, so the allowed pre-acceptance-abort rerun condition was not met. [Limits](history/follow-up-20-run/recording-limitations.json), [14 retained attempts](history/follow-up-20-run/node-write-audit.json).
 
 The three carried platform/fault-matrix/pure-stale-generation requests remain. F19-01 remains answered by D-152. Zero owned Docker inventory, no workflow dispatch, no expected-blocked change.
+
+## Follow-up 21 — 2026-11-03 EST (additive)
+
+**F20-01 answered by agent-core 48 (#447) and run 7599576e:** short whole-node expiry passes with D-142-qualified closure (D−99.541360 ms, D−96.362193 ms]. The historical failed row stays failed. **Follow-up 20 request 2 answered:** correct invocation ID on 32 operation snapshots; successful setup publication retained in AT10; 15 node-write commands/attempts, all first-attempt 202, zero conflicts. [Full receipts](followup21-2026-11-03.md).
+
+1. **F21-01 — orchestrator, member-expiry live coverage remains blocked:** none of 152 renewal samples met the unchanged >25-second node-extension prerequisite; maximum 23.057987 s. No post-deadline probe window or serving reads ran. Offline r28 M-1 replay and synthetic proof pass; assign a later live invocation if required. Do not treat this as a product defect or authorize a weaker bound. [Original samples](history/follow-up-21-run/finite-member-renewal-wait.json), [derived diagnosis](history/follow-up-21-run/member-expiry-prerequisite-review.json). No rerun was eligible.
+2. Carried: AT11 native platform matrix, AT13 full continuous fault matrix, F17-01 pure `stale_generation`. No renewed implementation claim.
+
+F48-01's paired restart signature is not observed in the retained agent/watchdog logs; this does not close agent-core 49/D-156. No new outside-owned code request. All three blocked acceptance rows remain blocked, earlier archives and historical failures remain unchanged, inventory is zero, and D-144/workflow remain unchanged.

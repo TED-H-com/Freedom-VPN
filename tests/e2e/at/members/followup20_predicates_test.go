@@ -14,7 +14,7 @@ import (
 
 func readF20JSON(t *testing.T, name string, out any) {
 	t.Helper()
-	f, err := os.Open("../../../../docs/e2e/at/members/" + name)
+	f, err := os.Open("../../../../docs/e2e/at/members/history/follow-up-18-run2/" + name)
 	if err != nil {
 		t.Fatal(err)
 	}

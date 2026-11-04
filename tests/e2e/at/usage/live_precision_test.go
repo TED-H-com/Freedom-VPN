@@ -198,7 +198,8 @@ func (s *liveSuite) verifyFreshCountedStream(rec *Record, node, current, origin 
 	}
 	publishedAt := time.Now().UTC()
 	pub := s.nodeMutation(node, http.MethodPut, "/publication", map[string]any{"publication_intent": "published", "group_ids": []string{s.groupID.String()}, "reason": "TEST ONLY AT20 D-130 current usage"})
-	if pub.status != http.StatusAccepted {
+	rec.Observations["d130_republish_write"] = pub.write.Receipt
+	if !pub.accepted(http.StatusAccepted) {
 		s.t.Fatalf("D-130 publication HTTP %d %s", pub.status, pub.code)
 	}
 	var observation json.RawMessage
