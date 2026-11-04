@@ -749,9 +749,9 @@ func TestHandover_ReviewsArchive(t *testing.T) {
 	for _, name := range gotFiles {
 		rel := filepath.Join("docs", "reviews", name)
 		content := readOwnedDoc(t, root, rel)
-		if name == "r16-rev13-d089-d099-review.md" || name == "r17-rev14-d104-d117-review.md" || name == "r18-generation-change-review.md" || name == "r19-intersection-design-review.md" || name == "r20-adoption-signal-review.md" || name == "r21-adoption-fixes-review.md" || name == "r22-attribution-fixes-review.md" || name == "r23-intent-fixes-review.md" || name == "r24-hitless-guard-review.md" || name == "r25-retain-review.md" || name == "r26-expiry-fixes-review.md" || name == "r27-members-failures-review.md" || name == "r28-expiry-probe-review.md" || name == "r29-update-recover-review.md" || name == "r30-update-fixes-review.md" {
+		if name == "r16-rev13-d089-d099-review.md" || name == "r17-rev14-d104-d117-review.md" || name == "r18-generation-change-review.md" || name == "r19-intersection-design-review.md" || name == "r20-adoption-signal-review.md" || name == "r21-adoption-fixes-review.md" || name == "r22-attribution-fixes-review.md" || name == "r23-intent-fixes-review.md" || name == "r24-hitless-guard-review.md" || name == "r25-retain-review.md" || name == "r26-expiry-fixes-review.md" || name == "r27-members-failures-review.md" || name == "r28-expiry-probe-review.md" || name == "r29-update-recover-review.md" || name == "r30-update-fixes-review.md" || name == "r31-recovery-lock-fixes-review.md" {
 			// D-098 forbids reformatting the raw report to our older table schema.
-			// Followup15Claims / Followup18Claims / Followup25Claims / Followup27Claims / Followup30Claims / Followup31Claims / Followup33Claims / Followup35Claims / Followup36Claims / Followup38Claims / Followup39Claims / Followup42Claims / Followup43Claims / Followup45Claims verify SHA-256 and review metadata.
+			// Followup15Claims / Followup18Claims / Followup25Claims / Followup27Claims / Followup30Claims / Followup31Claims / Followup33Claims / Followup35Claims / Followup36Claims / Followup38Claims / Followup39Claims / Followup42Claims / Followup43Claims / Followup45Claims / Followup47Claims verify SHA-256 and review metadata.
 			continue
 		}
 

@@ -36,6 +36,7 @@
 | `r28-expiry-probe-review` | [r28-expiry-probe-review.md](r28-expiry-probe-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Isolation 20 delivered head 9be409f8; review 34a8d61f, F20-01 | 0 Critical, 1 High, 1 Medium; [current dispositions](#follow-up-44-dispositions) | [Agent proofs](../../node/agent/review_r28_test.go) in #447; [member-expiry proofs](../../tests/e2e/at/isolation/member_expiry_test.go) in #452 |
 | `r29-update-recover-review` | [r29-update-recover-review.md](r29-update-recover-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | F30-01 design diagnosis; base dd052c60, report and proofs committed by the reviewer at 5b1ca726 | 0 Critical, 1 High, 1 Medium, 2 Low; [cut dispositions](#r29-dispositions-at-the-follow-up-43-cutoff-2026-11-04-est) | [Updater proofs](../../node/updater/review_r29_test.go) in #446 and [agent proofs](../../node/agent/review_r29_test.go) in #454, byte-identical |
 | `r30-update-fixes-review` | [r30-update-fixes-review.md](r30-update-fixes-review.md) | 2026-11-04 | `agy/gemini-4-argon-high` | Post-merge D-155–D-158 review (#446, #454, #461, #463); head da2560a9, base 9b9546c9; committed by Ted H | 0 Critical, 2 High, 3 Medium, 0 Low; [cut dispositions](#r30-dispositions-at-the-follow-up-46-cutoff-2026-11-04-est) | Agent/watchdog proofs adopted by #470; updater proofs by #471; all five findings fixed, r31 running at cutoff |
+| `r31-recovery-lock-fixes-review` | [r31-recovery-lock-fixes-review.md](r31-recovery-lock-fixes-review.md) | 2026-11-04 | `agy/gemini-4-argon-high` | Post-merge agent-core 51 #470 / updater 26 #471; head 0e33b9fe, base fd0f2494; committed by Ted H | 0 Critical, 0 High, 1 Medium, 0 Low; [cut dispositions](#r31-dispositions-at-the-follow-up-47-cutoff-2026-11-04-est) | Both proofs adopted by #477; M-1 fixed; updater needs nothing; no owner question |
 
 ## What Held Across the Reviews
 
@@ -985,3 +986,47 @@ and updater 26 by **agy/gemini-4-argon-high**. Devstack 36 is running on those
 fixes with D-162's TEST ONLY fixture change and consumer/If-Match audit.
 These are status only; no delivered or merged PR was present at the initial
 check. Later results are **after the cutoff**. See [follow-up 46](../handover/follow-up-46.md).
+
+## r31 dispositions at the follow-up 47 cutoff (2026-11-04 EST)
+
+The [raw r31 archive](r31-recovery-lock-fixes-review.md) is byte-for-byte from
+`r31-recovery-lock-fixes-review`, head **0e33b9fe3ef62244aab7a35eb1119ef6a7036621**,
+base **fd0f249418926e875928d4e6799ac2fc05c6ba9f**: **302 lines**, SHA-256
+`46300735f2a56cfcab37d22b862153efd2f2895e6e25c244f7af938ca5ec7aaa`.
+This is a **post-merge code review of agent-core 51 (#470) and updater 26
+(#471)**, by **agy/gemini-4-argon-high**, committed by **Ted H** as the branch
+records. It is now a **D-098 input**. Findings: **0 Critical, 0 High,
+1 Medium, 0 Low**. The raw report retains its original source descriptions;
+the [frozen agent-core 52 diagnosis](../../tests/handover/testdata/history/follow-up-47/docs_node_followup52-2026-11-04.md.txt)
+records the actual current call sequence and reachability before the fix.
+
+| Finding | Disposition at #477 | Boundary |
+|---|---|---|
+| r31 M-1 | FIXED — agent-core 52 #477 | The shared `canBindRecoveryReport` predicate is extracted exactly from existing binding rules. At unchanged state with a report pending, only an armed, unbound recovery that can bind its own report bypasses dedup. Case A's isolation latch persists through Steps; B's armed failed-meter state is constructed, not reached by normal Steps; C's stale lease can last one enforcement pass. |
+| r30 H-1, H-2, M-1, M-2 | HELD in r31 | The fidelity table marks all four implemented, along with the four clarified D-158 clauses. Updater needs nothing. |
+| r30 M-3 | Exception incomplete in r31; FIXED — #477 | r31 M-1 is the incomplete guard in #470's exception. Ordinary dedup is restored; unchanged-state binding remains covered. |
+| Question to the owner | None | The review asks none. |
+
+Both r31 proof files are on main through **#477**:
+`node/agent/review_r31_test.go` and `node/updater/review_r31_test.go`.
+The updater is byte-identical to the review branch, SHA-256
+`00414c8f141bab43caed86eb683d28c0baa50fb3ee27d833711316a6c4e7b132`.
+The agent differs only as its dated note records: three comment labels change
+from `TODO` to `Regression`; case C crosses the existing **30 s stale-lease
+alarm** and asserts that real transition before taking its unchanged-state
+baseline. **Every imported assertion is kept**; all three M-1 subtests fail
+on unfixed code. Its held proofs pass before and after. The four main proof
+names are `TestR31_M1_UnbindableClosedRecoveryFloodsPendingObservationOutbox`,
+`TestR31_Held_H1_RecoverLifetimesAndFailClosedGate`,
+`TestR31_Held_M2_M3_InteractionSingleEarlyRenewalAfterAcceptedReport` and
+`TestR31_Held_D158_AnswerSequencesAndRecordInvariants`.
+
+The 32-entry outbox, report body, cadence, retry, backoff, Retry-After,
+agent-core 51's unchanged-state binding, D-067, D-135/D-136, D-155/D-156 and
+D-157 remain. Agent-core 52's ordinary lab passes **13/13**; no assembled live
+claim is made. Devstack 36 **#476** separately records D-158's first live wait:
+**446 ms, acquired**, with stale-then-live contention unobserved. The two r30
+dispositions sections above stay byte-identical. **Review r32**, a post-merge
+review of agent-core 52 by **agy/gemini-4-argon-high**, is running at briefing,
+status only; no delivered or merged PR at the initial check. See the
+[follow-up 47 cut](../handover/follow-up-47.md).
