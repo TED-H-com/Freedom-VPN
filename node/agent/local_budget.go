@@ -9,9 +9,11 @@ import (
 // through cancellation-independent helpers. Engine.Step is single-threaded.
 type localBudgetKey struct{}
 type localBudget struct {
-	ctx              context.Context
-	quarantine       context.Context
-	cancelQuarantine context.CancelFunc
+	quarantineAttempted bool
+	quarantineBaseline  bool
+	ctx                 context.Context
+	quarantine          context.Context
+	cancelQuarantine    context.CancelFunc
 }
 
 func newLocalBudget(parent context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
@@ -45,4 +47,15 @@ func cleanupBudget(ctx context.Context) (context.Context, context.CancelFunc) {
 		return localContext(ctx), func() {}
 	}
 	return newLocalBudget(ctx, 5*time.Second)
+}
+
+// Boot's adoption work follows TERM, unlike Step's independent local checks.
+// Keep that lifetime separate from the budget for control-plane HTTP requests.
+type bootCallerKey struct{}
+
+func localWorkContext(ctx context.Context) context.Context {
+	if caller, ok := ctx.Value(bootCallerKey{}).(context.Context); ok {
+		return caller
+	}
+	return localContext(ctx)
 }

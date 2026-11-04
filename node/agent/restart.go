@@ -68,7 +68,7 @@ func (e *Engine) adoptStoredServing(ctx context.Context, beat watchdog.Beat) boo
 	}
 	// A healthy watchdog briefly holds this same lock for its presence read.
 	// Contention alone must not turn a process replacement into withdrawal.
-	lock, err := nodelock.Acquire(controlContext(ctx), e.cfg.LockPath, 201, 10*time.Millisecond)
+	lock, err := nodelock.Acquire(localWorkContext(ctx), e.cfg.LockPath, 201, 10*time.Millisecond)
 	if err != nil {
 		return false
 	}
@@ -84,7 +84,7 @@ func (e *Engine) adoptStoredServing(ctx context.Context, beat watchdog.Beat) boo
 	e.evaluate(ctx)
 	// A stop request during the probe or resolver refresh leaves no fresh
 	// evidence to adopt on; Boot takes the baseline under its local budget.
-	if controlContext(ctx).Err() != nil || ctx.Err() != nil {
+	if localWorkContext(ctx).Err() != nil || ctx.Err() != nil {
 		return false
 	}
 	d := e.decision
@@ -115,7 +115,7 @@ func (e *Engine) adoptStoredServing(ctx context.Context, beat watchdog.Beat) boo
 			usageKnown = err == nil && sameUsageBindings(bindings, d.Model.Bindings)
 		}
 	}
-	if controlContext(ctx).Err() != nil || e.meter == nil || !usageKnown || !e.decision.Serve || !e.verifyServingModel(ctx, d.Model, e.appliedAssignments) {
+	if localWorkContext(ctx).Err() != nil || e.meter == nil || !usageKnown || !e.decision.Serve || !e.verifyServingModel(ctx, d.Model, e.appliedAssignments) {
 		if prepared {
 			e.discardUsagePreparation()
 		}

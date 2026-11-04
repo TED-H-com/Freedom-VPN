@@ -1,5 +1,5 @@
 # Supporting component checks never imply §19 full-stack acceptance.
-AT_SECOPS_RUN := python3 tests/e2e/at/secops/diskexec.py
+AT_SECOPS_RUN := python3 -B tests/e2e/at/secops/diskexec.py
 export GOTOOLCHAIN := local
 export CGO_ENABLED := 0
 export PYTHONDONTWRITEBYTECODE := 1
@@ -11,18 +11,18 @@ TEST_TARGETS += at-secops-test
 
 # Exits 2 for blocked acceptance; evidence is still written for all five ATs.
 at-secops:
-	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/run.py
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/run.py
 
 .PHONY: at-secops-followup3
 at-secops-followup3:
-	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/run.py --follow-up-3
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/run.py --follow-up-3
 
 at-secops-components:
-	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/run.py --components-only
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/run.py --components-only
 
 at-secops-test:
 	$(AT_SECOPS_RUN) go test -tags e2e -p 1 -parallel 2 ./tests/e2e/at/secops/...
-	$(AT_SECOPS_RUN) python3 -m unittest discover -s tests/e2e/at/secops -p 'test_*.py'
+	$(AT_SECOPS_RUN) python3 -B -m unittest discover -s tests/e2e/at/secops -p 'test_*.py'
 
 at-secops-lint:
 	@test -z "$$(gofmt -l $$(git ls-files --cached --others --exclude-standard 'tests/e2e/at/secops/*.go'))" || { echo 'gofmt required'; exit 1; }
@@ -38,44 +38,48 @@ at-secops-build:
 .PHONY: at-secops-pitr
 at-secops-pitr:
 	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 FVPN_SECOPS_PITR=1 $(AT_SECOPS_RUN) go test -v -tags e2e,integration -p 1 -parallel 2 -count=1 -timeout 12m -run '^TestAT30_LivePITRSource$$' ./tests/e2e/at/secops/...
-	python3 tests/e2e/at/secops/pitr.py
+	python3 -B tests/e2e/at/secops/pitr.py
 
 .PHONY: at-secops-followup4
 at-secops-followup4:
-	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/run.py --follow-up-4
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/run.py --follow-up-4
 
 .PHONY: at-secops-native-scale
 at-secops-native-scale:
-	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/scale_run.py
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/scale_run.py
 
 .PHONY: at-secops-followup5
 at-secops-followup5:
-	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/followup5_run.py
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/followup5_run.py
 
 .PHONY: at-secops-followup6
 at-secops-followup6:
-	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/followup6_run.py
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/followup6_run.py
 
 .PHONY: at-secops-followup7
 at-secops-followup7:
-	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/followup7_run.py
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/followup7_run.py
 
 .PHONY: at-secops-followup8
 at-secops-followup8:
-	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/followup8_run.py
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/followup8_run.py
 
 .PHONY: at-secops-followup9
 at-secops-followup9:
-	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/followup9_run.py
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/followup9_run.py
 
 .PHONY: at-secops-followup10
 at-secops-followup10:
-	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/followup10_run.py
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/followup10_run.py
 
 .PHONY: at-secops-followup11-transports
 at-secops-followup11-transports:
-	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 FVPN_SECOPS_FOLLOWUP11=transports python3 tests/e2e/at/secops/followup11_run.py
+	FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 FVPN_SECOPS_FOLLOWUP11=transports python3 -B tests/e2e/at/secops/followup11_run.py
 
 .PHONY: at-secops-followup13
 at-secops-followup13:
-	FVPN_SECOPS_EVIDENCE_FOLLOWUP=13 FVPN_SECOPS_FOLLOWUP11=restore FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/followup11_run.py
+	FVPN_SECOPS_EVIDENCE_FOLLOWUP=13 FVPN_SECOPS_FOLLOWUP11=restore FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/followup11_run.py
+
+.PHONY: at-secops-followup15
+at-secops-followup15:
+	FVPN_SECOPS_EVIDENCE_FOLLOWUP=15 FVPN_SECOPS_FOLLOWUP11=transports FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/followup11_run.py

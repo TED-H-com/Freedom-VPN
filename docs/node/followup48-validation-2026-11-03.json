@@ -1,0 +1,445 @@
+{
+  "date": "2026-11-03 EST",
+  "base": "ff5efb69",
+  "validated_code": "5882ebff20066c48a0e51ab4d621a817c9bd5a92",
+  "purpose": "functional correctness only; no reservation or timing comparison",
+  "review_refs": {
+    "r27": "dfde8d25a5e9503c5355149ddec5fe9039fbe802",
+    "r28": "34a8d61f759fb3eb23b313e444ad3bab86cf676f"
+  },
+  "before": {
+    "todo_failed": 4,
+    "held_passed": 6,
+    "source": "2f46b486 (unchanged imported proofs on base)"
+  },
+  "gates": [
+    {
+      "gate": "node-gates",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-lint",
+        "node-test",
+        "node-test-integration",
+        "node-build"
+      ],
+      "exit": 2,
+      "source": "ad0894a2"
+    },
+    {
+      "gate": "containment-assertions",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./node/agent",
+        "-run",
+        "TestReviewR15_TCForeignFilter|TestF31_AT13_CancellationDoesNotMaskRealApplyFailure|TestF32_AT13_QuarantineRetriesShareAllowance|TestR27_L1"
+      ],
+      "exit": 1,
+      "source": "ad0894a2",
+      "source_note": "Uncommitted test adaptations on this source; corrected version committed as 5882ebff. The first invocation had a test-edit compilation error."
+    },
+    {
+      "gate": "containment-assertions-fixed",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./node/agent",
+        "-run",
+        "TestReviewR15_TCForeignFilter|TestF31_AT13_CancellationDoesNotMaskRealApplyFailure|TestF32_AT13_QuarantineRetriesShareAllowance|TestR27_L1"
+      ],
+      "exit": 0,
+      "source": "ad0894a2",
+      "source_note": "Uncommitted test adaptations on this source; corrected version committed as 5882ebff. The first invocation had a test-edit compilation error."
+    },
+    {
+      "gate": "node-gates-final",
+      "source": "5882ebff20066c48a0e51ab4d621a817c9bd5a92",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-lint",
+        "node-test",
+        "node-test-integration",
+        "node-build"
+      ],
+      "exit": 0
+    },
+    {
+      "gate": "reviews-r16-r19",
+      "source": "5882ebff20066c48a0e51ab4d621a817c9bd5a92",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./node/agent",
+        "./node/enforce",
+        "-run",
+        "^TestReviewR1[6-9]_"
+      ],
+      "exit": 0
+    },
+    {
+      "gate": "reviews-r20-r28",
+      "source": "5882ebff20066c48a0e51ab4d621a817c9bd5a92",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./node/agent",
+        "./node/agent/cmd/fvpn-agent",
+        "./node/enforce",
+        "-run",
+        "^TestR2[0-8]_"
+      ],
+      "exit": 0
+    },
+    {
+      "gate": "netlab",
+      "source": "5882ebff20066c48a0e51ab4d621a817c9bd5a92",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test-netlab",
+        "FVPN_LAB_PREFIX=fvpn-w2-agent-core-f48"
+      ],
+      "exit": 2
+    },
+    {
+      "gate": "inventory",
+      "source": "5882ebff20066c48a0e51ab4d621a817c9bd5a92",
+      "command": [
+        "python3",
+        "-B",
+        ".agent/f48/inventory.py"
+      ],
+      "exit": 0
+    },
+    {
+      "gate": "handover",
+      "source": "5882ebff20066c48a0e51ab4d621a817c9bd5a92",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "exit": 0
+    },
+    {
+      "gate": "go-lint",
+      "source": "5882ebff20066c48a0e51ab4d621a817c9bd5a92",
+      "command": [
+        "make",
+        "go-lint",
+        "go-with-disk-tmp=mkdir -p .agent/tmp;"
+      ],
+      "exit": 0
+    },
+    {
+      "gate": "vet",
+      "source": "5882ebff20066c48a0e51ab4d621a817c9bd5a92",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit": 0
+    },
+    {
+      "gate": "style",
+      "source": "5882ebff20066c48a0e51ab4d621a817c9bd5a92",
+      "command": [
+        "python3",
+        "-B",
+        ".agent/f48/style_check.py"
+      ],
+      "exit": 0
+    },
+    {
+      "gate": "evidence",
+      "source": "5882ebff20066c48a0e51ab4d621a817c9bd5a92",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/netlab",
+        "./tests/e2e",
+        "-run",
+        "TestCommitted(EvidenceFiles|FixtureEvidence)_ValidAndHygieneClean"
+      ],
+      "exit": 0
+    },
+    {
+      "gate": "final-all-tests",
+      "source": "5882ebff20066c48a0e51ab4d621a817c9bd5a92",
+      "command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "exit": 0
+    }
+  ],
+  "logs": {
+    "containment-assertions-fixed.log": {
+      "sha256": "b512a5c0dafad5b912493c058fdc453bea68e278d0e27a5039710e36f3a29bad",
+      "bytes": 611,
+      "tail": "=== RUN   TestReviewR15_TCForeignFilterWithdrawsServingOnApply\n--- PASS: TestReviewR15_TCForeignFilterWithdrawsServingOnApply (0.16s)\n=== RUN   TestF31_AT13_CancellationDoesNotMaskRealApplyFailure\n--- PASS: TestF31_AT13_CancellationDoesNotMaskRealApplyFailure (0.12s)\n=== RUN   TestF32_AT13_QuarantineRetriesShareAllowance\n--- PASS: TestF32_AT13_QuarantineRetriesShareAllowance (0.12s)\n=== RUN   TestR27_L1_ForeignTCQuarantineStepRedundantBaselinesAndReQuarantine\n--- PASS: TestR27_L1_ForeignTCQuarantineStepRedundantBaselinesAndReQuarantine (0.14s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t0.558s",
+      "failures": []
+    },
+    "containment-assertions.log": {
+      "sha256": "c54faaca810f106fe78138658f93cfd497ceda2a0a8a1891b1f53073f4df49db",
+      "bytes": 221,
+      "tail": "# github.com/TED-H-com/Freedom-VPN/node/agent [github.com/TED-H-com/Freedom-VPN/node/agent.test]\nnode/agent/followup12_test.go:190:152: undefined: last\nFAIL\tgithub.com/TED-H-com/Freedom-VPN/node/agent [build failed]\nFAIL",
+      "failures": [
+        "node/agent/followup12_test.go:190:152: undefined: last",
+        "FAIL\tgithub.com/TED-H-com/Freedom-VPN/node/agent [build failed]"
+      ]
+    },
+    "evidence.log": {
+      "sha256": "d35a933721f11206167e386a5589bbf06f5539983102bf4b7113aa2e8d410c02",
+      "bytes": 113,
+      "tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t3.253s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e\t9.210s",
+      "failures": []
+    },
+    "final-all-tests.log": {
+      "sha256": "cd5618c9c91393059da25e24f94369d5852cdbcddf58688f14b343f8e9d80421",
+      "bytes": 9189,
+      "tail": "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-stream\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/agentwait\t0.029s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread\t0.085s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay\t0.104s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin\t0.005s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls\t(cached)\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture\t(cached)\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t4.462s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t3.714s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab\t0.004s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority\t[no test files]\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\t[no test files]",
+      "failures": []
+    },
+    "go-lint.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "tail": "",
+      "failures": []
+    },
+    "handover.log": {
+      "sha256": "5d05fd0571d040c77d143bfd775ee7ed07f493828d7fa481f895482ad7897c0a",
+      "bytes": 60,
+      "tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t3.863s",
+      "failures": []
+    },
+    "heartbeat-after.log": {
+      "sha256": "ddc1f7db3984b3ea8a7e86383b8be603bf7da783898741794503ec8f772ba1c1",
+      "bytes": 6465,
+      "tail": "    --- PASS: TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat/local_deadline_timeout_and_datapath_error_leave_serving_true_heartbeat (0.25s)\n    --- PASS: TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat/boot_probe_clear_failure_leaves_baseline_ok_heartbeat_and_burns_issuance (0.17s)\n=== RUN   TestR23_H3a_PreApplyHandoffSettleFailure_EmitsCorruptObservationAndDashHeartbeat\n--- PASS: TestR23_H3a_PreApplyHandoffSettleFailure_EmitsCorruptObservationAndDashHeartbeat (0.15s)\n=== RUN   TestR23_Held_AQ5_BootHeartbeatStopProbeExceptionAndDatapathValidation\n--- PASS: TestR23_Held_AQ5_BootHeartbeatStopProbeExceptionAndDatapathValidation (0.04s)\n=== RUN   TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat\n=== RUN   TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat/during_verifyCurrentServing\n=== RUN   TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat/during_enforce_canRetainServing\n--- PASS: TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat (0.38s)\n    --- PASS: TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat/during_verifyCurrentServing (0.19s)\n    --- PASS: TestR25_H1b_SiblingExpiryDuringVerifyOrRetainLeavesSurvivingSiblingInBaselineWithDashHeartbeat/during_enforce_canRetainServing (0.20s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t7.420s\n=== RUN   TestAT13_ISOF603_HeartbeatReadPrecedesClockSample\n--- PASS: TestAT13_ISOF603_HeartbeatReadPrecedesClockSample (0.01s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/watchdog\t0.015s",
+      "failures": []
+    },
+    "heartbeat-before.log": {
+      "sha256": "2c7b7c7fb7dbb6b23a0253ebda13717a53ea0a080ad2d004bf279f9850c3ce8f",
+      "bytes": 306,
+      "tail": "--- FAIL: TestF48_R23_BootHeartbeatUsesOneBudget (0.02s)\n    followup48_test.go:212: heartbeat shortened Boot deadline: got=2026-11-03 20:59:12.469189853 -0500 EST m=+0.119750980 want=2026-11-03 20:59:22.369188834 -0500 EST m=+10.019749960\nFAIL\nFAIL\tgithub.com/TED-H-com/Freedom-VPN/node/agent\t0.023s\nFAIL",
+      "failures": [
+        "--- FAIL: TestF48_R23_BootHeartbeatUsesOneBudget (0.02s)",
+        "    followup48_test.go:212: heartbeat shortened Boot deadline: got=2026-11-03 20:59:12.469189853 -0500 EST m=+0.119750980 want=2026-11-03 20:59:22.369188834 -0500 EST m=+10.019749960"
+      ]
+    },
+    "inventory.log": {
+      "sha256": "0391a7b1e521c10ce0f3636a0c53eb49ab948f75273d86fbf62e4fd2303b43ec",
+      "bytes": 64,
+      "tail": "{\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}",
+      "failures": []
+    },
+    "netlab.log": {
+      "sha256": "3e581d6dee622b5c6dc978766af72942ed75b716b2e63fb4461a4c99e8d44ba8",
+      "bytes": 9045,
+      "tail": "--- PASS: TestLab06_RevokedStopsForwarding (3.84s)\nFAIL\nFAIL\tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/agent\t214.629s\nFAIL\nmake[1]: Entering directory '<worktree>'\ndocker rm -f fvpn-w2-agent-core-f48 >/dev/null 2>&1 || true\ndocker network rm fvpn-w2-agent-core-f48-dns >/dev/null 2>&1 || true\n/usr/bin/make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w2-agent-core-f48'\nmake[2]: Entering directory '<worktree>'\nmkdir -p <worktree>/.agent/tmp/fvpn-w2-agent-core-f48-scratch\ndocker rm -f fvpn-w2-agent-core-f48-wipe >/dev/null 2>&1 || true\ndocker run --rm --name fvpn-w2-agent-core-f48-wipe --network none \\\n\t-v <worktree>/.agent/tmp/fvpn-w2-agent-core-f48-scratch:/scratch fvpn-w2-agent-core-f48:lab \\\n\tfind /scratch -mindepth 1 -delete\nmake[2]: Leaving directory '<worktree>'\nrmdir <worktree>/.agent/tmp/fvpn-w2-agent-core-f48-scratch 2>/dev/null || true\nmake[1]: Leaving directory '<worktree>'\nmake: *** [mk/node.mk:64: node-test-netlab] Error 1",
+      "failures": [
+        "--- FAIL: TestLabD087_D104_GrantRenewalExpiryCorrelation (126.68s)",
+        "=== RUN   TestLabUsageLedger"
+      ]
+    },
+    "node-gates-final.log": {
+      "sha256": "60395dfa53a47703c94259c532ad587800d05a7f81b540c7841a610b35099dea",
+      "bytes": 4200,
+      "tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent\t0.296s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/watchdog\t0.131s\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/agentstore\t0.217s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/controlclient\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/timeanchor\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol\t0.032s\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol\t[no test files]\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/internal/nodelock\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/usagestore\t1.043s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/meter\t0.673s\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test -count=1 -tags integration ./node/agent/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t142.903s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent\t0.289s\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o bin/linux_amd64/fvpn-agent ./node/agent/cmd/fvpn-agent\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=arm64 go build -trimpath -o bin/linux_arm64/fvpn-agent ./node/agent/cmd/fvpn-agent\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o bin/linux_amd64/fvpn-watchdog ./node/watchdog/cmd/fvpn-watchdog\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=arm64 go build -trimpath -o bin/linux_arm64/fvpn-watchdog ./node/watchdog/cmd/fvpn-watchdog",
+      "failures": []
+    },
+    "node-gates.log": {
+      "sha256": "5490c4de8769686cd75d492c3d1cc21ee0d1039965dbd32c36a8126a56c6bc2a",
+      "bytes": 14248,
+      "tail": "2026/11/03 21:02:13 INFO baseline decision writer=watchdog cause=policy_expired boot_id=01a1a44a-e29f-7e57-a403-3180fe1d4473 mono_ns=3679998000000 heartbeat_mono_ns=3678998000000 policy_expires_mono_ns=3679998000000 generation=3 serving=true baseline_ok=true\n2026/11/03 21:02:13 INFO baseline write writer=watchdog phase=begin cause=policy_expired mono_ns=3679998000000 heartbeat_mono_ns=3678998000000 policy_expires_mono_ns=3679998000000 generation=3\n2026/11/03 21:02:13 INFO baseline write writer=watchdog phase=end cause=policy_expired mono_ns=3679998000000 succeeded=true\nFAIL\nFAIL\tgithub.com/TED-H-com/Freedom-VPN/node/agent\t172.950s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent\t0.292s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/watchdog\t0.135s\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/agentstore\t0.220s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/controlclient\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/timeanchor\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol\t0.035s\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol\t[no test files]\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/internal/nodelock\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/usagestore\t1.049s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/meter\t0.687s\nFAIL\nmake: *** [mk/node.mk:46: node-test] Error 1",
+      "failures": [
+        "--- FAIL: TestReviewR15_TCForeignFilterWithdrawsServingOnApply (0.15s)",
+        "    followup12_test.go:354: foreign tc did not withdraw serving: serving=false result={Deadline:{Granularity:1ms InstallBound:100ms ApplyStart:22h31m7.045974101s RenderStart:0s InstallStart:0s InstalledBy:0s InstallOK:false ReleaseStart:0s ReleaseEnd:0s GuardReleased:false} Plan:{NFT:# inet fvpn generation 2 forward_admission_v1",
+        "--- FAIL: TestF31_AT13_CancellationDoesNotMaskRealApplyFailure (0.15s)",
+        "    followup31_restart_test.go:118: cancellation hid a real Apply/foreign-tc failure",
+        "--- FAIL: TestF32_AT13_QuarantineRetriesShareAllowance (0.16s)",
+        "    followup32_test.go:76: quarantine retry refreshed its deadline"
+      ]
+    },
+    "proofs-before.log": {
+      "sha256": "9e1f1993c2e56edf7b85fb1b6c00757bf794263fcaccabd96b25e4496befb519",
+      "bytes": 4428,
+      "tail": "=== RUN   TestR27_Held_D106ContainmentRetainsFirstRejectionAcrossGenerationsUntilRestart\n--- PASS: TestR27_Held_D106ContainmentRetainsFirstRejectionAcrossGenerationsUntilRestart (0.21s)\n=== RUN   TestR28_ControlOutageDoesNotFailTunnelProbeBeforeLeaseExpiry\n    review_r28_test.go:109: H-1: refreshProbe passed expired controlContext(ctx) (context deadline exceeded) to Prober.Probe after syncDesired timed out: serving=false safety=failed dataHealth=failed reasons=[safety_check_failed] probeDetail=\"overlay_down\" probeCheckStatus=failed errors=[{Code:HEALTH_CHECK_FAILED Message:tunnel_probe ObservedAt:2026-11-04 01:51:49.170071023 +0000 UTC Stage:probe}] baselines=1->3 heartbeat={serving:false reason:safety_check_failed}\n--- FAIL: TestR28_ControlOutageDoesNotFailTunnelProbeBeforeLeaseExpiry (0.42s)\n=== RUN   TestR28_WhatHeld_RefreshProbeAndNetbirdProberContextPropagation\n--- PASS: TestR28_WhatHeld_RefreshProbeAndNetbirdProberContextPropagation (0.00s)\n=== RUN   TestR28_WhatHeld_FastControlRefusalPreservesServingUntilDeadline\n--- PASS: TestR28_WhatHeld_FastControlRefusalPreservesServingUntilDeadline (0.12s)\n=== RUN   TestR28_WhatHeld_PostDeadlineReasonOrderingInDecideAndBaseline\n--- PASS: TestR28_WhatHeld_PostDeadlineReasonOrderingInDecideAndBaseline (0.00s)\nFAIL\nFAIL\tgithub.com/TED-H-com/Freedom-VPN/node/agent\t1.425s\n=== RUN   TestR27_Held_LoadTCAndVerifyServingClassifyReadFailedAsTCForeignFilter\n--- PASS: TestR27_Held_LoadTCAndVerifyServingClassifyReadFailedAsTCForeignFilter (0.02s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/enforce\t0.028s\nFAIL",
+      "failures": [
+        "--- FAIL: TestR27_H1_AuditBlockedMissingInterfaceAtBootLatchesFalseTCForeignFilter (0.18s)",
+        "=== RUN   TestR27_M1_ProvisionalTimerRaceAndClosedRecoveryDelayPopulatedLease",
+        "--- FAIL: TestR27_M1_ProvisionalTimerRaceAndClosedRecoveryDelayPopulatedLease (0.18s)",
+        "=== RUN   TestR27_L1_ForeignTCQuarantineStepRedundantBaselinesAndReQuarantine",
+        "--- FAIL: TestR27_L1_ForeignTCQuarantineStepRedundantBaselinesAndReQuarantine (0.13s)",
+        "=== RUN   TestR27_Held_SameGenerationRestartRenewsBeforeObserveAndSkipsProvisionalWhenPopulated",
+        "--- FAIL: TestR28_ControlOutageDoesNotFailTunnelProbeBeforeLeaseExpiry (0.42s)",
+        "=== RUN   TestR28_WhatHeld_RefreshProbeAndNetbirdProberContextPropagation"
+      ]
+    },
+    "r27-h1-after.log": {
+      "sha256": "0bc0b862d0086e740409ebcdd8f82bcc181c375d91415bd29d5e0b057dd5e09b",
+      "bytes": 1720,
+      "tail": "    --- PASS: TestF48_ReadFailureNeedsIndependentAbsenceEvidence/absent (0.12s)\n    --- PASS: TestF48_ReadFailureNeedsIndependentAbsenceEvidence/present (0.12s)\n    --- PASS: TestF48_ReadFailureNeedsIndependentAbsenceEvidence/unreadable_inventory (0.12s)\n    --- PASS: TestF48_ReadFailureNeedsIndependentAbsenceEvidence/real_filter (0.12s)\n=== RUN   TestF48_SystemPlaneInterfaceInventory\n--- PASS: TestF48_SystemPlaneInterfaceInventory (0.00s)\n=== RUN   TestR27_H1_AuditBlockedMissingInterfaceAtBootLatchesFalseTCForeignFilter\n--- PASS: TestR27_H1_AuditBlockedMissingInterfaceAtBootLatchesFalseTCForeignFilter (0.21s)\n=== RUN   TestR27_Held_SameGenerationRestartRenewsBeforeObserveAndSkipsProvisionalWhenPopulated\n--- PASS: TestR27_Held_SameGenerationRestartRenewsBeforeObserveAndSkipsProvisionalWhenPopulated (0.18s)\n=== RUN   TestR27_Held_D106ContainmentRetainsFirstRejectionAcrossGenerationsUntilRestart\n--- PASS: TestR27_Held_D106ContainmentRetainsFirstRejectionAcrossGenerationsUntilRestart (0.22s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t1.084s\n=== RUN   TestR27_Held_LoadTCAndVerifyServingClassifyReadFailedAsTCForeignFilter\n--- PASS: TestR27_Held_LoadTCAndVerifyServingClassifyReadFailedAsTCForeignFilter (0.02s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/enforce\t0.029s",
+      "failures": []
+    },
+    "r27-l1-after.log": {
+      "sha256": "0bdc9984af2462e37a754b333db26691dc9c93edee0954edf62d98946bf58cd0",
+      "bytes": 9343,
+      "tail": "=== RUN   TestD090_RecoveryFailureRequarantines/foreign_after_up\n=== RUN   TestD090_RecoveryFailureRequarantines/clear\n--- PASS: TestD090_RecoveryFailureRequarantines (0.04s)\n    --- PASS: TestD090_RecoveryFailureRequarantines/up (0.01s)\n    --- PASS: TestD090_RecoveryFailureRequarantines/foreign_after_up (0.02s)\n    --- PASS: TestD090_RecoveryFailureRequarantines/clear (0.02s)\n=== RUN   TestD090_QuarantineRejectsUplinkAlias\n--- PASS: TestD090_QuarantineRejectsUplinkAlias (0.00s)\n=== RUN   TestD090_BaselineRetainsForeignRootAttachments\n--- PASS: TestD090_BaselineRetainsForeignRootAttachments (0.00s)\n=== RUN   TestD090_PublicVerificationCannotReleaseMarker\n--- PASS: TestD090_PublicVerificationCannotReleaseMarker (0.00s)\n=== RUN   TestD090_ApplyTCReadFailureQuarantines\n--- PASS: TestD090_ApplyTCReadFailureQuarantines (0.00s)\n=== RUN   TestR27_Held_LoadTCAndVerifyServingClassifyReadFailedAsTCForeignFilter\n--- PASS: TestR27_Held_LoadTCAndVerifyServingClassifyReadFailedAsTCForeignFilter (0.02s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/enforce\t0.422s",
+      "failures": []
+    },
+    "r27-m1-after.log": {
+      "sha256": "9c4e0bfc54f6c1a3014cf90b77beebb0b2f97b295c6b02359ac3558da0664e7c",
+      "bytes": 4189,
+      "tail": "    --- PASS: TestD067_EngineRenewalTiming/long_lease (0.00s)\n    --- PASS: TestD067_EngineRenewalTiming/heartbeat_over_cap (0.00s)\n    --- PASS: TestD067_EngineRenewalTiming/short_lease_long_heartbeat (0.00s)\n    --- PASS: TestD067_EngineRenewalTiming/unaligned_poll (0.00s)\n=== RUN   TestD067_ReadyRenewsWithin60Seconds\n    followup20_test.go:105: grant-less request to populated request=1m0s; ready to populated request=55s\n--- PASS: TestD067_ReadyRenewsWithin60Seconds (0.16s)\n=== RUN   TestD067_GrantlessFailureDoesNotSpinOrOverrideRetryAfter\n--- PASS: TestD067_GrantlessFailureDoesNotSpinOrOverrideRetryAfter (0.20s)\n=== RUN   TestD067_GrantlessReplayKeepsDeadline\n--- PASS: TestD067_GrantlessReplayKeepsDeadline (0.00s)\n=== RUN   TestD087_AT10_FixedGenerationProvisionalToGranted\n    followup27_test.go:110: fixed generation=2: provisional report delivered; scheduled grant request after 1s; new serving report delivered before 3600s observation interval\n--- PASS: TestD087_AT10_FixedGenerationProvisionalToGranted (0.16s)\n=== RUN   TestR27_M1_ProvisionalTimerRaceAndClosedRecoveryDelayPopulatedLease\n--- PASS: TestR27_M1_ProvisionalTimerRaceAndClosedRecoveryDelayPopulatedLease (0.19s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t1.467s",
+      "failures": []
+    },
+    "r27-m1-debug.log": {
+      "sha256": "13ca5dd35ad7b03ad09b4d9f71102fbbb088944110f05d6baa5442ba856d0217",
+      "bytes": 1198,
+      "tail": "--- FAIL: TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate (0.20s)\n    followup48_test.go:183: baseline at empty renewal; applied=&{Generation:3 IPv6Mode:block Now:2026-11-04 01:56:56.943117628 +0000 UTC NowMono:1h0m0s timeoutReserve:0 Datapath:{MemberIngress:fv-fh Uplink:fv-ih SNAT:192.0.2.37} Bindings:[] Leases:[] Resolvers:[] DeniedV4:[] ExtraDeniedV4:[] HostV4:[] QoS:{Up:{RateBPS:200000000 CeilBPS:200000000} Down:{RateBPS:200000000 CeilBPS:200000000} HostUp:{RateBPS:1000000 CeilBPS:200000000} HostDown:{RateBPS:1000000 CeilBPS:200000000} Members:[] Assignments:map[019a0000-0000-7000-8000-00000000000a:47]} Revoke:[100.64.1.1] Probe:<nil>} candidate={Generation:3 IPv6Mode:block Now:2026-11-04 01:57:01.941117628 +0000 UTC NowMono:1h0m5s timeoutReserve:0 Datapath:{MemberIngress:fv-fh Uplink:fv-ih SNAT:192.0.2.37} Bindings:[] Leases:[] Resolvers:[] DeniedV4:[] ExtraDeniedV4:[] HostV4:[] QoS:{Up:{RateBPS:200000000 CeilBPS:200000000} Down:{RateBPS:200000000 CeilBPS:200000000} HostUp:{RateBPS:1000000 CeilBPS:200000000} HostDown:{RateBPS:1000000 CeilBPS:200000000} Members:[] Assignments:map[]} Revoke:[] Probe:<nil>}\nFAIL\nFAIL\tgithub.com/TED-H-com/Freedom-VPN/node/agent\t0.207s\nFAIL",
+      "failures": [
+        "--- FAIL: TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate (0.20s)",
+        "    followup48_test.go:183: baseline at empty renewal; applied=&{Generation:3 IPv6Mode:block Now:2026-11-04 01:56:56.943117628 +0000 UTC NowMono:1h0m0s timeoutReserve:0 Datapath:{MemberIngress:fv-fh Uplink:fv-ih SNAT:192.0.2.37} Bindings:[] Leases:[] Resolvers:[] DeniedV4:[] ExtraDeniedV4:[] HostV4:[] QoS:{Up:{RateBPS:200000000 CeilBPS:200000000} Down:{RateBPS:200000000 CeilBPS:200000000} HostUp:{RateBPS:1000000 CeilBPS:200000000} HostDown:{RateBPS:1000000 CeilBPS:200000000} Members:[] Assignments:map[019a0000-0000-7000-8000-00000000000a:47]} Revoke:[100.64.1.1] Probe:<nil>} candidate={Generation:3 IPv6Mode:block Now:2026-11-04 01:57:01.941117628 +0000 UTC NowMono:1h0m5s timeoutReserve:0 Datapath:{MemberIngress:fv-fh Uplink:fv-ih SNAT:192.0.2.37} Bindings:[] Leases:[] Resolvers:[] DeniedV4:[] ExtraDeniedV4:[] HostV4:[] QoS:{Up:{RateBPS:200000000 CeilBPS:200000000} Down:{RateBPS:200000000 CeilBPS:200000000} HostUp:{RateBPS:1000000 CeilBPS:200000000} HostDown:{RateBPS:1000000 CeilBPS:200000000} Members:[] Assignments:map[]} Revoke:[] Probe:<nil>}"
+      ]
+    },
+    "r27-m1-final.log": {
+      "sha256": "2bddabe112e65ee97220b0b4ff773ff8e4b41911c08a421e5d9bf3047cab3229",
+      "bytes": 4323,
+      "tail": "    --- PASS: TestD067_EngineRenewalTiming/short_lease_long_heartbeat (0.00s)\n    --- PASS: TestD067_EngineRenewalTiming/unaligned_poll (0.00s)\n=== RUN   TestD067_ReadyRenewsWithin60Seconds\n    followup20_test.go:105: grant-less request to populated request=1m0s; ready to populated request=55s\n--- PASS: TestD067_ReadyRenewsWithin60Seconds (0.17s)\n=== RUN   TestD067_GrantlessFailureDoesNotSpinOrOverrideRetryAfter\n--- PASS: TestD067_GrantlessFailureDoesNotSpinOrOverrideRetryAfter (0.20s)\n=== RUN   TestD067_GrantlessReplayKeepsDeadline\n--- PASS: TestD067_GrantlessReplayKeepsDeadline (0.00s)\n=== RUN   TestD087_AT10_FixedGenerationProvisionalToGranted\n    followup27_test.go:110: fixed generation=2: provisional report delivered; scheduled grant request after 1s; new serving report delivered before 3600s observation interval\n--- PASS: TestD087_AT10_FixedGenerationProvisionalToGranted (0.15s)\n=== RUN   TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate\n--- PASS: TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate (0.22s)\n=== RUN   TestR27_M1_ProvisionalTimerRaceAndClosedRecoveryDelayPopulatedLease\n--- PASS: TestR27_M1_ProvisionalTimerRaceAndClosedRecoveryDelayPopulatedLease (0.19s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t1.701s",
+      "failures": []
+    },
+    "r27-m1-schedule.log": {
+      "sha256": "002e586d08c1aa99cb3ec259efeb7921658d05d5eae9bc6ab1e6fe7e6de4d712",
+      "bytes": 270,
+      "tail": "=== RUN   TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate\n    followup48_test.go:188: Retry-After or deny-all retention changed\n--- FAIL: TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate (0.34s)\nFAIL\nFAIL\tgithub.com/TED-H-com/Freedom-VPN/node/agent\t0.344s\nFAIL",
+      "failures": [
+        "--- FAIL: TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate (0.34s)",
+        "FAIL"
+      ]
+    },
+    "r28-after.log": {
+      "sha256": "1759396452c32eea13b60040c3a2112efb587e1d1a6e4f0d1492db80ead0d11f",
+      "bytes": 2403,
+      "tail": "    --- PASS: TestR21_M2_OneBootBudgetAllStages/adoption_lock (0.24s)\n    --- PASS: TestR21_M2_OneBootBudgetAllStages/meter_open (0.23s)\n    --- PASS: TestR21_M2_OneBootBudgetAllStages/settlement (0.25s)\n    --- PASS: TestR21_M2_OneBootBudgetAllStages/uncooperative (0.24s)\n=== RUN   TestF48_AT13_HungControlPreservesLocalChecksUntilDeadline\n--- PASS: TestF48_AT13_HungControlPreservesLocalChecksUntilDeadline (3.11s)\n=== RUN   TestF48_LocalWorkBudgetSeparatesStepAndBoot\n--- PASS: TestF48_LocalWorkBudgetSeparatesStepAndBoot (0.00s)\n=== RUN   TestR28_ControlOutageDoesNotFailTunnelProbeBeforeLeaseExpiry\n--- PASS: TestR28_ControlOutageDoesNotFailTunnelProbeBeforeLeaseExpiry (0.44s)\n=== RUN   TestR28_WhatHeld_RefreshProbeAndNetbirdProberContextPropagation\n--- PASS: TestR28_WhatHeld_RefreshProbeAndNetbirdProberContextPropagation (0.00s)\n=== RUN   TestR28_WhatHeld_FastControlRefusalPreservesServingUntilDeadline\n--- PASS: TestR28_WhatHeld_FastControlRefusalPreservesServingUntilDeadline (0.12s)\n=== RUN   TestR28_WhatHeld_PostDeadlineReasonOrderingInDecideAndBaseline\n--- PASS: TestR28_WhatHeld_PostDeadlineReasonOrderingInDecideAndBaseline (0.00s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t6.406s",
+      "failures": []
+    },
+    "reviews-r16-r19.log": {
+      "sha256": "4aa76ccea6f2baa2c782b96a6737994caa411c1a1e51096510bb4b5cf08b3bef",
+      "bytes": 11385,
+      "tail": "=== RUN   TestReviewR18_DisabledLifecycleDoesNotAllocate\n--- PASS: TestReviewR18_DisabledLifecycleDoesNotAllocate (0.00s)\n=== RUN   TestReviewR18_DisabledRunCommandMatchesRun\n--- PASS: TestReviewR18_DisabledRunCommandMatchesRun (0.01s)\n=== RUN   TestReviewR18_RenderCaptureStaysInMemory\n--- PASS: TestReviewR18_RenderCaptureStaysInMemory (0.00s)\n=== RUN   TestReviewR18_EnabledSampleIgnoresInstallDeadline\n    review_r18_lifecycle_test.go:107: finished install context skipped resource sampling (elapsed 608.701µs, total syscr +11)\n--- PASS: TestReviewR18_EnabledSampleIgnoresInstallDeadline (0.12s)\n=== RUN   TestReviewR18_EnabledCancelReapsChild\n--- PASS: TestReviewR18_EnabledCancelReapsChild (0.05s)\n=== RUN   TestReviewR19_Q4_CurrentRenderDoesNotRestrictEstablishedDownload\n    review_r19_intersection_test.go:68: current destination denial precedes the established download accept\n--- PASS: TestReviewR19_Q4_CurrentRenderDoesNotRestrictEstablishedDownload (0.00s)\n=== RUN   TestReviewR19_Q4_ExistingCounterIsNotRecreated\n--- PASS: TestReviewR19_Q4_ExistingCounterIsNotRecreated (0.00s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/enforce\t0.223s",
+      "failures": []
+    },
+    "reviews-r20-r28.log": {
+      "sha256": "8a262eac69e4d4c15c51ff35e44a3d206f815aa7dded20c38a057a28f0d2c11b",
+      "bytes": 37897,
+      "tail": "=== RUN   TestR20_Held_VerifyServingCatchesResolverBindingQoSAndSNATDrift\n--- PASS: TestR20_Held_VerifyServingCatchesResolverBindingQoSAndSNATDrift (0.01s)\n=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen\n=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/cold_start_rollback_with_failed_loadState_omits_delete_chain_and_flush_set\n=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/expired_ctx_during_verify_aborts_rollback_after_guard_release\n--- PASS: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen (0.00s)\n    --- PASS: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/cold_start_rollback_with_failed_loadState_omits_delete_chain_and_flush_set (0.00s)\n    --- PASS: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/expired_ctx_during_verify_aborts_rollback_after_guard_release (0.00s)\n=== RUN   TestR24_H2_OrphanMemberTCClassDeletedBeforeNftBatch\n--- PASS: TestR24_H2_OrphanMemberTCClassDeletedBeforeNftBatch (0.00s)\n=== RUN   TestR24_M2_PostShapeClockCheckSkipsBaselineInApply\n--- PASS: TestR24_M2_PostShapeClockCheckSkipsBaselineInApply (0.00s)\n=== RUN   TestR24_Held_Q1_GuardInstallBoundLifetimeCeilingAndCounterContinuity\n--- PASS: TestR24_Held_Q1_GuardInstallBoundLifetimeCeilingAndCounterContinuity (0.00s)\n=== RUN   TestR27_Held_LoadTCAndVerifyServingClassifyReadFailedAsTCForeignFilter\n--- PASS: TestR27_Held_LoadTCAndVerifyServingClassifyReadFailedAsTCForeignFilter (0.02s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/enforce\t0.044s",
+      "failures": []
+    },
+    "style.log": {
+      "sha256": "ede8e7bad1ea0c5f9d85ac0046d258fea3e043248f1d68c6a38a0dd16fb5a2b6",
+      "bytes": 94,
+      "tail": "gofmt: clean; git diff --check: clean; staged diff: clean; public hygiene: clean; JSON: valid",
+      "failures": []
+    },
+    "vet.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "tail": "",
+      "failures": []
+    }
+  },
+  "code_sha256": {
+    "node/agent/boot_heartbeat.go": "c901c916694dd74c964e0ce20660766e1694d0d1fa3cb4df824976f0290a68aa",
+    "node/agent/engine.go": "86f2803619a2d706a6ae31ebcc5a8d568e61aeebd8222acba62c80d643a528be",
+    "node/agent/followup12_test.go": "9c1cf1617cafd9231279aebada5b940f4adf7fef2f010cbcaef6e08e9f86320b",
+    "node/agent/followup31_restart_test.go": "7e88d5b470a2e84171ec40abd908070408c91018c5ea89c093d72473e6d440e9",
+    "node/agent/followup32_test.go": "37fd254ded0fb59fd824ac41d779f18fe8660270b1353a40771da63f83585832",
+    "node/agent/followup48_test.go": "8111a70861833a6181ed31907d445d2c70fc5c00ecb316d590dc1534ed7dcc7b",
+    "node/agent/local_budget.go": "07b50f3b291fefbc34c704c30c8f5d1e0aa8fa249d3451dad79e526fe72a7681",
+    "node/agent/plane.go": "c3cf45ba942d7db3748a9020a1884d6eaf69137098896879ceed2f843d2d1ed0",
+    "node/agent/probeexc.go": "0a7113b536c577ce78ee6362ce07436bd84a2afed76ba251729b8e871a0a5ad9",
+    "node/agent/quarantine.go": "3a3ced3bef9a3618743f810c770d9e2e4cd6768fcc1f482e5ba71fe0a985ba14",
+    "node/agent/recovery.go": "30a2db68c36403b7a3e8bb53c35bc25d9567da0fa299f1d8e710c1cea408a3b7",
+    "node/agent/restart.go": "e157943894b8f052559f70f305ffed3c737468416bb160e0436c799e7bf44f5b",
+    "node/agent/review_r27_test.go": "8e0c845e9819b06b8223e64fd689e52b08aa8aeaf24a8d2372de9508a291abce",
+    "node/agent/review_r28_test.go": "c2451efc0b68bbcd0901da74cef5a229b346143cccfc82c2d277eea1bef4b139",
+    "node/agent/serving.go": "5140dacc1430f2759f5e16a2e6c1ca2a54b740af4425ad09b7f11c289b954788",
+    "node/agent/usage.go": "cd4e78ed1e26db78b5d20f59e0d6df6cc02c50ba2ad07d2075b6c238336f70d7",
+    "node/enforce/review_r27_test.go": "3a6857f7e2053c9c2b510640c8d6e3a7f42e53e8079b9f5c0b4c3a4e3055b43c"
+  },
+  "environment": {
+    "CGO_ENABLED": "0",
+    "GOTOOLCHAIN": "local",
+    "TMPDIR": "<worktree>/.agent/tmp",
+    "GOTMPDIR": "<worktree>/.agent/tmp",
+    "GOCACHE": "$HOME/.cache/go-build",
+    "admission": "$FVPN_HOLD_SH; isolated output; no reservation"
+  },
+  "suite_concurrency": {
+    "checks": [
+      {
+        "processes": []
+      }
+    ],
+    "waited_seconds": 0.015
+  },
+  "d150_code_reading": "not determined; no frozen execution; no timing claim",
+  "lab_full_control_hang": false,
+  "lab_held_lease_requests": true,
+  "owned_inventory": {
+    "containers": [],
+    "images": [],
+    "networks": [],
+    "volumes": []
+  },
+  "lab_result": {
+    "pass": 12,
+    "fail": 1,
+    "skip": 1,
+    "failed_scenario": "TestLabD087_D104_GrantRenewalExpiryCorrelation",
+    "predicate": "tests/netlab/agent/timing-analysis.py:117",
+    "last_positive_lower_bound_met": false,
+    "first_drop_upper_bound_met": true,
+    "no_rerun": true,
+    "capture_sha256": {
+      "agent.log": "92b72e8979807d405dac0791e4bc70188c42e088e42245c92dc34ebe1f193a39",
+      "analysis.json": "5153cf287225c6f6a312dc311e20e05c6643443d1830e0694903683d0a14dd06",
+      "expiry.json": "1bca1ee4b1d7b672e3a1da7540019f0ca567d148a0ecfb615f6fedf09f67466b",
+      "expiry.json.restart.json": "ad255068ae5e3fb04b161a5e532dae2b93ccfb5b0010acaed4903ff817bfddb2",
+      "observations.json": "f9e8d7f24cba561e854338cd1bb4d6445c45aba0e402ea37b9d2b1180c143a8a",
+      "operations.jsonl": "9d1010b82f2ed4bab9be1fd2de2bf9dc3920c3811d04756f00658188605bbd82",
+      "renewal.json": "1bb57c45383d445d8ba090c2464d3f693f8ddc2bef80d989fd27ee06ef10142b",
+      "watchdog.log": "9e6118812e458442ef392a035638e0e4ab7532c39fdbd3c55f449ff61e7065df"
+    }
+  },
+  "r23_original_failure": {
+    "test": "TestR23_H2_InterruptedCheckpointPreparesNextEpoch/checkpoint_read_restart_true",
+    "location": "node/agent/followup40_test.go:228",
+    "error": "agent: boot failed: heartbeat: context deadline exceeded",
+    "preserved": true,
+    "code_changed": false,
+    "targeted_recheck_passed": true,
+    "plain_full_module_retry_passed": true,
+    "output_excerpt": "--- FAIL: TestR23_H2_InterruptedCheckpointPreparesNextEpoch (1.85s)\n    --- FAIL: TestR23_H2_InterruptedCheckpointPreparesNextEpoch/checkpoint_read_restart_true (0.54s)\n        followup40_test.go:228: agent: boot failed: heartbeat: context deadline exceeded"
+  },
+  "admission_limitation": "Recursive Make in the lab resolved /usr/bin/make and inherited the admitted run rather than separate wrapper checks; remaining driver pins MAKE. All PATH Go/Docker invocations were checked."
+}
