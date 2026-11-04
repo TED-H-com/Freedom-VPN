@@ -33,6 +33,8 @@ at-secops-build:
 	@mkdir -p .agent/secops/build
 	GOOS=linux GOARCH=amd64 $(AT_SECOPS_RUN) go test -c -tags e2e,integration -o .agent/secops/build/amd64.test ./tests/e2e/at/secops
 	GOOS=linux GOARCH=arm64 $(AT_SECOPS_RUN) go test -c -tags e2e,integration -o .agent/secops/build/arm64.test ./tests/e2e/at/secops
+	GOOS=linux GOARCH=amd64 $(AT_SECOPS_RUN) go build -o .agent/secops/build/leaseprobe-amd64 ./tests/e2e/at/secops/leaseprobe
+	GOOS=linux GOARCH=arm64 $(AT_SECOPS_RUN) go build -o .agent/secops/build/leaseprobe-arm64 ./tests/e2e/at/secops/leaseprobe
 
 # Requires a fresh own-prefix e2e-up; leaves that stack running for inspection.
 .PHONY: at-secops-pitr
