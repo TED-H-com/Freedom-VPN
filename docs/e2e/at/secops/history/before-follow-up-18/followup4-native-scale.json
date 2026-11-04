@@ -1,0 +1,636 @@
+{
+  "started_at": "2026-10-30T07:21:00Z",
+  "scope": "20 native users \u00d7 3 peers; no serving node or capacity claim",
+  "node_incarnation": null,
+  "inventory_before": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "up": {
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-up"
+    ],
+    "started_at": "2026-10-30T07:21:00Z",
+    "finished_at": "2026-10-30T07:21:23Z",
+    "elapsed_seconds": 22.881,
+    "exit_code": 0,
+    "scan": {
+      "stream": "scale-e2e-up",
+      "bytes": 19783,
+      "findings": []
+    }
+  },
+  "probe": {
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "45m",
+      "-run",
+      "^TestSECOPS10_NativeScale$",
+      "./tests/e2e/at/secops"
+    ],
+    "started_at": "2026-10-30T07:21:23Z",
+    "finished_at": "2026-10-30T07:35:58Z",
+    "elapsed_seconds": 874.982,
+    "exit_code": 0,
+    "scan": {
+      "stream": "scale-probe",
+      "bytes": 5573,
+      "findings": []
+    },
+    "status": "passed",
+    "required_tests": [
+      "TestSECOPS10_NativeScale"
+    ],
+    "missing": [],
+    "skipped": [],
+    "tests": [
+      {
+        "name": "TestSECOPS10_NativeScale",
+        "result": "pass",
+        "elapsed_seconds": 874.61
+      }
+    ],
+    "package_results": {
+      "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "pass"
+    }
+  },
+  "down": {
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
+    ],
+    "started_at": "2026-10-30T07:35:58Z",
+    "finished_at": "2026-10-30T07:36:43Z",
+    "elapsed_seconds": 44.978,
+    "exit_code": 0,
+    "scan": {
+      "stream": "scale-e2e-down",
+      "bytes": 3056,
+      "findings": []
+    }
+  },
+  "inventory_after": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "finished_at": "2026-10-30T07:36:43Z",
+  "status": "blocked",
+  "actual": {
+    "attempted_new_peers": 51,
+    "authorized_peer_observations": 50,
+    "blocker": "JoinNativeMember user=16 peer=3: native login failed",
+    "elapsed_seconds": 843.517177336,
+    "hook": "StartNativePeer + JoinNativeMember",
+    "new_authorized_peers": 50,
+    "new_identity_matches": 50,
+    "projector_writes": false,
+    "requested_peers": 60,
+    "requested_users": 20,
+    "status": "blocked",
+    "users": [
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:22:37.663052394Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 0
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:23:23.883287848Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 1
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:24:09.07254411Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 2
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:24:53.211878184Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 3
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:25:38.73373117Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 4
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:26:24.011826108Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 5
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:27:07.312430997Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 6
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:27:54.619778477Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 7
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:28:37.762545971Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 8
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:29:23.03941147Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 9
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:30:09.289916405Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 10
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:30:55.707951427Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 11
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:31:38.241768064Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 12
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:32:23.963562718Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 13
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:33:09.198605261Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 14
+      },
+      {
+        "authorized": 3,
+        "code": "",
+        "http_status": 200,
+        "reads": [
+          {
+            "code": "",
+            "http_status": 200,
+            "utc": "2026-10-30T07:33:56.510879406Z",
+            "valid_device_page": true
+          }
+        ],
+        "user_index": 15
+      }
+    ]
+  },
+  "source_revision": "9b17127c888f94191d759617c99fe1225078a092",
+  "probe_source_sha256": "2c9a50a6fee5521ef2c1862f2b99a401604239d6b69610cab1ad3348c4706b0e",
+  "policy_revision": "01a18baf-a38d-78ac-9c75-d7fd34349b3c",
+  "image_digests": [
+    {
+      "image_id": "sha256:44191ee433d61815c9d29741674a93bb4754fd34b5718b578f0fb5828e73c171",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:b3e06b3d9aca2d748a6c3a8eb65d3d048ecd76a88dc8f45e5b823c589b25564f",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:7fa047c08f4be63894d1dfecbe6731ad2e74cc139204c29a4b07484b90bd8526",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:803eb97ee87d9ca0a0127b9a263dd05fd539a014078ae95779288a066d14846c",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:4738436f99bacf5ebb9d5defcd6b213d97a3a26b8e5a16e8a240c44ce2a5daff",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:3073f325197595165b633cf82233875908fe5efe681a03fa8bbca6cfb95d776c",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "node-netns"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u16-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u16-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u16-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u15-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u15-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u15-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u14-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u14-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u14-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u13-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u13-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u13-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u12-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u12-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u12-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u11-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u11-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u11-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u10-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u10-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u10-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u09-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u09-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u09-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u08-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u08-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u08-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u07-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u07-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u07-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u06-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u06-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u06-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u05-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u05-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u05-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u04-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u04-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u04-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u03-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u03-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u03-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u02-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u02-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u02-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u01-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u01-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u01-p1"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u00-p3"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u00-p2"
+    },
+    {
+      "image_id": "sha256:f6227d3bbd6511da44720e7b2877bc1510932f46a1635b8f72997571b5414153",
+      "service": "member-secops-u00-p1"
+    }
+  ],
+  "build_evidence": "Final cross-compile hashes in validation.json; this subset makes no forwarding assertion.",
+  "build_digests": [
+    {
+      "arch": "amd64",
+      "kind": "final acceptance test binary",
+      "sha256": "85df479ef61a616245d12f0bc77aced05a02e82359fcbf4db3c7ce64a86f2917"
+    },
+    {
+      "arch": "arm64",
+      "kind": "final acceptance test binary",
+      "sha256": "9c39d79ef98414369ff32f345bebfc1656400abe3b8b842fedc58eed703c313a"
+    }
+  ],
+  "diagnostics": "native-diagnostics.json",
+  "cohort_snapshot": "native-cohort.json"
+}

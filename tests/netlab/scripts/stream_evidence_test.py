@@ -33,7 +33,8 @@ class StreamEvidenceTest(unittest.TestCase):
         self.assertEqual([e.get('echo_status') for e in reads], [None, 'stale', 'stale'])
         self.assertEqual([e.get('response_sequence') for e in reads], [None, 1, 2])
         verdict = acceptance_evidence(result, log)
-        self.assertEqual(verdict['errors'], ['(iv): TCP failure: 1:TimeoutError'])
+        self.assertEqual(len(verdict['errors']), 1)
+        self.assertIn('(iv): TCP failure: 1:TimeoutError unattributable: missing TCP capture', verdict['errors'][0])
         self.assertFalse(verdict['passed'])
         self.assert_legacy_identical(result, log)
 

@@ -1,0 +1,76 @@
+{
+  "run_id": "9d927350-eaa5-4461-ad11-8cf2f4d54c95",
+  "receipts": [
+    {
+      "source": "$.checks[13].node_write_receipt",
+      "started_at": "2026-11-04T07:47:55.561704248Z",
+      "finished_at": "2026-11-04T07:47:55.569053625Z",
+      "max_attempts": 3,
+      "limit_seconds": 10,
+      "status": "pass",
+      "outcome": "accepted",
+      "attempts": [
+        {
+          "method": "PATCH",
+          "path": "/api/v1/admin/nodes/01a1a587-3661-731a-8050-765713f60dcc",
+          "if_match": "\"6\"",
+          "idempotency_key": "746144ea-20f8-4a66-9159-1951454466bc",
+          "body_sha256": "4939d40789ac64dedacaf0576b0f088ab48bf3b256d2263b70a3aa36ef39b67d",
+          "started_at": "2026-11-04T07:47:55.561711804Z",
+          "finished_at": "2026-11-04T07:47:55.569017737Z",
+          "status": 202,
+          "error_code": "",
+          "transport_error": false
+        }
+      ]
+    },
+    {
+      "source": "$.checks[16].node_write_receipt",
+      "started_at": "2026-11-04T07:48:24.232180818Z",
+      "finished_at": "2026-11-04T07:48:24.23984761Z",
+      "max_attempts": 3,
+      "limit_seconds": 10,
+      "status": "pass",
+      "outcome": "accepted",
+      "attempts": [
+        {
+          "method": "PUT",
+          "path": "/api/v1/admin/nodes/01a1a587-3661-731a-8050-765713f60dcc/publication",
+          "if_match": "\"17\"",
+          "idempotency_key": "1c183d50-3f06-479b-934f-a2a7576d073f",
+          "body_sha256": "a5173d592a9ea613e7ba7cfed07e123934362ed38a9927e50fc2da598668ff36",
+          "started_at": "2026-11-04T07:48:24.232188669Z",
+          "finished_at": "2026-11-04T07:48:24.239833715Z",
+          "status": 202,
+          "error_code": "",
+          "transport_error": false
+        }
+      ]
+    },
+    {
+      "source": "$.publication_request.node_write_receipt",
+      "started_at": "2026-11-04T07:48:24.232180818Z",
+      "finished_at": "2026-11-04T07:48:24.23984761Z",
+      "max_attempts": 3,
+      "limit_seconds": 10,
+      "status": "pass",
+      "outcome": "accepted",
+      "attempts": [
+        {
+          "method": "PUT",
+          "path": "/api/v1/admin/nodes/01a1a587-3661-731a-8050-765713f60dcc/publication",
+          "if_match": "\"17\"",
+          "idempotency_key": "1c183d50-3f06-479b-934f-a2a7576d073f",
+          "body_sha256": "a5173d592a9ea613e7ba7cfed07e123934362ed38a9927e50fc2da598668ff36",
+          "started_at": "2026-11-04T07:48:24.232188669Z",
+          "finished_at": "2026-11-04T07:48:24.239833715Z",
+          "status": 202,
+          "error_code": "",
+          "transport_error": false
+        }
+      ]
+    }
+  ],
+  "unique_command_receipts": 2,
+  "conflicts": []
+}

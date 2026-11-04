@@ -59,6 +59,7 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 	p.releaseSupport(admin)
 	node := p.enrollAgent(admin)
 	p.capacityInput(admin, node)
+	p.installLeaseProbe18()
 	rows := map[string]any{}
 	p.metadata["transport_cases"] = rows
 	rows["guest_clock_rollback"] = map[string]any{"status": "blocked", "owner": "w3-devstack-e2e / operator", "missing_export": "Disposable guest with independently adjustable wall clock; containers share the development host clock."}
@@ -69,7 +70,7 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 			defer func() { p.t = parent }()
 			row := map[string]any{"status": "blocked", "owner": "w3-devstack-e2e", "transport_scope": "one original TCP/9446 connection and authenticated UDP/9445 socket; independent senders; helper limit 20 minutes"}
 			rows[kind] = row
-			if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "17" {
+			if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "17" || os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "18" {
 				p.restartSnapshot17(kind + " before")
 				defer p.restartSnapshot17(kind + " after")
 			}
@@ -143,13 +144,30 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 				p.forcedRelay11(stack, transport, peer, rows)
 			}
 			if kind == "lease_expiry" {
+				original := p.call(admin, "GET", "/api/v1/admin/fleet-config", nil, nil)
+				var config struct {
+					Maximum int `json:"max_offline_lease_seconds"`
+				}
+				if original.status != 200 || json.Unmarshal(original.body, &config) != nil || config.Maximum <= 0 {
+					t.Fatal("original fleet cap unavailable")
+				}
+				row["original_fleet_maximum"] = config.Maximum
+				defer func() {
+					receipt := p.fleetMaximum(config.Maximum)
+					row["fleet_restoration"] = receipt
+					// Retain the historical evidence key for the default lab cap.
+					if config.Maximum == 86400 {
+						row["fleet_restore_86400"] = receipt
+					}
+				}()
 				row["fleet_set_60"] = p.fleetMaximum(60)
-				defer func() { row["fleet_restore_86400"] = p.fleetMaximum(86400) }()
 			}
+			endTimed := p.beginTimed18(kind, row)
+			defer endTimed()
 			var lease json.RawMessage
 			var issued, expires time.Time
 			for until := time.Now().Add(90 * time.Second); time.Now().Before(until); {
-				er = p.db.QueryRow(t.Context(), `SELECT issued_at,expires_at,jsonb_build_object('generation',policy_generation::text,'issued_at',issued_at,'expires_at',expires_at,'members',envelope->'signed'->'members') FROM serving_leases WHERE node_id=$1 ORDER BY issued_at DESC LIMIT 1`, node).Scan(&issued, &expires, &lease)
+				er = p.db.QueryRow(t.Context(), `SELECT issued_at,expires_at,jsonb_build_object('lease_id',id::text,'max_offline_seconds',envelope->'signed'->'max_offline_seconds','generation',policy_generation::text,'issued_at',issued_at,'expires_at',expires_at,'members',envelope->'signed'->'members') FROM serving_leases WHERE node_id=$1 ORDER BY issued_at DESC LIMIT 1`, node).Scan(&issued, &expires, &lease)
 				if er == nil && (kind != "lease_expiry" || expires.Sub(issued) <= 60*time.Second) {
 					break
 				}
@@ -166,7 +184,7 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 					time.Sleep(time.Second)
 				}
 				// Re-read the actual lease just before the disconnected fault.
-				if p.db.QueryRow(t.Context(), `SELECT issued_at,expires_at,jsonb_build_object('generation',policy_generation::text,'issued_at',issued_at,'expires_at',expires_at,'members',envelope->'signed'->'members') FROM serving_leases WHERE node_id=$1 ORDER BY issued_at DESC LIMIT 1`, node).Scan(&issued, &expires, &lease) != nil {
+				if p.db.QueryRow(t.Context(), `SELECT issued_at,expires_at,jsonb_build_object('lease_id',id::text,'max_offline_seconds',envelope->'signed'->'max_offline_seconds','generation',policy_generation::text,'issued_at',issued_at,'expires_at',expires_at,'members',envelope->'signed'->'members') FROM serving_leases WHERE node_id=$1 ORDER BY issued_at DESC LIMIT 1`, node).Scan(&issued, &expires, &lease) != nil {
 					t.Fatal("lease read")
 				}
 				row["signed_lease"] = lease
@@ -176,6 +194,11 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 				deadline = expires
 			}
 			row["earliest_deadline"] = deadline
+			if kind == "lease_expiry" {
+				local, readErr := p.nodeLease16()
+				row["lease_before_fault"] = local
+				row["lease_before_fault_read_ok"] = readErr == nil
+			}
 			row["before_kernel_timeout"] = p.timeoutView()
 			row["before_heartbeat"] = p.heartbeatView()
 			restored := false
@@ -188,7 +211,7 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 				row["worker_unpause_ok"] = exec.CommandContext(context.Background(), "docker", "unpause", livePrefix+"worker").Run() == nil
 				row["agent_resume_ok"] = stack.PauseAgent(context.Background(), false) == nil
 			}
-			defer restore()
+			defer func() { endTimed(); restore() }()
 			actionStart := time.Now()
 			row["action_started_at"] = actionStart.UTC()
 			if kind == "device_revoke" {
@@ -204,8 +227,18 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 				if exec.CommandContext(t.Context(), "docker", "pause", livePrefix+"worker").Run() != nil {
 					t.Fatal("worker pause")
 				}
+				row["control_stop_started_at"] = time.Now().UTC()
 				if exec.CommandContext(t.Context(), "docker", "stop", "--time", "2", livePrefix+"control").Run() != nil {
 					t.Fatal("control stop")
+				}
+				row["control_stop_completed_at"] = time.Now().UTC()
+				if kind == "lease_expiry" {
+					var qualified bool
+					deadline, qualified = p.faultLease18(row, end)
+					if !qualified {
+						return
+					}
+					row["deadline_elapsed_seconds"] = deadline.Sub(start).Seconds()
 				}
 				a := sampleTransport11(t.Context(), transport, peer.Device, start)
 				time.Sleep(3 * time.Second)
@@ -216,7 +249,9 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 				if stack.PauseAgent(t.Context(), true) != nil {
 					t.Fatal("pause agent supervisor")
 				}
+				row["agent_kill_started_at"] = time.Now().UTC()
 				_, er = p.docker("node", "sh", "-c", `test -s /var/lib/vpn-node/e2e/agent.pid && kill -KILL "$(cat /var/lib/vpn-node/e2e/agent.pid)"`)
+				row["agent_kill_completed_at"] = time.Now().UTC()
 				row["agent_sigkill_ok"] = er == nil
 				if er != nil {
 					t.Fatal("agent kill")
@@ -233,6 +268,7 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 			b := sampleTransport11(t.Context(), transport, peer.Device, start)
 			row["samples"] = samples
 			row["cutoff_samples"] = []transportSample11{a, b}
+			endTimed()
 			row["after_kernel_timeout"] = p.timeoutView()
 			row["after_heartbeat"] = p.heartbeatView()
 			quiet := quietTransport11(a, b)
@@ -270,8 +306,11 @@ func (p *liveProbe) forcedRelay11(stack, transport *labstack.Stack, peer flowPee
 	row := map[string]any{"status": "blocked", "scope": "one member, one exit, established TCP and UDP; 180-second automatic fault expiry, 90-second path wait; not 60-peer relay capacity"}
 	rows["forced_relay"] = row
 	ctx := p.t.Context()
+	endTimed := p.beginTimed18("forced_relay", row)
+	defer endTimed()
 	start := time.Now()
 	defer func() {
+		endTimed()
 		path, err := stack.ForceMemberRelay(context.Background(), livePrefix+peer.Service, false)
 		row["cleanup_path"] = path
 		row["cleanup_ok"] = err == nil
@@ -312,6 +351,7 @@ func (p *liveProbe) forcedRelay11(stack, transport *labstack.Stack, peer flowPee
 	time.Sleep(5 * time.Second)
 	e := sampleTransport11(ctx, transport, peer.Device, start)
 	row["direct_restored_samples"] = []transportSample11{d, e}
+	endTimed()
 	row["same_sockets_across_steps"] = true
 	row["status"] = "failed"
 	if relayOK && activeTransport11(d, e) {

@@ -1,0 +1,18 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-count=1",
+    "-v",
+    "-run",
+    "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
+    "./tests/netlab"
+  ],
+  "source_commit": "4b418508fc5a8d4ae495af3cdc8af624c6bbdda5",
+  "started_utc": "2026-11-04T09:30:44.076280+00:00",
+  "ended_utc": "2026-11-04T09:30:48.416682+00:00",
+  "elapsed_s": 4.34,
+  "exit_code": 0,
+  "output": "final-hygiene.txt",
+  "console_host_paths_redacted": true
+}

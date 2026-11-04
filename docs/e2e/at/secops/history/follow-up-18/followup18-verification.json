@@ -1,0 +1,52 @@
+{
+  "earlier_history_files_unchanged": 1119,
+  "pre_run_files_byte_identical_to_committed_source": 145,
+  "indexed_archive_pins_valid": 1258,
+  "scope_pins_valid": 692,
+  "baseline_scope_mismatches": [
+    {
+      "scope_location": "$.handover_follow_up_3.sources[3]",
+      "path": "tests/handover/handover_test.go",
+      "recorded_sha256": "e74b9b594f15166dbceb7c10607f13d15ad564ffb8dc7503fb15a3743ae9be85",
+      "baseline_sha256": "4c73331ff7d4a5dc3a2d3c6fbd8fe99c6055f236de5c03296530db1531796176",
+      "already_mismatched_at_baseline": true
+    },
+    {
+      "scope_location": "$.follow_up_11.records[15]",
+      "path": "docs/e2e/at/secops/history/index.json",
+      "recorded_sha256": "9a287259b6e354c60575fc6644a572f4deb4df5d37f19acee02b8248d460eba4",
+      "baseline_sha256": "3e62afaa9c8b4ef36563bec83fedcfaa1963dc025eff486fee84b2b79423eab7",
+      "already_mismatched_at_baseline": true
+    },
+    {
+      "scope_location": "$.follow_up_12.records[29]",
+      "path": "docs/e2e/at/secops/history/index.json",
+      "recorded_sha256": "9a287259b6e354c60575fc6644a572f4deb4df5d37f19acee02b8248d460eba4",
+      "baseline_sha256": "3e62afaa9c8b4ef36563bec83fedcfaa1963dc025eff486fee84b2b79423eab7",
+      "already_mismatched_at_baseline": true
+    },
+    {
+      "scope_location": "$.handover_follow_up_16.reviewed_documents[6]",
+      "path": "tests/handover/handover_test.go",
+      "recorded_sha256": "e74b9b594f15166dbceb7c10607f13d15ad564ffb8dc7503fb15a3743ae9be85",
+      "baseline_sha256": "4c73331ff7d4a5dc3a2d3c6fbd8fe99c6055f236de5c03296530db1531796176",
+      "already_mismatched_at_baseline": true
+    },
+    {
+      "scope_location": "$.follow_up_13.records[23]",
+      "path": "docs/e2e/at/secops/history/index.json",
+      "recorded_sha256": "9a287259b6e354c60575fc6644a572f4deb4df5d37f19acee02b8248d460eba4",
+      "baseline_sha256": "3e62afaa9c8b4ef36563bec83fedcfaa1963dc025eff486fee84b2b79423eab7",
+      "already_mismatched_at_baseline": true
+    }
+  ],
+  "at": "2026-11-04T08:13:48.159503+00:00",
+  "new_immutable_records": 22,
+  "indexed_archive_pins_after_freeze": 1280,
+  "all_nine_gates_passed": true,
+  "no_new_file_over_20_MB": true,
+  "unchanged_prior_evaluator_qualification_proof_files": 8,
+  "pre_subject_wrapper_stop": "history/follow-up-18-pre-subject/archive-index.json",
+  "final_gate_admission_wait_seconds": 301,
+  "historical_scope_exceptions": "All five mismatched baseline already; historical digests are preserved."
+}

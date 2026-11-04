@@ -26,9 +26,9 @@ def main(phase=None):
                   application_base=main_revision, phase=phase, started_at=utc(), d099_roadmap_present=d099,
                   prepare=dict(prefix=PREFIX,port_base=PORT_BASE,reset=True,grace_seconds=90))
     followup = os.environ.get('FVPN_SECOPS_EVIDENCE_FOLLOWUP', '11')
-    if followup not in ('11', '12', '13', '15', '16', '17'):
+    if followup not in ('11', '12', '13', '15', '16', '17', '18'):
         raise SystemExit('unsupported evidence follow-up')
-    if followup in ('15', '16', '17') and phase != 'transports':
+    if followup in ('15', '16', '17', '18') and phase != 'transports':
         raise SystemExit('follow-up 15 authorizes only the transport campaign')
     if followup == '13' and phase != 'restore':
         raise SystemExit('follow-up 13 authorizes only the restore campaign')
@@ -67,6 +67,13 @@ def main(phase=None):
             record['state_cleanup']=cleanup_disk_state(env)
             record['inventory_after']=inventory(env);record['finished_at']=utc()
             write_json(PUBLIC/(label+'-run.json'),record)
+    if followup == '18':
+        from timing_admission import validate
+        events = [json.loads(line) for line in Path(env['FVPN_SECOPS_TIMING_JOURNAL']).read_text().splitlines()]
+        timing = dict(events=events, **validate(events))
+        write_json(PUBLIC/'followup18-admission.json', timing)
+        if not timing['passed']:
+            return 2
     # Root summaries are rendered only after both independent phases finish.
     return 0 if record.get('live',{}).get('status')=='passed' and record.get('state_cleanup',{}).get('removed') else 2
 

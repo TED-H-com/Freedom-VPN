@@ -1,0 +1,27 @@
+{
+  "pre_run_wait_seconds": 3393.098176194384,
+  "pre_run_components": {
+    "initial_admission_seconds": 2672.108108671382,
+    "suite_preflight_seconds": 720.9900675230019
+  },
+  "during_run_held_checks": [
+    {
+      "at": "2026-11-04T04:32:23Z",
+      "command": "docker",
+      "admitted": false
+    },
+    {
+      "at": "2026-11-04T04:33:23Z",
+      "command": "docker",
+      "admitted": false
+    },
+    {
+      "at": "2026-11-04T04:34:23Z",
+      "command": "docker",
+      "admitted": false
+    }
+  ],
+  "during_run_poll_sleep_seconds": 180,
+  "approximate_total_wait_seconds": 3573.098176194384,
+  "note": "The three held Docker checks occurred in the preliminary positive sample, before the fleet cap change and before any control-loss fault. The sample read itself lasted 180.371 seconds; it is not offline-continuity evidence."
+}
