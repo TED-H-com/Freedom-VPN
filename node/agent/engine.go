@@ -196,6 +196,7 @@ type Engine struct {
 	lastServing          bool
 	lastObservationState string
 	observationRetryAt   time.Duration
+	observationAttempts  map[uuid.UUID]uint64 // actual sends in this process; pruned to pending IDs
 	observationFailures  int
 	prober               Prober
 	lastProbe            ProbeResult
