@@ -1,0 +1,85 @@
+{
+  "case": "AT05",
+  "checks": [],
+  "classification_scope": "Replay original accepted reports through PublicationDataPathFailure at their receipt time; current signed-lease identity lookup. This is not a captured operation transition.",
+  "control_io_after_cancel": "not observable here",
+  "interpretation": "Node-wide hold; the observation contract has no per-member hold field. Grant or device withdrawal while members remain eligible cannot prove members_revoked. Incident closure is not service recovery.",
+  "joined": {
+    "samples": [],
+    "incidents": [],
+    "escalations": [],
+    "revocations": []
+  },
+  "run_id": "3eb3960d-c411-4648-8d77-bba40b436ae3",
+  "snapshots": [
+    {
+      "at": "2026-11-04T08:21:33.926435209Z",
+      "available": true,
+      "label": "AT05 start",
+      "snapshot": {
+        "members": [
+          {
+            "status": "pending_payment",
+            "member_id": "01a1a5a6-2384-7372-a2aa-a5dfe364cbb6",
+            "updated_at": "2026-11-04T08:21:31.141235+00:00",
+            "admin_suspended": false,
+            "entitlement_state": null,
+            "effective_service_end": null
+          },
+          {
+            "status": "pending_payment",
+            "member_id": "01a1a5a6-2652-7820-a7bd-c79041a218fc",
+            "updated_at": "2026-11-04T08:21:31.858873+00:00",
+            "admin_suspended": false,
+            "entitlement_state": null,
+            "effective_service_end": null
+          },
+          {
+            "status": "pending_payment",
+            "member_id": "01a1a5a6-2920-77c1-8e74-90cc4af9796e",
+            "updated_at": "2026-11-04T08:21:32.576809+00:00",
+            "admin_suspended": false,
+            "entitlement_state": null,
+            "effective_service_end": null
+          }
+        ],
+        "incidents": []
+      }
+    },
+    {
+      "at": "2026-11-04T08:21:50.644103203Z",
+      "available": true,
+      "label": "AT05 complete",
+      "snapshot": {
+        "members": [
+          {
+            "status": "pending_payment",
+            "member_id": "01a1a5a6-2384-7372-a2aa-a5dfe364cbb6",
+            "updated_at": "2026-11-04T08:21:38.194387+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "pending_payment",
+            "effective_service_end": null
+          },
+          {
+            "status": "pending_payment",
+            "member_id": "01a1a5a6-2652-7820-a7bd-c79041a218fc",
+            "updated_at": "2026-11-04T08:21:38.201714+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "pending_payment",
+            "effective_service_end": null
+          },
+          {
+            "status": "pending_payment",
+            "member_id": "01a1a5a6-2920-77c1-8e74-90cc4af9796e",
+            "updated_at": "2026-11-04T08:21:38.205164+00:00",
+            "admin_suspended": false,
+            "entitlement_state": "pending_payment",
+            "effective_service_end": null
+          }
+        ],
+        "incidents": []
+      }
+    }
+  ],
+  "source_commit": "8a6dcf34248f035a3a460fcdee3e1e19e80c9137"
+}
