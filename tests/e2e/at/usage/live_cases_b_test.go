@@ -287,7 +287,8 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	s.node2ID = enrolled2.NodeID
 	s.incarnation2ID = enrolled2.IncarnationID
 	s.node2Client = s.buildNodeMTLSClient("node2")
-	s.exit2ID, s.exit2NetID = s.configureAndPublishNode("node2", s.node2ID, s.incarnation2ID, s.node2Client, 15000000, 8000000)
+	var node2SetupWrites nodeSetupWrites
+	s.exit2ID, s.exit2NetID, node2SetupWrites = s.configureAndPublishNode("node2", s.node2ID, s.incarnation2ID, s.node2Client, 15000000, 8000000)
 
 	// Each ACK below is emitted by the real agent after kernel apply.
 	s.stopNodeAgent("node")
@@ -810,6 +811,9 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		SpecRef: "§11.2, §11.5, §11.6, §14.3, FUP02, FUP04",
 		Status:  StatusPass,
 		Summary: fmt.Sprintf("PR #222 verified live: Transition 1 (policy.activated mode=enforce) incremented desired_config_generation on both carrying exits (node %d->%d, node2 %d->%d) and left non-carrying node at %d->%d, cleared fair_use.applying true->false in %d ms via observation %s, and ignored replay; Transition 2 (fup.member_generation_changed) incremented carrying exits (node %d->%d, node2 %d->%d) and left non-carrying node at %d->%d, cleared fair_use.applying true->false in %d ms via observation %s, and ignored duplicate usage replay.", genNodeBefore1, genNodeAfter1, genNode2Before1, genNode2After1, genOtherBefore1, genOtherAfter1, wallClock1Ms, clearObs1ID, genNodeBefore2, genNodeAfter2, genNode2Before2, genNode2After2, genOtherBefore2, genOtherAfter2, wallClock2Ms, clearObs2ID),
+		Details: map[string]any{
+			"node2_setup_writes": node2SetupWrites,
+		},
 	})
 
 	// 5. Measure ENR-03 per-incarnation retained usage across node2 re-enrollment through product APIs only
@@ -834,6 +838,10 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 		SpecRef: "§5.2, §10.5, §14.2, ENR03, MTR03",
 		Status:  StatusPass,
 		Summary: fmt.Sprintf("GET /api/v1/admin/nodes/%s/incarnations listed new incarnation %s (active, initial 0/0, after traffic %s/%s B) and retired incarnation %s (retire_reason=reinstall, retained %s/%s B fixed across new traffic) newest-first while member_usage_periods stayed unchanged on re-enrollment (%s B) and accumulated on the same month (%s B).", s.incarnationRetention.NodeID, s.incarnationRetention.NewIncarnationID, s.incarnationRetention.IncarnationsAfterNewTraffic.Items[0].Usage.UploadBytes, s.incarnationRetention.IncarnationsAfterNewTraffic.Items[0].Usage.DownloadBytes, s.incarnationRetention.OldIncarnationID, s.incarnationRetention.IncarnationsAfterReinstall.Items[1].Usage.UploadBytes, s.incarnationRetention.IncarnationsAfterReinstall.Items[1].Usage.DownloadBytes, s.incarnationRetention.DBPeriodTotalsAfterReinstall["total_bytes"], s.incarnationRetention.DBPeriodTotalsAfterNewTraffic["total_bytes"]),
+		Details: map[string]any{
+			"revoke_write":           s.incarnationRetention.RevokeWrite,
+			"reinstall_setup_writes": s.incarnationRetention.ReinstallSetupWrites,
+		},
 	})
 
 	mechPool := optionalTestPool(t)
@@ -842,6 +850,7 @@ func (s *liveSuite) evalAT19(t *testing.T) Record {
 	for k, v := range mechObs {
 		rec.Observations[k] = v
 	}
+	rec.Observations["node2_setup_writes"] = node2SetupWrites
 	rec.Observations["cross_node_distinct_exits"] = distinctExitsCount
 	rec.Observations["cross_node_total_bytes"] = crossNodeTotal
 	rec.Observations["node2_transfer"] = trNode2

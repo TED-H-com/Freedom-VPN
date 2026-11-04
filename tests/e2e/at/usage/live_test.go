@@ -57,6 +57,127 @@ type httpResponse struct {
 	code    string
 }
 
+type nodeCommand struct {
+	httpResponse
+	write e2e.NodeWriteResult
+}
+
+func (c nodeCommand) accepted(status ...int) bool {
+	return c.write.Accepted(status...)
+}
+
+func (c nodeCommand) detail() string {
+	raw, _ := json.Marshal(map[string]any{
+		"http_status":      c.status,
+		"error_code":       c.code,
+		"node_write":       c.write.Receipt,
+		"already_intended": c.write.AlreadyIntended,
+	})
+	return string(raw)
+}
+
+type nodeSetupWrites struct {
+	DisableWrite     *e2e.NodeWriteReceipt `json:"disable_write,omitempty"`
+	CapacityWrite    e2e.NodeWriteReceipt  `json:"capacity_write"`
+	PublicationWrite *e2e.NodeWriteReceipt `json:"publication_write,omitempty"`
+}
+
+func nodeRetired(body []byte) bool {
+	return e2e.NodeFieldsMatch(map[string]any{"lifecycle_state": string(api.LifecycleStateRetired)})(body)
+}
+
+func nodeMutationPredicate(method, suffix string, body any) func([]byte) bool {
+	switch {
+	case method == http.MethodPatch && suffix == "":
+		raw, err := json.Marshal(body)
+		if err != nil {
+			return nil
+		}
+		var fields map[string]any
+		if json.Unmarshal(raw, &fields) != nil || len(fields) == 0 {
+			return nil
+		}
+		for k, v := range fields {
+			switch k {
+			case "", "reason", "publication_intent", "group_ids":
+				return nil
+			case "capacity":
+				capMap, ok := v.(map[string]any)
+				if !ok || len(capMap) == 0 {
+					return nil
+				}
+			}
+		}
+		return e2e.NodeFieldsMatch(body)
+	case method == http.MethodPut && suffix == "/publication":
+		raw, err := json.Marshal(body)
+		if err != nil {
+			return nil
+		}
+		var req struct {
+			Intent   string    `json:"publication_intent"`
+			GroupIDs *[]string `json:"group_ids"`
+			Reason   string    `json:"reason"`
+		}
+		if json.Unmarshal(raw, &req) != nil || req.GroupIDs == nil || strings.TrimSpace(req.Reason) == "" {
+			return nil
+		}
+		seen := make(map[uuid.UUID]struct{}, len(*req.GroupIDs))
+		groups := make([]uuid.UUID, 0, len(*req.GroupIDs))
+		for _, g := range *req.GroupIDs {
+			id, err := uuid.Parse(g)
+			if err != nil || id == uuid.Nil {
+				return nil
+			}
+			if _, dup := seen[id]; dup {
+				return nil
+			}
+			seen[id] = struct{}{}
+			groups = append(groups, id)
+		}
+		switch api.PublicationIntent(req.Intent) {
+		case api.PublicationIntentPublished:
+			if len(groups) == 0 {
+				return nil
+			}
+			return e2e.NodePublished(groups...)
+		case api.PublicationIntentDisabled, api.PublicationIntentUnpublished:
+			return e2e.NodeFieldsMatch(map[string]any{
+				"publication_intent": req.Intent,
+				"group_ids":          *req.GroupIDs,
+			})
+		default:
+			return nil
+		}
+	case method == http.MethodPost && suffix == "/revoke":
+		raw, err := json.Marshal(body)
+		if err != nil {
+			return nil
+		}
+		var req struct {
+			Reason string `json:"reason"`
+		}
+		if json.Unmarshal(raw, &req) != nil || strings.TrimSpace(req.Reason) == "" {
+			return nil
+		}
+		return e2e.NodeRevoked
+	case method == http.MethodDelete && suffix == "":
+		raw, err := json.Marshal(body)
+		if err != nil {
+			return nil
+		}
+		var req struct {
+			Reason string `json:"reason"`
+		}
+		if json.Unmarshal(raw, &req) != nil || strings.TrimSpace(req.Reason) == "" {
+			return nil
+		}
+		return nodeRetired
+	default:
+		return nil
+	}
+}
+
 type liveSuite struct {
 	t            *testing.T
 	ctx          context.Context
@@ -108,6 +229,7 @@ type liveSuite struct {
 	nodeTrust   *envelope.TrustStore
 
 	sharedCmds               []CommandRecord
+	nodeWriteReceipts        []e2e.NodeWriteReceipt
 	extraRedactions          []string
 	bootstrapTransfer        transferResult
 	d067BringUp              d067CycleMeasurement
@@ -583,19 +705,37 @@ func (s *liveSuite) activateFairUseShadowRevision(reason string) uuid.UUID {
 	return rev.RevisionID
 }
 
-func (s *liveSuite) nodeMutation(nodeID uuid.UUID, method, suffix string, body any) httpResponse {
+func (s *liveSuite) nodeMutation(nodeID uuid.UUID, method, suffix string, body any) nodeCommand {
 	basePath := "/api/v1/admin/nodes/" + nodeID.String()
-	var got httpResponse
-	for range 4 {
-		old := s.apiCall(s.admin, http.MethodGet, basePath, nil, nil)
-		h := idemHeaders()
-		h["If-Match"] = old.headers.Get("ETag")
-		got = s.apiCall(s.admin, method, basePath+suffix, body, h)
-		if got.status != http.StatusPreconditionFailed {
-			return got
-		}
+	old := s.apiCall(s.admin, http.MethodGet, basePath, nil, nil)
+	intended := nodeMutationPredicate(method, suffix, body)
+	// Refuse missing initial read-back rather than writing blind.
+	if old.status != http.StatusOK {
+		intended = nil
 	}
-	return got
+	res := s.hook.WriteNode(
+		s.ctx,
+		s.adminHook(),
+		method,
+		basePath+suffix,
+		basePath,
+		body,
+		old.headers.Get("ETag"),
+		intended,
+		http.StatusOK,
+		http.StatusAccepted,
+	)
+	cmd := nodeCommand{
+		httpResponse: httpResponse{
+			status:  res.Reply.Status,
+			headers: res.Reply.Header,
+			body:    res.Reply.Body,
+			code:    res.Reply.Code,
+		},
+		write: res,
+	}
+	s.nodeWriteReceipts = append(s.nodeWriteReceipts, res.Receipt)
+	return cmd
 }
 
 func (s *liveSuite) retireStaleNodesExcept(keepIDs ...uuid.UUID) {
@@ -651,10 +791,11 @@ func (s *liveSuite) retireStaleNodesExcept(keepIDs ...uuid.UUID) {
 	})
 }
 
-func (s *liveSuite) ensureUnpublishedReadyBaseline(nodeService string, nodeID uuid.UUID, perMemDownBPS, perMemUpBPS int64) {
+func (s *liveSuite) ensureUnpublishedReadyBaseline(nodeService string, nodeID uuid.UUID, perMemDownBPS, perMemUpBPS int64) nodeSetupWrites {
 	// Stop fvpn-agent first so any in-memory e.applyError from a previous serving attempt is cleared on restart.
 	s.stopNodeAgent(nodeService)
 
+	var writes nodeSetupWrites
 	var currentIntent string
 	_ = s.pool.QueryRow(s.ctx, `SELECT COALESCE(publication_intent, '') FROM exits WHERE node_id = $1`, nodeID).Scan(&currentIntent)
 	if currentIntent == "published" {
@@ -663,9 +804,11 @@ func (s *liveSuite) ensureUnpublishedReadyBaseline(nodeService string, nodeID uu
 			"group_ids":          []string{s.groupID.String()},
 			"reason":             "TEST ONLY reset publication before publish " + nodeService,
 		})
-		if disResp.status != http.StatusAccepted {
+		if !disResp.accepted(http.StatusOK, http.StatusAccepted) {
 			s.t.Fatalf("PUT /api/v1/admin/nodes/%s/publication (disabled) failed: HTTP %d %s", nodeID, disResp.status, string(disResp.body))
 		}
+		rec := disResp.write.Receipt
+		writes.DisableWrite = &rec
 	}
 
 	patchResp := s.nodeMutation(nodeID, http.MethodPatch, "", map[string]any{
@@ -676,9 +819,10 @@ func (s *liveSuite) ensureUnpublishedReadyBaseline(nodeService string, nodeID uu
 			"member_down_bps_cap": perMemDownBPS,
 		},
 	})
-	if patchResp.status != http.StatusOK && patchResp.status != http.StatusAccepted {
+	if !patchResp.accepted(http.StatusOK, http.StatusAccepted) {
 		s.t.Fatalf("PATCH /api/v1/admin/nodes/%s failed: HTTP %d %s", nodeID, patchResp.status, string(patchResp.body))
 	}
+	writes.CapacityWrite = patchResp.write.Receipt
 
 	// Wait for outbox events (node.publication_changed / node.updated) to compile the non-serving desired state
 	_ = s.waitFor(20*time.Second, func() bool {
@@ -713,10 +857,11 @@ func (s *liveSuite) ensureUnpublishedReadyBaseline(nodeService string, nodeID uu
 	if !ready {
 		s.t.Fatalf("node %s (%s) did not reach unpublished baseline observation safety_status=passed & provisioning_state=ready", nodeID, nodeService)
 	}
+	return writes
 }
 
-func (s *liveSuite) configureAndPublishNode(nodeService string, nodeID, incID uuid.UUID, nodeClient *http.Client, perMemDownBPS, perMemUpBPS int64) (uuid.UUID, string) {
-	s.ensureUnpublishedReadyBaseline(nodeService, nodeID, perMemDownBPS, perMemUpBPS)
+func (s *liveSuite) configureAndPublishNode(nodeService string, nodeID, incID uuid.UUID, nodeClient *http.Client, perMemDownBPS, perMemUpBPS int64) (uuid.UUID, string, nodeSetupWrites) {
+	writes := s.ensureUnpublishedReadyBaseline(nodeService, nodeID, perMemDownBPS, perMemUpBPS)
 
 	var oldDesired uint64
 	_ = s.pool.QueryRow(s.ctx, `SELECT desired_config_generation::bigint FROM nodes WHERE id = $1`, nodeID).Scan(&oldDesired)
@@ -726,9 +871,11 @@ func (s *liveSuite) configureAndPublishNode(nodeService string, nodeID, incID uu
 		"group_ids":          []string{s.groupID.String()},
 		"reason":             "TEST ONLY publish " + nodeService + " for AT14-AT19",
 	})
-	if pubResp.status != http.StatusAccepted {
+	if !pubResp.accepted(http.StatusOK, http.StatusAccepted) {
 		s.t.Fatalf("PUT /api/v1/admin/nodes/%s/publication failed: HTTP %d %s", nodeID, pubResp.status, string(pubResp.body))
 	}
+	pubReceipt := pubResp.write.Receipt
+	writes.PublicationWrite = &pubReceipt
 
 	var exitID uuid.UUID
 	var targetGen uint64
@@ -742,7 +889,7 @@ func (s *liveSuite) configureAndPublishNode(nodeService string, nodeID, incID uu
 
 	_, _, _, _ = s.ackNodeGeneration(nodeID, incID, nodeClient, targetGen)
 
-	return exitID, exitNetworkID(exitID)
+	return exitID, exitNetworkID(exitID), writes
 }
 
 func (s *liveSuite) bootstrapCountedServingFlow() {
@@ -1007,7 +1154,7 @@ func (s *liveSuite) bootstrapCountedServingFlow() {
 	}
 
 	// 6. Ensure primary node is at unpublished ready baseline (safety_status=passed, provisioning_state=ready) with finite capacity (60M down / 30M up)
-	s.ensureUnpublishedReadyBaseline("node", s.nodeID, 60000000, 30000000)
+	baselineWrites := s.ensureUnpublishedReadyBaseline("node", s.nodeID, 60000000, 30000000)
 
 	// 7. Publish node into s.groupID and measure D-067 Cycle 1 (bring_up) provisional-lease window
 	// (applying -> awaiting_member_grants -> ready -> populated lease -> VerifyServing / data-plane probe).
@@ -1017,10 +1164,15 @@ func (s *liveSuite) bootstrapCountedServingFlow() {
 			"group_ids":          []string{s.groupID.String()},
 			"reason":             "TEST ONLY publish node for AT14-AT19",
 		})
-		if pubResp.status != http.StatusAccepted {
+		if !pubResp.accepted(http.StatusOK, http.StatusAccepted) {
 			s.t.Fatalf("PUT /api/v1/admin/nodes/%s/publication failed: HTTP %d %s", s.nodeID, pubResp.status, string(pubResp.body))
 		}
+		pubReceipt := pubResp.write.Receipt
+		baselineWrites.PublicationWrite = &pubReceipt
 	}, true)
+	s.d067BringUp.DisableWrite = baselineWrites.DisableWrite
+	s.d067BringUp.CapacityWrite = &baselineWrites.CapacityWrite
+	s.d067BringUp.PublicationWrite = baselineWrites.PublicationWrite
 
 	_ = s.pool.QueryRow(s.ctx, `SELECT id FROM exits WHERE node_id = $1`, s.nodeID).Scan(&s.exitID)
 	s.exitNetID = exitNetworkID(s.exitID)
@@ -1045,6 +1197,9 @@ func (s *liveSuite) bootstrapCountedServingFlow() {
 }
 
 func (s *liveSuite) refreshPolicyRevisions() {
+	if s.pool == nil {
+		return
+	}
 	rows, err := s.pool.Query(s.ctx, `SELECT type, active_revision_id::text FROM policy_definitions WHERE active_revision_id IS NOT NULL ORDER BY type`)
 	if err == nil {
 		defer rows.Close()
@@ -1184,6 +1339,7 @@ func (s *liveSuite) baseRecord(id, title, spec, expected string, reqs []string) 
 			"active_policy_revisions": s.activePolicies,
 			"bootstrap_transfer":      s.bootstrapTransfer,
 			"first_serving_apply":     s.firstServing,
+			"node_writes":             append([]e2e.NodeWriteReceipt(nil), s.nodeWriteReceipts...),
 		},
 		MechanismChecks: []MechanismCheck{},
 		Blockers:        []string{},

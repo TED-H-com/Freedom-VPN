@@ -23,6 +23,7 @@ at-usage:
 
 at-usage-test:
 	@$(at-usage-disk) go test -p 1 -parallel 2 $(AT_USAGE_PKGS)
+	@$(at-usage-disk) go test -tags e2e -p 1 -parallel 2 $(AT_USAGE_PKGS)
 
 at-usage-lint:
 	@test -z "$$(gofmt -l tests/e2e/at/usage)" || { echo 'gofmt required in tests/e2e/at/usage'; gofmt -l tests/e2e/at/usage; exit 1; }
