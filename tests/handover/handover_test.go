@@ -417,7 +417,6 @@ func TestHandover_FVPnBinaries(t *testing.T) {
 		"fvpn-postgres-entrypoint":    "backup-postgres-entrypoint-script",
 		"fvpn-oidc":                   "devstack-oidc-container-name",
 		"fvpn-nb-login":               "devstack-netbird-login-temp-log-prefix (/var/run/fvpn-nb-login-*.log)",
-		"fvpn-clone-2":                "at03-clone-node-fixture-name",
 	}
 
 	tokenRE := regexp.MustCompile(`\b(fvpn-[a-z0-9-]+)(\.service)?\b`)
@@ -17110,18 +17109,18 @@ func TestHandover_Followup48Claims(t *testing.T) {
 		}
 	}
 	// Pin the complete narrative and manifests, including every source quotation.
-	checkHash("docs/handover/follow-up-48.md", "2f5ebd06746fc37630346f5c42648b231563582d6f6b8a116516e651b7311048")
-	checkHash("tests/handover/testdata/followup48-claims.json", "82f5fbe03793ee9aedf15b76f5a8b767ddbd1007b81928531e39f10085d0e591")
-	checkHash("tests/handover/testdata/followup48-decisions.json", "ae2d9a6904918af6f833a53617c37e3b5c227d40807ed1bde6377fdb7376a868")
+	checkHash("docs/handover/follow-up-48.md", "cc1096b2eca1743b567142574bddc99d0e7f82ff867edb6a0216dd48175c1f56")
+	checkHash("tests/handover/testdata/followup48-claims.json", "9e156c795b0e527c7ec4b1fe25eaf1c2f5a9caf6a064bb5798495a519fa51345")
+	checkHash("tests/handover/testdata/followup48-decisions.json", "316844ecf5a80f1d24cebe34c6886c6d2d21e6f56619c91d6f4cc7e1230a1f96")
 	checkHash("tests/handover/testdata/followup48-evidence.json", "b247a0e9b5517d38587aa50e8d185259ae411e646734fb3d92566871ee1aefa1")
-	checkHash("tests/handover/testdata/followup48-findings.json", "725110dad0d8f5fd84a3a2bb9ec477987213c3ec71e8fdd28f9b29c2667eb4f9")
+	checkHash("tests/handover/testdata/followup48-findings.json", "ac295bfa6628a98bfcae14b7dda4107e54add1b1b83736dc37ec7b6147d926ac")
 	checkHash("tests/handover/testdata/followup48-main.json", "251cbb7d172089b90769bcb5610804341f6fb5f1f68b9e9f3d9d4290048ba83b")
 	checkHash("tests/handover/testdata/followup48-snapshots.json", "8ab50f9e477074c73d509e69fdf8570e370cbaff8e645f8f1061e492b50281e9")
 	checkHash("tests/handover/testdata/followup48-values.json", "d597b9c13b7ba382ef5d305b88d45af68fdad865367d78769e47e5cf6cd2b93c")
 	checkHash("tests/handover/testdata/history/follow-up-48/prior-claims.json", "26db4f69634da4f427268c29971665d139b2501608dbe0969d6554969ff9c8bd")
 	checkHash("tests/handover/testdata/history/follow-up-48/product-source-audit.json", "c8bcbfc695fa97be206dddc344de6984f0a833c5e31d06f29dbc05b9e6aecad0")
 	checkHash("tests/handover/testdata/history/follow-up-48/review-provenance.json", "84ef2b0fefd6ed8d4a62ed50f38cf51f70a12fe9684429faba5f9c2e00bd578a")
-	checkHash("tests/handover/testdata/history/follow-up-48/node-workflow-failures.json", "ad5f8c6323995a3b9454e6d1b8dc40e7534a6aba693051fe7a439a6a437b5505")
+	checkHash("tests/handover/testdata/history/follow-up-48/node-workflow-failures.json", "d1b35865356f926f2cd3fac3315c4b3a7fd7f84d8c0b54ba755b997f896e59ff")
 	type artifact struct {
 		Path, SHA256 string
 		Bytes        int
@@ -17706,12 +17705,16 @@ func TestHandover_Followup48Claims(t *testing.T) {
 			t.Fatal("r31 dispositions must stay exact")
 		}
 		var runs []struct {
-			RunID  int64  `json:"run_id"`
-			Branch string `json:"branch"`
-			Test   string `json:"test"`
+			RunID            int64  `json:"run_id"`
+			Branch           string `json:"branch"`
+			HeadSHA          string `json:"head_sha"`
+			Test             string `json:"test"`
+			Line             int    `json:"line"`
+			Failure          string `json:"failure"`
+			FailureTruncated bool   `json:"failure_truncated"`
 		}
 		readJSON(frozen+"node-workflow-failures.json", &runs)
-		if len(runs) != 5 || runs[0].RunID != 41782791081 || runs[1].RunID != 41787173794 || runs[2].RunID != 41794009264 || runs[3].RunID != 41808885873 || runs[4].RunID != 41871089749 {
+		if len(runs) != 6 || runs[0].RunID != 41782791081 || runs[0].Line != 764 || runs[1].RunID != 41787173794 || runs[1].Line != 295 || runs[2].RunID != 41794009264 || runs[2].Line != 265 || runs[3].RunID != 41808885873 || runs[3].Line != 277 || !runs[3].FailureTruncated || runs[4].RunID != 41871089749 || runs[4].Line != 240 || runs[5].RunID != 41885624816 || runs[5].Line != 1000 {
 			t.Fatal("node workflow failures")
 		}
 	})

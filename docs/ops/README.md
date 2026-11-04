@@ -1,6 +1,6 @@
 # Operations Runbooks Index (`docs/ops/`)
 
-**Current cut — [follow-up 48](../handover/follow-up-48.md) (2026-11-04 EST):** #478–#481 at b921c75f; 66 decisions, 138 findings. F24-01 closed and isolation's scheduled run passes; assist.py retry and D-162 reach audited; F22-D146 answered under D-162 with 18 stored/enqueued/accepted records across 9 windows; r32 archived (0 findings).
+**Current cut — [follow-up 48](../handover/follow-up-48.md) (2026-11-04 EST):** #478–#481 at b921c75f; 66 decisions, 138 findings. F24-01 closed and isolation's local scheduled-mode run bd73d7a4 passes (GitHub's 11-04 scheduled job 41836274140 stays failed, next run pending); assist.py retry and D-162 reach audited; F22-D146 answered under D-162 with 18 stored/enqueued/accepted records across 9 windows; r32 archived (0 findings).
 **Previous cut — [follow-up 47](../handover/follow-up-47.md) (2026-11-04 EST):** #474–#477 at 1c39a0e7; 66 decisions, 136 findings. D-163 fixes the scheduled mapping; F24-01 keeps isolation's local scheduled run red. D-162 is TEST ONLY and implemented; F22-D146 stays open. D-158 records its first live wait, 446 ms acquired. r31 archived, M-1 fixed; observation records documented.
 
 ## Follow-up 48 acceptance snapshot (2026-11-04 EST)
@@ -11,21 +11,23 @@ their original outcomes.
 
 | Delivery | Evidence boundary at this cut |
 |---|---|
-| Isolation 25 #478 | 213-file D-098 archive of df9dbad7 (boundary review stays failed). D-141 diagnosis of packet 56 (15.176 ms capture-read transit vs 0.167 ms next sample; 22.974 µs node crossing in tcpdump; 33.2 ms spacing excluding all 14 grid candidates) and fixes in boundaryplan.Plan and review_boundary.py; offline replays of df9dbad7 (empty plan, failed review), 328ab9e0 (31 probes) and 11-04 runner (49 probes) pass. bd73d7a4: 27/2/0, all 29 statuses unchanged; scheduled status pass (exit 0), 27 pass / 2 expected_blocked / 1 expected_not_exercised (pure_stale_generation under D-163). Whole-node expiry qualifies D-142: 103 calibration samples, 1.074 ms max transit, 5.5 ms spacing, 34 added probes (236 total), 164 positives / 72 drops, last positive 164 (-99.869 ms) / first drop 165 (-94.561 ms), 0 overlaps. Member expiry passes at A + 22.1 s (generation 29), 5 timeouts, flat 2,629 bytes, 6 serving reads, 15.5 s before node expiry. D-161: 58 TCP reads, 0 TCP timeouts, 7 guard-attributed TCP losses, 1 UDP loss (1/5), 210.638 ms longest stall, 101 verified Applies. 15 first-attempt 202 writes; 4 restart windows / 6 exit-0 receipts. Closes F24-01 only. |
+| Isolation 25 #478 | 213-file D-098 archive of df9dbad7 (boundary review stays failed). D-141 diagnosis of packet 56 (15.176 ms capture-read transit vs 0.167 ms next sample; 22.974 µs node crossing in tcpdump; 33.2 ms spacing excluding all 14 grid candidates) and fixes in boundaryplan.Plan and review_boundary.py; offline replay of df9dbad7 emits an empty unqualified plan and its review fails in both variants, while offline replays of 328ab9e0 (31 probes) and the 11-04 runner (49 probes) pass. bd73d7a4: 27/2/0, all 29 statuses unchanged; scheduled status pass (exit 0), 27 pass / 2 expected blocked / 1 expected not exercised (pure_stale_generation under D-163). Whole-node expiry qualifies D-142: 103 calibration samples, 1.074 ms max transit, 5.5 ms spacing, 34 added probes (236 total), 164 positives / 72 drops, last positive 164 (-99.869 ms) / first drop 165 (-94.561 ms), 0 overlaps. Member expiry passes at D = 2026-11-04T16:04:02Z (first binding-bearing renewal generation 29 issued at A + 22.129357191 s), 5 timeouts, flat 2,629 bytes, 6 serving reads, 15.5 s before node expiry. D-161: 58 TCP reads, 0 TCP timeouts, 7 guard-attributed TCP losses, 1 UDP loss (1/5), 210.638 ms longest stall, 101 verified Applies. 15 first-attempt 202 writes; 4 restart windows / 6 exit-0 receipts. Closes F24-01 only. |
 | Handover 47 #479 | #474–#477 / 1c39a0e7: 17 subtests, 13 snapshots, 20 main declarations, 20 source readings, 92 artifacts, 38 exact values; 66 decisions and 136 findings; 238 scope-review.json digests refreshed. |
-| Isolation 26 #480 | Offline only. Answers follow-up 47's assist.py:22 hand-off: assist.go.txt calls shared writeNode (3 attempts, 10 s bound, exact 412 RESOURCE_VERSION_CONFLICT retry) with nodeFieldsMatch (208000000/200000000 capacity, 100000000 per-member caps) and retains node_write receipt; api_ok is write.accepted(202). 5 fake-server cases in TestAPI01_IsolationAssist (assist_offline_test.go.txt) plus TestAPI01_AssistNodeWriteUsesSharedHelper AST check. D-162 reach audit: main runtime stays 1 s via configureObservation(), boot-release and clone runtime inherit 1 s, enrollment files carry 5 s; 0 check changes. Routes clone receiver port wiring (second_exit.go 9445 vs proxy.go 9444) to w3-devstack-e2e. |
+| Isolation 26 #480 | Offline only. Answers follow-up 47's hand-off (formerly assist.py:22, now assist.go.txt:24): assist.go.txt calls shared writeNode (3 attempts, 10 s bound, exact 412 RESOURCE_VERSION_CONFLICT retry) with nodeFieldsMatch (208000000/200000000 capacity, 100000000 per-member caps) and retains node_write receipt; api_ok is write.accepted(202). 5 fake-server cases in TestAPI01_IsolationAssist (assist_offline_test.go.txt) plus TestAPI01_AssistNodeWriteUsesSharedHelper AST check. D-162 reach audit: main runtime stays 1 s via configureObservation(), boot-release and clone runtime inherit 1 s, enrollment files carry 5 s; 0 check changes. Routes existing clone receiver wiring (9445 vs 9444) to w3-devstack-e2e. |
 | Members 24 #481 / r32 | 145-file D-098 archive of 6a25221b. Allowlisted observation record parser (observation_records.py / observation_records_test.go) and per-row window joins. dee8492f on df61fd68: 3/7/0 cases (AT02, AT03, AT08 pass), 708/6/0 subchecks (+2 pass: AT09 indexes 44 and 46; AT09 72/6/0). F22-D146 answered under D-162: serving-read ages 0.739651 s, 6.849400 s and 1.441758 s on clamp rows 46, 51 and 59; 18 stored observations, 18 enqueues and 18 accepted attempts across all 9 native MTU windows (0 missing joins, 0 overwritten exports). AT02 closed recovery: Apply 540, report 01a1a782 (`closed_recovery_binding`) accepted on attempt 1 in 8 ms, renewal 545 at 66.406460 ms, generation-14 lease 4b88acc1, serving Apply 546; 187.308830 ms / 7 losses deny-all, 304.961112 ms / 13 losses Apply+wait. 30 first-attempt 202 writes. No F48-01 signature retained. r32 archived byte-for-byte: 201 lines, 31,981 bytes, 0/0/0/0 findings, 6 held invariants, 4 review-branch proofs, 0 owner questions. |
 
 **66 decisions / 138 findings: 6 updated, 2 added, 130 unchanged findings.**
 F24-01 is closed by #478; F22-D146 is answered by #481 under D-162; follow-up
 47's assist.py retry is answered by #480; r32 confirms agent-core 52 (#477) with
 zero findings. Agent-core 53 (`w2-agent-core`) is running at briefing, status
-only, for the five GitHub Actions `Node` workflow `node/agent` wall-clock
-failures (`41782791081`, `41787173794`, `41794009264`, `41808885873`,
-`41871089749`); no delivered or merged PR at the initial check. Later results
-are after the cutoff. Clone receiver port wiring (`fvpn-clone-2:9445` vs `9444`)
-is routed to `w3-devstack-e2e`. F22-AT01 and F11-01 stay open under D-148.
-No date is promised; no other operator or member procedure changes.
+only, for the Node workflow's `node/agent` test failures (eight failures since
+#447, of which two are review branches' own proofs and six fail tests that pass
+on `main`: `41782791081`, `41787173794`, `41794009264`, `41808885873`,
+`41871089749` and `41885624816`, with the sixth added by the orchestrator); no
+delivered or merged PR at the initial check. Later results are after the cutoff.
+Isolation 26 clone receiver wiring (9445 vs 9444) is routed to
+`w3-devstack-e2e`. F22-AT01 and F11-01 stay open under D-148. No date is
+promised; no other operator or member procedure changes.
 
 ## Follow-up 47 acceptance snapshot (2026-11-04 EST)
 

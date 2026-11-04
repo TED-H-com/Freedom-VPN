@@ -120,7 +120,7 @@
           "df61fd68add1678729ef32ae1ef93719124035e3",
           "213",
           "docs/e2e/at/isolation/history/follow-up-24/archive.json",
-          "df9dbad7-27ad-4895-8bd3-74108db12e87",
+          "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
           "15.175703 ms",
           "22.974 µs",
           "33.2 ms",
@@ -219,7 +219,7 @@
       {
         "path": "docs/handover/README.md",
         "tokens": [
-          "Clone receiver port wiring (fvpn-clone-2:9445 vs 9444)",
+          "Isolation 26 clone receiver wiring (9445 vs 9444)",
           "OPEN — routed to w3-devstack-e2e",
           "observer_main.go:95",
           "proxy.go:140"
@@ -354,7 +354,7 @@
           "21e59029934a34f7125805e116a2ffaaf61b60cb",
           "1c39a0e73825dbcf911dfd2bec6e75aed64c979b",
           "5b7ec63eecbe64e278e16bf24ef3a8e9ea3e625d6bde701d6d0c0e5735e1960f",
-          "341d099a6ebeeac5221275d6db748a6b3bfdc94d",
+          "341d099a3bff0afcb82cc624aaab2f81cc1a516a",
           "agy/gemini-4-argon-high",
           "committed by Ted H",
           "201 lines",
@@ -401,11 +401,13 @@
           "41794009264",
           "41808885873",
           "41871089749",
+          "41885624816",
           "TestD155_CrashedTransactionsKeepAgentRunning/blocked",
           "TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery",
           "TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat",
           "TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption",
           "TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample/delivered_ACK",
+          "TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException/held_finalsample_blocks_step_sync_and_apply_until_settled",
           "D-098 / D-109 / D-132",
           "66 decisions",
           "138 findings rows: 6 updated, 2 added, 130 byte-identical",
@@ -428,6 +430,7 @@
           "41794009264",
           "41808885873",
           "41871089749",
+          "41885624816",
           "Every historical failure stays failed"
         ]
       },
@@ -442,6 +445,7 @@
           "41794009264",
           "41808885873",
           "41871089749",
+          "41885624816",
           "no delivered or merged PR at the initial check. Later results",
           "No date is promised; no other operator or member procedure changes."
         ]
