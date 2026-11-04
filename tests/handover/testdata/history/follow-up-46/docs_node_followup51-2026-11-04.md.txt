@@ -1,0 +1,340 @@
+# Follow-up 51 — 2026-11-04 — recovery contexts and renewal/report ordering
+
+## Diagnosis before code changes (D-141)
+
+Base: `2d3aaeed`; reviewed r30 at `da2560a9`, including its Fidelity rows,
+H-1/M-2/M-3, proofs, and What held. Citations in this section refer to the
+unchanged base. No production code or proof changed before this record.
+
+### H-1: confirmed engine API defect; neither CLI mode reaches the reported path
+
+`bootWithBudget` stores the caller in `runCtx` (`node/agent/engine.go:471`).
+`recoverOnce` returns on its cancellation before setting `recoverBlocked`
+(`node/agent/updaterecover.go:37–40`); `Step` never replaces it
+(`engine.go:676–695`). A canceled Boot followed by a live Step can therefore
+admit forwarding without recovery (`input`, `engine.go:940`; recovery gate,
+`node/agent/decide.go:146–147`). A canceled per-call Boot after busy recovery
+instead keeps `recovery_required` forever, even after lock release. An in-flight
+child also inherits that Boot context (`updaterecover.go:62–86`) and is killed
+when the call's context ends. Both effects last for that engine's lifetime.
+
+The first r30 proof restarts a served rig with `/bin/true` but missing updater
+configuration, cancels Boot before entry, then calls Step with a live context.
+The second uses exit 3 followed by exit 0 and cancels Boot between calls. Those
+are real public Engine API sequences. Its manual clock does not advance between
+child attempts: the second proof must also respect the one-second retry floor
+(`updaterecover.go:16,59,69`); real elapsed time advances, this rig's clock does
+not. Assertions will be preserved with a minimal explicit clock advance if
+needed. Neither proof tests an actual running child surviving per-call cancel.
+
+CLI run calls `Run(ctx)`, which uses the same process context for Boot and every
+Step (`engine.go:603–631`). CLI once uses the same signal context for Boot and
+Step, then defers Close (`node/agent/cmd/fvpn-agent/main.go:96–100,120–135`).
+There is no later live Step after cancellation in either CLI mode. Run exits;
+a canceled once Step returns at `engine.go:692–693` and Close joins children.
+
+Every production `runCtx` read and its actual need:
+
+| Base location | Need |
+|---|---|
+| `updaterecover.go:37` | Process stopping: only Run's context has this meaning for the engine API. |
+| `updaterecover.go:62–66` | Parent of a long-lived recover child; per-call Boot/Step cancellation must not own it. Run cancellation or explicit stop/Close may end it. |
+| `usage.go:232` | Suppress upload startup if its existing caller parent is canceled. |
+| `usage.go:236–237` | Parent of the upload loop; currently Boot's caller (the signal context in both CLI modes). |
+| `usage.go:243` | Attach Close's loop cancellation when the upload parent is that caller. |
+
+`usage.go:240` is a comment, not another read; `engine.go:98` declares the field
+and `engine.go:471` is its only production assignment. Preserve upload parenting
+separately: run and once must still cancel request contexts synchronously with
+the same signal context, and Close must still cancel/join via `loopCtx`.
+
+### M-2: confirmed, reachable in a real run Step
+
+A grant-less request is sent before desired sync (`engine.go:742–752`) and sets
+`leaseAttempted` (`node/agent/sync.go:86,112–124`). Failure or an old-generation
+answer can leave the lease behind the new desired document. The same Step can
+complete closed recovery and ACK the new generation (`engine.go:1128–1138,
+1381–1394`), but `renewAppliedLease` calls the already-consumed per-Step guard
+(`sync.go:252–267`). The lease-generation gate stays closed (`policy_missing`),
+and `recoveryRenewalEligible` cannot bind a report (`recovery_renewal.go:16–22`).
+The r30 proof constructs this using only normal Steps and external fixtures:
+generation 14 grant-less lease, foreign tc, repair, a due slot, generation 15,
+and one failed lease call. This history can occur during run. A fresh CLI once pass does not itself
+produce that multi-Step grant-less-slot history; the older-generation-answer
+variant can follow a Boot quarantine failure instead. See the post-source-check
+once-mode refinement below, which corrects the initial diagnosis on this point.
+
+This is delay, not unauthorized forwarding or a permanent wedge. On the next
+Step the guard resets (`engine.go:691`); the generation mismatch makes renewal
+due before the ordinary D-067 slot (`sync.go:159`). After a failed pre-request,
+`nextStepDelay` uses the attempt plus the control interval if the old slot has
+already elapsed (`engine.go:657–662`); after an old-generation empty answer it
+uses that answer's next exponential slot. Retry-After still wins. On the next
+successful matching lease, a clean report can bind/arm D-157 and Run wakes
+immediately (`engine.go:645–647`). An empty answer advances D-067 as usual
+(`sync.go:221–233`). Thus the added delay can be the next poll/slot (capped by
+D-067's 60 seconds) plus control failures, not an indefinite recovery latch.
+
+The required same-Step dispatch is the **generation catch-up request** before
+the report. The D-157 one-shot follows acceptance of the bound clean report;
+r30 explicitly asserts it is armed at recovery-Step return. Preserve that
+existing immediate-next-wake behavior and every assertion rather than consume
+that opportunity before the report or weaken its receipt gate.
+
+### M-3: reachable with a full outbox and partial drain; direct proof skips that history
+
+`observe` returns before updating `lastObservationState` while `outboxFull`
+(`node/agent/observe.go:33,62`). Once space returns, identical state plus any
+pending item is deduplicated (`:38–45`), even though a new closed Apply reset
+its opportunity and `lastObs` (`engine.go:1381–1384`). The r30 proof directly
+calls baseline and `noteApply`, then enforce and observe. It proves the local
+dedup defect but does not itself prove a production Step sequence.
+
+A real sequence can fill 32 entries with semantic transitions during observation
+backoff, ending with a clean closed-recovery report as entry 32. The next Step
+sets `outboxFull` (`engine.go:780–781`); that gate withdraws (`decide.go:140–141`,
+`engine.go:1140–1148`). The final blocked audit can detect foreign tc on the
+retained model and record an Apply error (`node/agent/serving.go:208–238`), while
+observe skips the failure because the outbox is full. Later the first flush can
+accept some old entries and fail on another (`observe.go:286–350`). The Step
+recounts pending items, now below 32, and a clean same-generation closed Apply
+can restore the same semantic observation state. Old pending items remain, so
+the new recovery's report is skipped. Full drain would avoid the bug; an
+intermediate recorded failure would also change the comparison state.
+
+The cost is prior observation outage/backoff, enough transitions to reach the
+32-entry cap (which itself closes forwarding), then partial rather than complete
+drain. This can occur in run's repeated Steps; one fresh CLI once pass cannot
+create two in-memory closed recoveries. It holds the early-renewal opportunity,
+not a forwarding permission. Ordinary D-067 renewals continue. A later full
+drain or semantic transition lets the still-due report queue, or a populated
+ordinary lease plus verified Apply restores forwarding. There is no finite
+bound if observations continue failing; ordinary grant acquisition can recover
+without that optimization. A narrow exception for a recovery waiting to bind
+its own report preserves dedup in every other case and the 32-entry safety cap.
+
+### Preserved contracts and scope
+
+D-155 exit-3 deferral, retry floor, fast wait, lock precheck, failure evidence and
+join; D-156 restart receipt/watchdog adoption; D-157 accepted clean report,
+one-shot consumption and Retry-After; D-067 grant-less cadence; D-135/D-136
+baseline retention; populated matching grants plus verified Apply before
+forwarding. These support §5.1, §8.1/§8.2 and §16.3; no new AT02 live or timing
+claim. Updater H-2/M-1 remain outside this lane. Earlier notes remain unchanged.
+
+## Changes and proof design
+
+Recovery closes its gate before checking process cancellation, and `input`
+also refuses an unfinished configured recovery. Only `Run` sets `runCtx`.
+Its context remains immutable after Run returns because a bounded Boot worker
+may still be finishing; clearing it then could race that worker. Run's deferred
+`stopRecovery` and Close retain their join behavior. Standalone Boot/Step use
+the existing explicitly canceled background child. A canceled per-call Boot
+can still run recovery within its independent local budget; it cannot poison
+later Steps. A canceled Run spawns nothing and supplies no failure evidence.
+
+Uploads retain exactly their prior parent in `uploadParent`, assigned by Boot.
+Both CLI modes still use their signal context; cancellation reaches the HTTP
+request synchronously, and loop cancellation on Close still ends uploads. This
+also preserves standalone Boot's existing upload behavior; this change only
+removes that caller's ownership of the recovery child. The real request-context
+proof holds a usage response and checks cancellation before Close in both modes.
+
+Lease requests remember the ACK actually sent (zero for null). A closed Apply
+with a newly available ACK can make one generation catch-up request despite an
+earlier attempt in the same Step. The retry bound is still checked by syncLease;
+recording the new ACK prevents another bypass for that ACK. The accepted clean
+report then arms the existing one-shot, which is consumed only by its dispatch.
+The proof repeats recovery, tests both a transient pre-request failure and an
+old-generation answer, inspects ACKs/IDs, and checks the next D-067 slot after
+an empty early answer.
+
+Pending-state dedup now has one exception: an armed closed recovery with no
+bound report ID. The capacity guard remains first. The added Step-only proof
+uses real queued reports, 32 transitions, an unreported failure while full,
+and one accepted old report followed by Retry-After. A second proof checks
+coalescing after a report has bound and after the opportunity is gone. Fake
+control additions only expose a held upload's request context and permit a
+specified number of observation posts before the existing injected failure.
+
+r30 files were imported byte-for-byte in `45cfee9a`. All assertions are kept.
+Its H-1 manual-clock proof adds `Advance(recoverRetryInterval)` before the
+second child attempt; the existing one-second retry floor must not be removed
+to accommodate a clock that never advances. The subsequent M-2 Retry-After
+clock correction is recorded below. All four addressed TODO markers
+are removed. The watchdog proof remains byte-for-byte unchanged.
+
+At the implementation checkpoint, validation was pending host admission. The first bounded admission attempt
+returned 125 after 20 held checks (19 thirty-second waits); no test ran. The
+baseline source and unchanged imported proofs are preserved in an ignored Go
+overlay for the next admitted attempt. This is not a failed test result.
+
+### Admitted proof results and diagnosis refinement
+
+The immutable imported baseline run reproduced all four addressed failures;
+both r30 held suites passed. H-1 and M-3 fixes, the Run/once/upload lifetime
+proofs, and the full-outbox Step sequence then passed. M-3 is thus reproduced
+through ordinary Steps, not only r30's direct baseline/noteApply construction.
+
+The first fixed run exposed a second manual-clock omission in r30's M-2 proof:
+`fakecontrol.FailLeases` sends `DEPENDENCY_UNAVAILABLE` at
+`node/internal/fakecontrol/handlers.go:341–343` on the base;
+`pkg/apierr/apierr.go:248–249,268–269` adds a default `Retry-After: 1` for 503.
+The unchanged syncLease correctly keeps that lower bound. Advancing the manual
+clock to the grant-less slot before Step does not advance it during Apply.
+The proof now models one second elapsing in successful Apply, using a test-only
+Plane wrapper. Every original assertion remains intact. This corrects the
+fixture, not the production retry policy. For this specific default-503 case,
+if Apply finishes before that second expires, renewal waits until the later
+Retry-After/ordinary scheduling wake; same-Step catch-up is possible only when
+that bound expires within the Step. An old-generation reply has no such bound.
+
+Own M-2 proof development also initially assumed `LeaseRequests` included a
+503 injected before decoding. It does not: its documented counter
+`LeaseRenewals` includes those failures, while decoded history excludes them.
+The assertion now checks both dispatch counts and the correct decoded history,
+including null pre-Apply ACK for the old-generation response case. This changed
+only the new proof, not fake-control failure behavior or any prior proof.
+All addressed r30 tests pass with those two clock corrections. The repeated
+M-2 recovery proof now passes for both failed and old-generation pre-attempts.
+
+### Once-mode reachability refinement
+
+The initial M-2 diagnosis's statement that fresh Boot has no retained in-memory
+Apply failure was too broad. Boot can create one: restart adoption performs a
+live verification (`node/agent/restart.go:96`); a foreign-tc rejection sets the
+error and quarantine (`node/agent/serving.go:150–174`), and Boot deliberately
+retains it while quarantine is pending (`engine.go:567–574` on the base).
+Therefore the older-generation-answer variant can also reach M-2 in a fresh
+CLI once invocation: Boot rejects adoption; the environment repairs tc; the
+single Step fetches a new desired generation, receives a fresh but older-generation
+lease, then closes recovery at the new generation. That pre-enforce request
+consumes the old guard. The specific r30 transient-failure-at-a-grant-less-slot
+history still requires earlier Steps; its proof does not model CLI startup.
+Both modes execute the same affected Step code. M-3 still needs two closed
+recoveries in one engine and cannot be created by one fresh CLI once pass.
+
+## Single ordinary functional lab
+
+On code commit `e6737125`, one `node-test-netlab` ran with
+`FVPN_LAB_PREFIX=fvpn-w2-agent-core-f51`: PASS 13/13, no rerun. The suite-process
+check waited 90.069 seconds before launch. Foreign-process records contain only
+pid, comm and ticks. Post-cleanup read-back: zero owned containers, images,
+networks and volumes. Raw outputs and captures remain in ignored `.agent/f51/`.
+
+Every scenario's actual result:
+
+```text
+--- PASS: TestLabISO_F6_RecoveryAndEvidence (9.91s)
+--- PASS: TestLabD087_D104_GrantRenewalExpiryCorrelation (128.67s)
+--- PASS: TestLabUsageLedger (10.73s)
+--- PASS: TestLabExternalMeterReset (5.74s)
+--- PASS: TestLabF36_AT13_RestartChangedSetsStopsEstablishedFlow (10.22s)
+--- PASS: TestLab08_HealthAttestationUnpublished (4.66s)
+--- PASS: TestLab01_ForwardOnlyAfterLease (3.87s)
+--- PASS: TestLab02_WatchdogEnforces (6.13s)
+--- PASS: TestLab03_KernelTimeout (10.13s)
+--- PASS: TestLab04_RestartKeepsVerifiedLease (3.89s)
+--- PASS: TestLab05_NoAllowAllOnUpdate (11.40s)
+--- PASS: TestLab07_UnpublishedBaselineAck (4.10s)
+--- PASS: TestLab06_RevokedStopsForwarding (3.80s)
+ok  github.com/TED-H-com/Freedom-VPN/tests/netlab/agent 214.935s
+```
+
+Expiry phase of `TestLabD087_D104_GrantRenewalExpiryCorrelation`:
+
+| Receipt | Value |
+|---|---|
+| D, monotonic ns | `114214633915175` |
+| Last positive egress relative to D | `−100474204 ns` (−100.474204 ms) |
+| First dropped probe's send relative to D | `−63777600 ns` (−63.777600 ms) |
+| Packets | 97 positive, 15 dropped; all positive egresses before D |
+| Existing predicates | Last positive ≥ D − 101 ms; first drop ≤ D + 100 ms: PASS |
+
+This is the requested ordinary functional gate, not a live AT02 or new timing
+claim. Members' next assembled run on main is scheduled by the orchestrator.
+
+## Final gate evidence
+
+Code under test: `e6737125`, based on `2d3aaeed`. Main advanced independently;
+this lane did not merge or alter the newer main work. The comparison
+for owned scope is `git diff --stat main...HEAD` (merge-base comparison).
+
+r30 actual before/after lines (baseline overlay uses the unchanged import;
+corrected-clock proofs also fail against unchanged production):
+
+```text
+--- FAIL: TestR30_H1_CanceledBootContextSkipsRecoverAndAdmitsServing (0.21s)
+--- FAIL: TestR30_H1_PerCallBootContextWedgesStepRecovery (0.18s)
+--- FAIL: TestR30_M2_PreEnforceLeaseAttemptBlocksPostRecoveryRenewal (0.20s)
+--- FAIL: TestR30_M3_PendingOutboxDedupSkipsNewClosedRecoveryReport (0.19s)
+--- PASS: TestR30_H1_CanceledBootContextSkipsRecoverAndAdmitsServing (0.20s)
+--- PASS: TestR30_H1_PerCallBootContextWedgesStepRecovery (0.23s)
+--- PASS: TestR30_M2_PreEnforceLeaseAttemptBlocksPostRecoveryRenewal (0.40s)
+--- PASS: TestR30_M3_PendingOutboxDedupSkipsNewClosedRecoveryReport (0.33s)
+--- PASS: TestR30_D155_D156_D157_HeldInvariants (0.23s)
+--- PASS: TestR30_D156_WatchdogAdoptionPendingInvariants (0.04s)
+```
+
+| Gate | Result |
+|---|---|
+| Node lint | PASS, including pinned staticcheck and tagged netlab checks |
+| Node unit | PASS; agent 174.139s |
+| Node integration | PASS; agent 174.332s; integration DSN configured |
+| Node build | PASS, linux amd64 and arm64 agent/watchdog |
+| R16–R19 and r20–r30 | PASS; agent 79.232s, command 0.082s, watchdog 0.051s, enforce 0.259s |
+| Explicit r30 run | PASS; agent 1.385s, watchdog 0.044s |
+| Unchanged updater and node lock | PASS; updater 166.879s, updater command 13.812s, node lock 0.034s |
+| Ordinary lab | PASS 13/13, 214.935s; one attempt |
+| Handover | PASS 3.910s |
+| Root go-lint and explicit vet | PASS exit 0 |
+| gofmt / diff / public hygiene | Empty formatting output, diff exit 0, zero forbidden-pattern matches |
+| Committed-evidence hygiene | PASS; netlab 3.587s, e2e 8.513s |
+| Plain `go test ./...` before final commit | PASS exit 0; agent 160.518s, updater 172.670s |
+| Owned Docker inventory | Zero containers, images, networks and volumes |
+
+Actual output excerpts, with no private locations:
+
+```text
+ok  github.com/TED-H-com/Freedom-VPN/node/agent 174.139s
+ok  github.com/TED-H-com/Freedom-VPN/node/agent 174.332s
+ok  github.com/TED-H-com/Freedom-VPN/node/updater 166.879s
+ok  github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater 13.812s
+ok  github.com/TED-H-com/Freedom-VPN/node/nodelock 0.034s
+ok  github.com/TED-H-com/Freedom-VPN/tests/handover 3.910s
+ok  github.com/TED-H-com/Freedom-VPN/tests/netlab 3.587s
+ok  github.com/TED-H-com/Freedom-VPN/tests/e2e 8.513s
+```
+
+Environment: `CGO_ENABLED=0`, `GOTOOLCHAIN=local`, disk `.agent/tmp` for TMPDIR
+and GOTMPDIR; `go env GOCACHE` is `~/.cache/go-build`. Every go-test, make and
+Docker command, including nested ones, passed `$FVPN_HOLD_SH` admission in a
+separate captured stream. No reservation, background shell task, shell cleanup
+trap, host networking change or foreign-process signal was used. Root lint
+used `go-with-disk-tmp=` so the existing root recipe's trap was not invoked.
+
+### Requests to orchestrator — 2026-11-04
+
+No outside-path code change is requested. Members' next assembled AT02 run on
+main remains the orchestrator's scheduled work. No live claim is made here.
+F31-01 and F17-01 remain carried; updater r30 H-2/M-1 and r28 management loss are
+outside this follow-up. Physical arm64 execution remains unmeasured.
+
+Final plain full-module output tail (exit 0, before the final records commit):
+
+```text
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace	0.002s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin	0.004s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls	0.002s
+?   	github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture	0.002s
+?   	github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth	0.002s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats	0.002s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/handover	4.221s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/netlab	3.974s
+?   	github.com/TED-H-com/Freedom-VPN/tests/netlab/at	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab	0.005s
+?   	github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority	[no test files]
+?   	github.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture	[no test files]
+```

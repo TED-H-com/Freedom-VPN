@@ -1,7 +1,27 @@
 # Operations Runbooks Index (`docs/ops/`)
 
-**Current cut — [follow-up 45](../handover/follow-up-45.md) (2026-11-04 EST):** #464–#468 at c148cf34; F30-01 closed, AT02 deny-all measured at 205 ms / 8 losses, AT29 blocked on the guest clock. 64 decisions, 133 findings; D-161 implemented, r30 archived and routed. D-158's wait remains unmeasured live. See [update recovery](../handover/operator-guide.md#f30-01), [closed recovery](../handover/operator-guide.md#at02-closed-recovery) and [TCP guard limitation](../handover/operator-guide.md#tcp-reload-guard).
-**Previous cut — [follow-up 44](../handover/follow-up-44.md) (2026-11-04 EST):** #457–#463 at 5c21e670; D-158 lock wait and D-157 renewal merged, F30-01 candidate proof and live AT02 measurement pending. 64 decisions, 126 findings; F22-01 and SECOPS-F17-01 open, AT29 failed and confounded. See [update recovery](../handover/operator-guide.md#f30-01), [closed recovery](../handover/operator-guide.md#at02-closed-recovery) and [TCP guard limitation](../handover/operator-guide.md#tcp-reload-guard).
+**Current cut — [follow-up 46](../handover/follow-up-46.md) (2026-11-04 EST):** #469–#473 at 52b93845; F22-01 answered, all five r30 findings fixed, clarified D-158 implemented. 65 decisions, 133 findings; D-162 is TEST ONLY and running with devstack 36. Members AT02 adds 179 ms / 7 losses; D-158’s wait remains unmeasured live.
+**Previous cut — [follow-up 45](../handover/follow-up-45.md) (2026-11-04 EST):** #464–#468 at c148cf34; F30-01 closed, AT02 deny-all measured at 205 ms / 8 losses, AT29 blocked on the guest clock. 64 decisions, 133 findings; D-161 implemented, r30 archived and routed. D-158's wait remains unmeasured live. See [update recovery](../handover/operator-guide.md#f30-01), [closed recovery](../handover/operator-guide.md#at02-closed-recovery) and [TCP guard limitation](../handover/operator-guide.md#tcp-reload-guard).
+
+## Follow-up 46 acceptance snapshot (2026-11-04 EST)
+
+Current cut: **#469–#473 / 52b93845**, five merged PRs, no unbriefed PR.
+[Evidence and routing](../handover/follow-up-46.md). Earlier sections retain
+their historical cutoff.
+
+| Delivery | Current evidence boundary |
+|---|---|
+| Isolation 23 #469 | 184-file D-098 archive; D-160 checked without a harness change. 328ab9e0: 27/2/0, all 29 statuses unchanged. F22-01 answered by D-161 complete captures: 65 TCP reads, zero timeouts/UDP losses, six recovered guard losses, 210.1 ms longest stall. Historical failure and unproven cause stay; accepted-timeout branch unexercised live. r28 M-1 second live pass, denial 13.9 s before node expiry; whole-node D-140/D-142 pass at generation 32. 15 first-attempt 202 writes. |
+| Agent-core 51 #470 | r30 H-1/M-2/M-3 fixed: Run context ownership, new-ACK catch-up, closed-recovery report dedup exception after capacity guard. Neither CLI mode reaches H-1. Preserved lease/Apply forwarding gate and D-155/D-156/D-157/D-067/D-135/D-136. Ordinary lab 13/13 once. |
+| Updater 26 #471 | r30 H-2/M-1 fixed under clarified D-158: consecutive stale count, live reset and original 10 s budget, wait record only after first-attempt ErrBusy. Prompt recover/Retain, errors, exits and nodelock unchanged. Live wait remains unmeasured. |
+| Handover 45 #472 | Previous #464–#468 cut: 15 subtests, 27 snapshots, 13 main declarations, 17 code readings; 64 decisions, 133 findings. |
+| Members 23 #473 | 122-record D-098 archive; 6a25221b on c148cf34: 3/7/0, subchecks 706/8/0, only AT01's four continuation checks change the count. F22-D146 located in regular-node 30 s fixture default against 15 s freshness; open for D-162. F22-AT01 response reached ingress then was dropped before WG accounting, drop point unproven; D-148/F11-01 open. AT02: one early renewal, 179 ms / 7 losses. 30 first-attempt 202 writes. |
+
+**65 decisions; 133 findings: 10 updated / 0 added / 123 unchanged.**
+D-162 alone is new; D-158's clarification is implemented. D-162 is TEST ONLY,
+with product default and all predicates unchanged. Review r31 and devstack 36
+are running at briefing, status only; no delivered or merged PR at the initial
+check. Later results are after the cutoff. No date is promised.
 
 ## Follow-up 45 acceptance snapshot (2026-11-04 EST)
 

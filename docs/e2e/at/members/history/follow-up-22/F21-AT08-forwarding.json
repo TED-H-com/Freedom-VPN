@@ -1,0 +1,929 @@
+{
+  "run_id": "5715939e-3943-48f1-8bd5-c869bf7c91c2",
+  "source_commit": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+  "status": "blocked",
+  "blockers": [
+    "F4-01: bounded member transfer did not produce both an origin receipt and device upload/download counter increments. See forwarding-observation.md and this JSON forwarding field; owner to resolve from first missing hop."
+  ],
+  "forwarding": [
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a1a495-e051-7b0c-9e12-a61e03dc7619",
+      "origin_verified": true,
+      "origin_requests": 0,
+      "origin_snat_matches": false,
+      "probe_sha256": "b5b5ac22000f236437e4896bcab89a48ada96480c2bb77b2e50ac3938022abf6",
+      "at": "2026-11-04T03:54:29Z",
+      "member_container_role": "member",
+      "route_selected": true,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "62",
+        "device_upload_bytes": "277344",
+        "device_download_bytes": "25920",
+        "member_accept_rules": 27,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "424",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "15909",
+          "ctv6": "0",
+          "nd_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nd_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nd_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nd_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nd_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nd_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nd_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nd_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nd_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nd_01a1a4afaa727adcbe05f1b4aee57fde": "0",
+          "nu_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nu_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nu_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nu_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nu_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nu_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nu_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nu_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nu_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nu_01a1a4afaa727adcbe05f1b4aee57fde": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "62",
+        "device_upload_bytes": "277344",
+        "device_download_bytes": "25920",
+        "member_accept_rules": 27,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "424",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "15909",
+          "ctv6": "0",
+          "nd_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nd_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nd_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nd_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nd_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nd_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nd_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nd_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nd_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nd_01a1a4afaa727adcbe05f1b4aee57fde": "0",
+          "nu_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nu_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nu_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nu_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nu_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nu_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nu_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nu_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nu_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nu_01a1a4afaa727adcbe05f1b4aee57fde": "0"
+        }
+      },
+      "packet_observations": {
+        "member": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9009,
+          "filter": "controlled-origin TCP/443, client port 20034",
+          "interfaces": {
+            "fvnb0": {
+              "to_origin": 5
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9089,
+          "filter": "controlled-origin TCP/443, client port 20034",
+          "interfaces": {}
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9025,
+          "filter": "controlled-origin TCP/443, client port 20034",
+          "interfaces": {}
+        }
+      },
+      "transfer": {
+        "body_bytes": 0,
+        "http_status": 0,
+        "origin_receipt": false
+      },
+      "counted": false,
+      "first_unconfirmed_hop": "selected route to node or later path; consult counters and packet observations"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a1a495-e051-7b0c-9e12-a61e03dc7619",
+      "origin_verified": true,
+      "origin_requests": 0,
+      "origin_snat_matches": false,
+      "probe_sha256": "b5b5ac22000f236437e4896bcab89a48ada96480c2bb77b2e50ac3938022abf6",
+      "at": "2026-11-04T03:54:43Z",
+      "member_container_role": "member-b1",
+      "route_selected": false,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "62",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 27,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "424",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "15909",
+          "ctv6": "0",
+          "nd_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nd_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nd_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nd_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nd_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nd_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nd_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nd_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nd_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nd_01a1a4afaa727adcbe05f1b4aee57fde": "0",
+          "nu_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nu_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nu_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nu_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nu_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nu_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nu_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nu_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nu_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nu_01a1a4afaa727adcbe05f1b4aee57fde": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "62",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 27,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "424",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "15909",
+          "ctv6": "0",
+          "nd_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nd_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nd_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nd_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nd_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nd_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nd_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nd_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nd_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nd_01a1a4afaa727adcbe05f1b4aee57fde": "0",
+          "nu_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nu_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nu_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nu_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nu_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nu_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nu_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nu_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nu_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nu_01a1a4afaa727adcbe05f1b4aee57fde": "0"
+        }
+      },
+      "packet_observations": {
+        "member-b1": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9023,
+          "filter": "controlled-origin TCP/443, client port 20035",
+          "interfaces": {
+            "eth0": {
+              "to_origin": 5
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9042,
+          "filter": "controlled-origin TCP/443, client port 20035",
+          "interfaces": {}
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9026,
+          "filter": "controlled-origin TCP/443, client port 20035",
+          "interfaces": {}
+        }
+      },
+      "transfer": {
+        "body_bytes": 0,
+        "http_status": 0,
+        "origin_receipt": false
+      },
+      "counted": false,
+      "first_unconfirmed_hop": "member exit selection: controlled-origin route remains on underlay; no selected exit"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a1a495-e051-7b0c-9e12-a61e03dc7619",
+      "origin_verified": true,
+      "origin_requests": 1,
+      "origin_snat_matches": true,
+      "probe_sha256": "b5b5ac22000f236437e4896bcab89a48ada96480c2bb77b2e50ac3938022abf6",
+      "at": "2026-11-04T03:55:04Z",
+      "first_counted_byte_at": "2026-11-04T03:55:09.8502885Z",
+      "member_container_role": "member-b1",
+      "route_selected": true,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "64",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 9,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "424",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "15909",
+          "ctv6": "0",
+          "nd_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nd_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nd_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nd_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nd_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nd_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nd_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nd_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nd_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nd_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nd_01a1a4afaa727adcbe05f1b4aee57fde": "0",
+          "nu_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nu_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nu_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nu_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nu_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nu_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nu_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nu_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nu_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nu_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nu_01a1a4afaa727adcbe05f1b4aee57fde": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "64",
+        "device_upload_bytes": "2317",
+        "device_download_bytes": "2462",
+        "member_accept_rules": 9,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "424",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "15909",
+          "ctv6": "0",
+          "nd_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nd_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nd_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nd_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nd_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nd_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nd_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nd_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nd_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nd_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nd_01a1a4afaa727adcbe05f1b4aee57fde": "0",
+          "nu_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nu_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nu_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nu_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nu_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nu_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nu_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nu_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nu_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nu_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nu_01a1a4afaa727adcbe05f1b4aee57fde": "0"
+        }
+      },
+      "packet_observations": {
+        "member-b1": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9020,
+          "filter": "controlled-origin TCP/443, client port 20036",
+          "interfaces": {
+            "fvnb0": {
+              "from_origin": 8,
+              "to_origin": 9
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9027,
+          "filter": "controlled-origin TCP/443, client port 20036",
+          "interfaces": {
+            "fvmb0": {
+              "from_origin": 8,
+              "to_origin": 10
+            },
+            "fvup0": {
+              "from_origin": 8,
+              "to_origin": 10
+            }
+          }
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9060,
+          "filter": "controlled-origin TCP/443, client port 20036",
+          "interfaces": {
+            "eth0": {
+              "from_origin": 8,
+              "to_origin": 10
+            }
+          }
+        }
+      },
+      "transfer": {
+        "body_bytes": 3,
+        "http_status": 200,
+        "origin_receipt": true
+      },
+      "counted": true,
+      "first_unconfirmed_hop": "none: origin HTTP response and both device admission counters increased"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a1a495-e051-7b0c-9e12-a61e03dc7619",
+      "origin_verified": true,
+      "origin_requests": 0,
+      "origin_snat_matches": false,
+      "probe_sha256": "b5b5ac22000f236437e4896bcab89a48ada96480c2bb77b2e50ac3938022abf6",
+      "at": "2026-11-04T03:55:17Z",
+      "member_container_role": "member",
+      "route_selected": false,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "64",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 9,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "424",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "15909",
+          "ctv6": "0",
+          "nd_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nd_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nd_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nd_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nd_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nd_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nd_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nd_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nd_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nd_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nd_01a1a4afaa727adcbe05f1b4aee57fde": "0",
+          "nu_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nu_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nu_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nu_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nu_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nu_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nu_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nu_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nu_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nu_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nu_01a1a4afaa727adcbe05f1b4aee57fde": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "64",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 9,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "424",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "15909",
+          "ctv6": "0",
+          "nd_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nd_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nd_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nd_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nd_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nd_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nd_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nd_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nd_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nd_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nd_01a1a4afaa727adcbe05f1b4aee57fde": "0",
+          "nu_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nu_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nu_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nu_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nu_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nu_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nu_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nu_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nu_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nu_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nu_01a1a4afaa727adcbe05f1b4aee57fde": "0"
+        }
+      },
+      "packet_observations": {
+        "member": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9007,
+          "filter": "controlled-origin TCP/443, client port 20037",
+          "interfaces": {
+            "eth0": {
+              "to_origin": 5
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9009,
+          "filter": "controlled-origin TCP/443, client port 20037",
+          "interfaces": {}
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9076,
+          "filter": "controlled-origin TCP/443, client port 20037",
+          "interfaces": {}
+        }
+      },
+      "transfer": {
+        "body_bytes": 0,
+        "http_status": 0,
+        "origin_receipt": false
+      },
+      "counted": false,
+      "first_unconfirmed_hop": "member exit selection: controlled-origin route remains on underlay; no selected exit"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a1a495-e051-7b0c-9e12-a61e03dc7619",
+      "origin_verified": true,
+      "origin_requests": 0,
+      "origin_snat_matches": false,
+      "probe_sha256": "b5b5ac22000f236437e4896bcab89a48ada96480c2bb77b2e50ac3938022abf6",
+      "at": "2026-11-04T03:55:33Z",
+      "member_container_role": "member-b1",
+      "route_selected": false,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "0",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 0,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "424",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "15909",
+          "ctv6": "0",
+          "nd_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nd_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nd_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nd_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nd_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nd_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nd_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nd_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nd_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nd_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nd_01a1a4afaa727adcbe05f1b4aee57fde": "0",
+          "nu_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nu_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nu_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nu_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nu_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nu_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nu_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nu_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nu_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nu_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nu_01a1a4afaa727adcbe05f1b4aee57fde": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "0",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 0,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "424",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "15909",
+          "ctv6": "0",
+          "nd_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nd_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nd_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nd_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nd_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nd_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nd_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nd_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nd_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nd_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nd_01a1a4afaa727adcbe05f1b4aee57fde": "0",
+          "nu_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nu_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nu_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nu_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nu_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nu_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nu_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nu_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nu_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nu_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nu_01a1a4afaa727adcbe05f1b4aee57fde": "0"
+        }
+      },
+      "packet_observations": {
+        "member-b1": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9035,
+          "filter": "controlled-origin TCP/443, client port 20038",
+          "interfaces": {
+            "eth0": {
+              "to_origin": 5
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9010,
+          "filter": "controlled-origin TCP/443, client port 20038",
+          "interfaces": {}
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9095,
+          "filter": "controlled-origin TCP/443, client port 20038",
+          "interfaces": {}
+        }
+      },
+      "transfer": {
+        "body_bytes": 0,
+        "http_status": 0,
+        "origin_receipt": false
+      },
+      "counted": false,
+      "first_unconfirmed_hop": "member exit selection: controlled-origin route remains on underlay; no selected exit"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a1a495-e051-7b0c-9e12-a61e03dc7619",
+      "origin_verified": true,
+      "origin_requests": 0,
+      "origin_snat_matches": false,
+      "probe_sha256": "b5b5ac22000f236437e4896bcab89a48ada96480c2bb77b2e50ac3938022abf6",
+      "at": "2026-11-04T03:55:49Z",
+      "member_container_role": "member-b1",
+      "route_selected": false,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "eth0",
+          "flags": [],
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "0",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 0,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "424",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "15909",
+          "ctv6": "0",
+          "nd_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nd_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nd_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nd_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nd_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nd_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nd_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nd_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nd_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nd_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nd_01a1a4afaa727adcbe05f1b4aee57fde": "0",
+          "nu_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nu_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nu_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nu_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nu_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nu_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nu_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nu_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nu_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nu_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nu_01a1a4afaa727adcbe05f1b4aee57fde": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "0",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 0,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "424",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "15909",
+          "ctv6": "0",
+          "nd_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nd_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nd_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nd_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nd_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nd_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nd_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nd_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nd_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nd_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nd_01a1a4afaa727adcbe05f1b4aee57fde": "0",
+          "nu_01a1a49680857df69d1e6a0f6060a6af": "0",
+          "nu_01a1a49767ea70a29637bfa827fd9e3c": "0",
+          "nu_01a1a497a2d47a0bbaa5468e7c7de165": "0",
+          "nu_01a1a49900017a12afb83dd74fb07c12": "0",
+          "nu_01a1a499f5ae71238b88b4bfddb9ace2": "0",
+          "nu_01a1a4a732fc77fa8a8536dcd8e58588": "0",
+          "nu_01a1a4a906fa75e7b3a0c67bb4c46745": "0",
+          "nu_01a1a4ab50ce7318b61bb521d6eb421d": "0",
+          "nu_01a1a4abc6ff7335b3d90e9b9d585850": "0",
+          "nu_01a1a4af373774a5b8c7ddcbab1e7a79": "0",
+          "nu_01a1a4afaa727adcbe05f1b4aee57fde": "0"
+        }
+      },
+      "packet_observations": {
+        "member-b1": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9011,
+          "filter": "controlled-origin TCP/443, client port 20039",
+          "interfaces": {
+            "eth0": {
+              "to_origin": 5
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9055,
+          "filter": "controlled-origin TCP/443, client port 20039",
+          "interfaces": {}
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9004,
+          "filter": "controlled-origin TCP/443, client port 20039",
+          "interfaces": {}
+        }
+      },
+      "transfer": {
+        "body_bytes": 0,
+        "http_status": 0,
+        "origin_receipt": false
+      },
+      "counted": false,
+      "first_unconfirmed_hop": "member exit selection: controlled-origin route remains on underlay; no selected exit"
+    }
+  ],
+  "cause_status": "unproven",
+  "finding": "Initial selected-route transfer at 03:54:29Z: five member-interface packets, zero node/origin packets, zero origin requests, unchanged device byte counters; later counted transfer is independent."
+}

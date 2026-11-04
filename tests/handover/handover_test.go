@@ -65,6 +65,7 @@ var ownedDocs = []string{
 	"docs/handover/follow-up-43.md",
 	"docs/handover/follow-up-44.md",
 	"docs/handover/follow-up-45.md",
+	"docs/handover/follow-up-46.md",
 	"docs/ops/README.md",
 	"docs/reviews/README.md",
 	"docs/reviews/r3-d055-review.md",
@@ -15327,7 +15328,7 @@ func TestHandover_Followup45Claims(t *testing.T) {
 	}
 	require := func(path string, tokens ...string) {
 		t.Helper()
-		s := readOwnedDoc(t, root, path)
+		s := readOwnedDoc(t, root, followup46InputPath(path))
 		if strings.HasSuffix(path, "-excerpt.json") {
 			readJSON(path, &s)
 		}
@@ -15529,7 +15530,7 @@ func TestHandover_Followup45Claims(t *testing.T) {
 		}
 	})
 	t.Run("64_decisions_two_updates_and_133_findings_seven_updates_seven_additions", func(t *testing.T) {
-		oldText, nowText := readOwnedDoc(t, root, followup45PriorPath(register)), readOwnedDoc(t, root, register)
+		oldText, nowText := readOwnedDoc(t, root, followup45PriorPath(register)), readOwnedDoc(t, root, followup46PriorPath(register))
 		re := regexp.MustCompile(`(?m)^\| D-\d{3} \|.*$`)
 		old, now := re.FindAllString(oldText, -1), re.FindAllString(nowText, -1)
 		var decisions struct{ Updated map[string]string }
@@ -15758,7 +15759,7 @@ func TestHandover_Followup45Claims(t *testing.T) {
 	}
 	t.Run("seven_entrypoints_preserve_operator_contract_and_other_guidance", func(t *testing.T) {
 		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
-			lines, old := strings.Split(readOwnedDoc(t, root, path), "\n"), strings.Split(readOwnedDoc(t, root, followup45PriorPath(path)), "\n")
+			lines, old := strings.Split(readOwnedDoc(t, root, followup46PriorPath(path)), "\n"), strings.Split(readOwnedDoc(t, root, followup45PriorPath(path)), "\n")
 			if len(lines) < 4 || !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-45.md") || !strings.Contains(lines[2], "#464–#468") || lines[3] != strings.Replace(old[2], "**Current cut", "**Previous cut", 1) {
 				t.Fatalf("entrypoint %s", path)
 			}
@@ -15792,7 +15793,7 @@ func TestHandover_Followup45Claims(t *testing.T) {
 				t.Fatalf("unrelated guidance changed %s", path)
 			}
 		}
-		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		op := readOwnedDoc(t, root, followup46PriorPath("docs/handover/operator-guide.md"))
 		old := readOwnedDoc(t, root, followup45PriorPath("docs/handover/operator-guide.md"))
 		for _, anchor := range []string{"f30-01", "r28-h-1", "d156-release-rule", "at02-closed-recovery", "tcp-reload-guard"} {
 			if strings.Count(op, "<a id=\""+anchor+"\"></a>") != 1 {
@@ -15807,5 +15808,532 @@ func TestHandover_Followup45Claims(t *testing.T) {
 			}
 		}
 		require("docs/handover/operator-guide.md", "F30-01 at the #468 cutoff — closed", "no lock contention", "205 ms with 8 losses", "one early renewal")
+	})
+}
+
+func followup46PriorPath(path string) string {
+	return "tests/handover/testdata/history/follow-up-46/prior-" + strings.ReplaceAll(path, "/", "_") + ".txt"
+}
+
+func followup46InputPath(path string) string {
+	switch path {
+	case "README.md", "docs/handover/README.md", "docs/reviews/README.md", "docs/handover/operator-guide.md", "docs/ops/README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md":
+		return followup46PriorPath(path)
+	default:
+		return path
+	}
+}
+
+// Reverse only four input-expression redirects in follow-up 45.
+func restoreFollowup46Assertions(source string) string {
+	return strings.NewReplacer(
+		"s := readOwnedDoc(t, root, followup46InputPath(path))", "s := readOwnedDoc(t, root, path)",
+		"readOwnedDoc(t, root, followup46PriorPath(register))", "readOwnedDoc(t, root, register)",
+		"lines, old := strings.Split(readOwnedDoc(t, root, followup46PriorPath(path)),", "lines, old := strings.Split(readOwnedDoc(t, root, path),",
+		"op := readOwnedDoc(t, root, followup46PriorPath(\"docs/handover/operator-guide.md\"))", "op := readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
+	).Replace(source)
+}
+
+// TestHandover_Followup46Claims pins #469–#473 under D-098/D-109/D-132.
+func TestHandover_Followup46Claims(t *testing.T) {
+	root := repoRoot(t)
+	const fixture = "tests/handover/testdata/"
+	const frozen = fixture + "history/follow-up-46/"
+	const cut = "52b93845b5cfeac1dd63e04c700857fcd098a7f6"
+	const prior = "b933ca79d2a03e821a37b6c297aed5a9603e826c"
+	const register = "docs/handover/README.md"
+	hash := func(s string) string { sum := sha256.Sum256([]byte(s)); return hex.EncodeToString(sum[:]) }
+	checkHash := func(path, want string) {
+		t.Helper()
+		if hash(readOwnedDoc(t, root, path)) != want {
+			t.Fatalf("immutable input changed: %s", path)
+		}
+	}
+	readJSON := func(path string, dst any) {
+		t.Helper()
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, path)), dst); err != nil {
+			t.Fatalf("decode %s: %v", path, err)
+		}
+	}
+	normalize := func(s string) string {
+		return strings.Join(strings.Fields(strings.NewReplacer("`", "", "**", "").Replace(s)), " ")
+	}
+	require := func(path string, tokens ...string) {
+		t.Helper()
+		s := readOwnedDoc(t, root, path)
+		if strings.HasSuffix(path, "-excerpt.json") {
+			readJSON(path, &s)
+		}
+		for _, token := range tokens {
+			if !strings.Contains(normalize(s), normalize(token)) {
+				t.Fatalf("%s missing %q", path, token)
+			}
+		}
+	}
+	// Pin full narratives and expectation manifests as well as individual claims.
+	checkHash("docs/handover/follow-up-46.md", "9025b1b4c8cf3e698c48ca0b37876ce822481a90acaf173f6172b835db058459")
+	checkHash("tests/handover/testdata/followup46-claims.json", "6f869c6156aca168907c6a519d6895d773a7537ec3a28b80ace672af0050cc4a")
+	checkHash("tests/handover/testdata/followup46-code.json", "489579a881dfdc494fba2f6a91d90f54b37b25ad17ad5114afa5689aef7eab8b")
+	checkHash("tests/handover/testdata/followup46-decisions.json", "af7d7d3eefa313c9393b008b83e05e678d48a36b2c34d5d5dce5bd43ec04fac1")
+	checkHash("tests/handover/testdata/followup46-evidence.json", "39bd43aac12f691d199e14fd599f6d65a996d66bb911e79334b14b533c63b53d")
+	checkHash("tests/handover/testdata/followup46-findings.json", "be00cc548c1e26baf1f4c0fca084eba88c7879375c86de687a11bb6eb1a3e184")
+	checkHash("tests/handover/testdata/followup46-main.json", "4f1fa4e8fa7965f9498035dc96f8c9ef00c4a2bd7b2964674e3321f4143b4ca9")
+	checkHash("tests/handover/testdata/followup46-snapshots.json", "b32eb30f4cdea00207d440e4c5a0206152761979e9b433fe56be85217f8234f9")
+	checkHash("tests/handover/testdata/followup46-values.json", "6c0409b7ee40689003c90f773786839bfd74b6f5b10dac8ef9eae13391002261")
+	checkHash("tests/handover/testdata/history/follow-up-46/prior-claims.json", "6521abdafc33a322c1b79847250f19030e95f0ef68621cbe2904826fe09bc691")
+	checkHash("tests/handover/testdata/history/follow-up-46/product-source-audit.json", "1d232c5d19b17387783109017770715ccd445b04c1d9004d982a58e420cc504c")
+	type snapshot struct {
+		Path, Source, SHA256 string
+		Commit               string `json:"source_commit"`
+		Bytes                int
+	}
+	rows := func(s, heading string) map[string]string {
+		t.Helper()
+		if strings.Count(s, heading) != 1 {
+			t.Fatalf("unique heading: %s", heading)
+		}
+		s = strings.Split(strings.Split(s, heading)[1], "\nEvery historical failure")[0]
+		m := map[string]string{}
+		for _, row := range strings.Split(s, "\n") {
+			if !strings.HasPrefix(row, "| ") || strings.HasPrefix(row, "| Finding |") {
+				continue
+			}
+			id := strings.TrimSpace(strings.Split(row, "|")[1])
+			if _, ok := m[id]; ok {
+				t.Fatalf("duplicate row %s", id)
+			}
+			m[id] = row
+		}
+		return m
+	}
+	t.Run("five_final_roadmap_rows_and_PR_provenance", func(t *testing.T) {
+		var m struct {
+			Commit   string `json:"source_commit"`
+			Previous string `json:"previous_cut"`
+			Merged   []int  `json:"merged_prs"`
+			History  []string
+			Rows     []struct {
+				PR                int
+				Lane, Row, SHA256 string
+			}
+			PRs []struct {
+				Number, Bytes int
+				Path, SHA256  string
+				Decoded       string `json:"decoded_sha256"`
+				Merge         string `json:"merge_commit"`
+			}
+		}
+		readJSON(fixture+"followup46-main.json", &m)
+		if m.Commit != cut || m.Previous != "c148cf349df219124e457113ce90c010016a308e" || !slices.Equal(m.Merged, []int{469, 470, 471, 472, 473}) || len(m.History) != 10 || len(m.Rows) != 5 || len(m.PRs) != 5 {
+			t.Fatal("cut inventory")
+		}
+		for i, r := range m.Rows {
+			if r.PR != 469+i || hash(r.Row) != r.SHA256 || !strings.HasPrefix(r.Row, "| "+r.Lane+" |") || !strings.HasSuffix(r.Row, fmt.Sprintf("| done (#%d) |", r.PR)) {
+				t.Fatal("final roadmap row")
+			}
+			require("docs/ROADMAP.md", r.Row)
+			p := m.PRs[i]
+			checkHash(p.Path, p.SHA256)
+			var body string
+			readJSON(p.Path, &body)
+			if p.Number != r.PR || len(body) != p.Bytes || hash(body) != p.Decoded || !strings.HasPrefix(m.History[2*i], p.Merge+" ") || !strings.Contains(m.History[2*i+1], fmt.Sprintf("merged (#%d)", r.PR)) {
+				t.Fatal("PR provenance")
+			}
+		}
+	})
+	t.Run("21_snapshots_23_main_tests_18_source_readings_and_10_artifacts", func(t *testing.T) {
+		var snaps []snapshot
+		readJSON(fixture+"followup46-snapshots.json", &snaps)
+		if len(snaps) != 21 {
+			t.Fatal("snapshot count")
+		}
+		old := 0
+		for _, s := range snaps {
+			if !strings.HasPrefix(s.Path, frozen) || len(readOwnedDoc(t, root, s.Path)) != s.Bytes {
+				t.Fatal("snapshot boundary")
+			}
+			checkHash(s.Path, s.SHA256)
+			if strings.Contains(s.Path, "/prior-") {
+				old++
+				if s.Commit != prior {
+					t.Fatal("prior provenance")
+				}
+			} else if s.Commit != cut {
+				t.Fatal("producer provenance")
+			}
+		}
+		if old != 9 {
+			t.Fatal("prior count")
+		}
+		var e struct {
+			Commit    string `json:"source_commit"`
+			Proofs    []struct{ Path, Name string }
+			Artifacts []snapshot
+		}
+		readJSON(fixture+"followup46-evidence.json", &e)
+		if e.Commit != cut || len(e.Proofs) != 23 || len(e.Artifacts) != 10 {
+			t.Fatal("evidence count")
+		}
+		for _, p := range e.Proofs {
+			if !regexp.MustCompile(`(?m)^func ` + regexp.QuoteMeta(p.Name) + `\(t \*testing.T\)`).MatchString(readOwnedDoc(t, root, p.Path)) {
+				t.Fatalf("main test missing: %s", p.Name)
+			}
+		}
+		for _, a := range e.Artifacts {
+			if !strings.Contains(a.Path, "/history/follow-up-22/") && !strings.Contains(a.Path, "/history/follow-up-23-run/") {
+				t.Fatal("living artifact")
+			}
+			checkHash(a.Path, a.SHA256)
+			if len(readOwnedDoc(t, root, a.Path)) != a.Bytes {
+				t.Fatal("artifact size")
+			}
+		}
+		var audit []struct {
+			Source, Text, SHA256 string
+			Commit               string `json:"source_commit"`
+		}
+		readJSON(frozen+"product-source-audit.json", &audit)
+		if len(audit) != 18 {
+			t.Fatal("source count")
+		}
+		code := map[string]string{}
+		for _, a := range audit {
+			if a.Commit != cut || hash(a.Text) != a.SHA256 {
+				t.Fatal("source provenance")
+			}
+			code[a.Source] = a.Text
+		}
+		var expected map[string][]string
+		readJSON(fixture+"followup46-code.json", &expected)
+		for p, tokens := range expected {
+			for _, token := range tokens {
+				if !strings.Contains(code[p], token) {
+					t.Fatalf("source %s missing %q", p, token)
+				}
+			}
+		}
+		if strings.Count(code["node/agent/engine.go"], "e.runCtx =") != 1 || strings.Contains(code["tests/e2e/cmd/fvpn-e2e-prepare/main.go"], `"observation_seconds"`) || !strings.Contains(code["tests/e2e/at/members/d146_live_test.go"], "interval '15 seconds'") {
+			t.Fatal("Run ownership or fixture/predicate boundary")
+		}
+		observe := code["node/agent/observe.go"]
+		if strings.Index(observe, "if !due || e.outboxFull") >= strings.Index(observe, "if state == e.lastObservationState") {
+			t.Fatal("capacity must precede dedup")
+		}
+		wait := code["node/updater/lock_wait.go"]
+		if strings.Index(wait, "if !errors.Is(err, nodelock.ErrBusy)") >= strings.Index(wait, "waited = true") {
+			t.Fatal("non-busy first errors must not log wait")
+		}
+	})
+	t.Run("39_earlier_claims_unchanged_and_472_actual_counts", func(t *testing.T) {
+		var p struct {
+			Claims   map[string]string
+			Subtests int `json:"followup45_subtests"`
+		}
+		readJSON(frozen+"prior-claims.json", &p)
+		if len(p.Claims) != 39 || p.Subtests != 15 {
+			t.Fatal("prior inventory")
+		}
+		checked := 0
+		for _, m := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(readOwnedDoc(t, root, "tests/handover/handover_test.go"), -1) {
+			if want, ok := p.Claims[m[1]]; ok {
+				if hash(restoreFollowup46Assertions(m[0])) != want {
+					t.Fatalf("earlier assertion changed: %s", m[1])
+				}
+				checked++
+			}
+		}
+		if checked != 39 {
+			t.Fatal("earlier claims missing")
+		}
+		var snaps, code, groups []any
+		var e struct{ Proofs, Artifacts []any }
+		var main struct{ Rows, PRs []any }
+		var prev struct{ Claims map[string]string }
+		readJSON(fixture+"followup45-snapshots.json", &snaps)
+		readJSON(fixture+"followup45-evidence.json", &e)
+		readJSON(fixture+"followup45-main.json", &main)
+		readJSON(fixture+"history/follow-up-45/product-source-audit.json", &code)
+		readJSON(fixture+"history/follow-up-45/prior-claims.json", &prev)
+		readJSON(fixture+"followup45-claims.json", &groups)
+		oldFunc := regexp.MustCompile(`(?s)func TestHandover_Followup45Claims\(.*?\n}`).FindString(readOwnedDoc(t, root, "tests/handover/handover_test.go"))
+		old := readOwnedDoc(t, root, followup46PriorPath(register))
+		if len(regexp.MustCompile(`(?m)^\tt\.Run\("`).FindAllString(oldFunc, -1))+len(groups) != 15 || len(snaps) != 27 || len(e.Proofs) != 13 || len(e.Artifacts) != 9 || len(main.Rows) != 5 || len(main.PRs) != 5 || len(code) != 17 || len(prev.Claims) != 38 || len(rows(old, "## Findings register at the follow-up 45 cutoff")) != 133 || len(regexp.MustCompile(`(?m)^\| D-\d{3} \|`).FindAllString(old, -1)) != 64 {
+			t.Fatal("#472 actual counts")
+		}
+	})
+	t.Run("65_decisions_and_133_findings_preserve_unrelated_rows", func(t *testing.T) {
+		before, after := readOwnedDoc(t, root, followup46PriorPath(register)), readOwnedDoc(t, root, register)
+		re := regexp.MustCompile(`(?m)^\| D-\d{3} \|.*$`)
+		old, now := re.FindAllString(before, -1), re.FindAllString(after, -1)
+		var d, f struct{ Updated, Added map[string]string }
+		readJSON(fixture+"followup46-decisions.json", &d)
+		readJSON(fixture+"followup46-findings.json", &f)
+		if len(old) != 64 || len(now) != 65 || len(d.Updated) != 1 || len(d.Added) != 1 || d.Updated["D-158"] == "" || d.Added["D-162"] != now[64] || !strings.HasPrefix(old[63], "| D-161 |") {
+			t.Fatal("decision inventory")
+		}
+		for i, row := range old {
+			id := strings.TrimSpace(strings.Split(row, "|")[1])
+			want := row
+			if x, ok := d.Updated[id]; ok {
+				want = x
+			}
+			if now[i] != want {
+				t.Fatalf("decision drift %s", id)
+			}
+		}
+		a, b := rows(before, "## Findings register at the follow-up 45 cutoff"), rows(after, "## Findings register at the follow-up 46 cutoff")
+		if len(a) != 133 || len(b) != 133 || len(f.Updated) != 10 || len(f.Added) != 0 {
+			t.Fatal("finding inventory")
+		}
+		unchanged := 0
+		for id, row := range a {
+			want, ok := f.Updated[id]
+			if !ok {
+				want = row
+				unchanged++
+			}
+			if b[id] != want {
+				t.Fatalf("finding drift %s", id)
+			}
+		}
+		if unchanged != 123 {
+			t.Fatal("unrelated findings changed")
+		}
+	})
+	t.Run("D098_archive_sizes_and_every_original_hash", func(t *testing.T) {
+		const iso = "docs/e2e/at/isolation/history/follow-up-22/"
+		var a struct {
+			Run   string `json:"run_id"`
+			Files []snapshot
+		}
+		readJSON(iso+"archive.json", &a)
+		if !strings.HasPrefix(a.Run, "7b0db5f2") || len(a.Files) != 184 {
+			t.Fatal("isolation archive")
+		}
+		for _, s := range a.Files {
+			checkHash(iso+s.Path, s.SHA256)
+		}
+		const members = "docs/e2e/at/members/history/follow-up-22/"
+		lines := strings.Split(strings.TrimSpace(readOwnedDoc(t, root, members+"SHA256SUMS")), "\n")
+		if len(lines) != 122 {
+			t.Fatal("members archive count")
+		}
+		for _, l := range lines {
+			parts := strings.SplitN(l, "  ", 2)
+			if len(parts) != 2 {
+				t.Fatal("archive syntax")
+			}
+			checkHash(members+parts[1], parts[0])
+		}
+	})
+	t.Run("isolation_statuses_and_all_first_attempt_writes", func(t *testing.T) {
+		const iso = "docs/e2e/at/isolation/history/follow-up-23-run/"
+		var c struct {
+			Rows []struct {
+				Record, Name, Prior, Current string
+				Changed                      bool
+			}
+		}
+		readJSON(iso+"row-comparison.json", &c)
+		if len(c.Rows) != 29 {
+			t.Fatal("acceptance row count")
+		}
+		counts := map[string]int{}
+		blocked := []string{}
+		for _, r := range c.Rows {
+			if r.Changed || r.Prior != r.Current {
+				t.Fatal("historical status changed")
+			}
+			counts[r.Current]++
+			if r.Current == "blocked" {
+				blocked = append(blocked, r.Record+": "+r.Name)
+			}
+		}
+		if counts["pass"] != 27 || counts["blocked"] != 2 || counts["fail"] != 0 || !slices.Equal(blocked, []string{"AT11: IPv6 platform matrix", "AT13: continuous crash/NetBird/reboot/updater transitions"}) {
+			t.Fatal("operator matrices")
+		}
+		type receipt struct{ Attempts []struct{ Status int } }
+		var i struct{ Commands []struct{ Trace receipt } }
+		var m struct{ Receipts []struct{ Receipt receipt } }
+		readJSON(iso+"node-write-audit.json", &i)
+		readJSON(frozen+"docs_e2e_at_members_F23-node-writes.json", &m)
+		if len(i.Commands) != 15 || len(m.Receipts) != 30 {
+			t.Fatal("write counts")
+		}
+		all := []receipt{}
+		for _, x := range i.Commands {
+			all = append(all, x.Trace)
+		}
+		for _, x := range m.Receipts {
+			all = append(all, x.Receipt)
+		}
+		for _, r := range all {
+			if len(r.Attempts) != 1 || r.Attempts[0].Status != 202 {
+				t.Fatal("first-attempt 202")
+			}
+		}
+	})
+	t.Run("members_only_AT01_count_changes_and_early_renewal", func(t *testing.T) {
+		type result struct {
+			Run       string         `json:"run_id"`
+			Counts    map[string]int `json:"case_counts"`
+			Subchecks map[string]int `json:"subcheck_counts"`
+			Cases     []struct {
+				Case, Status string
+				Counts       map[string]int
+			}
+		}
+		var old, now result
+		readJSON("docs/e2e/at/members/history/follow-up-22/F22-results.json", &old)
+		readJSON(frozen+"docs_e2e_at_members_F23-results.json", &now)
+		if !strings.HasPrefix(now.Run, "6a25221b") || now.Counts["pass"] != 3 || now.Counts["blocked"] != 7 || now.Counts["fail"] != 0 || now.Subchecks["pass"] != 706 || now.Subchecks["blocked"] != 8 || now.Subchecks["fail"] != 0 || old.Subchecks["pass"] != 702 || len(now.Cases) != 10 {
+			t.Fatal("members aggregate")
+		}
+		for _, n := range now.Cases {
+			found := false
+			for _, o := range old.Cases {
+				if n.Case != o.Case {
+					continue
+				}
+				found = true
+				delta := 0
+				if n.Case == "AT01" {
+					delta = 4
+				}
+				if n.Status != o.Status || n.Counts["pass"] != o.Counts["pass"]+delta || n.Counts["blocked"] != o.Counts["blocked"] || n.Counts["fail"] != o.Counts["fail"] {
+					t.Fatal("unexpected case change")
+				}
+			}
+			if !found {
+				t.Fatal("missing prior case")
+			}
+		}
+		var trace struct {
+			Recoveries []struct {
+				Requests []json.RawMessage `json:"requests_until_serving_apply"`
+			}
+		}
+		readJSON(frozen+"docs_e2e_at_members_F23-AT02-closed-recovery-trace.json", &trace)
+		if len(trace.Recoveries) != 1 || len(trace.Recoveries[0].Requests) != 1 {
+			t.Fatal("one early renewal")
+		}
+	})
+	t.Run("59_exact_frozen_evidence_values_without_float_conversion", func(t *testing.T) {
+		var values []struct {
+			Path, Pointer string
+			Expected      json.RawMessage
+		}
+		readJSON(fixture+"followup46-values.json", &values)
+		if len(values) != 59 {
+			t.Fatal("expected-value inventory")
+		}
+		for _, v := range values {
+			if !strings.HasPrefix(v.Path, frozen) && !strings.Contains(v.Path, "/history/follow-up-23-run/") {
+				t.Fatal("living evidence")
+			}
+			dec := json.NewDecoder(strings.NewReader(readOwnedDoc(t, root, v.Path)))
+			dec.UseNumber()
+			var node any
+			if err := dec.Decode(&node); err != nil {
+				t.Fatal(err)
+			}
+			for _, key := range strings.Split(v.Pointer, "/")[1:] {
+				switch x := node.(type) {
+				case map[string]any:
+					var ok bool
+					node, ok = x[key]
+					if !ok {
+						t.Fatalf("missing %s %s", v.Path, v.Pointer)
+					}
+				case []any:
+					n, err := strconv.Atoi(key)
+					if err != nil || n < 0 || n >= len(x) {
+						t.Fatal("array pointer")
+					}
+					node = x[n]
+				default:
+					t.Fatal("scalar pointer")
+				}
+			}
+			got, err := json.Marshal(node)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var want bytes.Buffer
+			if err := json.Compact(&want, v.Expected); err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(got, want.Bytes()) {
+				t.Fatalf("%s %s: %s != %s", v.Path, v.Pointer, got, want.Bytes())
+			}
+		}
+	})
+	var groups []struct {
+		Name    string
+		Records []struct {
+			Path   string
+			Tokens []string
+		}
+	}
+	readJSON(fixture+"followup46-claims.json", &groups)
+	if len(groups) != 6 {
+		t.Fatal("claim group count")
+	}
+	for _, g := range groups {
+		t.Run(g.Name, func(t *testing.T) {
+			for _, r := range g.Records {
+				require(r.Path, r.Tokens...)
+			}
+		})
+	}
+	t.Run("entrypoints_exact_operator_quote_and_unchanged_guidance", func(t *testing.T) {
+		strip := func(s, start, end string) string {
+			t.Helper()
+			a := strings.Index(s, start)
+			if a < 0 {
+				t.Fatalf("missing boundary %s", start)
+			}
+			b := strings.Index(s[a:], end)
+			if b < 0 {
+				t.Fatalf("missing end %s", end)
+			}
+			return s[:a] + s[a+b:]
+		}
+		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
+			lines, old := strings.Split(readOwnedDoc(t, root, path), "\n"), strings.Split(readOwnedDoc(t, root, followup46PriorPath(path)), "\n")
+			if !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-46.md") || !strings.Contains(lines[2], "#469–#473") || lines[3] != strings.Replace(old[2], "**Current cut", "**Previous cut", 1) {
+				t.Fatalf("entrypoint %s", path)
+			}
+			body, before := strings.Join(lines[4:], "\n"), strings.Join(old[4:], "\n")
+			if path == "docs/handover/operator-guide.md" {
+				for _, ends := range [][2]string{{"Under D-158,", "<a id=\"d156-release-rule\"></a>"}, {"<a id=\"at02-closed-recovery\"></a>", "<a id=\"tcp-reload-guard\"></a>"}} {
+					body = strip(body, ends[0], ends[1])
+					before = strip(before, ends[0], ends[1])
+				}
+			}
+			if path == "docs/ops/README.md" {
+				body = strip(body, "## Follow-up 46 acceptance snapshot", "## Follow-up 45 acceptance snapshot")
+			}
+			if body != before {
+				t.Fatalf("unrelated guidance changed %s", path)
+			}
+		}
+		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		source := readOwnedDoc(t, root, frozen+"docs_updates_node-followup26-2026-11-04.md.txt")
+		quote := regexp.MustCompile(`(?s)“(Under D-158,.*?)”`).FindStringSubmatch(source)
+		if len(quote) != 2 {
+			t.Fatal("frozen Requests quotation")
+		}
+		exact := strings.Join(strings.Fields(quote[1]), " ")
+		logging := "The one `update lock wait` record requires a first-attempt `ErrBusy`, including a later cancellation; a non-busy first error and cancellation before any attempt write none."
+		if !strings.Contains(op, exact+"\n\n"+logging) {
+			t.Fatal("exact operator sentence and adjacent logging guidance")
+		}
+		for _, anchor := range []string{"f30-01", "d156-release-rule", "r28-h-1", "at02-closed-recovery", "tcp-reload-guard"} {
+			if strings.Count(op, "<a id=\""+anchor+"\"></a>") != 1 {
+				t.Fatal("operator anchor")
+			}
+		}
+		require("docs/handover/operator-guide.md", "179 ms deny-all with 7 losses", "one early renewal", "63.9 ms", "no timing change is credited to a merge")
 	})
 }

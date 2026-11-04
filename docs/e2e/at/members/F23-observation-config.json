@@ -1,0 +1,20 @@
+{
+  "run_id": "6a25221b-1dcf-4f4d-b866-cd04f57f58f6",
+  "source_commit": "8bde2b6acc0b116515148eeb0ff4448c65453a92",
+  "artifact": "prepared node/etc/agent-run.json retained after teardown",
+  "original_bytes": "1166",
+  "original_sha256": "0c4c7bda43217823eff7cd3c2679750ef0eb359c84411cc0507fe5d003671bc7",
+  "fields": {
+    "heartbeat_seconds": 5,
+    "poll_seconds": 5,
+    "observation_seconds": null
+  },
+  "observation_seconds_present": false,
+  "source_references": [
+    "tests/e2e/cmd/fvpn-e2e-prepare/main.go:384",
+    "node/agent/config.go:145",
+    "node/agent/observe.go:29",
+    "tests/e2e/installer_fixture.go:119"
+  ],
+  "interpretation": "Prepared regular node config omits observation_seconds. Agent Config defaults nonpositive values to 30 s; installer fixture sets 5 s only for installer-node. Stored series is consistent with the regular-node default, not proof of each request outcome. Config is prepared-artifact evidence, not an in-process configuration dump."
+}

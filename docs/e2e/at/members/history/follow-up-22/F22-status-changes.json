@@ -1,0 +1,164 @@
+{
+  "old_run": "5715939e-3943-48f1-8bd5-c869bf7c91c2",
+  "new_run": "3eb3960d-c411-4648-8d77-bba40b436ae3",
+  "changes": [
+    {
+      "case": "AT05",
+      "old_case_status": "blocked",
+      "new_case_status": "blocked",
+      "steps": []
+    },
+    {
+      "case": "AT01",
+      "old_case_status": "blocked",
+      "new_case_status": "blocked",
+      "steps": [
+        {
+          "operation": "delete",
+          "old": [
+            {
+              "index": 18,
+              "name": "Linux sleep wake analogue",
+              "status": "pass"
+            },
+            {
+              "index": 19,
+              "name": "populated-grant serving readiness",
+              "status": "pass"
+            },
+            {
+              "index": 20,
+              "name": "native capture completeness initial-selection",
+              "status": "pass"
+            },
+            {
+              "index": 21,
+              "name": "bounded member transfer observation",
+              "status": "pass"
+            }
+          ],
+          "new": [],
+          "attribution": "Conditional check inventory or added evidence; no changed predicate or inferred merged-change cause."
+        }
+      ]
+    },
+    {
+      "case": "AT02",
+      "old_case_status": "pass",
+      "new_case_status": "pass",
+      "steps": [
+        {
+          "operation": "replace",
+          "old": [
+            {
+              "index": 46,
+              "name": "native capture completeness regrant-01a1a496-8085-7df6-9d1e-6a0f6060a6af",
+              "status": "pass"
+            }
+          ],
+          "new": [
+            {
+              "index": 46,
+              "name": "native capture completeness regrant-01a1a5a6-efdc-7dc9-b6cd-eb37f033ca5f",
+              "status": "pass"
+            }
+          ],
+          "attribution": "Conditional check inventory or added evidence; no changed predicate or inferred merged-change cause."
+        },
+        {
+          "operation": "replace",
+          "old": [
+            {
+              "index": 133,
+              "name": "native capture completeness regrant-01a1a499-f5ae-7123-8b88-b4bfddb9ace2",
+              "status": "pass"
+            }
+          ],
+          "new": [
+            {
+              "index": 133,
+              "name": "native capture completeness regrant-01a1a5aa-8364-7d73-9e96-95bd726aa406",
+              "status": "pass"
+            }
+          ],
+          "attribution": "Conditional check inventory or added evidence; no changed predicate or inferred merged-change cause."
+        }
+      ]
+    },
+    {
+      "case": "AT03",
+      "old_case_status": "pass",
+      "new_case_status": "pass",
+      "steps": [
+        {
+          "operation": "replace",
+          "old": [
+            {
+              "index": 96,
+              "name": "native capture completeness regrant-01a1a4a7-32fc-77fa-8a85-36dcd8e58588",
+              "status": "pass"
+            }
+          ],
+          "new": [
+            {
+              "index": 96,
+              "name": "native capture completeness regrant-01a1a5b8-19ad-7974-8a7e-879385b52ccf",
+              "status": "pass"
+            }
+          ],
+          "attribution": "Conditional check inventory or added evidence; no changed predicate or inferred merged-change cause."
+        }
+      ]
+    },
+    {
+      "case": "AT04",
+      "old_case_status": "blocked",
+      "new_case_status": "blocked",
+      "steps": []
+    },
+    {
+      "case": "AT08",
+      "old_case_status": "blocked",
+      "new_case_status": "pass",
+      "steps": [
+        {
+          "operation": "insert",
+          "old": [],
+          "new": [
+            {
+              "index": 7,
+              "name": "native capture completeness at08-initial-selection",
+              "status": "pass"
+            }
+          ],
+          "attribution": "Conditional check inventory or added evidence; no changed predicate or inferred merged-change cause."
+        }
+      ]
+    },
+    {
+      "case": "AT20",
+      "old_case_status": "blocked",
+      "new_case_status": "blocked",
+      "steps": []
+    },
+    {
+      "case": "AT21",
+      "old_case_status": "blocked",
+      "new_case_status": "blocked",
+      "steps": []
+    },
+    {
+      "case": "AT22",
+      "old_case_status": "blocked",
+      "new_case_status": "blocked",
+      "steps": []
+    },
+    {
+      "case": "AT09",
+      "old_case_status": "blocked",
+      "new_case_status": "blocked",
+      "steps": []
+    }
+  ],
+  "scope": "Sequence-aligned original check names/statuses; numeric observations are retained in full originals. AT02 early renewal timing is separately joined in F22-AT02-closed-recovery-trace.json. No other merged change is attributed from co-occurrence."
+}

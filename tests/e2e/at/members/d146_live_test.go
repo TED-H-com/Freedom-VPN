@@ -143,3 +143,12 @@ func (l *live) d146ServingDiagnostic(kernel string) map[string]any {
 	out["classification"] = classifyServingRead(rows, kernel)
 	return out
 }
+
+// F22-D146: read all stored observations in the original half-open row window,
+// without a current-incarnation or success filter. Payload fields never escape.
+// This diagnostic cannot satisfy or replace the unchanged serving query above.
+func (l *live) d146ObservationWindow(start, end time.Time) ([]byte, error) {
+	var raw []byte
+	err := l.pool.QueryRow(l.ctx, `SELECT COALESCE(jsonb_agg(jsonb_build_object('received_at',received_at,'report_id',report_id,'generation',applied_generation::text,'incarnation',incarnation_id) ORDER BY received_at,report_id),'[]'::jsonb) FROM node_observations WHERE node_id=$1 AND received_at >= $2 AND received_at < $3`, l.node, start, end).Scan(&raw)
+	return raw, err
+}

@@ -1,0 +1,52 @@
+{
+  "node/agent/engine.go": [
+    "e.runCtx = ctx",
+    "e.uploadParent = caller",
+    "e.outboxFull = len(pending) >= 32"
+  ],
+  "node/agent/updaterecover.go": [
+    "e.recoverBlocked = true",
+    "parent := e.runCtx",
+    "parent = context.Background()",
+    "context.WithCancel(parent)",
+    "job.cancel()"
+  ],
+  "node/agent/observe.go": [
+    "if !due || e.outboxFull",
+    "!(e.closedRecoveryRenewal.armed && e.closedRecoveryRenewal.reportID == uuid.Nil)",
+    "e.noteRecoveryReport(rep)"
+  ],
+  "node/agent/sync.go": [
+    "e.leaseAttemptGen = uint64(gen)",
+    "e.leaseAttemptGen != e.appliedGen",
+    "e.leaseAttempted = false",
+    "e.clock.Mono() < e.leaseRetryAt"
+  ],
+  "node/agent/config.go": [
+    "c.ObservationSeconds = 30"
+  ],
+  "node/agent/cmd/fvpn-agent/main.go": [
+    "eng.Run(ctx)",
+    "eng.Boot(ctx)",
+    "eng.Step(ctx)"
+  ],
+  "node/updater/lock_wait.go": [
+    "10 * time.Second",
+    "20 * time.Millisecond",
+    "promptLockAttempts = 5",
+    "if !errors.Is(err, nodelock.ErrBusy)",
+    "waited = true",
+    "if lockBusyDetail(err) == \"lock\"",
+    "staleAttempts = 0",
+    "staleAttempts++",
+    "if staleAttempts == promptLockAttempts",
+    "if staleAttempts == 0",
+    "remaining := updateLockWaitBudget - time.Since(started)"
+  ],
+  "internal/nodes/observations.go": [
+    "resource_version = resource_version + 1"
+  ],
+  "tests/e2e/installer_fixture.go": [
+    "cfg[\"heartbeat_seconds\"], cfg[\"poll_seconds\"], cfg[\"observation_seconds\"] = 5, 5, 5"
+  ]
+}

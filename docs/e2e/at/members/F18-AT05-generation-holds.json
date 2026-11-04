@@ -10,34 +10,34 @@
     "escalations": [],
     "revocations": []
   },
-  "run_id": "3eb3960d-c411-4648-8d77-bba40b436ae3",
+  "run_id": "6a25221b-1dcf-4f4d-b866-cd04f57f58f6",
   "snapshots": [
     {
-      "at": "2026-11-04T08:21:33.926435209Z",
+      "at": "2026-11-04T11:56:26.513075542Z",
       "available": true,
       "label": "AT05 start",
       "snapshot": {
         "members": [
           {
             "status": "pending_payment",
-            "member_id": "01a1a5a6-2384-7372-a2aa-a5dfe364cbb6",
-            "updated_at": "2026-11-04T08:21:31.141235+00:00",
+            "member_id": "01a1a66a-dcff-74dc-9e06-6cfae0221e03",
+            "updated_at": "2026-11-04T11:56:24.459521+00:00",
             "admin_suspended": false,
-            "entitlement_state": null,
+            "entitlement_state": "pending_payment",
             "effective_service_end": null
           },
           {
             "status": "pending_payment",
-            "member_id": "01a1a5a6-2652-7820-a7bd-c79041a218fc",
-            "updated_at": "2026-11-04T08:21:31.858873+00:00",
+            "member_id": "01a1a66a-dfd3-7208-b5c1-6535f357bbb7",
+            "updated_at": "2026-11-04T11:56:24.465809+00:00",
             "admin_suspended": false,
-            "entitlement_state": null,
+            "entitlement_state": "pending_payment",
             "effective_service_end": null
           },
           {
             "status": "pending_payment",
-            "member_id": "01a1a5a6-2920-77c1-8e74-90cc4af9796e",
-            "updated_at": "2026-11-04T08:21:32.576809+00:00",
+            "member_id": "01a1a66a-e2b6-734b-8794-1fc6c3b9c10f",
+            "updated_at": "2026-11-04T11:56:25.142744+00:00",
             "admin_suspended": false,
             "entitlement_state": null,
             "effective_service_end": null
@@ -47,31 +47,31 @@
       }
     },
     {
-      "at": "2026-11-04T08:21:50.644103203Z",
+      "at": "2026-11-04T11:56:41.840855924Z",
       "available": true,
       "label": "AT05 complete",
       "snapshot": {
         "members": [
           {
             "status": "pending_payment",
-            "member_id": "01a1a5a6-2384-7372-a2aa-a5dfe364cbb6",
-            "updated_at": "2026-11-04T08:21:38.194387+00:00",
+            "member_id": "01a1a66a-dcff-74dc-9e06-6cfae0221e03",
+            "updated_at": "2026-11-04T11:56:24.459521+00:00",
             "admin_suspended": false,
             "entitlement_state": "pending_payment",
             "effective_service_end": null
           },
           {
             "status": "pending_payment",
-            "member_id": "01a1a5a6-2652-7820-a7bd-c79041a218fc",
-            "updated_at": "2026-11-04T08:21:38.201714+00:00",
+            "member_id": "01a1a66a-dfd3-7208-b5c1-6535f357bbb7",
+            "updated_at": "2026-11-04T11:56:24.465809+00:00",
             "admin_suspended": false,
             "entitlement_state": "pending_payment",
             "effective_service_end": null
           },
           {
             "status": "pending_payment",
-            "member_id": "01a1a5a6-2920-77c1-8e74-90cc4af9796e",
-            "updated_at": "2026-11-04T08:21:38.205164+00:00",
+            "member_id": "01a1a66a-e2b6-734b-8794-1fc6c3b9c10f",
+            "updated_at": "2026-11-04T11:56:39.608388+00:00",
             "admin_suspended": false,
             "entitlement_state": "pending_payment",
             "effective_service_end": null
@@ -81,5 +81,5 @@
       }
     }
   ],
-  "source_commit": "8a6dcf34248f035a3a460fcdee3e1e19e80c9137"
+  "source_commit": "8bde2b6acc0b116515148eeb0ff4448c65453a92"
 }
