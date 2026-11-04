@@ -290,7 +290,7 @@ promised for unmerged work. No new handover live run or physical-arm64 claim.
    if the necessary transition cannot be observed. Running at cutoff.
 5. **Devstack / members owners:** investigate F21-AT08 and F21-D146 without a
    presumed cause. Members' three archived G2 links need the outside-owned
-   `docs/e2e/at/poc/G2-followup34-2026-11-03.md` alias already routed by #455.
+   docs/e2e/at/poc/G2-followup34-2026-11-03.md alias already routed by #455.
    Handover does not rewrite pinned lane evidence or add that alias.
 
 These carry existing routed work. No outside-owned pin needs changing for this

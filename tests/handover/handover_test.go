@@ -14325,7 +14325,7 @@ func TestHandover_Followup43Claims(t *testing.T) {
 		requireHandoverClaimTokens(t, root, path, tokens...)
 	}
 	// Complete narratives and inventories are bound as well as individual claims.
-	checkHash("docs/handover/follow-up-43.md", "1a824684a264d9d4442828cf87b2ad211068862f392f8b7a442a422044da8ca8")
+	checkHash("docs/handover/follow-up-43.md", "7c42f489a42796ae29e46f4b808d888a7a11261e532edba223856b6f6ebe3eb2")
 	checkHash("tests/handover/testdata/followup43-main.json", "6b3e02f2665b7831732aff82b4b1c26766454298b767b452ac2878bedb07733f")
 	checkHash("tests/handover/testdata/followup43-snapshots.json", "63ebfe95f932f13fc570ba9dd165de677fa21f9277a6034dc4026602ee75ba28")
 	checkHash("tests/handover/testdata/followup43-evidence.json", "9ac887bae55ad280e33914b7d359a48935a426a649e6446b8db3debd070ed7c2")
