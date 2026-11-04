@@ -69,6 +69,10 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 			defer func() { p.t = parent }()
 			row := map[string]any{"status": "blocked", "owner": "w3-devstack-e2e", "transport_scope": "one original TCP/9446 connection and authenticated UDP/9445 socket; independent senders; helper limit 20 minutes"}
 			rows[kind] = row
+			if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "17" {
+				p.restartSnapshot17(kind + " before")
+				defer p.restartSnapshot17(kind + " after")
+			}
 			complete := false
 			defer func() {
 				if t.Failed() && !complete {
