@@ -1504,3 +1504,128 @@ and diagnostic. Original records and earlier “not exercised” wording are
 preserved as history; the required real-API proof is now exercised. This
 zero-header injection does not establish the historical observation race.
 Isolation still owns its post-merge acceptance run.
+
+## 2026-11-03 — AT owners: exported node conflict handling (follow-up 33)
+
+`labstack.Stack.WriteNode(ctx, browser, method, writePath, readPath, body,
+etag, intended, successStatuses...)` is now available through
+`tests/e2e/internal/labstack` with `-tags e2e`. Supply the AT caller's own
+`BrowserSession` (cookie client and CSRF), `/api/v1/` paths and the initial
+GET's ETag. The caller's client must use `*http.Transport` or nil; a custom
+RoundTripper is refused because it could introduce unrecorded retries.
+
+```go
+result := stack.WriteNode(ctx, browser, "PATCH", nodePath, nodePath,
+    capacityBody, read.Header.Get("ETag"), labstack.NodeFieldsMatch(capacityBody), 202)
+// Embed result.Receipt even when result.Accepted(202) is false.
+```
+
+Predicates: `NodeFieldsMatch(want)` compares requested fields exactly (including
+nested capacity and decimal strings); exclude command-only fields such as
+`reason`. `NodePublished(groups...)` requires published intent and the exact
+unordered group membership, refusing duplicates. `NodeRevoked` checks revoked
+lifecycle. Other lifecycle writes can supply `NodeFieldsMatch` with their
+intended lifecycle, or a `func([]byte) bool` decoding the GET body and requiring
+all intended values. A nil predicate is refused.
+
+The exported call shares `writeNode`: only exact `412 RESOURCE_VERSION_CONFLICT`
+re-reads; already-intended ends writes; otherwise the fresh strong ETag is used
+with the same UUID key and frozen JSON body. Three writes and ten seconds cover
+all attempts/re-reads, including a final re-read after the third conflict. Other
+statuses/codes, transport errors, failed reads and invalid fresh ETags stop.
+Private HTTP/1 connections prevent implicit replay; redirects are not followed.
+`Accepted(202)` includes already-intended; `Reply` remains the real 412 in that
+case. It supplies no new operation. Retain the consumer's real operation lookup
+and observed-state checks; command acceptance is not applied-state completion.
+
+Embed `NodeWriteReceipt` (`result.Receipt`): UTC `started_at`/`finished_at`,
+`max_attempts`, `limit_seconds`, `status`, `outcome`, ordered `attempts` with
+method/path, sent `if_match`, `idempotency_key`, exact request `body_sha256`,
+response status/code, optional current-version detail, transport-error flag,
+and nested `reread`. Each re-read has its own times, method/path, status/code,
+returned ETag and `already_intended`; its sent If-Match is empty and its request
+body digest is SHA-256 of empty bytes. Bodies/cookies/CSRF are never in receipts.
+
+The [follow-up 32 audit](runs/2026-11-03/followup32/audit.md) sites are now
+adoptable in each owner's follow-up (line numbers are the audit baseline):
+
+| Owner | Sites |
+|---|---|
+| secops | Capacity PATCH: `counted_capacity_test.go:104`, `followup4_live_test.go:54`, `followup5_live_test.go:56`, `followup7_live_test.go:101`; publication PUT: `inputs_test.go:335`; revoke POST: `live_test.go:671`. |
+| enrollment | Capacity/publication closures: `freeze_test.go:68`, `handoff_test.go:427`; revoke helper: `live_test.go:888`. |
+| members | Generic node mutations: `identity_nodes_test.go:173`. |
+| usage | Generic node mutations: `live_test.go:592`. |
+| updates | Retirement DELETE: `installer_test.go:411`; retain retirement read-back. |
+| isolation | Existing overlaid driver can keep calling `writeNode`; six sites are assigned to isolation 20. |
+
+No AT file changed. Expected stale-version negative tests remain negative.
+Offline cookie/CSRF stubs cover retry, already-intended, three-write exhaustion,
+other-code 412 and redirect refusal. Live proof belongs to each consumer's next
+authorized assembled run; no stack or Docker command ran in this follow-up.
+
+## 2026-11-03 — members 19: finite-grant early-return recovery (follow-up 33)
+
+`ReplaceFiniteGrant` keeps its signature, successful fields and expired-input
+pre-revoke refusal. It now retains every successfully revoked grant's plan
+revision and original `[valid_from, valid_until)` before replay verification.
+Any later error triggers recovery through the public grants API, using the
+original validity rather than extending the fixture. Recovery has a separate
+two-minute context so cancellation of the failed transition cannot skip it.
+
+If the replacement committed before its response/replay/projection failed,
+read-only lookup by this command's key, administrator and member identifies
+only its own still-live grant. Recovery withdraws that replacement through the
+public revoke API before restoring the originals. This also handles a different
+replacement plan, which would otherwise prevent the original plan's restoration.
+Every original grant gets one restoration POST; a failed restoration does not
+skip the others. A grant that has expired in the meantime cannot be recreated
+with its original end; the failed API result is reported, never extended.
+
+`GrantTransition.Restorations` records the revoked grant ID, original plan and
+validity, new grant/operation IDs, HTTP status/code, accepted flag, outcome and
+UTC times. `outcome=restored` requires operation success and public member-grant
+read-back of the live, unrevoked grant with exactly that plan and validity.
+`ReplacementRevocations` retains acceptance and operation receipts for any
+withdrawal of the replacement; acceptance alone does not claim worker completion.
+The original failure remains the returned error. If recovery fails too, the
+returned joined error contains both failures and all available result receipts.
+
+Members' existing secondary restoration is **harmless for same-plan service
+eligibility**, but creates another grant/audit and may extend validity to its own
+one-hour end. `members.Service.Grant` rejects overlapping grants only on a
+different plan revision; `entitlement.Compute` merges overlapping same-plan
+spans. Callers are `finiteExpiry` in `finite_grant_test.go` via
+`runFiniteExpiry`/`restoreFiniteGrantOnEarlyReturn`, and `reauthorizationLimit`
+in `reauthorization_test.go` via `restoreLimitGrantOnEarlyReturn` in
+`grant_restore.go`. Their extra recovery can remain as a fallback, especially
+when the shared recovery reports failure. Owners may skip a duplicate POST
+when all shared restoration receipts are `restored`, while preserving their
+own device/fence verification and recovery after later failures. The normal
+expiry restoration and successful downgrade's later return to the higher plan
+are still needed. No caller was changed.
+
+Offline tests exercise create, replay and projection failures, first-revoke
+replay failure, partial revocation, committed replacement recovery, joined
+restoration failure with continued attempts, and success without restoration.
+Live worker/API proof remains for the consumers' next authorized assembled run.
+
+## 2026-11-03 — members 19: partial native-router rollback (follow-up 33)
+
+`PrepareNativeRouter1280` retains its normal ten steps and `e2e-down` cleanup.
+A failed setup step rolls back only completed steps, in reverse order: delete
+peer routes, disconnect attached networks, remove the router container and
+remove its network. Router-only forwarding sysctls are undone by container
+removal. Each inverse gets a detached ten-second bound; failure or cancellation
+of one does not stop the remaining inverses.
+
+The error preserves the original setup cause through `errors.Is`/`Unwrap` and
+includes all rollback receipts in its text, so members' existing `safeError`
+already retains them. `errors.As` to `*labstack.NativeRouterSetupError` exposes
+`Step` and `Rollback` (setup-step index, inverse command, outcome, UTC bounds).
+The sysctl row records its container removal's outcome. A failed inverse stays
+visible for later cleanup; it is never treated as successful removal.
+
+An injected runner tests failure at every one of the ten steps, the exact
+reverse commands, continued rollback when every inverse fails, caller
+cancellation, and success with no rollback. These are offline proofs only;
+no live network or platform acceptance is claimed.

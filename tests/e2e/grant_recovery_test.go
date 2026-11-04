@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/http/cookiejar"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -32,7 +33,6 @@ func TestENT01_FiniteGrantRecovery(t *testing.T) {
 			var requests, restores, withdrawals int
 			var createKey, createBody string
 			var restoredGrants []map[string]any
-			var restoreOps []uuid.UUID
 			path := "/api/v1/admin/members/" + member.String()
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.Method == "GET" {
@@ -64,7 +64,14 @@ func TestENT01_FiniteGrantRecovery(t *testing.T) {
 					} else if createKey != r.Header.Get("Idempotency-Key") || createBody != string(raw) {
 						t.Error("changed create replay key/body")
 					}
-					if mode == "create" || mode == "lost_create_response" || mode == "restoration_failure" || (mode == "replay" && requests == 2) {
+					if mode == "lost_create_response" {
+						conn, _, err := w.(http.Hijacker).Hijack()
+						if err == nil {
+							_ = conn.Close()
+						}
+						return
+					}
+					if mode == "create" || mode == "restoration_failure" || (mode == "replay" && requests == 2) {
 						w.WriteHeader(503)
 						return
 					}
@@ -88,7 +95,6 @@ func TestENT01_FiniteGrantRecovery(t *testing.T) {
 					return
 				}
 				id, op := uuid.New(), uuid.New()
-				restoreOps = append(restoreOps, op)
 				restoredGrants = append(restoredGrants, map[string]any{"grant_id": id, "plan_revision_id": grant.Plan, "valid_from": grant.From, "valid_until": grant.Until, "revoked_at": nil})
 				w.WriteHeader(202)
 				_ = json.NewEncoder(w).Encode(map[string]any{"operation_id": op, "resource": map[string]any{"id": id}})
@@ -149,7 +155,7 @@ func TestENT01_FiniteGrantRecovery(t *testing.T) {
 					t.Fatal("original error lost")
 				}
 			}
-			wantOriginal := map[string]string{"create": "create HTTP 503", "lost_create_response": "create HTTP 503", "replay": "create replay did not return the same operation", "projection": "worker operation/projection deadline", "restoration_failure": "create HTTP 503"}[mode]
+			wantOriginal := map[string]string{"create": "create HTTP 503", "lost_create_response": "create HTTP 0", "replay": "create replay did not return the same operation", "projection": "worker operation/projection deadline", "restoration_failure": "create HTTP 503"}[mode]
 			if !strings.Contains(err.Error(), wantOriginal) {
 				t.Fatalf("original error lost: %v", err)
 			}
@@ -175,7 +181,8 @@ func TestENT01_FiniteGrantRecovery(t *testing.T) {
 }
 
 func TestENT01_ExpiredFiniteGrantHasNoEffects(t *testing.T) {
-	got, err := (&Stack{}).ReplaceFiniteGrant(t.Context(), BrowserSession{}, uuid.New(), uuid.New(), time.Now().Add(-time.Second))
+	jar, _ := cookiejar.New(nil)
+	got, err := (&Stack{}).ReplaceFiniteGrant(t.Context(), BrowserSession{Client: &http.Client{Jar: jar}}, uuid.New(), uuid.New(), time.Now().Add(-time.Second))
 	if err == nil || len(got.Revoked) != 0 || len(got.Restorations) != 0 || got.BeforeRevision != "" || got.AfterRevision != "" {
 		t.Fatal(fmt.Sprint(got, err))
 	}

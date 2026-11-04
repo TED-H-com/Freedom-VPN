@@ -18,6 +18,7 @@ type NativeRouterRollback struct {
 	Step       int       `json:"setup_step"`
 	Command    []string  `json:"command,omitempty"`
 	Outcome    string    `json:"outcome"`
+	Error      string    `json:"error,omitempty"`
 	StartedAt  time.Time `json:"started_at"`
 	FinishedAt time.Time `json:"finished_at"`
 }
@@ -51,6 +52,7 @@ func rollbackNativeRouter(ctx context.Context, run nativeRouterRunner, failed in
 			row.Outcome = "succeeded"
 			if err != nil {
 				row.Outcome = "failed"
+				row.Error = err.Error()
 			}
 		}
 		row.FinishedAt = time.Now().UTC()
@@ -60,6 +62,7 @@ func rollbackNativeRouter(ctx context.Context, run nativeRouterRunner, failed in
 				if out.Rollback[j].Step == 5 {
 					out.Rollback[j].Outcome = "container_removal_" + row.Outcome
 					out.Rollback[j].FinishedAt = row.FinishedAt
+					out.Rollback[j].Error = row.Error
 				}
 			}
 		}
