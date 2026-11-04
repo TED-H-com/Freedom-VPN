@@ -11,3 +11,9 @@
 Secondary owned diagnostics, not extra outside-owner requests: the populated-hold reviewer raised a missing-input FileNotFoundError because setup returned before the experiment; clone export likewise found no clone. The generic recovery verdict is blocked/run_id null and does not prove an injection. These remain visible under [findings](follow-up-19-findings.json); a future owned change can emit a clean unavailable review on this early-abort path without changing acceptance predicates.
 
 All owned Docker inventories are zero. D-144's expected-blocked list and workflow are unchanged. No handover claims edit was needed: the existing claims already read immutable artifacts. Historical follow-up-18 requests remain [archived](history/follow-up-18/requests.md).
+
+## Follow-up 20 — 2026-11-03 (additive)
+
+**F19-01 answered by provisional D-152.** #434's resolver-only and host-only rows dropped uploads at `ctbadns` and `cthost`, with zero upload usage. D-152 confirms these are the applicable production destination-deny rules, so both rows meet the requirement. Denied-only and denied+host use `ctdeny`. No lab run, rule-order change or historical-record rewrite. [Decision and retained evidence](followup20-2026-11-03.md#f19-01-answered-by-d-152), [new findings](follow-up-20-findings.json). The original request above and [archived findings](history/follow-up-19/follow-up-19-findings.json) remain as recorded.
+
+F19-02's shared helper fix is merged in devstack 32. This lane has migrated its six sites; the fresh assembled publication outcome is recorded after its single run. The three carried operator/classification requests remain open unless directly answered by new evidence.

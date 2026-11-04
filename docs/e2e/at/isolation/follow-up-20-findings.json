@@ -1,0 +1,20 @@
+{
+  "baseline": "c359d4a9447fded8b035d9a084ae24999850dbf0",
+  "date": "2026-11-03",
+  "findings": [
+    {
+      "id": "F19-01",
+      "status": "answered",
+      "decision": "D-152, provisional orchestrator decision",
+      "resolver_only": {"drop_rule": "ctbadns", "upload_usage_bytes": 0, "meets_requirement": true},
+      "host_only": {"drop_rule": "cthost", "upload_usage_bytes": 0, "meets_requirement": true},
+      "denied_only_and_denied_host": "ctdeny",
+      "historical_run": "1d746f9a-e2df-4baf-af8d-f2d3074c8cbf",
+      "evidence": "history/follow-up-19-lab-final/lab-AT13-d147-detail.json",
+      "new_lab_run": false,
+      "historical_records_rewritten": false
+    },
+    {"id": "F19-02", "status": "pending fresh assembled publication evidence", "owner": "w3-devstack-e2e", "fix": "devstack 32 (#438) shared bounded writeNode helper"}
+  ],
+  "carried_requests": ["AT11 native platform matrix", "AT13 full continuous fault matrix", "F17-01 pure stale_generation"]
+}

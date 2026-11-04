@@ -129,6 +129,14 @@ def joins(central):
 
 
 def review(root):
+    from review_unexecuted import populated_holds, present
+    populated, unavailable = populated_holds(root)
+    if not present(root, 'generation-holds-central.json'):
+        result = dict(unavailable or {}, status='unavailable', passed=False, stage='generation_holds',
+                      accepted_hold_count=0, applied_equals_delivered_desired=0,
+                      applied_equals_desired_at_read=0, problems=[], populated_hold_retention=[])
+        (root/'generation-holds-review.json').write_text(json.dumps(result, indent=2)+'\n')
+        return result
     central = read(root, 'generation-holds-central.json')
     result = joins(central)
     wire = read(root, 'receiver-capture.json')['transactions']
@@ -214,9 +222,8 @@ def review(root):
         if retention['status'] == 'fail':
             result['problems'].append(dict(incident_id=hid, problem='incident/first_seen lost across direct stop'))
     populated_retention = []
-    if (root/'populated-holds.json').exists() or (root/'populated-holds.json.gz').exists():
+    if populated is not None:
         from review_populated_holds import retention as review_retention
-        populated = read(root, 'populated-holds.json')
         if populated['run_id'] != central['run_id']:
             raise ValueError('populated hold attempts belong to another run')
         for attempt in populated['attempts']:
@@ -229,6 +236,8 @@ def review(root):
             if checked['status'] != 'pass':
                 result['problems'].append(dict(incident_id=attempt['incident_id'], problem='populated active-stop retention failed'))
     result['populated_hold_retention'] = populated_retention
+    if unavailable:
+        result['populated_holds_diagnostic'] = unavailable
     result['applied_equals_delivered_desired']=sum(h['applied_equals_delivered_desired'] for h in result['holds'])
     result.update(run_id=central['run_id'], status='fail' if result['problems'] else 'pass', retention=retention,
         accepted_hold_count=len(result['holds']), applied_equals_desired_at_read=sum(h['applied_equals_desired_at_read'] for h in result['holds']),
@@ -255,4 +264,4 @@ if __name__ == '__main__':
     import sys
     result = review(Path(sys.argv[1]))
     print(json.dumps({k:result[k] for k in ('run_id','status','accepted_hold_count','applied_equals_delivered_desired','applied_equals_desired_at_read','problems')},indent=2))
-    raise SystemExit(bool(result['problems']))
+    raise SystemExit(result['status'] == 'unavailable' or bool(result['problems']))
