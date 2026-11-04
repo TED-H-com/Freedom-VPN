@@ -1,0 +1,75 @@
+//go:build e2e
+
+package e2e
+
+import (
+	"context"
+	"encoding/json"
+	"os"
+	"os/exec"
+	"testing"
+	"time"
+)
+
+// isolationAssist performs the operator's command and retains its acceptance
+// receipt. api_ok is not an operation or observed-state completion claim.
+// Only the live entry point supplies the saved lab address/route restoration.
+func isolationAssist(ctx context.Context, admin *session, path string, restore func() ([]byte, error)) (map[string]any, error) {
+	get, err := admin.call(ctx, "GET", path, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+	start := time.Now().UTC()
+	capacity := map[string]any{"capacity": map[string]any{"down_bps": 208000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
+	write := admin.writeNode(ctx, "PATCH", path, path, capacity, get.Header.Get("ETag"), nodeFieldsMatch(capacity), []int{202}, func(string, string) {})
+	out, restoreErr := restore()
+	return map[string]any{
+		"at": start, "completed_at": time.Now().UTC(),
+		"action":      "Extra clean capacity generation (208000000) after recovery stalled; restore saved lab member addresses/routes again. No row or observation edits.",
+		"http_status": write.Reply.Status, "response": json.RawMessage(write.Reply.Body),
+		"restore_output": string(out), "restore_ok": restoreErr == nil,
+		"api_ok": write.accepted(202), "assisted": true, "node_write": write.Receipt,
+	}, nil
+}
+
+// TEST ONLY: explicit operator assist, never part of an offline or assembled run.
+func TestIsolationAssist(t *testing.T) {
+	ctx, cancel := context.WithTimeout(t.Context(), 60*time.Second)
+	defer cancel()
+	lab, err := openLab()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if lab.prefix != "fvpn-w4-isolation" {
+		t.Fatal("binding")
+	}
+	raw, err := lab.docker(lab.node, "cat", "/var/lib/vpn-node/identity/node.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var id struct {
+		Node string `json:"node_id"`
+	}
+	if json.Unmarshal(raw, &id) != nil {
+		t.Fatal("identity")
+	}
+	admin, err := lab.login(ctx, "e2e-admin", "admin")
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := lab.public + "/api/v1/admin/nodes/" + id.Node
+	evidence, err := isolationAssist(ctx, admin, path, func() ([]byte, error) {
+		return exec.Command("docker", "exec", lab.node, "sh", "-c", "ip link set fvmb0 up; ip -4 address restore < /tmp/isolation-member-addresses; ip -4 route restore < /tmp/isolation-member-routes").CombinedOutput()
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	body, err := json.MarshalIndent(evidence, "", "  ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(os.Getenv("ASSIST_EVIDENCE"), append(body, '\n'), 0600); err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("extra generation status=%d restore_ok=%t", evidence["http_status"], evidence["restore_ok"])
+}
