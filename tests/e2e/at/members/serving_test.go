@@ -94,15 +94,25 @@ func (l *live) publicationState() (string, string) {
 }
 func (l *live) publicationCommand(r *record, intent string, groups []uuid.UUID) bool {
 	got := l.nodeMutation("PUT", "/publication", api.PublicationRequest{PublicationIntent: api.PublicationIntent(intent), GroupIds: &groups, Reason: "TEST ONLY AT08"})
-	r.check("publication command "+intent, "202 pending, group_ids accepted", detail(got), "PUT /admin/nodes/{id}/publication with group_ids and If-Match", got.status == 202)
-	if got.status != 202 {
-		r.block("Publication command rejected: " + detail(got))
+	r.check("publication command "+intent, "202 pending, group_ids accepted", got.detail(), "PUT /admin/nodes/{id}/publication with group_ids and If-Match", got.accepted(202))
+	if !got.accepted(202) {
+		r.block("Publication command rejected: " + got.detail())
 		return false
 	}
 	var command struct {
 		ID uuid.UUID `json:"operation_id"`
 	}
 	_ = json.Unmarshal(got.body, &command)
+	if got.write.AlreadyIntended {
+		kind := map[string]string{"published": "node.publish", "disabled": "node.disable", "unpublished": "node.unpublish"}[intent]
+		// No new operation is fabricated from the 412. Require the real current
+		// generation's operation and retain all original completion checks below.
+		err := l.pool.QueryRow(l.ctx, `SELECT o.id FROM operations o JOIN nodes n ON n.id=o.resource_id WHERE o.resource_type='node' AND o.resource_id=$1 AND o.kind=$2 AND o.desired_generation=n.desired_config_generation ORDER BY o.created_at DESC,o.id DESC LIMIT 1`, l.node, kind).Scan(&command.ID)
+		r.jsonCheck("existing publication operation "+intent, "real operation for the current desired generation", map[string]any{"operation_id": command.ID, "node_write": got.write.Receipt}, "read-only lookup after already-intended conflict", err == nil && command.ID != uuid.Nil)
+		if err != nil || command.ID == uuid.Nil {
+			return false
+		}
+	}
 	var status string
 	var required, observed int
 	progress := map[string]string{}
@@ -142,7 +152,7 @@ func (l *live) publish(r *record, groups []uuid.UUID) bool {
 		return false
 	}
 	patch := l.nodeMutation("PATCH", "", map[string]any{"name": "TEST ONLY renamed", "region": "TEST", "capacity": map[string]any{"down_bps": 200000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}})
-	r.check("finite capacity and classification", "200 or 202", detail(patch), "PATCH node capacity: TEST ONLY 200 Mbps / 100 Mbps member caps", patch.status == 200 || patch.status == 202)
+	r.check("finite capacity and classification", "200 or 202", patch.detail(), "PATCH node capacity: TEST ONLY 200 Mbps / 100 Mbps member caps", patch.accepted(200, 202))
 	return l.publicationCommand(r, "published", groups)
 }
 func (l *live) routeReadback(r *record) {
