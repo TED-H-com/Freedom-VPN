@@ -1,0 +1,42 @@
+{
+  "branch": "r31-recovery-lock-fixes-review",
+  "head": "0e33b9fe3ef62244aab7a35eb1119ef6a7036621",
+  "base": "fd0f249418926e875928d4e6799ac2fc05c6ba9f",
+  "committer": "Ted H",
+  "reviewer": "agy/gemini-4-argon-high",
+  "source": ".agent/REVIEW.md",
+  "archive": "docs/reviews/r31-recovery-lock-fixes-review.md",
+  "sha256": "46300735f2a56cfcab37d22b862153efd2f2895e6e25c244f7af938ca5ec7aaa",
+  "bytes": 50588,
+  "lines": 302,
+  "proofs": [
+    {
+      "path": "tests/handover/testdata/history/follow-up-47/review-node_agent_review_r31_test.go.txt",
+      "source": "node/agent/review_r31_test.go",
+      "source_commit": "0e33b9fe3ef62244aab7a35eb1119ef6a7036621",
+      "sha256": "e45caec2d5dcc3768af1c3edad0c03802b993b8d476e0361d6b948e9b894ff65",
+      "bytes": 14877
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-47/main-node_agent_review_r31_test.go.txt",
+      "source": "node/agent/review_r31_test.go",
+      "source_commit": "1c39a0e73825dbcf911dfd2bec6e75aed64c979b",
+      "sha256": "f6b5c080ee8cc16bac815380f3cb63b0f54e1b0bf7ed456a924d7630209d9f24",
+      "bytes": 15259
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-47/review-node_updater_review_r31_test.go.txt",
+      "source": "node/updater/review_r31_test.go",
+      "source_commit": "0e33b9fe3ef62244aab7a35eb1119ef6a7036621",
+      "sha256": "00414c8f141bab43caed86eb683d28c0baa50fb3ee27d833711316a6c4e7b132",
+      "bytes": 5717
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-47/main-node_updater_review_r31_test.go.txt",
+      "source": "node/updater/review_r31_test.go",
+      "source_commit": "1c39a0e73825dbcf911dfd2bec6e75aed64c979b",
+      "sha256": "00414c8f141bab43caed86eb683d28c0baa50fb3ee27d833711316a6c4e7b132",
+      "bytes": 5717
+    }
+  ]
+}
