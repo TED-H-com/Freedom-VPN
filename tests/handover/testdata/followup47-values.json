@@ -1,0 +1,1162 @@
+[
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/scheduled-job.json",
+    "pointer": "/status",
+    "expected": "fail"
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/scheduled-job.json",
+    "pointer": "/errors",
+    "expected": [
+      "python3 -B tests/e2e/at/isolation/review_boundary.py: nonzero exit 1"
+    ]
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/scheduled-job.json",
+    "pointer": "/phase_errors",
+    "expected": [
+      "python3 -B tests/e2e/at/isolation/review_boundary.py: nonzero exit 1"
+    ]
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/scheduled-job.json",
+    "pointer": "/reviews",
+    "expected": [
+      {
+        "review": "populated-holds",
+        "status": "incomplete",
+        "mapping": "expected not exercised",
+        "items": [
+          {
+            "item": "pure_stale_generation",
+            "status": "not exercised",
+            "reason": "F17-01: the populated-holds fixture does not exercise a pure stale_generation incident; this carried gap remains open.",
+            "owner": "w4-at-isolation / acceptance",
+            "established_by": "D-163: workflow runs 41640196805 (2026-11-03) and 41836274140 (2026-11-04), artifacts at-isolation-41640196805-1 and at-isolation-41836274140-1, each retain an incomplete populated-holds-review.json with only pure_stale_generation not exercised, eight other coverage items passing and no join problems."
+          }
+        ],
+        "coverage": {
+          "populated_hold": "pass",
+          "independent_denial": "pass",
+          "alarm_single_escalation": "pass",
+          "unrelated_failure_precedence": "pass",
+          "active_stop_retention": "pass",
+          "matching_recovery": "pass",
+          "distinct_later_incident": "pass",
+          "pure_stale_generation": "not exercised",
+          "central_30s_fallback": "pass"
+        },
+        "join_problems": []
+      }
+    ]
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/member-expiry-review.json",
+    "pointer": "/status",
+    "expected": "pass"
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/member-expiry-review.json",
+    "pointer": "/qualified",
+    "expected": true
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/member-expiry-review.json",
+    "pointer": "/sample_count",
+    "expected": 1
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/member-expiry-review.json",
+    "pointer": "/serving_read_count",
+    "expected": 6
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/member-expiry-review.json",
+    "pointer": "/bounds",
+    "expected": {
+      "signed_lease_bounds": "{\"members\": [{\"lease_end\": \"2026-11-04T14:22:31.122426107Z\", \"member_id\": \"01a1a6e3-1db9-7e1b-9947-e73c26a87a0f\", \"entitlement_revision\": \"2\", \"effective_service_end\": \"2026-11-04T15:08:01.424552Z\"}, {\"lease_end\": \"2026-11-04T14:22:31.122426107Z\", \"member_id\": \"01a1a6e3-99d0-786d-92dd-81628a43f8cb\", \"entitlement_revision\": \"1\", \"effective_service_end\": \"2026-11-04T15:08:16.23106Z\"}, {\"lease_end\": \"2026-11-04T14:22:04Z\", \"member_id\": \"01a1a6ef-9412-73e6-b7a4-66151a161a1b\", \"entitlement_revision\": \"1\", \"effective_service_end\": \"2026-11-04T14:22:04Z\"}], \"lease_id\": \"6298bba5-84c4-4200-9503-b9eed6a20eb6\", \"issued_at\": \"2026-11-04T14:21:31.122426+00:00\", \"expires_at\": \"2026-11-04T14:22:31.122426+00:00\", \"generation\": \"31\", \"accepted_serving\": true}",
+      "grant_deadline": "2026-11-04T14:22:04Z",
+      "control_stopped_at": "2026-11-04T14:21:59Z",
+      "post_deadline_bytes_before": "2671",
+      "post_deadline_bytes_after": "2671",
+      "node_lease_valid_through_last_probe": "true; completed=2026-11-04T14:22:27.323992642Z; node_expires=2026-11-04T14:22:31.122426Z"
+    }
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/member-expiry-review.json",
+    "pointer": "/last_sample",
+    "expected": {
+      "at": "2026-11-04T14:21:41.165307451Z",
+      "lease": {
+        "members": [
+          {
+            "lease_end": "2026-11-04T14:22:31.122426107Z",
+            "member_id": "01a1a6e3-1db9-7e1b-9947-e73c26a87a0f",
+            "entitlement_revision": "2",
+            "effective_service_end": "2026-11-04T15:08:01.424552Z"
+          },
+          {
+            "lease_end": "2026-11-04T14:22:31.122426107Z",
+            "member_id": "01a1a6e3-99d0-786d-92dd-81628a43f8cb",
+            "entitlement_revision": "1",
+            "effective_service_end": "2026-11-04T15:08:16.23106Z"
+          },
+          {
+            "lease_end": "2026-11-04T14:22:04Z",
+            "member_id": "01a1a6ef-9412-73e6-b7a4-66151a161a1b",
+            "entitlement_revision": "1",
+            "effective_service_end": "2026-11-04T14:22:04Z"
+          }
+        ],
+        "lease_id": "6298bba5-84c4-4200-9503-b9eed6a20eb6",
+        "issued_at": "2026-11-04T14:21:31.122426+00:00",
+        "expires_at": "2026-11-04T14:22:31.122426+00:00",
+        "generation": "31",
+        "accepted_serving": true
+      }
+    }
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/member-expiry-review.json",
+    "pointer": "/post_deadline_probes",
+    "expected": [
+      {
+        "name": "post_deadline_0",
+        "detail": "result=timeout; route=192.0.6.10 dev fvnb0 table netbird src 100.77.244.225 uid 0 \n    cache"
+      },
+      {
+        "name": "post_deadline_1",
+        "detail": "result=timeout; route=192.0.6.10 dev fvnb0 table netbird src 100.77.244.225 uid 0 \n    cache"
+      },
+      {
+        "name": "post_deadline_2",
+        "detail": "result=timeout; route=192.0.6.10 dev fvnb0 table netbird src 100.77.244.225 uid 0 \n    cache"
+      },
+      {
+        "name": "post_deadline_3",
+        "detail": "result=timeout; route=192.0.6.10 dev fvnb0 table netbird src 100.77.244.225 uid 0 \n    cache"
+      },
+      {
+        "name": "post_deadline_4",
+        "detail": "result=timeout; route=192.0.6.10 dev fvnb0 table netbird src 100.77.244.225 uid 0 \n    cache"
+      }
+    ]
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/member-expiry-review.json",
+    "pointer": "/serving_reads",
+    "expected": [
+      {
+        "read_start": "2026-11-04T14:22:06.50251511Z",
+        "read_end": "2026-11-04T14:22:06.547919072Z",
+        "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 125567843755863\nwall_unix_ns 1793802125392379883\npolicy_expires_mono_ns 125609768732308\nbaseline_ok 1\nserving 1\ngeneration 32\nreason serving\n",
+        "forward_chain": "table inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 counter name \"u_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 counter name \"u_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 tcp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 udp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 tcp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 udp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t}\n}\n"
+      },
+      {
+        "read_start": "2026-11-04T14:22:09.659174261Z",
+        "read_end": "2026-11-04T14:22:09.703194218Z",
+        "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 125567843755863\nwall_unix_ns 1793802125392379883\npolicy_expires_mono_ns 125609768732308\nbaseline_ok 1\nserving 1\ngeneration 32\nreason serving\n",
+        "forward_chain": "table inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 counter name \"u_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 counter name \"u_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 tcp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 udp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 tcp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 udp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t}\n}\n"
+      },
+      {
+        "read_start": "2026-11-04T14:22:13.799358556Z",
+        "read_end": "2026-11-04T14:22:13.84159892Z",
+        "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 125572936617214\nwall_unix_ns 1793802130485241431\npolicy_expires_mono_ns 125609768732308\nbaseline_ok 1\nserving 1\ngeneration 32\nreason serving\n",
+        "forward_chain": "table inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 counter name \"u_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 counter name \"u_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 tcp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 udp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 tcp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 udp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t}\n}\n"
+      },
+      {
+        "read_start": "2026-11-04T14:22:17.9460869Z",
+        "read_end": "2026-11-04T14:22:17.990125561Z",
+        "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 125578085904644\nwall_unix_ns 1793802135634528725\npolicy_expires_mono_ns 125609768732308\nbaseline_ok 1\nserving 1\ngeneration 32\nreason serving\n",
+        "forward_chain": "table inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 counter name \"u_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 counter name \"u_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 tcp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 udp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 tcp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 udp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t}\n}\n"
+      },
+      {
+        "read_start": "2026-11-04T14:22:22.102097595Z",
+        "read_end": "2026-11-04T14:22:22.144712347Z",
+        "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 125583178757950\nwall_unix_ns 1793802140727382120\npolicy_expires_mono_ns 125609768732308\nbaseline_ok 1\nserving 1\ngeneration 32\nreason serving\n",
+        "forward_chain": "table inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 counter name \"u_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 counter name \"u_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 tcp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 udp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 tcp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 udp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t}\n}\n"
+      },
+      {
+        "read_start": "2026-11-04T14:22:26.248271486Z",
+        "read_end": "2026-11-04T14:22:26.295604668Z",
+        "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 125588456424585\nwall_unix_ns 1793802146005048520\npolicy_expires_mono_ns 125609768732308\nbaseline_ok 1\nserving 1\ngeneration 32\nreason serving\n",
+        "forward_chain": "table inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 counter name \"u_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 counter name \"u_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 tcp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 udp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 tcp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 udp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 tcp flags & syn == syn tcp option maxseg size > 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t}\n}\n"
+      }
+    ]
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/d161-review.json",
+    "pointer": "/verdict",
+    "expected": "AT10 PASS under D-120"
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/d161-review.json",
+    "pointer": "/complete_checked_combined_captures",
+    "expected": true
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/d161-review.json",
+    "pointer": "/summary/tcp_reads",
+    "expected": 65
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/d161-review.json",
+    "pointer": "/summary/tcp_timeouts",
+    "expected": 0
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/d161-review.json",
+    "pointer": "/summary/udp_timeouts",
+    "expected": 0
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/d161-review.json",
+    "pointer": "/d120",
+    "expected": {
+      "passed": true,
+      "verdict": "AT10 PASS under D-120",
+      "reloads": 100,
+      "udp_losses": 0,
+      "errors": [],
+      "losses": [],
+      "total_losses": 0,
+      "tcp_reads": 65,
+      "tcp_read_records": [
+        {
+          "event": "tcp_read",
+          "sequence": 1,
+          "wall_ns": "1793801147183992770",
+          "mono_ns": "124589635370082",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 1
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 2,
+          "wall_ns": "1793801147385397784",
+          "mono_ns": "124589836775770",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 2
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 3,
+          "wall_ns": "1793801147586746402",
+          "mono_ns": "124590038124868",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 3
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 4,
+          "wall_ns": "1793801147789797443",
+          "mono_ns": "124590241174520",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 4
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 5,
+          "wall_ns": "1793801147991808432",
+          "mono_ns": "124590443185822",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 5
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 6,
+          "wall_ns": "1793801148194792767",
+          "mono_ns": "124590646170059",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 6
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 7,
+          "wall_ns": "1793801148397869053",
+          "mono_ns": "124590849246146",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 7
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 8,
+          "wall_ns": "1793801148599931021",
+          "mono_ns": "124591051308299",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 8
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 9,
+          "wall_ns": "1793801148802714940",
+          "mono_ns": "124591254092466",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 9
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 10,
+          "wall_ns": "1793801149004372977",
+          "mono_ns": "124591455750296",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 10
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 11,
+          "wall_ns": "1793801149412465903",
+          "mono_ns": "124591863844175",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 11
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 12,
+          "wall_ns": "1793801149614107400",
+          "mono_ns": "124592065484867",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 12
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 13,
+          "wall_ns": "1793801150020414941",
+          "mono_ns": "124592471793103",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 13
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 14,
+          "wall_ns": "1793801150222051547",
+          "mono_ns": "124592673428847",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 14
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 15,
+          "wall_ns": "1793801150423642855",
+          "mono_ns": "124592875019916",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 15
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 16,
+          "wall_ns": "1793801150624856416",
+          "mono_ns": "124593076233441",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 16
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 17,
+          "wall_ns": "1793801150826457483",
+          "mono_ns": "124593277834754",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 17
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 18,
+          "wall_ns": "1793801151028375361",
+          "mono_ns": "124593479752406",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 18
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 19,
+          "wall_ns": "1793801151230484227",
+          "mono_ns": "124593681861586",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 19
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 20,
+          "wall_ns": "1793801151432147129",
+          "mono_ns": "124593883524251",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 20
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 21,
+          "wall_ns": "1793801151633143460",
+          "mono_ns": "124594084520573",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 21
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 22,
+          "wall_ns": "1793801151835120053",
+          "mono_ns": "124594286497368",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 22
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 23,
+          "wall_ns": "1793801152245687050",
+          "mono_ns": "124594697065770",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 23
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 24,
+          "wall_ns": "1793801152446806496",
+          "mono_ns": "124594898183639",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 24
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 25,
+          "wall_ns": "1793801152648775537",
+          "mono_ns": "124595100152852",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 25
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 26,
+          "wall_ns": "1793801152851338290",
+          "mono_ns": "124595302715674",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 26
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 27,
+          "wall_ns": "1793801153052360607",
+          "mono_ns": "124595503737930",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 27
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 28,
+          "wall_ns": "1793801153460388040",
+          "mono_ns": "124595911766114",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 28
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 29,
+          "wall_ns": "1793801153870359874",
+          "mono_ns": "124596321738204",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 29
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 30,
+          "wall_ns": "1793801154071459182",
+          "mono_ns": "124596522836328",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 30
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 31,
+          "wall_ns": "1793801154272875681",
+          "mono_ns": "124596724252832",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 31
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 32,
+          "wall_ns": "1793801154474525864",
+          "mono_ns": "124596925902889",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 32
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 33,
+          "wall_ns": "1793801154676606683",
+          "mono_ns": "124597127983937",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 33
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 34,
+          "wall_ns": "1793801154879119042",
+          "mono_ns": "124597330496177",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 34
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 35,
+          "wall_ns": "1793801155084041755",
+          "mono_ns": "124597535419499",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 35
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 36,
+          "wall_ns": "1793801155286416321",
+          "mono_ns": "124597737793580",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 36
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 37,
+          "wall_ns": "1793801155487901039",
+          "mono_ns": "124597939278474",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 37
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 38,
+          "wall_ns": "1793801155689909742",
+          "mono_ns": "124598141286922",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 38
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 39,
+          "wall_ns": "1793801155890865675",
+          "mono_ns": "124598342242653",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 39
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 40,
+          "wall_ns": "1793801156092687059",
+          "mono_ns": "124598544064284",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 40
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 41,
+          "wall_ns": "1793801156293658399",
+          "mono_ns": "124598745035407",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 41
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 42,
+          "wall_ns": "1793801156700815671",
+          "mono_ns": "124599152193956",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 42
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 43,
+          "wall_ns": "1793801156901867518",
+          "mono_ns": "124599353244795",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 43
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 44,
+          "wall_ns": "1793801157103057640",
+          "mono_ns": "124599554434893",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 44
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 45,
+          "wall_ns": "1793801157304034786",
+          "mono_ns": "124599755411722",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 45
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 46,
+          "wall_ns": "1793801157708216753",
+          "mono_ns": "124600159595529",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 46
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 47,
+          "wall_ns": "1793801157909385994",
+          "mono_ns": "124600360762931",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 47
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 48,
+          "wall_ns": "1793801158110454761",
+          "mono_ns": "124600561831760",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 48
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 49,
+          "wall_ns": "1793801158311921795",
+          "mono_ns": "124600763298974",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 49
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 50,
+          "wall_ns": "1793801158513248870",
+          "mono_ns": "124600964625853",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 50
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 51,
+          "wall_ns": "1793801158714522013",
+          "mono_ns": "124601165898907",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 51
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 52,
+          "wall_ns": "1793801158915795882",
+          "mono_ns": "124601367173036",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 52
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 53,
+          "wall_ns": "1793801159117466245",
+          "mono_ns": "124601568843510",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 53
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 54,
+          "wall_ns": "1793801159318693015",
+          "mono_ns": "124601770069961",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 54
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 55,
+          "wall_ns": "1793801159520165616",
+          "mono_ns": "124601971542539",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 55
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 56,
+          "wall_ns": "1793801159721701310",
+          "mono_ns": "124602173078596",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 56
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 57,
+          "wall_ns": "1793801160132798315",
+          "mono_ns": "124602584177298",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 57
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 58,
+          "wall_ns": "1793801160334183436",
+          "mono_ns": "124602785560841",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 58
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 59,
+          "wall_ns": "1793801160741557907",
+          "mono_ns": "124603192936633",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 59
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 60,
+          "wall_ns": "1793801160943698875",
+          "mono_ns": "124603395076100",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 60
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 61,
+          "wall_ns": "1793801161146091347",
+          "mono_ns": "124603597468650",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 61
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 62,
+          "wall_ns": "1793801161347330389",
+          "mono_ns": "124603798707403",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 62
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 63,
+          "wall_ns": "1793801161548310710",
+          "mono_ns": "124603999687726",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 63
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 64,
+          "wall_ns": "1793801161749481680",
+          "mono_ns": "124604200858727",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 64
+        },
+        {
+          "event": "tcp_read",
+          "sequence": 65,
+          "wall_ns": "1793801161951065579",
+          "mono_ns": "124604402442608",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 65
+        }
+      ],
+      "tcp_timeouts": 0,
+      "tcp_guard_losses": [
+        {
+          "id": 21,
+          "direction": "request",
+          "seq_start": 3586218429,
+          "seq_end": 3586218433,
+          "ip_id": 32118,
+          "origin_ns": 1793801149204801000,
+          "node_entry_ns": 1793801149205108000,
+          "node_exit_ns": null,
+          "far_side_ns": null,
+          "delivered": false,
+          "sequence": 11,
+          "classification": "boundary",
+          "generation": "1012",
+          "failures": [],
+          "sequences": [
+            11
+          ]
+        },
+        {
+          "id": 26,
+          "direction": "request",
+          "seq_start": 3586218437,
+          "seq_end": 3586218441,
+          "ip_id": 32123,
+          "origin_ns": 1793801149814921000,
+          "node_entry_ns": 1793801149815287000,
+          "node_exit_ns": null,
+          "far_side_ns": null,
+          "delivered": false,
+          "sequence": 13,
+          "classification": "boundary",
+          "generation": "1017",
+          "failures": [],
+          "sequences": [
+            13
+          ]
+        },
+        {
+          "id": 47,
+          "direction": "request",
+          "seq_start": 3586218477,
+          "seq_end": 3586218481,
+          "ip_id": 32144,
+          "origin_ns": 1793801152041741000,
+          "node_entry_ns": 1793801152041804000,
+          "node_exit_ns": null,
+          "far_side_ns": null,
+          "delivered": false,
+          "sequence": 23,
+          "classification": "boundary",
+          "generation": "1035",
+          "failures": [],
+          "sequences": [
+            23
+          ]
+        },
+        {
+          "id": 58,
+          "direction": "request",
+          "seq_start": 3586218497,
+          "seq_end": 3586218501,
+          "ip_id": 32155,
+          "origin_ns": 1793801153252977000,
+          "node_entry_ns": 1793801153255054000,
+          "node_exit_ns": null,
+          "far_side_ns": null,
+          "delivered": false,
+          "sequence": 28,
+          "classification": "boundary",
+          "generation": "1045",
+          "failures": [],
+          "sequences": [
+            28
+          ]
+        },
+        {
+          "id": 61,
+          "direction": "request",
+          "seq_start": 3586218501,
+          "seq_end": 3586218505,
+          "ip_id": 32158,
+          "origin_ns": 1793801153661128000,
+          "node_entry_ns": 1793801153661185000,
+          "node_exit_ns": null,
+          "far_side_ns": null,
+          "delivered": false,
+          "sequence": 29,
+          "classification": "boundary",
+          "generation": "1048",
+          "failures": [],
+          "sequences": [
+            29
+          ]
+        },
+        {
+          "id": 88,
+          "direction": "request",
+          "seq_start": 3586218553,
+          "seq_end": 3586218557,
+          "ip_id": 32185,
+          "origin_ns": 1793801156495018000,
+          "node_entry_ns": 1793801156495345000,
+          "node_exit_ns": null,
+          "far_side_ns": null,
+          "delivered": false,
+          "sequence": 42,
+          "classification": "boundary",
+          "generation": "1057",
+          "failures": [],
+          "sequences": [
+            42
+          ]
+        },
+        {
+          "id": 97,
+          "direction": "request",
+          "seq_start": 3586218569,
+          "seq_end": 3586218573,
+          "ip_id": 32194,
+          "origin_ns": 1793801157504855000,
+          "node_entry_ns": 1793801157505060000,
+          "node_exit_ns": null,
+          "far_side_ns": null,
+          "delivered": false,
+          "sequence": 46,
+          "classification": "boundary",
+          "generation": "1065",
+          "failures": [],
+          "sequences": [
+            46
+          ]
+        },
+        {
+          "id": 120,
+          "direction": "request",
+          "seq_start": 3586218613,
+          "seq_end": 3586218617,
+          "ip_id": 32217,
+          "origin_ns": 1793801159922974000,
+          "node_entry_ns": 1793801159923227000,
+          "node_exit_ns": null,
+          "far_side_ns": null,
+          "delivered": false,
+          "sequence": 57,
+          "classification": "boundary",
+          "generation": "1085",
+          "failures": [],
+          "sequences": [
+            57
+          ]
+        },
+        {
+          "id": 125,
+          "direction": "request",
+          "seq_start": 3586218621,
+          "seq_end": 3586218625,
+          "ip_id": 32222,
+          "origin_ns": 1793801160534593000,
+          "node_entry_ns": 1793801160534918000,
+          "node_exit_ns": null,
+          "far_side_ns": null,
+          "delivered": false,
+          "sequence": 59,
+          "classification": "boundary",
+          "generation": "1090",
+          "failures": [],
+          "sequences": [
+            59
+          ]
+        }
+      ],
+      "guard_attributed_timeouts": [],
+      "unattributed_timeouts": [],
+      "longest_tcp_stall": {
+        "sequence": 57,
+        "first_origin_ns": 1793801159922974000,
+        "echo_arrival_ns": 1793801160132597000,
+        "stall_ns": 209623000
+      },
+      "tcp_evidence_errors": [],
+      "tcp_failures": []
+    }
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/d161-review.json",
+    "pointer": "/tcp_errors",
+    "expected": []
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/d161-review.json",
+    "pointer": "/connection_errors",
+    "expected": []
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/boundary-review-failure.json",
+    "pointer": "/finding",
+    "expected": "F24-01"
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/boundary-review-failure.json",
+    "pointer": "/original_boundary_review_present",
+    "expected": false
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/boundary-review-failure.json",
+    "pointer": "/packet_evaluator_passed",
+    "expected": true
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/boundary-review-failure.json",
+    "pointer": "/added_scheduled_mono_ns",
+    "expected": null
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/boundary-review-failure.json",
+    "pointer": "/spacing_ns",
+    "expected": "33200000"
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/boundary-review-failure.json",
+    "pointer": "/observed_dense_probes",
+    "expected": 0
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/boundary-review-failure.json",
+    "pointer": "/packet_positives",
+    "expected": 161
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/boundary-review-failure.json",
+    "pointer": "/packet_drops",
+    "expected": 41
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/restart-signature-review.json",
+    "pointer": "/generation_mismatch_unique",
+    "expected": 0
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/finite-member-schedule.json",
+    "pointer": "/run_id",
+    "expected": "df9dbad7-049d-4eaa-ab98-5490906cc3e9"
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/node-write-audit.json",
+    "pointer": "/recorded_logical_commands",
+    "expected": 15
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/node-write-audit.json",
+    "pointer": "/recorded_attempts",
+    "expected": 15
+  },
+  {
+    "path": "docs/e2e/at/isolation/history/follow-up-24-run/node-write-audit.json",
+    "pointer": "/conflict_commands",
+    "expected": 0
+  },
+  {
+    "path": "docs/e2e/runs/2026-11-04/followup36/observation-cadence.txt",
+    "pointer": "/count",
+    "expected": 123
+  },
+  {
+    "path": "docs/e2e/runs/2026-11-04/followup36/observation-cadence.txt",
+    "pointer": "/interval_count",
+    "expected": 122
+  },
+  {
+    "path": "docs/e2e/runs/2026-11-04/followup36/observation-cadence.txt",
+    "pointer": "/minimum_seconds",
+    "expected": "0.081075"
+  },
+  {
+    "path": "docs/e2e/runs/2026-11-04/followup36/observation-cadence.txt",
+    "pointer": "/median_seconds",
+    "expected": "5.162159"
+  },
+  {
+    "path": "docs/e2e/runs/2026-11-04/followup36/observation-cadence.txt",
+    "pointer": "/maximum_seconds",
+    "expected": "10.254596"
+  }
+]
