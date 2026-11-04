@@ -2,6 +2,9 @@ package agent
 
 import (
 	"context"
+	"errors"
+	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"strings"
 	"testing"
 	"time"
 
@@ -61,5 +64,80 @@ func TestF48_LocalWorkBudgetSeparatesStepAndBoot(t *testing.T) {
 	}
 	if err := localContext(boot).Err(); err != nil {
 		t.Fatalf("Boot cleanup canceled: %v", err)
+	}
+}
+
+// Even an unhealthy probe cannot waive a read failure on a present interface.
+func TestF48_ReadFailureNeedsIndependentAbsenceEvidence(t *testing.T) {
+	for _, tc := range []struct {
+		name        string
+		exists      bool
+		err         error
+		foreign     bool
+		wantMissing bool
+	}{
+		{"absent", false, nil, false, true},
+		{"present", true, nil, false, false},
+		{"unreadable_inventory", false, context.DeadlineExceeded, false, false},
+		{"real_filter", false, nil, true, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			r := newRig(t)
+			alignControlClock(r)
+			serveBoundGeneration(t, r)
+			r.manualUsage(t)
+			p := &f48InterfacePlane{r27BootMissingInterfacePlane: &r27BootMissingInterfacePlane{memPlane: r.plane, missingInterface: !tc.foreign, foreignTC: tc.foreign}, exists: tc.exists, err: tc.err}
+			r.eng.plane = p
+			r.eng.withdraw(t.Context())
+			r.eng.auditBlocked(t.Context())
+			if r.eng.serving {
+				t.Fatal("audit opened forwarding")
+			}
+			if tc.wantMissing {
+				if r.eng.applyError != nil || r.eng.containment != nil || r.eng.quarantinePending {
+					t.Fatal("absence latched containment")
+				}
+			} else if r.eng.applyError == nil || r.eng.applyError.Code != api.ErrorCodeTCFOREIGNFILTER || !r.eng.quarantinePending {
+				t.Fatalf("unproven absence waived containment: %+v", r.eng.applyError)
+			}
+		})
+	}
+}
+
+type f48InterfacePlane struct {
+	*r27BootMissingInterfacePlane
+	exists bool
+	err    error
+}
+
+func (p *f48InterfacePlane) InterfaceExists(context.Context, string) (bool, error) {
+	return p.exists, p.err
+}
+
+type f48LinkInventory struct {
+	enforce.Executor
+	raw string
+	err error
+}
+
+func (x f48LinkInventory) Output(_ context.Context, name string, args ...string) ([]byte, error) {
+	if name != "ip" || strings.Join(args, " ") != "-j link show" {
+		return nil, errors.New("unexpected inventory command")
+	}
+	return []byte(x.raw), x.err
+}
+func TestF48_SystemPlaneInterfaceInventory(t *testing.T) {
+	for _, tc := range []struct {
+		raw          string
+		exists, fail bool
+	}{
+		{`[]`, false, false}, {`[{"ifname":"fv-fh"}]`, true, false},
+		{`[{"ifname":"fv-other"}]`, false, false}, {`null`, false, true}, {`[{}]`, false, true}, {`broken`, false, true},
+	} {
+		p := SystemPlane{Executor: f48LinkInventory{raw: tc.raw}}
+		exists, err := p.InterfaceExists(t.Context(), "fv-fh")
+		if exists != tc.exists || (err != nil) != tc.fail {
+			t.Fatalf("%s: exists=%v err=%v", tc.raw, exists, err)
+		}
 	}
 }

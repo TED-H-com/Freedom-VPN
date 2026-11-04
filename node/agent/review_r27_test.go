@@ -35,6 +35,11 @@ type r27BootMissingInterfacePlane struct {
 	baselineCalls    int
 }
 
+// The fixture supplies the same independent link inventory read as SystemPlane.
+func (p *r27BootMissingInterfacePlane) InterfaceExists(context.Context, string) (bool, error) {
+	return !p.missingInterface, nil
+}
+
 func (p *r27BootMissingInterfacePlane) RestartGeneration(context.Context) (uint64, error) {
 	return 0, fmt.Errorf("no table inet fvpn")
 }
@@ -247,6 +252,17 @@ func TestR27_H1_AuditBlockedMissingInterfaceAtBootLatchesFalseTCForeignFilter(t 
 		t.Fatalf("TODO(review r27): H-1: auditBlocked on missing interface at boot latched false applyError=%+v containment=%+v quarantines=%d report.Errors=%+v",
 			r.eng.applyError, r.eng.containment, plane.quarantines, rep.Errors)
 	}
+	if next.serving || next.containment != nil || next.quarantinePending || plane.quarantines != 0 {
+		t.Fatalf("missing interface was not simply blocked: serving=%v containment=%+v quarantines=%d", next.serving, next.containment, plane.quarantines)
+	}
+	// Once NetBird creates a clean interface, the next Apply can recover.
+	plane.missingInterface = false
+	prober.up = true
+	stepOK(t, r)
+	if !next.serving || next.applyError != nil || next.containment != nil || plane.quarantines != 0 {
+		t.Fatalf("clean interface failed to recover: serving=%v error=%+v containment=%+v", next.serving, next.applyError, next.containment)
+	}
+
 }
 
 // TestR27_M1_ProvisionalTimerRaceAndClosedRecoveryDelayPopulatedLease
