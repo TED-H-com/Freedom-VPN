@@ -241,6 +241,10 @@ func anyBytes(list []usagestore.Counter) bool {
 // planSample builds the next interval commit. final closes the epoch after
 // the sample (§13.6 step 8).
 func planSample(head usagestore.Head, obs Observation, now time.Time, interval time.Duration, final bool) (plan, error) {
+	return planSampleWithBarrier(head, obs, now, interval, final, false)
+}
+
+func planSampleWithBarrier(head usagestore.Head, obs Observation, now time.Time, interval time.Duration, final, restart bool) (plan, error) {
 	now = now.UTC()
 	if head.OpenEpoch == uuid.Nil {
 		if final {
@@ -259,18 +263,22 @@ func planSample(head usagestore.Head, obs Observation, now time.Time, interval t
 	}
 	if !head.LastSample.IsZero() && !now.After(head.LastSample) {
 		if head.LastSample.Sub(now) <= interval {
-			// A retry of FinalSample after the interval was already
-			// checkpointed still closes. Changed counters wait for a
+			// A retry of FinalSample or a restart checkpoint after the
+			// interval was already checkpointed still succeeds when the
+			// readings have not changed. Changed counters wait for a
 			// forward clock so those bytes are not abandoned (§10.9).
-			if final && sameReadings(head.Counters, cur) {
-				return plan{commit: usagestore.Commit{
-					Epoch:       head.OpenEpoch,
-					Counters:    head.Counters,
-					BootID:      obs.BootID,
-					CloseEpoch:  true,
-					CloseReason: "final_sample",
-					SampledAt:   head.LastSample,
-				}}, nil
+			if (final || restart) && sameReadings(head.Counters, cur) {
+				c := usagestore.Commit{
+					Epoch:     head.OpenEpoch,
+					Counters:  head.Counters,
+					BootID:    obs.BootID,
+					SampledAt: head.LastSample,
+				}
+				if final {
+					c.CloseEpoch = true
+					c.CloseReason = "final_sample"
+				}
+				return plan{commit: c}, nil
 			}
 			return plan{hold: true}, nil
 		}

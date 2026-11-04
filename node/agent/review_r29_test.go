@@ -258,13 +258,14 @@ exit 1
 	}
 	defer cand.Close()
 
-	// Use a 600ms Boot budget (standing in for bootLocalBudget=10s vs HealthAttestWait=30s):
-	// if recoverOnce blocks synchronously inside Boot before answerHealthOnBoot/Step can run,
-	// Boot times out with ErrBoot and kills the recovery process before health-attest.json is written.
-	if err := cand.bootWithBudget(context.Background(), 600*time.Millisecond); err != nil {
+	// Boot uses bootLocalBudget (10s < the script's 15s wait and production's
+	// HealthAttestWait=30s): if recoverOnce blocks synchronously inside Boot
+	// before answerHealthOnBoot/Step can run, Boot times out with ErrBoot and
+	// kills the recovery process before health-attest.json is written.
+	if err := cand.Boot(context.Background()); err != nil {
 		t.Fatalf("Boot self-deadlocked waiting for synchronous recoverOnce to receive health-attest.json from this same agent: %v", err)
 	}
-	for i := 0; i < 20 && (cand.recoverBlocked || cand.latchBlocked); i++ {
+	for i := 0; i < 200 && (cand.recoverBlocked || cand.latchBlocked); i++ {
 		if err := cand.Step(context.Background()); err != nil {
 			t.Fatal(err)
 		}

@@ -753,13 +753,16 @@ func TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat(t *tes
 		release := make(chan struct{})
 		defer close(release)
 		next.meterSource = r21ReadFunc(func(ctx context.Context) (meter.Observation, error) {
+			if b, ok := ctx.Value(localBudgetKey{}).(*localBudget); ok && b.cancel != nil {
+				b.cancel()
+			}
 			<-release
 			return src.Read(ctx)
 		})
 
 		caller, cancel := context.WithCancel(t.Context())
 		cancel()
-		err := next.bootWithBudget(caller, 80*time.Millisecond)
+		err := next.bootWithBudget(caller, bootLocalBudget)
 		if !errors.Is(err, context.Canceled) {
 			t.Fatalf("expected context.Canceled on TERM after baseline, got %v", err)
 		}
