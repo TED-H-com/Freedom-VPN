@@ -19,3 +19,15 @@ func TestHarnessImportAndRollbackOptions(t *testing.T) {
 		t.Fatal("unbounded scale accepted")
 	}
 }
+
+func TestAPI01_NodeWriteImportSurface(t *testing.T) {
+	var stack *labstack.Stack
+	result := stack.WriteNode(t.Context(), labstack.BrowserSession{}, "PATCH", "/api/v1/admin/nodes/test-only", "/api/v1/admin/nodes/test-only", nil, `"1"`, labstack.NodeRevoked, 202)
+	var receipt labstack.NodeWriteReceipt = result.Receipt
+	if result.Err == nil || result.Accepted(202) || len(receipt.Attempts) != 0 {
+		t.Fatal("invalid caller accepted")
+	}
+	if !labstack.NodeFieldsMatch(map[string]string{"lifecycle_state": "retired"})([]byte(`{"lifecycle_state":"retired"}`)) || labstack.NodePublished(uuid.New())([]byte(`{}`)) {
+		t.Fatal("exported predicate mismatch")
+	}
+}

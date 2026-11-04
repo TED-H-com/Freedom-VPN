@@ -245,6 +245,12 @@ type NativeRouter1280 struct {
 // The new member link is 1280; router ingress and node links remain 1500. Routes
 // are specific to fixture peers and contain no MTU metric. e2e-down owns cleanup.
 func (s *Stack) PrepareNativeRouter1280(ctx context.Context) (*NativeRouter1280, error) {
+	return s.prepareNativeRouter1280(ctx, func(ctx context.Context, args ...string) ([]byte, error) {
+		return exec.CommandContext(ctx, "docker", args...).Output()
+	})
+}
+
+func (s *Stack) prepareNativeRouter1280(ctx context.Context, run nativeRouterRunner) (*NativeRouter1280, error) {
 	if s.lab.node != s.lab.prefix+"-node" || s.lab.member != s.lab.prefix+"-member" {
 		return nil, fmt.Errorf("router requires the canonical prepared native node/member pair")
 	}
@@ -257,7 +263,7 @@ func (s *Stack) PrepareNativeRouter1280(ctx context.Context) (*NativeRouter1280,
 	}
 	h := &NativeRouter1280{stack: s, Container: s.lab.prefix + "-node-router", Member4: member4, Router4: router4, Member6: right6 + "3", Router6: right6 + "2"}
 	network := s.lab.prefix + "-node-router-link"
-	image, err := exec.CommandContext(ctx, "docker", "inspect", "--format={{.Image}}", s.lab.node).Output()
+	image, err := run(ctx, "inspect", "--format={{.Image}}", s.lab.node)
 	if err != nil {
 		return nil, err
 	}
@@ -273,9 +279,21 @@ func (s *Stack) PrepareNativeRouter1280(ctx context.Context) (*NativeRouter1280,
 		{"exec", s.lab.member, "ip", "route", "add", s.lab.labPrefix + ".40/32", "via", h.Router4},
 		{"exec", s.lab.member, "ip", "-6", "route", "add", left6 + "40/128", "via", h.Router6},
 	}
+	undo := [][]string{
+		{"network", "rm", network},
+		{"rm", "-fv", h.Container},
+		{"network", "disconnect", s.lab.prefix + "-node-underlay", h.Container},
+		{"network", "disconnect", network, h.Container},
+		{"network", "disconnect", network, s.lab.member},
+		nil, // Router-only sysctls disappear when its container is removed.
+		{"exec", s.lab.node, "ip", "route", "del", h.Member4 + "/32", "via", s.lab.labPrefix + ".60"},
+		{"exec", s.lab.node, "ip", "-6", "route", "del", h.Member6 + "/128", "via", left6 + "60"},
+		{"exec", s.lab.member, "ip", "route", "del", s.lab.labPrefix + ".40/32", "via", h.Router4},
+		{"exec", s.lab.member, "ip", "-6", "route", "del", left6 + "40/128", "via", h.Router6},
+	}
 	for i, args := range steps {
-		if err = exec.CommandContext(ctx, "docker", args...).Run(); err != nil {
-			return nil, fmt.Errorf("router step %d: %w", i, err)
+		if _, err = run(ctx, args...); err != nil {
+			return nil, rollbackNativeRouter(ctx, run, i, err, undo)
 		}
 	}
 	return h, nil
