@@ -13,7 +13,8 @@ import (
 // Snapshot before another sub-case can replace agent.log on a normal restart.
 // This is observational only; no new fault, retry or acceptance predicate.
 func (p *liveProbe) restartSnapshot17(label string) {
-	dir := filepath.Join(p.root, ".agent/secops/f17/restarts")
+	followup := os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP")
+	dir := filepath.Join(p.root, ".agent/secops/f"+followup+"/restarts")
 	if err := os.MkdirAll(dir, 0700); err != nil {
 		p.t.Error(err)
 		return
@@ -27,7 +28,7 @@ func (p *liveProbe) restartSnapshot17(label string) {
 		}
 		lines := []string{}
 		for i, line := range strings.Split(string(raw), "\n") {
-			if name == "watchdog" || strings.Contains(line, "boot") || strings.Contains(line, "restart") || strings.Contains(line, "retained") || strings.Contains(line, "GENERATION_MISMATCH") {
+			if name == "watchdog" || strings.Contains(line, "boot") || strings.Contains(line, "restart") || strings.Contains(line, "retained") || strings.Contains(line, "adopted") || strings.Contains(line, "baseline") || strings.Contains(line, "GENERATION_MISMATCH") {
 				if line != "" {
 					lines = append(lines, fmt.Sprintf("%d: %s", i+1, line))
 				}

@@ -105,6 +105,8 @@ func (p *liveProbe) manualGrantWithdrawal15(stack *labstack.Stack, node uuid.UUI
 		t.Error("both original transports must be active")
 		return
 	}
+	endTimed := p.beginTimed18("manual_grant_withdrawal", row)
+	defer endTimed()
 	row["before_kernel_timeout"], row["before_heartbeat"] = p.timeoutView(), p.heartbeatView()
 	row["service_end"] = end
 	// Retain actual signed lease deadlines without signatures or private material.
@@ -203,7 +205,7 @@ JOIN serving_leases s ON s.id=(o.report_payload->'lease'->>'lease_id')::uuid WHE
 		return
 	}
 	resume := func() { row["agent_resume_ok"] = stack.PauseAgent(context.Background(), false) == nil }
-	defer resume()
+	defer func() { endTimed(); resume() }()
 	_, err = p.docker("node", "sh", "-c", `test -s /var/lib/vpn-node/e2e/agent.pid && kill -KILL "$(cat /var/lib/vpn-node/e2e/agent.pid)"`)
 	row["agent_sigkill_ok"] = err == nil
 	_, watchdogErr := p.docker("node", "pgrep", "-f", "^fvpn-watchdog run")
@@ -212,6 +214,7 @@ JOIN serving_leases s ON s.id=(o.report_payload->'lease'->>'lease_id')::uuid WHE
 	time.Sleep(10 * time.Second)
 	b = sampleTransport11(t.Context(), transport, peer.Device, start)
 	row["independent_cutoff_samples"] = []transportSample11{a, b}
+	endTimed()
 	if err != nil || watchdogErr != nil || !quietTransport11(a, b) {
 		t.Error("withdrawal independent cutoff not proved")
 	}

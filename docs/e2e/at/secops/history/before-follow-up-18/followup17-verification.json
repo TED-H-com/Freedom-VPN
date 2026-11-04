@@ -1,0 +1,57 @@
+{
+  "at": "2026-11-04T06:52:00.971057Z",
+  "earlier_history_files_unchanged": 970,
+  "pre_run_files_byte_identical_to_committed_source": 127,
+  "pre_run_source_revision": "6461a88ad79eeda6d3bd6a30c4a04b95e18aa576",
+  "new_artifacts_scanned": 38,
+  "no_new_file_over_20_MB": true,
+  "unchanged_continuity_evaluator_and_synthetic_tests": true,
+  "historical_scope_exceptions": "Five already mismatched the starting application baseline: three mutable history/index.json references and two handover-test source references. Historical digests are preserved and excluded from verified pins.",
+  "baseline_scope_mismatches": [
+    {
+      "scope_location": "$.handover_follow_up_3.sources[3]",
+      "path": "tests/handover/handover_test.go",
+      "recorded_sha256": "e74b9b594f15166dbceb7c10607f13d15ad564ffb8dc7503fb15a3743ae9be85",
+      "baseline_sha256": "8263afc269a03c2224fc309841b74403268e3571a86c63aaa5af4bcebd5585d3",
+      "already_mismatched_at_baseline": true
+    },
+    {
+      "scope_location": "$.follow_up_11.records[15]",
+      "path": "docs/e2e/at/secops/history/index.json",
+      "recorded_sha256": "9a287259b6e354c60575fc6644a572f4deb4df5d37f19acee02b8248d460eba4",
+      "baseline_sha256": "9d4dc93ed8b20e100f4b716facea7068fa69fc04f4939df074383420eb2e0f06",
+      "already_mismatched_at_baseline": true
+    },
+    {
+      "scope_location": "$.follow_up_12.records[29]",
+      "path": "docs/e2e/at/secops/history/index.json",
+      "recorded_sha256": "9a287259b6e354c60575fc6644a572f4deb4df5d37f19acee02b8248d460eba4",
+      "baseline_sha256": "9d4dc93ed8b20e100f4b716facea7068fa69fc04f4939df074383420eb2e0f06",
+      "already_mismatched_at_baseline": true
+    },
+    {
+      "scope_location": "$.handover_follow_up_16.reviewed_documents[6]",
+      "path": "tests/handover/handover_test.go",
+      "recorded_sha256": "e74b9b594f15166dbceb7c10607f13d15ad564ffb8dc7503fb15a3743ae9be85",
+      "baseline_sha256": "8263afc269a03c2224fc309841b74403268e3571a86c63aaa5af4bcebd5585d3",
+      "already_mismatched_at_baseline": true
+    },
+    {
+      "scope_location": "$.follow_up_13.records[23]",
+      "path": "docs/e2e/at/secops/history/index.json",
+      "recorded_sha256": "9a287259b6e354c60575fc6644a572f4deb4df5d37f19acee02b8248d460eba4",
+      "baseline_sha256": "9d4dc93ed8b20e100f4b716facea7068fa69fc04f4939df074383420eb2e0f06",
+      "already_mismatched_at_baseline": true
+    }
+  ],
+  "indexed_archive_pins_valid": 1108,
+  "scope_pins_valid": 692,
+  "supplementary_audit": "Expected the three known index exceptions; broader audit also found two old handover-test source pins. All five already mismatch application baseline; no historical digest repaired.",
+  "final_committed_evidence_hygiene": {
+    "exit_code": 0,
+    "output_tail": [
+      "ok  github.com/TED-H-com/Freedom-VPN/tests/e2e  10.668s",
+      "ok  github.com/TED-H-com/Freedom-VPN/tests/netlab  3.080s"
+    ]
+  }
+}
