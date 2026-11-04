@@ -12,6 +12,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/internal/members/issuer"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labstack"
 	"github.com/google/uuid"
 )
 
@@ -162,21 +163,44 @@ func (l *live) identity(r *record) {
 	}
 	r.block("AT01 platform sign-out/network change/sleep-wake scripts need operator run; Linux positive counted forwarding is recorded separately.")
 }
-func (l *live) nodeMutation(method, suffix string, body any) response {
-	path := "/api/v1/admin/nodes/" + l.node.String()
-	var got response
-	// Heartbeats advance resource_version. A 412 has no effect; refresh the ETag
-	// and retry this setup command with a fresh key, never bypass If-Match.
-	for range 3 {
-		old := l.api(l.admin, "GET", path, nil, nil)
-		h := commandHeaders()
-		h["If-Match"] = old.headers.Get("ETag")
-		got = l.api(l.admin, method, path+suffix, body, h)
-		if got.status != 412 {
-			return got
-		}
+
+type nodeCommand struct {
+	response
+	write labstack.NodeWriteResult
+}
+
+func (c nodeCommand) accepted(status ...int) bool { return c.write.Accepted(status...) }
+func (c nodeCommand) detail() string {
+	raw, _ := json.Marshal(map[string]any{"http_status": c.status, "error_code": c.code, "node_write": c.write.Receipt, "already_intended": c.write.AlreadyIntended})
+	return string(raw)
+}
+
+func nodeMutationPredicate(method, suffix string, body any) func([]byte) bool {
+	if method == "PATCH" && suffix == "" {
+		return labstack.NodeFieldsMatch(body)
 	}
-	return got
+	if method == "PUT" && suffix == "/publication" {
+		p, ok := body.(api.PublicationRequest)
+		if !ok || p.GroupIds == nil {
+			return nil
+		}
+		if p.PublicationIntent == api.PublicationIntentPublished {
+			return labstack.NodePublished((*p.GroupIds)...)
+		}
+		return labstack.NodeFieldsMatch(map[string]any{"publication_intent": p.PublicationIntent, "group_ids": *p.GroupIds})
+	}
+	return nil // New commands must define their exact desired read-back first.
+}
+func (l *live) nodeMutation(method, suffix string, body any) nodeCommand {
+	path := "/api/v1/admin/nodes/" + l.node.String()
+	old := l.api(l.admin, "GET", path, nil, nil)
+	intended := nodeMutationPredicate(method, suffix, body)
+	// The helper refuses missing initial read-back rather than writing blind.
+	if old.status != 200 {
+		intended = nil
+	}
+	result := l.hook.WriteNode(l.ctx, labstack.BrowserSession{Client: l.admin.client, CSRF: l.admin.csrf}, method, path+suffix, path, body, old.headers.Get("ETag"), intended, 200, 202)
+	return nodeCommand{response: response{status: result.Reply.Status, headers: result.Reply.Header, body: result.Reply.Body, code: result.Reply.Code}, write: result}
 }
 func (l *live) publication(r *record) {
 	if l.node == uuid.Nil {

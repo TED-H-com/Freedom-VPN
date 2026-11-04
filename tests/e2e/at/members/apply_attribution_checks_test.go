@@ -65,16 +65,18 @@ func TestAT02_F12RecoveryRequiresNextApplyAndCountsEveryLoss(t *testing.T) {
 	run := uuid.New()
 	fail := agent.Measurement{RunID: run, BootID: boot, Sequence: 1, Timing: &enforce.TimingEvidence{Operation: "apply", Start: 100, End: 200}}
 	base := agent.Measurement{RunID: run, BootID: boot, Sequence: 2, Baseline: &agent.MeasurementBaseline{Cause: "apply_rollback", Start: 201, End: 210, Succeeded: true}}
-	good := agent.Measurement{RunID: run, BootID: boot, Sequence: 3, Timing: &enforce.TimingEvidence{Operation: "apply", Start: 300, End: 310, Succeeded: true}}
+	good := agent.Measurement{RunID: run, BootID: boot, Sequence: 3, Timing: &enforce.TimingEvidence{Operation: "apply", Start: 300, End: 310, Succeeded: true, Verified: true}}
+	good.Lease = &agent.MeasurementLease{Members: 1}
+	heartbeat := agent.Measurement{RunID: run, BootID: boot, Sequence: 4, Heartbeat: &agent.MeasurementHeartbeat{Mono: 311, Serving: true, Written: true}}
 	trace := []json.RawMessage{}
-	for _, m := range []agent.Measurement{fail, base, good} {
+	for _, m := range []agent.Measurement{fail, base, good, heartbeat} {
 		b, _ := json.Marshal(m)
 		trace = append(trace, b)
 	}
 	cap := siblingObservation{Boot: boot.String(), Start: 50, End: 500, StatsAvailable: true, Packets: []siblingPacket{{1, 80, "fvmb0"}, {1, 81, "fvup0"}, {2, 220, "fvmb0"}, {3, 320, "fvmb0"}, {3, 321, "fvup0"}}}
 	raw, _ := json.Marshal(cap)
 	out, ok, observed := siblingRecovery(trace, raw)
-	if ok || !observed || out["measurement_valid"] != true || out["lost_admitted_packets"] != 1 {
+	if !ok || !observed || out["measurement_valid"] != true || out["lost_admitted_packets"] != 1 {
 		t.Fatal("valid bracket lost", out)
 	}
 	cap.Packets = append(cap.Packets, siblingPacket{4, 400, "fvmb0"})

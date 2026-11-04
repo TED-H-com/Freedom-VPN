@@ -114,26 +114,20 @@ func TestR27_M2_AT09_RestartProvisionalPredicateAndTimelineScope(t *testing.T) {
 	}
 	populatedSafetyObs.Checks[3].ErrorCode.Set(api.ErrorCodeHEALTHCHECKFAILED)
 
-	// Evaluate the exact loop in verifyProvisionalObservations (second_exit_test.go:274-297).
-	provisionalCount := 0
-	allValid := true
-	sawLeaseExpired := false
-	for _, rep := range []api.ObservationReport{provisionalObs, populatedSafetyObs} {
-		provisionalCount++
-		obsValid, expired, _ := provisionalObservation(rep)
-		sawLeaseExpired = sawLeaseExpired || expired
-		allValid = allValid && obsValid
+	// Call the live predicate, with the same two reports and explicit held
+	// leases. M-2's old copied loop could never exercise the repaired code.
+	resumedAt := now.Add(-time.Second)
+	leases := []restartLease{
+		{ID: uuid.New(), IssuedAt: resumedAt, ExpiresAt: now.Add(time.Hour), Generation: "66", MemberGrants: 0},
+		{ID: uuid.New(), IssuedAt: now.Add(time.Second), ExpiresAt: now.Add(time.Hour), Generation: "66", MemberGrants: 7},
 	}
-	passed := provisionalCount > 0 && allValid && !sawLeaseExpired
-
-	// TODO(review r27): M-2 — verifyProvisionalObservations (second_exit_test.go:268-311)
-	// feeds every post-restart member_forwarding_enabled=false observation into
-	// provisionalObservation and requires provisionalCount > 0 && allValid,
-	// rejecting valid post-restart safety_check_failed observations emitted
-	// while the node already holds a populated lease (member_grants > 0).
-	if !passed {
-		t.Fatalf("TODO(review r27): M-2: verifyProvisionalObservations rejected post-restart sequence with populated-lease safety observation (provisionalCount=%d allValid=%v)",
-			provisionalCount, allValid)
+	provisionalObs.ObservedAt = now
+	provisionalObs.Lease.LeaseId.Set(leases[0].ID)
+	populatedSafetyObs.ObservedAt = now.Add(2 * time.Second)
+	populatedSafetyObs.Lease.LeaseId.Set(leases[1].ID)
+	got := assessRestart(resumedAt, "66", leases, []restartObservation{{now, provisionalObs}, {now.Add(2 * time.Second), populatedSafetyObs}})
+	if !got.SequenceOK || got.D067Status != "pass" {
+		t.Fatalf("M-2: rejected grant-less then populated safety sequence: %+v", got)
 	}
 }
 
@@ -191,7 +185,7 @@ func TestR27_M3_AT02_SiblingRecoveryBracketAndQuarantinePredicates(t *testing.T)
 			RunID:    run,
 			BootID:   boot,
 			Sequence: 4,
-			Timing:   &enforce.TimingEvidence{Operation: "apply", CandidateGeneration: 13, Start: 220, End: 260, Succeeded: true},
+			Timing:   &enforce.TimingEvidence{Operation: "apply", CandidateGeneration: 13, Start: 220, End: 260, Succeeded: true, Verified: true},
 		},
 		{
 			RunID:     run,
@@ -209,13 +203,13 @@ func TestR27_M3_AT02_SiblingRecoveryBracketAndQuarantinePredicates(t *testing.T)
 			RunID:    run,
 			BootID:   boot,
 			Sequence: 7,
-			Timing:   &enforce.TimingEvidence{Operation: "apply", CandidateGeneration: 13, Start: 420, End: 460, Succeeded: true},
+			Timing:   &enforce.TimingEvidence{Operation: "apply", CandidateGeneration: 13, Start: 420, End: 460, Succeeded: true, Verified: true},
 		},
 		{
 			RunID:     run,
 			BootID:    boot,
 			Sequence:  8,
-			Heartbeat: &agent.MeasurementHeartbeat{Generation: 13, Serving: true, BaselineOK: true, Mono: 470},
+			Heartbeat: &agent.MeasurementHeartbeat{Generation: 13, Serving: true, Written: true, BaselineOK: true, Mono: 470},
 		},
 	}
 

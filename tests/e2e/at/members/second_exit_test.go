@@ -217,20 +217,17 @@ func (l *live) recordRestartRecovery(r *record, desiredBefore, appliedBefore dec
 	appliedAfter, _ := afterNode.ConfigGeneration.Applied.Get()
 	fwdAfter, _ := afterNode.MemberForwardingObserved.Get()
 	sameGeneration := decoded && desiredBefore != 0 && desiredAfter == desiredBefore && appliedAfter == desiredBefore && appliedBefore == desiredBefore
-	leases, observations, queryOK := l.nodeLeaseTimeline(l.node, r.At)
-	var leaseRows []struct {
-		IssuedAt     time.Time `json:"issued_at"`
-		Generation   string    `json:"generation"`
-		MemberGrants int       `json:"member_grants"`
-	}
-	_ = json.Unmarshal(leases, &leaseRows)
+	leases, observations, queryOK := l.nodeLeaseTimeline(l.node, resumedAt.Format(time.RFC3339Nano))
+	var leaseRows []restartLease
+	queryOK = queryOK && json.Unmarshal(leases, &leaseRows) == nil
+	assessment, observationOK := l.verifyProvisionalObservations(r, resumedAt, desiredBefore.String(), provisionalAdmin, leaseRows, queryOK)
+	queryOK = queryOK && observationOK
 	postRestartPopulated := false
 	for _, row := range leaseRows {
 		if !row.IssuedAt.Before(resumedAt) && row.Generation == desiredBefore.String() && row.MemberGrants > 0 {
 			postRestartPopulated = true
 		}
 	}
-	provisionalOK := l.verifyProvisionalObservations(r, resumedAt, desiredBefore.String(), provisionalAdmin)
 	firstByteSeconds := 0.0
 	if !firstByteAt.IsZero() {
 		firstByteSeconds = firstByteAt.Sub(resumedAt).Seconds()
@@ -252,62 +249,46 @@ func (l *live) recordRestartRecovery(r *record, desiredBefore, appliedBefore dec
 		"first_counted_byte_seconds": firstByteSeconds,
 		"provisional_admin_node":     provisionalAdmin,
 		"recovered_admin_node":       summarizeNodeDetail(afterNode),
+		"restart_assessment":         assessment,
 		"leases":                     json.RawMessage(leases),
 		"observations":               json.RawMessage(observations),
 	})
 	r.check(
 		"same-generation D-067 restart recovery and lease sequence",
-		"forwarding restored on unchanged desired generation within bounded schedule; provisional renewal yields populated lease and counted fvmb0 transfer",
+		"forwarding restored on unchanged desired generation within bounded schedule; grant-less then populated, or populated from first renewal; counted fvmb0 transfer",
 		string(summary),
 		"GET /admin/nodes/{node2} before/during/after restart; SELECT serving_leases and contiguous node_observations; verify counted member transfer",
-		sameGeneration && fwdAfter && postRestartPopulated && provisionalOK && counted && !firstByteAt.IsZero() && firstByteSeconds > 0 && firstByteSeconds <= 90 && queryOK,
+		sameGeneration && fwdAfter && postRestartPopulated && assessment.SequenceOK && counted && !firstByteAt.IsZero() && firstByteSeconds > 0 && firstByteSeconds <= 90 && queryOK,
 	)
+	r.jsonCheck("restart without installed foreign filter reports no TC_FOREIGN_FILTER", "no foreign filter report in a recreated namespace with no injected tc object", assessment, "all post-restart reports; namespace recreation removes prior tc objects", queryOK && assessment.NoForeignFilter)
 }
 
-func (l *live) verifyProvisionalObservations(r *record, resumedAt time.Time, expectedGen string, provisionalAdmin map[string]any) bool {
-	rows, err := l.pool.Query(l.ctx, `SELECT received_at,report_payload FROM node_observations WHERE node_id=$1 AND received_at>=$2 AND (report_payload->>'member_forwarding_enabled')::boolean=false ORDER BY received_at`, l.node, resumedAt)
-	if err != nil {
-		r.check("D-067 revision 11 provisional lease observation", "awaiting_member_grants reason, D-126 per-check precedence, one provisional stage=lease error", err.Error(), "SELECT post-restart provisional node_observations", false)
-		return false
-	}
-	defer rows.Close()
-	provisionalCount := 0
-	allValid := true
-	sawLeaseExpired := false
-	var samples []map[string]any
-	for rows.Next() {
-		var receivedAt time.Time
-		var raw []byte
-		if rows.Scan(&receivedAt, &raw) != nil {
-			allValid = false
-			continue
+func (l *live) verifyProvisionalObservations(r *record, resumedAt time.Time, expectedGen string, provisionalAdmin map[string]any, leases []restartLease, leasesAvailable bool) (restartAssessment, bool) {
+	rows, err := l.pool.Query(l.ctx, `SELECT received_at,report_payload FROM node_observations WHERE node_id=$1 AND received_at>=$2 ORDER BY received_at`, l.node, resumedAt)
+	queryOK := err == nil && leasesAvailable
+	observations := []restartObservation{}
+	if err == nil {
+		defer rows.Close()
+		for rows.Next() {
+			var row restartObservation
+			var raw []byte
+			if rows.Scan(&row.ReceivedAt, &raw) != nil || json.Unmarshal(raw, &row.Report) != nil {
+				queryOK = false
+				continue
+			}
+			observations = append(observations, row)
 		}
-		var rep api.ObservationReport
-		if json.Unmarshal(raw, &rep) != nil {
-			allValid = false
-			continue
-		}
-		provisionalCount++
-		obsValid, expired, sample := provisionalObservation(rep)
-		sawLeaseExpired = sawLeaseExpired || expired
-		allValid = allValid && obsValid
-		sample["received_at"] = receivedAt.Format(time.RFC3339Nano)
-		samples = append(samples, sample)
+		queryOK = queryOK && rows.Err() == nil
 	}
-	ok := provisionalCount > 0 && allValid && !sawLeaseExpired && expectedGen != ""
-	actual, _ := json.Marshal(map[string]any{
-		"provisional_observations": provisionalCount,
-		"all_match_revision_11":    allValid,
-		"saw_lease_expired":        sawLeaseExpired,
-		"provisional_admin_node":   provisionalAdmin,
-		"observations":             samples,
-	})
-	r.check(
-		"D-067 revision 11 provisional lease observation",
-		"provisional observations report awaiting_member_grants (never lease_expired); each failed lease/qos/source_binding check carries AWAITING_MEMBER_GRANTS or, with safety_check_failed, its active enforcement safety code (D-126); exactly one stage=lease error retains the provisional cause",
-		string(actual),
-		"inspect post-restart provisional api.ObservationReport rows and GET /admin/nodes/{node2}",
-		ok,
-	)
-	return ok
+	assessment := assessRestart(resumedAt, expectedGen, leases, observations)
+	actual := map[string]any{"assessment": assessment, "provisional_admin_node": provisionalAdmin, "query_ok": queryOK}
+	const name = "D-067 revision 11 provisional lease observation"
+	if queryOK && assessment.D067Status == "blocked" {
+		raw, _ := json.Marshal(actual)
+		r.Steps = append(r.Steps, step{Name: name, Status: "blocked", Expected: "grant-less lease exercises D-067 revision 11 with D-126", Actual: string(raw), Command: "join post-restart reports to their held lease IDs", At: time.Now().UTC().Format(time.RFC3339)})
+		r.block("D-067 restart subcheck not exercised: no grant-less lease after restart; populated publication still exercises D-067")
+	} else {
+		r.jsonCheck(name, "under a grant-less lease: awaiting_member_grants, D-126 check precedence and exactly one provisional stage=lease error", actual, "join post-restart report lease IDs; populated reports use safety checks", queryOK && assessment.D067Status == "pass")
+	}
+	return assessment, queryOK
 }
