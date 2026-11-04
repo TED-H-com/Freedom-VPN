@@ -1,3 +1,37 @@
+# Follow-up 23 run ledger — 2026-11-04
+
+Run `6a25221b-1dcf-4f4d-b866-cd04f57f58f6`, measured source `8bde2b6acc0b116515148eeb0ff4448c65453a92`, baseline/current main at preflight `c148cf349df219124e457113ce90c010016a308e`. **3 PASS / 7 BLOCKED / 0 FAIL; 706 passed / 8 blocked / 0 failed subchecks**. No predicate changed, no case retried. [All original subchecks](F23-subchecks.md), [result index](F23-results.json), [verification receipts](F23-verification.md).
+
+D-098 was committed first as `2d4d37a8`: [122 original root records](history/follow-up-22/INDEX.md), including unchanged gzip and SHA-256 pins. Run `3eb3960d` remains **3 / 7 / 0 cases; 702 / 8 / 0 subchecks**, measured on `55f2765d`; the orchestrator accepted that baseline without a later-main rerun. Run `5715939e` and every earlier archive/note retain their original outcomes.
+
+`go env GOCACHE` returned **`<home>/.cache/go-build`**, without a cache override. Preflight at **2026-11-04T11:54:37.281619+00:00** ran **`vmstat 5 7`** and:
+
+```sh
+ps -eo pid,etimes,args | grep -E '[g]ates\.sh|[m]k/at-|[n]ode-test-netlab|[n]etlab-test|[e]2e-test'
+```
+
+No foreign process matched at preflight. Raw arguments remain private; public foreign records contain only pid, comm and ticks. [Host receipt](F23-host-preflight.json).
+
+```text
+procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu
+ 6  0 3071224 16159060 3265864 156532608    9   35 17015 30562 26046   22  4  2 93  1  0  0
+ 0  0 3071224 16058600 3265872 156532508    0    0     0  1741 23319 262416 15  5 79  0  0  0
+ 0  0 3071224 16267336 3265880 156532544    0    0     0   683 2797 4055  0  0 99  0  0  0
+ 0  0 3071224 16540316 3265888 156532632    0    0     0  5581 5459 6056  1  1 98  0  0  0
+ 0  0 3071224 16673376 3265896 156532700    0    0     0   216 3165 5111  0  0 99  0  0  0
+ 0  0 3071224 16765292 3265904 156532860    0    0     0   280 3074 4604  0  0 99  0  0  0
+ 0  0 3071224 16816188 3265912 156532848    0    0     0    64 2680 3699  0  0 100  0  0  0
+```
+
+One foreground assembled run, no pre-check failure or rerun: wrapper **11:54:37.199071–12:44:14.872068Z**; `make -f mk/at-members.mk at-members` **11:55:40.741129–12:43:30.556090Z**, exit **2**, live test **2,830.06 s**. **Total admission wait: 0 s** (no 60-second admission sleeps, no wrapper waiter). Setup and teardown used only `fvpn-w4-members-*`, prefix `w4-members`, port base `24000`. [Cleanup](F23-cleanup.json): exit **0**, zero owned containers, networks, volumes and images.
+
+**D-133:** a foreign process **pid 198676** first appears at **12:43:49.215928Z**, last sample **12:44:14.358513Z**, six samples during teardown. The window is **confounded**, with **no intersecting acceptance case envelope**; acceptance had ended **18.659838 s** before its first sample. It is retained and nothing is retried. Five-second samples cannot exclude shorter activity. [Process monitor](F23-process-monitor.json), [all admission answers and overlap](F23-admission.json), [311 timed-section boundaries](F23-timed-sections.json).
+
+D-160 admission is checked before each case clock. Conservative case envelopes cover every nested timed check; admission calls inside an active section are recorded but do not wait. No held check occurred inside a timed section. Admission output is separate from tool-consumed streams. No reservation or new shell cleanup trap was used. Scratch is on disk under `.agent/tmp`; Python uses `-B`.
+
+Instrumentation commit **8bde2b6a** follows archive commit **2d4d37a8**, both committed before measurement. Shared capture already supports all underlay interfaces. [Dated analysis](followup23-2026-11-04.md) reports packet paths, all native observation windows, closed recovery, restart predicates, watchdogs and every write attempt. [Verification](F23-verification.md) retains real command/output tails. New evidence over 20 MB is lossless gzip with both-form SHA-256 and byte pins; original case outcomes are never re-evaluated by indexers.
+
 Final verification: [gate results, link proof and archive audit](F22-verification.md). All required non-live gates pass; live exit 2 retains blocked cases.
 
 # Follow-up 22 run ledger — 2026-11-04

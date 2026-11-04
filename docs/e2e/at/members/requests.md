@@ -1,3 +1,15 @@
+# Follow-up 23 — 2026-11-04
+
+### Requests to orchestrator
+
+2026-11-04:
+
+- **F23-D146 / devstack:** the regular-node prepared config omits `observation_seconds` in `tests/e2e/cmd/fvpn-e2e-prepare/main.go:384–408`; `node/agent/config.go:145–146` defaults it to 30 s. The 5 s override at `tests/e2e/installer_fixture.go:119` applies to installer-node only. [Allowlisted retained config](F23-observation-config.json) and [complete row observation windows](F23-observation-windows.json) show a roughly 30 s cadence and the dual-row stale read. Please resolve the fixture/report-cadence mismatch with the owner. No freshness policy, 15 s bound, D-151 qualification or outside-owned file was changed.
+- **F23-observation submissions / agent-core:** `node/agent/observe.go:285–365` and `node/internal/controlclient/client.go:248` emit no individual observation-submission timestamp/outcome. Existing exported logs cannot supply the requested attempts. Every row records this as unavailable, with start/end byte coverage and overwrite detection. Owner instrumentation is needed to distinguish scheduling, queueing, transport and rejection for each attempt; this sub-item stops at that missing export evidence.
+- **F22-AT01 / existing D-148 owner:** the old node response is present at member underlay ingress, with an IPv6 loopback source label. [Pinned retrospective extraction](F23-retrospective-F22-AT01.json) places the first unconfirmed boundary after ingress and before WireGuard receive accounting. No per-packet kernel drop trace or proof of the response-source mechanism is retained. The native NetBird response path/shared fixture remains owner work; no unsupported causal file attribution or product change is made here. F11-01 stays **OPEN, upstream-dependent (D-148)**.
+
+F4-03, F4-04, F4-05 / F4-07, F4-06 and F4-10 remain the existing owner-resource groups below; they are not re-asked. No handover claim requires changing a handover-owned file.
+
 # Follow-up 22 — 2026-11-04
 
 ### Requests to orchestrator

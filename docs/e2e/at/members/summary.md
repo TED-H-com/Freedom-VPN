@@ -1,3 +1,26 @@
+# Follow-up 23 results — 2026-11-04
+
+Run `6a25221b-1dcf-4f4d-b866-cd04f57f58f6`, measured source `8bde2b6acc0b116515148eeb0ff4448c65453a92`, baseline/current main at preflight `c148cf349df219124e457113ce90c010016a308e`. **3 PASS / 7 BLOCKED / 0 FAIL; 706 passed / 8 blocked / 0 failed subchecks**. No predicate changed, no case retried. [All original subchecks](F23-subchecks.md), [result index](F23-results.json), [verification receipts](F23-verification.md).
+
+D-098 was committed first as `2d4d37a8`: [122 original root records](history/follow-up-22/INDEX.md), including unchanged gzip and SHA-256 pins. Run `3eb3960d` remains **3 / 7 / 0 cases; 702 / 8 / 0 subchecks**, measured on `55f2765d`; the orchestrator accepted that baseline without a later-main rerun. Run `5715939e` and every earlier archive/note retain their original outcomes.
+
+| Case | Requirements (§19 acceptance) | Status | Pass / blocked / fail |
+|---|---|---|---:|
+| [AT05](AT05.json) | NODE01 NODE04 ENR01 ENR04 PKG01 | blocked | 31 / 0 / 0 |
+| [AT01](AT01.json) | APP01 ID01 MEM01 | blocked | 23 / 0 / 0 |
+| [AT02](AT02.json.gz) | MEM01 MEM02 MEM03 SEC01 | pass | 193 / 0 / 0 |
+| [AT03](AT03.json) | BILL01 BILL03 ENT01 | pass | 98 / 0 / 0 |
+| [AT04](AT04.json) | BILL02 ENT02 MEM03 | blocked | 113 / 0 / 0 |
+| [AT08](AT08.json) | NODE02 NODE03 EXIT01 EXIT03 | pass | 36 / 0 / 0 |
+| [AT20](AT20.json) | DNS01 DNS02 ISO04 | blocked | 89 / 0 / 0 |
+| [AT21](AT21.json) | DNS03 DNS04 APP01 | blocked | 13 / 0 / 0 |
+| [AT22](AT22.json) | SEC02 DNS01 DNS04 | blocked | 40 / 0 / 0 |
+| [AT09](AT09.json) | EXIT02 APP01 NFR01 | blocked | 70 / 8 / 0 |
+
+AT01 and AT08 initial transfers are counted. The old AT01 response reached member underlay ingress with an IPv6 loopback source; the first unconfirmed boundary is ingress → WireGuard accounting. Native control observations arrive about every 30 s because the regular-node config omits the installer-only 5 s override. The new stale row is dual/IPv4, age 22.606093 s, and remains blocked under the unchanged 15 s bound. Per-submission outcomes remain unavailable from existing agent logs. [Full dated analysis](followup23-2026-11-04.md).
+
+AT02's single closed recovery: Apply 544 → renewal 549 → populated lease → serving Apply 550; deny-all **179.481443 ms / seven losses**. AT09 indexes **25 BLOCKED, 26 PASS, 27 PASS**; D-067 provisional predicate unexercised. No retained F48-01 signature; **zero node_write conflicts** across 30 receipts. D-133 overlap occurs only in the recorded teardown window; no retry. Cleanup leaves zero owned Docker inventory.
+
 # Follow-up 22 results — 2026-11-04
 
 Run `3eb3960d-c411-4648-8d77-bba40b436ae3`, measured source `8a6dcf34248f035a3a460fcdee3e1e19e80c9137`, baseline `55f2765dac6e1c6871045ee6182d6cc23ccf8a33` (agent-core 49 #454 and 50 #461). **3 PASS / 7 BLOCKED / 0 FAIL; 702 passed / 8 blocked / 0 failed subchecks**. Every predicate remains unchanged; every observed case and subcheck is retained in [the result index](F22-results.json) and [the complete subcheck list](F22-subchecks.md).

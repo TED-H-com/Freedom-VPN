@@ -1,3 +1,15 @@
+# Follow-up 23 blockers and evidence limits — 2026-11-04
+
+Run `6a25221b-1dcf-4f4d-b866-cd04f57f58f6`, measured source `8bde2b6acc0b116515148eeb0ff4448c65453a92`, baseline/current main at preflight `c148cf349df219124e457113ce90c010016a308e`. **3 PASS / 7 BLOCKED / 0 FAIL; 706 passed / 8 blocked / 0 failed subchecks**. No predicate changed, no case retried. [All original subchecks](F23-subchecks.md), [result index](F23-results.json), [verification receipts](F23-verification.md).
+
+D-098 was committed first as `2d4d37a8`: [122 original root records](history/follow-up-22/INDEX.md), including unchanged gzip and SHA-256 pins. Run `3eb3960d` remains **3 / 7 / 0 cases; 702 / 8 / 0 subchecks**, measured on `55f2765d`; the orchestrator accepted that baseline without a later-main rerun. Run `5715939e` and every earlier archive/note retain their original outcomes.
+
+The measured native freshness failure is dual/IPv4 indexes 44/46; IPv6 indexes 49/51 now pass. The later failed condition is only observation age (22.606093 s > 15 s). Regular-node config defaults to 30 s; the cited 5 s override applies only to installer-node. [Every window and failed condition](F23-observation-windows.json), [config proof](F23-observation-config.json). Agent per-submission logging is absent, so scheduling versus queue/transport/rejection cannot be reconstructed.
+
+The old AT01 response is retained at both underlay ends, with an IPv6 loopback source label. The remaining boundary is after member ingress and before WireGuard accounting, without packet-specific kernel drop proof. New successful initial transfers do not close F11-01 or establish a merged-change cause. [Packet evidence](F23-initial-transfers.json), [historical correction](F23-retrospective-F22-AT01.json).
+
+D-067 index 25 remains blocked/unexercised; indexes 26/27 pass. D-133 marks the six teardown overlap samples as confounded, with no intersecting acceptance case. All original failed/blocked conditions, resource gaps and archived outcomes stand. [Dated analysis and owner requests](followup23-2026-11-04.md).
+
 # Follow-up 22 blockers and measured limits — 2026-11-04
 
 Run `3eb3960d-c411-4648-8d77-bba40b436ae3`, measured source `8a6dcf34248f035a3a460fcdee3e1e19e80c9137`, baseline `55f2765dac6e1c6871045ee6182d6cc23ccf8a33` (agent-core 49 #454 and 50 #461). **3 PASS / 7 BLOCKED / 0 FAIL; 702 passed / 8 blocked / 0 failed subchecks**. Every predicate remains unchanged; every observed case and subcheck is retained in [the result index](F22-results.json) and [the complete subcheck list](F22-subchecks.md).
