@@ -26,14 +26,16 @@ def main(phase=None):
                   application_base=main_revision, phase=phase, started_at=utc(), d099_roadmap_present=d099,
                   prepare=dict(prefix=PREFIX,port_base=PORT_BASE,reset=True,grace_seconds=90))
     followup = os.environ.get('FVPN_SECOPS_EVIDENCE_FOLLOWUP', '11')
-    if followup not in ('11', '12', '13'):
+    if followup not in ('11', '12', '13', '15'):
         raise SystemExit('unsupported evidence follow-up')
+    if followup == '15' and phase != 'transports':
+        raise SystemExit('follow-up 15 authorizes only the transport campaign')
     if followup == '13' and phase != 'restore':
         raise SystemExit('follow-up 13 authorizes only the restore campaign')
     record['follow_up'] = int(followup)
     label = 'followup'+followup+'-'+phase
     with tempfile.TemporaryDirectory(prefix=label+'.',dir=ROOT/'.agent/tmp') as scratch:
-        env=dict(os.environ, PATH=str(Path.home()/'.local/go/bin')+':'+os.getenv('PATH',''),
+        env=dict(os.environ,
                  GOTOOLCHAIN='local',CGO_ENABLED='0',PYTHONDONTWRITEBYTECODE='1',TMPDIR=scratch,GOTMPDIR=scratch,
                  E2E_RESET='1',FVPN_E2E_PREFIX=PREFIX,FVPN_E2E_PORT_BASE=PORT_BASE,FVPN_E2E_GRACE_SECONDS='90',
                  GOFLAGS='-p=2',GOMAXPROCS='2',FVPN_E2E_STATE=str(ROOT/'.agent/e2e-state-w4-secops'),
@@ -53,8 +55,10 @@ def main(phase=None):
                 record['live']=dict(cmd,**summarize_go(raw,[name],cmd['exit_code']))
         finally:
             cleanup_extra_restore_objects(env)
-            for suffix in ('grant_expiry','lease_expiry','device_revoke'):
-                name='fvpn-w4-secops-member-f11-'+suffix.replace('_','-')
+            for name in ('fvpn-w4-secops-member-f11-grant-expiry',
+                         'fvpn-w4-secops-member-f11-lease-expiry',
+                         'fvpn-w4-secops-member-f11-device-revoke',
+                         'fvpn-w4-secops-member-f15-manual-grant-withdrawal'):
                 subprocess.run(['docker','rm','-fv',name],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
                 subprocess.run(['docker','volume','rm',name],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
             record['down'],_=command(label+'-e2e-down',['make','-f','mk/e2e.mk','e2e-down'],env,300)
