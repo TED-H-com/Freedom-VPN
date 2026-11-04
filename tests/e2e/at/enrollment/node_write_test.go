@@ -43,6 +43,18 @@ func (p *probe) writeNode(node uuid.UUID, method, suffix string, body any, inten
 	}
 	result = p.stack.WriteNode(p.ctx, p.admin, method, path+suffix, path, body, read.Header.Get("ETag"), intended, success...)
 	p.keep(result.Reply)
+	// The shared command stops on 429. Retain limiter evidence without adding
+	// the general browser dispatcher's retry loop around the bounded command.
+	for _, attempt := range result.Receipt.Attempts {
+		if attempt.Status == 429 {
+			p.sawLimited(method, path+suffix, result.Reply.Header.Get("Retry-After"))
+		}
+		if attempt.Reread != nil && attempt.Reread.Status == 429 {
+			// Read receipts expose status, not response headers. Do not invent a
+			// Retry-After value or report that this stopped request recovered.
+			p.sawLimited("GET", path, "")
+		}
+	}
 	return result
 }
 

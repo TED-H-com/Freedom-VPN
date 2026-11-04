@@ -111,10 +111,7 @@ func (p *probe) prepareFreezeNode(node, group uuid.UUID, detail map[string]any) 
 			return false
 		}
 	}
-	if !p.writePublication(node, group, "TEST ONLY serving freeze", detail).Accepted(200, 202) {
-		return false
-	}
-	return true
+	return p.writePublication(node, group, "TEST ONLY serving freeze", detail).Accepted(200, 202)
 }
 
 type freezeSample struct {

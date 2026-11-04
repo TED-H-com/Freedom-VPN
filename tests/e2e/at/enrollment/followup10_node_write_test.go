@@ -86,7 +86,7 @@ func TestF10_NodeWriteSites(t *testing.T) {
 				name     string
 				readback any
 			}
-			cases := []scenario{{"accepted", nil}, {"retry", map[string]any{}}, {"already_intended", desired}, {"other_412", nil}, {"exhausted", nil}, {"reread_failed", nil}, {"transport", nil}}
+			cases := []scenario{{"accepted", nil}, {"retry", map[string]any{}}, {"already_intended", desired}, {"other_412", nil}, {"exhausted", nil}, {"reread_failed", nil}, {"transport", nil}, {"rate_limited", nil}, {"reread_limited", nil}}
 			if capacity {
 				for _, field := range []string{"down_bps", "up_bps", "member_down_bps_cap", "member_up_bps_cap"} {
 					for _, missing := range []bool{false, true} {
@@ -128,6 +128,10 @@ func TestF10_NodeWriteSites(t *testing.T) {
 							if pending {
 								pending = false
 								rereads++
+								if tc.name == "reread_limited" {
+									w.WriteHeader(429)
+									return
+								}
 								if tc.name == "reread_failed" {
 									w.WriteHeader(503)
 									return
@@ -154,6 +158,11 @@ func TestF10_NodeWriteSites(t *testing.T) {
 						bodies = append(bodies, string(body))
 						keys = append(keys, r.Header.Get("Idempotency-Key"))
 						etags = append(etags, r.Header.Get("If-Match"))
+						if tc.name == "rate_limited" {
+							w.Header().Set("Retry-After", "1")
+							w.WriteHeader(429)
+							return
+						}
 						if tc.name == "transport" {
 							conn, _, e := w.(http.Hijacker).Hijack()
 							if e != nil {
@@ -186,7 +195,7 @@ func TestF10_NodeWriteSites(t *testing.T) {
 					} else {
 						ok = p.revokeNode(node, detail).Accepted(202)
 					}
-					wantOK := tc.name != "other_412" && tc.name != "exhausted" && tc.name != "reread_failed" && tc.name != "transport"
+					wantOK := tc.name != "other_412" && tc.name != "exhausted" && tc.name != "reread_failed" && tc.name != "transport" && tc.name != "rate_limited" && tc.name != "reread_limited"
 					if ok != wantOK {
 						t.Fatalf("accepted=%t, want %t: %+v", ok, wantOK, detail)
 					}
@@ -223,14 +232,19 @@ func TestF10_NodeWriteSites(t *testing.T) {
 						wantWrites, wantReads = 1, 0
 					case "already_intended":
 						wantWrites, outcome = 1, "already_intended"
-					case "other_412":
+					case "other_412", "rate_limited":
 						wantWrites, wantReads, outcome = 1, 0, "non_conflict_response"
 					case "exhausted":
 						wantWrites, wantReads, outcome = 3, 3, "attempt_limit"
-					case "reread_failed":
+					case "reread_failed", "reread_limited":
 						wantWrites, outcome = 1, "reread_failed"
 					case "transport":
 						wantWrites, wantReads, outcome = 1, 0, "transport_error"
+					}
+					if tc.name == "rate_limited" || tc.name == "reread_limited" {
+						if p.limitedCount != 1 || len(p.limited) != 1 || p.limited[0]["retry_succeeded"] != "false" {
+							t.Fatal("stopped limiter response hidden or reported recovered")
+						}
 					}
 					trace := record.Receipt
 					if writes != wantWrites || rereads != wantReads || len(trace.Attempts) != writes || trace.Outcome != outcome || trace.MaxAttempts != 3 || trace.LimitSeconds != 10 || trace.StartedAt.IsZero() || trace.FinishedAt.Before(trace.StartedAt) {
@@ -292,11 +306,14 @@ func TestF10_NodeWriteSites(t *testing.T) {
 }
 
 func TestF10_RevokeOperationReadback(t *testing.T) {
-	for _, mode := range []string{"found", "missing", "ambiguous", "old", "wrong_node", "wrong_action", "failed", "paginated", "http_error"} {
+	for _, mode := range []string{"accepted", "malformed_operation", "found", "missing", "ambiguous", "old", "wrong_node", "wrong_action", "failed", "paginated", "http_error"} {
 		t.Run(mode, func(t *testing.T) {
 			node, operation := uuid.New(), uuid.New()
 			retired := time.Now().UTC().Truncate(time.Microsecond)
 			p := nodeWriteProbe(t, func(w http.ResponseWriter, r *http.Request) {
+				if mode == "accepted" || mode == "malformed_operation" {
+					t.Error("unexpected audit lookup for a new operation")
+				}
 				if r.Method != "GET" || r.URL.Path != "/api/v1/admin/audit-events" || r.URL.Query().Get("resource_id") != node.String() || r.URL.Query().Get("occurred_from") != retired.Format(time.RFC3339Nano) {
 					t.Error("incorrect operation lookup", r.URL)
 				}
@@ -329,8 +346,14 @@ func TestF10_RevokeOperationReadback(t *testing.T) {
 				_ = json.NewEncoder(w).Encode(map[string]any{"items": items, "next_cursor": cursor})
 			})
 			result := labstack.NodeWriteResult{AlreadyIntended: true, Reply: labstack.Response{Status: 412}}
+			if mode == "accepted" || mode == "malformed_operation" {
+				result = labstack.NodeWriteResult{Reply: labstack.Response{Status: 202, Body: []byte(fmt.Sprintf(`{"operation_id":%q}`, operation))}}
+				if mode == "malformed_operation" {
+					result.Reply.Body = []byte(`{}`)
+				}
+			}
 			got, ok := p.revokeOperation(node, result, retired, map[string]any{})
-			if ok != (mode == "found") || (ok && got != operation) {
+			if ok != (mode == "found" || mode == "accepted") || (ok && got != operation) {
 				t.Fatalf("lookup=%s/%t", got, ok)
 			}
 		})
