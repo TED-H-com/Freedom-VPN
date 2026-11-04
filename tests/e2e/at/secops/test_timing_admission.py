@@ -51,3 +51,22 @@ class TimingAdmission18(unittest.TestCase):
 
     def test_unclosed_section_fails(self):
         self.assertFalse(timing.validate([dict(kind='section_start',section='lease_expiry',mono_ns='1')])['passed'])
+
+    def test_admission_uses_unwrapped_path(self):
+        # Admission itself may invoke Python or Docker. It must not enter the
+        # monitored command wrappers recursively before recording an answer.
+        with tempfile.TemporaryDirectory() as tmp:
+            original_path = os.environ.get('FVPN_SECOPS_ADMISSION_PATH', os.environ['PATH'])
+            hold = Path(tmp)/'hold.sh'
+            hold.write_text("python3 -B -c 'print(\"free\")'\n")
+            wrapper = Path(tmp)/'python3'
+            wrapper.write_text('#!/bin/sh\nexit 99\n')
+            wrapper.chmod(0o700)
+            env=dict(FVPN_SECOPS_TIMING_JOURNAL=str(Path(tmp)/'journal'),
+                     FVPN_SECOPS_TIMING_ACTIVE=str(Path(tmp)/'active'),FVPN_HOLD_SH=str(hold),
+                     PATH=tmp+':'+original_path,FVPN_SECOPS_ADMISSION_PATH=original_path)
+            with patch.dict(os.environ,env):
+                self.assertTrue(timing.check('TEST ONLY nested tool'))
+            records=[json.loads(x) for x in (Path(tmp)/'journal').read_text().splitlines()]
+            self.assertEqual(len(records),1)
+            self.assertEqual(records[0]['answer'],'free')

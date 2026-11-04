@@ -31,7 +31,8 @@ def check(command):
     if active():
         raise RuntimeError('admission check forbidden inside timed section')
     started = stamp()
-    result = subprocess.run(['bash', os.environ['FVPN_HOLD_SH']], capture_output=True, text=True)
+    admission_env = dict(os.environ, PATH=os.environ.get('FVPN_SECOPS_ADMISSION_PATH', os.environ['PATH']))
+    result = subprocess.run(['bash', os.environ['FVPN_HOLD_SH']], capture_output=True, text=True, env=admission_env)
     free = result.returncode == 0 and result.stdout.strip() == 'free'
     # No private reasons, paths or foreign argv in public evidence.
     event = dict(kind='admission', command=command, answer='free' if free else 'held',
