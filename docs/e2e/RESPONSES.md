@@ -1683,3 +1683,58 @@ candidate start and arrange a separately authorized candidate acceptance proof.
 Handover/status: keep F30-01 open until that path is observed; lease-expiry's
 quarantine removal alone is insufficient in this run. Preserve the confounded
 window and admission omissions in review. No out-of-scope path was edited.
+
+## 2026-11-04 — updater 25 / D-158 and D-160 (follow-up 35)
+
+**F30-01 is closed by updater 24, agent-core 49 and updater 25**, with run
+`8a436a87-5efe-4c18-a7ec-72be170cb69b` on code `9fbff94c` and baseline
+`5c21e670`: **32 pass / 1 blocked / 0 fail**, acceptance make exit 2, unchanged
+nightly evaluator **PASS** (exit 0). No scenario or full run was retried. See
+[analysis and all records](runs/2026-11-04/followup35/analysis.md).
+
+Each updater-loop invocation now retains complete output, UTC start/end, PID and
+exit status. Both scenario records contain the cumulative archive; the second
+retains the first unchanged. The offline two-invocation proof passes.
+`update-good` exited **0**, ran the exact candidate and recorded local success;
+its complete output is empty and it wrote **no lock-wait record**. `update-bad`
+exited **1**, retained the exact `HASH_MISMATCH: artifact` error line and also
+wrote no wait record. Neither invocation encountered a failed first acquisition,
+so this run supplies no wait interval or holder during a wait. It cannot assign
+the changed good-update outcome to updater 25's ten-second budget.
+
+The lock/heartbeat trace identifies candidate PID **181291** booting under
+parent updater PID **178784** at **09:52:32.026315972 UTC**, followed by
+`recovery_required` while the parent still holds the lock. Parent ownership
+ends between samples **09:52:37.440685257–37.654699088**. The agent log bounds
+recovery clearance by **09:52:42.112**; its first serving heartbeat is written
+**09:52:42.902971300** and observed **09:52:42.906726464**, generation 95.
+The analysis explains the runtime-contract interpretation of deferral and
+clearance and distinguishes it from an unlogged recovery-child completion time.
+
+`lease-expiry` then passes: countedFlow succeeds after a **1.293275146 s**
+readiness poll, control stops, the installed desired-policy deadline is reached,
+member accept rules become zero, and active TCP/UDP senders produce no additional
+replies or counted bytes in the closed-path checks. Control restarts successfully.
+The analysis retains D, all fault/restart timestamps, counters and timing limits.
+
+D-160 records **30 admitted sections**, **zero admission checks inside them**,
+and all section start/end times. Host preflight waited **660 s** before launch;
+no foreign overlap was observed in the five-second run samples. Follow-up 34's
+2029 recorded acceptance-time admission checks were all free: its only recorded
+wait began after acceptance ended. The old three setup-sub-make omissions are
+not rewritten or excused. Current recursive makes are admitted.
+
+All required final gates pass. Teardown and inventory prove zero owned Docker
+containers, images, networks and volumes. The initial record-format hygiene and
+EOF-whitespace corrections are retained with their failing and passing receipts.
+AT29 guest-clock rollback stays [operator-run](at29-guest-clock.md), and
+`member-ipv6` remains the sole unchanged nightly-list entry. No workflow was
+triggered, and no other lane's path was changed.
+
+### Requests to orchestrator
+
+2026-11-04 — Carry the above F30-01 closure and run ID into finding tracking and
+handover, credited to updater 24, agent-core 49 and updater 25. Preserve the
+absence of contended acquisition in this run; do not call it a measured proof
+that the new wait budget caused the status change. Keep the existing operator
+AT29 and member IPv6 dispositions. No additional outside-path fix is requested.
