@@ -1,7 +1,29 @@
 # Operations Runbooks Index (`docs/ops/`)
 
-**Current cut — [follow-up 40](../handover/follow-up-40.md) (2026-11-03 EST):** #430–#434 at 3f7dbc25: D-146/D-147 on main (#432); members 18’s three receive-only TCP rows pass under provisional D-151, while AT09 stays failed. Isolation 19’s four source sets pass in the lab; assembled checks blocked by capacity PATCH 412. Agent-core 44 has no comparison; 45 repeats. D-152 answers F19-01; devstack 32 and members 19 requests stay open. 55 decisions.
-**Previous cut — [follow-up 39](../handover/follow-up-39.md):** #428–#429 at 1b87ab32; 11 subtests, two final rows/PR excerpts, ten frozen inputs, exact r26 and separate audit, 15 dated documents/75 Go tests; 99 findings, 53 decisions, all ten owner requests answered.
+**Current cut — [follow-up 41](../handover/follow-up-41.md) (2026-11-03 EST):** #435–#438 at c359d4a9: agent-core 45 has no comparison; members 19 restores early returns (offline only); devstack 32 handles exact-code 412s, with forced real-API proof 8/8. Isolation’s assembled run is pending in 20; agent-core 46 and read-only r27 are status only. 55 decisions, 105 findings; no operator/member behavior change.
+**Previous cut — [follow-up 40](../handover/follow-up-40.md):** #430–#434 at 3f7dbc25; D-146/D-147 on main, D-151/D-152 provisional; 14 subtests, 76 immutable records, 11 run snapshots, 84 Go declarations; 55 decisions and 102 findings.
+
+## Follow-up 41 acceptance snapshot (2026-11-03 EST)
+
+Cut **#435–#438**, main **c359d4a9**, immediately after #434; four briefed
+PRs, no unbriefed PR. [Evidence and routing](../handover/follow-up-41.md).
+
+| Item | Result and boundary |
+|---|---|
+| Handover 40 (#435) | 14 subtests; five final rows/PR excerpts, ten frozen #430 inputs, 76 immutable records/11 frozen runs, ten cases/77 subchecks, 84 Go declarations; 55 decisions/102 findings. |
+| Agent-core 45 (#436) | Corrected clocks pass; A1 self-matched the parent shell, A3 stopped on combined Docker output. No scenario or comparison, zero pooled legs per arm. Ordinary 13/13 on 3f7dbc25; expiry predicate true, renewal 1,517/1,518 with one loss inside guards; zero-loss predicate false. D-150's third attempt is 46. |
+| Members 19 (#437) | Two finiteExpiry early returns and six more owned sites restored; public same-plan grants, original failed check/normal checks retained. Offline tests with/without e2e; no assembled run, no recorded AT02/AT09 verdict change. |
+| Devstack 32 (#438) | Exact 412 RESOURCE_VERSION_CONFLICT re-read, intended-value success or same-key/body fresh-ETag retry; three writes/ten seconds. Eight sites converted. Five retained live invocations: e22872b7 pre-enrollment failure, c52b760c 8/8, af726b13 proof blocked, 95fb7eab forced 8/8, 3ad796d4 ordinary 8/8. Zero-header proof does not reproduce the observation race. |
+
+[105-row register](../handover/README.md#findings-register-at-the-follow-up-41-cutoff):
+three updated, three added, 99 unchanged. **55 decisions**, no new decision;
+only D-150's status changes, D-151/D-152 remain unchanged. Shared-helper early
+returns, AT-owned node writes and the zero-header contract detail are open
+with their named owners. Isolation 20's assembled run is pending; it,
+agent-core 46 and read-only r27 are briefing status only, outside this cut.
+No r27 archive is added. Nothing changes operator/member behavior; every
+historical failure stays failed and no date is promised for unmerged work.
+Earlier snapshot sections below describe their own cuts.
 
 ## Follow-up 40 acceptance snapshot (2026-11-03 EST)
 
