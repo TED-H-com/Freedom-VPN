@@ -53,19 +53,27 @@ func f50ReadyReport(t *testing.T, r *rig) {
 func TestD157_AT02_ClosedRecoveryRenewsAfterAcceptedReadyReport(t *testing.T) {
 	r, p := f50Rig(t)
 	f50Recovery(t, r, p, 14)
+	// Row 562 is a clean reporting transition after the closed Apply. Drive
+	// that production refresh explicitly, independent of a health challenge,
+	// so even the pre-D-157 engine has supplied central's recovery inputs.
+	r.eng.evaluate(t.Context())
+	if err := r.eng.observe(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.eng.flush(t.Context()); err != nil {
+		t.Fatal(err)
+	}
+	f50ReadyReport(t, r)
+	r.srv.SetMemberGrantsReady(true)
 	sent, slot := r.eng.leaseAttemptAt, r.eng.provisionalRetryAt
-	// Assert the old scheduling defect first, so the before-change failure is
-	// precisely the five-second wait, not a changed reporting assertion.
 	if delay := r.eng.runStepDelay(sent, 5*time.Second); delay != 0 {
 		t.Fatalf("closed recovery waits %s for D-067 slot; want immediate wake after accepted ready report", delay)
 	}
-	f50ReadyReport(t, r)
 	requests := r.srv.LeaseRequests()
 	beforeReq := requests[len(requests)-1]
 	if !beforeReq.AppliedConfigGeneration.IsNull() {
 		t.Fatal("quarantined request ACKed an unverified generation")
 	}
-	r.srv.SetMemberGrantsReady(true)
 	before, baselines := r.srv.LeaseRenewals(), p.baselineCalls
 	stepOK(t, r) // 563/564, without advancing to the slot.
 	if r.clock.Mono() >= slot || r.srv.LeaseRenewals() != before+1 || !r.eng.serving || len(r.eng.lease.Members) != 1 || p.baselineCalls != baselines {
