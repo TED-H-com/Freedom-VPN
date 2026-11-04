@@ -1,0 +1,19 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-count=1",
+    "-v",
+    "-run",
+    "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
+    "./tests/netlab"
+  ],
+  "source_commit": "13931f53c1a277073ff24519120a98c392451721",
+  "started_utc": "2026-11-04T09:23:36.735146+00:00",
+  "ended_utc": "2026-11-04T09:23:40.494348+00:00",
+  "elapsed_s": 3.759,
+  "exit_code": 0,
+  "output": "gate4.txt",
+  "console_host_paths_redacted": true,
+  "retained_output": "gate4.txt"
+}

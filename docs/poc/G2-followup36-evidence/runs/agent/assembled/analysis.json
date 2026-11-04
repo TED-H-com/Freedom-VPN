@@ -1,0 +1,152 @@
+{
+  "scope": "TEST ONLY assembled agent/kernel/TLS fake control; 80ms dual-phase diagnostic; no D-120 tolerance",
+  "snapshots": 753,
+  "runs": [
+    {
+      "run_id": "22b0559d-a4a7-4c3f-82a1-43b58b39eaaa",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe"
+    },
+    {
+      "run_id": "586d1a32-e229-4cf0-9ffa-4305311617c3",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe"
+    },
+    {
+      "run_id": "fa5af802-1f59-49cf-a8c8-e2c76f55c732",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe"
+    }
+  ],
+  "brackets": {
+    "baseline": {
+      "count": 17,
+      "median_ns": "26366912",
+      "worst_ns": "41766846"
+    },
+    "apply": {
+      "count": 9,
+      "median_ns": "86658597",
+      "worst_ns": "161279115"
+    },
+    "verifier": {
+      "count": 318,
+      "median_ns": "31375731",
+      "worst_ns": "37750699"
+    },
+    "nft_read": {
+      "count": 318,
+      "median_ns": "3120662",
+      "worst_ns": "5109869"
+    },
+    "precision_read": {
+      "count": 310,
+      "median_ns": "2859391",
+      "worst_ns": "3582353"
+    },
+    "tc_read": {
+      "count": 318,
+      "median_ns": "16589665",
+      "worst_ns": "21394987"
+    },
+    "install_command": {
+      "count": 7,
+      "median_ns": "18423395",
+      "worst_ns": "24650718"
+    },
+    "release_command": {
+      "count": 7,
+      "median_ns": "14949264",
+      "worst_ns": "27085185"
+    },
+    "outer_guard": {
+      "count": 7,
+      "median_ns": "33883993",
+      "worst_ns": "45512845"
+    },
+    "inner_guard": {
+      "count": 7,
+      "median_ns": "2243",
+      "worst_ns": "5166"
+    },
+    "render_to_installed": {
+      "count": 7,
+      "median_ns": "18734975",
+      "worst_ns": "24822981"
+    },
+    "verify": {
+      "count": 310,
+      "median_ns": "31330778",
+      "worst_ns": "37750699"
+    }
+  },
+  "renewal": {
+    "probes": 1518,
+    "delivered": 1518,
+    "losses": [],
+    "actual_renewals": [
+      {
+        "run_id": "fa5af802-1f59-49cf-a8c8-e2c76f55c732",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "sequence": "223",
+        "source": "renewal",
+        "anchor": {
+          "mono_before_ns": "107344711068932",
+          "wall": "2026-11-04T09:18:22.259692549Z",
+          "mono_after_ns": "107344711069503"
+        },
+        "lease": {
+          "lease_id": "01a1a5da-3031-71d0-b4b1-d62d7a4054da",
+          "generation": "3",
+          "issued_at": "2026-11-04T09:18:22.257115498Z",
+          "expires_at": "2026-11-04T09:19:22.257115498Z",
+          "request_mono_ns": "107344708092196",
+          "node_deadline_ns": "107404708092196",
+          "members": 2
+        },
+        "renewal": {
+          "request_id": "01a1a5da-3030-7af8-b7de-f3ea91ef1d8b",
+          "start_ns": "107344708092196",
+          "end_ns": "107344711067977",
+          "request_wall": "2026-11-04T09:18:22.256715572Z",
+          "new_lease": true
+        }
+      },
+      {
+        "run_id": "fa5af802-1f59-49cf-a8c8-e2c76f55c732",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "sequence": "442",
+        "source": "renewal",
+        "anchor": {
+          "mono_before_ns": "107375731220458",
+          "wall": "2026-11-04T09:18:53.279843856Z",
+          "mono_after_ns": "107375731220662"
+        },
+        "lease": {
+          "lease_id": "01a1a5da-a95d-75a2-84ac-c3269636685b",
+          "generation": "3",
+          "issued_at": "2026-11-04T09:18:53.277367276Z",
+          "expires_at": "2026-11-04T09:19:53.277367276Z",
+          "request_mono_ns": "107375727506528",
+          "node_deadline_ns": "107435727506528",
+          "members": 2
+        },
+        "renewal": {
+          "request_id": "01a1a5da-a95c-7205-b729-4ae13e38a336",
+          "start_ns": "107375727506528",
+          "end_ns": "107375731220063",
+          "request_wall": "2026-11-04T09:18:53.276129922Z",
+          "new_lease": true
+        }
+      }
+    ],
+    "loss_windows_overlapping_install": 0,
+    "ingress_in_outer_guard": 0,
+    "unresolved_ingress": 0
+  },
+  "expiry": {
+    "deadline_ns": "107435727506528",
+    "last_positive_offset_ns": "-100326460",
+    "first_drop_offset_ns": "-63748480",
+    "positives": 97,
+    "drops": 15,
+    "packet_predicate": "pass"
+  }
+}

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Correlate TEST ONLY UDP metadata with independent header captures and Apply.
+"""Correlate TEST ONLY TCP/UDP metadata with independent header captures and Apply.
 
 Node any is authoritative for node ingress/egress. Origin/responder any traces
 are additional namespace-local observations, not fields invented from a node
@@ -85,25 +85,108 @@ def position(at, windows):
     return ('inside' if inside else 'boundary'), w['generation']
 
 
-def classify_d120(datagrams, windows, tcp_errors=(), evidence_errors=(), reloads=100):
+def guard_failures(at, windows):
+    """The shared D-120 (i)/(ii) rules for UDP and D-161 TCP loss."""
+    pos, generation = position(at, windows)
+    matches = matching_guards(at, windows)
+    w = matches[0] if len(matches) == 1 else None
+    failures = []
+    if pos not in ('inside', 'boundary'):
+        failures.append('(i): ' + pos)
+    if w:
+        if w.get('verified') is not True:
+            failures.append('(i): Apply not verified')
+        if not 0 <= w['upper_ns'] <= 100_000_000:
+            failures.append('(ii): guard upper bound > 100 ms or invalid')
+        if not 0 <= w['render_to_installed_ns'] <= 100_000_000:
+            failures.append('(ii): render-to-installed > 100 ms or invalid')
+    return pos, generation, w, failures
+
+
+def classify_tcp(facts, windows, tcp_errors):
+    """Pure D-161 assessment of checked observations; never read captures here."""
+    facts = facts or dict(reads=[], requests=[], errors=['missing TCP capture'], connection_errors=[])
+    reads = facts['reads']
+    common = facts['errors'] + facts['connection_errors']
+    requests = {r['sequence']: r for r in facts['requests']}
+    guard_losses, losses_by_sequence = {}, {}
+    for r in facts['requests']:
+        losses = []
+        for t in r['lost_transmissions']:
+            pos, generation, _, failures = guard_failures(t['node_entry_ns'], windows)
+            if t['node_entry_ns'] is None or t['node_exit_ns'] is not None:
+                failures.append('lost transmission not dropped at node (entry required, exit absent)')
+            row = dict(t, sequence=r['sequence'], classification=pos, generation=generation,
+                       failures=failures)
+            losses.append(row)
+            if not facts['errors'] and not failures:
+                guard_losses.setdefault(t['id'], dict(row, sequences=[]))['sequences'].append(r['sequence'])
+        losses_by_sequence[r['sequence']] = losses
+    attributed, unattributed, failures = [], [], []
+    for error in tcp_errors:
+        parts = error.split(':', 1)
+        sequence = int(parts[0]) if len(parts) == 2 and parts[0].isdigit() else None
+        reason = parts[-1]
+        if reason != 'TimeoutError':
+            failures.append(error)
+            continue
+        r = requests.get(sequence)
+        lost = losses_by_sequence.get(sequence, [])
+        conditions = list(common)
+        if r is None:
+            conditions.append('missing TCP request/echo capture facts')
+        else:
+            conditions.extend(r['errors'])
+            if not r['delivery'] or not r['echo_arrival']:
+                conditions.append('missing delivered request or in-order echo')
+        if not lost:
+            conditions.append('no captured lost transmission of stalled bytes')
+        for t in lost:
+            conditions.extend(f'transmission {t["id"]}: {f}' for f in t['failures'])
+        row = dict(sequence=sequence, lost_transmissions=lost,
+                   delivery=r['delivery'] if r else None, echo_arrival=r['echo_arrival'] if r else None)
+        if conditions:
+            unattributed.append(dict(row, failed_conditions=conditions))
+            failures.append(f'{sequence}:TimeoutError unattributable: ' + '; '.join(conditions))
+        else:
+            attributed.append(row)
+    # RST/FIN/second connection fails even when no application recv exposed it.
+    failures.extend(facts['connection_errors'])
+    stalls = [dict(sequence=r['sequence'], first_origin_ns=r['first_origin_ns'],
+                   echo_arrival_ns=r['echo_arrival']['wall_ns'], stall_ns=r['stall_ns'])
+              for r in facts['requests'] if r['stall_ns'] is not None]
+    return dict(tcp_reads=len(reads), tcp_read_records=reads,
+                tcp_timeouts=sum(r.get('outcome') == 'TimeoutError' for r in reads),
+                tcp_guard_losses=list(guard_losses.values()), guard_attributed_timeouts=attributed,
+                unattributed_timeouts=unattributed,
+                longest_tcp_stall=max(stalls, key=lambda s: s['stall_ns']) if stalls and not facts['errors'] else None,
+                tcp_evidence_errors=facts['errors'], tcp_failures=failures)
+
+
+def classify_d120(datagrams, windows, tcp_errors=(), evidence_errors=(), reloads=100, tcp_facts=None):
     """Pure D-120 verdict. No I/O, retries, inferred ingress or missing-data pass.
 
     The harness separately proves complete sidecar/capture coverage and the
     fixed 100-reload campaign. Per-loss failures include global (iv)/(v).
     """
     errors = list(evidence_errors)
+    tcp = classify_tcp(tcp_facts, windows, tcp_errors)
+    tcp_failures = tcp['tcp_failures']
+    if tcp_facts is not None:
+        errors.extend('evidence: TCP: ' + e for e in tcp['tcp_evidence_errors'])
     if reloads != 100:
         errors.append('campaign: requires 100 reloads')
     if not datagrams:
         errors.append('evidence: no datagrams')
-    if tcp_errors:
-        errors.append('(iv): TCP failure: ' + ', '.join(tcp_errors))
+    if tcp_failures:
+        errors.append('(iv): TCP failure: ' + ', '.join(tcp_failures))
     def success(d):
         return bool(d.get('read') and d['read'].get('outcome') == 'ok'
                     and d['read'].get('response_matches') is True)
     losses = [d for d in datagrams if not success(d)]
-    if len(losses) > 5:
-        errors.append('(v): more than 5 UDP losses per 100 reloads')
+    total_losses = len(losses) + len(tcp['guard_attributed_timeouts'])
+    if total_losses > 5:
+        errors.append('(v): more than 5 UDP losses plus guard-attributed TCP timeouts per 100 reloads')
     rows = []
     for idx, d in enumerate(datagrams):
         if success(d):
@@ -111,30 +194,19 @@ def classify_d120(datagrams, windows, tcp_errors=(), evidence_errors=(), reloads
         failures = []
         ingress = d.get('stages', {}).get('node_ingress')
         at = ingress['wall_ns'] if ingress else None
-        pos, _ = position(at, windows)
-        matches = matching_guards(at, windows)
-        w = matches[0] if len(matches) == 1 else None
-        if pos not in ('inside', 'boundary'):
-            failures.append('(i): ' + pos)
+        pos, _, w, failures = guard_failures(at, windows)
         if not d.get('send') or not d.get('read'):
             failures.append('evidence: missing sidecar send/read')
         elif d['read'].get('outcome') != 'TimeoutError':
             failures.append('UDP failure is not a lost echo (timeout)')
-        if w:
-            if w.get('verified') is not True:
-                failures.append('(i): Apply not verified')
-            if not 0 <= w['upper_ns'] <= 100_000_000:
-                failures.append('(ii): guard upper bound > 100 ms or invalid')
-            if not 0 <= w['render_to_installed_ns'] <= 100_000_000:
-                failures.append('(ii): render-to-installed > 100 ms or invalid')
         next_d = datagrams[idx + 1] if idx + 1 < len(datagrams) else None
         next_result = 'ok' if next_d and success(next_d) else ('missing' if next_d is None else 'failed')
         if next_result != 'ok':
             failures.append('(iii): next datagram ' + next_result)
-        if tcp_errors:
+        if tcp_failures:
             failures.append('(iv): TCP failure in run')
-        if len(losses) > 5:
-            failures.append('(v): more than 5 UDP losses per 100 reloads')
+        if total_losses > 5:
+            failures.append('(v): more than 5 UDP losses plus guard-attributed TCP timeouts per 100 reloads')
         rows.append(dict(sequence=d['sequence'], generation=w['generation'] if w else None,
                          bracket_start_ns=w['install_start']['wall_ns'] if w else None,
                          bracket_end_ns=w['release_end']['wall_ns'] if w else None,
@@ -143,13 +215,14 @@ def classify_d120(datagrams, windows, tcp_errors=(), evidence_errors=(), reloads
                          classification=pos, next_datagram=next_result, failures=failures))
     passed = not errors and not any(r['failures'] for r in rows)
     return dict(passed=passed, verdict='AT10 PASS under D-120' if passed else 'AT10 FAIL',
-                reloads=reloads, udp_losses=len(losses), errors=errors, losses=rows)
+                reloads=reloads, udp_losses=len(losses), errors=errors, losses=rows,
+                total_losses=total_losses, **tcp)
 
 
 def acceptance_evidence(result, stream_log):
     """Cross-check sidecar against the independently retained text verdicts."""
     events, windows, ds = result['events'], result['windows'], result['datagrams']
-    errors, tcp_errors = [], []
+    errors, tcp_errors = list(result.get('capture_errors', [])), []
     ends = [e for e in events if e['event'] == 'trace_end']
     if len(ends) != 1 or events[-1] != ends[0]:
         errors.append('evidence: missing final sidecar boundary')
@@ -187,7 +260,7 @@ def acceptance_evidence(result, stream_log):
             errors.append(f'evidence: missing trace record {d["sequence"]}')
     if result['summary']['incomplete_udp_reads']:
         errors.append('evidence: incomplete UDP reads')
-    return classify_d120(ds, windows, tcp_errors, errors)
+    return classify_d120(ds, windows, tcp_errors, errors, tcp_facts=result.get('tcp'))
 
 
 def verdict_table(verdict):
@@ -199,6 +272,13 @@ def verdict_table(verdict):
         lines.append(f"{r['sequence']} | {r['generation']} | {r['bracket_start_ns']} | {r['bracket_end_ns']} | {upper} | {render} | {r['classification']} | {r['next_datagram']} | {', '.join(r['failures']) or 'none'}")
     if not verdict['losses']:
         lines.append('(no UDP losses)')
+    lines.append(f"TCP reads: {verdict['tcp_reads']}; TCP timeouts: {verdict['tcp_timeouts']}; "
+                 f"guard-attributed timeouts: {len(verdict['guard_attributed_timeouts'])}; "
+                 f"combined losses: {verdict['total_losses']}")
+    lines.append('longest TCP stall: ' + json.dumps(verdict['longest_tcp_stall'], sort_keys=True))
+    for key in ('tcp_read_records', 'tcp_guard_losses', 'guard_attributed_timeouts', 'unattributed_timeouts'):
+        for row in verdict[key]:
+            lines.append(key + ': ' + json.dumps(row, sort_keys=True))
     lines.extend(verdict['errors'])
     return '\n'.join(lines) + '\n'
 
@@ -216,8 +296,13 @@ def analyze(stream, apply, trace_base):
     windows = guards(json_rows(apply))
     if not windows:
         raise ValueError('no Apply records')
-    cap = {role: captures(Path(str(trace_base) + '-' + role + '.txt'))
-           for role in ('origin', 'node', 'responder')}
+    cap, capture_errors = {}, []
+    for role in ('origin', 'node', 'responder'):
+        try:
+            cap[role] = captures(Path(str(trace_base) + '-' + role + '.txt'))
+        except (OSError, ValueError):
+            cap[role] = []
+            capture_errors.append('evidence: ' + role + ': missing or incomplete UDP capture')
     sends = [e for e in events if e['event'] == 'udp_send']
     reads = {e['sequence']: e for e in events if e['event'] == 'udp_read'}
     datagrams = []
@@ -272,7 +357,27 @@ def analyze(stream, apply, trace_base):
                    max_wall_mono_elapsed_difference_ns=max(abs(
                        (int(w['apply_end']['wall_ns'])-int(w['apply_start']['wall_ns']))-
                        (int(w['apply_end']['mono_ns'])-int(w['apply_start']['mono_ns']))) for w in windows))
-    return dict(test_only=True, summary=summary, windows=windows, datagrams=datagrams, events=events)
+    from tcp_d161 import checked_tcp, tcp_facts
+    from trace_split import udp_projection
+    tcp_captures, tcp_capture_errors = {}, []
+    for role in ('origin', 'node', 'responder'):
+        path = Path(str(trace_base) + '-' + role + '-headers.txt')
+        try:
+            text, stats = path.read_text(), path.with_suffix('.err').read_text()
+            tcp_captures[role] = checked_tcp(text, stats)
+            projected, _, _ = udp_projection(text, stats)
+            if projected != Path(str(trace_base) + '-' + role + '.txt').read_text():
+                tcp_capture_errors.append(role + ': combined/UDP projection mismatch')
+        except FileNotFoundError:
+            tcp_capture_errors.append(role + ': missing TCP capture')
+        except (OSError, ValueError) as exc:
+            tcp_capture_errors.append(role + ': incomplete or unparsed TCP capture: ' + str(exc))
+    tcp = tcp_facts(events, tcp_captures, tcp_capture_errors)
+    assessment = classify_tcp(tcp, windows, [f'{e["sequence"]}:{e["outcome"]}' for e in events
+                                           if e['event'] == 'tcp_read' and e.get('outcome')])
+    summary.update({k: assessment[k] for k in ('tcp_reads', 'tcp_guard_losses',
+                    'guard_attributed_timeouts', 'longest_tcp_stall', 'unattributed_timeouts')})
+    return dict(test_only=True, summary=summary, windows=windows, datagrams=datagrams, events=events, tcp=tcp, capture_errors=capture_errors)
 
 
 if __name__ == '__main__':
