@@ -77,7 +77,7 @@ func TestCommittedFixtureEvidence_ValidAndHygieneClean(t *testing.T) {
 			return err
 		}
 		if d.IsDir() {
-			if strings.HasPrefix(filepath.Base(filepath.Dir(path)), "2026-") && d.Name() != "followup16" && d.Name() != "followup17" && d.Name() != "followup18" && d.Name() != "followup19" && d.Name() != "followup20" && d.Name() != "followup21" && d.Name() != "followup22" && d.Name() != "followup23" && d.Name() != "followup24" && d.Name() != "followup25" && d.Name() != "followup26" && d.Name() != "followup27" && d.Name() != "followup29" && d.Name() != "followup30" && d.Name() != "followup31" && d.Name() != "followup32" && d.Name() != "followup33" && d.Name() != "followup34" && d.Name() != "followup35" {
+			if strings.HasPrefix(filepath.Base(filepath.Dir(path)), "2026-") && d.Name() != "followup16" && d.Name() != "followup17" && d.Name() != "followup18" && d.Name() != "followup19" && d.Name() != "followup20" && d.Name() != "followup21" && d.Name() != "followup22" && d.Name() != "followup23" && d.Name() != "followup24" && d.Name() != "followup25" && d.Name() != "followup26" && d.Name() != "followup27" && d.Name() != "followup29" && d.Name() != "followup30" && d.Name() != "followup31" && d.Name() != "followup32" && d.Name() != "followup33" && d.Name() != "followup34" && d.Name() != "followup35" && d.Name() != "followup36" {
 				return filepath.SkipDir
 			}
 			return nil

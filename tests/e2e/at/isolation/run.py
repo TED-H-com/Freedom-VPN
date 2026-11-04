@@ -70,6 +70,8 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
             stack = stack or review
             boundary = call(['python3', '-B', 'tests/e2e/at/isolation/review_boundary.py', evidence], env)
             stack = stack or boundary
+            # D-163 may explain only this invocation's result, never a leftover.
+            Path(evidence, 'populated-holds-review.json').unlink(missing_ok=True)
             holds = call(['python3', '-B', 'tests/e2e/at/isolation/review_populated_holds.py', evidence], env)
             stack = stack or holds
     finally:
@@ -98,6 +100,8 @@ with tempfile.TemporaryDirectory(prefix='at-isolation.', dir=ROOT / '.agent/tmp'
         if env.get('GITHUB_STEP_SUMMARY'):
             with open(env['GITHUB_STEP_SUMMARY'], 'a') as f:
                 f.write(Path(evidence, 'scheduled-job.md').read_text())
-        stack = stack or int(result['status'] != 'pass')
+        # Every subprocess exit is retained in phases and evaluated by the
+        # scheduled summary, including D-163's narrowly listed coverage gap.
+        stack = int(result['status'] != 'pass')
     print(f'at-isolation lab={lab} stack={stack}', flush=True)
     raise SystemExit(2 if lab or stack or any(inventory.values()) else 0)

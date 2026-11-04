@@ -110,14 +110,7 @@ func (s *Stack) ConfigureInstallerServing(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	var cfg map[string]any
-	if err = json.Unmarshal(raw, &cfg); err != nil {
-		return err
-	}
-	cfg["dns"] = map[string]any{"resolvers": []any{map[string]string{"id": "lab", "admin_url": "http://127.0.0.1:8080", "dns_addr": "127.0.0.1:53"}}, "resolver_credentials_file": "/etc/vpn-node/resolver-credentials.json"}
-	cfg["test_mode"] = true
-	cfg["heartbeat_seconds"], cfg["poll_seconds"], cfg["observation_seconds"] = 5, 5, 5
-	raw, err = json.MarshalIndent(cfg, "", "  ")
+	raw, err = installerServingConfig(raw)
 	if err != nil {
 		return err
 	}

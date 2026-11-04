@@ -1,0 +1,17 @@
+{
+  "scope": "This ordinary TestE2E_Acceptance run; no opt-in native or populated-hold campaign was enabled.",
+  "regular_node_15_second_reads": [],
+  "source": "tests/e2e/scenarios_test.go:27 and 05-acceptance.txt",
+  "skipped_opt_in_tests": [
+    "--- SKIP: TestE2E_Followup16Fixtures (0.00s)",
+    "--- SKIP: TestE2E_Followup18Installer (0.00s)",
+    "--- SKIP: TestE2E_Followup18Native (0.00s)",
+    "--- SKIP: TestE2E_Followup18FirstOffer (0.00s)",
+    "--- SKIP: TestE2E_Followup25Native (0.00s)",
+    "--- SKIP: TestE2E_Followup26Native (0.00s)",
+    "--- SKIP: TestE2E_Followup27 (0.00s)",
+    "--- SKIP: TestE2E_Followup30SurvivorHold (0.00s)",
+    "--- SKIP: TestE2E_Followup32Publisher (0.00s)"
+  ],
+  "explanation": "The regular-node 15-second observation predicates live in servingGate26 and survivorHold30 and their opt-in callers. The full acceptance path does not call them. No observed ages are claimed for an unexecuted query; the accepted receipt timeline is exported separately."
+}

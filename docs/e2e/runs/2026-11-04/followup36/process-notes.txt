@@ -1,0 +1,13 @@
+{
+  "check": "Final ad hoc owned-path audit",
+  "initial_command": "git diff --name-only main",
+  "initial_result": "AssertionError: tip comparison included paths changed on main after the run baseline; no outside-path file was edited by this lane.",
+  "current_main": "30aa402892887126f57050abdca0d874c50980c3",
+  "merge_base": "52b93845b5cfeac1dd63e04c700857fcd098a7f6",
+  "corrected_commands": [
+    "git diff --name-only main...HEAD",
+    "git diff --cached --name-only"
+  ],
+  "corrected_result": "PASS: only owned non-AT tests/e2e and docs/e2e paths. Full branch-plus-index hygiene also passes.",
+  "impact": "No scenario or test rerun and no source change. Required gates remain as recorded. Measured baseline and source are unchanged."
+}

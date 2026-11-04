@@ -1,0 +1,95 @@
+{
+  "id": "update-bad",
+  "title": "Tampered artifact fails closed",
+  "spec": [
+    "§13.4",
+    "§19 AT25",
+    "§19 AT27"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "batch",
+      "detail": "202"
+    },
+    {
+      "name": "fleet_generation",
+      "detail": "3"
+    },
+    {
+      "name": "target_count",
+      "detail": "3"
+    },
+    {
+      "name": "desired_contains_release",
+      "detail": "true"
+    },
+    {
+      "name": "running_candidate_executable",
+      "detail": "false"
+    },
+    {
+      "name": "exit_code",
+      "detail": "1"
+    },
+    {
+      "name": "locally_succeeded",
+      "detail": "false"
+    },
+    {
+      "name": "rolled_back",
+      "detail": "false"
+    },
+    {
+      "name": "HASH_MISMATCH",
+      "detail": "true"
+    },
+    {
+      "name": "recovery_required",
+      "detail": "false"
+    },
+    {
+      "name": "ISOLATION_BASELINE_MISSING",
+      "detail": "false"
+    },
+    {
+      "name": "artifact url address",
+      "detail": "false"
+    },
+    {
+      "name": "health_json",
+      "detail": "-"
+    },
+    {
+      "name": "health_attestation",
+      "detail": "-"
+    },
+    {
+      "name": "error_code",
+      "detail": "-"
+    },
+    {
+      "name": "result_last_error",
+      "detail": "-"
+    },
+    {
+      "name": "journal_excerpt",
+      "detail": "fvpn-updater: updater: HASH_MISMATCH: artifact"
+    },
+    {
+      "name": "note",
+      "detail": "tampered bytes were rejected"
+    },
+    {
+      "name": "updater_invocations",
+      "detail": "[{\"invocation_id\":\"invocation.YQEMZXKV\",\"started_at\":\"2026-11-04T14:45:49.043793385Z\",\"ended_at\":\"2026-11-04T14:45:59.988545964Z\",\"pid\":186378,\"exit_code\":0,\"output\":\"{\\\"time\\\":\\\"2026-11-04T14:45:49.495505375Z\\\",\\\"level\\\":\\\"INFO\\\",\\\"msg\\\":\\\"update lock wait\\\",\\\"command\\\":\\\"run\\\",\\\"waited_ms\\\":446,\\\"acquired\\\":true,\\\"budget_ms\\\":10000}\\n\"},{\"invocation_id\":\"invocation.hHQ2yCIu\",\"started_at\":\"2026-11-04T14:46:07.995705033Z\",\"ended_at\":\"2026-11-04T14:46:11.002748759Z\",\"pid\":195558,\"exit_code\":1,\"output\":\"fvpn-updater: updater: HASH_MISMATCH: artifact\\n\"}]"
+    },
+    {
+      "name": "timed_section",
+      "detail": "update-bad"
+    }
+  ],
+  "at": "2026-11-04T14:46:12Z",
+  "run_id": "c17589fa-7e48-4dee-b574-7e29aca1effa",
+  "source_commit": "f6edbda9909268106f7a8e08c26aab8254ae1481"
+}

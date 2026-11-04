@@ -1,7 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 45](follow-up-45.md) (2026-11-04 EST):** #464–#468 at c148cf34; F30-01 closed, AT02 deny-all measured at 205 ms / 8 losses, AT29 blocked on the guest clock. 64 decisions, 133 findings; D-161 implemented, r30 archived and routed. D-158's wait remains unmeasured live. See [update recovery](operator-guide.md#f30-01), [closed recovery](operator-guide.md#at02-closed-recovery) and [TCP guard limitation](operator-guide.md#tcp-reload-guard).
-**Previous cut — [follow-up 44](follow-up-44.md) (2026-11-04 EST):** #457–#463 at 5c21e670; D-158 lock wait and D-157 renewal merged, F30-01 candidate proof and live AT02 measurement pending. 64 decisions, 126 findings; F22-01 and SECOPS-F17-01 open, AT29 failed and confounded. See [update recovery](operator-guide.md#f30-01), [closed recovery](operator-guide.md#at02-closed-recovery) and [TCP guard limitation](operator-guide.md#tcp-reload-guard).
+**Current cut — [follow-up 46](follow-up-46.md) (2026-11-04 EST):** #469–#473 at 52b93845; F22-01 answered, all five r30 findings fixed, clarified D-158 implemented. 65 decisions, 133 findings; D-162 is TEST ONLY and running with devstack 36. Members AT02 adds 179 ms / 7 losses; D-158’s wait remains unmeasured live.
+**Previous cut — [follow-up 45](follow-up-45.md) (2026-11-04 EST):** #464–#468 at c148cf34; F30-01 closed, AT02 deny-all measured at 205 ms / 8 losses, AT29 blocked on the guest clock. 64 decisions, 133 findings; D-161 implemented, r30 archived and routed. D-158's wait remains unmeasured live. See [update recovery](operator-guide.md#f30-01), [closed recovery](operator-guide.md#at02-closed-recovery) and [TCP guard limitation](operator-guide.md#tcp-reload-guard).
 
 ## Restart measurements at #433
 
@@ -702,7 +702,11 @@ work. See the [cut's evidence](follow-up-45.md).
 
 **Updater exit statuses (D-034g, D-155):** `0` means the command completed without an operation error; it does not authorize member forwarding. `1` means another failure, including stale-holder details `lock boot id`, `lock pid`, `lock process` and `lock start time`. `2` means only `ErrMembersBlocked`, and takes precedence if an error also matches busy. `3` (`ExitBusy`) means `UPDATE_BUSY` with detail exactly `lock`: recovery has not completed and can be retried after the live holder releases the lock. `64` means usage or flag error. `run`, `recover`, `apply`, `seed` and configured `flush` can return `3`; read-only `status` takes no update lock and returns `0` on a successful read or `1` on failure. Live busy stderr remains `fvpn-updater: updater: UPDATE_BUSY: lock`.
 
-Under D-158, `fvpn-updater run`, `seed`, `apply` and standalone `flush` wait for live `update.lock` contention with a 10-second budget and 20 ms polling before exit 3; `recover` and standalone `Retain` keep their prompt five-attempt window, and stale-holder details retain exit 1 after five attempts counted from the first stale answer.
+Under D-158, `fvpn-updater run`, `seed`, `apply` and standalone `flush` poll every 20 ms, return exit 1 with the final stale-holder detail after five consecutive stale answers, reset that count on every live answer (including empty or unreadable metadata), and return exit 3 on the first live answer at or past the 10-second budget measured from the first attempt, never before that budget; stale answers can extend the wait nominally about 100 ms past it, filesystem work and scheduling can add elapsed time, and `recover` and standalone `Retain` keep their prompt five-attempt window.
+
+The one `update lock wait` record requires a first-attempt `ErrBusy`, including a later cancellation; a non-busy first error and cancellation before any attempt write none.
+
+Source: [updater 26, Requests item 1 (frozen)](../../tests/handover/testdata/history/follow-up-46/docs_updates_node-followup26-2026-11-04.md.txt).
 
 <a id="d156-release-rule"></a>
 
@@ -726,7 +730,7 @@ member-expiry live coverage. See the [current review disposition](../reviews/REA
 
 <a id="at02-closed-recovery"></a>
 
-**Known behaviour at #468 — AT02 deny-all after a closed recovery.**
+**Known behaviour at #473 — AT02 deny-all after a closed recovery.**
 Agent-core 50's change is merged in **#461 under D-157**: after a verified
 closed recovery, the node renews as soon as central accepts its clean report,
 at most once per recovery. The opportunity is consumed on dispatch; D-067
@@ -735,7 +739,10 @@ continues otherwise, including after an empty answer. Members 22 **#467** run
 then a one-member lease and verified serving Apply. The **deny-all interval
 was 205 ms with 8 losses**, down from members 21's historical **4.968 s and
 241 losses**. Exact central readiness timing was not retained. The measurement
-answers this finding; it is no zero-loss availability promise.
+answers this finding; it is no zero-loss availability promise. Members 23 **#473** run
+**6a25221b** adds **one early renewal**, 63.9 ms after the closed recovery,
+and a **179 ms deny-all with 7 losses** before verified serving. D-157 is
+in both runs; no timing change is credited to a merge.
 
 <a id="tcp-reload-guard"></a>
 

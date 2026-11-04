@@ -1,0 +1,160 @@
+{
+  "run_id": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
+  "finding": "F24-01",
+  "status": "fail",
+  "owner": "w4-at-isolation / boundary schedule and reviewer",
+  "reason": "review_boundary.py exits 1 with TypeError at line 73: sorted(None) on added_scheduled_mono_ns. No boundary-review.json was emitted.",
+  "original_phase_exit": 1,
+  "original_boundary_review_present": false,
+  "packet_evaluator_passed": true,
+  "packet_positives": 161,
+  "packet_drops": 41,
+  "last_positive_offset_ns": "-99919810",
+  "first_drop_offset_ns": "-62775828",
+  "calibration_qualified": true,
+  "calibration_count": 103,
+  "calibration_max_transit_sample": {
+    "egress_mono_ns": "125723364189738",
+    "ingress_mono_ns": "125723349014035",
+    "latency_ns": "1190251",
+    "packet_id": 56,
+    "send_mono_ns": "125723347823784",
+    "transit_ns": "15175703"
+  },
+  "spacing_ns": "33200000",
+  "added_scheduled_mono_ns": null,
+  "observed_dense_probes": 0,
+  "all_probes": 202,
+  "candidate_exclusion_replay": [
+    {
+      "scheduled_mono_ns": "125728478043437",
+      "excluded_by_original_packet_ids": [
+        158,
+        159
+      ]
+    },
+    {
+      "scheduled_mono_ns": "125728511243437",
+      "excluded_by_original_packet_ids": [
+        159
+      ]
+    },
+    {
+      "scheduled_mono_ns": "125728544443437",
+      "excluded_by_original_packet_ids": [
+        160
+      ]
+    },
+    {
+      "scheduled_mono_ns": "125728577643437",
+      "excluded_by_original_packet_ids": [
+        160,
+        161
+      ]
+    },
+    {
+      "scheduled_mono_ns": "125728610843437",
+      "excluded_by_original_packet_ids": [
+        161
+      ]
+    },
+    {
+      "scheduled_mono_ns": "125728644043437",
+      "excluded_by_original_packet_ids": [
+        162
+      ]
+    },
+    {
+      "scheduled_mono_ns": "125728677243437",
+      "excluded_by_original_packet_ids": [
+        162
+      ]
+    },
+    {
+      "scheduled_mono_ns": "125728710443437",
+      "excluded_by_original_packet_ids": [
+        163
+      ]
+    },
+    {
+      "scheduled_mono_ns": "125728743643437",
+      "excluded_by_original_packet_ids": [
+        163,
+        164
+      ]
+    },
+    {
+      "scheduled_mono_ns": "125728776843437",
+      "excluded_by_original_packet_ids": [
+        164
+      ]
+    },
+    {
+      "scheduled_mono_ns": "125728810043437",
+      "excluded_by_original_packet_ids": [
+        165
+      ]
+    },
+    {
+      "scheduled_mono_ns": "125728843243437",
+      "excluded_by_original_packet_ids": [
+        165,
+        166
+      ]
+    },
+    {
+      "scheduled_mono_ns": "125728876443437",
+      "excluded_by_original_packet_ids": [
+        166
+      ]
+    },
+    {
+      "scheduled_mono_ns": "125728909643437",
+      "excluded_by_original_packet_ids": [
+        167
+      ]
+    }
+  ],
+  "all_candidates_excluded": true,
+  "diagnostic_order_only": {
+    "qualification_start_packet_id": 161,
+    "deciding_pair": {
+      "last_positive": {
+        "packet_id": 161,
+        "phase": "phased",
+        "result": "ok",
+        "scheduled_mono_ns": "125728610630414",
+        "send_mono_ns": "125728611351887",
+        "ingress_mono_ns": "125728611670918",
+        "egress_mono_ns": "125728611710604",
+        "scheduled_offset_ns": "-101000000",
+        "send_offset_ns": "-100278527",
+        "ingress_offset_ns": "-99959496",
+        "egress_offset_ns": "-99919810",
+        "scheduling_lateness_ns": "721473",
+        "latency_ns": "319031",
+        "transit_ns": "39686"
+      },
+      "first_drop": {
+        "packet_id": 162,
+        "phase": "arbitrary_37ms",
+        "result": "timeout",
+        "scheduled_mono_ns": "125728647630414",
+        "send_mono_ns": "125728648153347",
+        "ingress_mono_ns": "125728648854586",
+        "egress_mono_ns": "0",
+        "scheduled_offset_ns": "-64000000",
+        "send_offset_ns": "-63477067",
+        "ingress_offset_ns": "-62775828",
+        "egress_offset_ns": null,
+        "scheduling_lateness_ns": "522933",
+        "latency_ns": "701239",
+        "transit_ns": null
+      }
+    },
+    "interleavings": [],
+    "judged_interleavings": 0
+  },
+  "d142_qualification": "not established by the scheduled reviewer; no successful review artifact; diagnostic ordering does not substitute for it",
+  "scope": "Read-only arithmetic and original timeline/qualify_scope functions over retained records. No review script, plan, acceptance record or verdict changed. No live rerun."
+}

@@ -54,7 +54,7 @@ func TestAT13_MemberScheduleFollowup21RenewalReplay(t *testing.T) {
 			continue
 		}
 		status, evidence := replayMemberWindow(p.Deadline, rec.Samples[i+1:])
-		if status != StatusPass || p.Deadline.Format(time.RFC3339) != "2026-11-04T03:08:48Z" || evidence != "2026-11-04T03:08:36.030226Z" {
+		if status != StatusPass || p.Deadline.Format(time.RFC3339) != "2026-11-04T03:08:37Z" || evidence != "2026-11-04T03:08:03.470797Z" {
 			t.Fatalf("schedule=%+v status=%s evidence=%s", p, status, evidence)
 		}
 		t.Logf("original=blocked; timing replay=pass; anchor=%s D=%s qualifying issue=%s (includes the actual 10.460446s early renewal); no signed record edited", p.Issued, p.Deadline, evidence)
@@ -70,27 +70,14 @@ func TestAT13_MemberScheduleJitterAndEarlyRenewal(t *testing.T) {
 		if !ok {
 			t.Fatal("valid anchor rejected")
 		}
-		for name, offsets := range map[string][]time.Duration{
-			"scheduled":       {0, 30 * time.Second, 60 * time.Second},
-			"earliest jitter": {0, 27 * time.Second, 54 * time.Second},
-			"latest jitter":   {0, 33 * time.Second, 66 * time.Second},
-			"late step":       {0, 34 * time.Second, 68 * time.Second},
-			"early nominal":   {0, 10500 * time.Millisecond, 40500 * time.Millisecond},
-			"early min":       {0, 10500 * time.Millisecond, 37500 * time.Millisecond},
-			"early max":       {0, 10500 * time.Millisecond, 43500 * time.Millisecond},
-			"early late step": {0, 10500 * time.Millisecond, 44500 * time.Millisecond},
-		} {
-			t.Run(name+"/"+fraction.String(), func(t *testing.T) {
-				var samples []renewalSample
-				for _, offset := range offsets {
-					s := renewalSample{At: anchor.Add(offset + 2*time.Second)}
-					s.Lease.Issued, s.Lease.Expires, s.Lease.Accepted = anchor.Add(offset), anchor.Add(offset+time.Minute), true
-					samples = append(samples, s)
-				}
-				if status, detail := replayMemberWindow(plan.Deadline, samples); status != StatusPass {
-					t.Fatal(status, detail)
-				}
-			})
+		// Entire claimed 10..34s range, including fractional boundaries; setup
+		// may postpone the first sample until A+34s, acceptance by issue+2s.
+		for offset := 10 * time.Second; offset <= 34*time.Second; offset += time.Millisecond {
+			s := renewalSample{At: anchor.Add(max(34*time.Second, offset+2*time.Second))}
+			s.Lease.Issued, s.Lease.Expires, s.Lease.Accepted = anchor.Add(offset), anchor.Add(offset+time.Minute), true
+			if status, detail := replayMemberWindow(plan.Deadline, []renewalSample{s}); status != StatusPass {
+				t.Fatal(fraction, offset, status, detail)
+			}
 		}
 	}
 }
@@ -99,7 +86,7 @@ func TestAT13_MemberScheduleMissingWindowStillBlocks(t *testing.T) {
 	a := time.Date(2026, 11, 4, 0, 0, 0, 0, time.UTC)
 	p, _ := PlanMemberExpiry(a, a.Add(time.Minute), a, true)
 	var samples []renewalSample
-	for _, offset := range []time.Duration{0, 20 * time.Second, 51 * time.Second} {
+	for _, offset := range []time.Duration{0, 9 * time.Second, 40 * time.Second} {
 		s := renewalSample{At: a.Add(offset)}
 		s.Lease.Issued, s.Lease.Expires, s.Lease.Accepted = a.Add(offset), a.Add(offset+time.Minute), true
 		samples = append(samples, s)
@@ -128,12 +115,105 @@ func TestAT13_MemberScheduleUTCReceipt(t *testing.T) {
 	// Database timestamps can carry the session location; receipts use UTC.
 	a := time.Date(2026, 11, 4, 1, 18, 26, 165788000, time.FixedZone("TEST ONLY", -5*60*60))
 	p, ok := PlanMemberExpiry(a, a.Add(time.Minute), a.Add(time.Second), true)
-	if !ok || !p.Issued.Equal(a) || p.Deadline.Format(time.RFC3339) != "2026-11-04T06:19:21Z" {
+	if !ok || !p.Issued.Equal(a) || p.Deadline.Format(time.RFC3339) != "2026-11-04T06:19:10Z" {
 		t.Fatalf("instant or schedule changed: %+v", p)
 	}
 	for _, stamp := range []time.Time{p.Issued, p.Expires, p.Observed, p.NextExpected, p.Deadline} {
 		if stamp.Location() != time.UTC {
 			t.Fatal("receipt is not UTC", stamp)
+		}
+	}
+}
+
+func TestAT13_MemberScheduleRunnerAndFollowup23Replay(t *testing.T) {
+	for _, tc := range []struct{ dir, run, oldStatus, deadline, issue string }{
+		{"follow-up-24-nightly-41836274140", "8ee5129e-6ae1-41f4-8486-f1d92bec8b34", StatusBlocked, "2026-11-04T13:34:05Z", "2026-11-04T13:33:40.265996Z"},
+		{"follow-up-23", "328ab9e0-7ff4-495a-81c1-410ae8a7d876", StatusPass, "2026-11-04T10:45:36Z", "2026-11-04T10:45:10.111815Z"},
+	} {
+		t.Run(tc.dir, func(t *testing.T) {
+			read := func(name string, dst any) {
+				raw, err := os.ReadFile("../../../../docs/e2e/at/isolation/history/" + tc.dir + "/" + name)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := json.Unmarshal(raw, dst); err != nil {
+					t.Fatal(err)
+				}
+			}
+			var anchor struct {
+				RunID    string               `json:"run_id"`
+				Schedule MemberExpirySchedule `json:"schedule"`
+				Anchored bool                 `json:"anchored"`
+			}
+			var rec struct {
+				RunID    string          `json:"run_id"`
+				Deadline time.Time       `json:"member_deadline"`
+				Samples  []renewalSample `json:"samples"`
+			}
+			read("finite-member-schedule.json", &anchor)
+			read("finite-member-renewal-wait.json", &rec)
+			var signed struct {
+				Samples []struct {
+					Lease struct {
+						Members []struct {
+							End        time.Time `json:"lease_end"`
+							ServiceEnd time.Time `json:"effective_service_end"`
+						} `json:"members"`
+					} `json:"lease"`
+				} `json:"samples"`
+			}
+			read("finite-member-renewal-wait.json", &signed)
+			for _, s := range signed.Samples {
+				matches := 0
+				for _, m := range s.Lease.Members {
+					if m.End.Equal(rec.Deadline) && m.ServiceEnd.Equal(rec.Deadline) {
+						matches++
+					}
+				}
+				if matches != 1 {
+					t.Fatal("original signed member/service deadlines must both equal original D")
+				}
+			}
+			if anchor.RunID != tc.run || rec.RunID != tc.run {
+				t.Fatal("different retained run")
+			}
+			if status, _ := replayMemberWindow(rec.Deadline, rec.Samples); status != tc.oldStatus {
+				t.Fatal("historical result changed", status)
+			}
+			p, ok := PlanMemberExpiry(anchor.Schedule.Issued, anchor.Schedule.Expires, anchor.Schedule.Observed, anchor.Anchored)
+			if !ok || p.Deadline.Format(time.RFC3339) != tc.deadline {
+				t.Fatal(p, ok)
+			}
+			// Counterfactual timing only: the new grant would be created with
+			// the planned D. Original signed documents and verdicts stay intact.
+			status, issue := replayMemberWindow(p.Deadline, rec.Samples)
+			if status != StatusPass || issue != tc.issue {
+				t.Fatal(status, issue)
+			}
+			t.Logf("original=%s; new timing=pass; A=%s D=%s first sample=%s qualifying issue=%s", tc.oldStatus, p.Issued, p.Deadline, rec.Samples[0].At, issue)
+		})
+	}
+}
+
+func TestAT13_MemberScheduleStrictWaitBoundaries(t *testing.T) {
+	a := time.Date(2026, 11, 4, 0, 0, 0, 0, time.UTC)
+	p, _ := PlanMemberExpiry(a, a.Add(time.Minute), a, true)
+	s := renewalSample{At: a.Add(34 * time.Second)}
+	s.Lease.Issued, s.Lease.Expires, s.Lease.Accepted = a.Add(10*time.Second), a.Add(70*time.Second), true
+	for _, kind := range []string{"unaccepted", "extension equality", "cutoff equality", "late setup"} {
+		v := s
+		switch kind {
+		case "unaccepted":
+			v.Lease.Accepted = false
+		case "extension equality":
+			v.Lease.Expires = p.Deadline.Add(25 * time.Second)
+		case "cutoff equality":
+			v.At = p.Deadline.Add(-5 * time.Second)
+		case "late setup":
+			v.At = p.Deadline
+		}
+		if status, _ := replayMemberWindow(p.Deadline, []renewalSample{v}); status != StatusBlocked {
+			t.Fatal(kind, status)
 		}
 	}
 }

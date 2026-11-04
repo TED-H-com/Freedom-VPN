@@ -1,0 +1,11 @@
+{
+  "through_nightly_source": "admission-summary.txt",
+  "pre_acceptance_admission_sleep_seconds": 1260,
+  "acceptance_preflight_admission_sleep_seconds": 0,
+  "post_acceptance_export_admission_sleep_seconds": 600,
+  "final_review_admission_sleep_seconds": 60,
+  "total_admission_sleep_seconds": 1920,
+  "total_admission_sleep_minutes": 32,
+  "held_answers": 32,
+  "note": "The additional final-review wait preceded the staged whitespace check. No held answers during acceptance, teardown, or the final Go evidence check. All waiting occurred outside timed sections."
+}

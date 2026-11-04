@@ -1,0 +1,60 @@
+{
+  "source": "update-recovery-heartbeats.txt.gz",
+  "invocations": [
+    {
+      "invocation_id": "invocation.YQEMZXKV",
+      "pid": 186378,
+      "wait_windows": [
+        {
+          "wait_record": {
+            "time": "2026-11-04T14:45:49.495505375Z",
+            "level": "INFO",
+            "msg": "update lock wait",
+            "command": "run",
+            "waited_ms": 446,
+            "acquired": true,
+            "budget_ms": 10000
+          },
+          "samples_from_invocation_start_through_record": [
+            {
+              "sample_at": "2026-11-04T14:45:49.155531064Z",
+              "agent_pid": "894",
+              "agent_executable": "/usr/local/bin/fvpn-agent",
+              "lock_holder_pids": "894",
+              "lock_holder_comm": "894 fvpn-agent",
+              "forwarding_blocked": "0",
+              "serving": "1",
+              "reason": "serving"
+            },
+            {
+              "sample_at": "2026-11-04T14:45:49.367913641Z",
+              "agent_pid": "894",
+              "agent_executable": "/usr/local/bin/fvpn-agent",
+              "lock_holder_pids": "894",
+              "lock_holder_comm": "894 fvpn-agent",
+              "forwarding_blocked": "0",
+              "serving": "1",
+              "reason": "serving"
+            }
+          ],
+          "first_sample_after_record": {
+            "sample_at": "2026-11-04T14:45:49.584005669Z",
+            "agent_pid": "894",
+            "agent_executable": "/usr/local/bin/fvpn-agent",
+            "lock_holder_pids": "186378",
+            "lock_holder_comm": "186378 fvpn-updater",
+            "forwarding_blocked": "0",
+            "serving": "1",
+            "reason": "serving"
+          }
+        }
+      ]
+    },
+    {
+      "invocation_id": "invocation.hHQ2yCIu",
+      "pid": 195558,
+      "wait_windows": []
+    }
+  ],
+  "limits": "Lock ownership is sampled about every 0.2 s. Samples do not retain lock metadata or individual acquisition answers; stale-then-live is unobserved."
+}

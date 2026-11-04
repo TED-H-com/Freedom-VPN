@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -8,6 +9,50 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/node/agent"
 )
+
+func TestD162_PreparedAgentCadence(t *testing.T) {
+	state := t.TempDir()
+	if err := writeAgentConfigs(state, "192.0.2"); err != nil {
+		t.Fatal(err)
+	}
+	for _, name := range []string{"agent-enroll.json", "agent-run.json"} {
+		path := filepath.Join(state, "node", "etc", name)
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var fields map[string]json.RawMessage
+		if err := json.Unmarshal(raw, &fields); err != nil {
+			t.Fatal(err)
+		}
+		for _, key := range []string{"heartbeat_seconds", "poll_seconds", "observation_seconds"} {
+			if string(fields[key]) != "5" {
+				t.Fatalf("%s: explicit %s = %s, want 5", name, key, fields[key])
+			}
+		}
+		cfg, err := agent.LoadConfig(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if cfg.HeartbeatSeconds != 5 || cfg.PollSeconds != 5 || cfg.ObservationSeconds != 5 {
+			t.Fatalf("%s: loaded cadence differs", name)
+		}
+		// Removing only the fixture override must still select the product's
+		// 30-second default, never the lab's TEST ONLY value.
+		delete(fields, "observation_seconds")
+		raw, err = json.Marshal(fields)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = os.WriteFile(path, raw, 0600); err != nil {
+			t.Fatal(err)
+		}
+		cfg, err = agent.LoadConfig(path)
+		if err != nil || cfg.ObservationSeconds != 30 {
+			t.Fatalf("product default changed: seconds=%d err=%v", cfg.ObservationSeconds, err)
+		}
+	}
+}
 
 func TestD061_OnlyRuntimeConfigHasHostLocalResolver(t *testing.T) {
 	state := t.TempDir()
