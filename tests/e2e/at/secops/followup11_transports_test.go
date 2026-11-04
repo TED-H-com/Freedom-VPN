@@ -208,7 +208,7 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 				b := sampleTransport11(t.Context(), transport, peer.Device, start)
 				row["control_lost_agent_alive"] = []transportSample11{a, b}
 				row["continued_before_expiry"] = activeTransport11(a, b)
-				row["continuity_evidence"] = "Three-second diagnostic only; control_lost_agent_alive proves the full valid-lease continuity window"
+				row["continuity_evidence"] = "Three-second diagnostic only; control_lost_agent_alive supplies the full-window continuity verdict"
 				if stack.PauseAgent(t.Context(), true) != nil {
 					t.Fatal("pause agent supervisor")
 				}
