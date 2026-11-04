@@ -1,7 +1,7 @@
 # Freedom VPN
 
-**Current cut — [follow-up 46](docs/handover/follow-up-46.md) (2026-11-04 EST):** #469–#473 at 52b93845; F22-01 answered, all five r30 findings fixed, clarified D-158 implemented. 65 decisions, 133 findings; D-162 is TEST ONLY and running with devstack 36. Members AT02 adds 179 ms / 7 losses; D-158’s wait remains unmeasured live.
-**Previous cut — [follow-up 45](docs/handover/follow-up-45.md) (2026-11-04 EST):** #464–#468 at c148cf34; F30-01 closed, AT02 deny-all measured at 205 ms / 8 losses, AT29 blocked on the guest clock. 64 decisions, 133 findings; D-161 implemented, r30 archived and routed. D-158's wait remains unmeasured live. See [update recovery](docs/handover/operator-guide.md#f30-01), [closed recovery](docs/handover/operator-guide.md#at02-closed-recovery) and [TCP guard limitation](docs/handover/operator-guide.md#tcp-reload-guard).
+**Current cut — [follow-up 47](docs/handover/follow-up-47.md) (2026-11-04 EST):** #474–#477 at 1c39a0e7; 66 decisions, 136 findings. D-163 fixes the scheduled mapping; F24-01 keeps isolation's local scheduled run red. D-162 is TEST ONLY and implemented; F22-D146 stays open. D-158 records its first live wait, 446 ms acquired. r31 archived, M-1 fixed; observation records documented.
+**Previous cut — [follow-up 46](docs/handover/follow-up-46.md) (2026-11-04 EST):** #469–#473 at 52b93845; F22-01 answered, all five r30 findings fixed, clarified D-158 implemented. 65 decisions, 133 findings; D-162 is TEST ONLY and running with devstack 36. Members AT02 adds 179 ms / 7 losses; D-158’s wait remains unmeasured live.
 
 Freedom VPN is a member-based, multi-region VPN platform for a small paid community, starting at about 20 members. Every exit node runs the same node package and joins one central control plane, whether it is a pre-installed box, a cloud Ubuntu VM or any other Ubuntu host.
 

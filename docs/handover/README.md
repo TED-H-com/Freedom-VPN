@@ -123,19 +123,19 @@ is frozen at #418, with its 81 findings and nine owner requests.
 
 <a id="follow-up-45-decisions-register-2026-11-04-est"></a>
 
-## Follow-up 46 decisions register (2026-11-04 EST)
+<a id="follow-up-46-decisions-register-2026-11-04-est"></a>
 
-Cut **#469–#473**, ending at main **52b93845**: five merges and five final
-roadmap rows, all briefed. [Evidence cut](follow-up-46.md) and
-[acceptance snapshot](../ops/README.md#follow-up-46-acceptance-snapshot-2026-11-04-est).
-There are **65 decisions**: **D-162 is the only addition**; **D-158's
-clarification is implemented by updater 26 #471**. The other **63 rows remain
-byte-identical** to #472. Main at this cut had no decision after D-161 before
-this addition. Other rows' status prose retains its historical cutoff;
-F22-01 is now answered by isolation 23 and D-157 has members 23's additional
-measurement. All provisional decisions retain the owner's right to overturn.
-Running follow-ups and dated hand-offs are in
-[follow-up 46](follow-up-46.md#requests-to-orchestrator).
+## Follow-up 47 decisions register (2026-11-04 EST)
+
+Cut **#474–#477**, ending at main **1c39a0e7**: four merges and four final
+roadmap rows, all briefed. [Evidence cut](follow-up-47.md) and
+[acceptance snapshot](../ops/README.md#follow-up-47-acceptance-snapshot-2026-11-04-est).
+There are **66 decisions**: **D-163 is the only addition**, implemented by
+isolation 24 #475; **D-162 is implemented by devstack 36 #476**. The other
+**64 rows remain byte-identical** to #474. Main had no other decision added
+after D-162. Other rows retain their historical status prose. All provisional
+decisions retain the owner's right to overturn. Running follow-ups and dated
+hand-offs are in [follow-up 47](follow-up-47.md#requests-to-orchestrator).
 
 | Decision | Operator meaning and delivery boundary |
 |---|---|
@@ -203,7 +203,8 @@ Running follow-ups and dated hand-offs are in
 | D-159 | **01:5x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** If the campaign's back-to-back cadence resonates with TCP's retry interval, and the agent's minimum Apply spacing is at least about 1 s, the D-120 campaign reloads no faster than that minimum spacing; otherwise nothing changes. Netlab 35 #462 found no positive minimum Apply spacing (binding-deadline wake-ups, zero remaining Step delay, second Apply in the same closed-recovery Step). The condition is false and the campaign cadence is unchanged. |
 | D-160 | **02:2x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** A timed sub-case never waits for host admission inside its timed section, from reading the deadline it measures to its last cutoff sample. Admission is checked before that section. Overlap that happens anyway is confounded under D-133, never delayed. Source: SECOPS-F17-01, the two admission holds that delayed the killed-agent fault beyond its cached deadline. Secops 18 running at cutoff; no result imported. |
 | D-161 | **03:0x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** D-120's “zero TCP timeouts” becomes “zero TCP timeouts not attributed to the guard”. A TCP read timeout is a guard loss only if the run's complete, checked captures show every lost transmission of the stalled bytes entering the node inside, or on the boundary of, exactly one verified outer guard bracket, within both 100 ms bounds, and never leaving it; a later transmission delivers the bytes in order on the same connection; and that connection is never reset or closed. Guard-attributed timeouts count toward “≤ 5 losses per 100 reloads”. Every campaign reports its longest TCP stall and guard-attributed TCP drops. Every other D-120 predicate is unchanged; historical failures stay failed. Basis: D-145 keeps the guard; TCP needs retransmission to recover a dropped segment and a retry can hit a later reload's guard; D-120 is a test-acceptance definition, not a product guarantee. Implemented by netlab 36 #465. Gate 2 passes AT10 with 64 reads, zero TCP timeouts, eight recovered boundary losses and longest stall 217.7 ms; its timeout path is synthetic-proven only. Missing combined TCP captures fail as an evidence error. F22-01 stays open until isolation's complete-capture run is judged under D-161; isolation 23 runs at cutoff. |
-| D-162 | **08:1x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** The lab's regular node reports observations every 5 s, like its heartbeat, its poll and the installer node: `observation_seconds: 5` in both prepared configs. **TEST ONLY:** the product default of 30 s and every acceptance predicate, including the 15 s freshness bound, remain unchanged. The bound was written for a lab reporting every 5 s; widening it would let a stale node pass. Every accepted observation increments the node's ETag, so the lab's `If-Match` writers meet a newer ETag six times as often; devstack 36 audits those writers and the fixture's consumers. **Status at cutoff:** devstack 36 implements D-162, running; no implementation or acceptance result is imported into this cut. |
+| D-162 | **08:1x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** The lab's regular node reports observations every 5 s, like its heartbeat, its poll and the installer node: `observation_seconds: 5` in both prepared configs. **TEST ONLY:** the product default of 30 s and every acceptance predicate, including the 15 s freshness bound, remain unchanged. The bound was written for a lab reporting every 5 s; widening it would let a stale node pass. Every accepted observation increments the node's ETag, so the lab's `If-Match` writers meet a newer ETag six times as often; devstack 36 audits those writers and the fixture's consumers. **Status at cutoff:** implemented by devstack 36 #476, run c17589fa: 123 accepted regular-node observations, 122 intervals, min 0.081 s / median 5.162 s / max 10.255 s. The final 622 s had no receipt; the last preceded the lease-expiry control stop by 1.7 s. The 15 s reads did not run, so F22-D146 is not re-scored. |
+| D-163 | **08:5x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** In the scheduled job only, a review's nonzero exit maps to **expected not exercised** only when that same run's own result names a listed item, and only that item, as not exercised; every other item must pass, with no join problem and no error. The explicit list, `tests/e2e/at/isolation/expected-not-exercised.json`, is committed beside `expected-blocked.json`, with one entry: populated-holds / `pure_stale_generation` (Isolation F17-01). List an item only once the runner shows it, D-144's rule. Everything else stays red. Review outputs, acceptance records and D-144's row mapping are unchanged; a listed item that passes is reported as **no longer needed**. Why: under D-144 the job is green only when known owned gaps remain; a carried gap that no run can exercise must not turn it red every night, and stays visible in the summary. **Status:** implemented by isolation 24 #475; only review exit 1 with incomplete, current-run, complete coverage and no other failure qualifies. |
 
 Current contract is revision 14: OpenAPI `1.10.0`, `50` operations (#289).
 Wire-members follow-up 11 (#297) registers `revokeMemberGrant` at
@@ -274,7 +275,9 @@ is frozen from #430: 99 findings and 53 decisions, all ten owner requests answer
 
 <a id="findings-register-at-the-follow-up-45-cutoff"></a>
 
-## Findings register at the follow-up 46 cutoff
+<a id="findings-register-at-the-follow-up-46-cutoff"></a>
+
+## Findings register at the follow-up 47 cutoff
 
 | Finding | Status at #463 | Evidence / next owner |
 |---|---|---|
@@ -346,8 +349,8 @@ is frozen from #430: 99 findings and 53 decisions, all ten owner requests answer
 | r21 L-1 | FIXED — #429 | Confirmed 37 orphan reason; earlier main retained the actual error. Keep pending topology evidence, but heartbeat override requires a current member-path error. Non-serving decision/heartbeat agree; later serving attempts still verify and eventual repair clears it. Proof: `TestR21_L1_RefusedAdoptionMemberPathLeavesOrphanMemberPathPending`; [full record and proofs](../reviews/README.md#r20-to-r25-dispositions-at-the-follow-up-39-cutoff-2026-11-03-est). |
 | Netlab F27-01 / B1 | UNRESOLVED — no fix; B1 FAIL and unexplained; D-150 measurement closed by D-153 | #423 revises C1 as documents only. D-145 keeps the production guard; no C1 or hitless hand-over. Netlab 30 remains host-unqualified; historical B1 is not explained or upgraded. Four attempts, agent-core 44–47 (#431/#436/#439/#444), yielded no comparison on frozen A 567080be / B 38420dad: harness/admission failures in 44–46, then frozen A's TestLabExternalMeterReset failed in 47. Both arms have zero pooled legs. Main's 13/13 is functional evidence only; no claim about 37–43 timing, B-only failure or attributable shift. D-153 schedules no further A/B; agent-core 48 reads the frozen failure for the record only. C1 reopening still requires D-145's field complaints or measured member-visible impact after r24 H-1's fix. |
 | Netlab F27-02 | FIXED — fixture defect, #417; fixed-test reading HOLDS by #420 | F21-01’s mechanism: test setup consumed the persisted wall-clock budget, fixed by synctest. Updater 23 predeclared process-exit end rule: r1 20/0 unqualified at 0.996 foreign cores; r2 50/0 qualified (0.105 before exit, 0.385 after), pooled with updater 22’s quiet 200/0; all 352 logged parent Recover calls have exact budgets. Updater 21’s failed verdict, updater 22’s undecided verdict and netlab 27’s failed run stay recorded; every unqualified leg stays unqualified. |
-| Devstack F30-01 | CLOSED — #468 run 8a436a87; credited to #446, #454 and #463 | Candidate started under its parent-held update.lock, reported recovery_required while held, cleared after release, served members, and lease-expiry passed afterward. update-good exits 0 with no update lock wait record: first acquisition succeeded. No merged change is credited with avoiding devstack 34's collision; D-158's wait is unit-proven, not measured live. [Update behaviour](operator-guide.md#f30-01). |
-| Isolation F17-01 | ACCEPTANCE-COVERAGE GAP — agent-core / wire-nodes | #404 pure stale_generation not exercised: current agent and central classification cannot produce that report without rewriting one. Routed, not yet judged by owners; not classified as a defect. |
+| Devstack F30-01 | CLOSED — #468 run 8a436a87; credited to #446, #454 and #463 | Candidate started under its parent-held update.lock, reported recovery_required while held, cleared after release, served members, and lease-expiry passed afterward. update-good exits 0 with no update lock wait record: first acquisition succeeded. No merged change is credited with avoiding devstack 34's collision; #476 run c17589fa records the first live D-158 wait: 446 ms, acquired, budget 10000 ms; the running agent held update.lock during the wait. Stale-then-live contention is unobserved. F30-01 stays closed. [Update behaviour](operator-guide.md#f30-01). |
+| Isolation F17-01 | ACCEPTANCE-COVERAGE GAP — agent-core / wire-nodes | #404 pure stale_generation not exercised: current agent and central classification cannot produce that report without rewriting one. Routed, not yet judged by owners; not classified as a defect. #475 lists pure_stale_generation under D-163 in expected-not-exercised.json. It is still not exercised; the review still writes incomplete and exits 1. Only the scheduled summary maps the same-run sole listed gap; no coverage or defect closure. |
 | Isolation 17 D-140 sample | FIRST QUALIFIED PASS — #404 | 0ec14b39, one run/no retry, 2.4 ms from 103 calibration packets; D-142 from packet 166, zero overlaps anywhere; byte-identical EvaluateDeadline passes. Isolation 15/16 and F14-01 stay failed; fresh D-104 26/7 does not close original F16-01. |
 | Members 16 survivor continuation | EXERCISED LIVE — first consumer members 17, #410 | #406 ArmMatchingLeaseHoldSurvivor consumed in run 81b638e8: sibling suspension, survivor accepted report inside the same open incident, recovery at generation 11. The separate source-address populated-hold row remains not exercised (F31-01). |
 | Netlab F28-01 | CLOSED — test-isolation defect, netlab 29 #415 | Reproduced +97 upload bytes (15,533 → 15,630): AT10's old admitted TCP flow, 57-byte retransmitted request + 40-byte RST, matched at all four capture points strictly between reads. FIN-WAIT-1 survives node conntrack flush. AT12 destroys/verifies old sockets before probes and baseline; assertion byte-identical, both corrected full suites found old sockets and counted zero deny bytes. Not refused-packet billing. Follow-up 28 gate 2 stays FAIL; original packets not captured. |
@@ -406,40 +409,46 @@ is frozen from #430: 99 findings and 53 decisions, all ten owner requests answer
 | SECOPS-F16-01 | ANSWERED — #460 | Fleet cap is set before admission, constructing a fresh 60 s lease. Run b2de46c8 control_lost_agent_alive passes on lease bef669a3 with one agent identity throughout and both transports continuous to about D − 1 s. D-133 confounded; original run 1bfd5cff stays failed. AT29 still fails on SECOPS-F17-01. |
 | AT29 current acceptance | BLOCKED — #464 run 9d927350; operator guest clock | Every runnable case passes; live-agent continuity uses one identity, both transports continuous to D − 0.99 s and quiet from D + 2.01 s. Guest clock rollback still needs an independently clocked disposable guest. The lane's D-133 confounded record stays as written; the orchestrator's PR reading finds no foreign suite overlapped. Historical failures and full AT31's block remain. |
 
-| Isolation F22-01 | ANSWERED — #469 run 328ab9e0 | D-120 passes under D-161 on complete checked combined TCP captures: 65 reads, zero TCP timeouts, zero UDP losses, six verified-guard losses recovered by retransmission, longest stall 210.1 ms. The accepted-timeout branch did not run live. Historical 7b0db5f2 stays failed and its cause unproven; its 184 files are archived under D-098. |
+| Isolation F22-01 | ANSWERED — #469 run 328ab9e0 | D-120 passes under D-161 on complete checked combined TCP captures: 65 reads, zero TCP timeouts, zero UDP losses, six verified-guard losses recovered by retransmission, longest stall 210.1 ms. The accepted-timeout branch did not run live. Historical 7b0db5f2 stays failed and its cause unproven; its 184 files are archived under D-098. #475 adds a second pass under D-161 on complete checked captures: 65 TCP reads, zero TCP timeouts, zero UDP losses, nine guard-attributed lost transmissions, longest TCP stall 209.6 ms. The finding stays answered by #469. |
 | SECOPS-F17-01 | ANSWERED — #464 | Run 9d927350 reads D after the control stop from the accepted local lease and serving heartbeat. Old case: read 90 ms after stop, 58.48 s remaining; watchdog heartbeat_stale withdrew first, quiet from D + 0.39 s. D-160 journal and validator reject admission inside timed sections. Lane's D-133 confounded record remains; orchestrator reads no foreign-suite overlap. Historical b2de46c8 and 1bfd5cff stay failed. |
 
 | Members F22-AT01 | OPEN — D-148 upstream response-source boundary | #473 corrects the #467 reading: original node packet 158 and member packet 161 share an IP hash. The IPv6 loopback-source WireGuard response reached member underlay ingress, then was dropped before WireGuard receive accounting. Header errors rose 0 to 1; the packet-specific drop point and source-selection mechanism are unproven. The old uncounted outcome stays. This boundary is already reported upstream under D-148; a new counted transfer does not close F11-01. |
-| Members F22-D146 | OPEN — located in the fixture; devstack 36 running for D-162 | #473: the regular-node prepared config omits observation_seconds, so its 30 s product default conflicts with the lab serving query's 15 s freshness bound. The 5 s override cited in #467 belongs only to the installer node. The 34.85 s between two latest rows did not prove a gap in accepted reports; full windows show roughly 30 s reporting. IPv6 1280 indexes 49/51 pass; dual 1280 indexes 44/46 block on a 22.61 s-old observation, the only failed condition. D-162 changes only the TEST ONLY fixture cadence; predicates stay. Historical outcomes and F21's undetermined indexes stay. |
-| r30 H-1 | FIXED — #470; r31 running at cutoff | Only Run sets the run context; outside Run no caller context owns the recover child. Close still cancels and joins it; uploads retain Boot's caller. The orchestrator's reachability reading is unchanged: neither CLI mode reaches H-1. Forwarding stays blocked until configured recovery completes. |
-| r30 H-2 | FIXED — #471 under clarified D-158; r31 running at cutoff | Five consecutive stale answers 20 ms apart give exit 1 with final stale detail. Every live answer, including empty/unreadable metadata, resets the count. The original first-attempt 10 s budget governs live answers: no exit 3 before it; exit 3 on the first live answer at or past it. Live D-158 contention remains unmeasured. |
-| r30 M-1 | FIXED — #471 under clarified D-158; r31 running at cutoff | One update lock wait record only after a first-attempt ErrBusy, including later cancellation. A non-busy first error and cancellation before any attempt write none. Error lines, exit table and nodelock are unchanged. |
-| r30 M-2 | FIXED — #470; r31 running at cutoff | A held closed recovery may make one catch-up lease request for a newly available ACK despite an earlier attempt in the same Step. Retry bound and Retry-After stay; recording that ACK prevents a second bypass. The accepted clean report still arms D-157's existing one-shot. |
-| r30 M-3 | FIXED — #470; r31 running at cutoff | Deduplication has one exception: a closed recovery waiting to bind its own report. The 32-entry capacity guard still comes first; ordinary coalescing is unchanged. |
+| Members F22-D146 | OPEN — D-162 implemented by #476; members 24 running at cutoff | #473 diagnosis: the regular-node prepared config omitted observation_seconds, so its 30 s product default conflicts with the lab serving query's 15 s freshness bound. The 5 s override cited in #467 belongs only to the installer node. The 34.85 s between two latest rows did not prove a gap in accepted reports; full windows show roughly 30 s reporting. IPv6 1280 indexes 49/51 pass; dual 1280 indexes 44/46 block on a 22.61 s-old observation, the only failed condition. D-162 changes only the TEST ONLY fixture cadence; predicates stay. Historical outcomes and F21's undetermined indexes stay. #476 run c17589fa has 123 accepted receipts / 122 intervals: min 0.081 s, median 5.162 s, max 10.255 s; final 622 s without a receipt, last 1.7 s before control stop. No 15 s reads ran, so this does not re-score F22-D146. Members 24 runs the dual 1280 rows under D-162. |
+| r30 H-1 | FIXED — #470; held in r31 | Only Run sets the run context; outside Run no caller context owns the recover child. Close still cancels and joins it; uploads retain Boot's caller. The orchestrator's reachability reading is unchanged: neither CLI mode reaches H-1. Forwarding stays blocked until configured recovery completes. |
+| r30 H-2 | FIXED — #471 under clarified D-158; held in r31 | Five consecutive stale answers 20 ms apart give exit 1 with final stale detail. Every live answer, including empty/unreadable metadata, resets the count. The original first-attempt 10 s budget governs live answers: no exit 3 before it; exit 3 on the first live answer at or past it. #476 records the first live wait, 446 ms acquired; stale-then-live contention remains unobserved. |
+| r30 M-1 | FIXED — #471 under clarified D-158; held in r31 | One update lock wait record only after a first-attempt ErrBusy, including later cancellation. A non-busy first error and cancellation before any attempt write none. Error lines, exit table and nodelock are unchanged. |
+| r30 M-2 | FIXED — #470; held in r31 | A held closed recovery may make one catch-up lease request for a newly available ACK despite an earlier attempt in the same Step. Retry bound and Retry-After stay; recording that ACK prevents a second bypass. The accepted clean report still arms D-157's existing one-shot. |
+| r30 M-3 | FIXED — #477 after r31 M-1 found #470's exception incomplete | Deduplication has one exception: an armed, unbound recovery that can bind its own report, tested by the shared canBindRecoveryReport predicate. At unchanged state with a report pending, otherwise ordinary dedup holds. The 32-entry capacity guard still comes first; ordinary coalescing is unchanged. |
+| Isolation F24-01 | OPEN — isolation 25 running at cutoff | #475 run df9dbad7: the planner's added-probe schedule is empty and written as null; the unchanged reviewer crashes at sorted(None). No boundary review is written, so D-142 qualification is not established although the packet verdict passes. The run's scheduled verdict is fail for F24-01 alone; no rerun or expected-gap entry. |
+| r31 M-1 | FIXED — agent-core 52 #477 | Diagnosis first under D-141: A isolation latch is persistent through Steps; B armed failed meter is not reached in normal Steps; C stale lease lasts one enforcement pass. The exact existing canBindRecoveryReport binding predicate also gates the pending-dedup exception. Report body, 32-entry outbox, cadence/retry/backoff/Retry-After and D-067/D-135/D-136/D-155/D-156/D-157 remain. All three imported subtests fail unfixed; lab 13/13; no assembled live claim. |
+| 11-04 scheduled at-isolation job 41836274140 | HARNESS CAUSES FIXED — #475; next scheduled run pending | On d2cb5446: the member-expiry plan missed its unchanged window, and the populated-holds review's sole pure_stale_generation gap made the job red. D=floor(A+44 s) replaces floor(A+55 s); D-163 maps only the current run's listed review gap. Both causes fixed; historical job stays failed. Local df9dbad7 remains scheduled fail for separate F24-01. |
 
-Every historical failure stays failed. The register has **133 rows**:
-**10 existing rows updated, 0 added, 123 byte-identical** to #472.
-Members 23 named no new finding. Every other row, including all other open
-findings, retains its exact bytes. [Current review dispositions](../reviews/README.md#r30-dispositions-at-the-follow-up-46-cutoff-2026-11-04-est)
-record all five r30 repairs without adopting r31's pending results.
+Every historical failure stays failed. The register has **136 rows**:
+**9 existing rows updated, 3 added, 124 byte-identical** to #474.
+Every other row retains its exact bytes, including **Isolation F18-01**:
+no PR in this cut claims its first scheduled exercise. Members F22-AT01 and
+F11-01 stay open under D-148. [Current review dispositions](../reviews/README.md#r31-dispositions-at-the-follow-up-47-cutoff-2026-11-04-est)
+record r31's one repair and the status of r30 at this cut.
 
-F22-01 is answered by isolation's complete-capture run; F30-01 remains closed.
-AT02 adds members 23's 179 ms / 7-loss sample. AT29 remains blocked on the
-operator's guest clock. F22-D146 is located in the fixture and stays open;
-F22-AT01 and F11-01 remain open under D-148. The [follow-up 46 cut](follow-up-46.md)
-keeps every historical outcome and the unproven drop point explicit.
-Operator statements remain under [F30-01](operator-guide.md#f30-01),
-[closed recovery](operator-guide.md#at02-closed-recovery) and the unchanged
-[TCP guard limitation](operator-guide.md#tcp-reload-guard).
+F22-01 stays answered by #469, with #475's second D-161 pass; F30-01 stays
+closed with #476's first live wait. F22-D146 stays open: D-162 is implemented,
+but no 15 s reads ran. [The cut](follow-up-47.md) records the unchanged
+historical outcomes. The operator's [F30-01 anchor](operator-guide.md#f30-01),
+[AT02 paragraph](operator-guide.md#at02-closed-recovery) and
+[TCP guard limitation](operator-guide.md#tcp-reload-guard) are retained.
 
-**Running at briefing, status only:** review r31, a post-merge code review of
-agent-core 51 and updater 26 by agy/gemini-4-argon-high; devstack 36 implements
-D-162, audits fixture consumers and If-Match writers, and runs full acceptance
-on agent-core 51 and updater 26. No delivered or merged PR was present at the
-initial check. Later results are after the cutoff and do not enter this cut.
-No date is promised.
+**Running at briefing, status only:** isolation 25 (F24-01, D-098 archive of
+run df9dbad7 and one assembled scheduled-mode run); members 24 (dual 1280
+rows under D-162, reading agent-core 52's records in the native window);
+review r32 (post-merge agent-core 52 review by agy/gemini-4-argon-high).
+No delivered or merged PR at the initial check. Later results are **after
+the cutoff** and do not enter this cut. No date is promised.
+After the initial check, **isolation 25 merged after the cutoff (#478)**;
+its results are excluded.
 
 D-145 keeps the current guard and C1 remains unimplemented. D-148 leaves
-Members F11-01 open and upstream-dependent; D-149 is unchanged. All ten earlier
-owner requests remain answered. AT11 / AT13 operator rows, Isolation F17-01,
-AT29 / AT31 resources, physical arm64, power loss and QUIC remain carried.
+Members F11-01 open and upstream-dependent; D-149 is unchanged. Follow-up 46's
+requests are answered by #476, r31 and #477. F22-AT01's boundary stays with
+D-148's owner, already reported upstream. AT11 / AT13 operator matrices,
+Isolation F17-01, AT29 / AT31 resources, physical arm64, power loss and QUIC
+remain carried. The assist.py retry is routed to isolation after follow-up 25.

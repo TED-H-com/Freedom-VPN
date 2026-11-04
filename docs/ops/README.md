@@ -1,7 +1,45 @@
 # Operations Runbooks Index (`docs/ops/`)
 
-**Current cut — [follow-up 46](../handover/follow-up-46.md) (2026-11-04 EST):** #469–#473 at 52b93845; F22-01 answered, all five r30 findings fixed, clarified D-158 implemented. 65 decisions, 133 findings; D-162 is TEST ONLY and running with devstack 36. Members AT02 adds 179 ms / 7 losses; D-158’s wait remains unmeasured live.
-**Previous cut — [follow-up 45](../handover/follow-up-45.md) (2026-11-04 EST):** #464–#468 at c148cf34; F30-01 closed, AT02 deny-all measured at 205 ms / 8 losses, AT29 blocked on the guest clock. 64 decisions, 133 findings; D-161 implemented, r30 archived and routed. D-158's wait remains unmeasured live. See [update recovery](../handover/operator-guide.md#f30-01), [closed recovery](../handover/operator-guide.md#at02-closed-recovery) and [TCP guard limitation](../handover/operator-guide.md#tcp-reload-guard).
+**Current cut — [follow-up 47](../handover/follow-up-47.md) (2026-11-04 EST):** #474–#477 at 1c39a0e7; 66 decisions, 136 findings. D-163 fixes the scheduled mapping; F24-01 keeps isolation's local scheduled run red. D-162 is TEST ONLY and implemented; F22-D146 stays open. D-158 records its first live wait, 446 ms acquired. r31 archived, M-1 fixed; observation records documented.
+**Previous cut — [follow-up 46](../handover/follow-up-46.md) (2026-11-04 EST):** #469–#473 at 52b93845; F22-01 answered, all five r30 findings fixed, clarified D-158 implemented. 65 decisions, 133 findings; D-162 is TEST ONLY and running with devstack 36. Members AT02 adds 179 ms / 7 losses; D-158’s wait remains unmeasured live.
+
+## Follow-up 47 acceptance snapshot (2026-11-04 EST)
+
+Current cut: **#474–#477 / 1c39a0e7**, four merged PRs, no unbriefed PR.
+[Evidence and routing](../handover/follow-up-47.md). Earlier snapshots retain
+their original outcomes.
+
+| Delivery | Evidence boundary at this cut |
+|---|---|
+| Handover 46 #474 | #469–#473 / 52b93845: 15 subtests, 21 snapshots, 23 main declarations, 18 source readings, ten artifacts, 59 exact values; 65 decisions and 133 findings. |
+| Isolation 24 #475 | 203-file D-098 archive; 41836274140's two harness causes fixed. df9dbad7: 27/2/0, all 29 statuses unchanged; member expiry passes, five timeouts with flat bytes / six serving reads. Whole-node packet verdict passes but D-142 qualification is not established: F24-01 null schedule / sorted(None) crash, the sole scheduled failure. D-161: 65 TCP reads, zero timeouts/UDP losses, nine guard losses, 209.6 ms longest stall. 15 first-attempt 202 writes; one watchdog baseline_unverified, no GENERATION_MISMATCH, no closure claim. |
+| Devstack 36 #476 | D-162 TEST ONLY 5/5/5; product default and 15 s predicate unchanged. c17589fa: 32/1/0, make exit 2 / nightly pass exit 0; all statuses match 35. 123 receipts / 122 intervals: min 0.081 s, median 5.162 s, max 10.255 s; final 622 s without receipt, last 1.7 s before control stop. No 15 s reads, no F22-D146 re-score. Three first-attempt 202 writes. update-good's first live D-158 wait: 446 ms, acquired, 10000 ms budget; stale-then-live unobserved. update-bad exit 1 HASH_MISMATCH: artifact, no wait record; lease-expiry pass. No individual attribution among agent-core 51, updater 26 and D-162. |
+| Agent-core 52 #477 / r31 | Diagnosis-first shared canBindRecoveryReport fixes r31 M-1; report/outbox/cadence/retry/safety rules unchanged. Lab 13/13, no assembled live claim. Two observation records, attempts per report per process. r31 archived byte-for-byte: 302 lines, 0/0/1/0 findings, M-1 fixed, updater needs nothing, no owner question. |
+
+**D-163 — the scheduled job's second list:**
+`tests/e2e/at/isolation/expected-not-exercised.json` sits beside
+`tests/e2e/at/isolation/expected-blocked.json`. Its sole entry is the
+populated-holds review's **pure_stale_generation / Isolation F17-01**.
+Only the same run's own incomplete result with that sole unexercised item,
+every other item passing, no join problem and no error maps review exit 1
+to **expected not exercised**. Everything else stays red. The runner removes
+prior populated-holds-review.json before reviewing; review outputs, acceptance
+records and D-144's row mapping stay unchanged. A listed item that passes is
+**no longer needed**. D-144 requires runner evidence before listing. This
+provisional orchestrator decision (08:5x EST, owner may overturn), implemented
+by #475, keeps a carried unexercisable gap visible without making every night
+red. It does not excuse F24-01 or erase the 11-04 job's historical failure.
+
+**66 decisions / 136 findings: 9 updated, 3 added, 124 unchanged findings.**
+D-162 is implemented; F22-D146 stays open. F22-01 stays answered by #469;
+F30-01 stays closed. Isolation F18-01 and every other row are unchanged;
+F22-AT01/F11-01 stay open under D-148. Follow-up 46's requests are answered.
+Isolation 25, members 24 and review r32 are running at briefing, status only;
+no delivered or merged PR at the initial check. Later results are after the
+cutoff. The assist.py:22 retry is routed to isolation after follow-up 25.
+After the initial check, **isolation 25 merged after the cutoff (#478)**;
+its results are excluded.
+No date is promised; no other operator or member procedure changes.
 
 ## Follow-up 46 acceptance snapshot (2026-11-04 EST)
 
