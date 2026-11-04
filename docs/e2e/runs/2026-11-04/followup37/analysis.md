@@ -154,3 +154,41 @@ Below is every archived isolation clone window under `docs/e2e/at/isolation/hist
      - `freezeIdentity()` (`tests/e2e/at/isolation/driver.go.txt:2658-2703`) does not score any `AT10`–`AT13` check in `x.records`; it writes only the auxiliary record `identity-freeze.json.gz` with `"status": "requires receiver correlation"` and `"owner": "ENR-02 / ENR-03; this is the consumer latch observation only"`.
      - `tests/e2e/at/isolation/review_stops.py:23-47` uses `identity-freeze.json.gz` only to verify the **source** container's `docker stop -t 25` snapshot stop/start (`label = "clone_source"`), and uses `receiver-closure.json.gz` (`label = "direct_agent"`) to verify that `stopCloneAgent` cleanly stopped the running clone `fvpn-agent` process via SIGTERM (`exit_code: 0`, `wait_source: "pidfd_poll_and_host_proc_reap"`).
    - **What did depend on it:** Isolation's auxiliary consumer-latch observation in `docs/e2e/at/isolation/identity-freeze.json.gz` (observing `conflicts: 1`, `mapping_frozen: true`, and the resulting `identity_frozen` fail-closed latch on the source node during `freezeIdentity`) went unexercised in follow-ups 16–25 because the clone never reached control. Meanwhile, the primary `ENR-02` / `ENR-03` / `AT07` clone-conflict and serving-freeze-withdrawal proofs remained exercised and passing in enrollment's `docs/e2e/at/enrollment/AT07.json` (`run_id: 891ee9b8-bf01-4583-a47a-9542c8b04c8a`) and devstack's `docs/e2e/runs/2026-10-31/followup15/exports/clone-conflict.json` (`run_id: 12d10041-9d33-4fbb-a4b0-9d2a21bce785`), where the source node does not carry isolation's observer.
+
+---
+
+## 2. The Shared Fixture Fix and Offline Test Proof
+
+### 2.1 Shared Fixture Change (`tests/e2e/second_exit.go`)
+
+- **Why the fix belongs in the shared fixture (`tests/e2e/second_exit.go`):**
+  - `startExitSlot` (`tests/e2e/second_exit.go:28-154`) boots the second or cloned container (`node2` or `node-clone`) from the unmutated base Docker image of `s.lab.node` (`tests/e2e/second_exit.go:82-84,92,151`). Inside that container, `deploy/devstack/entrypoint-node.sh:108` starts the base image's `/usr/local/bin/fvpn-e2e-nodeconfig resolver-proxy` on `127.0.0.1:9444` (`localNodeControlURL = "https://127.0.0.1:9444"`), which proxies mTLS agent requests to `https://agent.example.invalid:9443` (`pres.Control` on `fvpn-<prefix>-node-clone-net` when `clone == true`).
+  - Isolation's `freezeIdentity` (`tests/e2e/at/isolation/driver.go.txt:2658-2703`) only needs the clone to reach Central from its distinct `/24` presentation network so Central records `conflicts = 1` and `mapping_frozen = true`, causing the **source** node (`x.r.lab.node`) to receive `identity_frozen = true` through its own observer proxy on `:9445`. Isolation does not read observer timing logs from the clone.
+- **Exact change in `tests/e2e/second_exit.go`:**
+  - Extracted `prepareExitSlotConfigs(base, snat string, clone bool) error`, `rewriteExitConfigFile`, and `rewriteExitConfig` (`tests/e2e/second_exit.go:156-223`), called before container creation (`tests/e2e/second_exit.go:73-75`) and after copying `/var/lib/vpn-node/.` into `base/var` when `clone == true` (`tests/e2e/second_exit.go:124-126`).
+  - Using `map[string]json.RawMessage` at both the top level and inside `datapath`, `prepareExitSlotConfigs`:
+    - sets `datapath.snat` to `snat` (`prefix + lastOctet`) in `base/etc/agent-enroll.json`, `base/etc/agent-run.json`, and every `base/var/e2e/agent-*.json`;
+    - sets `control_url` to `"https://127.0.0.1:9444"` in `base/etc/agent-run.json`, in every `base/var/e2e/agent-*.json`, and (when `clone == true`) in `base/etc/agent-enroll.json` (while preserving `base/etc/agent-enroll.json`'s enrollment `control_url` when `clone == false`);
+    - keeps every other copied field (including `test_timing_path`, `heartbeat_seconds`, `poll_seconds`, `observation_seconds`, `release_id`, `agent_release`, `dns`, `host_reserve_bps`, and `datapath.{member_ingress,uplink}`), the clone's identity files (`var/identity/{node.json,cert.pem,key.pem}`), `/etc/vpn-node/machine-id`, and durable state (`var/state/agent.db`) byte-identical.
+
+### 2.2 Offline Test (`tests/e2e/second_exit_test.go`)
+
+- `TestD141_ClonePreparedConfigsDialContainerResolverProxy` (`tests/e2e/second_exit_test.go:15-218`) constructs a fake source configuration carrying isolation's observer settings (`"control_url": "https://127.0.0.1:9445"`, `"heartbeat_seconds": 1`, `"poll_seconds": 1`, `"observation_seconds": 1`, `"test_timing_path": "/var/lib/vpn-node/e2e/isolation-operations.jsonl"`, `"datapath": {"member_ingress": "fvmb0", "snat": "198.51.100.20", "uplink": "fvup0"}`) alongside `agent-enroll.json`, `var/e2e/agent-00000000-0000-7000-8000-000000000001.json`, cloned identity files, and durable state, and verifies:
+  1. All prepared clone configs (`etc/agent-enroll.json`, `etc/agent-run.json`, and `var/e2e/agent-00000000-0000-7000-8000-000000000001.json`) name `"control_url": "https://127.0.0.1:9444"` and `"snat": "198.51.100.23"`.
+  2. Every other top-level and `datapath` key is byte-for-byte unchanged (`bytes.Equal`), and restoring only `control_url` and `snat` reproduces the exact input file bytes.
+  3. All cloned identity and durable state files (`etc/machine-id`, `var/identity/{node.json,cert.pem,key.pem}`, `var/state/agent.db`, `var/e2e/agent-selected`) are untouched (`bytes.Equal`).
+  4. In clean second-exit mode (`clone == false`), `etc/agent-enroll.json` preserves `"https://portal.example.invalid:8443"` while `etc/agent-run.json` points to `"https://127.0.0.1:9444"`.
+  5. Malformed JSON or a config missing `datapath` is rejected.
+
+---
+
+## 3. Carried Items and Hand-offs
+
+- **Carried:**
+  - `AT29` guest-clock rollback remains an operator-run row ([`docs/e2e/at29-guest-clock.md`](../../../at29-guest-clock.md)).
+  - `member-ipv6` remains listed in `docs/e2e/nightly-expected-blocked.json`.
+  - No live run was executed in this follow-up, and no historical record in `docs/e2e/` or `docs/e2e/at/**` was rewritten or re-scored.
+- **Hand-offs (`### Requests to orchestrator`):**
+  1. **`w4-at-isolation` (`tests/e2e/at/isolation/driver.go.txt:2658-2703`, `tests/e2e/at/isolation/driver.go.txt:2306-2331`):**
+     - The shared clone fixture in `tests/e2e/second_exit.go` now rewrites the clone's prepared configs (`etc/agent-run.json`, `var/e2e/agent-*.json`, and `etc/agent-enroll.json`) to dial `https://127.0.0.1:9444` (served by the clone's own `fvpn-e2e-nodeconfig resolver-proxy`). Isolation's next authorized assembled run will exercise `freezeIdentity` live against this fix.
+     - Optional isolation-owned observability improvement: `retainReasonLogs` (`tests/e2e/at/isolation/driver.go.txt:2306-2331`) and `archiveReceiver` (`tests/e2e/at/isolation/driver.go.txt:2378-2388`) currently retain `/var/lib/vpn-node/e2e/{agent,watchdog}.log` only from the primary node (`x.r.lab.node`). If isolation wants retained clone agent/watchdog logs in future runs, capture `/var/lib/vpn-node/e2e/{agent,watchdog}.log` from `x.r.lab.prefix + "-node-clone"` before `x.stopCloneAgent(fixture.Clone)` at `tests/e2e/at/isolation/driver.go.txt:2698`.
