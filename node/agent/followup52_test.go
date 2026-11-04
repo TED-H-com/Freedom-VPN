@@ -51,8 +51,9 @@ func TestD157_F52_IsolationLatchStepsOutlast32Intervals(t *testing.T) {
 	if !r.eng.closedRecoveryHeld || r.eng.closedRecoveryRenewal.reportID != uuid.Nil || len(pending) != 1 {
 		t.Fatal("missing unbound closed recovery")
 	}
-	for range 35 {
-		r.clock.Advance(30 * time.Second)
+	// Match the rig's 5s run cadence through 35 default 30s intervals.
+	for range 35 * 6 {
+		r.clock.Advance(5 * time.Second)
 		stepOK(t, r)
 		f52NoCapacityGate(t, r)
 		got := f52Pending(t, r)
@@ -134,7 +135,7 @@ func TestD157_F52_StaleLeaseStepsOutlast32Intervals(t *testing.T) {
 			for range 35 {
 				// Keep this at 1s TEST ONLY to stay inside the original lease lifetime;
 				// a real expiry is a separate semantic transition, not a duplicate.
-				r.eng.cfg.ObservationSeconds = 1
+				r.eng.cfg.ObservationSeconds, r.eng.cfg.PollSeconds = 1, 1
 				r.clock.Advance(time.Second)
 				stepOK(t, r)
 				f52NoCapacityGate(t, r)
@@ -223,7 +224,7 @@ func TestD157_F52_PendingRevokeStepsOutlast32Intervals(t *testing.T) {
 		t.Fatal("pending revoke retained recovery")
 	}
 	before, state := len(f52Pending(t, r)), r.eng.lastObservationState
-	r.eng.cfg.ObservationSeconds = 1
+	r.eng.cfg.ObservationSeconds, r.eng.cfg.PollSeconds = 1, 1
 	for range 35 {
 		r.clock.Advance(time.Second)
 		stepOK(t, r)
