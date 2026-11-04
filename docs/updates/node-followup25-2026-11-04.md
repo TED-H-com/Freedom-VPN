@@ -1,6 +1,11 @@
 # Node updater follow-up 25 — 2026-11-04
 
-## Diagnosis before changes (D-141)
+## Diagnosis before changes (D-141; original stop, superseded)
+
+This section records the original delivery at `72585ab0`. The orchestrator
+accepted the stop and revised D-158 on 2026-11-04 at 02:23 EST. The resume
+section below describes the implementation of that revision; historical
+statements of unchanged code and deferred work below describe only the stop.
 
 **Verdict: ordinary lock contention is the supported explanation, but the code
 does not support a two-second upper bound on ordinary agent holds. Item 2 is
@@ -203,7 +208,7 @@ The CLI has JSON slog records separate from that error line, but uses the same
 stderr stream (`main.go:136,151–154`). **There is currently no acquisition-wait
 record** in `withLock`; none is added by this diagnosis-only delivery.
 
-## Implementation stop and proof disposition
+## Implementation stop and proof disposition (superseded by resume)
 
 Item 2 was not started because of the code-supported budget mismatch described
 above. There is no new budget constant, retry loop, log event or test assertion.
@@ -228,7 +233,7 @@ gates are recorded below after completion. **F30-01 remains open** until a
 future acceptance run reaches the real candidate path and passes. No live run,
 container, reservation or physical arm64 measurement is part of this delivery.
 
-## Decisions and remaining work
+## Original decisions and remaining work (superseded by resume)
 
 - §13.5 exclusion and §13.11 bounded contention remain intact. The diagnosis
   relates to UPD02/UPD03/UPD05 (§4) and the AT25/AT26 (§19) regression paths;
@@ -254,40 +259,11 @@ container, reservation or physical arm64 measurement is part of this delivery.
   supply the missing candidate-start, deferred-recovery-clearance and first
   candidate-service evidence.
 
-### Requests to orchestrator
+The original requests for a revised duration and caller scope were answered by
+D-158's revision on 2026-11-04 at 02:23 EST. Current devstack and operator-guide
+hand-offs are under Requests to orchestrator in the resume section below.
 
-2026-11-04:
-
-1. Resolve D-158's budget before scheduling implementation: proposed **10 s**
-   for `run`, with 20 ms polling, on the source evidence above. If retaining
-   **2 s**, explicitly scope it to covering the sampled ordinary holds rather
-   than the code's full cooperative allowance. Preserve D-155's prompt
-   `recover`, L-1, exact stderr/exit meanings and nested ownership. Decide
-   whether to include `seed` (automated production overlap), and explicit
-   `apply`/standalone `flush`, using the entry-point table.
-2. For devstack's next authorized run: **this delivery adds no wait record**.
-   Do not expect one yet or describe the acquisition budget as changed. After
-   implementation, retain each invocation's complete `updater.out` before the
-   next invocation overwrites it (`entrypoint-node.sh:171`). Suggested future
-   JSON slog record: `msg="update lock wait"`, `command="run"`,
-   `waited_ms=<elapsed monotonic milliseconds>`, `acquired=<boolean>` and
-   `budget_ms=<selected budget in milliseconds>`. This is a proposed interface,
-   not emitted output. Record invocation start/end and correlate it with lock
-   PID/comm/start ticks so the next run can identify a second holder. Keep
-   the unchanged error line separately. The orchestrator schedules acceptance;
-   no run is initiated here, and F30-01 stays open until the candidate is reached
-   and passes.
-3. For handover, exact current operator-guide sentence requested:
-   **“`fvpn-updater run` currently makes five lock attempts 20 ms apart (80 ms
-   of retry delays); D-158's longer acquisition budget is deferred pending
-   the follow-up 25 duration decision, and a live holder still yields exit 3.”**
-   If the proposed 10 s change is later implemented and verified, the replacement
-   sentence would be: **“`fvpn-updater run` waits up to a 10-second acquisition
-   budget for `update.lock`, then returns exit 3 if a live holder remains;
-   `recover` retains its prompt five-attempt, 20 ms retry window.”** Do not
-   publish the latter as current behavior before that implementation.
-
-## Validation on the unchanged runtime
+## Original validation on the unchanged runtime (stop delivery)
 
 Every gate was preceded by a separate `bash "$FVPN_HOLD_SH"` command returning
 `free`. No admission deferral, reservation or harness rerun occurred. Commands
@@ -340,3 +316,206 @@ Only this new dated note and `docs/updates/node-updater.md` are changed;
 production code, tests, dependencies, earlier follow-up documents and other
 lanes' files are unchanged. The public-hygiene pattern check has no matches.
 Cross-compilation is not evidence of an arm64 device run or live F30-01 closure.
+
+## Resume — 2026-11-04: revised D-158 implemented
+
+The orchestrator accepted the original stop and revised D-158 at 02:23 EST:
+**10 s / 20 ms for `run`, `seed`, `apply` and standalone `flush`**. This section
+supersedes the original deferral, proof omissions and proposed hand-offs above.
+The worktree was clean at `72585ab0` when resumed. No earlier follow-up document
+was edited.
+
+`node/updater/lock_wait.go:13` defines the single `updateLockWaitBudget` constant
+as 10 seconds. `withLockFor` selects it for the four commands; `withLock` keeps
+the existing five attempts at 20 ms for `Recover` and standalone `Retain`
+(`node/updater/engine.go:144–172`). The `lockHeld` bypass precedes either
+acquisition path, so seal's Flush/Retain and Run's inner Recover wait for nothing.
+Journal open remains inside the locked callback. Lock scope across start,
+check, seal and rollback is unchanged.
+
+The new helper performs real single-attempt `AcquireWithBootID` calls, using
+monotonic elapsed time to bound live contention. Cancellation is checked before
+attempts and while waiting on the timer. The common `node/nodelock` and
+`node/internal/nodelock` APIs and their agent, watchdog and installer consumers
+are untouched. Unreadable metadata remains conservatively live busy.
+
+The first stale answer starts the original **five-attempt** policy, including
+that answer; four further attempts are separated by 20 ms. Earlier live
+attempts do not consume this window, and a later successful acquisition still
+proceeds. As in the existing lock library, exhaustion returns the last error.
+Thus a retained stale detail stays exit 1 after its prompt window, rather than
+waiting out the remaining live budget. The stale window is counted from its
+first answer even if that answer arrives near the live deadline; it is not
+restarted on each stale retry. Synchronous filesystem operations and scheduling
+can exceed nominal timer durations; this is not a maximum lock-occupancy SLA.
+
+Only the four budgeted commands emit a new record, and only if their first
+attempt fails. One `update lock wait` slog event records `command`, `waited_ms`,
+`acquired` and `budget_ms=10000` when acquisition ends, before journal/command
+work. The CLI's existing JSON handler writes it to stderr. An acquired lock
+does not imply that subsequent command work succeeds. The terminal error line,
+D-034g and the exit table are unchanged. Recover's exact stderr is unchanged.
+
+### Before/after proofs
+
+Host admission initially deferred for another lane and an orchestrator
+reservation. To continue useful preparation, the original four changed source
+files were saved byte-for-byte from `72585ab0`. The before run used Go's file
+overlay for those files and excluded the new `lock_wait.go`. `GOFLAGS` passed
+the same overlay to the compiled CLI child build. The after run used no overlay.
+Both runs used identical new proof bodies, disk temporary directories and a
+separate admission returning `free`. No harness failure or harness rerun occurred.
+
+The command for both was:
+
+```sh
+go test -count=1 -v ./node/updater ./node/updater/cmd/fvpn-updater -run '^TestD158_'
+```
+
+The parent starts a real subprocess holder and waits for its readiness line
+after durable metadata is written. It releases that holder after 600 ms.
+The CLI tests use a real parent flock and a separately compiled updater child.
+All holders and timers are cleaned up; no Docker or host networking is used.
+The real-default test uses the actual 10 s budget; no shorter-budget seam was
+needed. Times below are observations from these offline proof runs, not live
+acceptance or performance bounds.
+
+| Proof | Before (`72585ab0` runtime) | After (`ae690cfe` implementation) |
+|---|---|---|
+| `TestD158_CommandsProceedAfter600msHolder/run` | FAIL: exit 3 at 81.071 ms | PASS: exit 0 at 617.335 ms; acquired record, no-work Run reaches its ordinary completion. |
+| Same proof, `seed` | FAIL: exit 3 at 81.403 ms | PASS: exit 0 at 617.479 ms; verified baseline read back. |
+| Same proof, `apply` | FAIL: exit 3 at 81.243 ms | PASS: exit 0 at 664.315 ms; staged release becomes current and pending record is consumed as succeeded. |
+| Same proof, standalone `flush` | FAIL: exit 3 at 81.343 ms | PASS: exit 0 at 615.934 ms; standalone journal/outbox read completes. |
+| CLI `real default budget` | FAIL: exit 3 at 86.265 ms, before the required budget | PASS: exit 3 at **10.006258811 s**, logged `waited_ms=10000`, `acquired=false`; exact live-busy error line. |
+| `TestD158_StaleDetailsKeepPromptWindow` | PASS: all four details on all four commands, about 81–82 ms | PASS: all 16 combinations, about 81 ms; exit 1, exact detail, no journal open. |
+| `TestD158_StaleWindowStartsAtFirstStaleAnswer` | FAIL: live-busy exit 3 at 81.006 ms, before metadata changes | PASS: metadata becomes stale at about 300 ms; exit 1 at 385.748 ms, preserving four additional retry intervals. |
+| `TestD158_RecoverAndRetainKeepPromptWindow` | PASS: recover 81.252 ms; Retain 81.611 ms | PASS: recover 81.221 ms; Retain 81.300 ms; exit 3 and no wait record. |
+| `TestD158_NestedCallsDoNotWaitOrLog` | PASS | PASS: Run/Recover/Flush/Retain finish under the existing holder, no wait log, real kernel ownership retained until the outer return. |
+| `TestD158_CancellationAndUnreadableMetadata` | FAIL for both live and unreadable metadata: busy at about 81 ms before cancellation | PASS for both: context cancellation at about 300 ms ends the live wait, `acquired=false`, no journal open. Unreadable metadata did not select the stale window. |
+| CLI `uncontended`, plus all four engine replays | Existing CLI no-work line PASS | PASS: no wait record; the pre-existing no-work JSON line is unchanged except its timestamp. All four commands omit a wait record on a free lock. |
+| CLI `released` | FAIL: exit 3 at 86.288 ms | PASS: exit 0 at 622.663 ms; one JSON record (`acquired=true`) followed by the original no-work diagnostic. |
+| CLI four stale cases / record fields | Exit 1 and original error lines; FAIL because the new record is absent | PASS: one record each at 80–81 logged ms, `acquired=false`; each original error line byte-identical. |
+| CLI `acquired operation error` | FAIL: contention prevents reaching the operation error | PASS: after acquisition, the missing-pending operation's error line is byte-identical to its uncontended version; the sole added record says `command=apply`, `acquired=true`. |
+
+Real output tails:
+
+```text
+FAIL    github.com/TED-H-com/Freedom-VPN/node/updater                  2.288s
+FAIL    github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater  1.043s
+```
+
+```text
+ok      github.com/TED-H-com/Freedom-VPN/node/updater                  5.224s
+ok      github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater  12.033s
+```
+
+These baseline failures reached their subjects and are expected red proofs.
+The earlier r29 and follow-up 24 test files remain byte-identical to `72585ab0`;
+none pins an 80 ms window for the newly budgeted commands. In particular the
+unchanged all-entry-points L-1 test now waits the real 10 s for each live-held
+run/seed/apply/flush case instead of weakening its journal assertions.
+
+### Consumer audit
+
+| Consumer checked, unchanged | Why the new record is compatible |
+|---|---|
+| Installer `captureCommand` / `seedBaseline`, `packaging/installer/baseline.go:36–62,79–102` | Captures the complete stderr string and numeric exit. Only the separate `seed --help` probe parses help text; it never takes the lock. Real seed success is decided by exit 0, so a preceding JSON wait record is diagnostic data. Existing `TestD089_InstallAndReenrollSeedThroughInstalledBinary`, `TestD089_RealUpdaterConsumesWriterRecord`, and `TestD089_CheckAfterJournaledSwitch` are in the consumer gate. |
+| Agent recovery child, `node/agent/updaterecover.go:74–85,102–115` | Uses `exec.ExitError` and exact statuses 3/2, without parsing updater stderr. Recover keeps its original window and gains no wait record. Existing `TestD155_RecoverExitAndRetry`, `TestD155_StaleHolderIsTerminal`, `TestD155_RecoveryLocalBudgetSingleChildAndJoin` and `TestD155_CrashedTransactionsKeepAgentRunning` pass unchanged in the consumer gate. |
+| Update AT launcher/results, `tests/e2e/at/updates/live_test.go:504–509,617`; installer AT capture, `installer_test.go:53–69,268–270,303–317` | Retains command output and status; success/failure predicates require status plus independent journal/health evidence, not an exact all-stderr string. These live-tagged bodies were source-audited and compiled with `-tags=e2e -run '^$'`; the required untagged package gate passes unchanged. Neither command executes Docker acceptance. No live AT pass is claimed. |
+
+### Resume validation
+
+All required gates ran sequentially in the foreground after their own admission
+command printed `free`. Initial admission deferrals were waited out before the
+proof runs; none was treated as a test result. No reservation, Docker object,
+harness failure or harness rerun was needed. All started processes were joined.
+The environment remained `CGO_ENABLED=0`, `GOTOOLCHAIN=local`, with `.agent/tmp`
+for `TMPDIR` and `GOTMPDIR`; GOCACHE was read, not overridden.
+
+| Command | Result on the implementation |
+|---|---|
+| `go test -count=1 ./node/updater/... ./node/nodelock/... ./node/internal/updatejournal/... ./node/internal/nodelock/... ./node/internal/healthattest/...` | Exit 0, including all four r29 proofs and all five follow-up 24 tests unchanged. |
+| `go test -count=1 ./node/agent/... ./packaging/installer/... ./tests/e2e/at/updates/...` | Exit 0; the audited consumers pass unchanged. |
+| `go test -count=1 ./tests/handover/...` | Exit 0. |
+| `make go-lint go-with-disk-tmp=` | Exit 0, no output; root gofmt, vet and pinned staticcheck v0.8.2. The empty make helper retains the disk scratch environment without a shell cleanup trap. |
+| `go vet ./...` | Exit 0, no output. |
+| `test -z "$(gofmt -l $(git ls-files '*.go'))"` | Exit 0, no output. |
+| `git diff --check` | Exit 0, no output. |
+| `make updater-build` | Exit 0; linux/amd64 and linux/arm64 updater/release binaries. |
+| `go test -count=1 -tags=e2e -run '^$' ./tests/e2e/at/updates/...` | Exit 0; compile-only check of the live-tagged AT consumers. No tests or Docker operations run. |
+
+Real output from the three required test gates:
+
+```text
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater	166.362s
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater	13.575s
+?   	github.com/TED-H-com/Freedom-VPN/node/updater/fsutil	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/node/nodelock	0.033s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal	0.720s
+?   	github.com/TED-H-com/Freedom-VPN/node/internal/nodelock	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/healthattest	0.052s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	146.802s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent	0.301s
+ok  	github.com/TED-H-com/Freedom-VPN/packaging/installer	7.963s
+?   	github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates	0.072s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve	0.083s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/handover	5.759s
+```
+
+Real cross-build and AT compile output:
+
+```text
+CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o bin/linux_amd64/fvpn-updater ./node/updater/cmd/fvpn-updater
+CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=arm64 go build -trimpath -o bin/linux_arm64/fvpn-updater ./node/updater/cmd/fvpn-updater
+CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o bin/linux_amd64/fvpn-release ./packaging/release/cmd/fvpn-release
+CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=arm64 go build -trimpath -o bin/linux_arm64/fvpn-release ./packaging/release/cmd/fvpn-release
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates	0.008s [no tests to run]
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve	0.002s [no tests to run]
+```
+
+No outside-path gate failed, so no comparison run on main was needed. The
+original exit table and D-034g text were checked against `72585ab0` and are
+unchanged. Only owned updater code/tests and the two follow-up 25 documentation
+files changed; no dependency, common lock API, earlier follow-up document or
+other lane's file changed. The longer all-entry-points L-1 test is expected:
+its live-held budgeted commands now exercise the actual ten-second policy.
+Cross-compilation and offline tests do not establish arm64 device performance
+or close F30-01.
+
+### Requests to orchestrator
+
+2026-11-04 (resume):
+
+1. Devstack's next authorized acceptance run should retain the new JSON record
+   and its associated error line for **each** invocation. The exact record
+   shape, from the compiled CLI proof, is:
+
+   ```json
+   {"time":"2026-11-04T02:41:23.589840709-05:00","level":"INFO","msg":"update lock wait","command":"run","waited_ms":616,"acquired":true,"budget_ms":10000}
+   ```
+
+   A real default-budget failure emitted:
+
+   ```text
+   {"time":"2026-11-04T02:41:33.598565271-05:00","level":"INFO","msg":"update lock wait","command":"run","waited_ms":10000,"acquired":false,"budget_ms":10000}
+   fvpn-updater: updater: UPDATE_BUSY: lock
+   ```
+
+   `command` is `run`, `seed`, `apply` or `flush`; times/elapsed values vary.
+   No wait record means the first attempt succeeded (or execution did not reach
+   a failed acquisition), not missing evidence of a retry. `acquired=true`
+   proves acquisition only, not candidate success. `recover`, `Retain` and
+   nested calls do not add this event. **`deploy/devstack/entrypoint-node.sh:171`
+   overwrites `updater.out` at every invocation**, so preserve it before the
+   next update scenario. No launcher or AT predicate is changed here.
+2. Handover's exact replacement operator-guide sentence:
+   **“Under D-158, `fvpn-updater run`, `seed`, `apply` and standalone `flush`
+   wait for live `update.lock` contention with a 10-second budget and 20 ms
+   polling before exit 3; `recover` and standalone `Retain` keep their prompt
+   five-attempt window, and stale-holder details retain exit 1 after five
+   attempts counted from the first stale answer.”**
+3. The orchestrator schedules the next devstack candidate-path run.
+   **F30-01 remains open** until acceptance reaches the real candidate and
+   passes. The unit proofs and cross-compilation cannot close it. No agent-core
+   request is added: this change establishes no excessive agent hold.

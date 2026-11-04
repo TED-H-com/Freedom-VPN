@@ -29,25 +29,34 @@ fvpn-updater version
 | 1 | Any other failure, including a config that does not load and `flush` without `result_url`. |
 | 64 | Usage, an unknown command, a bad flag, or missing required flags. `seed -h` and `seed --help` print seed-specific flag help and exit 64. |
 
-Acquisition timing does not change these exit meanings. As of follow-up 25,
-`run` still uses five attempts 20 ms apart (80 ms of retry delays), just like
-`recover`. D-158's proposed longer `run` budget is **not implemented**: the
-diagnosis found that ordinary agent Apply has a cooperative allowance of up to
-10 s, so the brief's stop condition applies to the proposed 2 s budget. A live
-holder after the current window still produces exit 3. See
-[follow-up 25](node-followup25-2026-11-04.md) for the proposed 10 s replacement
-and evidence limits; neither duration is a new shipped setting.
+Acquisition timing does not change these exit meanings. Revised D-158 gives
+`run`, `seed`, `apply` and standalone `flush` a **10-second live-contention
+budget**, polling every 20 ms. A live holder beyond that budget still produces
+exit 3 and the exact error line below. `recover` and standalone library `Retain`
+keep five attempts 20 ms apart (80 ms of retry delays). Stale-holder diagnostics
+keep that five-attempt window, counted from the first stale answer, and exit 1;
+unreadable metadata retains the existing conservative live-busy classification.
+See [follow-up 25](node-followup25-2026-11-04.md) for the diagnosis and proofs.
 
 `run` holds the node lock, calls `recover`, applies an installer pending release when that file exists, then takes the current desired state. `apply` holds the same lock, calls `recover`, and applies the `-pending` file. It does not also read desired state. `flush` posts pending results and does not start an update. `flush` requires `result_url`. `Run`, `ApplyPending`, `Seed`, `Recover`, `Flush` and `Retain` take the node lock at entry, before they supersede an older job, claim, download or install.
 
 D-155 orders lock acquisition before layout setup and opening or migrating `journal.db` in `Run`, `Recover`, `ApplyPending`, `Seed` and `Flush`. `Retain` checks the lock before pruning an attached journal or returning with no journal; it never opens one. The lock library may create the lock's parent directory and open the lock file before attempting `flock`. Argument/configuration validation and `ApplyPending`'s absolute-path resolution also precede the lock; none opens the journal. Nested calls on the same engine keep the existing holder (`Run`'s inner `Recover`, `Flush` during seal, and `Retain`). Read-only `status` takes no update lock and keeps reading the existing journal during contention; a missing journal remains an error and is not created.
 
-D-158 remains pending a revised acquisition-budget decision. The current wait
-is bounded by attempt count and context cancellation; individual filesystem
-operations and scheduling can add elapsed time. All entry points retain their
-current window, including stale-holder retries, and no acquisition-wait log
-record has been added. The follow-up 25 audit also identifies serving-agent
-overlap for installer `seed`, explicit `apply`, and standalone `flush`.
+D-158's `updateLockWaitBudget` is a bounded contention policy, not a promise
+that a holder releases. The live budget uses monotonic elapsed time; context
+cancellation ends the retry wait. Individual filesystem operations and
+scheduling can add elapsed time. A first stale answer switches to the prompt
+five-attempt policy even after earlier live contention. Nested calls reuse the
+outer lock without waiting. The common lock library and its agent, watchdog
+and installer consumers are unchanged.
+
+For the four budgeted commands, a failed first acquisition produces exactly
+one JSON slog record on the CLI's existing stderr stream when acquisition ends:
+`msg="update lock wait"`, `command`, `waited_ms`, `acquired`, and `budget_ms=10000`.
+It measures acquisition only, before journal open or command work. A successful
+first attempt emits no wait record; existing uncontended logs and error lines
+are unchanged. `recover` and `Retain` gain no wait record. Devstack must retain
+each `updater.out` before the next invocation overwrites it.
 
 | Command | Can return live-holder `UPDATE_BUSY: lock`? | Exit before D-155 | Exit after D-155 |
 |---|---|---|---|
