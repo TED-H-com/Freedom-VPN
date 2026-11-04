@@ -31,6 +31,8 @@ func (l *live) siblingApplyFault(r *record, capture *siblingCapture) {
 		ev["removed_at"] = time.Now().UTC()
 		clean := l.nodeMutation("PATCH", "", map[string]any{"capacity": map[string]any{"down_bps": 231000000, "up_bps": 231000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}})
 		ev["clean_generation_command_status"] = clean.status
+		ev["clean_generation_node_write"] = clean.write.Receipt
+		ev["clean_generation_command_accepted"] = clean.accepted(200, 202)
 		ev["clean_generation_command_completed_at"] = time.Now().UTC()
 		l.forwardingGate(r)
 	}

@@ -144,9 +144,9 @@ func (l *live) populatedHold(r *record, name string, count, capacity int) {
 		return
 	}
 	command := l.nodeMutation("PATCH", "", map[string]any{"capacity": map[string]any{"down_bps": capacity, "up_bps": capacity, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}})
-	ev["command"] = map[string]any{"at": time.Now().UTC(), "status": command.status, "body": json.RawMessage(command.body)}
-	r.check("populated hold capacity command "+name, "202 real capacity command", detail(command), "D-102 fresh TEST ONLY arm; current ETag and Idempotency-Key", command.status == 202)
-	if command.status != 202 {
+	ev["command"] = map[string]any{"at": time.Now().UTC(), "status": command.status, "body": json.RawMessage(command.body), "node_write": command.write.Receipt}
+	r.check("populated hold capacity command "+name, "202 real capacity command", command.detail(), "D-102 fresh TEST ONLY arm; current ETag and Idempotency-Key", command.accepted(202))
+	if !command.accepted(202) {
 		return
 	}
 	entered := l.wait(45*time.Second, func() bool {
@@ -262,5 +262,6 @@ func (l *live) populatedHold(r *record, name string, count, capacity int) {
 		// restore addresses or weaken the verifier after the bounded injection.
 		clean := l.nodeMutation("PATCH", "", map[string]any{"capacity": map[string]any{"down_bps": capacity + 1000000, "up_bps": capacity + 1000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}})
 		ev["clean_capacity_status"] = clean.status
+		ev["clean_capacity_node_write"] = clean.write.Receipt
 	}
 }
