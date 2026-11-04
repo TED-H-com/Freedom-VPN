@@ -139,6 +139,7 @@ def extract(before, after, start, end, observations):
     last = max(after_times, key=ns) if after_times else None
     suffix = max(a, ns(first)) if first else None
     return dict(format_document='docs/node/README.md: observation enqueued / observation submission',
+                reason='Documented agent-core 52 receipts extracted; missing records and retained coverage are listed explicitly.',
                 submission_events_available=bool(attempts), enqueues=window_enqueues,
                 submission_attempts=window_attempts, stored_observation_joins=joins,
                 enqueued_not_stored_in_window=[r for r in window_enqueues if r['report_id'] not in {o['report_id'] for o in stored}],
