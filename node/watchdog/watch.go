@@ -187,7 +187,13 @@ func (w *Watch) baselineDecision(ctx context.Context) (string, Beat, time.Durati
 	if mono-beat.Mono > time.Duration(w.Config.WatchdogStaleSeconds)*time.Second {
 		return "heartbeat_stale", beat, mono
 	}
-	if !beat.BaselineOK {
+	// Startup uncertainty must not erase retained rules before the successor
+	// can judge them. The old receipt's boot, time and staleness checks above
+	// still apply; its original kernel deadline and the presence check below
+	// still apply. A malformed or ordinary unverified receipt never qualifies.
+	adopting := beat.Reason == AdoptionPending && !beat.Serving && !beat.BaselineOK &&
+		beat.Generation > 0 && beat.PolicyExpires > 0 && w.BootID != uuid.Nil && beat.BootID == w.BootID
+	if !adopting && (!beat.BaselineOK || beat.Reason == AdoptionPending) {
 		return "baseline_unverified", beat, mono
 	}
 	if beat.PolicyExpires > 0 && mono >= beat.PolicyExpires {
