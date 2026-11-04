@@ -1,0 +1,36 @@
+{
+  "run_id": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
+  "baseline": "33f0ef8e891525e291d60eec9d513bda07f57c82",
+  "build": "0b95e69ae89c68e0fcfbf1fbbfe6774b2e1948db",
+  "acceptance_counts": {
+    "pass": 27,
+    "blocked": 2
+  },
+  "command_exit_code": 2,
+  "lab_reload_revoke": "fail",
+  "retry": false,
+  "overlap_observed": false,
+  "findings": [
+    {
+      "id": "F21-01",
+      "status": "answered: unchanged window opened and M-1 judged pass",
+      "evidence": "history/follow-up-22-run/member-expiry-review.json"
+    },
+    {
+      "id": "F22-01",
+      "status": "failed lab TCP continuity; cause unproven",
+      "owner": "w1-netlab",
+      "evidence": "history/follow-up-22-run/reload-revoke-failure-review.json"
+    },
+    {
+      "id": "F48-01",
+      "status": "paired signature not observed; no global closure",
+      "evidence": "history/follow-up-22-run/restart-timeline.json"
+    },
+    {
+      "id": "F17-01",
+      "status": "carried: pure stale_generation not exercised",
+      "evidence": "history/follow-up-22-run/populated-holds-review.json"
+    }
+  ]
+}

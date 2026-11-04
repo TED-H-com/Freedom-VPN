@@ -1,0 +1,148 @@
+{
+  "baseline": "5c7e8dcd13da345e1adf37489b950f489fe6abbb",
+  "measured_source": "56d814113913ddc6177d47d4a5160a65c93add25",
+  "checks": [
+    {
+      "command": [
+        "make",
+        "-f",
+        "mk/at-isolation.mk",
+        "at-isolation-lint",
+        "at-isolation-test",
+        "at-isolation-build"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 25.166,
+      "admission_wait_seconds": null,
+      "admission_note": "First check was free; exact check duration was not separately recorded. Initial private recorder labeled total elapsed time as admission wait; this receipt corrects that label.",
+      "name": "lane",
+      "log": "history/follow-up-24-validation/lane.log.txt",
+      "output_tail": "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go vet -tags netlab ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...\n+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t17.935s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\n+ python3 tests/e2e/at/isolation/driver.py build\n+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
+    },
+    {
+      "command": [
+        "make",
+        "-f",
+        "mk/e2e.mk",
+        "e2e-lint"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.872,
+      "admission_wait_seconds": null,
+      "admission_note": "First check was free; exact check duration was not separately recorded. Initial private recorder labeled total elapsed time as admission wait; this receipt corrects that label.",
+      "name": "e2e-lint",
+      "log": "history/follow-up-24-validation/e2e-lint.log.txt",
+      "output_tail": "cd $WORKTREE && go vet ./tests/e2e/...\ncd $WORKTREE && go vet -tags e2e ./tests/e2e/...\ncd $WORKTREE && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/...\ncd $WORKTREE && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e ./tests/e2e/..."
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "tests/e2e/at/isolation/run.py",
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "-run",
+        "TestAT13_MemberSchedule|TestD144_Nightly",
+        "./tests/e2e/at/isolation"
+      ],
+      "exit_code": 0,
+      "admission_wait_seconds": 0.038,
+      "elapsed_seconds": 0.549,
+      "name": "focused-final",
+      "log": "history/follow-up-24-validation/focused-final.log.txt.gz",
+      "output_tail": "=== RUN   TestAT13_MemberScheduleStrictWaitBoundaries\n--- PASS: TestAT13_MemberScheduleStrictWaitBoundaries (0.00s)\n=== RUN   TestD144_NightlyReviewAndSuiteAdmission\n    producer_timing_test.go:420: test_d163_both_runner_reviews_establish_same_gap (nightly_test.Nightly.test_d163_both_runner_reviews_establish_same_gap) ... ok\n        test_d163_runner_records_and_only_known_gap (nightly_test.Nightly.test_d163_runner_records_and_only_known_gap) ... ok\n        test_real_processes_only (nightly_test.Nightly.test_real_processes_only) ... ok\n        test_summary_preserves_blocks_unblocks_and_errors (nightly_test.Nightly.test_summary_preserves_blocks_unblocks_and_errors) ... ok\n        test_unexecuted_expiry_never_reads_inherited_evidence (nightly_test.Nightly.test_unexecuted_expiry_never_reads_inherited_evidence) ... ok\n        test_unexecuted_foreign_redirect_writes_unavailable_verdict_without_traceback (nightly_test.Nightly.test_unexecuted_foreign_redirect_writes_unavailable_verdict_without_traceback) ... ok\n        \n        ----------------------------------------------------------------------\n        Ran 6 tests in 0.211s\n        \n        OK\n        \n--- PASS: TestD144_NightlyReviewAndSuiteAdmission (0.25s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.258s"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "tests/e2e/at/isolation/run.py",
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "exit_code": 0,
+      "admission_wait_seconds": 1803.063,
+      "elapsed_seconds": 1808.075,
+      "name": "handover",
+      "log": "history/follow-up-24-validation/handover.log.txt",
+      "output_tail": "+ go test -count=1 ./tests/handover/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t4.110s"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "tests/e2e/at/isolation/run.py",
+        "make",
+        "go-lint",
+        "go-with-disk-tmp="
+      ],
+      "exit_code": 0,
+      "admission_wait_seconds": 0.053,
+      "elapsed_seconds": 3.649,
+      "name": "root-go-lint",
+      "log": "history/follow-up-24-validation/root-go-lint.log.txt",
+      "output_tail": "+ make go-lint go-with-disk-tmp="
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "tests/e2e/at/isolation/run.py",
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
+        "./tests/e2e/at/isolation"
+      ],
+      "exit_code": 0,
+      "admission_wait_seconds": 0.052,
+      "elapsed_seconds": 15.995,
+      "name": "hygiene",
+      "log": "history/follow-up-24-validation/hygiene.log.txt",
+      "output_tail": "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation\n=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean\n--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (15.76s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t15.763s"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        ".agent/f24/inventory.py"
+      ],
+      "exit_code": 0,
+      "admission_wait_seconds": 0.051,
+      "elapsed_seconds": 0.211,
+      "name": "inventory",
+      "log": "history/follow-up-24-validation/inventory.log.txt",
+      "output_tail": "{\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}"
+    }
+  ],
+  "assembled": {
+    "run_id": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
+    "exit_code": 2,
+    "scheduled_status": "fail",
+    "pass_rows": 27,
+    "blocked_rows": 2,
+    "fail_rows": 0,
+    "reason": "F24-01: boundary reviewer sorted(None), D-142 qualification unestablished; member expiry passed and D-163 mapped only F17-01",
+    "receipt": "history/follow-up-24-run/follow-up-24-run-receipt.json"
+  },
+  "formatting": "whole-module gofmt empty; final diff/staged checks clean. Initial staged check found multiline probe-summary whitespace in the new dated document, corrected in 1bacdf9b. A later staged check found whitespace in a retained test log; the exact log bytes are published as lossless gzip, with both forms pinned.",
+  "scope_verification": {
+    "sha256_pins": 360,
+    "gzip_original_pins": 35,
+    "d098_byte_identical": 203,
+    "owned_paths_only": true,
+    "earlier_archives_untouched": true,
+    "predicate_driver_unchanged": true,
+    "handover_changed_lines": [],
+    "workflow_and_expected_blocks_unchanged": true,
+    "review_and_scheduled_go_unchanged": true,
+    "additive_narratives": true
+  },
+  "scope": "Actual offline gates and admitted final inventory. The single live run remains failed and is never retried. Final checks waited for a foreign e2e run that began after the measured run. No public foreign command text is retained."
+}

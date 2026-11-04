@@ -1,0 +1,51 @@
+{
+  "workflow_run_id": "41640196805",
+  "artifact": "at-isolation-41640196805-1",
+  "source": "Already unpacked workflow artifact supplied by the orchestrator; original scheduled verdict unchanged.",
+  "files": [
+    {
+      "path": "finite-member-renewal-wait.json",
+      "sha256": "4d0a6fc3de0e954a735f1fbbba2b32acc5152b137056cbcccba5d95af8d7ce58",
+      "bytes": 134764,
+      "source": "finite-member-renewal-wait.json",
+      "byte_identical": true
+    },
+    {
+      "path": "populated-holds-review.json",
+      "sha256": "d24d06901dd1052bfe9807f58f4a9ebaf2aaa98df0c0c20cbdbd024483f42021",
+      "bytes": 15843,
+      "source": "populated-holds-review.json",
+      "byte_identical": true
+    },
+    {
+      "path": "receiver-capture-member-extract.json",
+      "sha256": "1d25924724eb7709592f6b08153001f1dc17033606a2dee8dcfab2d3f7d5c33d",
+      "bytes": 1478286,
+      "source": "receiver-capture.json",
+      "source_sha256": "88ef47911d3eb5b91b98092206525d67bc85b865eb2a716d5012019d84dabe8b",
+      "source_bytes": 6390475,
+      "byte_identical": false,
+      "selection": "Complete indexed objects in the stated half-open timestamp interval; no object fields changed."
+    },
+    {
+      "path": "lease-history-member-extract.json",
+      "sha256": "6ad8141b9d1192b5aafe06e262f8282db508245af32104381a4a0e9e645fb88c",
+      "bytes": 16553,
+      "source": "lease-history.json",
+      "source_sha256": "7d733be99377c0f6cdff99e37b665744fcc245b99ab4ae44af7b3614c03aad83",
+      "source_bytes": 139566,
+      "byte_identical": false,
+      "selection": "Complete indexed objects in the stated half-open timestamp interval; no object fields changed."
+    },
+    {
+      "path": "AT13-member-extract.json",
+      "sha256": "4f1d266321ac0d6f4607454ad93a396f70adae8b1a5cd14aa6d43ed1284cdbd2",
+      "bytes": 72094,
+      "source": "AT13.json",
+      "source_sha256": "5b65086c67518229755827fe61ace4abb08701fd75b535a405b33512432bc20c",
+      "source_bytes": 386871,
+      "byte_identical": false,
+      "selection": "Complete original check object; no fields changed."
+    }
+  ]
+}

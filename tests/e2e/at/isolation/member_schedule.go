@@ -14,10 +14,19 @@ type MemberExpirySchedule struct {
 }
 
 // PlanMemberExpiry anchors a single new grant to a fresh accepted renewal,
-// instead of an unrelated wall-clock phase. For issue time A, D=floor(A+55s),
-// so the unchanged eligible issue window (D-35s,D-5s] contains A+[27s,33s].
-// It also contains the renewal after an extra A+10.5s renewal, including a
-// one-second step delay. No lease or existing grant is changed or extended.
+// instead of an unrelated wall-clock phase. For issue time A, D=floor(A+44s).
+// The unchanged predicate needs issue > D-35s and acceptance seen < D-5s.
+// This admits a binding-bearing renewal at A+[10s,34s], seen within 2s,
+// even if grant/peer setup and the counted control take until A+34s:
+// D-35s <= A+9s, while D-5s > A+38s. Thus there is at least 1s of
+// lease-extension margin and more than 2s of observation margin. This covers
+// the retained A+10.460s, A+17.149s and runner A+19.133s renewals, as well
+// as ordinary A+[27s,33s] renewal plus a 1s step delay. Earlier grant-only
+// renewals can be ignored; waiting for their successors at A+55s put the
+// binding-bearing renewal just outside the eligible window on the runner.
+// These are TEST ONLY replay assumptions, not a production latency bound.
+// Slower setup/acceptance still blocks under the unchanged live predicate.
+// No lease or existing grant is changed or extended.
 func PlanMemberExpiry(issued, expires, observed time.Time, accepted bool) (MemberExpirySchedule, bool) {
 	issued, expires, observed = issued.UTC(), expires.UTC(), observed.UTC()
 	p := MemberExpirySchedule{Name: "fresh-renewal anchor", Observed: observed, Issued: issued, Expires: expires}
@@ -25,6 +34,6 @@ func PlanMemberExpiry(issued, expires, observed time.Time, accepted bool) (Membe
 		return p, false
 	}
 	p.NextExpected = issued.Add(30 * time.Second)
-	p.Deadline = issued.Add(55 * time.Second).UTC().Truncate(time.Second)
+	p.Deadline = issued.Add(44 * time.Second).UTC().Truncate(time.Second)
 	return p, true
 }
