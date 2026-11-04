@@ -155,6 +155,13 @@ func TestD158_CommandsProceedAfter600msHolder(t *testing.T) {
 			}
 			check()
 			d158Record(t, &log, command, true, 500*time.Millisecond)
+			log.Reset()
+			// Replay may report a consumed pending file; either result must have
+			// no acquisition record when the first attempt succeeds.
+			_ = call(t.Context())
+			if strings.Contains(log.String(), "update lock wait") {
+				t.Fatalf("uncontended %s logged a wait: %s", command, &log)
+			}
 		})
 	}
 }

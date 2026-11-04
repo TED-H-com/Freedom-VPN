@@ -151,6 +151,41 @@ func TestD158_CLIWaitRecordAndExactErrorLine(t *testing.T) {
 			}
 		})
 	}
+	t.Run("acquired operation error", func(t *testing.T) {
+		args := []string{"apply", "-config", cfg, "-pending", filepath.Join(root, "TEST-ONLY-absent-pending.json")}
+		runApply := func() (string, int) {
+			t.Helper()
+			cmd := exec.CommandContext(t.Context(), bin, args...)
+			var stdout, stderr bytes.Buffer
+			cmd.Stdout, cmd.Stderr = &stdout, &stderr
+			err := cmd.Run()
+			var exit *exec.ExitError
+			if !errors.As(err, &exit) || stdout.Len() != 0 {
+				t.Fatalf("expected operation failure, got %v stdout=%s", err, &stdout)
+			}
+			return stderr.String(), exit.ExitCode()
+		}
+		before, code := runApply()
+		if code != 1 || !strings.HasPrefix(before, "fvpn-updater: ") || strings.Count(before, "\n") != 1 {
+			t.Fatal("unexpected uncontended operation error")
+		}
+		lk, err := nodelock.TryAcquire(lay.Lock)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var once sync.Once
+		release := func() { once.Do(func() { _ = lk.Release() }) }
+		defer release()
+		timer := time.AfterFunc(600*time.Millisecond, release)
+		defer timer.Stop()
+		after, code := runApply()
+		line, remaining, _ := strings.Cut(after, "\n")
+		var record map[string]any
+		if code != 1 || remaining != before || json.Unmarshal([]byte(line), &record) != nil || record["msg"] != "update lock wait" || record["command"] != "apply" || record["acquired"] != true || record["budget_ms"] != float64(10000) {
+			t.Fatal("acquired wait changed the operation error or omitted its record")
+		}
+		t.Logf("wait record: %s; operation error byte-identical", line)
+	})
 }
 
 // The pre-D-158 no-work diagnostic stays exactly one JSON line. Only its
