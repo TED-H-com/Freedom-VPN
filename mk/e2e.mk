@@ -26,7 +26,7 @@ export CGO_ENABLED := 0
 
 LINT_TARGETS += e2e-lint
 
-.PHONY: e2e-lint e2e-config e2e-up e2e-down e2e-browser e2e-test
+.PHONY: e2e-lint e2e-config e2e-up e2e-down e2e-browser e2e-test e2e-acceptance
 
 e2e-lint:
 	@test -z "$$(gofmt -l $$(git ls-files --cached --others --exclude-standard 'tests/e2e/**/*.go'))" || { echo 'gofmt required'; exit 1; }
@@ -57,6 +57,10 @@ e2e-browser:
 # Fresh secrets, the probe browser, then the acceptance run. The stack stays up
 # for inspection. FVPN_E2E_RUN_LABEL selects docs/e2e/runs/<date>/<label>.
 e2e-test:
+	python3 -B $(E2E_ROOT)/deploy/devstack/admission.py run $(MAKE) -f $(E2E_MK) e2e-acceptance
+
+# Internal body: keep one wrapper tree across setup and scenario execution.
+e2e-acceptance:
 	$(MAKE) -f $(E2E_MK) e2e-down
 	$(MAKE) -f $(E2E_MK) e2e-up E2E_RESET=1
 	$(MAKE) -f $(E2E_MK) e2e-browser
