@@ -1,0 +1,16 @@
+{
+  "captured_at": "2026-11-04T05:52:16.397055+00:00",
+  "exit": 0,
+  "query": "SELECT jsonb_build_object('lease_id',envelope->'signed'->>'lease_id',\n'policy_generation',policy_generation::text,'issued_at',issued_at,'expires_at',expires_at,\n'signed_expires_at',envelope->'signed'->>'expires_at','member_count',jsonb_array_length(envelope->'signed'->'members'),\n'min_member_lease_end',(SELECT min(m->>'lease_end') FROM jsonb_array_elements(envelope->'signed'->'members') m),\n'min_effective_service_end',(SELECT min(m->>'effective_service_end') FROM jsonb_array_elements(envelope->'signed'->'members') m))\nFROM serving_leases ORDER BY issued_at DESC LIMIT 1;",
+  "result": {
+    "lease_id": "130edc7b-a71f-4ec7-80d7-2e6d6d96ad3b",
+    "issued_at": "2026-11-04T05:50:47.683761+00:00",
+    "expires_at": "2026-11-05T05:50:47.683761+00:00",
+    "member_count": 21,
+    "policy_generation": "96",
+    "signed_expires_at": "2026-11-05T05:50:47.683761946Z",
+    "min_member_lease_end": "2026-11-04T06:39:43.614406Z",
+    "min_effective_service_end": "2026-11-04T06:39:43.614406Z"
+  },
+  "error": ""
+}
