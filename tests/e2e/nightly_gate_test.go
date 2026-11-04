@@ -21,7 +21,7 @@ func writeSummaryFixture(t *testing.T, dir string, rows []SummaryRow) string {
 }
 
 func TestD144_CommittedExpectedBlockedListAndFollowup29FullSummary(t *testing.T) {
-	list, err := DefaultNightlyExpectedBlockedList()
+	list, err := historicalNightlyExpectedBlockedList()
 	if err != nil {
 		t.Fatalf("DefaultNightlyExpectedBlockedList: %v", err)
 	}
@@ -62,7 +62,7 @@ func TestD144_CommittedExpectedBlockedListAndFollowup29FullSummary(t *testing.T)
 }
 
 func TestD144_ListedBlockedRowKeepsJobGreenAndPreservesBlockedStatus(t *testing.T) {
-	list, err := DefaultNightlyExpectedBlockedList()
+	list, err := historicalNightlyExpectedBlockedList()
 	if err != nil {
 		t.Fatalf("DefaultNightlyExpectedBlockedList: %v", err)
 	}
@@ -131,7 +131,7 @@ func TestD144_ListedBlockedRowKeepsJobGreenAndPreservesBlockedStatus(t *testing.
 }
 
 func TestD144_ListedRowThatPassesIsReportedUnblockedAndSucceeds(t *testing.T) {
-	list, err := DefaultNightlyExpectedBlockedList()
+	list, err := historicalNightlyExpectedBlockedList()
 	if err != nil {
 		t.Fatalf("DefaultNightlyExpectedBlockedList: %v", err)
 	}
@@ -162,7 +162,7 @@ func TestD144_ListedRowThatPassesIsReportedUnblockedAndSucceeds(t *testing.T) {
 }
 
 func TestD144_UnlistedBlockedRowFails(t *testing.T) {
-	list, err := DefaultNightlyExpectedBlockedList()
+	list, err := historicalNightlyExpectedBlockedList()
 	if err != nil {
 		t.Fatalf("DefaultNightlyExpectedBlockedList: %v", err)
 	}
@@ -183,7 +183,7 @@ func TestD144_UnlistedBlockedRowFails(t *testing.T) {
 }
 
 func TestD144_FailRowFails(t *testing.T) {
-	list, err := DefaultNightlyExpectedBlockedList()
+	list, err := historicalNightlyExpectedBlockedList()
 	if err != nil {
 		t.Fatalf("DefaultNightlyExpectedBlockedList: %v", err)
 	}
@@ -203,7 +203,7 @@ func TestD144_FailRowFails(t *testing.T) {
 }
 
 func TestD144_ErrorRowAndRunnerErrorFail(t *testing.T) {
-	list, err := DefaultNightlyExpectedBlockedList()
+	list, err := historicalNightlyExpectedBlockedList()
 	if err != nil {
 		t.Fatalf("DefaultNightlyExpectedBlockedList: %v", err)
 	}
@@ -248,7 +248,7 @@ func TestD144_ErrorRowAndRunnerErrorFail(t *testing.T) {
 }
 
 func TestD144_MissingOrUnreadableSummaryFails(t *testing.T) {
-	list, err := DefaultNightlyExpectedBlockedList()
+	list, err := historicalNightlyExpectedBlockedList()
 	if err != nil {
 		t.Fatalf("DefaultNightlyExpectedBlockedList: %v", err)
 	}
@@ -316,5 +316,25 @@ func TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails(t *testing.T)
 				t.Fatalf("expected %s expected-blocked list to fail gate, got ok=%v verdict=%q err=%v", name, repBad.OK, repBad.Verdict, errBad)
 			}
 		})
+	}
+}
+
+// Historical gate cases keep their original two-entry contract and assertions.
+// This is a frozen TEST ONLY snapshot; runtime always reads the live list.
+func historicalNightlyExpectedBlockedList() (NightlyExpectedBlockedList, error) {
+	return LoadNightlyExpectedBlockedList(filepath.Join("testdata", "nightly_expected_blocked_followup29.json"))
+}
+
+func TestD144_CurrentExpectedBlockedListAfterFollowup34(t *testing.T) {
+	live, err := DefaultNightlyExpectedBlockedList()
+	if err != nil {
+		t.Fatal(err)
+	}
+	historical, err := historicalNightlyExpectedBlockedList()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(live.Entries) != 1 || live.Entries[0] != historical.Entries[0] || live.Entries[0].ID != "member-ipv6" {
+		t.Fatalf("current list must retain only the unchanged member-ipv6 entry: %+v", live)
 	}
 }

@@ -1,0 +1,18 @@
+{
+  "checks": 2112,
+  "commands": {
+    "go": 51,
+    "make": 6,
+    "docker": 2053,
+    "npm": 2
+  },
+  "denials": 26,
+  "wait_windows": [
+    {
+      "first_denial": "2026-11-04T06:01:57.594346+00:00",
+      "first_free": "2026-11-04T06:27:58.872950+00:00",
+      "seconds": 1561.279
+    }
+  ],
+  "note": "Admission output was captured separately. The three absolute setup sub-makes bypassed the wrapper, as recorded in analysis.md."
+}

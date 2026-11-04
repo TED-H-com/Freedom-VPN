@@ -212,3 +212,53 @@ candidate proof. No scenario predicate or result was changed to obtain a pass.
   when reviewing the run. Neither is silently converted into a clean gate.
 
 Publication trims terminal line whitespace from Docker progress, vmstat and lock-observer text; timestamps and values are unchanged. [Normalization hashes](publication-normalization.txt) identify pre-trim and published bytes. The first staged whitespace check found those capture spaces and was corrected before the records commit.
+
+## Completed quarantine and gate decision
+
+The unchanged-list command was:
+
+```sh
+go run ./tests/e2e/cmd/fvpn-e2e-nightly-gate -summary docs/e2e/runs/2026-11-04/followup34/acceptance-summary.md -test-exit-code 2 -test-log docs/e2e/runs/2026-11-04/followup34/05-acceptance.txt
+```
+
+[Before removal](nightly-gate-before.md), the verdict is **fail**, exit 1:
+pass=31, expected_blocked=1 (`member-ipv6`), unblocked=1 (`lease-expiry`),
+unexpected_blocked=1 (`update-good`), fail=0, error=0. This is the scheduled
+job's local evaluator on the actual log/exit status, not a dispatched workflow.
+
+The passed `lease-expiry` entry was then removed. The member-ipv6 JSON object
+was compared byte-for-byte against the original and is unchanged (SHA-256
+`c017b0a1232be1873486aee5c7cddcf2e15e581145a3743c489f039023958f8a`). It remains the sole listed entry. Thus r29 L-2's stale
+live citations and ordering note are gone with the entry. The frozen historical
+copies deliberately retain the original text.
+
+[After removal](nightly-gate-after.md), the **same run** still gets **fail**,
+exit 1: pass=31, expected_blocked=1, unblocked=0, unexpected_blocked=1,
+fail=0, error=0. No entry was added for update-good and no result was suppressed.
+
+The existing E2E nightly-gate tests used the live list for historical follow-up
+29 cases. They now load the byte-identical frozen
+`tests/e2e/testdata/nightly_expected_blocked_followup29.json`; all their existing
+case assertions are retained. A separate test checks the current list contains
+only the unchanged member-ipv6 entry. Handover's own frozen list, tests and
+follow-up 29 records were not changed. Required test results are in
+[checks.md](checks.md).
+
+**F30-01 is not closed by this run:** updater 24 and agent-core 49 are merged,
+but the good update never started the candidate. The lease quarantine removal
+answers the observed row only. The candidate proof gap remains routed above.
+
+## Cleanup and final verification
+
+`make -f mk/e2e.mk e2e-down` completed successfully; see
+[teardown output](06-e2e-down.txt). Admission held the next Docker command after
+compose teardown; [separate admission summary](admission-summary.txt) records
+the exact first-denial/first-free windows. Deferral is not a test result.
+The [final D-103 inventory](owned-docker-inventory.txt) is **0 containers,
+0 images, 0 networks, 0 volumes**. Shared PostgreSQL and other prefixes were
+untouched. Every new evidence file is below 20 MiB, so lossless gzip is not
+required. Existing historical records remain byte-identical.
+
+An auxiliary post-run preparation script stopped because the new E2E fixture directory did not yet exist. The directory was created, and continuation resumed after the already recorded unchanged-list gate. No acceptance invocation or completed gate was repeated for this preparation error.
+
+The final staged whitespace check found an extra terminal blank line in each generated nightly verdict Markdown. These were trimmed; [hashes](gate-publication-normalization.txt) retain both forms, and the full CLI outputs remain unchanged. The repeated staged check passed.
