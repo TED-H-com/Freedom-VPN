@@ -12,8 +12,8 @@ launched with this cut to diagnose and fix the `node/agent` wall-clock and
 deadline sensitivity observed under CPU load in GitHub Actions `Node` workflow
 runs **41782791081, 41787173794, 41794009264, 41808885873, and 41871089749**.
 No delivered or merged PR was present at the initial read-only check
-(`origin/w2-agent-core` remained at #477's commit `341d099a`). Later results
-are **after the cutoff** and do not enter this cut. No date is promised.
+(`w2-agent-core` was at `main` `b921c75f` with no new commits or PR). Later
+results are **after the cutoff** and do not enter this cut. No date is promised.
 
 **D-098 / D-109 / D-132:** `TestHandover_Followup48Claims` pins the four final
 roadmap rows, verbatim PR excerpts, 23 frozen snapshots (nine #479 documents,
@@ -65,100 +65,134 @@ recorded as after-cutoff status only in
 `df61fd68add1678729ef32ae1ef93719124035e3`) and the
 [frozen dated note](../../tests/handover/testdata/history/follow-up-48/docs_e2e_at_isolation_followup25-2026-11-04.md.txt)
 archive follow-up 24's run **df9dbad7-27ad-4895-8bd3-74108db12e87** (measured
-source `56d814114c0160bb69d669fa5103adbe0e1df560`): all **213 files** are
-copied byte-identically under `docs/e2e/at/isolation/history/follow-up-24/`
-with manifest `docs/e2e/at/isolation/history/follow-up-24/archive.json` and
-verified by `TestCommittedHistoryFollowup24Archive`
-(`tests/e2e/at/isolation/followup25_test.go`). Follow-up 24's own
-`scheduled-job.json` stays `status: "fail"` in its D-098 archive.
+source `56d814114c0160bb69d669fa5103adbe0e1df560`): all **213 root, support and
+reload-stream files** are copied byte-identically under
+`docs/e2e/at/isolation/history/follow-up-24/` with manifest
+`docs/e2e/at/isolation/history/follow-up-24/archive.json` and verified alongside
+the 6-file `follow-up-25-runner-replay` archive by
+`TestD098_Followup24AndRunnerReplayPins`
+(`tests/e2e/at/isolation/boundaryplan/plan_test.go`). Follow-up 24's own
+boundary review stays failed in its D-098 archive.
 
 **D-141 diagnosis first**
-(`docs/e2e/at/isolation/history/follow-up-25-run/diagnosis.json`): in
-`df9dbad7`, calibration had **105 matched probe samples**: **104 positive**
-transit durations (`1,391,722 ns` to `4,784,820 ns`, mean `1,729,405 ns`) and
-**one negative sample** at **`packet_id: 56`** (`send_unix_ns:
-1793807958631888677`, `ingress_unix_ns: 1793807958630793166`, **`transit_ns:
--1095511`**) where `fvmb0` packet capture timestamped ingress `1.095511 ms`
-before user-space `WriteTo` returned. `boundaryplan.Plan`
-(`tests/e2e/at/isolation/internal/boundaryplan/plan.go`) rejected only
-`d == 0`, summed all 105 durations (`178,762,672 ns`), computed `avgNs =
-1,702,501 ns`, integer-divided `avgMs := avgNs / 1e6` to **`0`**, set
-`spacingMs = 0`, broke out of the offset loop on iteration 0 (`0 <= 0`), and
-marshaled the nil slice as **`added_probe_offsets_ms: null`**.
-`tests/e2e/at/isolation/review_boundary.py` then crashed at
-`sorted(schedule.get("added_probe_offsets_ms", []))`
-(`TypeError: 'NoneType' object is not iterable`) because `.get(key, [])`
-returns `None` when the key is present with value `null`.
+(`docs/e2e/at/isolation/history/follow-up-25-diagnosis/diagnosis.json` and
+`docs/e2e/at/isolation/history/follow-up-25-diagnosis/reload-stream-interval.json`):
+in `df9dbad7`, calibration had **103 samples** (`packets 1..103`). Packet
+**`56`** (`phase: "arbitrary_37ms"`, scheduled `D − 5364 ms`, send `D −
+5363.806630 ms`, ingress `D − 5362.616379 ms`, egress `D − 5347.440676 ms`) had
+send-to-ingress latency `1,190,251 ns` (`1.190251 ms`) and capture-read transit
+**`15,175,703 ns` (`15.175703 ms`)**, while the next largest of the 103 samples
+was packet **`6`** at **`167,079 ns` (`0.167079 ms`)**. With latency spread
+`2,673,957 ns` (`2.673957 ms`, min `838,577 ns`, median `1,093,437 ns`, max
+`3,512,534 ns`), the unrounded bound was `2,673,957 + 2 * 15,175,703 + 100,000 =
+33,125,363 ns` (`33.125363 ms`), rounded up to **`33,200,000 ns` (`33.2 ms`)**
+(without packet `56` it would have been `3.108115 ms` -> **`3.2 ms`**). Any
+spacing above `31.5 ms` exceeds half of both original cadence gaps (`37,000,000
+ns` and `63,000,000 ns`), so all **14 grid candidates** were excluded, leaving
+`var added []int64` nil and marshaling **`"added_scheduled_mono_ns": null`**,
+which crashed `tests/e2e/at/isolation/review_boundary.py` at
+`sorted(plan.get('added_scheduled_mono_ns', []))` (`TypeError: 'NoneType' object
+is not iterable`). Independent `tcpdump`
+(`docs/e2e/at/isolation/history/follow-up-24/whole-node-node-capture.txt` lines
+`224–227`) shows packet `56` crossing `fvmb0 -> fvup0` in **`22.974 µs`** and
+all four forward/reply frames within **`61.175 µs`**, and the member UDP socket
+completed its reply read `481,964 ns` (`0.481964 ms`) before the calibration
+reader's `fvmb0` `recvfrom` timestamp: the `15.176 ms` outlier is capture-read
+delay, not kernel datapath transit, with no overlapping Apply, reload guard,
+renewal or netlink receipt (one overlapping desired-state `GET` returned `502`,
+which is not an Apply). The sample is kept (`discounted_samples: []`).
 
 **The planner and reviewer fixes and offline replays:**
-- `boundaryplan.Plan` (`tests/e2e/at/isolation/internal/boundaryplan/plan.go`)
-  now skips any non-positive calibration duration (`d <= 0`), floors any
-  positive average below 1 ms (`avgNs > 0 && avgMs < 1`) to `avgMs = 1`, and
-  returns an error when no positive calibration sample exists so a valid
-  `Schedule` never has an empty `AddedProbeOffsetsMs`.
-- `tests/e2e/at/isolation/review_boundary.py` treats `null` or non-list
-  `added_probe_offsets_ms` as `[]` and fails cleanly (`status: "fail"`, exit
-  `1`, reason `"boundary schedule has no added probes"`) with zero traceback.
-- Offline proofs (`TestF24_01_Followup24CalibrationPlanAndBoundaryReview` and
-  `TestF24_01_BoundaryPlanSubMillisecondAndInvalidCalibration` in
-  `tests/e2e/at/isolation/followup25_test.go`, and
-  `TestBoundaryReview_Followup24NullOffsetsAndPositiveReplay` in
-  `tests/e2e/at/isolation/boundary_review_test.py`) verify that:
-  1. Unchanged `df9dbad7` `boundary-schedule.json` (`added_probe_offsets_ms:
-     null`) exits `1` cleanly with `status: "fail"` and no traceback;
-  2. Replanning `df9dbad7`'s 104 positive samples yields `avg_transit_ns:
-     1729405`, `avg_transit_ms: 1`, `spacing_ms: 2` and **48 added offsets**
-     (`-149 ms` to `-55 ms`), and `review_boundary.py` on `df9dbad7`'s
-     unchanged 191 boundary packets passes D-140 and D-142 (`0` overlaps across
-     `27` adjacent pairs from packet `165` to `191`);
-  3. Follow-up 22's qualified run `7599576e`
-     (`docs/e2e/at/isolation/history/follow-up-22/boundary-schedule.json` and
-     `deadline-trace.json`) replays as `status: "pass"`, exit `0`.
+- `tests/e2e/at/isolation/boundaryplan/plan.go` (`boundaryplan.Plan`, called by
+  `tests/e2e/at/isolation/observer_main.go`) keeps the formula, checkpoint,
+  calibration inputs, both original cadences, the grid anchor and D-142
+  unchanged (`tests/e2e/at/isolation/deadline_trace.go` is byte-identical). It
+  always emits `added_scheduled_mono_ns` as an array (`[]string{}` when empty),
+  sets `qualified: len(added) > 0`, and records `unqualified_reason`,
+  `discounted_samples: []`, `spacing_unrounded_ns`, `cadence_gaps_ns`,
+  `cadence_gap_rule` and `candidates` (with `excluded_by_original_sends`).
+- `tests/e2e/at/isolation/review_boundary.py` (`validate_plan`) validates the
+  plan schema and extension fields before use, rejects missing, `null`, empty or
+  non-list `added_scheduled_mono_ns` and `qualified: false` without crashing,
+  writes `boundary-review.json` with `status: "fail"` and `schedule_qualified:
+  false`, and exits `1` (which the scheduled summary reports as a review error,
+  not a D-163 entry).
+- Offline proofs (`TestAT13_F24_01PlannerReplay` and
+  `TestAT13_F24_01MissingCalibration` in
+  `tests/e2e/at/isolation/boundaryplan/plan_test.go`, and `BoundaryQualification`
+  / `F2401Review` in `tests/e2e/at/isolation/boundary_evidence_test.py`, with
+  replay outputs in `docs/e2e/at/isolation/history/follow-up-25-replay/`):
+  1. `df9dbad7` (`follow-up-24-run`): original `null` plan fails cleanly with
+     `malformed plan: added_scheduled_mono_ns is null (F24-01 empty Go slice)`
+     and `planned dense probes missing or extra`; replanning gives `spacing_ns:
+     "33200000"`, `added_scheduled_mono_ns: []`, `qualified: false`, and all
+     **14** excluded candidates (`df9dbad7-plan.json` and
+     `df9dbad7-new-plan-review.json`, `status: "fail"`, `schedule_qualified:
+     false`, `unchanged_evaluator_passed: true`);
+  2. `328ab9e0` (`follow-up-23-run`): `spacing_ns: "6100000"`, **31 added
+     probes**, `added_scheduled_mono_ns` JSON bytes identical to the original,
+     `status: "pass"`, `schedule_qualified: true`;
+  3. `runner-1104` (`follow-up-25-runner-replay`, artifact
+     `at-isolation-41836274140-1`): `spacing_ns: "4000000"`, **49 added probes**,
+     `added_scheduled_mono_ns` JSON bytes identical to the original, `status:
+     "pass"`, `schedule_qualified: true`.
 
-**Assembled scheduled-mode run `bd73d7a4-52d6-4e1c-b334-f1ec3273b27e`** on base
-`341d099a6ebeeac5221275d6db748a6b3bfdc94d` (measured source
-`ef0bf2e216ef97c6be31263eb67b4d5a7933d3be`, archived under
+**Assembled scheduled-mode run `bd73d7a4-03f1-4b17-97c2-9c25a39ac0db`** on
+measured commit `4c495c3ba81674d6033630f200fa6859b02c1be1` (`main` at `034c82cf`
+plus `#478`'s commits, `15:47:50Z–16:11:27Z`, `1,416.625 s`, archived under
 `docs/e2e/at/isolation/history/follow-up-25-run/`):
 - **Case and row verdicts (`comparisons.json`):** **27 `pass`, 2 `blocked`, 0
   `fail`** (`AT10` `pass` 9/0/0, `AT11` `blocked` 5/1/0 on `IPv6 platform
   matrix`, `AT12` `pass` 7/0/0, `AT13` `blocked` 6/1/0 on `continuous
-  crash/NetBird/reboot/updater transitions`, `AT21` `pass` 1/0/0). All **29 row
-  statuses** match follow-up 24 (`df9dbad7`) and follow-up 23 (`328ab9e0`).
-- **Scheduled verdict (`scheduled-job.json`):** **`scheduled_verdict: "pass"`**,
-  **`exit_code: 0`**, **27 `pass`**, **2 `expected_blocked`** (D-144), **0
-  unexpected blocked**, **0 failed**, **0 review errors**, and **1
+  crash/NetBird/reboot/updater transitions`). All **29 row statuses** match
+  follow-up 24 (`df9dbad7`) and follow-up 23 (`328ab9e0`).
+- **Scheduled verdict (`scheduled-job.json`):** **`status: "pass"`**,
+  **`exit_code: 0`**, **27 `passed_checks`**, **2 `expected_blocked`** (D-144),
+  **0 `unexpected_blocked`**, **0 `failed_checks`**, **0 `errors`**, and **1
   `expected_not_exercised` review item** (`populated-holds` /
   `pure_stale_generation` under D-163).
-- **Whole-node expiry (`D-104` / `D-140` / `D-142`, `boundary-schedule.json`
-  and `boundary-review.json`):** **103 calibration probes**, `avg_transit_ns:
-  2124916` (`avg_transit_ms: 2`), `spacing_ms: 3`, **34 added boundary probes**
-  (`-152 ms` to `-53 ms`). Last positive packet **`166`** (send `D − 101 ms`,
-  ingress `D − 99.644 ms`, egress `D − 98.545 ms`), first drop packet **`167`**
-  (send `D − 98 ms`, ingress `D − 96.453 ms`), closure bracket `(D − 99.644 ms,
-  D − 96.453 ms]` strictly after `D − 101 ms`. `review_boundary.py` exits `0`
-  with `status: "pass"` and **zero overlaps** across all **27 adjacent probe
-  pairs** in the D-142 tail (`packet 166` through `192`).
-- **Member-grant expiry (`r28 M-1` / `F21-01`, `member-expiry-review.json`):**
-  anchor `A = 2026-11-04T16:37:52Z`, planned `D = 2026-11-04T16:38:36Z`
-  (`floor(A + 44 s)`), qualifying binding-bearing lease generation **`31`**
-  issued at `16:38:14.086819Z` (**`A + 22.1 s`**, inside `(D − 35 s, D − 5
-  s)`). All **5 post-deadline probes timed out**, member download bytes stayed
-  flat at **`2,671`**, all **6 node snapshots** showed `provisioning_state:
-  "ready"` and `member_forwarding_enabled: true`, and the final probe finished
-  **`15.49 s`** before the sampled node lease expired (`16:38:57.086819Z`).
+- **Whole-node expiry (`D-104` / `D-140` / `D-142`, `boundary-schedule.json`,
+  `deadline-verdict.json` and `boundary-review.json`):** `qualified: true`,
+  **103 calibration samples** (`discounted_samples: []`), latency spread
+  `3,173,852 ns` (`3.173852 ms`), max calibration transit `1,073,914 ns`
+  (`1.073914 ms`), unrounded bound `5,421,680 ns`, **`spacing_ns: "5500000"`
+  (`5.5 ms`)**, **34 planned / 34 observed added probes** (`236` total probes).
+  Packet verdict: **`passed: true`**, **164 positives** and **72 drops**; last
+  positive packet **`164`** (scheduled `-100000000 ns`, send `-100765548 ns`,
+  ingress `-99889360 ns`, egress **`-99868939 ns` / `D − 99.869 ms`**), first
+  drop packet **`165`** (scheduled `-99000000 ns`, send `-95405875 ns`, ingress
+  **`-94561348 ns` / `D − 94.561 ms`**), deciding gap `5,307,591 ns` (`5.308
+  ms`). `review_boundary.py` exits `0` with `status: "pass"`,
+  `schedule_qualified: true`, and **0 judged overlaps / 0 total overlaps** in the
+  D-142 tail from packet `164`.
+- **Member-grant expiry (`r28 M-1` / `F21-01`, `finite-member-schedule.json`,
+  `finite-member-renewal-wait.json` and `member-renewal-current.json`):** anchor
+  `A = 2026-11-04T16:03:18.861239Z` (`generation: 28`), planned `D =
+  2026-11-04T16:04:02Z`, qualifying binding-bearing lease generation **`29`**
+  (`7a4d3afb-e46e-4e5e-9c97-3a3559eacca0`, `expires_at:
+  2026-11-04T16:04:22.990642Z`) issued at `16:03:40.990596191Z` (**`A +
+  22.129357191 s` / `A + 22.1 s`**) and observed serving at `16:03:50.281020Z`.
+  All **5 post-deadline probes timed out**, member download bytes stayed flat at
+  **`2,629`**, all **6 node reads** showed the node serving at generation `29`,
+  and the last probe finished **`15.466248617 s` (`15.5 s`)** before the node
+  lease expired.
 - **`D-120` reload lab under `D-161` (`d161-review.json`):**
-  `complete_checked_combined_captures: true`, **58 TCP reads**, **zero TCP
-  timeouts**, **7 guard-attributed lost TCP transmissions** across **195
-  reloads** (`3.59` per 100 reloads `<= 5`), **1 boundary-classified UDP loss**
-  (generation `1005`, sequence `3`, recovered by successor `4`), and longest
-  TCP stall **`210,636,000 ns` (`210.636 ms`)**.
-- **`If-Match` node writes (`node-write-audit.json`):** **15 logical node
-  writes**, **15 HTTP attempts**, all **first-attempt `202`**, **zero `412`
-  conflicts**.
-- **Closure boundary:** closes **`Isolation F24-01`** only. Historical
-  `Isolation F14-01` (`56d20530`), `Isolation 15` (`0b9e4510`), `Isolation 16`
-  (`83b457ef`) and `Isolation F16-01` stay failed/unqualified, and `df9dbad7`
-  stays `scheduled_verdict: "fail"` in its D-098 archive.
+  `complete_checked_combined_captures: true`, **58 TCP reads**, **0 TCP
+  timeouts**, **7 guard-attributed lost TCP transmissions**, **1 UDP loss**
+  (`1/5`, within `<= 5` per 100 reloads), longest TCP stall **`210,638,448 ns`
+  (`210.638 ms`)** on sequence `44`, and **101 verified Applies** (max guard
+  upper bound `57.624 ms`).
+- **`If-Match` node writes and agent restarts (`node-write-audit.json`,
+  `restart-timeline.json` and `restart-signature-review.json`):** **15 logical
+  node writes** in **15 attempts**, all **first-attempt `202`**, **0 `412`
+  conflicts**; **4 restart windows / 6 parent-wait receipts** (`exit_code: 0`,
+  `signal: null`), `watchdog_decisions_count: 0`, `baseline_unverified_count: 0`
+  and `generation_mismatch_count: 0` (no F48-01 closure claim).
+- **Closure boundary:** closes **`Isolation F24-01`** for the planning record
+  and reviewer crash only. Historical `Isolation F14-01` (`56d20530`),
+  `Isolation 15` (`0b9e4510`), `Isolation 16` (`83b457ef`) and `Isolation
+  F16-01` stay failed/unqualified, and `df9dbad7` stays failed (`161` positives,
+  `41` drops, D-142 qualification not established) in its D-098 archive.
 
 ## Isolation 26 (#480): offline assist.py bounded retry and D-162 reach audit
 
@@ -166,93 +200,102 @@ returns `None` when the key is present with value `null`.
 `1d67b3ec4f4cc34a801daa84fb04084a8f44386c`, roadmap row
 `36b4c632edeed91a7c0a55e936a031340b01e0fd`) and the
 [frozen dated note](../../tests/handover/testdata/history/follow-up-48/docs_e2e_at_isolation_followup26-2026-11-04.md.txt)
-answer follow-up 47's routed hand-off (`"The assist.py retry is routed to
+answer follow-up 47's routed hand-off (`"The assist.py:22 retry is routed to
 isolation after follow-up 25"`, originally identified by devstack 36 #476's
-D-162 consumer audit). Scope is **offline only**: no netlab, no Docker and no
-live acceptance run (`docs/e2e/at/isolation/history/follow-up-26-offline/gates.json`
-and `static-checks.json`).
+D-162 consumer audit). Scope is **offline only**: no Docker, no lab, no stack,
+no assembled run and no reservation; the assist was never run live
+(`docs/e2e/at/isolation/history/follow-up-26-validation/gates.json` and
+`docs/e2e/at/isolation/history/follow-up-26-validation/static-checks.json`).
 
-**Bounded `If-Match` retry and read-back in `tests/e2e/at/isolation/assist.py`
-and `tests/e2e/at/isolation/driver.go.txt`:**
-- `tests/e2e/at/isolation/assist.py` replaces the single `GET`/`PATCH` in
-  `patch_capacity()` with bounded retry matching `Stack.WriteNode`: up to
-  **`MAX_NODE_WRITE_ATTEMPTS = 8`** attempts with a stable `Idempotency-Key`
-  (`f"iso-assist-cap-{uuid.uuid4()}"`) and unchanged body (`{"capacity":
-  {"down_bps": "50000000", "up_bps": "50000000"}}`). On `412`
-  (`RESOURCE_VERSION_CONFLICT` or `PRECONDITION_FAILED`), it re-reads `GET
-  /api/v1/admin/nodes/{id}` to refresh `ETag` (`If-Match`) and retries with the
-  same `Idempotency-Key` and body; on `429`, `502`, `503`, `504` or
-  `urllib.error.URLError`, it sleeps `Retry-After` (or `50 ms * attempt`) and
-  retries; on `200`/`202`, if an `Operation` receipt is returned (`status ==
-  202` or `"steps"` in body), it polls `GET /api/v1/admin/operations/{id}`
-  until `status == "succeeded"` AND requires `GET /api/v1/admin/nodes/{id}`
-  read-back (`node_capacity_matches`) before reporting `"api_ok": bool(op_ok and
-  readback_ok)` alongside `"attempts": attempts`.
-- `tests/e2e/at/isolation/driver.go.txt` (`writeNode` / `nodeFieldsMatch` and
-  `TestAT13_Driver` / `TestAT12_Driver`): `writeNode` requires both operation
-  completion and `nodeFieldsMatch` read-back (`capacity.down_bps` /
-  `capacity.up_bps`, `classification`, `internet_egress_verified`) before
-  returning, and `TestAT13_Driver` checks `assist["api_ok"] == true` before
-  polling node recovery while keeping the `AT13` step classified as
-  `"assisted"`.
+**Bounded `If-Match` retry and receipt retention in
+`tests/e2e/at/isolation/assist.go.txt`, `tests/e2e/at/isolation/assist.py` and
+`tests/e2e/at/isolation/driver.py`:**
+- The Go source formerly embedded inline in `tests/e2e/at/isolation/assist.py`
+  now lives in `tests/e2e/at/isolation/assist.go.txt`, overlaid into `./tests/e2e`
+  by `tests/e2e/at/isolation/assist.py` and by `tests/e2e/at/isolation/driver.py`
+  in `lint`, `build` and `test-assist` modes (`mk/at-isolation.mk`).
+- `isolationAssist` (`tests/e2e/at/isolation/assist.go.txt`) performs the initial
+  `GET /api/v1/admin/nodes/{id}` to read the starting `ETag`, then calls the
+  unchanged shared `admin.writeNode` helper (`tests/e2e/node_write.go`,
+  `nodeWriteAttempts = 3`, `nodeWriteTimeout = 10 * time.Second`, private HTTP/1
+  transport, one `Idempotency-Key` and one body across attempts, retrying only
+  on exact `412 RESOURCE_VERSION_CONFLICT` after a `GET` reread) with
+  `nodeFieldsMatch(capacity)` on the unchanged capacity payload (`down_bps:
+  208000000`, `up_bps: 200000000`, `member_down_bps_cap: 100000000`,
+  `member_up_bps_cap: 100000000`) and `[]int{202}`.
+- The evidence retains `node_write: write.Receipt` (with every attempt and
+  reread) and sets `"api_ok": write.accepted(202)` (`true` only when the command
+  is accepted with `202` or a `412` reread proves all four desired capacity
+  fields are already intended, whereas previously `api_ok` was `err == nil` and
+  therefore `true` even on `412` or `500`), while keeping `"assisted": true`,
+  the action text and the address/route restoration unchanged (`api_ok` is
+  command acceptance, never an observed-state completion claim).
 - **Offline proof (`TestAPI01_IsolationAssist` in
-  `tests/e2e/at/isolation/assist_test.go`, committed as `assist.go.txt` and
-  copied during `TestCommittedEvidence` via `evidence_test.go`):** exercises
-  **five fake-server cases** against `assist.py` without Docker:
-  1. `412_then_202_waits_for_operation_and_readback` (three `412` conflicts
-     with advancing `ETag`s `"1"`..`"4"` followed by `202`, `running` ->
-     `succeeded` operation and stale -> matching node capacity read-back: `4`
-     attempts, stable `Idempotency-Key` and body across all four `PATCH` calls,
-     `api_ok: true`);
-  2. `429_and_503_retry_then_200_readback` (`429` with `Retry-After: 0`, `503`,
-     then `200`: `3` attempts, `api_ok: true`);
-  3. `non_retryable_412_code_stops_immediately` (`412 STATE_CONFLICT` stops on
-     attempt `1`, `api_ok: false`);
-  4. `operation_202_without_readback_stays_false` (`202` with `succeeded`
-     operation while node capacity remains `"0"` returns `api_ok: false`);
-  5. `ast_no_raw_if_match_bypass` (AST scan of `tests/e2e/at/isolation/assist.py`
-     and `driver.go.txt` confirming `If-Match` appears only inside
-     `patch_capacity` and `writeNode`).
+  `tests/e2e/at/isolation/assist_offline_test.go.txt` and
+  `TestAPI01_AssistNodeWriteUsesSharedHelper` in
+  `tests/e2e/at/isolation/driver_writes_test.go`, pinned in
+  `docs/e2e/at/isolation/history/follow-up-26-validation/assist.log.txt`):**
+  1. `accepted`: direct `202` after initial `GET` (`1` write attempt,
+     `outcome: "accepted"`, `status: "pass"`, `api_ok: true`);
+  2. `conflict_then_accepted`: initial `412 RESOURCE_VERSION_CONFLICT` with
+     `If-Match: "1"`, `GET` reread returning `ETag: "2"` with partial capacity
+     (`Intended: false`), then retry `PATCH` with `If-Match: "2"` returning `202`
+     (`2` write attempts, identical `Idempotency-Key` and `BodySHA256`,
+     `outcome: "accepted"`, `status: "pass"`, `api_ok: true`);
+  3. `non_conflict`: `500 INTERNAL_ERROR` stops after `1` attempt with no reread
+     or retry (`outcome: "non_conflict_response"`, `status: "blocked"`,
+     `api_ok: false`);
+  4. `wrong_412_code`: `412 PRECONDITION_FAILED` stops after `1` attempt with no
+     reread or retry (`outcome: "non_conflict_response"`, `status: "blocked"`,
+     `api_ok: false`);
+  5. `already_intended`: `412 RESOURCE_VERSION_CONFLICT` followed by `GET`
+     reread returning all four desired capacity fields (`Intended: true`) stops
+     after `1` write attempt with `http_status: 412`, `outcome:
+     "already_intended"`, `status: "pass"` and `api_ok: true`;
+  6. `TestAPI01_AssistNodeWriteUsesSharedHelper` (`driver_writes_test.go`) runs
+     `nodeWriteBypasses` over `assist.go.txt` (`writes == 1`, `len(bypasses) ==
+     0`).
 
 **`D-162` config and consumer reach audit:**
-- Audited all **four lab node-agent configs**:
-  1. `deploy/devstack/configs/node-agent.json` (`fvpn-node-1` prepared config):
-     `observation_seconds: 5` under D-162, while
-     `tests/e2e/at/isolation/run.py:169-190` (`tighten_agent_cadence`) rewrites
-     the main runtime container's `/var/lib/vpn-node/agent-run.json` to
-     **`observation_seconds: 1`** (`poll_seconds: 1`, `heartbeat_seconds: 1`,
-     `usage_flush_seconds: 1`);
-  2. `deploy/devstack/configs/node-agent-2.json` (`fvpn-node-2` installer
-     config): already **`observation_seconds: 5`** (`poll_seconds: 5`,
-     `heartbeat_seconds: 5`);
-  3. `tests/e2e/at/isolation/run.py:258` (`prepare_boot_release`,
-     `/var/lib/vpn-node/boot-release/agent-config.json`): copies
-     `/var/lib/vpn-node/agent-run.json` after `tighten_agent_cadence()`,
-     inheriting **`observation_seconds: 1`**;
-  4. `tests/e2e/at/isolation/run.py:678` (`prepare_clone_config`,
-     `/var/lib/vpn-node/clone/agent-run.json` for `fvpn-clone-2`): copies
-     `/var/lib/vpn-node/agent-run.json` after `tighten_agent_cadence()`,
-     inheriting **`observation_seconds: 1`**.
-- Audited all consumer suites (`tests/e2e/at/isolation`,
-  `tests/e2e/at/enrollment`, `tests/e2e/at/members`, `tests/e2e/at/secops`,
-  `tests/e2e/at/updates`, `tests/e2e/at/usage`, `tests/e2e`): enrollment uses
-  `5 s`, isolation runtime uses `1 s`, and **zero check changes** were needed
-  across any suite.
-- **Clone receiver port wiring routed to `w3-devstack-e2e`:**
-  `deploy/devstack/docker-compose.yml:273` configures `fvpn-clone-2`
-  (`fvpn-resolver-sync`) with `FVPN_RESOLVER_SYNC_LISTEN: ":9445"`, whereas
-  `internal/nodes/service.go:38` sets `DefaultCloneControlListenPort = 9444`,
-  causing central's `resolver_Reconcile` worker to dial
-  `https://fvpn-clone-2:9444/internal/v1/resolver/config` and receive `connect:
-  connection refused`. Existing `AT12` (`TestAT12_Driver`) tests D-072
-  cloned-identity quarantine and recovery and does not assert `DNS01` resolver
-  sync on `fvpn-clone-2`; routed as a non-blocking wiring request to
-  `w3-devstack-e2e`.
+- Audited every routed line (`tests/e2e/cmd/fvpn-e2e-nodeconfig/main.go:108,162`
+  and `tests/e2e/second_exit.go:63`) and every config written or inherited by
+  the isolation harness:
+  1. Source enrollment config (`/etc/vpn-node/agent-enroll.json` from
+     `tests/e2e/cmd/fvpn-e2e-nodeconfig/main.go:108`): carries `D-162`'s
+     `observation_seconds: 5` (enrollment only);
+  2. Main source runtime config (`/etc/vpn-node/agent-run.json`): initialized to
+     `5` by `fvpn-e2e-nodeconfig` (`main.go:162`) and overwritten before the
+     acceptance run by `configureObservation()`
+     (`tests/e2e/at/isolation/observer_main.go:88-93`) to
+     **`heartbeat_seconds: 1`, `poll_seconds: 1`, `observation_seconds: 1`**
+     (`1 s` before and after `D-162`);
+  3. Boot-release auxiliary config (`/etc/vpn-node/agent-boot-release.json` from
+     `tests/e2e/at/isolation/driver.go.txt:211-232`): copies
+     `/etc/vpn-node/agent-run.json` after `configureObservation()`, inheriting
+     **`1 s`**;
+  4. Cloned second-exit configs (`<state>/node-clone/etc/agent-enroll.json` and
+     `agent-run.json` from `tests/e2e/second_exit.go:45,59-83`): copy
+     `/etc/vpn-node/.` from the source container after `configureObservation()`
+     and rewrite only `datapath.snat`, so `node-clone`'s `agent-enroll.json`
+     keeps `5 s` and `node-clone`'s `agent-run.json` inherits **`1 s`**.
+- No coherent-window (`15 s` in `review_observations.py:72`), sample or incident
+  check changed.
+- **Clone receiver port wiring routed to `w3-devstack-e2e` (static concern):**
+  `tests/e2e/second_exit.go:59,72` copies the source container's
+  `/etc/vpn-node/agent-run.json` (`control_url: "https://127.0.0.1:9445"` set by
+  `tests/e2e/at/isolation/observer_main.go:95` where the source `observe-proxy`
+  listens on `:9445` and forwards to `127.0.0.1:9444`), whereas
+  `tests/e2e/second_exit.go:98,121,167` starts the original node image
+  (`deploy/devstack/Dockerfile.node:7`), whose `fvpn-e2e-nodeconfig` proxy
+  listens on `127.0.0.1:9444` (`tests/e2e/cmd/fvpn-e2e-nodeconfig/proxy.go:140`)
+  and does not start `observe-proxy` on `:9445`. Routed as a static concern to
+  `w3-devstack-e2e`, with no measured failure and no re-score.
 - **Session capacity interruption:** #480's PR body records that the first
-  `agy/gemini-4-argon-high` invocation stopped after three minutes on model
-  capacity before making any commit, and a resumed invocation on the same
-  branch completed the task in seven minutes (`3` commits, `10` owned files,
-  `+531/−46`).
+  `codex gpt-6-astra` session stopped at `12:05 EST` on `"Selected model is at
+  capacity"` while waiting for host admission to run its last gate after
+  completing its first three commits, and the resumed conversation (`12:07–12:54
+  EST`) ran the committed-evidence hygiene test and finalized its fourth commit
+  (`4` commits, `16` owned files, `+1,229/−25`).
 
 ## Members 24 (#481): D-098 archive, F22-D146 answered and observation records live
 
@@ -260,128 +303,121 @@ and `tests/e2e/at/isolation/driver.go.txt`:**
 `884565c8dd973c2d9b16082556a7a3d5c77387ea`, roadmap row
 `b921c75f180beb6c0051d585a86d6651b2c8d71a`) and the
 [frozen dated note](../../tests/handover/testdata/history/follow-up-48/docs_e2e_at_members_followup24-2026-11-04.md.txt)
-archive follow-up 23's run **6a25221b-5634-49ca-ab02-d9fb4ddbeac0** (measured
-source `94198d3974440413f76189f7e0bde449a3dde7f0`): all **145 files** are
-copied byte-identically under `docs/e2e/at/members/history/follow-up-23/` with
-manifest `docs/e2e/at/members/history/follow-up-23/archive.json` and verified
-by `TestD098_Followup23ArchiveIntegrity`
-(`tests/e2e/at/members/d146_live_test.go`).
+archive follow-up 23's run **6a25221b-1dcf-4f4d-b866-cd04f57f58f6** (measured
+source `c148cf34`): all **145 regular root records** are copied byte-identically
+under `docs/e2e/at/members/history/follow-up-23/` with
+`docs/e2e/at/members/history/follow-up-23/INDEX.md` and
+`docs/e2e/at/members/history/follow-up-23/SHA256SUMS`, verified by
+`TestD098_Followup23Archive` (`tests/e2e/at/members/archive_f24_test.go`).
 
-**Allowlisted observation record parser and distinct native-row exports:**
-- Note on file naming: #481's PR summary prose refers to the parser as
-  `tests/e2e/at/members/observation_records.go`, while the committed tree
-  implements the parser in `tests/e2e/at/members/observation_records.py`,
-  invoked by `tests/e2e/at/members/path_evidence_live_test.go`
-  (`writeFollowup24Evidence`) and tested by
-  `tests/e2e/at/members/observation_records_test.go`
-  (`TestF24_ObservationRecordParserAndWindowJoin`,
-  `TestF24_ClosedRecoveryObservationTraceJoin`) and
-  `tests/e2e/at/members/observation_records_test.py`.
-- The parser enforces strict key allowlists (`ENQUEUE_ALLOWLIST` and
-  `SUBMISSION_ALLOWLIST`), finite enum sets (`DUE_REASONS`, `OUTCOMES`,
-  `TRANSPORT_ERROR_CLASSES`) and `FORBIDDEN_SUBSTRINGS` (`authorization`,
-  `bearer`, `private key`, `secret`, `token`, `https://`, `http://`,
-  `/api/v1/`), and exports distinct per-row files
-  `F24-native-row-<idx>-node-observations.json` and
-  `F24-native-row-<idx>-node-agent.log` across all nine native MTU rows (`0`
-  overwritten native-row exports).
+**Allowlisted observation record parser (`tests/e2e/at/members/observation_records.py`):**
+- Invoked by `(*nativeRowWindow).stop()` in
+  `tests/e2e/at/members/path_evidence_live_test.go` over each native MTU row's
+  `before` and `after` agent-log snapshots and stored `node_observations` rows,
+  and verified offline by
+  `TestD146_F24ObservationReceiptsAcceptedRetryAndOverwrite`
+  (`tests/e2e/at/members/observation_records_test.go`) running the three unit
+  tests in `tests/e2e/at/members/observation_records_test.py`
+  (`test_accepted_retry_and_half_open_window`,
+  `test_overwrite_retains_start_export_and_process_attempt_reset`,
+  `test_invalid_records_are_counted_without_leaking_fields`).
+- Enforces finite enum sets (`REASONS`, `OUTCOMES`, `CLASSES`), UUID and
+  timestamp validation, and SHA-256 `boot_id` hashing (`boot-<16 hex>`),
+  publishing only the documented metadata, line numbers and `line_sha256`
+  digests while retaining both `start_export` and `end_export` when log
+  replacement is detected. The serving query in
+  `tests/e2e/at/members/d146_live_test.go` (`d146Rules`) keeps its `FROM` /
+  `JOIN` / `WHERE` and `15 seconds` freshness bound unchanged, adding only
+  `read_at` and `observation_age_seconds` metadata
+  (`tests/handover/testdata/history/follow-up-48/docs_e2e_at_members_F24-predicate-audit.json`).
 
-**Assembled live run `dee8492f-a3fc-4053-ba21-98965d505f9a`** on base
+**Assembled live run `dee8492f-4a7e-4f3c-9063-3ab27f66dcec`** on baseline
 `df61fd68add1678729ef32ae1ef93719124035e3` (measured source
-`55588821923632e12c8d557577fc937705031797`):
-- **Overall case verdicts:** **3 `pass` (`AT01`, `AT02`, `AT08`), 7 `blocked`
-  (`AT03`, `AT04`, `AT05`, `AT09`, `AT19`, `AT20`, `AT21`), 0 `fail`**.
-- **Subcheck totals (`F24-subcheck-comparison.json`):** **708 `pass`, 6
-  `blocked`, 0 `fail`** (compared with follow-up 23 `6a25221b`'s **706 `pass`,
+`55588821291e335ef72fbd7fe1f5ff052dea92bf`, after the single permitted pre-check
+retry where attempt 1 stopped before `TestATMembers_Live` and before the first
+acceptance check when its wrapper missed `main` advancing during a `660 s`
+admission wait):
+- **Overall case verdicts (`docs_e2e_at_members_F24-results.json`):** **3 `pass`
+  (`AT02`, `AT03`, `AT08`), 7 `blocked` (`AT01`, `AT04`, `AT05`, `AT09`, `AT20`,
+  `AT21`, `AT22`), 0 `fail`**.
+- **Subcheck totals (`docs_e2e_at_members_F24-comparison.json`):** **708 `pass`,
+  6 `blocked`, 0 `fail`** (compared with follow-up 23 `6a25221b`'s **706 `pass`,
   8 `blocked`, 0 `fail`**). Only two subchecks changed across the entire suite:
-  **`AT09` index `44`** (`native_1280_dual_stack_ipv4_selected_echo`) and
-  **`AT09` index `46`**
-  (`native_1280_dual_stack_ipv4_selected_d151_qualification`), both moving from
-  **`blocked` to `pass`**. Overall `AT09` stays **`blocked`** (`67 pass / 6
-  blocked / 0 fail`) on its six unchanged non-1280 blocked subchecks (indices
-  `9`, `25`, `64`, `67`, `74`, `77`).
-- **`F22-D146` answered under `D-162` (`F24-observation-windows.json` and
-  `F24-serving-read-records.json`):**
-  - All three receive-only `1280` TCP clamp rows pass in the same run under
-    D-146 / D-151 / D-162:
-    1. Dual-stack IPv4-selected (`row 44` / `row 46`): `64,064` bytes (`64`
-       echoes), SYN MSS `1240 -> 1160`, SYN-ACK MSS `1460 -> 1160`, `72`
-       reverse data packets (`max 1132 <= 1280`), `0` PTB, serving-read age
+  **`AT09` index `44`** (`native dual MTU 1280 transfer`) and **`AT09` index
+  `46`** (`native dual MTU 1280 D-146 clamp evidence`), both moving from
+  **`blocked` to `pass`**. Overall `AT09` stays **`blocked`** (`72 pass / 6
+  blocked / 0 fail`, vs `70 / 8 / 0` in `6a25221b`).
+- **`F22-D146` answered under `D-162`
+  (`docs_e2e_at_members_F24-observation-config.json`,
+  `docs_e2e_at_members_F24-observation-windows.json` and
+  `docs_e2e_at_members_F24-serving-read-records.json`):**
+  - Prepared regular-node config carries `observation_seconds: 5` (`TEST ONLY`,
+    product default `30 s` unchanged).
+  - All three receive-only `1280` TCP clamp rows pass the unchanged `15 s`
+    serving query in the same run (`generation: "74"`, `due_reason:
+    "interval_elapsed"`, `outcome: "accepted"`, `http_status: 202`,
+    `attempt_numbers: [1]`, `attempt_scope: "process"`):
+    1. Dual-stack (`index 44` transfer / `index 46` clamp): observation age
        **`0.739651 s` (`0.740 s` `< 15 s`)** on report
        `cf8f027e-ca91-4510-b122-4ef916a3f03d` (`observed_at:
-       2026-11-04T17:04:49.556224Z`, `received_at:
-       2026-11-04T17:04:49.561257Z`, `checked_at:
-       2026-11-04T17:04:50.300908Z`);
-    2. IPv6-only (`row 49` / `row 51`): `64,064` bytes (`64` echoes), SYN MSS
-       `1240 -> 1160`, SYN-ACK MSS `1460 -> 1160`, `73` reverse data packets
-       (`max 1152 <= 1280`), `0` PTB, serving-read age **`6.849400 s` (`6.849
-       s` `< 15 s`)** on report `cb71f4f6-82be-41c0-87e1-3baad34824f5`
-       (`observed_at: 2026-11-04T17:05:00.168074Z`, `received_at:
-       2026-11-04T17:05:00.172786Z`, `checked_at:
-       2026-11-04T17:05:07.022186Z`);
-    3. IPv4-only (`row 57` / `row 59`): `64,064` bytes (`64` echoes), SYN MSS
-       `1240 -> 1160`, SYN-ACK MSS `1460 -> 1160`, `72` reverse data packets
-       (`max 1132 <= 1280`), `0` PTB, serving-read age **`1.441758 s` (`1.442
-       s` `< 15 s`)** on report `2965978d-e2ef-4d02-a309-c68e4d4ad42a`
-       (`observed_at: 2026-11-04T17:05:31.594790Z`, `received_at:
-       2026-11-04T17:05:31.599940Z`, `checked_at:
-       2026-11-04T17:05:33.041698Z`).
-    - All three serving-read reports are at generation `74`, `due_reason:
-      "interval_elapsed"`, `outcome: "accepted"`, `http_status: 202`,
-      `attempt_numbers: [1]`, `attempt_scope: "process"`.
-  - Across all **nine native MTU windows** (rows `35`, `38`, `41`, `44`, `49`,
-    `54`, `57`, `73`, `76`, each spanning ~`9.69 s` to `10.02 s` and containing
-    two reports): **18 stored `node_observations` rows**, **18 `observation
-    enqueued` records** (`18` `interval_elapsed`) and **18 `observation
-    submission` attempts** (`18` `accepted` on attempt `1` with `http_status:
-    202`), joined 1-to-1 by `report_id` with **zero missing joins, zero
-    in-window enqueues absent from storage, zero malformed receipts and zero
-    overwritten native-row exports**. Historical `3eb3960d` and `6a25221b`
-    blocked outcomes stay unchanged.
-- **`AT02` closed recovery (`F24-AT02-closed-recovery-trace.json`, producer
+       2026-11-04T17:38:08.587777293Z`, `received_at:
+       2026-11-04T17:38:08.591928Z`, `read_at: 2026-11-04T17:38:09.331579Z`);
+    2. IPv6 (`index 49` transfer / `index 51` clamp): observation age
+       **`6.849400 s` (`6.849 s` `< 15 s`)** on report
+       `cb71f4f6-82be-41c0-87e1-3baad34824f5` (`observed_at:
+       2026-11-04T17:38:28.600317972Z`, `received_at:
+       2026-11-04T17:38:28.604178Z`, `read_at: 2026-11-04T17:38:35.453578Z`);
+    3. IPv4 (`index 57` transfer / `index 59` clamp): observation age
+       **`1.441758 s` (`1.442 s` `< 15 s`)** on report
+       `2965978d-e2ef-4d02-a309-c68e4d4ad42a` (`observed_at:
+       2026-11-04T17:39:08.622666996Z`, `received_at:
+       2026-11-04T17:39:08.626668Z`, `read_at: 2026-11-04T17:39:10.068426Z`).
+  - Across all **nine native MTU windows** (indices `35`, `38`, `41`, `44`,
+    `49`, `54`, `57`, `73`, `76`, with stored report counts `2, 1, 3, 2, 2, 1,
+    3, 2, 2`): **18 stored `node_observations` rows**, **18 `observation
+    enqueued` records** and **18 `observation submission` attempts** (`18`
+    `accepted` on attempt `1`), joined 1-to-1 by `report_id` with **zero missing
+    joins, zero in-window enqueues absent from storage, zero malformed receipts
+    and zero overwritten native-row exports**. Historical `3eb3960d` and
+    `6a25221b` blocked outcomes stay unchanged.
+- **`AT02` closed recovery (`docs_e2e_at_members_F24-AT02-closed-recovery-trace.json`
+  and `docs_e2e_at_members_F24-AT02-recovery.json`, producer
   `9879ce69-34b6-4fa6-9165-cb4619bc9fde`):**
-  - Closed recovery Apply **`540`** (`17:01:44.573422289Z` to
-    `17:01:44.653708385Z`, generation `14`, provisional grant-less lease
-    `6c4b0ac0-78c2-43cb-ba09-7f4e524aa65a` with `members: 0`).
+  - Closed recovery Apply **`540`**, early renewal request **`545`** starting
+    **`66.406460 ms` (`66.4 ms`)** after closed Apply `540` ends, returning
+    populated generation-`14` lease **`4b88acc1-5ff1-4618-9f40-6f1a4f06064c`**
+    (`members: 1`), followed by verified serving Apply **`546`**, with **1
+    renewal request and 0 baseline writes** between closed Apply `540` and
+    serving Apply `546`.
   - Closed recovery report **`01a1a782-6b90-74a8-bcd6-c9a06650a2ec`**: enqueued
     at `17:01:44.722Z` (`observed_at: 2026-11-04T17:01:44.720284884Z`,
     **`due_reason: "closed_recovery_binding"`**,
     `AT02-interim-170257/node-agent.log` line `207`) and accepted on attempt
-    `1` at `17:01:44.730Z` (`started_at: 2026-11-04T17:01:44.723557482Z`,
-    `duration_ms: 6`, `http_status: 202`, `outcome: "accepted"`, line `208`;
-    **`8 ms` from enqueue to completion**).
-  - One early renewal request **`545`** at **`66,406,460 ns` (`66.406460 ms`,
-    `66.4 ms`)** after closed Apply `540` ends (`17:01:44.720114845Z` to
-    `17:01:44.862337870Z`, `renewal_start_interval_ns: 208629485` / `208.6
-    ms`), returning populated generation-`14` lease
-    **`4b88acc1-5ff1-4618-9f40-6f1a4f06064c`** (`members: 1`), followed by
-    verified serving Apply **`546`** (`17:01:44.862346251Z` to
-    `17:01:44.958669497Z`), with **1 renewal request and 0 baseline writes**
-    between closed Apply `540` and serving Apply `546`.
-  - Deny-all after closed Apply: **`187,308,830 ns` (`187.308830 ms`, `187.3
-    ms`)** with **`7` losses**; Apply plus wait (`540` start to `546` end):
-    **`304,961,112 ns` (`304.961112 ms`, `305.0 ms`)** with **`13` losses**.
-- **`If-Match` node writes (`F24-node-write-audit.json`):** **30 logical node
-  writes, 30 HTTP attempts, all first-attempt `202`, zero `412` conflicts**.
-- **`F48-01` log-overwrite coverage limit:** `tests/e2e/at/members/run.py`
-  starts `fvpn-agent` across three phases (`start_node_agent`,
-  `restart_node_agent_same_generation`, `run_update_drill`) with
-  `>/var/log/fvpn-agent.log 2>&1` truncation instead of `>>`. Root
-  `node-agent.log` therefore holds only the post-update-drill process (`PID
-  889`, `29` enqueues, `29` submissions), while
-  `AT02-interim-170257/node-agent.log` holds the initial process (`PID 330`,
-  `59` enqueues, `59` submissions). The `AT09` generation-`74` same-boot
-  restart window (`PID 773`) was overwritten by `run_update_drill` before final
-  log collection; its four post-restart observations (`eb748375`, `0eb3b034`,
-  `d0501b95`, `0a08d0e5`) are verified in `node-observations.json`, while the
-  `F48-01` pending-adoption heartbeat / watchdog interaction was not preserved
-  in the truncated log files.
+    `1` at `17:01:44.730Z` (`duration_ms: 6`, `http_status: 202`, `outcome:
+    "accepted"`, line `208`; **`8 ms` from enqueue to completion**).
+  - Deny-all after closed Apply: **`187.308830 ms` (`187.3 ms`)** with **`7`
+    losses**; Apply plus wait (`540` start to `546` end): **`304.961112 ms`
+    (`305.0 ms`)** with **`13` losses**.
+- **`AT09` restart, `If-Match` node writes and D-160/D-133
+  (`docs_e2e_at_members_F24-AT09-restart.json`,
+  `docs_e2e_at_members_F24-node-writes.json` and
+  `docs_e2e_at_members_F24-log-coverage.json`):** `AT09` index `25` stays
+  `blocked` (unexercised D-067 provisional path), index `26` passes at
+  generation `63` (serving after `5.986591953 s`, first counted byte after
+  `13.462104236 s`) and index `27` passes with no `TC_FOREIGN_FILTER` (`12`
+  retained post-restart reports vs `4` in `6a25221b`). **30 distinct node
+  writes, 30 attempts, all first-attempt `202`, 0 HTTP `412` conflicts**. Neither
+  `baseline_unverified` nor `GENERATION_MISMATCH` appears in retained logs (no
+  F48-01 closure claim given log overwrites across restarts). D-160 journals
+  **311 timed sections** with `0 s` in-section sleep; four teardown foreign
+  windows after acceptance ended (`17:41:05Z`) are recorded as confounded under
+  D-133 without intersecting any case.
 - **Attribution boundary:** `dee8492f` is the first members run combining D-162
-  (#476), agent-core 52 (#477) and isolation 25 (#478). The F22-D146
-  improvement is credited to D-162's 5 s lab observation cadence; AT02's closed
-  recovery reflects D-157 + #477's records without claiming a new timing
-  improvement over `6a25221b`; and AT01's passing initial transfer does not
-  close `F22-AT01` or `F11-01` under D-148.
+  (#476), agent-core 51 (#470), updater 26 (#471) and agent-core 52 (#477). The
+  F22-D146 cadence improvement is credited to D-162's `5 s` setting; other
+  timing, report-count or transfer differences are not assigned to individual
+  merges; and counted initial transfers on `AT01`/`AT08` do not close `F22-AT01`
+  or `F11-01` under D-148.
 
 ## Review r32 and Node workflow failures (agent-core 53 running)
 
@@ -428,8 +464,8 @@ submission`** in `node/agent/observation_log.go:18-100` and
    `journal.db` 1 s) without mutating any state observable by Central or later
    Steps.
 
-Because r32 found zero defects, its proof file `node/agent/review_r32_test.go`
-(**20,346 bytes**, SHA-256
+Because r32 found zero defects, its proof file (`review_r32_test.go` in
+`node/agent`, **20,346 bytes**, SHA-256
 `8625fecccc518a49c10551bbd63d26be2807dc60b558816855182cb5d7ad999a`,
 [frozen copy](../../tests/handover/testdata/history/follow-up-48/review-node_agent_review_r32_test.go.txt))
 remains on the review branch (`present_on_main: false`), with four top-level
@@ -482,9 +518,9 @@ Routed to **`w2-agent-core` follow-up 53**, running at the cutoff.
 **D-162** is updated with #480's config/consumer reach audit and #481's live
 15 s serving-read qualification (`0.740 s`, `6.849 s` and `1.442 s` on rows
 `46`, `51` and `59`), and **D-163** is updated with #478's live scheduled-mode
-qualification (`bd73d7a4`, `scheduled_verdict: "pass"`, `exit_code: 0`, sole
-listed `pure_stale_generation` mapped to `expected_not_exercised`). **The other
-64 rows are byte-identical** to #479.
+qualification (`bd73d7a4`, `status: "pass"`, `exit_code: 0`, sole listed
+`pure_stale_generation` mapped to `expected_not_exercised`). **The other 64
+rows are byte-identical** to #479.
 
 **138 findings rows: 6 updated, 2 added, 130 byte-identical** to #479.
 Added: **Node workflow agent test failures** (`OPEN — routed to w2-agent-core
@@ -506,21 +542,17 @@ is byte-identical. Changed owned documents have refreshed digest values only in
 ### Requests to orchestrator
 
 **2026-11-04 EST:** follow-up 47's requests are answered by **isolation 25
-#478**, **isolation 26 #480** (answering `tests/e2e/at/isolation/assist.py:22`),
-**members 24 #481** and **review r32** (`0` findings, `0` owner questions).
+#478**, **isolation 26 #480** (answering `tests/e2e/at/isolation/assist.py:22`
+via `tests/e2e/at/isolation/assist.go.txt`), **members 24 #481** and **review
+r32** (`0` findings, `0` owner questions).
 1. **Carry `w2-agent-core` follow-up 53** (running at cutoff, status only) for
    the `Node` workflow `node/agent` wall-clock and deadline sensitivity across
    runs `41782791081`, `41787173794`, `41794009264`, `41808885873` and
    `41871089749`.
-2. **Route `fvpn-clone-2` receiver port wiring (`:9445` vs `:9444`) to
-   `w3-devstack-e2e`:** align `deploy/devstack/docker-compose.yml`
-   (`FVPN_RESOLVER_SYNC_LISTEN: ":9445"` on `fvpn-clone-2`) and central's clone
-   endpoint port (`DefaultCloneControlListenPort = 9444` in
-   `internal/nodes/service.go`) if clone `DNS01` sync is later exercised.
-3. **Optional non-blocking log-append note for `w4-at-members`:** in
-   `tests/e2e/at/members/run.py`, `start_node_agent`,
-   `restart_node_agent_same_generation` and `run_update_drill` each truncate
-   `>/var/log/fvpn-agent.log 2>&1`, which overwrote the `AT09` generation-`74`
-   same-boot restart window (`PID 773`, `F48-01`) when `run_update_drill`
-   started `PID 889`. Appending (`>>`) or saving a per-phase log before
-   `run_update_drill` would preserve `PID 773`'s log records in future runs.
+2. **Route shared second-exit clone receiver wiring (`:9445` vs `:9444`) to
+   `w3-devstack-e2e` (static concern from #480):** `tests/e2e/second_exit.go:59,72`
+   copies the source container's `agent-run.json` (`control_url:
+   "https://127.0.0.1:9445"` set by `tests/e2e/at/isolation/observer_main.go:95`),
+   while `tests/e2e/second_exit.go:98,121,167` starts the original node image
+   (`deploy/devstack/Dockerfile.node:7`) whose helper proxy listens on
+   `127.0.0.1:9444` (`tests/e2e/cmd/fvpn-e2e-nodeconfig/proxy.go:140`).
