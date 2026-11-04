@@ -102,3 +102,9 @@ Use `.agent/tmp` for TMPDIR/GOTMPDIR, `go env GOCACHE`, Python `-B`, and a fresh
 ### Follow-up 20 recorded outcome
 
 Run `c52bea6c-cd91-4086-a779-656b01277dcc` on `037f4418`, 00:06:02.834855Z–00:32:12.735944Z on 2026-11-04 UTC (2026-11-03 EST), 1569.901 s, exit 2. No lab, no rerun. 26 pass / 2 blocked / 1 fail. Initial admission 0.035 s; no other-suite overlap sampled; final owned inventory zero. The collector failure did not stop the main driver before acceptance, so no rerun exception applied. Post-run recording fixes `4fc47dd1` have offline coverage only. [Full outcome, limits and handoffs](followup20-2026-11-03.md).
+
+## Follow-up 21 — 2026-11-03 EST (additive)
+
+Archive first: `8bd664bc`, 165 original root/support files. Commit M-1 and predeclare unchanged D-140/D-142 schedule: `fe2c68ec`. Run lane lint/test/build before the assembled invocation. Require `$FVPN_HOLD_SH` free before every make, Go test and Docker command; keep admission in a separate stream. Wait up to 120 minutes; no reservation. Record `vmstat 5 7`, baseline and `ps -eo pid,etimes,args | grep -E '[g]ates\.sh|[m]k/at-|[n]ode-test-netlab|[n]etlab-test'`; publish foreign processes only as pid, comm and ticks. Use disk scratch under `.agent/tmp`, Python `-B`, discovered GOCACHE and a fresh evidence directory.
+
+The single authorized `make -f mk/at-isolation.mk at-isolation` invocation is consumed: `7599576e-339c-49c9-8bf5-0f710818cbda`, **02:50:38.278643Z–03:17:20.956680Z on 2026-11-04 UTC**, lab included, source clean, **26 pass / 3 blocked / 0 fail**, exit 2. No pre-acceptance owned-harness abort occurred; no retry. Admission took 0.054 s; 54 overlap samples clear. Zero owned inventory. The three blocks are native platform, full continuous fault matrix and member-expiry lease-bound prerequisite. [Detailed results and qualification](followup21-2026-11-03.md). Final gate receipts are retained in `history/follow-up-21-validation/`.
