@@ -16877,6 +16877,28 @@ func TestHandover_Followup47Claims(t *testing.T) {
 				}
 			}
 		}
+		extract := func(text, name string) string {
+			t.Helper()
+			f := regexp.MustCompile(`(?ms)^func \(e \*Engine\) ` + regexp.QuoteMeta(name) + `\(.*?^}`).FindString(text)
+			if f == "" {
+				t.Fatal("missing frozen function", name)
+			}
+			return f
+		}
+		const recovery = "node/agent/recovery_renewal.go"
+		predicate := strings.NewReplacer(
+			"noteRecoveryReport(rep api.ObservationReport) {", "canBindRecoveryReport(rep api.ObservationReport) bool {",
+			"\treturn\n", "\treturn false\n",
+			"\tif internet && awaiting {\n\t\tr.reportID = rep.ReportId\n\t}", "\treturn internet && awaiting",
+		).Replace(extract(old[recovery], "noteRecoveryReport"))
+		if predicate != extract(code[recovery], "canBindRecoveryReport") {
+			t.Fatal("exact existing binding predicate")
+		}
+		for _, name := range []string{"recoveryRenewalEligible", "acceptRecoveryReport", "earlyRecoveryRenewal"} {
+			if extract(old[recovery], name) != extract(code[recovery], name) {
+				t.Fatal("unchanged renewal rule", name)
+			}
+		}
 		var list []struct{ Review, Item string }
 		if err := json.Unmarshal([]byte(code["tests/e2e/at/isolation/expected-not-exercised.json"]), &list); err != nil {
 			t.Fatal(err)
@@ -16981,12 +17003,14 @@ func TestHandover_Followup47Claims(t *testing.T) {
 				}
 			}
 		}
-		scope := source[strings.Index(source, "Attempt numbers start at 1"):strings.Index(source, "The outbox's", strings.Index(source, "Attempt numbers start at 1"))]
+		scope := strings.Split(strings.Split(source, "Attempt numbers start at 1")[1], "The outbox's")[0]
+		scope = "Attempt numbers start at 1" + scope
 		if !strings.Contains(op, "“"+strings.Join(strings.Fields(scope), " ")+"”") {
 			t.Fatal("exact attempt scope")
 		}
 		note := readOwnedDoc(t, root, frozen+"docs_node_followup52-2026-11-04.md.txt")
-		secret := note[strings.Index(note, "These receipts contain no report body"):strings.Index(note, "A process killed", strings.Index(note, "These receipts contain no report body"))]
+		secret := strings.Split(strings.Split(note, "These receipts contain no report body")[1], "A process killed")[0]
+		secret = "These receipts contain no report body" + secret
 		if !strings.Contains(op, "“"+strings.Join(strings.Fields(secret), " ")+"”") {
 			t.Fatal("exact secrecy claim")
 		}
