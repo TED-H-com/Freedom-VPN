@@ -1,0 +1,37 @@
+{
+  "id": "worker-restart",
+  "title": "Worker process crash restarts and claims events",
+  "spec": [
+    "§17"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "readyz",
+      "detail": "true"
+    },
+    {
+      "name": "deliveries_after_kill",
+      "detail": "1"
+    },
+    {
+      "name": "claims_after_kill",
+      "detail": "0"
+    },
+    {
+      "name": "within_30s",
+      "detail": "true"
+    },
+    {
+      "name": "note",
+      "detail": "SIGKILL of pid 1; /readyz on 127.0.0.1:9092; a post-kill delivery or a new claim"
+    },
+    {
+      "name": "timed_section",
+      "detail": "worker-restart"
+    }
+  ],
+  "at": "2026-11-04T14:36:20Z",
+  "run_id": "c17589fa-7e48-4dee-b574-7e29aca1effa",
+  "source_commit": "f6edbda9909268106f7a8e08c26aab8254ae1481"
+}

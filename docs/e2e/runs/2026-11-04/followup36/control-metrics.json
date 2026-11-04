@@ -1,0 +1,33 @@
+{
+  "id": "control-metrics",
+  "title": "Control loopback metrics listener",
+  "spec": [
+    "§17.1"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "config_metrics_address",
+      "detail": "127.0.0.1:9091"
+    },
+    {
+      "name": "compose_override",
+      "detail": "none; worker alone overrides FVPN_METRICS_ADDRESS=:9092"
+    },
+    {
+      "name": "response",
+      "detail": "HTTP/1.1 200 OK"
+    },
+    {
+      "name": "metric_families",
+      "detail": "1"
+    },
+    {
+      "name": "timed_section",
+      "detail": "control-metrics"
+    }
+  ],
+  "at": "2026-11-04T14:33:48Z",
+  "run_id": "c17589fa-7e48-4dee-b574-7e29aca1effa",
+  "source_commit": "f6edbda9909268106f7a8e08c26aab8254ae1481"
+}
