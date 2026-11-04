@@ -71,7 +71,10 @@ func (e *Engine) observe(ctx context.Context) error {
 		e.storageOK = false
 		return err
 	}
+	dueReason := e.observationDueReason(state, e.canBindRecoveryReport(rep))
 	e.noteRecoveryReport(rep)
+	e.log.Info(observationEnqueued, "report_id", rep.ReportId.String(),
+		"observed_at", rep.ObservedAt.UTC().Format(time.RFC3339Nano), "due_reason", dueReason)
 	e.lastObs = wall
 	e.lastServing = e.serving
 	e.lastObservationState = state
@@ -307,6 +310,14 @@ func (e *Engine) flush(ctx context.Context) error {
 		e.storageOK = false
 		return err
 	}
+	if e.observationAttempts == nil {
+		e.observationAttempts = make(map[uuid.UUID]uint64)
+	}
+	for id := range e.observationAttempts {
+		if !slices.ContainsFunc(items, func(item agentstore.OutboxItem) bool { return item.ReportID == id }) {
+			delete(e.observationAttempts, id)
+		}
+	}
 	e.outboxFull = len(items) >= 32
 	for _, item := range items {
 		if err := controlContext(ctx).Err(); err != nil {
@@ -327,42 +338,9 @@ func (e *Engine) flush(ctx context.Context) error {
 			e.storageOK = false
 			return err
 		}
-		accepted, err := e.client.Observe(controlContext(ctx), item.ReportID, rep)
-		if err == nil {
-			e.observationFailures, e.observationRetryAt = 0, 0
-			if accepted.IdentityFrozen != nil && *accepted.IdentityFrozen {
-				e.freezeIdentity(ctx)
-				if !e.freezeDurable {
-					return nil
-				}
-			}
-			e.acceptRecoveryReport(rep, accepted)
-			if serr := e.store.MarkAccepted(ctx, item.ReportID, e.clock.Wall().UTC()); serr != nil {
-				e.storageOK = false
-			}
-			continue
-		}
-		if isRevoked(err) {
-			e.markRevoked(ctx)
+		if e.submitObservation(ctx, item.ReportID, rep) {
 			return nil
 		}
-		var se *controlclient.StatusError
-		if errors.As(err, &se) && (se.Status == 409 || se.Status == 422) {
-			_ = e.store.MarkConflict(ctx, item.ReportID)
-			continue
-		}
-		_ = e.store.BumpAttempt(ctx, item.ReportID, safeErr(err))
-		e.observationFailures++
-		wait := time.Second
-		for i := 1; i < e.observationFailures && wait < 30*time.Second; i++ {
-			wait *= 2
-		}
-		wait = min(time.Minute, wait+observationJitter(wait))
-		if se != nil {
-			wait = max(wait, se.RetryAfter)
-		}
-		e.observationRetryAt = e.clock.Mono() + wait
-		return nil // One failed request per slot, even with a full outbox.
 	}
 	remaining, err := e.store.Pending(ctx)
 	if err != nil {
@@ -375,6 +353,55 @@ func (e *Engine) flush(ctx context.Context) error {
 		}
 	}
 	return nil
+}
+
+// submitObservation returns whether flush must stop after this one request.
+func (e *Engine) submitObservation(ctx context.Context, id uuid.UUID, rep api.ObservationReport) bool {
+	// The durable attempts field is an uncertainty marker: a retryable failure
+	// increments it twice. Keep diagnostics separate without changing the outbox.
+	e.observationAttempts[id]++
+	attempt := e.observationAttempts[id]
+	started, timer := e.clock.Wall().UTC(), time.Now()
+	accepted, err := e.client.Observe(controlContext(ctx), id, rep)
+	elapsed := time.Since(timer)
+	var retryAt time.Time
+	defer func() { e.logObservationSubmission(id, attempt, started, elapsed, accepted, err, retryAt) }()
+	if err == nil {
+		e.observationFailures, e.observationRetryAt = 0, 0
+		if accepted.IdentityFrozen != nil && *accepted.IdentityFrozen {
+			e.freezeIdentity(ctx)
+			if !e.freezeDurable {
+				return true
+			}
+		}
+		e.acceptRecoveryReport(rep, accepted)
+		if serr := e.store.MarkAccepted(ctx, id, e.clock.Wall().UTC()); serr != nil {
+			e.storageOK = false
+		}
+		return false
+	}
+	if isRevoked(err) {
+		e.markRevoked(ctx)
+		return true
+	}
+	var se *controlclient.StatusError
+	if errors.As(err, &se) && (se.Status == 409 || se.Status == 422) {
+		_ = e.store.MarkConflict(ctx, id)
+		return false
+	}
+	_ = e.store.BumpAttempt(ctx, id, safeErr(err))
+	e.observationFailures++
+	wait := time.Second
+	for i := 1; i < e.observationFailures && wait < 30*time.Second; i++ {
+		wait *= 2
+	}
+	wait = min(time.Minute, wait+observationJitter(wait))
+	if se != nil {
+		wait = max(wait, se.RetryAfter)
+	}
+	e.observationRetryAt = e.clock.Mono() + wait
+	retryAt = e.clock.Wall().Add(wait)
+	return true // One failed request per slot, even with a full outbox.
 }
 
 func observationJitter(wait time.Duration) time.Duration {

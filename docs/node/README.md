@@ -152,6 +152,56 @@ IPv6 is always blocked. A null capacity blocks forwarding. `test_exempt_v4` is a
 
 Heartbeats default to 10 seconds. Observation reports default to 30 seconds (§16.5). Reports carry the applied generation, the baseline and serving checks, `safety_status`, `data_health`, the running release, and failure reasons. `data_health` is the probe result: `unknown` only before the first run, then `healthy`, `degraded`, or `failed`. `netbird.peer_id` stays null. NetBird `status --json` has no management peer id, and the agent does not invent one from the public key. Reports are queued in the local outbox and resent until the center accepts them. HTTP 202 means accepted, not verified. 409 and 422 are conflicts and are not retried. 429 and 5xx stay pending.
 
+The agent emits two stable structured log records in its existing slog format
+(text in the CLI; fields are also available to JSON handlers):
+
+| `msg` | When | Fields |
+| --- | --- | --- |
+| `observation enqueued` | Once after a report is durably queued | `report_id`, `observed_at` (UTC RFC 3339 with fractional seconds when present), `due_reason` |
+| `observation submission` | Once when each individual submission call finishes | `report_ids`, matching `attempt_numbers`, `attempt_scope`, `process_id`, `boot_id`, `started_at`, `duration_ms`, `outcome`, `accepted_report_ids`, `http_status`, `error_code`, `transport_error_class`, `next_retry_at`, `retry_after_ms` |
+
+`due_reason` is `closed_recovery_binding`, `first_report`, `serving_changed`,
+`state_changed`, or `interval_elapsed`, in that precedence. `first_report` means
+the first queued state in this process. `state_changed` also covers an explicit
+scheduler reset after an enforcement transition. A recovery reason means that
+this new report satisfies the existing binding rules; it does not mean that
+Central accepted it or that forwarding opened.
+
+Each submission currently sends one report, so the ID and attempt arrays each
+have one element. Attempt numbers start at 1 **per report per process**, increment
+once for each submission call, and reset on process restart. Correlate them with
+`boot_id` and `process_id`; correlate queueing and Central acceptance by report
+ID across restarts. `attempt_scope=process` makes that scope explicit. The outbox's
+existing durable uncertainty counter is not a submission count (a retryable
+failure writes it twice) and is unchanged. The in-memory diagnostic counts retain
+only pending IDs.
+
+`started_at` and non-null `next_retry_at` are UTC RFC 3339 timestamps. Duration
+uses elapsed monotonic time and is truncated to milliseconds. `next_retry_at`
+is the wall-clock projection of the existing monotonic backoff deadline at the
+end of the call, not a promise that transport will run at exactly that time.
+It is null when this response schedules no retry. `retry_after_ms` is the parsed
+Retry-After duration in milliseconds (0 when absent); existing jitter/backoff
+and Retry-After precedence are unchanged.
+
+`outcome` is `accepted`, `rejected` for an HTTP failure, `transport_error`, or
+`timeout`. A decoded 202 with `accepted=false` is logged as `unconfirmed_response`;
+the existing response handling is unchanged. `accepted_report_ids` contains the
+ID the response actually accepted. `http_status` is 202 for a decoded acceptance
+response, the rejection status for a status error, or 0 when unavailable.
+`error_code` is Central's recognized API error code, an empty string if absent,
+or `unknown` for an unrecognized value. Transport classes are finite tokens:
+`deadline_exceeded`, `network_timeout`, `canceled`, `connection_refused`,
+`connection_reset`, `connection_closed`, `dns`, `network`, or `other`.
+
+These receipts contain no report body, URL, response error message, credential,
+token or key. A deduplicated enqueue, idle Step, or waiting retry slot emits
+neither record. A process killed during a submission may have no completion
+record; the durable outbox retains its existing uncertainty/retry semantics.
+An enqueue receipt distinguishes scheduling from transport. Compare its observed
+time with the submission start, outcome and next retry time to explain a late
+observation. An accepted submission is still not proof of applied verification.
+
 Each report calls `updatejournal.Snapshot` on `updater_journal` at report time. The call is read-only, does not create or migrate the database, and stops at the caller's deadline or one second. The `update` object is always present. Its members are `generation`, `job_id`, `stage`, and `state`. A null `generation` means no update state: the file is missing, the schema cannot be read, the snapshot missed its deadline, or the database has no job. That is not generation 0, and the next report does not reuse the previous snapshot. A recorded job fills those members from that snapshot. `locally_succeeded` is stage `report` and state `succeeded`. A destructive rollback is stage `report` and state `rolled_back`, and the restored release is the top-level `current_release_id`. Journal stage `recovery_required` is reported as stage `rollback` and state `failed`, which is the API vocabulary the snapshot already uses; `recovery_required` is not an observation state. `current_release_id` and `last_good_release_id` stay top-level fields. `current_release_id` defaults to the running binary's configured release, including when the journal pointer is empty or invalid. A journal pointer overrides it only when the job ID is a valid nonzero UUID and the transaction reached `locally_succeeded` or `rolled_back`. Claimed, in-progress, and recovery-required jobs cannot override it. With a recorded generation, `last_good_release_id` still comes from the journal pointer (null if invalid); otherwise it is the configured release only after a generation has been applied. A snapshot error is logged once each time its reason class changes (`missing`, `deadline`, `canceled`, `unsupported_schema`, `not_a_file`, `unreadable`). The line does not include the path or the journal contents. The observation is still queued.
 
 The `usage` object is live outbox status, read from the open usage store when the report is built (§10.5, §10.6, §10.8). The read is bounded to about 2 seconds. Before the store is open, and when the read fails, the report keeps the zero shape: null `ledger_epoch`, `meter_epoch_id`, `blocked_seq` and `oldest_unacked_at`, and `"0"` or 0 for the other fields. A read that reaches the time limit sends the last successful status from this process. Neither outcome adds an `errors[]` entry, and neither changes `safety_status`, `provisioning_state`, or member forwarding. The agent logs `usage status unavailable: <reason>` or `usage status available` once when that state changes.
