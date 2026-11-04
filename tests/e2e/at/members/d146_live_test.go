@@ -69,7 +69,7 @@ func (l *live) d146Rules(device uuid.UUID) map[string]any {
 	}
 	out["pairs"], out["available"] = pairs, true
 	var observation []byte
-	err = l.pool.QueryRow(l.ctx, `SELECT jsonb_build_object('report_id',o.report_id,'received_at',o.received_at,'generation',o.applied_generation::text,'forwarding',o.report_payload->'member_forwarding_enabled','reasons',o.report_payload->'forwarding_block_reasons') FROM nodes n JOIN LATERAL (SELECT * FROM node_observations WHERE node_id=n.id AND incarnation_id=n.current_incarnation_id ORDER BY received_at DESC LIMIT 1) o ON true WHERE n.id=$1 AND n.desired_config_generation=n.applied_config_generation AND o.applied_generation=n.applied_config_generation AND o.applied_generation=$2 AND o.received_at>clock_timestamp()-interval '15 seconds' AND o.report_payload->>'member_forwarding_enabled'='true' AND o.report_payload->'forwarding_block_reasons'='[]'::jsonb`, l.node, int64(state.Generation)).Scan(&observation)
+	err = l.pool.QueryRow(l.ctx, `SELECT jsonb_build_object('read_at',clock_timestamp(),'observation_age_seconds',EXTRACT(EPOCH FROM clock_timestamp()-o.received_at)::text,'report_id',o.report_id,'received_at',o.received_at,'generation',o.applied_generation::text,'forwarding',o.report_payload->'member_forwarding_enabled','reasons',o.report_payload->'forwarding_block_reasons') FROM nodes n JOIN LATERAL (SELECT * FROM node_observations WHERE node_id=n.id AND incarnation_id=n.current_incarnation_id ORDER BY received_at DESC LIMIT 1) o ON true WHERE n.id=$1 AND n.desired_config_generation=n.applied_config_generation AND o.applied_generation=n.applied_config_generation AND o.applied_generation=$2 AND o.received_at>clock_timestamp()-interval '15 seconds' AND o.report_payload->>'member_forwarding_enabled'='true' AND o.report_payload->'forwarding_block_reasons'='[]'::jsonb`, l.node, int64(state.Generation)).Scan(&observation)
 	out["serving_read_ok"] = err == nil
 	if err == nil {
 		out["serving"] = true
@@ -145,10 +145,11 @@ func (l *live) d146ServingDiagnostic(kernel string) map[string]any {
 }
 
 // F22-D146: read all stored observations in the original half-open row window,
-// without a current-incarnation or success filter. Payload fields never escape.
+// without a current-incarnation or success filter. Only timing and serving state
+// metadata are exported; no peer, error, network or secret-bearing payload.
 // This diagnostic cannot satisfy or replace the unchanged serving query above.
 func (l *live) d146ObservationWindow(start, end time.Time) ([]byte, error) {
 	var raw []byte
-	err := l.pool.QueryRow(l.ctx, `SELECT COALESCE(jsonb_agg(jsonb_build_object('received_at',received_at,'report_id',report_id,'generation',applied_generation::text,'incarnation',incarnation_id) ORDER BY received_at,report_id),'[]'::jsonb) FROM node_observations WHERE node_id=$1 AND received_at >= $2 AND received_at < $3`, l.node, start, end).Scan(&raw)
+	err := l.pool.QueryRow(l.ctx, `SELECT COALESCE(jsonb_agg(jsonb_build_object('received_at',received_at,'report_id',report_id,'observed_at',report_payload->'observed_at','member_forwarding_enabled',report_payload->'member_forwarding_enabled','forwarding_block_reasons',report_payload->'forwarding_block_reasons','generation',applied_generation::text,'incarnation',incarnation_id) ORDER BY received_at,report_id),'[]'::jsonb) FROM node_observations WHERE node_id=$1 AND received_at >= $2 AND received_at < $3`, l.node, start, end).Scan(&raw)
 	return raw, err
 }
