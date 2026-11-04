@@ -1,0 +1,1222 @@
+{
+  "schema_version": 1,
+  "follow_up": 10,
+  "source_revision": "319c5259344347e7eef50eb5becb2645785d1047",
+  "application_base": "d9e28f8",
+  "run_id": "0e8ff9a4-4fa1-4154-ae35-847a5be4d985",
+  "driver_run_id": "a6be6802-cdc6-4990-9c66-149688d7221c",
+  "started_at": "2026-10-31T04:00:29Z",
+  "finished_at": "2026-10-31T04:23:47Z",
+  "hardware": "shared development host; not candidate hardware",
+  "probe_source_sha256": "d478487184650ec8b801b722d6db12c6ce2494223498d139134bb9fe1ed4eace",
+  "record_renderer_sha256": "86cc329815fb8058644abfde06223a32965e08ebdcd73462bb012cbe592641f0",
+  "commands": [
+    [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-up"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "45m",
+      "-run",
+      "^TestAT30_Followup10_LiveRestoreReconcile$",
+      "./tests/e2e/at/secops"
+    ],
+    [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
+    ]
+  ],
+  "image_digests": [
+    {
+      "image_id": "sha256:76939669bdc24a1b812738e9728c318949960e1dd95f50bd295dd0e2cb67097e",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:ae7f55b9525a90540090ed6646dfd2b6d714762ce715abec68bbaf9cf0296cee",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:49365eb5d9192947a051875662445260b10aebffec789196c2b6503a3dadffe2",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:c27011f7c4d4855da081e4feadea305f9b40a7c6d265c6480fa00beb13ba2c68",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:49b2570e2ce908352bb435cae9021c1df089c8cef31f085b41cb5568737e5a5f",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:2be0309c0165d0e651cc5c17f962b5d89995dda7a4aca5ac017c4cd70661cb9a",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "node-netns"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member"
+    },
+    {
+      "image_id": "sha256:bda61af4f65bce644ac2f538c21405291d29d90b5148c2081a2ec77c1d76ad3b",
+      "service": "restore-live"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u20-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u20-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u20-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u19-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u19-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u19-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u18-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u18-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u18-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u17-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u17-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u17-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u16-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u16-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u16-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u15-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u15-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u15-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u14-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u14-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u14-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u13-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u13-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u13-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u12-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u12-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u12-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u11-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u11-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u11-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u10-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u10-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u10-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u09-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u09-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u09-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u08-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u08-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u08-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u07-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u07-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u07-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u06-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u06-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u06-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u05-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u05-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u05-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u04-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u04-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u04-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u03-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u03-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u03-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u02-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u02-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u02-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u01-p2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u01-p1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-u01-p3"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-secops10-grace"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-at30-m2-d3-post-restore"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-at30-m3-d1-t1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-at30-m2-d2"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-at30-m2-d1"
+    },
+    {
+      "image_id": "sha256:5d52d78710dcd68e204c78e87d6e7d0d7c3a4bd2e6cfe826b9cc7481b171b6fe",
+      "service": "member-at30-m1-d1"
+    }
+  ],
+  "build_digests": [
+    {
+      "name": "amd64.test",
+      "sha256": "bf6858441e6cefc330257a2d7edf0c100b2f11141a3581ef28b93fba25f09c88"
+    },
+    {
+      "name": "arm64.test",
+      "sha256": "7b75aac657090483b5c9c2af49dece0e6d0c7bac86090adfe38ce1a7dff9e549"
+    }
+  ],
+  "policy_revision": "01a1901e-4f39-7e04-960d-4c11f81e7984",
+  "agent_node_incarnation": "01a1901e-5d77-7da0-b0c8-9432b9f7287a",
+  "previous_run": "history/follow-up-9/",
+  "projector_owned_rows_written": [],
+  "id": "SECOPS-18",
+  "status": "passed",
+  "request_status": "closed",
+  "actual": {
+    "negative_central_revoke_not_fenced": {
+      "admin_authorize_revoked": {
+        "device": {
+          "device_id": "01a1901f-a636-76a2-9bfd-191231cd1b41",
+          "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0",
+          "status": "revoked",
+          "authorization_unconfirmed": false,
+          "authorization_unconfirmed_since": null
+        },
+        "error": "STATE_CONFLICT",
+        "fence_count": 0,
+        "request": "POST authorize revoked device",
+        "status": 409
+      },
+      "db_member_devices_status": "revoked",
+      "delete_http_status": 202,
+      "device_id": "01a1901f-a636-76a2-9bfd-191231cd1b41",
+      "external_withdrawal_audit_count": 0,
+      "fence_row_count": 0,
+      "flow_after_central_revoke": {
+        "blocker": "expected exactly one advertised product exit",
+        "counted": false,
+        "exact_native_output_retained": true,
+        "network_list": "No networks available.",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "peer": {
+          "container_role": "member-at30-m2-d1",
+          "device_id": "01a1901f-a636-76a2-9bfd-191231cd1b41"
+        },
+        "public_status_scope": "full status private; network IDs and route semantics only published",
+        "utc": "2026-10-31T04:10:02.693514508Z"
+      },
+      "member_devices_api_status": "revoked",
+      "observed_authorized": false,
+      "operation_id": "01a19025-fe5f-7e03-9f9a-62011276d136",
+      "operation_status": "succeeded",
+      "passed": true,
+      "revoked_not_pending_and_unfenced": true,
+      "worker_fence_counter_after": 2,
+      "worker_fence_counter_before": 2
+    },
+    "negative_post_restore_fresh_enroll_builds": {
+      "counted_flow_proof": {
+        "admitted_bytes_delta": {
+          "download": "1514",
+          "upload": "1066"
+        },
+        "after_bytes": {
+          "download": "1514",
+          "generation": "17",
+          "upload": "1066"
+        },
+        "before_bytes": {
+          "download": "0",
+          "generation": "17",
+          "upload": "0"
+        },
+        "counted": true,
+        "counter_reads_ok": true,
+        "http_200": true,
+        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-302b6e18e0ce985b1c18c786\n    Network: 0.0.0.0/0\n    Status: Not Selected",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "origin_authenticated": true,
+        "origin_node_snat": true,
+        "origin_probe_matches": true,
+        "origin_requests": 1,
+        "peer": {
+          "container_role": "member-at30-m2-d3-post-restore",
+          "device_id": "01a19026-9cd4-7925-af5d-2f8d5d311974"
+        },
+        "route_device": "fvnb0",
+        "route_get": "<controlled-origin> dev fvnb0 table netbird src 100.84.25.249 uid 0 \n    cache",
+        "selection_ok": true,
+        "selection_output": "Networks selected successfully.",
+        "utc": "2026-10-31T04:10:15.103437176Z"
+      },
+      "db_member_devices_status": "authorized",
+      "device_id": "01a19026-9cd4-7925-af5d-2f8d5d311974",
+      "external_peer_id": "dbimk8f8k4c000fj4f4g",
+      "external_withdrawal_audit_count": 0,
+      "fence_row_count": 0,
+      "fresh_grant_without_fence": true,
+      "member_devices_api_status": "authorized",
+      "observed_authorized": true,
+      "passed": true,
+      "service": "member-at30-m2-d3-post-restore",
+      "worker_fence_counter_after": 2,
+      "worker_fence_counter_before": 2
+    },
+    "new_in_t0_t1_unmapped_member_device": {
+      "central_member_device_rows_l2": 0,
+      "deduplicated_across_sweeps": true,
+      "device_id_at_t1": "01a19021-7c9f-76e8-b576-ed7f475a5d96",
+      "flow_after_restore": {
+        "after_bytes": {
+          "download": "0",
+          "generation": "17",
+          "upload": "0"
+        },
+        "before_bytes": {
+          "download": "0",
+          "generation": "17",
+          "upload": "0"
+        },
+        "counter_reads_ok": true,
+        "elapsed_seconds": 2.073389811,
+        "http_200": false,
+        "utc": "2026-10-31T04:10:15.532018234Z"
+      },
+      "identity_unmapped_audit_count": 1,
+      "identity_unmapped_audit_event": {
+        "id": "01a19024-0198-79cd-ae25-e51c212429b0",
+        "actor": "00000000-0000-0000-0000-000000000003",
+        "action": "device.authorize",
+        "result": "denied",
+        "resource": "fleet_config:00000000-0000-0000-0000-000000000001",
+        "actor_type": "system",
+        "after_diff": {
+          "reason": "identity_unmapped"
+        },
+        "request_id": null,
+        "before_diff": {
+          "reason": null
+        },
+        "occurred_at": "2026-10-31T04:07:21.240414+00:00",
+        "operation_id": null,
+        "schema_version": 1
+      },
+      "member_id": "01a19021-5c05-73ee-8df5-aa2a2029fd80"
+    },
+    "peers_n2": {
+      "central_authorization_observations": [
+        {
+          "peer_id": "dbimgfn8k4c000fj22qg",
+          "device_id": "01a1901f-6dcb-7545-870c-c0f2a6d76d90",
+          "member_id": "01a1901f-0dcf-769b-96f9-0d144df8c022",
+          "observed_at": "2026-10-31T04:09:21.530791+00:00",
+          "observed_version": "1",
+          "observed_authorized": false,
+          "observed_entitlement_revision": "2"
+        },
+        {
+          "peer_id": "dbimglf8k4c000fj24f0",
+          "device_id": "01a1901f-a636-76a2-9bfd-191231cd1b41",
+          "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0",
+          "observed_at": "2026-10-31T04:09:21.559495+00:00",
+          "observed_version": "1",
+          "observed_authorized": true,
+          "observed_entitlement_revision": "1"
+        },
+        {
+          "peer_id": "dbimgon8k4c000fj26c0",
+          "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+          "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0",
+          "observed_at": "2026-10-31T04:09:21.569911+00:00",
+          "observed_version": "1",
+          "observed_authorized": false,
+          "observed_entitlement_revision": "1"
+        }
+      ],
+      "central_device_bindings": [
+        {
+          "peer_ref": "dbimgfn8k4c000fj22qg",
+          "device_id": "01a1901f-6dcb-7545-870c-c0f2a6d76d90",
+          "member_id": "01a1901f-0dcf-769b-96f9-0d144df8c022",
+          "overlay_ip": "100.84.12.242/32",
+          "valid_from": "2026-10-31T04:02:21.259345+00:00",
+          "valid_until": "2026-10-31T04:07:21.269538+00:00",
+          "binding_revision": "1"
+        },
+        {
+          "peer_ref": "dbimglf8k4c000fj24f0",
+          "device_id": "01a1901f-a636-76a2-9bfd-191231cd1b41",
+          "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0",
+          "overlay_ip": "100.84.133.131/32",
+          "valid_from": "2026-10-31T04:02:35.702435+00:00",
+          "valid_until": "2026-10-31T06:01:56+00:00",
+          "binding_revision": "1"
+        },
+        {
+          "peer_ref": "dbimgon8k4c000fj26c0",
+          "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+          "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0",
+          "overlay_ip": "100.84.246.111/32",
+          "valid_from": "2026-10-31T04:02:51.024431+00:00",
+          "valid_until": "2026-10-31T06:01:56+00:00",
+          "binding_revision": "1"
+        }
+      ],
+      "central_member_devices": [
+        {
+          "id": "01a1901f-6dcb-7545-870c-c0f2a6d76d90",
+          "name": "fvpn-w4-secops-member-at30-m1-d1",
+          "status": "authorized",
+          "peer_id": "dbimgfn8k4c000fj22qg",
+          "member_id": "01a1901f-0dcf-769b-96f9-0d144df8c022",
+          "revoked_at": null,
+          "authorized_at": "2026-10-31T04:02:21.259345+00:00",
+          "resource_version": "1"
+        },
+        {
+          "id": "01a1901f-a636-76a2-9bfd-191231cd1b41",
+          "name": "fvpn-w4-secops-member-at30-m2-d1",
+          "status": "authorized",
+          "peer_id": "dbimglf8k4c000fj24f0",
+          "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0",
+          "revoked_at": null,
+          "authorized_at": "2026-10-31T04:02:35.702435+00:00",
+          "resource_version": "1"
+        },
+        {
+          "id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+          "name": "fvpn-w4-secops-member-at30-m2-d2",
+          "status": "authorized",
+          "peer_id": "dbimgon8k4c000fj26c0",
+          "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0",
+          "revoked_at": null,
+          "authorized_at": "2026-10-31T04:02:51.024431+00:00",
+          "resource_version": "1"
+        }
+      ],
+      "device_audit_events": [
+        {
+          "action": "identity_binding.rejected",
+          "result": "denied",
+          "resource": "fleet_config:00000000-0000-0000-0000-000000000001",
+          "after_diff": {
+            "reason": "service_user"
+          },
+          "before_diff": {
+            "reason": null
+          },
+          "occurred_at": "2026-10-31T04:01:05.676448+00:00"
+        },
+        {
+          "action": "identity_binding.rejected",
+          "result": "denied",
+          "resource": "fleet_config:00000000-0000-0000-0000-000000000001",
+          "after_diff": {
+            "reason": "identity_unmapped"
+          },
+          "before_diff": {
+            "reason": null
+          },
+          "occurred_at": "2026-10-31T04:01:05.678546+00:00"
+        },
+        {
+          "action": "identity_binding.rejected",
+          "result": "denied",
+          "resource": "fleet_config:00000000-0000-0000-0000-000000000001",
+          "after_diff": {
+            "reason": "identity_unmapped"
+          },
+          "before_diff": {
+            "reason": null
+          },
+          "occurred_at": "2026-10-31T04:01:05.680009+00:00"
+        },
+        {
+          "action": "identity_binding.rejected",
+          "result": "denied",
+          "resource": "fleet_config:00000000-0000-0000-0000-000000000001",
+          "after_diff": {
+            "reason": "identity_unmapped"
+          },
+          "before_diff": {
+            "reason": null
+          },
+          "occurred_at": "2026-10-31T04:01:05.682924+00:00"
+        },
+        {
+          "action": "device.authorize",
+          "result": "succeeded",
+          "resource": "member_device:01a1901f-6dcb-7545-870c-c0f2a6d76d90",
+          "after_diff": {
+            "status": "authorized",
+            "member_id": "01a1901f-0dcf-769b-96f9-0d144df8c022"
+          },
+          "before_diff": {
+            "status": null,
+            "member_id": null
+          },
+          "occurred_at": "2026-10-31T04:02:21.25462+00:00"
+        },
+        {
+          "action": "netbird.observed",
+          "result": "succeeded",
+          "resource": "member_device:01a1901f-6dcb-7545-870c-c0f2a6d76d90",
+          "after_diff": {
+            "device_id": "01a1901f-6dcb-7545-870c-c0f2a6d76d90",
+            "authorized": true,
+            "observed_at": "2026-10-31T04:02:21.539682Z",
+            "device_version": "1",
+            "entitlement_revision": "1"
+          },
+          "before_diff": {},
+          "occurred_at": "2026-10-31T04:02:21.539183+00:00"
+        },
+        {
+          "action": "device.authorize",
+          "result": "succeeded",
+          "resource": "member_device:01a1901f-a636-76a2-9bfd-191231cd1b41",
+          "after_diff": {
+            "status": "authorized",
+            "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0"
+          },
+          "before_diff": {
+            "status": null,
+            "member_id": null
+          },
+          "occurred_at": "2026-10-31T04:02:35.701055+00:00"
+        },
+        {
+          "action": "netbird.observed",
+          "result": "succeeded",
+          "resource": "member_device:01a1901f-a636-76a2-9bfd-191231cd1b41",
+          "after_diff": {
+            "device_id": "01a1901f-a636-76a2-9bfd-191231cd1b41",
+            "authorized": true,
+            "observed_at": "2026-10-31T04:02:35.753927Z",
+            "device_version": "1",
+            "entitlement_revision": "1"
+          },
+          "before_diff": {},
+          "occurred_at": "2026-10-31T04:02:35.753552+00:00"
+        },
+        {
+          "action": "device.authorize",
+          "result": "succeeded",
+          "resource": "member_device:01a1901f-e210-7693-b546-5d995b9ac15d",
+          "after_diff": {
+            "status": "authorized",
+            "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0"
+          },
+          "before_diff": {
+            "status": null,
+            "member_id": null
+          },
+          "occurred_at": "2026-10-31T04:02:51.021726+00:00"
+        },
+        {
+          "action": "netbird.observed",
+          "result": "succeeded",
+          "resource": "member_device:01a1901f-e210-7693-b546-5d995b9ac15d",
+          "after_diff": {
+            "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+            "authorized": true,
+            "observed_at": "2026-10-31T04:02:51.071031Z",
+            "device_version": "1",
+            "entitlement_revision": "1"
+          },
+          "before_diff": {},
+          "occurred_at": "2026-10-31T04:02:51.070705+00:00"
+        },
+        {
+          "action": "identity_binding.rejected",
+          "result": "denied",
+          "resource": "fleet_config:00000000-0000-0000-0000-000000000001",
+          "after_diff": {
+            "reason": "identity_unmapped"
+          },
+          "before_diff": {
+            "reason": null
+          },
+          "occurred_at": "2026-10-31T04:07:21.231951+00:00"
+        },
+        {
+          "action": "device.authorize",
+          "result": "denied",
+          "resource": "fleet_config:00000000-0000-0000-0000-000000000001",
+          "after_diff": {
+            "reason": "identity_unmapped"
+          },
+          "before_diff": {
+            "reason": null
+          },
+          "occurred_at": "2026-10-31T04:07:21.240414+00:00"
+        }
+      ],
+      "member_devices_api": {
+        "m1": {
+          "body": {
+            "authorized_count": 1,
+            "device_limit": 3,
+            "items": [
+              {
+                "authorization_unconfirmed": true,
+                "authorized_at": "2026-10-31T04:02:21.259345Z",
+                "created_at": "2026-10-31T04:02:21.25462Z",
+                "device_id": "01a1901f-6dcb-7545-870c-c0f2a6d76d90",
+                "last_seen_at": "2026-10-31T04:02:21.259345Z",
+                "name": "fvpn-w4-secops-member-at30-m1-d1",
+                "platform": "unknown",
+                "revoked_at": null,
+                "status": "pending"
+              }
+            ],
+            "next_cursor": null
+          },
+          "http_status": 200
+        },
+        "m2": {
+          "body": {
+            "authorized_count": 2,
+            "device_limit": 3,
+            "items": [
+              {
+                "authorization_unconfirmed": false,
+                "authorized_at": "2026-10-31T04:02:35.702435Z",
+                "created_at": "2026-10-31T04:02:35.701055Z",
+                "device_id": "01a1901f-a636-76a2-9bfd-191231cd1b41",
+                "last_seen_at": "2026-10-31T04:02:35.702435Z",
+                "name": "fvpn-w4-secops-member-at30-m2-d1",
+                "platform": "unknown",
+                "revoked_at": null,
+                "status": "authorized"
+              },
+              {
+                "authorization_unconfirmed": true,
+                "authorized_at": "2026-10-31T04:02:51.024431Z",
+                "created_at": "2026-10-31T04:02:51.021726Z",
+                "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+                "last_seen_at": "2026-10-31T04:02:51.024431Z",
+                "name": "fvpn-w4-secops-member-at30-m2-d2",
+                "platform": "unknown",
+                "revoked_at": null,
+                "status": "pending"
+              }
+            ],
+            "next_cursor": null
+          },
+          "http_status": 200
+        }
+      },
+      "netbird_paid_group_name": "fvpn-paid-01a1901e-4f05-7dd0-bb9a-4537f691abae",
+      "netbird_paid_group_peer_ids": null,
+      "netbird_peers": [
+        {
+          "id": "dbimg278k4c000fj21e0",
+          "name": "bc5da0173a56",
+          "user_id": ""
+        },
+        {
+          "id": "dbimgfn8k4c000fj22qg",
+          "name": "fvpn-w4-secops-member-at30-m1-d1",
+          "user_id": "CiRkYzVjYmE3Ni0xMjI5LTQ2MTYtOWZlMy1jOTc3ZjJkODNmYTUSBWxvY2Fs"
+        },
+        {
+          "id": "dbimglf8k4c000fj24f0",
+          "name": "fvpn-w4-secops-member-at30-m2-d1",
+          "user_id": "CiQ5YmEzNmEzYy1lY2EwLTRjNmEtOWQ2My0zYmY0M2RlNTE3MDkSBWxvY2Fs"
+        },
+        {
+          "id": "dbimgon8k4c000fj26c0",
+          "name": "fvpn-w4-secops-member-at30-m2-d2",
+          "user_id": "CiQ5YmEzNmEzYy1lY2EwLTRjNmEtOWQ2My0zYmY0M2RlNTE3MDkSBWxvY2Fs"
+        },
+        {
+          "id": "dbimhkf8k4c000fj2l2g",
+          "name": "fvpn-w4-secops-member-at30-m3-d1-t1",
+          "user_id": "CiQwZWU0MDk5MC1iMWY3LTRhNjQtYjlhNC1kMTk1MTY4ODg2YmQSBWxvY2Fs"
+        }
+      ],
+      "node_desired_state_bindings": [
+        {
+          "peer_id": "dbimglf8k4c000fj24f0",
+          "device_id": "01a1901f-a636-76a2-9bfd-191231cd1b41",
+          "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0",
+          "valid_from": "2026-10-31T04:02:35.702435Z",
+          "valid_until": "2026-10-31T06:01:56Z",
+          "allowed_ipv4": [
+            "100.84.133.131"
+          ],
+          "allowed_ipv6": [],
+          "binding_revision": "1"
+        },
+        {
+          "peer_id": "dbimgon8k4c000fj26c0",
+          "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+          "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0",
+          "valid_from": "2026-10-31T04:02:51.024431Z",
+          "valid_until": "2026-10-31T06:01:56Z",
+          "allowed_ipv4": [
+            "100.84.246.111"
+          ],
+          "allowed_ipv6": [],
+          "binding_revision": "1"
+        }
+      ],
+      "utc": "2026-10-31T04:09:24.220004343Z"
+    },
+    "regrant_authorize_device": {
+      "calls": [
+        {
+          "device": {
+            "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+            "member_id": "00000000-0000-0000-0000-000000000000",
+            "status": "pending",
+            "authorization_unconfirmed": true
+          },
+          "fence_count": 1,
+          "request": "GET member/devices before",
+          "status": 200
+        },
+        {
+          "device": {
+            "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+            "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0",
+            "status": "pending",
+            "authorization_unconfirmed": true,
+            "authorization_unconfirmed_since": "2026-10-31T04:07:21.33181Z"
+          },
+          "fence_count": 1,
+          "request": "GET admin/devices before",
+          "status": 200
+        },
+        {
+          "authorization_unconfirmed": true,
+          "error": "UNAUTHENTICATED",
+          "fence_count": 1,
+          "request": "POST authorize with member cookie",
+          "status": 401
+        },
+        {
+          "fence_count": 0,
+          "operation": {
+            "completed_at": "2026-10-31T04:02:53.811303Z",
+            "created_at": "2026-10-31T04:02:51.021726Z",
+            "desired_generation": "1",
+            "error": null,
+            "kind": "member.device_authorize",
+            "observed_generation": null,
+            "operation_id": "01a1901f-e211-722b-bd48-1a14d8876476",
+            "request_id": "01a1901f-e20a-708c-90b1-6316a90253bd",
+            "resource": {
+              "id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+              "type": "member_device"
+            },
+            "resource_version": null,
+            "status": "succeeded",
+            "steps": [
+              {
+                "error_code": null,
+                "message": null,
+                "name": "netbird",
+                "observed_at": "2026-10-31T04:02:51.071046Z",
+                "required": true,
+                "status": "succeeded"
+              },
+              {
+                "error_code": null,
+                "message": null,
+                "name": "nodes",
+                "observed_at": "2026-10-31T04:02:53.807205Z",
+                "required": true,
+                "status": "succeeded"
+              }
+            ],
+            "updated_at": "2026-10-31T04:02:53.8114Z"
+          },
+          "request": "POST authorize admin CSRF Origin fresh key no body",
+          "status": 202
+        },
+        {
+          "fence_count": 0,
+          "operation": {
+            "completed_at": "2026-10-31T04:02:53.811303Z",
+            "created_at": "2026-10-31T04:02:51.021726Z",
+            "desired_generation": "1",
+            "error": null,
+            "kind": "member.device_authorize",
+            "observed_generation": null,
+            "operation_id": "01a1901f-e211-722b-bd48-1a14d8876476",
+            "request_id": "01a1901f-e20a-708c-90b1-6316a90253bd",
+            "resource": {
+              "id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+              "type": "member_device"
+            },
+            "resource_version": null,
+            "status": "succeeded",
+            "steps": [
+              {
+                "error_code": null,
+                "message": null,
+                "name": "netbird",
+                "observed_at": "2026-10-31T04:02:51.071046Z",
+                "required": true,
+                "status": "succeeded"
+              },
+              {
+                "error_code": null,
+                "message": null,
+                "name": "nodes",
+                "observed_at": "2026-10-31T04:02:53.807205Z",
+                "required": true,
+                "status": "succeeded"
+              }
+            ],
+            "updated_at": "2026-10-31T04:02:53.8114Z"
+          },
+          "request": "POST authorize same key replay",
+          "status": 202
+        },
+        {
+          "device": {
+            "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+            "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0",
+            "status": "authorized",
+            "authorization_unconfirmed": false,
+            "authorization_unconfirmed_since": null
+          },
+          "fence_count": 0,
+          "request": "GET admin/devices after worker sync",
+          "status": 200
+        },
+        {
+          "device": {
+            "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+            "member_id": "00000000-0000-0000-0000-000000000000",
+            "status": "authorized",
+            "authorization_unconfirmed": false
+          },
+          "fence_count": 0,
+          "request": "GET member/devices after worker sync",
+          "status": 200
+        }
+      ],
+      "confirmation_method": "GET admin/devices after worker sync; no wait for a new operation or operation transition",
+      "counted_flow_after_regrant": {
+        "admitted_bytes_delta": {
+          "download": "1515",
+          "upload": "1106"
+        },
+        "after_bytes": {
+          "download": "3030",
+          "generation": "15",
+          "upload": "2172"
+        },
+        "before_bytes": {
+          "download": "1515",
+          "generation": "15",
+          "upload": "1066"
+        },
+        "counted": true,
+        "counter_reads_ok": true,
+        "http_200": true,
+        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-302b6e18e0ce985b1c18c786\n    Network: 0.0.0.0/0\n    Status: Selected",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "origin_authenticated": true,
+        "origin_node_snat": true,
+        "origin_probe_matches": true,
+        "origin_requests": 1,
+        "peer": {
+          "container_role": "member-at30-m2-d2",
+          "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d"
+        },
+        "route_device": "fvnb0",
+        "route_get": "<controlled-origin> dev fvnb0 table netbird src 100.84.246.111 uid 0 \n    cache",
+        "selection_ok": true,
+        "selection_output": "Networks selected successfully.",
+        "utc": "2026-10-31T04:09:31.150620135Z"
+      },
+      "existing_desired_generation": "1",
+      "existing_operation_id": "01a1901f-e211-722b-bd48-1a14d8876476",
+      "existing_operation_returned": true,
+      "fence_rows_after_fresh_regrant": 0,
+      "member_devices_api_status": "authorized",
+      "observed_authorized_after_sync": true,
+      "operation_desired_generation": "1",
+      "operation_id": "01a1901f-e211-722b-bd48-1a14d8876476",
+      "operation_kind": "member.device_authorize",
+      "passed": true,
+      "replay_outbox_count_unchanged": true,
+      "replay_resource_version_unchanged": true,
+      "route": "/api/v1/admin/members/01a1901f-0e55-7e05-b160-c5c4654291e0/devices/01a1901f-e210-7693-b546-5d995b9ac15d/authorize",
+      "same_key_replay_same_operation": true
+    },
+    "revoked_in_t0_t1_device": {
+      "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+      "external_peer_id": "dbimgon8k4c000fj26c0",
+      "external_withdrawal_audit_count": 1,
+      "external_withdrawal_audit_event": {
+        "id": "01a19024-01f3-7dea-afb2-b8f62531acab",
+        "actor": "00000000-0000-0000-0000-000000000003",
+        "action": "device.authorization.external_withdrawal",
+        "result": "succeeded",
+        "resource": "member_device:01a1901f-e210-7693-b546-5d995b9ac15d",
+        "actor_type": "system",
+        "after_diff": {
+          "reason": "external_withdrawal",
+          "peer_id": "dbimgon8k4c000fj26c0",
+          "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0",
+          "observed_groups": []
+        },
+        "request_id": null,
+        "before_diff": {
+          "reason": null,
+          "peer_id": null,
+          "member_id": null,
+          "observed_groups": null
+        },
+        "occurred_at": "2026-10-31T04:07:21.331464+00:00",
+        "operation_id": null,
+        "schema_version": 1
+      },
+      "fence_row": {
+        "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+        "fenced_at": "2026-10-31T04:07:21.33181+00:00",
+        "observed_group_ids": []
+      },
+      "fence_row_count": 1,
+      "fenced_instead_of_regranted": true,
+      "l2_counted_flow_resumed": false,
+      "l2_db_member_devices_status": "authorized",
+      "l2_flow_probe": {
+        "blocker": "expected exactly one advertised product exit",
+        "counted": false,
+        "exact_native_output_retained": true,
+        "network_list": "No networks available.",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "peer": {
+          "container_role": "member-at30-m2-d2",
+          "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d"
+        },
+        "public_status_scope": "full status private; network IDs and route semantics only published",
+        "utc": "2026-10-31T04:09:24.301258418Z"
+      },
+      "l2_member_devices_api_status": "pending",
+      "l2_observed_authorized": false,
+      "l2_readded_to_netbird_paid_group": false,
+      "revocation_intent_explainable": true,
+      "sibling_d1_counted_flow": {
+        "admitted_bytes_delta": {
+          "download": "1514",
+          "upload": "1066"
+        },
+        "after_bytes": {
+          "download": "30299",
+          "generation": "14",
+          "upload": "20682"
+        },
+        "before_bytes": {
+          "download": "28785",
+          "generation": "14",
+          "upload": "19616"
+        },
+        "counted": true,
+        "counter_reads_ok": true,
+        "http_200": true,
+        "network_list": "Available Networks:\n\n  - ID: fvpn-exit-302b6e18e0ce985b1c18c786\n    Network: 0.0.0.0/0\n    Status: Selected",
+        "network_list_ok": true,
+        "order": [
+          "select advertised exit",
+          "route dev fvnb0",
+          "HTTPS 200",
+          "authenticated node-SNAT receipt",
+          "exact-device byte delta"
+        ],
+        "origin_authenticated": true,
+        "origin_node_snat": true,
+        "origin_probe_matches": true,
+        "origin_requests": 1,
+        "peer": {
+          "container_role": "member-at30-m2-d1",
+          "device_id": "01a1901f-a636-76a2-9bfd-191231cd1b41"
+        },
+        "route_device": "fvnb0",
+        "route_get": "<controlled-origin> dev fvnb0 table netbird src 100.84.133.131 uid 0 \n    cache",
+        "selection_ok": true,
+        "selection_output": "Networks selected successfully.",
+        "utc": "2026-10-31T04:09:24.473684232Z"
+      },
+      "t1_in_netbird_paid_group": false,
+      "t1_status_before_restore": "revoked",
+      "worker_all_restore_fence_log_lines": [
+        {
+          "device_id": "01a1901f-6dcb-7545-870c-c0f2a6d76d90",
+          "ledger_mode": "reconciling",
+          "level": "WARN",
+          "member_id": "01a1901f-0dcf-769b-96f9-0d144df8c022",
+          "msg": "device authorization unconfirmed during ledger restore",
+          "peer_id": "dbimgfn8k4c000fj22qg",
+          "time": "2026-10-31T04:07:21.238273594Z"
+        },
+        {
+          "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+          "ledger_mode": "reconciling",
+          "level": "WARN",
+          "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0",
+          "msg": "device authorization unconfirmed during ledger restore",
+          "peer_id": "dbimgon8k4c000fj26c0",
+          "time": "2026-10-31T04:07:21.335275025Z"
+        }
+      ],
+      "worker_restore_fence_counter_line": "fvpn_device_restore_fence_decisions_total 2",
+      "worker_restore_fence_counter_value": 2,
+      "worker_restore_fence_log_lines": [
+        {
+          "device_id": "01a1901f-e210-7693-b546-5d995b9ac15d",
+          "ledger_mode": "reconciling",
+          "level": "WARN",
+          "member_id": "01a1901f-0e55-7e05-b160-c5c4654291e0",
+          "msg": "device authorization unconfirmed during ledger restore",
+          "peer_id": "dbimgon8k4c000fj26c0",
+          "time": "2026-10-31T04:07:21.335275025Z"
+        }
+      ]
+    },
+    "status": "passed"
+  }
+}
