@@ -273,20 +273,33 @@ func TestD157_F51_PreAttemptCatchupAndOneEarlyRenewalPerRecovery(t *testing.T) {
 		r.srv.SetFixture(generationFixture(gen, oneBinding(r.clock.Wall())))
 		if gen == 15 {
 			r.srv.FailLeases(1)
+			// The injected 503 has Retry-After: 1; let it elapse inside Apply.
+			r.eng.plane = &f51RecoveryPlane{r27BootMissingInterfacePlane: p, afterApply: func() { r.clock.Advance(time.Second) }}
 		} else {
 			r.srv.SetLeaseGeneration(gen - 1)
 			r.eng.plane = &f51RecoveryPlane{r27BootMissingInterfacePlane: p, afterApply: func() { r.srv.SetLeaseGeneration(0) }}
 		}
 		before := r.srv.LeaseRenewals()
+		previous := r.srv.LeaseRequests()
 		stepOK(t, r)
 		if r.srv.LeaseRenewals() != before+2 || r.eng.appliedGen != gen || !r.eng.earlyRecoveryRenewal() || r.eng.serving {
-			t.Fatal("pre-enforce failure suppressed same-Step catchup or recovery report")
+			t.Fatalf("pre-enforce catchup gen=%d calls=%d want=%d applied=%d lease=%d closed=%v renewal=%+v serving=%v retry=%s now=%s log=%s", gen, r.srv.LeaseRenewals(), before+2, r.eng.appliedGen, r.eng.lease.ConfigGeneration, r.eng.closedRecoveryHeld, r.eng.closedRecoveryRenewal, r.eng.serving, r.eng.leaseRetryAt, r.clock.Mono(), r.log.String())
 		}
 		reqs := r.srv.LeaseRequests()
-		first, last := reqs[len(reqs)-2], reqs[len(reqs)-1]
+		last := reqs[len(reqs)-1]
 		ack, err := last.AppliedConfigGeneration.Get()
-		if !first.AppliedConfigGeneration.IsNull() || err != nil || uint64(ack) != gen || first.RenewalRequestId == last.RenewalRequestId {
+		if err != nil || uint64(ack) != gen || previous[len(previous)-1].RenewalRequestId == last.RenewalRequestId {
 			t.Fatal("catchup did not send newly verified ACK with fresh ID")
+		}
+		// The 503 is injected before decoding; only the older-generation answer
+		// records the pre-Apply request body. Counts above include both paths.
+		if gen == 16 {
+			first := reqs[len(reqs)-2]
+			if len(reqs) != len(previous)+2 || !first.AppliedConfigGeneration.IsNull() || first.RenewalRequestId == last.RenewalRequestId {
+				t.Fatal("pre-Apply request ACKed a failed generation or reused its ID")
+			}
+		} else if len(reqs) != len(previous)+1 {
+			t.Fatal("catchup request missing after undecoded failure")
 		}
 		sent := r.clock.Mono()
 		stepOK(t, r)

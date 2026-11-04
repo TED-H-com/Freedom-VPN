@@ -141,6 +141,9 @@ func TestR30_M2_PreEnforceLeaseAttemptBlocksPostRecoveryRenewal(t *testing.T) {
 	r.clock.Advance(r.eng.provisionalRetryAt - r.clock.Mono())
 	r.srv.SetFixture(generationFixture(15, oneBinding(r.clock.Wall())))
 	r.srv.FailLeases(1)
+	// FailLeases emits a 503 with the API's default Retry-After: 1. Model
+	// that second elapsing during Apply; a frozen rig clock cannot expire it.
+	r.eng.plane = &f51RecoveryPlane{r27BootMissingInterfacePlane: p, afterApply: func() { r.clock.Advance(time.Second) }}
 
 	stepOK(t, r)
 	if r.eng.appliedGen != 15 || !r.eng.closedRecoveryHeld {
