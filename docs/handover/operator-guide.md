@@ -722,7 +722,7 @@ Isolation 21 #452 supplies live evidence: its short whole-node expiry passes
 D-140 and qualifies under D-142. Spec **§16.3 and §17.1** still require
 serving until the lease deadline while the other conditions hold. The original
 F20-01 run stays failed; this result does not supply r28 M-1's separate
-member-expiry live coverage. See the [current review disposition](../reviews/README.md#r27-and-r28-dispositions-at-the-follow-up-43-cutoff-2026-11-04-est).
+member-expiry live coverage. See the [current review disposition](../reviews/README.md#follow-up-44-dispositions).
 
 <a id="at02-closed-recovery"></a>
 
