@@ -12604,7 +12604,7 @@ func TestHandover_Followup40Claims(t *testing.T) {
 	const frozen = fixture + "history/follow-up-40/"
 	const cut = "3f7dbc254ba1ce001628af8151a4d81c6954412d"
 	const doc = "docs/handover/follow-up-40.md"
-	const register = "docs/handover/README.md"
+	const register = fixture + "history/follow-up-41/register40.md"
 	checkHash := func(path, want string) {
 		t.Helper()
 		sum := sha256.Sum256([]byte(readOwnedDoc(t, root, path)))
@@ -13119,17 +13119,17 @@ func TestHandover_Followup40Claims(t *testing.T) {
 	})
 	t.Run("seven_entrypoints_current_guidance_and_no_new_scope_request", func(t *testing.T) {
 		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
-			lines := strings.Split(readOwnedDoc(t, root, path), "\n")
+			lines := strings.Split(readOwnedDoc(t, root, fixture+"history/follow-up-41/entrypoint-"+strings.ReplaceAll(path, "/", "_")+".txt"), "\n")
 			if !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-40.md") || !strings.Contains(lines[2], "#430–#434") || !strings.Contains(lines[3], "follow-up-39.md") {
 				t.Errorf("entrypoint drift: %s", path)
 			}
 		}
-		const op = "docs/handover/operator-guide.md"
+		const op = fixture + "history/follow-up-41/operator-guide40.md.txt"
 		require(op, "New TCP connections of admitted members negotiate at most **1160 MSS**", "standard WireGuard transport headers", "new\nhandshake", "UDP and QUIC", "73/73", "74/74", "72/72", "no PTB", "Time-exceeded", "traceroute still gets no reply", "download", "capacity PATCH 412")
 		if strings.Count(readOwnedDoc(t, root, op), followup31Update) != 1 {
 			t.Fatal("F30-01 guidance changed")
 		}
-		require("docs/ops/README.md", "## Follow-up 40 acceptance snapshot", "four updated, three added, 95 unchanged", "55 decisions", "Earlier snapshot sections")
+		require(fixture+"history/follow-up-41/entrypoint-docs_ops_README.md.txt", "## Follow-up 40 acceptance snapshot", "four updated, three added, 95 unchanged", "55 decisions", "Earlier snapshot sections")
 		require(doc, "D-098 / D-109 / D-132", "No claims\ntest reads a living", "no new outside-owned pin or scope request; no item stopped", "Every historical\nfailure stays failed", "No scheduled-run result")
 	})
 }
