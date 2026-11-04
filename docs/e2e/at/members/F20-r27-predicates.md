@@ -64,4 +64,4 @@ New `TestF20_` tests replay the immutable records, reject capture gaps, unplacea
 
 ### Requests to orchestrator
 
-2026-11-03 — No new out-of-scope implementation request. Keep H-1, M-1 and L-1 with agent-core and schedule the next assembled run after the required fixes merge. Existing carried requests remain in [requests.md](history/follow-up-18-run2/requests.md).
+2026-11-03 — No new out-of-scope implementation request. Keep H-1, M-1 and L-1 with agent-core and schedule the next assembled run after the required fixes merge. Existing carried requests remain in [requests.md](requests.md).
