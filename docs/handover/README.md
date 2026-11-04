@@ -272,7 +272,9 @@ is frozen from #430: 99 findings and 53 decisions, all ten owner requests answer
 
 <a id="findings-register-at-the-follow-up-43-cutoff"></a>
 
-## Findings register at the follow-up 45 cutoff
+<a id="findings-register-at-the-follow-up-45-cutoff"></a>
+
+## Findings register at the follow-up 46 cutoff
 
 | Finding | Status at #463 | Evidence / next owner |
 |---|---|---|
@@ -296,7 +298,7 @@ is frozen from #430: 99 findings and 53 decisions, all ten owner requests answer
 | Updates F11-02 | CLOSED | #351 corrects offline-install documentation: retained verified archive on initial / same-release installs; only absence downloads the signed URL. |
 | Updates F11-01 | CLOSED — fix + regular-run result | #352 fixes the shared TEST ONLY loopback gate; #359 run 2babf9b6 passes regular AT23–AT27 5 / 5 and installer 27 / 27 through that wrapper, unchanged generated config, no adapter. |
 | F9-INFLIGHT | OPEN — inherent backend finding, documented | #345 late upstream reply before the 10 s timeout replaces newer cache data. No exposed setting fixes insertion ordering; TTL is a maximum lifetime. |
-| Members F11-01 | OPEN — upstream-dependent under D-148 | #386 explains the TEST ONLY tracer closure; native delivery delay remains and historical d556673b stays unattributed. #394 request 2 adds IPv6 ::1-source type-4 data and type-2 responses to the owner’s repair-direction / upstream-report evidence. Its 8 / 8 fresh first selections and 58,619 sends reproduce neither the five-SYN failure nor the five-second gap; no common cause is assigned to members F15-F11-01, F15-AT02 or F14-01. D-148 makes no product, pin, daemon or architecture change. The orchestrator filed the ::1 response-source boundary with public evidence in [NetBird discussion 8473](https://github.com/netbirdio/netbird/discussions/8473) on 2026-11-03. |
+| Members F11-01 | OPEN — upstream-dependent under D-148 | #386 explains the TEST ONLY tracer closure; native delivery delay remains and historical d556673b stays unattributed. #394 request 2 adds IPv6 ::1-source type-4 data and type-2 responses to the owner’s repair-direction / upstream-report evidence. Its 8 / 8 fresh first selections and 58,619 sends reproduce neither the five-SYN failure nor the five-second gap; no common cause is assigned to members F15-F11-01, F15-AT02 or F14-01. D-148 makes no product, pin, daemon or architecture change. The orchestrator filed the ::1 response-source boundary with public evidence in [NetBird discussion 8473](https://github.com/netbirdio/netbird/discussions/8473) on 2026-11-03. #473 adds the original 3eb3960d sample: a loopback-source IPv6 WireGuard response reaches member ingress and is dropped before receive accounting; the exact drop point is unproven. New run 6a25221b counts its initial transfers, without a merged-change cause or closure. |
 | Members F11-02 | CLOSED — fresh populated-grant rows | #361 run b98b78ee qualifies generations 10 / 21 with fresh accepted reports, populated lease, live grants and serving heartbeat. Historical generation-10 zero-grant / AWAITING failure stays failed. |
 | Members F11-03 | HISTORICAL FAIL — #410 unchanged; fresh AT02 passes in #455 | Members 17's three failed Applies, measurement_valid=false, all 1,253 losses and first re-grant failure remain recorded; #368 remains historical. #445 applies confirmed D-135/D-136 without an outage ceiling or zero-loss criterion; run-2 offline replay remains a proof, not a verdict. In #455 run 5715939e, accounting index 190 and sibling recovery 191 pass: all 1,237 losses among 6,165 sends are inside measured brackets. Remaining deny-all after a closed recovery is a separate availability row under D-157. |
 | Install-overrun cause | OPEN — unproven | #356 controlled interventions did not reproduce the overrun. #365 lifecycle observation and #369 TEST ONLY caller add evidence capacity, not retrospective causality. TestLab04 cancellation mechanisms are a separate finding; historical overrun cause stays unproven. |
@@ -400,41 +402,42 @@ is frozen from #430: 99 findings and 53 decisions, all ten owner requests answer
 | Isolation F21-01 | ANSWERED — #459; harness schedule | Fresh-renewal anchor and offline replay/jitter/failure proofs replace the phase-dependent schedule. Run 7b0db5f2 gives r28 M-1 its first live pass: all five post-deadline requests time out with six serving-node reads; member deadline is 26.3 s before node expiry. Run 21 stays blocked and run 20's pass remains unqualified as serving-node expiry evidence. Distinct from Updater F21-01. |
 | Members F21-AT08 | ANSWERED — #467 | AT08 passes with paired safe peer summaries, original native capture, one origin receipt and both counter increments. Historical run 5715939e's blocked first transfer keeps its outcome and unknown cause; no merged-change cause inferred. |
 | Members F21-D146 | ANSWERED — #467 new-run diagnosis; historical condition undetermined | The later read in 3eb3960d identifies freshness as the only failed condition: latest observation 22.39 s old against 15 s. Original serving read stays failed. Historical run 5715939e indexes 49 and 51 retained only the combined failed read and stay undetermined. Continuing freshness failure is Members F22-D146. |
-| Members AT02 deny-all after closed recovery | ANSWERED — #461 under D-157, measured live by #467 | Run 3eb3960d has one early renewal 67.8 ms after closed-recovery Apply 586, then a one-member lease and verified serving Apply 592. Deny-all lasts 205 ms with 8 losses, down from historical 4.968 s and 241 losses. Exact central readiness timing was not retained. [Known behaviour](operator-guide.md#at02-closed-recovery). |
+| Members AT02 deny-all after closed recovery | ANSWERED — #461 under D-157, measured live by #467 and #473 | Run 3eb3960d has one early renewal 67.8 ms after closed-recovery Apply 586, then a one-member lease and verified serving Apply 592. Deny-all lasts 205 ms with 8 losses, down from historical 4.968 s and 241 losses. Exact central readiness timing was not retained. [Known behaviour](operator-guide.md#at02-closed-recovery). Members 23 run 6a25221b adds one early renewal 63.9 ms after closed Apply 544, then a populated lease and verified serving Apply 550: 179 ms with 7 losses, one intervening request and no baseline write. D-157 is in both runs; no timing change is credited to a merge. |
 | SECOPS-F16-01 | ANSWERED — #460 | Fleet cap is set before admission, constructing a fresh 60 s lease. Run b2de46c8 control_lost_agent_alive passes on lease bef669a3 with one agent identity throughout and both transports continuous to about D − 1 s. D-133 confounded; original run 1bfd5cff stays failed. AT29 still fails on SECOPS-F17-01. |
 | AT29 current acceptance | BLOCKED — #464 run 9d927350; operator guest clock | Every runnable case passes; live-agent continuity uses one identity, both transports continuous to D − 0.99 s and quiet from D + 2.01 s. Guest clock rollback still needs an independently clocked disposable guest. The lane's D-133 confounded record stays as written; the orchestrator's PR reading finds no foreign suite overlapped. Historical failures and full AT31's block remain. |
 
-| Isolation F22-01 | OPEN — isolation 23, running at cutoff | D-161 is implemented in netlab 36 #465. F22-01 (7b0db5f2) and F27-01/B1 replays still fail without TCP captures. Closure requires an isolation run with complete combined TCP captures judged under D-161; isolation 23 also archives 7b0db5f2 under D-098. Historical failure stays failed. |
+| Isolation F22-01 | ANSWERED — #469 run 328ab9e0 | D-120 passes under D-161 on complete checked combined TCP captures: 65 reads, zero TCP timeouts, zero UDP losses, six verified-guard losses recovered by retransmission, longest stall 210.1 ms. The accepted-timeout branch did not run live. Historical 7b0db5f2 stays failed and its cause unproven; its 184 files are archived under D-098. |
 | SECOPS-F17-01 | ANSWERED — #464 | Run 9d927350 reads D after the control stop from the accepted local lease and serving heartbeat. Old case: read 90 ms after stop, 58.48 s remaining; watchdog heartbeat_stale withdrew first, quiet from D + 0.39 s. D-160 journal and validator reject admission inside timed sections. Lane's D-133 confounded record remains; orchestrator reads no foreign-suite overlap. Historical b2de46c8 and 1bfd5cff stay failed. |
 
-| Members F22-AT01 | OPEN — members 23, running at cutoff | #467 run 3eb3960d: AT01's first transfer uncounted on an IPv6 pair. Both views become connected/direct but neither reports a handshake; member sent 148 B and received 0, node received 296 B and sent 480. Consistent with IPv6 return-path loss, not proven; four conditional continuation checks were not reached. |
-| Members F22-D146 | OPEN — members 23, running at cutoff | #467 IPv6 receive-only 1280 indexes 49/51 stay blocked. Later serving read has matching generation/incarnation, forwarding enabled and no reasons, but observation age 22.39 s exceeds 15 s. Neighbouring accepted reports are 34.85 s apart; why reports stopped or failed is not retained. No predicate relaxation; F21 historical indexes stay undetermined. |
-| r30 H-1 | OPEN — agent-core 51, running at cutoff | Engine API canceled-Boot context can skip or wedge recovery. Orchestrator: not reachable from current fvpn-agent run/once, which pass one context to Boot and Step; latent fail-open default, routed for repair anyway. |
-| r30 H-2 | OPEN — updater 26, running at cutoff | Stale-then-live answers can end live contention early. D-158 clarified: five consecutive stale answers; live detail lock resets count; first-attempt 10 s budget governs live answers. |
-| r30 M-1 | OPEN — updater 26, running at cutoff | Non-busy first-attempt error emits a wait record. Under clarified D-158, update lock wait is emitted only when the first attempt missed on ErrBusy. |
-| r30 M-2 | OPEN — agent-core 51, running at cutoff | Pre-enforce lease attempt suppresses post-recovery renewal when the same Step advances the applied generation. |
-| r30 M-3 | OPEN — agent-core 51, running at cutoff | Pending-outbox deduplication skips a new closed-recovery report when its state matches an older pending report. |
+| Members F22-AT01 | OPEN — D-148 upstream response-source boundary | #473 corrects the #467 reading: original node packet 158 and member packet 161 share an IP hash. The IPv6 loopback-source WireGuard response reached member underlay ingress, then was dropped before WireGuard receive accounting. Header errors rose 0 to 1; the packet-specific drop point and source-selection mechanism are unproven. The old uncounted outcome stays. This boundary is already reported upstream under D-148; a new counted transfer does not close F11-01. |
+| Members F22-D146 | OPEN — located in the fixture; devstack 36 running for D-162 | #473: the regular-node prepared config omits observation_seconds, so its 30 s product default conflicts with the lab serving query's 15 s freshness bound. The 5 s override cited in #467 belongs only to the installer node. The 34.85 s between two latest rows did not prove a gap in accepted reports; full windows show roughly 30 s reporting. IPv6 1280 indexes 49/51 pass; dual 1280 indexes 44/46 block on a 22.61 s-old observation, the only failed condition. D-162 changes only the TEST ONLY fixture cadence; predicates stay. Historical outcomes and F21's undetermined indexes stay. |
+| r30 H-1 | FIXED — #470; r31 running at cutoff | Only Run sets the run context; outside Run no caller context owns the recover child. Close still cancels and joins it; uploads retain Boot's caller. The orchestrator's reachability reading is unchanged: neither CLI mode reaches H-1. Forwarding stays blocked until configured recovery completes. |
+| r30 H-2 | FIXED — #471 under clarified D-158; r31 running at cutoff | Five consecutive stale answers 20 ms apart give exit 1 with final stale detail. Every live answer, including empty/unreadable metadata, resets the count. The original first-attempt 10 s budget governs live answers: no exit 3 before it; exit 3 on the first live answer at or past it. Live D-158 contention remains unmeasured. |
+| r30 M-1 | FIXED — #471 under clarified D-158; r31 running at cutoff | One update lock wait record only after a first-attempt ErrBusy, including later cancellation. A non-busy first error and cancellation before any attempt write none. Error lines, exit table and nodelock are unchanged. |
+| r30 M-2 | FIXED — #470; r31 running at cutoff | A held closed recovery may make one catch-up lease request for a newly available ACK despite an earlier attempt in the same Step. Retry bound and Retry-After stay; recording that ACK prevents a second bypass. The accepted clean report still arms D-157's existing one-shot. |
+| r30 M-3 | FIXED — #470; r31 running at cutoff | Deduplication has one exception: a closed recovery waiting to bind its own report. The 32-entry capacity guard still comes first; ordinary coalescing is unchanged. |
 
 Every historical failure stays failed. The register has **133 rows**:
-**7 existing rows updated, 7 added, 119 byte-identical** to #466.
-Every other row, including all other open findings, retains its exact bytes.
-The seven additions are members F22-AT01/F22-D146 and r30's five findings.
-[Review dispositions](../reviews/README.md#r30-dispositions-at-the-follow-up-45-cutoff-2026-11-04-est)
-keep the raw review separate from the orchestrator's reachability reading.
+**10 existing rows updated, 0 added, 123 byte-identical** to #472.
+Members 23 named no new finding. Every other row, including all other open
+findings, retains its exact bytes. [Current review dispositions](../reviews/README.md#r30-dispositions-at-the-follow-up-46-cutoff-2026-11-04-est)
+record all five r30 repairs without adopting r31's pending results.
 
-F30-01 is closed; AT02's early renewal is measured. AT29 is blocked on the
-operator's guest clock; secops' conservative D-133 record remains alongside
-the orchestrator's reading. F22-01 still needs isolation's complete-capture
-run. The [follow-up 45 cut](follow-up-45.md) records the evidence boundaries.
+F22-01 is answered by isolation's complete-capture run; F30-01 remains closed.
+AT02 adds members 23's 179 ms / 7-loss sample. AT29 remains blocked on the
+operator's guest clock. F22-D146 is located in the fixture and stays open;
+F22-AT01 and F11-01 remain open under D-148. The [follow-up 46 cut](follow-up-46.md)
+keeps every historical outcome and the unproven drop point explicit.
 Operator statements remain under [F30-01](operator-guide.md#f30-01),
 [closed recovery](operator-guide.md#at02-closed-recovery) and the unchanged
 [TCP guard limitation](operator-guide.md#tcp-reload-guard).
 
-**Running at briefing, status only:** isolation 23 (D-098 archive of 7b0db5f2
-and one D-161 run); members 23 (F22-AT01/F22-D146); updater 26 (r30 H-2/M-1,
-D-158 clarified); agent-core 51 (r30 H-1/M-2/M-3). No delivered or merged PR
-was present for these follow-ups at start. Later results are after the cutoff
-and do not enter this cut. No date is promised.
+**Running at briefing, status only:** review r31, a post-merge code review of
+agent-core 51 and updater 26 by agy/gemini-4-argon-high; devstack 36 implements
+D-162, audits fixture consumers and If-Match writers, and runs full acceptance
+on agent-core 51 and updater 26. No delivered or merged PR was present at the
+initial check. Later results are after the cutoff and do not enter this cut.
+No date is promised.
 
 D-145 keeps the current guard and C1 remains unimplemented. D-148 leaves
 Members F11-01 open and upstream-dependent; D-149 is unchanged. All ten earlier

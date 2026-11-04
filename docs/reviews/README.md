@@ -35,7 +35,7 @@
 | `r27-members-failures-review` | [r27-members-failures-review.md](r27-members-failures-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Members 18 run 2; proofs 62146ff1, report committed by orchestrator in dfde8d25 | 0 Critical, 1 High, 3 Medium, 1 Low; [current dispositions](#r27-and-r28-dispositions-at-the-follow-up-43-cutoff-2026-11-04-est) | [Members proofs](../../tests/e2e/at/members/review_r27_test.go) in #445; [agent](../../node/agent/review_r27_test.go) / [enforce](../../node/enforce/review_r27_test.go) proofs in #447 |
 | `r28-expiry-probe-review` | [r28-expiry-probe-review.md](r28-expiry-probe-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Isolation 20 delivered head 9be409f8; review 34a8d61f, F20-01 | 0 Critical, 1 High, 1 Medium; [current dispositions](#follow-up-44-dispositions) | [Agent proofs](../../node/agent/review_r28_test.go) in #447; [member-expiry proofs](../../tests/e2e/at/isolation/member_expiry_test.go) in #452 |
 | `r29-update-recover-review` | [r29-update-recover-review.md](r29-update-recover-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | F30-01 design diagnosis; base dd052c60, report and proofs committed by the reviewer at 5b1ca726 | 0 Critical, 1 High, 1 Medium, 2 Low; [cut dispositions](#r29-dispositions-at-the-follow-up-43-cutoff-2026-11-04-est) | [Updater proofs](../../node/updater/review_r29_test.go) in #446 and [agent proofs](../../node/agent/review_r29_test.go) in #454, byte-identical |
-| `r30-update-fixes-review` | [r30-update-fixes-review.md](r30-update-fixes-review.md) | 2026-11-04 | `agy/gemini-4-argon-high` | Post-merge D-155–D-158 review (#446, #454, #461, #463); head da2560a9, base 9b9546c9; committed by Ted H | 0 Critical, 2 High, 3 Medium, 0 Low; [cut dispositions](#r30-dispositions-at-the-follow-up-45-cutoff-2026-11-04-est) | None on main at cutoff; three proof files routed, not adopted |
+| `r30-update-fixes-review` | [r30-update-fixes-review.md](r30-update-fixes-review.md) | 2026-11-04 | `agy/gemini-4-argon-high` | Post-merge D-155–D-158 review (#446, #454, #461, #463); head da2560a9, base 9b9546c9; committed by Ted H | 0 Critical, 2 High, 3 Medium, 0 Low; [cut dispositions](#r30-dispositions-at-the-follow-up-46-cutoff-2026-11-04-est) | Agent/watchdog proofs adopted by #470; updater proofs by #471; all five findings fixed, r31 running at cutoff |
 
 ## What Held Across the Reviews
 
@@ -954,3 +954,34 @@ belong to a later cut. The [follow-up 45 cut](../handover/follow-up-45.md) recor
 F30-01's separate closure in devstack 35: the candidate deferred recovery,
 cleared and served, then lease-expiry passed. That run met no contended
 acquisition, so D-158's wait remains unit-proven, not measured live.
+
+
+## r30 dispositions at the follow-up 46 cutoff (2026-11-04 EST)
+
+At **#473**, all five r30 findings are fixed on main. The raw archive and
+its earlier dated dispositions remain unchanged. The
+[frozen agent-core 51 note](../../tests/handover/testdata/history/follow-up-46/docs_node_followup51-2026-11-04.md.txt)
+and [frozen updater 26 note](../../tests/handover/testdata/history/follow-up-46/docs_updates_node-followup26-2026-11-04.md.txt)
+record diagnosis, unchanged-code failures and passing repaired proofs.
+
+| Finding | Disposition at #473 | Boundary |
+|---|---|---|
+| H-1 | FIXED — #470 | Only Run owns the recover child's run context; outside Run no per-call context owns it. Close cancels and joins. The orchestrator's reading stays: neither CLI mode reaches H-1. |
+| H-2 | FIXED — #471, clarified D-158 | Five consecutive stale answers; every live answer resets the count. No exit 3 before the first-attempt 10 s budget; the first live answer at or past it gives exit 3. |
+| M-1 | FIXED — #471, clarified D-158 | Wait record requires first-attempt ErrBusy, including later cancellation. Non-busy first error and cancellation before any attempt write none. |
+| M-2 | FIXED — #470 | One catch-up request for a newly available ACK despite an earlier same-Step attempt; retry bound and Retry-After remain. |
+| M-3 | FIXED — #470 | A closed recovery waiting to bind its report bypasses dedup, after the 32-entry capacity guard. |
+
+Main carries the agent, updater and watchdog r30 proofs. Every assertion is
+retained; the agent's two manual-clock corrections preserve D-155's retry
+floor and the fake 503's Retry-After. Agent-core 51's ordinary lab passes
+13/13 on one attempt, functional evidence only. D-155, D-156, D-157, D-067,
+D-135 and D-136 remain; forwarding needs a populated lease and verified Apply.
+Updater's recover/standalone Retain prompt window, error lines, exit table
+and nodelock remain. **D-158's wait remains unmeasured live.**
+
+**Review r31 is running at cutoff**, a post-merge code review of agent-core 51
+and updater 26 by **agy/gemini-4-argon-high**. Devstack 36 is running on those
+fixes with D-162's TEST ONLY fixture change and consumer/If-Match audit.
+These are status only; no delivered or merged PR was present at the initial
+check. Later results are **after the cutoff**. See [follow-up 46](../handover/follow-up-46.md).
