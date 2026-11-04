@@ -59,3 +59,73 @@ class Nightly(unittest.TestCase):
             self.assertEqual(verdict['status'],'unavailable')
             self.assertEqual(verdict['reason'],'injection not reached')
             self.assertNotIn('injected_creator', verdict)
+
+    def test_d163_runner_records_and_only_known_gap(self):
+        import copy
+        import shutil
+        from nightly_summary import DRIVER_PHASE, HOLD_REVIEW_PHASE
+        source=Path(__file__).resolve().parents[4]/'docs/e2e/at/isolation/history/follow-up-24-nightly-41836274140'
+        original=json.loads((source/'scheduled-job.json').read_text())
+        with tempfile.TemporaryDirectory() as tmp:
+            root=Path(tmp)
+            for name in ('AT10.json','AT11.json','AT12.json','AT13.json','populated-holds-review.json'):
+                shutil.copyfile(source/name,root/name)
+            review_path=root/'populated-holds-review.json'
+            raw=review_path.read_bytes()
+            result=summarize(root,original['phases'],original['run_id'])
+            self.assertEqual(result['status'],'fail')
+            self.assertEqual(result['errors'],['AT13 lease member expiry under control loss: blocked'])
+            self.assertEqual(result['reviews'][0]['mapping'],'expected not exercised')
+            self.assertEqual(review_path.read_bytes(),raw)
+            self.assertIn('F17-01',(root/'scheduled-job.md').read_text())
+            self.assertIn('w4-at-isolation / acceptance',(root/'scheduled-job.md').read_text())
+            # A passing acceptance row also makes its aggregate driver exit 0.
+            # An unexplained nonzero driver exit must still fail the job.
+            at13=json.loads((root/'AT13.json').read_text())
+            next(c for c in at13['checks'] if c['name']=='lease member expiry under control loss')['status']='pass'
+            (root/'AT13.json').write_text(json.dumps(at13))
+            self.assertEqual(summarize(root,original['phases'],original['run_id'])['status'],'fail')
+            phases=copy.deepcopy(original['phases'])
+            next(p for p in phases if p['name']==DRIVER_PHASE)['exit_code']=0
+            self.assertEqual(summarize(root,phases,original['run_id'])['status'],'pass')
+            initial=json.loads(raw)
+            for kind in ('another gap','fail','join problem','different run','missing item','attempt failure','wrong status','error','missing result','invalid result'):
+                with self.subTest(kind=kind):
+                    v=copy.deepcopy(initial)
+                    if kind=='another gap':v['coverage']['independent_denial']='not exercised'
+                    if kind=='fail':v['coverage']['populated_hold']='fail'
+                    if kind=='join problem':v['join_problems']=[{'reason':'unmatched incident'}]
+                    if kind=='different run':v['run_id']='older'
+                    if kind=='missing item':del v['coverage']['matching_recovery']
+                    if kind=='attempt failure':v['attempts'][0]['status']='fail'
+                    if kind=='wrong status':v['status']='fail'
+                    if kind=='error':v['errors']=['unexpected error']
+                    review_path.write_text(json.dumps(v))
+                    if kind=='missing result':review_path.unlink()
+                    if kind=='invalid result':review_path.write_text('{')
+                    self.assertEqual(summarize(root,phases,original['run_id'])['status'],'fail')
+            review_path.write_bytes(raw)
+            changed=copy.deepcopy(phases)
+            next(p for p in changed if p['name']==HOLD_REVIEW_PHASE)['exit_code']=2
+            self.assertEqual(summarize(root,changed,original['run_id'])['status'],'fail')
+            changed=copy.deepcopy(phases)
+            changed.append(dict(name='unknown review',exit_code=1))
+            self.assertEqual(summarize(root,changed,original['run_id'])['status'],'fail')
+            v=copy.deepcopy(initial);v['coverage']['pure_stale_generation']='pass';v['status']='pass'
+            review_path.write_text(json.dumps(v))
+            next(p for p in phases if p['name']==HOLD_REVIEW_PHASE)['exit_code']=0
+            r=summarize(root,phases,original['run_id'])
+            self.assertEqual(r['status'],'pass')
+            self.assertIn('no longer needed',r['reviews'][0]['mapping'])
+            self.assertIn('remove from expected-not-exercised list',(root/'scheduled-job.md').read_text())
+            self.assertEqual(json.loads(review_path.read_text())['status'],'pass')
+
+    def test_d163_both_runner_reviews_establish_same_gap(self):
+        from nightly_summary import review_mapping, HOLD_REVIEW_PHASE
+        history=Path(__file__).resolve().parents[4]/'docs/e2e/at/isolation/history'
+        for workflow in ('41640196805','41836274140'):
+            root=history/('follow-up-24-nightly-'+workflow)
+            record=json.loads((root/'populated-holds-review.json').read_text())
+            result=review_mapping(root,dict(name=HOLD_REVIEW_PHASE,exit_code=1),record['run_id'])
+            self.assertEqual(result['mapping'],'expected not exercised')
+            self.assertEqual(sum(v=='pass' for v in result['coverage'].values()),8)

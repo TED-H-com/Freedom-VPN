@@ -1,7 +1,7 @@
 {
-  "completed_at": "2026-11-04T10:48:49.418568853Z",
+  "completed_at": "2026-11-04T14:25:10.707177591Z",
   "ready": true,
-  "run_id": "328ab9e0-7ff4-495a-81c1-410ae8a7d876",
+  "run_id": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
   "samples": [
     {
       "forward_view": {
@@ -13,24 +13,24 @@
         "LabMemberAccept": 0,
         "MSSClamp": 0,
         "PMTUAccept": 0,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-0e66-7d28-9961-e33705013197:cb26\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-8a97-727c-8d0f-fb2fdaafbfe8:1355\" | iifname \"fvmb0\" counter name \"ctbase\" drop | oifname \"fvmb0\" counter name \"ctbase\" drop | iifname \"fvmb0\" "
+        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\" | iifname \"fvmb0\" counter name \"ctbase\" drop | oifname \"fvmb0\" counter name \"ctbase\" drop | iifname \"fvmb0\" "
       },
-      "kernel_ruleset": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 46 bytes 1978\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 4 bytes 240\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 3959 bytes 237540\n\t}\n\n\tcounter ctdenyd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 44 bytes 1727\n\t}\n\n\tcounter d_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 1813 bytes 106259\n\t}\n\n\tcounter nd_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 6 bytes 438\n\t}\n\n\tcounter nu_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 6 bytes 372\n\t}\n\n\tcounter u_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 1820 bytes 93387\n\t}\n\n\tcounter d_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 68 bytes 5501\n\t}\n\n\tcounter nd_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 94 bytes 6028\n\t}\n\n\tcounter d_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 16 bytes 3038\n\t}\n\n\tcounter nd_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 17 bytes 2266\n\t}\n\n\tcounter d_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 8 bytes 1520\n\t}\n\n\tcounter nd_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 8 bytes 1113\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-0e66-7d28-9961-e33705013197:cb26\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-8a97-727c-8d0f-fb2fdaafbfe8:1355\"\n\t\tiifname \"fvmb0\" counter name \"ctbase\" drop\n\t\toifname \"fvmb0\" counter name \"ctbase\" drop\n\t\tiifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\toifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t}\n}\n",
+      "kernel_ruleset": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 15 bytes 853\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 4 bytes 240\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 3971 bytes 238260\n\t}\n\n\tcounter ctdenyd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 46 bytes 1801\n\t}\n\n\tcounter d_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 1814 bytes 106259\n\t}\n\n\tcounter nd_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 6 bytes 438\n\t}\n\n\tcounter nu_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 6 bytes 372\n\t}\n\n\tcounter u_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 1822 bytes 93464\n\t}\n\n\tcounter d_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 80 bytes 6060\n\t}\n\n\tcounter nd_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 112 bytes 6904\n\t}\n\n\tcounter d_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 16 bytes 3035\n\t}\n\n\tcounter nd_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 17 bytes 2266\n\t}\n\n\tcounter d_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 8 bytes 1518\n\t}\n\n\tcounter nd_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 9 bytes 1153\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\"\n\t\tiifname \"fvmb0\" counter name \"ctbase\" drop\n\t\toifname \"fvmb0\" counter name \"ctbase\" drop\n\t\tiifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\toifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t}\n}\n",
       "label": "control restoration readiness",
       "observation": {
         "lease": {
-          "lease_id": "69d8f20e-5608-4b04-99ab-cbeebdae9ccf",
-          "expires_at": "2026-11-04T10:48:24.809114181Z"
+          "lease_id": "9e0c7c6f-db4d-44e3-9de5-6f707ef74b78",
+          "expires_at": "2026-11-04T14:24:46.263046199Z"
         },
         "usage": {
           "blocked_seq": "32",
-          "ledger_epoch": "43c16a4c-1ae4-4b2b-b9fb-9f180032ae57",
-          "meter_epoch_id": "01a1a62a-b813-7c92-ac2a-eca54aef3bb4",
-          "oldest_unacked_at": "2026-11-04T10:43:14.955698213Z",
-          "acked_archive_bytes": "20099",
+          "ledger_epoch": "5ef0ff30-a83d-4754-b72d-df968b0fd543",
+          "meter_epoch_id": "01a1a6f0-cce1-7573-b199-1819a7eb539f",
+          "oldest_unacked_at": "2026-11-04T14:19:37.521899199Z",
+          "acked_archive_bytes": "20093",
           "unacked_event_count": 16,
           "central_acked_through": "31",
-          "unacked_payload_bytes": "10372",
+          "unacked_payload_bytes": "10371",
           "last_durable_event_seq": "47"
         },
         "checks": [
@@ -38,63 +38,63 @@
             "name": "dns_policy",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "internet_only",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "lease",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "meter_path",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "policy_signature",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "qos",
-            "detail": "read_at=2026-11-04T10:47:34.851013629Z source=live candidate=32 verified=true {\"generation\":\"32\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"0334453567f6d20ffcc77ce18574a07dff5e2b42f88a39f2beb812e9120207e9\"}",
+            "detail": "read_at=2026-11-04T14:23:57.311358531Z source=live candidate=34 verified=true {\"generation\":\"34\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"90f7622824ad0cb2b6f4db8c79aa9f321f925c7736317801016f26e5cc23169c\"}",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "release_supported",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "source_binding",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "storage",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "tunnel_probe",
             "detail": "Egress probe used no extra target.",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           }
         ],
         "errors": [],
@@ -110,14 +110,14 @@
           "peer_id": null,
           "version": null
         },
-        "node_id": "01a1a61c-e996-7746-895d-1ae813c5020e",
-        "report_id": "01a1a62b-dcc9-708c-8512-9b39c095c196",
+        "node_id": "01a1a6e2-f90b-7629-ba41-ef37246f9bcd",
+        "report_id": "01a1a6f1-f585-7339-b5dd-30bb9aa9956f",
         "data_health": "healthy",
-        "observed_at": "2026-11-04T10:47:34.856773854Z",
+        "observed_at": "2026-11-04T14:23:57.31691113Z",
         "tc_evidence": {
           "phase": "verify",
-          "sha256": "0334453567f6d20ffcc77ce18574a07dff5e2b42f88a39f2beb812e9120207e9",
-          "read_at": "2026-11-04T10:47:34.850870488Z",
+          "sha256": "90f7622824ad0cb2b6f4db8c79aa9f321f925c7736317801016f26e5cc23169c",
+          "read_at": "2026-11-04T14:23:57.311225084Z",
           "rejected": null,
           "verified": true,
           "truncated": true,
@@ -127,13 +127,13 @@
               "objects": [
                 {
                   "kind": "fq_codel",
-                  "handle": "1355:",
-                  "parent": "1:1355"
+                  "handle": "a89f:",
+                  "parent": "1:a89f"
                 },
                 {
                   "kind": "fq_codel",
-                  "handle": "cb26:",
-                  "parent": "1:cb26"
+                  "handle": "a971:",
+                  "parent": "1:a971"
                 },
                 {
                   "kind": "htb",
@@ -148,13 +148,13 @@
               "objects": [
                 {
                   "kind": "fq_codel",
-                  "handle": "1355:",
-                  "parent": "1:1355"
+                  "handle": "a89f:",
+                  "parent": "1:a89f"
                 },
                 {
                   "kind": "fq_codel",
-                  "handle": "cb26:",
-                  "parent": "1:cb26"
+                  "handle": "a971:",
+                  "parent": "1:a971"
                 },
                 {
                   "kind": "htb",
@@ -168,22 +168,17 @@
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1355:"
-            },
-            {
-              "objects": [],
-              "interface": "fvmb0",
               "attachment": "1:1"
             },
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1:1355"
+              "attachment": "1:a89f"
             },
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1:cb26"
+              "attachment": "1:a971"
             },
             {
               "objects": [],
@@ -193,7 +188,12 @@
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "cb26:"
+              "attachment": "a89f:"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "a971:"
             },
             {
               "objects": [],
@@ -213,36 +213,36 @@
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1355:"
-            },
-            {
-              "objects": [],
-              "interface": "fvup0",
               "attachment": "1:1"
             },
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1:1355"
+              "attachment": "1:a89f"
             },
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1:cb26"
+              "attachment": "1:a971"
             },
             {
               "objects": [],
               "interface": "fvup0",
               "attachment": "1:fffe"
+            },
+            {
+              "objects": [],
+              "interface": "fvup0",
+              "attachment": "a89f:"
             }
           ],
           "reads_total": 20,
           "objects_total": 6,
-          "candidate_generation": "32"
+          "candidate_generation": "34"
         },
         "agent_version": "0.1.0",
         "safety_status": "passed",
-        "current_release_id": "01a1a61c-e4a0-7d70-954e-1ddc85db20fb",
+        "current_release_id": "01a1a6e2-f412-7487-8923-536f86f6fb56",
         "provisioning_state": "ready",
         "applied_policy_refs": {
           "dns_generation": "1",
@@ -252,56 +252,56 @@
         "dns_policy_evidence": {
           "feeds": [],
           "outcome": "applied",
-          "applied_at": "2026-11-04T10:47:34.819575326Z",
+          "applied_at": "2026-11-04T14:23:57.279739212Z",
           "error_code": null,
           "generation": "1",
-          "document_id": "01a1a61c-ea4a-758e-b25a-24301fc5bb9f",
-          "content_sha256": "3ad123904841139224b8d7f392ef364069233cc939d7ee33a07660cb602e2b9f"
+          "document_id": "01a1a6e2-f965-7c04-92e9-e3792e6685e7",
+          "content_sha256": "f5426143ef28539e45f43755886339d4fee957ef864ae68f97d8b356912b377c"
         },
-        "node_incarnation_id": "01a1a61c-ec74-7874-8e20-cb4a8fe633c0",
-        "last_good_release_id": "01a1a61c-e4a0-7d70-954e-1ddc85db20fb",
+        "node_incarnation_id": "01a1a6e2-fba0-7c39-a4b5-0c774125ca16",
+        "last_good_release_id": "01a1a6e2-f412-7487-8923-536f86f6fb56",
         "applied_binding_revision": "1",
         "forwarding_block_reasons": [],
-        "applied_config_generation": "32",
+        "applied_config_generation": "34",
         "member_forwarding_enabled": true
       },
       "queue": {
         "pending": 2,
-        "at": "2026-11-04T10:48:40.673685897Z"
+        "at": "2026-11-04T14:25:01.946733447Z"
       },
       "queue_available": true,
-      "read_end": "2026-11-04T10:48:40.622371637Z",
-      "read_start": "2026-11-04T10:48:40.594233116Z",
-      "readback": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\"},{\"ifindex\":2,\"link_index\":2130,\"ifname\":\"eth0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"66:c9:ee:01:54:ee\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":3,\"link_index\":2131,\"ifname\":\"fvup0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"b6:2b:04:37:ff:ff\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\"}]\n[{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"100.74.126.211\",\"prefixlen\":16,\"broadcast\":\"100.74.255.255\",\"scope\":\"global\",\"label\":\"fvmb0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n[{\"dst\":\"100.74.0.0/16\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"local\",\"dst\":\"100.74.126.211\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"host\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"broadcast\",\"dst\":\"100.74.255.255\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"multicast\",\"dst\":\"ff00::/8\",\"table\":\"local\",\"protocol\":\"kernel\",\"metric\":256,\"flags\":[],\"pref\":\"medium\"}]\n[{\"kind\":\"noqueue\",\"handle\":\"0:\",\"root\":true,\"refcnt\":2,\"options\":{}}]\n[]\nv1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 112760209113114\nwall_unix_ns 1793789317757737034\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 32\nreason lease_expired\n"
+      "read_end": "2026-11-04T14:25:01.896352818Z",
+      "read_start": "2026-11-04T14:25:01.869292072Z",
+      "readback": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\"},{\"ifindex\":2,\"link_index\":2295,\"ifname\":\"eth0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"1a:bf:55:98:36:2f\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":3,\"link_index\":2296,\"ifname\":\"fvup0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"fa:7d:8f:8b:fb:50\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\"}]\n[{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"100.77.231.216\",\"prefixlen\":16,\"broadcast\":\"100.77.255.255\",\"scope\":\"global\",\"label\":\"fvmb0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n[{\"dst\":\"100.77.0.0/16\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"local\",\"dst\":\"100.77.231.216\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"host\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"broadcast\",\"dst\":\"100.77.255.255\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"multicast\",\"dst\":\"ff00::/8\",\"table\":\"local\",\"protocol\":\"kernel\",\"metric\":256,\"flags\":[],\"pref\":\"medium\"}]\n[{\"kind\":\"noqueue\",\"handle\":\"0:\",\"root\":true,\"refcnt\":2,\"options\":{}}]\n[]\nv1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 125741761922626\nwall_unix_ns 1793802299310546411\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 34\nreason lease_expired\n"
     },
     {
       "forward_view": {
         "Present": true,
         "Policy": "drop",
         "Baseline": false,
-        "Generation": 32,
+        "Generation": 34,
         "MemberAccept": 18,
         "LabMemberAccept": 18,
         "MSSClamp": 4,
         "PMTUAccept": 6,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-0e66-7d28-9961-e33705013197:cb26\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-8a97-727c-8d0f-fb2fdaafbfe8:1355\" | iifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop | iifname \"fvup0\" oifname \"fvmb0\" meta nfproto"
+        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=34 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\" | iifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop | iifname \"fvup0\" oifname \"fvmb0\" meta nfproto"
       },
-      "kernel_ruleset": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 46 bytes 1978\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 4 bytes 240\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 3959 bytes 237540\n\t}\n\n\tcounter ctdenyd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 44 bytes 1727\n\t}\n\n\tcounter d_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 1813 bytes 106259\n\t}\n\n\tcounter nd_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 6 bytes 438\n\t}\n\n\tcounter nu_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 6 bytes 372\n\t}\n\n\tcounter u_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 1820 bytes 93387\n\t}\n\n\tcounter d_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 68 bytes 5501\n\t}\n\n\tcounter nd_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 94 bytes 6028\n\t}\n\n\tcounter d_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 16 bytes 3038\n\t}\n\n\tcounter nd_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 17 bytes 2266\n\t}\n\n\tcounter d_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 8 bytes 1520\n\t}\n\n\tcounter nd_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 8 bytes 1113\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.74.30.177 timeout 59s848ms expires 58s389ms, 100.74.210.208 timeout 59s848ms expires 58s389ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 172.16.0.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 192.0.6.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 192.0.6.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-0e66-7d28-9961-e33705013197:cb26\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-8a97-727c-8d0f-fb2fdaafbfe8:1355\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 counter name \"u_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 counter name \"u_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.210.208 tcp sport 53 counter name \"nd_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.210.208 udp sport 53 counter name \"nd_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.30.177 tcp sport 53 counter name \"nd_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.30.177 udp sport 53 counter name \"nd_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.210.208 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.74.210.208 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.74.210.208 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.30.177 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.74.30.177 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.74.30.177 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.210.208 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.210.208 counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.30.177 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.30.177 counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 192.0.6.20\n\t}\n}\n",
+      "kernel_ruleset": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 15 bytes 853\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 4 bytes 240\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 3971 bytes 238260\n\t}\n\n\tcounter ctdenyd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 46 bytes 1801\n\t}\n\n\tcounter d_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 1814 bytes 106259\n\t}\n\n\tcounter nd_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 6 bytes 438\n\t}\n\n\tcounter nu_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 6 bytes 372\n\t}\n\n\tcounter u_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 1822 bytes 93464\n\t}\n\n\tcounter d_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 80 bytes 6060\n\t}\n\n\tcounter nd_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 112 bytes 6904\n\t}\n\n\tcounter d_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 16 bytes 3035\n\t}\n\n\tcounter nd_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 17 bytes 2266\n\t}\n\n\tcounter d_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 8 bytes 1518\n\t}\n\n\tcounter nd_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 9 bytes 1153\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.77.15.30 timeout 59s852ms expires 59s512ms, 100.77.187.94 timeout 59s852ms expires 59s512ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 172.16.0.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 192.0.6.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 192.0.6.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=34 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 counter name \"u_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 counter name \"u_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 tcp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 udp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 tcp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 udp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 192.0.6.20\n\t}\n}\n",
       "label": "control restoration readiness",
       "observation": {
         "lease": {
-          "lease_id": "69d8f20e-5608-4b04-99ab-cbeebdae9ccf",
-          "expires_at": "2026-11-04T10:48:24.809114181Z"
+          "lease_id": "9e0c7c6f-db4d-44e3-9de5-6f707ef74b78",
+          "expires_at": "2026-11-04T14:24:46.263046199Z"
         },
         "usage": {
           "blocked_seq": "32",
-          "ledger_epoch": "43c16a4c-1ae4-4b2b-b9fb-9f180032ae57",
-          "meter_epoch_id": "01a1a62a-b813-7c92-ac2a-eca54aef3bb4",
-          "oldest_unacked_at": "2026-11-04T10:43:14.955698213Z",
-          "acked_archive_bytes": "20099",
+          "ledger_epoch": "5ef0ff30-a83d-4754-b72d-df968b0fd543",
+          "meter_epoch_id": "01a1a6f0-cce1-7573-b199-1819a7eb539f",
+          "oldest_unacked_at": "2026-11-04T14:19:37.521899199Z",
+          "acked_archive_bytes": "20093",
           "unacked_event_count": 16,
           "central_acked_through": "31",
-          "unacked_payload_bytes": "10372",
+          "unacked_payload_bytes": "10371",
           "last_durable_event_seq": "47"
         },
         "checks": [
@@ -309,63 +309,63 @@
             "name": "dns_policy",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "internet_only",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "lease",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "meter_path",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "policy_signature",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "qos",
-            "detail": "read_at=2026-11-04T10:47:34.851013629Z source=live candidate=32 verified=true {\"generation\":\"32\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"0334453567f6d20ffcc77ce18574a07dff5e2b42f88a39f2beb812e9120207e9\"}",
+            "detail": "read_at=2026-11-04T14:23:57.311358531Z source=live candidate=34 verified=true {\"generation\":\"34\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"90f7622824ad0cb2b6f4db8c79aa9f321f925c7736317801016f26e5cc23169c\"}",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "release_supported",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "source_binding",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "storage",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "tunnel_probe",
             "detail": "Egress probe used no extra target.",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           }
         ],
         "errors": [],
@@ -381,14 +381,14 @@
           "peer_id": null,
           "version": null
         },
-        "node_id": "01a1a61c-e996-7746-895d-1ae813c5020e",
-        "report_id": "01a1a62b-dcc9-708c-8512-9b39c095c196",
+        "node_id": "01a1a6e2-f90b-7629-ba41-ef37246f9bcd",
+        "report_id": "01a1a6f1-f585-7339-b5dd-30bb9aa9956f",
         "data_health": "healthy",
-        "observed_at": "2026-11-04T10:47:34.856773854Z",
+        "observed_at": "2026-11-04T14:23:57.31691113Z",
         "tc_evidence": {
           "phase": "verify",
-          "sha256": "0334453567f6d20ffcc77ce18574a07dff5e2b42f88a39f2beb812e9120207e9",
-          "read_at": "2026-11-04T10:47:34.850870488Z",
+          "sha256": "90f7622824ad0cb2b6f4db8c79aa9f321f925c7736317801016f26e5cc23169c",
+          "read_at": "2026-11-04T14:23:57.311225084Z",
           "rejected": null,
           "verified": true,
           "truncated": true,
@@ -398,13 +398,13 @@
               "objects": [
                 {
                   "kind": "fq_codel",
-                  "handle": "1355:",
-                  "parent": "1:1355"
+                  "handle": "a89f:",
+                  "parent": "1:a89f"
                 },
                 {
                   "kind": "fq_codel",
-                  "handle": "cb26:",
-                  "parent": "1:cb26"
+                  "handle": "a971:",
+                  "parent": "1:a971"
                 },
                 {
                   "kind": "htb",
@@ -419,13 +419,13 @@
               "objects": [
                 {
                   "kind": "fq_codel",
-                  "handle": "1355:",
-                  "parent": "1:1355"
+                  "handle": "a89f:",
+                  "parent": "1:a89f"
                 },
                 {
                   "kind": "fq_codel",
-                  "handle": "cb26:",
-                  "parent": "1:cb26"
+                  "handle": "a971:",
+                  "parent": "1:a971"
                 },
                 {
                   "kind": "htb",
@@ -439,22 +439,17 @@
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1355:"
-            },
-            {
-              "objects": [],
-              "interface": "fvmb0",
               "attachment": "1:1"
             },
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1:1355"
+              "attachment": "1:a89f"
             },
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1:cb26"
+              "attachment": "1:a971"
             },
             {
               "objects": [],
@@ -464,7 +459,12 @@
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "cb26:"
+              "attachment": "a89f:"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "a971:"
             },
             {
               "objects": [],
@@ -484,36 +484,36 @@
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1355:"
-            },
-            {
-              "objects": [],
-              "interface": "fvup0",
               "attachment": "1:1"
             },
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1:1355"
+              "attachment": "1:a89f"
             },
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1:cb26"
+              "attachment": "1:a971"
             },
             {
               "objects": [],
               "interface": "fvup0",
               "attachment": "1:fffe"
+            },
+            {
+              "objects": [],
+              "interface": "fvup0",
+              "attachment": "a89f:"
             }
           ],
           "reads_total": 20,
           "objects_total": 6,
-          "candidate_generation": "32"
+          "candidate_generation": "34"
         },
         "agent_version": "0.1.0",
         "safety_status": "passed",
-        "current_release_id": "01a1a61c-e4a0-7d70-954e-1ddc85db20fb",
+        "current_release_id": "01a1a6e2-f412-7487-8923-536f86f6fb56",
         "provisioning_state": "ready",
         "applied_policy_refs": {
           "dns_generation": "1",
@@ -523,56 +523,56 @@
         "dns_policy_evidence": {
           "feeds": [],
           "outcome": "applied",
-          "applied_at": "2026-11-04T10:47:34.819575326Z",
+          "applied_at": "2026-11-04T14:23:57.279739212Z",
           "error_code": null,
           "generation": "1",
-          "document_id": "01a1a61c-ea4a-758e-b25a-24301fc5bb9f",
-          "content_sha256": "3ad123904841139224b8d7f392ef364069233cc939d7ee33a07660cb602e2b9f"
+          "document_id": "01a1a6e2-f965-7c04-92e9-e3792e6685e7",
+          "content_sha256": "f5426143ef28539e45f43755886339d4fee957ef864ae68f97d8b356912b377c"
         },
-        "node_incarnation_id": "01a1a61c-ec74-7874-8e20-cb4a8fe633c0",
-        "last_good_release_id": "01a1a61c-e4a0-7d70-954e-1ddc85db20fb",
+        "node_incarnation_id": "01a1a6e2-fba0-7c39-a4b5-0c774125ca16",
+        "last_good_release_id": "01a1a6e2-f412-7487-8923-536f86f6fb56",
         "applied_binding_revision": "1",
         "forwarding_block_reasons": [],
-        "applied_config_generation": "32",
+        "applied_config_generation": "34",
         "member_forwarding_enabled": true
       },
       "queue": {
         "pending": 3,
-        "at": "2026-11-04T10:48:42.859570707Z"
+        "at": "2026-11-04T14:25:04.138575108Z"
       },
       "queue_available": true,
-      "read_end": "2026-11-04T10:48:42.808908301Z",
-      "read_start": "2026-11-04T10:48:42.78158866Z",
-      "readback": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\"},{\"ifindex\":2,\"link_index\":2130,\"ifname\":\"eth0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"66:c9:ee:01:54:ee\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":3,\"link_index\":2131,\"ifname\":\"fvup0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"htb\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"b6:2b:04:37:ff:ff\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\"}]\n[{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"100.74.126.211\",\"prefixlen\":16,\"broadcast\":\"100.74.255.255\",\"scope\":\"global\",\"label\":\"fvmb0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n[{\"dst\":\"100.74.0.0/16\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"local\",\"dst\":\"100.74.126.211\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"host\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"broadcast\",\"dst\":\"100.74.255.255\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"multicast\",\"dst\":\"ff00::/8\",\"table\":\"local\",\"protocol\":\"kernel\",\"metric\":256,\"flags\":[],\"pref\":\"medium\"}]\n[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true,\"refcnt\":2,\"options\":{\"r2q\":10,\"default\":\"0xfffe\",\"direct_packets_stat\":0,\"direct_qlen\":1000}},{\"kind\":\"fq_codel\",\"handle\":\"cb26:\",\"parent\":\"1:cb26\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}},{\"kind\":\"fq_codel\",\"handle\":\"1355:\",\"parent\":\"1:1355\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}}]\n[]\nv1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 112765078830342\nwall_unix_ns 1793789322627454171\npolicy_expires_mono_ns 112823768701249\nbaseline_ok 1\nserving 1\ngeneration 32\nreason serving\n"
+      "read_end": "2026-11-04T14:25:04.086972611Z",
+      "read_start": "2026-11-04T14:25:04.058303928Z",
+      "readback": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\"},{\"ifindex\":2,\"link_index\":2295,\"ifname\":\"eth0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"1a:bf:55:98:36:2f\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":3,\"link_index\":2296,\"ifname\":\"fvup0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"htb\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"fa:7d:8f:8b:fb:50\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\"}]\n[{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"100.77.231.216\",\"prefixlen\":16,\"broadcast\":\"100.77.255.255\",\"scope\":\"global\",\"label\":\"fvmb0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n[{\"dst\":\"100.77.0.0/16\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"local\",\"dst\":\"100.77.231.216\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"host\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"broadcast\",\"dst\":\"100.77.255.255\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"multicast\",\"dst\":\"ff00::/8\",\"table\":\"local\",\"protocol\":\"kernel\",\"metric\":256,\"flags\":[],\"pref\":\"medium\"}]\n[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true,\"refcnt\":2,\"options\":{\"r2q\":10,\"default\":\"0xfffe\",\"direct_packets_stat\":0,\"direct_qlen\":1000}},{\"kind\":\"fq_codel\",\"handle\":\"a971:\",\"parent\":\"1:a971\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}},{\"kind\":\"fq_codel\",\"handle\":\"a89f:\",\"parent\":\"1:a89f\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}}]\n[]\nv1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 125746486261198\nwall_unix_ns 1793802304034885091\npolicy_expires_mono_ns 125806171750373\nbaseline_ok 1\nserving 1\ngeneration 34\nreason serving\n"
     },
     {
       "forward_view": {
         "Present": true,
         "Policy": "drop",
         "Baseline": false,
-        "Generation": 32,
+        "Generation": 34,
         "MemberAccept": 18,
         "LabMemberAccept": 18,
         "MSSClamp": 4,
         "PMTUAccept": 6,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-0e66-7d28-9961-e33705013197:cb26\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-8a97-727c-8d0f-fb2fdaafbfe8:1355\" | iifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop | iifname \"fvup0\" oifname \"fvmb0\" meta nfproto"
+        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=34 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\" | iifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop | iifname \"fvup0\" oifname \"fvmb0\" meta nfproto"
       },
-      "kernel_ruleset": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 46 bytes 1978\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 4 bytes 240\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 3959 bytes 237540\n\t}\n\n\tcounter ctdenyd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 44 bytes 1727\n\t}\n\n\tcounter d_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 1813 bytes 106259\n\t}\n\n\tcounter nd_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 6 bytes 438\n\t}\n\n\tcounter nu_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 6 bytes 372\n\t}\n\n\tcounter u_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 1820 bytes 93387\n\t}\n\n\tcounter d_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 68 bytes 5501\n\t}\n\n\tcounter nd_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 94 bytes 6028\n\t}\n\n\tcounter d_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 16 bytes 3038\n\t}\n\n\tcounter nd_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 17 bytes 2266\n\t}\n\n\tcounter d_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 8 bytes 1520\n\t}\n\n\tcounter nd_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 8 bytes 1113\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.74.30.177 timeout 59s848ms expires 56s202ms, 100.74.210.208 timeout 59s848ms expires 56s202ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 172.16.0.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 192.0.6.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 192.0.6.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-0e66-7d28-9961-e33705013197:cb26\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-8a97-727c-8d0f-fb2fdaafbfe8:1355\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 counter name \"u_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 counter name \"u_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.210.208 tcp sport 53 counter name \"nd_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.210.208 udp sport 53 counter name \"nd_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.30.177 tcp sport 53 counter name \"nd_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.30.177 udp sport 53 counter name \"nd_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.210.208 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.74.210.208 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.74.210.208 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.30.177 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.74.30.177 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.74.30.177 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.210.208 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.210.208 counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.30.177 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.30.177 counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 192.0.6.20\n\t}\n}\n",
+      "kernel_ruleset": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 15 bytes 853\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 4 bytes 240\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 3971 bytes 238260\n\t}\n\n\tcounter ctdenyd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 46 bytes 1801\n\t}\n\n\tcounter d_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 1814 bytes 106259\n\t}\n\n\tcounter nd_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 6 bytes 438\n\t}\n\n\tcounter nu_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 6 bytes 372\n\t}\n\n\tcounter u_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 1822 bytes 93464\n\t}\n\n\tcounter d_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 80 bytes 6060\n\t}\n\n\tcounter nd_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 112 bytes 6904\n\t}\n\n\tcounter d_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 16 bytes 3035\n\t}\n\n\tcounter nd_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 17 bytes 2266\n\t}\n\n\tcounter d_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 8 bytes 1518\n\t}\n\n\tcounter nd_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 9 bytes 1153\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.77.15.30 timeout 59s852ms expires 57s317ms, 100.77.187.94 timeout 59s852ms expires 57s317ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 172.16.0.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 192.0.6.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 192.0.6.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=34 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 counter name \"u_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 counter name \"u_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 tcp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 udp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 tcp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 udp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 192.0.6.20\n\t}\n}\n",
       "label": "control restoration readiness",
       "observation": {
         "lease": {
-          "lease_id": "69d8f20e-5608-4b04-99ab-cbeebdae9ccf",
-          "expires_at": "2026-11-04T10:48:24.809114181Z"
+          "lease_id": "9e0c7c6f-db4d-44e3-9de5-6f707ef74b78",
+          "expires_at": "2026-11-04T14:24:46.263046199Z"
         },
         "usage": {
           "blocked_seq": "32",
-          "ledger_epoch": "43c16a4c-1ae4-4b2b-b9fb-9f180032ae57",
-          "meter_epoch_id": "01a1a62a-b813-7c92-ac2a-eca54aef3bb4",
-          "oldest_unacked_at": "2026-11-04T10:43:14.955698213Z",
-          "acked_archive_bytes": "20099",
+          "ledger_epoch": "5ef0ff30-a83d-4754-b72d-df968b0fd543",
+          "meter_epoch_id": "01a1a6f0-cce1-7573-b199-1819a7eb539f",
+          "oldest_unacked_at": "2026-11-04T14:19:37.521899199Z",
+          "acked_archive_bytes": "20093",
           "unacked_event_count": 16,
           "central_acked_through": "31",
-          "unacked_payload_bytes": "10372",
+          "unacked_payload_bytes": "10371",
           "last_durable_event_seq": "47"
         },
         "checks": [
@@ -580,63 +580,63 @@
             "name": "dns_policy",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "internet_only",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "lease",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "meter_path",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "policy_signature",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "qos",
-            "detail": "read_at=2026-11-04T10:47:34.851013629Z source=live candidate=32 verified=true {\"generation\":\"32\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"0334453567f6d20ffcc77ce18574a07dff5e2b42f88a39f2beb812e9120207e9\"}",
+            "detail": "read_at=2026-11-04T14:23:57.311358531Z source=live candidate=34 verified=true {\"generation\":\"34\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"90f7622824ad0cb2b6f4db8c79aa9f321f925c7736317801016f26e5cc23169c\"}",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "release_supported",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "source_binding",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "storage",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "tunnel_probe",
             "detail": "Egress probe used no extra target.",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           }
         ],
         "errors": [],
@@ -652,14 +652,14 @@
           "peer_id": null,
           "version": null
         },
-        "node_id": "01a1a61c-e996-7746-895d-1ae813c5020e",
-        "report_id": "01a1a62b-dcc9-708c-8512-9b39c095c196",
+        "node_id": "01a1a6e2-f90b-7629-ba41-ef37246f9bcd",
+        "report_id": "01a1a6f1-f585-7339-b5dd-30bb9aa9956f",
         "data_health": "healthy",
-        "observed_at": "2026-11-04T10:47:34.856773854Z",
+        "observed_at": "2026-11-04T14:23:57.31691113Z",
         "tc_evidence": {
           "phase": "verify",
-          "sha256": "0334453567f6d20ffcc77ce18574a07dff5e2b42f88a39f2beb812e9120207e9",
-          "read_at": "2026-11-04T10:47:34.850870488Z",
+          "sha256": "90f7622824ad0cb2b6f4db8c79aa9f321f925c7736317801016f26e5cc23169c",
+          "read_at": "2026-11-04T14:23:57.311225084Z",
           "rejected": null,
           "verified": true,
           "truncated": true,
@@ -669,13 +669,13 @@
               "objects": [
                 {
                   "kind": "fq_codel",
-                  "handle": "1355:",
-                  "parent": "1:1355"
+                  "handle": "a89f:",
+                  "parent": "1:a89f"
                 },
                 {
                   "kind": "fq_codel",
-                  "handle": "cb26:",
-                  "parent": "1:cb26"
+                  "handle": "a971:",
+                  "parent": "1:a971"
                 },
                 {
                   "kind": "htb",
@@ -690,13 +690,13 @@
               "objects": [
                 {
                   "kind": "fq_codel",
-                  "handle": "1355:",
-                  "parent": "1:1355"
+                  "handle": "a89f:",
+                  "parent": "1:a89f"
                 },
                 {
                   "kind": "fq_codel",
-                  "handle": "cb26:",
-                  "parent": "1:cb26"
+                  "handle": "a971:",
+                  "parent": "1:a971"
                 },
                 {
                   "kind": "htb",
@@ -710,22 +710,17 @@
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1355:"
-            },
-            {
-              "objects": [],
-              "interface": "fvmb0",
               "attachment": "1:1"
             },
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1:1355"
+              "attachment": "1:a89f"
             },
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1:cb26"
+              "attachment": "1:a971"
             },
             {
               "objects": [],
@@ -735,7 +730,12 @@
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "cb26:"
+              "attachment": "a89f:"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "a971:"
             },
             {
               "objects": [],
@@ -755,36 +755,36 @@
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1355:"
-            },
-            {
-              "objects": [],
-              "interface": "fvup0",
               "attachment": "1:1"
             },
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1:1355"
+              "attachment": "1:a89f"
             },
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1:cb26"
+              "attachment": "1:a971"
             },
             {
               "objects": [],
               "interface": "fvup0",
               "attachment": "1:fffe"
+            },
+            {
+              "objects": [],
+              "interface": "fvup0",
+              "attachment": "a89f:"
             }
           ],
           "reads_total": 20,
           "objects_total": 6,
-          "candidate_generation": "32"
+          "candidate_generation": "34"
         },
         "agent_version": "0.1.0",
         "safety_status": "passed",
-        "current_release_id": "01a1a61c-e4a0-7d70-954e-1ddc85db20fb",
+        "current_release_id": "01a1a6e2-f412-7487-8923-536f86f6fb56",
         "provisioning_state": "ready",
         "applied_policy_refs": {
           "dns_generation": "1",
@@ -794,56 +794,56 @@
         "dns_policy_evidence": {
           "feeds": [],
           "outcome": "applied",
-          "applied_at": "2026-11-04T10:47:34.819575326Z",
+          "applied_at": "2026-11-04T14:23:57.279739212Z",
           "error_code": null,
           "generation": "1",
-          "document_id": "01a1a61c-ea4a-758e-b25a-24301fc5bb9f",
-          "content_sha256": "3ad123904841139224b8d7f392ef364069233cc939d7ee33a07660cb602e2b9f"
+          "document_id": "01a1a6e2-f965-7c04-92e9-e3792e6685e7",
+          "content_sha256": "f5426143ef28539e45f43755886339d4fee957ef864ae68f97d8b356912b377c"
         },
-        "node_incarnation_id": "01a1a61c-ec74-7874-8e20-cb4a8fe633c0",
-        "last_good_release_id": "01a1a61c-e4a0-7d70-954e-1ddc85db20fb",
+        "node_incarnation_id": "01a1a6e2-fba0-7c39-a4b5-0c774125ca16",
+        "last_good_release_id": "01a1a6e2-f412-7487-8923-536f86f6fb56",
         "applied_binding_revision": "1",
         "forwarding_block_reasons": [],
-        "applied_config_generation": "32",
+        "applied_config_generation": "34",
         "member_forwarding_enabled": true
       },
       "queue": {
         "pending": 3,
-        "at": "2026-11-04T10:48:45.048023099Z"
+        "at": "2026-11-04T14:25:06.333557442Z"
       },
       "queue_available": true,
-      "read_end": "2026-11-04T10:48:44.996561872Z",
-      "read_start": "2026-11-04T10:48:44.968466116Z",
-      "readback": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\"},{\"ifindex\":2,\"link_index\":2130,\"ifname\":\"eth0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"66:c9:ee:01:54:ee\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":3,\"link_index\":2131,\"ifname\":\"fvup0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"htb\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"b6:2b:04:37:ff:ff\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\"}]\n[{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"100.74.126.211\",\"prefixlen\":16,\"broadcast\":\"100.74.255.255\",\"scope\":\"global\",\"label\":\"fvmb0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n[{\"dst\":\"100.74.0.0/16\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"local\",\"dst\":\"100.74.126.211\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"host\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"broadcast\",\"dst\":\"100.74.255.255\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"multicast\",\"dst\":\"ff00::/8\",\"table\":\"local\",\"protocol\":\"kernel\",\"metric\":256,\"flags\":[],\"pref\":\"medium\"}]\n[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true,\"refcnt\":2,\"options\":{\"r2q\":10,\"default\":\"0xfffe\",\"direct_packets_stat\":0,\"direct_qlen\":1000}},{\"kind\":\"fq_codel\",\"handle\":\"cb26:\",\"parent\":\"1:cb26\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}},{\"kind\":\"fq_codel\",\"handle\":\"1355:\",\"parent\":\"1:1355\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}}]\n[]\nv1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 112767068789123\nwall_unix_ns 1793789324617412740\npolicy_expires_mono_ns 112823768701249\nbaseline_ok 1\nserving 1\ngeneration 32\nreason serving\n"
+      "read_end": "2026-11-04T14:25:06.283013613Z",
+      "read_start": "2026-11-04T14:25:06.255138882Z",
+      "readback": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\"},{\"ifindex\":2,\"link_index\":2295,\"ifname\":\"eth0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"1a:bf:55:98:36:2f\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":3,\"link_index\":2296,\"ifname\":\"fvup0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"htb\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"fa:7d:8f:8b:fb:50\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\"}]\n[{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"100.77.231.216\",\"prefixlen\":16,\"broadcast\":\"100.77.255.255\",\"scope\":\"global\",\"label\":\"fvmb0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n[{\"dst\":\"100.77.0.0/16\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"local\",\"dst\":\"100.77.231.216\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"host\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"broadcast\",\"dst\":\"100.77.255.255\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"multicast\",\"dst\":\"ff00::/8\",\"table\":\"local\",\"protocol\":\"kernel\",\"metric\":256,\"flags\":[],\"pref\":\"medium\"}]\n[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true,\"refcnt\":2,\"options\":{\"r2q\":10,\"default\":\"0xfffe\",\"direct_packets_stat\":0,\"direct_qlen\":1000}},{\"kind\":\"fq_codel\",\"handle\":\"a971:\",\"parent\":\"1:a971\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}},{\"kind\":\"fq_codel\",\"handle\":\"a89f:\",\"parent\":\"1:a89f\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}}]\n[]\nv1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 125748491889557\nwall_unix_ns 1793802306040513234\npolicy_expires_mono_ns 125806171750373\nbaseline_ok 1\nserving 1\ngeneration 34\nreason serving\n"
     },
     {
       "forward_view": {
         "Present": true,
         "Policy": "drop",
         "Baseline": false,
-        "Generation": 32,
+        "Generation": 34,
         "MemberAccept": 18,
         "LabMemberAccept": 18,
         "MSSClamp": 4,
         "PMTUAccept": 6,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-0e66-7d28-9961-e33705013197:cb26\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-8a97-727c-8d0f-fb2fdaafbfe8:1355\" | iifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop | iifname \"fvup0\" oifname \"fvmb0\" meta nfproto"
+        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=34 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\" | iifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop | iifname \"fvup0\" oifname \"fvmb0\" meta nfproto"
       },
-      "kernel_ruleset": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 46 bytes 1978\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 4 bytes 240\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 3959 bytes 237540\n\t}\n\n\tcounter ctdenyd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 44 bytes 1727\n\t}\n\n\tcounter d_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 1813 bytes 106259\n\t}\n\n\tcounter nd_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 6 bytes 438\n\t}\n\n\tcounter nu_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 6 bytes 372\n\t}\n\n\tcounter u_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 1820 bytes 93387\n\t}\n\n\tcounter d_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 68 bytes 5501\n\t}\n\n\tcounter nd_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 94 bytes 6028\n\t}\n\n\tcounter d_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 16 bytes 3038\n\t}\n\n\tcounter nd_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 17 bytes 2266\n\t}\n\n\tcounter d_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 8 bytes 1520\n\t}\n\n\tcounter nd_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 8 bytes 1113\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.74.30.177 timeout 59s848ms expires 54s25ms, 100.74.210.208 timeout 59s848ms expires 54s25ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 172.16.0.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 192.0.6.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 192.0.6.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-0e66-7d28-9961-e33705013197:cb26\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-8a97-727c-8d0f-fb2fdaafbfe8:1355\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 counter name \"u_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 counter name \"u_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.210.208 tcp sport 53 counter name \"nd_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.210.208 udp sport 53 counter name \"nd_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.30.177 tcp sport 53 counter name \"nd_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.30.177 udp sport 53 counter name \"nd_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.210.208 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.74.210.208 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.74.210.208 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.30.177 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.74.30.177 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.74.30.177 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.210.208 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.210.208 counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.30.177 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.30.177 counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 192.0.6.20\n\t}\n}\n",
+      "kernel_ruleset": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 15 bytes 853\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 4 bytes 240\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 3971 bytes 238260\n\t}\n\n\tcounter ctdenyd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 46 bytes 1801\n\t}\n\n\tcounter d_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 1814 bytes 106259\n\t}\n\n\tcounter nd_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 6 bytes 438\n\t}\n\n\tcounter nu_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 6 bytes 372\n\t}\n\n\tcounter u_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 1822 bytes 93464\n\t}\n\n\tcounter d_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 80 bytes 6060\n\t}\n\n\tcounter nd_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 112 bytes 6904\n\t}\n\n\tcounter d_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 16 bytes 3035\n\t}\n\n\tcounter nd_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 17 bytes 2266\n\t}\n\n\tcounter d_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 8 bytes 1518\n\t}\n\n\tcounter nd_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 9 bytes 1153\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.77.15.30 timeout 59s852ms expires 55s142ms, 100.77.187.94 timeout 59s852ms expires 55s142ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 172.16.0.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 192.0.6.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 192.0.6.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=34 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 counter name \"u_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 counter name \"u_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 tcp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 udp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 tcp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 udp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 192.0.6.20\n\t}\n}\n",
       "label": "control restoration readiness",
       "observation": {
         "lease": {
-          "lease_id": "69d8f20e-5608-4b04-99ab-cbeebdae9ccf",
-          "expires_at": "2026-11-04T10:48:24.809114181Z"
+          "lease_id": "9e0c7c6f-db4d-44e3-9de5-6f707ef74b78",
+          "expires_at": "2026-11-04T14:24:46.263046199Z"
         },
         "usage": {
           "blocked_seq": "32",
-          "ledger_epoch": "43c16a4c-1ae4-4b2b-b9fb-9f180032ae57",
-          "meter_epoch_id": "01a1a62a-b813-7c92-ac2a-eca54aef3bb4",
-          "oldest_unacked_at": "2026-11-04T10:43:14.955698213Z",
-          "acked_archive_bytes": "20099",
+          "ledger_epoch": "5ef0ff30-a83d-4754-b72d-df968b0fd543",
+          "meter_epoch_id": "01a1a6f0-cce1-7573-b199-1819a7eb539f",
+          "oldest_unacked_at": "2026-11-04T14:19:37.521899199Z",
+          "acked_archive_bytes": "20093",
           "unacked_event_count": 16,
           "central_acked_through": "31",
-          "unacked_payload_bytes": "10372",
+          "unacked_payload_bytes": "10371",
           "last_durable_event_seq": "47"
         },
         "checks": [
@@ -851,63 +851,63 @@
             "name": "dns_policy",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "internet_only",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "lease",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "meter_path",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "policy_signature",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "qos",
-            "detail": "read_at=2026-11-04T10:47:34.851013629Z source=live candidate=32 verified=true {\"generation\":\"32\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"0334453567f6d20ffcc77ce18574a07dff5e2b42f88a39f2beb812e9120207e9\"}",
+            "detail": "read_at=2026-11-04T14:23:57.311358531Z source=live candidate=34 verified=true {\"generation\":\"34\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"90f7622824ad0cb2b6f4db8c79aa9f321f925c7736317801016f26e5cc23169c\"}",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "release_supported",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "source_binding",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "storage",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           },
           {
             "name": "tunnel_probe",
             "detail": "Egress probe used no extra target.",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:47:34.857628408Z"
+            "observed_at": "2026-11-04T14:23:57.317288365Z"
           }
         ],
         "errors": [],
@@ -923,14 +923,14 @@
           "peer_id": null,
           "version": null
         },
-        "node_id": "01a1a61c-e996-7746-895d-1ae813c5020e",
-        "report_id": "01a1a62b-dcc9-708c-8512-9b39c095c196",
+        "node_id": "01a1a6e2-f90b-7629-ba41-ef37246f9bcd",
+        "report_id": "01a1a6f1-f585-7339-b5dd-30bb9aa9956f",
         "data_health": "healthy",
-        "observed_at": "2026-11-04T10:47:34.856773854Z",
+        "observed_at": "2026-11-04T14:23:57.31691113Z",
         "tc_evidence": {
           "phase": "verify",
-          "sha256": "0334453567f6d20ffcc77ce18574a07dff5e2b42f88a39f2beb812e9120207e9",
-          "read_at": "2026-11-04T10:47:34.850870488Z",
+          "sha256": "90f7622824ad0cb2b6f4db8c79aa9f321f925c7736317801016f26e5cc23169c",
+          "read_at": "2026-11-04T14:23:57.311225084Z",
           "rejected": null,
           "verified": true,
           "truncated": true,
@@ -940,13 +940,13 @@
               "objects": [
                 {
                   "kind": "fq_codel",
-                  "handle": "1355:",
-                  "parent": "1:1355"
+                  "handle": "a89f:",
+                  "parent": "1:a89f"
                 },
                 {
                   "kind": "fq_codel",
-                  "handle": "cb26:",
-                  "parent": "1:cb26"
+                  "handle": "a971:",
+                  "parent": "1:a971"
                 },
                 {
                   "kind": "htb",
@@ -961,13 +961,13 @@
               "objects": [
                 {
                   "kind": "fq_codel",
-                  "handle": "1355:",
-                  "parent": "1:1355"
+                  "handle": "a89f:",
+                  "parent": "1:a89f"
                 },
                 {
                   "kind": "fq_codel",
-                  "handle": "cb26:",
-                  "parent": "1:cb26"
+                  "handle": "a971:",
+                  "parent": "1:a971"
                 },
                 {
                   "kind": "htb",
@@ -981,22 +981,17 @@
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1355:"
-            },
-            {
-              "objects": [],
-              "interface": "fvmb0",
               "attachment": "1:1"
             },
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1:1355"
+              "attachment": "1:a89f"
             },
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1:cb26"
+              "attachment": "1:a971"
             },
             {
               "objects": [],
@@ -1006,7 +1001,12 @@
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "cb26:"
+              "attachment": "a89f:"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "a971:"
             },
             {
               "objects": [],
@@ -1026,36 +1026,36 @@
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1355:"
-            },
-            {
-              "objects": [],
-              "interface": "fvup0",
               "attachment": "1:1"
             },
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1:1355"
+              "attachment": "1:a89f"
             },
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1:cb26"
+              "attachment": "1:a971"
             },
             {
               "objects": [],
               "interface": "fvup0",
               "attachment": "1:fffe"
+            },
+            {
+              "objects": [],
+              "interface": "fvup0",
+              "attachment": "a89f:"
             }
           ],
           "reads_total": 20,
           "objects_total": 6,
-          "candidate_generation": "32"
+          "candidate_generation": "34"
         },
         "agent_version": "0.1.0",
         "safety_status": "passed",
-        "current_release_id": "01a1a61c-e4a0-7d70-954e-1ddc85db20fb",
+        "current_release_id": "01a1a6e2-f412-7487-8923-536f86f6fb56",
         "provisioning_state": "ready",
         "applied_policy_refs": {
           "dns_generation": "1",
@@ -1065,120 +1065,120 @@
         "dns_policy_evidence": {
           "feeds": [],
           "outcome": "applied",
-          "applied_at": "2026-11-04T10:47:34.819575326Z",
+          "applied_at": "2026-11-04T14:23:57.279739212Z",
           "error_code": null,
           "generation": "1",
-          "document_id": "01a1a61c-ea4a-758e-b25a-24301fc5bb9f",
-          "content_sha256": "3ad123904841139224b8d7f392ef364069233cc939d7ee33a07660cb602e2b9f"
+          "document_id": "01a1a6e2-f965-7c04-92e9-e3792e6685e7",
+          "content_sha256": "f5426143ef28539e45f43755886339d4fee957ef864ae68f97d8b356912b377c"
         },
-        "node_incarnation_id": "01a1a61c-ec74-7874-8e20-cb4a8fe633c0",
-        "last_good_release_id": "01a1a61c-e4a0-7d70-954e-1ddc85db20fb",
+        "node_incarnation_id": "01a1a6e2-fba0-7c39-a4b5-0c774125ca16",
+        "last_good_release_id": "01a1a6e2-f412-7487-8923-536f86f6fb56",
         "applied_binding_revision": "1",
         "forwarding_block_reasons": [],
-        "applied_config_generation": "32",
+        "applied_config_generation": "34",
         "member_forwarding_enabled": true
       },
       "queue": {
         "pending": 3,
-        "at": "2026-11-04T10:48:47.223274746Z"
+        "at": "2026-11-04T14:25:08.508645391Z"
       },
       "queue_available": true,
-      "read_end": "2026-11-04T10:48:47.173633502Z",
-      "read_start": "2026-11-04T10:48:47.144530137Z",
-      "readback": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\"},{\"ifindex\":2,\"link_index\":2130,\"ifname\":\"eth0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"66:c9:ee:01:54:ee\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":3,\"link_index\":2131,\"ifname\":\"fvup0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"htb\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"b6:2b:04:37:ff:ff\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\"}]\n[{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"100.74.126.211\",\"prefixlen\":16,\"broadcast\":\"100.74.255.255\",\"scope\":\"global\",\"label\":\"fvmb0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n[{\"dst\":\"100.74.0.0/16\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"local\",\"dst\":\"100.74.126.211\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"host\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"broadcast\",\"dst\":\"100.74.255.255\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"multicast\",\"dst\":\"ff00::/8\",\"table\":\"local\",\"protocol\":\"kernel\",\"metric\":256,\"flags\":[],\"pref\":\"medium\"}]\n[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true,\"refcnt\":2,\"options\":{\"r2q\":10,\"default\":\"0xfffe\",\"direct_packets_stat\":0,\"direct_qlen\":1000}},{\"kind\":\"fq_codel\",\"handle\":\"cb26:\",\"parent\":\"1:cb26\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}},{\"kind\":\"fq_codel\",\"handle\":\"1355:\",\"parent\":\"1:1355\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}}]\n[]\nv1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 112769076156472\nwall_unix_ns 1793789326624780931\npolicy_expires_mono_ns 112823768701249\nbaseline_ok 1\nserving 1\ngeneration 32\nreason serving\n"
+      "read_end": "2026-11-04T14:25:08.458446639Z",
+      "read_start": "2026-11-04T14:25:08.43080509Z",
+      "readback": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\"},{\"ifindex\":2,\"link_index\":2295,\"ifname\":\"eth0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"1a:bf:55:98:36:2f\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":3,\"link_index\":2296,\"ifname\":\"fvup0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"htb\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"fa:7d:8f:8b:fb:50\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\"}]\n[{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"100.77.231.216\",\"prefixlen\":16,\"broadcast\":\"100.77.255.255\",\"scope\":\"global\",\"label\":\"fvmb0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n[{\"dst\":\"100.77.0.0/16\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"local\",\"dst\":\"100.77.231.216\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"host\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"broadcast\",\"dst\":\"100.77.255.255\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"multicast\",\"dst\":\"ff00::/8\",\"table\":\"local\",\"protocol\":\"kernel\",\"metric\":256,\"flags\":[],\"pref\":\"medium\"}]\n[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true,\"refcnt\":2,\"options\":{\"r2q\":10,\"default\":\"0xfffe\",\"direct_packets_stat\":0,\"direct_qlen\":1000}},{\"kind\":\"fq_codel\",\"handle\":\"a971:\",\"parent\":\"1:a971\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}},{\"kind\":\"fq_codel\",\"handle\":\"a89f:\",\"parent\":\"1:a89f\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}}]\n[]\nv1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 125750486794965\nwall_unix_ns 1793802308035418700\npolicy_expires_mono_ns 125806171750373\nbaseline_ok 1\nserving 1\ngeneration 34\nreason serving\n"
     },
     {
       "forward_view": {
         "Present": true,
         "Policy": "drop",
         "Baseline": false,
-        "Generation": 32,
+        "Generation": 34,
         "MemberAccept": 18,
         "LabMemberAccept": 18,
         "MSSClamp": 4,
         "PMTUAccept": 6,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-0e66-7d28-9961-e33705013197:cb26\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-8a97-727c-8d0f-fb2fdaafbfe8:1355\" | iifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop | iifname \"fvup0\" oifname \"fvmb0\" meta nfproto"
+        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=34 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\" | iifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop | iifname \"fvup0\" oifname \"fvmb0\" meta nfproto"
       },
-      "kernel_ruleset": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 46 bytes 1978\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 4 bytes 240\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 3959 bytes 237540\n\t}\n\n\tcounter ctdenyd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 44 bytes 1727\n\t}\n\n\tcounter d_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 1813 bytes 106259\n\t}\n\n\tcounter nd_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 6 bytes 438\n\t}\n\n\tcounter nu_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 6 bytes 372\n\t}\n\n\tcounter u_01a1a61d48ae7743b5214dbb1b98ec14 {\n\t\tpackets 1820 bytes 93387\n\t}\n\n\tcounter d_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 68 bytes 5501\n\t}\n\n\tcounter nd_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a61d83be7929bb93bb283c8d0e34 {\n\t\tpackets 94 bytes 6028\n\t}\n\n\tcounter d_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 16 bytes 3038\n\t}\n\n\tcounter nd_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a61dbecf77da9959aa16830819e2 {\n\t\tpackets 17 bytes 2266\n\t}\n\n\tcounter d_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 8 bytes 1520\n\t}\n\n\tcounter nd_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a629a512765d91d470738a1fb77d {\n\t\tpackets 8 bytes 1113\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.74.30.177 timeout 59s848ms expires 51s853ms, 100.74.210.208 timeout 59s848ms expires 51s853ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 172.16.0.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 192.0.6.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 192.0.6.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=32 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-0e66-7d28-9961-e33705013197:cb26\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a61d-8a97-727c-8d0f-fb2fdaafbfe8:1355\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.210.208 counter name \"u_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.74.30.177 counter name \"u_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.210.208 tcp sport 53 counter name \"nd_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.210.208 udp sport 53 counter name \"nd_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.30.177 tcp sport 53 counter name \"nd_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.30.177 udp sport 53 counter name \"nd_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.210.208 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.74.210.208 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.74.210.208 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.74.30.177 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.74.30.177 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.74.30.177 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.210.208 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.210.208 counter name \"d_01a1a61d48ae7743b5214dbb1b98ec14\" meta priority set 1:cb26 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.30.177 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.74.30.177 counter name \"d_01a1a61dbecf77da9959aa16830819e2\" meta priority set 1:1355 accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 192.0.6.20\n\t}\n}\n",
+      "kernel_ruleset": "table inet fvpn {\n\tcounter ctbase {\n\t\tpackets 15 bytes 853\n\t}\n\n\tcounter ctv6 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctin {\n\t\tpackets 4 bytes 240\n\t}\n\n\tcounter ctbadns {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctdeny {\n\t\tpackets 3971 bytes 238260\n\t}\n\n\tcounter ctdenyd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter cthost {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctinv {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctnodn {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunkd {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter ctunku {\n\t\tpackets 46 bytes 1801\n\t}\n\n\tcounter d_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 1814 bytes 106259\n\t}\n\n\tcounter nd_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 6 bytes 438\n\t}\n\n\tcounter nu_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 6 bytes 372\n\t}\n\n\tcounter u_01a1a6e357e475eba8a32fc65e952c72 {\n\t\tpackets 1822 bytes 93464\n\t}\n\n\tcounter d_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 80 bytes 6060\n\t}\n\n\tcounter nd_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6e392b676c5aa22d06d16a578a5 {\n\t\tpackets 112 bytes 6904\n\t}\n\n\tcounter d_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 16 bytes 3035\n\t}\n\n\tcounter nd_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6e3cdd47291b3dafa790c4058ea {\n\t\tpackets 17 bytes 2266\n\t}\n\n\tcounter d_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 8 bytes 1518\n\t}\n\n\tcounter nd_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter nu_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 0 bytes 0\n\t}\n\n\tcounter u_01a1a6efb67c73f0b3c4a1231663e9f3 {\n\t\tpackets 9 bytes 1153\n\t}\n\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t\telements = { 100.77.15.30 timeout 59s852ms expires 52s966ms, 100.77.187.94 timeout 59s852ms expires 52s966ms }\n\t}\n\n\tset denied_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 0.0.0.0/8, 10.0.0.0/8,\n\t\t\t     100.64.0.0/10, 127.0.0.0/8,\n\t\t\t     169.254.0.0/16, 172.16.0.0/12,\n\t\t\t     192.0.0.0/24, 192.0.2.0/24,\n\t\t\t     192.88.99.0/24, 192.168.0.0/16,\n\t\t\t     198.18.0.0/15, 198.51.100.0/24,\n\t\t\t     203.0.113.0/24, 224.0.0.0/3 }\n\t}\n\n\tset host_v4 {\n\t\ttype ipv4_addr\n\t\tflags interval\n\t\tauto-merge\n\t\telements = { 192.0.6.20 }\n\t}\n\n\tset resolver_v4 {\n\t\ttype ipv4_addr\n\t\telements = { 192.0.6.53 }\n\t}\n\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=34 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-1db9-7e1b-9947-e73c26a87a0f:a89f\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a6e3-99d0-786d-92dd-81628a43f8cb:a971\"\n\t\tiifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state invalid counter name \"ctinv\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr != @allowed_v4 counter name \"ctunku\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 tcp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 ip daddr @resolver_v4 udp dport 53 counter name \"nu_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @resolver_v4 counter name \"ctbadns\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @denied_v4 counter name \"ctdeny\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip daddr @host_v4 counter name \"cthost\" drop\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.187.94 counter name \"u_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvmb0\" oifname \"fvup0\" ip saddr 100.77.15.30 counter name \"u_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr != @allowed_v4 counter name \"ctunkd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ct state != { established, related } counter name \"ctnodn\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 tcp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 udp sport 53 counter name \"nd_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 tcp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 udp sport 53 counter name \"nd_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.187.94 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 ip daddr 100.77.15.30 ct state related icmp type destination-unreachable icmp code frag-needed counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @resolver_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @denied_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip saddr @host_v4 counter name \"ctdenyd\" drop\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.187.94 counter name \"d_01a1a6e357e475eba8a32fc65e952c72\" meta priority set 1:a89f accept\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 tcp flags \u0026 syn == syn tcp option maxseg size \u003e 1160 tcp option maxseg size set 1160\n\t\tiifname \"fvup0\" oifname \"fvmb0\" ip daddr 100.77.15.30 counter name \"d_01a1a6e3cdd47291b3dafa790c4058ea\" meta priority set 1:a971 accept\n\t}\n\n\tchain input {\n\t\ttype filter hook input priority mangle; policy accept;\n\t\tiifname \"fvmb0\" counter name \"ctin\" drop\n\t\tip saddr 100.64.0.0/10 counter name \"ctin\" drop\n\t}\n\n\tchain output {\n\t\ttype filter hook output priority mangle; policy accept;\n\t}\n\n\tchain postrouting {\n\t\ttype nat hook postrouting priority srcnat; policy accept;\n\t\toifname \"fvup0\" ip saddr @allowed_v4 snat ip to 192.0.6.20\n\t}\n}\n",
       "label": "control restoration readiness",
       "observation": {
         "lease": {
-          "lease_id": "9c8eb09b-c12b-44b3-a779-b6e28c0f92de",
-          "expires_at": "2026-11-04T10:49:41.321054184Z"
+          "lease_id": "745ee611-b5a4-4975-936e-070a80e19640",
+          "expires_at": "2026-11-04T14:26:03.723264183Z"
         },
         "usage": {
           "blocked_seq": "32",
-          "ledger_epoch": "43c16a4c-1ae4-4b2b-b9fb-9f180032ae57",
-          "meter_epoch_id": "01a1a62c-e086-781f-894c-fc679097a80d",
-          "oldest_unacked_at": "2026-11-04T10:43:14.955698213Z",
-          "acked_archive_bytes": "20099",
-          "unacked_event_count": 19,
+          "ledger_epoch": "5ef0ff30-a83d-4754-b72d-df968b0fd543",
+          "meter_epoch_id": "01a1a6f2-f905-778c-bb4a-cf3a109ee95a",
+          "oldest_unacked_at": "2026-11-04T14:19:37.521899199Z",
+          "acked_archive_bytes": "20093",
+          "unacked_event_count": 18,
           "central_acked_through": "31",
-          "unacked_payload_bytes": "12319",
-          "last_durable_event_seq": "50"
+          "unacked_payload_bytes": "11669",
+          "last_durable_event_seq": "49"
         },
         "checks": [
           {
             "name": "dns_policy",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:48:48.63821348Z"
+            "observed_at": "2026-11-04T14:25:10.042906438Z"
           },
           {
             "name": "internet_only",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:48:48.63821348Z"
+            "observed_at": "2026-11-04T14:25:10.042906438Z"
           },
           {
             "name": "lease",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:48:48.63821348Z"
+            "observed_at": "2026-11-04T14:25:10.042906438Z"
           },
           {
             "name": "meter_path",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:48:48.63821348Z"
+            "observed_at": "2026-11-04T14:25:10.042906438Z"
           },
           {
             "name": "policy_signature",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:48:48.63821348Z"
+            "observed_at": "2026-11-04T14:25:10.042906438Z"
           },
           {
             "name": "qos",
-            "detail": "read_at=2026-11-04T10:48:48.631852884Z source=live candidate=32 verified=true {\"generation\":\"32\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"0334453567f6d20ffcc77ce18574a07dff5e2b42f88a39f2beb812e9120207e9\"}",
+            "detail": "read_at=2026-11-04T14:25:10.037010593Z source=live candidate=34 verified=true {\"generation\":\"34\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"90f7622824ad0cb2b6f4db8c79aa9f321f925c7736317801016f26e5cc23169c\"}",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:48:48.63821348Z"
+            "observed_at": "2026-11-04T14:25:10.042906438Z"
           },
           {
             "name": "release_supported",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:48:48.63821348Z"
+            "observed_at": "2026-11-04T14:25:10.042906438Z"
           },
           {
             "name": "source_binding",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:48:48.63821348Z"
+            "observed_at": "2026-11-04T14:25:10.042906438Z"
           },
           {
             "name": "storage",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:48:48.63821348Z"
+            "observed_at": "2026-11-04T14:25:10.042906438Z"
           },
           {
             "name": "tunnel_probe",
             "detail": "Egress probe used no extra target.",
             "status": "passed",
             "error_code": null,
-            "observed_at": "2026-11-04T10:48:48.63821348Z"
+            "observed_at": "2026-11-04T14:25:10.042906438Z"
           }
         ],
         "errors": [],
@@ -1194,14 +1194,14 @@
           "peer_id": null,
           "version": null
         },
-        "node_id": "01a1a61c-e996-7746-895d-1ae813c5020e",
-        "report_id": "01a1a62c-fcfd-7174-821e-9e35a2a39362",
+        "node_id": "01a1a6e2-f90b-7629-ba41-ef37246f9bcd",
+        "report_id": "01a1a6f3-119a-7b2f-b980-af0e952a77cb",
         "data_health": "healthy",
-        "observed_at": "2026-11-04T10:48:48.636805642Z",
+        "observed_at": "2026-11-04T14:25:10.04242595Z",
         "tc_evidence": {
           "phase": "verify",
-          "sha256": "0334453567f6d20ffcc77ce18574a07dff5e2b42f88a39f2beb812e9120207e9",
-          "read_at": "2026-11-04T10:48:48.631723276Z",
+          "sha256": "90f7622824ad0cb2b6f4db8c79aa9f321f925c7736317801016f26e5cc23169c",
+          "read_at": "2026-11-04T14:25:10.036872389Z",
           "rejected": null,
           "verified": true,
           "truncated": true,
@@ -1211,13 +1211,13 @@
               "objects": [
                 {
                   "kind": "fq_codel",
-                  "handle": "1355:",
-                  "parent": "1:1355"
+                  "handle": "a89f:",
+                  "parent": "1:a89f"
                 },
                 {
                   "kind": "fq_codel",
-                  "handle": "cb26:",
-                  "parent": "1:cb26"
+                  "handle": "a971:",
+                  "parent": "1:a971"
                 },
                 {
                   "kind": "htb",
@@ -1232,13 +1232,13 @@
               "objects": [
                 {
                   "kind": "fq_codel",
-                  "handle": "1355:",
-                  "parent": "1:1355"
+                  "handle": "a89f:",
+                  "parent": "1:a89f"
                 },
                 {
                   "kind": "fq_codel",
-                  "handle": "cb26:",
-                  "parent": "1:cb26"
+                  "handle": "a971:",
+                  "parent": "1:a971"
                 },
                 {
                   "kind": "htb",
@@ -1252,22 +1252,17 @@
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1355:"
-            },
-            {
-              "objects": [],
-              "interface": "fvmb0",
               "attachment": "1:1"
             },
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1:1355"
+              "attachment": "1:a89f"
             },
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "1:cb26"
+              "attachment": "1:a971"
             },
             {
               "objects": [],
@@ -1277,7 +1272,12 @@
             {
               "objects": [],
               "interface": "fvmb0",
-              "attachment": "cb26:"
+              "attachment": "a89f:"
+            },
+            {
+              "objects": [],
+              "interface": "fvmb0",
+              "attachment": "a971:"
             },
             {
               "objects": [],
@@ -1297,36 +1297,36 @@
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1355:"
-            },
-            {
-              "objects": [],
-              "interface": "fvup0",
               "attachment": "1:1"
             },
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1:1355"
+              "attachment": "1:a89f"
             },
             {
               "objects": [],
               "interface": "fvup0",
-              "attachment": "1:cb26"
+              "attachment": "1:a971"
             },
             {
               "objects": [],
               "interface": "fvup0",
               "attachment": "1:fffe"
+            },
+            {
+              "objects": [],
+              "interface": "fvup0",
+              "attachment": "a89f:"
             }
           ],
           "reads_total": 20,
           "objects_total": 6,
-          "candidate_generation": "32"
+          "candidate_generation": "34"
         },
         "agent_version": "0.1.0",
         "safety_status": "passed",
-        "current_release_id": "01a1a61c-e4a0-7d70-954e-1ddc85db20fb",
+        "current_release_id": "01a1a6e2-f412-7487-8923-536f86f6fb56",
         "provisioning_state": "ready",
         "applied_policy_refs": {
           "dns_generation": "1",
@@ -1336,29 +1336,29 @@
         "dns_policy_evidence": {
           "feeds": [],
           "outcome": "applied",
-          "applied_at": "2026-11-04T10:48:48.60102658Z",
+          "applied_at": "2026-11-04T14:25:10.006362641Z",
           "error_code": null,
           "generation": "1",
-          "document_id": "01a1a61c-ea4a-758e-b25a-24301fc5bb9f",
-          "content_sha256": "3ad123904841139224b8d7f392ef364069233cc939d7ee33a07660cb602e2b9f"
+          "document_id": "01a1a6e2-f965-7c04-92e9-e3792e6685e7",
+          "content_sha256": "f5426143ef28539e45f43755886339d4fee957ef864ae68f97d8b356912b377c"
         },
-        "node_incarnation_id": "01a1a61c-ec74-7874-8e20-cb4a8fe633c0",
-        "last_good_release_id": "01a1a61c-e4a0-7d70-954e-1ddc85db20fb",
+        "node_incarnation_id": "01a1a6e2-fba0-7c39-a4b5-0c774125ca16",
+        "last_good_release_id": "01a1a6e2-f412-7487-8923-536f86f6fb56",
         "applied_binding_revision": "1",
         "forwarding_block_reasons": [],
-        "applied_config_generation": "32",
+        "applied_config_generation": "34",
         "member_forwarding_enabled": true
       },
       "queue": {
         "pending": 0,
-        "at": "2026-11-04T10:48:49.395948531Z"
+        "at": "2026-11-04T14:25:10.686060153Z"
       },
       "queue_available": true,
-      "read_end": "2026-11-04T10:48:49.346406163Z",
-      "read_start": "2026-11-04T10:48:49.31984115Z",
-      "readback": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\"},{\"ifindex\":2,\"link_index\":2130,\"ifname\":\"eth0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"66:c9:ee:01:54:ee\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":3,\"link_index\":2131,\"ifname\":\"fvup0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"htb\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"b6:2b:04:37:ff:ff\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\"}]\n[{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"100.74.126.211\",\"prefixlen\":16,\"broadcast\":\"100.74.255.255\",\"scope\":\"global\",\"label\":\"fvmb0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n[{\"dst\":\"100.74.0.0/16\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"local\",\"dst\":\"100.74.126.211\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"host\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"broadcast\",\"dst\":\"100.74.255.255\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.74.126.211\",\"flags\":[]},{\"type\":\"multicast\",\"dst\":\"ff00::/8\",\"table\":\"local\",\"protocol\":\"kernel\",\"metric\":256,\"flags\":[],\"pref\":\"medium\"}]\n[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true,\"refcnt\":2,\"options\":{\"r2q\":10,\"default\":\"0xfffe\",\"direct_packets_stat\":0,\"direct_qlen\":1000}},{\"kind\":\"fq_codel\",\"handle\":\"cb26:\",\"parent\":\"1:cb26\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}},{\"kind\":\"fq_codel\",\"handle\":\"1355:\",\"parent\":\"1:1355\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}}]\n[]\nv1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 112771128722509\nwall_unix_ns 1793789328677346341\npolicy_expires_mono_ns 112823768701249\nbaseline_ok 1\nserving 1\ngeneration 32\nreason serving\n"
+      "read_end": "2026-11-04T14:25:10.634179688Z",
+      "read_start": "2026-11-04T14:25:10.60750377Z",
+      "readback": "[{\"ifindex\":1,\"ifname\":\"lo\",\"flags\":[\"LOOPBACK\",\"UP\",\"LOWER_UP\"],\"mtu\":65536,\"qdisc\":\"noqueue\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"loopback\",\"address\":\"00:00:00:00:00:00\",\"broadcast\":\"00:00:00:00:00:00\"},{\"ifindex\":2,\"link_index\":2295,\"ifname\":\"eth0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"noqueue\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"link_type\":\"ether\",\"address\":\"1a:bf:55:98:36:2f\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":3,\"link_index\":2296,\"ifname\":\"fvup0\",\"flags\":[\"BROADCAST\",\"MULTICAST\",\"UP\",\"LOWER_UP\"],\"mtu\":1500,\"qdisc\":\"htb\",\"operstate\":\"UP\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"ether\",\"address\":\"fa:7d:8f:8b:fb:50\",\"broadcast\":\"ff:ff:ff:ff:ff:ff\",\"link_netnsid\":0},{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"linkmode\":\"DEFAULT\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\"}]\n[{\"ifindex\":4,\"ifname\":\"fvmb0\",\"flags\":[\"POINTOPOINT\",\"NOARP\",\"UP\",\"LOWER_UP\"],\"mtu\":1280,\"qdisc\":\"htb\",\"operstate\":\"UNKNOWN\",\"group\":\"default\",\"txqlen\":1000,\"link_type\":\"none\",\"addr_info\":[{\"family\":\"inet\",\"local\":\"100.77.231.216\",\"prefixlen\":16,\"broadcast\":\"100.77.255.255\",\"scope\":\"global\",\"label\":\"fvmb0\",\"valid_life_time\":4294967295,\"preferred_life_time\":4294967295}]}]\n[{\"dst\":\"100.77.0.0/16\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"local\",\"dst\":\"100.77.231.216\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"host\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"broadcast\",\"dst\":\"100.77.255.255\",\"table\":\"local\",\"protocol\":\"kernel\",\"scope\":\"link\",\"prefsrc\":\"100.77.231.216\",\"flags\":[]},{\"type\":\"multicast\",\"dst\":\"ff00::/8\",\"table\":\"local\",\"protocol\":\"kernel\",\"metric\":256,\"flags\":[],\"pref\":\"medium\"}]\n[{\"kind\":\"htb\",\"handle\":\"1:\",\"root\":true,\"refcnt\":2,\"options\":{\"r2q\":10,\"default\":\"0xfffe\",\"direct_packets_stat\":0,\"direct_qlen\":1000}},{\"kind\":\"fq_codel\",\"handle\":\"a971:\",\"parent\":\"1:a971\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}},{\"kind\":\"fq_codel\",\"handle\":\"a89f:\",\"parent\":\"1:a89f\",\"options\":{\"limit\":10240,\"flows\":1024,\"quantum\":1514,\"target\":4999,\"interval\":99999,\"memory_limit\":33554432,\"ecn\":true,\"drop_batch\":64}}]\n[]\nv1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 125752539360163\nwall_unix_ns 1793802310087983848\npolicy_expires_mono_ns 125806171750373\nbaseline_ok 1\nserving 1\ngeneration 34\nreason serving\n"
     }
   ],
-  "started_at": "2026-11-04T10:48:40.503586714Z",
+  "started_at": "2026-11-04T14:25:01.788936169Z",
   "timeout_seconds": 90
 }
