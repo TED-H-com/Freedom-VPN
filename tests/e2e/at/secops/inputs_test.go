@@ -19,6 +19,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labstack"
 	"github.com/google/uuid"
 )
 
@@ -332,8 +333,13 @@ func (p *liveProbe) serving(admin *liveSession, node uuid.UUID) {
 	p.metadata["agent_node_incarnation"] = view.CurrentIncarnationId
 	p.metadata["node_service_precondition"] = map[string]any{"lifecycle": view.LifecycleState, "provisioning": view.ProvisioningState, "data_health": view.DataHealth, "safety": view.SafetyStatus, "publication": view.PublicationIntent, "observed_publication": view.PublicationObserved, "config_generation": view.ConfigGeneration, "management_peer_bound": view.NetbirdPeerId.IsSpecified() && !view.NetbirdPeerId.IsNull()}
 	p.metadata["publication_observation_before"] = p.publicationObservation(node)
-	r := p.call(admin, "PUT", "/api/v1/admin/nodes/"+node.String()+"/publication", api.PublicationRequest{PublicationIntent: api.PublicationIntentPublished, GroupIds: &[]uuid.UUID{p.groupID}, Reason: "TEST ONLY serving precondition"}, map[string]string{"If-Match": detail.header.Get("ETag")})
-	p.metadata["publication_request"] = map[string]any{"status": r.status, "code": r.code}
+	path := "/api/v1/admin/nodes/" + node.String()
+	written := p.writeNode("node publication", admin, "PUT", path+"/publication", path, api.PublicationRequest{PublicationIntent: api.PublicationIntentPublished, GroupIds: &[]uuid.UUID{p.groupID}, Reason: "TEST ONLY serving precondition"}, detail.header.Get("ETag"), labstack.NodePublished(p.groupID))
+	r := liveReply{status: written.Reply.Status, code: written.Reply.Code, body: written.Reply.Body, header: written.Reply.Header}
+	p.metadata["publication_request"] = map[string]any{"status": r.status, "code": r.code, "node_write_receipt": written.Receipt, "already_intended": written.AlreadyIntended}
+	if written.AlreadyIntended {
+		p.metadata["publication_operation"] = map[string]any{"new_operation": false, "reason": "already-intended read-back; no fabricated operation"}
+	}
 	if r.status == 202 {
 		var op api.Operation
 		_ = json.Unmarshal(r.body, &op)

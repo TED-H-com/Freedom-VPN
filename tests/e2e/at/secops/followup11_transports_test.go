@@ -16,34 +16,11 @@ import (
 	"github.com/google/uuid"
 )
 
-type transportSample11 struct {
-	UTC        time.Time                      `json:"utc"`
-	Elapsed    float64                        `json:"monotonic_elapsed_seconds"`
-	Status     labstack.MemberTransportStatus `json:"status"`
-	Counters   labstack.DeviceCounters        `json:"counters"`
-	StatusOK   bool                           `json:"status_read_ok"`
-	CountersOK bool                           `json:"counter_read_ok"`
-}
-
 func sampleTransport11(ctx context.Context, s *labstack.Stack, device uuid.UUID, start time.Time) transportSample11 {
 	status, se := s.EstablishedStatus(ctx)
 	counters, ce := s.DeviceByteCounters(ctx, device)
 	return transportSample11{time.Now().UTC(), time.Since(start).Seconds(), status, counters, se == nil, ce == nil}
 }
-func activeTransport11(a, b transportSample11) bool {
-	return a.StatusOK && b.StatusOK && a.Status.Running && b.Status.Running &&
-		b.Status.TCPEchoes > a.Status.TCPEchoes && b.Status.UDPReplies > a.Status.UDPReplies &&
-		a.CountersOK && b.CountersOK && a.Counters.Present && b.Counters.Present &&
-		b.Counters.Upload > a.Counters.Upload && b.Counters.Download > a.Counters.Download
-}
-func quietTransport11(a, b transportSample11) bool {
-	// Absent counters are explicitly not interpreted as zero bytes. A revoked
-	// binding may remove them; continuously running senders/replies decide cutoff.
-	return a.StatusOK && b.StatusOK && a.Status.Running && b.Status.Running &&
-		b.Status.TCPAttempts > a.Status.TCPAttempts && b.Status.UDPAttempts > a.Status.UDPAttempts &&
-		b.Status.TCPEchoes == a.Status.TCPEchoes && b.Status.UDPReplies == a.Status.UDPReplies
-}
-
 func (p *liveProbe) transportFlow11(peer flowPeer, timeout time.Duration) map[string]any {
 	var last map[string]any
 	for deadline := time.Now().Add(timeout); time.Now().Before(deadline); {
@@ -84,9 +61,8 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 	p.capacityInput(admin, node)
 	rows := map[string]any{}
 	p.metadata["transport_cases"] = rows
-	rows["manual_grant_withdrawal"] = map[string]any{"status": "blocked", "owner": "w3-wire-members / contracts", "missing_export": "The contract exposes finite createMemberGrant but no revokeMemberGrant HTTP operation; no source-row mutation or invented endpoint used. Finite grant expiration is measured separately."}
 	rows["guest_clock_rollback"] = map[string]any{"status": "blocked", "owner": "w3-devstack-e2e / operator", "missing_export": "Disposable guest with independently adjustable wall clock; containers share the development host clock."}
-	for _, kind := range []string{"grant_expiry", "lease_expiry", "device_revoke"} {
+	for _, kind := range []string{"grant_expiry", "lease_expiry", "device_revoke", "manual_grant_withdrawal"} {
 		t.Run(kind, func(t *testing.T) {
 			parent := p.t
 			p.t = t
@@ -99,6 +75,11 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 					row["status"] = "failed"
 				}
 			}()
+			if kind == "manual_grant_withdrawal" {
+				p.manualGrantWithdrawal15(stack, node, row)
+				complete = true
+				return
+			}
 			subject := "secops-deadline-grant"
 			if kind == "lease_expiry" {
 				subject = "secops-deadline-lease"
