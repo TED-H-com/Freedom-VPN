@@ -100,6 +100,8 @@ func TestD157_EmptyEarlyAnswerKeepsD067AndSecondRecoveryGetsOne(t *testing.T) {
 			t.Fatalf("D-067 second gap=%s", r.eng.provisionalRetryAt-sent)
 		}
 		for range 9 {
+			// Repeated accepted ready reports cannot recreate the consumed opportunity.
+			r.eng.lastObs = time.Time{}
 			r.clock.Advance(time.Second)
 			stepOK(t, r)
 			if r.srv.LeaseRenewals() != before+1 || p.baselineCalls != baseline || r.eng.serving {

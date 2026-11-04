@@ -1380,6 +1380,9 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	}
 	e.closedRecoveryHeld = closedRecovery
 	e.closedRecoveryRenewal = recoveryRenewal{armed: closedRecovery}
+	if closedRecovery {
+		e.lastObs = time.Time{} // each recovery needs its own report, even at the same generation
+	}
 	e.serving = !closedRecovery
 	e.applyError = nil
 	e.expectServing.Store(!closedRecovery)
