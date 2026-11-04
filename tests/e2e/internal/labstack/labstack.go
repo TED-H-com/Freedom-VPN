@@ -104,3 +104,6 @@ type NativeCaptureEvidence = e2e.NativeCaptureEvidence
 type NativePathSample = e2e.NativePathSample
 
 type NativeRouter1280 = e2e.NativeRouter1280
+
+type NativeRouterSetupError = e2e.NativeRouterSetupError
+type NativeRouterRollback = e2e.NativeRouterRollback
