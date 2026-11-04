@@ -6,4 +6,4 @@ Run `5715939e-3943-48f1-8bd5-c869bf7c91c2`, measured harness `dbfccc6fc7d076ec73
 
 D-098 archive precedes the follow-up 22 live run. Earlier archives remain untouched. Handover claim assertions already read frozen snapshots; remaining living-root references are navigation/source inventory, so no D-132 handover edit is required. Living roots remain available until superseded; run-specific F18 files keep their historical content.
 
-[Original captures](../follow-up-18-captures/5715939e-3943-48f1-8bd5-c869bf7c91c2/analysis.json).
+[Original captures](../follow-up-18-captures/5715939e-3943-48f1-8bd5-c869bf7c91c2/).
