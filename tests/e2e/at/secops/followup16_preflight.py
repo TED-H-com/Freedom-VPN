@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Bounded foreground concurrency wait; never reserves the shared host."""
-import json
 import os
 from pathlib import Path
 import subprocess
@@ -21,6 +20,9 @@ def identity(pid):
 
 def main():
     start = time.monotonic()
+    prior_wait = float(os.environ.get("FVPN_SECOPS_PRIOR_WAIT_SECONDS", "0"))
+    if not 0 <= prior_wait <= 7200:
+        raise SystemExit("prior admission wait outside total 120-minute allowance")
     own = set()
     pid = os.getpid()
     while pid:
@@ -43,15 +45,16 @@ def main():
         done = free and not active
         elapsed = time.monotonic()-start
         write_json(PUBLIC/'followup16-preflight.json', dict(started_at=checks[0]['at'], finished_at=utc() if done else None,
-                   wait_seconds=elapsed, limit_seconds=7200, admitted=done, checks=checks))
+                   wait_seconds=elapsed, prior_admission_wait_seconds=prior_wait, total_wait_seconds=prior_wait+elapsed,
+                   limit_seconds=7200, admitted=done, checks=checks))
         if done:
             print(f'PASS: host and suite admission after {elapsed:.3f} seconds')
             return 0
-        if elapsed >= 7200:
+        if prior_wait+elapsed >= 7200:
             print('BLOCKED: 120-minute concurrency wait exhausted')
             return 125
         print(f'Waiting for host/suite admission: {elapsed:.0f}s', flush=True)
-        time.sleep(min(60, 7200-elapsed))
+        time.sleep(min(60, 7200-prior_wait-elapsed))
 
 
 if __name__ == '__main__':
