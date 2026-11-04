@@ -39,7 +39,7 @@ done
 ''')
             wrapper.chmod(0o700)
         env = dict(os.environ, PATH=directory+':'+original_path, TMPDIR=str(scratch), GOTMPDIR=str(scratch),
-                   PYTHONDONTWRITEBYTECODE='1', FVPN_SECOPS_ADMISSION_LOG=str(private/'admission.log'))
+                   MAKE=str(Path(directory)/'make'), PYTHONDONTWRITEBYTECODE='1', FVPN_SECOPS_ADMISSION_LOG=str(private/'admission.log'))
         return subprocess.run(sys.argv[1:], cwd=root, env=env, check=False).returncode
 
 
