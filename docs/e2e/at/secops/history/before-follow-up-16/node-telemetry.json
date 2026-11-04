@@ -1,0 +1,2769 @@
+{
+  "schema_version": 1,
+  "follow_up": 7,
+  "started_at": "2026-10-30T19:23:34Z",
+  "finished_at": "2026-10-30T19:59:27Z",
+  "source_revision": "443cbb0d787e3b4a6ef9daf33bb060e4d89932bf",
+  "application_base": "fb3ea32",
+  "run_id": "ab96acac-8713-485a-9c29-88f20110e2e5",
+  "driver_run_id": "f54627cd-eb5f-4d42-a7d9-e916cc0e5127",
+  "hardware": "shared development host; not candidate hardware",
+  "commands": [
+    [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-up"
+    ],
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "65m",
+      "-run",
+      "^TestAT28_AT31_Followup7$",
+      "./tests/e2e/at/secops"
+    ],
+    [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
+    ]
+  ],
+  "probe_source_sha256": "f830695290e94d999b7d9f05cdd15fc52bd84c2c5f0b09ff79e112d9b9929f60",
+  "policy_revision": "01a18e45-2ef2-7928-8842-cb727eb863fd",
+  "node_incarnation": "31098d68-decf-4cde-b6ae-097ad69f6267",
+  "agent_node_incarnation": "01a18e45-58f2-7a9c-8449-6c8ced14c767",
+  "image_digests": [
+    {
+      "image_id": "sha256:e9f2c7cff1cd68b0bfa7ac4548335f197d88a37d39fc5acd0d0f543f94f89816",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:c49e52563fec70dad7363818558012aa4502871835218f53c0440d966983dd67",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:f26d3b2473cddd221c0cf40ea42307eb407d0f8ae80f391c741c13e17aabe34c",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:2363ab8a61ab529a5bdb3ec1d82a6363614d7ebfe6dab4efffbdda7e4c69afd1",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:29656c46da670df3d48cf04182c3ef85c46cd9d344d3f7a6fb3c197943adcfc8",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:97d2f24fde2ddacf88ed52ffdb9d842387a9996e766d5d4037cb5d48d1a19600",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "node-netns"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "node2-netns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "node2-adguard"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "node2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-deadline-lease"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-deadline-grant"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-deadline-paid"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u19-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u19-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u19-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u18-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u18-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u18-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u17-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u17-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u17-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u16-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u16-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u16-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u15-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u15-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u15-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u14-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u14-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u14-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u13-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u13-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u13-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u12-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u12-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u12-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u11-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u11-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u11-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u10-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u10-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u10-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u09-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u09-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u09-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u08-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u08-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u08-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u07-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u07-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u07-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u06-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u06-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u06-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u05-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u05-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u05-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u04-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u04-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u04-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u03-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u03-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u03-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u02-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u02-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u02-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u01-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u01-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u01-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u00-p3"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u00-p2"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-secops-u00-p1"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-proxy-b"
+    },
+    {
+      "image_id": "sha256:cbc12c1791698628651f92cc5e3bb49ff46e4cb772a4209d03351389ffb43030",
+      "service": "member-proxy-a"
+    }
+  ],
+  "build_digests": [
+    {
+      "name": "amd64.test",
+      "sha256": "9a563f3bf75858a1c9abf334908ef8d23ea2ec714aa1d39a430b18ba2348c592"
+    },
+    {
+      "name": "proxyprobe",
+      "sha256": "a9109d38c54602b0e23cb033f5979caa3ccfa730ed42da9d7cd7267da9368bed"
+    },
+    {
+      "name": "arm64.test",
+      "sha256": "38e022e0f268db063915895a36ce1574938184d81da33228f631231851f25e65"
+    }
+  ],
+  "previous_run": "history/follow-up-6/",
+  "projector_owned_rows_written": [],
+  "expected": "Container CPU/memory/FD/conntrack samples at a fixed five-second cadence",
+  "actual": {
+    "admission_node_telemetry": {
+      "cadence_seconds": 5,
+      "errors": 0,
+      "samples": [
+        {
+          "at": "2026-10-30T19:25:50.287500811Z",
+          "cpu_usage_usec": 1440250,
+          "memory_bytes": 58200064,
+          "open_fds": 86,
+          "processes": 10,
+          "conntrack_entries": 60
+        },
+        {
+          "at": "2026-10-30T19:25:55.288529518Z",
+          "cpu_usage_usec": 1545595,
+          "cpu_percent_one_core": 2.1064666126100686,
+          "memory_bytes": 59125760,
+          "open_fds": 85,
+          "processes": 10,
+          "conntrack_entries": 43
+        },
+        {
+          "at": "2026-10-30T19:26:00.288038685Z",
+          "cpu_usage_usec": 1609197,
+          "cpu_percent_one_core": 1.2721648841013118,
+          "memory_bytes": 58638336,
+          "open_fds": 86,
+          "processes": 10,
+          "conntrack_entries": 50
+        },
+        {
+          "at": "2026-10-30T19:26:05.289596436Z",
+          "cpu_usage_usec": 1716812,
+          "cpu_percent_one_core": 2.151629659349304,
+          "memory_bytes": 59961344,
+          "open_fds": 85,
+          "processes": 10,
+          "conntrack_entries": 52
+        },
+        {
+          "at": "2026-10-30T19:26:10.28803415Z",
+          "cpu_usage_usec": 1778796,
+          "cpu_percent_one_core": 1.2400674680088652,
+          "memory_bytes": 59854848,
+          "open_fds": 84,
+          "processes": 10,
+          "conntrack_entries": 46
+        },
+        {
+          "at": "2026-10-30T19:26:15.289123948Z",
+          "cpu_usage_usec": 1835748,
+          "cpu_percent_one_core": 1.1387917893970998,
+          "memory_bytes": 59891712,
+          "open_fds": 84,
+          "processes": 10,
+          "conntrack_entries": 46
+        },
+        {
+          "at": "2026-10-30T19:26:20.288514477Z",
+          "cpu_usage_usec": 1918250,
+          "cpu_percent_one_core": 1.6502411548253746,
+          "memory_bytes": 72847360,
+          "open_fds": 93,
+          "processes": 11,
+          "conntrack_entries": 40
+        },
+        {
+          "at": "2026-10-30T19:26:25.286865794Z",
+          "cpu_usage_usec": 1970306,
+          "cpu_percent_one_core": 1.0414634086033774,
+          "memory_bytes": 60092416,
+          "open_fds": 85,
+          "processes": 10,
+          "conntrack_entries": 41
+        },
+        {
+          "at": "2026-10-30T19:26:30.291845901Z",
+          "cpu_usage_usec": 2033419,
+          "cpu_percent_one_core": 1.2610040130175488,
+          "memory_bytes": 60694528,
+          "open_fds": 85,
+          "processes": 10,
+          "conntrack_entries": 42
+        },
+        {
+          "at": "2026-10-30T19:26:35.293849877Z",
+          "cpu_usage_usec": 2100306,
+          "cpu_percent_one_core": 1.3372040550333222,
+          "memory_bytes": 60366848,
+          "open_fds": 85,
+          "processes": 10,
+          "conntrack_entries": 26
+        },
+        {
+          "at": "2026-10-30T19:26:40.287811312Z",
+          "cpu_usage_usec": 2224074,
+          "cpu_percent_one_core": 2.4783531393049296,
+          "memory_bytes": 62234624,
+          "open_fds": 78,
+          "processes": 10,
+          "conntrack_entries": 26
+        },
+        {
+          "at": "2026-10-30T19:26:45.292241982Z",
+          "cpu_usage_usec": 2288205,
+          "cpu_percent_one_core": 1.281484433073383,
+          "memory_bytes": 61538304,
+          "open_fds": 78,
+          "processes": 10,
+          "conntrack_entries": 21
+        },
+        {
+          "at": "2026-10-30T19:26:50.287988324Z",
+          "cpu_usage_usec": 2355892,
+          "cpu_percent_one_core": 1.3548926499919558,
+          "memory_bytes": 62296064,
+          "open_fds": 79,
+          "processes": 10,
+          "conntrack_entries": 20
+        },
+        {
+          "at": "2026-10-30T19:26:55.288837152Z",
+          "cpu_usage_usec": 2475759,
+          "cpu_percent_one_core": 2.396933083216968,
+          "memory_bytes": 61829120,
+          "open_fds": 79,
+          "processes": 10,
+          "conntrack_entries": 25
+        },
+        {
+          "at": "2026-10-30T19:27:00.288133092Z",
+          "cpu_usage_usec": 2544403,
+          "cpu_percent_one_core": 1.373073345203885,
+          "memory_bytes": 62005248,
+          "open_fds": 79,
+          "processes": 10,
+          "conntrack_entries": 26
+        },
+        {
+          "at": "2026-10-30T19:27:05.287708263Z",
+          "cpu_usage_usec": 2610101,
+          "cpu_percent_one_core": 1.3140716511490973,
+          "memory_bytes": 62402560,
+          "open_fds": 80,
+          "processes": 10,
+          "conntrack_entries": 20
+        },
+        {
+          "at": "2026-10-30T19:27:10.289585631Z",
+          "cpu_usage_usec": 2733153,
+          "cpu_percent_one_core": 2.4601162912796943,
+          "memory_bytes": 63123456,
+          "open_fds": 82,
+          "processes": 10,
+          "conntrack_entries": 28
+        },
+        {
+          "at": "2026-10-30T19:27:15.287961087Z",
+          "cpu_usage_usec": 2808061,
+          "cpu_percent_one_core": 1.498646923573562,
+          "memory_bytes": 63848448,
+          "open_fds": 81,
+          "processes": 10,
+          "conntrack_entries": 32
+        },
+        {
+          "at": "2026-10-30T19:27:20.292522734Z",
+          "cpu_usage_usec": 2882100,
+          "cpu_percent_one_core": 1.4794302722673605,
+          "memory_bytes": 63496192,
+          "open_fds": 82,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:27:25.290211585Z",
+          "cpu_usage_usec": 3015985,
+          "cpu_percent_one_core": 2.6789382851077375,
+          "memory_bytes": 63590400,
+          "open_fds": 82,
+          "processes": 10,
+          "conntrack_entries": 25
+        },
+        {
+          "at": "2026-10-30T19:27:30.289740086Z",
+          "cpu_usage_usec": 3093990,
+          "cpu_percent_one_core": 1.5602471309924033,
+          "memory_bytes": 63885312,
+          "open_fds": 82,
+          "processes": 10,
+          "conntrack_entries": 26
+        },
+        {
+          "at": "2026-10-30T19:27:35.289002411Z",
+          "cpu_usage_usec": 3168457,
+          "cpu_percent_one_core": 1.4895597621995162,
+          "memory_bytes": 64045056,
+          "open_fds": 83,
+          "processes": 10,
+          "conntrack_entries": 30
+        },
+        {
+          "at": "2026-10-30T19:27:40.288472066Z",
+          "cpu_usage_usec": 3302407,
+          "cpu_percent_one_core": 2.6792841889946426,
+          "memory_bytes": 65331200,
+          "open_fds": 83,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:27:45.29054808Z",
+          "cpu_usage_usec": 3376279,
+          "cpu_percent_one_core": 1.4768268173703125,
+          "memory_bytes": 65122304,
+          "open_fds": 83,
+          "processes": 10,
+          "conntrack_entries": 20
+        },
+        {
+          "at": "2026-10-30T19:27:50.290231497Z",
+          "cpu_usage_usec": 3456281,
+          "cpu_percent_one_core": 1.6001413155076176,
+          "memory_bytes": 65019904,
+          "open_fds": 84,
+          "processes": 10,
+          "conntrack_entries": 21
+        },
+        {
+          "at": "2026-10-30T19:27:55.291144095Z",
+          "cpu_usage_usec": 3583880,
+          "cpu_percent_one_core": 2.5515142986308192,
+          "memory_bytes": 64098304,
+          "open_fds": 84,
+          "processes": 10,
+          "conntrack_entries": 25
+        },
+        {
+          "at": "2026-10-30T19:28:00.288105961Z",
+          "cpu_usage_usec": 3664365,
+          "cpu_percent_one_core": 1.610678691539168,
+          "memory_bytes": 66023424,
+          "open_fds": 84,
+          "processes": 10,
+          "conntrack_entries": 26
+        },
+        {
+          "at": "2026-10-30T19:28:05.290836192Z",
+          "cpu_usage_usec": 3741478,
+          "cpu_percent_one_core": 1.5414183143868185,
+          "memory_bytes": 66093056,
+          "open_fds": 85,
+          "processes": 10,
+          "conntrack_entries": 20
+        },
+        {
+          "at": "2026-10-30T19:28:10.291651658Z",
+          "cpu_usage_usec": 3879410,
+          "cpu_percent_one_core": 2.758190157940933,
+          "memory_bytes": 65572864,
+          "open_fds": 85,
+          "processes": 10,
+          "conntrack_entries": 20
+        },
+        {
+          "at": "2026-10-30T19:28:15.292761444Z",
+          "cpu_usage_usec": 3962006,
+          "cpu_percent_one_core": 1.6515534258259534,
+          "memory_bytes": 65769472,
+          "open_fds": 87,
+          "processes": 10,
+          "conntrack_entries": 30
+        },
+        {
+          "at": "2026-10-30T19:28:20.291769933Z",
+          "cpu_usage_usec": 4045080,
+          "cpu_percent_one_core": 1.6618095404878594,
+          "memory_bytes": 66519040,
+          "open_fds": 88,
+          "processes": 10,
+          "conntrack_entries": 30
+        },
+        {
+          "at": "2026-10-30T19:28:25.289379807Z",
+          "cpu_usage_usec": 4187086,
+          "cpu_percent_one_core": 2.8414782982318076,
+          "memory_bytes": 66428928,
+          "open_fds": 87,
+          "processes": 10,
+          "conntrack_entries": 26
+        },
+        {
+          "at": "2026-10-30T19:28:30.290631038Z",
+          "cpu_usage_usec": 4270593,
+          "cpu_percent_one_core": 1.6697221583748107,
+          "memory_bytes": 67158016,
+          "open_fds": 87,
+          "processes": 10,
+          "conntrack_entries": 27
+        },
+        {
+          "at": "2026-10-30T19:28:35.289746472Z",
+          "cpu_usage_usec": 4357990,
+          "cpu_percent_one_core": 1.7482492883760044,
+          "memory_bytes": 67772416,
+          "open_fds": 88,
+          "processes": 10,
+          "conntrack_entries": 31
+        },
+        {
+          "at": "2026-10-30T19:28:40.292155166Z",
+          "cpu_usage_usec": 4510137,
+          "cpu_percent_one_core": 3.0414748035778945,
+          "memory_bytes": 64724992,
+          "open_fds": 86,
+          "processes": 10,
+          "conntrack_entries": 30
+        },
+        {
+          "at": "2026-10-30T19:28:45.292138521Z",
+          "cpu_usage_usec": 4592564,
+          "cpu_percent_one_core": 1.6485454880079293,
+          "memory_bytes": 65490944,
+          "open_fds": 86,
+          "processes": 10,
+          "conntrack_entries": 30
+        },
+        {
+          "at": "2026-10-30T19:28:50.290708279Z",
+          "cpu_usage_usec": 4744468,
+          "cpu_percent_one_core": 3.0389492865811074,
+          "memory_bytes": 63553536,
+          "open_fds": 87,
+          "processes": 10,
+          "conntrack_entries": 21
+        },
+        {
+          "at": "2026-10-30T19:28:55.288437751Z",
+          "cpu_usage_usec": 4832443,
+          "cpu_percent_one_core": 1.760299361797869,
+          "memory_bytes": 65101824,
+          "open_fds": 87,
+          "processes": 10,
+          "conntrack_entries": 25
+        },
+        {
+          "at": "2026-10-30T19:29:00.289922932Z",
+          "cpu_usage_usec": 4917415,
+          "cpu_percent_one_core": 1.6989353546981951,
+          "memory_bytes": 65622016,
+          "open_fds": 87,
+          "processes": 10,
+          "conntrack_entries": 26
+        },
+        {
+          "at": "2026-10-30T19:29:05.287986708Z",
+          "cpu_usage_usec": 5066841,
+          "cpu_percent_one_core": 2.98967773715739,
+          "memory_bytes": 66236416,
+          "open_fds": 88,
+          "processes": 10,
+          "conntrack_entries": 21
+        },
+        {
+          "at": "2026-10-30T19:29:10.29180414Z",
+          "cpu_usage_usec": 5154584,
+          "cpu_percent_one_core": 1.7535212104037454,
+          "memory_bytes": 66383872,
+          "open_fds": 88,
+          "processes": 10,
+          "conntrack_entries": 22
+        },
+        {
+          "at": "2026-10-30T19:29:15.28801962Z",
+          "cpu_usage_usec": 5247444,
+          "cpu_percent_one_core": 1.8586067869114404,
+          "memory_bytes": 66277376,
+          "open_fds": 88,
+          "processes": 10,
+          "conntrack_entries": 26
+        },
+        {
+          "at": "2026-10-30T19:29:20.290521328Z",
+          "cpu_usage_usec": 5398354,
+          "cpu_percent_one_core": 3.01669062418639,
+          "memory_bytes": 67534848,
+          "open_fds": 89,
+          "processes": 10,
+          "conntrack_entries": 25
+        },
+        {
+          "at": "2026-10-30T19:29:25.289636999Z",
+          "cpu_usage_usec": 5459926,
+          "cpu_percent_one_core": 1.2316578381488705,
+          "memory_bytes": 70258688,
+          "open_fds": 95,
+          "processes": 11,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:29:30.289959399Z",
+          "cpu_usage_usec": 5515318,
+          "cpu_percent_one_core": 1.1077685710825367,
+          "memory_bytes": 66711552,
+          "open_fds": 88,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:29:35.292304997Z",
+          "cpu_usage_usec": 5612955,
+          "cpu_percent_one_core": 1.9518243609365276,
+          "memory_bytes": 67686400,
+          "open_fds": 89,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:29:40.292047521Z",
+          "cpu_usage_usec": 5764103,
+          "cpu_percent_one_core": 3.023115675946356,
+          "memory_bytes": 67051520,
+          "open_fds": 89,
+          "processes": 10,
+          "conntrack_entries": 22
+        },
+        {
+          "at": "2026-10-30T19:29:45.289607632Z",
+          "cpu_usage_usec": 5863832,
+          "cpu_percent_one_core": 1.9955537859462475,
+          "memory_bytes": 67342336,
+          "open_fds": 91,
+          "processes": 10,
+          "conntrack_entries": 33
+        },
+        {
+          "at": "2026-10-30T19:29:50.289505284Z",
+          "cpu_usage_usec": 5958455,
+          "cpu_percent_one_core": 1.8924987386921819,
+          "memory_bytes": 68145152,
+          "open_fds": 92,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:29:55.290053821Z",
+          "cpu_usage_usec": 6118891,
+          "cpu_percent_one_core": 3.2083680182864707,
+          "memory_bytes": 66670592,
+          "open_fds": 92,
+          "processes": 10,
+          "conntrack_entries": 31
+        },
+        {
+          "at": "2026-10-30T19:30:00.289020155Z",
+          "cpu_usage_usec": 6219018,
+          "cpu_percent_one_core": 2.0029540771058127,
+          "memory_bytes": 68055040,
+          "open_fds": 92,
+          "processes": 10,
+          "conntrack_entries": 35
+        },
+        {
+          "at": "2026-10-30T19:30:05.294368104Z",
+          "cpu_usage_usec": 6320357,
+          "cpu_percent_one_core": 2.0246144929893664,
+          "memory_bytes": 67317760,
+          "open_fds": 93,
+          "processes": 10,
+          "conntrack_entries": 32
+        },
+        {
+          "at": "2026-10-30T19:30:10.289426314Z",
+          "cpu_usage_usec": 6491977,
+          "cpu_percent_one_core": 3.4357957962616017,
+          "memory_bytes": 68292608,
+          "open_fds": 93,
+          "processes": 10,
+          "conntrack_entries": 33
+        },
+        {
+          "at": "2026-10-30T19:30:15.291708699Z",
+          "cpu_usage_usec": 6604504,
+          "cpu_percent_one_core": 2.2495131489862903,
+          "memory_bytes": 68747264,
+          "open_fds": 95,
+          "processes": 10,
+          "conntrack_entries": 40
+        },
+        {
+          "at": "2026-10-30T19:30:20.290624308Z",
+          "cpu_usage_usec": 6706153,
+          "cpu_percent_one_core": 2.033421004687339,
+          "memory_bytes": 68640768,
+          "open_fds": 96,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:30:25.290353984Z",
+          "cpu_usage_usec": 6886582,
+          "cpu_percent_one_core": 3.6087751077044428,
+          "memory_bytes": 69193728,
+          "open_fds": 96,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:30:30.288451845Z",
+          "cpu_usage_usec": 6990648,
+          "cpu_percent_one_core": 2.0821120933230164,
+          "memory_bytes": 69537792,
+          "open_fds": 96,
+          "processes": 10,
+          "conntrack_entries": 30
+        },
+        {
+          "at": "2026-10-30T19:30:35.293114539Z",
+          "cpu_usage_usec": 7101560,
+          "cpu_percent_one_core": 2.21617333238003,
+          "memory_bytes": 69640192,
+          "open_fds": 97,
+          "processes": 10,
+          "conntrack_entries": 31
+        },
+        {
+          "at": "2026-10-30T19:30:40.291933114Z",
+          "cpu_usage_usec": 7278190,
+          "cpu_percent_one_core": 3.533434897664795,
+          "memory_bytes": 69885952,
+          "open_fds": 95,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:30:45.290842916Z",
+          "cpu_usage_usec": 7383224,
+          "cpu_percent_one_core": 2.1011381313176973,
+          "memory_bytes": 71012352,
+          "open_fds": 95,
+          "processes": 10,
+          "conntrack_entries": 30
+        },
+        {
+          "at": "2026-10-30T19:30:50.289082884Z",
+          "cpu_usage_usec": 7492835,
+          "cpu_percent_one_core": 2.192991947200563,
+          "memory_bytes": 70848512,
+          "open_fds": 96,
+          "processes": 10,
+          "conntrack_entries": 31
+        },
+        {
+          "at": "2026-10-30T19:30:55.292244825Z",
+          "cpu_usage_usec": 7671756,
+          "cpu_percent_one_core": 3.576158479576186,
+          "memory_bytes": 70766592,
+          "open_fds": 96,
+          "processes": 10,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:31:00.288375532Z",
+          "cpu_usage_usec": 7781736,
+          "cpu_percent_one_core": 2.201303497642861,
+          "memory_bytes": 70766592,
+          "open_fds": 95,
+          "processes": 10,
+          "conntrack_entries": 27
+        },
+        {
+          "at": "2026-10-30T19:31:05.292461301Z",
+          "cpu_usage_usec": 7941205,
+          "cpu_percent_one_core": 3.186775913952166,
+          "memory_bytes": 71520256,
+          "open_fds": 97,
+          "processes": 10,
+          "conntrack_entries": 28
+        },
+        {
+          "at": "2026-10-30T19:31:10.292691141Z",
+          "cpu_usage_usec": 7994192,
+          "cpu_percent_one_core": 1.059691288110868,
+          "memory_bytes": 69672960,
+          "open_fds": 98,
+          "processes": 10,
+          "conntrack_entries": 30
+        },
+        {
+          "at": "2026-10-30T19:31:15.291167447Z",
+          "cpu_usage_usec": 8110648,
+          "cpu_percent_one_core": 2.3298299895952335,
+          "memory_bytes": 71073792,
+          "open_fds": 98,
+          "processes": 10,
+          "conntrack_entries": 31
+        },
+        {
+          "at": "2026-10-30T19:31:20.290200414Z",
+          "cpu_usage_usec": 8220093,
+          "cpu_percent_one_core": 2.1893234296008193,
+          "memory_bytes": 71516160,
+          "open_fds": 99,
+          "processes": 10,
+          "conntrack_entries": 32
+        },
+        {
+          "at": "2026-10-30T19:31:25.291861014Z",
+          "cpu_usage_usec": 8402717,
+          "cpu_percent_one_core": 3.651267341090677,
+          "memory_bytes": 68829184,
+          "open_fds": 99,
+          "processes": 10,
+          "conntrack_entries": 30
+        },
+        {
+          "at": "2026-10-30T19:31:30.293038422Z",
+          "cpu_usage_usec": 8518778,
+          "cpu_percent_one_core": 2.320673524085471,
+          "memory_bytes": 68911104,
+          "open_fds": 98,
+          "processes": 10,
+          "conntrack_entries": 31
+        },
+        {
+          "at": "2026-10-30T19:31:35.28928859Z",
+          "cpu_usage_usec": 8647647,
+          "cpu_percent_one_core": 2.5793143991343874,
+          "memory_bytes": 72028160,
+          "open_fds": 99,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:31:40.289551729Z",
+          "cpu_usage_usec": 8831875,
+          "cpu_percent_one_core": 3.6843660999177663,
+          "memory_bytes": 72327168,
+          "open_fds": 99,
+          "processes": 10,
+          "conntrack_entries": 26
+        },
+        {
+          "at": "2026-10-30T19:31:45.290264961Z",
+          "cpu_usage_usec": 8952025,
+          "cpu_percent_one_core": 2.402657269590059,
+          "memory_bytes": 72470528,
+          "open_fds": 99,
+          "processes": 10,
+          "conntrack_entries": 30
+        },
+        {
+          "at": "2026-10-30T19:31:50.291457771Z",
+          "cpu_usage_usec": 9079711,
+          "cpu_percent_one_core": 2.5531109247515693,
+          "memory_bytes": 73093120,
+          "open_fds": 100,
+          "processes": 10,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:31:55.291712426Z",
+          "cpu_usage_usec": 9289628,
+          "cpu_percent_one_core": 4.198126185235259,
+          "memory_bytes": 73371648,
+          "open_fds": 100,
+          "processes": 10,
+          "conntrack_entries": 25
+        },
+        {
+          "at": "2026-10-30T19:32:00.292287862Z",
+          "cpu_usage_usec": 9423740,
+          "cpu_percent_one_core": 2.6819313440310233,
+          "memory_bytes": 72519680,
+          "open_fds": 100,
+          "processes": 10,
+          "conntrack_entries": 26
+        },
+        {
+          "at": "2026-10-30T19:32:05.289554928Z",
+          "cpu_usage_usec": 9549893,
+          "cpu_percent_one_core": 2.5244398254860045,
+          "memory_bytes": 73490432,
+          "open_fds": 101,
+          "processes": 10,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:32:10.290079858Z",
+          "cpu_usage_usec": 9738841,
+          "cpu_percent_one_core": 3.778563303752992,
+          "memory_bytes": 74407936,
+          "open_fds": 101,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:32:15.288517316Z",
+          "cpu_usage_usec": 9861896,
+          "cpu_percent_one_core": 2.4618693548530945,
+          "memory_bytes": 73551872,
+          "open_fds": 101,
+          "processes": 10,
+          "conntrack_entries": 25
+        },
+        {
+          "at": "2026-10-30T19:32:20.290219168Z",
+          "cpu_usage_usec": 9989462,
+          "cpu_percent_one_core": 2.550451901666049,
+          "memory_bytes": 73674752,
+          "open_fds": 102,
+          "processes": 10,
+          "conntrack_entries": 20
+        },
+        {
+          "at": "2026-10-30T19:32:25.287734369Z",
+          "cpu_usage_usec": 10187832,
+          "cpu_percent_one_core": 3.969372618622676,
+          "memory_bytes": 72773632,
+          "open_fds": 101,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:32:30.29259604Z",
+          "cpu_usage_usec": 10314824,
+          "cpu_percent_one_core": 2.5373728256234958,
+          "memory_bytes": 74436608,
+          "open_fds": 103,
+          "processes": 10,
+          "conntrack_entries": 31
+        },
+        {
+          "at": "2026-10-30T19:32:35.303589306Z",
+          "cpu_usage_usec": 10465370,
+          "cpu_percent_one_core": 3.0043145541916205,
+          "memory_bytes": 76394496,
+          "open_fds": 104,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:32:40.29027869Z",
+          "cpu_usage_usec": 10707940,
+          "cpu_percent_one_core": 4.864349497650604,
+          "memory_bytes": 76664832,
+          "open_fds": 102,
+          "processes": 10,
+          "conntrack_entries": 27
+        },
+        {
+          "at": "2026-10-30T19:32:45.290218184Z",
+          "cpu_usage_usec": 10844344,
+          "cpu_percent_one_core": 2.728113013441198,
+          "memory_bytes": 75567104,
+          "open_fds": 102,
+          "processes": 10,
+          "conntrack_entries": 31
+        },
+        {
+          "at": "2026-10-30T19:32:50.290884906Z",
+          "cpu_usage_usec": 11034335,
+          "cpu_percent_one_core": 3.7993133828365533,
+          "memory_bytes": 76763136,
+          "open_fds": 104,
+          "processes": 10,
+          "conntrack_entries": 33
+        },
+        {
+          "at": "2026-10-30T19:32:55.290118622Z",
+          "cpu_usage_usec": 11091048,
+          "cpu_percent_one_core": 1.1344338597031498,
+          "memory_bytes": 75939840,
+          "open_fds": 103,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:33:00.290625359Z",
+          "cpu_usage_usec": 11221025,
+          "cpu_percent_one_core": 2.5992765700777416,
+          "memory_bytes": 76496896,
+          "open_fds": 103,
+          "processes": 10,
+          "conntrack_entries": 30
+        },
+        {
+          "at": "2026-10-30T19:33:05.290271032Z",
+          "cpu_usage_usec": 11357394,
+          "cpu_percent_one_core": 2.727573290572266,
+          "memory_bytes": 75345920,
+          "open_fds": 104,
+          "processes": 10,
+          "conntrack_entries": 19
+        },
+        {
+          "at": "2026-10-30T19:33:10.290866105Z",
+          "cpu_usage_usec": 11565704,
+          "cpu_percent_one_core": 4.165704220378493,
+          "memory_bytes": 76677120,
+          "open_fds": 104,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:33:15.288362851Z",
+          "cpu_usage_usec": 11710259,
+          "cpu_percent_one_core": 2.892548156548614,
+          "memory_bytes": 77402112,
+          "open_fds": 104,
+          "processes": 10,
+          "conntrack_entries": 25
+        },
+        {
+          "at": "2026-10-30T19:33:20.291405742Z",
+          "cpu_usage_usec": 11850203,
+          "cpu_percent_one_core": 2.7971776986310872,
+          "memory_bytes": 77783040,
+          "open_fds": 105,
+          "processes": 10,
+          "conntrack_entries": 25
+        },
+        {
+          "at": "2026-10-30T19:33:25.291122226Z",
+          "cpu_usage_usec": 12108054,
+          "cpu_percent_one_core": 5.157312436118527,
+          "memory_bytes": 76427264,
+          "open_fds": 105,
+          "processes": 10,
+          "conntrack_entries": 20
+        },
+        {
+          "at": "2026-10-30T19:33:30.29161683Z",
+          "cpu_usage_usec": 12247811,
+          "cpu_percent_one_core": 2.794863529863735,
+          "memory_bytes": 77066240,
+          "open_fds": 105,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:33:35.290158399Z",
+          "cpu_usage_usec": 12390973,
+          "cpu_percent_one_core": 2.8640754112732276,
+          "memory_bytes": 76443648,
+          "open_fds": 106,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:33:40.289833614Z",
+          "cpu_usage_usec": 12617956,
+          "cpu_percent_one_core": 4.539954901850559,
+          "memory_bytes": 77434880,
+          "open_fds": 106,
+          "processes": 10,
+          "conntrack_entries": 20
+        },
+        {
+          "at": "2026-10-30T19:33:45.290003205Z",
+          "cpu_usage_usec": 12757880,
+          "cpu_percent_one_core": 2.79838508381505,
+          "memory_bytes": 77647872,
+          "open_fds": 105,
+          "processes": 10,
+          "conntrack_entries": 21
+        },
+        {
+          "at": "2026-10-30T19:33:50.289460405Z",
+          "cpu_usage_usec": 12894642,
+          "cpu_percent_one_core": 2.7355369698934515,
+          "memory_bytes": 76439552,
+          "open_fds": 106,
+          "processes": 10,
+          "conntrack_entries": 25
+        },
+        {
+          "at": "2026-10-30T19:33:55.290912135Z",
+          "cpu_usage_usec": 13119028,
+          "cpu_percent_one_core": 4.486417386657453,
+          "memory_bytes": 76935168,
+          "open_fds": 106,
+          "processes": 10,
+          "conntrack_entries": 22
+        },
+        {
+          "at": "2026-10-30T19:34:00.288456143Z",
+          "cpu_usage_usec": 13260952,
+          "cpu_percent_one_core": 2.839874942027724,
+          "memory_bytes": 77987840,
+          "open_fds": 108,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:34:05.298709843Z",
+          "cpu_usage_usec": 13414522,
+          "cpu_percent_one_core": 3.0651142476078608,
+          "memory_bytes": 77230080,
+          "open_fds": 109,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:34:10.291074955Z",
+          "cpu_usage_usec": 13644518,
+          "cpu_percent_one_core": 4.606954716656549,
+          "memory_bytes": 76795904,
+          "open_fds": 109,
+          "processes": 10,
+          "conntrack_entries": 28
+        },
+        {
+          "at": "2026-10-30T19:34:15.287723655Z",
+          "cpu_usage_usec": 13786007,
+          "cpu_percent_one_core": 2.8316779604697846,
+          "memory_bytes": 78876672,
+          "open_fds": 109,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:34:20.289592321Z",
+          "cpu_usage_usec": 14016398,
+          "cpu_percent_one_core": 4.606098548050122,
+          "memory_bytes": 77709312,
+          "open_fds": 110,
+          "processes": 10,
+          "conntrack_entries": 31
+        },
+        {
+          "at": "2026-10-30T19:34:25.288076539Z",
+          "cpu_usage_usec": 14165184,
+          "cpu_percent_one_core": 2.976622382125525,
+          "memory_bytes": 77484032,
+          "open_fds": 110,
+          "processes": 10,
+          "conntrack_entries": 27
+        },
+        {
+          "at": "2026-10-30T19:34:30.28852258Z",
+          "cpu_usage_usec": 14277090,
+          "cpu_percent_one_core": 2.2379203591530166,
+          "memory_bytes": 78352384,
+          "open_fds": 111,
+          "processes": 10,
+          "conntrack_entries": 28
+        },
+        {
+          "at": "2026-10-30T19:34:35.287608361Z",
+          "cpu_usage_usec": 14345405,
+          "cpu_percent_one_core": 1.3665498651702372,
+          "memory_bytes": 77369344,
+          "open_fds": 111,
+          "processes": 10,
+          "conntrack_entries": 28
+        },
+        {
+          "at": "2026-10-30T19:34:40.293481488Z",
+          "cpu_usage_usec": 14586156,
+          "cpu_percent_one_core": 4.809370790910977,
+          "memory_bytes": 78413824,
+          "open_fds": 110,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:34:45.288889294Z",
+          "cpu_usage_usec": 14756867,
+          "cpu_percent_one_core": 3.417358634763682,
+          "memory_bytes": 78577664,
+          "open_fds": 112,
+          "processes": 10,
+          "conntrack_entries": 35
+        },
+        {
+          "at": "2026-10-30T19:34:50.298459246Z",
+          "cpu_usage_usec": 14909284,
+          "cpu_percent_one_core": 3.0425166523355895,
+          "memory_bytes": 79134720,
+          "open_fds": 113,
+          "processes": 10,
+          "conntrack_entries": 35
+        },
+        {
+          "at": "2026-10-30T19:34:55.292130597Z",
+          "cpu_usage_usec": 15189055,
+          "cpu_percent_one_core": 5.602511265463534,
+          "memory_bytes": 79319040,
+          "open_fds": 113,
+          "processes": 10,
+          "conntrack_entries": 31
+        },
+        {
+          "at": "2026-10-30T19:35:00.290579135Z",
+          "cpu_usage_usec": 15352539,
+          "cpu_percent_one_core": 3.270694871761427,
+          "memory_bytes": 77316096,
+          "open_fds": 113,
+          "processes": 10,
+          "conntrack_entries": 32
+        },
+        {
+          "at": "2026-10-30T19:35:05.290046977Z",
+          "cpu_usage_usec": 15485651,
+          "cpu_percent_one_core": 2.662523376623012,
+          "memory_bytes": 77516800,
+          "open_fds": 114,
+          "processes": 10,
+          "conntrack_entries": 28
+        },
+        {
+          "at": "2026-10-30T19:35:10.290519381Z",
+          "cpu_usage_usec": 15619797,
+          "cpu_percent_one_core": 2.6826665395192126,
+          "memory_bytes": 80248832,
+          "open_fds": 114,
+          "processes": 10,
+          "conntrack_entries": 27
+        },
+        {
+          "at": "2026-10-30T19:35:15.289247413Z",
+          "cpu_usage_usec": 15774989,
+          "cpu_percent_one_core": 3.104629797950968,
+          "memory_bytes": 79990784,
+          "open_fds": 113,
+          "processes": 10,
+          "conntrack_entries": 31
+        },
+        {
+          "at": "2026-10-30T19:35:20.290718779Z",
+          "cpu_usage_usec": 15925607,
+          "cpu_percent_one_core": 3.011473803966991,
+          "memory_bytes": 79859712,
+          "open_fds": 114,
+          "processes": 10,
+          "conntrack_entries": 21
+        },
+        {
+          "at": "2026-10-30T19:35:25.295993956Z",
+          "cpu_usage_usec": 16194811,
+          "cpu_percent_one_core": 5.378405591705193,
+          "memory_bytes": 80277504,
+          "open_fds": 114,
+          "processes": 10,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:35:30.290855737Z",
+          "cpu_usage_usec": 16350537,
+          "cpu_percent_one_core": 3.1177239096458593,
+          "memory_bytes": 79847424,
+          "open_fds": 114,
+          "processes": 10,
+          "conntrack_entries": 18
+        },
+        {
+          "at": "2026-10-30T19:35:35.290827919Z",
+          "cpu_usage_usec": 16493639,
+          "cpu_percent_one_core": 2.862055923334335,
+          "memory_bytes": 75161600,
+          "open_fds": 115,
+          "processes": 10,
+          "conntrack_entries": 22
+        },
+        {
+          "at": "2026-10-30T19:35:40.294336267Z",
+          "cpu_usage_usec": 16655581,
+          "cpu_percent_one_core": 3.2365689979258523,
+          "memory_bytes": 80949248,
+          "open_fds": 115,
+          "processes": 10,
+          "conntrack_entries": 21
+        },
+        {
+          "at": "2026-10-30T19:35:45.290797072Z",
+          "cpu_usage_usec": 16827098,
+          "cpu_percent_one_core": 3.4327698483767053,
+          "memory_bytes": 80297984,
+          "open_fds": 115,
+          "processes": 10,
+          "conntrack_entries": 22
+        },
+        {
+          "at": "2026-10-30T19:35:50.291310455Z",
+          "cpu_usage_usec": 16855297,
+          "cpu_percent_one_core": 0.5639220983962717,
+          "memory_bytes": 80150528,
+          "open_fds": 116,
+          "processes": 10,
+          "conntrack_entries": 21
+        },
+        {
+          "at": "2026-10-30T19:35:55.291385672Z",
+          "cpu_usage_usec": 17124282,
+          "cpu_percent_one_core": 5.379619072238448,
+          "memory_bytes": 79417344,
+          "open_fds": 116,
+          "processes": 10,
+          "conntrack_entries": 18
+        },
+        {
+          "at": "2026-10-30T19:36:00.288959138Z",
+          "cpu_usage_usec": 17296861,
+          "cpu_percent_one_core": 3.4532558885648608,
+          "memory_bytes": 81002496,
+          "open_fds": 115,
+          "processes": 10,
+          "conntrack_entries": 22
+        },
+        {
+          "at": "2026-10-30T19:36:05.289154083Z",
+          "cpu_usage_usec": 17474487,
+          "cpu_percent_one_core": 3.552381496197845,
+          "memory_bytes": 78012416,
+          "open_fds": 116,
+          "processes": 10,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:36:10.293017643Z",
+          "cpu_usage_usec": 17743402,
+          "cpu_percent_one_core": 5.374147331866898,
+          "memory_bytes": 81469440,
+          "open_fds": 116,
+          "processes": 10,
+          "conntrack_entries": 18
+        },
+        {
+          "at": "2026-10-30T19:36:15.291641573Z",
+          "cpu_usage_usec": 17923088,
+          "cpu_percent_one_core": 3.594709314329234,
+          "memory_bytes": 79904768,
+          "open_fds": 118,
+          "processes": 10,
+          "conntrack_entries": 25
+        },
+        {
+          "at": "2026-10-30T19:36:20.289874151Z",
+          "cpu_usage_usec": 18095946,
+          "cpu_percent_one_core": 3.458382484257419,
+          "memory_bytes": 80801792,
+          "open_fds": 119,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:36:25.299802698Z",
+          "cpu_usage_usec": 18380669,
+          "cpu_percent_one_core": 5.683174866246251,
+          "memory_bytes": 82046976,
+          "open_fds": 119,
+          "processes": 10,
+          "conntrack_entries": 26
+        },
+        {
+          "at": "2026-10-30T19:36:30.291326856Z",
+          "cpu_usage_usec": 18549137,
+          "cpu_percent_one_core": 3.3750813312201142,
+          "memory_bytes": 82149376,
+          "open_fds": 119,
+          "processes": 10,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:36:35.292027608Z",
+          "cpu_usage_usec": 18722817,
+          "cpu_percent_one_core": 3.473113241789918,
+          "memory_bytes": 79900672,
+          "open_fds": 120,
+          "processes": 10,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:36:40.290181761Z",
+          "cpu_usage_usec": 18984756,
+          "cpu_percent_one_core": 5.240714711505618,
+          "memory_bytes": 82079744,
+          "open_fds": 118,
+          "processes": 10,
+          "conntrack_entries": 28
+        },
+        {
+          "at": "2026-10-30T19:36:45.290938636Z",
+          "cpu_usage_usec": 19160850,
+          "cpu_percent_one_core": 3.5213469561045194,
+          "memory_bytes": 81584128,
+          "open_fds": 118,
+          "processes": 10,
+          "conntrack_entries": 21
+        },
+        {
+          "at": "2026-10-30T19:36:50.29460401Z",
+          "cpu_usage_usec": 19415660,
+          "cpu_percent_one_core": 5.0924668408891085,
+          "memory_bytes": 86867968,
+          "open_fds": 125,
+          "processes": 11,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:36:55.290729968Z",
+          "cpu_usage_usec": 19463678,
+          "cpu_percent_one_core": 0.961104671973124,
+          "memory_bytes": 82620416,
+          "open_fds": 119,
+          "processes": 10,
+          "conntrack_entries": 17
+        },
+        {
+          "at": "2026-10-30T19:37:00.290118869Z",
+          "cpu_usage_usec": 19641603,
+          "cpu_percent_one_core": 3.55893497232053,
+          "memory_bytes": 83275776,
+          "open_fds": 121,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:37:05.292267322Z",
+          "cpu_usage_usec": 19818369,
+          "cpu_percent_one_core": 3.5338015586879665,
+          "memory_bytes": 84533248,
+          "open_fds": 122,
+          "processes": 10,
+          "conntrack_entries": 28
+        },
+        {
+          "at": "2026-10-30T19:37:10.290048894Z",
+          "cpu_usage_usec": 20092002,
+          "cpu_percent_one_core": 5.475089218244851,
+          "memory_bytes": 83443712,
+          "open_fds": 122,
+          "processes": 10,
+          "conntrack_entries": 28
+        },
+        {
+          "at": "2026-10-30T19:37:15.29170915Z",
+          "cpu_usage_usec": 20277861,
+          "cpu_percent_one_core": 3.715946115633169,
+          "memory_bytes": 83156992,
+          "open_fds": 122,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:37:20.289676924Z",
+          "cpu_usage_usec": 20456705,
+          "cpu_percent_one_core": 3.57833439683959,
+          "memory_bytes": 83550208,
+          "open_fds": 123,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:37:25.291147664Z",
+          "cpu_usage_usec": 20736607,
+          "cpu_percent_one_core": 5.59639383194712,
+          "memory_bytes": 83640320,
+          "open_fds": 123,
+          "processes": 10,
+          "conntrack_entries": 27
+        },
+        {
+          "at": "2026-10-30T19:37:30.291222126Z",
+          "cpu_usage_usec": 20919403,
+          "cpu_percent_one_core": 3.655865555387803,
+          "memory_bytes": 84144128,
+          "open_fds": 122,
+          "processes": 10,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:37:35.290827919Z",
+          "cpu_usage_usec": 21100214,
+          "cpu_percent_one_core": 3.6165051303275826,
+          "memory_bytes": 82350080,
+          "open_fds": 125,
+          "processes": 10,
+          "conntrack_entries": 30
+        },
+        {
+          "at": "2026-10-30T19:37:40.29068802Z",
+          "cpu_usage_usec": 21369507,
+          "cpu_percent_one_core": 5.38601069950217,
+          "memory_bytes": 83791872,
+          "open_fds": 125,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:37:45.290880436Z",
+          "cpu_usage_usec": 21543034,
+          "cpu_percent_one_core": 3.4704064476545935,
+          "memory_bytes": 84062208,
+          "open_fds": 125,
+          "processes": 10,
+          "conntrack_entries": 28
+        },
+        {
+          "at": "2026-10-30T19:37:50.29035912Z",
+          "cpu_usage_usec": 21723514,
+          "cpu_percent_one_core": 3.609976387690105,
+          "memory_bytes": 84447232,
+          "open_fds": 126,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:37:55.287000467Z",
+          "cpu_usage_usec": 21998845,
+          "cpu_percent_one_core": 5.510321451534832,
+          "memory_bytes": 86028288,
+          "open_fds": 126,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:38:00.290091666Z",
+          "cpu_usage_usec": 22176160,
+          "cpu_percent_one_core": 3.544108890828156,
+          "memory_bytes": 84500480,
+          "open_fds": 126,
+          "processes": 10,
+          "conntrack_entries": 30
+        },
+        {
+          "at": "2026-10-30T19:38:05.29157802Z",
+          "cpu_usage_usec": 22359859,
+          "cpu_percent_one_core": 3.67288815759908,
+          "memory_bytes": 84447232,
+          "open_fds": 127,
+          "processes": 10,
+          "conntrack_entries": 33
+        },
+        {
+          "at": "2026-10-30T19:38:10.292474798Z",
+          "cpu_usage_usec": 22633552,
+          "cpu_percent_one_core": 5.472878408609297,
+          "memory_bytes": 85848064,
+          "open_fds": 127,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:38:15.291270661Z",
+          "cpu_usage_usec": 22823658,
+          "cpu_percent_one_core": 3.803035875241941,
+          "memory_bytes": 83148800,
+          "open_fds": 126,
+          "processes": 10,
+          "conntrack_entries": 19
+        },
+        {
+          "at": "2026-10-30T19:38:20.294009627Z",
+          "cpu_usage_usec": 23019242,
+          "cpu_percent_one_core": 3.9095383814594977,
+          "memory_bytes": 85954560,
+          "open_fds": 127,
+          "processes": 10,
+          "conntrack_entries": 19
+        },
+        {
+          "at": "2026-10-30T19:38:25.288141568Z",
+          "cpu_usage_usec": 23298555,
+          "cpu_percent_one_core": 5.592823804011709,
+          "memory_bytes": 87744512,
+          "open_fds": 125,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:38:30.291124764Z",
+          "cpu_usage_usec": 23478152,
+          "cpu_percent_one_core": 3.5897981856823336,
+          "memory_bytes": 86503424,
+          "open_fds": 125,
+          "processes": 10,
+          "conntrack_entries": 22
+        },
+        {
+          "at": "2026-10-30T19:38:35.289214567Z",
+          "cpu_usage_usec": 23632696,
+          "cpu_percent_one_core": 3.0920612892397044,
+          "memory_bytes": 83640320,
+          "open_fds": 126,
+          "processes": 10,
+          "conntrack_entries": 22
+        },
+        {
+          "at": "2026-10-30T19:38:40.292008789Z",
+          "cpu_usage_usec": 23796870,
+          "cpu_percent_one_core": 3.281646070470735,
+          "memory_bytes": 87363584,
+          "open_fds": 126,
+          "processes": 10,
+          "conntrack_entries": 19
+        },
+        {
+          "at": "2026-10-30T19:38:45.290297876Z",
+          "cpu_usage_usec": 23985708,
+          "cpu_percent_one_core": 3.778052783924541,
+          "memory_bytes": 86589440,
+          "open_fds": 126,
+          "processes": 10,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:38:50.289874265Z",
+          "cpu_usage_usec": 24279194,
+          "cpu_percent_one_core": 5.870217337727332,
+          "memory_bytes": 85909504,
+          "open_fds": 126,
+          "processes": 10,
+          "conntrack_entries": 21
+        },
+        {
+          "at": "2026-10-30T19:38:55.322637819Z",
+          "cpu_usage_usec": 24542037,
+          "cpu_percent_one_core": 5.222637566414073,
+          "memory_bytes": 84672512,
+          "open_fds": 128,
+          "processes": 10,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:39:00.291222291Z",
+          "cpu_usage_usec": 24636643,
+          "cpu_percent_one_core": 1.904083558066556,
+          "memory_bytes": 91967488,
+          "open_fds": 134,
+          "processes": 11,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:39:05.292093675Z",
+          "cpu_usage_usec": 24762572,
+          "cpu_percent_one_core": 2.518141146419054,
+          "memory_bytes": 87449600,
+          "open_fds": 129,
+          "processes": 10,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:39:10.289917524Z",
+          "cpu_usage_usec": 25056707,
+          "cpu_percent_one_core": 5.885261443515113,
+          "memory_bytes": 86888448,
+          "open_fds": 129,
+          "processes": 10,
+          "conntrack_entries": 26
+        },
+        {
+          "at": "2026-10-30T19:39:15.292104902Z",
+          "cpu_usage_usec": 25249557,
+          "cpu_percent_one_core": 3.8553133944595706,
+          "memory_bytes": 87982080,
+          "open_fds": 129,
+          "processes": 10,
+          "conntrack_entries": 27
+        },
+        {
+          "at": "2026-10-30T19:39:20.289292989Z",
+          "cpu_usage_usec": 25438038,
+          "cpu_percent_one_core": 3.771741161600989,
+          "memory_bytes": 87408640,
+          "open_fds": 130,
+          "processes": 10,
+          "conntrack_entries": 28
+        },
+        {
+          "at": "2026-10-30T19:39:25.289081149Z",
+          "cpu_usage_usec": 25728528,
+          "cpu_percent_one_core": 5.81004616003571,
+          "memory_bytes": 88428544,
+          "open_fds": 130,
+          "processes": 10,
+          "conntrack_entries": 19
+        },
+        {
+          "at": "2026-10-30T19:39:30.292157584Z",
+          "cpu_usage_usec": 25925956,
+          "cpu_percent_one_core": 3.9461319962824035,
+          "memory_bytes": 87887872,
+          "open_fds": 130,
+          "processes": 10,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:39:35.291066819Z",
+          "cpu_usage_usec": 26119242,
+          "cpu_percent_one_core": 3.8665635024277454,
+          "memory_bytes": 87711744,
+          "open_fds": 131,
+          "processes": 10,
+          "conntrack_entries": 21
+        },
+        {
+          "at": "2026-10-30T19:39:40.289841281Z",
+          "cpu_usage_usec": 26433702,
+          "cpu_percent_one_core": 6.29074190865145,
+          "memory_bytes": 88727552,
+          "open_fds": 131,
+          "processes": 10,
+          "conntrack_entries": 23
+        },
+        {
+          "at": "2026-10-30T19:39:45.28994422Z",
+          "cpu_usage_usec": 26643049,
+          "cpu_percent_one_core": 4.1868538018912975,
+          "memory_bytes": 87269376,
+          "open_fds": 131,
+          "processes": 10,
+          "conntrack_entries": 28
+        },
+        {
+          "at": "2026-10-30T19:39:50.292587937Z",
+          "cpu_usage_usec": 26848834,
+          "cpu_percent_one_core": 4.113525000805089,
+          "memory_bytes": 88907776,
+          "open_fds": 132,
+          "processes": 10,
+          "conntrack_entries": 25
+        },
+        {
+          "at": "2026-10-30T19:39:55.291722047Z",
+          "cpu_usage_usec": 27181236,
+          "cpu_percent_one_core": 6.649191493684493,
+          "memory_bytes": 90083328,
+          "open_fds": 134,
+          "processes": 10,
+          "conntrack_entries": 33
+        },
+        {
+          "at": "2026-10-30T19:40:00.290581902Z",
+          "cpu_usage_usec": 27393431,
+          "cpu_percent_one_core": 4.244867952994453,
+          "memory_bytes": 87212032,
+          "open_fds": 134,
+          "processes": 10,
+          "conntrack_entries": 34
+        },
+        {
+          "at": "2026-10-30T19:40:05.289127459Z",
+          "cpu_usage_usec": 27716558,
+          "cpu_percent_one_core": 6.4644204262075915,
+          "memory_bytes": 88850432,
+          "open_fds": 133,
+          "processes": 10,
+          "conntrack_entries": 36
+        },
+        {
+          "at": "2026-10-30T19:40:10.290728295Z",
+          "cpu_usage_usec": 27749216,
+          "cpu_percent_one_core": 0.6529509465237141,
+          "memory_bytes": 89509888,
+          "open_fds": 132,
+          "processes": 10,
+          "conntrack_entries": 29
+        },
+        {
+          "at": "2026-10-30T19:40:15.290205653Z",
+          "cpu_usage_usec": 27969128,
+          "cpu_percent_one_core": 4.3986997890510295,
+          "memory_bytes": 88985600,
+          "open_fds": 132,
+          "processes": 10,
+          "conntrack_entries": 33
+        },
+        {
+          "at": "2026-10-30T19:40:20.291087733Z",
+          "cpu_usage_usec": 28188910,
+          "cpu_percent_one_core": 4.394864675553397,
+          "memory_bytes": 89759744,
+          "open_fds": 133,
+          "processes": 10,
+          "conntrack_entries": 22
+        },
+        {
+          "at": "2026-10-30T19:40:25.290561834Z",
+          "cpu_usage_usec": 28512696,
+          "cpu_percent_one_core": 6.4764011865815245,
+          "memory_bytes": 88854528,
+          "open_fds": 133,
+          "processes": 10,
+          "conntrack_entries": 24
+        },
+        {
+          "at": "2026-10-30T19:40:30.291551382Z",
+          "cpu_usage_usec": 28727450,
+          "cpu_percent_one_core": 4.294230130632539,
+          "memory_bytes": 88973312,
+          "open_fds": 133,
+          "processes": 10,
+          "conntrack_entries": 25
+        },
+        {
+          "at": "2026-10-30T19:40:35.300886827Z",
+          "cpu_usage_usec": 28960092,
+          "cpu_percent_one_core": 4.644168923289185,
+          "memory_bytes": 86118400,
+          "open_fds": 134,
+          "processes": 10,
+          "conntrack_entries": 19
+        },
+        {
+          "at": "2026-10-30T19:40:40.292983931Z",
+          "cpu_usage_usec": 29277584,
+          "cpu_percent_one_core": 6.359892313504965,
+          "memory_bytes": 89739264,
+          "open_fds": 134,
+          "processes": 10,
+          "conntrack_entries": 21
+        },
+        {
+          "at": "2026-10-30T19:40:45.288937958Z",
+          "cpu_usage_usec": 29495935,
+          "cpu_percent_one_core": 4.370556630824658,
+          "memory_bytes": 90091520,
+          "open_fds": 134,
+          "processes": 10,
+          "conntrack_entries": 22
+        },
+        {
+          "at": "2026-10-30T19:40:50.289623088Z",
+          "cpu_usage_usec": 29714777,
+          "cpu_percent_one_core": 4.376240341290995,
+          "memory_bytes": 90497024,
+          "open_fds": 135,
+          "processes": 10,
+          "conntrack_entries": 23
+        }
+      ]
+    },
+    "traffic_node_telemetry": {
+      "cadence_seconds": 5,
+      "errors": 0,
+      "samples": [
+        {
+          "at": "2026-10-30T19:41:24.999430792Z",
+          "cpu_usage_usec": 31474558,
+          "memory_bytes": 89858048,
+          "open_fds": 136,
+          "processes": 10,
+          "conntrack_entries": 43
+        },
+        {
+          "at": "2026-10-30T19:41:29.997901236Z",
+          "cpu_usage_usec": 32211101,
+          "cpu_percent_one_core": 14.735367714019837,
+          "memory_bytes": 95416320,
+          "open_fds": 122,
+          "processes": 10,
+          "conntrack_entries": 104
+        },
+        {
+          "at": "2026-10-30T19:41:35.001003757Z",
+          "cpu_usage_usec": 33061868,
+          "cpu_percent_one_core": 17.00478845734211,
+          "memory_bytes": 88838144,
+          "open_fds": 118,
+          "processes": 10,
+          "conntrack_entries": 171
+        },
+        {
+          "at": "2026-10-30T19:41:39.999987877Z",
+          "cpu_usage_usec": 33632344,
+          "cpu_percent_one_core": 11.411838611721773,
+          "memory_bytes": 92360704,
+          "open_fds": 111,
+          "processes": 10,
+          "conntrack_entries": 186
+        },
+        {
+          "at": "2026-10-30T19:41:45.000438988Z",
+          "cpu_usage_usec": 34157147,
+          "cpu_percent_one_core": 10.495113107806164,
+          "memory_bytes": 93413376,
+          "open_fds": 105,
+          "processes": 10,
+          "conntrack_entries": 219
+        },
+        {
+          "at": "2026-10-30T19:41:49.999952841Z",
+          "cpu_usage_usec": 34808567,
+          "cpu_percent_one_core": 13.02966686669165,
+          "memory_bytes": 94519296,
+          "open_fds": 97,
+          "processes": 10,
+          "conntrack_entries": 259
+        },
+        {
+          "at": "2026-10-30T19:41:55.001583512Z",
+          "cpu_usage_usec": 35672765,
+          "cpu_percent_one_core": 17.27832494731597,
+          "memory_bytes": 98414592,
+          "open_fds": 86,
+          "processes": 10,
+          "conntrack_entries": 328
+        },
+        {
+          "at": "2026-10-30T19:42:00.005287354Z",
+          "cpu_usage_usec": 36106286,
+          "cpu_percent_one_core": 8.664001981114852,
+          "memory_bytes": 98320384,
+          "open_fds": 78,
+          "processes": 10,
+          "conntrack_entries": 364
+        },
+        {
+          "at": "2026-10-30T19:42:05.004045271Z",
+          "cpu_usage_usec": 36413056,
+          "cpu_percent_one_core": 6.136924513922206,
+          "memory_bytes": 98615296,
+          "open_fds": 74,
+          "processes": 10,
+          "conntrack_entries": 362
+        },
+        {
+          "at": "2026-10-30T19:42:10.003943606Z",
+          "cpu_usage_usec": 36736211,
+          "cpu_percent_one_core": 6.4632314168844,
+          "memory_bytes": 102191104,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 359
+        },
+        {
+          "at": "2026-10-30T19:42:15.00224497Z",
+          "cpu_usage_usec": 37013669,
+          "cpu_percent_one_core": 5.5510458412607235,
+          "memory_bytes": 101801984,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 358
+        },
+        {
+          "at": "2026-10-30T19:42:20.003685047Z",
+          "cpu_usage_usec": 37305055,
+          "cpu_percent_one_core": 5.8260420101800205,
+          "memory_bytes": 101752832,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 358
+        },
+        {
+          "at": "2026-10-30T19:42:25.001481925Z",
+          "cpu_usage_usec": 37614730,
+          "cpu_percent_one_core": 6.196230210218639,
+          "memory_bytes": 104263680,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 347
+        },
+        {
+          "at": "2026-10-30T19:42:30.005238758Z",
+          "cpu_usage_usec": 37906528,
+          "cpu_percent_one_core": 5.831578346804927,
+          "memory_bytes": 104763392,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 347
+        },
+        {
+          "at": "2026-10-30T19:42:35.003507323Z",
+          "cpu_usage_usec": 38195624,
+          "cpu_percent_one_core": 5.78392289730834,
+          "memory_bytes": 104112128,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 339
+        },
+        {
+          "at": "2026-10-30T19:42:40.001150217Z",
+          "cpu_usage_usec": 38590194,
+          "cpu_percent_one_core": 7.895121927853374,
+          "memory_bytes": 104812544,
+          "open_fds": 77,
+          "processes": 10,
+          "conntrack_entries": 83
+        },
+        {
+          "at": "2026-10-30T19:42:45.001812547Z",
+          "cpu_usage_usec": 38896233,
+          "cpu_percent_one_core": 6.1199693121450975,
+          "memory_bytes": 107225088,
+          "open_fds": 77,
+          "processes": 10,
+          "conntrack_entries": 84
+        },
+        {
+          "at": "2026-10-30T19:42:50.005385917Z",
+          "cpu_usage_usec": 39203136,
+          "cpu_percent_one_core": 6.133676420937543,
+          "memory_bytes": 103739392,
+          "open_fds": 76,
+          "processes": 10,
+          "conntrack_entries": 80
+        },
+        {
+          "at": "2026-10-30T19:42:55.004078638Z",
+          "cpu_usage_usec": 39534795,
+          "cpu_percent_one_core": 6.634914736940479,
+          "memory_bytes": 106000384,
+          "open_fds": 78,
+          "processes": 10,
+          "conntrack_entries": 86
+        },
+        {
+          "at": "2026-10-30T19:43:00.00239291Z",
+          "cpu_usage_usec": 40786570,
+          "cpu_percent_one_core": 25.04394345534262,
+          "memory_bytes": 110383104,
+          "open_fds": 78,
+          "processes": 10,
+          "conntrack_entries": 90
+        },
+        {
+          "at": "2026-10-30T19:43:05.001497256Z",
+          "cpu_usage_usec": 41321704,
+          "cpu_percent_one_core": 10.704597523117993,
+          "memory_bytes": 107495424,
+          "open_fds": 76,
+          "processes": 10,
+          "conntrack_entries": 391
+        },
+        {
+          "at": "2026-10-30T19:43:10.003438346Z",
+          "cpu_usage_usec": 41624002,
+          "cpu_percent_one_core": 6.043613760353184,
+          "memory_bytes": 107286528,
+          "open_fds": 74,
+          "processes": 10,
+          "conntrack_entries": 684
+        },
+        {
+          "at": "2026-10-30T19:43:15.003469019Z",
+          "cpu_usage_usec": 41971075,
+          "cpu_percent_one_core": 6.941417417180712,
+          "memory_bytes": 106975232,
+          "open_fds": 74,
+          "processes": 10,
+          "conntrack_entries": 977
+        },
+        {
+          "at": "2026-10-30T19:43:20.003919991Z",
+          "cpu_usage_usec": 42306988,
+          "cpu_percent_one_core": 6.717654105218572,
+          "memory_bytes": 104341504,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 861
+        },
+        {
+          "at": "2026-10-30T19:43:25.002403687Z",
+          "cpu_usage_usec": 42608611,
+          "cpu_percent_one_core": 6.034289963601793,
+          "memory_bytes": 107524096,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 745
+        },
+        {
+          "at": "2026-10-30T19:43:30.002613416Z",
+          "cpu_usage_usec": 42915664,
+          "cpu_percent_one_core": 6.140802419129889,
+          "memory_bytes": 107728896,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 1038
+        },
+        {
+          "at": "2026-10-30T19:43:35.003958933Z",
+          "cpu_usage_usec": 43234948,
+          "cpu_percent_one_core": 6.38396205410577,
+          "memory_bytes": 106438656,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 908
+        },
+        {
+          "at": "2026-10-30T19:43:40.002391727Z",
+          "cpu_usage_usec": 43571431,
+          "cpu_percent_one_core": 6.7317700140713335,
+          "memory_bytes": 108613632,
+          "open_fds": 77,
+          "processes": 10,
+          "conntrack_entries": 805
+        },
+        {
+          "at": "2026-10-30T19:43:45.008462223Z",
+          "cpu_usage_usec": 43872577,
+          "cpu_percent_one_core": 6.0156164448867555,
+          "memory_bytes": 109543424,
+          "open_fds": 77,
+          "processes": 10,
+          "conntrack_entries": 1084
+        },
+        {
+          "at": "2026-10-30T19:43:50.00074193Z",
+          "cpu_usage_usec": 44183289,
+          "cpu_percent_one_core": 6.223849989100781,
+          "memory_bytes": 107200512,
+          "open_fds": 77,
+          "processes": 10,
+          "conntrack_entries": 1345
+        },
+        {
+          "at": "2026-10-30T19:43:55.001680655Z",
+          "cpu_usage_usec": 44511530,
+          "cpu_percent_one_core": 6.563587719223654,
+          "memory_bytes": 106979328,
+          "open_fds": 76,
+          "processes": 10,
+          "conntrack_entries": 684
+        },
+        {
+          "at": "2026-10-30T19:44:00.00121148Z",
+          "cpu_usage_usec": 44836652,
+          "cpu_percent_one_core": 6.503050213716804,
+          "memory_bytes": 108077056,
+          "open_fds": 76,
+          "processes": 10,
+          "conntrack_entries": 974
+        },
+        {
+          "at": "2026-10-30T19:44:05.002863739Z",
+          "cpu_usage_usec": 45047074,
+          "cpu_percent_one_core": 4.207049772829879,
+          "memory_bytes": 108613632,
+          "open_fds": 79,
+          "processes": 11,
+          "conntrack_entries": 1251
+        },
+        {
+          "at": "2026-10-30T19:44:10.004242007Z",
+          "cpu_usage_usec": 45379393,
+          "cpu_percent_one_core": 6.644548406311427,
+          "memory_bytes": 109051904,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 1481
+        },
+        {
+          "at": "2026-10-30T19:44:15.004232355Z",
+          "cpu_usage_usec": 45708322,
+          "cpu_percent_one_core": 6.578592699315347,
+          "memory_bytes": 106651648,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 713
+        },
+        {
+          "at": "2026-10-30T19:44:20.004084407Z",
+          "cpu_usage_usec": 46007638,
+          "cpu_percent_one_core": 5.986497138055717,
+          "memory_bytes": 106721280,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 908
+        },
+        {
+          "at": "2026-10-30T19:44:25.003669518Z",
+          "cpu_usage_usec": 46310181,
+          "cpu_percent_one_core": 6.051362128716444,
+          "memory_bytes": 106278912,
+          "open_fds": 77,
+          "processes": 10,
+          "conntrack_entries": 1179
+        },
+        {
+          "at": "2026-10-30T19:44:30.0039986Z",
+          "cpu_usage_usec": 46687186,
+          "cpu_percent_one_core": 7.539603770422404,
+          "memory_bytes": 107454464,
+          "open_fds": 77,
+          "processes": 10,
+          "conntrack_entries": 1453
+        },
+        {
+          "at": "2026-10-30T19:44:35.001235516Z",
+          "cpu_usage_usec": 47021513,
+          "cpu_percent_one_core": 6.690237137438132,
+          "memory_bytes": 108396544,
+          "open_fds": 78,
+          "processes": 10,
+          "conntrack_entries": 1697
+        },
+        {
+          "at": "2026-10-30T19:44:40.000991857Z",
+          "cpu_usage_usec": 47345468,
+          "cpu_percent_one_core": 6.47941575359262,
+          "memory_bytes": 109854720,
+          "open_fds": 76,
+          "processes": 10,
+          "conntrack_entries": 684
+        },
+        {
+          "at": "2026-10-30T19:44:45.001905321Z",
+          "cpu_usage_usec": 47642722,
+          "cpu_percent_one_core": 5.9439940750792415,
+          "memory_bytes": 106991616,
+          "open_fds": 76,
+          "processes": 10,
+          "conntrack_entries": 984
+        },
+        {
+          "at": "2026-10-30T19:44:50.002576506Z",
+          "cpu_usage_usec": 47946931,
+          "cpu_percent_one_core": 6.083363387548946,
+          "memory_bytes": 110575616,
+          "open_fds": 76,
+          "processes": 10,
+          "conntrack_entries": 1265
+        },
+        {
+          "at": "2026-10-30T19:44:55.002108587Z",
+          "cpu_usage_usec": 48293504,
+          "cpu_percent_one_core": 6.932108733077255,
+          "memory_bytes": 110682112,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 1498
+        },
+        {
+          "at": "2026-10-30T19:45:00.001251439Z",
+          "cpu_usage_usec": 48613861,
+          "cpu_percent_one_core": 6.4082385617733495,
+          "memory_bytes": 110977024,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 1738
+        },
+        {
+          "at": "2026-10-30T19:45:05.003665757Z",
+          "cpu_usage_usec": 48916128,
+          "cpu_percent_one_core": 6.042422334198989,
+          "memory_bytes": 108498944,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 743
+        },
+        {
+          "at": "2026-10-30T19:45:10.002246164Z",
+          "cpu_usage_usec": 49243599,
+          "cpu_percent_one_core": 6.551280030254397,
+          "memory_bytes": 111534080,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 1028
+        },
+        {
+          "at": "2026-10-30T19:45:15.004112497Z",
+          "cpu_usage_usec": 49544527,
+          "cpu_percent_one_core": 6.016314310812671,
+          "memory_bytes": 111230976,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 1294
+        },
+        {
+          "at": "2026-10-30T19:45:20.002663422Z",
+          "cpu_usage_usec": 49886025,
+          "cpu_percent_one_core": 6.831939998690721,
+          "memory_bytes": 113397760,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 848
+        },
+        {
+          "at": "2026-10-30T19:45:25.002221597Z",
+          "cpu_usage_usec": 50221029,
+          "cpu_percent_one_core": 6.7006721048905495,
+          "memory_bytes": 112259072,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 1123
+        },
+        {
+          "at": "2026-10-30T19:45:30.003004877Z",
+          "cpu_usage_usec": 50528878,
+          "cpu_percent_one_core": 6.156015623216528,
+          "memory_bytes": 111960064,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 738
+        },
+        {
+          "at": "2026-10-30T19:45:35.000722082Z",
+          "cpu_usage_usec": 50832401,
+          "cpu_percent_one_core": 6.073232789088954,
+          "memory_bytes": 112189440,
+          "open_fds": 76,
+          "processes": 10,
+          "conntrack_entries": 798
+        },
+        {
+          "at": "2026-10-30T19:45:40.001771572Z",
+          "cpu_usage_usec": 51130353,
+          "cpu_percent_one_core": 5.957789471905426,
+          "memory_bytes": 110522368,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 1074
+        },
+        {
+          "at": "2026-10-30T19:45:45.003982009Z",
+          "cpu_usage_usec": 51455855,
+          "cpu_percent_one_core": 6.507163265110752,
+          "memory_bytes": 111767552,
+          "open_fds": 77,
+          "processes": 10,
+          "conntrack_entries": 922
+        },
+        {
+          "at": "2026-10-30T19:45:50.001350871Z",
+          "cpu_usage_usec": 51604596,
+          "cpu_percent_one_core": 2.976386256596482,
+          "memory_bytes": 111267840,
+          "open_fds": 78,
+          "processes": 10,
+          "conntrack_entries": 746
+        },
+        {
+          "at": "2026-10-30T19:45:55.002141434Z",
+          "cpu_usage_usec": 51865477,
+          "cpu_percent_one_core": 5.21679515895375,
+          "memory_bytes": 111529984,
+          "open_fds": 77,
+          "processes": 10,
+          "conntrack_entries": 1028
+        },
+        {
+          "at": "2026-10-30T19:46:00.002156366Z",
+          "cpu_usage_usec": 52188021,
+          "cpu_percent_one_core": 6.450860735149501,
+          "memory_bytes": 112902144,
+          "open_fds": 76,
+          "processes": 10,
+          "conntrack_entries": 861
+        },
+        {
+          "at": "2026-10-30T19:46:05.001498647Z",
+          "cpu_usage_usec": 52497514,
+          "cpu_percent_one_core": 6.190674344827881,
+          "memory_bytes": 109330432,
+          "open_fds": 74,
+          "processes": 10,
+          "conntrack_entries": 741
+        },
+        {
+          "at": "2026-10-30T19:46:10.005223701Z",
+          "cpu_usage_usec": 52946166,
+          "cpu_percent_one_core": 8.966359964989394,
+          "memory_bytes": 114642944,
+          "open_fds": 76,
+          "processes": 10,
+          "conntrack_entries": 746
+        },
+        {
+          "at": "2026-10-30T19:46:15.001183746Z",
+          "cpu_usage_usec": 53264423,
+          "cpu_percent_one_core": 6.370287134672231,
+          "memory_bytes": 112353280,
+          "open_fds": 78,
+          "processes": 10,
+          "conntrack_entries": 747
+        },
+        {
+          "at": "2026-10-30T19:46:20.001461523Z",
+          "cpu_usage_usec": 53575543,
+          "cpu_percent_one_core": 6.222054331282804,
+          "memory_bytes": 113336320,
+          "open_fds": 78,
+          "processes": 10,
+          "conntrack_entries": 1036
+        },
+        {
+          "at": "2026-10-30T19:46:25.00279806Z",
+          "cpu_usage_usec": 53883977,
+          "cpu_percent_one_core": 6.1670315068421875,
+          "memory_bytes": 110624768,
+          "open_fds": 78,
+          "processes": 10,
+          "conntrack_entries": 861
+        },
+        {
+          "at": "2026-10-30T19:46:30.003292408Z",
+          "cpu_usage_usec": 54192308,
+          "cpu_percent_one_core": 6.16601036902122,
+          "memory_bytes": 112984064,
+          "open_fds": 78,
+          "processes": 10,
+          "conntrack_entries": 747
+        },
+        {
+          "at": "2026-10-30T19:46:35.001805274Z",
+          "cpu_usage_usec": 54549421,
+          "cpu_percent_one_core": 7.144384931548159,
+          "memory_bytes": 111579136,
+          "open_fds": 79,
+          "processes": 10,
+          "conntrack_entries": 979
+        },
+        {
+          "at": "2026-10-30T19:46:40.000797567Z",
+          "cpu_usage_usec": 54908145,
+          "cpu_percent_one_core": 7.17592624622196,
+          "memory_bytes": 112455680,
+          "open_fds": 76,
+          "processes": 10,
+          "conntrack_entries": 743
+        },
+        {
+          "at": "2026-10-30T19:46:44.999870546Z",
+          "cpu_usage_usec": 55215017,
+          "cpu_percent_one_core": 6.138578118165135,
+          "memory_bytes": 112885760,
+          "open_fds": 76,
+          "processes": 10,
+          "conntrack_entries": 859
+        },
+        {
+          "at": "2026-10-30T19:46:49.999625446Z",
+          "cpu_usage_usec": 55519216,
+          "cpu_percent_one_core": 6.084278251319879,
+          "memory_bytes": 112218112,
+          "open_fds": 76,
+          "processes": 10,
+          "conntrack_entries": 828
+        },
+        {
+          "at": "2026-10-30T19:46:55.00186292Z",
+          "cpu_usage_usec": 55842417,
+          "cpu_percent_one_core": 6.461128678514235,
+          "memory_bytes": 113983488,
+          "open_fds": 76,
+          "processes": 10,
+          "conntrack_entries": 881
+        },
+        {
+          "at": "2026-10-30T19:47:00.000524214Z",
+          "cpu_usage_usec": 56148290,
+          "cpu_percent_one_core": 6.119098334731059,
+          "memory_bytes": 112443392,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 856
+        },
+        {
+          "at": "2026-10-30T19:47:05.022888594Z",
+          "cpu_usage_usec": 56484254,
+          "cpu_percent_one_core": 6.689359325218852,
+          "memory_bytes": 112730112,
+          "open_fds": 77,
+          "processes": 10,
+          "conntrack_entries": 741
+        },
+        {
+          "at": "2026-10-30T19:47:10.037612291Z",
+          "cpu_usage_usec": 56831215,
+          "cpu_percent_one_core": 6.918845802163844,
+          "memory_bytes": 109359104,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 745
+        },
+        {
+          "at": "2026-10-30T19:47:15.001851581Z",
+          "cpu_usage_usec": 57157629,
+          "cpu_percent_one_core": 6.575307533170907,
+          "memory_bytes": 113098752,
+          "open_fds": 74,
+          "processes": 10,
+          "conntrack_entries": 727
+        },
+        {
+          "at": "2026-10-30T19:47:20.000435152Z",
+          "cpu_usage_usec": 57461226,
+          "cpu_percent_one_core": 6.073660581796843,
+          "memory_bytes": 112758784,
+          "open_fds": 74,
+          "processes": 10,
+          "conntrack_entries": 919
+        },
+        {
+          "at": "2026-10-30T19:47:25.005206567Z",
+          "cpu_usage_usec": 57779088,
+          "cpu_percent_one_core": 6.351179177680785,
+          "memory_bytes": 111656960,
+          "open_fds": 74,
+          "processes": 10,
+          "conntrack_entries": 741
+        },
+        {
+          "at": "2026-10-30T19:47:30.000910654Z",
+          "cpu_usage_usec": 58107233,
+          "cpu_percent_one_core": 6.56854357834986,
+          "memory_bytes": 114036736,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 1032
+        },
+        {
+          "at": "2026-10-30T19:47:35.005156598Z",
+          "cpu_usage_usec": 58409580,
+          "cpu_percent_one_core": 6.041809363157071,
+          "memory_bytes": 109273088,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 1292
+        },
+        {
+          "at": "2026-10-30T19:47:40.001586123Z",
+          "cpu_usage_usec": 58726557,
+          "cpu_percent_one_core": 6.3440702688586414,
+          "memory_bytes": 112484352,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 1528
+        },
+        {
+          "at": "2026-10-30T19:47:45.005709627Z",
+          "cpu_usage_usec": 59026285,
+          "cpu_percent_one_core": 5.989620355301287,
+          "memory_bytes": 113152000,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 735
+        },
+        {
+          "at": "2026-10-30T19:47:50.00813296Z",
+          "cpu_usage_usec": 59355210,
+          "cpu_percent_one_core": 6.575313165324228,
+          "memory_bytes": 112898048,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 764
+        },
+        {
+          "at": "2026-10-30T19:47:55.007319552Z",
+          "cpu_usage_usec": 59689202,
+          "cpu_percent_one_core": 6.680926863871697,
+          "memory_bytes": 110886912,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 1041
+        },
+        {
+          "at": "2026-10-30T19:48:00.004734154Z",
+          "cpu_usage_usec": 59846080,
+          "cpu_percent_one_core": 3.139183207597311,
+          "memory_bytes": 112988160,
+          "open_fds": 82,
+          "processes": 11,
+          "conntrack_entries": 1312
+        },
+        {
+          "at": "2026-10-30T19:48:05.006947491Z",
+          "cpu_usage_usec": 60080604,
+          "cpu_percent_one_core": 4.688404596127285,
+          "memory_bytes": 114188288,
+          "open_fds": 75,
+          "processes": 10,
+          "conntrack_entries": 1261
+        },
+        {
+          "at": "2026-10-30T19:48:10.000443737Z",
+          "cpu_usage_usec": 60740165,
+          "cpu_percent_one_core": 13.208400837956692,
+          "memory_bytes": 113766400,
+          "open_fds": 73,
+          "processes": 10,
+          "conntrack_entries": 1234
+        }
+      ]
+    }
+  },
+  "status": "passed"
+}

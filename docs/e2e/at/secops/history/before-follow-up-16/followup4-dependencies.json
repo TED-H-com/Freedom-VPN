@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "follow_up": 4,
+  "checked_at": "2026-10-30T07:45:51.232255Z",
+  "local_source_revision": "9b17127c888f94191d759617c99fe1225078a092",
+  "initial_source_revision": "4299123",
+  "at_start": {
+    "wire_nodes_followup_15_found": false
+  },
+  "before_publication": {
+    "wire_nodes_followup_15_found": true,
+    "merged_pr": 148,
+    "fast_forward_performed": true
+  },
+  "commands": [
+    "git fetch origin",
+    "git log --oneline origin/main --grep='w3-wire-nodes follow-up 15'",
+    "git merge --ff-only origin/main",
+    "git fetch origin; git log --oneline origin/main --grep='w3-wire-nodes follow-up 15'"
+  ],
+  "decision": "#148 arrived during initial inspection; fast-forwarded this task branch before any live run. All application observations remain pinned to 9b17127; no merge during a live run.",
+  "history": [
+    {
+      "follow_up": 3,
+      "record": "followup3-dependencies.json"
+    }
+  ],
+  "requests": {
+    "SECOPS-03": {
+      "status": "resolved: fresh real DNS/ready baseline",
+      "merged_prs": [
+        143,
+        146,
+        148
+      ],
+      "evidence": "publication.json"
+    },
+    "SECOPS-06": {
+      "status": "login/class buckets resolved; 8 MiB body blocked by SECOPS-15",
+      "merged_prs": [
+        106,
+        141,
+        145
+      ],
+      "evidence": "limiter.json"
+    },
+    "SECOPS-07": {
+      "status": "DOC01\u2013DOC14 resolved",
+      "merged_prs": [
+        138
+      ],
+      "evidence": "scope-review.json"
+    },
+    "SECOPS-09": {
+      "status": "persistent recovery resolved; counted-flow gate remains on devstack follow-up 9",
+      "merged_prs": [
+        118,
+        143,
+        146
+      ],
+      "evidence": "AT29.json"
+    },
+    "SECOPS-10": {
+      "status": "blocked: isolated 50/60 admitted, login 51 fails at configured nginx 256-connection budget; hook supports multiple peers",
+      "merged_prs": [
+        143
+      ],
+      "evidence": "native-scale.json"
+    },
+    "SECOPS-11": {
+      "status": "resolved live unarmed step refusal and successful zero-binding published generation; not traffic proof",
+      "merged_prs": [
+        109,
+        148
+      ],
+      "evidence": "publication.json"
+    },
+    "SECOPS-12": {
+      "status": "resolved historical image/PITR proof; no new schema compatibility assertion",
+      "merged_prs": [
+        112,
+        111
+      ],
+      "evidence": "pitr.json"
+    },
+    "SECOPS-13": {
+      "status": "resolved exact owner test passes frozen testdata fixture",
+      "merged_prs": [
+        130,
+        148
+      ],
+      "evidence": "components.json"
+    },
+    "SECOPS-14": {
+      "status": "resolved 20/20 GET / 200 and correct authenticated sessions",
+      "merged_prs": [
+        143
+      ],
+      "evidence": "limiter.json"
+    },
+    "SECOPS-15": {
+      "status": "new blocked: 8 MiB usage allowance conflicts with 1 MiB whole-body canonicalization",
+      "merged_prs": [
+        145
+      ],
+      "evidence": "limiter.json"
+    },
+    "SECOPS-16": {
+      "status": "new observed: gateway error contains transient device-flow query value; counts only published",
+      "merged_prs": [
+        143
+      ],
+      "evidence": "native-diagnostics.json"
+    }
+  }
+}
