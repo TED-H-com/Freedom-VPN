@@ -1,0 +1,268 @@
+{
+  "run_id": "dee8492f-4a7e-4f3c-9063-3ab27f66dcec",
+  "source_commit": "55588821291e335ef72fbd7fe1f5ff052dea92bf",
+  "transitions": [
+    {
+      "case": "AT02",
+      "index": 136,
+      "role": "node",
+      "original_check": {
+        "name": "agent transition usage stop",
+        "status": "pass",
+        "expected": "record command duration and stored lease continuity",
+        "actual": "{\"command_ok\":true,\"control_io_after_cancel\":\"not observable here\",\"duration_ns\":\"445546449\",\"ended_at\":\"2026-11-04T17:04:58.495395129Z\",\"parent_wait_receipt\":{\"id\":\"8e508c72-0d7e-44c0-bbaf-f8752658d3da\",\"pid\":1269,\"start_ticks\":\"13477661\",\"started_at\":\"2026-11-04T16:55:34.163282205Z\",\"wait_observed_at\":\"2026-11-04T17:04:58.174132941Z\",\"wait_status\":0,\"exit_code\":0,\"signal\":null,\"core_dump\":false},\"sigterm_to_exit\":\"see separate r18 M-2 direct stop if present; otherwise exact signal/exit interval not observable here\",\"started_at\":\"2026-11-04T17:04:58.04984868Z\",\"stored_lease_after\":{\"available\":true,\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"envelope_sha256\":\"6511830a22c0f3f1dcd5bcb92c063f6bbf3a63b9b1359f8e36cd4d01801047ad\",\"expires_at\":\"2026-11-05T17:04:37.141447789Z\",\"highest_issued_at\":\"2026-11-04T17:04:37.141447789Z\",\"issued_at\":\"2026-11-04T17:04:37.141447789Z\",\"lease_id\":\"eee07652-bf31-4c62-a6bf-3f60401394b5\",\"mono_sent_ns\":\"135319589872633\",\"present\":true,\"process_id\":\"8e508c72-0d7e-44c0-bbaf-f8752658d3da\",\"read_at\":\"2026-11-04T17:04:59.144605908Z\",\"retained_restart_sets\":{\"denied_v4\":null,\"extra_denied_v4\":null,\"host_v4\":null,\"nil_denied_means_spec_defaults\":true}},\"stored_lease_before\":{\"available\":true,\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"envelope_sha256\":\"6511830a22c0f3f1dcd5bcb92c063f6bbf3a63b9b1359f8e36cd4d01801047ad\",\"expires_at\":\"2026-11-05T17:04:37.141447789Z\",\"highest_issued_at\":\"2026-11-04T17:04:37.141447789Z\",\"issued_at\":\"2026-11-04T17:04:37.141447789Z\",\"lease_id\":\"eee07652-bf31-4c62-a6bf-3f60401394b5\",\"mono_sent_ns\":\"135319589872633\",\"present\":true,\"process_id\":\"8e508c72-0d7e-44c0-bbaf-f8752658d3da\",\"read_at\":\"2026-11-04T17:04:57.969494335Z\",\"retained_restart_sets\":{\"denied_v4\":null,\"extra_denied_v4\":null,\"host_v4\":null,\"nil_denied_means_spec_defaults\":true}},\"stored_lease_status\":\"survived unchanged\"}",
+        "command": "read-only SQLite lease metadata before/after; no renewal or repair requested",
+        "at": "2026-11-04T17:04:59Z"
+      },
+      "watchdog_after_case": [
+        {
+          "snapshot": "AT02",
+          "role": "node",
+          "log": "watchdog.log",
+          "bytes": 733,
+          "sha256": "50c8b0236f72571156c9f2c44466168b5844bfcc5ff1db3ace570f417c9795dc",
+          "diagnostic_lines": [
+            {
+              "line": 1,
+              "text": "{\"time\":\"2026-11-04T16:55:34.110212074Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":134776561576484,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+            },
+            {
+              "line": 2,
+              "text": "{\"time\":\"2026-11-04T16:55:34.11027286Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":134776561648333,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+            },
+            {
+              "line": 3,
+              "text": "{\"time\":\"2026-11-04T16:55:34.126444496Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":134776577816645,\"succeeded\":true}"
+            }
+          ]
+        }
+      ],
+      "scope": "After-case watchdog file pin/lines; a line predating this transition is not a decision for this restart. Intermediate exports and the original AT09 capture are retained separately."
+    },
+    {
+      "case": "AT02",
+      "index": 143,
+      "role": "node",
+      "original_check": {
+        "name": "agent transition usage resume",
+        "status": "pass",
+        "expected": "record command duration and stored lease continuity",
+        "actual": "{\"command_ok\":true,\"control_io_after_cancel\":\"not observable here\",\"duration_ns\":\"737677089\",\"ended_at\":\"2026-11-04T17:05:06.085783302Z\",\"parent_wait_receipt\":{\"id\":\"8e508c72-0d7e-44c0-bbaf-f8752658d3da\",\"pid\":1269,\"start_ticks\":\"13477661\",\"started_at\":\"2026-11-04T16:55:34.163282205Z\",\"wait_observed_at\":\"2026-11-04T17:04:58.174132941Z\",\"wait_status\":0,\"exit_code\":0,\"signal\":null,\"core_dump\":false},\"sigterm_to_exit\":\"see separate r18 M-2 direct stop if present; otherwise exact signal/exit interval not observable here\",\"started_at\":\"2026-11-04T17:05:05.348106213Z\",\"stored_lease_after\":{\"available\":true,\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"envelope_sha256\":\"96c2fea2194678e576dd04dc822c5657f578e2b6c8dc15d0f2eed3a3851db3ae\",\"expires_at\":\"2026-11-05T17:05:05.868463737Z\",\"highest_issued_at\":\"2026-11-04T17:05:05.868463737Z\",\"issued_at\":\"2026-11-04T17:05:05.868463737Z\",\"lease_id\":\"b6f679b9-dc68-444f-97ad-4e2cfc6987c8\",\"mono_sent_ns\":\"135348317920531\",\"present\":true,\"process_id\":\"343abcff-dfd7-442e-bd15-18a4c930d6fa\",\"read_at\":\"2026-11-04T17:05:06.746569168Z\",\"retained_restart_sets\":{\"denied_v4\":null,\"extra_denied_v4\":null,\"host_v4\":null,\"nil_denied_means_spec_defaults\":true}},\"stored_lease_before\":{\"available\":true,\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"envelope_sha256\":\"6511830a22c0f3f1dcd5bcb92c063f6bbf3a63b9b1359f8e36cd4d01801047ad\",\"expires_at\":\"2026-11-05T17:04:37.141447789Z\",\"highest_issued_at\":\"2026-11-04T17:04:37.141447789Z\",\"issued_at\":\"2026-11-04T17:04:37.141447789Z\",\"lease_id\":\"eee07652-bf31-4c62-a6bf-3f60401394b5\",\"mono_sent_ns\":\"135319589872633\",\"present\":true,\"process_id\":\"8e508c72-0d7e-44c0-bbaf-f8752658d3da\",\"read_at\":\"2026-11-04T17:04:59.144605908Z\",\"retained_restart_sets\":{\"denied_v4\":null,\"extra_denied_v4\":null,\"host_v4\":null,\"nil_denied_means_spec_defaults\":true}},\"stored_lease_status\":\"replaced; exact prior lease survival unproven\"}",
+        "command": "read-only SQLite lease metadata before/after; no renewal or repair requested",
+        "at": "2026-11-04T17:05:06Z"
+      },
+      "watchdog_after_case": [
+        {
+          "snapshot": "AT02",
+          "role": "node",
+          "log": "watchdog.log",
+          "bytes": 733,
+          "sha256": "50c8b0236f72571156c9f2c44466168b5844bfcc5ff1db3ace570f417c9795dc",
+          "diagnostic_lines": [
+            {
+              "line": 1,
+              "text": "{\"time\":\"2026-11-04T16:55:34.110212074Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":134776561576484,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+            },
+            {
+              "line": 2,
+              "text": "{\"time\":\"2026-11-04T16:55:34.11027286Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":134776561648333,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+            },
+            {
+              "line": 3,
+              "text": "{\"time\":\"2026-11-04T16:55:34.126444496Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":134776577816645,\"succeeded\":true}"
+            }
+          ]
+        }
+      ],
+      "scope": "After-case watchdog file pin/lines; a line predating this transition is not a decision for this restart. Intermediate exports and the original AT09 capture are retained separately."
+    },
+    {
+      "case": "AT08",
+      "index": 25,
+      "role": "node",
+      "original_check": {
+        "name": "agent transition disabled node restart",
+        "status": "pass",
+        "expected": "record command duration and stored lease continuity",
+        "actual": "{\"command_ok\":true,\"control_io_after_cancel\":\"not observable here\",\"duration_ns\":\"606609463\",\"ended_at\":\"2026-11-04T17:26:35.073496223Z\",\"parent_wait_receipt\":{\"id\":\"343abcff-dfd7-442e-bd15-18a4c930d6fa\",\"pid\":171297,\"start_ticks\":\"13534811\",\"started_at\":\"2026-11-04T17:05:05.661391466Z\",\"wait_observed_at\":\"2026-11-04T17:26:34.743380272Z\",\"wait_status\":0,\"exit_code\":0,\"signal\":null,\"core_dump\":false},\"sigterm_to_exit\":\"see separate r18 M-2 direct stop if present; otherwise exact signal/exit interval not observable here\",\"started_at\":\"2026-11-04T17:26:34.46688676Z\",\"stored_lease_after\":{\"available\":true,\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"envelope_sha256\":\"4bf41cb3023472d14e5e67851abec0accbd8e1833cfe26fc7ba9ebea4f7d7f32\",\"expires_at\":\"2026-11-05T17:26:35.428401666Z\",\"highest_issued_at\":\"2026-11-04T17:26:35.428401666Z\",\"issued_at\":\"2026-11-04T17:26:35.428401666Z\",\"lease_id\":\"77ed06de-90e7-44a1-b2af-5e36774cd8dc\",\"mono_sent_ns\":\"136637877946033\",\"present\":true,\"process_id\":\"7efa42c7-8aa9-489f-9bbb-01ee6aeba5c6\",\"read_at\":\"2026-11-04T17:26:35.922287879Z\",\"retained_restart_sets\":{\"denied_v4\":null,\"extra_denied_v4\":null,\"host_v4\":null,\"nil_denied_means_spec_defaults\":true}},\"stored_lease_before\":{\"available\":true,\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"envelope_sha256\":\"ad179ec1d9fc224adacb1bb29e467b17e19cc5330918f710015764279ad0f7dc\",\"expires_at\":\"2026-11-05T17:26:34.335604048Z\",\"highest_issued_at\":\"2026-11-04T17:26:34.335604048Z\",\"issued_at\":\"2026-11-04T17:26:34.335604048Z\",\"lease_id\":\"93cf49e3-a240-4ccd-8051-02aa1dc952cf\",\"mono_sent_ns\":\"136636784096365\",\"present\":true,\"process_id\":\"343abcff-dfd7-442e-bd15-18a4c930d6fa\",\"read_at\":\"2026-11-04T17:26:34.381528077Z\",\"retained_restart_sets\":{\"denied_v4\":null,\"extra_denied_v4\":null,\"host_v4\":null,\"nil_denied_means_spec_defaults\":true}},\"stored_lease_status\":\"replaced; exact prior lease survival unproven\"}",
+        "command": "read-only SQLite lease metadata before/after; no renewal or repair requested",
+        "at": "2026-11-04T17:26:36Z"
+      },
+      "watchdog_after_case": [
+        {
+          "snapshot": "AT08",
+          "role": "node",
+          "log": "watchdog.log",
+          "bytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "diagnostic_lines": []
+        }
+      ],
+      "scope": "After-case watchdog file pin/lines; a line predating this transition is not a decision for this restart. Intermediate exports and the original AT09 capture are retained separately."
+    },
+    {
+      "case": "AT09",
+      "index": 17,
+      "role": "node2",
+      "original_check": {
+        "name": "agent transition selected namespace stop",
+        "status": "pass",
+        "expected": "record command duration and stored lease continuity",
+        "actual": "{\"command_ok\":true,\"control_io_after_cancel\":\"not observable here\",\"duration_ns\":\"5238113156\",\"ended_at\":\"2026-11-04T17:36:10.203152778Z\",\"parent_wait_receipt\":{\"id\":\"825a5f88-9d43-4b7b-af19-eb998fa33b02\",\"pid\":1155,\"start_ticks\":\"13535069\",\"started_at\":\"2026-11-04T17:05:08.240877081Z\",\"wait_observed_at\":\"2026-11-04T17:36:05.139416579Z\",\"wait_status\":0,\"exit_code\":0,\"signal\":null,\"core_dump\":false},\"sigterm_to_exit\":\"see separate r18 M-2 direct stop if present; otherwise exact signal/exit interval not observable here\",\"started_at\":\"2026-11-04T17:36:04.965039622Z\",\"stored_lease_after\":{\"available\":true,\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"envelope_sha256\":\"d6a2e2233166571475c9c6cc5009f4e293dd289e836a5a7e2463e905b298f0fb\",\"expires_at\":\"2026-11-05T17:35:33.334047455Z\",\"highest_issued_at\":\"2026-11-04T17:35:33.334047455Z\",\"issued_at\":\"2026-11-04T17:35:33.334047455Z\",\"lease_id\":\"8740d7bc-9604-49ce-a1c5-2f4cbe947462\",\"mono_sent_ns\":\"137175782650035\",\"present\":true,\"read_at\":\"2026-11-04T17:36:11.131528494Z\",\"retained_restart_sets\":{\"denied_v4\":null,\"extra_denied_v4\":null,\"host_v4\":null,\"nil_denied_means_spec_defaults\":true}},\"stored_lease_before\":{\"available\":true,\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"envelope_sha256\":\"d6a2e2233166571475c9c6cc5009f4e293dd289e836a5a7e2463e905b298f0fb\",\"expires_at\":\"2026-11-05T17:35:33.334047455Z\",\"highest_issued_at\":\"2026-11-04T17:35:33.334047455Z\",\"issued_at\":\"2026-11-04T17:35:33.334047455Z\",\"lease_id\":\"8740d7bc-9604-49ce-a1c5-2f4cbe947462\",\"mono_sent_ns\":\"137175782650035\",\"present\":true,\"process_id\":\"825a5f88-9d43-4b7b-af19-eb998fa33b02\",\"read_at\":\"2026-11-04T17:36:04.877971142Z\",\"retained_restart_sets\":{\"denied_v4\":null,\"extra_denied_v4\":null,\"host_v4\":null,\"nil_denied_means_spec_defaults\":true}},\"stored_lease_status\":\"survived unchanged\"}",
+        "command": "read-only SQLite lease metadata before/after; no renewal or repair requested",
+        "at": "2026-11-04T17:36:11Z"
+      },
+      "watchdog_after_case": [
+        {
+          "snapshot": "AT09",
+          "role": "node2",
+          "log": "watchdog.log",
+          "bytes": 786,
+          "sha256": "04534739b126f106ea8597a1a8034196f63f2dc2e8fe9f18b6a9024aec0fbacf",
+          "diagnostic_lines": [
+            {
+              "line": 1,
+              "text": "{\"time\":\"2026-11-04T17:36:17.759427439Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"baseline_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":137220209605593,\"heartbeat_mono_ns\":137207574883711,\"policy_expires_mono_ns\":137775720998180,\"generation\":63,\"serving\":true,\"baseline_ok\":true}"
+            },
+            {
+              "line": 2,
+              "text": "{\"time\":\"2026-11-04T17:36:17.760543891Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"baseline_unreadable\",\"mono_ns\":137220210885932,\"heartbeat_mono_ns\":137207574883711,\"policy_expires_mono_ns\":137775720998180,\"generation\":63}"
+            },
+            {
+              "line": 3,
+              "text": "{\"time\":\"2026-11-04T17:36:17.78100659Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"baseline_unreadable\",\"mono_ns\":137220232379165,\"succeeded\":true}"
+            }
+          ]
+        }
+      ],
+      "scope": "After-case watchdog file pin/lines; a line predating this transition is not a decision for this restart. Intermediate exports and the original AT09 capture are retained separately."
+    },
+    {
+      "case": "AT09",
+      "index": 23,
+      "role": "node2",
+      "original_check": {
+        "name": "agent transition selected namespace restart and 90-second observation",
+        "status": "pass",
+        "expected": "record command duration and stored lease continuity",
+        "actual": "{\"command_ok\":true,\"control_io_after_cancel\":\"not observable here\",\"duration_ns\":\"90923531465\",\"ended_at\":\"2026-11-04T17:37:47.860970354Z\",\"parent_wait_receipt\":null,\"sigterm_to_exit\":\"see separate r18 M-2 direct stop if present; otherwise exact signal/exit interval not observable here\",\"started_at\":\"2026-11-04T17:36:16.937438889Z\",\"stored_lease_after\":{\"available\":true,\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"envelope_sha256\":\"912ec4758faf76182333ca6ee64b14d0fb07303bcd3c16709c13b3ec8519782b\",\"expires_at\":\"2026-11-05T17:36:17.900576039Z\",\"highest_issued_at\":\"2026-11-04T17:36:17.900576039Z\",\"issued_at\":\"2026-11-04T17:36:17.900576039Z\",\"lease_id\":\"7aa00162-c76a-41ad-8694-2a99ae5672b9\",\"mono_sent_ns\":\"137220347485468\",\"present\":true,\"process_id\":\"7c04df76-cee1-468d-b3bb-37d256c2a1bf\",\"read_at\":\"2026-11-04T17:37:48.697995599Z\",\"retained_restart_sets\":{\"denied_v4\":null,\"extra_denied_v4\":null,\"host_v4\":null,\"nil_denied_means_spec_defaults\":true}},\"stored_lease_before\":{\"available\":true,\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"envelope_sha256\":\"d6a2e2233166571475c9c6cc5009f4e293dd289e836a5a7e2463e905b298f0fb\",\"expires_at\":\"2026-11-05T17:35:33.334047455Z\",\"highest_issued_at\":\"2026-11-04T17:35:33.334047455Z\",\"issued_at\":\"2026-11-04T17:35:33.334047455Z\",\"lease_id\":\"8740d7bc-9604-49ce-a1c5-2f4cbe947462\",\"mono_sent_ns\":\"137175782650035\",\"present\":true,\"read_at\":\"2026-11-04T17:36:11.131528494Z\",\"retained_restart_sets\":{\"denied_v4\":null,\"extra_denied_v4\":null,\"host_v4\":null,\"nil_denied_means_spec_defaults\":true}},\"stored_lease_status\":\"replaced; exact prior lease survival unproven\"}",
+        "command": "read-only SQLite lease metadata before/after; no renewal or repair requested",
+        "at": "2026-11-04T17:37:48Z"
+      },
+      "watchdog_after_case": [
+        {
+          "snapshot": "AT09",
+          "role": "node2",
+          "log": "watchdog.log",
+          "bytes": 786,
+          "sha256": "04534739b126f106ea8597a1a8034196f63f2dc2e8fe9f18b6a9024aec0fbacf",
+          "diagnostic_lines": [
+            {
+              "line": 1,
+              "text": "{\"time\":\"2026-11-04T17:36:17.759427439Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"baseline_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":137220209605593,\"heartbeat_mono_ns\":137207574883711,\"policy_expires_mono_ns\":137775720998180,\"generation\":63,\"serving\":true,\"baseline_ok\":true}"
+            },
+            {
+              "line": 2,
+              "text": "{\"time\":\"2026-11-04T17:36:17.760543891Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"baseline_unreadable\",\"mono_ns\":137220210885932,\"heartbeat_mono_ns\":137207574883711,\"policy_expires_mono_ns\":137775720998180,\"generation\":63}"
+            },
+            {
+              "line": 3,
+              "text": "{\"time\":\"2026-11-04T17:36:17.78100659Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"baseline_unreadable\",\"mono_ns\":137220232379165,\"succeeded\":true}"
+            }
+          ]
+        }
+      ],
+      "scope": "After-case watchdog file pin/lines; a line predating this transition is not a decision for this restart. Intermediate exports and the original AT09 capture are retained separately."
+    }
+  ],
+  "unique_watchdog_lines": [
+    {
+      "snapshot": "final",
+      "role": "node2",
+      "file": "watchdog.log",
+      "line": 1,
+      "text": "{\"time\":\"2026-11-04T17:36:17.759427439Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"baseline_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":137220209605593,\"heartbeat_mono_ns\":137207574883711,\"policy_expires_mono_ns\":137775720998180,\"generation\":63,\"serving\":true,\"baseline_ok\":true}"
+    },
+    {
+      "snapshot": "final",
+      "role": "node2",
+      "file": "watchdog.log",
+      "line": 2,
+      "text": "{\"time\":\"2026-11-04T17:36:17.760543891Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"baseline_unreadable\",\"mono_ns\":137220210885932,\"heartbeat_mono_ns\":137207574883711,\"policy_expires_mono_ns\":137775720998180,\"generation\":63}"
+    },
+    {
+      "snapshot": "final",
+      "role": "node2",
+      "file": "watchdog.log",
+      "line": 3,
+      "text": "{\"time\":\"2026-11-04T17:36:17.78100659Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"baseline_unreadable\",\"mono_ns\":137220232379165,\"succeeded\":true}"
+    },
+    {
+      "snapshot": "AT01",
+      "role": "node",
+      "file": "watchdog.log",
+      "line": 1,
+      "text": "{\"time\":\"2026-11-04T16:55:34.110212074Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":134776561576484,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+    },
+    {
+      "snapshot": "AT01",
+      "role": "node",
+      "file": "watchdog.log",
+      "line": 2,
+      "text": "{\"time\":\"2026-11-04T16:55:34.11027286Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":134776561648333,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+    },
+    {
+      "snapshot": "AT01",
+      "role": "node",
+      "file": "watchdog.log",
+      "line": 3,
+      "text": "{\"time\":\"2026-11-04T16:55:34.126444496Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":134776577816645,\"succeeded\":true}"
+    },
+    {
+      "snapshot": "AT02",
+      "role": "node2",
+      "file": "watchdog.log",
+      "line": 1,
+      "text": "{\"time\":\"2026-11-04T17:05:08.198874589Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":135350650240000,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+    },
+    {
+      "snapshot": "AT02",
+      "role": "node2",
+      "file": "watchdog.log",
+      "line": 2,
+      "text": "{\"time\":\"2026-11-04T17:05:08.198938629Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":135350650314069,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+    },
+    {
+      "snapshot": "AT02",
+      "role": "node2",
+      "file": "watchdog.log",
+      "line": 3,
+      "text": "{\"time\":\"2026-11-04T17:05:08.216860272Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":135350668233623,\"succeeded\":true}"
+    }
+  ],
+  "AT09_embedded_agent_log": {
+    "case_step": 24,
+    "bytes": 9044,
+    "sha256": "27c4bab222d0e59a14f8556159411d154ae21de08db5686e4ebc344306c4afbc",
+    "lines": [
+      {
+        "line": 1,
+        "text": "time=2026-11-04T17:36:17.842Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=137220293884155 generation=63"
+      },
+      {
+        "line": 2,
+        "text": "time=2026-11-04T17:36:17.860Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=137220312029645 succeeded=true"
+      },
+      {
+        "line": 7,
+        "text": "time=2026-11-04T17:36:17.925Z level=INFO msg=\"baseline write\" writer=agent cause=safety_check_failed phase=begin mono_ns=137220377239356 generation=63"
+      },
+      {
+        "line": 8,
+        "text": "time=2026-11-04T17:36:17.944Z level=INFO msg=\"baseline write\" writer=agent cause=safety_check_failed phase=end mono_ns=137220396337132 succeeded=true"
+      }
+    ]
+  },
+  "F48_signature_token_matches": [],
+  "coverage": "Every explicit agent-transition check is retained. AT02 usage resume retains the earlier watchdog startup file; its three lines predate resume. AT08 disabled-node restart creates an empty watchdog file, also empty in final export. AT09 recreated namespace retains baseline_unreadable decision and successful write. The full set of interim/between-case exports is pinned in F24-restart-log-review.json. No absence claim extends across overwritten or unsnapshotted intervals."
+}
