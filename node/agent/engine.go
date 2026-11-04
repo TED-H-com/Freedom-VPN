@@ -73,7 +73,8 @@ type Engine struct {
 	meterSource meter.Source
 	ownStore    bool
 
-	closedRecoveryHeld bool // verified deny-all Apply, awaiting scheduled grants
+	closedRecoveryHeld    bool // verified deny-all Apply, awaiting member grants
+	closedRecoveryRenewal recoveryRenewal
 
 	usage           *usagestore.Store
 	meter           *meter.Meter
@@ -641,6 +642,9 @@ func (e *Engine) Run(ctx context.Context) error {
 // Failed requests and replayed expired leases retry at the control cadence,
 // rather than spinning on an already elapsed deadline. Retry-After wins.
 func (e *Engine) nextStepDelay(interval time.Duration) time.Duration {
+	if e.earlyRecoveryRenewal() {
+		return min(interval, max(0, e.leaseRetryAt-e.clock.Mono()))
+	}
 	if e.retainedPending {
 		interval = min(interval, meter.DefaultSampleInterval)
 	}
@@ -784,6 +788,11 @@ func (e *Engine) Step(ctx context.Context) error {
 	// The matching lease is requested before heartbeat and observation.
 	if err := e.renewAppliedLease(ctx); err != nil && ctx.Err() != nil {
 		return err
+	}
+	// D-157: report the verified closed recovery, including its ACK, before
+	// asking central for grants. The pre-Apply decision may still be failed.
+	if e.closedRecoveryHeld && e.applyError == nil {
+		e.decision = Decide(e.input())
 	}
 	e.publishMeterEpoch()
 	_ = e.observe(ctx)
@@ -1040,6 +1049,7 @@ func (e *Engine) latch() {
 
 func (e *Engine) baseline(ctx context.Context) error {
 	e.closedRecoveryHeld = false
+	e.closedRecoveryRenewal = recoveryRenewal{}
 	// A planned baseline is not an external meter reset. Clear this before
 	// FinalSample reads the counters.
 	e.expectServing.Store(false)
@@ -1299,6 +1309,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		}
 	}
 	e.closedRecoveryHeld = false
+	e.closedRecoveryRenewal = recoveryRenewal{}
 	invalidateQuarantineBaseline(ctx)
 	res, err := e.plane.Apply(applyCtx, model, prev)
 	host.finish(err)
@@ -1368,6 +1379,10 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		return nil
 	}
 	e.closedRecoveryHeld = closedRecovery
+	e.closedRecoveryRenewal = recoveryRenewal{armed: closedRecovery}
+	if closedRecovery {
+		e.lastObs = time.Time{} // each recovery needs its own report, even at the same generation
+	}
 	e.serving = !closedRecovery
 	e.applyError = nil
 	e.expectServing.Store(!closedRecovery)
