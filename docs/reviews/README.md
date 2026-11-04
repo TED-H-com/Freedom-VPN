@@ -32,8 +32,9 @@
 | `r24-hitless-guard-review` | [`r24-hitless-guard-review.md`](r24-hitless-guard-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Netlab 31 design at 52a7e59b; review ba5d3004, 08:19:51 EST; G5/G6 owner trade | 8 (0 Critical, 4 High, 3 Medium, 1 Low); #423 enforcement fixes, C1 revision documents only, H-1/H-3 returned to agent-core 41; [#426 additive L-1 / M-3 corrections](../poc/G2-followup33-design/corrections.md) | [`node/enforce/review_r24_test.go`](../../node/enforce/review_r24_test.go) adopted by #423; copied M-3 dropped; agent/watchdog proofs review-branch only |
 | `r25-retain-review` | [r25-retain-review.md](r25-retain-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `8cc27609` | Agent-core 40/41, carrying 37–41; unmerged | 0 Critical / 1 High / 1 Medium / 0 Low; RETURNED to agent-core 42 before merge, not yet judged | None; 680-line node/agent/review_r25_test.go on `1afecb29` only; exact archive only. |
 | `r26-expiry-fixes-review` | [`r26-expiry-fixes-review.md`](r26-expiry-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Agent-core 42 at 8dec4100 and 37–42 together; expiry, retention and jitter | 0 Critical, 0 High, 0 Medium, 0 Low; reviewer recommends merge 37–42; orchestrator merged 37–43 as #429 under D-150 | [`node/agent/review_r26_test.go`](../../node/agent/review_r26_test.go), six TestR26_Held_* proofs imported by 43; [cut dispositions and errata](#r26-dispositions-at-the-follow-up-39-cutoff-2026-11-03-est) |
-| `r27-members-failures-review` | [r27-members-failures-review.md](r27-members-failures-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Members 18 run 2; proofs 62146ff1, report committed by orchestrator in dfde8d25 | 0 Critical, 1 High, 3 Medium, 1 Low; [cut dispositions](#r27-dispositions-at-the-follow-up-42-cutoff-2026-11-03-est) | [Members proofs](../../tests/e2e/at/members/review_r27_test.go) in #445; agent/enforce proofs review-branch only |
-| `r28-expiry-probe-review` | [r28-expiry-probe-review.md](r28-expiry-probe-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Isolation 20 delivered head 9be409f8; review 34a8d61f, F20-01 | 0 Critical, 1 High, 1 Medium; [cut dispositions](#r28-dispositions-at-the-follow-up-42-cutoff-2026-11-03-est) | Review-branch only at cutoff; agent-core 48 running |
+| `r27-members-failures-review` | [r27-members-failures-review.md](r27-members-failures-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Members 18 run 2; proofs 62146ff1, report committed by orchestrator in dfde8d25 | 0 Critical, 1 High, 3 Medium, 1 Low; [current dispositions](#r27-and-r28-dispositions-at-the-follow-up-43-cutoff-2026-11-04-est) | [Members proofs](../../tests/e2e/at/members/review_r27_test.go) in #445; [agent](../../node/agent/review_r27_test.go) / [enforce](../../node/enforce/review_r27_test.go) proofs in #447 |
+| `r28-expiry-probe-review` | [r28-expiry-probe-review.md](r28-expiry-probe-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Isolation 20 delivered head 9be409f8; review 34a8d61f, F20-01 | 0 Critical, 1 High, 1 Medium; [current dispositions](#r27-and-r28-dispositions-at-the-follow-up-43-cutoff-2026-11-04-est) | [Agent proofs](../../node/agent/review_r28_test.go) in #447; [member-expiry proofs](../../tests/e2e/at/isolation/member_expiry_test.go) in #452 |
+| `r29-update-recover-review` | [r29-update-recover-review.md](r29-update-recover-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | F30-01 design diagnosis; base dd052c60, report and proofs committed by the reviewer at 5b1ca726 | 0 Critical, 1 High, 1 Medium, 2 Low; [cut dispositions](#r29-dispositions-at-the-follow-up-43-cutoff-2026-11-04-est) | [Updater proofs](../../node/updater/review_r29_test.go) in #446 and [agent proofs](../../node/agent/review_r29_test.go) in #454, byte-identical |
 
 ## What Held Across the Reviews
 
@@ -832,3 +833,68 @@ The review-branch proof names are
 They are pinned through the review archive, not claimed as declarations on
 main. The existing R21 budget proof is on main. No merged fix or date is
 promised. **r29 is running, status only, and is not archived in this cut.**
+
+## r27 and r28 dispositions at the follow-up 43 cutoff (2026-11-04 EST)
+
+The raw archives and the #445 dispositions above remain historical. This cut
+ends at #456 / **04d31ea5**. The [frozen agent-core 48 note](../../tests/handover/testdata/history/follow-up-43/docs_node_followup48-2026-11-03.md.txt)
+and [PR #447](https://github.com/TED-H-com/Freedom-VPN/pull/447) record all four
+imported TODO proofs failing before and passing after, and six Held/WhatHeld
+proofs passing. The deterministic R23 heartbeat proof also fails before and
+passes after; Boot's R21 `adoption_probe` budget stays protected.
+
+| Finding | Disposition at #456 | Evidence and remaining boundary |
+|---|---|---|
+| r27 H-1 | FIXED — #447; holds live in #455 | Independent successful link inventory distinguishes interface absence from a foreign filter. Members 21 AT09 index 27 passes; no TC_FOREIGN_FILTER after restart. `TestR27_H1_AuditBlockedMissingInterfaceAtBootLatchesFalseTCForeignFilter`. |
+| r27 M-1 | FIXED — #447 | Grant-less deadline schedules Step; freshly verified deny-all recovery model is retained. `TestR27_M1_ProvisionalTimerRaceAndClosedRecoveryDelayPopulatedLease`. Members 21 has no re-baseline after closed recovery, but its remaining 4.968 s / 241 losses waiting for the slot is a separate availability item under D-157. |
+| r27 M-2 / M-3 | ANSWERED — #445; exercised in #455 | AT09 index 25 remains blocked / not exercised, 26 passes. AT02 accounting and sibling recovery pass D-135/D-136. Every historical failed run stays failed. |
+| r27 L-1 | FIXED — #447 | One containment attempt per local pass, verified baseline reused until rules mutate. `TestR27_L1_ForeignTCQuarantineStepRedundantBaselinesAndReQuarantine`. |
+| r28 H-1 / Isolation F20-01 | FIXED — #447; qualified live short whole-node expiry in #452 | Independent local context preserves the probe under hung control requests. `TestR28_ControlOutageDoesNotFailTunnelProbeBeforeLeaseExpiry`; the original F20-01 run stays failed. |
+| r28 M-1 | CHECK MERGED — #452; live coverage still open | Member expiry now requires a serving node. Run 20 evidence replays as fail; its historical pass remains recorded but is not serving-node evidence. Isolation F21-01 never reached the probe window; isolation 22 is running at cutoff. |
+| R23 boot heartbeat flake | FIXED — #447 | Remove the independent 100 ms child deadline while retaining publication expiry checks; `TestF48_R23_BootHeartbeatUsesOneBudget`. |
+
+Agent-core 48's lab records **12 pass, 1 fail, 1 optional skip**. The
+orchestrator diagnoses that D087/D104 failure as **F48-01**, a pre-existing
+same-boot startup/watchdog race; 48 found it, did not cause it. Agent-core 49
+#454 fixes it under D-156; its lab passes **13/13 on one attempt**. See the
+[release rule](../handover/operator-guide.md#d156-release-rule).
+
+## r29 dispositions at the follow-up 43 cutoff (2026-11-04 EST)
+
+The [raw r29 archive](r29-update-recover-review.md) is byte-for-byte from
+`r29-update-recover-review` at **5b1ca726c2515967824f4294823aaf1f2ac5f8a7**,
+base **dd052c6012f10fbde147f61931a50c00bec1f98b**: **180 lines**, SHA-256
+`5c54bfb22cc9f407f779f8f2f401530ffe5238711b2adc10401d69abee20b7af`.
+It is a **design diagnosis of F30-01**, by **agy/gemini-4-argon-high**. The
+reviewer committed the report and proofs at 5b1ca726; that commit carries
+`Agent: agy/gemini-4-argon-high`. Unlike r27, this report was committed by the
+reviewer. This raw archive is now a **D-098 input**, not a rewritten disposition.
+
+Findings: **0 Critical, 1 High, 1 Medium, 2 Low**.
+
+| Finding | Disposition at #456 | Boundary |
+|---|---|---|
+| H-1 | FIXED — updater half #446, agent half #454 under D-155 | Exact live-lock ExitBusy 3; deferred candidate boot recovery and later Step retry. Terminal failures stay terminal. F30-01 acceptance closure remains pending. |
+| M-1 | FIXED — #454 | One tracked recovery child with a 250 ms first wait; later Steps poll without waiting. Real crashed blocked/switched/checking stages keep the agent running; stop cancels and joins. |
+| L-1 | FIXED — #446 | Six lock-taking entry points check update.lock before journal access; Retain never opens a journal. |
+| L-2 | OPEN — devstack 34, running at the cutoff | Nightly quarantine's stale citations and ordering note. Entry removal requires the passing lease-expiry acceptance result. |
+| Question to the owner | ANSWERED — D-155 | The orchestrator's provisional Option B decision; the owner may overturn. Rejected A, C, D1 and D2 are recorded in the decision table. |
+
+Updater's import **03e24246** and agent's import **facfd361** preserve their
+entire r29 proof files byte-identically. Each side's two TODO proofs fail
+before and pass after; each side's two Held proofs pass throughout. Main now
+carries:
+
+- Updater: `TestR29_H1_UpdaterExitCodeDistinguishesLiveUpdateBusy`,
+  `TestR29_L1_ContendedRecoverChecksUpdateLockBeforeOpeningJournal`,
+  `TestR29_Held_ContendedRecoverDuringStepStartAndCheckDoesNotMutateTxnOrGate`,
+  `TestR29_Held_CrashedSwitchedAndCheckingTxnsRecoveredUnderFreeLock`.
+- Agent: `TestR29_H1_CandidateBootUnderHeldUpdateLockDefersRecoverAndServesAfterCommit`,
+  `TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery`,
+  `TestR29_Held_D053AndD064PassWhileRecoverBlockedUnderHeldUpdateLock`,
+  `TestR29_Held_TerminalRecoveryRequiredExit2KeepsForwardingOffAfterLockRelease`.
+
+The [cut](../handover/follow-up-43.md) pins the imported proof identities and
+producer evidence. Handover did not rerun the review proofs or acceptance.
+**F30-01 stays open** until an acceptance run passes `lease-expiry` with the
+nightly quarantine entry removed. Devstack 34 is running for that at cutoff.

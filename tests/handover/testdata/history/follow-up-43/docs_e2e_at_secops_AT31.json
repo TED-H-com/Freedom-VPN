@@ -1,0 +1,347 @@
+{
+  "schema_version": 1,
+  "follow_up": 16,
+  "id": "AT31",
+  "status": "blocked",
+  "requirements": [
+    "NFR01",
+    "NODE02",
+    "FUP04"
+  ],
+  "spec": [
+    "§19 AT31"
+  ],
+  "run_id": "1bfd5cff-e593-481b-a4d2-94ca08cf7c3d",
+  "application_base": "410607051d81d7dd538388b14904a2ca4a8ada59",
+  "source_revision": "67fcd152b1196ab90ba95c09eaaa73d5c9d12eb5",
+  "actual": {
+    "forced_relay": {
+      "before_path": {
+        "Relayed": 0,
+        "Direct": 1,
+        "Forced": false
+      },
+      "cleanup_ok": true,
+      "cleanup_path": {
+        "Relayed": 0,
+        "Direct": 1,
+        "Forced": false
+      },
+      "direct_restored_samples": [
+        {
+          "utc": "2026-11-04T04:37:55.840594236Z",
+          "monotonic_elapsed_seconds": 31.470245906,
+          "status": {
+            "read_diagnostic": {
+              "started": "2026-11-04T04:37:55.679433443Z",
+              "completed": "2026-11-04T04:37:55.762536031Z",
+              "stage": "member_status_read",
+              "category": "none"
+            },
+            "tcp_echoes": 60,
+            "udp_replies": 63,
+            "tcp_attempts": 66,
+            "udp_attempts": 72,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "12747",
+            "download_bytes": "10677",
+            "Present": true,
+            "kernel_generation": "20",
+            "read_diagnostic": {
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "read_start_mono_ns": "90518283027972",
+              "read_end_mono_ns": "90518286619834",
+              "enforcement_before": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "enforcement_after": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "started": "2026-11-04T04:37:55.831595618Z",
+              "completed": "2026-11-04T04:37:55.835243635Z",
+              "stage": "nft_read",
+              "category": "none",
+              "exit": 0,
+              "heartbeat_before": {
+                "read_at": "2026-11-04T04:37:55.831626091Z",
+                "wall_unix_ns": "1793767075515673972",
+                "serving": true,
+                "read_ok": true
+              },
+              "heartbeat_after": {
+                "read_at": "2026-11-04T04:37:55.83524393Z",
+                "wall_unix_ns": "1793767075515673972",
+                "serving": true,
+                "read_ok": true
+              }
+            }
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-11-04T04:38:01.005130932Z",
+          "monotonic_elapsed_seconds": 36.634782722,
+          "status": {
+            "read_diagnostic": {
+              "started": "2026-11-04T04:38:00.844701224Z",
+              "completed": "2026-11-04T04:38:00.928294857Z",
+              "stage": "member_status_read",
+              "category": "none"
+            },
+            "tcp_echoes": 70,
+            "udp_replies": 73,
+            "tcp_attempts": 76,
+            "udp_attempts": 82,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "14793",
+            "download_bytes": "12206",
+            "Present": true,
+            "kernel_generation": "21",
+            "read_diagnostic": {
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "read_start_mono_ns": "90523447431137",
+              "read_end_mono_ns": "90523451002507",
+              "enforcement_before": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "enforcement_after": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "started": "2026-11-04T04:38:00.995998931Z",
+              "completed": "2026-11-04T04:38:00.999626253Z",
+              "stage": "nft_read",
+              "category": "none",
+              "exit": 0,
+              "heartbeat_before": {
+                "read_at": "2026-11-04T04:38:00.996024294Z",
+                "wall_unix_ns": "1793767080795821571",
+                "serving": true,
+                "read_ok": true
+              },
+              "heartbeat_after": {
+                "read_at": "2026-11-04T04:38:00.999626364Z",
+                "wall_unix_ns": "1793767080795821571",
+                "serving": true,
+                "read_ok": true
+              }
+            }
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        }
+      ],
+      "forced_after_seconds": 6.785835091,
+      "forced_path": {
+        "Relayed": 1,
+        "Direct": 0,
+        "Forced": true
+      },
+      "relay_samples": [
+        {
+          "utc": "2026-11-04T04:37:24.618917591Z",
+          "monotonic_elapsed_seconds": 0.248569327,
+          "status": {
+            "read_diagnostic": {
+              "started": "2026-11-04T04:37:24.46320288Z",
+              "completed": "2026-11-04T04:37:24.544430836Z",
+              "stage": "member_status_read",
+              "category": "none"
+            },
+            "tcp_echoes": 10,
+            "udp_replies": 10,
+            "tcp_attempts": 10,
+            "udp_attempts": 10,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "3186",
+            "download_bytes": "3072",
+            "Present": true,
+            "kernel_generation": "20",
+            "read_diagnostic": {
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "read_start_mono_ns": "90487063765747",
+              "read_end_mono_ns": "90487067099634",
+              "enforcement_before": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "enforcement_after": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "started": "2026-11-04T04:37:24.612341793Z",
+              "completed": "2026-11-04T04:37:24.615723134Z",
+              "stage": "nft_read",
+              "category": "none",
+              "exit": 0,
+              "heartbeat_before": {
+                "read_at": "2026-11-04T04:37:24.612369334Z",
+                "wall_unix_ns": "1793767040491167754",
+                "serving": true,
+                "read_ok": true
+              },
+              "heartbeat_after": {
+                "read_at": "2026-11-04T04:37:24.615723451Z",
+                "wall_unix_ns": "1793767040491167754",
+                "serving": true,
+                "read_ok": true
+              }
+            }
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-11-04T04:37:31.312427902Z",
+          "monotonic_elapsed_seconds": 6.942079677,
+          "status": {
+            "read_diagnostic": {
+              "started": "2026-11-04T04:37:31.156184773Z",
+              "completed": "2026-11-04T04:37:31.238097316Z",
+              "stage": "member_status_read",
+              "category": "none"
+            },
+            "tcp_echoes": 10,
+            "udp_replies": 14,
+            "tcp_attempts": 17,
+            "udp_attempts": 23,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "3494",
+            "download_bytes": "3380",
+            "Present": true,
+            "kernel_generation": "20",
+            "read_diagnostic": {
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "read_start_mono_ns": "90493756519473",
+              "read_end_mono_ns": "90493759998095",
+              "enforcement_before": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "enforcement_after": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "started": "2026-11-04T04:37:31.305094432Z",
+              "completed": "2026-11-04T04:37:31.30862189Z",
+              "stage": "nft_read",
+              "category": "none",
+              "exit": 0,
+              "heartbeat_before": {
+                "read_at": "2026-11-04T04:37:31.30511857Z",
+                "wall_unix_ns": "1793767050497029780",
+                "serving": true,
+                "read_ok": true
+              },
+              "heartbeat_after": {
+                "read_at": "2026-11-04T04:37:31.308622178Z",
+                "wall_unix_ns": "1793767050497029780",
+                "serving": true,
+                "read_ok": true
+              }
+            }
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-11-04T04:37:36.476434735Z",
+          "monotonic_elapsed_seconds": 12.106086423,
+          "status": {
+            "read_diagnostic": {
+              "started": "2026-11-04T04:37:36.31576498Z",
+              "completed": "2026-11-04T04:37:36.40130262Z",
+              "stage": "member_status_read",
+              "category": "none"
+            },
+            "tcp_echoes": 21,
+            "udp_replies": 24,
+            "tcp_attempts": 27,
+            "udp_attempts": 33,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "5679",
+            "download_bytes": "5395",
+            "Present": true,
+            "kernel_generation": "20",
+            "read_diagnostic": {
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "read_start_mono_ns": "90498919937989",
+              "read_end_mono_ns": "90498923560478",
+              "enforcement_before": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "enforcement_after": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "started": "2026-11-04T04:37:36.468510451Z",
+              "completed": "2026-11-04T04:37:36.47218405Z",
+              "stage": "nft_read",
+              "category": "none",
+              "exit": 0,
+              "heartbeat_before": {
+                "read_at": "2026-11-04T04:37:36.468535001Z",
+                "wall_unix_ns": "1793767055502755931",
+                "serving": true,
+                "read_ok": true
+              },
+              "heartbeat_after": {
+                "read_at": "2026-11-04T04:37:36.472184155Z",
+                "wall_unix_ns": "1793767055502755931",
+                "serving": true,
+                "read_ok": true
+              }
+            }
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        }
+      ],
+      "relay_window_end_path": {
+        "Relayed": 1,
+        "Direct": 0,
+        "Forced": false
+      },
+      "restore_after_seconds": 31.309083053,
+      "restored_path": {
+        "Relayed": 0,
+        "Direct": 1,
+        "Forced": false
+      },
+      "same_sockets_across_steps": true,
+      "scope": "one member, one exit, established TCP and UDP; 180-second automatic fault expiry, 90-second path wait; not 60-peer relay capacity",
+      "status": "passed"
+    }
+  },
+  "blockers": [
+    "One member/one exit bounded relay path only; no 60-peer mixed relay capacity or candidate-hardware campaign.",
+    "The 180-second forced-relay match and 20-minute transport helper are export limits, not capacity guarantees."
+  ],
+  "evidence": [
+    "followup16-transports-live.json",
+    "followup16-transports-run.json",
+    "history/before-follow-up-16/AT31.json"
+  ],
+  "record_kind": "bounded relay row produced again by the AT29 transport test; no capacity campaign",
+  "driver_run_id": "2d6e6e6a-3ed4-4f3d-84bb-decd68f77f0f"
+}
