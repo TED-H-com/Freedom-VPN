@@ -30,6 +30,16 @@ def suite_roots(matches, parents, own_pid):
     return sorted(roots)
 
 
+def process_args(command):
+    # ps/pgrep render argv without shell escaping. A literal unmatched quote in
+    # an argument is not a malformed process and must not crash admission or
+    # disappear from the inventory. Conservative tokenization keeps it counted.
+    try:
+        return shlex.split(command)
+    except ValueError:
+        return command.split()
+
+
 def inventory():
     found = subprocess.run(['pgrep', '-af', 'gates.sh|mk/at-|node-test-netlab|mk/netlab|test.*tags.*netlab'], text=True, capture_output=True)
     if found.returncode not in (0, 1):
@@ -41,7 +51,7 @@ def inventory():
     matches = {}
     for line in found.stdout.splitlines():
         pid, command = line.split(maxsplit=1)
-        args = shlex.split(command)
+        args = process_args(command)
         # Ignore orchestration shells containing quoted command text.
         if any(a in ('-c', '-lc', '-ec') for a in args[:3]):
             continue
