@@ -1,3 +1,47 @@
+# Follow-up 24 run ledger — 2026-11-04
+
+Run `dee8492f-4a7e-4f3c-9063-3ab27f66dcec`, measured source `55588821291e335ef72fbd7fe1f5ff052dea92bf`, baseline `df61fd68add1678729ef32ae1ef93719124035e3`: **3 / 7 / 0 cases (PASS / BLOCKED / FAIL); 708 / 6 / 0 subchecks**. One live assembled acceptance, after the sole permitted pre-check retry; no case retry. Original predicates, the strict 15 s freshness bound, report/lease joins and traffic checks are unchanged.
+
+[Dated analysis](followup24-2026-11-04.md), [all original subchecks](F24-subchecks.md), [result index](F24-results.json), [verification receipts](F24-verification.md).
+
+The [follow-up 23 archive](history/follow-up-23/INDEX.md) preserves all 145 regular root records byte-for-byte, including gzip and SHA-256 pins. `6a25221b` remains **3/7/0 cases and 706/8/0 subchecks**; `3eb3960d` and every earlier archive/dated note retain their original outcomes. Historical sections below describe those runs; use their frozen archives for the corresponding case payloads.
+
+Baseline/current main at preflight **`df61fd68add1678729ef32ae1ef93719124035e3`**; measured source **`55588821291e335ef72fbd7fe1f5ff052dea92bf`**. Archive commit **a54cdd5d**, instrumentation **dbaab374 / 55588821**, all committed before measurement. `go env GOCACHE` returned **`<home>/.cache/go-build`**, without a cache override. Preflight **2026-11-04T16:53:26.453097+00:00** ran **`vmstat 5 7`** and:
+
+```sh
+ps -eo pid,etimes,args | grep -E '[g]ates\.sh|[m]k/at-|[n]ode-test-netlab|[n]etlab-test|[e]2e-test'
+```
+
+No foreign process matched the current run's preflight. Raw process arguments stay private; public foreign records contain only pid, comm and ticks. [Host receipt](F24-host-preflight.json).
+
+```text
+procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu
+ 2  0 3082172 12499124 2938984 158423752    8   30 14775 28085 26100   22  4  2 93  1  0  0
+ 4  0 3082172 12602300 2938996 158424136    0    0     1  4129 21022 18408  6  2 92  0  0  0
+ 1  0 3082172 12916904 2939008 158425772    0    0     1  1823 23264 22847  5  2 92  0  0  0
+ 0  0 3082172 12873636 2939016 158414388    0    0     0 14770 12247 11759  3  1 95  0  0  0
+ 0  0 3082172 13144784 2939024 158414416    0    0     0   580 3028 4435  0  0 100  0  0  0
+ 0  0 3082172 13431128 2939032 158416112    0    0     0   225 3444 4646  1  1 98  0  0  0
+ 0  0 3082172 13731632 2939040 158416512    0    0     0  1449 3883 6626  0  0 99  1  0  0
+```
+
+Both [attempt records](F24-attempts.json) are retained. Attempt 1 waited 660 s, then its own admission wrapper missed main advancing during that wait; its own process tree was stopped before `TestATMembers_Live` and before the first acceptance check. It has no acceptance run UUID or result. After cleanup, the lane rebased its already-committed archive/instrumentation onto current main, repeated the prechecks, and used the single permitted retry. The sole live acceptance ran **16:54:29.765248–17:41:04.975195Z**, exit **2**. No case was retried.
+
+The current run had zero suite/case admission sleeps. Teardown's Docker admission wait was **660.495 s**; adding the first attempt's 660 s gives **1,320.495 s (22 min 0.495 s)** before/following the acceptance, excluding any separately recorded post-run gate wait. Both cleanup receipts show zero owned containers, networks, volumes and images. The completed foreground wrapper ended **17:52:49.586858Z**.
+
+**D-133:** all four observed foreign-process windows are retained as confounded: **17:41:24.395505Z** (one sample), **17:43:09.978900Z** (one), **17:44:05.289677–17:51:52.986873Z** (94), and **17:52:08.070188Z** (one). None intersects an acceptance case. The first is **19.420310 s** after acceptance ended; five-second samples cannot exclude shorter activity. Nothing was retried for overlap.
+
+D-160 journals **311** timed sections, each with a start and end. There are **48 held replies inside active sections**, all naming this lane's own assembled `make` pid **3306533**, as seen by independent read-only snapshot callers. Each reply and its classification is preserved; these are not observed foreign runs. They caused no sleeps inside a timed section. All other in-section admission answers were free. Tool admission output stayed separate from tool-consumed streams. No reservation, host-network operation or new shell cleanup trap was used.
+
+Post-run gate admission wait recorded at this publication: **1020.717 s**; total first-attempt/suite/wrapper wait **2341.212 s**. All waiters are enumerated in [the admission ledger](F24-admission.json). Later verification receipts, if any, remain separately timestamped. The 120-minute assembled admission limit was not exhausted.
+
+**F22-D146 closes for the tested D-162 cadence:** dual/IPv4 1280 indexes **44 and 46 PASS**, with serving observation age **0.739651 s**. IPv6 and IPv4 ages are **6.849400 s** and **1.441758 s**; all pass the unchanged strict 15 s bound. Nine native windows retain all **18 reports, 18 enqueues and 18 attempts**, complete report-ID joins and no row-log overwrite. Prepared regular-node configs explicitly use **5 s**; this is TEST ONLY and the product default remains **30 s**. [Series, states, intervals and attempts](F24-observation-windows.json), [serving read joins](F24-serving-read-records.json), [config pins](F24-observation-config.json).
+
+AT01 and AT08 initial transfers are counted, with both endpoint paths and original packet joins retained. F11-01 stays **OPEN/upstream-dependent (D-148)**, and the historical node packet 158/member packet 161 evidence stays with that owner. AT02's closed recovery is Apply **540 → renewal 545 → populated lease → serving Apply 546**, deny-all **187.308830 ms / seven losses**; its report is enqueued for `closed_recovery_binding` and accepted on attempt 1. AT09 indexes **25 BLOCKED, 26 PASS, 27 PASS**, with all **12** post-restart reports retained; D-067's grant-less provisional path remains unexercised. No retained F48-01 signature; **30 writes / zero 412s**, each accepted on its first attempt. Combined-change attribution is limited to what the records support.
+
+Only `fvpn-w4-members-*`, prefix `w4-members`, port base `24000`, were used. Shared Postgres and foreign resources were untouched. Scratch stayed on disk under `.agent/tmp`; Python used `-B`. Both attempts and the 311 section records remain available. No failed case, confounded window or subcheck was rerun. The sole pre-check retry has been consumed.
+
 # Follow-up 23 run ledger — 2026-11-04
 
 Run `6a25221b-1dcf-4f4d-b866-cd04f57f58f6`, measured source `8bde2b6acc0b116515148eeb0ff4448c65453a92`, baseline/current main at preflight `c148cf349df219124e457113ce90c010016a308e`. **3 PASS / 7 BLOCKED / 0 FAIL; 706 passed / 8 blocked / 0 failed subchecks**. No predicate changed, no case retried. [All original subchecks](F23-subchecks.md), [result index](F23-results.json), [verification receipts](F23-verification.md).

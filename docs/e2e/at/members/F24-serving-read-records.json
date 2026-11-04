@@ -1,0 +1,273 @@
+{
+  "run_id": "dee8492f-4a7e-4f3c-9063-3ab27f66dcec",
+  "source_commit": "55588821291e335ef72fbd7fe1f5ff052dea92bf",
+  "reads": [
+    {
+      "index": 46,
+      "row": "native dual MTU 1280",
+      "serving_read_ok": true,
+      "later_diagnostic": false,
+      "read_at": "2026-11-04T17:39:06.68285+00:00",
+      "age_seconds": "0.739651",
+      "observation": {
+        "read_at": "2026-11-04T17:39:06.68285+00:00",
+        "reasons": [],
+        "report_id": "01a1a7a4-9e50-71b3-9208-14a317374722",
+        "forwarding": true,
+        "generation": "74",
+        "received_at": "2026-11-04T17:39:05.943199+00:00",
+        "observation_age_seconds": "0.739651"
+      },
+      "enqueues": [
+        {
+          "time": "2026-11-04T17:39:05.937Z",
+          "msg": "observation enqueued",
+          "source": "AT09-interim-174001/node-agent.log",
+          "line": 287,
+          "line_sha256": "73a74f92fd86731fed9556c622885c9e0be1dc1b95c8d14f6db43328c0ef6748",
+          "report_id": "01a1a7a4-9e50-71b3-9208-14a317374722",
+          "observed_at": "2026-11-04T17:39:05.935900591Z",
+          "due_reason": "interval_elapsed"
+        }
+      ],
+      "attempts": [
+        {
+          "time": "2026-11-04T17:39:05.947Z",
+          "msg": "observation submission",
+          "source": "AT09-interim-174001/node-agent.log",
+          "line": 288,
+          "line_sha256": "d924671cd66ef92e984256a805252706fddc0a81c2fafb13e695aa1546ec7180",
+          "report_ids": [
+            "01a1a7a4-9e50-71b3-9208-14a317374722"
+          ],
+          "attempt_numbers": [
+            1
+          ],
+          "attempt_scope": "process",
+          "process_id": 871,
+          "boot_id": "boot-e2c1d9ed15a51615",
+          "started_at": "2026-11-04T17:39:05.939179181Z",
+          "duration_ms": 7,
+          "outcome": "accepted",
+          "accepted_report_ids": [
+            "01a1a7a4-9e50-71b3-9208-14a317374722"
+          ],
+          "http_status": 202,
+          "error_code": "",
+          "transport_error_class": "",
+          "next_retry_at": null,
+          "retry_after_ms": 0
+        }
+      ],
+      "accepted_attempts": [
+        {
+          "time": "2026-11-04T17:39:05.947Z",
+          "msg": "observation submission",
+          "source": "AT09-interim-174001/node-agent.log",
+          "line": 288,
+          "line_sha256": "d924671cd66ef92e984256a805252706fddc0a81c2fafb13e695aa1546ec7180",
+          "report_ids": [
+            "01a1a7a4-9e50-71b3-9208-14a317374722"
+          ],
+          "attempt_numbers": [
+            1
+          ],
+          "attempt_scope": "process",
+          "process_id": 871,
+          "boot_id": "boot-e2c1d9ed15a51615",
+          "started_at": "2026-11-04T17:39:05.939179181Z",
+          "duration_ms": 7,
+          "outcome": "accepted",
+          "accepted_report_ids": [
+            "01a1a7a4-9e50-71b3-9208-14a317374722"
+          ],
+          "http_status": 202,
+          "error_code": "",
+          "transport_error_class": "",
+          "next_retry_at": null,
+          "retry_after_ms": 0
+        }
+      ],
+      "records_30_seconds_before_15_seconds_after": [],
+      "scope": "Exact report-ID join. Later diagnostic is never relabeled as the original failed read. Surrounding log records are retained context, not continuous Central coverage."
+    },
+    {
+      "index": 51,
+      "row": "native ipv6 MTU 1280",
+      "serving_read_ok": true,
+      "later_diagnostic": false,
+      "read_at": "2026-11-04T17:39:22.80298+00:00",
+      "age_seconds": "6.849400",
+      "observation": {
+        "read_at": "2026-11-04T17:39:22.80298+00:00",
+        "reasons": [],
+        "report_id": "01a1a7a4-c56c-7004-9663-6d72540f6e22",
+        "forwarding": true,
+        "generation": "74",
+        "received_at": "2026-11-04T17:39:15.95358+00:00",
+        "observation_age_seconds": "6.849400"
+      },
+      "enqueues": [
+        {
+          "time": "2026-11-04T17:39:15.949Z",
+          "msg": "observation enqueued",
+          "source": "AT09-interim-174001/node-agent.log",
+          "line": 289,
+          "line_sha256": "e51e0d3da091e700ed06d183e66793c215c57b90acb24b741065bb7e24d016dd",
+          "report_id": "01a1a7a4-c56c-7004-9663-6d72540f6e22",
+          "observed_at": "2026-11-04T17:39:15.947788636Z",
+          "due_reason": "interval_elapsed"
+        }
+      ],
+      "attempts": [
+        {
+          "time": "2026-11-04T17:39:15.957Z",
+          "msg": "observation submission",
+          "source": "AT09-interim-174001/node-agent.log",
+          "line": 290,
+          "line_sha256": "f82b859b5477ba866bf885c0acc9bcd6baed367a2d7c5135673edfadbb31a619",
+          "report_ids": [
+            "01a1a7a4-c56c-7004-9663-6d72540f6e22"
+          ],
+          "attempt_numbers": [
+            1
+          ],
+          "attempt_scope": "process",
+          "process_id": 871,
+          "boot_id": "boot-e2c1d9ed15a51615",
+          "started_at": "2026-11-04T17:39:15.950921214Z",
+          "duration_ms": 5,
+          "outcome": "accepted",
+          "accepted_report_ids": [
+            "01a1a7a4-c56c-7004-9663-6d72540f6e22"
+          ],
+          "http_status": 202,
+          "error_code": "",
+          "transport_error_class": "",
+          "next_retry_at": null,
+          "retry_after_ms": 0
+        }
+      ],
+      "accepted_attempts": [
+        {
+          "time": "2026-11-04T17:39:15.957Z",
+          "msg": "observation submission",
+          "source": "AT09-interim-174001/node-agent.log",
+          "line": 290,
+          "line_sha256": "f82b859b5477ba866bf885c0acc9bcd6baed367a2d7c5135673edfadbb31a619",
+          "report_ids": [
+            "01a1a7a4-c56c-7004-9663-6d72540f6e22"
+          ],
+          "attempt_numbers": [
+            1
+          ],
+          "attempt_scope": "process",
+          "process_id": 871,
+          "boot_id": "boot-e2c1d9ed15a51615",
+          "started_at": "2026-11-04T17:39:15.950921214Z",
+          "duration_ms": 5,
+          "outcome": "accepted",
+          "accepted_report_ids": [
+            "01a1a7a4-c56c-7004-9663-6d72540f6e22"
+          ],
+          "http_status": 202,
+          "error_code": "",
+          "transport_error_class": "",
+          "next_retry_at": null,
+          "retry_after_ms": 0
+        }
+      ],
+      "records_30_seconds_before_15_seconds_after": [],
+      "scope": "Exact report-ID join. Later diagnostic is never relabeled as the original failed read. Surrounding log records are retained context, not continuous Central coverage."
+    },
+    {
+      "index": 59,
+      "row": "native ipv4 MTU 1280",
+      "serving_read_ok": true,
+      "later_diagnostic": false,
+      "read_at": "2026-11-04T17:39:47.402424+00:00",
+      "age_seconds": "1.441758",
+      "observation": {
+        "read_at": "2026-11-04T17:39:47.402424+00:00",
+        "reasons": [],
+        "report_id": "01a1a7a5-3aa2-7f41-afce-32e62cea41cf",
+        "forwarding": true,
+        "generation": "74",
+        "received_at": "2026-11-04T17:39:45.960666+00:00",
+        "observation_age_seconds": "1.441758"
+      },
+      "enqueues": [
+        {
+          "time": "2026-11-04T17:39:45.956Z",
+          "msg": "observation enqueued",
+          "source": "AT09-interim-174001/node-agent.log",
+          "line": 298,
+          "line_sha256": "587d96a6d818ac6d8543ed6f9c02e659b8dffc38eed8599446bc6c3dc3426998",
+          "report_id": "01a1a7a5-3aa2-7f41-afce-32e62cea41cf",
+          "observed_at": "2026-11-04T17:39:45.954861061Z",
+          "due_reason": "interval_elapsed"
+        }
+      ],
+      "attempts": [
+        {
+          "time": "2026-11-04T17:39:45.964Z",
+          "msg": "observation submission",
+          "source": "AT09-interim-174001/node-agent.log",
+          "line": 299,
+          "line_sha256": "bce30699bdf02d7cd3941a248f297b899b69866c2084286a0e1d64f803b1bf5d",
+          "report_ids": [
+            "01a1a7a5-3aa2-7f41-afce-32e62cea41cf"
+          ],
+          "attempt_numbers": [
+            1
+          ],
+          "attempt_scope": "process",
+          "process_id": 871,
+          "boot_id": "boot-e2c1d9ed15a51615",
+          "started_at": "2026-11-04T17:39:45.9571993Z",
+          "duration_ms": 5,
+          "outcome": "accepted",
+          "accepted_report_ids": [
+            "01a1a7a5-3aa2-7f41-afce-32e62cea41cf"
+          ],
+          "http_status": 202,
+          "error_code": "",
+          "transport_error_class": "",
+          "next_retry_at": null,
+          "retry_after_ms": 0
+        }
+      ],
+      "accepted_attempts": [
+        {
+          "time": "2026-11-04T17:39:45.964Z",
+          "msg": "observation submission",
+          "source": "AT09-interim-174001/node-agent.log",
+          "line": 299,
+          "line_sha256": "bce30699bdf02d7cd3941a248f297b899b69866c2084286a0e1d64f803b1bf5d",
+          "report_ids": [
+            "01a1a7a5-3aa2-7f41-afce-32e62cea41cf"
+          ],
+          "attempt_numbers": [
+            1
+          ],
+          "attempt_scope": "process",
+          "process_id": 871,
+          "boot_id": "boot-e2c1d9ed15a51615",
+          "started_at": "2026-11-04T17:39:45.9571993Z",
+          "duration_ms": 5,
+          "outcome": "accepted",
+          "accepted_report_ids": [
+            "01a1a7a5-3aa2-7f41-afce-32e62cea41cf"
+          ],
+          "http_status": 202,
+          "error_code": "",
+          "transport_error_class": "",
+          "next_retry_at": null,
+          "retry_after_ms": 0
+        }
+      ],
+      "records_30_seconds_before_15_seconds_after": [],
+      "scope": "Exact report-ID join. Later diagnostic is never relabeled as the original failed read. Surrounding log records are retained context, not continuous Central coverage."
+    }
+  ]
+}

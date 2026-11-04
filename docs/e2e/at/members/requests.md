@@ -1,3 +1,13 @@
+# Follow-up 24 — 2026-11-04
+
+### Requests to orchestrator
+
+**2026-11-04:** no new product or shared-harness request. Follow-up 23 request 1 is answered by devstack 36 **#476 / D-162**, and this owner run passes the unchanged freshness predicates. Request 2 is answered by agent-core 52 **#477** and the extracted enqueue/attempt records. F22-AT01's historical packet 158/161 evidence remains with the existing **D-148** owner; F11-01 stays **OPEN/upstream-dependent**. The carried owner-resource gaps and D-067's unexercised provisional path remain unchanged. No outside-owned fix or handover-test change is proposed.
+
+[This run and all retained limits](followup24-2026-11-04.md), [F22-D146 cadence result](F24-observation-windows.json), [F22-AT01 historical packet evidence](F23-retrospective-F22-AT01.json).
+
+The existing groups below retain their original wording and historical status. F4-03, F4-04, F4-05 / F4-07, F4-06 and F4-10 remain owner-resource rows and are not re-asked. Handover claims continue using frozen evidence; no handover-owned change was needed.
+
 # Follow-up 23 — 2026-11-04
 
 ### Requests to orchestrator

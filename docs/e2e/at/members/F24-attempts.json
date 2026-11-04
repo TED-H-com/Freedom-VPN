@@ -1,0 +1,1227 @@
+{
+  "rule": "One rerun only after own setup/wrapper/admission stops before its first acceptance check. Attempt 1 started no live test; it was stopped because the admission wrapper missed main advancing during the hold. All original receipts are retained. Attempt 2 uses current main at preflight; no retry of any case or result.",
+  "prior_wait_counted_seconds": 660,
+  "attempts": [
+    {
+      "attempt": 1,
+      "kind": "own pre-check harness/admission stop; not an acceptance result",
+      "run_id": null,
+      "acceptance_checks_started": false,
+      "reason": {
+        "at": "2026-11-04T16:49:51.817254+00:00",
+        "reason": "Own admission wrapper failed to refresh/check current main after waiting; stopping before TestATMembers_Live or any acceptance check",
+        "baseline": "1c39a0e73825dbcf911dfd2bec6e75aed64c979b",
+        "main": "df61fd68add1678729ef32ae1ef93719124035e3",
+        "acceptance_checks_started": false,
+        "stopped_owned_pids": [
+          3285441,
+          3285131
+        ]
+      },
+      "host_preflight": {
+        "at": "2026-11-04T16:48:15.591357+00:00",
+        "baseline_commit": "1c39a0e73825dbcf911dfd2bec6e75aed64c979b",
+        "harness_commit": "f9d41521576b214856b29193c7fa6789d9ca2fbf",
+        "main_ref_at_preflight": "df61fd68add1678729ef32ae1ef93719124035e3",
+        "gocache": "<home>/.cache/go-build",
+        "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  0 3082172 15155428 2934412 158239856    8   30 14809 28128 26072   22  4  2 93  1  0  0\n 2  0 3082172 15156072 2934420 158239860    0    0     0   659 2742 4248  0  0 99  0  0  0\n 1  0 3082172 15157720 2934428 158239864    0    0     0   502 3005 4407  0  1 99  0  0  0\n 0  0 3082172 14853496 2934444 158239952    0    0    12  9804 2639 3896  0  0 99  0  0  0\n 1  0 3082172 14892268 2934452 158239952    0    0     0   568 2512 3887  0  0 100  0  0  0\n 1  0 3082172 14915968 2934460 158239960    0    0     0   190 2606 4075  0  0 100  0  0  0\n 2  0 3082172 14794068 2934468 158254808    0    0  2927  2482 6592 10926  2  1 97  0  0  0\n",
+        "process_command": "ps -eo pid,etimes,args | grep -E '[g]ates\\.sh|[m]k/at-|[n]ode-test-netlab|[n]etlab-test|[e]2e-test'",
+        "foreign_processes": [],
+        "raw_process_output": "Private; public foreign inventory contains pid, comm and ticks only"
+      },
+      "suite_wait": {
+        "polls": [
+          {
+            "at": "2026-11-04T16:37:14.866384+00:00",
+            "stage": "preflight",
+            "elapsed_seconds": 0.068,
+            "hold_free": false,
+            "foreign_processes": [],
+            "slept_seconds": 60
+          },
+          {
+            "at": "2026-11-04T16:38:14.931354+00:00",
+            "stage": "preflight",
+            "elapsed_seconds": 60.133,
+            "hold_free": false,
+            "foreign_processes": [],
+            "slept_seconds": 60
+          },
+          {
+            "at": "2026-11-04T16:39:14.993339+00:00",
+            "stage": "preflight",
+            "elapsed_seconds": 120.195,
+            "hold_free": false,
+            "foreign_processes": [
+              {
+                "pid": 3247340,
+                "comm": "bash",
+                "ticks": 0
+              }
+            ],
+            "slept_seconds": 60
+          },
+          {
+            "at": "2026-11-04T16:40:15.058802+00:00",
+            "stage": "preflight",
+            "elapsed_seconds": 180.26,
+            "hold_free": false,
+            "foreign_processes": [
+              {
+                "pid": 3247340,
+                "comm": "bash",
+                "ticks": 0
+              }
+            ],
+            "slept_seconds": 60
+          },
+          {
+            "at": "2026-11-04T16:41:15.124200+00:00",
+            "stage": "preflight",
+            "elapsed_seconds": 240.326,
+            "hold_free": false,
+            "foreign_processes": [
+              {
+                "pid": 3247340,
+                "comm": "bash",
+                "ticks": 0
+              }
+            ],
+            "slept_seconds": 60
+          },
+          {
+            "at": "2026-11-04T16:42:15.190468+00:00",
+            "stage": "preflight",
+            "elapsed_seconds": 300.392,
+            "hold_free": false,
+            "foreign_processes": [
+              {
+                "pid": 3247340,
+                "comm": "bash",
+                "ticks": 0
+              },
+              {
+                "pid": 3254879,
+                "comm": "go",
+                "ticks": 63
+              }
+            ],
+            "slept_seconds": 60
+          },
+          {
+            "at": "2026-11-04T16:43:15.259820+00:00",
+            "stage": "preflight",
+            "elapsed_seconds": 360.461,
+            "hold_free": false,
+            "foreign_processes": [
+              {
+                "pid": 3247340,
+                "comm": "bash",
+                "ticks": 0
+              },
+              {
+                "pid": 3254879,
+                "comm": "go",
+                "ticks": 97
+              }
+            ],
+            "slept_seconds": 60
+          },
+          {
+            "at": "2026-11-04T16:44:15.327007+00:00",
+            "stage": "preflight",
+            "elapsed_seconds": 420.528,
+            "hold_free": false,
+            "foreign_processes": [
+              {
+                "pid": 3247340,
+                "comm": "bash",
+                "ticks": 0
+              },
+              {
+                "pid": 3254879,
+                "comm": "go",
+                "ticks": 113
+              }
+            ],
+            "slept_seconds": 60
+          },
+          {
+            "at": "2026-11-04T16:45:15.394024+00:00",
+            "stage": "preflight",
+            "elapsed_seconds": 480.595,
+            "hold_free": false,
+            "foreign_processes": [
+              {
+                "pid": 3247340,
+                "comm": "bash",
+                "ticks": 0
+              },
+              {
+                "pid": 3254879,
+                "comm": "go",
+                "ticks": 131
+              }
+            ],
+            "slept_seconds": 60
+          },
+          {
+            "at": "2026-11-04T16:46:15.460247+00:00",
+            "stage": "preflight",
+            "elapsed_seconds": 540.662,
+            "hold_free": false,
+            "foreign_processes": [
+              {
+                "pid": 3247340,
+                "comm": "bash",
+                "ticks": 0
+              },
+              {
+                "pid": 3254879,
+                "comm": "go",
+                "ticks": 131
+              }
+            ],
+            "slept_seconds": 60
+          },
+          {
+            "at": "2026-11-04T16:47:15.524836+00:00",
+            "stage": "preflight",
+            "elapsed_seconds": 600.726,
+            "hold_free": false,
+            "foreign_processes": [],
+            "slept_seconds": 60
+          },
+          {
+            "at": "2026-11-04T16:48:15.591213+00:00",
+            "stage": "preflight",
+            "elapsed_seconds": 660.793,
+            "hold_free": true,
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:48:45.755913+00:00",
+            "stage": "after-vmstat",
+            "elapsed_seconds": 0.059,
+            "hold_free": true,
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:49:19.137257+00:00",
+            "stage": "after-startup",
+            "elapsed_seconds": 0.07,
+            "hold_free": true,
+            "foreign_processes": []
+          }
+        ],
+        "wait_seconds": 660
+      },
+      "command_start": {
+        "at": "2026-11-04T16:49:19.137427+00:00"
+      },
+      "command_end": {
+        "at": "2026-11-04T16:49:51.835196+00:00",
+        "exit": 2
+      },
+      "cleanup": {
+        "at": "2026-11-04T16:50:15.658225+00:00",
+        "exports": [
+          {
+            "role": "node",
+            "file": "enforcement-timing.jsonl",
+            "exit": 1
+          },
+          {
+            "role": "node",
+            "file": "agent.log",
+            "exit": 1
+          },
+          {
+            "role": "node",
+            "file": "watchdog.log",
+            "exit": 1
+          },
+          {
+            "role": "node2",
+            "file": "enforcement-timing.jsonl",
+            "exit": 1
+          },
+          {
+            "role": "node2",
+            "file": "agent.log",
+            "exit": 1
+          },
+          {
+            "role": "node2",
+            "file": "watchdog.log",
+            "exit": 1
+          }
+        ],
+        "teardown_exit": 0,
+        "inventory": {
+          "containers": {
+            "exit": 0,
+            "owned": []
+          },
+          "networks": {
+            "exit": 0,
+            "owned": []
+          },
+          "volumes": {
+            "exit": 0,
+            "owned": []
+          },
+          "images": {
+            "exit": 0,
+            "owned": []
+          }
+        }
+      },
+      "process_monitor": {
+        "interval_seconds": 5,
+        "samples": [
+          {
+            "at": "2026-11-04T16:48:45.756228+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:48:50.779726+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:48:55.806847+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:49:00.834478+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:49:05.863081+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:49:10.892150+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:49:15.920653+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:49:20.946814+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:49:25.977891+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:49:31.007804+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:49:36.038083+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:49:41.067842+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:49:46.097445+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:49:51.126403+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:49:56.156179+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:50:01.184376+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:50:06.212818+00:00",
+            "foreign_processes": []
+          },
+          {
+            "at": "2026-11-04T16:50:11.240664+00:00",
+            "foreign_processes": []
+          }
+        ],
+        "confounded": false,
+        "limitation": "Sampling cannot exclude activity entirely between samples; any observed external overlap is D-133 confounded, no retry."
+      },
+      "admission": [
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:34:29.323622+00:00",
+          "command": "make",
+          "pid": 3235387,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:34:29.414660+00:00",
+          "command": "go",
+          "pid": 3235418,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:34:30.081176+00:00",
+          "command": "go",
+          "pid": 3235600,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:34:55.306291+00:00",
+          "command": "make",
+          "pid": 3236071,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:34:55.392718+00:00",
+          "command": "go",
+          "pid": 3236143,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:34:55.706784+00:00",
+          "command": "go",
+          "pid": 3236362,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:34:56.055329+00:00",
+          "command": "go",
+          "pid": 3236620,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:34:57.045503+00:00",
+          "command": "go",
+          "pid": 3236985,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:35:21.162967+00:00",
+          "command": "go",
+          "pid": 3237739,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:36:12.437747+00:00",
+          "command": "go",
+          "pid": 3240405,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:45.666094+00:00",
+          "command": "go",
+          "pid": 3278774,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:45.808704+00:00",
+          "command": "make",
+          "pid": 3278796,
+          "exit": 0,
+          "wait_seconds": 0.036,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:45.875400+00:00",
+          "command": "docker",
+          "pid": 3278806,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:45.941174+00:00",
+          "command": "docker",
+          "pid": 3278822,
+          "exit": 0,
+          "wait_seconds": 0.036,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:46.266424+00:00",
+          "command": "go",
+          "pid": 3278966,
+          "exit": 0,
+          "wait_seconds": 0.044,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:46.838226+00:00",
+          "command": "docker",
+          "pid": 3279205,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:47.597974+00:00",
+          "command": "docker",
+          "pid": 3279292,
+          "exit": 0,
+          "wait_seconds": 0.039,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:47.676540+00:00",
+          "command": "docker",
+          "pid": 3279309,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:47.762533+00:00",
+          "command": "docker",
+          "pid": 3279326,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:47.839481+00:00",
+          "command": "docker",
+          "pid": 3279343,
+          "exit": 0,
+          "wait_seconds": 0.039,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:47.926467+00:00",
+          "command": "docker",
+          "pid": 3279360,
+          "exit": 0,
+          "wait_seconds": 0.04,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:48.009485+00:00",
+          "command": "docker",
+          "pid": 3279379,
+          "exit": 0,
+          "wait_seconds": 0.041,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:48.089655+00:00",
+          "command": "docker",
+          "pid": 3279398,
+          "exit": 0,
+          "wait_seconds": 0.04,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:48.165552+00:00",
+          "command": "docker",
+          "pid": 3279417,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:48.249984+00:00",
+          "command": "go",
+          "pid": 3279437,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:48.943453+00:00",
+          "command": "go",
+          "pid": 3279557,
+          "exit": 0,
+          "wait_seconds": 0.04,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:49.564978+00:00",
+          "command": "go",
+          "pid": 3279744,
+          "exit": 0,
+          "wait_seconds": 0.039,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:50.099242+00:00",
+          "command": "go",
+          "pid": 3279870,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:50.420326+00:00",
+          "command": "go",
+          "pid": 3279979,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:50.893319+00:00",
+          "command": "go",
+          "pid": 3280108,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:51.272506+00:00",
+          "command": "go",
+          "pid": 3280232,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:51.767251+00:00",
+          "command": "go",
+          "pid": 3280357,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:52.299284+00:00",
+          "command": "go",
+          "pid": 3280478,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:52.669038+00:00",
+          "command": "go",
+          "pid": 3280593,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:53.035924+00:00",
+          "command": "docker",
+          "pid": 3280712,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:53.777765+00:00",
+          "command": "docker",
+          "pid": 3280810,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:54.561612+00:00",
+          "command": "docker",
+          "pid": 3280897,
+          "exit": 0,
+          "wait_seconds": 0.036,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:55.284962+00:00",
+          "command": "docker",
+          "pid": 3281013,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:56.536287+00:00",
+          "command": "docker",
+          "pid": 3281123,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:48:57.568865+00:00",
+          "command": "docker",
+          "pid": 3281215,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:04.670251+00:00",
+          "command": "docker",
+          "pid": 3281549,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:10.821593+00:00",
+          "command": "docker",
+          "pid": 3282699,
+          "exit": 0,
+          "wait_seconds": 0.039,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:10.940559+00:00",
+          "command": "docker",
+          "pid": 3282755,
+          "exit": 0,
+          "wait_seconds": 0.039,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:11.282985+00:00",
+          "command": "docker",
+          "pid": 3282797,
+          "exit": 0,
+          "wait_seconds": 0.04,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:17.796484+00:00",
+          "command": "docker",
+          "pid": 3283244,
+          "exit": 0,
+          "wait_seconds": 0.042,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:19.195620+00:00",
+          "command": "make",
+          "pid": 3284669,
+          "exit": 0,
+          "wait_seconds": 0.041,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:19.325134+00:00",
+          "command": "go",
+          "pid": 3285131,
+          "exit": 0,
+          "wait_seconds": 0.04,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:51.892827+00:00",
+          "command": "docker",
+          "pid": 3286849,
+          "exit": 0,
+          "wait_seconds": 0.04,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:51.962619+00:00",
+          "command": "docker",
+          "pid": 3286867,
+          "exit": 0,
+          "wait_seconds": 0.039,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:52.031054+00:00",
+          "command": "docker",
+          "pid": 3286884,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:52.101107+00:00",
+          "command": "docker",
+          "pid": 3286901,
+          "exit": 0,
+          "wait_seconds": 0.039,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:52.168648+00:00",
+          "command": "docker",
+          "pid": 3286916,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:52.234755+00:00",
+          "command": "docker",
+          "pid": 3286933,
+          "exit": 0,
+          "wait_seconds": 0.039,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:52.302301+00:00",
+          "command": "docker",
+          "pid": 3286950,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:52.370673+00:00",
+          "command": "docker",
+          "pid": 3286967,
+          "exit": 0,
+          "wait_seconds": 0.039,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:52.438007+00:00",
+          "command": "make",
+          "pid": 3286984,
+          "exit": 0,
+          "wait_seconds": 0.039,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:49:52.498435+00:00",
+          "command": "docker",
+          "pid": 3286996,
+          "exit": 0,
+          "wait_seconds": 0.039,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:50:14.208215+00:00",
+          "command": "docker",
+          "pid": 3287954,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:50:14.310988+00:00",
+          "command": "docker",
+          "pid": 3288011,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:50:14.383750+00:00",
+          "command": "docker",
+          "pid": 3288042,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:50:14.477329+00:00",
+          "command": "docker",
+          "pid": 3288128,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:50:14.664515+00:00",
+          "command": "docker",
+          "pid": 3288283,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:50:14.950688+00:00",
+          "command": "docker",
+          "pid": 3288304,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:50:15.043509+00:00",
+          "command": "docker",
+          "pid": 3288324,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:50:15.110186+00:00",
+          "command": "docker",
+          "pid": 3288378,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:50:15.176827+00:00",
+          "command": "docker",
+          "pid": 3288302,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:50:15.351524+00:00",
+          "command": "docker",
+          "pid": 3288605,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:50:15.440004+00:00",
+          "command": "docker",
+          "pid": 3288621,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:50:15.505963+00:00",
+          "command": "docker",
+          "pid": 3288637,
+          "exit": 0,
+          "wait_seconds": 0.037,
+          "answer": "free"
+        },
+        {
+          "timed_section_active": false,
+          "at": "2026-11-04T16:50:15.573547+00:00",
+          "command": "docker",
+          "pid": 3288653,
+          "exit": 0,
+          "wait_seconds": 0.038,
+          "answer": "free"
+        },
+        {
+          "at": "2026-11-04T16:37:14.866309+00:00",
+          "exit": 1,
+          "answer": "held"
+        },
+        {
+          "at": "2026-11-04T16:38:14.931308+00:00",
+          "exit": 1,
+          "answer": "held"
+        },
+        {
+          "at": "2026-11-04T16:39:14.993302+00:00",
+          "exit": 1,
+          "answer": "held"
+        },
+        {
+          "at": "2026-11-04T16:40:15.058760+00:00",
+          "exit": 1,
+          "answer": "held"
+        },
+        {
+          "at": "2026-11-04T16:41:15.124165+00:00",
+          "exit": 1,
+          "answer": "held"
+        },
+        {
+          "at": "2026-11-04T16:42:15.190439+00:00",
+          "exit": 1,
+          "answer": "held"
+        },
+        {
+          "at": "2026-11-04T16:43:15.259779+00:00",
+          "exit": 1,
+          "answer": "held"
+        },
+        {
+          "at": "2026-11-04T16:44:15.326965+00:00",
+          "exit": 1,
+          "answer": "held"
+        },
+        {
+          "at": "2026-11-04T16:45:15.393982+00:00",
+          "exit": 1,
+          "answer": "held"
+        },
+        {
+          "at": "2026-11-04T16:46:15.460204+00:00",
+          "exit": 1,
+          "answer": "held"
+        },
+        {
+          "at": "2026-11-04T16:47:15.524792+00:00",
+          "exit": 1,
+          "answer": "held"
+        },
+        {
+          "at": "2026-11-04T16:48:15.591168+00:00",
+          "exit": 0,
+          "answer": "free"
+        },
+        {
+          "at": "2026-11-04T16:48:45.755879+00:00",
+          "exit": 0,
+          "answer": "free"
+        },
+        {
+          "at": "2026-11-04T16:49:19.137213+00:00",
+          "exit": 0,
+          "answer": "free"
+        }
+      ],
+      "gates": [
+        {
+          "name": "01-area-lint",
+          "command": [
+            "make",
+            "-f",
+            "mk/at-members.mk",
+            "at-members-lint"
+          ],
+          "started_at": "2026-11-04T16:34:29.269220+00:00",
+          "ended_at": "2026-11-04T16:34:31.948925+00:00",
+          "elapsed_seconds": 2.68,
+          "exit": 0,
+          "log_bytes": 0,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "output_tail": ""
+        },
+        {
+          "name": "02-e2e-lint",
+          "command": [
+            "make",
+            "-f",
+            "mk/e2e.mk",
+            "e2e-lint"
+          ],
+          "started_at": "2026-11-04T16:34:55.252031+00:00",
+          "ended_at": "2026-11-04T16:34:59.034709+00:00",
+          "elapsed_seconds": 3.783,
+          "exit": 0,
+          "log_bytes": 420,
+          "log_sha256": "dc22eabf4527c6a9e71b1d23615e41a43e4215ba7a00c654ae8da06245a26dea",
+          "output_tail": "cd <worktree> && go vet ./tests/e2e/...\ncd <worktree> && go vet -tags e2e ./tests/e2e/...\ncd <worktree> && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/...\ncd <worktree> && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e ./tests/e2e/..."
+        },
+        {
+          "name": "03a-members",
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "./tests/e2e/at/members/..."
+          ],
+          "started_at": "2026-11-04T16:35:21.107490+00:00",
+          "ended_at": "2026-11-04T16:36:05.369739+00:00",
+          "elapsed_seconds": 44.262,
+          "exit": 0,
+          "log_bytes": 143,
+          "log_sha256": "4b5451224b7a6726a6714eb32eb3c9213c0bebfa1e6c74a288203f45964a2e5a",
+          "output_tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members\t43.876s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe\t0.002s"
+        },
+        {
+          "name": "03b-members-e2e",
+          "command": [
+            "go",
+            "test",
+            "-count=1",
+            "-tags",
+            "e2e",
+            "./tests/e2e/at/members/..."
+          ],
+          "started_at": "2026-11-04T16:36:12.383092+00:00",
+          "ended_at": "2026-11-04T16:37:00.103522+00:00",
+          "elapsed_seconds": 47.72,
+          "exit": 0,
+          "log_bytes": 143,
+          "log_sha256": "238447cd7829138f09b17b683c2f408b979704052e1f41bf6211cc62da0e17d1",
+          "output_tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members\t47.168s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe\t0.002s"
+        },
+        {
+          "name": "04-assembled",
+          "command": [
+            "python3",
+            "-B",
+            ".agent/tmp/f24/live.py"
+          ],
+          "started_at": "2026-11-04T16:37:14.780962+00:00",
+          "ended_at": "2026-11-04T16:50:15.662111+00:00",
+          "elapsed_seconds": 780.881,
+          "exit": 2,
+          "log_bytes": 26799,
+          "log_sha256": "16c83df923cf83a7e745a1c91a95cf8d74354da026a11f3088eaa5ce97661c0e",
+          "output_tail": " Container fvpn-w4-members-netbird Removed \n Container fvpn-w4-members-node-netns Stopped \n Container fvpn-w4-members-node-netns Removing \n Container fvpn-w4-members-node-netns Removed \n Volume fvpn-w4-members-nb Removing \n Volume fvpn-w4-members-pgbackrest-repo Removing \n Volume fvpn-w4-members-pg Removing \n Network fvpn-w4-members-origin Removing \n Network fvpn-w4-members Removing \n Volume fvpn-w4-members-pgbackrest-repo Removed \n Volume fvpn-w4-members-pg Removed \n Volume fvpn-w4-members-nb Removed \n Network fvpn-w4-members-origin Removed \n Network fvpn-w4-members Removed \ne2e stack is down\nOwned teardown exit: 0 inventory: {\"containers\": {\"exit\": 0, \"owned\": []}, \"networks\": {\"exit\": 0, \"owned\": []}, \"volumes\": {\"exit\": 0, \"owned\": []}, \"images\": {\"exit\": 0, \"owned\": []}}"
+        }
+      ],
+      "acceptance_log": {
+        "bytes": 2462,
+        "sha256": "b1148a7f9447c11a53e48b0e578c23de1512ac68b0e6ce0f719407b6147cb3f6",
+        "tail": "    --- PASS: TestAT02_CounterTimingRejectsUnattributableSamples/zero_clock (0.00s)\n    --- PASS: TestAT02_CounterTimingRejectsUnattributableSamples/reversed_clock (0.00s)\n    --- PASS: TestAT02_CounterTimingRejectsUnattributableSamples/wrong_boot (0.00s)\n    --- PASS: TestAT02_CounterTimingRejectsUnattributableSamples/missing_record (0.00s)\n    --- PASS: TestAT02_CounterTimingRejectsUnattributableSamples/changed_record (0.00s)\n=== RUN   TestAT09_D146RequiresCompleteSameRunClampEvidence\n--- PASS: TestAT09_D146RequiresCompleteSameRunClampEvidence (0.13s)\n=== RUN   TestAT20_F12DistributionIsNotSameResolverCacheFailure\n--- PASS: TestAT20_F12DistributionIsNotSameResolverCacheFailure (0.00s)\n=== RUN   TestAT20_F12NegativePrecisionAndOutstandingCompletion\n--- PASS: TestAT20_F12NegativePrecisionAndOutstandingCompletion (0.00s)\n=== RUN   TestEvidenceGzipLosslessAndPins\n--- PASS: TestEvidenceGzipLosslessAndPins (0.09s)\n=== RUN   TestCommittedEvidenceHygiene\nmake: *** [mk/at-members.mk:14: at-members] Error 241"
+      }
+    },
+    {
+      "attempt": 2,
+      "kind": "sole live acceptance; permitted pre-check retry",
+      "host_preflight": {
+        "at": "2026-11-04T16:53:26.453097+00:00",
+        "baseline_commit": "df61fd68add1678729ef32ae1ef93719124035e3",
+        "harness_commit": "55588821291e335ef72fbd7fe1f5ff052dea92bf",
+        "main_ref_at_preflight": "df61fd68add1678729ef32ae1ef93719124035e3",
+        "gocache": "<home>/.cache/go-build",
+        "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 2  0 3082172 12499124 2938984 158423752    8   30 14775 28085 26100   22  4  2 93  1  0  0\n 4  0 3082172 12602300 2938996 158424136    0    0     1  4129 21022 18408  6  2 92  0  0  0\n 1  0 3082172 12916904 2939008 158425772    0    0     1  1823 23264 22847  5  2 92  0  0  0\n 0  0 3082172 12873636 2939016 158414388    0    0     0 14770 12247 11759  3  1 95  0  0  0\n 0  0 3082172 13144784 2939024 158414416    0    0     0   580 3028 4435  0  0 100  0  0  0\n 0  0 3082172 13431128 2939032 158416112    0    0     0   225 3444 4646  1  1 98  0  0  0\n 0  0 3082172 13731632 2939040 158416512    0    0     0  1449 3883 6626  0  0 99  1  0  0\n",
+        "process_command": "ps -eo pid,etimes,args | grep -E '[g]ates\\.sh|[m]k/at-|[n]ode-test-netlab|[n]etlab-test|[e]2e-test'",
+        "foreign_processes": [],
+        "raw_process_output": "Private; public foreign inventory contains pid, comm and ticks only"
+      },
+      "command_start": {
+        "at": "2026-11-04T16:54:29.765248+00:00"
+      },
+      "command_end": {
+        "at": "2026-11-04T17:41:04.975195+00:00",
+        "exit": 2
+      },
+      "cleanup": {
+        "at": "2026-11-04T17:52:49.582078+00:00",
+        "exports": [
+          {
+            "role": "node",
+            "file": "enforcement-timing.jsonl",
+            "exit": 0
+          },
+          {
+            "role": "node",
+            "file": "agent.log",
+            "exit": 0
+          },
+          {
+            "role": "node",
+            "file": "watchdog.log",
+            "exit": 0
+          },
+          {
+            "role": "node2",
+            "file": "enforcement-timing.jsonl",
+            "exit": 0
+          },
+          {
+            "role": "node2",
+            "file": "agent.log",
+            "exit": 0
+          },
+          {
+            "role": "node2",
+            "file": "watchdog.log",
+            "exit": 0
+          }
+        ],
+        "teardown_exit": 0,
+        "inventory": {
+          "containers": {
+            "exit": 0,
+            "owned": []
+          },
+          "networks": {
+            "exit": 0,
+            "owned": []
+          },
+          "volumes": {
+            "exit": 0,
+            "owned": []
+          },
+          "images": {
+            "exit": 0,
+            "owned": []
+          }
+        }
+      }
+    }
+  ]
+}

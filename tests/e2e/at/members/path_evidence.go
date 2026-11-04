@@ -202,10 +202,13 @@ func parseControlTCP(raw []byte, address, port string) []tcpControlView {
 }
 
 type storedObservation struct {
-	ReceivedAt  time.Time `json:"received_at"`
-	ReportID    string    `json:"report_id"`
-	Generation  *string   `json:"generation"`
-	Incarnation string    `json:"incarnation"`
+	ReceivedAt  time.Time  `json:"received_at"`
+	ReportID    string     `json:"report_id"`
+	ObservedAt  *time.Time `json:"observed_at,omitempty"`
+	Forwarding  *bool      `json:"member_forwarding_enabled,omitempty"`
+	Reasons     []string   `json:"forwarding_block_reasons"`
+	Generation  *string    `json:"generation"`
+	Incarnation string     `json:"incarnation"`
 }
 
 func observationsInWindow(raw []byte, start, end time.Time) []storedObservation {
@@ -224,8 +227,8 @@ func observationsInWindow(raw []byte, start, end time.Time) []storedObservation 
 
 var logTime = regexp.MustCompile(`(?:^|\s)time=([^\s]+)`)
 
-// Current agent code has no per-submission log event. Preserve coverage and
-// explicitly report that absence instead of presenting zero submissions.
+// Coverage fallback only. The live companion parser adds documented receipts;
+// a failed extraction must remain unavailable, never zero submissions.
 func observationLogWindow(before, after []byte, start, end time.Time) map[string]any {
 	var first, last *time.Time
 	lines := 0
@@ -247,5 +250,5 @@ func observationLogWindow(before, after []byte, start, end time.Time) map[string
 		}
 	}
 	prefix := len(after) >= len(before) && string(after[:len(before)]) == string(before)
-	return map[string]any{"submission_events_available": false, "reason": "agent observe/flush and controlclient do not log individual submission times or outcomes", "start_bytes": strconv.Itoa(len(before)), "end_bytes": strconv.Itoa(len(after)), "start_content_retained_as_prefix": prefix, "overwrite_or_replacement_detected": !prefix, "first_retained_log_time": first, "last_retained_log_time": last, "timestamped_lines_in_window": lines, "window_start": start, "window_end": end, "coverage_limit": "timestamps bound retained log lines, not silent periods; replacement can lose the prefix; a shorter or replaced log cannot prove all submissions"}
+	return map[string]any{"submission_events_available": false, "reason": "receipt parser unavailable; coverage metadata only", "start_bytes": strconv.Itoa(len(before)), "end_bytes": strconv.Itoa(len(after)), "start_content_retained_as_prefix": prefix, "overwrite_or_replacement_detected": !prefix, "first_retained_log_time": first, "last_retained_log_time": last, "timestamped_lines_in_window": lines, "window_start": start, "window_end": end, "coverage_limit": "timestamps bound retained log lines, not silent periods; replacement can lose the prefix; a shorter or replaced log cannot prove all submissions"}
 }

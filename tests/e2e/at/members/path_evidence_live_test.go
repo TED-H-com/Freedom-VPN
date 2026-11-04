@@ -3,6 +3,7 @@
 package members
 
 import (
+	"bytes"
 	"encoding/json"
 	"net"
 	"net/netip"
@@ -132,6 +133,16 @@ func (w *nativeRowWindow) stop() {
 	end := time.Now().UTC()
 	raw, err := w.l.d146ObservationWindow(w.start, end)
 	logs := observationLogWindow(w.beforeLog, after, w.start, end)
+	input, _ := json.Marshal(map[string]any{"before": string(w.beforeLog), "after": string(after), "start": w.start, "end": end, "observations": observationsInWindow(raw, w.start, end)})
+	cmd := exec.CommandContext(w.l.ctx, "python3", "-B", "tests/e2e/at/members/observation_records.py")
+	cmd.Dir, cmd.Stdin = w.l.root, bytes.NewReader(input)
+	parsed, parseErr := cmd.Output()
+	if parseErr == nil && json.Unmarshal(parsed, &logs) == nil {
+		logs["extraction_ok"] = true
+	} else {
+		logs["extraction_ok"] = false
+		logs["reason"] = "observation receipt extraction unavailable"
+	}
 	logs["start_export_ok"] = w.beforeLogOK
 	logs["end_export_ok"] = logOK
 	out := map[string]any{"row": w.label, "fixture": w.kind, "node_role": w.role, "started_at": w.start, "ended_at": end, "stored_observations_read_ok": err == nil, "stored_observations": observationsInWindow(raw, w.start, end), "agent_log": logs, "control_path_start": w.beforePath, "control_path_end": endPath, "fixture_path_assessment": fixtureControlAssessment(w.kind, w.beforePath, endPath)}

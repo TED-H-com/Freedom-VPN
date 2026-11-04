@@ -1,3 +1,30 @@
+# Follow-up 24 results — 2026-11-04
+
+Run `dee8492f-4a7e-4f3c-9063-3ab27f66dcec`, measured source `55588821291e335ef72fbd7fe1f5ff052dea92bf`, baseline `df61fd68add1678729ef32ae1ef93719124035e3`: **3 / 7 / 0 cases (PASS / BLOCKED / FAIL); 708 / 6 / 0 subchecks**. One live assembled acceptance, after the sole permitted pre-check retry; no case retry. Original predicates, the strict 15 s freshness bound, report/lease joins and traffic checks are unchanged.
+
+[Dated analysis](followup24-2026-11-04.md), [all original subchecks](F24-subchecks.md), [result index](F24-results.json), [verification receipts](F24-verification.md).
+
+The [follow-up 23 archive](history/follow-up-23/INDEX.md) preserves all 145 regular root records byte-for-byte, including gzip and SHA-256 pins. `6a25221b` remains **3/7/0 cases and 706/8/0 subchecks**; `3eb3960d` and every earlier archive/dated note retain their original outcomes. Historical sections below describe those runs; use their frozen archives for the corresponding case payloads.
+
+| Case | Status | Passed / blocked / failed subchecks |
+|---|---|---|
+| AT05 | blocked | 31 / 0 / 0 |
+| AT01 | blocked | 23 / 0 / 0 |
+| AT02 | pass | 193 / 0 / 0 |
+| AT03 | pass | 98 / 0 / 0 |
+| AT04 | blocked | 113 / 0 / 0 |
+| AT08 | pass | 36 / 0 / 0 |
+| AT20 | blocked | 89 / 0 / 0 |
+| AT21 | blocked | 13 / 0 / 0 |
+| AT22 | blocked | 40 / 0 / 0 |
+| AT09 | blocked | 72 / 6 / 0 |
+
+**F22-D146 closes for the tested D-162 cadence:** dual/IPv4 1280 indexes **44 and 46 PASS**, with serving observation age **0.739651 s**. IPv6 and IPv4 ages are **6.849400 s** and **1.441758 s**; all pass the unchanged strict 15 s bound. Nine native windows retain all **18 reports, 18 enqueues and 18 attempts**, complete report-ID joins and no row-log overwrite. Prepared regular-node configs explicitly use **5 s**; this is TEST ONLY and the product default remains **30 s**. [Series, states, intervals and attempts](F24-observation-windows.json), [serving read joins](F24-serving-read-records.json), [config pins](F24-observation-config.json).
+
+AT01 and AT08 initial transfers are counted, with both endpoint paths and original packet joins retained. F11-01 stays **OPEN/upstream-dependent (D-148)**, and the historical node packet 158/member packet 161 evidence stays with that owner. AT02's closed recovery is Apply **540 → renewal 545 → populated lease → serving Apply 546**, deny-all **187.308830 ms / seven losses**; its report is enqueued for `closed_recovery_binding` and accepted on attempt 1. AT09 indexes **25 BLOCKED, 26 PASS, 27 PASS**, with all **12** post-restart reports retained; D-067's grant-less provisional path remains unexercised. No retained F48-01 signature; **30 writes / zero 412s**, each accepted on its first attempt. Combined-change attribution is limited to what the records support.
+
+Only AT09 indexes 44 and 46 change subcheck status from `6a25221b`; every case status is unchanged. [Original-index comparison and runtime label differences](F24-comparison.json). The four D-133 foreign-activity windows are confined to teardown, with no intersecting acceptance case. Cleanup leaves zero owned Docker inventory.
+
 # Follow-up 23 results — 2026-11-04
 
 Run `6a25221b-1dcf-4f4d-b866-cd04f57f58f6`, measured source `8bde2b6acc0b116515148eeb0ff4448c65453a92`, baseline/current main at preflight `c148cf349df219124e457113ce90c010016a308e`. **3 PASS / 7 BLOCKED / 0 FAIL; 706 passed / 8 blocked / 0 failed subchecks**. No predicate changed, no case retried. [All original subchecks](F23-subchecks.md), [result index](F23-results.json), [verification receipts](F23-verification.md).
