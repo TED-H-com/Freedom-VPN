@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal"
 	"github.com/TED-H-com/Freedom-VPN/node/nodelock"
 	"github.com/TED-H-com/Freedom-VPN/node/updater"
 	"github.com/google/uuid"
@@ -85,5 +86,37 @@ func TestD155_RecoverCLIExitAndStderrUnderHeldLock(t *testing.T) {
 				t.Fatalf("stdout=%q stderr=%q, want empty stdout and %q", &stdout, &stderr, want)
 			}
 		})
+	}
+}
+
+func TestD155_StatusRemainsReadOnlyUnderHeldLock(t *testing.T) {
+	lay, cfg, _, _, seedArgs := seedCLIInputs(t)
+	var before, stderr bytes.Buffer
+	if code := run(seedArgs, &before, &stderr); code != 0 {
+		t.Fatalf("seed: exit %d, %s", code, &stderr)
+	}
+	before.Reset()
+	args := []string{"status", "-config", cfg}
+	if code := run(args, &before, &stderr); code != 0 {
+		t.Fatalf("status before lock: exit %d, %s", code, &stderr)
+	}
+	lk, err := nodelock.TryAcquire(lay.Lock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer lk.Release()
+	for _, args := range [][]string{args, {"status", "-journal", filepath.Join(lay.Journal, updatejournal.FileName)}} {
+		var during, stderr bytes.Buffer
+		if code := run(args, &during, &stderr); code != 0 || stderr.Len() != 0 || !bytes.Equal(before.Bytes(), during.Bytes()) {
+			t.Fatalf("status under lock: exit %d, stdout=%s stderr=%s; want %s", code, &during, &stderr, &before)
+		}
+	}
+	missing := filepath.Join(lay.Journal, "missing", updatejournal.FileName)
+	var out bytes.Buffer
+	if code := run([]string{"status", "-journal", missing}, &out, &stderr); code != 1 {
+		t.Fatalf("status of absent journal under lock: exit %d, want 1", code)
+	}
+	if _, err := os.Stat(filepath.Dir(missing)); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("status created missing journal directory: %v", err)
 	}
 }

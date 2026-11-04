@@ -202,10 +202,12 @@ func (e *Engine) Flush(ctx context.Context) error {
 	if e.Sender == nil {
 		return permanent(apierr.ValidationFailed, "result_url is required for result delivery")
 	}
-	if err := e.open(ctx); err != nil {
-		return err
-	}
-	return e.withLock(ctx, func() error { return e.flushLocked(ctx) })
+	return e.withLock(ctx, func() error {
+		if err := e.open(ctx); err != nil {
+			return err
+		}
+		return e.flushLocked(ctx)
+	})
 }
 
 func (e *Engine) flushLocked(ctx context.Context) error {

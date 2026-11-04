@@ -57,15 +57,15 @@ func (e *Engine) ApplyPending(ctx context.Context, path string) error {
 	if strings.TrimSpace(path) == "" {
 		return errors.New("updater: pending path is required")
 	}
-	if err := e.open(ctx); err != nil {
-		return err
-	}
 	var err error
 	path, err = filepath.Abs(path)
 	if err != nil {
 		return err
 	}
 	return e.withLock(ctx, func() error {
+		if err := e.open(ctx); err != nil {
+			return err
+		}
 		// Recovery may seal this very pending job and consume its record.
 		rec, readErr := readPending(path)
 		_, before := os.Lstat(path)
