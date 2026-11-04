@@ -1,0 +1,53 @@
+{
+  "source_commit": "c148cf349df219124e457113ce90c010016a308e",
+  "proofs": [
+    {
+      "path": "tests/e2e/at/secops/fault_lease_test.go",
+      "name": "TestAT29_FaultLease18"
+    },
+    {
+      "path": "tests/e2e/at/secops/fault_lease_test.go",
+      "name": "TestAT29_HistoricalStaleLease18"
+    },
+    {
+      "path": "tests/e2e/at/members/peer_summary_test.go",
+      "name": "TestAT08_SelectedPeerSummaryDropsIdentity"
+    },
+    {
+      "path": "tests/e2e/at/members/peer_summary_test.go",
+      "name": "TestAT08_MissingSelectedPeerIsNeverConnected"
+    },
+    {
+      "path": "tests/e2e/at/members/serving_diagnostic_test.go",
+      "name": "TestD146_LaterServingReadClassifiesEveryCondition"
+    },
+    {
+      "path": "tests/e2e/timing_test.go",
+      "name": "TestD160_AdmissionPrecedesSectionAndNeverRunsInside"
+    },
+    {
+      "path": "tests/e2e/timing_test.go",
+      "name": "TestD160_HeldBeforeSectionWaitsBeforeStart"
+    },
+    {
+      "path": "tests/e2e/updater_invocations_test.go",
+      "name": "TestD158_TwoUpdaterInvocationOutputsSurvive"
+    },
+    {
+      "path": "tests/handover/handover_test.go",
+      "name": "TestHandover_Followup44Claims"
+    },
+    {
+      "path": "tests/e2e/evidence_test.go",
+      "name": "TestCommittedFixtureEvidence_ValidAndHygieneClean"
+    },
+    {
+      "path": "node/updater/followup25_test.go",
+      "name": "TestD158_CommandsProceedAfter600msHolder"
+    },
+    {
+      "path": "node/updater/followup25_test.go",
+      "name": "TestD158_StaleWindowStartsAtFirstStaleAnswer"
+    }
+  ]
+}
