@@ -1,7 +1,32 @@
 # Operations Runbooks Index (`docs/ops/`)
 
-**Current cut — [follow-up 42](../handover/follow-up-42.md) (2026-11-03 EST):** #439–#445 at 5a942aa1; D-153 closes D-150 with no comparison, D-154 compares zero normally; r27/r28 archived, 57 decisions and 113 findings. Isolation c52bea6c records 26 pass / 2 blocked / 1 fail; historical verdicts stay unchanged. See [r28 H-1 known behaviour](../handover/operator-guide.md#r28-h-1). Secops 15, agent-core 48 and r29 are status only.
-**Previous cut — [follow-up 41](../handover/follow-up-41.md):** #435–#438 at c359d4a9; 14 subtests, 101 immutable records, 36 Go declarations; 55 decisions and 105 findings.
+**Current cut — [follow-up 43](../handover/follow-up-43.md) (2026-11-04 EST):** #446–#456 at 04d31ea5; D-155/D-156 fixes merged, F30-01 acceptance pending; D-157 routed, no merged fix. 60 decisions, 124 findings; r29 archived. AT29 failed at setup. See [update recovery](../handover/operator-guide.md#f30-01), [r28 H-1 fixed](../handover/operator-guide.md#r28-h-1), [release rule](../handover/operator-guide.md#d156-release-rule) and [closed-recovery interval](../handover/operator-guide.md#at02-closed-recovery).
+**Previous cut — [follow-up 42](../handover/follow-up-42.md):** #439–#445 at 5a942aa1; 15 subtests, 57 decisions and 113 findings; historical verdicts unchanged.
+
+## Follow-up 43 acceptance snapshot (2026-11-04 EST)
+
+Cut **#446–#456**, main **04d31ea5**, eleven briefed PRs, no unbriefed PR.
+[Evidence and routing](../handover/follow-up-43.md). Earlier snapshot sections
+below describe their own cuts and are not current acceptance statuses.
+
+| Item | Result and boundary |
+|---|---|
+| Handover 42 #449 | Previous #439–#445 cut: 15 subtests, seven final rows/PR excerpts, ten #440 inputs, 59 records, 19 prose copies, 31 main declarations; 57 decisions / 113 findings. |
+| Updater 24 #446 / agent-core 49 #454 | Both F30-01 halves merged under D-155; exact live-lock ExitBusy 3, deferred/retried tracked recovery. Acceptance/quarantine closure remains pending devstack 34. |
+| Agent-core 48 #447 | r28 H-1, r27 H-1/M-1/L-1, R23 heartbeat budget fixed. Lab 12 pass / 1 fail / 1 optional skip found pre-existing F48-01; #454 fixes it under D-156, lab 13/13 on one attempt. |
+| Secops 15 #448 | Six shared writes; manual withdrawal through revokeMemberGrant and one live AT29 transport run. Four runnable cases pass; then blocked only on guest_clock_rollback. Superseded by #456 below. |
+| Enrollment #450 / updates #451 / usage #453 | Shared helper, exact predicates, receipts and AST audits adopted at all assigned sites; offline only. Usage review fix restores 202-only statuses at seven checks. |
+| Isolation 21 #452 | 7599576e: 26 pass / 3 blocked / 0 fail. Short whole-node expiry passes D-140 and qualifies D-142; historical F20-01 stays failed. M-1 check merged but Isolation F21-01 probe window not reached. 15 first-attempt writes. |
+| Members 21 #455 | 5715939e: 2 pass / 8 blocked / 0 fail; 705 / 8 / 0 subchecks. AT09 27/26 pass, 25 not exercised; AT02 accounting/recovery pass. Remaining interval under D-157; F21-AT08/F21-D146 routed. 30 first-attempt writes. |
+| Secops 16 #456 | 1bfd5cff: new control_lost_agent_alive fails setup, SECOPS-F16-01. No fresh short lease in 90 s after cap change, no outage. AT29 failed; original four pass, clock guest blocked. AT31 bounded relay row passes, overall blocked. |
+| Decisions / findings | 60 decisions, earlier 57 unchanged; 124 findings, 11 updated / 11 added / 102 unchanged. AT29 needed a new standalone row. Every historical failure stays failed. |
+| Running at cutoff | Devstack 34, isolation 22, secops 17, agent-core 50: status only; later results are after the cutoff. |
+
+Operator statements are maintained once: [F30-01 and exit statuses](../handover/operator-guide.md#f30-01),
+[r28 H-1 fixed](../handover/operator-guide.md#r28-h-1),
+[D-156 release rule](../handover/operator-guide.md#d156-release-rule),
+[AT02 closed-recovery interval](../handover/operator-guide.md#at02-closed-recovery).
+No date is promised for unmerged work.
 
 ## Follow-up 42 acceptance snapshot (2026-11-03 EST)
 

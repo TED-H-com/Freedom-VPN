@@ -1,7 +1,7 @@
 # Freedom VPN
 
-**Current cut — [follow-up 42](docs/handover/follow-up-42.md) (2026-11-03 EST):** #439–#445 at 5a942aa1; D-153 closes D-150 with no comparison, D-154 compares zero normally; r27/r28 archived, 57 decisions and 113 findings. Isolation c52bea6c records 26 pass / 2 blocked / 1 fail; historical verdicts stay unchanged. See [r28 H-1 known behaviour](docs/handover/operator-guide.md#r28-h-1). Secops 15, agent-core 48 and r29 are status only.
-**Previous cut — [follow-up 41](docs/handover/follow-up-41.md):** #435–#438 at c359d4a9; 14 subtests, 101 immutable records, 36 Go declarations; 55 decisions and 105 findings.
+**Current cut — [follow-up 43](docs/handover/follow-up-43.md) (2026-11-04 EST):** #446–#456 at 04d31ea5; D-155/D-156 fixes merged, F30-01 acceptance pending; D-157 routed, no merged fix. 60 decisions, 124 findings; r29 archived. AT29 failed at setup. See [update recovery](docs/handover/operator-guide.md#f30-01), [r28 H-1 fixed](docs/handover/operator-guide.md#r28-h-1), [release rule](docs/handover/operator-guide.md#d156-release-rule) and [closed-recovery interval](docs/handover/operator-guide.md#at02-closed-recovery).
+**Previous cut — [follow-up 42](docs/handover/follow-up-42.md):** #439–#445 at 5a942aa1; 15 subtests, 57 decisions and 113 findings; historical verdicts unchanged.
 
 Freedom VPN is a member-based, multi-region VPN platform for a small paid community, starting at about 20 members. Every exit node runs the same node package and joins one central control plane, whether it is a pre-installed box, a cloud Ubuntu VM or any other Ubuntu host.
 

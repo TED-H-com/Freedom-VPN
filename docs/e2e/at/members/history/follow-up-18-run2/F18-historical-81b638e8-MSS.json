@@ -1,0 +1,539 @@
+{
+  "scope": "Additive header analysis. Every historical outcome, including failed F8-02 cases and blocked receive-only rows, is unchanged.",
+  "pins": {
+    "history/follow-up-17-captures/81b638e8-be59-4996-9594-14dd402ebb86/headers/matrix1280/member.headers.jsonl": "e7cb91be183db3a490c3805611ea5e8d633404e399d8002127ef2fe256449337",
+    "history/follow-up-17-captures/81b638e8-be59-4996-9594-14dd402ebb86/headers/matrix1280/origin.headers.jsonl": "9fdccb5967e867e975038c319f65dae894ca97f4f77aaba7226478adf6aafc02",
+    "history/follow-up-17-captures/81b638e8-be59-4996-9594-14dd402ebb86/matrix1280.json": "1b5083b185d95c85c1a3ce1638ccdd2ca7f33aecfca08fdabd0ca0362f400829",
+    "history/follow-up-17-captures/81b638e8-be59-4996-9594-14dd402ebb86/headers/ipv6-asymmetric/member.headers.jsonl": "021dd5998ee009272d904e1849e5a7194bca47030c8a59ec42d5c17c36a9e350",
+    "history/follow-up-17-captures/81b638e8-be59-4996-9594-14dd402ebb86/headers/ipv6-asymmetric/origin.headers.jsonl": "da5313dea93a4fde49befc40b8adfbdf78ada5c3d3242b73605021fb930563e4",
+    "history/follow-up-17-captures/81b638e8-be59-4996-9594-14dd402ebb86/ipv6-asymmetric.json": "cc5b98f3e2109013d3d943ba2e75281f79aeb6388d2f6a94f16320ea83a06db5",
+    "tests/e2e/cmd/fvpn-e2e-fixture-probe/main.go": "87558ac4eaebba736fa4207c15a8fdb8c9b9cdde838be6e723e537bdbbfaa541",
+    "tests/e2e/cmd/fvpn-e2e-origin/member_echo.go": "d293c144c51570707f62ae4dcb80ca9a19594e0d3c86778b50d078cf4387e1f2"
+  },
+  "rows": [
+    {
+      "row": "matrix1280",
+      "run_id": "81b638e8-be59-4996-9594-14dd402ebb86",
+      "source_commit": "3ba0856487288b9be3cf81f3e3afa37b0fa43a47",
+      "historical_status": "blocked",
+      "selected": {
+        "connected": true,
+        "connection_type": "P2P",
+        "chosen_family": "ipv4"
+      },
+      "bulk": {
+        "dns_wire_id": 0,
+        "authority_serial": 0,
+        "endpoint": {
+          "at": "2026-11-03T08:52:55.901677512Z",
+          "local_port": 50316,
+          "remote_port": 9446,
+          "read_bytes": 64387,
+          "write_bytes": 64108,
+          "complete_lines": 64,
+          "partial_line_bytes": 0,
+          "error": "none",
+          "tcp_info": {
+            "bytes_acked": 64109,
+            "bytes_received": 64387,
+            "lost": 0,
+            "notsent_bytes": 0,
+            "rcv_mss": 1006,
+            "rcv_space": 12280,
+            "retrans": 0,
+            "rto_us": 201000,
+            "rtt_us": 163,
+            "sacked": 0,
+            "snd_cwnd": 63,
+            "snd_mss": 1228,
+            "snd_wnd": 68608,
+            "state": 1,
+            "total_retrans": 0,
+            "unacked": 0
+          }
+        },
+        "authority_ttl": 0,
+        "has_soa": false,
+        "available": true,
+        "rcode": -1,
+        "types": [],
+        "ttls": [],
+        "address_classes": [],
+        "expected_answer": false,
+        "connected": true,
+        "bytes": 64064,
+        "milliseconds": 1
+      },
+      "endpoint_handshakes": {
+        "member": [
+          {
+            "packet": 745,
+            "timestamp": "1793695975.900117",
+            "sent": true,
+            "tcp": {
+              "src_port": 50316,
+              "dst_port": 9446,
+              "seq": 3777620867,
+              "ack": 0,
+              "flags": 2,
+              "window": 64480,
+              "header_length": 40,
+              "length": 0,
+              "options": [
+                {
+                  "kind": 2,
+                  "length": 4,
+                  "mss": 1240
+                },
+                {
+                  "kind": 4,
+                  "length": 2
+                },
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 3396880227,
+                  "tsecr": 0
+                },
+                {
+                  "kind": 3,
+                  "length": 3,
+                  "window_scale": 10
+                }
+              ]
+            },
+            "mss": 1240
+          },
+          {
+            "packet": 748,
+            "timestamp": "1793695975.900307",
+            "sent": false,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 50316,
+              "seq": 790744256,
+              "ack": 3777620868,
+              "flags": 18,
+              "window": 65160,
+              "header_length": 40,
+              "length": 0,
+              "options": [
+                {
+                  "kind": 2,
+                  "length": 4,
+                  "mss": 1460
+                },
+                {
+                  "kind": 4,
+                  "length": 2
+                },
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 2940398393,
+                  "tsecr": 3396880227
+                },
+                {
+                  "kind": 3,
+                  "length": 3,
+                  "window_scale": 10
+                }
+              ]
+            },
+            "mss": 1460
+          }
+        ],
+        "origin": [
+          {
+            "packet": 31,
+            "timestamp": "1793695975.900228",
+            "sent": false,
+            "tcp": {
+              "src_port": 50316,
+              "dst_port": 9446,
+              "seq": 3777620867,
+              "ack": 0,
+              "flags": 2,
+              "window": 64480,
+              "header_length": 40,
+              "length": 0,
+              "options": [
+                {
+                  "kind": 2,
+                  "length": 4,
+                  "mss": 1240
+                },
+                {
+                  "kind": 4,
+                  "length": 2
+                },
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 3396880227,
+                  "tsecr": 0
+                },
+                {
+                  "kind": 3,
+                  "length": 3,
+                  "window_scale": 10
+                }
+              ]
+            },
+            "mss": 1240
+          },
+          {
+            "packet": 32,
+            "timestamp": "1793695975.900246",
+            "sent": true,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 50316,
+              "seq": 790744256,
+              "ack": 3777620868,
+              "flags": 18,
+              "window": 65160,
+              "header_length": 40,
+              "length": 0,
+              "options": [
+                {
+                  "kind": 2,
+                  "length": 4,
+                  "mss": 1460
+                },
+                {
+                  "kind": 4,
+                  "length": 2
+                },
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 2940398393,
+                  "tsecr": 3396880227
+                },
+                {
+                  "kind": 3,
+                  "length": 3,
+                  "window_scale": 10
+                }
+              ]
+            },
+            "mss": 1460
+          }
+        ]
+      },
+      "reverse_tcp_payload_lengths": {
+        "member": {
+          "3": 1,
+          "1006": 64
+        },
+        "origin": {
+          "3": 1,
+          "1006": 64
+        }
+      },
+      "reverse_inner_packet_lengths": {
+        "member": {
+          "IP 55; IP header 20; TCP header 32": 1,
+          "IP 1058; IP header 20; TCP header 32": 64
+        },
+        "origin": {
+          "IP 55; IP header 20; TCP header 32": 1,
+          "IP 1058; IP header 20; TCP header 32": 64
+        }
+      },
+      "reverse_outer": {
+        "sizes": {
+          "124": {
+            "sent": 11,
+            "arrived": 11,
+            "absent": 0
+          },
+          "1132": {
+            "sent": 64,
+            "arrived": 64,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth0",
+        "receiver_interface": "eth0",
+        "absent_bounds": []
+      },
+      "ptb": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "fragmentation_needed": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "explanation": "Origin emits one ECHO prefix plus each 1001-byte fixture line per write (1006 bytes). Captured reverse segments are 1006 bytes, independent of the larger advertised MSS ceiling. Inner 20+32+1006=1058 bytes pads to 1072, then WireGuard/UDP/outer IPv4 adds 60 (1132) or IPv6 adds 80 (1152). The matching sizes/counts are consistent with line-sized writes; opaque ciphertext is not mapped to inner segments by timing. No clamp was present or inferred, and this finite transfer did not exercise an oversized reverse segment."
+    },
+    {
+      "row": "ipv6-asymmetric",
+      "run_id": "81b638e8-be59-4996-9594-14dd402ebb86",
+      "source_commit": "3ba0856487288b9be3cf81f3e3afa37b0fa43a47",
+      "historical_status": "blocked",
+      "selected": {
+        "connected": true,
+        "connection_type": "P2P",
+        "chosen_family": "ipv6"
+      },
+      "bulk": {
+        "dns_wire_id": 0,
+        "authority_serial": 0,
+        "endpoint": {
+          "at": "2026-11-03T08:53:08.577214022Z",
+          "local_port": 49168,
+          "remote_port": 9446,
+          "read_bytes": 64387,
+          "write_bytes": 64108,
+          "complete_lines": 64,
+          "partial_line_bytes": 0,
+          "error": "none",
+          "tcp_info": {
+            "bytes_acked": 64109,
+            "bytes_received": 64387,
+            "lost": 0,
+            "notsent_bytes": 0,
+            "rcv_mss": 1006,
+            "rcv_space": 12280,
+            "retrans": 0,
+            "rto_us": 201000,
+            "rtt_us": 171,
+            "sacked": 0,
+            "snd_cwnd": 63,
+            "snd_mss": 1228,
+            "snd_wnd": 68608,
+            "state": 1,
+            "total_retrans": 0,
+            "unacked": 0
+          }
+        },
+        "authority_ttl": 0,
+        "has_soa": false,
+        "available": true,
+        "rcode": -1,
+        "types": [],
+        "ttls": [],
+        "address_classes": [],
+        "expected_answer": false,
+        "connected": true,
+        "bytes": 64064,
+        "milliseconds": 1
+      },
+      "endpoint_handshakes": {
+        "member": [
+          {
+            "packet": 455,
+            "timestamp": "1793695988.575606",
+            "sent": true,
+            "tcp": {
+              "src_port": 49168,
+              "dst_port": 9446,
+              "seq": 3889847049,
+              "ack": 0,
+              "flags": 2,
+              "window": 64480,
+              "header_length": 40,
+              "length": 0,
+              "options": [
+                {
+                  "kind": 2,
+                  "length": 4,
+                  "mss": 1240
+                },
+                {
+                  "kind": 4,
+                  "length": 2
+                },
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 769277651,
+                  "tsecr": 0
+                },
+                {
+                  "kind": 3,
+                  "length": 3,
+                  "window_scale": 10
+                }
+              ]
+            },
+            "mss": 1240
+          },
+          {
+            "packet": 458,
+            "timestamp": "1793695988.575813",
+            "sent": false,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 49168,
+              "seq": 4154028457,
+              "ack": 3889847050,
+              "flags": 18,
+              "window": 65160,
+              "header_length": 40,
+              "length": 0,
+              "options": [
+                {
+                  "kind": 2,
+                  "length": 4,
+                  "mss": 1460
+                },
+                {
+                  "kind": 4,
+                  "length": 2
+                },
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 4183580438,
+                  "tsecr": 769277651
+                },
+                {
+                  "kind": 3,
+                  "length": 3,
+                  "window_scale": 10
+                }
+              ]
+            },
+            "mss": 1460
+          }
+        ],
+        "origin": [
+          {
+            "packet": 31,
+            "timestamp": "1793695988.575728",
+            "sent": false,
+            "tcp": {
+              "src_port": 49168,
+              "dst_port": 9446,
+              "seq": 3889847049,
+              "ack": 0,
+              "flags": 2,
+              "window": 64480,
+              "header_length": 40,
+              "length": 0,
+              "options": [
+                {
+                  "kind": 2,
+                  "length": 4,
+                  "mss": 1240
+                },
+                {
+                  "kind": 4,
+                  "length": 2
+                },
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 769277651,
+                  "tsecr": 0
+                },
+                {
+                  "kind": 3,
+                  "length": 3,
+                  "window_scale": 10
+                }
+              ]
+            },
+            "mss": 1240
+          },
+          {
+            "packet": 32,
+            "timestamp": "1793695988.575749",
+            "sent": true,
+            "tcp": {
+              "src_port": 9446,
+              "dst_port": 49168,
+              "seq": 4154028457,
+              "ack": 3889847050,
+              "flags": 18,
+              "window": 65160,
+              "header_length": 40,
+              "length": 0,
+              "options": [
+                {
+                  "kind": 2,
+                  "length": 4,
+                  "mss": 1460
+                },
+                {
+                  "kind": 4,
+                  "length": 2
+                },
+                {
+                  "kind": 8,
+                  "length": 10,
+                  "tsval": 4183580438,
+                  "tsecr": 769277651
+                },
+                {
+                  "kind": 3,
+                  "length": 3,
+                  "window_scale": 10
+                }
+              ]
+            },
+            "mss": 1460
+          }
+        ]
+      },
+      "reverse_tcp_payload_lengths": {
+        "member": {
+          "3": 1,
+          "1006": 64
+        },
+        "origin": {
+          "3": 1,
+          "1006": 64
+        }
+      },
+      "reverse_inner_packet_lengths": {
+        "member": {
+          "IP 55; IP header 20; TCP header 32": 1,
+          "IP 1058; IP header 20; TCP header 32": 64
+        },
+        "origin": {
+          "IP 55; IP header 20; TCP header 32": 1,
+          "IP 1058; IP header 20; TCP header 32": 64
+        }
+      },
+      "reverse_outer": {
+        "sizes": {
+          "144": {
+            "sent": 14,
+            "arrived": 14,
+            "absent": 0
+          },
+          "1152": {
+            "sent": 64,
+            "arrived": 64,
+            "absent": 0
+          }
+        },
+        "absent_sender_packets": [],
+        "unmatched_receiver_packets": 0,
+        "sender_interface": "eth2",
+        "receiver_interface": "eth1",
+        "absent_bounds": []
+      },
+      "ptb": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "fragmentation_needed": {
+        "member": [],
+        "node": [],
+        "origin": []
+      },
+      "explanation": "Origin emits one ECHO prefix plus each 1001-byte fixture line per write (1006 bytes). Captured reverse segments are 1006 bytes, independent of the larger advertised MSS ceiling. Inner 20+32+1006=1058 bytes pads to 1072, then WireGuard/UDP/outer IPv4 adds 60 (1132) or IPv6 adds 80 (1152). The matching sizes/counts are consistent with line-sized writes; opaque ciphertext is not mapped to inner segments by timing. No clamp was present or inferred, and this finite transfer did not exercise an oversized reverse segment."
+    }
+  ]
+}
