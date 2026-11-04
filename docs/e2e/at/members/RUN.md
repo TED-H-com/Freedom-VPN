@@ -1,3 +1,5 @@
+Final verification: [gate results, link proof and archive audit](F22-verification.md). All required non-live gates pass; live exit 2 retains blocked cases.
+
 # Follow-up 22 run ledger — 2026-11-04
 
 Baseline `55f2765dac6e1c6871045ee6182d6cc23ccf8a33`; measured harness `8a6dcf34248f035a3a460fcdee3e1e19e80c9137`; main at preflight `0d9448800b9e50392b1365a54fed89d4fdb333ba`. PR bodies #454 and #461 were read. #461 implements D-157's one opportunity after central accepts the clean report tied to a verified closed recovery; it is not diagnosis-only. No product or shared-hook change is made by this lane.
