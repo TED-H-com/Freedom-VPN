@@ -1,5 +1,5 @@
 {
-  "scope": "Actual foreground attempts; admission captured separately. Live exit 2 is an acceptance result, not a gate retry. Final hygiene appended after it runs.",
+  "scope": "All nine actual foreground gates in required order; admission captured separately. Live exit 2 is the retained acceptance result, with no rerun. Committed-evidence hygiene passed after records commit d70f3e16.",
   "gates": [
     {
       "name": "01-area-lint",
@@ -121,6 +121,26 @@
       "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "log_bytes": 0,
       "output_tail": ""
+    },
+    {
+      "name": "09-hygiene",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-run",
+        "^TestCommittedEvidenceHygiene$",
+        "-v",
+        "./tests/e2e/at/members/..."
+      ],
+      "started_at": "2026-11-04T04:18:29.568567+00:00",
+      "ended_at": "2026-11-04T04:19:51.565696+00:00",
+      "elapsed_seconds": 81.997,
+      "exit": 0,
+      "log_sha256": "6292aa1ffd8a7257c7ff81b5378ef5e0ef199b271b1d36b432af379ee382b091",
+      "log_bytes": 381,
+      "output_tail": "=== RUN   TestCommittedEvidenceHygiene\n    evidence_test.go:65: scanned 250 acceptance JSON records plus 523 Markdown documents\n--- PASS: TestCommittedEvidenceHygiene (21.61s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members\t21.628s\ntesting: warning: no tests to run\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe\t0.002s [no tests to run]",
+      "admission_wait_seconds": 60.083
     }
   ]
 }

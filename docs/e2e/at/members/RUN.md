@@ -10,6 +10,8 @@ Other gates appeared during startup and during teardown. Those windows remain **
 
 `go env GOCACHE`: **`<home>/.cache/go-build`**, home-relative; no cache override. Disk scratch under `.agent/tmp`; Python `-B`; no new shell cleanup trap. Prefix `fvpn-w4-members-`, port base `24000`. [Teardown and independent four-kind inventory](F21-cleanup.json): **exit 0, zero owned containers/networks/volumes/images**. Shared Postgres was untouched.
 
+Setup used `FVPN_E2E_PREFIX=w4-members`, `FVPN_E2E_PORT_BASE=24000`, `FVPN_E2E_TWO_RESOLVERS=true`, `FVPN_E2E_KERNEL_OBSERVE=1` and `E2E_RESET=1`. The admitted foreground sequence was `make -f mk/e2e.mk e2e-up`, the single `make -f mk/at-members.mk at-members`, producer/log export, then `make -f mk/e2e.mk e2e-down` and independent owned inventory.
+
 Preflight `vmstat 5 7`, begun **2026-11-04T02:50:12.483732+00:00** before the admission wait:
 
 ```text
@@ -63,7 +65,7 @@ Actual live result tail (Go marks blocked cases non-green):
 FAIL	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members	2801.534s
 ```
 
-Gates run in order: area lint; assembled run; offline members; uncached handover; root lint; root vet; gofmt; diff check; committed-evidence hygiene. Root lint uses `make go-lint go-with-disk-tmp=` with the wrapper's disk TMPDIR/GOTMPDIR, retaining the exact checks without the root shell cleanup trap. Gate receipts are added after completion. [Case analysis and limitations](followup21-2026-11-03.md), [requests](requests.md).
+Gates run in order: area lint; assembled run; offline members; uncached handover; root lint; root vet; gofmt; diff check; committed-evidence hygiene. Root lint uses `make go-lint go-with-disk-tmp=` with the wrapper's disk TMPDIR/GOTMPDIR, retaining the exact checks without the root shell cleanup trap. All nine gate receipts are complete. [Case analysis and limitations](followup21-2026-11-03.md), [requests](requests.md).
 
 Completed gates (original output tails and log pins in [F21-gates.json](F21-gates.json)):
 
@@ -77,8 +79,9 @@ Completed gates (original output tails and log pins in [F21-gates.json](F21-gate
 | 06-vet | 0 | 0.449 |
 | 07-gofmt | 0 | 0.133 |
 | 08-diff | 0 | 0.458 |
+| 09-hygiene | 0 | 81.997 |
 
-The committed-evidence hygiene gate follows this publication. Reproduce the additive case index with `python3 -B tests/e2e/at/members/followup21_records.py`; it refuses another run/source and never changes a case verdict.
+The committed-evidence hygiene gate passed against records commit `d70f3e16`, scanning 250 acceptance JSON records and 523 Markdown documents. Its 81.997 s includes a separate 60.083 s admission wait; the test itself took 21.61 s. This post-run wait is separate from the 32 min 1.515 s before acceptance and 120.120 s before cleanup. Reproduce the additive case index with `python3 -B tests/e2e/at/members/followup21_records.py`; it refuses another run/source and never changes a case verdict.
 
 ---
 
