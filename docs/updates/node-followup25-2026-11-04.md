@@ -20,12 +20,12 @@ Evidence below uses repository-relative paths and line numbers on this base.
 
 The configured lock defaults to `/var/lib/vpn-node/update.lock`
 (`node/agent/config.go:124`). Searching all non-test agent acquisitions gives
-the following complete list outside restart/adoption and stop:
+the following complete list outside the restart.go adoption and stop paths:
 
 | Acquisition | Work while holding the lock | Length bound | Every new generation? |
 |---|---|---|---|
 | `enforce`, `node/agent/engine.go:1146`, release deferred at 1161 | Reread updater latch; retain/verify an unchanged serving model, or prepare usage, read topology, reserve revocations, install nft/tc, verify again, persist applied state, snapshot counters, resume/sample meter, and publish heartbeat. See 1164, 1172, 1202, 1230, 1257, 1280, 1303, 1350, 1379, 1411, 1429, 1437 and 1441. | The remaining Step local deadline, up to 10 s from Step entry, for cooperative work. Individual serving verification is capped at 1 s; the entire section is not capped at 2 s. Enforcement failure cleanup may outlive the Step deadline, as detailed below. | Yes when a new generation reaches the serving/closed-recovery Apply branch. It also acquires on unchanged serving passes. `canRetainServing` rejects a changed generation (`node/agent/retain.go:33`); a non-serving decision instead takes the baseline branch (`engine.go:1130`). |
-| `quarantineForeign`, `node/agent/quarantine.go:139` | If not already `planeLocked`, acquire for `plane.Quarantine`, retain sanitized containment evidence and baseline status (149–164). Under an existing Apply lock it reuses that ownership. | One 5 s quarantine allowance, shortened by the shared local deadline (`quarantine.go:110–127`, `local_budget.go:32`). | No; foreign tc / failed containment path. |
+| `quarantine`, `node/agent/quarantine.go:139` | If not already `planeLocked`, acquire for `plane.Quarantine`, retain sanitized containment evidence and baseline status (149–164). Under an existing Apply lock it reuses that ownership. | One 5 s quarantine allowance, shortened by the shared local deadline (`quarantine.go:110–127`, `local_budget.go:32`). | No; foreign tc / failed containment path. |
 | `retainClosedRecovery`, `node/agent/recovery.go:47` | Reread latch and verify the unchanged deny-all model under `planeLocked` (51–58). | Serving read timeout at most 1 s, plus any rejection/cleanup within the local deadline. | No; only an already held empty recovery model with provisional grants (30–45). |
 | `openUsage`, `node/agent/usage.go:280` | Retire/adopt a different incarnation's usage ledger by reopening it with `RetirePreviousAt` (278–286). Same-incarnation opens do not acquire this lock. | Caller local work context: Step up to 10 s, Boot 10 s. SQLite open/migration uses that context; synchronous filesystem work is not a hard real-time bound (`node/internal/usagestore/store.go:77–90,125–134`). | No; initialization/adoption only. `ensureUsage` stops after `usageOnce` (`usage.go:130`). The lifetime lock at 136 is a different file, `usage.db.lock`. |
 | `updateLockHeld`, `node/agent/probeexc.go:70` | One nonblocking attempt, write/sync holder metadata if successful, immediately release at 72. No probe or recovery runs while that descriptor is held. Used by the challenge check (84) and recovery precheck (`updaterecover.go:59`). | No retry timer; filesystem open/metadata fsync only (`node/nodelock/lock.go:51–79,115–130`). | No generation dependency. It may be called on probe or deferred recovery passes. |
@@ -48,7 +48,8 @@ attributing an unidentified PID.
 `controlPassTimeout() + 5*time.Second` (`node/agent/engine.go:680–684`).
 `controlPassTimeout()` is `min(5s, watchdogStale/3)` with a 30 s default
 (`node/agent/serving.go:246–251`, `config.go:139`). Thus the normal configured
-allowance is **10 s**. `newLocalBudget` preserves it through local helpers
+allowance is **10 s**. Devstack configures the same 30 s watchdog stale value
+(`tests/e2e/cmd/fvpn-e2e-prepare/main.go:395`). `newLocalBudget` preserves it through local helpers
 (`local_budget.go:19–40`). The call at `engine.go:1303` passes that context to
 `SystemPlane.Apply` (`plane.go:93–98`).
 
@@ -159,9 +160,9 @@ attempts with 20 ms intervals (`engine.go:144–160`).
 | Entry point / lock site | Production invocation | Devstack / acceptance invocation | Can overlap a serving agent Apply? |
 |---|---|---|---|
 | `run`, `engine.go:107` | Timer/service above; manual CLI; installer upgrade releases its lock and starts that service (`packaging/installer/upgrade.go:103–127`). | Config-consumer loop (`deploy/devstack/entrypoint-node.sh:167–178`), driven by update scenarios. | Yes, routinely. |
-| `recover`, `engine.go:196` | Pre-agent boot service (`deploy/node/systemd/fvpn-updater-recover.service:6,13`); agent Boot/Step deferred child (`node/agent/updaterecover.go:29–97`); nested `Run` recovery (`engine.go:112`). | The same agent child, configured by the devstack agent configuration; manual/AT recovery. | Boot service precedes the agent. Deferred child is a separate process, but recovery blocks the initiating agent's serving decision; it may contend with the outer updater. Manual recovery can overlap. Keep its prompt window under D-155. Nested recovery reuses the outer lock. |
-| `apply`, `pending.go:65` | Explicit manual installer hand-off command; the normal installer upgrade starts `run`, not `apply`. | Installer AT invokes the explicit command (`tests/e2e/at/updates/installer_test.go:306`); no ordinary devstack background apply loop. | Yes for the explicit command; it does not stop the serving agent before trying the lock. |
-| `seed`, `seed.go:24` | Installer baseline (`packaging/installer/baseline.go:99`), after starting units including the agent (`install.go:255–269`, `constants.go:30–36`); already-current repair releases the installer lock before seeding (install.go:124–125); reenroll similarly (reenroll.go:117–122). | Installer acceptance uses the real installer and direct seed/replay; no ordinary node-launcher seed loop. | Yes, including an automated production path. It cannot be assumed to be a before-agent-only command. |
+| `recover`, `engine.go:196` | Pre-agent boot service (`deploy/node/systemd/fvpn-updater-recover.service:6,13`); agent Boot/Step deferred child (`node/agent/updaterecover.go:29–97`); nested `Run` recovery (`engine.go:112`). | The same agent child, configured at `tests/e2e/cmd/fvpn-e2e-prepare/main.go:397`; manual/AT recovery. | Boot service precedes the agent. Deferred child is a separate process, but recovery blocks the initiating agent's serving decision; it may contend with the outer updater. Manual recovery can overlap. Keep its prompt window under D-155. Nested recovery reuses the outer lock. |
+| `apply`, `pending.go:65` | Explicit manual installer hand-off command; the normal installer upgrade starts `run`, not `apply`. | Installer AT invokes the explicit command (`tests/e2e/at/updates/installer_test.go:303`); no ordinary devstack background apply loop. | Yes for the explicit command; it does not stop the serving agent before trying the lock. |
+| `seed`, `seed.go:24` | Installer baseline (`packaging/installer/baseline.go:99`), after starting units including the agent (`install.go:255–269`, `constants.go:30–36`); already-current repair releases the installer lock before seeding (install.go:124–125); reenroll similarly (reenroll.go:117–122). | Installer acceptance uses the real installer and direct seed/replay (`tests/e2e/at/updates/installer_test.go:225–233`); no ordinary node-launcher seed loop. | Yes, including an automated production path. It cannot be assumed to be a before-agent-only command. |
 | `flush`, `result.go:205` | Manual result delivery; seal invokes it inside the already-held lock (`apply.go:513`). No separate flush timer found. | AT explicit result delivery (`tests/e2e/at/updates/live_test.go:617`). | Yes standalone, including after a successful candidate. Nested seal has no acquisition wait. |
 | `Retain`, `retain.go:17` | Library only, called during seal (`apply.go:516`); no CLI command or independent production caller found. | Engine tests; no launcher invocation. | In production it reuses the outer holder. A standalone library caller can contend; keep the existing window. |
 
@@ -201,3 +202,28 @@ fvpn-updater: updater: UPDATE_BUSY: lock
 The CLI has JSON slog records separate from that error line, but uses the same
 stderr stream (`main.go:136,151–154`). **There is currently no acquisition-wait
 record** in `withLock`; none is added by this diagnosis-only delivery.
+
+## Implementation stop and proof disposition
+
+Item 2 was not started because of the code-supported budget mismatch described
+above. There is no new budget constant, retry loop, log event or test assertion.
+All production behavior, D-034g, L-1, nested lock reuse and existing tests remain
+unchanged. No existing assertion was changed to accommodate a longer wait;
+the r29 and follow-up 24 test files contain no assertion pinning `run` to 80 ms.
+
+The requested D-158 proofs have the following explicit disposition. The source
+predictions are not represented as executed before/after evidence:
+
+| Requested proof | Before: source prediction / existing evidence | After this delivery |
+|---|---|---|
+| Real live holder releases after about 600 ms; `run` proceeds | Current nominal 80 ms retry delays would return busy before release. The requested new deterministic test was not run. | Not implemented or run; no passing claim. |
+| Real live holder exceeds the new budget; exit 3 no earlier than budget | Current holder exclusion and exit 3 are covered by existing tests; there is no new-budget timing assertion. | Not implemented or run. |
+| Each stale detail; exit 1 well before new budget | Existing real CLI `recover` test checks all four details and exact stderr; common acquisition currently spends its nominal 80 ms retries. No new `run` timing proof. | Not implemented or run. |
+| `recover` stays within its current live-holder window | Existing r29/follow-up 24 contention tests retain their original exit/journal assertions; no new timing assertion. | Original tests unchanged; no D-158 timing proof claimed. |
+| Cancellation promptly ends the longer wait | The current wait selects on `ctx.Done()` (`node/nodelock/lock.go:218–224`). | No longer wait implemented or tested. |
+
+These are intentional omissions under the requested stop branch, not harness
+failures or successful proofs. Existing regression results and the required
+gates are recorded below after completion. **F30-01 remains open** until a
+future acceptance run reaches the real candidate path and passes. No live run,
+container, reservation or physical arm64 measurement is part of this delivery.
