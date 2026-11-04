@@ -2,18 +2,18 @@ package agent
 
 import (
 	"context"
-	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/watchdog"
 )
 
-// bootHeartbeatBudget is a cap within Boot's existing deadline, never an
-// additional phase. A blocked worker has already published conservative state.
-const bootHeartbeatBudget = 100 * time.Millisecond
-
+// Heartbeat publication consumes Boot's single local deadline. An independent
+// 100ms cap made healthy disk fsync/scheduler delay look like startup failure.
+// WriteHeartbeatContext still checks the deadline before atomic publication.
 func (e *Engine) bootHeartbeat(parent context.Context) error {
-	ctx, cancel := context.WithTimeout(parent, bootHeartbeatBudget)
-	defer cancel()
+	return e.writeBootHeartbeat(parent, watchdog.WriteHeartbeatContext)
+}
+
+func (e *Engine) writeBootHeartbeat(ctx context.Context, write func(context.Context, string, watchdog.Beat) error) error {
 	b := watchdog.Beat{
 		BootID: e.bootID, Mono: e.clock.Mono(), Wall: e.clock.Wall().UTC(),
 		BaselineOK: e.baselineOK, Reason: "boot_unverified",
@@ -25,5 +25,5 @@ func (e *Engine) bootHeartbeat(parent context.Context) error {
 		b.Serving, b.Generation, b.PolicyExpires = true, e.appliedGen, e.servingDeadline()
 		b.Reason = "serving"
 	}
-	return watchdog.WriteHeartbeatContext(ctx, e.cfg.HeartbeatPath, b)
+	return write(ctx, e.cfg.HeartbeatPath, b)
 }

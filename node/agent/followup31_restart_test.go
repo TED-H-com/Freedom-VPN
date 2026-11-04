@@ -39,6 +39,15 @@ func (p *cancelLocalWorkPlane) Apply(ctx context.Context, m enforce.Model, prev 
 	return p.memPlane.Apply(ctx, m, prev)
 }
 
+// Model the baseline included in Quarantine's verified evidence. The old
+// stub only claimed it and relied on a redundant later Baseline to perform it.
+func (p *cancelLocalWorkPlane) Quarantine(ctx context.Context, m enforce.Model) (enforce.QuarantineEvidence, error) {
+	if err := p.memPlane.Baseline(ctx, m.Datapath); err != nil {
+		return enforce.QuarantineEvidence{}, err
+	}
+	return p.memPlane.Quarantine(ctx, m)
+}
+
 func (p *cancelLocalWorkPlane) MemberPath(ctx context.Context, m enforce.Model, expected *MemberPath) (MemberPath, error) {
 	if p.phase == "member_path" {
 		p.cancel()

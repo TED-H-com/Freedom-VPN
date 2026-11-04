@@ -14,10 +14,12 @@ import (
 // jobs and any release named by a result that is not yet acknowledged.
 // It never deletes identity, state or the usage outbox (§13.7, §13.8).
 func (e *Engine) Retain(ctx context.Context) error {
-	if e.Journal == nil {
-		return nil
-	}
-	return e.withLock(ctx, func() error { return e.retainLocked(ctx) })
+	return e.withLock(ctx, func() error {
+		if e.Journal == nil {
+			return nil
+		}
+		return e.retainLocked(ctx)
+	})
 }
 
 func (e *Engine) retainLocked(ctx context.Context) error {

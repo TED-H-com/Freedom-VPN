@@ -27,6 +27,11 @@ func main() {
 	if json.NewDecoder(io.LimitReader(os.Stdin, 1<<20)).Decode(&in) != nil || in.Count < 1 || in.Count > 150 {
 		os.Exit(2)
 	}
+	// This probe's sole caller tests enrollment ingress. Node mutations must
+	// use Stack.WriteNode, never this raw request dispatcher.
+	if in.Path != "/api/v1/agent/enroll" {
+		os.Exit(2)
+	}
 	ca, err := os.ReadFile("/etc/vpn-node/ca.pem")
 	if err != nil {
 		os.Exit(2)

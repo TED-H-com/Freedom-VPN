@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "follow_up": 4,
+  "recorded_at": "2026-10-30T07:57:11.423220Z",
+  "application_source_revision": "9b17127c888f94191d759617c99fe1225078a092",
+  "final_probe_source_sha256": "7e484978bb4df49280bf12ac8528a0324c4e3b95c12e38fb123ec22e30e52911",
+  "scope": "Combined main run contains two live usage-size failures and a late transport/login stop; isolated native admission recheck stops at 50 authorized peers on gateway connection budget. Blocked profiles never pass because their supporting Go tests pass.",
+  "checks": [
+    {
+      "name": "root-lint",
+      "command": "python3 tests/e2e/at/secops/diskexec.py make go-lint",
+      "exit_code": 0,
+      "output_tail": []
+    },
+    {
+      "name": "e2e-vet",
+      "command": "python3 tests/e2e/at/secops/diskexec.py go vet -tags e2e ./tests/...",
+      "exit_code": 0,
+      "output_tail": []
+    },
+    {
+      "name": "area",
+      "command": "make -f mk/at-secops.mk at-secops-lint at-secops-test",
+      "exit_code": 0,
+      "output_tail": [
+        "python3 tests/e2e/at/secops/diskexec.py go vet -tags e2e,integration ./tests/e2e/at/secops",
+        "python3 tests/e2e/at/secops/diskexec.py go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e,integration ./tests/e2e/at/secops",
+        "python3 tests/e2e/at/secops/diskexec.py go test -tags e2e -p 1 -parallel 2 ./tests/e2e/at/secops",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t2.803s",
+        "python3 tests/e2e/at/secops/diskexec.py python3 -m unittest discover -s tests/e2e/at/secops -p 'test_*.py'",
+        "......",
+        "----------------------------------------------------------------------",
+        "Ran 6 tests in 0.001s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "name": "python-evidence",
+      "command": "python3 -m unittest discover -s tests/e2e/at/secops -p test_*.py",
+      "exit_code": 0,
+      "output_tail": [
+        "......",
+        "----------------------------------------------------------------------",
+        "Ran 6 tests in 0.001s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "name": "owner-fixture",
+      "command": "go test -tags e2e,integration -p 1 -parallel 2 -count=1 -run ^TestSECOPS11_RecordedBaselineDoesNotProveServing$ ./internal/nodes",
+      "exit_code": 0,
+      "output_tail": [
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/internal/nodes\t0.007s"
+      ]
+    },
+    {
+      "name": "doc14",
+      "command": "go test -count=1 -run ^TestHandover_OpenAPIClaims$ ./tests/handover",
+      "exit_code": 0,
+      "output_tail": [
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t0.015s"
+      ]
+    },
+    {
+      "name": "both-architectures",
+      "command": "make -f mk/at-secops.mk at-secops-build",
+      "exit_code": 0,
+      "output_tail": [
+        "GOOS=linux GOARCH=amd64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/amd64.test ./tests/e2e/at/secops",
+        "GOOS=linux GOARCH=arm64 python3 tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/arm64.test ./tests/e2e/at/secops"
+      ]
+    },
+    {
+      "name": "combined-live-and-components",
+      "command": "make -f mk/at-secops.mk at-secops-followup4",
+      "exit_code": 2,
+      "output_tail": [
+        "running payment-reconciliation",
+        "payment-reconciliation: passed",
+        "running peer-reconciliation",
+        "peer-reconciliation: passed",
+        "running scope-schema",
+        "scope-schema: passed",
+        "running scope-lifecycle",
+        "scope-lifecycle: passed",
+        "evidence: docs/e2e/at/secops; consult each AT verdict; full suite exits 2 while any AT is blocked",
+        "make: *** [mk/at-secops.mk:45: at-secops-followup4] Error 2"
+      ]
+    },
+    {
+      "name": "isolated-native-scale",
+      "command": "make -f mk/at-secops.mk at-secops-native-scale",
+      "exit_code": 2,
+      "output_tail": [
+        "FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 tests/e2e/at/secops/scale_run.py",
+        "native admission subset: blocked",
+        "make: *** [mk/at-secops.mk:49: at-secops-native-scale] Error 2"
+      ]
+    },
+    {
+      "name": "simultaneous-cohort",
+      "command": "python3 tests/e2e/at/secops/cohort_probe.py",
+      "exit_code": 2,
+      "output_tail": [
+        "simultaneous native cohort: blocked"
+      ]
+    },
+    {
+      "name": "git format",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "output_tail": []
+    },
+    {
+      "name": "gofmt format",
+      "command": [
+        "gofmt",
+        "-l",
+        "tests/e2e/at/secops/doc.go",
+        "tests/e2e/at/secops/followup4_live_test.go",
+        "tests/e2e/at/secops/inputs_test.go",
+        "tests/e2e/at/secops/limiter_live_test.go",
+        "tests/e2e/at/secops/live_test.go",
+        "tests/e2e/at/secops/pitr_test.go",
+        "tests/e2e/at/secops/pitr_verify_test.go",
+        "tests/e2e/at/secops/pki_test.go",
+        "tests/e2e/at/secops/publication_live_test.go",
+        "tests/e2e/at/secops/rate_classes_live_test.go",
+        "tests/e2e/at/secops/restore_test.go",
+        "tests/e2e/at/secops/scope_test.go",
+        "tests/e2e/at/secops/security_test.go",
+        "tests/e2e/at/secops/watchdog_test.go"
+      ],
+      "exit_code": 0,
+      "output_tail": []
+    }
+  ],
+  "component_suites": {
+    "count": 25,
+    "status": "passed",
+    "record": "components.json"
+  },
+  "build_digests": [
+    {
+      "arch": "amd64",
+      "kind": "final acceptance test binary",
+      "sha256": "df77bd58f997c7bea7e5ac439f4167e200e96e8e87b93ee8a18d706c8ee0a11d",
+      "scope": "Final source compilation; not the previously executed live probe binary."
+    },
+    {
+      "arch": "arm64",
+      "kind": "final acceptance test binary",
+      "sha256": "6d927b65bee3841d8fcfca141ae75d23ec016b7cb38036614e352470d909dc1d",
+      "scope": "Final source compilation; not the previously executed live probe binary."
+    }
+  ],
+  "cleanup": "cleanup.json",
+  "public_evidence_directory": "docs/e2e/at/secops"
+}
