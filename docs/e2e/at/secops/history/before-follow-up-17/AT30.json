@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "follow_up": 13,
+  "application_base": "7e044c71ecf1d07f63e89721bd213db6611a6a47",
+  "source_revision": "c5d66ccccdbf0ca1c0f0f1120cb704d760c4ddac",
+  "run_id": "5218b7d5-1415-4e1b-8618-48ea2d3cf03e",
+  "driver_run_id": "47e4fdfc-7ba0-437d-b3c2-2fafe50c036b",
+  "started_at": "2026-10-31T11:49:34Z",
+  "finished_at": "2026-10-31T11:59:13Z",
+  "hardware": "shared development host; not candidate hardware",
+  "probe_source_sha256": "4f01f0939ec526d6395cfc473f4d3b05fadd90dce40754fd40455577bbaf5135",
+  "record_renderer_sha256": "46f491ab16489a5dd170ea344e1fa6c3bf23bda4a82fe4f55c0be4f59a9c043d",
+  "previous_run": "history/follow-up-12/",
+  "projector_owned_rows_written": [],
+  "id": "AT30",
+  "status": "passed",
+  "requirements": [
+    "DATA01",
+    "BILL01",
+    "MTR03"
+  ],
+  "spec": [
+    "§17.3",
+    "§19 AT30"
+  ],
+  "evaluation": {
+    "primary_overwrite_refusal": true,
+    "post_restore_checklist_6_of_6": true,
+    "fail_safe_negative_without_protocol": true,
+    "product_restore_protocol_5_steps": true,
+    "secops19_visibility_and_zero_convergence": true,
+    "retained_node_usage_replay": true,
+    "provider_reconciliation": true,
+    "unmapped_peer_discovery_deduplicated": true,
+    "t0_t1_device_revocation_fenced_d076": true,
+    "regrant_authorize_device_clears_fence": true,
+    "negative_central_revoke_not_fenced": true,
+    "negative_post_restore_fresh_enroll_not_fenced": true
+  },
+  "blockers": [],
+  "development_host_deltas": {
+    "Pre-replay database RPO (s)": {
+      "follow_up_12_baseline_seconds": 106.45,
+      "follow_up_13_seconds": 92.163101,
+      "delta_seconds": -14.286899
+    },
+    "Total outage RTO (s)": {
+      "follow_up_12_baseline_seconds": 74.53,
+      "follow_up_13_seconds": 81.016113709,
+      "delta_seconds": 6.486113709
+    }
+  },
+  "evidence": [
+    "restore-reconcile.json",
+    "followup13-restore-live.json",
+    "SECOPS-21.json"
+  ]
+}
