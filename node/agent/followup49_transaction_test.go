@@ -18,6 +18,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/updater"
 	"github.com/TED-H-com/Freedom-VPN/node/updater/fsutil"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api/presence"
 	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
@@ -54,7 +55,7 @@ func (f f49RecoveryFixture) engine(t *testing.T) *updater.Engine {
 		Layout: f.Layout, Node: f.Node, ReleaseTrust: trust,
 		Platform: updater.Platform{StateSchema: 1, UpdaterVersion: "0.1.0"},
 		Gate:     updater.FileGate{Path: filepath.Join(f.Layout.Journal, "forwarding.blocked")},
-		Meter:    updater.FileMeter{Path: filepath.Join(f.Layout.Journal, "meter.checkpoint")},
+		Meter:    updater.FileMeter{Path: filepath.Join(f.Layout.State, "meter.checkpoint")},
 		Services: f49Services{}, Health: &updater.NodeChecks{},
 		Now:    func() time.Time { return f.Now },
 		Attest: updater.AttestWindow{Wait: 3 * time.Second, Poll: 10 * time.Millisecond, TTL: 30 * time.Second},
@@ -138,6 +139,13 @@ func f49PrepareTransaction(t *testing.T, r *rig, stage updatejournal.Stage) {
 	if err := os.WriteFile(filepath.Join(rel, "TEST_ONLY"), []byte("test candidate\n"), 0600); err != nil {
 		t.Fatal(err)
 	}
+	exe, err := os.Executable()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Link(exe, filepath.Join(rel, "fvpn-agent")); err != nil {
+		t.Fatal(err)
+	}
 	tree, err := fsutil.TreeHash(rel)
 	if err != nil {
 		t.Fatal(err)
@@ -148,7 +156,7 @@ func f49PrepareTransaction(t *testing.T, r *rig, stage updatejournal.Stage) {
 	}
 	e.Journal = j
 	jobID := uuid.NewString()
-	work := updater.Work{Intent: api.UpdateIntent{JobId: uuid.MustParse(jobID), Attempt: 1, Generation: 1, NodeId: f.Node.ID, IncarnationId: f.Node.Incarnation, ReleaseId: cfg.ReleaseUUID(), ManifestSha256: sum, ManifestUrl: "https://example.invalid/manifest", PublicationIntent: api.PublicationIntentPublished, IssuedAt: f.Now.Add(-time.Minute), AuthorizationValidUntil: f.Now.Add(time.Hour)}, Serving: []uuid.UUID{cfg.ReleaseUUID()}}
+	work := updater.Work{PolicyGeneration: r.eng.desired.ConfigGeneration, PolicyKnown: true, Intent: api.UpdateIntent{BatchId: presence.NewNullNullable[uuid.UUID](), TargetId: presence.NewNullNullable[uuid.UUID](), JobId: uuid.MustParse(jobID), Attempt: 1, Generation: 1, NodeId: f.Node.ID, IncarnationId: f.Node.Incarnation, ReleaseId: cfg.ReleaseUUID(), ManifestSha256: sum, ManifestUrl: "https://example.invalid/manifest", PublicationIntent: api.PublicationIntentPublished, IssuedAt: f.Now.Add(-time.Minute), AuthorizationValidUntil: f.Now.Add(time.Hour)}, Serving: []uuid.UUID{cfg.ReleaseUUID()}}
 	claim, err := json.Marshal(struct {
 		updater.Work
 		BootID      uuid.UUID `json:"boot_id"`
@@ -196,7 +204,7 @@ func f49PrepareTransaction(t *testing.T, r *rig, stage updatejournal.Stage) {
 	if err := os.WriteFile(config, raw, 0600); err != nil {
 		t.Fatal(err)
 	}
-	exe, err := os.Executable()
+	exe, err = os.Executable()
 	if err != nil {
 		t.Fatal(err)
 	}
