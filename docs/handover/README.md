@@ -443,6 +443,8 @@ rows under D-162, reading agent-core 52's records in the native window);
 review r32 (post-merge agent-core 52 review by agy/gemini-4-argon-high).
 No delivered or merged PR at the initial check. Later results are **after
 the cutoff** and do not enter this cut. No date is promised.
+After the initial check, **isolation 25 merged after the cutoff (#478)**;
+its results are excluded.
 
 D-145 keeps the current guard and C1 remains unimplemented. D-148 leaves
 Members F11-01 open and upstream-dependent; D-149 is unchanged. Follow-up 46's

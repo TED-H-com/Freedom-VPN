@@ -16400,7 +16400,8 @@ func TestHandover_Followup47Claims(t *testing.T) {
 		}
 	}
 	// Pin the complete narrative and manifests, including every source quotation.
-	checkHash("docs/handover/follow-up-47.md", "fc4d4d2f63d279e5d9c1bbe788088577c21424d9f3265c60a66c4045d7e7e641")
+	checkHash("tests/handover/testdata/history/follow-up-47/after-cutoff-status.json", "010e930405282a4829b69d786f44d3bd9ffda95c120b9fd133b22f935c0488aa")
+	checkHash("docs/handover/follow-up-47.md", "035da3a5a97d8133126e1f5b3013a5f1180fd19f7b7c38ae141c51a940fe6211")
 	checkHash("tests/handover/testdata/followup47-claims.json", "361a7013dbe0e5243154b1f66d270427f0bea01f8f0e0e0607ac5f3812bea735")
 	checkHash("tests/handover/testdata/followup47-decisions.json", "2a2147545774ebe0bfdeccf45920dea713dc34a34eeb3abeff801e828f0460c9")
 	checkHash("tests/handover/testdata/followup47-evidence.json", "880149b4b70cdf5079335a9056f9f554504a6bcb199f3f5c1c8b0131492bf8bf")
@@ -16445,6 +16446,16 @@ func TestHandover_Followup47Claims(t *testing.T) {
 			}
 		}
 		readJSON(fixture+"followup47-main.json", &m)
+		var later struct {
+			Number   int
+			State    string
+			MergedAt string
+		}
+		readJSON(frozen+"after-cutoff-status.json", &later)
+		if later.Number != 478 || later.State != "MERGED" || later.MergedAt != "2026-11-04T16:47:51Z" {
+			t.Fatal("after-cutoff status only")
+		}
+		require("docs/handover/follow-up-47.md", "isolation 25 merged after the cutoff (#478)", "its results are excluded")
 		if m.Commit != cut || m.Previous != "52b93845b5cfeac1dd63e04c700857fcd098a7f6" || !slices.Equal(m.Merged, []int{474, 475, 476, 477}) || len(m.History) != 8 || len(m.Rows) != 4 || len(m.PRs) != 4 {
 			t.Fatal("cut inventory")
 		}

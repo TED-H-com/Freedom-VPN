@@ -37,6 +37,8 @@ F22-AT01/F11-01 stay open under D-148. Follow-up 46's requests are answered.
 Isolation 25, members 24 and review r32 are running at briefing, status only;
 no delivered or merged PR at the initial check. Later results are after the
 cutoff. The assist.py:22 retry is routed to isolation after follow-up 25.
+After the initial check, **isolation 25 merged after the cutoff (#478)**;
+its results are excluded.
 No date is promised; no other operator or member procedure changes.
 
 ## Follow-up 46 acceptance snapshot (2026-11-04 EST)

@@ -12,6 +12,8 @@ reading agent-core 52's two records in the native window; **review r32**, a
 post-merge code review of agent-core 52 by **agy/gemini-4-argon-high**.
 No delivered or merged PR was present at the initial read-only check. Later
 results are **after the cutoff** and do not enter this cut. No date is promised.
+After the initial check, **isolation 25 merged after the cutoff (#478)**;
+its results are excluded.
 
 **D-098 / D-109 / D-132:** `TestHandover_Followup47Claims` pins the final
 roadmap rows, PR excerpts, frozen producer documents, archived run records,
