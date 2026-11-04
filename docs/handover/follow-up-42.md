@@ -19,8 +19,8 @@ cutoff**; none of its results enters this cut. **r29 is not archived here.**
 roadmap rows and PR excerpts, #440 frozen inputs, dated producer records,
 immutable isolation history, the two raw review archives and Go test names on
 main. No claim reads a living members, isolation, secops or usage evidence
-root. Four reads in follow-up 41 move to frozen #440 bytes; all 35 earlier
-claims functions retain their assertions. Review-branch proofs are explicitly
+root. Four reads in follow-up 41 and two review-index reads in follow-up 40
+move to frozen #440 bytes; all 35 earlier claims functions retain their assertions. Review-branch proofs are explicitly
 distinguished from declarations on main.
 
 ## Handover 41 (#440)
