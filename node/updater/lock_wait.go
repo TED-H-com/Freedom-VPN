@@ -16,9 +16,11 @@ const lockRetryInterval = 20 * time.Millisecond
 const promptLockAttempts = 5
 
 // acquireCommandLock leaves the common lock APIs and their consumers unchanged.
-// Stale metadata switches to the existing five-attempt window, counted from
-// the first stale answer, even if live contention preceded it. Later attempts
-// may acquire a released lock; otherwise the final diagnostic is preserved.
+// Five consecutive stale answers, 20 ms apart, return the final stale detail.
+// A live answer (including empty/unreadable metadata) resets that count and
+// obeys the 10 s budget from the first attempt: only a live answer at/past the
+// deadline ends live contention. Stale retries can extend it by about 100 ms,
+// plus filesystem/scheduling time. Log once only if the first attempt is busy.
 func (e *Engine) acquireCommandLock(ctx context.Context, command string) (lk *nodelock.Lock, err error) {
 	started := time.Now()
 	waited := false
@@ -38,14 +40,14 @@ func (e *Engine) acquireCommandLock(ctx context.Context, command string) (lk *no
 		if err == nil {
 			return lk, nil
 		}
-		waited = true
 		if !errors.Is(err, nodelock.ErrBusy) {
 			return nil, err
 		}
-		if staleAttempts > 0 {
+		waited = true
+		if lockBusyDetail(err) == "lock" {
+			staleAttempts = 0
+		} else {
 			staleAttempts++
-		} else if lockBusyDetail(err) != "lock" {
-			staleAttempts = 1
 		}
 		if staleAttempts == promptLockAttempts {
 			return nil, err
