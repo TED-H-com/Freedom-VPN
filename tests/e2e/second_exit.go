@@ -69,28 +69,9 @@ func (s *Stack) startExitSlot(ctx context.Context, slot, lastOctet string, clone
 		_ = os.Remove(filepath.Join(base, "etc", "machine-id"))
 	}
 	prefix := s.lab.originIP[:strings.LastIndex(s.lab.originIP, ".")]
-	for _, file := range []string{"agent-enroll.json", "agent-run.json"} {
-		path := filepath.Join(base, "etc", file)
-		raw, err := os.ReadFile(path)
-		if err != nil {
-			return err
-		}
-		var cfg map[string]any
-		if err = json.Unmarshal(raw, &cfg); err != nil {
-			return err
-		}
-		dp, ok := cfg["datapath"].(map[string]any)
-		if !ok {
-			return fmt.Errorf("datapath missing")
-		}
-		dp["snat"] = prefix + lastOctet
-		raw, err = json.MarshalIndent(cfg, "", "  ")
-		if err != nil {
-			return err
-		}
-		if err = os.WriteFile(path, raw, 0600); err != nil {
-			return err
-		}
+	snat := prefix + lastOctet
+	if err := prepareExitSlotConfigs(base, snat, clone); err != nil {
+		return err
 	}
 	if err := run("cp", s.lab.prefix+"-adguard:/opt/adguardhome/conf/AdGuardHome.yaml", filepath.Join(base, "adguard/conf/AdGuardHome.yaml")); err != nil {
 		return err
@@ -108,7 +89,7 @@ func (s *Stack) startExitSlot(ctx context.Context, slot, lastOctet string, clone
 	if err = run("run", "-d", "--name", ns, "--hostname", name, "--network", s.lab.prefix, "--entrypoint", "sleep", strings.TrimSpace(string(image)), "infinity"); err != nil {
 		return err
 	}
-	if err = run("network", "connect", "--ip", prefix+lastOctet, s.lab.prefix+"-origin", ns); err != nil {
+	if err = run("network", "connect", "--ip", snat, s.lab.prefix+"-origin", ns); err != nil {
 		return err
 	}
 	if err = run("run", "-d", "--name", name+"-adguard", "--network", "container:"+ns, "--mount", "type=bind,src="+filepath.Join(base, "adguard/conf")+",dst=/opt/adguardhome/conf", "--mount", "type=bind,src="+filepath.Join(base, "adguard/work")+",dst=/opt/adguardhome/work", strings.TrimSpace(string(dnsImage)), "--no-check-update", "--no-permcheck", "-c", "/opt/adguardhome/conf/AdGuardHome.yaml", "-w", "/opt/adguardhome/work"); err != nil {
@@ -140,6 +121,9 @@ func (s *Stack) startExitSlot(ctx context.Context, slot, lastOctet string, clone
 		for _, file := range []string{"updater.json", "pause-agent", "agent.pid"} {
 			_ = os.Remove(filepath.Join(base, "var/e2e", file))
 		}
+		if err := prepareExitSlotConfigs(base, snat, true); err != nil {
+			return err
+		}
 	}
 	// A clean second exit keeps an empty directory off the client's state path.
 	// The clone bind-mounts the copied profile where the client reads it.
@@ -167,4 +151,73 @@ func (s *Stack) startExitSlot(ctx context.Context, slot, lastOctet string, clone
 		strings.TrimSpace(string(image)),
 	)
 	return run(args...)
+}
+
+const localNodeControlURL = "https://127.0.0.1:9444"
+
+// prepareExitSlotConfigs updates datapath.snat for the target slot and points
+// runtime/cloned agent configs at the container's own resolver-proxy listener
+// (127.0.0.1:9444), keeping every other copied field byte-identical.
+func prepareExitSlotConfigs(base, snat string, clone bool) error {
+	for _, file := range []string{"agent-enroll.json", "agent-run.json"} {
+		setControlURL := clone || file == "agent-run.json"
+		if err := rewriteExitConfigFile(filepath.Join(base, "etc", file), snat, setControlURL); err != nil {
+			return err
+		}
+	}
+	releaseConfigs, err := filepath.Glob(filepath.Join(base, "var", "e2e", "agent-*.json"))
+	if err != nil {
+		return err
+	}
+	for _, path := range releaseConfigs {
+		if err := rewriteExitConfigFile(path, snat, true); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func rewriteExitConfigFile(path, snat string, setControlURL bool) error {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+	out, err := rewriteExitConfig(raw, snat, setControlURL)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, out, 0600)
+}
+
+func rewriteExitConfig(raw []byte, snat string, setControlURL bool) ([]byte, error) {
+	var cfg map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &cfg); err != nil || cfg == nil {
+		return nil, fmt.Errorf("agent config invalid")
+	}
+	dpRaw, ok := cfg["datapath"]
+	if !ok {
+		return nil, fmt.Errorf("datapath missing")
+	}
+	var dp map[string]json.RawMessage
+	if err := json.Unmarshal(dpRaw, &dp); err != nil || dp == nil {
+		return nil, fmt.Errorf("datapath missing")
+	}
+	snatJSON, err := json.Marshal(snat)
+	if err != nil {
+		return nil, err
+	}
+	dp["snat"] = snatJSON
+	dpOut, err := json.Marshal(dp)
+	if err != nil {
+		return nil, err
+	}
+	cfg["datapath"] = dpOut
+	if setControlURL {
+		urlJSON, err := json.Marshal(localNodeControlURL)
+		if err != nil {
+			return nil, err
+		}
+		cfg["control_url"] = urlJSON
+	}
+	return json.MarshalIndent(cfg, "", "  ")
 }
