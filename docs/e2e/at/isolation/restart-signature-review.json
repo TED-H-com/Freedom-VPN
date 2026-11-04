@@ -1,10 +1,10 @@
 {
-  "run_id": "7599576e-339c-49c9-8bf5-0f710818cbda",
-  "scope": "Targeted search of retained agent/watchdog log snapshots; absence here is not proof the product race is fixed.",
+  "run_id": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
+  "scope": "Retained log snapshots and container lifecycle events; absence of a signature is not proof of an unobserved watchdog pass. Duplicate log lines remain attributable to their snapshots.",
   "logs": [
     {
       "path": "agent-before-clone.log.txt",
-      "lines": 113
+      "lines": 112
     },
     {
       "path": "agent-before-populated-hold-stop.log.txt",
@@ -12,15 +12,15 @@
     },
     {
       "path": "agent-before-restart.log.txt",
-      "lines": 85
+      "lines": 92
     },
     {
       "path": "agent-final.log.txt",
-      "lines": 306
+      "lines": 298
     },
     {
       "path": "agent.log.txt",
-      "lines": 641
+      "lines": 639
     },
     {
       "path": "watchdog-before-clone.log.txt",
@@ -46,26 +46,184 @@
   "matches": [
     {
       "path": "agent-before-clone.log.txt",
-      "line": 113,
-      "text": "time=2026-11-04T03:14:12.884Z level=INFO msg=\"serving rules retained for restart\" generation=37 policy_expires_mono_ns=85545299770014 next_binding_expiry_mono_ns=85545299770014"
+      "line": 1,
+      "text": "time=2026-11-04T06:17:56.044Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=96518495809221 generation=30"
+    },
+    {
+      "path": "agent-before-clone.log.txt",
+      "line": 2,
+      "text": "time=2026-11-04T06:17:56.084Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=96518535496435 succeeded=true"
+    },
+    {
+      "path": "agent-before-clone.log.txt",
+      "line": 112,
+      "text": "time=2026-11-04T06:24:21.585Z level=INFO msg=\"serving rules retained for restart\" generation=37 policy_expires_mono_ns=96955177073270 next_binding_expiry_mono_ns=96955177073270"
+    },
+    {
+      "path": "agent-before-populated-hold-stop.log.txt",
+      "line": 1,
+      "text": "time=2026-11-04T06:03:38.382Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=95660833807963 generation=0"
+    },
+    {
+      "path": "agent-before-populated-hold-stop.log.txt",
+      "line": 2,
+      "text": "time=2026-11-04T06:03:38.412Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=95660863374882 succeeded=true"
     },
     {
       "path": "agent-before-restart.log.txt",
-      "line": 85,
-      "text": "time=2026-11-04T03:07:01.653Z level=INFO msg=\"serving rules retained for restart\" generation=28 policy_expires_mono_ns=85109536810976 next_binding_expiry_mono_ns=85109536810976"
+      "line": 1,
+      "text": "time=2026-11-04T06:09:31.941Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=96014392419161 generation=18"
+    },
+    {
+      "path": "agent-before-restart.log.txt",
+      "line": 2,
+      "text": "time=2026-11-04T06:09:31.966Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=96014417891938 succeeded=true"
+    },
+    {
+      "path": "agent-before-restart.log.txt",
+      "line": 92,
+      "text": "time=2026-11-04T06:17:54.585Z level=INFO msg=\"serving rules retained for restart\" generation=30 policy_expires_mono_ns=96561912183505 next_binding_expiry_mono_ns=96561912183505"
+    },
+    {
+      "path": "agent-final.log.txt",
+      "line": 1,
+      "text": "time=2026-11-04T06:24:24.692Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=96907144144139 generation=37"
+    },
+    {
+      "path": "agent-final.log.txt",
+      "line": 2,
+      "text": "time=2026-11-04T06:24:24.727Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=96907178702148 succeeded=true"
     },
     {
       "path": "agent.log.txt",
-      "line": 222,
-      "text": "time=2026-11-04T03:07:01.653Z level=INFO msg=\"serving rules retained for restart\" generation=28 policy_expires_mono_ns=85109536810976 next_binding_expiry_mono_ns=85109536810976"
+      "line": 1,
+      "text": "time=2026-11-04T06:03:38.382Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=95660833807963 generation=0"
     },
     {
       "path": "agent.log.txt",
-      "line": 335,
-      "text": "time=2026-11-04T03:14:12.884Z level=INFO msg=\"serving rules retained for restart\" generation=37 policy_expires_mono_ns=85545299770014 next_binding_expiry_mono_ns=85545299770014"
+      "line": 2,
+      "text": "time=2026-11-04T06:03:38.412Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=95660863374882 succeeded=true"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 138,
+      "text": "time=2026-11-04T06:09:31.941Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=96014392419161 generation=18"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 139,
+      "text": "time=2026-11-04T06:09:31.966Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=96014417891938 succeeded=true"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 229,
+      "text": "time=2026-11-04T06:17:54.585Z level=INFO msg=\"serving rules retained for restart\" generation=30 policy_expires_mono_ns=96561912183505 next_binding_expiry_mono_ns=96561912183505"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 230,
+      "text": "time=2026-11-04T06:17:56.044Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=96518495809221 generation=30"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 231,
+      "text": "time=2026-11-04T06:17:56.084Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=96518535496435 succeeded=true"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 341,
+      "text": "time=2026-11-04T06:24:21.585Z level=INFO msg=\"serving rules retained for restart\" generation=37 policy_expires_mono_ns=96955177073270 next_binding_expiry_mono_ns=96955177073270"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 342,
+      "text": "time=2026-11-04T06:24:24.692Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=96907144144139 generation=37"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 343,
+      "text": "time=2026-11-04T06:24:24.727Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=96907178702148 succeeded=true"
+    },
+    {
+      "path": "watchdog-before-populated-hold-stop.log.txt",
+      "line": 1,
+      "text": "{\"time\":\"2026-11-04T06:03:38.296837226Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":95660748201202,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+    },
+    {
+      "path": "watchdog-before-populated-hold-stop.log.txt",
+      "line": 2,
+      "text": "{\"time\":\"2026-11-04T06:03:38.296920842Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":95660748296166,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+    },
+    {
+      "path": "watchdog-before-populated-hold-stop.log.txt",
+      "line": 3,
+      "text": "{\"time\":\"2026-11-04T06:03:38.322944873Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":95660774316996,\"succeeded\":true}"
+    },
+    {
+      "path": "watchdog.log.txt",
+      "line": 1,
+      "text": "{\"time\":\"2026-11-04T06:03:38.296837226Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":95660748201202,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+    },
+    {
+      "path": "watchdog.log.txt",
+      "line": 2,
+      "text": "{\"time\":\"2026-11-04T06:03:38.296920842Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":95660748296166,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+    },
+    {
+      "path": "watchdog.log.txt",
+      "line": 3,
+      "text": "{\"time\":\"2026-11-04T06:03:38.322944873Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":95660774316996,\"succeeded\":true}"
     }
   ],
-  "baseline_unverified_lines": 0,
-  "generation_mismatch_lines": 0,
-  "conclusion": "F48-01 paired signature not observed in retained logs; agent-core 49/D-156 remains separate."
+  "unique_lines": [
+    "time=2026-11-04T06:03:38.382Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=95660833807963 generation=0",
+    "time=2026-11-04T06:03:38.412Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=95660863374882 succeeded=true",
+    "time=2026-11-04T06:09:31.941Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=96014392419161 generation=18",
+    "time=2026-11-04T06:09:31.966Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=96014417891938 succeeded=true",
+    "time=2026-11-04T06:17:54.585Z level=INFO msg=\"serving rules retained for restart\" generation=30 policy_expires_mono_ns=96561912183505 next_binding_expiry_mono_ns=96561912183505",
+    "time=2026-11-04T06:17:56.044Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=96518495809221 generation=30",
+    "time=2026-11-04T06:17:56.084Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=96518535496435 succeeded=true",
+    "time=2026-11-04T06:24:21.585Z level=INFO msg=\"serving rules retained for restart\" generation=37 policy_expires_mono_ns=96955177073270 next_binding_expiry_mono_ns=96955177073270",
+    "time=2026-11-04T06:24:24.692Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=96907144144139 generation=37",
+    "time=2026-11-04T06:24:24.727Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=96907178702148 succeeded=true",
+    "{\"time\":\"2026-11-04T06:03:38.296837226Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":95660748201202,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}",
+    "{\"time\":\"2026-11-04T06:03:38.296920842Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":95660748296166,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}",
+    "{\"time\":\"2026-11-04T06:03:38.322944873Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":95660774316996,\"succeeded\":true}"
+  ],
+  "watchdog_records": [
+    {
+      "path": "watchdog-before-populated-hold-stop.log.txt",
+      "line": 1,
+      "text": "{\"time\":\"2026-11-04T06:03:38.296837226Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":95660748201202,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+    },
+    {
+      "path": "watchdog-before-populated-hold-stop.log.txt",
+      "line": 2,
+      "text": "{\"time\":\"2026-11-04T06:03:38.296920842Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":95660748296166,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+    },
+    {
+      "path": "watchdog-before-populated-hold-stop.log.txt",
+      "line": 3,
+      "text": "{\"time\":\"2026-11-04T06:03:38.322944873Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":95660774316996,\"succeeded\":true}"
+    },
+    {
+      "path": "watchdog.log.txt",
+      "line": 1,
+      "text": "{\"time\":\"2026-11-04T06:03:38.296837226Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":95660748201202,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+    },
+    {
+      "path": "watchdog.log.txt",
+      "line": 2,
+      "text": "{\"time\":\"2026-11-04T06:03:38.296920842Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":95660748296166,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+    },
+    {
+      "path": "watchdog.log.txt",
+      "line": 3,
+      "text": "{\"time\":\"2026-11-04T06:03:38.322944873Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":95660774316996,\"succeeded\":true}"
+    }
+  ],
+  "baseline_unverified_unique": 0,
+  "generation_mismatch_unique": 0,
+  "restart_lifecycle_source": "restart-lifecycle.json",
+  "container_lifecycle_source": "container-lifecycle-events.json"
 }

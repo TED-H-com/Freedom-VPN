@@ -1171,7 +1171,37 @@ func (x *isolationRun) deadline() {
 	if x.admin == nil {
 		return
 	}
-	end := time.Now().UTC().Add(180 * time.Second).Truncate(time.Second)
+	// F21-01: choose the finite grant's deadline from a fresh accepted renewal.
+	// This is read-only observation before creating the grant, never an edit of
+	// an existing grant or lease. Missing/late anchors block with their samples.
+	anchorConn, anchorErr := x.r.lab.db(x.ctx)
+	if anchorErr != nil {
+		x.add("AT13", iso.Check{Name: "lease member expiry", Status: iso.StatusBlocked, Actual: "finite-member-schedule.json: anchor database unavailable", Owner: "acceptance"})
+		x.extra("finite-member-schedule.json", map[string]any{"run_id": x.records["AT13"].RunID, "error": "anchor database unavailable"})
+		return
+	}
+	anchorWait, anchorCancel := context.WithTimeout(x.ctx, 60*time.Second)
+	var schedule iso.MemberExpirySchedule
+	anchorSamples := []map[string]any{}
+	anchored := waitUntil(anchorWait, time.Second, func() bool {
+		var issued, expires time.Time
+		var accepted bool
+		err := anchorConn.QueryRow(anchorWait, `SELECT issued_at,expires_at,
+            EXISTS(SELECT 1 FROM node_observations o WHERE o.node_id=s.node_id AND o.report_payload->'lease'->>'lease_id'=s.id::text AND o.report_payload->>'member_forwarding_enabled'='true')
+            FROM serving_leases s WHERE node_id=$1 ORDER BY issued_at DESC LIMIT 1`, x.r.nodeID).Scan(&issued, &expires, &accepted)
+		var ok bool
+		schedule, ok = iso.PlanMemberExpiry(issued, expires, time.Now().UTC(), accepted)
+		anchorSamples = append(anchorSamples, map[string]any{"schedule": schedule, "accepted_serving": accepted, "read_ok": err == nil})
+		return err == nil && ok
+	})
+	anchorCancel()
+	anchorConn.Close(x.ctx)
+	x.extra("finite-member-schedule.json", map[string]any{"run_id": x.records["AT13"].RunID, "anchored": anchored, "schedule": schedule, "samples": anchorSamples})
+	if !anchored {
+		x.add("AT13", iso.Check{Name: "lease member expiry", Status: iso.StatusBlocked, Actual: "finite-member-schedule.json: no fresh accepted 60-second renewal anchor", Owner: "acceptance"})
+		return
+	}
+	end := schedule.Deadline
 	r := x.join("iso-expiry", x.r.planRevID, "expiry", end)
 	if r == nil {
 		x.add("AT13", iso.Check{Name: "lease member expiry", Status: iso.StatusBlocked, Actual: "finite member admission failed", Owner: "w3-wire-members"})

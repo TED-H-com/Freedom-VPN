@@ -1,0 +1,58 @@
++ go test -count=1 -v -run ^TestAT13_Member(Schedule|Expiry) ./tests/e2e/at/isolation
+=== RUN   TestAT13_MemberExpiryRejectsFollowup20Replay
+    member_expiry_test.go:45: c52bea6c-cd91-4086-a779-656b01277dcc: historical=pass, new check=fail: member_expiry_serving_reads[0]: heartbeat serving="0" reason="safety_check_failed"; forward_chain present=false baseline=false member_accept=0; read_error=""
+--- PASS: TestAT13_MemberExpiryRejectsFollowup20Replay (0.00s)
+=== RUN   TestAT13_MemberExpiryServingNode
+=== RUN   TestAT13_MemberExpiryServingNode/failed_read
+=== RUN   TestAT13_MemberExpiryServingNode/ambiguous_heartbeat
+=== RUN   TestAT13_MemberExpiryServingNode/withdrawn_during_probes
+=== RUN   TestAT13_MemberExpiryServingNode/stale_serving_heartbeat_over_baseline
+=== RUN   TestAT13_MemberExpiryServingNode/missing_chain
+--- PASS: TestAT13_MemberExpiryServingNode (0.00s)
+    --- PASS: TestAT13_MemberExpiryServingNode/failed_read (0.00s)
+    --- PASS: TestAT13_MemberExpiryServingNode/ambiguous_heartbeat (0.00s)
+    --- PASS: TestAT13_MemberExpiryServingNode/withdrawn_during_probes (0.00s)
+    --- PASS: TestAT13_MemberExpiryServingNode/stale_serving_heartbeat_over_baseline (0.00s)
+    --- PASS: TestAT13_MemberExpiryServingNode/missing_chain (0.00s)
+=== RUN   TestAT13_MemberScheduleFollowup21RenewalReplay
+    member_schedule_test.go:60: original=blocked; timing replay=pass; anchor=2026-11-04 03:07:53.010351 +0000 +0000 D=2026-11-04 03:08:48 +0000 UTC qualifying issue=2026-11-04T03:08:36.030226Z (includes the actual 10.460446s early renewal); no signed record edited
+--- PASS: TestAT13_MemberScheduleFollowup21RenewalReplay (0.00s)
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/early_max/0s
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/early_late_step/0s
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/scheduled/0s
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/earliest_jitter/0s
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/latest_jitter/0s
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/late_step/0s
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/early_nominal/0s
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/early_min/0s
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/early_min/999ms
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/early_max/999ms
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/early_late_step/999ms
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/scheduled/999ms
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/earliest_jitter/999ms
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/latest_jitter/999ms
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/late_step/999ms
+=== RUN   TestAT13_MemberScheduleJitterAndEarlyRenewal/early_nominal/999ms
+--- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/early_max/0s (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/early_late_step/0s (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/scheduled/0s (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/earliest_jitter/0s (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/latest_jitter/0s (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/late_step/0s (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/early_nominal/0s (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/early_min/0s (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/early_min/999ms (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/early_max/999ms (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/early_late_step/999ms (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/scheduled/999ms (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/earliest_jitter/999ms (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/latest_jitter/999ms (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/late_step/999ms (0.00s)
+    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/early_nominal/999ms (0.00s)
+=== RUN   TestAT13_MemberScheduleMissingWindowStillBlocks
+    member_schedule_test.go:110: blocked finite-member-renewal-wait.json: no accepted node lease extends more than 25s beyond the member deadline before the D-5s cutoff
+--- PASS: TestAT13_MemberScheduleMissingWindowStillBlocks (0.00s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation	0.005s
