@@ -28,6 +28,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/usagestore"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/usageupload"
+	"github.com/TED-H-com/Freedom-VPN/node/updater"
 	"github.com/TED-H-com/Freedom-VPN/node/watchdog"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -168,6 +169,7 @@ type Engine struct {
 	conntrackDetail      string
 	recoverBlocked       bool
 	recovered            bool
+	recoverRetryAt       time.Duration
 	latchBlocked         bool
 	outboxFull           bool
 	meterFailed          bool
@@ -682,6 +684,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	if err := caller.Err(); err != nil {
 		return err
 	}
+	e.recoverOnce(ctx)
 	e.latch()
 	if e.identityFrozen && !e.freezeDurable {
 		e.persistFreeze(ctx)
@@ -1035,25 +1038,36 @@ func (e *Engine) recoverOnce(ctx context.Context) {
 	if e.recovered {
 		return
 	}
-	e.recovered = true
 	if e.cfg.UpdaterRecover == "" {
+		e.recovered = true
 		return
 	}
+	e.recoverBlocked = true
 	if e.cfg.UpdaterConfig == "" {
-		e.recoverBlocked = true
+		e.recovered = true
 		return
 	}
+	// The precheck also supports an older updater whose live-busy exit is 1.
+	// Do not consume an attempt or latch a result while the parent still runs.
+	if e.clock.Mono() < e.recoverRetryAt || e.updateLockHeld() {
+		return
+	}
+	e.recoverRetryAt = e.clock.Mono() + recoverRetryInterval
 	cmd := exec.CommandContext(ctx, e.cfg.UpdaterRecover, "recover", "-config", e.cfg.UpdaterConfig)
 	err := cmd.Run()
 	if ctx.Err() != nil {
 		e.recovered = false // interrupted recovery supplies no failure evidence
 		return
 	}
+	var ee *exec.ExitError
+	if errors.As(err, &ee) && ee.ExitCode() == updater.ExitBusy {
+		return
+	}
+	e.recovered = true
 	if err == nil {
 		e.recoverBlocked = false
 		return
 	}
-	var ee *exec.ExitError
 	if errors.As(err, &ee) && ee.ExitCode() == 2 {
 		e.recoverBlocked = true
 		return
