@@ -499,11 +499,12 @@ func (e *Engine) bootWithBudget(caller context.Context, timeout time.Duration) e
 func (e *Engine) boot(ctx context.Context) (bootErr error) {
 	caller := localWorkContext(ctx)
 	previous, _ := watchdog.ReadHeartbeat(e.cfg.HeartbeatPath)
-	// Publish uncertainty before any stage can block. Adoption checks the
-	// captured prior receipt, never this new startup heartbeat (r22 M-3).
+	// Publish uncertainty before any stage can block. A pending adoption
+	// retains only the prior receipt's age/deadline (D-156); adoption itself
+	// still checks that captured verified receipt, not this startup write.
 	e.serving, e.baselineOK = false, false
 	e.policyExpires = 0
-	if err := e.bootHeartbeat(ctx); err != nil {
+	if err := e.startupHeartbeat(ctx, previous); err != nil {
 		return fmt.Errorf("%w: heartbeat: %w", ErrBoot, err)
 	}
 	defer func() {
