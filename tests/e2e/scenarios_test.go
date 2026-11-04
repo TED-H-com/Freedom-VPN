@@ -82,8 +82,10 @@ func TestE2E_Acceptance(t *testing.T) {
 		run.scaleHook(ctx, admin)
 		run.gatewayPrivacy(ctx)
 		run.threatFeedTamper(ctx, admin)
+		finishRecoveryObservation := run.observeUpdateRecovery(ctx)
 		run.updater(ctx, good, bad)
 		run.controlStop(ctx)
+		finishRecoveryObservation()
 		run.revoke(ctx, nodeID)
 		run.secondExit(ctx)
 	} else {
@@ -743,6 +745,9 @@ func (r *runner) controlStop(ctx context.Context) {
 	recPathNote(&rec)("established_before", fmt.Sprintf("tcp=%d udp=%d running=%t", active.TCPEchoes, active.UDPReplies, active.Running))
 	before := r.lab.forwardChain()
 	recPathNote(&rec)("desired_before_stop", expiryView(r.desiredRaw()))
+	heartbeatBefore, _ := r.lab.docker(r.lab.node, "cat", "/run/vpn-node/heartbeat")
+	recPathNote(&rec)("heartbeat_before_stop", strings.TrimSpace(string(heartbeatBefore)))
+	recPathNote(&rec)("control_stop_requested_at", time.Now().UTC().Format(time.RFC3339Nano))
 	cmd := exec.Command("docker", "stop", "-t", "20", r.lab.control)
 	if err := cmd.Run(); err != nil {
 		rec.Status = StatusFail
@@ -750,9 +755,12 @@ func (r *runner) controlStop(ctx context.Context) {
 		r.record(rec)
 		return
 	}
+	recPathNote(&rec)("control_stopped_at", time.Now().UTC().Format(time.RFC3339Nano))
+	waitStarted := time.Now()
 	waitExpiry, cancelExpiry := context.WithTimeout(ctx, 11*time.Minute)
 	waitUntil(waitExpiry, 2*time.Second, func() bool { return r.lab.forwardChain().MemberAccept == 0 })
 	cancelExpiry()
+	recPathNote(&rec)("forwarding_wait_elapsed", time.Since(waitStarted).String())
 	after := r.lab.forwardChain()
 	heartbeat, _ := r.lab.docker(r.lab.node, "cat", "/run/vpn-node/heartbeat")
 	recPathNote(&rec)("heartbeat_after_wait", strings.TrimSpace(string(heartbeat)))
@@ -783,10 +791,13 @@ func (r *runner) controlStop(ctx context.Context) {
 	recPathNote(&rec)("active_senders_after_cutoff", boolText(later.Running && later.TCPAttempts > stopped.TCPAttempts && later.UDPAttempts > stopped.UDPAttempts))
 	recPathNote(&rec)("established_replies_and_bytes_stopped", boolText(quiet))
 	recPathNote(&rec)("established_after", fmt.Sprintf("tcp=%d udp=%d attempts_tcp=%d attempts_udp=%d", later.TCPEchoes, later.UDPReplies, later.TCPAttempts, later.UDPAttempts))
+	recPathNote(&rec)("quiet_first_sample", fmt.Sprintf("tcp=%d udp=%d attempts_tcp=%d attempts_udp=%d upload=%d download=%d", stopped.TCPEchoes, stopped.UDPReplies, stopped.TCPAttempts, stopped.UDPAttempts, bytesStopped.Upload, bytesStopped.Download))
+	recPathNote(&rec)("quiet_second_sample", fmt.Sprintf("tcp=%d udp=%d attempts_tcp=%d attempts_udp=%d upload=%d download=%d", later.TCPEchoes, later.UDPReplies, later.TCPAttempts, later.UDPAttempts, bytesLater.Upload, bytesLater.Download))
 	if !quiet || after.MemberAccept > 0 {
 		rec.Status = StatusFail
 		recPathNote(&rec)("owner", "w2-agent-core / node enforcement: established traffic cutoff")
 	}
+	recPathNote(&rec)("control_start_requested_at", time.Now().UTC().Format(time.RFC3339Nano))
 	start := exec.Command("docker", "start", r.lab.control)
 	if err := start.Run(); err != nil {
 		rec.Status = StatusFail
@@ -806,6 +817,7 @@ func (r *runner) controlStop(ctx context.Context) {
 		return resp.StatusCode == 200
 	})
 	rec.Observations = append(rec.Observations, Observation{Name: "control_restarted", Detail: boolText(up)})
+	recPathNote(&rec)("control_restart_checked_at", time.Now().UTC().Format(time.RFC3339Nano))
 	if !up && rec.Status != StatusFail {
 		rec.Status = StatusFail
 	}
