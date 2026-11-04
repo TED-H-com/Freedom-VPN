@@ -15715,7 +15715,7 @@ func TestHandover_Followup45Claims(t *testing.T) {
 				first, _ := json.Marshal(inv[0])
 				if i == 0 {
 					previous = string(first)
-				} else if string(first) != previous || inv[1].PID != 186533 || inv[1].Exit != 1 || inv[1].Output != "fvpn-updater: updater: HASH_MISMATCH: artifact\\n" {
+				} else if string(first) != previous || inv[1].PID != 186533 || inv[1].Exit != 1 || inv[1].Output != "fvpn-updater: updater: HASH_MISMATCH: artifact\n" {
 					t.Fatal("retained failure output")
 				}
 				for _, v := range inv {
