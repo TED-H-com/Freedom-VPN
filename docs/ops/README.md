@@ -1,7 +1,30 @@
 # Operations Runbooks Index (`docs/ops/`)
 
-**Current cut — [follow-up 41](../handover/follow-up-41.md) (2026-11-03 EST):** #435–#438 at c359d4a9: agent-core 45 has no comparison; members 19 restores early returns (offline only); devstack 32 handles exact-code 412s, with forced real-API proof 8/8. Isolation’s assembled run is pending in 20; agent-core 46 and read-only r27 are status only. 55 decisions, 105 findings; no operator/member behavior change.
-**Previous cut — [follow-up 40](../handover/follow-up-40.md):** #430–#434 at 3f7dbc25; D-146/D-147 on main, D-151/D-152 provisional; 14 subtests, 76 immutable records, 11 run snapshots, 84 Go declarations; 55 decisions and 102 findings.
+**Current cut — [follow-up 42](../handover/follow-up-42.md) (2026-11-03 EST):** #439–#445 at 5a942aa1; D-153 closes D-150 with no comparison, D-154 compares zero normally; r27/r28 archived, 57 decisions and 113 findings. Isolation c52bea6c records 26 pass / 2 blocked / 1 fail; historical verdicts stay unchanged. See [r28 H-1 known behaviour](../handover/operator-guide.md#r28-h-1). Secops 15, agent-core 48 and r29 are status only.
+**Previous cut — [follow-up 41](../handover/follow-up-41.md):** #435–#438 at c359d4a9; 14 subtests, 101 immutable records, 36 Go declarations; 55 decisions and 105 findings.
+
+## Follow-up 42 acceptance snapshot (2026-11-03 EST)
+
+Cut **#439–#445**, main **5a942aa1**, immediately after #438; seven briefed
+PRs, no unbriefed PR. [Evidence and routing](../handover/follow-up-42.md).
+
+| Item | Result and boundary |
+|---|---|
+| Handover 41 #440 | Previous #435–#438 cut: 14 subtests, four final rows/PRs, ten #435 inputs, 101 records, 36 Go declarations, seven prose copies; 55 decisions / 105 findings. |
+| Agent-core 46 #439 | Three dry rounds stopped on foreign activity, no reservation or comparison. Main lab 13/13, functional only. |
+| Agent-core 47 #444 | One dry reservation; A 12/13, frozen meter-reset failure stops the item. Zero pooled legs per arm. Main 13/13 functional only; one retained R23 boot-heartbeat flake passed targeted/full retries. |
+| Devstack 33 #441 | Shared WriteNode/receipts/predicates exported; finite-grant restoration and native-router rollback, offline. |
+| Isolation 20 #442 | c52bea6c: 26 pass / 2 blocked / 1 fail. F20-01 remains failed. r28 M-1's recorded memberExpiry pass is not evidence of per-member expiry under a serving node; isolation follows agent-core 48. |
+| Wire-nodes 35 #443 | D-154 zero-version comparison; four routes, zero row and standalone entry points. Stale publisherTrace32 comment routed to devstack, nonblocking. |
+| Members 20 #445 | r27 M-2/M-3 predicates answered offline, five shared writes and audit; grant fallback kept. Run-2 replay is a proof, not a verdict; all historical failures unchanged. |
+| Decisions / findings | 57 decisions; 113 findings: seven updated, eight added, 98 unchanged. D-150 closed by D-153 with no comparison; D-151/D-152 unchanged. |
+| Reviews / running work | r27/r28 raw archives and dispositions; secops 15, agent-core 48 and r29 status only. r29 not archived here. |
+
+The one new known operator behaviour is [r28 H-1](../handover/operator-guide.md#r28-h-1),
+next to the unchanged [F30-01](../handover/operator-guide.md#f30-01) guidance.
+Nothing else in this cut changes operator/member behaviour; no fix date or
+post-cutoff result is promised. Earlier snapshot sections below describe their
+own cuts and keep their original verdicts.
 
 ## Follow-up 41 acceptance snapshot (2026-11-03 EST)
 
