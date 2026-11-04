@@ -1,0 +1,590 @@
+{
+  "F22-01": {
+    "send": {
+      "event": "tcp_send",
+      "sequence": 101,
+      "wall_ns": "1793772107012461508",
+      "mono_ns": "95549463840526"
+    },
+    "timeout": {
+      "event": "tcp_read",
+      "sequence": 101,
+      "wall_ns": "1793772108514156341",
+      "mono_ns": "95550965536325",
+      "outcome": "TimeoutError"
+    },
+    "elapsed_ns": 1501695799,
+    "windows": [
+      {
+        "generation": "1090",
+        "relative_ns": [
+          -31912101,
+          14636198,
+          14643860,
+          37599961
+        ]
+      },
+      {
+        "generation": "1091",
+        "relative_ns": [
+          186469788,
+          227568165,
+          227575613,
+          246609693
+        ]
+      },
+      {
+        "generation": "1092",
+        "relative_ns": [
+          401612702,
+          428570061,
+          428579623,
+          448468287
+        ]
+      },
+      {
+        "generation": "1093",
+        "relative_ns": [
+          601830519,
+          629503551,
+          629509838,
+          653598212
+        ]
+      },
+      {
+        "generation": "1094",
+        "relative_ns": [
+          812633479,
+          827654348,
+          827658157,
+          853514311
+        ]
+      },
+      {
+        "generation": "1095",
+        "relative_ns": [
+          1010805740,
+          1025628611,
+          1025635322,
+          1046684314
+        ]
+      },
+      {
+        "generation": "1096",
+        "relative_ns": [
+          1200784622,
+          1213485537,
+          1213489240,
+          1224492080
+        ]
+      },
+      {
+        "generation": "1097",
+        "relative_ns": [
+          1378869847,
+          1394617250,
+          1394624076,
+          1407537880
+        ]
+      },
+      {
+        "generation": "1098",
+        "relative_ns": [
+          1560520106,
+          1572685762,
+          1572695013,
+          1581516888
+        ]
+      },
+      {
+        "generation": "1099",
+        "relative_ns": [
+          1739365148,
+          1751472605,
+          1751475086,
+          1766444732
+        ]
+      }
+    ],
+    "replay": [
+      {
+        "offset_ns": 0,
+        "source": "send",
+        "hits": [
+          {
+            "generation": "1090",
+            "phase": "install"
+          }
+        ]
+      },
+      {
+        "offset_ns": 208154467,
+        "source": "f30 cycle26 offset transplanted; not observed here",
+        "hits": [
+          {
+            "generation": "1091",
+            "phase": "install"
+          }
+        ]
+      },
+      {
+        "offset_ns": 416030325,
+        "source": "f30 cycle26 offset transplanted; not observed here",
+        "hits": [
+          {
+            "generation": "1092",
+            "phase": "install"
+          }
+        ]
+      },
+      {
+        "offset_ns": 832000000,
+        "source": "hypothetical backoff; not measured by f30",
+        "hits": [
+          {
+            "generation": "1094",
+            "phase": "release"
+          }
+        ]
+      },
+      {
+        "offset_ns": 1664000000,
+        "source": "hypothetical backoff; not measured by f30",
+        "hits": []
+      }
+    ],
+    "capture_counts": {
+      "origin": {
+        "tcp_header_lines": 0,
+        "udp_header_lines": 208
+      },
+      "node": {
+        "tcp_header_lines": 0,
+        "udp_header_lines": 416
+      },
+      "responder": {
+        "tcp_header_lines": 0,
+        "udp_header_lines": 208
+      }
+    },
+    "nearby_tcp": [
+      {
+        "event": "tcp_send",
+        "sequence": 99,
+        "wall_ns": "1793772106608722076",
+        "mono_ns": "95549060100851"
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 99,
+        "wall_ns": "1793772106609781918",
+        "mono_ns": "95549061159676",
+        "size": 4
+      },
+      {
+        "event": "tcp_send",
+        "sequence": 100,
+        "wall_ns": "1793772106810548244",
+        "mono_ns": "95549261927406"
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 100,
+        "wall_ns": "1793772106811558310",
+        "mono_ns": "95549262935948",
+        "size": 5
+      },
+      {
+        "event": "tcp_send",
+        "sequence": 101,
+        "wall_ns": "1793772107012461508",
+        "mono_ns": "95549463840526"
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 101,
+        "wall_ns": "1793772108514156341",
+        "mono_ns": "95550965536325",
+        "outcome": "TimeoutError"
+      },
+      {
+        "event": "tcp_send",
+        "sequence": 102,
+        "wall_ns": "1793772108714325298",
+        "mono_ns": "95551165703499"
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 102,
+        "wall_ns": "1793772108714383604",
+        "mono_ns": "95551165760682",
+        "size": 5
+      },
+      {
+        "event": "tcp_send",
+        "sequence": 103,
+        "wall_ns": "1793772108915460932",
+        "mono_ns": "95551366839775"
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 103,
+        "wall_ns": "1793772108915542846",
+        "mono_ns": "95551366919787",
+        "size": 5
+      }
+    ]
+  },
+  "F27-01-B1": {
+    "send": {
+      "event": "tcp_send",
+      "sequence": 43,
+      "wall_ns": "1793688296212473088",
+      "mono_ns": "11738663851693"
+    },
+    "timeout": {
+      "event": "tcp_read",
+      "sequence": 43,
+      "wall_ns": "1793688297713878691",
+      "mono_ns": "11740165259666",
+      "outcome": "TimeoutError"
+    },
+    "elapsed_ns": 1501407973,
+    "windows": [
+      {
+        "generation": "1064",
+        "relative_ns": [
+          -10610843,
+          404068,
+          406561,
+          14469408
+        ]
+      },
+      {
+        "generation": "1065",
+        "relative_ns": [
+          94059210,
+          105477185,
+          105483425,
+          117640244
+        ]
+      },
+      {
+        "generation": "1066",
+        "relative_ns": [
+          199466642,
+          210556582,
+          210561900,
+          223613973
+        ]
+      },
+      {
+        "generation": "1067",
+        "relative_ns": [
+          301757974,
+          315503560,
+          315507941,
+          323487714
+        ]
+      },
+      {
+        "generation": "1068",
+        "relative_ns": [
+          404029643,
+          416569407,
+          416572452,
+          427551968
+        ]
+      },
+      {
+        "generation": "1069",
+        "relative_ns": [
+          510550957,
+          522588847,
+          522591440,
+          534690233
+        ]
+      },
+      {
+        "generation": "1070",
+        "relative_ns": [
+          616525003,
+          627595784,
+          627598556,
+          640548395
+        ]
+      },
+      {
+        "generation": "1071",
+        "relative_ns": [
+          720235763,
+          731756882,
+          731771641,
+          742660384
+        ]
+      },
+      {
+        "generation": "1072",
+        "relative_ns": [
+          821378313,
+          841475460,
+          841478387,
+          857635168
+        ]
+      },
+      {
+        "generation": "1073",
+        "relative_ns": [
+          939624011,
+          953540125,
+          953545343,
+          961513197
+        ]
+      },
+      {
+        "generation": "1074",
+        "relative_ns": [
+          1038921944,
+          1051697104,
+          1051699815,
+          1063546357
+        ]
+      },
+      {
+        "generation": "1075",
+        "relative_ns": [
+          1143602308,
+          1153598417,
+          1153603722,
+          1164462825
+        ]
+      },
+      {
+        "generation": "1076",
+        "relative_ns": [
+          1246418045,
+          1275534952,
+          1275540684,
+          1290443832
+        ]
+      },
+      {
+        "generation": "1077",
+        "relative_ns": [
+          1371198931,
+          1387585018,
+          1387590056,
+          1405638264
+        ]
+      },
+      {
+        "generation": "1078",
+        "relative_ns": [
+          1486022921,
+          1505559581,
+          1505561975,
+          1522548645
+        ]
+      },
+      {
+        "generation": "1079",
+        "relative_ns": [
+          1608175993,
+          1625598894,
+          1625606808,
+          1642560946
+        ]
+      },
+      {
+        "generation": "1080",
+        "relative_ns": [
+          1726566600,
+          1745490308,
+          1745496244,
+          1761387587
+        ]
+      }
+    ],
+    "replay": [
+      {
+        "offset_ns": 0,
+        "source": "send",
+        "hits": [
+          {
+            "generation": "1064",
+            "phase": "install"
+          }
+        ]
+      },
+      {
+        "offset_ns": 208154467,
+        "source": "f30 cycle26 offset transplanted; not observed here",
+        "hits": [
+          {
+            "generation": "1066",
+            "phase": "install"
+          }
+        ]
+      },
+      {
+        "offset_ns": 416030325,
+        "source": "f30 cycle26 offset transplanted; not observed here",
+        "hits": [
+          {
+            "generation": "1068",
+            "phase": "install"
+          }
+        ]
+      },
+      {
+        "offset_ns": 832000000,
+        "source": "hypothetical backoff; not measured by f30",
+        "hits": [
+          {
+            "generation": "1072",
+            "phase": "install"
+          }
+        ]
+      },
+      {
+        "offset_ns": 1664000000,
+        "source": "hypothetical backoff; not measured by f30",
+        "hits": []
+      }
+    ],
+    "capture_counts": {
+      "origin": {
+        "tcp_header_lines": 0,
+        "udp_header_lines": 95
+      },
+      "node": {
+        "tcp_header_lines": 0,
+        "udp_header_lines": 189
+      },
+      "responder": {
+        "tcp_header_lines": 0,
+        "udp_header_lines": 94
+      }
+    },
+    "nearby_tcp": [
+      {
+        "event": "tcp_send",
+        "sequence": 41,
+        "wall_ns": "1793688295809737217",
+        "mono_ns": "11738261115660"
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 41,
+        "wall_ns": "1793688295810281135",
+        "mono_ns": "11738261658329",
+        "size": 4
+      },
+      {
+        "event": "tcp_send",
+        "sequence": 42,
+        "wall_ns": "1793688296011098446",
+        "mono_ns": "11738462477394"
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 42,
+        "wall_ns": "1793688296011794813",
+        "mono_ns": "11738463171984",
+        "size": 4
+      },
+      {
+        "event": "tcp_send",
+        "sequence": 43,
+        "wall_ns": "1793688296212473088",
+        "mono_ns": "11738663851693"
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 43,
+        "wall_ns": "1793688297713878691",
+        "mono_ns": "11740165259666",
+        "outcome": "TimeoutError"
+      },
+      {
+        "event": "tcp_send",
+        "sequence": 44,
+        "wall_ns": "1793688297914066236",
+        "mono_ns": "11740365445260"
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 44,
+        "wall_ns": "1793688297914153416",
+        "mono_ns": "11740365530536",
+        "size": 4
+      },
+      {
+        "event": "tcp_send",
+        "sequence": 45,
+        "wall_ns": "1793688298114833732",
+        "mono_ns": "11740566211997"
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 45,
+        "wall_ns": "1793688298114908922",
+        "mono_ns": "11740566285924",
+        "size": 4
+      }
+    ]
+  },
+  "sources": [
+    {
+      "path": "docs/e2e/at/isolation/reload-stream/TestAT10_AT13_ReloadRevokeBaseline/stream-a1.log.jsonl",
+      "commit": "4e77e816",
+      "sha256": "28a894d33a1845b5cc7581facbb2a5358ad00c088e69facf795802140dafe003"
+    },
+    {
+      "path": "docs/e2e/at/isolation/reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-apply.jsonl.gz",
+      "commit": "4e77e816",
+      "sha256": "c1f758353d837a0719d260e22287f02d0e7488ba63c15b56f1a1de6f5c78ae41"
+    },
+    {
+      "path": "docs/e2e/at/isolation/reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.txt.gz",
+      "commit": "4e77e816",
+      "sha256": "60ccc849587e3f67f9edcfc35b1c61230ffde9ff6e00bd98a3049c3a00e37961"
+    },
+    {
+      "path": "docs/e2e/at/isolation/reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-node.txt.gz",
+      "commit": "4e77e816",
+      "sha256": "aa67b359a71ca727f3841afc1daada226f102a539c1bebb63647ddd4884fe782"
+    },
+    {
+      "path": "docs/e2e/at/isolation/reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.txt.gz",
+      "commit": "4e77e816",
+      "sha256": "c3d06e6e682a2e2b99f13e6df8f2e7fad2aeacb5da058705249fbf1a29668d5c"
+    },
+    {
+      "path": "docs/poc/G2-followup27-evidence/comparison/B1/reload/TestAT10_AT13_ReloadRevokeBaseline/stream-a1.log.jsonl",
+      "commit": "870a931a",
+      "sha256": "9fabb7b60725010bfeae94408a8a8c704bbe3eecf294cb56e3cfd85b08b17c7d"
+    },
+    {
+      "path": "docs/poc/G2-followup27-evidence/comparison/B1/reload/TestAT10_AT13_ReloadRevokeBaseline/at10-apply.jsonl.gz",
+      "commit": "870a931a",
+      "sha256": "68f92672b36ca6c71ea2de3770bc283f841b0883afa612fbe191362a44f42cde"
+    },
+    {
+      "path": "docs/poc/G2-followup27-evidence/comparison/B1/reload/TestAT10_AT13_ReloadRevokeBaseline/at10-origin.txt",
+      "commit": "870a931a",
+      "sha256": "0bf361b3533e0f1da88af20fbadd8d0daf2405feee7f7dc010ccf1621e903aaf"
+    },
+    {
+      "path": "docs/poc/G2-followup27-evidence/comparison/B1/reload/TestAT10_AT13_ReloadRevokeBaseline/at10-node.txt",
+      "commit": "870a931a",
+      "sha256": "f4cbb909f65451fac214a5811c99f9e9d7b2ab2f58586769b9bb5bfdc596bf50"
+    },
+    {
+      "path": "docs/poc/G2-followup27-evidence/comparison/B1/reload/TestAT10_AT13_ReloadRevokeBaseline/at10-responder.txt",
+      "commit": "870a931a",
+      "sha256": "9a8b01222666d77f882666a707496ce47449f18ed2948c39571d01b5280310ee"
+    }
+  ],
+  "interpretation": "Timing compatibility only. No historical TCP packets, retry schedule after +416ms, or echo token identities were retained. Agent has no positive enforced Apply floor; campaign spacing unchanged."
+}
