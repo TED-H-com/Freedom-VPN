@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/node/watchdog"
 	"strings"
 	"testing"
 	"time"
@@ -195,5 +196,36 @@ func TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate(t *testing.T) {
 	stepOK(t, r)
 	if !r.eng.serving || r.srv.LeaseRenewals() != renewals+1 || p.baselineCalls != baseline {
 		t.Fatal("scheduled populated lease failed to recover directly")
+	}
+}
+
+// The writer sees the enclosing deadline exactly. This catches the accidental
+// 100ms sub-budget deterministically, without a sleep, timeout increase or retry.
+func TestF48_R23_BootHeartbeatUsesOneBudget(t *testing.T) {
+	r := newRig(t)
+	ctx, done := bootLocal(t.Context(), bootLocalBudget)
+	defer done()
+	want, _ := ctx.Deadline()
+	err := r.eng.writeBootHeartbeat(ctx, func(got context.Context, path string, b watchdog.Beat) error {
+		deadline, ok := got.Deadline()
+		if !ok || !deadline.Equal(want) {
+			t.Fatalf("heartbeat shortened Boot deadline: got=%v want=%v", deadline, want)
+		}
+		return watchdog.WriteHeartbeatContext(got, path, b)
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	// A publication that outlives Boot is still refused, leaving the last
+	// conservative heartbeat untouched.
+	before := mustBeat(t, r)
+	expired, cancel := context.WithCancel(ctx)
+	cancel()
+	if err := r.eng.bootHeartbeat(expired); !errors.Is(err, context.Canceled) {
+		t.Fatalf("expired publication=%v", err)
+	}
+	after := mustBeat(t, r)
+	if before != after {
+		t.Fatal("heartbeat replaced after cancellation")
 	}
 }
