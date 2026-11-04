@@ -15516,6 +15516,13 @@ func TestHandover_Followup45Claims(t *testing.T) {
 		readJSON(fixture+"followup44-main.json", &m)
 		readJSON(fixture+"history/follow-up-44/product-source-audit.json", &code)
 		readJSON(fixture+"history/follow-up-44/prior-claims.json", &prev)
+		var groups []any
+		readJSON(fixture+"followup44-claims.json", &groups)
+		oldFunction := regexp.MustCompile(`(?s)func TestHandover_Followup44Claims\(.*?\n}`).FindString(readOwnedDoc(t, root, "tests/handover/handover_test.go"))
+		if strings.Count(oldFunction, `t.Run("`)+len(groups) != 15 {
+			t.Fatal("#466 actual subtests")
+		}
+
 		old := readOwnedDoc(t, root, followup45PriorPath(register))
 		if len(snaps) != 25 || len(e.Proofs) != 30 || len(m.Rows) != 7 || len(m.PRs) != 7 || len(code) != 16 || len(prev.Claims) != 37 || len(findings(old, "## Findings register at the follow-up 44 cutoff")) != 126 || len(regexp.MustCompile(`(?m)^\| D-\d{3} \|`).FindAllString(old, -1)) != 64 {
 			t.Fatal("#466 counts")
@@ -15595,12 +15602,13 @@ func TestHandover_Followup45Claims(t *testing.T) {
 	})
 	t.Run("frozen_run_verdicts_and_AT02_integer_measurement", func(t *testing.T) {
 		var at struct {
-			Status, Previous string
-			Confounded       bool
-			Run              string `json:"run_id"`
+			Status     string
+			Previous   string `json:"previous_status"`
+			Confounded bool
+			Run        string `json:"run_id"`
 		}
 		readJSON("docs/e2e/at/secops/history/follow-up-18/AT29.json", &at)
-		if at.Status != "blocked" || !at.Confounded || !strings.HasPrefix(at.Run, "9d927350") {
+		if at.Status != "blocked" || at.Previous != "failed" || !at.Confounded || !strings.HasPrefix(at.Run, "9d927350") {
 			t.Fatal("AT29 boundary")
 		}
 		var gate struct {
@@ -15654,7 +15662,13 @@ func TestHandover_Followup45Claims(t *testing.T) {
 					Deny               string `json:"deny_all_after_apply_ns"`
 					Losses             int    `json:"losses_after_deny_all_apply"`
 				} `json:"closed_recovery"`
-				Requests, Baselines []json.RawMessage `json:"-"`
+				Requests  []json.RawMessage `json:"requests_until_serving_apply"`
+				Baselines []json.RawMessage `json:"baseline_writes_until_serving_apply"`
+				Serving   struct {
+					Sequence string
+					Timing   struct{ Succeeded, Verified bool }
+					Lease    struct{ Members int }
+				} `json:"serving_apply"`
 			}
 		}
 		readJSON(frozen+"docs_e2e_at_members_F22-AT02-closed-recovery-trace.json", &recovery)
@@ -15662,7 +15676,7 @@ func TestHandover_Followup45Claims(t *testing.T) {
 			t.Fatal("recovery count")
 		}
 		r := recovery.Recoveries[0]
-		if r.Delay != "67818066" || r.Closed.Sequence != "586" || r.Closed.Deny != "205367485" || r.Closed.Losses != 8 {
+		if len(r.Requests) != 1 || len(r.Baselines) != 0 || r.Serving.Sequence != "592" || !r.Serving.Timing.Succeeded || !r.Serving.Timing.Verified || r.Serving.Lease.Members != 1 || r.Delay != "67818066" || r.Closed.Sequence != "586" || r.Closed.Deny != "205367485" || r.Closed.Losses != 8 {
 			t.Fatal("AT02 timing")
 		}
 	})
@@ -15719,6 +15733,8 @@ func TestHandover_Followup45Claims(t *testing.T) {
 		if lease.Status != "pass" {
 			t.Fatal("lease expiry")
 		}
+		require(frozen+"docs_e2e_runs_2026-11-04_followup35_recovery-proof.txt.txt", "2026-11-04T09:52:28.339161088Z", "2026-11-04T09:52:32.243095448Z", "2026-11-04T09:52:37.654699088Z", "2026-11-04T09:52:42.906726464Z", "cause=policy_missing", "recovery_required", "181291", "178784")
+
 		require(frozen+"docs_e2e_runs_2026-11-04_followup35_acceptance-summary.md.txt", "32", "1", "0", "member-ipv6")
 		require(frozen+"docs_e2e_runs_2026-11-04_followup35_nightly-gate.md.txt", "pass=32, expected_blocked=1", "fail=0, error=0")
 	})
