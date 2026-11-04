@@ -1,0 +1,13 @@
+=== RUN   TestE2E_Followup32Publisher
+    scenarios_test.go:131: scenario admin-login: pass
+    scenarios_test.go:131: scenario serving-catalogue: pass
+    scenarios_test.go:131: scenario enroll-bootstrap: pass
+    scenarios_test.go:131: scenario desired-state: pass
+    scenarios_test.go:131: scenario publish: pass
+    scenarios_test.go:131: scenario publisher-retry-proof: blocked
+    scenarios_test.go:164: acceptance summary: pass=5 blocked=1 fail=0 run=af726b13-9f9c-4675-b81f-edd78d3a5c24 source=419c065cbf93b83b0114f84071fee62981d90d99
+    scenarios_test.go:171: one or more scenarios are blocked or failed; see docs/e2e/runs
+--- FAIL: TestE2E_Followup32Publisher (21.96s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/e2e	21.968s
+FAIL

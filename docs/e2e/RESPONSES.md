@@ -1426,3 +1426,81 @@ carrying this link in members commit
 `docs/poc/G1-app-checklist.md`; the
 [per-file verification](runs/2026-11-03/followup31/archive-links.md) records each
 source file, source digest and successful target/byte comparison.
+
+## 2026-11-03 — isolation 19 F19-02: bounded node ETag conflict handling
+
+The shared publisher now re-reads the node after an exact HTTP 412
+`RESOURCE_VERSION_CONFLICT` on its capacity PATCH or publication PUT. If the
+re-read has all requested capacity values, or published intent and the exact
+requested group, that command succeeds without another write. Otherwise it
+retries with the new ETag. Each command has at most three write attempts and a
+ten-second total deadline, including re-reads. This permits two transient races
+while keeping persistent contention blocked. Other statuses, other 412 codes,
+failed re-reads and transport errors stop immediately. No run is retried and
+nothing is added to `expected-blocked.json`.
+
+The contract and `internal/nodes/observations.go` show that accepted reports
+advance the node version. Isolation's stored check timestamps include
+`2026-11-03T22:10:56.673939768Z`, in the same second as its blocked PATCH record.
+A report arriving between the GET and PATCH is a plausible explanation, but
+that record lacks the sent ETag, returned current version and individual request
+times needed to identify the competing write. This is not proof of host
+interference or a product defect. Isolation's later independent PUT returned
+202 and remained running; that separate evidence is preserved.
+
+Retries keep the original UUID key and unchanged body. OpenAPI `IdempotencyKey`
+and spec §14.5 identify the same logical command by its validated payload;
+`If-Match` is not in that hash. The server rolls back both the failed command
+and its key reservation on a 412, and stores only durable successful results.
+A new key is unnecessary. The [source audit](runs/2026-11-03/followup32/audit.md)
+traces this boundary and lists every owned/AT conditional-write site.
+
+Consumer records now contain a `node_write` observation for each command. Its
+JSON has ordered `attempts`, method/path, sent `if_match`, UUID key, response
+status/error code, decimal-string `current_resource_version` when supplied,
+UTC start/finish times, and the nested re-read's method/path/status/error/ETag
+and times. `outcome=already_intended` explicitly identifies success without a
+second write. Bounds and the terminal outcome/status are included. This
+command receipt does not imply applied state: all downstream publication
+predicates remain intact, including real operation success and active observed
+publication. The other owned node helpers use the same implementation;
+unrelated calls keep their existing behavior.
+
+`FVPN_E2E_PUBLISH_STALE_ETAG=1` is an off-by-default TEST ONLY switch: it sends
+`"0"` on the first capacity and first publication attempt, provoking real API
+412s without modifying product state or observations. Subsequent writes use
+the actual re-read ETags. The [follow-up 32 evidence](runs/2026-11-03/followup32/README.md)
+retains the synthetic gates and both fresh-stack attempts, including the
+ordinary path with the switch unset. AT-owned sites are read-only hand-offs in
+the audit's dated Requests to orchestrator; isolation reruns after merge.
+
+Follow-up 32 validation result: the ordinary fresh-stack run
+`c52b760c-c289-4220-a722-6c5a059819b9` passed all eight checks, including active
+publication and populated serving. It had zero conflicts. The forced run
+`e22872b7-1112-4082-8e2b-235275f4a659` failed before enrollment because the
+local admission wrapper polluted Docker's JSON stdout with `free`; its original
+failure is retained and the wrapper was corrected. Under the explicit no-run-
+retry rule it was not repeated. **Real-API 412→successful retry validation
+remains not exercised**, although all synthetic conflict cases passed. A later
+orchestrator-authorized forced proof is still needed; F19-02 is not fully closed.
+
+2026-11-03 resumed validation: **Resolved by forced invocation
+`95fb7eab-6795-48df-b3f2-ed014710d292`**, which passed all eight checks. The
+first PATCH and PUT each sent `"0"`, received real HTTP 412
+`RESOURCE_VERSION_CONFLICT`, re-read once, and retried once with ETags `"7"`
+and `"8"` respectively. Both retries returned 202 with the same key and exact
+body digest; each key had one durable accepted operation. Real operation
+success, active publication, member admission/counting and populated serving
+all passed. Fresh ordinary invocation `3ad796d4-b669-42d2-aadf-46e60146822a`
+also passed all eight checks with zero conflicts. First resumed invocation
+`af726b13-9f9c-4675-b81f-edd78d3a5c24` remains blocked: publication recovered,
+but the owned proof helper incorrectly demanded a version detail when the
+API's zero-header rejection supplied empty details. The proof was fixed and
+covered by a stub regression under the resume's explicit retry authorization;
+no product code or downstream predicate changed. The
+[resume records](runs/2026-11-03/followup32/resume.md) retain every invocation,
+request/re-read time, fresh ETag, same-key/body receipt, clean-wrapper dry check
+and diagnostic. Original records and earlier “not exercised” wording are
+preserved as history; the required real-API proof is now exercised. This
+zero-header injection does not establish the historical observation race.
+Isolation still owns its post-merge acceptance run.

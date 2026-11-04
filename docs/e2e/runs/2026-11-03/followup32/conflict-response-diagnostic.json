@@ -1,0 +1,26 @@
+{
+  "id": "conflict-response-diagnostic",
+  "title": "Read-only stale-header diagnostic: real 412 has empty optional details",
+  "spec": [
+    "API01",
+    "\u00a714.5"
+  ],
+  "status": "pass",
+  "run_id": "af726b13-9f9c-4675-b81f-edd78d3a5c24",
+  "source_commit": "419c065cbf93b83b0114f84071fee62981d90d99",
+  "at": "2026-11-03T23:25:55.2830024Z",
+  "observations": [
+    {
+      "name": "request",
+      "detail": "{\"body_sha256\": \"4939d40789ac64dedacaf0576b0f088ab48bf3b256d2263b70a3aa36ef39b67d\", \"error_code\": \"RESOURCE_VERSION_CONFLICT\", \"finished_at\": \"2026-11-03T23:25:55.2830024Z\", \"idempotency_key\": \"4573558b-666d-41c9-a39c-6e65f500145b\", \"if_match\": \"\\\"0\\\"\", \"method\": \"PATCH\", \"path\": \"/api/v1/admin/nodes/01a1a3ba-5fa4-7e43-bf4d-4b4f0b993dc9\", \"response_bytes\": 197, \"response_sha256\": \"7c447c7403b114b944a4eee3dcf52e2e3289851014cefec779094b70e1e0d711\", \"started_at\": \"2026-11-03T23:25:55.279449214Z\", \"status\": 412}"
+    },
+    {
+      "name": "response_envelope",
+      "detail": "{\"error\": {\"code\": \"RESOURCE_VERSION_CONFLICT\", \"details\": {}, \"message\": \"If-Match header does not match a valid resource_version\", \"request_id\": \"01a1a3bb-c8d0-78e2-b91c-7758b8aa63b8\", \"retryable\": false}}"
+    },
+    {
+      "name": "purpose",
+      "detail": "One diagnostic PATCH with If-Match=\"0\" after the blocked proof, using a separate key. The real API rejects this header before mutation in nodes.ParseIfMatch; no re-read/retry or new publisher invocation. The whole response parsed as JSON; details was empty. Original run records unchanged."
+    }
+  ]
+}

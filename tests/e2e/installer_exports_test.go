@@ -269,11 +269,11 @@ func (r *runner) revokeInstallerNode(ctx context.Context, s *Stack, admin Browse
 		note("revoke_get", itoa(detail.Status))
 		return false
 	}
-	rev, err := s.Call(ctx, admin, "POST", "/api/v1/admin/nodes/"+id.String()+"/revoke", api.ReasonRequest{Reason: "e2e installer reenroll"}, map[string]string{
-		"Idempotency-Key": uuid.NewString(), "If-Match": detail.Header.Get("ETag"),
-	})
-	note("revoke", itoa(rev.Status))
-	return err == nil && rev.Status == 202
+	nodeURL := s.PublicURL() + "/api/v1/admin/nodes/" + id.String()
+	client := &session{http: admin.Client, csrf: admin.CSRF}
+	result := client.writeNode(ctx, "POST", nodeURL+"/revoke", nodeURL, api.ReasonRequest{Reason: "e2e installer reenroll"}, detail.Header.Get("ETag"), revokedNode, []int{202}, note)
+	note("revoke", httpDetail(result.Reply, result.Err))
+	return result.accepted(202)
 }
 
 func TestE2E_InstallerExports(t *testing.T) {

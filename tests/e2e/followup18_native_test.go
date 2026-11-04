@@ -222,10 +222,11 @@ func (r *runner) firstOffer18(ctx context.Context, s *Stack, admin *session) {
 		parentRate = 220000000
 	}
 	capacity := map[string]any{"capacity": map[string]any{"down_bps": parentRate, "up_bps": parentRate, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
-	patched, err := admin.call(ctx, "PATCH", r.lab.public+"/api/v1/admin/nodes/"+r.nodeID.String(), capacity, map[string]string{"If-Match": detail.Header.Get("ETag"), "Idempotency-Key": uuid.NewString()})
-	recPathNote(&rec)("configuration_command", httpDetail(patched, err))
+	nodeURL := r.lab.public + "/api/v1/admin/nodes/" + r.nodeID.String()
+	result := admin.writeNode(ctx, "PATCH", nodeURL, nodeURL, capacity, detail.Header.Get("ETag"), nodeFieldsMatch(capacity), []int{200, 202}, recPathNote(&rec))
+	recPathNote(&rec)("configuration_command", httpDetail(result.Reply, result.Err))
 	recPathNote(&rec)("retained_generation", retained)
-	if err != nil || (patched.Status != 200 && patched.Status != 202) {
+	if !result.accepted(200, 202) {
 		return
 	}
 	changed, stopChanged := context.WithTimeout(ctx, 30*time.Second)

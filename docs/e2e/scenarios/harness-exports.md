@@ -727,3 +727,46 @@ owners. After that, devstack can supply the bounded TEST ONLY injection/removal
 handle and command/state/UTC receipts. Consumers will need cleanup registration,
 verified removal and accepted-report/incident/audit joins; there is currently no
 such handle to call.
+
+## Follow-up 32 — publisher and node conditional writes
+
+The shared publisher preserves its capacity values, publication request, step
+order and downstream operation/observed-state predicates. Its two conditional
+writes now use the shared `session.writeNode` helper. Owned capacity/revoke
+helpers use it too; `session.call` and `Stack.Call` retain their original
+behavior for all other callers. The helper uses private HTTP/1 connections
+and rejects redirects so net/http cannot silently replay a keyed request on
+a reused connection. There is no global HTTP retry policy.
+
+Only HTTP 412 with `RESOURCE_VERSION_CONFLICT` triggers a GET of the node. All
+intended desired fields must match to stop without another write; otherwise a
+fresh strong ETag is required. At most three writes and ten seconds total are
+allowed per logical command, including re-reads. Every other response or
+transport error stops. Retries reuse one UUID key and unchanged payload because
+the server's failed transaction does not persist a 412 idempotency reservation.
+Already-intended publication still needs the existing real operation to succeed
+and observed publication to become active; intent alone cannot pass publication.
+
+Keep each `node_write` observation verbatim and in order. Its JSON contains
+bounds, terminal status/outcome and every attempt's method/path, `if_match`,
+`idempotency_key`, status/error code, optional decimal `current_resource_version`,
+UTC start/finish, plus its re-read ETag and request/response times. The
+`already_intended` outcome and re-read flag identify a successful desired-value
+check without another write. A command `status=pass` is an accepted write or a
+matching re-read, not proof of applied state. Scenario status is separate.
+
+For fixture verification only, `FVPN_E2E_PUBLISH_STALE_ETAG=1` sends `"0"` on the
+first PATCH and first PUT; it is off by default. Run
+`TestE2E_Followup32Publisher` with `FVPN_E2E_FOLLOWUP32=1` once on a fresh stack
+with that switch, and once on a new fresh stack without it. Each invocation
+creates a new retained run directory under `runs/2026-11-03/followup32/`, checks
+the real same-key 412→202 receipts, and checks populated serving independently.
+Never repeat an attempt to replace its result. See the
+[audit and AT hand-offs](../runs/2026-11-03/followup32/audit.md).
+
+2026-11-03 resume: each new `node_write.attempts[]` also contains
+`body_sha256`, calculated from the exact JSON bytes passed to the HTTP request.
+The forced-proof runner checks that the digest stays identical across attempts,
+along with the UUID key. Stub tests compare each digest with the bytes actually
+received by the server. No raw body or secret is added to the receipts; older
+records remain unchanged.

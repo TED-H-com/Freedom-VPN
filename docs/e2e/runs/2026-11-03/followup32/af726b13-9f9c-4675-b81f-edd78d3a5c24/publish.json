@@ -1,0 +1,262 @@
+{
+  "id": "publish",
+  "title": "Publish the enrolled exit",
+  "spec": [
+    "§5.2",
+    "§14.2"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "agent_baseline_observed",
+      "detail": "true"
+    },
+    {
+      "name": "stored_rows",
+      "detail": "{\"node\": {\"peer_id\": \"dbl6qbf8k4c0009bnih0\", \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\", \"desired_config_generation\": \"1\"}, \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-03T23:24:33.623927896Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-03T23:24:33.623927896Z\"}, {\"name\": \"lease\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-11-03T23:24:33.623927896Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-03T23:24:33.623927896Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-03T23:24:33.623927896Z\"}, {\"name\": \"qos\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-11-03T23:24:33.623927896Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-03T23:24:33.623927896Z\"}, {\"name\": \"source_binding\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-11-03T23:24:33.623927896Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-03T23:24:33.623927896Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-03T23:24:33.623927896Z\"}], \"peer_id\": null, \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\"}, \"exit_group_count\": 0, \"peer_observe_events\": 2}"
+    },
+    {
+      "name": "control_status",
+      "detail": "online"
+    },
+    {
+      "name": "safety_status",
+      "detail": "passed"
+    },
+    {
+      "name": "data_health",
+      "detail": "healthy"
+    },
+    {
+      "name": "provisioning_state",
+      "detail": "ready"
+    },
+    {
+      "name": "lifecycle_state",
+      "detail": "registered"
+    },
+    {
+      "name": "publication_intent",
+      "detail": "unpublished"
+    },
+    {
+      "name": "publication_observed",
+      "detail": "absent"
+    },
+    {
+      "name": "config_desired",
+      "detail": "1"
+    },
+    {
+      "name": "config_applied",
+      "detail": "1"
+    },
+    {
+      "name": "check_dns_policy",
+      "detail": "passed"
+    },
+    {
+      "name": "check_internet_only",
+      "detail": "passed"
+    },
+    {
+      "name": "check_lease",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_meter_path",
+      "detail": "passed"
+    },
+    {
+      "name": "check_policy_signature",
+      "detail": "passed"
+    },
+    {
+      "name": "check_qos",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_release_supported",
+      "detail": "passed"
+    },
+    {
+      "name": "check_source_binding",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_storage",
+      "detail": "passed"
+    },
+    {
+      "name": "check_tunnel_probe",
+      "detail": "passed"
+    },
+    {
+      "name": "test_only_stale_etag",
+      "detail": "capacity first attempt only"
+    },
+    {
+      "name": "node_write",
+      "detail": "{\"started_at\":\"2026-11-03T23:24:33.694254126Z\",\"finished_at\":\"2026-11-03T23:24:33.706599941Z\",\"max_attempts\":3,\"limit_seconds\":10,\"status\":\"pass\",\"outcome\":\"accepted\",\"attempts\":[{\"method\":\"PATCH\",\"path\":\"/api/v1/admin/nodes/01a1a3ba-5fa4-7e43-bf4d-4b4f0b993dc9\",\"if_match\":\"\\\"0\\\"\",\"idempotency_key\":\"9bc52246-5cca-4dbb-b776-76d515b7bf48\",\"body_sha256\":\"4939d40789ac64dedacaf0576b0f088ab48bf3b256d2263b70a3aa36ef39b67d\",\"started_at\":\"2026-11-03T23:24:33.694262942Z\",\"finished_at\":\"2026-11-03T23:24:33.697786879Z\",\"status\":412,\"error_code\":\"RESOURCE_VERSION_CONFLICT\",\"transport_error\":false,\"reread\":{\"method\":\"GET\",\"path\":\"/api/v1/admin/nodes/01a1a3ba-5fa4-7e43-bf4d-4b4f0b993dc9\",\"started_at\":\"2026-11-03T23:24:33.697806052Z\",\"finished_at\":\"2026-11-03T23:24:33.70121898Z\",\"status\":200,\"error_code\":\"\",\"etag\":\"\\\"6\\\"\",\"transport_error\":false,\"already_intended\":false}},{\"method\":\"PATCH\",\"path\":\"/api/v1/admin/nodes/01a1a3ba-5fa4-7e43-bf4d-4b4f0b993dc9\",\"if_match\":\"\\\"6\\\"\",\"idempotency_key\":\"9bc52246-5cca-4dbb-b776-76d515b7bf48\",\"body_sha256\":\"4939d40789ac64dedacaf0576b0f088ab48bf3b256d2263b70a3aa36ef39b67d\",\"started_at\":\"2026-11-03T23:24:33.701258287Z\",\"finished_at\":\"2026-11-03T23:24:33.706586484Z\",\"status\":202,\"error_code\":\"\",\"transport_error\":false}]}"
+    },
+    {
+      "name": "capacity_patch",
+      "detail": "202"
+    },
+    {
+      "name": "capacity_input",
+      "detail": "TEST ONLY 200 Mbps parent / 100 Mbps member caps through PATCH; required by the agent QoS model"
+    },
+    {
+      "name": "test_only_stale_etag",
+      "detail": "publication first attempt only"
+    },
+    {
+      "name": "request",
+      "detail": "{\"publication_intent\":\"published\",\"group_ids\":[\"01a1a3ba-518c-7ed9-abe1-6f4792fe242c\"],\"reason\":\"e2e acceptance publish\"}; If-Match=\"0\""
+    },
+    {
+      "name": "node_write",
+      "detail": "{\"started_at\":\"2026-11-03T23:24:33.709324982Z\",\"finished_at\":\"2026-11-03T23:24:33.720383976Z\",\"max_attempts\":3,\"limit_seconds\":10,\"status\":\"pass\",\"outcome\":\"accepted\",\"attempts\":[{\"method\":\"PUT\",\"path\":\"/api/v1/admin/nodes/01a1a3ba-5fa4-7e43-bf4d-4b4f0b993dc9/publication\",\"if_match\":\"\\\"0\\\"\",\"idempotency_key\":\"d4814143-839b-459d-8cf7-f41407269b70\",\"body_sha256\":\"960d69301a7fefdc7a1b62122a83becb4abbb837fb284fc26730fbc4d697c534\",\"started_at\":\"2026-11-03T23:24:33.709328596Z\",\"finished_at\":\"2026-11-03T23:24:33.712413024Z\",\"status\":412,\"error_code\":\"RESOURCE_VERSION_CONFLICT\",\"transport_error\":false,\"reread\":{\"method\":\"GET\",\"path\":\"/api/v1/admin/nodes/01a1a3ba-5fa4-7e43-bf4d-4b4f0b993dc9\",\"started_at\":\"2026-11-03T23:24:33.71241594Z\",\"finished_at\":\"2026-11-03T23:24:33.715408949Z\",\"status\":200,\"error_code\":\"\",\"etag\":\"\\\"7\\\"\",\"transport_error\":false,\"already_intended\":false}},{\"method\":\"PUT\",\"path\":\"/api/v1/admin/nodes/01a1a3ba-5fa4-7e43-bf4d-4b4f0b993dc9/publication\",\"if_match\":\"\\\"7\\\"\",\"idempotency_key\":\"d4814143-839b-459d-8cf7-f41407269b70\",\"body_sha256\":\"960d69301a7fefdc7a1b62122a83becb4abbb837fb284fc26730fbc4d697c534\",\"started_at\":\"2026-11-03T23:24:33.715448105Z\",\"finished_at\":\"2026-11-03T23:24:33.720380291Z\",\"status\":202,\"error_code\":\"\",\"transport_error\":false}]}"
+    },
+    {
+      "name": "put",
+      "detail": "202"
+    },
+    {
+      "name": "operation_id",
+      "detail": "df7375b2-765c-4e9c-895d-6809c3caad59"
+    },
+    {
+      "name": "operation_status",
+      "detail": "succeeded"
+    },
+    {
+      "name": "operation_kind",
+      "detail": "node.publish"
+    },
+    {
+      "name": "step_agent_policy",
+      "detail": "succeeded"
+    },
+    {
+      "name": "step_data_path_probe",
+      "detail": "succeeded"
+    },
+    {
+      "name": "step_netbird_route_readback",
+      "detail": "succeeded"
+    },
+    {
+      "name": "node_after",
+      "detail": "200"
+    },
+    {
+      "name": "control_status",
+      "detail": "online"
+    },
+    {
+      "name": "safety_status",
+      "detail": "passed"
+    },
+    {
+      "name": "data_health",
+      "detail": "healthy"
+    },
+    {
+      "name": "provisioning_state",
+      "detail": "ready"
+    },
+    {
+      "name": "lifecycle_state",
+      "detail": "registered"
+    },
+    {
+      "name": "publication_intent",
+      "detail": "published"
+    },
+    {
+      "name": "publication_observed",
+      "detail": "active"
+    },
+    {
+      "name": "config_desired",
+      "detail": "3"
+    },
+    {
+      "name": "config_applied",
+      "detail": "3"
+    },
+    {
+      "name": "check_dns_policy",
+      "detail": "passed"
+    },
+    {
+      "name": "check_internet_only",
+      "detail": "passed"
+    },
+    {
+      "name": "check_lease",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_meter_path",
+      "detail": "passed"
+    },
+    {
+      "name": "check_policy_signature",
+      "detail": "passed"
+    },
+    {
+      "name": "check_qos",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_release_supported",
+      "detail": "passed"
+    },
+    {
+      "name": "check_source_binding",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_storage",
+      "detail": "passed"
+    },
+    {
+      "name": "check_tunnel_probe",
+      "detail": "passed"
+    },
+    {
+      "name": "desired_publication_intent",
+      "detail": "published"
+    },
+    {
+      "name": "desired_generation",
+      "detail": "3"
+    },
+    {
+      "name": "member_rate_policies",
+      "detail": "0"
+    },
+    {
+      "name": "device_bindings",
+      "detail": "0"
+    },
+    {
+      "name": "forward_generation",
+      "detail": "3"
+    },
+    {
+      "name": "member_accept_rules",
+      "detail": "0"
+    },
+    {
+      "name": "note",
+      "detail": "node.publish succeeded and publication_observed is active"
+    }
+  ],
+  "at": "2026-11-03T23:24:39Z",
+  "run_id": "af726b13-9f9c-4675-b81f-edd78d3a5c24",
+  "source_commit": "419c065cbf93b83b0114f84071fee62981d90d99"
+}
