@@ -39,40 +39,43 @@ import (
 const flowtableBypassBlocker = "w1-netlab / w3-devstack-e2e: PR #220 (2473acf, node/enforce/verify_foreign.go) added whole-ruleset foreign-chain verification to VerifyServing; in deploy/devstack, Docker Engine installs table ip nat (POSTROUTING -> DOCKER_POSTROUTING -> xt target SNAT for 127.0.0.11 loopback DNS) inside node-netns and node2-netns, causing VerifyServing to fail with FLOWTABLE_BYPASS (\"table nat family ip hook postrouting priority 100 chain POSTROUTING statement xt\") and roll back table inet fvpn to fvpn_generation=0 whenever d.Serve=true."
 
 type d067CycleMeasurement struct {
-	Cycle                            string            `json:"cycle"`
-	NodeID                           uuid.UUID         `json:"node_id"`
-	IncarnationID                    uuid.UUID         `json:"incarnation_id"`
-	OldAppliedGeneration             uint64            `json:"old_applied_generation"`
-	TargetDesiredGeneration          uint64            `json:"target_desired_generation"`
-	ProvisionalLeaseID               uuid.UUID         `json:"provisional_lease_id"`
-	ProvisionalLeaseGeneration       uint64            `json:"provisional_lease_generation"`
-	ProvisionalLeaseIssuedAt         string            `json:"provisional_lease_issued_at"`
-	ProvisionalLeaseExpiresAt        string            `json:"provisional_lease_expires_at"`
-	ProvisionalLeaseTTLSeconds       int64             `json:"provisional_lease_ttl_seconds"`
-	ProvisionalLeaseMemberCount      int               `json:"provisional_lease_member_count"`
-	ReadyObservationReportID         uuid.UUID         `json:"ready_observation_report_id"`
-	ReadyObservationReceivedAt       string            `json:"ready_observation_received_at"`
-	ForwardingBlockReasons           []string          `json:"forwarding_block_reasons"`
-	CheckErrorCodes                  map[string]string `json:"check_error_codes"`
-	Errors                           []api.NodeError   `json:"errors"`
-	LeaseExpiredReportedDuringWindow bool              `json:"lease_expired_reported_during_window"`
-	PopulatedLeaseID                 uuid.UUID         `json:"populated_lease_id"`
-	PopulatedLeaseGeneration         uint64            `json:"populated_lease_generation"`
-	PopulatedLeaseIssuedAt           string            `json:"populated_lease_issued_at"`
-	PopulatedLeaseExpiresAt          string            `json:"populated_lease_expires_at"`
-	PopulatedLeaseTTLSeconds         int64             `json:"populated_lease_ttl_seconds"`
-	PopulatedLeaseMemberCount        int               `json:"populated_lease_member_count"`
-	PopulatedLeaseInForceAt          string            `json:"populated_lease_in_force_at"`
-	FirstCountedByteAt               string            `json:"first_counted_byte_at"`
-	ReadyToPopulatedLeaseIssuedMs    int64             `json:"ready_to_populated_lease_issued_ms"`
-	ReadyToPopulatedLeaseMs          int64             `json:"ready_to_populated_lease_ms"`
-	ReadyToFirstCountedByteMs        int64             `json:"ready_to_first_counted_byte_ms"`
-	MaxAllowedWindowMs               int64             `json:"max_allowed_window_ms"`
-	FirstCountedTransfer             transferResult    `json:"first_counted_transfer"`
-	ApplyBlockerObservationReportID  uuid.UUID         `json:"apply_blocker_observation_report_id,omitempty"`
-	ApplyBlockerObservationAt        string            `json:"apply_blocker_observation_at,omitempty"`
-	ApplyBlockerErrorCode            string            `json:"apply_blocker_error_code,omitempty"`
-	ApplyBlockerDetail               string            `json:"apply_blocker_detail,omitempty"`
+	Cycle                            string                `json:"cycle"`
+	NodeID                           uuid.UUID             `json:"node_id"`
+	IncarnationID                    uuid.UUID             `json:"incarnation_id"`
+	OldAppliedGeneration             uint64                `json:"old_applied_generation"`
+	TargetDesiredGeneration          uint64                `json:"target_desired_generation"`
+	ProvisionalLeaseID               uuid.UUID             `json:"provisional_lease_id"`
+	ProvisionalLeaseGeneration       uint64                `json:"provisional_lease_generation"`
+	ProvisionalLeaseIssuedAt         string                `json:"provisional_lease_issued_at"`
+	ProvisionalLeaseExpiresAt        string                `json:"provisional_lease_expires_at"`
+	ProvisionalLeaseTTLSeconds       int64                 `json:"provisional_lease_ttl_seconds"`
+	ProvisionalLeaseMemberCount      int                   `json:"provisional_lease_member_count"`
+	ReadyObservationReportID         uuid.UUID             `json:"ready_observation_report_id"`
+	ReadyObservationReceivedAt       string                `json:"ready_observation_received_at"`
+	ForwardingBlockReasons           []string              `json:"forwarding_block_reasons"`
+	CheckErrorCodes                  map[string]string     `json:"check_error_codes"`
+	Errors                           []api.NodeError       `json:"errors"`
+	LeaseExpiredReportedDuringWindow bool                  `json:"lease_expired_reported_during_window"`
+	PopulatedLeaseID                 uuid.UUID             `json:"populated_lease_id"`
+	PopulatedLeaseGeneration         uint64                `json:"populated_lease_generation"`
+	PopulatedLeaseIssuedAt           string                `json:"populated_lease_issued_at"`
+	PopulatedLeaseExpiresAt          string                `json:"populated_lease_expires_at"`
+	PopulatedLeaseTTLSeconds         int64                 `json:"populated_lease_ttl_seconds"`
+	PopulatedLeaseMemberCount        int                   `json:"populated_lease_member_count"`
+	PopulatedLeaseInForceAt          string                `json:"populated_lease_in_force_at"`
+	FirstCountedByteAt               string                `json:"first_counted_byte_at"`
+	ReadyToPopulatedLeaseIssuedMs    int64                 `json:"ready_to_populated_lease_issued_ms"`
+	ReadyToPopulatedLeaseMs          int64                 `json:"ready_to_populated_lease_ms"`
+	ReadyToFirstCountedByteMs        int64                 `json:"ready_to_first_counted_byte_ms"`
+	MaxAllowedWindowMs               int64                 `json:"max_allowed_window_ms"`
+	FirstCountedTransfer             transferResult        `json:"first_counted_transfer"`
+	ApplyBlockerObservationReportID  uuid.UUID             `json:"apply_blocker_observation_report_id,omitempty"`
+	ApplyBlockerObservationAt        string                `json:"apply_blocker_observation_at,omitempty"`
+	ApplyBlockerErrorCode            string                `json:"apply_blocker_error_code,omitempty"`
+	ApplyBlockerDetail               string                `json:"apply_blocker_detail,omitempty"`
+	DisableWrite                     *e2e.NodeWriteReceipt `json:"disable_write,omitempty"`
+	CapacityWrite                    *e2e.NodeWriteReceipt `json:"capacity_write,omitempty"`
+	PublicationWrite                 *e2e.NodeWriteReceipt `json:"publication_write,omitempty"`
 }
 
 type fupTransitionMeasurement struct {
@@ -123,6 +126,9 @@ type incarnationRetentionMeasurement struct {
 	OldIncarnationUsageFixed       bool                    `json:"old_incarnation_usage_fixed"`
 	MemberTotalUnchangedOnReenroll bool                    `json:"member_total_unchanged_on_reenroll"`
 	NewTrafficAccumulatedSameMonth bool                    `json:"new_traffic_accumulated_same_month"`
+	RevokeOperationID              string                  `json:"revoke_operation_id"`
+	RevokeWrite                    e2e.NodeWriteReceipt    `json:"revoke_write"`
+	ReinstallSetupWrites           nodeSetupWrites         `json:"reinstall_setup_writes"`
 }
 
 type sqliteUsageSnapshot struct {
@@ -1023,9 +1029,16 @@ func (s *liveSuite) measurePerIncarnationRetainedUsage() incarnationRetentionMea
 	revResp := s.nodeMutation(s.node2ID, http.MethodPost, "/revoke", map[string]any{
 		"reason": "TEST ONLY AT19 ENR-03 revoke before reinstall",
 	})
-	var revOp api.OperationAccepted
-	if revResp.status != http.StatusAccepted || json.Unmarshal(revResp.body, &revOp) != nil {
+	if !revResp.accepted(http.StatusAccepted) {
 		s.t.Fatalf("ENR-03 POST /api/v1/admin/nodes/%s/revoke failed: HTTP %d %s", s.node2ID, revResp.status, string(revResp.body))
+	}
+	var revOp api.OperationAccepted
+	_ = json.Unmarshal(revResp.body, &revOp)
+	if revOp.OperationId == uuid.Nil && revResp.write.AlreadyIntended && s.pool != nil {
+		_ = s.pool.QueryRow(s.ctx, `SELECT o.id FROM operations o JOIN nodes n ON n.id = o.resource_id WHERE o.resource_type = 'node' AND o.resource_id = $1 AND o.kind = 'node.revoke' AND o.desired_generation = n.desired_config_generation ORDER BY o.created_at DESC LIMIT 1`, s.node2ID).Scan(&revOp.OperationId)
+	}
+	if revOp.OperationId == uuid.Nil {
+		s.t.Fatalf("ENR-03 POST /api/v1/admin/nodes/%s/revoke missing operation_id: %s", s.node2ID, revResp.detail())
 	}
 	_ = s.waitFor(10*time.Second, func() bool {
 		var pending int
@@ -1141,7 +1154,8 @@ func (s *liveSuite) measurePerIncarnationRetainedUsage() incarnationRetentionMea
 	s.stopNodeAgent("node2")
 
 	// 6. Publish node2 under newInc2, probe data path, ingest usage on newInc2 via newInc2's mTLS identity, and verify retained vs new usage
-	s.exit2ID, s.exit2NetID = s.configureAndPublishNode("node2", s.node2ID, newInc2, s.node2Client, 15000000, 8000000)
+	var reinstallSetupWrites nodeSetupWrites
+	s.exit2ID, s.exit2NetID, reinstallSetupWrites = s.configureAndPublishNode("node2", s.node2ID, newInc2, s.node2Client, 15000000, 8000000)
 	origin2IP, _ := s.originAndSNAT("node2")
 	_, _ = s.selectExitRoute("member", s.exit2NetID, origin2IP)
 	newTrafficStarted := time.Now().UTC()
@@ -1199,5 +1213,8 @@ func (s *liveSuite) measurePerIncarnationRetainedUsage() incarnationRetentionMea
 		OldIncarnationUsageFixed:       oldUsageFixed,
 		MemberTotalUnchangedOnReenroll: memberUnchangedOnReenroll,
 		NewTrafficAccumulatedSameMonth: newTrafficAccumulated,
+		RevokeOperationID:              revOp.OperationId.String(),
+		RevokeWrite:                    revResp.write.Receipt,
+		ReinstallSetupWrites:           reinstallSetupWrites,
 	}
 }

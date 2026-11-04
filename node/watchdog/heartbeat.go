@@ -13,10 +13,18 @@ import (
 	"github.com/google/uuid"
 )
 
+// AdoptionPending is a successor's uncertainty receipt. Mono, Generation and
+// PolicyExpires still belong to the predecessor's verified serving rules;
+// Serving and BaselineOK are false until adoption finishes. It grants no new
+// lifetime and must never be used as a fresh serving attestation.
+const AdoptionPending = "boot_adopting"
+
 // Beat is one agent heartbeat (§16.3). Mono is CLOCK_MONOTONIC, shared with
 // this process. PolicyExpires is the monotonic instant all installed member
 // admission expires, capped by node limits. Earlier bindings expire through
-// their own kernel element timeouts. Zero means the agent is not serving.
+// their own kernel element timeouts. A pending-adoption receipt preserves the
+// predecessor's Mono and deadline while Serving and BaselineOK remain false.
+// Zero means there is no retained serving deadline.
 type Beat struct {
 	BootID        uuid.UUID
 	Mono          time.Duration

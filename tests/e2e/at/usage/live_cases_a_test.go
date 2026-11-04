@@ -279,6 +279,11 @@ func (s *liveSuite) evalAT16(t *testing.T) Record {
 			SpecRef: "§5.1, §8.1, §16.3, D-067, MTR01, UPD03",
 			Status:  StatusPass,
 			Summary: fmt.Sprintf("D-067 provisional lease (members:[], 60s central backstop) reported awaiting_member_grants (AWAITING_MEMBER_GRANTS on lease/qos/source_binding, 1 errors[] entry at stage=lease, zero LEASE_EXPIRED) and recovered to a populated lease (members=2, ttl=86400s) in %dms (bring_up) and %dms (agent_restart), both <= 65000ms.", s.d067BringUp.ReadyToPopulatedLeaseMs, s.d067Restart.ReadyToPopulatedLeaseMs),
+			Details: map[string]any{
+				"bring_up_disable_write":     s.d067BringUp.DisableWrite,
+				"bring_up_capacity_write":    s.d067BringUp.CapacityWrite,
+				"bring_up_publication_write": s.d067BringUp.PublicationWrite,
+			},
 		},
 	)
 	mechChecks, mechObs := RunAT16Mechanisms(t)

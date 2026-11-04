@@ -98,7 +98,8 @@ func (p *liveProbe) capacityInput(admin *liveSession, node uuid.UUID) {
 		}
 		time.Sleep(2 * time.Second)
 	}
-	p.check("finite capacity", p.call(admin, "PATCH", path, map[string]any{"capacity": map[string]any{"down_bps": 200000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}, map[string]string{"If-Match": before.header.Get("ETag")}), 202, "")
+	body := map[string]any{"capacity": map[string]any{"down_bps": 200000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
+	p.writeNode("finite capacity", admin, "PATCH", path, path, body, before.header.Get("ETag"), labstack.NodeFieldsMatch(body))
 	time.Sleep(12 * time.Second)
 }
 func (p *liveProbe) loadCurrentBinding(m *liveSession) {

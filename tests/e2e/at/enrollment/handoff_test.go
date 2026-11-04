@@ -74,7 +74,7 @@ func (p *probe) installerHooks(t *testing.T) {
 	must(p.stack.HoldInstallerFirstPoll(p.ctx, false) == nil)
 	p.restoreInstaller("initial", installed, detail)
 	step("publish real installer and select native exit", "agent")
-	must(p.installerPublish(node))
+	must(p.installerPublish(node, detail))
 	selected, err := p.stack.MemberTransportStack("fvpn-w4-enroll-member", "installer-node")
 	must(err == nil)
 	must(p.selectInstallerExit(node))
@@ -160,11 +160,9 @@ func (p *probe) installerHooks(t *testing.T) {
 		must(p.freezeSQL(fmt.Sprintf("SELECT count(*) FROM usage_events WHERE node_id='%s' AND incarnation_id='%s' AND event_seq=%s", node, origin, ev.Event.EventSeq), &n) && n == 0)
 	}
 	step("authorized API retirement and worker read-back", "control/worker")
-	rev, err := p.revokeNodeReason(node, "TEST ONLY AT07 controlled installer reinstall")
-	detail["revoke_response"] = safeResponse(rev, err)
-	must(err == nil && rev.Status == 202)
-	var accepted api.OperationAccepted
-	must(json.Unmarshal(rev.Body, &accepted) == nil)
+	rev := p.revokeNodeReason(node, "TEST ONLY AT07 controlled installer reinstall", detail)
+	detail["revoke_response"] = safeResponse(rev.Reply, rev.Err)
+	must(rev.Accepted(202))
 	var retiredAt time.Time
 	must(p.waitInstaller(45*time.Second, func() bool {
 		page, r, e := p.listIncarnations(node, "")
@@ -179,10 +177,12 @@ func (p *probe) installerHooks(t *testing.T) {
 		}
 		return false
 	}))
+	operation, operationOK := p.revokeOperation(node, rev, retiredAt, detail)
+	must(operationOK)
 	must(p.waitInstaller(45*time.Second, func() bool {
-		r, e := p.call("GET", "/api/v1/admin/operations/"+accepted.OperationId.String(), nil)
+		r, e := p.call("GET", "/api/v1/admin/operations/"+operation.String(), nil)
 		var op api.Operation
-		if e != nil || r.Status != 200 || json.Unmarshal(r.Body, &op) != nil {
+		if e != nil || r.Status != 200 || json.Unmarshal(r.Body, &op) != nil || op.OperationId != operation || op.Kind != "node.revoke" || op.Resource.Type != "node" || op.Resource.Id != node {
 			return false
 		}
 		detail["revoke_operation_readback"] = op
@@ -325,7 +325,7 @@ func (p *probe) installerHooks(t *testing.T) {
 	}
 	restoredAt = time.Now().UTC()
 	must(p.stack.RestoreInstallerServices(p.ctx, "installer-node", states) == nil)
-	must(p.installerPublish(node)) // revoke disables publication; restore through the public API
+	must(p.installerPublish(node, detail)) // revoke disables publication; restore through the public API
 	freshRules, ok := p.installerServingReadback(node, restoredAt)
 	detail["fresh_current_serving"] = freshRules
 	must(ok)
@@ -417,17 +417,14 @@ func (p *probe) stopInstaller() bool {
 	}
 	return true
 }
-func (p *probe) installerPublish(node uuid.UUID) bool {
-	path := "/api/v1/admin/nodes/" + node.String()
-	mutate := func(method, suffix string, body any) bool {
-		r, e := p.call("GET", path, nil)
-		if e != nil || r.Status != 200 {
-			return false
-		}
-		r, e = p.callHeaders(method, path+suffix, body, map[string]string{"If-Match": r.Header.Get("ETag")})
-		return e == nil && (r.Status == 200 || r.Status == 202)
-	}
-	if !mutate("PATCH", "", map[string]any{"capacity": map[string]any{"down_bps": 200000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}) {
+func (p *probe) installerPublish(node uuid.UUID, detail map[string]any) bool {
+	// Initial publication and publication after reinstall need distinct receipts.
+	writes := map[string]any{}
+	defer func() {
+		prior, _ := detail["installer_publications"].([]map[string]any)
+		detail["installer_publications"] = append(prior, writes)
+	}()
+	if !p.writeServingCapacity(node, writes).Accepted(200, 202) {
 		return false
 	}
 	if !p.waitInstaller(90*time.Second, func() bool {
@@ -436,8 +433,9 @@ func (p *probe) installerPublish(node uuid.UUID) bool {
 	}) {
 		return false
 	}
-	return mutate("PUT", "/publication", api.PublicationRequest{PublicationIntent: api.PublicationIntentPublished, GroupIds: &[]uuid.UUID{p.servingGroup}, Reason: "TEST ONLY AT07 installer serving"})
+	return p.writePublication(node, p.servingGroup, "TEST ONLY AT07 installer serving", writes).Accepted(200, 202)
 }
+
 func (p *probe) selectInstallerExit(node uuid.UUID) bool {
 	var exit uuid.UUID
 	if !p.waitInstaller(90*time.Second, func() bool {

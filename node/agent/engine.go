@@ -12,7 +12,6 @@ import (
 	"maps"
 	"net/netip"
 	"os"
-	"os/exec"
 	"os/signal"
 	"sync"
 	"sync/atomic"
@@ -168,6 +167,10 @@ type Engine struct {
 	conntrackDetail      string
 	recoverBlocked       bool
 	recovered            bool
+	recoverMu            sync.Mutex // serializes child start with Close
+	recoverJob           *recoveryJob
+	recoverClosed        bool
+	recoverRetryAt       time.Duration
 	latchBlocked         bool
 	outboxFull           bool
 	meterFailed          bool
@@ -329,6 +332,7 @@ func (e *Engine) Close() error {
 	// work. A timed-out worker retains ledger ownership until it actually
 	// finishes or the process exits; never close a store under a live sampler.
 	e.closeOnce.Do(func() {
+		e.stopRecovery()
 		var cancel context.CancelFunc
 		e.closeCtx, cancel = newLocalBudget(context.Background(), closeLocalBudget)
 		e.closeDone = make(chan struct{})
@@ -495,11 +499,12 @@ func (e *Engine) bootWithBudget(caller context.Context, timeout time.Duration) e
 func (e *Engine) boot(ctx context.Context) (bootErr error) {
 	caller := localWorkContext(ctx)
 	previous, _ := watchdog.ReadHeartbeat(e.cfg.HeartbeatPath)
-	// Publish uncertainty before any stage can block. Adoption checks the
-	// captured prior receipt, never this new startup heartbeat (r22 M-3).
+	// Publish uncertainty before any stage can block. A pending adoption
+	// retains only the prior receipt's age/deadline (D-156); adoption itself
+	// still checks that captured verified receipt, not this startup write.
 	e.serving, e.baselineOK = false, false
 	e.policyExpires = 0
-	if err := e.bootHeartbeat(ctx); err != nil {
+	if err := e.startupHeartbeat(ctx, previous); err != nil {
 		return fmt.Errorf("%w: heartbeat: %w", ErrBoot, err)
 	}
 	defer func() {
@@ -595,6 +600,7 @@ func (e *Engine) boot(ctx context.Context) (bootErr error) {
 
 // Run boots, then steps until ctx ends.
 func (e *Engine) Run(ctx context.Context) error {
+	defer e.stopRecovery()
 	if err := e.Boot(ctx); err != nil {
 		return err
 	}
@@ -682,6 +688,7 @@ func (e *Engine) Step(ctx context.Context) error {
 	if err := caller.Err(); err != nil {
 		return err
 	}
+	e.recoverOnce(ctx)
 	e.latch()
 	if e.identityFrozen && !e.freezeDurable {
 		e.persistFreeze(ctx)
@@ -1029,37 +1036,6 @@ func (e *Engine) latch() {
 			e.usagePersist = true
 		}
 	}
-}
-
-func (e *Engine) recoverOnce(ctx context.Context) {
-	if e.recovered {
-		return
-	}
-	e.recovered = true
-	if e.cfg.UpdaterRecover == "" {
-		return
-	}
-	if e.cfg.UpdaterConfig == "" {
-		e.recoverBlocked = true
-		return
-	}
-	cmd := exec.CommandContext(ctx, e.cfg.UpdaterRecover, "recover", "-config", e.cfg.UpdaterConfig)
-	err := cmd.Run()
-	if ctx.Err() != nil {
-		e.recovered = false // interrupted recovery supplies no failure evidence
-		return
-	}
-	if err == nil {
-		e.recoverBlocked = false
-		return
-	}
-	var ee *exec.ExitError
-	if errors.As(err, &ee) && ee.ExitCode() == 2 {
-		e.recoverBlocked = true
-		return
-	}
-	e.recoverBlocked = true
-	e.log.Error("updater recover", "err", "forwarding stays blocked")
 }
 
 func (e *Engine) baseline(ctx context.Context) error {

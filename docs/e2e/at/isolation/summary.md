@@ -215,3 +215,14 @@ F19-01 is answered by D-152; F19-02 is answered by devstack 32 and this successf
 **F20-01 stays failed:** `tunnel_probe / HEALTH_CHECK_FAILED` caused the recorded safety baseline to complete **40.992498819 s before the signed deadline**. Boundary: **0 positives / 202 drops**, no qualified calibration, no last positive. [Owner handoff](requests.md), [findings](follow-up-20-findings.json). Full native platform/fault matrices and pure `stale_generation` remain carried. Native counted forwarding with six installed D-147 PMTU accepts was observed; native fragmentation-needed delivery was not exercised.
 
 Admission wait **0.035 s**; no other-suite overlap sampled; no reservation. Final owned Docker inventory zero. [113-file follow-up-19 archive](history/follow-up-19/archive.json), [86-file current runtime archive](history/follow-up-20-run/archive.json), [current/prior-only inventory](follow-up-20-evidence-inventory.json). The older sections above remain historical; their original root-link context is frozen under follow-up 19.
+
+
+## Follow-up 21 — 2026-11-03 EST (additive current result)
+
+Run `7599576e-339c-49c9-8bf5-0f710818cbda` on clean source `fe2c68ec`, baseline `9e709518` (#447): **26 pass / 3 blocked / 0 fail**, **1602.678 s**, exit **2**, lab included, no rerun. AT10 **9/0/0**, AT11 **2/1/0**, AT12 **10/0/0**, AT13 **5/2/0** (pass/blocked/fail). [Every row and evidence](followup21-2026-11-03.md#assembled-result).
+
+**F20-01 answered by agent-core 48:** whole-node expiry passes D-140 and qualifies under D-142, **165 positives / 88 drops**, last positive **D−99.541360 ms**, first drop **D−96.362193 ms**, zero interleavings. Historical `c52bea6c` remains failed. **Member expiry stays blocked:** the accepted node lease extends **23.057987 s** after the finite deadline, below the unchanged >25 s bound. No five-probe window or new serving reads occurred. M-1's original-evidence replay rejects `serving 0 / safety_check_failed`, and synthetic serving evidence passes; live coverage remains outstanding.
+
+**Follow-up 20 request 2 answered:** 32 operation snapshots carry this run's ID and AT10 retains successful setup's publication trace. **15 node-write commands / 15 first-attempt 202s / zero conflicts.** Lab and six-assertion recovery pass. The native platform/full fault matrices and pure `stale_generation` remain carried. F48-01's paired signature is not observed in retained logs, not declared fixed.
+
+Admission **0.054 s**, no other-run wait; 54 samples show no overlap; inventory zero. [165-file original root archive](history/follow-up-20/archive.json), [124-file run archive](history/follow-up-21-run/archive.json), [dated requests](requests.md). Earlier sections remain historical; their original root-link context is frozen under follow-up 20.

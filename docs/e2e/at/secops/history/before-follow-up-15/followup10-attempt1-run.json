@@ -1,0 +1,126 @@
+{
+  "driver_run_id": "e6f9d2c6-750b-4494-bfea-ca773ca8014c",
+  "source_revision": "bf56e5a7664a47f90db25c0f1114abf6332814be",
+  "started_at": "2026-10-31T03:39:05Z",
+  "expected": "AT30 restore with D-077 admin HTTP regrant, SECOPS-16/17/20/21 measurements on #240/#241/#244/#245",
+  "prepare": {
+    "reset": true,
+    "prefix": "w4-secops",
+    "port_base": "30000"
+  },
+  "inventory_before": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "up": {
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-up"
+    ],
+    "started_at": "2026-10-31T03:39:05Z",
+    "finished_at": "2026-10-31T03:39:42Z",
+    "elapsed_seconds": 36.891,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup10-e2e-up",
+      "bytes": 20509,
+      "findings": []
+    }
+  },
+  "live": {
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "45m",
+      "-run",
+      "^TestAT30_Followup10_LiveRestoreReconcile$",
+      "./tests/e2e/at/secops"
+    ],
+    "started_at": "2026-10-31T03:39:42Z",
+    "finished_at": "2026-10-31T03:58:35Z",
+    "elapsed_seconds": 1132.842,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup10-live",
+      "bytes": 3736,
+      "findings": []
+    },
+    "status": "passed",
+    "required_tests": [
+      "TestAT30_Followup10_LiveRestoreReconcile"
+    ],
+    "missing": [],
+    "skipped": [],
+    "tests": [
+      {
+        "name": "TestAT30_Followup10_LiveRestoreReconcile",
+        "result": "pass",
+        "elapsed_seconds": 1132.29
+      }
+    ],
+    "package_results": {
+      "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "pass"
+    }
+  },
+  "down": {
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
+    ],
+    "started_at": "2026-10-31T03:58:35Z",
+    "finished_at": "2026-10-31T03:59:23Z",
+    "elapsed_seconds": 48.369,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup10-e2e-down",
+      "bytes": 3056,
+      "findings": []
+    }
+  },
+  "inventory_after": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "finished_at": "2026-10-31T03:59:24Z"
+}
