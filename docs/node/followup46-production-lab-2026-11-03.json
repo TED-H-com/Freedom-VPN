@@ -1,0 +1,1261 @@
+{
+  "scope": "TEST ONLY ordinary main functional gate; no timing qualification, pooling or instrumentation overlay",
+  "source": {
+    "commit": "7cfeb4c98727ee0893d7a10cd67210353c4ffa3b",
+    "archive_sha256": "315ca5bcdad4ee19de4ad3c5d709e11ffa53559efa666cc5325a865b4d1276c1",
+    "verified_blobs": 20490,
+    "functional_only": true,
+    "instrumentation_overlay": false
+  },
+  "result": {
+    "exit": 0,
+    "seconds": 232.00893358199392,
+    "completed": "2026-11-03T23:45:26Z"
+  },
+  "passed_scenarios": [
+    "TestLabISO_F6_RecoveryAndEvidence",
+    "TestLabD087_D104_GrantRenewalExpiryCorrelation",
+    "TestLabUsageLedger",
+    "TestLabExternalMeterReset",
+    "TestLabF36_AT13_RestartChangedSetsStopsEstablishedFlow",
+    "TestLab08_HealthAttestationUnpublished",
+    "TestLab01_ForwardOnlyAfterLease",
+    "TestLab02_WatchdogEnforces",
+    "TestLab03_KernelTimeout",
+    "TestLab04_RestartKeepsVerifiedLease",
+    "TestLab05_NoAllowAllOnUpdate",
+    "TestLab07_UnpublishedBaselineAck",
+    "TestLab06_RevokedStopsForwarding"
+  ],
+  "skipped_scenarios": [
+    "TestD116_AT10_InstallerMarkerEnrollment"
+  ],
+  "measurement": {
+    "excluded_counts": {
+      "outer_guard": 0,
+      "install_command": 0,
+      "render_to_installed": 0,
+      "whole_serving_step": 0,
+      "pre_apply_accounting": 0
+    },
+    "excluded_spans": [],
+    "clock": null,
+    "metrics": {
+      "outer_guard": {
+        "count": 29,
+        "p50_ns": "31641644",
+        "p90_ns": "42686183",
+        "p99_ns": "56278110",
+        "max_ns": "56278110"
+      },
+      "install_command": {
+        "count": 29,
+        "p50_ns": "15921395",
+        "p90_ns": "21226303",
+        "p99_ns": "23873839",
+        "max_ns": "23873839"
+      },
+      "render_to_installed": {
+        "count": 29,
+        "p50_ns": "16009598",
+        "p90_ns": "21345108",
+        "p99_ns": "23960864",
+        "max_ns": "23960864"
+      },
+      "whole_serving_step": {
+        "count": 0,
+        "p50_ns": null,
+        "p90_ns": null,
+        "p99_ns": null,
+        "max_ns": null
+      },
+      "pre_apply_accounting": {
+        "count": 0,
+        "p50_ns": null,
+        "p90_ns": null,
+        "p99_ns": null,
+        "max_ns": null
+      }
+    },
+    "values_ns": {
+      "outer_guard": [
+        "38526238",
+        "31616250",
+        "35006769",
+        "39091907",
+        "29133378",
+        "33559270",
+        "28843435",
+        "31144090",
+        "27893187",
+        "23769810",
+        "30014619",
+        "39921382",
+        "23917003",
+        "35774785",
+        "26687422",
+        "19066109",
+        "34944685",
+        "32106509",
+        "42686183",
+        "39605264",
+        "31289725",
+        "31641644",
+        "38251862",
+        "36180034",
+        "30937245",
+        "27607026",
+        "56278110",
+        "43993299",
+        "28044034"
+      ],
+      "install_command": [
+        "19337649",
+        "18563258",
+        "17225514",
+        "14016818",
+        "18027254",
+        "13450863",
+        "14750151",
+        "13119031",
+        "15896129",
+        "14710101",
+        "21226303",
+        "23873839",
+        "11968019",
+        "18711253",
+        "14912567",
+        "11040652",
+        "15921395",
+        "19192432",
+        "18609598",
+        "23785707",
+        "11943946",
+        "19683358",
+        "14132235",
+        "18131222",
+        "14805499",
+        "11830296",
+        "21025504",
+        "19001491",
+        "15908944"
+      ],
+      "render_to_installed": [
+        "19459178",
+        "18670072",
+        "17513936",
+        "14117359",
+        "18122566",
+        "13542792",
+        "14824331",
+        "13213049",
+        "15979206",
+        "14811905",
+        "21345108",
+        "23960864",
+        "12083725",
+        "18819445",
+        "15066955",
+        "11118311",
+        "16009598",
+        "19302424",
+        "18735244",
+        "23905161",
+        "12050026",
+        "19798714",
+        "14233229",
+        "18245061",
+        "14924120",
+        "11936022",
+        "21156527",
+        "19110719",
+        "16001940"
+      ],
+      "whole_serving_step": [],
+      "pre_apply_accounting": []
+    },
+    "failed_operations": [
+      {
+        "run_id": "0504ad55-45b9-4a42-83a1-59572d7142f3",
+        "sequence": "9",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "live",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "2",
+          "start_ns": "72753666136830",
+          "end_ns": "72753697712688",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "0504ad55-45b9-4a42-83a1-59572d7142f3",
+        "sequence": "13",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "2",
+          "start_ns": "72753789834422",
+          "end_ns": "72753811364142",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "0504ad55-45b9-4a42-83a1-59572d7142f3",
+        "sequence": "18",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "apply",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "apply",
+          "candidate_generation": "3",
+          "start_ns": "72754699601238",
+          "end_ns": "72754751503856",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "1000000",
+            "install_bound_ns": "100000000",
+            "apply_start_ns": "72754699601238",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "0504ad55-45b9-4a42-83a1-59572d7142f3",
+        "sequence": "23",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "2",
+          "start_ns": "72754808454089",
+          "end_ns": "72754830523825",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "0504ad55-45b9-4a42-83a1-59572d7142f3",
+        "sequence": "27",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "apply",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "apply",
+          "candidate_generation": "3",
+          "start_ns": "72755700676496",
+          "end_ns": "72755753215198",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "1000000",
+            "install_bound_ns": "100000000",
+            "apply_start_ns": "72755700676496",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "0504ad55-45b9-4a42-83a1-59572d7142f3",
+        "sequence": "32",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "2",
+          "start_ns": "72755841035437",
+          "end_ns": "72755861612164",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "0504ad55-45b9-4a42-83a1-59572d7142f3",
+        "sequence": "36",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "apply",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "apply",
+          "candidate_generation": "3",
+          "start_ns": "72756702383575",
+          "end_ns": "72756752655026",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "1000000",
+            "install_bound_ns": "100000000",
+            "apply_start_ns": "72756702383575",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "0504ad55-45b9-4a42-83a1-59572d7142f3",
+        "sequence": "41",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "2",
+          "start_ns": "72756827568651",
+          "end_ns": "72756848504525",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "0504ad55-45b9-4a42-83a1-59572d7142f3",
+        "sequence": "49",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "72757978070905",
+          "end_ns": "72757990215186",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "1f9e7f6b-d33b-4c27-9b3a-7ee6b58732c5",
+        "sequence": "4",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "72922648096518",
+          "end_ns": "72922659004023",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "1f9e7f6b-d33b-4c27-9b3a-7ee6b58732c5",
+        "sequence": "7",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "72923647968786",
+          "end_ns": "72923659841797",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "3993363f-8315-43be-b8ea-518c75700cb1",
+        "sequence": "4",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "72915317060190",
+          "end_ns": "72915329457399",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "3993363f-8315-43be-b8ea-518c75700cb1",
+        "sequence": "8",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "72917371218471",
+          "end_ns": "72917382535047",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "49ff99e7-d5d2-4c35-8d1e-62c2d61f7c57",
+        "sequence": "9",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "8",
+          "start_ns": "72961425993075",
+          "end_ns": "72961436650167",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "49ff99e7-d5d2-4c35-8d1e-62c2d61f7c57",
+        "sequence": "12",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "8",
+          "start_ns": "72962326617162",
+          "end_ns": "72962337526214",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "49ff99e7-d5d2-4c35-8d1e-62c2d61f7c57",
+        "sequence": "15",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "8",
+          "start_ns": "72963333948905",
+          "end_ns": "72963345544100",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "57b72e39-f847-448a-b580-6cd33f72db4f",
+        "sequence": "9",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "72763448945733",
+          "end_ns": "72763460667353",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "57b72e39-f847-448a-b580-6cd33f72db4f",
+        "sequence": "12",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "72764323005039",
+          "end_ns": "72764334330613",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "57b72e39-f847-448a-b580-6cd33f72db4f",
+        "sequence": "16",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "72764387983654",
+          "end_ns": "72764399081944",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "57b72e39-f847-448a-b580-6cd33f72db4f",
+        "sequence": "19",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "72765376750129",
+          "end_ns": "72765387768936",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "83b8039f-9b5b-40c2-8f32-97cb3a03b1f7",
+        "sequence": "4",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "72927007767120",
+          "end_ns": "72927020625328",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "b89d6725-2f39-42d8-86a8-01e12e94c439",
+        "sequence": "17",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "live",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "72907313798980",
+          "end_ns": "72907334783875",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "bc69bb9a-eb40-493e-a73c-fbba52475760",
+        "sequence": "14",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "10",
+          "start_ns": "72966496550166",
+          "end_ns": "72966506505475",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "bc69bb9a-eb40-493e-a73c-fbba52475760",
+        "sequence": "19",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "10",
+          "start_ns": "72967427810115",
+          "end_ns": "72967439031602",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "bf093b8b-f4db-4745-a196-0584322ed0e8",
+        "sequence": "9",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "72891342397212",
+          "end_ns": "72891353654409",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      },
+      {
+        "run_id": "ea5242fb-a5b7-4e0b-91de-83f612174611",
+        "sequence": "4",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "kind": "operation",
+        "source": "blocked_audit",
+        "timing": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "verify",
+          "candidate_generation": "3",
+          "start_ns": "72921123669527",
+          "end_ns": "72921134330856",
+          "succeeded": false,
+          "verified": false,
+          "deadline": {
+            "granularity_ns": "0",
+            "install_bound_ns": "0",
+            "apply_start_ns": "0",
+            "render_start_ns": "0",
+            "install_start_ns": "0",
+            "installed_by_ns": "0",
+            "install_ok": false,
+            "release_start_ns": "0",
+            "release_end_ns": "0",
+            "guard_released": false
+          }
+        },
+        "marked_intervals": [],
+        "marked": false
+      }
+    ],
+    "snapshots": 1142,
+    "spans": 0,
+    "sequence_gaps": [],
+    "packets": {
+      "expiry": {
+        "positives": 97,
+        "drops": 15,
+        "deadline_ns": "72890412373269",
+        "last_positive_offset_ns": "-100590658",
+        "first_drop_offset_ns": "-63852222",
+        "positives_at_or_after_deadline": 0,
+        "capture_stats": [
+          {
+            "packets": 213,
+            "drops": 0
+          },
+          {
+            "packets": 198,
+            "drops": 0
+          }
+        ],
+        "predicate": true
+      },
+      "renewal": {
+        "packets": 1518,
+        "losses": 0,
+        "loss_ingress_inside_guard": 0,
+        "loss_ingress_outside_guard": 0,
+        "capture_stats": [
+          {
+            "packets": 3040,
+            "drops": 0
+          },
+          {
+            "packets": 3044,
+            "drops": 0
+          }
+        ],
+        "zero_loss_predicate": true
+      }
+    },
+    "binaries": {
+      "fvpn-agent": "a4e598507e807533c5576829f817f794cc0d3cff912b972661c0bdb95c26c29d",
+      "fvpn-watchdog": "d83658b1f36034df5d848151c449f7d441fe00d2995bbaaa4c9a0a849a7bc3e2",
+      "fvpn-labcontrol": "336faca23e599da379baef3d957877bbe148a40eceb5b9c109818aceaaf6fef8"
+    },
+    "image": {
+      "image_id": "sha256:e1c97c54bcc15d3e2c2b0d17d7ee0318e5891ac608d4d856cdc9d96eec259cb2"
+    },
+    "raw_pins": {
+      "assembled/agent.log": {
+        "sha256": "37fdf2f84525efa015ee3cd4b1f487e03beaa25d51457568f5adf05d41c0c42e",
+        "bytes": 16347
+      },
+      "assembled/analysis.json": {
+        "sha256": "298752a7603903f83180fae5d6d1859cd32b4dc77bb7607b8d5abdb0ba013a84",
+        "bytes": 4193
+      },
+      "assembled/expiry.json": {
+        "sha256": "383499f89580bbfc8b85b8607f8e355da88fd03e07cbbb4d70ec5f9f1f20ad64",
+        "bytes": 31702
+      },
+      "assembled/expiry.json.restart.json": {
+        "sha256": "6049b4157bde334512dd9ceba87bcf44825c2b9afa7d0121089475b279182f2e",
+        "bytes": 103
+      },
+      "assembled/observations.json": {
+        "sha256": "90307414e5d2efac87c2d91cb8bf85a4c44e3678afa52473463684659ebaaa02",
+        "bytes": 13249
+      },
+      "assembled/operations.jsonl": {
+        "sha256": "01fa66c50fde294c725cebecfa1b3c6f51e43edf43fccc177418dd6a1e74c303",
+        "bytes": 1775675
+      },
+      "assembled/renewal.json": {
+        "sha256": "c3961dfc62c44c69a70a2a7f2785b2cbf5cdad0c4f4739a96fb46dc7de06d258",
+        "bytes": 430580
+      },
+      "assembled/watchdog.log": {
+        "sha256": "eff9cd2f12de909f88d408505f484041fe854e8b1a01fd916ce9605b25e974a1",
+        "bytes": 763
+      },
+      "binaries.json": {
+        "sha256": "7af82258ff738a84aaab04ed87da93ea2b9edac68093d171c185995d6e845491",
+        "bytes": 263
+      },
+      "f36-result.json": {
+        "sha256": "c750b1e9d3d582830cf8721fe38be4ca30b8564fa365d57d8bfe9c967355a09e",
+        "bytes": 515111
+      },
+      "fixture-image.json": {
+        "sha256": "f31f9bf4667a05140c389b350e3a4047c002f55a3d45d5df9412bcab67980160",
+        "bytes": 88
+      },
+      "main.tar": {
+        "sha256": "315ca5bcdad4ee19de4ad3c5d709e11ffa53559efa666cc5325a865b4d1276c1",
+        "bytes": 3241431040
+      },
+      "result.json": {
+        "sha256": "4e80255eab129b03d2e65cc4c57d65d3d53879c7231cc460f962335e458b7e57",
+        "bytes": 88
+      },
+      "source.json": {
+        "sha256": "7b1afc805bba333e8b77de0ca68284c06d2fded3a1ef5259825c22459d4a6a86",
+        "bytes": 237
+      },
+      "suite/agent.log": {
+        "sha256": "7b330ad681da93f434181d4c81a0f55443ff993cb97066e74d0552510f7f74e5",
+        "bytes": 39970
+      },
+      "suite/operations.jsonl": {
+        "sha256": "ee891e5da97bebcf4382ba4901cbee1e0a95c33b0eb2198e01e9dfa055ee48f8",
+        "bytes": 4386438
+      },
+      "suite/watchdog.log": {
+        "sha256": "2fe4f26244570defbd1f4a1b8782031c0c6c3c83f11a76f03c3a5a8b258a3deb",
+        "bytes": 2293
+      },
+      "suite.log": {
+        "sha256": "cc5fc110bba3364db602188d000b05de674b62f58be6ad1d70fdf020ea8033ff",
+        "bytes": 11745
+      }
+    }
+  },
+  "analysis": {
+    "scope": "TEST ONLY assembled agent/kernel/TLS fake control; 80ms dual-phase diagnostic; no D-120 tolerance",
+    "snapshots": 817,
+    "runs": [
+      {
+        "run_id": "0504ad55-45b9-4a42-83a1-59572d7142f3",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe"
+      },
+      {
+        "run_id": "57b72e39-f847-448a-b580-6cd33f72db4f",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe"
+      },
+      {
+        "run_id": "bf093b8b-f4db-4745-a196-0584322ed0e8",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe"
+      }
+    ],
+    "brackets": {
+      "baseline": {
+        "count": 35,
+        "median_ns": "23445780",
+        "worst_ns": "42065812"
+      },
+      "apply": {
+        "count": 9,
+        "median_ns": "88236448",
+        "worst_ns": "154886475"
+      },
+      "verifier": {
+        "count": 337,
+        "median_ns": "32612564",
+        "worst_ns": "46016754"
+      },
+      "nft_read": {
+        "count": 337,
+        "median_ns": "3403581",
+        "worst_ns": "4187590"
+      },
+      "precision_read": {
+        "count": 327,
+        "median_ns": "3063768",
+        "worst_ns": "4359863"
+      },
+      "tc_read": {
+        "count": 337,
+        "median_ns": "17041636",
+        "worst_ns": "27519880"
+      },
+      "install_command": {
+        "count": 6,
+        "median_ns": "18950453",
+        "worst_ns": "23785707"
+      },
+      "release_command": {
+        "count": 6,
+        "median_ns": "16794307",
+        "worst_ns": "19340359"
+      },
+      "outer_guard": {
+        "count": 6,
+        "median_ns": "33324206",
+        "worst_ns": "39605264"
+      },
+      "inner_guard": {
+        "count": 6,
+        "median_ns": "5089",
+        "worst_ns": "7603"
+      },
+      "render_to_installed": {
+        "count": 6,
+        "median_ns": "19064625",
+        "worst_ns": "23905161"
+      },
+      "verify": {
+        "count": 330,
+        "median_ns": "32585595",
+        "worst_ns": "46016754"
+      }
+    },
+    "renewal": {
+      "probes": 1518,
+      "delivered": 1518,
+      "losses": [],
+      "actual_renewals": [
+        {
+          "run_id": "57b72e39-f847-448a-b580-6cd33f72db4f",
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "sequence": "240",
+          "source": "renewal",
+          "anchor": {
+            "mono_before_ns": "72797402793907",
+            "wall": "2026-11-03T23:42:34.95141728Z",
+            "mono_after_ns": "72797402794071"
+          },
+          "lease": {
+            "lease_id": "01a1a3cb-09c4-71b6-9acd-8c411ac61568",
+            "generation": "3",
+            "issued_at": "2026-11-03T23:42:34.948111117Z",
+            "expires_at": "2026-11-03T23:43:34.948111117Z",
+            "request_mono_ns": "72797398464230",
+            "node_deadline_ns": "72857398464230",
+            "members": 2
+          },
+          "renewal": {
+            "request_id": "01a1a3cb-09c3-7163-9a33-44502727d409",
+            "start_ns": "72797398464230",
+            "end_ns": "72797402793403",
+            "request_wall": "2026-11-03T23:42:34.94708767Z",
+            "new_lease": true
+          }
+        },
+        {
+          "run_id": "57b72e39-f847-448a-b580-6cd33f72db4f",
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "sequence": "473",
+          "source": "renewal",
+          "anchor": {
+            "mono_before_ns": "72830416956594",
+            "wall": "2026-11-03T23:43:07.965579945Z",
+            "mono_after_ns": "72830416956727"
+          },
+          "lease": {
+            "lease_id": "01a1a3cb-8aba-72fa-baea-95a553f8c6c8",
+            "generation": "3",
+            "issued_at": "2026-11-03T23:43:07.962193456Z",
+            "expires_at": "2026-11-03T23:44:07.962193456Z",
+            "request_mono_ns": "72830412373269",
+            "node_deadline_ns": "72890412373269",
+            "members": 2
+          },
+          "renewal": {
+            "request_id": "01a1a3cb-8ab8-7f3d-8ede-d5ade3374fa5",
+            "start_ns": "72830412373269",
+            "end_ns": "72830416956001",
+            "request_wall": "2026-11-03T23:43:07.96099673Z",
+            "new_lease": true
+          }
+        }
+      ],
+      "loss_windows_overlapping_install": 0,
+      "ingress_in_outer_guard": 0,
+      "unresolved_ingress": 0
+    },
+    "expiry": {
+      "deadline_ns": "72890412373269",
+      "last_positive_offset_ns": "-100590658",
+      "first_drop_offset_ns": "-63852222",
+      "positives": 97,
+      "drops": 15,
+      "packet_predicate": "pass"
+    }
+  }
+}
