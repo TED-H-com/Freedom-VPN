@@ -1,0 +1,135 @@
+{
+  "source_commit": "52b93845b5cfeac1dd63e04c700857fcd098a7f6",
+  "proofs": [
+    {
+      "path": "node/agent/review_r30_test.go",
+      "name": "TestR30_H1_CanceledBootContextSkipsRecoverAndAdmitsServing"
+    },
+    {
+      "path": "node/agent/review_r30_test.go",
+      "name": "TestR30_H1_PerCallBootContextWedgesStepRecovery"
+    },
+    {
+      "path": "node/agent/review_r30_test.go",
+      "name": "TestR30_M2_PreEnforceLeaseAttemptBlocksPostRecoveryRenewal"
+    },
+    {
+      "path": "node/agent/review_r30_test.go",
+      "name": "TestR30_M3_PendingOutboxDedupSkipsNewClosedRecoveryReport"
+    },
+    {
+      "path": "node/agent/review_r30_test.go",
+      "name": "TestR30_D155_D156_D157_HeldInvariants"
+    },
+    {
+      "path": "node/watchdog/review_r30_test.go",
+      "name": "TestR30_D156_WatchdogAdoptionPendingInvariants"
+    },
+    {
+      "path": "node/updater/review_r30_test.go",
+      "name": "TestR30_H2_StaleThenLiveLockMetadataAbortsEarlyWithExitBusy"
+    },
+    {
+      "path": "node/updater/review_r30_test.go",
+      "name": "TestR30_M1_NonBusyFirstLockErrorEmitsSpuriousWaitLog"
+    },
+    {
+      "path": "node/updater/review_r30_test.go",
+      "name": "TestR30_D155_UpdaterRecoverStaysPromptNoWaitLog"
+    },
+    {
+      "path": "node/agent/followup51_test.go",
+      "name": "TestD155_F51_PerCallCancellationDoesNotKillRecovery"
+    },
+    {
+      "path": "node/agent/followup51_test.go",
+      "name": "TestD155_F51_RunDefersRetriesAndStops"
+    },
+    {
+      "path": "node/agent/followup51_test.go",
+      "name": "TestD155_F51_RunStopAndOnceLifetime"
+    },
+    {
+      "path": "node/agent/followup51_test.go",
+      "name": "TestD155_F51_CanceledRunDoesNotSpawn"
+    },
+    {
+      "path": "node/agent/followup51_test.go",
+      "name": "TestD155_F51_UploadFollowsCallerInRunAndOnce"
+    },
+    {
+      "path": "node/agent/followup51_test.go",
+      "name": "TestD157_F51_PreAttemptCatchupAndOneEarlyRenewalPerRecovery"
+    },
+    {
+      "path": "node/agent/followup51_test.go",
+      "name": "TestD157_F51_PendingDedupStillCoalescesWithoutUnboundRecovery"
+    },
+    {
+      "path": "node/agent/followup51_test.go",
+      "name": "TestD157_F51_FullOutboxStepsBindSecondRecovery"
+    },
+    {
+      "path": "node/updater/followup26_test.go",
+      "name": "TestD158_ConsecutiveStaleResetAcquiresRealHolder"
+    },
+    {
+      "path": "node/updater/followup26_test.go",
+      "name": "TestD158_ConsecutiveStaleAfterLiveExactWindow"
+    },
+    {
+      "path": "node/updater/followup26_test.go",
+      "name": "TestD158_ConsecutiveStalePreservesOriginalLiveBudget"
+    },
+    {
+      "path": "node/updater/followup26_test.go",
+      "name": "TestD158_ConsecutiveWaitRecordRequiresFirstBusy"
+    },
+    {
+      "path": "tests/e2e/at/members/archive_f23_test.go",
+      "name": "TestD098_Followup22Archive"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-22/archive.json",
+      "sha256": "89b8d0b181375ae4c4946dee550142f55d4e1b9dc4cbbc5345a9f5e341657c09",
+      "bytes": 33820
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-23-run/archive.json",
+      "sha256": "6a8954b962bd55962bb71901a1ddd2376e8bbad045fbdbbb2145d7a2608051a6",
+      "bytes": 27059
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-23-run/d161-review.json",
+      "sha256": "c5eb05e140f4ebc7378f252e290fae2ba0b3c830257327bb8c2d5d0233ccc2ce",
+      "bytes": 26756
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-23-run/member-expiry-review.json",
+      "sha256": "271c2b5a392a85ee3c930029d5ad5e5a60ba6f6306956d714a14ac64a3704c37",
+      "bytes": 50639
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-23-run/boundary-review.json",
+      "sha256": "62715b0e4e53a54c796812e8ecb1f8d7e22a1a95ed5370425cb2dca4490f1e23",
+      "bytes": 123533
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-23-run/node-write-audit.json",
+      "sha256": "104f6e6a3f88a11012f85febe2dceac6aed4c90042a3f63febdeebdc109a4396",
+      "bytes": 15264
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-23-run/row-comparison.json",
+      "sha256": "cbd04af4962d9e5e1a983016b4b0fee65c85ff5114d3ab632e53558ac5fcca87",
+      "bytes": 4898
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-23-run/timing-admission-review.json",
+      "sha256": "61fb2d8bbe67cdb0914915628fbce2ba7568bec6add0e42400faa1221fda440c",
+      "bytes": 1159
+    }
+  ]
+}

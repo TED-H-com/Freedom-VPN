@@ -1,0 +1,22 @@
+{
+  "baseline": "c148cf349df219124e457113ce90c010016a308e",
+  "harness": "8bde2b6acc0b116515148eeb0ff4448c65453a92",
+  "checks": [
+    {
+      "file": "tests/e2e/at/members/forwarding_test.go",
+      "predicates": 7,
+      "unchanged": true
+    },
+    {
+      "file": "tests/e2e/at/members/native_matrix_test.go",
+      "predicates": 10,
+      "unchanged": true
+    }
+  ],
+  "qualification": {
+    "file": "tests/e2e/at/members/d146_evidence.py",
+    "sha256": "b29811dcb8bf497abf8be8cc9e1e4817f913960388ebfaf2cc37ad8b1c75512b",
+    "unchanged": true
+  },
+  "scope": "Every pre-existing check/jsonCheck final predicate argument in changed files is unchanged (whitespace normalized); D-146/D-151 qualifier bytes unchanged. New capture diagnostics and scheduling journals add evidence, not a replacement result."
+}

@@ -1,0 +1,121 @@
+{
+  "run_id": "3eb3960d-c411-4648-8d77-bba40b436ae3",
+  "source_commit": "8a6dcf34248f035a3a460fcdee3e1e19e80c9137",
+  "original_outcome": "blocked",
+  "original_counted": false,
+  "retrospective_decoder_source": "8bde2b6acc0b116515148eeb0ff4448c65453a92",
+  "original_capture_id": "786f5cd1-ed32-42b7-9638-99127303061c",
+  "original_capture_receipts": {
+    "member": {
+      "bytes": "43478",
+      "sha256": "80bcb4eb186631878618a6a880d5bc16ccd470c5465436ea4530bf1894115303"
+    },
+    "node": {
+      "bytes": "43596",
+      "sha256": "70b5a94c639568e0507db04549317bb5dd519187cbc30329d927ad9a84db0615"
+    },
+    "origin": {
+      "bytes": "14854",
+      "sha256": "56cd7bae9a8145f4f84f2d97dc946b9a281546b84d54674e614483f635652bee"
+    }
+  },
+  "critical_packets": [
+    {
+      "role": "member",
+      "packet": 161,
+      "ip_version": 6,
+      "ip_length": 140,
+      "packet_type": 0,
+      "interface_index": 3,
+      "protocol": 17,
+      "timestamp": "1793780557.385059",
+      "src": "addr-eff8e7ca506627fe",
+      "dst": "addr-ab8283067e853f4e",
+      "interface": "eth1",
+      "direction": "ingress",
+      "ip_sha256": "8c35343b6d681435b86c5ab3fb03283d215a1ac3f665ce4727cb854a4a244d69",
+      "udp": {
+        "src_port": 51820,
+        "dst_port": 51820,
+        "length": 100
+      },
+      "wireguard": {
+        "type": 2,
+        "length": 92
+      }
+    },
+    {
+      "role": "node",
+      "packet": 158,
+      "ip_version": 6,
+      "ip_length": 140,
+      "packet_type": 4,
+      "interface_index": 4,
+      "protocol": 17,
+      "timestamp": "1793780557.385050",
+      "src": "addr-eff8e7ca506627fe",
+      "dst": "addr-ab8283067e853f4e",
+      "interface": "eth2",
+      "direction": "egress",
+      "ip_sha256": "8c35343b6d681435b86c5ab3fb03283d215a1ac3f665ce4727cb854a4a244d69",
+      "udp": {
+        "src_port": 51820,
+        "dst_port": 51820,
+        "length": 100
+      },
+      "wireguard": {
+        "type": 2,
+        "length": 92
+      }
+    }
+  ],
+  "correction": "The node response reached member eth1 from node eth2 with identical IP hash. Its source label is the IPv6 loopback label, different from the selected node endpoint. Zero member WireGuard receive bytes does not imply no underlay ingress. The first observed gap is between member ingress and acceptance by WireGuard; kernel-drop attribution is not proven by these two headers.",
+  "scope": "New decoding of retained private captures verified against original committed byte pins, not a changed historical outcome. No packet contents or raw addresses are exported.",
+  "member_kernel_counters": {
+    "before-transfer": {
+      "started_at": "2026-11-04T08:22:37.066134252Z",
+      "ended_at": "2026-11-04T08:22:37.08580731Z",
+      "counters": {
+        "Ip6InReceives": "78",
+        "Ip6InHdrErrors": "0",
+        "Ip6InAddrErrors": "0",
+        "Ip6InDiscards": "23",
+        "Udp6InDatagrams": "0",
+        "Udp6InErrors": "0"
+      }
+    },
+    "after-transfer": {
+      "started_at": "2026-11-04T08:22:42.285462659Z",
+      "ended_at": "2026-11-04T08:22:42.307664548Z",
+      "counters": {
+        "Ip6InReceives": "104",
+        "Ip6InHdrErrors": "1",
+        "Ip6InAddrErrors": "0",
+        "Ip6InDiscards": "23",
+        "Udp6InDatagrams": "22",
+        "Udp6InErrors": "0"
+      }
+    }
+  },
+  "kernel_limit": "Ip6InHdrErrors increases 0 to 1 in the enclosing readback interval. Consistent with the observed loopback-source boundary; no per-packet drop trace proves which packet caused that increment.",
+  "capture_integrity": {
+    "member": {
+      "captured": 210,
+      "kernel_drops": 0,
+      "statistics_ok": true,
+      "process_stopped": true
+    },
+    "node": {
+      "captured": 213,
+      "kernel_drops": 0,
+      "statistics_ok": true,
+      "process_stopped": true
+    },
+    "origin": {
+      "captured": 60,
+      "kernel_drops": 0,
+      "statistics_ok": true,
+      "process_stopped": true
+    }
+  }
+}

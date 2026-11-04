@@ -1,0 +1,135 @@
+# Follow-up 23 — 2026-11-04
+
+Run `6a25221b-1dcf-4f4d-b866-cd04f57f58f6`, measured source `8bde2b6acc0b116515148eeb0ff4448c65453a92`, baseline/current main at preflight `c148cf349df219124e457113ce90c010016a308e`. **3 PASS / 7 BLOCKED / 0 FAIL; 706 passed / 8 blocked / 0 failed subchecks**. No predicate changed, no case retried. [All original subchecks](F23-subchecks.md), [result index](F23-results.json), [verification receipts](F23-verification.md).
+
+D-098 was committed first as `2d4d37a8`: [122 original root records](history/follow-up-22/INDEX.md), including unchanged gzip and SHA-256 pins. Run `3eb3960d` remains **3 / 7 / 0 cases; 702 / 8 / 0 subchecks**, measured on `55f2765d`; the orchestrator accepted that baseline without a later-main rerun. Run `5715939e` and every earlier archive/note retain their original outcomes.
+
+| Case | Requirements (§19 acceptance) | Status | Pass / blocked / fail |
+|---|---|---|---:|
+| [AT05](AT05.json) | NODE01 NODE04 ENR01 ENR04 PKG01 | blocked | 31 / 0 / 0 |
+| [AT01](AT01.json) | APP01 ID01 MEM01 | blocked | 23 / 0 / 0 |
+| [AT02](AT02.json.gz) | MEM01 MEM02 MEM03 SEC01 | pass | 193 / 0 / 0 |
+| [AT03](AT03.json) | BILL01 BILL03 ENT01 | pass | 98 / 0 / 0 |
+| [AT04](AT04.json) | BILL02 ENT02 MEM03 | blocked | 113 / 0 / 0 |
+| [AT08](AT08.json) | NODE02 NODE03 EXIT01 EXIT03 | pass | 36 / 0 / 0 |
+| [AT20](AT20.json) | DNS01 DNS02 ISO04 | blocked | 89 / 0 / 0 |
+| [AT21](AT21.json) | DNS03 DNS04 APP01 | blocked | 13 / 0 / 0 |
+| [AT22](AT22.json) | SEC02 DNS01 DNS04 | blocked | 40 / 0 / 0 |
+| [AT09](AT09.json) | EXIT02 APP01 NFR01 | blocked | 70 / 8 / 0 |
+
+## F22-AT01: check the old inference, then read this run
+
+The old peer-counter readings are correct, but “none of the node's traffic reached the member” is not supported by the original capture. The retained private pcaps were checked against the old committed byte counts and SHA-256 receipts. Node packet **158** at **08:22:37.385050Z** left **eth2**; member packet **161** at **08:22:37.385059Z** arrived on **eth1** with the same IP hash. It is a WireGuard type-2 response, 92 UDP-payload bytes / 140 IP bytes, from **`addr-eff8e7ca506627fe` (IPv6 loopback)** to **`addr-ab8283067e853f4e`**. The selected node label was **`addr-d1439358dea1ea21`**. Member `Ip6InHdrErrors` rose **0 → 1** while WireGuard receive accounting remained zero. Thus the first unconfirmed boundary is **after member underlay ingress, before WireGuard receive accounting**. This is not a packet-specific kernel drop trace and does not prove the source-selection cause. [Original-receipt extraction and limits](F23-retrospective-F22-AT01.json). The old uncounted outcome is unchanged.
+
+This run's AT01 first transfer is counted: one origin receipt, upload **0 → 2,357 B**, download **0 → 2,412 B**. The Linux wake analogue is also counted: one receipt, upload **2,357 → 4,622 B**, download **2,412 → 4,825 B**. AT08's first transfer has one receipt, upload **277,026 → 279,343 B**, download **25,958 → 28,370 B**. No new initial transfer is uncounted. Successful handshakes alone remain insufficient.
+
+[All before/after pair views and packet directions](F23-initial-transfers.json) retain address-family, source/destination labels, interface, neighbour state, WireGuard endpoints, handshake seconds and byte counters. Before an initial idle pair is selected, route/neighbor queries cover all candidate underlay addresses; the table joins those original before-reads to the eventual selected destination. Empty neighbour lists mean no entry was returned, not a failed-state inference.
+
+| Transfer | Member route before → after | Node route before → after | Neighbours before → after (member / node) |
+|---|---|---|---|
+| AT01 initial, IPv6 | eth1; source `addr-ab8283067e853f4e` → destination `addr-d1439358dea1ea21`, unchanged | eth2; source `addr-d1439358dea1ea21` → destination `addr-ab8283067e853f4e`, unchanged | absent → REACHABLE / absent → DELAY |
+| AT01 wake, IPv6 | same eth1 route/source | same eth2 route/source | REACHABLE → REACHABLE / REACHABLE → REACHABLE |
+| AT08 initial, IPv4 | eth0; source `addr-beec7c00603ab8bb` → destination `addr-156910cb925246e0`, unchanged | eth0; source `addr-156910cb925246e0` → destination `addr-beec7c00603ab8bb`, unchanged | absent → REACHABLE / absent → REACHABLE |
+
+WireGuard's own view (rx / tx bytes; handshake is Unix seconds):
+
+| Transfer / end | Before endpoint; handshake; rx / tx | After endpoint; handshake; rx / tx |
+|---|---|---|
+| AT01 initial / member | `addr-32bcd336456e1b8c:39696`; 0; 0 / 0 | `addr-d1439358dea1ea21:51820`; 1793793444; 2908 / 3028 |
+| AT01 initial / node | `addr-32bcd336456e1b8c:48003`; 0; 0 / 0 | `addr-060f0ef186d1db5b:3128`; 1793793444; 3028 / 3056 |
+| AT01 wake / member | `addr-d1439358dea1ea21:51820`; 1793793444; 2940 / 3028 | same endpoint/handshake; 5724 / 5732 |
+| AT01 wake / node | `addr-ab8283067e853f4e:51820`; 1793793444; 3028 / 3088 | same endpoint/handshake; 5732 / 5872 |
+| AT08 initial / member | `addr-32bcd336456e1b8c:51222`; 0; 0 / 0 | `addr-156910cb925246e0:51820`; 1793795232; 2908 / 2948 |
+| AT08 initial / node | `addr-32bcd336456e1b8c:35798`; 0; 0 / 0 | `addr-beec7c00603ab8bb:51820`; 1793795232; 2948 / 3056 |
+
+AT01's node native status advertises local label `addr-ed77cd6812ba7a08`; `ip route get` instead selects source `addr-d1439358dea1ea21`. Its immediate after-read WireGuard endpoint is an IPv4 proxy label while native status selects IPv6. Both observations are retained; neither is silently replaced by the other.
+
+The existing capture hook already uses `-i any`, so no shared hook change was needed. The new decoder includes UDP involving either WireGuard port, ICMP and ICMPv6 on every observed underlay interface. In the bounded transfer windows:
+
+| Transfer | Selected-pair UDP member egress / node ingress | Selected-pair UDP node egress / member ingress | Other observed candidate-pair UDP |
+|---|---:|---:|---|
+| AT01 initial | IPv6 eth1 → eth2: 11 / 11 | IPv6 eth2 → eth1: 11 / 11 | IPv4 eth0: 19 / 19 each direction |
+| AT01 wake | IPv6: 12 / 12 | IPv6: 10 / 10 | none in the filtered window |
+| AT08 initial | IPv4 eth0: 36 / 36 | IPv4 eth0: 35 / 35 | IPv6 eth1/eth2: 8 / 8 each direction |
+
+The JSON's `window_directions` retains **every** filtered egress and opposite ingress packet with exact time, IP size, interface and labels, plus occurrence-aware IP-hash joins. It includes ICMP/discovery traffic that is not addressed to the opposite endpoint; unmatched unrelated packets are not counted as selected-peer loss. AT01's initial capture-time native pair was unset, so its original endpoint-restricted `directions` is empty; the independent complete packet lists and later selected-pair views support the table above. No packet was recaptured or replayed. AT08's captured type-2 reply left node eth0 at **12:27:12.430507Z** and arrived at member eth0 at **12:27:12.430515Z** (120 IP bytes). Capture receipts retain completeness and drops. There is no evidence attributing AT01's changed result to #463, #464, #468 or another merge. Instrumentation also changes observation timing; a success is not proof that the old upstream path was fixed.
+
+## F22-D146: full row windows, regular-node cadence, unchanged qualification
+
+The old later-read age **22.393183 s** is correct. However, **34.849399 s between two selected latest-observation snapshots does not establish that no report was accepted throughout that whole interval**; intermediate observations could be hidden after the later diagnostic read. [Old-read bounds](F23-retrospective-F22-D146.json). This run records every stored observation in each half-open native row window, restricted to `received_at`, report ID, generation and incarnation. [All nine windows, path/TCP boundaries and log coverage](F23-observation-windows.json), [original native results](F23-native-MTU.json).
+
+The retained regular-node prepared config has heartbeat/poll **5 / 5 s**, but **no `observation_seconds` field**. `tests/e2e/cmd/fvpn-e2e-prepare/main.go:384–408` generates that config; `node/agent/config.go:145–146` defaults observation cadence to **30 s**, and `node/agent/observe.go:29–33` uses that interval unless state changes. The cited 5 s assignment in `tests/e2e/installer_fixture.go:119` is installer-node-specific. This corrects the assumption that these native rows necessarily report every 5 s. [Allowlisted config and original byte/hash pin](F23-observation-config.json). It is prepared-file evidence, not an in-process config dump.
+
+| AT09 index | Row / transfer status | Recorded half-open UTC window | Every stored observation received_at (UTC) |
+|---:|---|---|---|
+| 35 | native ipv4 MTU 1500 / pass | [12:40:33.448960197Z, 12:40:49.170914524Z) | 12:40:38.290902Z |
+| 38 | native ipv6 MTU 1500 / pass | [12:40:49.175093704Z, 12:41:05.031117698Z) | none |
+| 41 | native dual MTU 1500 / pass | [12:41:05.035338171Z, 12:41:20.854195251Z) | 12:41:08.306704Z |
+| 44 | native dual MTU 1280 / blocked | [12:41:20.859358705Z, 12:41:37.152111424Z) | none |
+| 49 | native ipv6 MTU 1280 / pass | [12:41:37.157222886Z, 12:41:53.352177905Z) | 12:41:38.325567Z |
+| 54 | D-137 supported known-PMTU 1280 / pass | [12:41:53.357216335Z, 12:42:01.739682585Z) | none |
+| 57 | native ipv4 MTU 1280 / pass | [12:42:01.744575778Z, 12:42:17.806235063Z) | 12:42:08.339587Z |
+| 73 | D-137 routed ipv6 1280 / pass | [12:42:53.484628373Z, 12:43:09.335323594Z) | 12:43:08.375421Z |
+| 76 | D-137 routed ipv4 1280 / pass | [12:43:09.340471772Z, 12:43:25.336306825Z) | none |
+
+The complete report IDs, generations and incarnations are retained with those timestamps in the JSON. The first four reports shown are generation **75**, incarnation **`01a1a66b-190b-745a-8ac4-b9459c7ddc74`**; the routed IPv6 report is generation **76** with the same incarnation. Adjacent retained early reports are **30.015802 s**, **30.018863 s**, and **30.014020 s** apart. The row windows have small gaps, so no broader continuous-window completeness is implied.
+
+All nine start/end path reads succeeded. The agent's configured control endpoint is IPv4 loopback **`addr-12ca17b49af22894:9444`**, routed via **lo** with the same source label. This is the local control proxy's agent-facing leg; the proxy's separate upstream connection was not captured. At every boundary `ss` returned agent-owned IPv4 **ESTAB** sockets. No `retrans` field was emitted, which is recorded as **unreported**, not an invented zero. RTT and MSS per socket are below; PMTU is **65535** throughout. No required tool was missing.
+
+| Row index | Start sockets: local port, RTT/variation ms, MSS | End sockets: local port, RTT/variation ms, MSS |
+|---:|---|---|
+| 35 | 32806: 0.367/0.695, 50688; 45648: 4.831/0.968, 65483 | 32806: 0.367/0.695, 50688; 45648: 4.368/0.734, 65483 |
+| 38 | 32806: 0.367/0.695, 50688; 45648: 4.368/0.734, 65483 | 45648: 4.618/0.719, 65483 |
+| 41 | 45648: 4.618/0.719, 65483 | 45648: 4.422/1.061, 65483 |
+| 44 | 45648: 4.422/1.061, 65483 | 44184: 0.029/0.028, 50688; 45648: 4.493/0.759, 65483 |
+| 49 | 44184: 0.029/0.028, 50688; 45648: 4.493/0.759, 65483 | 44184: 0.029/0.028, 50688; 45648: 4.13/0.617, 65483 |
+| 54 | 44184: 0.029/0.028, 50688; 45648: 4.473/1.15, 65483 | 45648: 4.507/0.93, 65483 |
+| 57 | 45648: 4.507/0.93, 65483 | 45648: 4.128/1.011, 65483 |
+| 73 | 44284: 0.039/0.059, 39424; 45648: 4.372/0.853, 65483; 52126: 0.06/0.068, 50688 | 45648: 3.963/0.691, 65483 |
+| 76 | 45648: 3.963/0.691, 65483 | 45648: 8.882/9.961, 65483 |
+
+The receive-only MTU/PTB fixture acts in the member namespace; known-PMTU changes only the selected node-to-member host route; routed rows change the member/router link. None targets the observed node **lo** control route. The measured source/route and TCP MSS do not show a 1280 clamp on this agent-facing path. This excludes that direct fixture reach, not indirect host effects or every proxy-upstream failure.
+
+All nine start/end log exports succeeded; every start file remains a prefix of its end file. **No log overwrite occurred inside these row windows**, so no window suffix was lost to replacement. The retained node log starts **12:28:27.734Z**. Its last retained timestamp is **12:40:27.943Z** for rows 35/38/41; **12:41:27.994Z** for rows 44/49/54/57; **12:42:33.444Z** for rows 73/76. Row 44 contains one timestamped log line; the other windows contain none. The absence of per-submission logging means **submission times/outcomes are unavailable in every row**, not zero attempts. Exported byte counts and log time coverage are explicit in the JSON.
+
+This run's sole failed serving read is the **dual receive-only 1280** row, indexes **44 / 46**, selected underlay **IPv4**. The later diagnostic at **12:41:30.912797Z** sees report **`01a1a693-d3cc-727a-9dd0-1df82fd4f08f`**, received **12:41:08.306704Z**, age **22.606093 s**, against **15 s**. Desired/applied/kernel/report generations are **75**, incarnation matches, forwarding is enabled and block reasons are empty. The sole failed condition is **`observation_age_below_15_seconds`**. It remains a later diagnostic, not proof of the exact earlier combined-query snapshot. The complete dual-row stored series is empty; the next IPv6-row report arrives **12:41:38.325567Z**.
+
+Dual indexes 44/45/46 are **BLOCKED / PASS / unqualified**. IPv6 49/50/51 are **PASS / PASS / qualified**; IPv4 57/58/59 are **PASS / PASS / qualified**. Both byte predicates pass in all three; MSS is **1240 → 1160** for the member SYN and **1460 → 1160** for the origin SYN-ACK. No PTB is seen. Reverse datagrams arrive **75/75 (max 1132 B)**, **77/77 (1152 B)**, **77/77 (1260 B)** respectively. D-137 1500, known-PMTU 1280 and both routed rows pass. The original `serving_read_ok`, 15 s bound and D-151 qualification remain unchanged. The stale row moving from IPv6 to dual/IPv4 cannot be attributed to a merged fix from these records; the evidence instead exposes the pre-existing config distinction and report cadence. UDP/QUIC without PTB and real-platform qualification remain limited.
+
+## AT02 closed recovery, AT09 restart and node writes
+
+[The complete original closed-recovery trace](F23-AT02-closed-recovery-trace.json) joins the single closed recovery by producer **`a29cf1a5-ff05-4b2b-a9cf-a03454111a68`** and sequence. [Loss accounting](F23-AT02-recovery.json) retains the unchanged D-135/D-136 classifier.
+
+| Event | Original sequence / timing | Lease/result |
+|---|---|---|
+| Previous renewal | **543**, request **12:02:54.520650780Z** | Generation 15, zero members; lease `6007073d-9fd3-4bc6-a2f0-eeab46965079` |
+| Verified closed Apply | **544**, monotonic **[117216999007396, 117217124258562) ns** | Deny-all verified; **125.251166 ms**, six lost probes |
+| Renewal against the closed recovery | **549**, request **12:02:54.736771099Z**, mono **117217188147750 ns** | **63.889188 ms** after closed Apply end; **216.120450 ms** after prior request |
+| Populated lease | Issued **12:02:54.738918627Z** | `39ffce46-4379-458c-87c5-1d80f759c631`, generation 15, one member |
+| Verified serving Apply | **550**, mono **[117217225514848, 117217303740005) ns**, end anchor **12:02:54.852442451Z** | Same populated lease, succeeded and verified |
+
+Exactly **one renewal request** and **zero baseline writes** lie between closed Apply and serving Apply. Deny-all after the closed Apply is **179.481443 ms / seven losses**; closed Apply plus wait is **304.732609 ms / 13 losses**. Wall anchors map monotonic receipts and are not exact kernel commit times. This retains the D-157 opportunity already present in both runs; the difference from F22's **205.367485 ms / eight losses** has no new merged-change attribution. Accepted-clean-report HTTP receipts and exact central readiness commit times remain unavailable. No 100 ms install budget is reinterpreted as an outage ceiling.
+
+[AT09 original restart steps](F23-AT09-restart.json): index **25 BLOCKED**, because the first renewed lease is populated (seven grants), with **zero grant-less leases and zero provisional observations**. The unchanged D-067 revision-11 provisional predicate is unexercised, not passed by a populated nonserving report. Index **26 PASS**: desired/applied generation **63** stays unchanged, serving readiness returns in **6.015788922 s**, first counted byte in **13.370094975 s**. Index **27 PASS**: no `TC_FOREIGN_FILTER` in the four post-restart reports. The first report's `tunnel_probe` is failed; it later recovers. The 90 s capture is complete.
+
+[Every recorded agent transition](F23-agent-transitions.json), [watchdog decisions with original lines and file hashes](F23-restart-log-review.json): AT02 usage stop/resume, AT08 disabled-node restart and AT09 namespace stop/restart are retained. AT02's case-end node watchdog log retains its original startup `heartbeat_unreadable` decision at lines **1–3**; the agent-only resume supplies no later watchdog decision. AT08's restarted node watchdog log is **0 bytes**, also at subsequent case ends: no decision is present in the surviving log. AT09 node2 watchdog lines **1–3** show **`baseline_unreadable`** at **12:38:42.644798385Z**, baseline write begin **12:38:42.645867133Z**, successful end **12:38:42.671854467Z**. The earlier node2 startup `heartbeat_unreadable` lines survive in AT22's snapshot. No retained watchdog/agent log contains the **`baseline_unverified` → `GENERATION_MISMATCH` F48-01 signature**. Overwritten same-case earlier logs cannot be certified absent.
+
+[Every node_write receipt and attempt](F23-node-writes.json): **30 distinct receipts, zero conflicts, zero 412 attempts**. Duplicate appearances are indexed by original locations. No failed/conflicting write is hidden by a retry.
+
+## Attribution, limits and preserved ownership
+
+AT01 reaches four more passing subchecks because its original first transfer succeeds; the full platform case remains blocked. All other case counts remain the same. AT09's dual transfer/clamp rows change PASS → BLOCKED and its IPv6 rows change BLOCKED → PASS. No other status change is attributed to a merge. Generated device identifiers in check names are not predicate changes.
+
+PR bodies **#467**, updater **#463 (D-158)**, security-ops **#464 (D-160)** and devstack **#468** were read. The two own commits were rebased before measurement onto current main **c148cf34**, which includes #468. None supplies record-level proof of the changed AT01 or native-row outcome. The #462 baseline question for F22 is closed by the orchestrator: no product or owned path changed before that retry's preflight, so run `3eb3960d` stands on `55f2765d`. No later run rewrites it.
+
+F11-01 remains OPEN/upstream-dependent under D-148. The carried platform, QUIC, portal, DNS, privacy/retention and measurement owner-resource rows remain unchanged. D-123 IPv6Block means these native payloads are IPv4 over selected underlays, not end-to-end IPv6 certification. No real arm64 execution or platform rollout is claimed. Instrumentation preserves all existing acceptance predicates; [predicate audit](F23-predicate-audit.json) records 17 unchanged pre-existing check expressions, with D-146 classifier bytes and freshness query unchanged.
+
+### Requests to orchestrator
+
+2026-11-04:
+
+- **F23-D146 / devstack:** the regular-node prepared config omits `observation_seconds` in `tests/e2e/cmd/fvpn-e2e-prepare/main.go:384–408`; `node/agent/config.go:145–146` defaults it to 30 s. The 5 s override at `tests/e2e/installer_fixture.go:119` applies to installer-node only. [Allowlisted retained config](F23-observation-config.json) and [complete row observation windows](F23-observation-windows.json) show a roughly 30 s cadence and the dual-row stale read. Please resolve the fixture/report-cadence mismatch with the owner. No freshness policy, 15 s bound, D-151 qualification or outside-owned file was changed.
+- **F23-observation submissions / agent-core:** `node/agent/observe.go:285–365` and `node/internal/controlclient/client.go:248` emit no individual observation-submission timestamp/outcome. Existing exported logs cannot supply the requested attempts. Every row records this as unavailable, with start/end byte coverage and overwrite detection. Owner instrumentation is needed to distinguish scheduling, queueing, transport and rejection for each attempt; this sub-item stops at that missing export evidence.
+- **F22-AT01 / existing D-148 owner:** the old node response is present at member underlay ingress, with an IPv6 loopback source label. [Pinned retrospective extraction](F23-retrospective-F22-AT01.json) places the first unconfirmed boundary after ingress and before WireGuard receive accounting. No per-packet kernel drop trace or proof of the response-source mechanism is retained. The native NetBird response path/shared fixture remains owner work; no unsupported causal file attribution or product change is made here. F11-01 stays **OPEN, upstream-dependent (D-148)**.
+
+F4-03, F4-04, F4-05 / F4-07, F4-06 and F4-10 remain the existing owner-resource groups below; they are not re-asked. No handover claim requires changing a handover-owned file.

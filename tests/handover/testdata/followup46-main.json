@@ -1,0 +1,107 @@
+{
+  "source_commit": "52b93845b5cfeac1dd63e04c700857fcd098a7f6",
+  "previous_cut": "c148cf349df219124e457113ce90c010016a308e",
+  "merged_prs": [
+    469,
+    470,
+    471,
+    472,
+    473
+  ],
+  "history": [
+    "ae017de4c7cb08ffe2bd17f0c27cb3ac03e476c4 isolation: follow-up 23 — F22-01 answered: the D-120 lab passes under D-161 on complete TCP captures (65 reads, 0 timeouts, 6 guard losses); run 328ab9e0: 27 pass, 2 blocked, 0 fail; r28 M-1's second live pass (w4-at-isolation follow-up 23) (#469)",
+    "0f0cd11f7e0e337bf74d7e5eac1a29203dcae188 roadmap: w4-at-isolation follow-up 23 merged (#469)",
+    "79c0bb105c93c395324fbc1425c078c827aff954 agent: follow-up 51 — r30 H-1, M-2 and M-3: a per-call Boot context no longer owns recovery; a closed recovery gets its catch-up renewal despite an earlier attempt; its own report is never deduplicated; lab 13/13 (w2-agent-core follow-up 51) (#470)",
+    "d2cb544692b5812c0eeb7dcb08c9868ab16b0c9d roadmap: w2-agent-core follow-up 51 merged (#470)",
+    "4742e6a66144592966b47d3c033c489393873d8e updater: follow-up 26 — r30 H-2 and M-1 under clarified D-158: five consecutive stale answers give exit 1, every live answer resets the count within the 10 s budget; the wait record only after a first-attempt ErrBusy (w2-updater follow-up 26) (#471)",
+    "fd0f249418926e875928d4e6799ac2fc05c6ba9f roadmap: w2-updater follow-up 26 merged (#471)",
+    "b933ca79d2a03e821a37b6c297aed5a9603e826c handover: follow-up 45 — cut #464–#468 (5 PRs): F30-01 closed, SECOPS-F17-01 and AT02 answered; D-158 clarified, D-161 implemented, 64 decisions; register at 133 rows with r30's five findings; r30 archived (w4-handover follow-up 45) (#472)",
+    "5c7e8dcd13da345e1adf37489b950f489fe6abbb roadmap: w4-handover follow-up 45 merged (#472)",
+    "af6d7828d3449ea714f5556b29ecfece31aac5d8 at-members: follow-up 23 — 3 pass / 7 blocked / 0 fail (706/8/0); F22-D146 is the regular node's 30 s observation default against a 15 s bound; F22-AT01's node reply reached member ingress (w4-at-members follow-up 23) (#473)",
+    "52b93845b5cfeac1dd63e04c700857fcd098a7f6 roadmap: w4-at-members follow-up 23 merged (#473)"
+  ],
+  "rows": [
+    {
+      "pr": 469,
+      "lane": "w4-at-isolation follow-up 23",
+      "row": "| w4-at-isolation follow-up 23 | D-098 first: run `7b0db5f2`'s 184 root files archived byte-identically under `history/follow-up-22/`. D-160 checked without a harness change: every admission check in the committed runner comes before the lab, test, stack and driver launch, and none falls inside the D-120 campaign or AT13's expiry sections; the run's records confirm none ran inside them. Netlab 36's D-161 wording is in the living AT10 procedure; archived procedures are unchanged. One assembled run, `328ab9e0`, on `main` after netlab 36 (#465): 27 pass, 2 blocked (the two operator matrices), 0 fail, exit 2, no rerun, and no wait or overlap. F22-01 is answered: the included D-120 lab passes under D-161 on complete combined captures, with 65 TCP reads, zero TCP timeouts, six lost transmissions attributed to a guard and recovered, zero UDP losses and a longest stall of 210.1 ms; D-161's accepted-timeout branch did not run live, and `7b0db5f2` stays failed with its cause unproven. r28 M-1's second live pass: after the member's deadline all five requests timed out with bytes flat while all six reads showed the node serving, 13.9 s before the node's lease expired. The whole-node expiry passes D-140 and qualifies under D-142 (164 positives, 69 drops). 15 node writes in 15 attempts, zero conflicts. No F48-01 signature. 4 commits, 476 owned files. Codex gpt-6-astra. | done (#469) |",
+      "sha256": "6f1afe7c9515aac009e58f5c881d8e917cf4de9ccd5de689d0474780eb18221c"
+    },
+    {
+      "pr": 470,
+      "lane": "w2-agent-core follow-up 51",
+      "row": "| w2-agent-core follow-up 51 | r30's H-1, M-2 and M-3, diagnosed first (D-141). H-1: Boot stored its caller as the engine's run context, so a cancelled per-call Boot could skip recovery and admit forwarding, or wedge `recovery_required`; neither CLI mode reaches it, since run and once use one context for Boot and Step. Only `Run` sets that context now: the recover child's parent is Run's context, or none outside Run, and Close still cancels and joins it; uploads keep their previous parent; forwarding stays blocked until a configured recovery completes. M-2: a grant-less lease attempt earlier in the same Step no longer uses up a closed recovery's catch-up request at a new generation. The agent records the ACK each attempt sent and allows one request for a newly available ACK; the retry bound and Retry-After are unchanged. Reachable in run, and in once mode only after Boot retains a quarantine. M-3: a closed recovery waiting to bind its report always queues its own report; dedup is unchanged otherwise. Reachable after a full outbox and a partial drain. r30's proofs imported byte-for-byte; every assertion kept, with two manual-clock corrections recorded (D-155's one-second retry floor, the 503's default Retry-After). Lab 13/13 on one attempt. 5 commits, 12 owned files. Codex gpt-6-astra. | done (#470) |",
+      "sha256": "b03be277ee970ad37768f4cd3d9dc76180b0570f10ab9519da3b989b48223064"
+    },
+    {
+      "pr": 471,
+      "lane": "w2-updater follow-up 26",
+      "row": "| w2-updater follow-up 26 | r30's H-2 and M-1 under D-158 as clarified, diagnosed first (D-141). H-2 is reachable in production: nodelock takes the flock before it rewrites the holder record, and Release leaves the record, so a new owner can hold the lock while its predecessor's stale record is still readable. One stale answer then started a five-attempt window that later live answers could not leave, so a live holder gave exit 3 at about 80 ms. Now five consecutive stale answers, 20 ms apart, give exit 1 with the final stale detail; every live answer, including empty or unreadable metadata, resets that count and is governed by the 10 s budget from the first attempt, and the first live answer at or past it gives exit 3; stale answers can extend the wait nominally about 100 ms. M-1: the one `update lock wait` record is written only when the first attempt misses on `ErrBusy`, so a non-busy first error emits none. The only production change is in `acquireCommandLock`. r30's proofs imported byte-for-byte, with only their TODO markers removed; the lane's proofs script real metadata changes on a virtual clock, with a real holder process. Recover, Retain, nested calls, the exit table and the error lines are unchanged. Live, D-158's wait stays unmeasured: devstack 35 closed F30-01 without a contended acquisition. 4 commits, 5 owned files. Codex gpt-6-astra. | done (#471) |",
+      "sha256": "2379366ed8ee0b95ed8814a67fd801362dd3a8fa479339ce430d9a2e8e643b89"
+    },
+    {
+      "pr": 472,
+      "lane": "w4-handover follow-up 45",
+      "row": "| w4-handover follow-up 45 | Cut #464 to #468 at `c148cf34` (secops 18, netlab 36, handover 44, members 22 and devstack 35; no unbriefed PR). `TestHandover_Followup45Claims` (15 subtests) pins the five final roadmap rows and PR excerpts, 27 frozen inputs, 13 Go test declarations on main and 17 frozen code readings; the 38 earlier claims functions stay exact, with follow-up 44's reads of the documents this cut rewrites moved onto frozen #466 bytes. Decisions stay at 64: D-158 gains the orchestrator's clarification (five consecutive stale answers give exit 1, a live answer resets the count, the 10 s budget from the first attempt governs live answers, the wait record only after a first-attempt `ErrBusy`), with the earlier counting still on main at the cutoff; D-161 is marked implemented by #465; the other 62 rows are unchanged. Findings register at 133 rows: 7 updated, 7 added (members F22-AT01 and F22-D146, and r30's five findings), 119 byte-identical. F30-01 is closed by devstack 35's run under the refined condition, credited to #446, #454 and #463; its first acquisition was uncontended, so D-158's wait has not run live. SECOPS-F17-01 answered, with AT29 blocked on the operator's guest clock; AT02 answered at 205 ms with eight losses; F22-01 stays open. Review r30 archived byte-for-byte (216 lines), its findings routed to agent-core 51 and updater 26. Operator guide: F30-01's and AT02's measured outcomes in place; updater 25's D-158 sentence and the TCP reload-guard paragraph unchanged; seven entrypoints point at the cut. Isolation 23, members 23, updater 26 and agent-core 51 recorded as running. Codex gpt-6-astra. | done (#472) |",
+      "sha256": "eb62861cfa319401b515c2f23562ff0f597283a31c689bc57f9741c2c8a1ecba"
+    },
+    {
+      "pr": 473,
+      "lane": "w4-at-members follow-up 23",
+      "row": "| w4-at-members follow-up 23 | D-098 archive of run 3eb3960d's 122 root records, then paired path and native-window instrumentation; then one assembled run (6a25221b) on main after devstack 35 (#468), judged by unchanged predicates and with no retry: 3 PASS / 7 BLOCKED / 0 FAIL and 706 / 8 / 0 subchecks. F22-D146 is located: the regular node's prepared config sets no observation_seconds, so its agent reports every 30 s (successive intervals 30.015–30.019 s), while the members serving query needs an observation under 15 s old; the 5 s override in installer_fixture.go applies only to the installer node. IPv6 1280 indexes 49 and 51 now pass; dual 1280 indexes 44 and 46 are blocked, the later read's only failed condition an observation 22.61 s old. F22-AT01: node packet 158 and member packet 161 share one IP hash, so the node's 140-byte IPv6 WireGuard response, with an IPv6 loopback source, reached member ingress; member header errors rose 0 → 1 and WireGuard received nothing; where it was dropped is unproven (to the D-148 owner; F11-01 stays open). AT01's and AT08's first transfers are counted. AT02: one early renewal 63.9 ms after the closed-recovery Apply; deny-all 179 ms with 7 losses. 30 node writes, all first-attempt. Observation submissions are not logged per attempt (agent-core request). 3 requests. | done (#473) |",
+      "sha256": "fbbd5e55606213050b04223058086d00a95ba095cf56c820c1916875fae57700"
+    }
+  ],
+  "prs": [
+    {
+      "number": 469,
+      "path": "tests/handover/testdata/history/follow-up-46/pr-469-excerpt.json",
+      "sha256": "4f371ccefd5a93c6aa08bf6882d793cae9bcfb1856b721818589520da595ab8b",
+      "decoded_sha256": "9b06a3fa6ecddbf05368eea3d25c8b8a90842dffd866884784e1e035a3d7c14d",
+      "bytes": 4378,
+      "merge_commit": "ae017de4c7cb08ffe2bd17f0c27cb3ac03e476c4",
+      "merged_at": "2026-11-04T12:52:19Z"
+    },
+    {
+      "number": 470,
+      "path": "tests/handover/testdata/history/follow-up-46/pr-470-excerpt.json",
+      "sha256": "0f682c92675d6ef2035349caed1fd34599e78183f09b3ec0ce678600ff62a670",
+      "decoded_sha256": "7e1071fc28a3acdc965739284753a3c4c53496c8c127ec7919df17eda54ca38a",
+      "bytes": 5807,
+      "merge_commit": "79c0bb105c93c395324fbc1425c078c827aff954",
+      "merged_at": "2026-11-04T13:10:25Z"
+    },
+    {
+      "number": 471,
+      "path": "tests/handover/testdata/history/follow-up-46/pr-471-excerpt.json",
+      "sha256": "05a60846044ba867c48e22756962b4aea5c39fe58d72e41a23e319a61dda2e15",
+      "decoded_sha256": "2f18127e558b887b4ebc0864657c5c0043d680da3429d153dcaeb0a34caa435d",
+      "bytes": 5464,
+      "merge_commit": "4742e6a66144592966b47d3c033c489393873d8e",
+      "merged_at": "2026-11-04T13:27:32Z"
+    },
+    {
+      "number": 472,
+      "path": "tests/handover/testdata/history/follow-up-46/pr-472-excerpt.json",
+      "sha256": "95be3bbbe978a28c30913b3dea46b9c25a8ed5bd99564c442d85e9906dedfb4a",
+      "decoded_sha256": "2d948c4fe894a2eb0624c641ad558a425a7ab82345f7ea32005549d4168868cf",
+      "bytes": 5222,
+      "merge_commit": "b933ca79d2a03e821a37b6c297aed5a9603e826c",
+      "merged_at": "2026-11-04T13:47:21Z"
+    },
+    {
+      "number": 473,
+      "path": "tests/handover/testdata/history/follow-up-46/pr-473-excerpt.json",
+      "sha256": "49be1e992d5f14edd75e4f6dfdd73f9fcd02eb16f116d190ab17a8a91c9cc3d9",
+      "decoded_sha256": "0b7d5a40744853512370e88ea6a95d9454fa560cf4fd6cb158dc0f4496f39963",
+      "bytes": 7647,
+      "merge_commit": "af6d7828d3449ea714f5556b29ecfece31aac5d8",
+      "merged_at": "2026-11-04T14:04:59Z"
+    }
+  ],
+  "running_at_briefing": [
+    "review r31: post-merge code review of agent-core 51 and updater 26 by agy/gemini-4-argon-high",
+    "devstack 36: D-162 fixture, consumers and If-Match audit, full acceptance on agent-core 51 and updater 26"
+  ],
+  "initial_status": "No delivered or merged PR was present at the initial read-only check; later results are after the cutoff."
+}
