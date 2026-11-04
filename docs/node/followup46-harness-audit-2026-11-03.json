@@ -1,0 +1,1567 @@
+{
+  "scope": "TEST ONLY frozen consumers; no Docker in synthetic probes",
+  "sources": {
+    "A": {
+      "commit": "567080be1969bf22782617e78c7605c2c92a52a2",
+      "tree": "a75453f25ecdef31da6941dd08a4dc45c178156e",
+      "archive_sha256": "3b0c7791dcdd4a8e0c79819bc4c55c67963805f69e775ab04c38d41f690134b9",
+      "verified_blobs": 18889,
+      "mismatches": []
+    },
+    "B": {
+      "commit": "38420dadef6ae9d0236288eef533bc1ddee0da53",
+      "tree": "6cdb55b1ef780a290f6f1331912df0f16d5f0eb9",
+      "archive_sha256": "5933e9a86278143e841e5316fdf3a8c025c6f7a24ce0d27a9356f9e8226b74fe",
+      "verified_blobs": 18939,
+      "mismatches": []
+    }
+  },
+  "overlays": {
+    "A": {
+      "engine.go": "2da977908daf24ecddde341582251c9a33a3e61cc895202bc13484a780e35b1f",
+      "followup43_spans.go": "bea36a4ad8059002f6f16d2d11d9c04f80844c4a1016937a31f47bd52fedb22f",
+      "original_engine_sha256": "d3177df609bc773d27d7155a83611dfffe4138d00a59fb6017b6923064001e22"
+    },
+    "B": {
+      "engine.go": "e31a711a319ba2cf3c5dcafa1b6f43a20aadd89e7a85150cd2e363f89cd29667",
+      "followup43_spans.go": "bea36a4ad8059002f6f16d2d11d9c04f80844c4a1016937a31f47bd52fedb22f",
+      "original_engine_sha256": "0c150567ba90d149f0bf2e63af71e7bb0f4689569329581cbbc39b57b96f91e1"
+    }
+  },
+  "fixtures": {
+    "A": {
+      "mk/node.mk": "e8a99f332b1e41dc63dbe250173aa7af11a35b88499ebc1ba979bbd12e18217a",
+      "mk/netlab.mk": "3a63e7ce2c437fef7056a511b7a0cecaceab6543493ca0b330dd04022d22fb4e",
+      "tests/netlab/Dockerfile": "c24379d083ac57899a449c93a2dd7e27a1eea566389a0c862f70a91dd0348d1e",
+      "tests/netlab/agent/generation-analysis.py": "87b61ae869a2a5ced46312de10f697999badba28ce594c19d8c89c624e73640a",
+      "tests/netlab/agent/harness_test.go": "89bd28ccf57ad134cffdfcfbd8af65f72dca9d385baae3125ef4104417cd0347",
+      "tests/netlab/agent/restart-sets.py": "b9be8d5b9fb107d1d651ff890f9c942b22071fc60ef062651b94581f38e12c87",
+      "tests/netlab/agent/run-installer.py": "ee27ed4645c7dff7f4443fa31e2f0edd81e310b8bfdd271247270aed7e58a2e1",
+      "tests/netlab/agent/run-live.py": "a7c5cc5ca96d3895de370d030a90614e90a759cf926cebced8776343da114f69",
+      "tests/netlab/agent/run-live.sh": "84a3da8570516fcbf3a6e79696b8e101915d98559a12f21b7b96ba190e927508",
+      "tests/netlab/agent/scenario_ab_recovery_test.go": "014c1c17f8e9ed74544ec68953f0567db6b2e027496225032eabd4e1d6732b1d",
+      "tests/netlab/agent/scenario_ac_timing_test.go": "22f8fbdb3d82df972c1b732c6a4ea2e7076c28aa3733e911f9be96e140f30c59",
+      "tests/netlab/agent/scenario_at_usage_test.go": "8e235b57e9b46a296b8b838652532e2af28931baa9fd91292456f1cd3ac7b298",
+      "tests/netlab/agent/scenario_az_external_test.go": "4eb663c59154358fd0a0e70bf291081fa2494a3541e720f881f7ce9bb3c39283",
+      "tests/netlab/agent/scenario_d116_test.go": "17ba5f6f198c567405c59ec6a8447fe42d7121c98a53605f61a8e74df95cfd2c",
+      "tests/netlab/agent/scenario_f31_test.go": "f977624c1a729fd97bd712ffda46c08d4080d0116281b13fbc0dabccc6c84ad2",
+      "tests/netlab/agent/scenario_f36_test.go": "e81bd729cdfa3643dd2b99649bdff78b42dd40cfa42361b6beaa8d19adb61aeb",
+      "tests/netlab/agent/scenario_health_test.go": "dde6f6d889365038d12b50897012a3fb456071bb54d520c788d40fbf64b5b490",
+      "tests/netlab/agent/scenario_test.go": "6524d149352804dd8b99bfff5a9fb4c59dad9476cb192a26d465e50b60c69611",
+      "tests/netlab/agent/timing-analysis.py": "fa8f76049c3adcf085181d366560c887dfd25ee2aa66bcd1fe3e6d845d192576",
+      "tests/netlab/agent/timing-probes.py": "73e77bf9f1953525758b7520734f851fbfb1b422eca2b4f32e41307f371aa5e6",
+      "tests/netlab/agent/timing_analysis_test.py": "451e808ebd22c0125b1ee57da1021f9d6967971442e30ad57594b6cf87ba557c",
+      "tests/netlab/agent/topology-owner.py": "faf40342b82524e434ebcd784fb2e259a1088a148d82b35a2d0237b75b825f67"
+    },
+    "B": {
+      "mk/node.mk": "e8a99f332b1e41dc63dbe250173aa7af11a35b88499ebc1ba979bbd12e18217a",
+      "mk/netlab.mk": "3a63e7ce2c437fef7056a511b7a0cecaceab6543493ca0b330dd04022d22fb4e",
+      "tests/netlab/Dockerfile": "c24379d083ac57899a449c93a2dd7e27a1eea566389a0c862f70a91dd0348d1e",
+      "tests/netlab/agent/followup39_timing.py": "a9431ffee5be67e12f7fee4f97c7735127ae5818472e7d623d13f3df0e6468e7",
+      "tests/netlab/agent/followup39_timing_test.py": "0dba7531fd08c32c0fb4f5621568707b18466593bd4e4434c2b1e3fc07cc9b79",
+      "tests/netlab/agent/generation-analysis.py": "87b61ae869a2a5ced46312de10f697999badba28ce594c19d8c89c624e73640a",
+      "tests/netlab/agent/harness_test.go": "89bd28ccf57ad134cffdfcfbd8af65f72dca9d385baae3125ef4104417cd0347",
+      "tests/netlab/agent/restart-sets.py": "b9be8d5b9fb107d1d651ff890f9c942b22071fc60ef062651b94581f38e12c87",
+      "tests/netlab/agent/run-installer.py": "ee27ed4645c7dff7f4443fa31e2f0edd81e310b8bfdd271247270aed7e58a2e1",
+      "tests/netlab/agent/run-live.py": "a7c5cc5ca96d3895de370d030a90614e90a759cf926cebced8776343da114f69",
+      "tests/netlab/agent/run-live.sh": "84a3da8570516fcbf3a6e79696b8e101915d98559a12f21b7b96ba190e927508",
+      "tests/netlab/agent/scenario_ab_recovery_test.go": "014c1c17f8e9ed74544ec68953f0567db6b2e027496225032eabd4e1d6732b1d",
+      "tests/netlab/agent/scenario_ac_timing_test.go": "22f8fbdb3d82df972c1b732c6a4ea2e7076c28aa3733e911f9be96e140f30c59",
+      "tests/netlab/agent/scenario_at_usage_test.go": "b4570c679568349b05334dfb896448e8d99ae87578f16f4f9520f23ce019b95a",
+      "tests/netlab/agent/scenario_az_external_test.go": "4eb663c59154358fd0a0e70bf291081fa2494a3541e720f881f7ce9bb3c39283",
+      "tests/netlab/agent/scenario_d116_test.go": "17ba5f6f198c567405c59ec6a8447fe42d7121c98a53605f61a8e74df95cfd2c",
+      "tests/netlab/agent/scenario_f31_test.go": "f977624c1a729fd97bd712ffda46c08d4080d0116281b13fbc0dabccc6c84ad2",
+      "tests/netlab/agent/scenario_f36_test.go": "e81bd729cdfa3643dd2b99649bdff78b42dd40cfa42361b6beaa8d19adb61aeb",
+      "tests/netlab/agent/scenario_health_test.go": "dde6f6d889365038d12b50897012a3fb456071bb54d520c788d40fbf64b5b490",
+      "tests/netlab/agent/scenario_test.go": "6524d149352804dd8b99bfff5a9fb4c59dad9476cb192a26d465e50b60c69611",
+      "tests/netlab/agent/timing-analysis.py": "fa8f76049c3adcf085181d366560c887dfd25ee2aa66bcd1fe3e6d845d192576",
+      "tests/netlab/agent/timing-probes.py": "73e77bf9f1953525758b7520734f851fbfb1b422eca2b4f32e41307f371aa5e6",
+      "tests/netlab/agent/timing_analysis_test.py": "451e808ebd22c0125b1ee57da1021f9d6967971442e30ad57594b6cf87ba557c",
+      "tests/netlab/agent/topology-owner.py": "faf40342b82524e434ebcd784fb2e259a1088a148d82b35a2d0237b75b825f67"
+    }
+  },
+  "files": {
+    "tests/netlab/agent/followup43_overlay.py": "9bde91765a8c4fd8e34dec54aba930570a6a19869ed7f917f339fea6375a8799",
+    "tests/netlab/agent/followup43_results.py": "bc21a46fc0adce330576b216d9b7f2b25cb1eb0962dbe53f0704a81794ccd1d8",
+    "tests/netlab/agent/followup43_results_test.py": "c259036a3e862e0f5ee513a1414340b191f7e6f53b9ec82c496d89ce68b6314a",
+    "tests/netlab/agent/followup43_spans.go.txt": "bea36a4ad8059002f6f16d2d11d9c04f80844c4a1016937a31f47bd52fedb22f",
+    "tests/netlab/agent/followup43_timing.py": "c68ad5b9b7c0510b4d5d7c047c24505ea35eeb2c5b523ad7b0ffb31caa7d49a3",
+    "tests/netlab/agent/followup43_timing_test.py": "cbb9927534012b55082ee1c5bfbc3908696a1f15498448443cd73cfb3792a652",
+    "tests/netlab/agent/followup44_clock.go.txt": "c6b3c8f1798b4af92b21bd8fb9127a1d9b27057acff9992f7e5fb94f4452893d",
+    "tests/netlab/agent/followup44_results.py": "972fd9e37f9754748e22be4a6f1d20ae535c618daaf6e88797193407aca9fc30",
+    "tests/netlab/agent/followup44_timing.py": "4f5900d40a93ed1effff624d998e93a9311f8781c1626e858db2f81ca603a65a",
+    "tests/netlab/agent/followup44_timing_test.py": "be977a8f72f0836925a3a57b53ce6964fa8a48b282d80cc60515a5c4de2e03e4",
+    "tests/netlab/agent/followup45_results.py": "2e9806480d5d47573a5d43ce5db07499cac7ee666c45584d037695ed5b9252b7",
+    "tests/netlab/agent/followup45_timing.py": "d452a2e16757e6c3b2261dbf3b63c31affcd00e3b50d3565925c5617c72e79b9",
+    "tests/netlab/agent/followup45_timing_test.py": "55274301724d2d41b3be44f2558f5327a53b4880063731aae672cdbbfb8188b5",
+    "tests/netlab/agent/followup46_timing_test.py": "12909ac09a1b7c7c44c76a897aaea00379a8989d5d986d42080a1fc3219f2aaf",
+    "tests/netlab/agent/followup46_results.py": "2fdc7637ace3abf2c4497d26db56c7f2cca61f10f8c38b4ae8cb645d933f907d",
+    "tests/netlab/agent/followup46_timing.py": "adfcf5d93d8b8e30d3cae3c27d71aea5dec5b8688b9b9c49b9d3131a18788063",
+    "tests/netlab/agent/followup39_timing.py": "a9431ffee5be67e12f7fee4f97c7735127ae5818472e7d623d13f3df0e6468e7",
+    "tests/netlab/agent/followup39_timing_test.py": "0dba7531fd08c32c0fb4f5621568707b18466593bd4e4434c2b1e3fc07cc9b79"
+  },
+  "clock_binaries": {
+    "A": "a8a92f189acc90ea7386321cdb84223479e0316fe8c37ffd386f71b476d55fab",
+    "B": "a8a92f189acc90ea7386321cdb84223479e0316fe8c37ffd386f71b476d55fab"
+  },
+  "production_equality": {
+    "B": "38420dadef6ae9d0236288eef533bc1ddee0da53",
+    "merge": "28e9e41cdd92dc34afd460d80efbecd8b4e35ef3",
+    "command": "git diff 38420dadef6ae9d0236288eef533bc1ddee0da53 28e9e41c -- '*.go' ':!**/*_test.go' ':!tests/**' ':!docs/**'",
+    "stdout": "",
+    "exit": 0
+  },
+  "verification": {
+    "utc": "2026-11-03T23:33:49.195420+00:00",
+    "all_blobs_match": true,
+    "archives_match": true,
+    "overlays_match": true
+  },
+  "wrapper_probes": [
+    {
+      "version": 45,
+      "mode": "combined",
+      "exit": 0,
+      "stdout": "free\ntrue\n",
+      "stderr": null,
+      "receipt": []
+    },
+    {
+      "version": 46,
+      "mode": "combined",
+      "exit": 0,
+      "stdout": "true\n",
+      "stderr": null,
+      "receipt": [
+        {
+          "command": [
+            "bash",
+            "$FVPN_HOLD_SH"
+          ],
+          "started": "2026-11-03T23:36:14.881398+00:00",
+          "completed": "2026-11-03T23:36:14.882422+00:00",
+          "exit": 0,
+          "stdout": "free\n",
+          "stderr": "",
+          "admitted": true
+        }
+      ]
+    },
+    {
+      "version": 45,
+      "mode": "stdout",
+      "exit": 0,
+      "stdout": "true\n",
+      "stderr": "free\n",
+      "receipt": []
+    },
+    {
+      "version": 46,
+      "mode": "stdout",
+      "exit": 0,
+      "stdout": "true\n",
+      "stderr": "",
+      "receipt": [
+        {
+          "command": [
+            "bash",
+            "$FVPN_HOLD_SH"
+          ],
+          "started": "2026-11-03T23:36:14.950843+00:00",
+          "completed": "2026-11-03T23:36:14.951797+00:00",
+          "exit": 0,
+          "stdout": "free\n",
+          "stderr": "",
+          "admitted": true
+        }
+      ]
+    },
+    {
+      "version": 45,
+      "mode": "shell",
+      "exit": 0,
+      "stdout": "true",
+      "stderr": "free\n",
+      "receipt": []
+    },
+    {
+      "version": 46,
+      "mode": "shell",
+      "exit": 0,
+      "stdout": "true",
+      "stderr": "",
+      "receipt": [
+        {
+          "command": [
+            "bash",
+            "$FVPN_HOLD_SH"
+          ],
+          "started": "2026-11-03T23:36:15.018531+00:00",
+          "completed": "2026-11-03T23:36:15.019540+00:00",
+          "exit": 0,
+          "stdout": "free\n",
+          "stderr": "",
+          "admitted": true
+        }
+      ]
+    }
+  ],
+  "consumer_calls": [
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 57,
+      "source": "raw, err := exec.Command(\"docker\", \"exec\", prefix(), \"cat\", labDir+\"/\"+name).Output()"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 80,
+      "source": "out, err := exec.Command(\"docker\", \"inspect\", \"-f\", \"{{.State.Running}}\", prefix()).CombinedOutput()"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 90,
+      "source": "out, err := exec.Command(\"docker\", \"inspect\", \"-f\", \"{{.State.Running}}\", prefix()).CombinedOutput()"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 94,
+      "source": "_, _, _ = dockerExec(\"sh\", \"-c\", \"mkdir -p \"+labDir+\"/state \"+labDir+\"/identity \"+labDir+\"/journal\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 95,
+      "source": "if _, _, err := dockerExec(\"chmod\", \"700\", labDir+\"/journal\"); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 98,
+      "source": "if _, _, err := dockerExec(\"python3\", \"/work/tests/netlab/agent/topology-owner.py\", \"capture\"); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 101,
+      "source": "if err := dockerDetach(\"sh\", \"-c\", \"exec fvpn-labcontrol -dir \"+labDir+\" -admin 127.0.0.1:9091 >\"+labDir+\"/labcontrol.log 2>&1\"); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 106,
+      "source": "if _, _, err := dockerExec(\"test\", \"-f\", labDir+\"/ready\"); err == nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 111,
+      "source": "if _, _, err := dockerExec(\"test\", \"-f\", labDir+\"/ready\"); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 114,
+      "source": "urlBytes, errOut, err := dockerExec(\"cat\", labDir+\"/url\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 127,
+      "source": "if _, errOut, err := dockerExecStdin([]string{\"nft\", \"-f\", \"-\"}, marker); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 133,
+      "source": "baseline, errOut, err := dockerExec(\"nft\", \"list\", \"table\", \"inet\", \"fvpn\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 138,
+      "source": "if _, errOut, err := dockerExecStdin([]string{\"nft\", \"-f\", \"-\"}, []byte(\"delete table inet fvpn\\n\"+baseline)); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 141,
+      "source": "text, errOut, err := dockerExec(\"nft\", \"list\", \"table\", \"inet\", \"fvpn\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 145,
+      "source": "if _, errOut, err := dockerExecStdin([]string{\"tee\", labDir + \"/before-enrollment.txt\"}, []byte(text)); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 148,
+      "source": "if _, errOut, err := dockerExec(\"sh\", \"-c\", \"nft -j list ruleset >\"+labDir+\"/before-enrollment.json\"); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 152,
+      "source": "if out, errOut, err := dockerExec(\"fvpn-agent\", \"enroll\", \"-config\", labDir+\"/agent.json\", \"-token-file\", labDir+\"/token\"); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 155,
+      "source": "if _, _, err := dockerExec(\"test\", \"!\", \"-f\", labDir+\"/token\"); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 158,
+      "source": "keyBefore, errOut, err := dockerExec(\"sha256sum\", labDir+\"/identity/key.pem\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 162,
+      "source": "if _, errOut, err := dockerExecStdin([]string{\"tee\", labDir + \"/token2\"}, []byte(\"other-token\\n\")); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 165,
+      "source": "if out, errOut, err := dockerExec(\"fvpn-agent\", \"enroll\", \"-config\", labDir+\"/agent.json\", \"-token-file\", labDir+\"/token2\"); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 168,
+      "source": "keyAfter, _, _ := dockerExec(\"sha256sum\", labDir+\"/identity/key.pem\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 213,
+      "source": "if _, errOut, err := dockerExecStdin([]string{\"tee\", labDir + \"/netbird-status.json\"}, status); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 220,
+      "source": "_, errOut, err := dockerExecStdin([]string{\"tee\", labDir + \"/agent.json\"}, append(raw, '\\n'))"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 228,
+      "source": "cmd := exec.Command(\"docker\", append([]string{\"exec\", prefix()}, args...)...)"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 237,
+      "source": "cmd := exec.Command(\"docker\", append([]string{\"exec\", \"-i\", prefix()}, args...)...)"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 247,
+      "source": "cmd := exec.Command(\"docker\", append([]string{\"exec\", \"-d\", prefix()}, args...)...)"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 258,
+      "source": "out, errOut, err := dockerExec(args...)"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 267,
+      "source": "out, errOut, err := dockerExecStdin([]string{\"tee\", path}, body)"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 275,
+      "source": "out, errOut, err := dockerExec(\"cat\", path)"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 283,
+      "source": "_, _, err := dockerExec(\"test\", \"-f\", path)"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 288,
+      "source": "out, errOut, err := dockerExec(\"sh\", \"-c\", \"tail -n 60 \"+labDir+\"/agent.log \"+labDir+\"/labcontrol.log 2>/dev/null || true\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 306,
+      "source": "body := readScratch(t, labDir+\"/agent.log\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 346,
+      "source": "out, errOut, err := dockerExec(\"python3\", \"/opt/netlab/scripts/probe.py\", labDir+\"/cases.json\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 398,
+      "source": "mustExec(t, \"python3\", labDir+\"/admin.py\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 407,
+      "source": "out, _, err := dockerExec(\"python3\", labDir+\"/admin_get.py\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 420,
+      "source": "_, _, _ = dockerExec(\"sh\", \"-c\", fmt.Sprintf("
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 430,
+      "source": "if err := dockerDetach(\"sh\", \"-c\", script); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 437,
+      "source": "_, _, _ = dockerExec(\"python3\", \"/work/tests/netlab/agent/topology-owner.py\", \"stop\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 438,
+      "source": "if err := dockerDetach(\"python3\", \"/work/tests/netlab/agent/topology-owner.py\", \"run\"); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 447,
+      "source": "_, _, err := dockerExec(\"python3\", \"-c\", `import time"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 462,
+      "source": "_, _, _ = dockerExec(\"python3\", \"/work/tests/netlab/agent/topology-owner.py\", \"stop\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 468,
+      "source": "_, _, _ = dockerExec(\"conntrack\", \"-F\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 469,
+      "source": "_, _, _ = dockerExec(\"conntrack\", \"-F\", \"-f\", \"ipv6\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 474,
+      "source": "out, _, _ := dockerExec(\"nft\", \"list\", \"table\", \"inet\", \"fvpn\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 56,
+      "source": "if err := json.Unmarshal([]byte(mustExec(t, \"ip\", \"-j\", \"addr\", \"show\", \"dev\", \"fv-fh\")), &addresses); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 63,
+      "source": "if err := json.Unmarshal([]byte(mustExec(t, \"ip\", \"-j\", family, \"route\", \"show\", \"dev\", \"fv-fh\")), &rows); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 72,
+      "source": "mustExec(t, \"ip\", \"-6\", \"addr\", \"replace\", fmt.Sprintf(\"%s/%d\", a.Local, a.PrefixLen), \"dev\", \"fv-fh\", \"nodad\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 79,
+      "source": "mustExec(t, \"ip\", family, \"route\", \"replace\", route.Dst, \"via\", route.Gateway, \"dev\", \"fv-fh\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 88,
+      "source": "mustExec(t, \"ip\", \"link\", \"set\", \"fv-fh\", \"up\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 92,
+      "source": "mustExec(t, \"tc\", \"qdisc\", \"add\", \"dev\", \"fv-fh\", \"clsact\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 93,
+      "source": "mustExec(t, \"tc\", \"filter\", \"add\", \"dev\", \"fv-fh\", \"ingress\", \"pref\", \"1\", \"matchall\", \"action\", \"mirred\", \"egress\", \"redirect\", \"dev\", \"fv-ih\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 94,
+      "source": "defer func() { _, _, _ = dockerExec(\"tc\", \"qdisc\", \"del\", \"dev\", \"fv-fh\", \"clsact\") }()"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 107,
+      "source": "link := mustExec(t, \"ip\", \"-j\", \"link\", \"show\", \"dev\", \"fv-fh\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 119,
+      "source": "mustExec(t, \"tc\", \"filter\", \"del\", \"dev\", \"fv-fh\", \"ingress\", \"pref\", \"1\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 120,
+      "source": "mustExec(t, \"tc\", \"qdisc\", \"del\", \"dev\", \"fv-fh\", \"clsact\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 124,
+      "source": "if strings.Contains(mustExec(t, \"ip\", \"-j\", \"link\", \"show\", \"dev\", \"fv-fh\"), `\"UP\"`) {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 129,
+      "source": "if !strings.Contains(mustExec(t, \"ip\", \"-j\", \"link\", \"show\", \"dev\", \"fv-fh\"), `\"UP\"`) {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 139,
+      "source": "t.Log(\"member addresses\", mustExec(t, \"ip\", \"-j\", \"addr\", \"show\", \"dev\", \"fv-fh\"))"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 140,
+      "source": "t.Log(\"member routes\", mustExec(t, \"ip\", \"-j\", \"-6\", \"route\", \"show\", \"table\", \"all\", \"dev\", \"fv-fh\"))"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 157,
+      "source": "leaseGen := strings.TrimSpace(mustExec(t, \"python3\", \"-c\", `import sqlite3,json"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ac_timing_test.go",
+      "line": 23,
+      "source": "original := readScratch(t, labDir+\"/agent.json\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ac_timing_test.go",
+      "line": 132,
+      "source": "body, err := exec.Command(\"docker\", \"exec\", prefix(), \"cat\", labDir+\"/\"+name).Output()"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ac_timing_test.go",
+      "line": 145,
+      "source": "mustExec(t, \"python3\", \"/work/tests/netlab/agent/timing-probes.py\", \"trace\", \"renewal\", \"0\", labDir+\"/renewal.json\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ac_timing_test.go",
+      "line": 148,
+      "source": "d := mustExec(t, \"python3\", \"-c\", `import sqlite3,json"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ac_timing_test.go",
+      "line": 160,
+      "source": "mustExec(t, \"python3\", \"/work/tests/netlab/agent/timing-probes.py\", \"trace\", \"expiry_restart\", fmt.Sprint(mono), labDir+\"/expiry.json\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_ac_timing_test.go",
+      "line": 170,
+      "source": "summary, err := exec.Command(\"python3\", \"timing-analysis.py\", outDir).CombinedOutput()"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_at_usage_test.go",
+      "line": 57,
+      "source": "mustExec(t, \"rm\", \"-f\", labDir+\"/journal/forwarding.blocked\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_at_usage_test.go",
+      "line": 136,
+      "source": "_, _, _ = dockerExec(\"sh\", \"-c\", script)"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_at_usage_test.go",
+      "line": 149,
+      "source": "mustExec(t, \"ip\", \"netns\", \"exec\", \"fv-a1\", \"python3\", labDir+\"/udpburst.py\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_at_usage_test.go",
+      "line": 157,
+      "source": "return len(readScratch(t, labDir+\"/agent.log\"))"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_at_usage_test.go",
+      "line": 168,
+      "source": "body := readScratch(t, labDir+\"/agent.log\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_at_usage_test.go",
+      "line": 199,
+      "source": "out := strings.TrimSpace(mustExec(t, \"python3\", labDir+\"/nft_usage.py\"))"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_at_usage_test.go",
+      "line": 263,
+      "source": "out, errOut, err := dockerExec(\"python3\", labDir+\"/usage_read.py\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_az_external_test.go",
+      "line": 69,
+      "source": "mustExec(t, \"nft\", \"flush\", \"chain\", \"inet\", \"fvpn\", \"forward\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_az_external_test.go",
+      "line": 97,
+      "source": "out, _, err := dockerExec(\"nft\", \"list\", \"chain\", \"inet\", \"fvpn\", \"forward\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_az_external_test.go",
+      "line": 139,
+      "source": "out, errOut, err := dockerExec(\"python3\", labDir+\"/usage_epoch.py\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 64,
+      "source": "saveD116(t, \"before-enrollment.json\", readScratch(t, labDir+\"/before-enrollment.json\"))"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 65,
+      "source": "saveD116(t, \"before-enrollment.txt\", readScratch(t, labDir+\"/before-enrollment.txt\"))"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 69,
+      "source": "if err := dockerDetach(\"sh\", \"-c\", script); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 75,
+      "source": "saveD116(t, \"agent.txt\", readScratch(t, labDir+\"/agent.log\"))"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 83,
+      "source": "mustExec(t, \"nft\", \"delete\", \"table\", \"inet\", \"fvpn_install\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 91,
+      "source": "mustExec(t, \"nft\", \"add\", \"table\", \"inet\", \"fvpn_install\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 92,
+      "source": "mustExec(t, \"nft\", \"add\", \"chain\", \"inet\", \"fvpn_install\", \"owner\", `{ comment \"managed-by=fvpn-node-install\"; }`)"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 93,
+      "source": "mustExec(t, \"python3\", \"/opt/netlab/scripts/trace_capture.py\", \"start\", \"/scratch/agent-at10\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 94,
+      "source": "if err := dockerDetach(\"ip\", \"netns\", \"exec\", \"fv-a1\", \"python3\", \"/opt/netlab/scripts/stream.py\", \"203.0.113.10\", \"9001\", \"9000\", \"/scratch/agent-stream.log\"); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 99,
+      "source": "mustExec(t, \"python3\", \"/opt/netlab/scripts/trace_capture.py\", \"finish-stream\", \"/scratch/agent-stream.log\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 100,
+      "source": "mustExec(t, \"python3\", \"/opt/netlab/scripts/trace_capture.py\", \"stop\", \"/scratch/agent-at10\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 103,
+      "source": "saveD116(t, strings.ReplaceAll(name, \".log\", \".txt\"), readScratch(t, \"/scratch/\"+name))"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 107,
+      "source": "for !scratchExists(\"/scratch/agent-stream.log\") || !strings.Contains(readScratch(t, \"/scratch/agent-stream.log\"), \" ok\") {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 125,
+      "source": "raw := mustExec(t, \"nft\", \"-j\", \"list\", \"ruleset\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 147,
+      "source": "text := mustExec(t, \"nft\", \"list\", \"table\", \"inet\", \"fvpn\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_f31_test.go",
+      "line": 29,
+      "source": "raw, errOut, err := dockerExec(\"python3\", \"-c\", followup31RestartSnapshot)"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_f31_test.go",
+      "line": 41,
+      "source": "raw, _, err := dockerExec(\"cat\", labDir+\"/\"+name)"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_f36_test.go",
+      "line": 20,
+      "source": "original := readScratch(t, labDir+\"/agent.json\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_f36_test.go",
+      "line": 44,
+      "source": "out, errOut, err := dockerExec(\"python3\", \"/work/tests/netlab/agent/restart-sets.py\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_f36_test.go",
+      "line": 49,
+      "source": "raw, _, readErr := dockerExec(\"cat\", labDir+\"/f36-result.json\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_health_test.go",
+      "line": 31,
+      "source": "_, _, _ = dockerExec(\"rm\", \"-f\", labDir+\"/journal/health-challenge.json\", labDir+\"/journal/health-attest.json\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_health_test.go",
+      "line": 57,
+      "source": "bootID := strings.ToLower(strings.TrimSpace(mustExec(t, \"cat\", \"/proc/sys/kernel/random/boot_id\")))"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_health_test.go",
+      "line": 86,
+      "source": "mustExec(t, \"chmod\", \"600\", challengePath)"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_health_test.go",
+      "line": 87,
+      "source": "if mode := strings.TrimSpace(mustExec(t, \"stat\", \"-c\", \"%a\", challengePath)); mode != \"600\" {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_health_test.go",
+      "line": 97,
+      "source": "out, _, err := dockerExec(\"cat\", attestPath)"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_health_test.go",
+      "line": 108,
+      "source": "if mode := strings.TrimSpace(mustExec(t, \"stat\", \"-c\", \"%a\", attestPath)); mode != \"600\" {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_health_test.go",
+      "line": 158,
+      "source": "out := strings.TrimSpace(mustExec(t, \"python3\", labDir+\"/identity_ids.py\"))"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 41,
+      "source": "mode := strings.Fields(mustExec(t, \"stat\", \"-c\", \"%a\", labDir+\"/identity/setup.key\"))"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 115,
+      "source": "_, _, _ = dockerExec(\"sh\", \"-c\", fmt.Sprintf("
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 139,
+      "source": "t.Log(\"TEST ONLY graceful restart stop:\", mustExec(t, \"python3\", \"/work/tests/netlab/agent/timing-probes.py\", \"stop\", labDir+\"/restart-stop.json\", \"10\"))"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 140,
+      "source": "mustExec(t, \"python3\", \"/work/tests/netlab/agent/topology-owner.py\", \"stop\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 171,
+      "source": "_, _, _ = dockerExec(\"sh\", \"-c\", \"rm -f /scratch/denyloop.stop /scratch/deny-hits.log \"+labDir+\"/deny-cases.json\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 184,
+      "source": "if err := dockerDetach(\"python3\", \"/opt/netlab/scripts/denyloop.py\", \"/scratch/deny-cases.json\"); err != nil {"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 188,
+      "source": "_, _, _ = dockerExec(\"sh\", \"-c\", \"touch /scratch/denyloop.stop; if [ -f /scratch/denyloop.pid ]; then kill $(cat /scratch/denyloop.pid) 2>/dev/null || true; fi\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 195,
+      "source": "_, _, _ = dockerExec(\"sh\", \"-c\", \"touch /scratch/denyloop.stop\")"
+    },
+    {
+      "arm": "A",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 198,
+      "source": "hits := readScratch(t, \"/scratch/deny-hits.log\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 57,
+      "source": "raw, err := exec.Command(\"docker\", \"exec\", prefix(), \"cat\", labDir+\"/\"+name).Output()"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 80,
+      "source": "out, err := exec.Command(\"docker\", \"inspect\", \"-f\", \"{{.State.Running}}\", prefix()).CombinedOutput()"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 90,
+      "source": "out, err := exec.Command(\"docker\", \"inspect\", \"-f\", \"{{.State.Running}}\", prefix()).CombinedOutput()"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 94,
+      "source": "_, _, _ = dockerExec(\"sh\", \"-c\", \"mkdir -p \"+labDir+\"/state \"+labDir+\"/identity \"+labDir+\"/journal\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 95,
+      "source": "if _, _, err := dockerExec(\"chmod\", \"700\", labDir+\"/journal\"); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 98,
+      "source": "if _, _, err := dockerExec(\"python3\", \"/work/tests/netlab/agent/topology-owner.py\", \"capture\"); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 101,
+      "source": "if err := dockerDetach(\"sh\", \"-c\", \"exec fvpn-labcontrol -dir \"+labDir+\" -admin 127.0.0.1:9091 >\"+labDir+\"/labcontrol.log 2>&1\"); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 106,
+      "source": "if _, _, err := dockerExec(\"test\", \"-f\", labDir+\"/ready\"); err == nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 111,
+      "source": "if _, _, err := dockerExec(\"test\", \"-f\", labDir+\"/ready\"); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 114,
+      "source": "urlBytes, errOut, err := dockerExec(\"cat\", labDir+\"/url\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 127,
+      "source": "if _, errOut, err := dockerExecStdin([]string{\"nft\", \"-f\", \"-\"}, marker); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 133,
+      "source": "baseline, errOut, err := dockerExec(\"nft\", \"list\", \"table\", \"inet\", \"fvpn\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 138,
+      "source": "if _, errOut, err := dockerExecStdin([]string{\"nft\", \"-f\", \"-\"}, []byte(\"delete table inet fvpn\\n\"+baseline)); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 141,
+      "source": "text, errOut, err := dockerExec(\"nft\", \"list\", \"table\", \"inet\", \"fvpn\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 145,
+      "source": "if _, errOut, err := dockerExecStdin([]string{\"tee\", labDir + \"/before-enrollment.txt\"}, []byte(text)); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 148,
+      "source": "if _, errOut, err := dockerExec(\"sh\", \"-c\", \"nft -j list ruleset >\"+labDir+\"/before-enrollment.json\"); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 152,
+      "source": "if out, errOut, err := dockerExec(\"fvpn-agent\", \"enroll\", \"-config\", labDir+\"/agent.json\", \"-token-file\", labDir+\"/token\"); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 155,
+      "source": "if _, _, err := dockerExec(\"test\", \"!\", \"-f\", labDir+\"/token\"); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 158,
+      "source": "keyBefore, errOut, err := dockerExec(\"sha256sum\", labDir+\"/identity/key.pem\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 162,
+      "source": "if _, errOut, err := dockerExecStdin([]string{\"tee\", labDir + \"/token2\"}, []byte(\"other-token\\n\")); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 165,
+      "source": "if out, errOut, err := dockerExec(\"fvpn-agent\", \"enroll\", \"-config\", labDir+\"/agent.json\", \"-token-file\", labDir+\"/token2\"); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 168,
+      "source": "keyAfter, _, _ := dockerExec(\"sha256sum\", labDir+\"/identity/key.pem\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 213,
+      "source": "if _, errOut, err := dockerExecStdin([]string{\"tee\", labDir + \"/netbird-status.json\"}, status); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 220,
+      "source": "_, errOut, err := dockerExecStdin([]string{\"tee\", labDir + \"/agent.json\"}, append(raw, '\\n'))"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 228,
+      "source": "cmd := exec.Command(\"docker\", append([]string{\"exec\", prefix()}, args...)...)"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 237,
+      "source": "cmd := exec.Command(\"docker\", append([]string{\"exec\", \"-i\", prefix()}, args...)...)"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 247,
+      "source": "cmd := exec.Command(\"docker\", append([]string{\"exec\", \"-d\", prefix()}, args...)...)"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 258,
+      "source": "out, errOut, err := dockerExec(args...)"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 267,
+      "source": "out, errOut, err := dockerExecStdin([]string{\"tee\", path}, body)"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 275,
+      "source": "out, errOut, err := dockerExec(\"cat\", path)"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 283,
+      "source": "_, _, err := dockerExec(\"test\", \"-f\", path)"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 288,
+      "source": "out, errOut, err := dockerExec(\"sh\", \"-c\", \"tail -n 60 \"+labDir+\"/agent.log \"+labDir+\"/labcontrol.log 2>/dev/null || true\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 306,
+      "source": "body := readScratch(t, labDir+\"/agent.log\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 346,
+      "source": "out, errOut, err := dockerExec(\"python3\", \"/opt/netlab/scripts/probe.py\", labDir+\"/cases.json\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 398,
+      "source": "mustExec(t, \"python3\", labDir+\"/admin.py\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 407,
+      "source": "out, _, err := dockerExec(\"python3\", labDir+\"/admin_get.py\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 420,
+      "source": "_, _, _ = dockerExec(\"sh\", \"-c\", fmt.Sprintf("
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 430,
+      "source": "if err := dockerDetach(\"sh\", \"-c\", script); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 437,
+      "source": "_, _, _ = dockerExec(\"python3\", \"/work/tests/netlab/agent/topology-owner.py\", \"stop\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 438,
+      "source": "if err := dockerDetach(\"python3\", \"/work/tests/netlab/agent/topology-owner.py\", \"run\"); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 447,
+      "source": "_, _, err := dockerExec(\"python3\", \"-c\", `import time"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 462,
+      "source": "_, _, _ = dockerExec(\"python3\", \"/work/tests/netlab/agent/topology-owner.py\", \"stop\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 468,
+      "source": "_, _, _ = dockerExec(\"conntrack\", \"-F\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 469,
+      "source": "_, _, _ = dockerExec(\"conntrack\", \"-F\", \"-f\", \"ipv6\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/harness_test.go",
+      "line": 474,
+      "source": "out, _, _ := dockerExec(\"nft\", \"list\", \"table\", \"inet\", \"fvpn\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 56,
+      "source": "if err := json.Unmarshal([]byte(mustExec(t, \"ip\", \"-j\", \"addr\", \"show\", \"dev\", \"fv-fh\")), &addresses); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 63,
+      "source": "if err := json.Unmarshal([]byte(mustExec(t, \"ip\", \"-j\", family, \"route\", \"show\", \"dev\", \"fv-fh\")), &rows); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 72,
+      "source": "mustExec(t, \"ip\", \"-6\", \"addr\", \"replace\", fmt.Sprintf(\"%s/%d\", a.Local, a.PrefixLen), \"dev\", \"fv-fh\", \"nodad\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 79,
+      "source": "mustExec(t, \"ip\", family, \"route\", \"replace\", route.Dst, \"via\", route.Gateway, \"dev\", \"fv-fh\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 88,
+      "source": "mustExec(t, \"ip\", \"link\", \"set\", \"fv-fh\", \"up\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 92,
+      "source": "mustExec(t, \"tc\", \"qdisc\", \"add\", \"dev\", \"fv-fh\", \"clsact\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 93,
+      "source": "mustExec(t, \"tc\", \"filter\", \"add\", \"dev\", \"fv-fh\", \"ingress\", \"pref\", \"1\", \"matchall\", \"action\", \"mirred\", \"egress\", \"redirect\", \"dev\", \"fv-ih\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 94,
+      "source": "defer func() { _, _, _ = dockerExec(\"tc\", \"qdisc\", \"del\", \"dev\", \"fv-fh\", \"clsact\") }()"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 107,
+      "source": "link := mustExec(t, \"ip\", \"-j\", \"link\", \"show\", \"dev\", \"fv-fh\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 119,
+      "source": "mustExec(t, \"tc\", \"filter\", \"del\", \"dev\", \"fv-fh\", \"ingress\", \"pref\", \"1\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 120,
+      "source": "mustExec(t, \"tc\", \"qdisc\", \"del\", \"dev\", \"fv-fh\", \"clsact\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 124,
+      "source": "if strings.Contains(mustExec(t, \"ip\", \"-j\", \"link\", \"show\", \"dev\", \"fv-fh\"), `\"UP\"`) {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 129,
+      "source": "if !strings.Contains(mustExec(t, \"ip\", \"-j\", \"link\", \"show\", \"dev\", \"fv-fh\"), `\"UP\"`) {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 139,
+      "source": "t.Log(\"member addresses\", mustExec(t, \"ip\", \"-j\", \"addr\", \"show\", \"dev\", \"fv-fh\"))"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 140,
+      "source": "t.Log(\"member routes\", mustExec(t, \"ip\", \"-j\", \"-6\", \"route\", \"show\", \"table\", \"all\", \"dev\", \"fv-fh\"))"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ab_recovery_test.go",
+      "line": 157,
+      "source": "leaseGen := strings.TrimSpace(mustExec(t, \"python3\", \"-c\", `import sqlite3,json"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ac_timing_test.go",
+      "line": 23,
+      "source": "original := readScratch(t, labDir+\"/agent.json\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ac_timing_test.go",
+      "line": 132,
+      "source": "body, err := exec.Command(\"docker\", \"exec\", prefix(), \"cat\", labDir+\"/\"+name).Output()"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ac_timing_test.go",
+      "line": 145,
+      "source": "mustExec(t, \"python3\", \"/work/tests/netlab/agent/timing-probes.py\", \"trace\", \"renewal\", \"0\", labDir+\"/renewal.json\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ac_timing_test.go",
+      "line": 148,
+      "source": "d := mustExec(t, \"python3\", \"-c\", `import sqlite3,json"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ac_timing_test.go",
+      "line": 160,
+      "source": "mustExec(t, \"python3\", \"/work/tests/netlab/agent/timing-probes.py\", \"trace\", \"expiry_restart\", fmt.Sprint(mono), labDir+\"/expiry.json\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_ac_timing_test.go",
+      "line": 170,
+      "source": "summary, err := exec.Command(\"python3\", \"timing-analysis.py\", outDir).CombinedOutput()"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_at_usage_test.go",
+      "line": 65,
+      "source": "mustExec(t, \"rm\", \"-f\", labDir+\"/journal/forwarding.blocked\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_at_usage_test.go",
+      "line": 144,
+      "source": "_, _, _ = dockerExec(\"sh\", \"-c\", script)"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_at_usage_test.go",
+      "line": 157,
+      "source": "mustExec(t, \"ip\", \"netns\", \"exec\", \"fv-a1\", \"python3\", labDir+\"/udpburst.py\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_at_usage_test.go",
+      "line": 165,
+      "source": "return len(readScratch(t, labDir+\"/agent.log\"))"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_at_usage_test.go",
+      "line": 176,
+      "source": "body := readScratch(t, labDir+\"/agent.log\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_at_usage_test.go",
+      "line": 207,
+      "source": "out := strings.TrimSpace(mustExec(t, \"python3\", labDir+\"/nft_usage.py\"))"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_at_usage_test.go",
+      "line": 271,
+      "source": "out, errOut, err := dockerExec(\"python3\", labDir+\"/usage_read.py\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_az_external_test.go",
+      "line": 69,
+      "source": "mustExec(t, \"nft\", \"flush\", \"chain\", \"inet\", \"fvpn\", \"forward\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_az_external_test.go",
+      "line": 97,
+      "source": "out, _, err := dockerExec(\"nft\", \"list\", \"chain\", \"inet\", \"fvpn\", \"forward\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_az_external_test.go",
+      "line": 139,
+      "source": "out, errOut, err := dockerExec(\"python3\", labDir+\"/usage_epoch.py\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 64,
+      "source": "saveD116(t, \"before-enrollment.json\", readScratch(t, labDir+\"/before-enrollment.json\"))"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 65,
+      "source": "saveD116(t, \"before-enrollment.txt\", readScratch(t, labDir+\"/before-enrollment.txt\"))"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 69,
+      "source": "if err := dockerDetach(\"sh\", \"-c\", script); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 75,
+      "source": "saveD116(t, \"agent.txt\", readScratch(t, labDir+\"/agent.log\"))"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 83,
+      "source": "mustExec(t, \"nft\", \"delete\", \"table\", \"inet\", \"fvpn_install\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 91,
+      "source": "mustExec(t, \"nft\", \"add\", \"table\", \"inet\", \"fvpn_install\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 92,
+      "source": "mustExec(t, \"nft\", \"add\", \"chain\", \"inet\", \"fvpn_install\", \"owner\", `{ comment \"managed-by=fvpn-node-install\"; }`)"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 93,
+      "source": "mustExec(t, \"python3\", \"/opt/netlab/scripts/trace_capture.py\", \"start\", \"/scratch/agent-at10\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 94,
+      "source": "if err := dockerDetach(\"ip\", \"netns\", \"exec\", \"fv-a1\", \"python3\", \"/opt/netlab/scripts/stream.py\", \"203.0.113.10\", \"9001\", \"9000\", \"/scratch/agent-stream.log\"); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 99,
+      "source": "mustExec(t, \"python3\", \"/opt/netlab/scripts/trace_capture.py\", \"finish-stream\", \"/scratch/agent-stream.log\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 100,
+      "source": "mustExec(t, \"python3\", \"/opt/netlab/scripts/trace_capture.py\", \"stop\", \"/scratch/agent-at10\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 103,
+      "source": "saveD116(t, strings.ReplaceAll(name, \".log\", \".txt\"), readScratch(t, \"/scratch/\"+name))"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 107,
+      "source": "for !scratchExists(\"/scratch/agent-stream.log\") || !strings.Contains(readScratch(t, \"/scratch/agent-stream.log\"), \" ok\") {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 125,
+      "source": "raw := mustExec(t, \"nft\", \"-j\", \"list\", \"ruleset\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_d116_test.go",
+      "line": 147,
+      "source": "text := mustExec(t, \"nft\", \"list\", \"table\", \"inet\", \"fvpn\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_f31_test.go",
+      "line": 29,
+      "source": "raw, errOut, err := dockerExec(\"python3\", \"-c\", followup31RestartSnapshot)"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_f31_test.go",
+      "line": 41,
+      "source": "raw, _, err := dockerExec(\"cat\", labDir+\"/\"+name)"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_f36_test.go",
+      "line": 20,
+      "source": "original := readScratch(t, labDir+\"/agent.json\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_f36_test.go",
+      "line": 44,
+      "source": "out, errOut, err := dockerExec(\"python3\", \"/work/tests/netlab/agent/restart-sets.py\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_f36_test.go",
+      "line": 49,
+      "source": "raw, _, readErr := dockerExec(\"cat\", labDir+\"/f36-result.json\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_health_test.go",
+      "line": 31,
+      "source": "_, _, _ = dockerExec(\"rm\", \"-f\", labDir+\"/journal/health-challenge.json\", labDir+\"/journal/health-attest.json\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_health_test.go",
+      "line": 57,
+      "source": "bootID := strings.ToLower(strings.TrimSpace(mustExec(t, \"cat\", \"/proc/sys/kernel/random/boot_id\")))"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_health_test.go",
+      "line": 86,
+      "source": "mustExec(t, \"chmod\", \"600\", challengePath)"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_health_test.go",
+      "line": 87,
+      "source": "if mode := strings.TrimSpace(mustExec(t, \"stat\", \"-c\", \"%a\", challengePath)); mode != \"600\" {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_health_test.go",
+      "line": 97,
+      "source": "out, _, err := dockerExec(\"cat\", attestPath)"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_health_test.go",
+      "line": 108,
+      "source": "if mode := strings.TrimSpace(mustExec(t, \"stat\", \"-c\", \"%a\", attestPath)); mode != \"600\" {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_health_test.go",
+      "line": 158,
+      "source": "out := strings.TrimSpace(mustExec(t, \"python3\", labDir+\"/identity_ids.py\"))"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 41,
+      "source": "mode := strings.Fields(mustExec(t, \"stat\", \"-c\", \"%a\", labDir+\"/identity/setup.key\"))"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 115,
+      "source": "_, _, _ = dockerExec(\"sh\", \"-c\", fmt.Sprintf("
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 139,
+      "source": "t.Log(\"TEST ONLY graceful restart stop:\", mustExec(t, \"python3\", \"/work/tests/netlab/agent/timing-probes.py\", \"stop\", labDir+\"/restart-stop.json\", \"10\"))"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 140,
+      "source": "mustExec(t, \"python3\", \"/work/tests/netlab/agent/topology-owner.py\", \"stop\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 171,
+      "source": "_, _, _ = dockerExec(\"sh\", \"-c\", \"rm -f /scratch/denyloop.stop /scratch/deny-hits.log \"+labDir+\"/deny-cases.json\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 184,
+      "source": "if err := dockerDetach(\"python3\", \"/opt/netlab/scripts/denyloop.py\", \"/scratch/deny-cases.json\"); err != nil {"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 188,
+      "source": "_, _, _ = dockerExec(\"sh\", \"-c\", \"touch /scratch/denyloop.stop; if [ -f /scratch/denyloop.pid ]; then kill $(cat /scratch/denyloop.pid) 2>/dev/null || true; fi\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 195,
+      "source": "_, _, _ = dockerExec(\"sh\", \"-c\", \"touch /scratch/denyloop.stop\")"
+    },
+    {
+      "arm": "B",
+      "file": "tests/netlab/agent/scenario_test.go",
+      "line": 198,
+      "source": "hits := readScratch(t, \"/scratch/deny-hits.log\")"
+    }
+  ]
+}
