@@ -1,87 +1,74 @@
-# Follow-up 16 — one AT29 transport run
+# Follow-up 17 — one AT29 transport run
 
-Use the assigned `FVPN_E2E_PREFIX=w4-secops`, port base `30000`, and only
-`fvpn-w4-secops-*` Docker objects. Never take a reservation, change the host
-clock/network, use sudo, or touch the shared PostgreSQL or another lane's objects.
+Use `FVPN_E2E_PREFIX=w4-secops`, port base `30000`, and only
+`fvpn-w4-secops-*` Docker objects. Never take a reservation. Scratch is disk
+`.agent/tmp` for both TMPDIR and GOTMPDIR. Go uses the cache from `go env GOCACHE`.
 
 Before every test, make, Python test driver or Docker command, run
-`bash "$FVPN_HOLD_SH"`. Start only on `free`; otherwise re-check every 60 seconds.
-The script is supplied by the orchestrator's private repository. Never write its
-location into evidence. `admitted.py` gives nested Docker, Go, make and Python
-commands the same check, with admission output captured separately under
-`.agent/secops/admission.log`. It preserves the inherited Go wrapper and uses
-the original PATH for admission itself, avoiding interpreter recursion.
+`bash "$FVPN_HOLD_SH"`; proceed only on `free`, otherwise re-check every 60s.
+The script is supplied by the orchestrator's private repository. `admitted.py`
+checks nested commands too and keeps admission output in a separate private
+stream. Exit 125 is an admission refusal, never a test result.
 
-Before the live run, check this exact process inventory and wait while another
-assembled run or network lab is active; record elapsed waiting time:
+D-098: `followup17_archive.py` freezes all existing root records byte-identically
+at `history/before-follow-up-17/`, verified against the committed source with
+SHA-256 pins. It refuses an existing archive. Every earlier archive is retained.
+Commit the setup and its offline proofs first, then this archive, before running.
 
-```sh
-ps -eo pid,etimes,args | grep -E '[g]ates\.sh|[m]k/at-|[n]ode-test-netlab|[n]etlab-test'
-```
-
-D-098 comes first. `followup16_archive.py` freezes all current root records
-byte-identically, verifies them against the committed source, and writes SHA-256
-pins. It refuses to replace an existing archive. The Follow-up 16 archive is committed at `history/before-follow-up-16/`;
-do not rerun its creation. Check `followup16_preflight.py` after admission and
-wait while another assembled run or lab remains active, up to 120 minutes total.
-
-The authorized run command is:
+`followup17_host.py` checks the required inventory:
 
 ```sh
-bash "$FVPN_HOLD_SH" && python3 -B tests/e2e/at/secops/admitted.py make -f mk/at-secops.mk at-secops-followup16
+ps -eo pid,etimes,args | grep -E '[g]ates\.sh|[m]k/at-|[n]ode-test-netlab|[n]etlab-test|[e]2e-test'
 ```
 
-The foreground driver creates a fresh stack, runs all AT29 transport sub-cases,
-then removes its containers, images, networks, volumes and generated bind state.
-It also emits the existing bounded AT31 relay row if execution reaches it.
-`guest_clock_rollback` remains blocked, owned by `w3-devstack-e2e / operator`.
-A maximum of one rerun is allowed only for a harness/setup/admission failure
-before the test reaches its subject. A failed sub-case stays a result and must
-not be rerun. Archive every attempt before any permitted replacement.
-
-The new `control_lost_agent_alive` case stops control and pauses the worker,
-leaving the original agent running. Its redacted agent log must prove control
-requests exhausted the full configured budget. The locally accepted lease
-and its request CLOCK_MONOTONIC stamp define D; the heartbeat's policy deadline
-must agree. The continuity window ends at D−101ms−1s and must span at least
-three Step intervals. Enforcement's 100ms installation reserve plus 1ms quantum
-supply the 101ms; the existing one-second sampler supplies the remaining margin.
-Each read interval, original process identity, heartbeat serving/reason, replies
-and sender attempts is retained. Closure is required by D+3s and for the next
-ten seconds, matching the existing lease-expiry observation bounds. These
-samples do not claim isolation's packet-level D-140/D-142 qualification.
-
-The existing `lease_expiry` case still kills the agent. Its three-second
-`continued_before_expiry` stays diagnostic; the new case supplies continuity.
-Cleanup is registered before mutation. It starts control, unpauses the worker,
-and restores the original fleet cap and finite member standing through public
-APIs using a detached context, including early-return paths.
-
-Manual withdrawal uses public `revokeMemberGrant` (#297), records 202 and actual
-operation completion, and samples the original TCP/9446 and authenticated
-UDP/9445 sockets with independent senders. The bound is the earlier of the
-§16.5 online 60-second target and the actual observed lease/member deadline
-(§9.4, §16.3, §19 AT29). Setup polling (90 s), recovery (120 s), sample cadence
-(1 s), positive window (4 s), and quiet window (10 s) are the existing transport
-harness limits. They are not additional production promises. Recovery keeps the
-original finite grant end, uses explicit administrator device authorization
-under D-077, and requires the applied ACK and fresh counted TCP/UDP traffic.
-A detached cleanup context restores standing even after an early return.
-
-Render this run only after cleanup:
+It waits for host admission and an empty foreign-suite inventory, up to 120
+minutes including earlier waits supplied in `FVPN_SECOPS_PRIOR_WAIT_SECONDS`.
+Before dispatch it records the baseline commit and `vmstat 5 7`, then rechecks.
+Only pid, comm and ticks of foreign processes are retained. A foreground parent
+monitors the run every five seconds and joins its child. Any observed foreign
+run overlap marks D-133 confounding; it never triggers a retry.
 
 ```sh
-bash "$FVPN_HOLD_SH" && python3 -B tests/e2e/at/secops/followup16_records.py
+bash "$FVPN_HOLD_SH" && python3 -B tests/e2e/at/secops/followup17_host.py
 ```
 
-Run these gates sequentially after admission, with disk TMPDIR/GOTMPDIR under
-`.agent/tmp` (the admission runner provides them): area lint, area test, area
-build, `go vet -tags e2e ./tests/e2e/...`, `go test -count=1 ./tests/handover/...`,
-`make go-lint`, the whole-module `gofmt -l` empty check, `git diff --check`, and
-the committed-evidence hygiene test. For `make go-lint`, use `diskexec.py` and
-`go-with-disk-tmp=` to avoid the root makefile's shell cleanup trap. Exit 125 is
-not admission and is never a test verdict.
+This dispatches the admitted `make -f mk/at-secops.mk at-secops-followup17`,
+using the existing fresh-stack transport driver. One rerun is allowed only for
+a harness, wrapper or admission stop before the subject; a failed sub-case is
+retained and never rerun. Archive any allowed prior attempt before replacement.
 
-The single Follow-up 16 live attempt is complete. The new prerequisite failed;
-do not rerun that sub-case under this authorization. See
-[the finding](followup16-finding.json) and [dated hand-off](2026-11-03-follow-up-16.md).
+The setup design is **cap before member admission**. The public fleet cap PUT
+and read-back precede this case's existing finite grant and native device join.
+Its new binding produces a configuration generation and prompts agent renewal.
+The 90s wait requires a locally accepted lease issued strictly after the cap
+write, signed cap 60, lifetime within 60s, matching serving heartbeat and the
+existing remaining-window/member-coverage predicates. Timeout names the lease.
+See [diagnosis and results](2026-11-04-follow-up-17.md).
+
+Continuity predicates from Follow-up 16 are unchanged: same live agent identity,
+original TCP/9446 and authenticated UDP/9445 sockets, independent senders,
+D from the accepted lease's request CLOCK_MONOTONIC stamp plus signed duration,
+continuity through D−101ms−1s for at least three Step intervals, agent request
+timeout logs, and quiet by D+3s through the next ten seconds. The 101ms is
+DeadlineInstallBound 100ms plus DeadlineGranularity 1ms. This one-second sampler
+does not claim D-140/D-142's packet-level isolation qualification. The original
+killed-agent case and its three-second diagnostic remain unchanged.
+
+Restoration is registered before mutations: restart control, unpause worker,
+restore the original fleet cap and finite member standing through the existing
+public API/read-back paths, including early returns. Log snapshots at each
+sub-case boundary retain watchdog decisions and agent startup/adoption evidence
+before a later restart overwrites agent.log. The driver tears down all owned
+Docker objects and generated bind state. Verify a second zero inventory after it.
+
+After cleanup, run the admitted `followup17_records.py`. Record SECOPS-F16-01 as
+answered only when this run reached the outage with a qualifying lease. Any
+post-setup failure is retained and routed as a product finding. Earlier run
+`1bfd5cff` remains failed. Evidence SHA-256 pins use immutable history paths only.
+New evidence over 20 MB must use lossless gzip with both form digests.
+
+Run the nine gates sequentially after admission: area lint, test, build;
+`make -f mk/e2e.mk e2e-lint`; `go test -count=1 ./tests/handover/...`;
+`make go-lint` (with disk TMPDIR/GOTMPDIR and `go-with-disk-tmp=` to avoid the
+root shell cleanup trap); empty whole-module gofmt; `git diff --check`; the
+committed-evidence hygiene test. Retain any out-of-scope failure and continue.

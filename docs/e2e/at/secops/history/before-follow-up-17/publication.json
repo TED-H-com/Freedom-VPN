@@ -1,0 +1,296 @@
+{
+  "schema_version": 1,
+  "follow_up": 5,
+  "run_id": "86e6106a-1be1-4003-9b0f-35a30e9cda12",
+  "source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
+  "probe_source_sha256": "bb9e726e4997f6f59fbbb4d6ac2b007c75aa30ab1cf0fc65c4bb795d6df5ac52",
+  "started_at": "2026-10-30T09:26:55.383432456Z",
+  "finished_at": "2026-10-30T09:45:27.565293215Z",
+  "policy_revision": "1",
+  "node_incarnation": "01a18c23-076a-79fb-af87-c28a9ac798a0",
+  "secondary_node_incarnation": "20ec54ef-1dbb-46f0-b183-8683e6369d91",
+  "image_digests": [
+    {
+      "image_id": "sha256:bb6608e4f6f966c410892a7f8bc7f023a3ec2d35ac48c4ea6089e64f91062c66",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:54b557988efb2328e10fdd6945d53b7a23f111e634fd2cb5025c20af94633929",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:9a761831f273a26f3ae8f58a8d565bde09f62267e90bd0380132e29a5d5b1618",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:457fd978be9cc245b5e57c25a0a7d30bf11522e2df2901d25debb7b5c49eb1dd",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:7f15d6df60d770b59512b00ca98fa888bbae9d795bff04a395f8ac9f27c4d57f",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:fb3d6639726f7e1160b9145c4a132cfe945aa3d89211cb986056cd0150daff38",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "node-netns"
+    },
+    {
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "member"
+    },
+    {
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "member-secops-deadline-grant"
+    },
+    {
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "member-secops-deadline-paid"
+    },
+    {
+      "image_id": "sha256:d3dee89328387e9f38c3a8f5e57b0f1fbc8a88315b008a4768fc8b804a79c77f",
+      "service": "member-secops-counted-b"
+    }
+  ],
+  "build_digests": [
+    {
+      "name": "fvpn-agent",
+      "sha256": "e58ce507f6e8cc6e90c1614daad37d62ac394bb2264615b780d1417cf4213f58",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-control",
+      "sha256": "ef97948f8d9bc326163f7b407c067d8a67f279215aa5ef2d232d61133d11a132",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-idp",
+      "sha256": "b079831f2ba6448fafca64d19005f39117e9dac44fd4378981c0fcdbfa94a2c2",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-nbbootstrap",
+      "sha256": "171dd8f5b28adfee27eaef82417e810480c5a241f9dff085df02f34832c6e469",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-nodeconfig",
+      "sha256": "f5cf21b2018e7e8135dbbdaa571bf69ee23604faa4d6435adebfcb462661cdd9",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-origin",
+      "sha256": "2f5e7744dc3abe4883f6265a1255a1c2734556f1c1398a7138459249309ceb43",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-payment",
+      "sha256": "825a8f62213dcaeae59cacf2ecd760d5216f1b8fea4fae8103ad896cfe21d0af",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-e2e-prepare",
+      "sha256": "d8a04949a3a789311e0c7c3896a333c91f89537ae6b92e8651d1d35989ad42ad",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-updater",
+      "sha256": "96825f58bc15c94f77d9e7000152c5545146818e3ba7533b6d2f4d6c24880c02",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-watchdog",
+      "sha256": "c1ff8ce46603a0458e905e26de6c9c4e63539faf42f0cbe14c9e6700bf0d6b61",
+      "kind": "prepared application binary"
+    },
+    {
+      "name": "fvpn-worker",
+      "sha256": "47a86133875571c8da3455a7b83a2797a2cc4d84347dc4875521c5b18243d6e7",
+      "kind": "prepared application binary"
+    }
+  ],
+  "commands": [
+    "FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 make -f mk/at-secops.mk at-secops-followup5"
+  ],
+  "hardware": "shared development host; not candidate hardware",
+  "id": "SECOPS-11",
+  "status": "historical halves retained; current populated serving probe",
+  "history": "followup4-publication.json",
+  "actual": {
+    "publication_request": {
+      "code": "",
+      "status": 202
+    },
+    "publication_operation": {
+      "operation_id": "a6da9ce4-5aa7-487b-aded-1fff3166a769",
+      "status": "succeeded",
+      "steps": [
+        {
+          "error_code": null,
+          "message": null,
+          "name": "agent_policy",
+          "observed_at": "2026-10-30T09:29:37.512868684Z",
+          "required": true,
+          "status": "succeeded"
+        },
+        {
+          "error_code": null,
+          "message": null,
+          "name": "data_path_probe",
+          "observed_at": "2026-10-30T09:29:37.512868684Z",
+          "required": true,
+          "status": "succeeded"
+        },
+        {
+          "error_code": null,
+          "message": null,
+          "name": "netbird_route_readback",
+          "observed_at": "2026-10-30T09:29:37.512868684Z",
+          "required": true,
+          "status": "succeeded"
+        }
+      ]
+    },
+    "publication_observation_after": {
+      "applied_config_generation": "8",
+      "available": true,
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "lease",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "qos",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "source_binding",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "tunnel_probe",
+          "status": "passed"
+        }
+      ],
+      "data_health": "healthy",
+      "forwarding_evidence_satisfied": true,
+      "lease": {
+        "expires_at": "2026-10-31T09:29:15.015078778Z",
+        "lease_id": "7c168ab7-fade-4891-bd2a-9e65039a3658"
+      },
+      "member_forwarding_enabled": true,
+      "observed_at": "2026-10-30T09:29:25.228044973Z",
+      "provisioning_state": "ready",
+      "report_id": "01a18c24-81ec-70b7-a59d-5f9635690491",
+      "safety_status": "passed"
+    },
+    "node_after_publication": {
+      "config_generation": {
+        "applied": "8",
+        "desired": "8"
+      },
+      "data_health": "healthy",
+      "observed_publication": "active",
+      "provisioning": "ready",
+      "publication": "published"
+    },
+    "selected_exit_flow": {
+      "admitted_bytes_delta": {
+        "download": "1513",
+        "upload": "1066"
+      },
+      "after_bytes": {
+        "download": "1513",
+        "generation": "8",
+        "upload": "1066"
+      },
+      "before_bytes": {
+        "download": "0",
+        "generation": "8",
+        "upload": "0"
+      },
+      "counted": true,
+      "counter_reads_ok": true,
+      "http_200": true,
+      "network_list": "Available Networks:\n\n  - ID: fvpn-exit-53453db75e0f862dd0da8226\n    Network: 0.0.0.0/0\n    Status: Not Selected",
+      "network_list_ok": true,
+      "order": [
+        "select advertised exit",
+        "route dev fvnb0",
+        "HTTPS 200",
+        "authenticated node-SNAT receipt",
+        "exact-device byte delta"
+      ],
+      "origin_authenticated": true,
+      "origin_node_snat": true,
+      "origin_probe_matches": true,
+      "origin_requests": 1,
+      "peer": {
+        "container_role": "member",
+        "device_id": "01a18c23-ce6c-7865-af78-3752cc919443"
+      },
+      "route_device": "fvnb0",
+      "route_get": "<controlled-origin> dev fvnb0 table netbird src 100.82.167.98 uid 0 \n    cache",
+      "selection_ok": true,
+      "selection_output": "Networks selected successfully.",
+      "utc": "2026-10-30T09:29:42.42115563Z"
+    }
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "run_id": "35116d25-122c-4724-adfe-5a06d623c04f",
+  "all_passed": true,
+  "gates": [
+    {
+      "gate": "01-lint",
+      "command": [
+        "make",
+        "-f",
+        "mk/at-secops.mk",
+        "at-secops-lint"
+      ],
+      "started_at": "2026-11-04T01:56:37.419191Z",
+      "elapsed_seconds": 1.447,
+      "exit_code": 0,
+      "status": "passed",
+      "output_tail": "python3 -B tests/e2e/at/secops/diskexec.py go vet -tags e2e,integration ./tests/e2e/at/secops/...\npython3 -B tests/e2e/at/secops/diskexec.py go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e,integration ./tests/e2e/at/secops/..."
+    },
+    {
+      "gate": "02-test",
+      "command": [
+        "make",
+        "-f",
+        "mk/at-secops.mk",
+        "at-secops-test"
+      ],
+      "started_at": "2026-11-04T01:56:38.866812Z",
+      "elapsed_seconds": 4.403,
+      "exit_code": 0,
+      "status": "passed",
+      "output_tail": "python3 -B tests/e2e/at/secops/diskexec.py go test -tags e2e -p 1 -parallel 2 ./tests/e2e/at/secops/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t3.602s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops/proxyprobe\t[no test files]\npython3 -B tests/e2e/at/secops/diskexec.py python3 -B -m unittest discover -s tests/e2e/at/secops -p 'test_*.py'\n...................................\n----------------------------------------------------------------------\nRan 35 tests in 0.003s\n\nOK"
+    },
+    {
+      "gate": "03-build",
+      "command": [
+        "make",
+        "-f",
+        "mk/at-secops.mk",
+        "at-secops-build"
+      ],
+      "started_at": "2026-11-04T01:56:43.269841Z",
+      "elapsed_seconds": 0.544,
+      "exit_code": 0,
+      "status": "passed",
+      "output_tail": "GOOS=linux GOARCH=amd64 python3 -B tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/amd64.test ./tests/e2e/at/secops\nGOOS=linux GOARCH=arm64 python3 -B tests/e2e/at/secops/diskexec.py go test -c -tags e2e,integration -o .agent/secops/build/arm64.test ./tests/e2e/at/secops"
+    },
+    {
+      "gate": "04-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags",
+        "e2e",
+        "./tests/e2e/..."
+      ],
+      "started_at": "2026-11-04T01:56:43.814460Z",
+      "elapsed_seconds": 0.245,
+      "exit_code": 0,
+      "status": "passed",
+      "output_tail": ""
+    },
+    {
+      "gate": "05-handover",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "started_at": "2026-11-04T01:56:44.059987Z",
+      "elapsed_seconds": 4.852,
+      "exit_code": 0,
+      "status": "passed",
+      "output_tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t4.473s"
+    },
+    {
+      "gate": "06-go-lint",
+      "command": [
+        "python3",
+        "-B",
+        "tests/e2e/at/secops/diskexec.py",
+        "make",
+        "go-lint",
+        "go-with-disk-tmp="
+      ],
+      "started_at": "2026-11-04T01:56:48.912394Z",
+      "elapsed_seconds": 1.653,
+      "exit_code": 0,
+      "status": "passed",
+      "output_tail": ""
+    },
+    {
+      "gate": "07-gofmt",
+      "command": [
+        "bash",
+        "-c",
+        "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+      ],
+      "started_at": "2026-11-04T01:56:50.565294Z",
+      "elapsed_seconds": 0.131,
+      "exit_code": 0,
+      "status": "passed",
+      "output_tail": ""
+    },
+    {
+      "gate": "08-diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at": "2026-11-04T01:56:50.696401Z",
+      "elapsed_seconds": 0.013,
+      "exit_code": 0,
+      "status": "passed",
+      "output_tail": ""
+    },
+    {
+      "gate": "09-hygiene",
+      "command": [
+        "go",
+        "test",
+        "-tags",
+        "e2e",
+        "-count=1",
+        "-run",
+        "TestCommitted.*HygieneClean",
+        "./tests/e2e",
+        "./tests/netlab"
+      ],
+      "started_at": "2026-11-04T01:56:50.709097Z",
+      "elapsed_seconds": 9.542,
+      "exit_code": 0,
+      "status": "passed",
+      "output_tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e\t9.053s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t3.424s"
+    }
+  ],
+  "additional_checks": {
+    "archive_pins_verified": 843,
+    "public_json_markdown_scanned_before_gate_ledger": 969,
+    "measured_go_probe_hash_matches_current_source": true,
+    "secret_streams": 30,
+    "secret_stream_findings": 0,
+    "owned_inventory_zero": true,
+    "suite_wait_seconds": 0,
+    "live_attempts": 1,
+    "reruns": 0
+  }
+}
