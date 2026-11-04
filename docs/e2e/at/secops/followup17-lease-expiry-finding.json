@@ -1,0 +1,79 @@
+{
+  "id": "SECOPS-F17-01",
+  "date": "2026-11-04",
+  "status": "open",
+  "acceptance_row_status": "failed",
+  "classification": "harness stale cached lease after admission delay; confounded under D-133",
+  "run_id": "b2de46c8-7611-4b7c-8863-2345ff2b0240",
+  "evidence": "history/follow-up-17/followup17-diagnostic.json",
+  "details": {
+    "status": "failed",
+    "reason": "established sender cutoff not proved",
+    "recorded_lease": {
+      "members": [
+        {
+          "lease_end": "2026-11-04T06:35:21.397505296Z",
+          "member_id": "01a1a540-231c-7381-b978-31673afdaa5e",
+          "entitlement_revision": "4",
+          "effective_service_end": "2026-11-04T06:53:21Z"
+        },
+        {
+          "lease_end": "2026-11-04T06:35:21.397505296Z",
+          "member_id": "01a1a543-2d3b-7b42-b5f0-f65f7337c166",
+          "entitlement_revision": "1",
+          "effective_service_end": "2026-11-04T07:03:25Z"
+        }
+      ],
+      "issued_at": "2026-11-04T06:34:21.397505+00:00",
+      "expires_at": "2026-11-04T06:35:21.397505+00:00",
+      "generation": "14"
+    },
+    "action_started_at": "2026-11-04T06:36:22.059987198Z",
+    "seconds_action_after_recorded_deadline": 60.662482,
+    "heartbeat_deadline_monotonic_ns": "97658778490379",
+    "cutoff_samples": [
+      {
+        "utc": "2026-11-04T06:36:26.006219887Z",
+        "status": {
+          "read_diagnostic": {
+            "started": "2026-11-04T06:36:25.855432624Z",
+            "completed": "2026-11-04T06:36:25.93467253Z",
+            "stage": "member_status_read",
+            "category": "none"
+          },
+          "tcp_echoes": 322,
+          "udp_replies": 322,
+          "tcp_attempts": 322,
+          "udp_attempts": 322,
+          "running": true,
+          "error": ""
+        },
+        "read_end_mono_ns": "97628453277989",
+        "seconds_before_heartbeat_deadline": 30.32521239
+      },
+      {
+        "utc": "2026-11-04T06:36:36.221762235Z",
+        "status": {
+          "read_diagnostic": {
+            "started": "2026-11-04T06:36:36.014660137Z",
+            "completed": "2026-11-04T06:36:36.119692289Z",
+            "stage": "member_status_read",
+            "category": "none"
+          },
+          "tcp_echoes": 342,
+          "udp_replies": 342,
+          "tcp_attempts": 343,
+          "udp_attempts": 343,
+          "running": true,
+          "error": ""
+        },
+        "read_end_mono_ns": "97638661325849",
+        "seconds_before_heartbeat_deadline": 20.11716453
+      }
+    ],
+    "interpretation": "Admission delayed pre-fault sampling while control could renew. Both quiet samples precede the accepted heartbeat deadline; this retained failure is not proof of forwarding beyond the node deadline. No predicate changed and no rerun."
+  },
+  "product_deadline_violation_proved": false,
+  "rerun_performed": false,
+  "requests_to_orchestrator": "Separately authorize old-case setup qualification at fault time and an unconfounded campaign; preserve failed row and all predicates."
+}

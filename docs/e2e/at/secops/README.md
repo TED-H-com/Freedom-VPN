@@ -1,3 +1,24 @@
+# Follow-up 17 — qualifying lease; AT29 remains failed
+
+Run `b2de46c8-7611-4b7c-8863-2345ff2b0240` reached control loss with a locally
+accepted 60-second lease issued after the cap write. The unchanged live-agent
+continuity/cutoff case passed; **SECOPS-F16-01 is answered**. AT29 remains
+**failed** because the original killed-agent lease-expiry case failed after
+admission delays left its cached deadline stale (**SECOPS-F17-01**).
+Grant expiry, device revoke and manual grant withdrawal passed. Guest clock
+rollback remains blocked. This attempt is **confounded under D-133**, including
+its passing rows; there was no retry. Both cleanup inventories are zero.
+
+See [the dated diagnosis and hand-off](2026-11-04-follow-up-17.md),
+[AT29](AT29.json), [retained run](history/follow-up-17/followup17-transports-live.json),
+and [the byte-identical prior failed result](history/before-follow-up-17/AT29.json).
+AT30 and AT31 overall statuses are unchanged. The bounded relay row emitted by
+this transport run passed and is retained with the run.
+
+---
+
+The following text is historical and belongs to earlier runs:
+
 # Follow-up 16 — AT29 live-agent continuity prerequisite failed
 
 AT29 is **failed**, previously blocked. Run `1bfd5cff-e593-481b-a4d2-94ca08cf7c3d`

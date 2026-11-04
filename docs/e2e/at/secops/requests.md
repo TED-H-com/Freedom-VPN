@@ -1,3 +1,31 @@
+# 2026-11-04 — Follow-up 17 disposition
+
+**SECOPS-F16-01 answered:** the new case reached its outage using lease
+`bef669a3-1141-45af-86c6-8fc823a4b84a`, issued after the public cap change with
+60s lifetime. Its unchanged continuity/cutoff evaluator passed. Historical run
+`1bfd5cff` remains failed. Overall AT29 remains failed.
+
+### Requests to orchestrator
+
+- **2026-11-04 — SECOPS-F17-01, secops/admission:** retain the old lease-expiry
+  failure and authorize a separate setup/timing follow-up. Two 60s admission
+  sleeps left its cached lease deadline stale; both quiet samples preceded the
+  heartbeat's newer deadline. No product deadline violation is proved, and no
+  old predicate was changed. [Receipt](history/follow-up-17/followup17-lease-expiry-finding.json).
+- **2026-11-04 — orchestrator scheduling:** retain D-133 confounding. Foreign
+  runs overlapped despite two empty preflight inventories, including thirteen
+  samples during the new control-loss window. Future unconfounded acceptance
+  needs coordinated scheduling; this lane took no reservation and no retry.
+- **2026-11-04 — w3-devstack-e2e/operator:** provide the independently clocked
+  disposable guest for guest_clock_rollback.
+- **2026-11-04 — handover/acceptance:** carry AT29 failed, SECOPS-F16-01 answered,
+  SECOPS-F17-01 open and D-133 limitations into out-of-lane records. No other
+  area's files were changed. [Full hand-off](2026-11-04-follow-up-17.md).
+
+---
+
+The following requests and dispositions are historical:
+
 # Requests to orchestrator — Follow-up 16 (2026-11-03 EST)
 
 ### Requests to orchestrator
