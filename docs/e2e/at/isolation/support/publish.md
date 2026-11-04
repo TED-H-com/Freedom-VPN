@@ -4,14 +4,14 @@ Publish the enrolled exit
 
 Status: pass
 
-Run: c52bea6c-cd91-4086-a779-656b01277dcc
+Run: 7599576e-339c-49c9-8bf5-0f710818cbda
 
-Source: 037f44187aaac256c82682de01af2ef61bbb90f0
+Source: fe2c68ecbf1ef1481d744c998be95710d28be954
 
 Spec: §5.2, §14.2
 
 - agent_baseline_observed: true
-- stored_rows: {"node": {"peer_id": null, "data_health": "healthy", "safety_status": "passed", "provisioning_state": "ready", "applied_config_generation": "1", "desired_config_generation": "1"}, "observation": {"checks": [{"name": "dns_policy", "status": "passed", "error_code": null, "observed_at": "2026-11-04T00:06:46.455532986Z"}, {"name": "internet_only", "status": "passed", "error_code": null, "observed_at": "2026-11-04T00:06:46.455532986Z"}, {"name": "lease", "status": "not_run", "error_code": null, "observed_at": "2026-11-04T00:06:46.455532986Z"}, {"name": "meter_path", "status": "passed", "error_code": null, "observed_at": "2026-11-04T00:06:46.455532986Z"}, {"name": "policy_signature", "status": "passed", "error_code": null, "observed_at": "2026-11-04T00:06:46.455532986Z"}, {"name": "qos", "status": "not_run", "error_code": null, "observed_at": "2026-11-04T00:06:46.455532986Z"}, {"name": "release_supported", "status": "passed", "error_code": null, "observed_at": "2026-11-04T00:06:46.455532986Z"}, {"name": "source_binding", "status": "not_run", "error_code": null, "observed_at": "2026-11-04T00:06:46.455532986Z"}, {"name": "storage", "status": "passed", "error_code": null, "observed_at": "2026-11-04T00:06:46.455532986Z"}, {"name": "tunnel_probe", "detail": "Egress probe used no extra target.", "status": "passed", "error_code": null, "observed_at": "2026-11-04T00:06:46.455532986Z"}], "peer_id": null, "data_health": "healthy", "safety_status": "passed", "provisioning_state": "ready", "applied_config_generation": "1"}, "exit_group_count": 0, "peer_observe_events": 3}
+- stored_rows: {"node": {"peer_id": null, "data_health": "healthy", "safety_status": "passed", "provisioning_state": "ready", "applied_config_generation": "1", "desired_config_generation": "1"}, "observation": {"checks": [{"name": "dns_policy", "status": "passed", "error_code": null, "observed_at": "2026-11-04T02:53:03.888823899Z"}, {"name": "internet_only", "status": "passed", "error_code": null, "observed_at": "2026-11-04T02:53:03.888823899Z"}, {"name": "lease", "status": "not_run", "error_code": null, "observed_at": "2026-11-04T02:53:03.888823899Z"}, {"name": "meter_path", "status": "passed", "error_code": null, "observed_at": "2026-11-04T02:53:03.888823899Z"}, {"name": "policy_signature", "status": "passed", "error_code": null, "observed_at": "2026-11-04T02:53:03.888823899Z"}, {"name": "qos", "status": "not_run", "error_code": null, "observed_at": "2026-11-04T02:53:03.888823899Z"}, {"name": "release_supported", "status": "passed", "error_code": null, "observed_at": "2026-11-04T02:53:03.888823899Z"}, {"name": "source_binding", "status": "not_run", "error_code": null, "observed_at": "2026-11-04T02:53:03.888823899Z"}, {"name": "storage", "status": "passed", "error_code": null, "observed_at": "2026-11-04T02:53:03.888823899Z"}, {"name": "tunnel_probe", "detail": "Egress probe used no extra target.", "status": "passed", "error_code": null, "observed_at": "2026-11-04T02:53:03.888823899Z"}], "peer_id": null, "data_health": "healthy", "safety_status": "passed", "provisioning_state": "ready", "applied_config_generation": "1"}, "exit_group_count": 0, "peer_observe_events": 2}
 - control_status: online
 - safety_status: passed
 - data_health: healthy
@@ -31,13 +31,13 @@ Spec: §5.2, §14.2
 - check_source_binding: not_run
 - check_storage: passed
 - check_tunnel_probe: passed
-- node_write: {"started_at":"2026-11-04T00:06:46.545489178Z","finished_at":"2026-11-04T00:06:46.55141341Z","max_attempts":3,"limit_seconds":10,"status":"pass","outcome":"accepted","attempts":[{"method":"PATCH","path":"/api/v1/admin/nodes/01a1a3e1-26ff-7e1d-a31d-368b83fa2c4c","if_match":"\"7\"","idempotency_key":"1dc18c75-ae52-4792-af19-95982c752c98","body_sha256":"4939d40789ac64dedacaf0576b0f088ab48bf3b256d2263b70a3aa36ef39b67d","started_at":"2026-11-04T00:06:46.545496514Z","finished_at":"2026-11-04T00:06:46.551385535Z","status":202,"error_code":"","transport_error":false}]}
+- node_write: {"started_at":"2026-11-04T02:53:04.094113089Z","finished_at":"2026-11-04T02:53:04.102555727Z","max_attempts":3,"limit_seconds":10,"status":"pass","outcome":"accepted","attempts":[{"method":"PATCH","path":"/api/v1/admin/nodes/01a1a479-618c-71dc-a4c9-5d8bb7a3b60e","if_match":"\"7\"","idempotency_key":"3df9abd0-be4d-4245-9267-9135b63579d1","body_sha256":"4939d40789ac64dedacaf0576b0f088ab48bf3b256d2263b70a3aa36ef39b67d","started_at":"2026-11-04T02:53:04.09412103Z","finished_at":"2026-11-04T02:53:04.102532515Z","status":202,"error_code":"","transport_error":false}]}
 - capacity_patch: 202
 - capacity_input: TEST ONLY 200 Mbps parent / 100 Mbps member caps through PATCH; required by the agent QoS model
-- request: {"publication_intent":"published","group_ids":["01a1a3e1-26d3-708d-a05f-4f4d492c4b73"],"reason":"e2e acceptance publish"}; If-Match="8"
-- node_write: {"started_at":"2026-11-04T00:06:46.553872257Z","finished_at":"2026-11-04T00:06:46.559664515Z","max_attempts":3,"limit_seconds":10,"status":"pass","outcome":"accepted","attempts":[{"method":"PUT","path":"/api/v1/admin/nodes/01a1a3e1-26ff-7e1d-a31d-368b83fa2c4c/publication","if_match":"\"8\"","idempotency_key":"fd1f76a1-08df-4e90-a2da-8f2ef427927b","body_sha256":"23807bc8cf9ca8ae87f647e70d8b98cfb08c3807e564155d26b4bf1d1974e050","started_at":"2026-11-04T00:06:46.553877445Z","finished_at":"2026-11-04T00:06:46.55964165Z","status":202,"error_code":"","transport_error":false}]}
+- request: {"publication_intent":"published","group_ids":["01a1a479-6155-7249-9bf8-16a0585bbb63"],"reason":"e2e acceptance publish"}; If-Match="8"
+- node_write: {"started_at":"2026-11-04T02:53:04.106010971Z","finished_at":"2026-11-04T02:53:04.113206061Z","max_attempts":3,"limit_seconds":10,"status":"pass","outcome":"accepted","attempts":[{"method":"PUT","path":"/api/v1/admin/nodes/01a1a479-618c-71dc-a4c9-5d8bb7a3b60e/publication","if_match":"\"8\"","idempotency_key":"8ace4708-87d1-4468-bdc3-300e44c1a656","body_sha256":"e787a00a73d473b53af02bf2e08ee00f881a014cadfa4e1562ef551be9f2b57e","started_at":"2026-11-04T02:53:04.106018859Z","finished_at":"2026-11-04T02:53:04.113189574Z","status":202,"error_code":"","transport_error":false}]}
 - put: 202
-- operation_id: 0b2b06d9-d654-4836-acfa-0c64981f537c
+- operation_id: 12574b2f-ce6f-4969-a789-4386bb162902
 - operation_status: succeeded
 - operation_kind: node.publish
 - step_agent_policy: succeeded

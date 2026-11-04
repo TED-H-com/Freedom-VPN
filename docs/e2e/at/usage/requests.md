@@ -161,6 +161,8 @@ table inet fvpn {
 
 ## Current requests
 
+- **Answered (Follow-up 9, 2026-11-03):** [devstack 32 / 33](../../RESPONSES.md#devstack--2026-11-03-follow-up-32) shared `Stack.WriteNode` adoption hand-off is completed offline across `tests/e2e/at/usage/` with command-specific read-back predicates (`NodeFieldsMatch`, `NodePublished`, `NodeRevoked`, `nodeRetired`), `NodeWriteReceipt` embedding, AST audit (`TestNodeWriteAudit`), and offline stub tests (`TestNodeWrite_AdoptedCallShapesAndPredicates`, `TestNodeWrite_SharedHelperConflictPathsAndReceipts`); see [2026-11-03-node-write.md](2026-11-03-node-write.md). Live proof waits for the next assembled run.
+
 Follow-up 5 request 1 closed by [devstack 19](../../RESPONSES.md#usage--2026-10-31-follow-up-19): retained canonical payloads and origin sequence/hash/ACK are the adoption predicate. [Its eight of eight rows](../../runs/2026-10-31/followup19/usage-retention.md) are independent local retention evidence; this run adds before/after attribution in [AT20.json](AT20.json). No assertion required a file-equality fixture change.
 No new requests. AT20 is the usage lane ENR-05 extension; it is not the DNS case numbered AT20 in §19. Installer hardware/platform and restore-runbook campaigns remain with their owners.
 

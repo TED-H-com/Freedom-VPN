@@ -1,0 +1,37 @@
+{
+  "follow_up": 13,
+  "attempt": 1,
+  "driver_run_id": "a3e24f08-f42a-41b6-bc69-2797eb0c8dcb",
+  "source_revision": "4e313a3d1cdf91da14036b8ea681fbd1d2c58ec0",
+  "status": "failed before arming capture",
+  "first_offer_capture_armed": false,
+  "first_delivery_observed": false,
+  "reason": "The negative restore closes p.db. armRestoreOffer13 called generationState10 before the clean DB existed, causing a nil pgx connection panic before ArmFirstDesiredOffer. finish also queried that absent DB, so no live JSON was produced.",
+  "correction": "Read retained heartbeat and accepted envelope from the node without central SQL; preserve partial diagnostics if no central DB is connected.",
+  "go_test_elapsed_seconds": 356.31,
+  "runner_exit_code": 2,
+  "private_raw_log_sha256": "01d58aaa44d9f656b0feb8fc9386a29e17037b6d2ed8f6f39e7fbb1e5e83dc0a",
+  "cleanup": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "state_cleanup": {
+    "exit_code": 0,
+    "removed": true
+  },
+  "driver_evidence": "followup13-restore-attempt1-run.json"
+}

@@ -1,3 +1,19 @@
+# Follow-up 15 — AT29 grant withdrawal
+
+Run `35116d25-122c-4724-adfe-5a06d623c04f` passed all four runnable AT29
+sub-cases, including public-API manual grant withdrawal. AT29 overall remains
+**blocked** on the independently clocked guest. The bounded AT31 relay row also
+passed again; full AT31 is still blocked on candidate hardware and mixed load.
+One live run, no rerun; zero owned Docker inventory after cleanup.
+
+See [the dated hand-off](2026-11-03-follow-up-15.md), [AT29](AT29.json),
+[AT31](AT31.json), and [the byte-identical prior records](history/before-follow-up-15/archive-index.json).
+AT30 was not rerun; its latest result remains the Follow-up 13 pass below.
+
+---
+
+The following is the retained Follow-up 13 report:
+
 # Follow-up 13 — first post-restore delivery
 
 AT30 **passed**; SECOPS-21 **closed**. Restore run `5218b7d5-1415-4e1b-8618-48ea2d3cf03e` on application base `7e044c71ecf1d07f63e89721bd213db6611a6a47`. Shared development host measurements; no production SLA.

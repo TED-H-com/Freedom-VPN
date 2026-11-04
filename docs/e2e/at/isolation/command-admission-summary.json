@@ -1,29 +1,6 @@
 {
-  "total_checks": 3309,
-  "denied_checks": [
-    {
-      "at": "2026-11-04T00:16:17.541931+00:00",
-      "command": "docker",
-      "verb": [
-        "logs"
-      ],
-      "wait_seconds": 0.039,
-      "ready": false,
-      "output": "3340433 /usr/bin/make -f mk/at-isolation.mk at-isolation",
-      "error": ""
-    },
-    {
-      "at": "2026-11-04T00:16:47.582006+00:00",
-      "command": "docker",
-      "verb": [
-        "logs"
-      ],
-      "wait_seconds": 30.079,
-      "ready": false,
-      "output": "3340433 /usr/bin/make -f mk/at-isolation.mk at-isolation",
-      "error": ""
-    }
-  ],
-  "max_wait_seconds": 30.079,
-  "stream_separation": "Every admission invocation captured separately; no admission text in any tool stdout/stderr."
+  "total_checks": 4974,
+  "denied_checks": [],
+  "max_wait_seconds": 0.044,
+  "stream_separation": "Admission captured separately before every PATH-resolved make, Go and Docker invocation; no admission text enters tool streams."
 }
