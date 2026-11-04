@@ -1,0 +1,73 @@
+update-good pass 2026-11-04T14:46:01Z c17589fa-7e48-4dee-b574-7e29aca1effa
+exit_code 0
+running_candidate_executable true
+locally_succeeded true
+rolled_back false
+error_code -
+result_last_error -
+note locally_succeeded was observed
+INVOCATION {'invocation_id': 'invocation.YQEMZXKV', 'started_at': '2026-11-04T14:45:49.043793385Z', 'ended_at': '2026-11-04T14:45:59.988545964Z', 'pid': 186378, 'exit_code': 0}
+COMPLETE OUTPUT '{"time":"2026-11-04T14:45:49.495505375Z","level":"INFO","msg":"update lock wait","command":"run","waited_ms":446,"acquired":true,"budget_ms":10000}\n'
+update-bad pass 2026-11-04T14:46:12Z c17589fa-7e48-4dee-b574-7e29aca1effa
+exit_code 1
+running_candidate_executable false
+locally_succeeded false
+rolled_back false
+error_code -
+result_last_error -
+note tampered bytes were rejected
+INVOCATION {'invocation_id': 'invocation.YQEMZXKV', 'started_at': '2026-11-04T14:45:49.043793385Z', 'ended_at': '2026-11-04T14:45:59.988545964Z', 'pid': 186378, 'exit_code': 0}
+COMPLETE OUTPUT '{"time":"2026-11-04T14:45:49.495505375Z","level":"INFO","msg":"update lock wait","command":"run","waited_ms":446,"acquired":true,"budget_ms":10000}\n'
+INVOCATION {'invocation_id': 'invocation.hHQ2yCIu', 'started_at': '2026-11-04T14:46:07.995705033Z', 'ended_at': '2026-11-04T14:46:11.002748759Z', 'pid': 195558, 'exit_code': 1}
+COMPLETE OUTPUT 'fvpn-updater: updater: HASH_MISMATCH: artifact\n'
+lease-expiry pass 2026-11-04T14:56:34Z c17589fa-7e48-4dee-b574-7e29aca1effa
+controlled_origin_http_200_and_counted true
+admission_bytes_before 17086
+admission_bytes_after 19718
+established_before tcp=1 udp=1 running=true
+established_after tcp=1197 udp=1197 attempts_tcp=1204 attempts_udp=1211
+admission_poll_started_at 2026-11-04T14:46:12.724854677Z
+admission_poll_elapsed 2.343563389s
+admission_poll_found true
+heartbeat v1
+boot_id 56e68667-9243-4933-83af-c70d575ff5fe
+mono_ns 127023535359354
+wall_unix_ns 1793803581083994739
+policy_expires_mono_ns 127622352267247
+baseline_ok 1
+serving 1
+generation 102
+reason serving
+desired_before_stop {"issued_at":"2026-11-04T14:46:25.259547047Z","expires_at":"2026-11-04T14:56:25.259547047Z","config_generation":"103"}
+heartbeat_before_stop v1
+boot_id 56e68667-9243-4933-83af-c70d575ff5fe
+mono_ns 127028886740671
+wall_unix_ns 1793803586435365683
+policy_expires_mono_ns 127627708978464
+baseline_ok 1
+serving 1
+generation 103
+reason serving
+control_stop_requested_at 2026-11-04T14:46:27.62351203Z
+control_stopped_at 2026-11-04T14:46:27.869039249Z
+forwarding_wait_elapsed 9m58.275120649s
+heartbeat_after_wait v1
+boot_id 56e68667-9243-4933-83af-c70d575ff5fe
+mono_ns 127627959877935
+wall_unix_ns 1793804185508501520
+policy_expires_mono_ns 0
+baseline_ok 1
+serving 0
+generation 103
+reason policy_expired
+wait_finished_at 2026-11-04T14:56:26Z
+member_accept_before 558
+member_accept_after 0
+note member accept rules were present and then gone
+active_senders_after_cutoff true
+established_replies_and_bytes_stopped true
+quiet_first_sample tcp=1197 udp=1197 attempts_tcp=1201 attempts_udp=1205 upload=231905 download=177265
+quiet_second_sample tcp=1197 udp=1197 attempts_tcp=1204 attempts_udp=1211 upload=231905 download=177265
+control_start_requested_at 2026-11-04T14:56:32.458748521Z
+control_restarted true
+control_restart_checked_at 2026-11-04T14:56:34.622965742Z

@@ -1,0 +1,39 @@
+{
+  "id": "member-ipv6",
+  "title": "Member IPv6 path",
+  "spec": [
+    "§8.3",
+    "ISO03",
+    "AT11"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "fvnb0_ipv6",
+      "detail": ""
+    },
+    {
+      "name": "member_disable_ipv6",
+      "detail": "true"
+    },
+    {
+      "name": "dns_resolver_ipv6",
+      "detail": "empty in the prepared node config"
+    },
+    {
+      "name": "blocker",
+      "detail": "native member uses DisableIPv6; no IPv6 underlay or platform route/capture campaign is provisioned. An address or ctv6 rule alone cannot prove AT11."
+    },
+    {
+      "name": "owner",
+      "detail": "w3-devstack-e2e / platform operators: dual-stack native path and per-platform leak measurements"
+    },
+    {
+      "name": "timed_section",
+      "detail": "member-ipv6"
+    }
+  ],
+  "at": "2026-11-04T14:36:18Z",
+  "run_id": "c17589fa-7e48-4dee-b574-7e29aca1effa",
+  "source_commit": "f6edbda9909268106f7a8e08c26aab8254ae1481"
+}

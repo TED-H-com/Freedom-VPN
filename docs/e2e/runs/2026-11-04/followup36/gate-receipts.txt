@@ -1,0 +1,202 @@
+[
+  {
+    "name": "01-e2e-lint",
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-lint"
+    ],
+    "start": "2026-11-04T14:09:05.605353+00:00",
+    "end": "2026-11-04T14:30:11.760440+00:00",
+    "seconds": 1266.155,
+    "exit": 0,
+    "receipt": "01-e2e-lint.meta.json"
+  },
+  {
+    "name": "02-isolation-lint",
+    "command": [
+      "make",
+      "-f",
+      "mk/at-isolation.mk",
+      "at-isolation-lint"
+    ],
+    "start": "2026-11-04T14:30:58.781921+00:00",
+    "end": "2026-11-04T14:31:03.312721+00:00",
+    "seconds": 4.531,
+    "exit": 0,
+    "receipt": "02-isolation-lint.meta.json"
+  },
+  {
+    "name": "03-e2e-vet",
+    "command": [
+      "go",
+      "vet",
+      "-tags",
+      "e2e",
+      "./tests/e2e/..."
+    ],
+    "start": "2026-11-04T14:31:14.080715+00:00",
+    "end": "2026-11-04T14:31:14.339064+00:00",
+    "seconds": 0.258,
+    "exit": 0,
+    "receipt": "03-e2e-vet.meta.json"
+  },
+  {
+    "name": "04-e2e-unit",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/e2e/..."
+    ],
+    "start": "2026-11-04T14:31:19.655895+00:00",
+    "end": "2026-11-04T14:31:58.777145+00:00",
+    "seconds": 39.121,
+    "exit": 0,
+    "receipt": "04-e2e-unit.meta.json"
+  },
+  {
+    "name": "05-acceptance",
+    "command": [
+      "FVPN_E2E_RUN_LABEL=followup36",
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-test"
+    ],
+    "start": "2026-11-04T14:32:49.364796+00:00",
+    "end": "2026-11-04T14:56:48.636097+00:00",
+    "seconds": 1439.271,
+    "exit": 2,
+    "receipt": "05-acceptance.meta.json"
+  },
+  {
+    "name": "05-observation-export",
+    "command": [
+      "python3",
+      "-B",
+      ".agent/tmp/followup36/export_observations.py"
+    ],
+    "start": "2026-11-04T14:56:59.157377+00:00",
+    "end": "2026-11-04T15:06:59.959138+00:00",
+    "seconds": 600.802,
+    "exit": 0,
+    "receipt": "05-observation-export.meta.json"
+  },
+  {
+    "name": "06-e2e-down",
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
+    ],
+    "start": "2026-11-04T15:08:23.137847+00:00",
+    "end": "2026-11-04T15:09:10.302627+00:00",
+    "seconds": 47.165,
+    "exit": 0,
+    "receipt": "06-e2e-down.meta.json"
+  },
+  {
+    "name": "06-owned-inventory",
+    "command": [
+      "python3",
+      "-B",
+      ".agent/tmp/followup36/inventory.py"
+    ],
+    "start": "2026-11-04T15:09:38.355608+00:00",
+    "end": "2026-11-04T15:09:38.854514+00:00",
+    "seconds": 0.499,
+    "exit": 0,
+    "receipt": "06-owned-inventory.meta.json"
+  },
+  {
+    "name": "07-handover",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/handover/..."
+    ],
+    "start": "2026-11-04T15:09:45.940619+00:00",
+    "end": "2026-11-04T15:09:50.864594+00:00",
+    "seconds": 4.924,
+    "exit": 0,
+    "receipt": "07-handover.meta.json"
+  },
+  {
+    "name": "08-go-lint",
+    "command": [
+      "make",
+      "go-lint",
+      "go-with-disk-tmp="
+    ],
+    "start": "2026-11-04T15:09:56.357059+00:00",
+    "end": "2026-11-04T15:10:00.488571+00:00",
+    "seconds": 4.132,
+    "exit": 0,
+    "receipt": "08-go-lint.meta.json"
+  },
+  {
+    "name": "09-gofmt",
+    "command": [
+      "bash",
+      "-c",
+      "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+    ],
+    "start": "2026-11-04T15:10:31.367483+00:00",
+    "end": "2026-11-04T15:10:31.575485+00:00",
+    "seconds": 0.208,
+    "exit": 0,
+    "receipt": "09-gofmt.meta.json"
+  },
+  {
+    "name": "10-diff-check",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "start": "2026-11-04T15:10:34.647670+00:00",
+    "end": "2026-11-04T15:10:34.739736+00:00",
+    "seconds": 0.092,
+    "exit": 0,
+    "receipt": "10-diff-check.meta.json"
+  },
+  {
+    "name": "11-evidence-hygiene",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/e2e",
+      "-run",
+      "^TestCommittedFixtureEvidence_ValidAndHygieneClean$"
+    ],
+    "start": "2026-11-04T15:10:38.837151+00:00",
+    "end": "2026-11-04T15:10:47.530516+00:00",
+    "seconds": 8.693,
+    "exit": 0,
+    "receipt": "11-evidence-hygiene.meta.json"
+  },
+  {
+    "name": "12-nightly-gate",
+    "command": [
+      "go",
+      "run",
+      "./tests/e2e/cmd/fvpn-e2e-nightly-gate",
+      "-summary",
+      "docs/e2e/runs/2026-11-04/followup36/acceptance-summary.md",
+      "-test-exit-code",
+      "2",
+      "-test-log",
+      "docs/e2e/runs/2026-11-04/followup36/05-acceptance.txt"
+    ],
+    "start": "2026-11-04T15:10:52.972509+00:00",
+    "end": "2026-11-04T15:10:53.232793+00:00",
+    "seconds": 0.26,
+    "exit": 0,
+    "receipt": "12-nightly-gate.meta.json"
+  }
+]

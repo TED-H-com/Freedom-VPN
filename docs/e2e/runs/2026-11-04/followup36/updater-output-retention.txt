@@ -1,0 +1,42 @@
+{
+  "run_id": "c17589fa-7e48-4dee-b574-7e29aca1effa",
+  "source_commit": "f6edbda9909268106f7a8e08c26aab8254ae1481",
+  "records": [
+    "update-good.json#updater_invocations",
+    "update-bad.json#updater_invocations"
+  ],
+  "first_invocation_unchanged_in_second_record": true,
+  "invocations": [
+    {
+      "invocation_id": "invocation.YQEMZXKV",
+      "started_at": "2026-11-04T14:45:49.043793385Z",
+      "ended_at": "2026-11-04T14:45:59.988545964Z",
+      "pid": 186378,
+      "exit_code": 0,
+      "output_bytes": 148,
+      "output_sha256": "ee00d380aa05b6f7676fb295bab8e9f7a2d2fd425d3b98ef7a2b3f9d1e18a5c5",
+      "wait_records": [
+        {
+          "time": "2026-11-04T14:45:49.495505375Z",
+          "level": "INFO",
+          "msg": "update lock wait",
+          "command": "run",
+          "waited_ms": 446,
+          "acquired": true,
+          "budget_ms": 10000
+        }
+      ]
+    },
+    {
+      "invocation_id": "invocation.hHQ2yCIu",
+      "started_at": "2026-11-04T14:46:07.995705033Z",
+      "ended_at": "2026-11-04T14:46:11.002748759Z",
+      "pid": 195558,
+      "exit_code": 1,
+      "output_bytes": 47,
+      "output_sha256": "e8d8f932f79b2347745cef2459376509a318294d97b31fc6bfa377134fce8430",
+      "wait_records": []
+    }
+  ],
+  "stale_then_live_contention": "unobserved; terminal wait summaries and sampled lock ownership do not establish the individual metadata-answer sequence"
+}

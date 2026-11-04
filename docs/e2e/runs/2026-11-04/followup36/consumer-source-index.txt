@@ -1,0 +1,86 @@
+Consumer search index at measured code. Read alongside analysis.md; these are source references, not live results.
+
+Search scope: all source under tests/e2e, including AT Go, Python, shell and driver.go.txt; excludes historical records and build outputs.
+
+tests/e2e/at/enrollment/followup10_node_write_test.go: 160
+tests/e2e/at/enrollment/freeze_test.go: 182, 254
+tests/e2e/at/enrollment/handoff_test.go: 534, 577
+tests/e2e/at/enrollment/live_test.go: 881
+tests/e2e/at/enrollment/node_write_audit_test.go: 223
+tests/e2e/at/enrollment/node_write_test.go: 18, 23, 44
+tests/e2e/at/isolation/assist.py: 22
+tests/e2e/at/isolation/driver.go.txt: 259, 402, 430, 440, 655, 866, 1190, 1236, 1403, 1541, 1913, 1914, 1915, 1916, 1917, 1918, 1919, 1920, 2417, 2424, 2540, 2553, 2788, 2956, 3082, 3116, 3194, 3213
+tests/e2e/at/isolation/observer_main.go: 119
+tests/e2e/at/members/d146_live_test.go: 72, 135, 136, 152
+tests/e2e/at/members/devices_billing_test.go: 290
+tests/e2e/at/members/followup_test.go: 166, 241
+tests/e2e/at/members/forwarding_test.go: 72, 384
+tests/e2e/at/members/generation_hold_test.go: 30
+tests/e2e/at/members/identity_nodes_test.go: 37, 39, 44, 69, 202
+tests/e2e/at/members/native_test.go: 272
+tests/e2e/at/members/node_write_audit_test.go: 171
+tests/e2e/at/members/populated_hold_test.go: 120, 162, 194, 252
+tests/e2e/at/members/restart_readback_test.go: 22, 39
+tests/e2e/at/members/second_exit_test.go: 140, 263, 270
+tests/e2e/at/members/serving_test.go: 97
+tests/e2e/at/secops/body_boundaries_test.go: 18
+tests/e2e/at/secops/counted_capacity_test.go: 106
+tests/e2e/at/secops/deadline_live_test.go: 30, 32, 33
+tests/e2e/at/secops/followup10_live_test.go: 433, 478, 551, 591
+tests/e2e/at/secops/followup10_probes_test.go: 95
+tests/e2e/at/secops/followup11_restore_test.go: 85
+tests/e2e/at/secops/followup13_restore_test.go: 58, 92
+tests/e2e/at/secops/followup15_withdrawal_test.go: 121
+tests/e2e/at/secops/followup16_continuity_test.go: 177
+tests/e2e/at/secops/followup4_live_test.go: 55
+tests/e2e/at/secops/followup5_live_test.go: 57, 167
+tests/e2e/at/secops/followup7_live_test.go: 102
+tests/e2e/at/secops/followup8_live_test.go: 1194
+tests/e2e/at/secops/followup8_records.py: 273
+tests/e2e/at/secops/followup9_records.py: 163, 400, 415, 417, 588, 644, 669, 700, 739
+tests/e2e/at/secops/inputs_test.go: 82, 337
+tests/e2e/at/secops/live_test.go: 557, 558, 680
+tests/e2e/at/secops/node_write_audit_test.go: 180
+tests/e2e/at/secops/node_write_test.go: 19
+tests/e2e/at/secops/publication_live_test.go: 18, 19, 42
+tests/e2e/at/updates/authority_test.go: 170, 204
+tests/e2e/at/updates/installer_test.go: 424
+tests/e2e/at/updates/live_test.go: 155, 645, 648, 651
+tests/e2e/at/updates/node_write_audit_test.go: 113, 120
+tests/e2e/at/updates/node_write_test.go: 247
+tests/e2e/at/updates/preresult_test.go: 155, 262, 298, 300
+tests/e2e/at/updates/restated_test.go: 100, 118
+tests/e2e/at/usage/live_cases_b_test.go: 409, 417, 499
+tests/e2e/at/usage/live_helpers_test.go: 536, 567, 568, 623, 650, 729, 748, 792
+tests/e2e/at/usage/live_precision_test.go: 207
+tests/e2e/at/usage/live_serving_test.go: 48
+tests/e2e/at/usage/live_test.go: 636, 709, 729, 859
+tests/e2e/at/usage/node_write_audit_test.go: 206
+tests/e2e/cmd/fvpn-e2e-prepare/agent_config_test.go: 28, 42
+tests/e2e/cmd/fvpn-e2e-prepare/main.go: 397
+tests/e2e/device_revoke_test.go: 145
+tests/e2e/exports_live_test.go: 353
+tests/e2e/feed_scenario_test.go: 68
+tests/e2e/followup18_live_test.go: 299
+tests/e2e/followup18_native_test.go: 226, 266
+tests/e2e/followup20_live_test.go: 49
+tests/e2e/followup26_live_test.go: 53, 135
+tests/e2e/followup27_live_test.go: 63, 93
+tests/e2e/followup30_live_test.go: 174, 231, 285, 309, 354
+tests/e2e/generation_hold.go: 66, 67
+tests/e2e/harness.go: 153
+tests/e2e/installer_config.go: 14
+tests/e2e/installer_config_test.go: 10, 19, 34
+tests/e2e/installer_exports_test.go: 274
+tests/e2e/internal/labstack/import_test.go: 25
+tests/e2e/namespace_restart.go: 94, 113
+tests/e2e/node_write.go: 93, 134
+tests/e2e/node_write_exports_test.go: 59, 82
+tests/e2e/node_write_test.go: 86, 100, 191, 230, 269
+tests/e2e/publish_test.go: 40, 58, 88, 104, 105
+tests/e2e/publisher_proof_test.go: 14, 73
+tests/e2e/restart_scenario_test.go: 58
+tests/e2e/scenarios_test.go: 863
+tests/e2e/serving.go: 225
+tests/e2e/stack_exports.go: 88
+tests/e2e/traffic_scenario_test.go: 95, 130, 133
