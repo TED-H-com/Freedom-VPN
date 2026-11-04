@@ -1,0 +1,38 @@
+[
+  {
+    "command": [
+      "bash",
+      "-c",
+      "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "main...HEAD"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": "AGENTS.md forbidden-pattern scan over git diff main...HEAD",
+    "exit_code": 0,
+    "matches": []
+  }
+]
