@@ -3,11 +3,11 @@
   "checks": [
     {
       "forwarding": false,
-      "hold_id": "01a1a496-1c10-7a0e-905e-8a37274a64ef",
+      "hold_id": "01a1a5a6-a039-75ec-be59-3b4a98a69499",
       "lease_stage_stale_generation": true,
       "policy_missing": true,
       "publication_cause_replayed": "stale_generation",
-      "report_id": "01a1a496-1c09-7dac-9646-e11e9fcbbb1d",
+      "report_id": "01a1a5a6-a032-7ec9-9b94-fe20579a5dea",
       "retained_safety_failure": false,
       "valid": true
     }
@@ -19,18 +19,18 @@
     "samples": [
       {
         "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
-        "hold_id": "01a1a496-1c10-7a0e-905e-8a37274a64ef",
-        "node_id": "01a1a495-dc6a-791b-989f-e5122ccd9877",
-        "lease_id": "26e57c19-451c-4167-a25e-65b49e5b2d1e",
-        "report_id": "01a1a496-1c09-7dac-9646-e11e9fcbbb1d",
+        "hold_id": "01a1a5a6-a039-75ec-be59-3b4a98a69499",
+        "node_id": "01a1a5a6-5da2-7b3e-a0b5-82645b104e40",
+        "lease_id": "1e0fe05a-a6e2-480f-aafa-a15cece8d756",
+        "report_id": "01a1a5a6-a032-7ec9-9b94-fe20579a5dea",
         "observation": {
           "lease": {
-            "lease_id": "26e57c19-451c-4167-a25e-65b49e5b2d1e",
-            "expires_at": "2026-11-05T03:24:23.338492112Z"
+            "lease_id": "1e0fe05a-a6e2-480f-aafa-a15cece8d756",
+            "expires_at": "2026-11-05T08:22:02.998521914Z"
           },
           "usage": {
             "blocked_seq": null,
-            "ledger_epoch": "88078336-b0a9-47d3-8b8a-7af9b271715e",
+            "ledger_epoch": "33144eee-4d63-4665-b156-8be78d40fbdb",
             "meter_epoch_id": null,
             "oldest_unacked_at": null,
             "acked_archive_bytes": "0",
@@ -44,62 +44,62 @@
               "name": "dns_policy",
               "status": "passed",
               "error_code": null,
-              "observed_at": "2026-11-04T03:24:23.384806078Z"
+              "observed_at": "2026-11-04T08:22:03.036165104Z"
             },
             {
               "name": "internet_only",
               "status": "passed",
               "error_code": null,
-              "observed_at": "2026-11-04T03:24:23.384806078Z"
+              "observed_at": "2026-11-04T08:22:03.036165104Z"
             },
             {
               "name": "lease",
               "status": "not_run",
               "error_code": null,
-              "observed_at": "2026-11-04T03:24:23.384806078Z"
+              "observed_at": "2026-11-04T08:22:03.036165104Z"
             },
             {
               "name": "meter_path",
               "status": "passed",
               "error_code": null,
-              "observed_at": "2026-11-04T03:24:23.384806078Z"
+              "observed_at": "2026-11-04T08:22:03.036165104Z"
             },
             {
               "name": "policy_signature",
               "status": "passed",
               "error_code": null,
-              "observed_at": "2026-11-04T03:24:23.384806078Z"
+              "observed_at": "2026-11-04T08:22:03.036165104Z"
             },
             {
               "name": "qos",
               "status": "not_run",
               "error_code": null,
-              "observed_at": "2026-11-04T03:24:23.384806078Z"
+              "observed_at": "2026-11-04T08:22:03.036165104Z"
             },
             {
               "name": "release_supported",
               "status": "passed",
               "error_code": null,
-              "observed_at": "2026-11-04T03:24:23.384806078Z"
+              "observed_at": "2026-11-04T08:22:03.036165104Z"
             },
             {
               "name": "source_binding",
               "status": "not_run",
               "error_code": null,
-              "observed_at": "2026-11-04T03:24:23.384806078Z"
+              "observed_at": "2026-11-04T08:22:03.036165104Z"
             },
             {
               "name": "storage",
               "status": "passed",
               "error_code": null,
-              "observed_at": "2026-11-04T03:24:23.384806078Z"
+              "observed_at": "2026-11-04T08:22:03.036165104Z"
             },
             {
               "name": "tunnel_probe",
               "detail": "Egress probe used no extra target.",
               "status": "passed",
               "error_code": null,
-              "observed_at": "2026-11-04T03:24:23.384806078Z"
+              "observed_at": "2026-11-04T08:22:03.036165104Z"
             }
           ],
           "errors": [
@@ -107,13 +107,13 @@
               "code": "STALE_GENERATION",
               "stage": "lease",
               "message": "Serving lease is not for the desired generation.",
-              "observed_at": "2026-11-04T03:24:23.384806078Z"
+              "observed_at": "2026-11-04T08:22:03.036165104Z"
             },
             {
               "code": "STALE_GENERATION",
               "stage": "lease",
               "message": "Serving lease generation hold: applied=3 lease=2 steps=1 elapsed_ms=0 alarm=false.",
-              "observed_at": "2026-11-04T03:24:23.433883572Z"
+              "observed_at": "2026-11-04T08:22:03.058955905Z"
             }
           ],
           "update": {
@@ -128,14 +128,14 @@
             "peer_id": null,
             "version": null
           },
-          "node_id": "01a1a495-dc6a-791b-989f-e5122ccd9877",
-          "report_id": "01a1a496-1c09-7dac-9646-e11e9fcbbb1d",
+          "node_id": "01a1a5a6-5da2-7b3e-a0b5-82645b104e40",
+          "report_id": "01a1a5a6-a032-7ec9-9b94-fe20579a5dea",
           "data_health": "healthy",
-          "observed_at": "2026-11-04T03:24:23.433883572Z",
+          "observed_at": "2026-11-04T08:22:03.058955905Z",
           "tc_evidence": null,
           "agent_version": "0.1.0",
           "safety_status": "passed",
-          "current_release_id": "01a1a495-b8a1-7615-baf4-4ba023637b9a",
+          "current_release_id": "01a1a5a6-37f4-7ea7-b66a-2a35bd6f6573",
           "provisioning_state": "ready",
           "applied_policy_refs": {
             "dns_generation": "1",
@@ -145,14 +145,14 @@
           "dns_policy_evidence": {
             "feeds": [],
             "outcome": "applied",
-            "applied_at": "2026-11-04T03:24:23.380368668Z",
+            "applied_at": "2026-11-04T08:22:03.0324346Z",
             "error_code": null,
             "generation": "1",
-            "document_id": "01a1a495-d39b-7e62-88b0-188830b810b6",
-            "content_sha256": "05f1051716a31742da9169362c09443579351f857204cdef662de162a023dee2"
+            "document_id": "01a1a5a6-52bd-76ef-b76d-4e07160b34f5",
+            "content_sha256": "1c2fd64c27ec0267b30944f0ed9f3fd07ca5e697a71fbc08c17f01371587ef9e"
           },
-          "node_incarnation_id": "01a1a495-e051-7b0c-9e12-a61e03dc7619",
-          "last_good_release_id": "01a1a495-b8a1-7615-baf4-4ba023637b9a",
+          "node_incarnation_id": "01a1a5a6-649f-765c-bf51-66db9de1cc49",
+          "last_good_release_id": "01a1a5a6-37f4-7ea7-b66a-2a35bd6f6573",
           "applied_binding_revision": "0",
           "forwarding_block_reasons": [
             "policy_missing"
@@ -160,9 +160,9 @@
           "applied_config_generation": "3",
           "member_forwarding_enabled": false
         },
-        "received_at": "2026-11-04T03:24:23.439379+00:00",
+        "received_at": "2026-11-04T08:22:03.064281+00:00",
         "summary_valid": true,
-        "incarnation_id": "01a1a495-e051-7b0c-9e12-a61e03dc7619",
+        "incarnation_id": "01a1a5a6-649f-765c-bf51-66db9de1cc49",
         "reported_alarm": false,
         "reported_steps": "1",
         "lease_generation": "2",
@@ -173,49 +173,49 @@
     ],
     "incidents": [
       {
-        "id": "01a1a496-1c10-7a0e-905e-8a37274a64ef",
-        "node_id": "01a1a495-dc6a-791b-989f-e5122ccd9877",
-        "ended_at": "2026-11-04T03:24:28.589472+00:00",
+        "id": "01a1a5a6-a039-75ec-be59-3b4a98a69499",
+        "node_id": "01a1a5a6-5da2-7b3e-a0b5-82645b104e40",
+        "ended_at": "2026-11-04T08:22:08.209797+00:00",
         "end_reason": "generation_matched",
         "escalated_at": null,
-        "last_seen_at": "2026-11-04T03:24:23.439379+00:00",
-        "first_seen_at": "2026-11-04T03:24:23.439379+00:00",
-        "incarnation_id": "01a1a495-e051-7b0c-9e12-a61e03dc7619",
-        "latest_report_id": "01a1a496-1c09-7dac-9646-e11e9fcbbb1d",
-        "first_observed_at": "2026-11-04T03:24:23.433883+00:00"
+        "last_seen_at": "2026-11-04T08:22:03.064281+00:00",
+        "first_seen_at": "2026-11-04T08:22:03.064281+00:00",
+        "incarnation_id": "01a1a5a6-649f-765c-bf51-66db9de1cc49",
+        "latest_report_id": "01a1a5a6-a032-7ec9-9b94-fe20579a5dea",
+        "first_observed_at": "2026-11-04T08:22:03.058955+00:00"
       }
     ],
     "escalations": [],
     "revocations": []
   },
-  "run_id": "5715939e-3943-48f1-8bd5-c869bf7c91c2",
+  "run_id": "3eb3960d-c411-4648-8d77-bba40b436ae3",
   "snapshots": [
     {
-      "at": "2026-11-04T03:24:11.341210603Z",
+      "at": "2026-11-04T08:21:51.686773888Z",
       "available": true,
       "label": "AT01 start",
       "snapshot": {
         "members": [
           {
             "status": "pending_payment",
-            "member_id": "01a1a495-a48e-7707-9189-556f76df3e64",
-            "updated_at": "2026-11-04T03:24:03.858442+00:00",
+            "member_id": "01a1a5a6-2384-7372-a2aa-a5dfe364cbb6",
+            "updated_at": "2026-11-04T08:21:38.194387+00:00",
             "admin_suspended": false,
             "entitlement_state": "pending_payment",
             "effective_service_end": null
           },
           {
             "status": "pending_payment",
-            "member_id": "01a1a495-a76a-7c80-9b28-8cde675480bc",
-            "updated_at": "2026-11-04T03:24:03.867983+00:00",
+            "member_id": "01a1a5a6-2652-7820-a7bd-c79041a218fc",
+            "updated_at": "2026-11-04T08:21:38.201714+00:00",
             "admin_suspended": false,
             "entitlement_state": "pending_payment",
             "effective_service_end": null
           },
           {
             "status": "pending_payment",
-            "member_id": "01a1a495-aa43-740c-b416-9e337bfee0de",
-            "updated_at": "2026-11-04T03:24:03.871368+00:00",
+            "member_id": "01a1a5a6-2920-77c1-8e74-90cc4af9796e",
+            "updated_at": "2026-11-04T08:21:38.205164+00:00",
             "admin_suspended": false,
             "entitlement_state": "pending_payment",
             "effective_service_end": null
@@ -225,31 +225,31 @@
       }
     },
     {
-      "at": "2026-11-04T03:25:32.388379788Z",
+      "at": "2026-11-04T08:22:47.149613993Z",
       "available": true,
       "label": "AT01 complete",
       "snapshot": {
         "members": [
           {
             "status": "active",
-            "member_id": "01a1a495-a48e-7707-9189-556f76df3e64",
-            "updated_at": "2026-11-04T03:24:29.889607+00:00",
+            "member_id": "01a1a5a6-2384-7372-a2aa-a5dfe364cbb6",
+            "updated_at": "2026-11-04T08:22:09.263397+00:00",
             "admin_suspended": false,
             "entitlement_state": "active",
-            "effective_service_end": "2026-11-04T04:24:29.277133+00:00"
+            "effective_service_end": "2026-11-04T09:22:08.650117+00:00"
           },
           {
             "status": "pending_payment",
-            "member_id": "01a1a495-a76a-7c80-9b28-8cde675480bc",
-            "updated_at": "2026-11-04T03:24:03.867983+00:00",
+            "member_id": "01a1a5a6-2652-7820-a7bd-c79041a218fc",
+            "updated_at": "2026-11-04T08:21:38.201714+00:00",
             "admin_suspended": false,
             "entitlement_state": "pending_payment",
             "effective_service_end": null
           },
           {
             "status": "pending_payment",
-            "member_id": "01a1a495-aa43-740c-b416-9e337bfee0de",
-            "updated_at": "2026-11-04T03:24:03.871368+00:00",
+            "member_id": "01a1a5a6-2920-77c1-8e74-90cc4af9796e",
+            "updated_at": "2026-11-04T08:21:38.205164+00:00",
             "admin_suspended": false,
             "entitlement_state": "pending_payment",
             "effective_service_end": null
@@ -257,20 +257,20 @@
         ],
         "incidents": [
           {
-            "id": "01a1a496-1c10-7a0e-905e-8a37274a64ef",
-            "node_id": "01a1a495-dc6a-791b-989f-e5122ccd9877",
-            "ended_at": "2026-11-04T03:24:28.589472+00:00",
+            "id": "01a1a5a6-a039-75ec-be59-3b4a98a69499",
+            "node_id": "01a1a5a6-5da2-7b3e-a0b5-82645b104e40",
+            "ended_at": "2026-11-04T08:22:08.209797+00:00",
             "end_reason": "generation_matched",
             "escalated_at": null,
-            "last_seen_at": "2026-11-04T03:24:23.439379+00:00",
-            "first_seen_at": "2026-11-04T03:24:23.439379+00:00",
-            "incarnation_id": "01a1a495-e051-7b0c-9e12-a61e03dc7619",
-            "latest_report_id": "01a1a496-1c09-7dac-9646-e11e9fcbbb1d",
-            "first_observed_at": "2026-11-04T03:24:23.433883+00:00"
+            "last_seen_at": "2026-11-04T08:22:03.064281+00:00",
+            "first_seen_at": "2026-11-04T08:22:03.064281+00:00",
+            "incarnation_id": "01a1a5a6-649f-765c-bf51-66db9de1cc49",
+            "latest_report_id": "01a1a5a6-a032-7ec9-9b94-fe20579a5dea",
+            "first_observed_at": "2026-11-04T08:22:03.058955+00:00"
           }
         ]
       }
     }
   ],
-  "source_commit": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23"
+  "source_commit": "8a6dcf34248f035a3a460fcdee3e1e19e80c9137"
 }
