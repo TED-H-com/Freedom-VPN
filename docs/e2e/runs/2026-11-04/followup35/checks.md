@@ -226,3 +226,23 @@ Exit 0; 0.094 s. UTC 2026-11-04T10:10:57.783439+00:00–2026-11-04T10:10:57.8777
 ```text
 (no output)
 ```
+
+## 16-final-evidence-hygiene
+
+Exit 0; 9.186 s. UTC 2026-11-04T10:13:45.802190+00:00–2026-11-04T10:13:54.988366+00:00.
+
+`go test -count=1 ./tests/e2e -run '^TestCommittedFixtureEvidence_ValidAndHygieneClean$'`
+
+```text
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e	8.878s
+```
+
+## 17-final-diff-check
+
+Exit 0; 0.092 s. UTC 2026-11-04T10:14:59.963177+00:00–2026-11-04T10:15:00.055085+00:00.
+
+`git diff --check`
+
+```text
+(no output)
+```

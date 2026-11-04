@@ -244,5 +244,34 @@
     "seconds": 0.094,
     "exit": 0,
     "receipt": "15-staged-whitespace-after.meta.json"
+  },
+  {
+    "name": "16-final-evidence-hygiene",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/e2e",
+      "-run",
+      "^TestCommittedFixtureEvidence_ValidAndHygieneClean$"
+    ],
+    "start": "2026-11-04T10:13:45.802190+00:00",
+    "end": "2026-11-04T10:13:54.988366+00:00",
+    "seconds": 9.186,
+    "exit": 0,
+    "receipt": "16-final-evidence-hygiene.meta.json"
+  },
+  {
+    "name": "17-final-diff-check",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "start": "2026-11-04T10:14:59.963177+00:00",
+    "end": "2026-11-04T10:15:00.055085+00:00",
+    "seconds": 0.092,
+    "exit": 0,
+    "receipt": "17-final-diff-check.meta.json"
   }
 ]
