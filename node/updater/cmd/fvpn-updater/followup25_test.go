@@ -131,6 +131,9 @@ func TestD158_CLIWaitRecordAndExactErrorLine(t *testing.T) {
 			if tc.name == "real default budget" && waited < 10000 {
 				t.Fatalf("budget returned early: %v", record)
 			}
+			if tc.releaseAfter != 0 && waited < 500 {
+				t.Fatalf("released holder was not observed for about 600 ms: %v", record)
+			}
 			wantError := ""
 			if code == 0 {
 				d158AbsentLog(t, remaining)

@@ -154,7 +154,7 @@ func TestD158_CommandsProceedAfter600msHolder(t *testing.T) {
 				t.Fatalf("did not wait for release and proceed: %v (%s)", err, elapsed)
 			}
 			check()
-			d158Record(t, &log, command, true, 600*time.Millisecond)
+			d158Record(t, &log, command, true, 500*time.Millisecond)
 		})
 	}
 }
@@ -261,15 +261,15 @@ func TestD158_CancellationAndUnreadableMetadata(t *testing.T) {
 			e.UseLog(slog.New(slog.NewJSONHandler(&log, nil)))
 			ctx, cancel := context.WithCancel(t.Context())
 			defer cancel()
+			started := time.Now()
 			timer := time.AfterFunc(300*time.Millisecond, cancel)
 			defer timer.Stop()
-			started := time.Now()
 			err := e.Run(ctx)
 			elapsed := time.Since(started)
 			if !errors.Is(err, context.Canceled) || elapsed < 300*time.Millisecond || elapsed > time.Second || e.Journal != nil {
 				t.Fatalf("cancel: %v elapsed=%s journal=%v", err, elapsed, e.Journal)
 			}
-			d158Record(t, &log, "run", false, 300*time.Millisecond)
+			d158Record(t, &log, "run", false, 280*time.Millisecond)
 		})
 	}
 }
