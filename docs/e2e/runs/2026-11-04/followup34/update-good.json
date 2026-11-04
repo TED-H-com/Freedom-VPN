@@ -1,0 +1,135 @@
+{
+  "id": "update-good",
+  "title": "Good release reaches a terminal updater state",
+  "spec": [
+    "§13",
+    "§19 AT23",
+    "§19 AT25"
+  ],
+  "status": "blocked",
+  "observations": [
+    {
+      "name": "batch",
+      "detail": "202"
+    },
+    {
+      "name": "fleet_generation",
+      "detail": "2"
+    },
+    {
+      "name": "target_count",
+      "detail": "3"
+    },
+    {
+      "name": "desired_contains_release",
+      "detail": "true"
+    },
+    {
+      "name": "probe_not_member",
+      "detail": "true"
+    },
+    {
+      "name": "probe_route_selected",
+      "detail": "true"
+    },
+    {
+      "name": "probe_config_scope",
+      "detail": "one dedicated setup-key peer /32; one isolated origin /32 UDP 4443; no member device or grant"
+    },
+    {
+      "name": "running_candidate_executable",
+      "detail": "false"
+    },
+    {
+      "name": "probe_agent_config",
+      "detail": "/etc/vpn-node/agent-run.json"
+    },
+    {
+      "name": "updater_log_readable",
+      "detail": "true"
+    },
+    {
+      "name": "probe_omission_count",
+      "detail": "0"
+    },
+    {
+      "name": "invalid_probe_peer",
+      "detail": "false"
+    },
+    {
+      "name": "exit_code",
+      "detail": "3"
+    },
+    {
+      "name": "locally_succeeded",
+      "detail": "false"
+    },
+    {
+      "name": "rolled_back",
+      "detail": "false"
+    },
+    {
+      "name": "HASH_MISMATCH",
+      "detail": "false"
+    },
+    {
+      "name": "recovery_required",
+      "detail": "false"
+    },
+    {
+      "name": "ISOLATION_BASELINE_MISSING",
+      "detail": "false"
+    },
+    {
+      "name": "artifact url address",
+      "detail": "false"
+    },
+    {
+      "name": "health_json",
+      "detail": "-"
+    },
+    {
+      "name": "health_attestation",
+      "detail": "-"
+    },
+    {
+      "name": "error_code",
+      "detail": "-"
+    },
+    {
+      "name": "result_last_error",
+      "detail": "-"
+    },
+    {
+      "name": "probe_traffic",
+      "detail": "{\"attempts\":431,\"authenticated_udp_replies\":0}"
+    },
+    {
+      "name": "probe_window",
+      "detail": "{\"samples\":78,\"grant_samples\":0,\"source_elements\":0,\"destination_elements\":0,\"max_timeout_seconds\":0,\"probe_up_bytes\":0,\"probe_down_bytes\":0,\"member_bytes_before\":35029,\"member_bytes_after\":35029,\"elements_after\":0}"
+    },
+    {
+      "name": "probe_origin_receipt",
+      "detail": "{\"probe_id\":\"fa24d2f0-9e6e-48e8-aa24-feebec741ba7\",\"requests\":0,\"source_address\":\"\"}"
+    },
+    {
+      "name": "probe_traversal_verified",
+      "detail": "false"
+    },
+    {
+      "name": "configured_probe_issued",
+      "detail": "false"
+    },
+    {
+      "name": "probe_gate",
+      "detail": "real candidate result does not prove §13.9; see observed grant and traversal counters; owner w2-agent-core / w1-netlab"
+    },
+    {
+      "name": "owner",
+      "detail": "w2-agent-core / w1-netlab: challenge exception and observed probe traversal"
+    }
+  ],
+  "at": "2026-11-04T05:50:29Z",
+  "run_id": "af4c130b-5029-401b-bd0f-e8afaad3d37f",
+  "source_commit": "ab0899e6799a4d992c87215c5a6705e7e2fa506f"
+}

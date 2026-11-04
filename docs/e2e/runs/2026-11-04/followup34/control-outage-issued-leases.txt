@@ -1,0 +1,381 @@
+{
+  "captured_at": "2026-11-04T05:51:00.673018+00:00",
+  "started_at": "2026-11-04T05:51:00.560439+00:00",
+  "exit": 0,
+  "query": "SELECT jsonb_build_object('lease_id',envelope->'signed'->>'lease_id',\n 'node_id',node_id,'policy_generation',policy_generation::text,'issued_at',issued_at,\n 'expires_at',expires_at,'members',(SELECT jsonb_agg(jsonb_build_object(\n 'expires_at',m->>'expires_at','effective_service_end',m->>'effective_service_end'))\n FROM jsonb_array_elements(envelope->'signed'->'members') AS m))\n FROM serving_leases ORDER BY issued_at DESC LIMIT 4;",
+  "rows": [
+    {
+      "members": [
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:39:43.614406Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:43:23.923721Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:43:39.912438Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:43:53.808038Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:09.690085Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:25.639402Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:40.488523Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:55.256524Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:10.039044Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:23.792542Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:40.689417Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:54.690492Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:10.659239Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:24.486661Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:40.353881Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:55.228343Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:10.03052Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:24.918629Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:39.84289Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:55.81714Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:48:08.564951Z"
+        }
+      ],
+      "node_id": "01a1a511-4190-721c-b8cf-b5151ee3e45e",
+      "lease_id": "130edc7b-a71f-4ec7-80d7-2e6d6d96ad3b",
+      "issued_at": "2026-11-04T05:50:47.683761+00:00",
+      "expires_at": "2026-11-05T05:50:47.683761+00:00",
+      "policy_generation": "96"
+    },
+    {
+      "members": [
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:39:43.614406Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:43:23.923721Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:43:39.912438Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:43:53.808038Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:09.690085Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:25.639402Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:40.488523Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:55.256524Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:10.039044Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:23.792542Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:40.689417Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:54.690492Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:10.659239Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:24.486661Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:40.353881Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:55.228343Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:10.03052Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:24.918629Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:39.84289Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:55.81714Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:48:08.564951Z"
+        }
+      ],
+      "node_id": "01a1a511-4190-721c-b8cf-b5151ee3e45e",
+      "lease_id": "3444f60d-c29c-4b8b-9d5b-33ba7bc5c082",
+      "issued_at": "2026-11-04T05:50:42.650229+00:00",
+      "expires_at": "2026-11-05T05:50:42.650229+00:00",
+      "policy_generation": "95"
+    },
+    {
+      "members": [
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:39:43.614406Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:43:23.923721Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:43:39.912438Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:43:53.808038Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:09.690085Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:25.639402Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:40.488523Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:55.256524Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:10.039044Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:23.792542Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:40.689417Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:54.690492Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:10.659239Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:24.486661Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:40.353881Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:55.228343Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:10.03052Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:24.918629Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:39.84289Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:55.81714Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:48:08.564951Z"
+        }
+      ],
+      "node_id": "01a1a511-4190-721c-b8cf-b5151ee3e45e",
+      "lease_id": "5dd2742b-f310-4277-87e4-523687272908",
+      "issued_at": "2026-11-04T05:50:37.648762+00:00",
+      "expires_at": "2026-11-05T05:50:37.648762+00:00",
+      "policy_generation": "94"
+    },
+    {
+      "members": [
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:39:43.614406Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:43:23.923721Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:43:39.912438Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:43:53.808038Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:09.690085Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:25.639402Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:40.488523Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:44:55.256524Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:10.039044Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:23.792542Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:40.689417Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:45:54.690492Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:10.659239Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:24.486661Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:40.353881Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:46:55.228343Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:10.03052Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:24.918629Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:39.84289Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:47:55.81714Z"
+        },
+        {
+          "expires_at": null,
+          "effective_service_end": "2026-11-04T06:48:08.564951Z"
+        }
+      ],
+      "node_id": "01a1a511-4190-721c-b8cf-b5151ee3e45e",
+      "lease_id": "8ec535e7-004c-43b7-9f56-f1ea0a53f32e",
+      "issued_at": "2026-11-04T05:50:32.639533+00:00",
+      "expires_at": "2026-11-05T05:50:32.639533+00:00",
+      "policy_generation": "93"
+    }
+  ],
+  "error": ""
+}
