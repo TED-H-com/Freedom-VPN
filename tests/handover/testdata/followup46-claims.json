@@ -1,0 +1,247 @@
+[
+  {
+    "name": "previous_cut_session_and_counts",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-46/pr-472-excerpt.json",
+        "tokens": [
+          "#464 to #468",
+          "c148cf34",
+          "15 subtests",
+          "27 byte-identical frozen inputs",
+          "13 Go test declarations",
+          "17 frozen code readings",
+          "38 earlier claims functions",
+          "still 64",
+          "133 rows",
+          "06:48 EST",
+          "07:46",
+          "8 commits and 54 owned files",
+          "+107,301/−327",
+          "45 minutes"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "isolation_archive_D160_D161_and_expiries",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-46/pr-469-excerpt.json",
+        "tokens": [
+          "184 root",
+          "history/follow-up-22/",
+          "without a harness change",
+          "before the lab, the test, the stack and the driver",
+          "27 pass, 2 blocked, 0 fail",
+          "All 29 statuses match",
+          "IPv6 platform matrix",
+          "full continuous fault matrix",
+          "F22-01 is answered",
+          "65 TCP reads",
+          "zero TCP timeouts",
+          "zero UDP losses",
+          "six lost TCP transmissions",
+          "verified guard",
+          "recovered by retransmission",
+          "210.1 ms",
+          "accepted-timeout branch did not run live",
+          "7b0db5f2 stays failed",
+          "cause stays unproven",
+          "13.9 s",
+          "D-140",
+          "D-142",
+          "generation 32",
+          "15 commands in 15 attempts",
+          "one 412"
+        ]
+      },
+      {
+        "path": "tests/handover/testdata/history/follow-up-46/docs_e2e_at_isolation_followup23-2026-11-04.md.txt",
+        "tokens": [
+          "184",
+          "D-160 admission audit",
+          "No committed harness code change",
+          "No live TCP timeout",
+          "13.878436494 s",
+          "generation-32",
+          "15 logical commands / 15 attempts",
+          "one 412"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "agent_r30_repairs_and_preserved_boundaries",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-46/pr-470-excerpt.json",
+        "tokens": [
+          "H-1 is an engine API defect that neither CLI mode reaches",
+          "only Run sets the run context",
+          "no caller's context owns the recover child",
+          "Close still cancels and joins",
+          "one catch-up request for a newly available ACK",
+          "earlier attempt in the same Step",
+          "32-entry capacity guard still comes first",
+          "D-155",
+          "D-156",
+          "D-157",
+          "D-067",
+          "D-135 and D-136",
+          "populated lease and a verified Apply",
+          "13/13 on one attempt"
+        ]
+      },
+      {
+        "path": "tests/handover/testdata/history/follow-up-46/docs_node_followup51-2026-11-04.md.txt",
+        "tokens": [
+          "Only Run sets runCtx",
+          "Close retain their join behavior",
+          "newly available ACK",
+          "capacity guard remains first",
+          "Retry-After",
+          "13/13"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "updater_clarification_and_live_limit",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-46/pr-471-excerpt.json",
+        "tokens": [
+          "five consecutive stale answers, 20 ms apart",
+          "exit 1 with the final stale detail",
+          "every live answer, including empty or unreadable metadata, resets the stale count",
+          "10 s budget from the first attempt",
+          "no exit 3 before it",
+          "first live answer at or past it",
+          "first attempt misses on ErrBusy",
+          "later cancellation",
+          "non-busy first error",
+          "cancellation before any attempt",
+          "recover and standalone Retain",
+          "error lines and the exit table",
+          "nodelock",
+          "D-158's wait stays unmeasured"
+        ]
+      },
+      {
+        "path": "tests/handover/testdata/history/follow-up-46/docs_updates_node-followup26-2026-11-04.md.txt",
+        "tokens": [
+          "Requests to orchestrator",
+          "five consecutive stale answers",
+          "including empty or unreadable metadata",
+          "never before that budget",
+          "first-attempt ErrBusy",
+          "No live acceptance"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "members_counts_corrections_AT02_and_open_boundaries",
+    "records": [
+      {
+        "path": "tests/handover/testdata/history/follow-up-46/pr-473-excerpt.json",
+        "tokens": [
+          "122",
+          "6a25221b",
+          "c148cf34",
+          "706",
+          "four",
+          "F22-D146",
+          "30 s",
+          "15 s",
+          "installer node",
+          "34.85 s",
+          "Two latest rows cannot prove",
+          "49 and 51",
+          "44 and 46",
+          "22.61 s",
+          "loopback",
+          "reached member eth1",
+          "before WireGuard receive accounting",
+          "Not proven",
+          "63.9 ms",
+          "179 ms with 7 losses",
+          "30, every one a first-attempt",
+          "F11-01 stays open"
+        ]
+      },
+      {
+        "path": "tests/handover/testdata/history/follow-up-46/docs_e2e_at_members_followup23-2026-11-04.md.txt",
+        "tokens": [
+          "122 original root records",
+          "706 passed / 8 blocked / 0 failed",
+          "no observation_seconds field",
+          "defaults observation cadence to 30 s",
+          "installer-node-specific",
+          "does not establish that no report was accepted",
+          "22.606093 s",
+          "observation_age_below_15_seconds",
+          "after member underlay ingress, before WireGuard receive accounting",
+          "does not prove the source-selection cause",
+          "179.481443 ms / seven losses",
+          "F11-01 remains OPEN/upstream-dependent under D-148"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "decisions_findings_running_and_requests",
+    "records": [
+      {
+        "path": "docs/handover/README.md",
+        "tokens": [
+          "65 decisions",
+          "63 rows remain byte-identical",
+          "| D-162 |",
+          "08:1x EST",
+          "observation_seconds: 5",
+          "TEST ONLY",
+          "product default of 30 s",
+          "15 s freshness bound",
+          "widening it would let a stale node pass",
+          "six times as often",
+          "devstack 36",
+          "133 rows",
+          "10 existing rows updated, 0 added, 123 byte-identical",
+          "already reported upstream",
+          "running at cutoff"
+        ]
+      },
+      {
+        "path": "docs/handover/follow-up-46.md",
+        "tokens": [
+          "D-098 / D-109 / D-132",
+          "#469, #470, #471, #472 and #473",
+          "No unbriefed PR",
+          "Every lane-document quotation",
+          "Running at briefing, status only",
+          "agy/gemini-4-argon-high",
+          "after the cutoff",
+          "No date is promised",
+          "### Requests to orchestrator",
+          "per-attempt observation-submission timestamps",
+          "No new outside-owned pin needs changing",
+          "D-158 live contention stays unmeasured"
+        ]
+      },
+      {
+        "path": "docs/reviews/README.md",
+        "tokens": [
+          "r30 dispositions at the follow-up 46 cutoff",
+          "H-1 | FIXED — #470",
+          "H-2 | FIXED — #471",
+          "M-1 | FIXED — #471",
+          "M-2 | FIXED — #470",
+          "M-3 | FIXED — #470",
+          "Review r31 is running at cutoff"
+        ]
+      }
+    ]
+  }
+]
