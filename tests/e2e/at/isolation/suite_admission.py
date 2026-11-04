@@ -53,7 +53,7 @@ def processes():
 def wait(evidence=None, exclusive=True):
     started=time.monotonic(); snapshots=[]
     while True:
-        raw=subprocess.run(['pgrep','-af','gates.sh|mk/at-'],capture_output=True,text=True).stdout
+        raw=subprocess.run(['bash','-c',r"ps -eo pid,etimes,args | grep -E '[g]ates\.sh|[m]k/at-'"],capture_output=True,text=True).stdout
         print('shared-host suite inventory:\n'+raw,flush=True)
         roots=processes()
         elapsed=time.monotonic()-started

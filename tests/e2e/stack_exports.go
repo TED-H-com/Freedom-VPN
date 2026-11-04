@@ -28,6 +28,10 @@ type BrowserSession struct {
 	CSRF, MemberID string
 }
 type Response = reply
+type NodeWriteResult = nodeWriteResult
+type NodeWriteReceipt = nodeWriteTrace
+type NodeWriteAttempt = nodeWriteAttempt
+type NodeWriteRead = nodeWriteRead
 type BuiltRelease struct {
 	ID             uuid.UUID
 	Directory      string
@@ -58,6 +62,63 @@ func (s *Stack) Call(ctx context.Context, b BrowserSession, method, path string,
 		return Response{}, fmt.Errorf("API path required")
 	}
 	return (&session{http: b.Client, csrf: b.CSRF}).call(ctx, method, s.lab.public+path, body, headers)
+}
+
+// WriteNode applies the publisher's bounded conflict handling using the caller's
+// cookies and CSRF token. Paths are /api/v1/ paths; etag is the initial GET ETag.
+// Only exact 412 RESOURCE_VERSION_CONFLICT is reread/retried (three writes,
+// ten seconds total). Each attempt uses one key and frozen JSON body. The client
+// must use *http.Transport (or nil); wrappers that might replay are refused.
+// Embed result.Receipt in AT evidence, including on failure. Accepted(202) also
+// accepts AlreadyIntended, which leaves Reply as the original 412, not a made-up
+// operation. Callers must still verify operation and observed-state completion.
+// intended receives a successful NodeDetail GET body and must check every
+// desired field; nil is refused. success lists accepted write HTTP statuses.
+func (s *Stack) WriteNode(ctx context.Context, b BrowserSession, method, writePath, readPath string, body any, etag string, intended func([]byte) bool, success ...int) NodeWriteResult {
+	if !strings.HasPrefix(writePath, "/api/v1/") || !strings.HasPrefix(readPath, "/api/v1/") || b.Client == nil || intended == nil {
+		return NodeWriteResult{Err: fmt.Errorf("node write: API paths, client and intended-values predicate required")}
+	}
+	if body != nil {
+		raw, err := json.Marshal(body)
+		if err != nil {
+			return NodeWriteResult{Err: fmt.Errorf("node write: invalid JSON body")}
+		}
+		body = json.RawMessage(raw)
+	}
+	return (&httpSession{http: b.Client, csrf: b.CSRF}).writeNode(ctx, method, s.lab.public+writePath, s.lab.public+readPath, body, etag, intended, success, func(string, string) {})
+}
+
+// NodeFieldsMatch compares requested top-level fields exactly, including nested
+// capacity fields and decimal strings. Omit command-only fields such as reason.
+// Custom predicates can decode []byte themselves; never convert versions to floats.
+func NodeFieldsMatch(want any) func([]byte) bool { return nodeFieldsMatch(want) }
+
+func NodeRevoked(body []byte) bool { return revokedNode(body) }
+
+// NodePublished requires published intent and exactly these groups, in any order.
+// Duplicate groups and malformed/missing fields fail closed.
+func NodePublished(groups ...uuid.UUID) func([]byte) bool {
+	want := make(map[uuid.UUID]bool, len(groups))
+	for _, id := range groups {
+		want[id] = true
+	}
+	return func(body []byte) bool {
+		var got struct {
+			Intent string      `json:"publication_intent"`
+			Groups []uuid.UUID `json:"group_ids"`
+		}
+		if len(want) != len(groups) || json.Unmarshal(body, &got) != nil || got.Intent != "published" || got.Groups == nil || len(got.Groups) != len(want) {
+			return false
+		}
+		seen := make(map[uuid.UUID]bool, len(got.Groups))
+		for _, id := range got.Groups {
+			if !want[id] || seen[id] {
+				return false
+			}
+			seen[id] = true
+		}
+		return true
+	}
 }
 
 // BuildRelease builds both architectures and signs the real bundle. The caller

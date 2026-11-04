@@ -1,0 +1,22 @@
+{
+  "run_id": "c52bea6c-cd91-4086-a779-656b01277dcc",
+  "measured_commit": "037f44187aaac256c82682de01af2ef61bbb90f0",
+  "fixed_commit": "4fc47dd1",
+  "live_rerun": false,
+  "collector": {
+    "status": "failed",
+    "stage": "operation_history_startup",
+    "reason": "capture_hold_operations.py required lab-AT10.json while the authorized invocation skipped lab",
+    "missing": "publication-operation-history.json",
+    "fix": "use invocation FVPN_AT_RUN_ID, with current product evidence fallback",
+    "offline_test": "EarlyAbort.test_operation_collector_without_lab_record"
+  },
+  "setup_publication": {
+    "status": "unavailable",
+    "reason": "Successful prepare discarded its temporary check and node_write trace",
+    "attempts": "unknown; no reconstruction",
+    "fix": "PublicationNote retains receipts in AT10 observations as well as the calling check",
+    "offline_test": "TestF19_02_SuccessfulSetupKeepsPublicationReceipt"
+  },
+  "rerun_rule": "Main driver continued and first acceptance check passed; no permitted pre-acceptance abort, so no live rerun"
+}

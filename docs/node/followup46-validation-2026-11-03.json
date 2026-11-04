@@ -1,0 +1,339 @@
+{
+  "utc": "2026-11-03T23:57:14.121422+00:00",
+  "gates": [
+    {
+      "gate": "node-lint-build",
+      "source": "ffb2ddc2ef4928a61488d4da976c377e6be3a260",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-lint",
+        "node-build"
+      ],
+      "exit": 0,
+      "seconds": 3.604,
+      "utc": "2026-11-03T23:41:11Z"
+    },
+    {
+      "gate": "node-test",
+      "source": "ffb2ddc2ef4928a61488d4da976c377e6be3a260",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test"
+      ],
+      "exit": 0,
+      "seconds": 261.855,
+      "utc": "2026-11-03T23:49:58Z"
+    },
+    {
+      "gate": "node-integration",
+      "source": "244be677074a979f88ee053cbf0e952904fef385",
+      "command": [
+        "make",
+        "-f",
+        "mk/node.mk",
+        "node-test-integration"
+      ],
+      "exit": 0,
+      "seconds": 138.598,
+      "utc": "2026-11-03T23:52:17Z"
+    },
+    {
+      "gate": "reviews-r16-r19",
+      "source": "244be677074a979f88ee053cbf0e952904fef385",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./node/agent",
+        "./node/enforce",
+        "-run",
+        "^TestReviewR1[6-9]_"
+      ],
+      "exit": 0,
+      "seconds": 20.039,
+      "utc": "2026-11-03T23:52:37Z"
+    },
+    {
+      "gate": "reviews-r20-r26",
+      "source": "244be677074a979f88ee053cbf0e952904fef385",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "./node/agent",
+        "./node/agent/cmd/fvpn-agent",
+        "./node/watchdog",
+        "./node/enforce",
+        "-run",
+        "^Test(R2[0-6]_|ReviewR2[0-6]_|ReviewR11_ClearFailureNextStep)"
+      ],
+      "exit": 0,
+      "seconds": 44.282,
+      "utc": "2026-11-03T23:53:21Z"
+    },
+    {
+      "gate": "handover",
+      "source": "244be677074a979f88ee053cbf0e952904fef385",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "exit": 0,
+      "seconds": 3.879,
+      "utc": "2026-11-03T23:53:25Z"
+    },
+    {
+      "gate": "go-lint",
+      "source": "244be677074a979f88ee053cbf0e952904fef385",
+      "command": [
+        "make",
+        "go-lint",
+        "go-with-disk-tmp=set -eu;"
+      ],
+      "exit": 0,
+      "seconds": 1.72,
+      "utc": "2026-11-03T23:53:27Z"
+    },
+    {
+      "gate": "vet",
+      "source": "244be677074a979f88ee053cbf0e952904fef385",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "exit": 0,
+      "seconds": 0.462,
+      "utc": "2026-11-03T23:53:27Z"
+    },
+    {
+      "gate": "evidence",
+      "source": "244be677074a979f88ee053cbf0e952904fef385",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/netlab",
+        "-run",
+        "^TestCommittedEvidenceFiles_ValidAndHygieneClean$"
+      ],
+      "exit": 0,
+      "seconds": 3.01,
+      "utc": "2026-11-03T23:53:50Z"
+    },
+    {
+      "gate": "fixture-hygiene",
+      "source": "244be677074a979f88ee053cbf0e952904fef385",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/e2e",
+        "-run",
+        "^TestCommittedFixtureEvidence_ValidAndHygieneClean$"
+      ],
+      "exit": 0,
+      "seconds": 8.927,
+      "utc": "2026-11-03T23:53:59Z"
+    },
+    {
+      "gate": "final-all-tests",
+      "source": "244be677074a979f88ee053cbf0e952904fef385",
+      "command": [
+        "go",
+        "test",
+        "./..."
+      ],
+      "exit": 0,
+      "seconds": 181.392,
+      "utc": "2026-11-03T23:57:01Z"
+    }
+  ],
+  "output_tails": {
+    "node-lint-build": "TMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go vet ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go vet -tags netlab ./node/agent/... ./tests/netlab/agent/...\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./node/agent/... ./tests/netlab/agent/...\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o bin/linux_amd64/fvpn-agent ./node/agent/cmd/fvpn-agent\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=arm64 go build -trimpath -o bin/linux_arm64/fvpn-agent ./node/agent/cmd/fvpn-agent\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o bin/linux_amd64/fvpn-watchdog ./node/watchdog/cmd/fvpn-watchdog\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=arm64 go build -trimpath -o bin/linux_arm64/fvpn-watchdog ./node/watchdog/cmd/fvpn-watchdog",
+    "node-test": "Waiting for host admission: reserved for orchestrator until 19:10:34 (orchestrator verify devstack f32)\nWaiting for host admission: reserved for orchestrator until 19:10:34 (orchestrator verify devstack f32)\nWaiting for host admission: reserved for orchestrator until 19:10:34 (orchestrator verify devstack f32)\nWaiting for host admission: reserved for orchestrator until 19:10:34 (orchestrator verify devstack f32)\nTMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test ./node/agent/... ./node/watchdog/... ./node/internal/agentstore/... ./node/internal/controlclient/... ./node/internal/timeanchor/... ./node/internal/fakecontrol/... ./node/internal/nodelock/... ./node/internal/usagestore/... ./node/internal/meter/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t140.230s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent\t0.291s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/watchdog\t0.105s\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/watchdog/cmd/fvpn-watchdog\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/agentstore\t0.164s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/controlclient\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/timeanchor\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol\t0.030s\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/internal/fakecontrol/cmd/fvpn-labcontrol\t[no test files]\n?   \tgithub.com/TED-H-com/Freedom-VPN/node/internal/nodelock\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/usagestore\t0.980s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/internal/meter\t0.620s",
+    "node-integration": "TMPDIR='<worktree>/.agent/tmp' GOTMPDIR='<worktree>/.agent/tmp' CGO_ENABLED=0 GOTOOLCHAIN=local go test -count=1 -tags integration ./node/agent/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent\t137.949s\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent\t0.291s",
+    "reviews-r16-r19": "=== RUN   TestReviewR18_DisabledLifecycleDoesNotAllocate\n--- PASS: TestReviewR18_DisabledLifecycleDoesNotAllocate (0.00s)\n=== RUN   TestReviewR18_DisabledRunCommandMatchesRun\n--- PASS: TestReviewR18_DisabledRunCommandMatchesRun (0.01s)\n=== RUN   TestReviewR18_RenderCaptureStaysInMemory\n--- PASS: TestReviewR18_RenderCaptureStaysInMemory (0.00s)\n=== RUN   TestReviewR18_EnabledSampleIgnoresInstallDeadline\n    review_r18_lifecycle_test.go:107: finished install context skipped resource sampling (elapsed 622.098\u00b5s, total syscr +11)\n--- PASS: TestReviewR18_EnabledSampleIgnoresInstallDeadline (0.12s)\n=== RUN   TestReviewR18_EnabledCancelReapsChild\n--- PASS: TestReviewR18_EnabledCancelReapsChild (0.05s)\n=== RUN   TestReviewR19_Q4_CurrentRenderDoesNotRestrictEstablishedDownload\n    review_r19_intersection_test.go:68: current destination denial precedes the established download accept\n--- PASS: TestReviewR19_Q4_CurrentRenderDoesNotRestrictEstablishedDownload (0.00s)\n=== RUN   TestReviewR19_Q4_ExistingCounterIsNotRecreated\n--- PASS: TestReviewR19_Q4_ExistingCounterIsNotRecreated (0.00s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/enforce\t0.222s",
+    "reviews-r20-r26": "    --- PASS: TestR20_H2_VerifierIgnoresEmptiedDenyAndHostSets/serving_emptied_and_timed_deny_and_host_sets (0.00s)\n    --- PASS: TestR20_H2_VerifierIgnoresEmptiedDenyAndHostSets/probe_baseline_emptied_deny_host_and_nonempty_allowed_v4 (0.00s)\n=== RUN   TestR20_Held_VerifyServingCatchesResolverBindingQoSAndSNATDrift\n--- PASS: TestR20_Held_VerifyServingCatchesResolverBindingQoSAndSNATDrift (0.01s)\n=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen\n=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/cold_start_rollback_with_failed_loadState_omits_delete_chain_and_flush_set\n=== RUN   TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/expired_ctx_during_verify_aborts_rollback_after_guard_release\n--- PASS: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen (0.00s)\n    --- PASS: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/cold_start_rollback_with_failed_loadState_omits_delete_chain_and_flush_set (0.00s)\n    --- PASS: TestR24_H4_RollbackWithStaleStateOrExpiredCtxLeavesCandidateOpen/expired_ctx_during_verify_aborts_rollback_after_guard_release (0.00s)\n=== RUN   TestR24_H2_OrphanMemberTCClassDeletedBeforeNftBatch\n--- PASS: TestR24_H2_OrphanMemberTCClassDeletedBeforeNftBatch (0.00s)\n=== RUN   TestR24_M2_PostShapeClockCheckSkipsBaselineInApply\n--- PASS: TestR24_M2_PostShapeClockCheckSkipsBaselineInApply (0.00s)\n=== RUN   TestR24_Held_Q1_GuardInstallBoundLifetimeCeilingAndCounterContinuity\n--- PASS: TestR24_Held_Q1_GuardInstallBoundLifetimeCeilingAndCounterContinuity (0.00s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/node/enforce\t0.022s",
+    "handover": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t3.484s",
+    "go-lint": "",
+    "vet": "",
+    "evidence": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t2.754s",
+    "fixture-hygiene": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e\t8.665s",
+    "final-all-tests": "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/cmd/fvpn-e2e-stream\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/agentwait\t0.037s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/counterread\t0.094s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/dnsrelay\t0.103s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/granttrace\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin\t0.004s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labtls\t(cached)\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/leasehold\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/nativecapture\t(cached)\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/offertrace\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/probeauth\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/internal/streamstats\t(cached)\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t3.776s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab\t2.830s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/cmd/fvpn-netlab\t(cached)\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/dns/cmd/cache-authority\t[no test files]\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/dns/internal/cachefixture\t[no test files]",
+    "ordinary-main-lab": "PASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/agent\t218.202s\nmake[1]: Entering directory '<worktree>/.agent/tmp/f46-production'\ndocker rm -f fvpn-w2-agent-core-f46 >/dev/null 2>&1 || true\ndocker network rm fvpn-w2-agent-core-f46-dns >/dev/null 2>&1 || true\n<worktree>/.agent/f46/bin/make -f mk/netlab.mk netlab-wipe-scratch FVPN_LAB_PREFIX='fvpn-w2-agent-core-f46'\nmake[2]: Entering directory '<worktree>/.agent/tmp/f46-production'\nmkdir -p <worktree>/.agent/tmp/f46-production/.agent/tmp/fvpn-w2-agent-core-f46-scratch\ndocker rm -f fvpn-w2-agent-core-f46-wipe >/dev/null 2>&1 || true\ndocker run --rm --name fvpn-w2-agent-core-f46-wipe --network none \\\n\t-v <worktree>/.agent/tmp/f46-production/.agent/tmp/fvpn-w2-agent-core-f46-scratch:/scratch fvpn-w2-agent-core-f46:lab \\\n\tfind /scratch -mindepth 1 -delete\nmake[2]: Leaving directory '<worktree>/.agent/tmp/f46-production'\nrmdir <worktree>/.agent/tmp/f46-production/.agent/tmp/fvpn-w2-agent-core-f46-scratch 2>/dev/null || true\nmake[1]: Leaving directory '<worktree>/.agent/tmp/f46-production'"
+  },
+  "synthetic_tests": {
+    "root": 65,
+    "other_directory_followup46": 24,
+    "logs": {
+      "synthetic-root.log": "3949e125f897407de76595459cedadf2d38e2389733e6896a85244790c5fe5af",
+      "synthetic-other-cwd.log": "55a9f262a1e90846e12601d41d95c377adb64c45a0c2f6e0cb58e822dda1ab55"
+    }
+  },
+  "hygiene": {
+    "comparison_base": "7cfeb4c98727ee0893d7a10cd67210353c4ffa3b",
+    "scope_command": "git diff --name-only main...HEAD plus working changes",
+    "followup39_43_44_45_hashes_unchanged": true,
+    "declared_files_match": true,
+    "legacy_files_checked": 15,
+    "owned_paths_only": true,
+    "production_unchanged": true,
+    "enforce_unchanged": true,
+    "dependencies_unchanged": true,
+    "earlier_records_unchanged": true,
+    "followup43_tools_hashes_unchanged": true,
+    "gofmt_empty": true,
+    "diff_check_clean": true,
+    "public_files_scanned": 17,
+    "public_files_clean": true,
+    "tracked_go_files": 1422,
+    "admission": "free"
+  },
+  "initial_hygiene_attempt": {
+    "exit": 1,
+    "reason": "Initial helper used two-point main comparison after main advanced; scope falsely included newly merged member files.",
+    "main_at_start": "7cfeb4c98727ee0893d7a10cd67210353c4ffa3b",
+    "main_at_check": "bcf27c91",
+    "resolution": "Use prescribed main...HEAD plus working changes, and merge-base for unchanged-production comparison; final check passes; no other-area edits."
+  },
+  "inventory": {
+    "containers": [],
+    "images": [],
+    "networks": [],
+    "volumes": []
+  },
+  "environment": {
+    "CGO_ENABLED": "0",
+    "GOTOOLCHAIN": "local",
+    "GOMAXPROCS": "4",
+    "TMPDIR": ".agent/tmp",
+    "GOTMPDIR": ".agent/tmp",
+    "GOCACHE": "~/.cache/go-build",
+    "python": "-B"
+  },
+  "admission": {
+    "gate_refusal_count": 4,
+    "maximum_gate_wait_seconds": 120.187,
+    "reservation_requests": 0,
+    "refusal_is_test_result": false
+  },
+  "ordinary_main_lab": {
+    "source": {
+      "commit": "7cfeb4c98727ee0893d7a10cd67210353c4ffa3b",
+      "archive_sha256": "315ca5bcdad4ee19de4ad3c5d709e11ffa53559efa666cc5325a865b4d1276c1",
+      "verified_blobs": 20490,
+      "functional_only": true,
+      "instrumentation_overlay": false
+    },
+    "result": {
+      "exit": 0,
+      "seconds": 232.00893358199392,
+      "completed": "2026-11-03T23:45:26Z"
+    },
+    "scenarios": 13,
+    "packet_predicates": {
+      "expiry": {
+        "positives": 97,
+        "drops": 15,
+        "deadline_ns": "72890412373269",
+        "last_positive_offset_ns": "-100590658",
+        "first_drop_offset_ns": "-63852222",
+        "positives_at_or_after_deadline": 0,
+        "capture_stats": [
+          {
+            "packets": 213,
+            "drops": 0
+          },
+          {
+            "packets": 198,
+            "drops": 0
+          }
+        ],
+        "predicate": true
+      },
+      "renewal": {
+        "packets": 1518,
+        "losses": 0,
+        "loss_ingress_inside_guard": 0,
+        "loss_ingress_outside_guard": 0,
+        "capture_stats": [
+          {
+            "packets": 3040,
+            "drops": 0
+          },
+          {
+            "packets": 3044,
+            "drops": 0
+          }
+        ],
+        "zero_loss_predicate": true
+      }
+    }
+  },
+  "raw_log_pins": {
+    "evidence.log": {
+      "sha256": "f040f5f81ae40b0161c8833571703d88f6d74016475b69241648be09b492c451",
+      "bytes": 58
+    },
+    "final-all-tests.log": {
+      "sha256": "0bdd5863b3d2a2dc2fcaa695d98754508217995131542a7a244e27202577c8de",
+      "bytes": 9194
+    },
+    "fixture-hygiene.log": {
+      "sha256": "a666e1d37edcbd255ce387f2a3c747046a253a295692e724c59a3a72531d931f",
+      "bytes": 55
+    },
+    "go-lint.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "handover.log": {
+      "sha256": "8bcd181aca31d00f7e8afebd9866842fb1b75dd825091db92854c1a248a662a0",
+      "bytes": 60
+    },
+    "node-integration.log": {
+      "sha256": "06d18f761c34c18b7063dd979d8d06b4b64250bca69ada5f0e267dd469da1a05",
+      "bytes": 355
+    },
+    "node-lint-build.log": {
+      "sha256": "905d6120b09828cbbffa1688fca614a9b07aa03db9e0995d981cb31d270136ed",
+      "bytes": 2538
+    },
+    "node-test.log": {
+      "sha256": "e019ff1e2d4149361dc0dea2898ce7fa170adb5c618613af0836f575e525d01f",
+      "bytes": 1723
+    },
+    "reviews-r16-r19.log": {
+      "sha256": "942c37d8adcb53bf25b8c75252656185dfdea01b2b38787565dd93eeb62455f7",
+      "bytes": 11385
+    },
+    "reviews-r20-r26.log": {
+      "sha256": "bc3caac61461d2017fb83d7978549bca39ca399d242094cc9a10711ac2ad3f39",
+      "bytes": 36509
+    },
+    "synthetic-other-cwd.log": {
+      "sha256": "55a9f262a1e90846e12601d41d95c377adb64c45a0c2f6e0cb58e822dda1ab55",
+      "bytes": 123
+    },
+    "synthetic-root.log": {
+      "sha256": "3949e125f897407de76595459cedadf2d38e2389733e6896a85244790c5fe5af",
+      "bytes": 164
+    },
+    "vet.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "production_unchanged": true,
+  "enforce_unchanged": true,
+  "earlier_records_unchanged": true
+}

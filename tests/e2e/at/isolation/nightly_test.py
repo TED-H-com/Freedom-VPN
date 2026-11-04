@@ -48,7 +48,7 @@ class Nightly(unittest.TestCase):
         self.assertEqual(classify(['go','test','-tags','netlab','./tests/netlab'],'/work/w1-netlab'),'netlab 27')
         self.assertIsNone(classify(['go','test','-tags','netlab','./tests/netlab'],'/work/w4-at-isolation'))
 
-    def test_unexecuted_foreign_redirect_writes_blocked_verdict_without_traceback(self):
+    def test_unexecuted_foreign_redirect_writes_unavailable_verdict_without_traceback(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
             (root/'receiver-capture.json').write_text(json.dumps(dict(run_id='775bc692-e6ef-4490-8056-ba6cfa818b69',transactions=[])))
@@ -56,4 +56,6 @@ class Nightly(unittest.TestCase):
             self.assertEqual(result.returncode,0,result.stderr)
             verdict=json.loads((root/'recovery-verdict.json').read_text())
             self.assertFalse(verdict['passed'])
-            self.assertEqual(verdict['status'],'blocked')
+            self.assertEqual(verdict['status'],'unavailable')
+            self.assertEqual(verdict['reason'],'injection not reached')
+            self.assertNotIn('injected_creator', verdict)

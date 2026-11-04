@@ -204,3 +204,14 @@ for sequence/generation **2488/17**, **2878/24**, **1488/28**, **2569/33** are
 intervals are **213.340536 / 213.023237 / no intervening baseline / 2123.628292 ms**.
 All **25** policy-missing windows remain, **23** populated, baseline→Apply
 **122.819935–6085.452005 ms**.
+
+
+## Follow-up 20 — 2026-11-03 (additive current result)
+
+One assembled run **c52bea6c-cd91-4086-a779-656b01277dcc**, measured source **037f4418**, source dirty false; baseline **c359d4a9**. **26 pass / 2 blocked / 1 fail**, exit 2, 1569.901 s, no rerun and no lab invocation. AT10 **9/0/0**, AT11 **2/1/0**, AT12 **10/0/0**, AT13 **5/1/1** (pass/blocked/fail). [Every row and evidence](followup20-2026-11-03.md#assembled-result).
+
+F19-01 is answered by D-152; F19-02 is answered by devstack 32 and this successful publication. All 14 retained node-write traces are single 202 attempts with no conflict. The successful extra setup publication trace is unavailable, so this is not a complete conflict audit. Its recording fix and the collector's skipped-lab fix are committed in **4fc47dd1**, with offline coverage only. Original failures and missing evidence are retained.
+
+**F20-01 stays failed:** `tunnel_probe / HEALTH_CHECK_FAILED` caused the recorded safety baseline to complete **40.992498819 s before the signed deadline**. Boundary: **0 positives / 202 drops**, no qualified calibration, no last positive. [Owner handoff](requests.md), [findings](follow-up-20-findings.json). Full native platform/fault matrices and pure `stale_generation` remain carried. Native counted forwarding with six installed D-147 PMTU accepts was observed; native fragmentation-needed delivery was not exercised.
+
+Admission wait **0.035 s**; no other-suite overlap sampled; no reservation. Final owned Docker inventory zero. [113-file follow-up-19 archive](history/follow-up-19/archive.json), [86-file current runtime archive](history/follow-up-20-run/archive.json), [current/prior-only inventory](follow-up-20-evidence-inventory.json). The older sections above remain historical; their original root-link context is frozen under follow-up 19.

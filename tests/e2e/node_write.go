@@ -26,6 +26,8 @@ const (
 type nodeWriteRead struct {
 	Method     string    `json:"method"`
 	Path       string    `json:"path"`
+	IfMatch    string    `json:"if_match"`
+	BodySHA256 string    `json:"body_sha256"`
 	StartedAt  time.Time `json:"started_at"`
 	FinishedAt time.Time `json:"finished_at"`
 	Status     int       `json:"status"`
@@ -64,7 +66,11 @@ type nodeWriteResult struct {
 	Reply           reply
 	Err             error
 	AlreadyIntended bool
+	Receipt         nodeWriteTrace
 }
+
+// Accepted reports command acceptance, not operation or observed-state completion.
+func (r nodeWriteResult) Accepted(statuses ...int) bool { return r.accepted(statuses...) }
 
 func (r nodeWriteResult) accepted(statuses ...int) bool {
 	if r.Err != nil {
@@ -90,6 +96,7 @@ func (s *httpSession) writeNode(ctx context.Context, method, writeURL, readURL s
 	trace := nodeWriteTrace{StartedAt: time.Now().UTC(), MaxAttempts: nodeWriteAttempts, LimitSeconds: int(nodeWriteTimeout / time.Second), Status: StatusBlocked}
 	defer func() {
 		trace.FinishedAt = time.Now().UTC()
+		out.Receipt = trace
 		raw, _ := json.Marshal(trace)
 		note("node_write", string(raw))
 	}()
@@ -159,7 +166,8 @@ func (s *httpSession) writeNode(ctx context.Context, method, writeURL, readURL s
 			out.Err, trace.Outcome = bounded.Err(), "time_limit"
 			return
 		}
-		read := &nodeWriteRead{Method: "GET", Path: evidencePath(readURL), StartedAt: time.Now().UTC()}
+		emptyDigest := sha256.Sum256(nil)
+		read := &nodeWriteRead{Method: "GET", Path: evidencePath(readURL), BodySHA256: hex.EncodeToString(emptyDigest[:]), StartedAt: time.Now().UTC()}
 		got, err := once.call(bounded, "GET", readURL, nil, nil)
 		read.FinishedAt, read.Status, read.ErrorCode, read.ETag, read.Transport = time.Now().UTC(), got.Status, got.Code, got.Header.Get("ETag"), err != nil
 		trace.Attempts[len(trace.Attempts)-1].Reread = read
