@@ -31,7 +31,8 @@ All these production holders can leave stale records:
 
 - An exited updater `run`: `Run` enters `withLockFor` at
   `node/updater/engine.go:107`; the lock is released at 168, and the CLI returns
-  the command status at `node/updater/cmd/fvpn-updater/main.go:139–154`.
+  the command status at `node/updater/cmd/fvpn-updater/main.go:139–154` and
+  exits at line 22.
 - A restarted agent: ordinary enforcement acquires/releases at
   `node/agent/engine.go:1156,1171`; adoption and stop also do so at
   `node/agent/restart.go:71,75,178,182`. A record for the prior process survives
@@ -43,7 +44,7 @@ All these production holders can leave stale records:
   `upgrade.go:53,60,115`. Its record can likewise outlive its process.
 
 Release alone does not make a still-running process's record stale. Once the
-recorded process has exited, the process check fails (lock.go:152–157); PID
+recorded process has exited and been reaped, the process check fails (lock.go:152–157); PID
 reuse is caught by start-time mismatch (159–160), and reboot by boot ID
 (146–147). The flock must be held by a new owner for a contender to read that
 old record; with no holder, acquisition succeeds and replaces it (59,74–79).
@@ -157,10 +158,205 @@ The following text pins or describes the previous policy:
    **This historical document will not be edited.**
 6. The brief identifies that same sentence in handover's operator guide.
    On this base, `docs/handover/operator-guide.md` contains no D-158 or
-   “first stale” sentence (its updater exit paragraph is at line 661).
+   “first stale” sentence (its updater exit paragraph is at line 698).
    The replacement will still be handed to its owner, for the owner's current
    version. No handover file is changed here.
 
 This delivery concerns §13.5 exclusion and §13.11 bounded `UPDATE_BUSY` handling,
 UPD02/UPD03/UPD05 (§4) and AT25/AT26 (§19) regression paths. No live acceptance,
 arm64 hardware result or F30-01 closure is claimed.
+
+## Implementation of clarified D-158
+
+The only production change is in `acquireCommandLock`, including its comment:
+move `waited = true` after the busy check, increment only on stale answers,
+and reset to zero on live answers. The existing elapsed-time check then applies
+to every live answer using the original start time. Five consecutive stale
+answers still return the last diagnostic. There is no new clock, configuration,
+lock API, test hook, shared mutable variable or change to error/exit mapping.
+
+The r30 test file was imported byte-for-byte in `b85c6f09`; its blob matches
+`da2560a9` (`42d2ff3a04247464a65f05a21b057ce05b1d98f2`). The fix removes only
+the H-2 and M-1 TODO markers from that file. All three test bodies and every
+assertion are retained. All existing r29/follow-up 24/follow-up 25 test files
+remain unchanged; the diagnosis above explains why their stale assertions do
+not require adjustment.
+
+`followup26_test.go` scripts real metadata changes between poll times using
+`testing/synctest`. Its clock advances deterministically without changing the
+10 s production constant or sleeping on the host for 10 s. The reset/acquisition
+proof starts a separate real lock-holder process, waits for its readiness,
+and joins it on release before allowing the next virtual poll. Other cases
+hold a real flock on a separate descriptor. Every child is reaped and each
+acquired journal is closed before its clock bubble exits. These are offline
+unit proofs, not production timing measurements.
+
+### Before/after proof results
+
+Host admission initially deferred for another lane's isolation command. After
+`free`, the before run used a Go overlay containing the byte-identical original
+`lock_wait.go` from `b85c6f09`; the after run removed only that overlay. The test
+bodies were identical. Both were admitted separately, ran in the foreground,
+and used disk scratch. No timing-only failure or harness rerun occurred.
+
+```sh
+go test -overlay .agent/tmp/followup26/before-overlay.json -count=1 -v -run 'TestR30_|TestD158_Consecutive' ./node/updater
+go test -count=1 -v -run 'TestR30_|TestD158_Consecutive' ./node/updater
+```
+
+| Proof / cases | Original runtime | Fixed runtime (`7f7118a3`) |
+|---|---|---|
+| `TestR30_H2_StaleThenLiveLockMetadataAbortsEarlyWithExitBusy` | FAIL: exit 3 after **81.637316 ms**, before the scheduled 250 ms release. | PASS (0.29 s total test time), Flush completes after release. |
+| `TestR30_M1_NonBusyFirstLockErrorEmitsSpuriousWaitLog` | FAIL: one spurious wait record with `waited_ms=0`. | PASS: non-busy first failure emits none. |
+| `TestR30_D155_UpdaterRecoverStaysPromptNoWaitLog` | PASS (0.19 s total). | PASS (0.18 s total); every assertion unchanged. |
+| `TestD158_ConsecutiveStaleResetAcquiresRealHolder` / valid, empty and unreadable live records | FAIL: all three return exit 3 at 80 ms, before the second stale run/release. | PASS: four stale, live reset, four stale, real child release at 170 ms; Flush acquires at 180 ms, opens the journal and logs exactly one acquired record. |
+| `TestD158_ConsecutiveStaleAfterLiveExactWindow` / all four stale details | PASS: first stale at 80 ms, fifth at 160 ms. | PASS unchanged: exit 1 exactly 80 ms after first stale, exact final detail, one failed-wait record, no journal. |
+| `TestD158_ConsecutiveStalePreservesOriginalLiveBudget/live_at_deadline` | FAIL: exit 3 at 80 ms. | PASS: exit 3 at exactly 10 s despite the first stale answer; exact `updater: UPDATE_BUSY: lock`. |
+| Same proof / `first_live_past_deadline` | FAIL: exit 3 at 80 ms. | PASS: stale polls at 9.98/10.00/10.02 s, first live answer at **10.04 s** returns exit 3 with the exact live error; no budget restart or early return. |
+| Same proof / `fifth_stale_past_deadline` | FAIL: exit 3 at 80 ms. | PASS: fifth consecutive stale answer at **10.06 s** returns exit 1 with exact `updater: UPDATE_BUSY: lock pid`. |
+| `TestD158_ConsecutiveWaitRecordRequiresFirstBusy` / four commands, cancelled entry | PASS: zero elapsed, no record, no lock file or journal created. | PASS unchanged. |
+| Same proof / four commands, non-busy first error | FAIL: each emits a zero-ms wait record. | PASS: each returns exit 1 with no record or journal. |
+| Same proof / four commands, busy then cancellation | PASS: cancellation at 30 ms, one record, `acquired=false`. | PASS unchanged: all four fields checked, no journal, one record only. |
+
+The `Consecutive` tests' elapsed times are **virtual retry-clock durations**;
+filesystem work and the real child still execute. They are not device latency
+measurements. r30's timings above are real host observations.
+
+Actual output tails:
+
+```text
+FAIL	github.com/TED-H-com/Freedom-VPN/node/updater	0.326s
+--- PASS: TestR30_H2_StaleThenLiveLockMetadataAbortsEarlyWithExitBusy (0.29s)
+--- PASS: TestR30_M1_NonBusyFirstLockErrorEmitsSpuriousWaitLog (0.00s)
+--- PASS: TestR30_D155_UpdaterRecoverStaysPromptNoWaitLog (0.18s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater	0.600s
+```
+
+### Final validation
+
+Every execution ran in the foreground after its own admission check printed
+`free`. Initial admission waits did not start tests or claim results. There was
+no reservation, exit-125 test result, timing rerun, Docker operation or live
+acceptance run. All started children were reaped. `CGO_ENABLED=0` and
+`GOTOOLCHAIN=local` were set; `TMPDIR` and `GOTMPDIR` used worktree-local
+`.agent/tmp`. GOCACHE came from `go env GOCACHE` and was not overridden.
+
+| Gate | Result |
+|---|---|
+| `go test -count=1 ./node/updater/... ./node/nodelock/... ./node/internal/updatejournal/... ./node/internal/nodelock/... ./node/internal/healthattest/...` | Exit 0. |
+| `go test -count=1 -v -run 'TestR30_|TestD158_|TestD155_|TestR29_' ./node/updater/...` | Exit 0; pass lines below. |
+| `go test -count=1 ./node/agent/... ./packaging/installer/... ./tests/e2e/at/updates/...` | Exit 0. Untagged package checks, not live AT execution. |
+| `go test -count=1 ./tests/handover/...` | Exit 0. |
+| `make go-lint go-with-disk-tmp=` | Exit 0, no output; whole-module formatting, vet and pinned staticcheck v0.8.2. The empty helper retains the selected disk scratch environment without invoking a shell cleanup trap. |
+| `go vet ./...` | Exit 0, no output. |
+| `test -z "$(gofmt -l $(git ls-files '*.go'))"` | Exit 0, no output. |
+| `git diff --check` | Exit 0, no output. |
+| `make updater-build` | Exit 0; linux/amd64 and linux/arm64 updater/release binaries. |
+
+Real package output:
+
+```text
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater	174.352s
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater	14.783s
+?   	github.com/TED-H-com/Freedom-VPN/node/updater/fsutil	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/node/nodelock	1.246s
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/updatejournal	1.948s
+?   	github.com/TED-H-com/Freedom-VPN/node/internal/nodelock	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/node/internal/healthattest	1.275s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	184.092s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent	0.307s
+ok  	github.com/TED-H-com/Freedom-VPN/packaging/installer	8.259s
+?   	github.com/TED-H-com/Freedom-VPN/packaging/installer/cmd/fvpn-node-install	[no test files]
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates	0.026s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/updates/stopobserve	0.083s
+ok  	github.com/TED-H-com/Freedom-VPN/tests/handover	3.783s
+```
+
+Required verbose pass lines and package results:
+
+```text
+--- PASS: TestD155_ExitCode (0.00s)
+--- PASS: TestD155_AllEntryPointsLockBeforeJournal (120.62s)
+--- PASS: TestD155_FirstBootAndNestedLock (0.02s)
+--- PASS: TestD158_HolderProcess (0.00s)
+--- PASS: TestD158_CommandsProceedAfter600msHolder (2.62s)
+--- PASS: TestD158_StaleDetailsKeepPromptWindow (1.41s)
+--- PASS: TestD158_StaleWindowStartsAtFirstStaleAnswer (0.39s)
+--- PASS: TestD158_RecoverAndRetainKeepPromptWindow (0.18s)
+--- PASS: TestD158_CancellationAndUnreadableMetadata (0.62s)
+--- PASS: TestD158_NestedCallsDoNotWaitOrLog (0.02s)
+--- PASS: TestD158_ConsecutiveStaleResetAcquiresRealHolder (0.06s)
+--- PASS: TestD158_ConsecutiveStaleAfterLiveExactWindow (0.01s)
+--- PASS: TestD158_ConsecutiveStalePreservesOriginalLiveBudget (0.03s)
+--- PASS: TestD158_ConsecutiveWaitRecordRequiresFirstBusy (0.01s)
+--- PASS: TestR29_H1_UpdaterExitCodeDistinguishesLiveUpdateBusy (0.10s)
+--- PASS: TestR29_L1_ContendedRecoverChecksUpdateLockBeforeOpeningJournal (0.08s)
+--- PASS: TestR29_Held_ContendedRecoverDuringStepStartAndCheckDoesNotMutateTxnOrGate (0.17s)
+--- PASS: TestR29_Held_CrashedSwitchedAndCheckingTxnsRecoveredUnderFreeLock (0.14s)
+--- PASS: TestR30_H2_StaleThenLiveLockMetadataAbortsEarlyWithExitBusy (0.28s)
+--- PASS: TestR30_M1_NonBusyFirstLockErrorEmitsSpuriousWaitLog (0.00s)
+--- PASS: TestR30_D155_UpdaterRecoverStaysPromptNoWaitLog (0.17s)
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater	126.935s
+--- PASS: TestD155_RecoverCLIExitAndStderrUnderHeldLock (0.82s)
+--- PASS: TestD155_StatusRemainsReadOnlyUnderHeldLock (0.05s)
+--- PASS: TestD158_CLIWaitRecordAndExactErrorLine (11.99s)
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater	12.863s
+```
+
+Real cross-build output:
+
+```text
+CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o bin/linux_amd64/fvpn-updater ./node/updater/cmd/fvpn-updater
+CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=arm64 go build -trimpath -o bin/linux_arm64/fvpn-updater ./node/updater/cmd/fvpn-updater
+CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o bin/linux_amd64/fvpn-release ./packaging/release/cmd/fvpn-release
+CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=arm64 go build -trimpath -o bin/linux_arm64/fvpn-release ./packaging/release/cmd/fvpn-release
+```
+
+No outside-path gate failed; no main-only comparison run was needed. The exit
+table and D-034g paragraph are byte-identical to main. The existing r29,
+follow-up 24 and follow-up 25 tests, earlier follow-up documents and dependency
+files are unchanged. Public-hygiene checks find no forbidden strings. Only the
+five owned files listed in the report change. Cross-compilation does not prove
+arm64 device behavior or provide live F30-01 acceptance evidence.
+
+### Requests to orchestrator
+
+2026-11-04:
+
+1. **Handover:** replace the old D-158 sentence in the owner's operator-guide
+   version with this exact sentence (the base here still predates that addition):
+
+   “Under D-158, `fvpn-updater run`, `seed`, `apply` and standalone `flush`
+   poll every 20 ms, return exit 1 with the final stale-holder detail after
+   five consecutive stale answers, reset that count on every live answer
+   (including empty or unreadable metadata), and return exit 3 on the first
+   live answer at or past the 10-second budget measured from the first
+   attempt, never before that budget; stale answers can extend the wait
+   nominally about 100 ms past it, filesystem work and scheduling can add
+   elapsed time, and `recover` and standalone `Retain` keep their prompt
+   five-attempt window.”
+
+   The associated logging guidance should say that the one `update lock wait`
+   record requires a first-attempt `ErrBusy`, including later cancellation;
+   non-busy first errors and cancellation before any attempt emit none.
+2. **Devstack:** if a future authorized acceptance run encounters stale then
+   live contention, retain each invocation's complete `updater.out` before
+   overwrite, its exit/error line, and the existing single wait record
+   (`command`, `waited_ms`, `acquired`, `budget_ms=10000`). Correlate with the
+   available timestamped holder/metadata samples and release evidence. A live
+   answer must reset the stale count: do not accept an early exit 3 at about
+   80 ms; a release within budget should allow acquisition, and a live-busy
+   terminal record must have `waited_ms >= 10000`. A stale terminal error needs
+   five consecutive stale answers with four 20 ms intervals and the final
+   stale detail. If sampling cannot establish that sequence, label it
+   unobserved rather than inferring it from the final record: the existing
+   fields do not log individual poll answers. `acquired=true` establishes lock
+   acquisition only; candidate, recovery and serving results still need their
+   own acceptance evidence. No new acceptance run or instrumentation is
+   requested by this delivery.
+
+The clarification is provisional at the orchestrator's direction; the owner
+may overturn it. There is no additional unresolved implementation question.
+F30-01 remains open; no live run, Docker object, reservation or arm64 hardware
+measurement is part of this follow-up.
