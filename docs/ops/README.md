@@ -1,7 +1,30 @@
 # Operations Runbooks Index (`docs/ops/`)
 
-**Current cut — [follow-up 44](../handover/follow-up-44.md) (2026-11-04 EST):** #457–#463 at 5c21e670; D-158 lock wait and D-157 renewal merged, F30-01 candidate proof and live AT02 measurement pending. 64 decisions, 126 findings; F22-01 and SECOPS-F17-01 open, AT29 failed and confounded. See [update recovery](../handover/operator-guide.md#f30-01), [closed recovery](../handover/operator-guide.md#at02-closed-recovery) and [TCP guard limitation](../handover/operator-guide.md#tcp-reload-guard).
-**Previous cut — [follow-up 43](../handover/follow-up-43.md) (2026-11-04 EST):** #446–#456 at 04d31ea5; D-155/D-156 fixes merged, F30-01 acceptance pending; D-157 routed, no merged fix. 60 decisions, 124 findings; r29 archived. AT29 failed at setup. See [update recovery](../handover/operator-guide.md#f30-01), [r28 H-1 fixed](../handover/operator-guide.md#r28-h-1), [release rule](../handover/operator-guide.md#d156-release-rule) and [closed-recovery interval](../handover/operator-guide.md#at02-closed-recovery).
+**Current cut — [follow-up 45](../handover/follow-up-45.md) (2026-11-04 EST):** #464–#468 at c148cf34; F30-01 closed, AT02 deny-all measured at 205 ms / 8 losses, AT29 blocked on the guest clock. 64 decisions, 133 findings; D-161 implemented, r30 archived and routed. D-158's wait remains unmeasured live. See [update recovery](../handover/operator-guide.md#f30-01), [closed recovery](../handover/operator-guide.md#at02-closed-recovery) and [TCP guard limitation](../handover/operator-guide.md#tcp-reload-guard).
+**Previous cut — [follow-up 44](../handover/follow-up-44.md) (2026-11-04 EST):** #457–#463 at 5c21e670; D-158 lock wait and D-157 renewal merged, F30-01 candidate proof and live AT02 measurement pending. 64 decisions, 126 findings; F22-01 and SECOPS-F17-01 open, AT29 failed and confounded. See [update recovery](../handover/operator-guide.md#f30-01), [closed recovery](../handover/operator-guide.md#at02-closed-recovery) and [TCP guard limitation](../handover/operator-guide.md#tcp-reload-guard).
+
+## Follow-up 45 acceptance snapshot (2026-11-04 EST)
+
+Current cut: **#464–#468 / c148cf34**, five merged PRs, no unbriefed PR.
+[Evidence and routing](../handover/follow-up-45.md). Earlier sections retain
+their original cutoff and do not override this snapshot.
+
+| Delivery | Current evidence boundary |
+|---|---|
+| Secops 18 #464 | SECOPS-F17-01 answered: fault-time accepted D. 9d927350 passes every runnable case; AT29 blocked on the operator's guest clock. Lane's D-133 confounded record retained alongside orchestrator's no-foreign-suite reading. Historical runs stay failed. |
+| Netlab 36 #465 | D-161 implemented. Gate 2 AT10 passes: 64 reads, 0 TCP timeouts, 0 UDP losses, 8 recovered boundary losses, 217.7 ms longest stall. Timeout acceptance synthetic-proven only; F22-01 and B1 historical failures remain. |
+| Handover 44 #466 | Previous #457–#463 cut: 15 subtests, 25 snapshots, 30 main test declarations, 16 code readings; 64 decisions and 126 findings. |
+| Members 22 #467 | 3eb3960d 3/7/0; subchecks 702/8/0. AT02 early renewal and 205 ms / 8-loss deny-all measured; F21-AT08 answered, old cause unknown. F21-D146's new-run freshness failure routes to F22-D146; historical indexes undetermined. F22-AT01/F22-D146 open with members 23. |
+| Devstack 35 #468 | 8a436a87 32/1/0, nightly evaluator passes. F30-01 closed by #446/#454/#463: candidate defers under parent lock, clears, serves, then lease-expiry passes. First acquisition uncontended: no live D-158 wait or causal credit for avoiding the earlier collision. update-bad exit 1 HASH_MISMATCH. |
+| Review r30 | Exact 216-line archive; 0 Critical / 2 High / 3 Medium / 0 Low. H-1/M-2/M-3 to agent-core 51; H-2/M-1 to updater 26 under clarified D-158. All open; proofs routed, not adopted. |
+
+**64 decisions; 133 findings: 7 updated / 7 added / 119 unchanged.**
+Only D-158 and D-161's decision rows change. Isolation 23, members 23,
+updater 26 and agent-core 51 run at briefing, status only. Later results are
+after the cutoff; every historical failure stays failed. No date is promised.
+Operator statements remain under [F30-01](../handover/operator-guide.md#f30-01),
+[closed recovery](../handover/operator-guide.md#at02-closed-recovery), and the
+unchanged [TCP guard limitation](../handover/operator-guide.md#tcp-reload-guard).
 
 ## Follow-up 44 acceptance snapshot (2026-11-04 EST)
 
