@@ -349,7 +349,7 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	}
 	pub := s.nodeMutation(node, http.MethodPut, "/publication", map[string]any{"publication_intent": "published", "group_ids": []string{s.groupID.String()}, "reason": "TEST ONLY AT20 serving"})
 	rec.Observations["node_initial_publication_write"] = pub.write.Receipt
-	if !pub.accepted(http.StatusOK, http.StatusAccepted) {
+	if !pub.accepted(http.StatusAccepted) {
 		t.Fatalf("AT20 publication: %d %s", pub.status, string(pub.body))
 	}
 	var exit uuid.UUID
@@ -449,7 +449,7 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	stage("API retirement and controlled same-node reinstall")
 	revoked := s.nodeMutation(node, http.MethodPost, "/revoke", map[string]any{"reason": "TEST ONLY AT20 controlled reinstall"})
 	rec.Observations["node_revoke_write"] = revoked.write.Receipt
-	if !revoked.accepted(http.StatusOK, http.StatusAccepted) {
+	if !revoked.accepted(http.StatusAccepted) {
 		t.Fatalf("AT20 revoke: %d %s", revoked.status, revoked.code)
 	}
 	rec.Observations["revoke_operation"] = json.RawMessage(revoked.body)

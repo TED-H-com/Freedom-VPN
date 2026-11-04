@@ -86,6 +86,19 @@ func nodeRetired(body []byte) bool {
 	return e2e.NodeFieldsMatch(map[string]any{"lifecycle_state": string(api.LifecycleStateRetired)})(body)
 }
 
+func nodeMutationSuccessStatuses(method, suffix string) []int {
+	switch {
+	case method == http.MethodPatch && suffix == "":
+		return []int{http.StatusOK, http.StatusAccepted}
+	case method == http.MethodPut && suffix == "/publication",
+		method == http.MethodPost && suffix == "/revoke",
+		method == http.MethodDelete && suffix == "":
+		return []int{http.StatusAccepted}
+	default:
+		return nil
+	}
+}
+
 func nodeMutationPredicate(method, suffix string, body any) func([]byte) bool {
 	switch {
 	case method == http.MethodPatch && suffix == "":
@@ -722,8 +735,7 @@ func (s *liveSuite) nodeMutation(nodeID uuid.UUID, method, suffix string, body a
 		body,
 		old.headers.Get("ETag"),
 		intended,
-		http.StatusOK,
-		http.StatusAccepted,
+		nodeMutationSuccessStatuses(method, suffix)...,
 	)
 	cmd := nodeCommand{
 		httpResponse: httpResponse{
@@ -804,7 +816,7 @@ func (s *liveSuite) ensureUnpublishedReadyBaseline(nodeService string, nodeID uu
 			"group_ids":          []string{s.groupID.String()},
 			"reason":             "TEST ONLY reset publication before publish " + nodeService,
 		})
-		if !disResp.accepted(http.StatusOK, http.StatusAccepted) {
+		if !disResp.accepted(http.StatusAccepted) {
 			s.t.Fatalf("PUT /api/v1/admin/nodes/%s/publication (disabled) failed: HTTP %d %s", nodeID, disResp.status, string(disResp.body))
 		}
 		rec := disResp.write.Receipt
@@ -871,7 +883,7 @@ func (s *liveSuite) configureAndPublishNode(nodeService string, nodeID, incID uu
 		"group_ids":          []string{s.groupID.String()},
 		"reason":             "TEST ONLY publish " + nodeService + " for AT14-AT19",
 	})
-	if !pubResp.accepted(http.StatusOK, http.StatusAccepted) {
+	if !pubResp.accepted(http.StatusAccepted) {
 		s.t.Fatalf("PUT /api/v1/admin/nodes/%s/publication failed: HTTP %d %s", nodeID, pubResp.status, string(pubResp.body))
 	}
 	pubReceipt := pubResp.write.Receipt
@@ -1164,7 +1176,7 @@ func (s *liveSuite) bootstrapCountedServingFlow() {
 			"group_ids":          []string{s.groupID.String()},
 			"reason":             "TEST ONLY publish node for AT14-AT19",
 		})
-		if !pubResp.accepted(http.StatusOK, http.StatusAccepted) {
+		if !pubResp.accepted(http.StatusAccepted) {
 			s.t.Fatalf("PUT /api/v1/admin/nodes/%s/publication failed: HTTP %d %s", s.nodeID, pubResp.status, string(pubResp.body))
 		}
 		pubReceipt := pubResp.write.Receipt

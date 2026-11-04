@@ -1029,7 +1029,7 @@ func (s *liveSuite) measurePerIncarnationRetainedUsage() incarnationRetentionMea
 	revResp := s.nodeMutation(s.node2ID, http.MethodPost, "/revoke", map[string]any{
 		"reason": "TEST ONLY AT19 ENR-03 revoke before reinstall",
 	})
-	if !revResp.accepted(http.StatusOK, http.StatusAccepted) {
+	if !revResp.accepted(http.StatusAccepted) {
 		s.t.Fatalf("ENR-03 POST /api/v1/admin/nodes/%s/revoke failed: HTTP %d %s", s.node2ID, revResp.status, string(revResp.body))
 	}
 	var revOp api.OperationAccepted

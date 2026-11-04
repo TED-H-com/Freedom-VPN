@@ -193,22 +193,42 @@ func TestNodeWrite_AdoptedCallShapesAndPredicates(t *testing.T) {
 		if nodeMutationPredicate(http.MethodPost, "/unknown", map[string]any{"reason": "TEST ONLY"}) != nil {
 			t.Fatal("unknown command must return nil predicate")
 		}
+		if got := nodeMutationSuccessStatuses(http.MethodPatch, ""); len(got) != 2 || got[0] != http.StatusOK || got[1] != http.StatusAccepted {
+			t.Fatalf("PATCH success statuses = %v, want [200 202]", got)
+		}
+		for _, tc := range []struct {
+			method string
+			suffix string
+		}{
+			{http.MethodPut, "/publication"},
+			{http.MethodPost, "/revoke"},
+			{http.MethodDelete, ""},
+		} {
+			if got := nodeMutationSuccessStatuses(tc.method, tc.suffix); len(got) != 1 || got[0] != http.StatusAccepted {
+				t.Fatalf("%s %s success statuses = %v, want [202]", tc.method, tc.suffix, got)
+			}
+		}
+		if got := nodeMutationSuccessStatuses(http.MethodPost, "/unknown"); got != nil {
+			t.Fatalf("unknown command success statuses = %v, want nil", got)
+		}
 	})
 }
 
 func TestNodeWrite_SharedHelperConflictPathsAndReceipts(t *testing.T) {
 	groupID := uuid.MustParse("019a4b00-0000-7000-8000-0000000000f1")
 	commands := []struct {
-		name         string
-		method       string
-		suffix       string
-		body         map[string]any
-		intendedBody map[string]any
+		name           string
+		method         string
+		suffix         string
+		acceptStatuses []int
+		body           map[string]any
+		intendedBody   map[string]any
 	}{
 		{
-			name:   "patch_capacity",
-			method: http.MethodPatch,
-			suffix: "",
+			name:           "patch_capacity",
+			method:         http.MethodPatch,
+			suffix:         "",
+			acceptStatuses: []int{http.StatusOK, http.StatusAccepted},
 			body: map[string]any{
 				"capacity": map[string]any{
 					"up_bps":              int64(1000000000),
@@ -227,9 +247,10 @@ func TestNodeWrite_SharedHelperConflictPathsAndReceipts(t *testing.T) {
 			},
 		},
 		{
-			name:   "put_publication_published",
-			method: http.MethodPut,
-			suffix: "/publication",
+			name:           "put_publication_published",
+			method:         http.MethodPut,
+			suffix:         "/publication",
+			acceptStatuses: []int{http.StatusAccepted},
 			body: map[string]any{
 				"publication_intent": "published",
 				"group_ids":          []string{groupID.String()},
@@ -241,9 +262,10 @@ func TestNodeWrite_SharedHelperConflictPathsAndReceipts(t *testing.T) {
 			},
 		},
 		{
-			name:   "put_publication_disabled",
-			method: http.MethodPut,
-			suffix: "/publication",
+			name:           "put_publication_disabled",
+			method:         http.MethodPut,
+			suffix:         "/publication",
+			acceptStatuses: []int{http.StatusAccepted},
 			body: map[string]any{
 				"publication_intent": "disabled",
 				"group_ids":          []string{groupID.String()},
@@ -255,9 +277,10 @@ func TestNodeWrite_SharedHelperConflictPathsAndReceipts(t *testing.T) {
 			},
 		},
 		{
-			name:   "post_revoke",
-			method: http.MethodPost,
-			suffix: "/revoke",
+			name:           "post_revoke",
+			method:         http.MethodPost,
+			suffix:         "/revoke",
+			acceptStatuses: []int{http.StatusAccepted},
 			body: map[string]any{
 				"reason": "TEST ONLY revoke node",
 			},
@@ -266,9 +289,10 @@ func TestNodeWrite_SharedHelperConflictPathsAndReceipts(t *testing.T) {
 			},
 		},
 		{
-			name:   "delete_retire",
-			method: http.MethodDelete,
-			suffix: "",
+			name:           "delete_retire",
+			method:         http.MethodDelete,
+			suffix:         "",
+			acceptStatuses: []int{http.StatusAccepted},
 			body: map[string]any{
 				"reason": "TEST ONLY retire node",
 			},
@@ -278,7 +302,7 @@ func TestNodeWrite_SharedHelperConflictPathsAndReceipts(t *testing.T) {
 		},
 	}
 
-	modes := []string{"retry", "already_intended", "other_412", "exhausted", "initial_get_failed"}
+	modes := []string{"retry", "already_intended", "status_200", "other_412", "exhausted", "initial_get_failed"}
 
 	for _, cmdSpec := range commands {
 		for _, mode := range modes {
@@ -311,6 +335,12 @@ func TestNodeWrite_SharedHelperConflictPathsAndReceipts(t *testing.T) {
 					b, _ := io.ReadAll(r.Body)
 					bodies = append(bodies, string(b))
 					keys = append(keys, r.Header.Get("Idempotency-Key"))
+					if mode == "status_200" {
+						w.Header().Set("ETag", `"2"`)
+						w.WriteHeader(http.StatusOK)
+						_, _ = w.Write(intendedJSON)
+						return
+					}
 					if mode == "other_412" {
 						w.WriteHeader(http.StatusPreconditionFailed)
 						_, _ = io.WriteString(w, `{"error":{"code":"STATE_CONFLICT"}}`)
@@ -365,9 +395,9 @@ func TestNodeWrite_SharedHelperConflictPathsAndReceipts(t *testing.T) {
 				}
 
 				got := s.nodeMutation(nodeID, cmdSpec.method, cmdSpec.suffix, cmdSpec.body)
-				wantAccepted := mode == "retry" || mode == "already_intended"
-				if got.accepted(http.StatusOK, http.StatusAccepted) != wantAccepted {
-					t.Fatalf("accepted=%t want=%t detail=%s", got.accepted(http.StatusOK, http.StatusAccepted), wantAccepted, got.detail())
+				wantAccepted := mode == "retry" || mode == "already_intended" || (mode == "status_200" && cmdSpec.method == http.MethodPatch)
+				if got.accepted(cmdSpec.acceptStatuses...) != wantAccepted {
+					t.Fatalf("accepted(%v)=%t want=%t detail=%s", cmdSpec.acceptStatuses, got.accepted(cmdSpec.acceptStatuses...), wantAccepted, got.detail())
 				}
 
 				switch mode {
@@ -378,6 +408,18 @@ func TestNodeWrite_SharedHelperConflictPathsAndReceipts(t *testing.T) {
 				case "already_intended":
 					if writes != 1 || reads != 2 || got.status != http.StatusPreconditionFailed || !got.write.AlreadyIntended || got.write.Receipt.Outcome != "already_intended" {
 						t.Fatalf("already_intended must preserve 412 without fabricating an operation: writes=%d reads=%d status=%d receipt=%+v", writes, reads, got.status, got.write.Receipt)
+					}
+				case "status_200":
+					wantOutcome := "non_conflict_response"
+					wantStatus := e2e.StatusBlocked
+					if cmdSpec.method == http.MethodPatch {
+						wantOutcome = "accepted"
+						wantStatus = e2e.StatusPass
+					}
+					if writes != 1 || reads != 1 || got.status != http.StatusOK || len(got.write.Receipt.Attempts) != 1 ||
+						got.write.Receipt.Attempts[0].Status != http.StatusOK || got.write.Receipt.Status != wantStatus ||
+						got.write.Receipt.Outcome != wantOutcome || got.write.AlreadyIntended {
+						t.Fatalf("status_200 mismatch: writes=%d reads=%d status=%d receipt=%+v", writes, reads, got.status, got.write.Receipt)
 					}
 				case "other_412":
 					if writes != 1 || reads != 1 || got.write.Receipt.Outcome != "non_conflict_response" {
