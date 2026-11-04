@@ -1,0 +1,70 @@
+{
+  "run_id": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
+  "status": "fail",
+  "test": "TestAT10_AT13_ReloadRevokeBaseline",
+  "summary": {
+    "apply_count": 101,
+    "verified_applies": 101,
+    "datagrams": 103,
+    "udp_timeouts": 0,
+    "timeouts_by_node_ingress": {},
+    "timeouts_by_send": {},
+    "timeouts_without_node_egress": 0,
+    "tcp_timeouts": 1,
+    "unobserved_node_ingress": 0,
+    "incomplete_udp_reads": 0,
+    "mismatched_echoes": 0,
+    "guard_lower_ns": {
+      "min": 2490,
+      "median": 5020,
+      "p95": 8896,
+      "max": 12141
+    },
+    "guard_upper_ns": {
+      "min": 20381770,
+      "median": 33499990,
+      "p95": 51278061,
+      "max": 69512019
+    },
+    "render_to_installed_ns": {
+      "min": 10373499,
+      "median": 18067495,
+      "p95": 27780130,
+      "max": 46657770
+    },
+    "guard_upper_over_100ms": 0,
+    "install_over_100ms": 0,
+    "capture_packets": {
+      "origin": 208,
+      "node": 416,
+      "responder": 208
+    },
+    "max_wall_mono_elapsed_difference_ns": 567
+  },
+  "d120": {
+    "passed": false,
+    "verdict": "AT10 FAIL",
+    "reloads": 100,
+    "udp_losses": 0,
+    "errors": [
+      "(iv): TCP failure: 101:TimeoutError"
+    ],
+    "losses": []
+  },
+  "timeout_events": [
+    {
+      "event": "tcp_read",
+      "sequence": 101,
+      "wall_ns": "1793772108514156341",
+      "mono_ns": "95550965536325",
+      "outcome": "TimeoutError"
+    }
+  ],
+  "sources": [
+    "assembled.log.txt",
+    "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-analysis.json",
+    "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/stream-a1.log.jsonl"
+  ],
+  "owner": "w1-netlab, coordinating w2-agent-core if production attribution is established",
+  "interpretation": "One observed TCP read timeout; no UDP loss and all 101 Apply snapshots verified. Root cause unproven. Original failed gate retained; fixture and product unchanged; no rerun."
+}

@@ -34,10 +34,10 @@ func (e *Engine) recoverOnce(ctx context.Context) {
 		e.recovered = true
 		return
 	}
+	e.recoverBlocked = true
 	if e.runCtx != nil && e.runCtx.Err() != nil {
 		return // a stop request is not recovery failure evidence
 	}
-	e.recoverBlocked = true
 	e.recoverMu.Lock()
 	defer e.recoverMu.Unlock()
 	if e.recoverClosed {

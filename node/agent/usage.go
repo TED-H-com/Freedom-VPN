@@ -227,20 +227,20 @@ func (e *Engine) activateUsage(ctx context.Context) {
 		return
 	}
 	up := e.uploader
-	// Uploads follow the process caller, not Boot's cancellation-independent
+	// Uploads retain Boot caller ownership in run and once mode, not its independent
 	// local context or a Step's short HTTP budget.
-	if e.runCtx == nil || e.runCtx.Err() == nil {
+	if e.uploadParent == nil || e.uploadParent.Err() == nil {
 		e.uploadOn = true
 		e.startLoops()
 		parent := e.loopCtx
-		if e.runCtx != nil {
-			parent = e.runCtx
+		if e.uploadParent != nil {
+			parent = e.uploadParent
 		}
 		// Signal cancellation propagates synchronously to the request context.
-		// An AfterFunc on runCtx could otherwise race the first upload.
+		// An AfterFunc on the caller could otherwise race the first upload.
 		uploadCtx, cancel := context.WithCancel(parent)
 		stop := func() bool { return false }
-		if e.runCtx != nil {
+		if e.uploadParent != nil {
 			stop = context.AfterFunc(e.loopCtx, cancel)
 		}
 		e.loops.Add(1)

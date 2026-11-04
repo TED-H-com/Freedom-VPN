@@ -4,17 +4,17 @@ Mechanism: D-147 RELATED IPv4 fragmentation-needed per source set and overlap
 
 Status: pass
 
-Run: 7b0db5f2-eab5-4534-824a-b54781eed3fd; started UTC: 2026-11-04T06:01:57Z; source dirty: false
+Run: 328ab9e0-7ff4-495a-81c1-410ae8a7d876; started UTC: 2026-11-04T10:29:52Z; source dirty: false
 
 Spec: §19 AT13, ISO01, ISO02, MTR01, D-146, D-147
 
-UTC: 2026-11-04T06:02:22Z
+UTC: 2026-11-04T10:30:16Z
 
-Build: 0b95e69ae89c68e0fcfbf1fbbfe6774b2e1948db
+Build: 89accd8da1bc3cf44093d3cc0061624f3d603002
 
 Image digests:
 
-- fvpn-w4-isolation-lab:lab sha256:03f00199eb3aaba16613fa095a499da0f76a0767492c25a481afbe0bdbfc9db7
+- fvpn-w4-isolation-lab:lab sha256:591cd748b1618303da63b84ad06907713ae9cc8cfca2046dbeaea15259a8b755
 
 Policy revision: generation 4200
 
@@ -30,15 +30,15 @@ Commands:
 - `FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w4-isolation-lab FVPN_AT_EVIDENCE_DIR=docs/e2e/at/isolation go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 ./tests/netlab/at`
 
 - forward_view: generation=4200 lab_member_accept=27 mss_clamp=6 pmtu_accept=9
-- d147_resolver_v4_only: src=203.0.113.53 sets=resolver_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=41p/7445B [tcp=1685B + frag_needed=10p/5760B] (tc 1:2f 41p/8019B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->ctbadns=1p/84B (u=0)
-- d147_denied_v4_only: src=192.168.34.2 sets=denied_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=42p/7497B [tcp=1737B + frag_needed=10p/5760B] (tc 1:2f 42p/8085B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->ctdeny=1p/84B (u=0)
-- d147_host_v4_only: src=203.0.113.33 sets=host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=52p/8017B [tcp=2257B + frag_needed=10p/5760B] (tc 1:2f 52p/8745B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->cthost=1p/84B (u=0)
-- d147_denied_v4_and_host_v4_overlap: src=192.168.34.1 sets=denied_v4+host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=46p/7705B [tcp=1945B + frag_needed=10p/5760B] (tc 1:2f 46p/8349B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->ctdeny=1p/84B (u=0)
+- d147_resolver_v4_only: src=203.0.113.53 sets=resolver_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=43p/7549B [tcp=1789B + frag_needed=10p/5760B] (tc 1:2f 43p/8151B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->ctbadns=1p/84B (u=0)
+- d147_denied_v4_only: src=192.168.34.2 sets=denied_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=40p/7393B [tcp=1633B + frag_needed=10p/5760B] (tc 1:2f 40p/7953B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->ctdeny=1p/84B (u=0)
+- d147_host_v4_only: src=203.0.113.33 sets=host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=35p/7133B [tcp=1373B + frag_needed=10p/5760B] (tc 1:2f 35p/7623B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->cthost=1p/84B (u=0)
+- d147_denied_v4_and_host_v4_overlap: src=192.168.34.1 sets=denied_v4+host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=42p/7497B [tcp=1737B + frag_needed=10p/5760B] (tc 1:2f 42p/8085B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->ctdeny=1p/84B (u=0)
 - scope: mechanism lab; D-147 per-source-set and overlap verification; product status is AT13.json
 
 Checks (full positive controls and observations in JSON):
 
-- D-147 resolver_v4_only (203.0.113.53): pass; src=203.0.113.53 sets=resolver_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=41p/7445B [tcp=1685B + frag_needed=10p/5760B] (tc 1:2f 41p/8019B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->ctbadns=1p/84B (u=0); counted positive=true
-- D-147 denied_v4_only (192.168.34.2): pass; src=192.168.34.2 sets=denied_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=42p/7497B [tcp=1737B + frag_needed=10p/5760B] (tc 1:2f 42p/8085B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->ctdeny=1p/84B (u=0); counted positive=true
-- D-147 host_v4_only (203.0.113.33): pass; src=203.0.113.33 sets=host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=52p/8017B [tcp=2257B + frag_needed=10p/5760B] (tc 1:2f 52p/8745B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->cthost=1p/84B (u=0); counted positive=true
-- D-147 denied_v4_and_host_v4_overlap (192.168.34.1): pass; src=192.168.34.1 sets=denied_v4+host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=46p/7705B [tcp=1945B + frag_needed=10p/5760B] (tc 1:2f 46p/8349B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->ctdeny=1p/84B (u=0); counted positive=true
+- D-147 resolver_v4_only (203.0.113.53): pass; src=203.0.113.53 sets=resolver_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=43p/7549B [tcp=1789B + frag_needed=10p/5760B] (tc 1:2f 43p/8151B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->ctbadns=1p/84B (u=0); counted positive=true
+- D-147 denied_v4_only (192.168.34.2): pass; src=192.168.34.2 sets=denied_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=40p/7393B [tcp=1633B + frag_needed=10p/5760B] (tc 1:2f 40p/7953B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->ctdeny=1p/84B (u=0); counted positive=true
+- D-147 host_v4_only (203.0.113.33): pass; src=203.0.113.33 sets=host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=35p/7133B [tcp=1373B + frag_needed=10p/5760B] (tc 1:2f 35p/7623B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->cthost=1p/84B (u=0); counted positive=true
+- D-147 denied_v4_and_host_v4_overlap (192.168.34.1): pass; src=192.168.34.1 sets=denied_v4+host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=42p/7497B [tcp=1737B + frag_needed=10p/5760B] (tc 1:2f 42p/8085B drops=0); negatives: time_exceeded->ctdenyd=1p/112B (d=0), unsolicited_frag_needed->ctinv=1p/60B (d=0), member_upload->ctdeny=1p/84B (u=0); counted positive=true

@@ -1,30 +1,9 @@
 {
-  "baseline": "33f0ef8e891525e291d60eec9d513bda07f57c82",
-  "measured_source": "0b95e69ae89c68e0fcfbf1fbbfe6774b2e1948db",
-  "utc_receipt_source": "2460932f",
+  "baseline": "2d3aaeedfd608d4da9179fadb87b29257e7d03dd",
+  "measured_source": "89accd8da1bc3cf44093d3cc0061624f3d603002",
   "checks": [
     {
-      "name": "schedule-tests",
-      "command": [
-        "python3",
-        "-B",
-        "tests/e2e/at/isolation/run.py",
-        "go",
-        "test",
-        "-count=1",
-        "-v",
-        "-run",
-        "^TestAT13_Member(Schedule|Expiry)",
-        "./tests/e2e/at/isolation"
-      ],
-      "started_at": "2026-11-04T05:35:26.716648Z",
-      "elapsed_seconds": 0.312,
-      "exit_code": 0,
-      "log": "history/follow-up-22-validation/schedule-tests.log.txt",
-      "output_tail": "    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/early_min/0s (0.00s)\n    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/early_min/999ms (0.00s)\n    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/early_max/999ms (0.00s)\n    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/early_late_step/999ms (0.00s)\n    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/scheduled/999ms (0.00s)\n    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/earliest_jitter/999ms (0.00s)\n    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/latest_jitter/999ms (0.00s)\n    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/late_step/999ms (0.00s)\n    --- PASS: TestAT13_MemberScheduleJitterAndEarlyRenewal/early_nominal/999ms (0.00s)\n=== RUN   TestAT13_MemberScheduleMissingWindowStillBlocks\n    member_schedule_test.go:110: blocked finite-member-renewal-wait.json: no accepted node lease extends more than 25s beyond the member deadline before the D-5s cutoff\n--- PASS: TestAT13_MemberScheduleMissingWindowStillBlocks (0.00s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t0.005s"
-    },
-    {
-      "name": "lane-pre",
+      "name": "lane",
       "command": [
         "make",
         "-f",
@@ -33,11 +12,14 @@
         "at-isolation-test",
         "at-isolation-build"
       ],
-      "started_at": "2026-11-04T05:35:38.151531Z",
-      "elapsed_seconds": 22.262,
+      "started_at": "2026-11-04T10:27:20.297628Z",
+      "finished_at": "2026-11-04T10:27:44.500857Z",
+      "duration_seconds": 24.203,
+      "admission_wait_seconds": 0.054,
       "exit_code": 0,
-      "log": "history/follow-up-22-validation/lane-pre.log.txt",
-      "output_tail": "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go vet -tags netlab ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...\n+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t15.622s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\n+ python3 tests/e2e/at/isolation/driver.py build\n+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
+      "source": "89accd8da1bc3cf44093d3cc0061624f3d603002",
+      "log": "history/follow-up-23-validation/lane.log.txt",
+      "output_tail": "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go vet -tags netlab ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...\n+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t15.882s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\n+ python3 tests/e2e/at/isolation/driver.py build\n+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
     },
     {
       "name": "e2e-lint",
@@ -47,40 +29,13 @@
         "mk/e2e.mk",
         "e2e-lint"
       ],
-      "started_at": "2026-11-04T05:36:45.535204Z",
-      "elapsed_seconds": 3.416,
+      "started_at": "2026-11-04T10:28:32.848378Z",
+      "finished_at": "2026-11-04T10:28:37.799247Z",
+      "duration_seconds": 4.951,
+      "admission_wait_seconds": 0.056,
       "exit_code": 0,
-      "log": "history/follow-up-22-validation/e2e-lint.log.txt",
-      "output_tail": "cd $WORKTREE && go vet ./tests/e2e/...\ncd $WORKTREE && go vet -tags e2e ./tests/e2e/...\ncd $WORKTREE && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/...\ncd $WORKTREE && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e ./tests/e2e/..."
-    },
-    {
-      "name": "lane-final",
-      "command": [
-        "make",
-        "-f",
-        "mk/at-isolation.mk",
-        "at-isolation-lint",
-        "at-isolation-test",
-        "at-isolation-build"
-      ],
-      "started_at": "2026-11-04T06:29:08.542039Z",
-      "elapsed_seconds": 23.834,
-      "exit_code": 0,
-      "log": "history/follow-up-22-validation/lane-final.log.txt",
-      "output_tail": "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go vet -tags netlab ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...\n+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t16.502s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\n+ python3 tests/e2e/at/isolation/driver.py build\n+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
-    },
-    {
-      "name": "e2e-lint-final",
-      "command": [
-        "make",
-        "-f",
-        "mk/e2e.mk",
-        "e2e-lint"
-      ],
-      "started_at": "2026-11-04T06:30:26.345662Z",
-      "elapsed_seconds": 1.651,
-      "exit_code": 0,
-      "log": "history/follow-up-22-validation/e2e-lint-final.log.txt",
+      "source": "89accd8da1bc3cf44093d3cc0061624f3d603002",
+      "log": "history/follow-up-23-validation/e2e-lint.log.txt",
       "output_tail": "cd $WORKTREE && go vet ./tests/e2e/...\ncd $WORKTREE && go vet -tags e2e ./tests/e2e/...\ncd $WORKTREE && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/...\ncd $WORKTREE && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e ./tests/e2e/..."
     },
     {
@@ -94,11 +49,14 @@
         "-count=1",
         "./tests/handover/..."
       ],
-      "started_at": "2026-11-04T06:30:43.773249Z",
-      "elapsed_seconds": 4.336,
+      "started_at": "2026-11-04T10:53:37.600429Z",
+      "finished_at": "2026-11-04T10:53:42.396963Z",
+      "duration_seconds": 4.797,
+      "admission_wait_seconds": 0.06,
       "exit_code": 0,
-      "log": "history/follow-up-22-validation/handover.log.txt",
-      "output_tail": "+ go test -count=1 ./tests/handover/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t3.864s"
+      "source": "89accd8da1bc3cf44093d3cc0061624f3d603002",
+      "log": "history/follow-up-23-validation/handover.log.txt",
+      "output_tail": "+ go test -count=1 ./tests/handover/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t3.898s"
     },
     {
       "name": "root-lint",
@@ -110,27 +68,69 @@
         "go-lint",
         "go-with-disk-tmp="
       ],
-      "started_at": "2026-11-04T06:31:18.713938Z",
-      "elapsed_seconds": 3.752,
+      "started_at": "2026-11-04T10:54:03.532982Z",
+      "finished_at": "2026-11-04T10:54:08.687196Z",
+      "duration_seconds": 5.154,
+      "admission_wait_seconds": 0.059,
       "exit_code": 0,
-      "log": "history/follow-up-22-validation/root-lint.log.txt",
+      "source": "89accd8da1bc3cf44093d3cc0061624f3d603002",
+      "log": "history/follow-up-23-validation/root-lint.log.txt",
       "output_tail": "+ make go-lint go-with-disk-tmp="
     },
     {
-      "name": "inventory",
+      "name": "handover-final",
       "command": [
         "python3",
         "-B",
-        ".agent/f22/inventory.py"
+        "tests/e2e/at/isolation/run.py",
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
       ],
-      "started_at": "2026-11-04T06:34:04.357597Z",
-      "elapsed_seconds": 0.379,
+      "started_at": "2026-11-04T10:56:42.457104Z",
+      "finished_at": "2026-11-04T10:56:46.757025Z",
+      "duration_seconds": 4.3,
+      "admission_wait_seconds": 0.062,
       "exit_code": 0,
-      "log": "history/follow-up-22-validation/inventory.log.txt",
-      "output_tail": "{\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}"
+      "source": "89accd8da1bc3cf44093d3cc0061624f3d603002",
+      "log": "history/follow-up-23-validation/handover-final.log.txt",
+      "output_tail": "+ go test -count=1 ./tests/handover/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t3.825s"
     },
     {
-      "name": "evidence-staged",
+      "name": "format",
+      "command": [
+        "sh",
+        "-c",
+        "test -z \"$(gofmt -l $(git ls-files \"*.go\"))\""
+      ],
+      "started_at": "2026-11-04T10:56:46.839161Z",
+      "finished_at": "2026-11-04T10:56:46.961949Z",
+      "duration_seconds": 0.123,
+      "admission_wait_seconds": 0.059,
+      "exit_code": 0,
+      "source": "89accd8da1bc3cf44093d3cc0061624f3d603002",
+      "log": "history/follow-up-23-validation/format.log.txt",
+      "output_tail": ""
+    },
+    {
+      "name": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at": "2026-11-04T10:56:47.044139Z",
+      "finished_at": "2026-11-04T10:56:47.050153Z",
+      "duration_seconds": 0.006,
+      "admission_wait_seconds": 0.059,
+      "exit_code": 0,
+      "source": "89accd8da1bc3cf44093d3cc0061624f3d603002",
+      "log": "history/follow-up-23-validation/diff.log.txt",
+      "output_tail": ""
+    },
+    {
+      "name": "evidence-hygiene",
       "command": [
         "python3",
         "-B",
@@ -143,11 +143,14 @@
         "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
         "./tests/e2e/at/isolation"
       ],
-      "started_at": "2026-11-04T06:34:44.910343Z",
-      "elapsed_seconds": 73.518,
+      "started_at": "2026-11-04T10:56:47.131851Z",
+      "finished_at": "2026-11-04T10:57:02.169527Z",
+      "duration_seconds": 15.038,
+      "admission_wait_seconds": 0.058,
       "exit_code": 0,
-      "log": "history/follow-up-22-validation/evidence-staged.log.txt",
-      "output_tail": "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation\n=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean\n--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (13.21s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t13.214s"
+      "source": "89accd8da1bc3cf44093d3cc0061624f3d603002",
+      "log": "history/follow-up-23-validation/evidence-hygiene.log.txt",
+      "output_tail": "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation\n=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean\n--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (14.85s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t14.851s"
     }
   ],
   "assembled": {
@@ -155,12 +158,12 @@
     "pass_rows": 27,
     "blocked_rows": 2,
     "fail_rows": 0,
-    "lab_reload_revoke": "fail: TCP sequence 101 TimeoutError; original D-120 verdict retained",
-    "receipt": "history/follow-up-22-run/follow-up-22-run-receipt.json"
+    "lab_reload_revoke": "AT10 PASS under D-120 with complete D-161 captures",
+    "receipt": "history/follow-up-23-run/follow-up-23-run-receipt.json"
   },
   "formatting": "whole-module gofmt empty; git diff --check and staged diff --check clean",
   "scope_verification": {
-    "new_archive_pins_verified": 301,
+    "new_archive_pins_verified": 323,
     "gzip_originals_verified": 35,
     "earlier_archives_unchanged": true,
     "owned_paths_only": true,
@@ -169,34 +172,5 @@
     "plain_files_over_20MB": [],
     "public_diff_hygiene": "pass"
   },
-  "post_run_gate_admission": [
-    {
-      "at": "2026-11-04T06:34:44.991506+00:00",
-      "command": "go",
-      "verb": [
-        "test"
-      ],
-      "wait_seconds": 0.043,
-      "ready": false
-    },
-    {
-      "at": "2026-11-04T06:35:15.034006+00:00",
-      "command": "go",
-      "verb": [
-        "test"
-      ],
-      "wait_seconds": 30.085,
-      "ready": false
-    },
-    {
-      "at": "2026-11-04T06:35:45.071503+00:00",
-      "command": "go",
-      "verb": [
-        "test"
-      ],
-      "wait_seconds": 60.123,
-      "ready": true
-    }
-  ],
-  "scope": "Every offline gate below passed. The assembled command remains exit 2 with one separately failed lab and two blocked operator rows. No live retry. Final post-commit evidence check is recorded in the hand-off report."
+  "scope": "Every offline gate passed. Assembled exit 2 retains both operator-blocked rows. No live retry. Handover was checked again after publication because the mutable roots had changed. Final post-commit evidence verification is recorded in the hand-off report."
 }
