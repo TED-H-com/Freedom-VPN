@@ -23,3 +23,18 @@ unchanged.
 Coverage: API01 / §14.5 conflict contract; ENT01, ENT02, BILL02 / §9.2 finite
 plan recovery; AT02 fixture continuity and D-137 router setup. These tests prove
 helper control flow, not the consumer's eventual acceptance cases.
+
+Validation completed at 2026-11-04T00:33:54Z (2026-11-03 local): all focused
+stub tests, e2e lint, isolation overlay lint, e2e-tagged vet of every AT package,
+non-stack e2e tests, handover tests, root Go lint and committed-evidence hygiene
+passed. Linux arm64 cross-compilation of the tagged shared harness also passed;
+this is compile-only evidence. The unchanged existing node-write tests passed,
+including their actual ten-second timeout and no-implicit-replay cases.
+There were no executed failing gates. Admission denied entry while isolation
+was running; those waits were not test results.
+
+Commit `e1903a99` added adoption records and test refinements. Commit `925207c2`
+retained the original sanitized revoke error text while preserving the cause
+for `errors.Is`; offline tests also verify that raw domain errors are excluded
+from public error records. The final evidence commit contains the output files
+and final checks. No AT consumer edits or new live evidence were produced.

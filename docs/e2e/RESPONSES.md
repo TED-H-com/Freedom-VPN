@@ -1629,3 +1629,9 @@ An injected runner tests failure at every one of the ten steps, the exact
 reverse commands, continued rollback when every inverse fails, caller
 cancellation, and success with no rollback. These are offline proofs only;
 no live network or platform acceptance is claimed.
+
+2026-11-03 follow-up 33 validation: all required offline gates passed, including
+unchanged node-write tests, new cookie/CSRF export and recovery stubs, the
+isolation overlay and all AT packages under `-tags e2e`. Linux arm64 compilation
+also passed (no hardware run). See the [gate ledger](runs/2026-11-03/followup33/checks.md).
+Live adoption and assembled proof remain with the consumer owners.
