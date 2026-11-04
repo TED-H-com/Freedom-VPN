@@ -1,7 +1,7 @@
 # Backup and Restore Drill Record (`docs/handover/restore-drill.md`)
 
-**Current cut — [follow-up 40](follow-up-40.md) (2026-11-03 EST):** #430–#434 at 3f7dbc25: D-146/D-147 on main (#432); members 18’s three receive-only TCP rows pass under provisional D-151, while AT09 stays failed. Isolation 19’s four source sets pass in the lab; assembled checks blocked by capacity PATCH 412. Agent-core 44 has no comparison; 45 repeats. D-152 answers F19-01; devstack 32 and members 19 requests stay open. 55 decisions.
-**Previous cut — [follow-up 39](follow-up-39.md):** #428–#429 at 1b87ab32; 11 subtests, two final rows/PR excerpts, ten frozen inputs, exact r26 and separate audit, 15 dated documents/75 Go tests; 99 findings, 53 decisions, all ten owner requests answered.
+**Current cut — [follow-up 41](follow-up-41.md) (2026-11-03 EST):** #435–#438 at c359d4a9: agent-core 45 has no comparison; members 19 restores early returns (offline only); devstack 32 handles exact-code 412s, with forced real-API proof 8/8. Isolation’s assembled run is pending in 20; agent-core 46 and read-only r27 are status only. 55 decisions, 105 findings; no operator/member behavior change.
+**Previous cut — [follow-up 40](follow-up-40.md):** #430–#434 at 3f7dbc25; D-146/D-147 on main, D-151/D-152 provisional; 14 subtests, 76 immutable records, 11 run snapshots, 84 Go declarations; 55 decisions and 102 findings.
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,

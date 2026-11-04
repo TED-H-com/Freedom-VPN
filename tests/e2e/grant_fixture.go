@@ -16,7 +16,6 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/internal/config"
 	"github.com/TED-H-com/Freedom-VPN/internal/entitlement"
 	"github.com/TED-H-com/Freedom-VPN/internal/members"
-	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -24,21 +23,23 @@ import (
 // GrantTransition exports read-back only, including incomplete transitions.
 // Accepted is deliberately separate from Projected; HTTP 202 is not completion.
 type GrantTransition struct {
-	RevokeReplayVerified bool        `json:"revoke_replay_verified"`
-	CreateReplayVerified bool        `json:"create_replay_verified"`
-	MemberID             uuid.UUID   `json:"member_id"`
-	PlanRevisionID       uuid.UUID   `json:"plan_revision_id"`
-	Revoked              []uuid.UUID `json:"revoked_grants"`
-	OperationID          uuid.UUID   `json:"operation_id"`
-	Accepted             bool        `json:"accepted"`
-	Projected            bool        `json:"projected"`
-	BeforeRevision       string      `json:"before_revision"`
-	AfterRevision        string      `json:"after_revision"`
-	DeviceLimit          int         `json:"device_limit"`
-	Authorized           int         `json:"authorized"`
-	Pending              int         `json:"pending"`
-	ValidUntil           time.Time   `json:"valid_until"`
-	ObservedAt           time.Time   `json:"observed_at"`
+	RevokeReplayVerified   bool                     `json:"revoke_replay_verified"`
+	CreateReplayVerified   bool                     `json:"create_replay_verified"`
+	MemberID               uuid.UUID                `json:"member_id"`
+	PlanRevisionID         uuid.UUID                `json:"plan_revision_id"`
+	Revoked                []uuid.UUID              `json:"revoked_grants"`
+	OperationID            uuid.UUID                `json:"operation_id"`
+	Accepted               bool                     `json:"accepted"`
+	Projected              bool                     `json:"projected"`
+	BeforeRevision         string                   `json:"before_revision"`
+	AfterRevision          string                   `json:"after_revision"`
+	DeviceLimit            int                      `json:"device_limit"`
+	Authorized             int                      `json:"authorized"`
+	Pending                int                      `json:"pending"`
+	ValidUntil             time.Time                `json:"valid_until"`
+	ObservedAt             time.Time                `json:"observed_at"`
+	Restorations           []GrantRestoration       `json:"restorations,omitempty"`
+	ReplacementRevocations []GrantRecoveryOperation `json:"replacement_revocations,omitempty"`
 }
 
 // ReplaceFiniteGrant replaces a grant-only member's finite plan through the
@@ -110,18 +111,19 @@ func (s *Stack) ReplaceFiniteGrant(ctx context.Context, admin BrowserSession, me
 	if err = pool.QueryRow(ctx, `SELECT revision::text FROM entitlements WHERE member_id=$1`, member).Scan(&out.BeforeRevision); err != nil {
 		return out, fmt.Errorf("finite grant: existing entitlement required")
 	}
-	rows, err := pool.Query(ctx, `SELECT id FROM entitlement_grants WHERE member_id=$1 AND revoked_at IS NULL AND valid_until>clock_timestamp() ORDER BY id`, member)
+	rows, err := pool.Query(ctx, `SELECT id,plan_revision_id,valid_from,valid_until FROM entitlement_grants WHERE member_id=$1 AND revoked_at IS NULL AND valid_until>clock_timestamp() ORDER BY id`, member)
 	if err != nil {
 		return out, fmt.Errorf("finite grant: grant inventory")
 	}
-	var grants []uuid.UUID
+	var grants []finiteGrant
 	for rows.Next() {
-		var id uuid.UUID
-		if err = rows.Scan(&id); err != nil {
+		var grant finiteGrant
+		if err = rows.Scan(&grant.ID, &grant.Plan, &grant.From, &grant.Until); err != nil {
 			rows.Close()
 			return out, fmt.Errorf("finite grant: grant inventory")
 		}
-		grants = append(grants, id)
+		grant.From, grant.Until = grant.From.UTC(), grant.Until.UTC()
+		grants = append(grants, grant)
 	}
 	err = rows.Err()
 	rows.Close()
@@ -129,60 +131,56 @@ func (s *Stack) ReplaceFiniteGrant(ctx context.Context, admin BrowserSession, me
 		return out, fmt.Errorf("finite grant: live finite grant required")
 	}
 	domain := members.Service{Pool: pool, Entitlements: store}
-	for _, id := range grants {
-		cmd := entitlement.Command{Actor: entitlement.Actor{ID: actor, Role: "admin", RequestID: uuid.New()}, Key: uuid.New()}
-		if err = domain.RevokeGrant(ctx, cmd, member, id, "TEST ONLY finite plan transition"); err != nil {
-			return out, fmt.Errorf("finite grant: production revoke failed")
-		}
-		if err = domain.RevokeGrant(ctx, cmd, member, id, "TEST ONLY finite plan transition"); err != nil {
-			return out, fmt.Errorf("finite grant: revoke replay failed")
-		}
-		out.Revoked = append(out.Revoked, id)
-	}
-	out.RevokeReplayVerified = true
-	key := uuid.NewString()
-	body := api.GrantCreateRequest{PlanRevisionId: &plan, Source: api.GrantSourceAdminGrant, Reason: "TEST ONLY finite plan transition", ValidUntil: out.ValidUntil}
-	resp, err := s.Call(ctx, admin, "POST", "/api/v1/admin/members/"+member.String()+"/grants", body, map[string]string{"Idempotency-Key": key})
-	if err != nil || resp.Status != 202 {
-		return out, fmt.Errorf("finite grant: create HTTP %d", resp.Status)
-	}
-	out.Accepted = true
-	var accepted struct {
-		ID uuid.UUID `json:"operation_id"`
-	}
-	if json.Unmarshal(resp.Body, &accepted) != nil || accepted.ID == uuid.Nil {
-		return out, fmt.Errorf("finite grant: operation absent")
-	}
-	out.OperationID = accepted.ID
-	replay, e := s.Call(ctx, admin, "POST", "/api/v1/admin/members/"+member.String()+"/grants", body, map[string]string{"Idempotency-Key": key})
-	var replayOp struct {
-		ID uuid.UUID `json:"operation_id"`
-	}
-	out.CreateReplayVerified = e == nil && replay.Status == 202 && json.Unmarshal(replay.Body, &replayOp) == nil && replayOp.ID == out.OperationID
-	if !out.CreateReplayVerified {
-		return out, fmt.Errorf("finite grant: create replay did not return the same operation")
-	}
-	wait, cancel := context.WithTimeout(ctx, 2*time.Minute)
-	defer cancel()
-	out.Projected = waitUntil(wait, time.Second, func() bool {
-		resp, e := s.Call(wait, admin, "GET", "/api/v1/admin/operations/"+out.OperationID.String(), nil, nil)
-		var op struct {
-			Status string `json:"status"`
-		}
-		if e != nil || resp.Status != 200 || json.Unmarshal(resp.Body, &op) != nil || op.Status != "succeeded" {
-			return false
-		}
-		var gotPlan uuid.UUID
-		var limit int
-		e = pool.QueryRow(wait, `SELECT e.revision::text,e.plan_revision_id,e.device_limit,
+	return replaceFiniteGrants(ctx, out, grants, finiteGrantSteps{
+		revoke: func(ctx context.Context, id, key uuid.UUID) error {
+			cmd := entitlement.Command{Actor: entitlement.Actor{ID: actor, Role: "admin", RequestID: uuid.New()}, Key: key}
+			return domain.RevokeGrant(ctx, cmd, member, id, "TEST ONLY finite plan transition")
+		},
+		call: func(ctx context.Context, method, path string, body any, headers map[string]string) (reply, error) {
+			return s.Call(ctx, admin, method, path, body, headers)
+		},
+		created: func(ctx context.Context, key string) ([]uuid.UUID, error) {
+			// Read only: locate this command's committed grant even if the HTTP
+			// response was lost. Never withdraw another caller's grant.
+			hash := sha256.Sum256([]byte(key))
+			rows, err := pool.Query(ctx, `SELECT g.id FROM entitlement_grants g
+			 JOIN idempotency_requests r ON r.resource_id=g.id
+			 WHERE g.member_id=$1 AND r.principal=$2 AND r.method='POST'
+			 AND r.key_hash=$3 AND r.state='completed' AND r.resource_type='entitlement_grant'
+			 AND g.revoked_at IS NULL AND g.valid_until>clock_timestamp()`, member, "admin:"+actor.String(), hash[:])
+			if err != nil {
+				return nil, fmt.Errorf("finite grant: replacement inventory unavailable")
+			}
+			defer rows.Close()
+			var ids []uuid.UUID
+			for rows.Next() {
+				var id uuid.UUID
+				if rows.Scan(&id) != nil {
+					return nil, fmt.Errorf("finite grant: replacement inventory unavailable")
+				}
+				ids = append(ids, id)
+			}
+			if rows.Err() != nil {
+				return nil, fmt.Errorf("finite grant: replacement inventory unavailable")
+			}
+			return ids, nil
+		},
+		project: func(checkCtx context.Context, out *GrantTransition) bool {
+			resp, e := s.Call(checkCtx, admin, "GET", "/api/v1/admin/operations/"+out.OperationID.String(), nil, nil)
+			var op struct {
+				Status string `json:"status"`
+			}
+			if e != nil || resp.Status != 200 || json.Unmarshal(resp.Body, &op) != nil || op.Status != "succeeded" {
+				return false
+			}
+			var gotPlan uuid.UUID
+			var limit int
+			e = pool.QueryRow(checkCtx, `SELECT e.revision::text,e.plan_revision_id,e.device_limit,
 		 (SELECT count(*) FROM member_devices WHERE member_id=e.member_id AND status='authorized'),
 		 (SELECT count(*) FROM member_devices WHERE member_id=e.member_id AND status='pending')
 		 FROM entitlements e WHERE e.member_id=$1`, member).Scan(&out.AfterRevision, &gotPlan, &limit, &out.Authorized, &out.Pending)
-		out.ObservedAt = time.Now().UTC()
-		return e == nil && gotPlan == plan && limit == out.DeviceLimit && out.AfterRevision != out.BeforeRevision && out.Authorized <= limit
+			out.ObservedAt = time.Now().UTC()
+			return e == nil && gotPlan == plan && limit == out.DeviceLimit && out.AfterRevision != out.BeforeRevision && out.Authorized <= limit
+		},
 	})
-	if !out.Projected {
-		return out, fmt.Errorf("finite grant: worker operation/projection deadline")
-	}
-	return out, nil
 }
