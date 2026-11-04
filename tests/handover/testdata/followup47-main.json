@@ -1,0 +1,80 @@
+{
+  "source_commit": "1c39a0e73825dbcf911dfd2bec6e75aed64c979b",
+  "previous_cut": "52b93845b5cfeac1dd63e04c700857fcd098a7f6",
+  "merged_prs": [
+    474,
+    475,
+    476,
+    477
+  ],
+  "history": [
+    "94198d3974440413f76189f7e0bde449a3dde7f0 handover: follow-up 46 — cut #469–#473 (5 PRs): F22-01 answered, r30's five findings fixed, clarified D-158 implemented; D-162 added, 65 decisions; register at 133 rows, 10 updated; updater 26's D-158 sentence in the guide (w4-handover follow-up 46) (#474)",
+    "30aa402892887126f57050abdca0d874c50980c3 roadmap: w4-handover follow-up 46 merged (#474)",
+    "cfb784df1f089e7c4f12f0e515e9f8b76f79a13b isolation: follow-up 24 — the 11-04 nightly's two harness causes fixed: AT13's member expiry at D = floor(A+44 s), D-163 for F17-01's listed gap; run df9dbad7: 27 pass, 2 blocked, 0 fail; new F24-01 keeps the job red (w4-at-isolation follow-up 24) (#475)",
+    "2a7065b7508c5c354ea3b9b741fcb9e4fa79ebc2 roadmap: w4-at-isolation follow-up 24 merged (#475)",
+    "9e9ec2c6c565b0e8a0b6df676da91bb5293ab83d e2e: follow-up 36 — D-162: the lab's regular node reports observations every 5 s; acceptance c17589fa: 32 pass / 1 blocked, nightly PASS; 123 receipts, median 5.16 s; zero 412s; update-good waited 446 ms and acquired (w3-devstack-e2e follow-up 36) (#476)",
+    "034c82cf991de73db0f3a2f02ebe7270ef04d8c4 roadmap: w3-devstack-e2e follow-up 36 merged (#476)",
+    "341d099a3bff0afcb82cc624aaab2f81cc1a516a agent: follow-up 52 — r31 M-1: an armed recovery bypasses the pending-outbox dedup only for a report it can bind; observation enqueued and observation submission records for members 23's request 2; lab 13/13 (w2-agent-core follow-up 52) (#477)",
+    "1c39a0e73825dbcf911dfd2bec6e75aed64c979b roadmap: w2-agent-core follow-up 52 merged (#477)"
+  ],
+  "rows": [
+    {
+      "pr": 474,
+      "lane": "w4-handover follow-up 46",
+      "row": "| w4-handover follow-up 46 | Cut #469 to #473 at `52b93845` (isolation 23, agent-core 51, updater 26, handover 45 and members 23; no unbriefed PR). `TestHandover_Followup46Claims` (15 subtests) pins the five final roadmap rows and PR excerpts, 21 frozen inputs (nine #472 documents and twelve producer records), 23 Go test declarations on main, 18 frozen source readings and ten archived artifacts; the 39 earlier claims functions stay exact, with follow-up 45's reads of the documents this cut rewrites moved onto frozen #472 bytes. Decisions at 65: D-162 added (provisional, TEST ONLY: the lab's regular node reports observations every 5 s; the 30 s product default and every predicate, the 15 s bound included, unchanged), and D-158's clarification marked implemented by #471; the other 63 rows are unchanged. Findings register at 133 rows: 10 updated, none added, 123 byte-identical. F22-01 answered by isolation 23's complete-capture run `328ab9e0`, with `7b0db5f2` still failed; r30's five findings fixed by agent-core 51 (H-1, M-2, M-3) and updater 26 (H-2, M-1); F22-D146 located in the regular node's 30 s observation default against the 15 s bound; F22-AT01's response reaches member ingress with its drop point unproven, and F11-01 stays open under D-148; AT02 adds a second sample, 179 ms with seven losses. Operator guide: updater 25's D-158 sentence replaced by updater 26's, with the one-record logging rule; AT02's second sample in place; the TCP reload-guard paragraph unchanged; seven entrypoints point at the cut. Review r31 and devstack 36 recorded as running. Codex gpt-6-astra. | done (#474) |",
+      "sha256": "7ac88c1c667953ce5d873599986020f2f7a4a4388335e52dba1f6986be97225f"
+    },
+    {
+      "pr": 475,
+      "lane": "w4-at-isolation follow-up 24",
+      "row": "| w4-at-isolation follow-up 24 | D-098 first: run `328ab9e0`'s 203 root, support and reload-stream files archived byte-identically under `history/follow-up-23/`. Scheduled run `41836274140` diagnosed (D-141): on the runner, generations 29 and 30, at A + 2.1 s and A + 3.1 s, already carried the finite member, and generation 31 at A + 19.1 s was the first to carry its device binding, most of the delay preceding the binding's publication; no record connects it to agent-core 51, and no specification bounds it. AT13's member-expiry plan, not its predicate, is fixed: D = floor(A + 44 s) admits a binding-bearing renewal from A + 10 s to A + 34 s seen within 2 s (TEST ONLY), with the runner's and two local runs' renewals replayed offline. D-163 in the scheduled summary: a committed `expected-not-exercised.json` with one entry, populated holds' `pure_stale_generation` (F17-01); that review's exit 1 maps to expected not exercised only when its same-run result names that item alone, every other item passing with no join problem; the review stays incomplete, and on the 11-04 records the only error left is AT13's row. One assembled run, `df9dbad7`, in scheduled mode: 27 pass, 2 blocked (the two operator matrices), 0 fail, all 29 statuses as in `328ab9e0`; exit 2, no rerun, no observed overlap. AT13's member expiry qualified at the window's first sample; after the member's deadline all five requests timed out with bytes flat while all six reads showed the node serving. The whole-node packet verdict passes (161 positives, 41 drops), but D-142's qualification is not established: new F24-01, all 14 added boundary probes excluded by the original cadence and the boundary reviewer crashing on the empty schedule, keeps the run's scheduled verdict red. The D-120 lab passes under D-161 (65 TCP reads, 0 timeouts, nine guard-attributed losses). 15 node writes in 15 attempts, zero conflicts. 7 commits, 518 owned files. Codex gpt-6-astra. | done (#475) |",
+      "sha256": "28d80fb6683fb678d9e7e71c85d26f27a305a2ddebedb14472ab4d4e43312f24"
+    },
+    {
+      "pr": 476,
+      "lane": "w3-devstack-e2e follow-up 36",
+      "row": "| w3-devstack-e2e follow-up 36 | D-162 in the fixture (TEST ONLY): writeAgentConfigs sets observation_seconds to 5 beside heartbeat and poll, so both prepared regular-node configs report every 5 s; the product default stays 30 s, every predicate and the 15 s bound are unchanged, and the installer node's existing override is extracted unchanged with offline tests. One full acceptance run, c17589fa, on 52b93845 plus this branch: 32 pass, 1 blocked (member-ipv6), 0 fail, make exit 2, no rerun; the unchanged nightly evaluator passes; every status matches follow-up 35. The stack database held 123 accepted regular-node observations in the run window, intervals min 0.081 s, median 5.162 s, max 10.255 s, with none after lease-expiry stopped the control plane. No 15 s freshness read ran in the acceptance path, so F22-D146 is not re-scored here. Three If-Match node writes (capacity, publication, revocation) each got 202 on the first attempt, zero 412s. The consumer audit tables every observation and If-Match consumer by file and line; the one missing bounded retry is isolation's operator assist (tests/e2e/at/isolation/assist.py:22), routed to isolation. update-good exited 0 after a 446 ms D-158 lock wait on the running agent (PID 894), and its candidate started under the parent's lock, deferred boot recovery, cleared by 14:46:04.707Z and served at 14:46:05.437Z; stale-then-live contention is unobserved. update-bad exits 1 on HASH_MISMATCH with no wait record. lease-expiry passes as in 35. First run with agent-core 51, updater 26 and D-162 together; no change is credited to one of them. Codex gpt-6-astra. | done (#476) |",
+      "sha256": "b3d4c2233ddf0a40c4d88aa4a2cdb3f45fb60f477eacd228873546ecb26c4a0d"
+    },
+    {
+      "pr": 477,
+      "lane": "w2-agent-core follow-up 52",
+      "row": "| w2-agent-core follow-up 52 | Review r31 M-1 and members 23 request 2. D-141 diagnosis first, on the unchanged base: r31 case A (an isolation error in the report) is reachable and persistent through a historical isolation containment and caused the unchanged-report flood; B (a failed meter path) is withdrawn and disarmed by enforcement before the next observation, so normal Steps do not reach it; C (a stale lease) is reachable for one enforcement pass. The fix is one predicate, canBindRecoveryReport, extracted exactly from the existing binding rules: at an unchanged state with a report pending, a new report is built only when an armed, unbound closed recovery can bind it, so ordinary dedup holds otherwise; the report body, the 32-entry outbox, cadence, retry, backoff, agent-core 51 binding, D-067, D-135/D-136, D-155/D-156 and D-157 are unchanged. r31 proofs imported byte-identically first; the updater file stays identical, and the agent file changes only three comment labels and case C setup, which now crosses the existing 30 s stale-lease alarm before its baseline, every assertion kept; all three M-1 subtests fail on the unfixed code. Own whole-Step proofs: 210 Steps (35 default intervals) end with one pending report and no outbox_full. Two stable log records, documented in docs/node/README.md: observation enqueued (report_id, observed_at, due_reason) and observation submission (report IDs, per-process attempt numbers, process and boot IDs, start, duration, outcome, accepted IDs, HTTP status, Central error code, transport class, next retry, Retry-After), with no body, URL, error text or credential; offline tests cover accepted, 5xx, 429, transport error and timeout. Ordinary lab 13/13; both records seen in the lab agent log. No live claim. Codex gpt-6-astra. | done (#477) |",
+      "sha256": "db2c3cb02167c270fa1ed89405604674685cbc9e91776e26cb8e2381f043ab2c"
+    }
+  ],
+  "prs": [
+    {
+      "number": 474,
+      "path": "tests/handover/testdata/history/follow-up-47/pr-474-excerpt.json",
+      "sha256": "b0f20b356021ee62f5d5f1c2deea38c6069f2a829c1d9d2ab361e30cda913a4a",
+      "decoded_sha256": "39b846ddd64cb91af7dd8219054d629acd50555c8b0c3c4a89ac8f91badf9f15",
+      "bytes": 4461,
+      "merge_commit": "94198d3974440413f76189f7e0bde449a3dde7f0"
+    },
+    {
+      "number": 475,
+      "path": "tests/handover/testdata/history/follow-up-47/pr-475-excerpt.json",
+      "sha256": "600293fe5ddd31d4cde6af94f10e5da7b1b38386c9d13f2d7174493175f9d8cf",
+      "decoded_sha256": "88dee34f5d67884c68c5f22a5aaf0b91c9aa08ec4745519c541b6ce163333d1b",
+      "bytes": 7076,
+      "merge_commit": "cfb784df1f089e7c4f12f0e515e9f8b76f79a13b"
+    },
+    {
+      "number": 476,
+      "path": "tests/handover/testdata/history/follow-up-47/pr-476-excerpt.json",
+      "sha256": "69d0a956387966eb30e84437467b76e2c0134e555d0e9a2075b9dbc7d1bb1e9e",
+      "decoded_sha256": "df42f289f61d90498df0488f6fd80278a6ba978b6d6eb85af423d33047a75d0a",
+      "bytes": 5973,
+      "merge_commit": "9e9ec2c6c565b0e8a0b6df676da91bb5293ab83d"
+    },
+    {
+      "number": 477,
+      "path": "tests/handover/testdata/history/follow-up-47/pr-477-excerpt.json",
+      "sha256": "f1e29cf72eeda18c43ccded680d65e95b459efb7e3f6b0791bcb9faca245d8db",
+      "decoded_sha256": "a2c0fb9a27e541b1a58e54685550fc811e07be20bd5c13ce7eecc7e66e8355ac",
+      "bytes": 5787,
+      "merge_commit": "341d099a3bff0afcb82cc624aaab2f81cc1a516a"
+    }
+  ]
+}
