@@ -54,7 +54,7 @@ tool only adds preflight receipts to its unchanged five-metric calculations.
 Admission receipts remain outside both Docker streams. The complete frozen
 consumer audit is unchanged and hash-linked in the JSON companion. Fresh
 actual-wrapper probes cover combined, stdout and shell reads without Docker.
-The separate clock binaries match 46; zero offsets and aligned brackets remain
+The clock source matches 46; fresh binaries are separately pinned. Zero offsets and aligned brackets remain
 mandatory. Scratch resolves from the tool file, independent of working directory.
 
 All 97 inherited/new synthetic tests pass. The 32 follow-up 47 tests also pass

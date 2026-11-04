@@ -58,7 +58,7 @@ D-138 requires at least two pooled legs per arm, repeated direction in both wind
 
 One reservation, granted on its first request after 0.060 seconds at
 2026-11-04T00:47:00.202151Z (2026-11-03 EST). After the mandatory 60-second
-settle and clear 4.028-second preflight, A started at 00:48:04.389070Z.
+settle and clear 4.026-second preflight, A started at 00:48:04.389070Z.
 A completed at 00:52:11.332843Z and release succeeded at 00:52:12.151923Z.
 No preflight activity wait, reservation refusal or running qualification breach.
 All 13 scenarios completed; 12 passed and TestLabExternalMeterReset failed at
