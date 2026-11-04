@@ -123,19 +123,19 @@ is frozen at #418, with its 81 findings and nine owner requests.
 
 <a id="follow-up-45-decisions-register-2026-11-04-est"></a>
 
-## Follow-up 46 decisions register (2026-11-04 EST)
+<a id="follow-up-46-decisions-register-2026-11-04-est"></a>
 
-Cut **#469–#473**, ending at main **52b93845**: five merges and five final
-roadmap rows, all briefed. [Evidence cut](follow-up-46.md) and
-[acceptance snapshot](../ops/README.md#follow-up-46-acceptance-snapshot-2026-11-04-est).
-There are **65 decisions**: **D-162 is the only addition**; **D-158's
-clarification is implemented by updater 26 #471**. The other **63 rows remain
-byte-identical** to #472. Main at this cut had no decision after D-161 before
-this addition. Other rows' status prose retains its historical cutoff;
-F22-01 is now answered by isolation 23 and D-157 has members 23's additional
-measurement. All provisional decisions retain the owner's right to overturn.
-Running follow-ups and dated hand-offs are in
-[follow-up 46](follow-up-46.md#requests-to-orchestrator).
+## Follow-up 47 decisions register (2026-11-04 EST)
+
+Cut **#474–#477**, ending at main **1c39a0e7**: four merges and four final
+roadmap rows, all briefed. [Evidence cut](follow-up-47.md) and
+[acceptance snapshot](../ops/README.md#follow-up-47-acceptance-snapshot-2026-11-04-est).
+There are **66 decisions**: **D-163 is the only addition**, implemented by
+isolation 24 #475; **D-162 is implemented by devstack 36 #476**. The other
+**64 rows remain byte-identical** to #474. Main had no other decision added
+after D-162. Other rows retain their historical status prose. All provisional
+decisions retain the owner's right to overturn. Running follow-ups and dated
+hand-offs are in [follow-up 47](follow-up-47.md#requests-to-orchestrator).
 
 | Decision | Operator meaning and delivery boundary |
 |---|---|
@@ -203,7 +203,8 @@ Running follow-ups and dated hand-offs are in
 | D-159 | **01:5x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** If the campaign's back-to-back cadence resonates with TCP's retry interval, and the agent's minimum Apply spacing is at least about 1 s, the D-120 campaign reloads no faster than that minimum spacing; otherwise nothing changes. Netlab 35 #462 found no positive minimum Apply spacing (binding-deadline wake-ups, zero remaining Step delay, second Apply in the same closed-recovery Step). The condition is false and the campaign cadence is unchanged. |
 | D-160 | **02:2x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** A timed sub-case never waits for host admission inside its timed section, from reading the deadline it measures to its last cutoff sample. Admission is checked before that section. Overlap that happens anyway is confounded under D-133, never delayed. Source: SECOPS-F17-01, the two admission holds that delayed the killed-agent fault beyond its cached deadline. Secops 18 running at cutoff; no result imported. |
 | D-161 | **03:0x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** D-120's “zero TCP timeouts” becomes “zero TCP timeouts not attributed to the guard”. A TCP read timeout is a guard loss only if the run's complete, checked captures show every lost transmission of the stalled bytes entering the node inside, or on the boundary of, exactly one verified outer guard bracket, within both 100 ms bounds, and never leaving it; a later transmission delivers the bytes in order on the same connection; and that connection is never reset or closed. Guard-attributed timeouts count toward “≤ 5 losses per 100 reloads”. Every campaign reports its longest TCP stall and guard-attributed TCP drops. Every other D-120 predicate is unchanged; historical failures stay failed. Basis: D-145 keeps the guard; TCP needs retransmission to recover a dropped segment and a retry can hit a later reload's guard; D-120 is a test-acceptance definition, not a product guarantee. Implemented by netlab 36 #465. Gate 2 passes AT10 with 64 reads, zero TCP timeouts, eight recovered boundary losses and longest stall 217.7 ms; its timeout path is synthetic-proven only. Missing combined TCP captures fail as an evidence error. F22-01 stays open until isolation's complete-capture run is judged under D-161; isolation 23 runs at cutoff. |
-| D-162 | **08:1x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** The lab's regular node reports observations every 5 s, like its heartbeat, its poll and the installer node: `observation_seconds: 5` in both prepared configs. **TEST ONLY:** the product default of 30 s and every acceptance predicate, including the 15 s freshness bound, remain unchanged. The bound was written for a lab reporting every 5 s; widening it would let a stale node pass. Every accepted observation increments the node's ETag, so the lab's `If-Match` writers meet a newer ETag six times as often; devstack 36 audits those writers and the fixture's consumers. **Status at cutoff:** devstack 36 implements D-162, running; no implementation or acceptance result is imported into this cut. |
+| D-162 | **08:1x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** The lab's regular node reports observations every 5 s, like its heartbeat, its poll and the installer node: `observation_seconds: 5` in both prepared configs. **TEST ONLY:** the product default of 30 s and every acceptance predicate, including the 15 s freshness bound, remain unchanged. The bound was written for a lab reporting every 5 s; widening it would let a stale node pass. Every accepted observation increments the node's ETag, so the lab's `If-Match` writers meet a newer ETag six times as often; devstack 36 audits those writers and the fixture's consumers. **Status at cutoff:** implemented by devstack 36 #476, run c17589fa: 123 accepted regular-node observations, 122 intervals, min 0.081 s / median 5.162 s / max 10.255 s. The final 622 s had no receipt; the last preceded the lease-expiry control stop by 1.7 s. The 15 s reads did not run, so F22-D146 is not re-scored. |
+| D-163 | **08:5x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** In the scheduled job only, a review's nonzero exit maps to **expected not exercised** only when that same run's own result names a listed item, and only that item, as not exercised; every other item must pass, with no join problem and no error. The explicit list, `tests/e2e/at/isolation/expected-not-exercised.json`, is committed beside `expected-blocked.json`, with one entry: populated-holds / `pure_stale_generation` (Isolation F17-01). List an item only once the runner shows it, D-144's rule. Everything else stays red. Review outputs, acceptance records and D-144's row mapping are unchanged; a listed item that passes is reported as **no longer needed**. Why: under D-144 the job is green only when known owned gaps remain; a carried gap that no run can exercise must not turn it red every night, and stays visible in the summary. **Status:** implemented by isolation 24 #475; only review exit 1 with incomplete, current-run, complete coverage and no other failure qualifies. |
 
 Current contract is revision 14: OpenAPI `1.10.0`, `50` operations (#289).
 Wire-members follow-up 11 (#297) registers `revokeMemberGrant` at
