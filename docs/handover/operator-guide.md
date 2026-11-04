@@ -1,7 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 42](follow-up-42.md) (2026-11-03 EST):** #439–#445 at 5a942aa1; D-153 closes D-150 with no comparison, D-154 compares zero normally; r27/r28 archived, 57 decisions and 113 findings. Isolation c52bea6c records 26 pass / 2 blocked / 1 fail; historical verdicts stay unchanged. See [r28 H-1 known behaviour](operator-guide.md#r28-h-1). Secops 15, agent-core 48 and r29 are status only.
-**Previous cut — [follow-up 41](follow-up-41.md):** #435–#438 at c359d4a9; 14 subtests, 101 immutable records, 36 Go declarations; 55 decisions and 105 findings.
+**Current cut — [follow-up 43](follow-up-43.md) (2026-11-04 EST):** #446–#456 at 04d31ea5; D-155/D-156 fixes merged, F30-01 acceptance pending; D-157 routed, no merged fix. 60 decisions, 124 findings; r29 archived. AT29 failed at setup. See [update recovery](operator-guide.md#f30-01), [r28 H-1 fixed](operator-guide.md#r28-h-1), [release rule](operator-guide.md#d156-release-rule) and [closed-recovery interval](operator-guide.md#at02-closed-recovery).
+**Previous cut — [follow-up 42](follow-up-42.md):** #439–#445 at 5a942aa1; 15 subtests, 57 decisions and 113 findings; historical verdicts unchanged.
 
 ## Restart measurements at #433
 
@@ -685,33 +685,48 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/update-batches" \
 
 <a id="f30-01"></a>
 
-**Known behaviour at #407 — F30-01 (reported and routed, not yet fixed).**
-During an update, `fvpn-updater` starts the candidate `fvpn-agent` in
-`stepStart` while still holding `update.lock`. The candidate's boot
-`recoverOnce` invokes `fvpn-updater recover`, receives `UPDATE_BUSY`, and
-latches `recovery_required` with no member serving for the life of that
-process. The updated node does not serve members until its agent is restarted.
-This is a production defect, owned by agent-core with the updater as co-owner;
-no fix date is promised. Devstack 30's #406 report and main's
-`node/updater/apply.go`, `node/updater/engine.go`, `node/agent/engine.go` and
-`node/agent/decide.go` establish this path. The devstack `node-restart` observation is not a verified production
-operator procedure; none is promised. The nightly `lease-expiry` listing
-keeps this defect visible and does not accept the behavior.
+**F30-01 at the #456 cutoff — both code halves merged under D-155 (#446, #454).**
+While the parent updater holds the live `update.lock`, the candidate agent
+defers boot recovery and retries it on later Steps; recovery runs as one
+tracked child so the agent can continue its control work. Central sees
+`applying` with `recovery_required` and may issue a zero-grant lease during
+this interval. Terminal recovery failures stay fail-closed. **F30-01 remains
+open** until an acceptance run passes `lease-expiry` with the nightly
+quarantine entry removed; devstack 34 is running for that at this cutoff.
+No acceptance closure or date is promised by the merged code alone.
+
+**Updater exit statuses (D-034g, D-155):** `0` means the command completed without an operation error; it does not authorize member forwarding. `1` means another failure, including stale-holder details `lock boot id`, `lock pid`, `lock process` and `lock start time`. `2` means only `ErrMembersBlocked`, and takes precedence if an error also matches busy. `3` (`ExitBusy`) means `UPDATE_BUSY` with detail exactly `lock`: recovery has not completed and can be retried after the live holder releases the lock. `64` means usage or flag error. `run`, `recover`, `apply`, `seed` and configured `flush` can return `3`; read-only `status` takes no update lock and returns `0` on a successful read or `1` on failure. Live busy stderr remains `fvpn-updater: updater: UPDATE_BUSY: lock`.
+
+<a id="d156-release-rule"></a>
+
+**D-156 release rule (#454): ship the agent and watchdog together.**
+The pending-adoption receipt keeps the predecessor's original heartbeat age
+and kernel deadline without claiming serving. A stalled successor remains
+bounded by the old staleness limit or the kernel deadline. An older watchdog
+with a newer agent withdraws a node early during a same-boot restart, which
+is the conservative side. r22 M-3's protection remains in place.
 
 <a id="r28-h-1"></a>
 
-**Known behaviour at #445 — r28 H-1 / Isolation F20-01 (reported, no merged fix).**
-When the control plane is unreachable in a way that makes requests hang,
-rather than be refused, the node withdraws member forwarding about **5 s**
-after the outage begins, while its lease is still valid. The hung request
-spends the control budget also given to the tunnel probe, so that probe fails
-without running and the agent installs a `safety_check_failed` baseline.
-Spec **§16.3 and §17.1** require forwarding to continue until the lease's
-deadline while the other serving conditions hold. This is a reported product
-defect, routed to **agent-core** (follow-up 48 running at this cutoff).
-There is **no merged fix and no date promised**. The
-[r28 disposition](../reviews/README.md#r28-dispositions-at-the-follow-up-42-cutoff-2026-11-03-est)
-retains the diagnosis; the historical F20-01 row remains failed.
+**r28 H-1 / Isolation F20-01 — fixed on main by #447.**
+The tunnel probe and local work now use a context independent of the control
+request budget, so hanging control requests do not spend the probe's allowance.
+Isolation 21 #452 supplies live evidence: its short whole-node expiry passes
+D-140 and qualifies under D-142. Spec **§16.3 and §17.1** still require
+serving until the lease deadline while the other conditions hold. The original
+F20-01 run stays failed; this result does not supply r28 M-1's separate
+member-expiry live coverage. See the [current review disposition](../reviews/README.md#r27-and-r28-dispositions-at-the-follow-up-43-cutoff-2026-11-04-est).
+
+<a id="at02-closed-recovery"></a>
+
+**Known behaviour at #456 — AT02 deny-all after a closed recovery.**
+After a node recovers from quarantine, members can see about **5 s** of
+deny-all before the next grant-less renewal (**4.968 s and 241 losses** in
+members 21's run). The redundant re-baseline is fixed by #447, but the wait
+for the renewal slot remains. Routed to **agent-core under D-157**;
+agent-core 50 is running at this cutoff. There is **no merged fix and no date
+promised** for this interval. Passing recovery accounting is not a zero-loss
+availability claim.
 
 When `fvpn-updater` executes a signed `UpdateIntent`:
 1. **Preflight & Verification (`AT23`–`AT25`, `AT27`)**:

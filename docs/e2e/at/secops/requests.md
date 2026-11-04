@@ -1,3 +1,56 @@
+# 2026-11-04 — Follow-up 17 disposition
+
+**SECOPS-F16-01 answered:** the new case reached its outage using lease
+`bef669a3-1141-45af-86c6-8fc823a4b84a`, issued after the public cap change with
+60s lifetime. Its unchanged continuity/cutoff evaluator passed. Historical run
+`1bfd5cff` remains failed. Overall AT29 remains failed.
+
+### Requests to orchestrator
+
+- **2026-11-04 — SECOPS-F17-01, secops/admission:** retain the old lease-expiry
+  failure and authorize a separate setup/timing follow-up. Two 60s admission
+  sleeps left its cached lease deadline stale; both quiet samples preceded the
+  heartbeat's newer deadline. No product deadline violation is proved, and no
+  old predicate was changed. [Receipt](history/follow-up-17/followup17-lease-expiry-finding.json).
+- **2026-11-04 — orchestrator scheduling:** retain D-133 confounding. Foreign
+  runs overlapped despite two empty preflight inventories, including thirteen
+  samples during the new control-loss window. Future unconfounded acceptance
+  needs coordinated scheduling; this lane took no reservation and no retry.
+- **2026-11-04 — w3-devstack-e2e/operator:** provide the independently clocked
+  disposable guest for guest_clock_rollback.
+- **2026-11-04 — handover/acceptance:** carry AT29 failed, SECOPS-F16-01 answered,
+  SECOPS-F17-01 open and D-133 limitations into out-of-lane records. No other
+  area's files were changed. [Full hand-off](2026-11-04-follow-up-17.md).
+
+---
+
+The following requests and dispositions are historical:
+
+# Requests to orchestrator — Follow-up 16 (2026-11-03 EST)
+
+### Requests to orchestrator
+
+**2026-11-03 — SECOPS-F16-01:** AT29 now fails the new accepted-short-lease
+prerequisite. The cap PUT/read-back was 60, but the node retained an earlier
+86400-second lease; no control-loss or through-D trace was obtained. Route the
+[exact failure](followup16-finding.json) to secops fixture and node/lease owners.
+A future setup must establish a post-cap accepted short lease through public
+configuration/member generation changes, retaining the predicates and this
+failed result. A separate authorized run is required for live agent-core 48
+verification; these observations do not establish a probe regression.
+
+**2026-11-03 — w3-devstack-e2e / operator:** provide the independently clocked
+guest for `guest_clock_rollback`.
+
+**2026-11-03 — handover owners:** refresh out-of-lane status references from
+[the dated note](2026-11-03-follow-up-16.md): AT29 changes blocked → failed;
+four earlier cases pass; new continuity remains unmeasured; bounded AT31 relay
+passes again. This lane did not edit out-of-lane documents.
+
+---
+
+The following requests and dispositions are historical:
+
 # Requests to orchestrator — Follow-up 15 (2026-11-03 EST)
 
 AT30 **passed**; SECOPS-21 **closed**. Restore run `5218b7d5-1415-4e1b-8618-48ea2d3cf03e` on application base `7e044c71ecf1d07f63e89721bd213db6611a6a47`. Shared development host measurements; no production SLA.

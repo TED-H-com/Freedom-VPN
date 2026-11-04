@@ -1,6 +1,6 @@
 {
-  "run_id": "7599576e-339c-49c9-8bf5-0f710818cbda",
-  "started_at": "2026-11-04T02:51:47Z",
+  "run_id": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
+  "started_at": "2026-11-04T06:02:22Z",
   "source_dirty": false,
   "id": "lab-AT10",
   "title": "Mechanism: host and upstream isolation during apply and interface change",
@@ -10,15 +10,15 @@
     "ISO02"
   ],
   "status": "pass",
-  "at": "2026-11-04T02:51:57Z",
-  "build": "fe2c68ecbf1ef1481d744c998be95710d28be954",
+  "at": "2026-11-04T06:02:33Z",
+  "build": "0b95e69ae89c68e0fcfbf1fbbfe6774b2e1948db",
   "image_digests": [
-    "fvpn-w4-isolation-lab:lab sha256:df384dcae1b09e3eb7af86ee262965e02ccd35cc19be6f0d555814df2763d72f"
+    "fvpn-w4-isolation-lab:lab sha256:03f00199eb3aaba16613fa095a499da0f76a0767492c25a481afbe0bdbfc9db7"
   ],
   "policy_revision": "generation 3000-3020",
   "node_incarnation": "mechanism-lab",
   "expected": "Protected IPv4 destinations stay denied while the ruleset is regenerated and a lab veth appears. The controlled Internet endpoint stays reachable. The probe holds at least ten attempts per second and records no allow.",
-  "actual": "20 regenerations, interface flap, rate 86.4 attempts/s, protected destinations denied, 203.0.113.10:80 allowed, captures empty. This is the mechanism lab, not the assembled stack.",
+  "actual": "20 regenerations, interface flap, rate 86.3 attempts/s, protected destinations denied, 203.0.113.10:80 allowed, captures empty. This is the mechanism lab, not the assembled stack.",
   "commands": [
     "FVPN_LAB_PREFIX=fvpn-w4-isolation-lab make -f mk/at-isolation.mk at-isolation-lab-up",
     "FVPN_NETLAB=1 FVPN_LAB_PREFIX=fvpn-w4-isolation-lab FVPN_AT_EVIDENCE_DIR=docs/e2e/at/isolation go test -tags netlab -count=1 -timeout 40m -p 1 -parallel 1 ./tests/netlab/at"
@@ -30,15 +30,15 @@
     },
     {
       "name": "attempts",
-      "detail": "546"
+      "detail": "588"
     },
     {
       "name": "seconds",
-      "detail": "6.322"
+      "detail": "6.810"
     },
     {
       "name": "rate_per_s",
-      "detail": "86.37"
+      "detail": "86.34"
     },
     {
       "name": "regenerations",

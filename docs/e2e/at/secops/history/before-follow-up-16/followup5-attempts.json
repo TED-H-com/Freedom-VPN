@@ -1,0 +1,20 @@
+{
+  "attempts": [
+    {
+      "source_revision": "5c58d32",
+      "status": "interrupted setup only",
+      "reason": "agent follow-up 11 arrived before measurement; own stack torn down and fresh #162 run prepared"
+    },
+    {
+      "run_id": "a9d79c5d-84ac-45df-a37d-9be21335b36c",
+      "source_revision": "446b6b0f643586d48859236664800df8c2d1ef64",
+      "started_at": "2026-10-30T09:14:24.303926792Z",
+      "finished_at": "2026-10-30T09:22:15.435323142Z",
+      "status": "scoped passes and blocked flow prerequisites",
+      "evidence": "followup5-attempt1-live.json",
+      "actual": "first member counted 1113 upload / 1520 download; every class body boundary passed; extra native peers selected fvnb0 but could not resolve releases.example.invalid",
+      "diagnostic": "wget: unable to resolve host address; CA exists; StartNativePeer provides no compose origin hostname mapping",
+      "next": "Use the same controlled origin IP already in its generated certificate SAN; preserve TLS verification. No lab, DNS, route, group or policy workaround."
+    }
+  ]
+}

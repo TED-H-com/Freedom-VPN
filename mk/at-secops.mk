@@ -33,6 +33,8 @@ at-secops-build:
 	@mkdir -p .agent/secops/build
 	GOOS=linux GOARCH=amd64 $(AT_SECOPS_RUN) go test -c -tags e2e,integration -o .agent/secops/build/amd64.test ./tests/e2e/at/secops
 	GOOS=linux GOARCH=arm64 $(AT_SECOPS_RUN) go test -c -tags e2e,integration -o .agent/secops/build/arm64.test ./tests/e2e/at/secops
+	GOOS=linux GOARCH=amd64 $(AT_SECOPS_RUN) go build -o .agent/secops/build/leaseprobe-amd64 ./tests/e2e/at/secops/leaseprobe
+	GOOS=linux GOARCH=arm64 $(AT_SECOPS_RUN) go build -o .agent/secops/build/leaseprobe-arm64 ./tests/e2e/at/secops/leaseprobe
 
 # Requires a fresh own-prefix e2e-up; leaves that stack running for inspection.
 .PHONY: at-secops-pitr
@@ -83,3 +85,11 @@ at-secops-followup13:
 .PHONY: at-secops-followup15
 at-secops-followup15:
 	FVPN_SECOPS_EVIDENCE_FOLLOWUP=15 FVPN_SECOPS_FOLLOWUP11=transports FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/followup11_run.py
+
+.PHONY: at-secops-followup16
+at-secops-followup16:
+	FVPN_SECOPS_EVIDENCE_FOLLOWUP=16 FVPN_SECOPS_FOLLOWUP11=transports FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/followup11_run.py
+
+.PHONY: at-secops-followup17
+at-secops-followup17:
+	FVPN_SECOPS_EVIDENCE_FOLLOWUP=17 FVPN_SECOPS_FOLLOWUP11=transports FVPN_E2E_PREFIX=w4-secops FVPN_E2E_PORT_BASE=30000 python3 -B tests/e2e/at/secops/followup11_run.py

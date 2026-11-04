@@ -1,0 +1,159 @@
+{
+  "driver_run_id": "2d6e6e6a-3ed4-4f3d-84bb-decd68f77f0f",
+  "source_revision": "67fcd152b1196ab90ba95c09eaaa73d5c9d12eb5",
+  "application_base": "410607051d81d7dd538388b14904a2ca4a8ada59",
+  "phase": "transports",
+  "started_at": "2026-11-04T04:25:22Z",
+  "d099_roadmap_present": true,
+  "prepare": {
+    "prefix": "w4-secops",
+    "port_base": "30000",
+    "reset": true,
+    "grace_seconds": 90
+  },
+  "follow_up": 16,
+  "inventory_before": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "up": {
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-up"
+    ],
+    "started_at": "2026-11-04T04:25:23Z",
+    "finished_at": "2026-11-04T04:25:56Z",
+    "elapsed_seconds": 33.456,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup16-transports-e2e-up",
+      "bytes": 19648,
+      "findings": []
+    }
+  },
+  "live": {
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "45m",
+      "-run",
+      "^TestAT29_AT31_Followup11_Transports$",
+      "./tests/e2e/at/secops"
+    ],
+    "started_at": "2026-11-04T04:25:56Z",
+    "finished_at": "2026-11-04T04:41:27Z",
+    "elapsed_seconds": 930.386,
+    "exit_code": 1,
+    "scan": {
+      "stream": "followup16-transports-live",
+      "bytes": 8161,
+      "findings": []
+    },
+    "status": "failed",
+    "required_tests": [
+      "TestAT29_AT31_Followup11_Transports"
+    ],
+    "missing": [],
+    "skipped": [],
+    "tests": [
+      {
+        "name": "TestAT29_AT31_Followup11_Transports",
+        "result": "fail",
+        "elapsed_seconds": 929.75
+      },
+      {
+        "name": "TestAT29_AT31_Followup11_Transports/control_lost_agent_alive",
+        "result": "fail",
+        "elapsed_seconds": 296.81
+      },
+      {
+        "name": "TestAT29_AT31_Followup11_Transports/device_revoke",
+        "result": "pass",
+        "elapsed_seconds": 142.53
+      },
+      {
+        "name": "TestAT29_AT31_Followup11_Transports/grant_expiry",
+        "result": "pass",
+        "elapsed_seconds": 198.98
+      },
+      {
+        "name": "TestAT29_AT31_Followup11_Transports/lease_expiry",
+        "result": "pass",
+        "elapsed_seconds": 132.99
+      },
+      {
+        "name": "TestAT29_AT31_Followup11_Transports/manual_grant_withdrawal",
+        "result": "pass",
+        "elapsed_seconds": 122.7
+      }
+    ],
+    "package_results": {
+      "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "fail"
+    }
+  },
+  "down": {
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
+    ],
+    "started_at": "2026-11-04T04:41:30Z",
+    "finished_at": "2026-11-04T04:41:54Z",
+    "elapsed_seconds": 23.789,
+    "exit_code": 0,
+    "scan": {
+      "stream": "followup16-transports-e2e-down",
+      "bytes": 3423,
+      "findings": []
+    }
+  },
+  "state_cleanup": {
+    "exit_code": 0,
+    "removed": true
+  },
+  "inventory_after": {
+    "containers": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "networks": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "volumes": {
+      "exit_code": 0,
+      "count": 0
+    },
+    "images": {
+      "exit_code": 0,
+      "count": 0
+    }
+  },
+  "finished_at": "2026-11-04T04:41:56Z"
+}

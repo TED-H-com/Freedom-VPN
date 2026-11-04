@@ -1,0 +1,105 @@
+{
+  "run_id": "9f1bc0ff-d01f-4a3f-ad41-6c6a086e6e04",
+  "findings": [
+    {
+      "id": "F17-01",
+      "status": "not exercised",
+      "row": "pure stale_generation classification",
+      "owner": "w3-wire-nodes / w2-agent-core",
+      "reason": "The unchanged seam yields genuine stale-lease reports, but their failed QoS check carries a read_at diagnostic. Central exempts only the exact dependent detail Rate policy could not be applied.; it conservatively returns check_failed. No report is rewritten.",
+      "report_id": "01a1a1be-ea7c-722e-88bb-8c57c70c8fb8",
+      "classification": "check_failed",
+      "checks": [
+        {
+          "error_code": null,
+          "name": "dns_policy",
+          "observed_at": "2026-11-03T14:10:06.039738426Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "internet_only",
+          "observed_at": "2026-11-03T14:10:06.039738426Z",
+          "status": "passed"
+        },
+        {
+          "detail": "Serving lease is not for the applied generation.",
+          "error_code": "STALE_GENERATION",
+          "name": "lease",
+          "observed_at": "2026-11-03T14:10:06.039738426Z",
+          "status": "failed"
+        },
+        {
+          "error_code": null,
+          "name": "meter_path",
+          "observed_at": "2026-11-03T14:10:06.039738426Z",
+          "status": "passed"
+        },
+        {
+          "error_code": null,
+          "name": "policy_signature",
+          "observed_at": "2026-11-03T14:10:06.039738426Z",
+          "status": "passed"
+        },
+        {
+          "detail": "read_at=2026-11-03T14:10:05.940031282Z source=live candidate=10 verified=true {\"generation\":\"10\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"fb28abe0bfce461038af13a6b3645632c268c1eb441cb3dba54c7b485525fa97\"}",
+          "error_code": "VALIDATION_FAILED",
+          "name": "qos",
+          "observed_at": "2026-11-03T14:10:06.039738426Z",
+          "status": "failed"
+        },
+        {
+          "error_code": null,
+          "name": "release_supported",
+          "observed_at": "2026-11-03T14:10:06.039738426Z",
+          "status": "passed"
+        },
+        {
+          "detail": "No member binding was admitted.",
+          "error_code": "VALIDATION_FAILED",
+          "name": "source_binding",
+          "observed_at": "2026-11-03T14:10:06.039738426Z",
+          "status": "failed"
+        },
+        {
+          "error_code": null,
+          "name": "storage",
+          "observed_at": "2026-11-03T14:10:06.039738426Z",
+          "status": "passed"
+        },
+        {
+          "detail": "Egress probe used no extra target.",
+          "error_code": null,
+          "name": "tunnel_probe",
+          "observed_at": "2026-11-03T14:10:06.039738426Z",
+          "status": "passed"
+        }
+      ],
+      "errors": [
+        {
+          "code": "STALE_GENERATION",
+          "message": "Serving lease is not for the desired generation.",
+          "observed_at": "2026-11-03T14:10:06.039738426Z",
+          "stage": "lease"
+        },
+        {
+          "code": "STALE_GENERATION",
+          "message": "Serving lease generation hold: applied=11 lease=10 steps=1 elapsed_ms=5 alarm=false.",
+          "observed_at": "2026-11-03T14:10:06.076127284Z",
+          "stage": "lease"
+        }
+      ],
+      "sources": [
+        "node/agent/serving_evidence.go:attachServingRead",
+        "internal/nodes/generation_hold.go:generationHoldSafetyFailure",
+        "docs/e2e/RESPONSES.md:devstack follow-up 27"
+      ],
+      "needed": "Owner-reviewed diagnostic/classification contract or a genuine supported seam path that can produce the pure row without editing reports, bypassing checks or weakening independent-failure precedence.",
+      "retry": false,
+      "classification_counts": {
+        "check_failed": 10,
+        "isolation_unconfirmed": 3
+      }
+    }
+  ]
+}

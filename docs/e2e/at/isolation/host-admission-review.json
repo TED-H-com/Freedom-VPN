@@ -1,0 +1,12 @@
+{
+  "run_id": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
+  "initial_free_check_seconds": 0.069,
+  "post_vmstat_prelaunch_seconds": 1414.684341,
+  "foreign_suite_wait_seconds_approx": 1414.753,
+  "total_preflight_seconds": 1444.775,
+  "vmstat_sampling_seconds": 30,
+  "explanation": "A foreign suite started during vmstat. The final recheck waited until all suites cleared. The original invocation receipt admission_wait_seconds measures only the initial free check; the total prelaunch wait is recorded here.",
+  "overlap_samples": 53,
+  "overlap_observed": false,
+  "scope": "Periodic sampling cannot exclude shorter activity; foreign processes retained only as pid/comm/ticks. No reservation or retry."
+}

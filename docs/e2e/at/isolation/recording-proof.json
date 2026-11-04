@@ -1,12 +1,12 @@
 {
-  "run_id": "7599576e-339c-49c9-8bf5-0f710818cbda",
+  "run_id": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
   "operation_collector": {
     "evidence": "publication-operation-history.json",
-    "run_id": "7599576e-339c-49c9-8bf5-0f710818cbda",
+    "run_id": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
     "matches_invocation": true,
     "snapshots": 32,
-    "first_read": "2026-11-04T02:52:55.315898Z",
-    "last_successful_read": "2026-11-04T03:16:36.256725Z",
+    "first_read": "2026-11-04T06:03:32.003268Z",
+    "last_successful_read": "2026-11-04T06:26:49.596825Z",
     "end": "final read after the assembled central report export"
   },
   "successful_setup_publication": {
@@ -15,8 +15,8 @@
     "receipt": {
       "pointer": "/observations/1",
       "trace": {
-        "started_at": "2026-11-04T02:53:06.35947266Z",
-        "finished_at": "2026-11-04T02:53:06.365005623Z",
+        "started_at": "2026-11-04T06:03:43.234232728Z",
+        "finished_at": "2026-11-04T06:03:43.240209335Z",
         "max_attempts": 3,
         "limit_seconds": 10,
         "status": "pass",
@@ -24,12 +24,12 @@
         "attempts": [
           {
             "method": "PUT",
-            "path": "/api/v1/admin/nodes/01a1a479-618c-71dc-a4c9-5d8bb7a3b60e/publication",
+            "path": "/api/v1/admin/nodes/01a1a527-e4a0-7bd8-aeab-c050db6c950c/publication",
             "if_match": "\"14\"",
-            "idempotency_key": "e5d8bacf-2bbb-425c-906e-3d6746edec98",
-            "body_sha256": "89c23386a686421749746a65f0b40d57d443ed575e846d9f3ff0bb6af15fb26e",
-            "started_at": "2026-11-04T02:53:06.359478603Z",
-            "finished_at": "2026-11-04T02:53:06.364999849Z",
+            "idempotency_key": "5c3bcd86-fc36-452b-9130-05d6e011ff81",
+            "body_sha256": "fd20c5c488f3197e98c5f266197dc56db6ebacff54ed5373c1e9180132c22c34",
+            "started_at": "2026-11-04T06:03:43.234238569Z",
+            "finished_at": "2026-11-04T06:03:43.240204109Z",
             "status": 202,
             "error_code": "",
             "transport_error": false

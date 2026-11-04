@@ -21,10 +21,14 @@ func (r *runner) countedFlow(ctx context.Context, note func(string, string)) boo
 		heartbeat, _ := r.lab.docker(r.lab.node, "cat", "/run/vpn-node/heartbeat")
 		note("heartbeat", strings.TrimSpace(string(heartbeat)))
 	}()
+	pollStarted := time.Now()
+	note("admission_poll_started_at", pollStarted.UTC().Format(time.RFC3339Nano))
 	ready, stopReady := context.WithTimeout(ctx, 90*time.Second)
 	var ok bool
 	found := waitUntil(ready, time.Second, func() bool { _, ok = r.admissionBytes(); return ok && r.lab.forwardChain().Generation > 0 })
 	stopReady()
+	note("admission_poll_elapsed", time.Since(pollStarted).String())
+	note("admission_poll_found", boolText(found))
 	if !found {
 		note("admission_counter", "unavailable after 90 seconds")
 		return false

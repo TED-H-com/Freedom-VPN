@@ -1,0 +1,35 @@
+{
+  "utc": "2026-10-29T23:40:45.279950+00:00",
+  "command": [
+    "docker",
+    "exec",
+    "fvpn-w4-secops-postgres",
+    "psql",
+    "-U",
+    "fvpn",
+    "-d",
+    "fvpn",
+    "-At",
+    "-c",
+    "SELECT json_agg(r) FROM (SELECT id AS node_id,current_incarnation_id AS incarnation_id,provisioning_state,desired_config_generation::text,applied_config_generation::text FROM nodes ORDER BY created_at) r"
+  ],
+  "nodes": [
+    {
+      "node_id": "01a18a08-dffa-71fd-b396-9dce81e98a71",
+      "incarnation_id": "01a18a08-e08e-78f9-8a08-9e5746376de8",
+      "provisioning_state": "applying",
+      "desired_config_generation": "1",
+      "applied_config_generation": "0"
+    },
+    {
+      "node_id": "01a18a08-e419-788a-927c-4bd525fad97c",
+      "incarnation_id": "13a81ca4-f5d2-4f9d-97fa-123e7eca2238",
+      "provisioning_state": "applying",
+      "desired_config_generation": "2",
+      "applied_config_generation": "0"
+    }
+  ],
+  "note": "Read-only identity supplement from the assigned running stack. Enrollment order is real agent A, then host-emulated node B; compare UUIDs with live refusal checks.",
+  "historical": true,
+  "superseded_by": "live.json agent_node_incarnation and node_after_publication are captured in every follow-up run; this first-pass supplement is not current evidence."
+}

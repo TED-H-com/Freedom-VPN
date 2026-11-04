@@ -62,19 +62,28 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 	rows := map[string]any{}
 	p.metadata["transport_cases"] = rows
 	rows["guest_clock_rollback"] = map[string]any{"status": "blocked", "owner": "w3-devstack-e2e / operator", "missing_export": "Disposable guest with independently adjustable wall clock; containers share the development host clock."}
-	for _, kind := range []string{"grant_expiry", "lease_expiry", "device_revoke", "manual_grant_withdrawal"} {
+	for _, kind := range []string{"grant_expiry", "lease_expiry", "control_lost_agent_alive", "device_revoke", "manual_grant_withdrawal"} {
 		t.Run(kind, func(t *testing.T) {
 			parent := p.t
 			p.t = t
 			defer func() { p.t = parent }()
 			row := map[string]any{"status": "blocked", "owner": "w3-devstack-e2e", "transport_scope": "one original TCP/9446 connection and authenticated UDP/9445 socket; independent senders; helper limit 20 minutes"}
 			rows[kind] = row
+			if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "17" {
+				p.restartSnapshot17(kind + " before")
+				defer p.restartSnapshot17(kind + " after")
+			}
 			complete := false
 			defer func() {
 				if t.Failed() && !complete {
 					row["status"] = "failed"
 				}
 			}()
+			if kind == "control_lost_agent_alive" {
+				p.liveAgentExpiry16(stack, node, row)
+				complete = true
+				return
+			}
 			if kind == "manual_grant_withdrawal" {
 				p.manualGrantWithdrawal15(stack, node, row)
 				complete = true
@@ -203,6 +212,7 @@ func TestAT29_AT31_Followup11_Transports(t *testing.T) {
 				b := sampleTransport11(t.Context(), transport, peer.Device, start)
 				row["control_lost_agent_alive"] = []transportSample11{a, b}
 				row["continued_before_expiry"] = activeTransport11(a, b)
+				row["continuity_evidence"] = "Three-second diagnostic only; control_lost_agent_alive supplies the full-window continuity verdict"
 				if stack.PauseAgent(t.Context(), true) != nil {
 					t.Fatal("pause agent supervisor")
 				}

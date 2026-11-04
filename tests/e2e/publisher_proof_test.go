@@ -11,9 +11,12 @@ import (
 )
 
 // publisherTrace32 checks the live proof without requiring optional error
-// details. The real API rejects the TEST ONLY "0" in ParseIfMatch, before a
-// version lookup, so that 412 has empty details. Ordinary version mismatches
-// include current_resource_version; writeNode records it whenever supplied.
+// details. Under D-154 (#443), the API parses the TEST ONLY If-Match: "0"
+// like any version and compares it. No node row has version 0, so the forced
+// write gets the ordinary 412 RESOURCE_VERSION_CONFLICT with
+// details.current_resource_version. The retained forced proof from run 95fb7eab
+// predates #443 and has empty details; replay tests still read that proof.
+// Accept both shapes, recording current_resource_version whenever supplied.
 func publisherTrace32(trace nodeWriteTrace, forced bool) (conflicts int, valid bool) {
 	if len(trace.Attempts) == 0 {
 		return 0, false

@@ -26,9 +26,9 @@ def main(phase=None):
                   application_base=main_revision, phase=phase, started_at=utc(), d099_roadmap_present=d099,
                   prepare=dict(prefix=PREFIX,port_base=PORT_BASE,reset=True,grace_seconds=90))
     followup = os.environ.get('FVPN_SECOPS_EVIDENCE_FOLLOWUP', '11')
-    if followup not in ('11', '12', '13', '15'):
+    if followup not in ('11', '12', '13', '15', '16', '17'):
         raise SystemExit('unsupported evidence follow-up')
-    if followup == '15' and phase != 'transports':
+    if followup in ('15', '16', '17') and phase != 'transports':
         raise SystemExit('follow-up 15 authorizes only the transport campaign')
     if followup == '13' and phase != 'restore':
         raise SystemExit('follow-up 13 authorizes only the restore campaign')
@@ -58,7 +58,8 @@ def main(phase=None):
             for name in ('fvpn-w4-secops-member-f11-grant-expiry',
                          'fvpn-w4-secops-member-f11-lease-expiry',
                          'fvpn-w4-secops-member-f11-device-revoke',
-                         'fvpn-w4-secops-member-f15-manual-grant-withdrawal'):
+                         'fvpn-w4-secops-member-f15-manual-grant-withdrawal',
+                         'fvpn-w4-secops-member-f16-live-agent-expiry'):
                 subprocess.run(['docker','rm','-fv',name],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
                 subprocess.run(['docker','volume','rm',name],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
             record['down'],_=command(label+'-e2e-down',['make','-f','mk/e2e.mk','e2e-down'],env,300)

@@ -1,0 +1,29 @@
+[
+  {
+    "follow_up": 4,
+    "utc": "2026-10-30T06:43:06.273683+00:00",
+    "status": "invalid fixture permissions; superseded by fresh rerun",
+    "owner": "this acceptance harness",
+    "cause": "run.py inherited umask 077 into devstack/up.sh; copied CoreDNS render directory/file became inaccessible to nonroot:nonroot. Fix child e2e-up umask 022, keep captured raw logs mode0600. No lab source or generated fixture edit.",
+    "commands": [
+      "docker logs fvpn-w4-secops-coredns",
+      "stat render/coredns directory and files",
+      "make -f mk/at-secops.mk at-secops-followup4"
+    ],
+    "coredns_log": "maxprocs: Leaving GOMAXPROCS=24: CPU quota undefined\nloading Caddyfile via flag: open /etc/coredns/Corefile: permission denied\nloading Caddyfile via flag: open /etc/coredns/Corefile: permission denied\nmaxprocs: Leaving GOMAXPROCS=24: CPU quota undefined\n",
+    "permissions": {
+      "example.invalid.zone": "0o600",
+      "Corefile": "0o600"
+    },
+    "directory_mode": "0o700",
+    "additional_harness_correction": "The probe previously sent an empty optional Idempotency-Key header, which generated parsing refused. Empty overrides now delete the header; the final run sends valid optional-header-free agent requests."
+  },
+  {
+    "follow_up": 4,
+    "utc": "2026-10-30T06:47:28.875999+00:00",
+    "status": "aborted during initial sessions before measurements",
+    "owner": "this acceptance harness",
+    "reason": "Compiled probe predated the controlled DNS smoke input correction. Restart fresh with final source; no verdict or measurement retained from this attempt.",
+    "final_fixture": "DNS policy now includes a controlled blocked.example.invalid rule through admin policy APIs; no resolver config or agent report edited."
+  }
+]

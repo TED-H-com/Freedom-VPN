@@ -1,0 +1,111 @@
+{
+  "run_id": "56d20530-8042-4d0c-8156-de5a47ce8b61",
+  "status": "fail",
+  "finding": "F14-01: whole-node D-104 last-positive boundary",
+  "verdict": {
+    "passed": false,
+    "deadline_mono_ns": "119060764038829",
+    "last_positive_mono_ns": "119060601818726",
+    "first_drop_mono_ns": "119060666400790",
+    "last_positive_offset_ns": "-162220103",
+    "first_drop_offset_ns": "-97638039",
+    "positives": 160,
+    "drops": 42,
+    "errors": [
+      "last positive earlier than D-101ms"
+    ]
+  },
+  "boundary_packet": {
+    "egress_mono_ns": "0",
+    "ingress_mono_ns": "119060666400790",
+    "probe": {
+      "deadline_mono_ns": "119060764038829",
+      "packet_id": 161,
+      "phase": "phased",
+      "read_completion": {
+        "mono_ns": "119060743596737",
+        "wall": "2026-11-01T12:18:43.227228627Z"
+      },
+      "result": "timeout",
+      "scheduled_mono_ns": "119060663038829",
+      "send": {
+        "mono_ns": "119060663338469",
+        "wall": "2026-11-01T12:18:43.146968031Z"
+      },
+      "source_port": 42161,
+      "trace_clock": {
+        "boot_id": "97c018d7-a925-4723-9127-83c097de1c8a",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026536949]"
+      }
+    }
+  },
+  "boundary_offsets_ns": {
+    "send": "-100700360",
+    "read_completion": "-20442092"
+  },
+  "boundary_scheduled_offset_ns": "-101000000",
+  "boundary_ingress_offset_ns": "-97638039",
+  "interpretation": "The scheduled D-101ms packet reached ingress at D-97.638039ms, inside the allowed conservative transition. The last-positive predicate still fails. No earlier forbidden drop or exact kernel-drop cause is established; no cadence allowance, retry waiver or reclassification.",
+  "renewal_outside_guard": [
+    {
+      "packet": {
+        "packet_id": 15,
+        "result": "timeout",
+        "sent_ns": "118933744388420",
+        "read_completion_ns": "118933824881743",
+        "ingress_ns": "118933745501925",
+        "egress_ns": "0"
+      },
+      "classification": "outside completed guard brackets; unresolved",
+      "baseline_sequence_overlaps": [
+        "1534",
+        "1535",
+        "1536"
+      ]
+    },
+    {
+      "packet": {
+        "packet_id": 16,
+        "result": "timeout",
+        "sent_ns": "118933781677275",
+        "read_completion_ns": "118933862321570",
+        "ingress_ns": "118933781862590",
+        "egress_ns": "0"
+      },
+      "classification": "outside completed guard brackets; unresolved",
+      "baseline_sequence_overlaps": [
+        "1535",
+        "1536"
+      ]
+    },
+    {
+      "packet": {
+        "packet_id": 17,
+        "result": "timeout",
+        "sent_ns": "118933844065014",
+        "read_completion_ns": "118933925073182",
+        "ingress_ns": "118933844804268",
+        "egress_ns": "0"
+      },
+      "classification": "outside completed guard brackets; unresolved",
+      "baseline_sequence_overlaps": [
+        "1536"
+      ]
+    },
+    {
+      "packet": {
+        "packet_id": 18,
+        "result": "timeout",
+        "sent_ns": "118933881497799",
+        "read_completion_ns": "118933962369120",
+        "ingress_ns": "118933881879450",
+        "egress_ns": "0"
+      },
+      "classification": "outside completed guard brackets; unresolved",
+      "baseline_sequence_overlaps": []
+    }
+  ],
+  "request": "Agent-core / netlab: review exact boundary scheduling and kernel deadline evidence; preserve this failed row. No product or shared-harness change is made here."
+}
