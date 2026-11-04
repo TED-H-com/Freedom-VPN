@@ -898,3 +898,22 @@ The [cut](../handover/follow-up-43.md) pins the imported proof identities and
 producer evidence. Handover did not rerun the review proofs or acceptance.
 **F30-01 stays open** until an acceptance run passes `lease-expiry` with the
 nightly quarantine entry removed. Devstack 34 is running for that at cutoff.
+
+
+<a id="follow-up-44-dispositions"></a>
+
+## Follow-up 44 dispositions (2026-11-04 EST)
+
+The earlier dated tables describe their original cuts. At #463:
+
+| Finding | Current disposition | Frozen evidence |
+|---|---|---|
+| r29 L-2 | ANSWERED — #458; stale citations left with the removed lease-expiry entry. member-ipv6 remains. | [Devstack 34](../../tests/handover/testdata/history/follow-up-44/docs_e2e_runs_2026-11-04_followup34_analysis.md.txt) |
+| r28 M-1 / Isolation F21-01 | ANSWERED — #459, first live pass under a serving node, all five requests time out with a 26.3 s node-lease extension. | [Isolation 22](../../tests/handover/testdata/history/follow-up-44/docs_e2e_at_isolation_followup22-2026-11-04.md.txt) |
+
+F30-01 remains open despite lease-expiry's pass: devstack 34 never started a
+candidate. Updater 25 #463 adds D-158's bounded live-lock wait; closure now
+requires update-good to start the candidate, deferred boot recovery under its
+parent's lock to clear, candidate member service, then a passing lease-expiry.
+Devstack 35 runs for it at cutoff. Every historical failure stays failed; raw
+review archives and imported proofs are unchanged. See [the cut](../handover/follow-up-44.md).
