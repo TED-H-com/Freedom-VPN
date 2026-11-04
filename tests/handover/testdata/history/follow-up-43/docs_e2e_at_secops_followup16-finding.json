@@ -1,0 +1,194 @@
+{
+  "id": "SECOPS-F16-01",
+  "status": "failed",
+  "run_id": "1bfd5cff-e593-481b-a4d2-94ca08cf7c3d",
+  "source_revision": "67fcd152b1196ab90ba95c09eaaa73d5c9d12eb5",
+  "application_base": "410607051d81d7dd538388b14904a2ca4a8ada59",
+  "title": "Live-agent AT29 continuity failed its accepted-short-lease prerequisite",
+  "classification": "Acceptance failure routed for product/fixture triage; no confirmed probe regression",
+  "observed": {
+    "fleet_put_status": 200,
+    "fleet_readback": {
+      "default_max_offline_lease_seconds": 86400,
+      "max_offline_lease_seconds": 60,
+      "resource_version": "5",
+      "updated_at": "2026-11-04T04:35:23.829257Z"
+    },
+    "accepted_lease": {
+      "signed": {
+        "authorization_generation": "3",
+        "config_generation": "17",
+        "expires_at": "2026-11-05T04:33:00.436641756Z",
+        "issued_at": "2026-11-04T04:33:00.436641756Z",
+        "lease_id": "f6b7e639-c508-44f6-af68-b25ac251a9d3",
+        "max_offline_seconds": 86400,
+        "members": [
+          {
+            "effective_service_end": "2026-11-04T04:49:40Z",
+            "entitlement_revision": "3",
+            "lease_end": "2026-11-04T04:49:40Z",
+            "member_id": "01a1a4ce-ead3-7525-8dca-edce0410f827"
+          },
+          {
+            "effective_service_end": "2026-11-04T04:59:45Z",
+            "entitlement_revision": "1",
+            "lease_end": "2026-11-04T04:59:45Z",
+            "member_id": "01a1a4d1-f443-7893-a59d-6ff0300cbe09"
+          },
+          {
+            "effective_service_end": "2026-11-04T05:01:58Z",
+            "entitlement_revision": "1",
+            "lease_end": "2026-11-04T05:01:58Z",
+            "member_id": "01a1a4d3-fb99-794f-907a-7f61ef67aa16"
+          }
+        ],
+        "node_id": "01a1a4ce-8793-773e-ab2f-72d815343097",
+        "node_incarnation_id": "01a1a4ce-8b85-7180-b930-202abc06e3cf",
+        "schema_version": 1
+      },
+      "request_monotonic_ns": "90222883600529",
+      "deadline_monotonic_ns": "176622883600529",
+      "lease_id": "f6b7e639-c508-44f6-af68-b25ac251a9d3",
+      "generation": "17",
+      "issued_at": "2026-11-04T04:33:00.436641756Z",
+      "expires_at": "2026-11-05T04:33:00.436641756Z",
+      "max_offline_seconds": 86400,
+      "members": [
+        {
+          "member_id": "01a1a4ce-ead3-7525-8dca-edce0410f827",
+          "lease_end": "2026-11-04T04:49:40Z"
+        },
+        {
+          "member_id": "01a1a4d1-f443-7893-a59d-6ff0300cbe09",
+          "lease_end": "2026-11-04T04:59:45Z"
+        },
+        {
+          "member_id": "01a1a4d3-fb99-794f-907a-7f61ef67aa16",
+          "lease_end": "2026-11-04T05:01:58Z"
+        }
+      ]
+    },
+    "preliminary_sample_read_seconds": 180.370879915,
+    "control_loss_injected": false,
+    "timeout_continuity_cutoff_measured": false,
+    "go_events": [
+      {
+        "Time": "2026-11-04T04:31:58.178511Z",
+        "Action": "run",
+        "Package": "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops",
+        "Test": "TestAT29_AT31_Followup11_Transports/control_lost_agent_alive"
+      },
+      {
+        "Time": "2026-11-04T04:36:54.888786Z",
+        "Action": "output",
+        "Package": "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops",
+        "Test": "TestAT29_AT31_Followup11_Transports/control_lost_agent_alive",
+        "Output": "    followup16_continuity_test.go:308: no locally accepted short lease\n",
+        "OutputType": "error"
+      },
+      {
+        "Time": "2026-11-04T04:36:54.992529Z",
+        "Action": "fail",
+        "Package": "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops",
+        "Test": "TestAT29_AT31_Followup11_Transports/control_lost_agent_alive",
+        "Elapsed": 296.81
+      }
+    ]
+  },
+  "interpretation": "The retained 86400-second lease predates the successful 60-second fleet change. ServingLease.max_offline_seconds explicitly does not rewrite an already issued lease after PUT /admin/fleet-config. The harness did not establish a fresh accepted 60-second lease within its 90-second setup window. This is not evidence that agent-core 48 withdraws early on control timeout.",
+  "contract_source": "contracts/openapi.yaml ServingLease.max_offline_seconds; pkg/api/api.gen.go ServingLease.MaxOfflineSeconds",
+  "restoration": {
+    "fleet_restoration_ok": true,
+    "standing": {
+      "device": {
+        "authorization_unconfirmed": false,
+        "device_id": "01a1a4d4-2d0e-7c19-8ddd-f62f9a38e078",
+        "status": "authorized"
+      },
+      "entitlement": {
+        "admin_suspended": false,
+        "cancel_at_period_end": false,
+        "computed_at": "2026-11-04T04:31:58.368318Z",
+        "device_limit": 3,
+        "effective_service_end": "2026-11-04T05:01:58Z",
+        "grace_until": null,
+        "paid_through": null,
+        "plan": {
+          "code": "secops-plan",
+          "display_name": {
+            "zh-TW": "TEST ONLY"
+          },
+          "plan_id": "01a1a4ce-79d4-714b-a216-82c53ca5558e",
+          "plan_revision_id": "01a1a4ce-79d4-732a-ad58-027df37045c8"
+        },
+        "revision": "1",
+        "state": "active",
+        "valid_from": "2026-11-04T04:31:58.367684Z"
+      },
+      "explicit_device_authorization": {
+        "accepted_operation": {
+          "completed_at": "2026-11-04T04:32:15.505774Z",
+          "created_at": "2026-11-04T04:32:11.020554Z",
+          "desired_generation": "1",
+          "error": null,
+          "kind": "member.device_authorize",
+          "observed_generation": null,
+          "operation_id": "01a1a4d4-2d0f-7c8a-860b-26b4c3582e41",
+          "request_id": "01a1a4d4-2d08-786e-83e2-51f66b04785c",
+          "resource": {
+            "id": "01a1a4d4-2d0e-7c19-8ddd-f62f9a38e078",
+            "type": "member_device"
+          },
+          "resource_version": null,
+          "status": "succeeded",
+          "steps": [
+            {
+              "error_code": null,
+              "message": null,
+              "name": "netbird",
+              "observed_at": "2026-11-04T04:32:11.058797Z",
+              "required": true,
+              "status": "succeeded"
+            },
+            {
+              "error_code": null,
+              "message": null,
+              "name": "nodes",
+              "observed_at": "2026-11-04T04:32:15.501774Z",
+              "required": true,
+              "status": "succeeded"
+            }
+          ],
+          "updated_at": "2026-11-04T04:32:15.505884Z"
+        },
+        "error_code": "",
+        "http_status": 202,
+        "returned_at": "2026-11-04T04:36:54.988106961Z",
+        "same_key_replay": {
+          "http_status": 202,
+          "same_operation_and_resource": true
+        },
+        "started_at": "2026-11-04T04:36:54.981055726Z"
+      },
+      "original_standing_retained": true,
+      "original_valid_until": "2026-11-04T05:01:58Z",
+      "status": "restored"
+    },
+    "transport_cleanup_ok": true,
+    "control_worker_fault_not_reached": true
+  },
+  "attempts": 1,
+  "reruns": 0,
+  "predicate_changed_after_result": false,
+  "requests": [
+    "Orchestrator: triage SECOPS-F16-01 with the secops fixture and node/lease owners. Establish a post-cap accepted short lease through public configuration/member generation changes before any future outage; retain the exact continuity/cutoff predicates and this failed result. A separate authorized run is needed for live agent-core 48 evidence.",
+    "w3-devstack-e2e / operator: provide an independently clocked disposable guest for guest_clock_rollback."
+  ],
+  "evidence": [
+    "AT29.json",
+    "followup16-transports-live.json",
+    "followup16-transports-run.json",
+    "followup16-preflight.json",
+    "followup16-cleanup.json"
+  ]
+}

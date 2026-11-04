@@ -1,0 +1,76 @@
+# Follow-up 15 — Shared `Stack.WriteNode` Adoption for Installer Fixture Retirement (2026-11-03)
+
+- **Date:** 2026-11-03
+- **Mode:** Offline only (no Docker object, no assembled run, no stack)
+- **Consumed upstream hand-off:** Devstack follow-up 33 (`PR #441`, `19b300ef`; `docs/e2e/RESPONSES.md` `2026-11-03 — AT owners: exported node conflict handling (follow-up 33)`) and devstack follow-up 32 audit (`docs/e2e/runs/2026-11-03/followup32/audit.md`).
+- **Requirement / Spec references:** `UPD02`, `§14.5`, `D-098`, `D-110`, `D-111`, `D-125`, `D-127`.
+
+## 1. Adopted Node Write Site and Read-Back Predicate
+
+| File | Function | Method & Path | Intended-State Predicate | Success Status | Receipt Observation | Post-Write Observed-State Gate |
+|---|---|---|---|---|---|---|
+| `tests/e2e/at/updates/installer_test.go` | `(h *handoffRun).retire` | `DELETE /api/v1/admin/nodes/{node}` | `retiredNode`: `e2e.NodeFieldsMatch(map[string]string{"lifecycle_state": "retired"})` | `202` (`http.StatusAccepted`) | `fixture_retirement_node_write` (embedded immediately after `fixture_retirement_http`) | `retired := h.central("fixture_retired", node)` must return `retired.text("lifecycle_state") == "retired"` in addition to `write.Accepted(202)`; otherwise `Fatal("installer fixture retirement not confirmed; refusing polluted fleet snapshots")` |
+
+### Contract Details
+
+1. **Initial ETag and fail-closed precondition:**
+   - `handoffRun.retire` reads `view := h.central("before_fixture_retirement", node)` and takes `etag := h.etags["before_fixture_retirement"]` (falling back to quoted `view.text("resource_version")` only when `view != nil` and the response header is empty).
+   - When `view == nil` (`etag == ""`), `Stack.WriteNode` receives `428 PRECONDITION_REQUIRED` (`outcome: "non_conflict_response"`, `status: "blocked"`), never retries, records `fixture_retirement_http` and `fixture_retirement_node_write`, and fatals at the post-write gate.
+2. **Bounded conflict handling (`§14.5`):**
+   - Only exact `412 RESOURCE_VERSION_CONFLICT` responses trigger a re-read of `GET /api/v1/admin/nodes/{node}` (bounded to 3 write attempts and 10 seconds total).
+   - If the re-read satisfies `retiredNode` (`lifecycle_state == "retired"`), `Stack.WriteNode` stops without re-sending `DELETE`, marks `AlreadyIntended: true` (`write.Accepted(202) == true`), and preserves the original `412 RESOURCE_VERSION_CONFLICT` in `write.Reply` (`fixture_retirement_http`).
+   - If the re-read is not yet `"retired"` and returns a fresh `ETag`, `Stack.WriteNode` retries with the fresh `If-Match` while keeping the same `Idempotency-Key` and request body SHA-256.
+   - Any other `412` error code (such as `STATE_CONFLICT`) or non-conflict status stops immediately without re-read or retry.
+3. **Observed-state separation:**
+   - `write.Accepted(202)` reports command acceptance, not applied-state completion. `handoffRun.retire` keeps `retired := h.central("fixture_retired", node)` unchanged after `Stack.WriteNode` and fatals whenever `!write.Accepted(202) || retired.text("lifecycle_state") != "retired"`.
+
+## 2. Package-Wide Node Write Audit (`tests/e2e/at/updates/node_write_audit_test.go`)
+
+`handoffRun.retire` is the only `/api/v1/admin/nodes` write in `tests/e2e/at/updates/`. There are no expected-`412` stale-`ETag` negative tests on `/api/v1/admin/nodes` in this package (all conflict probes in `updates` target `/api/v1/agent/update-results` and expect `409`).
+
+`TestUPD02_NodeWriteAudit` (untagged, runs without a stack) parses every `.go` file under `tests/e2e/at/updates/` and enforces:
+- Every `WriteNode` call site is listed in `approvedNodeWriteSites` and passes a non-nil `retiredNode` / `NodeFieldsMatch` predicate.
+- Every `call`, `Call`, `NewRequest`, `NewRequestWithContext`, `Do`, `Post`, `PostForm`, `Get`, `Head`, `nodePOST`, or `submit` call is either rejected immediately (if it writes to `/admin/nodes`) or verified against `nodeWriteAuditExceptions`.
+- `TestUPD02_NodeWriteAuditRejectsBypasses` injects synthetic bypasses (`session.call` `DELETE`/`PATCH` on `/api/v1/admin/nodes/`, `Stack.Call` `POST` on `/api/v1/admin/nodes/{id}:revoke`, raw `http.NewRequestWithContext`, raw `http.Client.Do`, unapproved `WriteNode`, and `WriteNode` with a `nil` predicate) and verifies that each fails the audit.
+
+### Audited Non-Node-Write Exceptions (`nodeWriteAuditExceptions`)
+
+| Site Key (`file:function:call`) | Reason |
+|---|---|
+| `authority_test.go:conflictBounds:nodePOST` | Agent mTLS `POST /api/v1/agent/update-results` conflict probe |
+| `authority_test.go:failedRequiresCause:nodePOST` | Agent mTLS `POST /api/v1/agent/update-results` `error_code` validation probe |
+| `authority_test.go:observationAuthority:nodePOST` | Agent mTLS `POST /api/v1/agent/observations` authority probe |
+| `installer_receipts_test.go:resultAcceptance:submit` | Agent mTLS `POST /api/v1/agent/update-results` receipt acceptance probe |
+| `installer_receipts_test.go:resultCorrection:submit` | Agent mTLS `POST /api/v1/agent/update-results` receipt correction probe |
+| `installer_test.go:central:call` | Read-only `GET /api/v1/admin/nodes/{node}` for `ETag` and observed-state readback |
+| `installer_test.go:installerHandoff:call` | `POST /api/v1/admin/enrollments` (enrollment creation, not a node resource write) |
+| `installer_test.go:installerHandoff:submit` | Agent mTLS `POST /api/v1/agent/update-results` failure receipt probe |
+| `lab_test.go:call:Do` | `session.call` internal HTTP transport dispatch; every caller of `session.call` is audited by AST |
+| `lab_test.go:call:NewRequestWithContext` | `session.call` internal HTTP request constructor; every caller of `session.call` is audited by AST |
+| `lab_test.go:enroll:call` | `POST /api/v1/admin/enrollments` (enrollment creation, not a node resource write) |
+| `lab_test.go:login:Do` | Session bootstrap `GET /auth/session` after portal OIDC login |
+| `lab_test.go:login:NewRequestWithContext` | Session bootstrap `GET /auth/session` after portal OIDC login |
+| `lab_test.go:putObject:Do` | Release artifact origin upload `PUT /e2e/object` (not a central node resource write) |
+| `lab_test.go:putObject:NewRequestWithContext` | Release artifact origin upload `PUT /e2e/object` (not a central node resource write) |
+| `live_test.go:createBatch:call` | `GET /api/v1/admin/releases` and `POST /api/v1/admin/update-batches` (release and batch endpoints) |
+| `live_test.go:target:call` | Read-only `GET /api/v1/admin/update-batches/{id}` |
+| `preresult_test.go:preResultInjection:nodePOST` | Agent mTLS `POST /api/v1/agent/observations` and `/api/v1/agent/update-results` pre-result probe |
+| `preresult_test.go:recordedInjection:nodePOST` | Agent mTLS `POST /api/v1/agent/observations` post-result probe |
+| `preresult_test.go:unexpectedAudit:call` | Read-only `GET /api/v1/admin/audit-events` |
+| `restated_test.go:offlineBatch:nodePOST` | Agent mTLS `POST /api/v1/agent/observations` offline catch-up probe |
+
+## 3. Offline Stub Verification (`tests/e2e/at/updates/node_write_test.go`)
+
+- `TestUPD02_NodeWriteRetiredPredicate`: verifies that `retiredNode` accepts `{"lifecycle_state":"retired"}` (both minimal and full `NodeDetail` payloads) and rejects `"registered"`, `"revoked"`, `"enrolling"`, missing fields, `null`, non-string values, and malformed JSON.
+- `TestUPD02_InstallerRetireNodeWriteAndReceipts`: exercises `handoffRun.retire` against an `httptest.NewTLSServer` cookie/CSRF stub via `e2e.OpenStack()` across seven cases:
+  1. `immediate 202`: 1 `DELETE`, 2 `GET`s (`before_fixture_retirement` + `fixture_retired`), `fixture_retirement_http == "202"`, receipt `outcome == "accepted"`, `status == "pass"`.
+  2. `conflict then retry 202`: `412 RESOURCE_VERSION_CONFLICT` -> helper re-read (`"registered"`, fresh `ETag`) -> retry `DELETE` with same `Idempotency-Key` -> `202` -> post-write `GET` `"retired"`, receipt `outcome == "accepted"`, `status == "pass"`, 2 attempts, 1 reread.
+  3. `conflict already intended`: `412 RESOURCE_VERSION_CONFLICT` -> helper re-read (`"retired"`) -> stops after 1 `DELETE`, preserves `fixture_retirement_http == "412 RESOURCE_VERSION_CONFLICT"`, receipt `outcome == "already_intended"`, `status == "pass"`, post-write `GET` confirms `"retired"`.
+  4. `other 412 not retried`: `412 STATE_CONFLICT` -> 1 `DELETE`, 0 helper re-reads, receipt `outcome == "non_conflict_response"`, `status == "blocked"`, fatals on retirement check.
+  5. `exhausted conflicts`: 3 `412 RESOURCE_VERSION_CONFLICT` writes + 3 helper re-reads, receipt `outcome == "attempt_limit"`, `status == "blocked"`, fatals on retirement check.
+  6. `accepted 202 but observed state still registered`: `DELETE` returns `202`, but `fixture_retired` `GET` returns `"registered"` -> fatals on retirement check because command acceptance is not observed-state completion.
+  7. `missing initial ETag rejected with 428 not retried`: initial `GET` returns `500` (`etag == ""`) -> `DELETE` returns `428 PRECONDITION_REQUIRED`, 0 helper re-reads, receipt `outcome == "non_conflict_response"`, `status == "blocked"`, fatals on retirement check.
+
+## 4. Live Proof Status
+
+This follow-up is offline-only. Committed run records from Follow-up 14 (`2704600f-e076-4a59-9338-09befa2af70e`) are preserved unchanged. Live `installer-handoff.json` evidence containing the embedded `fixture_retirement_node_write` receipt waits for the lane's next authorized assembled run.
