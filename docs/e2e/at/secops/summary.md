@@ -1,3 +1,25 @@
+# Follow-up 18 — fault-time lease proved; AT29 blocked
+
+Run`9d927350-eaa5-4461-ad11-8cf2f4d54c95` passed every runnable AT29 sub-case and bounded
+forced relay. **SECOPS-F17-01 is answered**: the old case reached cutoff with
+D read from the accepted local lease after control stopped, with no admission
+inside its timed section. The two admission waits occurred after cutoff.
+**AT29 changes from failed to blocked**: guest clock rollback is unavailable,
+and the attempt is confounded under D-133. Both cleanup inventories are zero.
+
+A wrapper recursion stopped the first dispatch before setup or any sub-case;
+its receipts are archived, the PATH defect is fixed/tested, and the one allowed
+harness rerun supplied this result. No failed sub-case was retried.
+
+[Complete dated note](2026-11-04-follow-up-18.md), [AT29](AT29.json),
+[immutable evidence](history/follow-up-18/followup18-transports-live.json),
+[b2de46c8 retained as failed](history/before-follow-up-18/AT29.json).
+AT30 and full AT31 remain unchanged. No product code or database row was edited.
+
+---
+
+The following text is historical and belongs to earlier runs:
+
 # Follow-up 17 — qualifying lease; AT29 remains failed
 
 Run `b2de46c8-7611-4b7c-8863-2345ff2b0240` reached control loss with a locally

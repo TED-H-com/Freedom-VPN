@@ -1,0 +1,5705 @@
+{
+  "passed": true,
+  "errors": [],
+  "timing": {
+    "passed": true,
+    "errors": [],
+    "sections": [
+      {
+        "section": "grant_expiry",
+        "start": {
+          "kind": "section_start",
+          "section": "grant_expiry",
+          "at": "2026-11-04T07:48:38.532017Z",
+          "mono_ns": "101960983397241"
+        },
+        "end": {
+          "kind": "section_end",
+          "section": "grant_expiry",
+          "at": "2026-11-04T07:51:22.017344Z",
+          "mono_ns": "102124468734070"
+        }
+      },
+      {
+        "section": "lease_expiry",
+        "start": {
+          "kind": "section_start",
+          "section": "lease_expiry",
+          "at": "2026-11-04T07:51:51.856330Z",
+          "mono_ns": "102154307709435"
+        },
+        "end": {
+          "kind": "section_end",
+          "section": "lease_expiry",
+          "at": "2026-11-04T07:53:41.770703Z",
+          "mono_ns": "102264222097584"
+        }
+      },
+      {
+        "section": "control_lost_agent_alive",
+        "start": {
+          "kind": "section_start",
+          "section": "control_lost_agent_alive",
+          "at": "2026-11-04T07:56:07.251265Z",
+          "mono_ns": "102409702644761"
+        },
+        "end": {
+          "kind": "section_end",
+          "section": "control_lost_agent_alive",
+          "at": "2026-11-04T07:57:11.803277Z",
+          "mono_ns": "102474254667457"
+        }
+      },
+      {
+        "section": "forced_relay",
+        "start": {
+          "kind": "section_start",
+          "section": "forced_relay",
+          "at": "2026-11-04T07:57:52.975193Z",
+          "mono_ns": "102515426573370"
+        },
+        "end": {
+          "kind": "section_end",
+          "section": "forced_relay",
+          "at": "2026-11-04T07:58:31.004321Z",
+          "mono_ns": "102553455710381"
+        }
+      },
+      {
+        "section": "device_revoke",
+        "start": {
+          "kind": "section_start",
+          "section": "device_revoke",
+          "at": "2026-11-04T07:58:31.328812Z",
+          "mono_ns": "102553780192937"
+        },
+        "end": {
+          "kind": "section_end",
+          "section": "device_revoke",
+          "at": "2026-11-04T07:59:45.071592Z",
+          "mono_ns": "102627522982961"
+        }
+      },
+      {
+        "section": "manual_grant_withdrawal",
+        "start": {
+          "kind": "section_start",
+          "section": "manual_grant_withdrawal",
+          "at": "2026-11-04T08:00:02.804198Z",
+          "mono_ns": "102645255577926"
+        },
+        "end": {
+          "kind": "section_end",
+          "section": "manual_grant_withdrawal",
+          "at": "2026-11-04T08:01:25.598545Z",
+          "mono_ns": "102728049938106"
+        }
+      }
+    ],
+    "admission_checks": [
+      {
+        "kind": "admission",
+        "command": "host-preflight",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:46:33.666891Z",
+          "mono_ns": "101836118279848"
+        },
+        "at": "2026-11-04T07:46:33.703214Z",
+        "mono_ns": "101836154603308"
+      },
+      {
+        "kind": "admission",
+        "command": "host-preflight-after-vmstat",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:03.723174Z",
+          "mono_ns": "101866174565009"
+        },
+        "at": "2026-11-04T07:47:03.759880Z",
+        "mono_ns": "101866211264799"
+      },
+      {
+        "kind": "admission",
+        "command": "make",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:03.809788Z",
+          "mono_ns": "101866261179419"
+        },
+        "at": "2026-11-04T07:47:03.844194Z",
+        "mono_ns": "101866295585494"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:03.865658Z",
+          "mono_ns": "101866317047476"
+        },
+        "at": "2026-11-04T07:47:03.899835Z",
+        "mono_ns": "101866351219815"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:03.974714Z",
+          "mono_ns": "101866426104157"
+        },
+        "at": "2026-11-04T07:47:04.010016Z",
+        "mono_ns": "101866461400991"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:04.089827Z",
+          "mono_ns": "101866541217107"
+        },
+        "at": "2026-11-04T07:47:04.124923Z",
+        "mono_ns": "101866576308445"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:04.203465Z",
+          "mono_ns": "101866654855592"
+        },
+        "at": "2026-11-04T07:47:04.238668Z",
+        "mono_ns": "101866690053993"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:04.317874Z",
+          "mono_ns": "101866769265031"
+        },
+        "at": "2026-11-04T07:47:04.353426Z",
+        "mono_ns": "101866804813633"
+      },
+      {
+        "kind": "admission",
+        "command": "make",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:04.432247Z",
+          "mono_ns": "101866883639393"
+        },
+        "at": "2026-11-04T07:47:04.467567Z",
+        "mono_ns": "101866918954596"
+      },
+      {
+        "kind": "admission",
+        "command": "go",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:04.494046Z",
+          "mono_ns": "101866945436484"
+        },
+        "at": "2026-11-04T07:47:04.529146Z",
+        "mono_ns": "101866980531159"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:04.549915Z",
+          "mono_ns": "101867001303293"
+        },
+        "at": "2026-11-04T07:47:04.585136Z",
+        "mono_ns": "101867036521043"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:05.142597Z",
+          "mono_ns": "101867593990370"
+        },
+        "at": "2026-11-04T07:47:05.177018Z",
+        "mono_ns": "101867628402476"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:05.949514Z",
+          "mono_ns": "101868400907669"
+        },
+        "at": "2026-11-04T07:47:05.985221Z",
+        "mono_ns": "101868436606353"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:06.030332Z",
+          "mono_ns": "101868481725645"
+        },
+        "at": "2026-11-04T07:47:06.065909Z",
+        "mono_ns": "101868517293705"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:06.120171Z",
+          "mono_ns": "101868571563866"
+        },
+        "at": "2026-11-04T07:47:06.156437Z",
+        "mono_ns": "101868607826902"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:06.203206Z",
+          "mono_ns": "101868654600580"
+        },
+        "at": "2026-11-04T07:47:06.238412Z",
+        "mono_ns": "101868689797815"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:06.281450Z",
+          "mono_ns": "101868732845919"
+        },
+        "at": "2026-11-04T07:47:06.318817Z",
+        "mono_ns": "101868770209560"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:06.361817Z",
+          "mono_ns": "101868813214710"
+        },
+        "at": "2026-11-04T07:47:06.399420Z",
+        "mono_ns": "101868850811916"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:06.445956Z",
+          "mono_ns": "101868897349139"
+        },
+        "at": "2026-11-04T07:47:06.481932Z",
+        "mono_ns": "101868933317595"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:06.525867Z",
+          "mono_ns": "101868977260874"
+        },
+        "at": "2026-11-04T07:47:06.561339Z",
+        "mono_ns": "101869012723878"
+      },
+      {
+        "kind": "admission",
+        "command": "go",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:06.614337Z",
+          "mono_ns": "101869065731246"
+        },
+        "at": "2026-11-04T07:47:06.650039Z",
+        "mono_ns": "101869101424349"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:06.671909Z",
+          "mono_ns": "101869123299004"
+        },
+        "at": "2026-11-04T07:47:06.707195Z",
+        "mono_ns": "101869158582678"
+      },
+      {
+        "kind": "admission",
+        "command": "go",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:07.408137Z",
+          "mono_ns": "101869859531062"
+        },
+        "at": "2026-11-04T07:47:07.443399Z",
+        "mono_ns": "101869894783260"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:07.465580Z",
+          "mono_ns": "101869916969714"
+        },
+        "at": "2026-11-04T07:47:07.500628Z",
+        "mono_ns": "101869952013255"
+      },
+      {
+        "kind": "admission",
+        "command": "go",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:08.100736Z",
+          "mono_ns": "101870552129943"
+        },
+        "at": "2026-11-04T07:47:08.136334Z",
+        "mono_ns": "101870587720917"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:08.159006Z",
+          "mono_ns": "101870610396243"
+        },
+        "at": "2026-11-04T07:47:08.193769Z",
+        "mono_ns": "101870645154273"
+      },
+      {
+        "kind": "admission",
+        "command": "go",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:08.719894Z",
+          "mono_ns": "101871171287822"
+        },
+        "at": "2026-11-04T07:47:08.755431Z",
+        "mono_ns": "101871206816124"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:08.777358Z",
+          "mono_ns": "101871228748494"
+        },
+        "at": "2026-11-04T07:47:08.811011Z",
+        "mono_ns": "101871262397185"
+      },
+      {
+        "kind": "admission",
+        "command": "go",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:09.112685Z",
+          "mono_ns": "101871564079821"
+        },
+        "at": "2026-11-04T07:47:09.148333Z",
+        "mono_ns": "101871599718663"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:09.170654Z",
+          "mono_ns": "101871622043534"
+        },
+        "at": "2026-11-04T07:47:09.205850Z",
+        "mono_ns": "101871657236165"
+      },
+      {
+        "kind": "admission",
+        "command": "go",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:09.672658Z",
+          "mono_ns": "101872124051559"
+        },
+        "at": "2026-11-04T07:47:09.708683Z",
+        "mono_ns": "101872160068282"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:09.730195Z",
+          "mono_ns": "101872181584404"
+        },
+        "at": "2026-11-04T07:47:09.765480Z",
+        "mono_ns": "101872216864922"
+      },
+      {
+        "kind": "admission",
+        "command": "go",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:10.126546Z",
+          "mono_ns": "101872577939662"
+        },
+        "at": "2026-11-04T07:47:10.161901Z",
+        "mono_ns": "101872613287139"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:10.183876Z",
+          "mono_ns": "101872635266213"
+        },
+        "at": "2026-11-04T07:47:10.218890Z",
+        "mono_ns": "101872670276306"
+      },
+      {
+        "kind": "admission",
+        "command": "go",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:10.693023Z",
+          "mono_ns": "101873144417585"
+        },
+        "at": "2026-11-04T07:47:10.729210Z",
+        "mono_ns": "101873180598585"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:10.751660Z",
+          "mono_ns": "101873203050672"
+        },
+        "at": "2026-11-04T07:47:10.786614Z",
+        "mono_ns": "101873237999023"
+      },
+      {
+        "kind": "admission",
+        "command": "go",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:11.352238Z",
+          "mono_ns": "101873803630941"
+        },
+        "at": "2026-11-04T07:47:11.388019Z",
+        "mono_ns": "101873839406545"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:11.410667Z",
+          "mono_ns": "101873862057100"
+        },
+        "at": "2026-11-04T07:47:11.445489Z",
+        "mono_ns": "101873896873725"
+      },
+      {
+        "kind": "admission",
+        "command": "go",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:11.800350Z",
+          "mono_ns": "101874251744902"
+        },
+        "at": "2026-11-04T07:47:11.835714Z",
+        "mono_ns": "101874287098575"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:11.857968Z",
+          "mono_ns": "101874309360474"
+        },
+        "at": "2026-11-04T07:47:11.893171Z",
+        "mono_ns": "101874344554191"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:12.237596Z",
+          "mono_ns": "101874688990520"
+        },
+        "at": "2026-11-04T07:47:12.273093Z",
+        "mono_ns": "101874724477640"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:13.058213Z",
+          "mono_ns": "101875509606148"
+        },
+        "at": "2026-11-04T07:47:13.092558Z",
+        "mono_ns": "101875543942954"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:14.753776Z",
+          "mono_ns": "101877205169909"
+        },
+        "at": "2026-11-04T07:47:14.788605Z",
+        "mono_ns": "101877239990343"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:15.491169Z",
+          "mono_ns": "101877942563180"
+        },
+        "at": "2026-11-04T07:47:15.526418Z",
+        "mono_ns": "101877977802359"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:16.802505Z",
+          "mono_ns": "101879253898572"
+        },
+        "at": "2026-11-04T07:47:16.837856Z",
+        "mono_ns": "101879289240633"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:17.851020Z",
+          "mono_ns": "101880302414256"
+        },
+        "at": "2026-11-04T07:47:17.886475Z",
+        "mono_ns": "101880337859972"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:24.723114Z",
+          "mono_ns": "101887174508058"
+        },
+        "at": "2026-11-04T07:47:24.758156Z",
+        "mono_ns": "101887209541770"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:31.446606Z",
+          "mono_ns": "101893898004357"
+        },
+        "at": "2026-11-04T07:47:31.483942Z",
+        "mono_ns": "101893935327565"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:31.568774Z",
+          "mono_ns": "101894020168350"
+        },
+        "at": "2026-11-04T07:47:31.606156Z",
+        "mono_ns": "101894057540892"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:31.916665Z",
+          "mono_ns": "101894368058687"
+        },
+        "at": "2026-11-04T07:47:31.953598Z",
+        "mono_ns": "101894404983774"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:38.445180Z",
+          "mono_ns": "101900896573913"
+        },
+        "at": "2026-11-04T07:47:38.484946Z",
+        "mono_ns": "101900936338410"
+      },
+      {
+        "kind": "admission",
+        "command": "go",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:39.791667Z",
+          "mono_ns": "101902243059375"
+        },
+        "at": "2026-11-04T07:47:39.830120Z",
+        "mono_ns": "101902281509890"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:39.852600Z",
+          "mono_ns": "101902303992912"
+        },
+        "at": "2026-11-04T07:47:39.890782Z",
+        "mono_ns": "101902342172407"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:44.379231Z",
+          "mono_ns": "101906830622428"
+        },
+        "at": "2026-11-04T07:47:44.417168Z",
+        "mono_ns": "101906868557083"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:47:45.459564Z",
+          "mono_ns": "101907910960995"
+        },
+        "at": "2026-11-04T07:47:45.498551Z",
+        "mono_ns": "101907949944118"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:07.865355Z",
+          "mono_ns": "101930316748826"
+        },
+        "at": "2026-11-04T07:48:07.903030Z",
+        "mono_ns": "101930354415747"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:07.944272Z",
+          "mono_ns": "101930395665365"
+        },
+        "at": "2026-11-04T07:48:07.982125Z",
+        "mono_ns": "101930433510421"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:08.022664Z",
+          "mono_ns": "101930474057432"
+        },
+        "at": "2026-11-04T07:48:08.060155Z",
+        "mono_ns": "101930511538816"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:08.102612Z",
+          "mono_ns": "101930554028705"
+        },
+        "at": "2026-11-04T07:48:08.139629Z",
+        "mono_ns": "101930591015263"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:08.418335Z",
+          "mono_ns": "101930869728923"
+        },
+        "at": "2026-11-04T07:48:08.455892Z",
+        "mono_ns": "101930907280844"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:08.488782Z",
+          "mono_ns": "101930940174821"
+        },
+        "at": "2026-11-04T07:48:08.526705Z",
+        "mono_ns": "101930978089907"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:08.759882Z",
+          "mono_ns": "101931211277888"
+        },
+        "at": "2026-11-04T07:48:08.798733Z",
+        "mono_ns": "101931250123747"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:08.857530Z",
+          "mono_ns": "101931308924230"
+        },
+        "at": "2026-11-04T07:48:08.896534Z",
+        "mono_ns": "101931347924893"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:09.955969Z",
+          "mono_ns": "101932407362780"
+        },
+        "at": "2026-11-04T07:48:09.994305Z",
+        "mono_ns": "101932445692675"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:11.057029Z",
+          "mono_ns": "101933508422451"
+        },
+        "at": "2026-11-04T07:48:11.095307Z",
+        "mono_ns": "101933546692809"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:11.230787Z",
+          "mono_ns": "101933682180986"
+        },
+        "at": "2026-11-04T07:48:11.269705Z",
+        "mono_ns": "101933721092055"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:13.330210Z",
+          "mono_ns": "101935781603359"
+        },
+        "at": "2026-11-04T07:48:13.368778Z",
+        "mono_ns": "101935820166741"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:15.420365Z",
+          "mono_ns": "101937871759756"
+        },
+        "at": "2026-11-04T07:48:15.457788Z",
+        "mono_ns": "101937909174093"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:17.521263Z",
+          "mono_ns": "101939972657513"
+        },
+        "at": "2026-11-04T07:48:17.558491Z",
+        "mono_ns": "101940009878634"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:19.629375Z",
+          "mono_ns": "101942080770631"
+        },
+        "at": "2026-11-04T07:48:19.669678Z",
+        "mono_ns": "101942121067362"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:21.739162Z",
+          "mono_ns": "101944190556369"
+        },
+        "at": "2026-11-04T07:48:21.776918Z",
+        "mono_ns": "101944228303497"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:23.844389Z",
+          "mono_ns": "101946295784428"
+        },
+        "at": "2026-11-04T07:48:23.882592Z",
+        "mono_ns": "101946333982019"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:23.950076Z",
+          "mono_ns": "101946401470029"
+        },
+        "at": "2026-11-04T07:48:23.987906Z",
+        "mono_ns": "101946439292756"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:24.049771Z",
+          "mono_ns": "101946501166200"
+        },
+        "at": "2026-11-04T07:48:24.087867Z",
+        "mono_ns": "101946539259470"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:24.146291Z",
+          "mono_ns": "101946597685431"
+        },
+        "at": "2026-11-04T07:48:24.184892Z",
+        "mono_ns": "101946636278667"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:28.278584Z",
+          "mono_ns": "101950729977950"
+        },
+        "at": "2026-11-04T07:48:28.316657Z",
+        "mono_ns": "101950768042147"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:28.362845Z",
+          "mono_ns": "101950814238024"
+        },
+        "at": "2026-11-04T07:48:28.400373Z",
+        "mono_ns": "101950851757874"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:28.443810Z",
+          "mono_ns": "101950895204237"
+        },
+        "at": "2026-11-04T07:48:28.481469Z",
+        "mono_ns": "101950932855598"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:28.524055Z",
+          "mono_ns": "101950975448665"
+        },
+        "at": "2026-11-04T07:48:28.561897Z",
+        "mono_ns": "101951013287168"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:28.606911Z",
+          "mono_ns": "101951058305353"
+        },
+        "at": "2026-11-04T07:48:28.645033Z",
+        "mono_ns": "101951096420527"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:28.713285Z",
+          "mono_ns": "101951164679819"
+        },
+        "at": "2026-11-04T07:48:28.750944Z",
+        "mono_ns": "101951202328484"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:31.825720Z",
+          "mono_ns": "101954277114546"
+        },
+        "at": "2026-11-04T07:48:31.863695Z",
+        "mono_ns": "101954315081147"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:31.908937Z",
+          "mono_ns": "101954360331021"
+        },
+        "at": "2026-11-04T07:48:31.946539Z",
+        "mono_ns": "101954397925313"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:31.994092Z",
+          "mono_ns": "101954445484738"
+        },
+        "at": "2026-11-04T07:48:32.031356Z",
+        "mono_ns": "101954482740931"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:32.073534Z",
+          "mono_ns": "101954524925999"
+        },
+        "at": "2026-11-04T07:48:32.111305Z",
+        "mono_ns": "101954562689855"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:32.179045Z",
+          "mono_ns": "101954630439873"
+        },
+        "at": "2026-11-04T07:48:32.216465Z",
+        "mono_ns": "101954667850074"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:32.287037Z",
+          "mono_ns": "101954738431724"
+        },
+        "at": "2026-11-04T07:48:32.324568Z",
+        "mono_ns": "101954775953928"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:32.385298Z",
+          "mono_ns": "101954836692063"
+        },
+        "at": "2026-11-04T07:48:32.422985Z",
+        "mono_ns": "101954874371210"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:32.468739Z",
+          "mono_ns": "101954920133200"
+        },
+        "at": "2026-11-04T07:48:32.505617Z",
+        "mono_ns": "101954957005405"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:32.630389Z",
+          "mono_ns": "101955081782667"
+        },
+        "at": "2026-11-04T07:48:32.667297Z",
+        "mono_ns": "101955118682338"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:32.713970Z",
+          "mono_ns": "101955165362924"
+        },
+        "at": "2026-11-04T07:48:32.751735Z",
+        "mono_ns": "101955203120730"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:33.004275Z",
+          "mono_ns": "101955455669302"
+        },
+        "at": "2026-11-04T07:48:33.041927Z",
+        "mono_ns": "101955493311864"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:33.079676Z",
+          "mono_ns": "101955531068092"
+        },
+        "at": "2026-11-04T07:48:33.117231Z",
+        "mono_ns": "101955568617035"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:33.175440Z",
+          "mono_ns": "101955626833435"
+        },
+        "at": "2026-11-04T07:48:33.213291Z",
+        "mono_ns": "101955664676352"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:33.274411Z",
+          "mono_ns": "101955725804518"
+        },
+        "at": "2026-11-04T07:48:33.311780Z",
+        "mono_ns": "101955763165437"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:33.370921Z",
+          "mono_ns": "101955822314226"
+        },
+        "at": "2026-11-04T07:48:33.408606Z",
+        "mono_ns": "101955859991266"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:33.667241Z",
+          "mono_ns": "101956118634629"
+        },
+        "at": "2026-11-04T07:48:33.704970Z",
+        "mono_ns": "101956156356314"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:33.966335Z",
+          "mono_ns": "101956417729063"
+        },
+        "at": "2026-11-04T07:48:34.004907Z",
+        "mono_ns": "101956456292602"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:34.056571Z",
+          "mono_ns": "101956507965062"
+        },
+        "at": "2026-11-04T07:48:34.094412Z",
+        "mono_ns": "101956545799858"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:34.153828Z",
+          "mono_ns": "101956605221792"
+        },
+        "at": "2026-11-04T07:48:34.191826Z",
+        "mono_ns": "101956643211117"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:38.248310Z",
+          "mono_ns": "101960699704245"
+        },
+        "at": "2026-11-04T07:48:38.287487Z",
+        "mono_ns": "101960738879295"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:38.346573Z",
+          "mono_ns": "101960797967746"
+        },
+        "at": "2026-11-04T07:48:38.385172Z",
+        "mono_ns": "101960836563773"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:38.437475Z",
+          "mono_ns": "101960888869641"
+        },
+        "at": "2026-11-04T07:48:38.475269Z",
+        "mono_ns": "101960926656169"
+      },
+      {
+        "kind": "admission",
+        "command": "timed-section:grant_expiry",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:48:38.494299Z",
+          "mono_ns": "101960945690129"
+        },
+        "at": "2026-11-04T07:48:38.531945Z",
+        "mono_ns": "101960983331494"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:22.037480Z",
+          "mono_ns": "102124488871591"
+        },
+        "at": "2026-11-04T07:51:22.074925Z",
+        "mono_ns": "102124526313179"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:22.119785Z",
+          "mono_ns": "102124571182349"
+        },
+        "at": "2026-11-04T07:51:22.159805Z",
+        "mono_ns": "102124611197116"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:22.202767Z",
+          "mono_ns": "102124654163573"
+        },
+        "at": "2026-11-04T07:51:22.242275Z",
+        "mono_ns": "102124693668898"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:22.393688Z",
+          "mono_ns": "102124845083588"
+        },
+        "at": "2026-11-04T07:51:22.433689Z",
+        "mono_ns": "102124885080650"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:22.475495Z",
+          "mono_ns": "102124926892672"
+        },
+        "at": "2026-11-04T07:51:22.515402Z",
+        "mono_ns": "102124966793100"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:22.559655Z",
+          "mono_ns": "102125011050127"
+        },
+        "at": "2026-11-04T07:51:22.598546Z",
+        "mono_ns": "102125049934173"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:22.810515Z",
+          "mono_ns": "102125261911311"
+        },
+        "at": "2026-11-04T07:51:22.851133Z",
+        "mono_ns": "102125302527548"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:22.895123Z",
+          "mono_ns": "102125346517797"
+        },
+        "at": "2026-11-04T07:51:22.934898Z",
+        "mono_ns": "102125386284482"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:23.006418Z",
+          "mono_ns": "102125457814333"
+        },
+        "at": "2026-11-04T07:51:23.046378Z",
+        "mono_ns": "102125497766068"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:23.118773Z",
+          "mono_ns": "102125570166740"
+        },
+        "at": "2026-11-04T07:51:23.158627Z",
+        "mono_ns": "102125610013579"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:25.228357Z",
+          "mono_ns": "102127679751448"
+        },
+        "at": "2026-11-04T07:51:25.267075Z",
+        "mono_ns": "102127718460929"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:25.310958Z",
+          "mono_ns": "102127762354444"
+        },
+        "at": "2026-11-04T07:51:25.349841Z",
+        "mono_ns": "102127801228325"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:25.418907Z",
+          "mono_ns": "102127870302043"
+        },
+        "at": "2026-11-04T07:51:25.457262Z",
+        "mono_ns": "102127908649665"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:25.527158Z",
+          "mono_ns": "102127978556907"
+        },
+        "at": "2026-11-04T07:51:25.567784Z",
+        "mono_ns": "102128019179216"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:25.629632Z",
+          "mono_ns": "102128081026045"
+        },
+        "at": "2026-11-04T07:51:25.669701Z",
+        "mono_ns": "102128121089672"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:25.715345Z",
+          "mono_ns": "102128166738807"
+        },
+        "at": "2026-11-04T07:51:25.754450Z",
+        "mono_ns": "102128205837354"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:27.950521Z",
+          "mono_ns": "102130401916161"
+        },
+        "at": "2026-11-04T07:51:27.989111Z",
+        "mono_ns": "102130440496041"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:28.037674Z",
+          "mono_ns": "102130489070271"
+        },
+        "at": "2026-11-04T07:51:28.076495Z",
+        "mono_ns": "102130527888244"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:28.447821Z",
+          "mono_ns": "102130899218086"
+        },
+        "at": "2026-11-04T07:51:28.487011Z",
+        "mono_ns": "102130938402327"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:28.532897Z",
+          "mono_ns": "102130984292766"
+        },
+        "at": "2026-11-04T07:51:28.571366Z",
+        "mono_ns": "102131022753047"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:28.616661Z",
+          "mono_ns": "102131068056515"
+        },
+        "at": "2026-11-04T07:51:28.654690Z",
+        "mono_ns": "102131106077157"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:28.700244Z",
+          "mono_ns": "102131151637732"
+        },
+        "at": "2026-11-04T07:51:28.738034Z",
+        "mono_ns": "102131189419460"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:28.781416Z",
+          "mono_ns": "102131232810407"
+        },
+        "at": "2026-11-04T07:51:28.819867Z",
+        "mono_ns": "102131271256532"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:28.864475Z",
+          "mono_ns": "102131315870002"
+        },
+        "at": "2026-11-04T07:51:28.902634Z",
+        "mono_ns": "102131354022739"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:29.162399Z",
+          "mono_ns": "102131613794984"
+        },
+        "at": "2026-11-04T07:51:29.202787Z",
+        "mono_ns": "102131654179139"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:29.234224Z",
+          "mono_ns": "102131685616936"
+        },
+        "at": "2026-11-04T07:51:29.273060Z",
+        "mono_ns": "102131724446521"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:29.456609Z",
+          "mono_ns": "102131908012108"
+        },
+        "at": "2026-11-04T07:51:29.497061Z",
+        "mono_ns": "102131948454812"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:29.559084Z",
+          "mono_ns": "102132010480479"
+        },
+        "at": "2026-11-04T07:51:29.598569Z",
+        "mono_ns": "102132049960698"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:30.660472Z",
+          "mono_ns": "102133111866098"
+        },
+        "at": "2026-11-04T07:51:30.699203Z",
+        "mono_ns": "102133150589958"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:30.829373Z",
+          "mono_ns": "102133280768399"
+        },
+        "at": "2026-11-04T07:51:30.868901Z",
+        "mono_ns": "102133320290529"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:32.930207Z",
+          "mono_ns": "102135381601876"
+        },
+        "at": "2026-11-04T07:51:32.971285Z",
+        "mono_ns": "102135422680214"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:35.034223Z",
+          "mono_ns": "102137485616750"
+        },
+        "at": "2026-11-04T07:51:35.071209Z",
+        "mono_ns": "102137522597942"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:37.141284Z",
+          "mono_ns": "102139592679103"
+        },
+        "at": "2026-11-04T07:51:37.178618Z",
+        "mono_ns": "102139630007531"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:39.253555Z",
+          "mono_ns": "102141704948137"
+        },
+        "at": "2026-11-04T07:51:39.291544Z",
+        "mono_ns": "102141742929083"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:39.367159Z",
+          "mono_ns": "102141818552756"
+        },
+        "at": "2026-11-04T07:51:39.404671Z",
+        "mono_ns": "102141856056569"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:39.464935Z",
+          "mono_ns": "102141916328973"
+        },
+        "at": "2026-11-04T07:51:39.502273Z",
+        "mono_ns": "102141953658046"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:39.558569Z",
+          "mono_ns": "102142009962788"
+        },
+        "at": "2026-11-04T07:51:39.596754Z",
+        "mono_ns": "102142048146863"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:39.658367Z",
+          "mono_ns": "102142109762229"
+        },
+        "at": "2026-11-04T07:51:39.696286Z",
+        "mono_ns": "102142147671389"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:39.741090Z",
+          "mono_ns": "102142192484946"
+        },
+        "at": "2026-11-04T07:51:39.779365Z",
+        "mono_ns": "102142230754791"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:39.847487Z",
+          "mono_ns": "102142298880385"
+        },
+        "at": "2026-11-04T07:51:39.884871Z",
+        "mono_ns": "102142336257627"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:39.956118Z",
+          "mono_ns": "102142407511766"
+        },
+        "at": "2026-11-04T07:51:39.993178Z",
+        "mono_ns": "102142444563606"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:40.053588Z",
+          "mono_ns": "102142504981436"
+        },
+        "at": "2026-11-04T07:51:40.089813Z",
+        "mono_ns": "102142541196813"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:40.135345Z",
+          "mono_ns": "102142586738705"
+        },
+        "at": "2026-11-04T07:51:40.172306Z",
+        "mono_ns": "102142623691940"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:43.247074Z",
+          "mono_ns": "102145698468468"
+        },
+        "at": "2026-11-04T07:51:43.284541Z",
+        "mono_ns": "102145735927721"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:45.332179Z",
+          "mono_ns": "102147783571422"
+        },
+        "at": "2026-11-04T07:51:45.371529Z",
+        "mono_ns": "102147822915082"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:45.418700Z",
+          "mono_ns": "102147870093431"
+        },
+        "at": "2026-11-04T07:51:45.456466Z",
+        "mono_ns": "102147907851996"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:45.526655Z",
+          "mono_ns": "102147978050402"
+        },
+        "at": "2026-11-04T07:51:45.564047Z",
+        "mono_ns": "102148015433250"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:45.634588Z",
+          "mono_ns": "102148085981256"
+        },
+        "at": "2026-11-04T07:51:45.671839Z",
+        "mono_ns": "102148123225098"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:45.731214Z",
+          "mono_ns": "102148182607422"
+        },
+        "at": "2026-11-04T07:51:45.768572Z",
+        "mono_ns": "102148219956838"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:45.815158Z",
+          "mono_ns": "102148266551289"
+        },
+        "at": "2026-11-04T07:51:45.852198Z",
+        "mono_ns": "102148303584858"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:45.971943Z",
+          "mono_ns": "102148423336868"
+        },
+        "at": "2026-11-04T07:51:46.009577Z",
+        "mono_ns": "102148460962126"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:46.057427Z",
+          "mono_ns": "102148508820035"
+        },
+        "at": "2026-11-04T07:51:46.094726Z",
+        "mono_ns": "102148546112223"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:46.223559Z",
+          "mono_ns": "102148674952749"
+        },
+        "at": "2026-11-04T07:51:46.260973Z",
+        "mono_ns": "102148712363078"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:46.298773Z",
+          "mono_ns": "102148750166234"
+        },
+        "at": "2026-11-04T07:51:46.336353Z",
+        "mono_ns": "102148787738040"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:46.397954Z",
+          "mono_ns": "102148849347419"
+        },
+        "at": "2026-11-04T07:51:46.435437Z",
+        "mono_ns": "102148886823547"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:46.497248Z",
+          "mono_ns": "102148948642888"
+        },
+        "at": "2026-11-04T07:51:46.534421Z",
+        "mono_ns": "102148985807224"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:46.592766Z",
+          "mono_ns": "102149044160345"
+        },
+        "at": "2026-11-04T07:51:46.630164Z",
+        "mono_ns": "102149081548846"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:46.891511Z",
+          "mono_ns": "102149342904047"
+        },
+        "at": "2026-11-04T07:51:46.929723Z",
+        "mono_ns": "102149381112489"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:47.191094Z",
+          "mono_ns": "102149642487961"
+        },
+        "at": "2026-11-04T07:51:47.229301Z",
+        "mono_ns": "102149680686377"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:47.289869Z",
+          "mono_ns": "102149741262400"
+        },
+        "at": "2026-11-04T07:51:47.327509Z",
+        "mono_ns": "102149778894467"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:47.386054Z",
+          "mono_ns": "102149837448058"
+        },
+        "at": "2026-11-04T07:51:47.423425Z",
+        "mono_ns": "102149874811421"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:51.480055Z",
+          "mono_ns": "102153931452029"
+        },
+        "at": "2026-11-04T07:51:51.517780Z",
+        "mono_ns": "102153969169094"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:51.577275Z",
+          "mono_ns": "102154028668781"
+        },
+        "at": "2026-11-04T07:51:51.615105Z",
+        "mono_ns": "102154066491476"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:51.759796Z",
+          "mono_ns": "102154211191108"
+        },
+        "at": "2026-11-04T07:51:51.798442Z",
+        "mono_ns": "102154249830385"
+      },
+      {
+        "kind": "admission",
+        "command": "timed-section:lease_expiry",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:51:51.817930Z",
+          "mono_ns": "102154269322835"
+        },
+        "at": "2026-11-04T07:51:51.856250Z",
+        "mono_ns": "102154307637807"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "held",
+        "started": {
+          "at": "2026-11-04T07:53:41.790637Z",
+          "mono_ns": "102264242027481"
+        },
+        "at": "2026-11-04T07:53:41.828536Z",
+        "mono_ns": "102264279922883"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "held",
+        "started": {
+          "at": "2026-11-04T07:54:41.828827Z",
+          "mono_ns": "102324280220507"
+        },
+        "at": "2026-11-04T07:54:41.870603Z",
+        "mono_ns": "102324321990569"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:41.870902Z",
+          "mono_ns": "102384322296278"
+        },
+        "at": "2026-11-04T07:55:41.910962Z",
+        "mono_ns": "102384362349627"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:41.956689Z",
+          "mono_ns": "102384408080999"
+        },
+        "at": "2026-11-04T07:55:41.995341Z",
+        "mono_ns": "102384446726975"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:42.037427Z",
+          "mono_ns": "102384488820572"
+        },
+        "at": "2026-11-04T07:55:42.075586Z",
+        "mono_ns": "102384526972303"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:42.276480Z",
+          "mono_ns": "102384727875681"
+        },
+        "at": "2026-11-04T07:55:42.317045Z",
+        "mono_ns": "102384768436684"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:42.357409Z",
+          "mono_ns": "102384808806205"
+        },
+        "at": "2026-11-04T07:55:42.398597Z",
+        "mono_ns": "102384849988181"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:42.443706Z",
+          "mono_ns": "102384895101393"
+        },
+        "at": "2026-11-04T07:55:42.484040Z",
+        "mono_ns": "102384935431841"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:42.591733Z",
+          "mono_ns": "102385043127560"
+        },
+        "at": "2026-11-04T07:55:42.632248Z",
+        "mono_ns": "102385083635573"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:42.676873Z",
+          "mono_ns": "102385128270090"
+        },
+        "at": "2026-11-04T07:55:42.717589Z",
+        "mono_ns": "102385168981164"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:42.785958Z",
+          "mono_ns": "102385237351565"
+        },
+        "at": "2026-11-04T07:55:42.825281Z",
+        "mono_ns": "102385276666158"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:42.887571Z",
+          "mono_ns": "102385338964692"
+        },
+        "at": "2026-11-04T07:55:42.927528Z",
+        "mono_ns": "102385378915804"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:42.988724Z",
+          "mono_ns": "102385440119512"
+        },
+        "at": "2026-11-04T07:55:43.028397Z",
+        "mono_ns": "102385479782446"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:43.074838Z",
+          "mono_ns": "102385526231467"
+        },
+        "at": "2026-11-04T07:55:43.114580Z",
+        "mono_ns": "102385565967201"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:43.232830Z",
+          "mono_ns": "102385684224753"
+        },
+        "at": "2026-11-04T07:55:43.272668Z",
+        "mono_ns": "102385724054619"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:43.410101Z",
+          "mono_ns": "102385861495224"
+        },
+        "at": "2026-11-04T07:55:43.450238Z",
+        "mono_ns": "102385901624781"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:45.236394Z",
+          "mono_ns": "102387687788213"
+        },
+        "at": "2026-11-04T07:55:45.276038Z",
+        "mono_ns": "102387727424596"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:45.318911Z",
+          "mono_ns": "102387770304701"
+        },
+        "at": "2026-11-04T07:55:45.358537Z",
+        "mono_ns": "102387809923736"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:45.402028Z",
+          "mono_ns": "102387853421140"
+        },
+        "at": "2026-11-04T07:55:45.441584Z",
+        "mono_ns": "102387892970852"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:45.488246Z",
+          "mono_ns": "102387939639953"
+        },
+        "at": "2026-11-04T07:55:45.527597Z",
+        "mono_ns": "102387978982076"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:45.570113Z",
+          "mono_ns": "102388021506401"
+        },
+        "at": "2026-11-04T07:55:45.609830Z",
+        "mono_ns": "102388061216326"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:45.653049Z",
+          "mono_ns": "102388104443414"
+        },
+        "at": "2026-11-04T07:55:45.692679Z",
+        "mono_ns": "102388144067312"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:46.020953Z",
+          "mono_ns": "102388472346448"
+        },
+        "at": "2026-11-04T07:55:46.060233Z",
+        "mono_ns": "102388511618468"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:46.092741Z",
+          "mono_ns": "102388544133241"
+        },
+        "at": "2026-11-04T07:55:46.131932Z",
+        "mono_ns": "102388583317819"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:46.300951Z",
+          "mono_ns": "102388752346063"
+        },
+        "at": "2026-11-04T07:55:46.341484Z",
+        "mono_ns": "102388792874734"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:46.402694Z",
+          "mono_ns": "102388854088858"
+        },
+        "at": "2026-11-04T07:55:46.442720Z",
+        "mono_ns": "102388894110854"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:47.504246Z",
+          "mono_ns": "102389955639867"
+        },
+        "at": "2026-11-04T07:55:47.543885Z",
+        "mono_ns": "102389995272172"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:47.669237Z",
+          "mono_ns": "102390120632180"
+        },
+        "at": "2026-11-04T07:55:47.709663Z",
+        "mono_ns": "102390161054006"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:49.769594Z",
+          "mono_ns": "102392220987980"
+        },
+        "at": "2026-11-04T07:55:49.809838Z",
+        "mono_ns": "102392261229018"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:51.873351Z",
+          "mono_ns": "102394324745327"
+        },
+        "at": "2026-11-04T07:55:51.913857Z",
+        "mono_ns": "102394365247936"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:53.984991Z",
+          "mono_ns": "102396436383920"
+        },
+        "at": "2026-11-04T07:55:54.024493Z",
+        "mono_ns": "102396475879427"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:56.099128Z",
+          "mono_ns": "102398550522066"
+        },
+        "at": "2026-11-04T07:55:56.138284Z",
+        "mono_ns": "102398589670452"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:56.203289Z",
+          "mono_ns": "102398654682744"
+        },
+        "at": "2026-11-04T07:55:56.242384Z",
+        "mono_ns": "102398693770311"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:56.298141Z",
+          "mono_ns": "102398749537008"
+        },
+        "at": "2026-11-04T07:55:56.338437Z",
+        "mono_ns": "102398789824936"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:56.398875Z",
+          "mono_ns": "102398850269097"
+        },
+        "at": "2026-11-04T07:55:56.437682Z",
+        "mono_ns": "102398889067941"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:56.499573Z",
+          "mono_ns": "102398950966732"
+        },
+        "at": "2026-11-04T07:55:56.538729Z",
+        "mono_ns": "102398990116377"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:56.581621Z",
+          "mono_ns": "102399033017783"
+        },
+        "at": "2026-11-04T07:55:56.619990Z",
+        "mono_ns": "102399071375794"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:56.679889Z",
+          "mono_ns": "102399131281850"
+        },
+        "at": "2026-11-04T07:55:56.717888Z",
+        "mono_ns": "102399169272915"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:56.779512Z",
+          "mono_ns": "102399230906312"
+        },
+        "at": "2026-11-04T07:55:56.819443Z",
+        "mono_ns": "102399270827911"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:56.881350Z",
+          "mono_ns": "102399332743439"
+        },
+        "at": "2026-11-04T07:55:56.920178Z",
+        "mono_ns": "102399371564524"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:56.966816Z",
+          "mono_ns": "102399418209346"
+        },
+        "at": "2026-11-04T07:55:57.004743Z",
+        "mono_ns": "102399456128726"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:55:58.233294Z",
+          "mono_ns": "102400684688882"
+        },
+        "at": "2026-11-04T07:55:58.271584Z",
+        "mono_ns": "102400722970308"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:00.319040Z",
+          "mono_ns": "102402770434177"
+        },
+        "at": "2026-11-04T07:56:00.359026Z",
+        "mono_ns": "102402810413963"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:00.408650Z",
+          "mono_ns": "102402860044141"
+        },
+        "at": "2026-11-04T07:56:00.447487Z",
+        "mono_ns": "102402898874911"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:00.516310Z",
+          "mono_ns": "102402967704060"
+        },
+        "at": "2026-11-04T07:56:00.554313Z",
+        "mono_ns": "102403005698595"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:00.622952Z",
+          "mono_ns": "102403074347260"
+        },
+        "at": "2026-11-04T07:56:00.661522Z",
+        "mono_ns": "102403112908003"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:00.721525Z",
+          "mono_ns": "102403172918654"
+        },
+        "at": "2026-11-04T07:56:00.760094Z",
+        "mono_ns": "102403211479986"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:00.807451Z",
+          "mono_ns": "102403258845084"
+        },
+        "at": "2026-11-04T07:56:00.845365Z",
+        "mono_ns": "102403296750306"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:00.963860Z",
+          "mono_ns": "102403415254598"
+        },
+        "at": "2026-11-04T07:56:01.003616Z",
+        "mono_ns": "102403455006303"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:01.050549Z",
+          "mono_ns": "102403501941992"
+        },
+        "at": "2026-11-04T07:56:01.089037Z",
+        "mono_ns": "102403540422677"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:01.217688Z",
+          "mono_ns": "102403669081916"
+        },
+        "at": "2026-11-04T07:56:01.257010Z",
+        "mono_ns": "102403708395254"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:01.296479Z",
+          "mono_ns": "102403747872493"
+        },
+        "at": "2026-11-04T07:56:01.335043Z",
+        "mono_ns": "102403786428419"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:01.395756Z",
+          "mono_ns": "102403847148508"
+        },
+        "at": "2026-11-04T07:56:01.435440Z",
+        "mono_ns": "102403886833941"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:01.498777Z",
+          "mono_ns": "102403950171864"
+        },
+        "at": "2026-11-04T07:56:01.537595Z",
+        "mono_ns": "102403988980506"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:01.596553Z",
+          "mono_ns": "102404047946623"
+        },
+        "at": "2026-11-04T07:56:01.635592Z",
+        "mono_ns": "102404086976992"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:01.897666Z",
+          "mono_ns": "102404349059306"
+        },
+        "at": "2026-11-04T07:56:01.936460Z",
+        "mono_ns": "102404387847404"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:02.195091Z",
+          "mono_ns": "102404646484280"
+        },
+        "at": "2026-11-04T07:56:02.234690Z",
+        "mono_ns": "102404686076186"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:02.295372Z",
+          "mono_ns": "102404746765337"
+        },
+        "at": "2026-11-04T07:56:02.333781Z",
+        "mono_ns": "102404785166192"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:02.393936Z",
+          "mono_ns": "102404845330029"
+        },
+        "at": "2026-11-04T07:56:02.433586Z",
+        "mono_ns": "102404884971538"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:02.486757Z",
+          "mono_ns": "102404938152228"
+        },
+        "at": "2026-11-04T07:56:02.524906Z",
+        "mono_ns": "102404976294504"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:06.572238Z",
+          "mono_ns": "102409023631786"
+        },
+        "at": "2026-11-04T07:56:06.612658Z",
+        "mono_ns": "102409064043526"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:06.667451Z",
+          "mono_ns": "102409118845672"
+        },
+        "at": "2026-11-04T07:56:06.706447Z",
+        "mono_ns": "102409157833815"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:06.759153Z",
+          "mono_ns": "102409210545648"
+        },
+        "at": "2026-11-04T07:56:06.797647Z",
+        "mono_ns": "102409249033846"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:07.073964Z",
+          "mono_ns": "102409525358232"
+        },
+        "at": "2026-11-04T07:56:07.113502Z",
+        "mono_ns": "102409564888859"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:07.154217Z",
+          "mono_ns": "102409605610687"
+        },
+        "at": "2026-11-04T07:56:07.193121Z",
+        "mono_ns": "102409644507521"
+      },
+      {
+        "kind": "admission",
+        "command": "timed-section:control_lost_agent_alive",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:56:07.212823Z",
+          "mono_ns": "102409664213704"
+        },
+        "at": "2026-11-04T07:56:07.251204Z",
+        "mono_ns": "102409702587176"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:11.823029Z",
+          "mono_ns": "102474274418164"
+        },
+        "at": "2026-11-04T07:57:11.861654Z",
+        "mono_ns": "102474313041670"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:11.909357Z",
+          "mono_ns": "102474360752222"
+        },
+        "at": "2026-11-04T07:57:11.949108Z",
+        "mono_ns": "102474400498532"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:11.994366Z",
+          "mono_ns": "102474445759825"
+        },
+        "at": "2026-11-04T07:57:12.033333Z",
+        "mono_ns": "102474484720946"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:12.077433Z",
+          "mono_ns": "102474528826899"
+        },
+        "at": "2026-11-04T07:57:12.116793Z",
+        "mono_ns": "102474568179115"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:12.254576Z",
+          "mono_ns": "102474705974969"
+        },
+        "at": "2026-11-04T07:57:12.296631Z",
+        "mono_ns": "102474748024308"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:12.378547Z",
+          "mono_ns": "102474829945615"
+        },
+        "at": "2026-11-04T07:57:12.420428Z",
+        "mono_ns": "102474871820147"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:12.468692Z",
+          "mono_ns": "102474920087754"
+        },
+        "at": "2026-11-04T07:57:12.508990Z",
+        "mono_ns": "102474960380676"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:12.579397Z",
+          "mono_ns": "102475030791400"
+        },
+        "at": "2026-11-04T07:57:12.619894Z",
+        "mono_ns": "102475071284128"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:12.680751Z",
+          "mono_ns": "102475132146564"
+        },
+        "at": "2026-11-04T07:57:12.720960Z",
+        "mono_ns": "102475172347124"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:12.773903Z",
+          "mono_ns": "102475225299156"
+        },
+        "at": "2026-11-04T07:57:12.814783Z",
+        "mono_ns": "102475266173335"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:12.858811Z",
+          "mono_ns": "102475310206447"
+        },
+        "at": "2026-11-04T07:57:12.899259Z",
+        "mono_ns": "102475350647943"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:15.082804Z",
+          "mono_ns": "102477534198161"
+        },
+        "at": "2026-11-04T07:57:15.122917Z",
+        "mono_ns": "102477574301967"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:15.172117Z",
+          "mono_ns": "102477623510172"
+        },
+        "at": "2026-11-04T07:57:15.212621Z",
+        "mono_ns": "102477664012265"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:15.273967Z",
+          "mono_ns": "102477725363762"
+        },
+        "at": "2026-11-04T07:57:15.316075Z",
+        "mono_ns": "102477767465417"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:15.369178Z",
+          "mono_ns": "102477820571674"
+        },
+        "at": "2026-11-04T07:57:15.409217Z",
+        "mono_ns": "102477860602770"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:15.451702Z",
+          "mono_ns": "102477903095767"
+        },
+        "at": "2026-11-04T07:57:15.492041Z",
+        "mono_ns": "102477943427757"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:15.532911Z",
+          "mono_ns": "102477984304858"
+        },
+        "at": "2026-11-04T07:57:15.572743Z",
+        "mono_ns": "102478024129323"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:15.616529Z",
+          "mono_ns": "102478067923597"
+        },
+        "at": "2026-11-04T07:57:15.656721Z",
+        "mono_ns": "102478108111266"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:15.700575Z",
+          "mono_ns": "102478151968522"
+        },
+        "at": "2026-11-04T07:57:15.739262Z",
+        "mono_ns": "102478190646180"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:18.128300Z",
+          "mono_ns": "102480579693891"
+        },
+        "at": "2026-11-04T07:57:18.167996Z",
+        "mono_ns": "102480619382489"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:18.211232Z",
+          "mono_ns": "102480662625613"
+        },
+        "at": "2026-11-04T07:57:18.250164Z",
+        "mono_ns": "102480701549982"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:18.292449Z",
+          "mono_ns": "102480743842407"
+        },
+        "at": "2026-11-04T07:57:18.330925Z",
+        "mono_ns": "102480782311130"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:18.575058Z",
+          "mono_ns": "102481026452347"
+        },
+        "at": "2026-11-04T07:57:18.613872Z",
+        "mono_ns": "102481065258862"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:18.646872Z",
+          "mono_ns": "102481098265334"
+        },
+        "at": "2026-11-04T07:57:18.685291Z",
+        "mono_ns": "102481136678524"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:18.869753Z",
+          "mono_ns": "102481321148188"
+        },
+        "at": "2026-11-04T07:57:18.910281Z",
+        "mono_ns": "102481361671570"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:18.970411Z",
+          "mono_ns": "102481421807087"
+        },
+        "at": "2026-11-04T07:57:19.011520Z",
+        "mono_ns": "102481462910918"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:20.072976Z",
+          "mono_ns": "102482524373799"
+        },
+        "at": "2026-11-04T07:57:20.114496Z",
+        "mono_ns": "102482565883178"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:20.247380Z",
+          "mono_ns": "102482698773748"
+        },
+        "at": "2026-11-04T07:57:20.287846Z",
+        "mono_ns": "102482739254185"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:22.342383Z",
+          "mono_ns": "102484793778525"
+        },
+        "at": "2026-11-04T07:57:22.381791Z",
+        "mono_ns": "102484833178284"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:24.435614Z",
+          "mono_ns": "102486887021840"
+        },
+        "at": "2026-11-04T07:57:24.476223Z",
+        "mono_ns": "102486927614416"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:26.533904Z",
+          "mono_ns": "102488985297749"
+        },
+        "at": "2026-11-04T07:57:26.573154Z",
+        "mono_ns": "102489024542512"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:28.655282Z",
+          "mono_ns": "102491106682506"
+        },
+        "at": "2026-11-04T07:57:28.696342Z",
+        "mono_ns": "102491147734777"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:30.774786Z",
+          "mono_ns": "102493226179774"
+        },
+        "at": "2026-11-04T07:57:30.813918Z",
+        "mono_ns": "102493265307175"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:32.873448Z",
+          "mono_ns": "102495324841999"
+        },
+        "at": "2026-11-04T07:57:32.913031Z",
+        "mono_ns": "102495364417298"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:34.987881Z",
+          "mono_ns": "102497439275472"
+        },
+        "at": "2026-11-04T07:57:35.026588Z",
+        "mono_ns": "102497477972924"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:37.105298Z",
+          "mono_ns": "102499556691005"
+        },
+        "at": "2026-11-04T07:57:37.143547Z",
+        "mono_ns": "102499594933000"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:39.220439Z",
+          "mono_ns": "102501671835425"
+        },
+        "at": "2026-11-04T07:57:39.259957Z",
+        "mono_ns": "102501711346159"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:41.327723Z",
+          "mono_ns": "102503779117819"
+        },
+        "at": "2026-11-04T07:57:41.366271Z",
+        "mono_ns": "102503817655892"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:41.436066Z",
+          "mono_ns": "102503887458935"
+        },
+        "at": "2026-11-04T07:57:41.475029Z",
+        "mono_ns": "102503926415614"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:41.535259Z",
+          "mono_ns": "102503986651980"
+        },
+        "at": "2026-11-04T07:57:41.573677Z",
+        "mono_ns": "102504025063285"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:41.635296Z",
+          "mono_ns": "102504086689398"
+        },
+        "at": "2026-11-04T07:57:41.673473Z",
+        "mono_ns": "102504124859530"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:41.733523Z",
+          "mono_ns": "102504184916882"
+        },
+        "at": "2026-11-04T07:57:41.772194Z",
+        "mono_ns": "102504223578805"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:41.817113Z",
+          "mono_ns": "102504268506764"
+        },
+        "at": "2026-11-04T07:57:41.854592Z",
+        "mono_ns": "102504305976246"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:41.923978Z",
+          "mono_ns": "102504375372097"
+        },
+        "at": "2026-11-04T07:57:41.962501Z",
+        "mono_ns": "102504413885806"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:42.031062Z",
+          "mono_ns": "102504482457078"
+        },
+        "at": "2026-11-04T07:57:42.069162Z",
+        "mono_ns": "102504520548684"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:42.131293Z",
+          "mono_ns": "102504582686159"
+        },
+        "at": "2026-11-04T07:57:42.169676Z",
+        "mono_ns": "102504621060960"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:42.217435Z",
+          "mono_ns": "102504668828179"
+        },
+        "at": "2026-11-04T07:57:42.255696Z",
+        "mono_ns": "102504707080917"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:44.464361Z",
+          "mono_ns": "102506915756420"
+        },
+        "at": "2026-11-04T07:57:44.503353Z",
+        "mono_ns": "102506954742182"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:46.552163Z",
+          "mono_ns": "102509003556819"
+        },
+        "at": "2026-11-04T07:57:46.590983Z",
+        "mono_ns": "102509042370177"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:46.634649Z",
+          "mono_ns": "102509086041221"
+        },
+        "at": "2026-11-04T07:57:46.673891Z",
+        "mono_ns": "102509125277691"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:46.732843Z",
+          "mono_ns": "102509184237018"
+        },
+        "at": "2026-11-04T07:57:46.771511Z",
+        "mono_ns": "102509222897311"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:46.837725Z",
+          "mono_ns": "102509289117967"
+        },
+        "at": "2026-11-04T07:57:46.877851Z",
+        "mono_ns": "102509329236166"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:46.927697Z",
+          "mono_ns": "102509379090961"
+        },
+        "at": "2026-11-04T07:57:46.967122Z",
+        "mono_ns": "102509418509310"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:47.015566Z",
+          "mono_ns": "102509466959741"
+        },
+        "at": "2026-11-04T07:57:47.053966Z",
+        "mono_ns": "102509505353350"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:47.172450Z",
+          "mono_ns": "102509623844283"
+        },
+        "at": "2026-11-04T07:57:47.211432Z",
+        "mono_ns": "102509662817159"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:47.258970Z",
+          "mono_ns": "102509710363973"
+        },
+        "at": "2026-11-04T07:57:47.297552Z",
+        "mono_ns": "102509748937288"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:47.424419Z",
+          "mono_ns": "102509875814388"
+        },
+        "at": "2026-11-04T07:57:47.463389Z",
+        "mono_ns": "102509914774017"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:47.501720Z",
+          "mono_ns": "102509953113663"
+        },
+        "at": "2026-11-04T07:57:47.539537Z",
+        "mono_ns": "102509990922568"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:47.596492Z",
+          "mono_ns": "102510047886661"
+        },
+        "at": "2026-11-04T07:57:47.634937Z",
+        "mono_ns": "102510086323196"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:47.688169Z",
+          "mono_ns": "102510139563329"
+        },
+        "at": "2026-11-04T07:57:47.726943Z",
+        "mono_ns": "102510178332089"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:47.788548Z",
+          "mono_ns": "102510239942084"
+        },
+        "at": "2026-11-04T07:57:47.827281Z",
+        "mono_ns": "102510278667071"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:48.089077Z",
+          "mono_ns": "102510540471148"
+        },
+        "at": "2026-11-04T07:57:48.127923Z",
+        "mono_ns": "102510579309011"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:48.393065Z",
+          "mono_ns": "102510844459094"
+        },
+        "at": "2026-11-04T07:57:48.431963Z",
+        "mono_ns": "102510883350581"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:48.492989Z",
+          "mono_ns": "102510944382914"
+        },
+        "at": "2026-11-04T07:57:48.529883Z",
+        "mono_ns": "102510981270170"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:48.589622Z",
+          "mono_ns": "102511041020069"
+        },
+        "at": "2026-11-04T07:57:48.629619Z",
+        "mono_ns": "102511081013047"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:52.687179Z",
+          "mono_ns": "102515138573296"
+        },
+        "at": "2026-11-04T07:57:52.727038Z",
+        "mono_ns": "102515178424190"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:52.788532Z",
+          "mono_ns": "102515239926593"
+        },
+        "at": "2026-11-04T07:57:52.827184Z",
+        "mono_ns": "102515278569419"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:52.880320Z",
+          "mono_ns": "102515331713947"
+        },
+        "at": "2026-11-04T07:57:52.918589Z",
+        "mono_ns": "102515369974771"
+      },
+      {
+        "kind": "admission",
+        "command": "timed-section:forced_relay",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:57:52.937633Z",
+          "mono_ns": "102515389022735"
+        },
+        "at": "2026-11-04T07:57:52.975119Z",
+        "mono_ns": "102515426506339"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:58:31.023922Z",
+          "mono_ns": "102553475311893"
+        },
+        "at": "2026-11-04T07:58:31.062478Z",
+        "mono_ns": "102553513865316"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:58:31.120736Z",
+          "mono_ns": "102553572130264"
+        },
+        "at": "2026-11-04T07:58:31.159368Z",
+        "mono_ns": "102553610756139"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:58:31.230489Z",
+          "mono_ns": "102553681882838"
+        },
+        "at": "2026-11-04T07:58:31.269932Z",
+        "mono_ns": "102553721321791"
+      },
+      {
+        "kind": "admission",
+        "command": "timed-section:device_revoke",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:58:31.290195Z",
+          "mono_ns": "102553741589285"
+        },
+        "at": "2026-11-04T07:58:31.328716Z",
+        "mono_ns": "102553780106522"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:45.091468Z",
+          "mono_ns": "102627542859788"
+        },
+        "at": "2026-11-04T07:59:45.129937Z",
+        "mono_ns": "102627581322296"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:45.174870Z",
+          "mono_ns": "102627626264272"
+        },
+        "at": "2026-11-04T07:59:45.213645Z",
+        "mono_ns": "102627665030919"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:45.256460Z",
+          "mono_ns": "102627707854114"
+        },
+        "at": "2026-11-04T07:59:45.295602Z",
+        "mono_ns": "102627746995229"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:45.401939Z",
+          "mono_ns": "102627853332481"
+        },
+        "at": "2026-11-04T07:59:45.440944Z",
+        "mono_ns": "102627892330003"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:45.956251Z",
+          "mono_ns": "102628407645528"
+        },
+        "at": "2026-11-04T07:59:45.995263Z",
+        "mono_ns": "102628446649424"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:46.039953Z",
+          "mono_ns": "102628491346781"
+        },
+        "at": "2026-11-04T07:59:46.078742Z",
+        "mono_ns": "102628530129287"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:46.123262Z",
+          "mono_ns": "102628574655755"
+        },
+        "at": "2026-11-04T07:59:46.161136Z",
+        "mono_ns": "102628612520391"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:46.203864Z",
+          "mono_ns": "102628655257793"
+        },
+        "at": "2026-11-04T07:59:46.242408Z",
+        "mono_ns": "102628693794422"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:46.285443Z",
+          "mono_ns": "102628736836724"
+        },
+        "at": "2026-11-04T07:59:46.323870Z",
+        "mono_ns": "102628775256287"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:46.366350Z",
+          "mono_ns": "102628817744031"
+        },
+        "at": "2026-11-04T07:59:46.405078Z",
+        "mono_ns": "102628856465726"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:46.656834Z",
+          "mono_ns": "102629108228229"
+        },
+        "at": "2026-11-04T07:59:46.696471Z",
+        "mono_ns": "102629147856831"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:46.729200Z",
+          "mono_ns": "102629180593308"
+        },
+        "at": "2026-11-04T07:59:46.767938Z",
+        "mono_ns": "102629219322649"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:46.932758Z",
+          "mono_ns": "102629384153687"
+        },
+        "at": "2026-11-04T07:59:46.973866Z",
+        "mono_ns": "102629425257562"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:47.032557Z",
+          "mono_ns": "102629483951841"
+        },
+        "at": "2026-11-04T07:59:47.072664Z",
+        "mono_ns": "102629524054601"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:48.131505Z",
+          "mono_ns": "102630582897742"
+        },
+        "at": "2026-11-04T07:59:48.171350Z",
+        "mono_ns": "102630622738282"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:49.233434Z",
+          "mono_ns": "102631684830104"
+        },
+        "at": "2026-11-04T07:59:49.273931Z",
+        "mono_ns": "102631725321341"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:49.398336Z",
+          "mono_ns": "102631849732228"
+        },
+        "at": "2026-11-04T07:59:49.439168Z",
+        "mono_ns": "102631890559395"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:51.500596Z",
+          "mono_ns": "102633951988545"
+        },
+        "at": "2026-11-04T07:59:51.541204Z",
+        "mono_ns": "102633992593474"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:53.603694Z",
+          "mono_ns": "102636055087403"
+        },
+        "at": "2026-11-04T07:59:53.643008Z",
+        "mono_ns": "102636094392272"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:55.721915Z",
+          "mono_ns": "102638173309958"
+        },
+        "at": "2026-11-04T07:59:55.760964Z",
+        "mono_ns": "102638212349704"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:55.838703Z",
+          "mono_ns": "102638290096945"
+        },
+        "at": "2026-11-04T07:59:55.878462Z",
+        "mono_ns": "102638329851340"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:55.942354Z",
+          "mono_ns": "102638393748766"
+        },
+        "at": "2026-11-04T07:59:55.981593Z",
+        "mono_ns": "102638432978919"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:56.040709Z",
+          "mono_ns": "102638492102369"
+        },
+        "at": "2026-11-04T07:59:56.079853Z",
+        "mono_ns": "102638531237386"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:56.138605Z",
+          "mono_ns": "102638590003820"
+        },
+        "at": "2026-11-04T07:59:56.177030Z",
+        "mono_ns": "102638628417668"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:56.220164Z",
+          "mono_ns": "102638671561054"
+        },
+        "at": "2026-11-04T07:59:56.259633Z",
+        "mono_ns": "102638711019118"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:56.328744Z",
+          "mono_ns": "102638780136989"
+        },
+        "at": "2026-11-04T07:59:56.367478Z",
+        "mono_ns": "102638818865144"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:56.435242Z",
+          "mono_ns": "102638886635746"
+        },
+        "at": "2026-11-04T07:59:56.476468Z",
+        "mono_ns": "102638927856822"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:56.539820Z",
+          "mono_ns": "102638991216602"
+        },
+        "at": "2026-11-04T07:59:56.579308Z",
+        "mono_ns": "102639030695683"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:56.627128Z",
+          "mono_ns": "102639078521207"
+        },
+        "at": "2026-11-04T07:59:56.665750Z",
+        "mono_ns": "102639117134259"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:56.991632Z",
+          "mono_ns": "102639443026918"
+        },
+        "at": "2026-11-04T07:59:57.031719Z",
+        "mono_ns": "102639483111590"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:57.078144Z",
+          "mono_ns": "102639529537338"
+        },
+        "at": "2026-11-04T07:59:57.116878Z",
+        "mono_ns": "102639568264493"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:57.239268Z",
+          "mono_ns": "102639690661279"
+        },
+        "at": "2026-11-04T07:59:57.277989Z",
+        "mono_ns": "102639729373265"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:57.317122Z",
+          "mono_ns": "102639768515448"
+        },
+        "at": "2026-11-04T07:59:57.355917Z",
+        "mono_ns": "102639807301817"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:57.417603Z",
+          "mono_ns": "102639868996000"
+        },
+        "at": "2026-11-04T07:59:57.456997Z",
+        "mono_ns": "102639908383844"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:57.509452Z",
+          "mono_ns": "102639960846777"
+        },
+        "at": "2026-11-04T07:59:57.548182Z",
+        "mono_ns": "102639999569728"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:57.608185Z",
+          "mono_ns": "102640059579787"
+        },
+        "at": "2026-11-04T07:59:57.646924Z",
+        "mono_ns": "102640098313369"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:57.904115Z",
+          "mono_ns": "102640355508503"
+        },
+        "at": "2026-11-04T07:59:57.943039Z",
+        "mono_ns": "102640394427325"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:58.203301Z",
+          "mono_ns": "102640654694680"
+        },
+        "at": "2026-11-04T07:59:58.243731Z",
+        "mono_ns": "102640695119143"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:58.306792Z",
+          "mono_ns": "102640758185905"
+        },
+        "at": "2026-11-04T07:59:58.345745Z",
+        "mono_ns": "102640797130193"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T07:59:58.405743Z",
+          "mono_ns": "102640857136979"
+        },
+        "at": "2026-11-04T07:59:58.444346Z",
+        "mono_ns": "102640895731766"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:00:02.502379Z",
+          "mono_ns": "102644953774734"
+        },
+        "at": "2026-11-04T08:00:02.543015Z",
+        "mono_ns": "102644994405489"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:00:02.605954Z",
+          "mono_ns": "102645057349892"
+        },
+        "at": "2026-11-04T08:00:02.646451Z",
+        "mono_ns": "102645097844412"
+      },
+      {
+        "kind": "admission",
+        "command": "python3",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:00:02.703171Z",
+          "mono_ns": "102645154565769"
+        },
+        "at": "2026-11-04T08:00:02.743487Z",
+        "mono_ns": "102645194878420"
+      },
+      {
+        "kind": "admission",
+        "command": "timed-section:manual_grant_withdrawal",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:00:02.763336Z",
+          "mono_ns": "102645214730974"
+        },
+        "at": "2026-11-04T08:00:02.804113Z",
+        "mono_ns": "102645255502780"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:25.618137Z",
+          "mono_ns": "102728069526530"
+        },
+        "at": "2026-11-04T08:01:25.656841Z",
+        "mono_ns": "102728108226832"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:29.759155Z",
+          "mono_ns": "102732210549516"
+        },
+        "at": "2026-11-04T08:01:29.797921Z",
+        "mono_ns": "102732249306930"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:29.841046Z",
+          "mono_ns": "102732292439049"
+        },
+        "at": "2026-11-04T08:01:29.879735Z",
+        "mono_ns": "102732331120201"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:29.948913Z",
+          "mono_ns": "102732400307814"
+        },
+        "at": "2026-11-04T08:01:29.987991Z",
+        "mono_ns": "102732439377295"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:30.057515Z",
+          "mono_ns": "102732508908357"
+        },
+        "at": "2026-11-04T08:01:30.096635Z",
+        "mono_ns": "102732548021546"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:30.159682Z",
+          "mono_ns": "102732611077988"
+        },
+        "at": "2026-11-04T08:01:30.199761Z",
+        "mono_ns": "102732651151155"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:30.248277Z",
+          "mono_ns": "102732699671351"
+        },
+        "at": "2026-11-04T08:01:30.287615Z",
+        "mono_ns": "102732739002824"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:30.404388Z",
+          "mono_ns": "102732855783665"
+        },
+        "at": "2026-11-04T08:01:30.443450Z",
+        "mono_ns": "102732894838801"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:31.492964Z",
+          "mono_ns": "102733944357785"
+        },
+        "at": "2026-11-04T08:01:31.531730Z",
+        "mono_ns": "102733983116038"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:33.285938Z",
+          "mono_ns": "102735737332066"
+        },
+        "at": "2026-11-04T08:01:33.324509Z",
+        "mono_ns": "102735775894886"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:33.364289Z",
+          "mono_ns": "102735815682352"
+        },
+        "at": "2026-11-04T08:01:33.403005Z",
+        "mono_ns": "102735854392072"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:33.461125Z",
+          "mono_ns": "102735912518804"
+        },
+        "at": "2026-11-04T08:01:33.499956Z",
+        "mono_ns": "102735951341720"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:33.563239Z",
+          "mono_ns": "102736014631206"
+        },
+        "at": "2026-11-04T08:01:33.602429Z",
+        "mono_ns": "102736053814165"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:33.662303Z",
+          "mono_ns": "102736113697664"
+        },
+        "at": "2026-11-04T08:01:33.701143Z",
+        "mono_ns": "102736152530966"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:33.963371Z",
+          "mono_ns": "102736414766113"
+        },
+        "at": "2026-11-04T08:01:34.002929Z",
+        "mono_ns": "102736454314013"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:34.266279Z",
+          "mono_ns": "102736717671848"
+        },
+        "at": "2026-11-04T08:01:34.305198Z",
+        "mono_ns": "102736756584295"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:34.365520Z",
+          "mono_ns": "102736816915052"
+        },
+        "at": "2026-11-04T08:01:34.403901Z",
+        "mono_ns": "102736855287111"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:34.462408Z",
+          "mono_ns": "102736913801563"
+        },
+        "at": "2026-11-04T08:01:34.501451Z",
+        "mono_ns": "102736952837654"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:38.556267Z",
+          "mono_ns": "102741007661269"
+        },
+        "at": "2026-11-04T08:01:38.596498Z",
+        "mono_ns": "102741047884710"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:38.658583Z",
+          "mono_ns": "102741109977491"
+        },
+        "at": "2026-11-04T08:01:38.696967Z",
+        "mono_ns": "102741148351961"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:38.749052Z",
+          "mono_ns": "102741200447009"
+        },
+        "at": "2026-11-04T08:01:38.787708Z",
+        "mono_ns": "102741239094257"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:38.831129Z",
+          "mono_ns": "102741282523194"
+        },
+        "at": "2026-11-04T08:01:38.868619Z",
+        "mono_ns": "102741320016362"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:38.912404Z",
+          "mono_ns": "102741363798095"
+        },
+        "at": "2026-11-04T08:01:38.950937Z",
+        "mono_ns": "102741402322405"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:38.994976Z",
+          "mono_ns": "102741446371203"
+        },
+        "at": "2026-11-04T08:01:39.034131Z",
+        "mono_ns": "102741485517083"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:39.079883Z",
+          "mono_ns": "102741531277534"
+        },
+        "at": "2026-11-04T08:01:39.118155Z",
+        "mono_ns": "102741569542303"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:39.180285Z",
+          "mono_ns": "102741631679634"
+        },
+        "at": "2026-11-04T08:01:39.218313Z",
+        "mono_ns": "102741669700988"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:39.262591Z",
+          "mono_ns": "102741713984957"
+        },
+        "at": "2026-11-04T08:01:39.301374Z",
+        "mono_ns": "102741752761575"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:39.344829Z",
+          "mono_ns": "102741796222326"
+        },
+        "at": "2026-11-04T08:01:39.382304Z",
+        "mono_ns": "102741833689286"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:39.413117Z",
+          "mono_ns": "102741864512067"
+        },
+        "at": "2026-11-04T08:01:39.453643Z",
+        "mono_ns": "102741905034998"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:39.485702Z",
+          "mono_ns": "102741937095756"
+        },
+        "at": "2026-11-04T08:01:39.525365Z",
+        "mono_ns": "102741976760627"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:39.563298Z",
+          "mono_ns": "102742014691862"
+        },
+        "at": "2026-11-04T08:01:39.604362Z",
+        "mono_ns": "102742055748573"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:39.642804Z",
+          "mono_ns": "102742094197556"
+        },
+        "at": "2026-11-04T08:01:39.680714Z",
+        "mono_ns": "102742132099129"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:39.716892Z",
+          "mono_ns": "102742168285299"
+        },
+        "at": "2026-11-04T08:01:39.755849Z",
+        "mono_ns": "102742207235265"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:39.792550Z",
+          "mono_ns": "102742243943708"
+        },
+        "at": "2026-11-04T08:01:39.830950Z",
+        "mono_ns": "102742282335304"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:39.863335Z",
+          "mono_ns": "102742314727825"
+        },
+        "at": "2026-11-04T08:01:39.902871Z",
+        "mono_ns": "102742354256438"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:39.934988Z",
+          "mono_ns": "102742386382278"
+        },
+        "at": "2026-11-04T08:01:39.972278Z",
+        "mono_ns": "102742423664266"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:40.003936Z",
+          "mono_ns": "102742455327944"
+        },
+        "at": "2026-11-04T08:01:40.041743Z",
+        "mono_ns": "102742493128001"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:40.072908Z",
+          "mono_ns": "102742524299740"
+        },
+        "at": "2026-11-04T08:01:40.112557Z",
+        "mono_ns": "102742563940619"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:40.146225Z",
+          "mono_ns": "102742597618551"
+        },
+        "at": "2026-11-04T08:01:40.184277Z",
+        "mono_ns": "102742635663932"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:40.216699Z",
+          "mono_ns": "102742668090605"
+        },
+        "at": "2026-11-04T08:01:40.256259Z",
+        "mono_ns": "102742707644041"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:40.287411Z",
+          "mono_ns": "102742738803942"
+        },
+        "at": "2026-11-04T08:01:40.326085Z",
+        "mono_ns": "102742777469961"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:40.357947Z",
+          "mono_ns": "102742809341093"
+        },
+        "at": "2026-11-04T08:01:40.396789Z",
+        "mono_ns": "102742848178462"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:40.428650Z",
+          "mono_ns": "102742880042878"
+        },
+        "at": "2026-11-04T08:01:40.466678Z",
+        "mono_ns": "102742918063860"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:40.498255Z",
+          "mono_ns": "102742949646758"
+        },
+        "at": "2026-11-04T08:01:40.536236Z",
+        "mono_ns": "102742987621939"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:40.568819Z",
+          "mono_ns": "102743020211364"
+        },
+        "at": "2026-11-04T08:01:40.607701Z",
+        "mono_ns": "102743059088116"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:40.647349Z",
+          "mono_ns": "102743098742514"
+        },
+        "at": "2026-11-04T08:01:40.685664Z",
+        "mono_ns": "102743137049060"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:40.717412Z",
+          "mono_ns": "102743168804500"
+        },
+        "at": "2026-11-04T08:01:40.755227Z",
+        "mono_ns": "102743206611381"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:40.787529Z",
+          "mono_ns": "102743238921095"
+        },
+        "at": "2026-11-04T08:01:40.825896Z",
+        "mono_ns": "102743277283823"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:40.857587Z",
+          "mono_ns": "102743308979009"
+        },
+        "at": "2026-11-04T08:01:40.895501Z",
+        "mono_ns": "102743346886906"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:40.929058Z",
+          "mono_ns": "102743380448051"
+        },
+        "at": "2026-11-04T08:01:40.967244Z",
+        "mono_ns": "102743418628611"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.000028Z",
+          "mono_ns": "102743451420995"
+        },
+        "at": "2026-11-04T08:01:41.038826Z",
+        "mono_ns": "102743490218256"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.074081Z",
+          "mono_ns": "102743525477390"
+        },
+        "at": "2026-11-04T08:01:41.113978Z",
+        "mono_ns": "102743565369271"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.146690Z",
+          "mono_ns": "102743598084792"
+        },
+        "at": "2026-11-04T08:01:41.184768Z",
+        "mono_ns": "102743636154810"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.218186Z",
+          "mono_ns": "102743669578664"
+        },
+        "at": "2026-11-04T08:01:41.256537Z",
+        "mono_ns": "102743707925132"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.288095Z",
+          "mono_ns": "102743739487421"
+        },
+        "at": "2026-11-04T08:01:41.326516Z",
+        "mono_ns": "102743777902174"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.357734Z",
+          "mono_ns": "102743809125612"
+        },
+        "at": "2026-11-04T08:01:41.396983Z",
+        "mono_ns": "102743848367778"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.428468Z",
+          "mono_ns": "102743879859115"
+        },
+        "at": "2026-11-04T08:01:41.466911Z",
+        "mono_ns": "102743918298329"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.499004Z",
+          "mono_ns": "102743950394594"
+        },
+        "at": "2026-11-04T08:01:41.537596Z",
+        "mono_ns": "102743988986790"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.568990Z",
+          "mono_ns": "102744020382312"
+        },
+        "at": "2026-11-04T08:01:41.607293Z",
+        "mono_ns": "102744058676839"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.639717Z",
+          "mono_ns": "102744091109128"
+        },
+        "at": "2026-11-04T08:01:41.678039Z",
+        "mono_ns": "102744129424453"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.716366Z",
+          "mono_ns": "102744167757196"
+        },
+        "at": "2026-11-04T08:01:41.754801Z",
+        "mono_ns": "102744206186426"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.785468Z",
+          "mono_ns": "102744236858805"
+        },
+        "at": "2026-11-04T08:01:41.823276Z",
+        "mono_ns": "102744274661590"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.854652Z",
+          "mono_ns": "102744306043976"
+        },
+        "at": "2026-11-04T08:01:41.892995Z",
+        "mono_ns": "102744344379972"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.925471Z",
+          "mono_ns": "102744376862798"
+        },
+        "at": "2026-11-04T08:01:41.964761Z",
+        "mono_ns": "102744416146024"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:41.996183Z",
+          "mono_ns": "102744447574880"
+        },
+        "at": "2026-11-04T08:01:42.034468Z",
+        "mono_ns": "102744485853378"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:42.066598Z",
+          "mono_ns": "102744517991763"
+        },
+        "at": "2026-11-04T08:01:42.106331Z",
+        "mono_ns": "102744557717321"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:42.138878Z",
+          "mono_ns": "102744590270032"
+        },
+        "at": "2026-11-04T08:01:42.176355Z",
+        "mono_ns": "102744627740580"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:42.207873Z",
+          "mono_ns": "102744659265175"
+        },
+        "at": "2026-11-04T08:01:42.245330Z",
+        "mono_ns": "102744696718233"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:42.276890Z",
+          "mono_ns": "102744728282132"
+        },
+        "at": "2026-11-04T08:01:42.313803Z",
+        "mono_ns": "102744765189217"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:42.346658Z",
+          "mono_ns": "102744798049776"
+        },
+        "at": "2026-11-04T08:01:42.385027Z",
+        "mono_ns": "102744836412661"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:42.415949Z",
+          "mono_ns": "102744867339882"
+        },
+        "at": "2026-11-04T08:01:42.453693Z",
+        "mono_ns": "102744905079408"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:42.497822Z",
+          "mono_ns": "102744949215714"
+        },
+        "at": "2026-11-04T08:01:42.535895Z",
+        "mono_ns": "102744987282136"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:42.580148Z",
+          "mono_ns": "102745031540666"
+        },
+        "at": "2026-11-04T08:01:42.618619Z",
+        "mono_ns": "102745070008453"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:42.661451Z",
+          "mono_ns": "102745112845221"
+        },
+        "at": "2026-11-04T08:01:42.700050Z",
+        "mono_ns": "102745151434974"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:42.742710Z",
+          "mono_ns": "102745194103542"
+        },
+        "at": "2026-11-04T08:01:42.781086Z",
+        "mono_ns": "102745232471516"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:42.824548Z",
+          "mono_ns": "102745275941582"
+        },
+        "at": "2026-11-04T08:01:42.862541Z",
+        "mono_ns": "102745313925156"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:42.905476Z",
+          "mono_ns": "102745356869383"
+        },
+        "at": "2026-11-04T08:01:42.944137Z",
+        "mono_ns": "102745395524930"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:42.985844Z",
+          "mono_ns": "102745437237855"
+        },
+        "at": "2026-11-04T08:01:43.024155Z",
+        "mono_ns": "102745475540853"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:43.083609Z",
+          "mono_ns": "102745535006610"
+        },
+        "at": "2026-11-04T08:01:43.122023Z",
+        "mono_ns": "102745573408334"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:43.173064Z",
+          "mono_ns": "102745624458662"
+        },
+        "at": "2026-11-04T08:01:43.211516Z",
+        "mono_ns": "102745662903519"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:43.271792Z",
+          "mono_ns": "102745723185441"
+        },
+        "at": "2026-11-04T08:01:43.310487Z",
+        "mono_ns": "102745761872488"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:43.369808Z",
+          "mono_ns": "102745821202568"
+        },
+        "at": "2026-11-04T08:01:43.408046Z",
+        "mono_ns": "102745859433075"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:43.459304Z",
+          "mono_ns": "102745910697854"
+        },
+        "at": "2026-11-04T08:01:43.497787Z",
+        "mono_ns": "102745949173038"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:43.549028Z",
+          "mono_ns": "102746000421159"
+        },
+        "at": "2026-11-04T08:01:43.586812Z",
+        "mono_ns": "102746038197452"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:43.646381Z",
+          "mono_ns": "102746097774202"
+        },
+        "at": "2026-11-04T08:01:43.684445Z",
+        "mono_ns": "102746135831009"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:43.746100Z",
+          "mono_ns": "102746197493747"
+        },
+        "at": "2026-11-04T08:01:43.784795Z",
+        "mono_ns": "102746236180267"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:43.844744Z",
+          "mono_ns": "102746296137968"
+        },
+        "at": "2026-11-04T08:01:43.883078Z",
+        "mono_ns": "102746334462437"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:43.931875Z",
+          "mono_ns": "102746383269177"
+        },
+        "at": "2026-11-04T08:01:43.969425Z",
+        "mono_ns": "102746420810107"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:44.030110Z",
+          "mono_ns": "102746481503927"
+        },
+        "at": "2026-11-04T08:01:44.068844Z",
+        "mono_ns": "102746520229586"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:44.171070Z",
+          "mono_ns": "102746622461517"
+        },
+        "at": "2026-11-04T08:01:44.209878Z",
+        "mono_ns": "102746661264188"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:44.241594Z",
+          "mono_ns": "102746692987676"
+        },
+        "at": "2026-11-04T08:01:44.279332Z",
+        "mono_ns": "102746730719207"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:44.310221Z",
+          "mono_ns": "102746761614900"
+        },
+        "at": "2026-11-04T08:01:44.348722Z",
+        "mono_ns": "102746800111088"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:44.379860Z",
+          "mono_ns": "102746831253430"
+        },
+        "at": "2026-11-04T08:01:44.418399Z",
+        "mono_ns": "102746869783964"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:44.450794Z",
+          "mono_ns": "102746902187055"
+        },
+        "at": "2026-11-04T08:01:44.488466Z",
+        "mono_ns": "102746939851888"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:44.519777Z",
+          "mono_ns": "102746971169496"
+        },
+        "at": "2026-11-04T08:01:44.558388Z",
+        "mono_ns": "102747009777930"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:44.590220Z",
+          "mono_ns": "102747041613301"
+        },
+        "at": "2026-11-04T08:01:44.629019Z",
+        "mono_ns": "102747080405239"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:44.660188Z",
+          "mono_ns": "102747111582439"
+        },
+        "at": "2026-11-04T08:01:44.697066Z",
+        "mono_ns": "102747148452295"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:44.727432Z",
+          "mono_ns": "102747178823660"
+        },
+        "at": "2026-11-04T08:01:44.765727Z",
+        "mono_ns": "102747217111397"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:44.795989Z",
+          "mono_ns": "102747247378611"
+        },
+        "at": "2026-11-04T08:01:44.833390Z",
+        "mono_ns": "102747284775505"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:44.864346Z",
+          "mono_ns": "102747315737128"
+        },
+        "at": "2026-11-04T08:01:44.901076Z",
+        "mono_ns": "102747352463085"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:44.931779Z",
+          "mono_ns": "102747383172254"
+        },
+        "at": "2026-11-04T08:01:44.971139Z",
+        "mono_ns": "102747422523386"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:45.001077Z",
+          "mono_ns": "102747452467737"
+        },
+        "at": "2026-11-04T08:01:45.040488Z",
+        "mono_ns": "102747491872643"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:45.070746Z",
+          "mono_ns": "102747522137773"
+        },
+        "at": "2026-11-04T08:01:45.109132Z",
+        "mono_ns": "102747560518901"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:45.139544Z",
+          "mono_ns": "102747590936850"
+        },
+        "at": "2026-11-04T08:01:45.179988Z",
+        "mono_ns": "102747631377541"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:45.213471Z",
+          "mono_ns": "102747664865130"
+        },
+        "at": "2026-11-04T08:01:45.253368Z",
+        "mono_ns": "102747704756837"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:45.285934Z",
+          "mono_ns": "102747737326994"
+        },
+        "at": "2026-11-04T08:01:45.324680Z",
+        "mono_ns": "102747776066460"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:45.355492Z",
+          "mono_ns": "102747806884870"
+        },
+        "at": "2026-11-04T08:01:45.395452Z",
+        "mono_ns": "102747846843929"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:45.427565Z",
+          "mono_ns": "102747878958688"
+        },
+        "at": "2026-11-04T08:01:45.465989Z",
+        "mono_ns": "102747917373961"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:45.496952Z",
+          "mono_ns": "102747948343729"
+        },
+        "at": "2026-11-04T08:01:45.535732Z",
+        "mono_ns": "102747987116607"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:45.566550Z",
+          "mono_ns": "102748017943848"
+        },
+        "at": "2026-11-04T08:01:45.605059Z",
+        "mono_ns": "102748056444359"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:45.637049Z",
+          "mono_ns": "102748088440991"
+        },
+        "at": "2026-11-04T08:01:45.674961Z",
+        "mono_ns": "102748126346787"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:45.853932Z",
+          "mono_ns": "102748305325732"
+        },
+        "at": "2026-11-04T08:01:45.892763Z",
+        "mono_ns": "102748344149922"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:45.925906Z",
+          "mono_ns": "102748377299080"
+        },
+        "at": "2026-11-04T08:01:45.964135Z",
+        "mono_ns": "102748415520276"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:46.147039Z",
+          "mono_ns": "102748598435175"
+        },
+        "at": "2026-11-04T08:01:46.186387Z",
+        "mono_ns": "102748637778234"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:46.219917Z",
+          "mono_ns": "102748671310626"
+        },
+        "at": "2026-11-04T08:01:46.258177Z",
+        "mono_ns": "102748709564237"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:46.443130Z",
+          "mono_ns": "102748894523645"
+        },
+        "at": "2026-11-04T08:01:46.481375Z",
+        "mono_ns": "102748932763167"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:46.514156Z",
+          "mono_ns": "102748965548371"
+        },
+        "at": "2026-11-04T08:01:46.552087Z",
+        "mono_ns": "102749003471856"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:46.740690Z",
+          "mono_ns": "102749192085006"
+        },
+        "at": "2026-11-04T08:01:46.779136Z",
+        "mono_ns": "102749230521592"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:46.811671Z",
+          "mono_ns": "102749263063841"
+        },
+        "at": "2026-11-04T08:01:46.849975Z",
+        "mono_ns": "102749301362123"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:47.056136Z",
+          "mono_ns": "102749507530354"
+        },
+        "at": "2026-11-04T08:01:47.093974Z",
+        "mono_ns": "102749545361615"
+      },
+      {
+        "kind": "admission",
+        "command": "make",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:47.127905Z",
+          "mono_ns": "102749579295913"
+        },
+        "at": "2026-11-04T08:01:47.165389Z",
+        "mono_ns": "102749616775620"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:01:47.190456Z",
+          "mono_ns": "102749641846935"
+        },
+        "at": "2026-11-04T08:01:47.227956Z",
+        "mono_ns": "102749679340262"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:08.944240Z",
+          "mono_ns": "102771395634401"
+        },
+        "at": "2026-11-04T08:02:08.980422Z",
+        "mono_ns": "102771431811042"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:09.052266Z",
+          "mono_ns": "102771503660033"
+        },
+        "at": "2026-11-04T08:02:09.088606Z",
+        "mono_ns": "102771539993296"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:09.125779Z",
+          "mono_ns": "102771577173001"
+        },
+        "at": "2026-11-04T08:02:09.162113Z",
+        "mono_ns": "102771613501688"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:09.223153Z",
+          "mono_ns": "102771674546413"
+        },
+        "at": "2026-11-04T08:02:09.259394Z",
+        "mono_ns": "102771710784419"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:09.412874Z",
+          "mono_ns": "102771864269029"
+        },
+        "at": "2026-11-04T08:02:09.448443Z",
+        "mono_ns": "102771899831359"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:09.738693Z",
+          "mono_ns": "102772190087218"
+        },
+        "at": "2026-11-04T08:02:09.774508Z",
+        "mono_ns": "102772225894902"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:09.830373Z",
+          "mono_ns": "102772281767704"
+        },
+        "at": "2026-11-04T08:02:09.866681Z",
+        "mono_ns": "102772318070808"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:09.898887Z",
+          "mono_ns": "102772350281680"
+        },
+        "at": "2026-11-04T08:02:09.935058Z",
+        "mono_ns": "102772386446304"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:09.967620Z",
+          "mono_ns": "102772419018122"
+        },
+        "at": "2026-11-04T08:02:10.004240Z",
+        "mono_ns": "102772455631129"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:10.163170Z",
+          "mono_ns": "102772614562860"
+        },
+        "at": "2026-11-04T08:02:10.198866Z",
+        "mono_ns": "102772650255567"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:10.230146Z",
+          "mono_ns": "102772681538847"
+        },
+        "at": "2026-11-04T08:02:10.267383Z",
+        "mono_ns": "102772718771976"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:10.298156Z",
+          "mono_ns": "102772749549389"
+        },
+        "at": "2026-11-04T08:02:10.333705Z",
+        "mono_ns": "102772785094231"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:10.364342Z",
+          "mono_ns": "102772815735281"
+        },
+        "at": "2026-11-04T08:02:10.399697Z",
+        "mono_ns": "102772851088131"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:10.430389Z",
+          "mono_ns": "102772881783145"
+        },
+        "at": "2026-11-04T08:02:10.466191Z",
+        "mono_ns": "102772917578474"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:10.496804Z",
+          "mono_ns": "102772948196348"
+        },
+        "at": "2026-11-04T08:02:10.533128Z",
+        "mono_ns": "102772984518238"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:10.564090Z",
+          "mono_ns": "102773015484821"
+        },
+        "at": "2026-11-04T08:02:10.600812Z",
+        "mono_ns": "102773052200778"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:10.631872Z",
+          "mono_ns": "102773083265791"
+        },
+        "at": "2026-11-04T08:02:10.667860Z",
+        "mono_ns": "102773119250779"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:10.698942Z",
+          "mono_ns": "102773150335434"
+        },
+        "at": "2026-11-04T08:02:10.734894Z",
+        "mono_ns": "102773186281160"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:10.767974Z",
+          "mono_ns": "102773219367268"
+        },
+        "at": "2026-11-04T08:02:10.802353Z",
+        "mono_ns": "102773253740449"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:10.833649Z",
+          "mono_ns": "102773285042287"
+        },
+        "at": "2026-11-04T08:02:10.870442Z",
+        "mono_ns": "102773321833960"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:10.902339Z",
+          "mono_ns": "102773353732083"
+        },
+        "at": "2026-11-04T08:02:10.938825Z",
+        "mono_ns": "102773390212691"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:10.970346Z",
+          "mono_ns": "102773421742604"
+        },
+        "at": "2026-11-04T08:02:11.006116Z",
+        "mono_ns": "102773457503468"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:11.036601Z",
+          "mono_ns": "102773487994754"
+        },
+        "at": "2026-11-04T08:02:11.072451Z",
+        "mono_ns": "102773523841794"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:11.105912Z",
+          "mono_ns": "102773557306691"
+        },
+        "at": "2026-11-04T08:02:11.142827Z",
+        "mono_ns": "102773594217976"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:11.174264Z",
+          "mono_ns": "102773625658728"
+        },
+        "at": "2026-11-04T08:02:11.210145Z",
+        "mono_ns": "102773661534171"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:11.241800Z",
+          "mono_ns": "102773693195387"
+        },
+        "at": "2026-11-04T08:02:11.279002Z",
+        "mono_ns": "102773730390711"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:11.310552Z",
+          "mono_ns": "102773761945740"
+        },
+        "at": "2026-11-04T08:02:11.346343Z",
+        "mono_ns": "102773797731027"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:11.378122Z",
+          "mono_ns": "102773829515328"
+        },
+        "at": "2026-11-04T08:02:11.413928Z",
+        "mono_ns": "102773865317699"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:11.445574Z",
+          "mono_ns": "102773896967603"
+        },
+        "at": "2026-11-04T08:02:11.481163Z",
+        "mono_ns": "102773932551091"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:11.512143Z",
+          "mono_ns": "102773963536952"
+        },
+        "at": "2026-11-04T08:02:11.547739Z",
+        "mono_ns": "102773999126969"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:11.580316Z",
+          "mono_ns": "102774031711874"
+        },
+        "at": "2026-11-04T08:02:11.616418Z",
+        "mono_ns": "102774067807616"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:11.844848Z",
+          "mono_ns": "102774296239411"
+        },
+        "at": "2026-11-04T08:02:11.880815Z",
+        "mono_ns": "102774332203213"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:11.959190Z",
+          "mono_ns": "102774410583350"
+        },
+        "at": "2026-11-04T08:02:11.995495Z",
+        "mono_ns": "102774446883027"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:12.073762Z",
+          "mono_ns": "102774525155391"
+        },
+        "at": "2026-11-04T08:02:12.109690Z",
+        "mono_ns": "102774561079962"
+      },
+      {
+        "kind": "admission",
+        "command": "docker",
+        "answer": "free",
+        "started": {
+          "at": "2026-11-04T08:02:12.188095Z",
+          "mono_ns": "102774639488458"
+        },
+        "at": "2026-11-04T08:02:12.223691Z",
+        "mono_ns": "102774675079359"
+      }
+    ],
+    "timed_command_count": 678
+  },
+  "fault_lease_qualified": true,
+  "cutoff_reached": true,
+  "answered": true
+}

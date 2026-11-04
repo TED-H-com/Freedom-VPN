@@ -1,0 +1,1298 @@
+{
+  "live1": {
+    "source": "docs/poc/G2-followup35-evidence/runs/live1/TestAT10_AT13_ReloadRevokeBaseline",
+    "original_verdict": "AT10 FAIL",
+    "replay_verdict": "AT10 PASS under D-120",
+    "combined_captures": true,
+    "tcp_reads": 56,
+    "tcp_timeouts": 0,
+    "tcp_guard_losses": [
+      {
+        "id": 13,
+        "direction": "request",
+        "seq_start": 4177956854,
+        "seq_end": 4177956857,
+        "ip_id": 43634,
+        "origin_ns": 1793776911096408000,
+        "node_entry_ns": 1793776911096656000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 7,
+        "classification": "boundary",
+        "generation": "1007",
+        "failures": [],
+        "sequences": [
+          7
+        ]
+      },
+      {
+        "id": 18,
+        "direction": "request",
+        "seq_start": 4177956860,
+        "seq_end": 4177956863,
+        "ip_id": 43639,
+        "origin_ns": 1793776911703821000,
+        "node_entry_ns": 1793776911704052000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 9,
+        "classification": "boundary",
+        "generation": "1012",
+        "failures": [],
+        "sequences": [
+          9
+        ]
+      },
+      {
+        "id": 27,
+        "direction": "request",
+        "seq_start": 4177956875,
+        "seq_end": 4177956879,
+        "ip_id": 43648,
+        "origin_ns": 1793776912715865000,
+        "node_entry_ns": 1793776912716180000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 13,
+        "classification": "boundary",
+        "generation": "1020",
+        "failures": [],
+        "sequences": [
+          13
+        ]
+      },
+      {
+        "id": 48,
+        "direction": "request",
+        "seq_start": 4177956915,
+        "seq_end": 4177956919,
+        "ip_id": 43669,
+        "origin_ns": 1793776914939557000,
+        "node_entry_ns": 1793776914939882000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 23,
+        "classification": "boundary",
+        "generation": "1038",
+        "failures": [],
+        "sequences": [
+          23
+        ]
+      },
+      {
+        "id": 53,
+        "direction": "request",
+        "seq_start": 4177956923,
+        "seq_end": 4177956927,
+        "ip_id": 43674,
+        "origin_ns": 1793776915550103000,
+        "node_entry_ns": 1793776915551798000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 25,
+        "classification": "boundary",
+        "generation": "1043",
+        "failures": [],
+        "sequences": [
+          25
+        ]
+      },
+      {
+        "id": 82,
+        "direction": "request",
+        "seq_start": 4177956979,
+        "seq_end": 4177956983,
+        "ip_id": 43703,
+        "origin_ns": 1793776918582716000,
+        "node_entry_ns": 1793776918583321000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 39,
+        "classification": "boundary",
+        "generation": "1054",
+        "failures": [],
+        "sequences": [
+          39
+        ]
+      },
+      {
+        "id": 87,
+        "direction": "request",
+        "seq_start": 4177956987,
+        "seq_end": 4177956991,
+        "ip_id": 43708,
+        "origin_ns": 1793776919191683000,
+        "node_entry_ns": 1793776919191883000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 41,
+        "classification": "boundary",
+        "generation": "1059",
+        "failures": [],
+        "sequences": [
+          41
+        ]
+      },
+      {
+        "id": 103,
+        "direction": "request",
+        "seq_start": 4177957015,
+        "seq_end": 4177957019,
+        "ip_id": 43724,
+        "origin_ns": 1793776922310564000,
+        "node_entry_ns": 1793776922311000000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 48,
+        "classification": "boundary",
+        "generation": "1083",
+        "failures": [],
+        "sequences": [
+          48
+        ]
+      },
+      {
+        "id": 108,
+        "direction": "request",
+        "seq_start": 4177957023,
+        "seq_end": 4177957027,
+        "ip_id": 43729,
+        "origin_ns": 1793776922919609000,
+        "node_entry_ns": 1793776922919844000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 50,
+        "classification": "boundary",
+        "generation": "1088",
+        "failures": [],
+        "sequences": [
+          50
+        ]
+      },
+      {
+        "id": 117,
+        "direction": "request",
+        "seq_start": 4177957039,
+        "seq_end": 4177957043,
+        "ip_id": 43738,
+        "origin_ns": 1793776923930980000,
+        "node_entry_ns": 1793776923931427000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 54,
+        "classification": "boundary",
+        "generation": "1096",
+        "failures": [],
+        "sequences": [
+          54
+        ]
+      }
+    ],
+    "guard_attributed_timeouts": [],
+    "unattributed_timeouts": [],
+    "longest_tcp_stall": {
+      "sequence": 54,
+      "first_origin_ns": 1793776923930980000,
+      "echo_arrival_ns": 1793776924140493000,
+      "stall_ns": 209513000
+    },
+    "udp_losses": 1,
+    "total_losses": 1,
+    "errors": []
+  },
+  "live2": {
+    "source": "docs/poc/G2-followup35-evidence/runs/live2/TestAT10_AT13_ReloadRevokeBaseline",
+    "original_verdict": "AT10 PASS under D-120",
+    "replay_verdict": "AT10 PASS under D-120",
+    "combined_captures": true,
+    "tcp_reads": 53,
+    "tcp_timeouts": 0,
+    "tcp_guard_losses": [
+      {
+        "id": 9,
+        "direction": "request",
+        "seq_start": 1645631384,
+        "seq_end": 1645631387,
+        "ip_id": 7926,
+        "origin_ns": 1793777002457017000,
+        "node_entry_ns": 1793777002457689000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 5,
+        "classification": "boundary",
+        "generation": "1003",
+        "failures": [],
+        "sequences": [
+          5
+        ]
+      },
+      {
+        "id": 26,
+        "direction": "request",
+        "seq_start": 1645631411,
+        "seq_end": 1645631415,
+        "ip_id": 7943,
+        "origin_ns": 1793777004281610000,
+        "node_entry_ns": 1793777004281870000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 13,
+        "classification": "boundary",
+        "generation": "1017",
+        "failures": [],
+        "sequences": [
+          13
+        ]
+      },
+      {
+        "id": 45,
+        "direction": "request",
+        "seq_start": 1645631447,
+        "seq_end": 1645631451,
+        "ip_id": 7962,
+        "origin_ns": 1793777006296627000,
+        "node_entry_ns": 1793777006296718000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 22,
+        "classification": "boundary",
+        "generation": "1033",
+        "failures": [],
+        "sequences": [
+          22
+        ]
+      },
+      {
+        "id": 60,
+        "direction": "request",
+        "seq_start": 1645631475,
+        "seq_end": 1645631479,
+        "ip_id": 7977,
+        "origin_ns": 1793777007909517000,
+        "node_entry_ns": 1793777007909766000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 29,
+        "classification": "boundary",
+        "generation": "1046",
+        "failures": [],
+        "sequences": [
+          29
+        ]
+      },
+      {
+        "id": 63,
+        "direction": "request",
+        "seq_start": 1645631479,
+        "seq_end": 1645631483,
+        "ip_id": 7980,
+        "origin_ns": 1793777008318217000,
+        "node_entry_ns": 1793777008318295000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 30,
+        "classification": "boundary",
+        "generation": "1049",
+        "failures": [],
+        "sequences": [
+          30
+        ]
+      },
+      {
+        "id": 93,
+        "direction": "request",
+        "seq_start": 1645631535,
+        "seq_end": 1645631539,
+        "ip_id": 8010,
+        "origin_ns": 1793777012848053000,
+        "node_entry_ns": 1793777012848343000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 44,
+        "classification": "boundary",
+        "generation": "1072",
+        "failures": [],
+        "sequences": [
+          44
+        ]
+      }
+    ],
+    "guard_attributed_timeouts": [],
+    "unattributed_timeouts": [],
+    "longest_tcp_stall": {
+      "sequence": 5,
+      "first_origin_ns": 1793777002457017000,
+      "echo_arrival_ns": 1793777002668895000,
+      "stall_ns": 211878000
+    },
+    "udp_losses": 2,
+    "total_losses": 2,
+    "errors": []
+  },
+  "live3": {
+    "source": "docs/poc/G2-followup35-evidence/runs/live3/TestAT10_AT13_ReloadRevokeBaseline",
+    "original_verdict": "AT10 PASS under D-120",
+    "replay_verdict": "AT10 PASS under D-120",
+    "combined_captures": true,
+    "tcp_reads": 67,
+    "tcp_timeouts": 0,
+    "tcp_guard_losses": [
+      {
+        "id": 11,
+        "direction": "request",
+        "seq_start": 2565188547,
+        "seq_end": 2565188550,
+        "ip_id": 24851,
+        "origin_ns": 1793777044121733000,
+        "node_entry_ns": 1793777044122129000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 6,
+        "classification": "boundary",
+        "generation": "1006",
+        "failures": [],
+        "sequences": [
+          6
+        ]
+      },
+      {
+        "id": 16,
+        "direction": "request",
+        "seq_start": 2565188553,
+        "seq_end": 2565188556,
+        "ip_id": 24856,
+        "origin_ns": 1793777044727213000,
+        "node_entry_ns": 1793777044727599000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 8,
+        "classification": "boundary",
+        "generation": "1011",
+        "failures": [],
+        "sequences": [
+          8
+        ]
+      },
+      {
+        "id": 21,
+        "direction": "request",
+        "seq_start": 2565188559,
+        "seq_end": 2565188563,
+        "ip_id": 24861,
+        "origin_ns": 1793777045335009000,
+        "node_entry_ns": 1793777045335115000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 10,
+        "classification": "boundary",
+        "generation": "1016",
+        "failures": [],
+        "sequences": [
+          10
+        ]
+      },
+      {
+        "id": 26,
+        "direction": "request",
+        "seq_start": 2565188567,
+        "seq_end": 2565188571,
+        "ip_id": 24866,
+        "origin_ns": 1793777045943844000,
+        "node_entry_ns": 1793777045944237000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 12,
+        "classification": "boundary",
+        "generation": "1021",
+        "failures": [],
+        "sequences": [
+          12
+        ]
+      },
+      {
+        "id": 47,
+        "direction": "request",
+        "seq_start": 2565188607,
+        "seq_end": 2565188611,
+        "ip_id": 24887,
+        "origin_ns": 1793777048164125000,
+        "node_entry_ns": 1793777048164290000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 22,
+        "classification": "boundary",
+        "generation": "1039",
+        "failures": [],
+        "sequences": [
+          22
+        ]
+      },
+      {
+        "id": 60,
+        "direction": "request",
+        "seq_start": 2565188631,
+        "seq_end": 2565188635,
+        "ip_id": 24900,
+        "origin_ns": 1793777049580443000,
+        "node_entry_ns": 1793777049580638000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 28,
+        "classification": "boundary",
+        "generation": "1050",
+        "failures": [],
+        "sequences": [
+          28
+        ]
+      },
+      {
+        "id": 83,
+        "direction": "request",
+        "seq_start": 2565188675,
+        "seq_end": 2565188679,
+        "ip_id": 24923,
+        "origin_ns": 1793777052005631000,
+        "node_entry_ns": 1793777052005726000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 39,
+        "classification": "boundary",
+        "generation": "1056",
+        "failures": [],
+        "sequences": [
+          39
+        ]
+      },
+      {
+        "id": 98,
+        "direction": "request",
+        "seq_start": 2565188703,
+        "seq_end": 2565188707,
+        "ip_id": 24938,
+        "origin_ns": 1793777053630040000,
+        "node_entry_ns": 1793777053631761000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 46,
+        "classification": "boundary",
+        "generation": "1066",
+        "failures": [],
+        "sequences": [
+          46
+        ]
+      },
+      {
+        "id": 101,
+        "direction": "request",
+        "seq_start": 2565188707,
+        "seq_end": 2565188711,
+        "ip_id": 24941,
+        "origin_ns": 1793777054039785000,
+        "node_entry_ns": 1793777054039852000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 47,
+        "classification": "boundary",
+        "generation": "1069",
+        "failures": [],
+        "sequences": [
+          47
+        ]
+      },
+      {
+        "id": 102,
+        "direction": "request",
+        "seq_start": 2565188707,
+        "seq_end": 2565188711,
+        "ip_id": 24942,
+        "origin_ns": 1793777054245636000,
+        "node_entry_ns": 1793777054245826000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 47,
+        "classification": "boundary",
+        "generation": "1070",
+        "failures": [],
+        "sequences": [
+          47
+        ]
+      },
+      {
+        "id": 129,
+        "direction": "request",
+        "seq_start": 2565188759,
+        "seq_end": 2565188763,
+        "ip_id": 24969,
+        "origin_ns": 1793777057291426000,
+        "node_entry_ns": 1793777057291560000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 60,
+        "classification": "boundary",
+        "generation": "1086",
+        "failures": [],
+        "sequences": [
+          60
+        ]
+      },
+      {
+        "id": 136,
+        "direction": "request",
+        "seq_start": 2565188771,
+        "seq_end": 2565188775,
+        "ip_id": 24976,
+        "origin_ns": 1793777058111308000,
+        "node_entry_ns": 1793777058111386000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 63,
+        "classification": "boundary",
+        "generation": "1091",
+        "failures": [],
+        "sequences": [
+          63
+        ]
+      },
+      {
+        "id": 141,
+        "direction": "request",
+        "seq_start": 2565188779,
+        "seq_end": 2565188783,
+        "ip_id": 24981,
+        "origin_ns": 1793777058717760000,
+        "node_entry_ns": 1793777058717890000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 65,
+        "classification": "boundary",
+        "generation": "1095",
+        "failures": [],
+        "sequences": [
+          65
+        ]
+      },
+      {
+        "id": 144,
+        "direction": "request",
+        "seq_start": 2565188783,
+        "seq_end": 2565188787,
+        "ip_id": 24984,
+        "origin_ns": 1793777059128117000,
+        "node_entry_ns": 1793777059128660000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 66,
+        "classification": "boundary",
+        "generation": "1098",
+        "failures": [],
+        "sequences": [
+          66
+        ]
+      }
+    ],
+    "guard_attributed_timeouts": [],
+    "unattributed_timeouts": [],
+    "longest_tcp_stall": {
+      "sequence": 47,
+      "first_origin_ns": 1793777054039785000,
+      "echo_arrival_ns": 1793777054652788000,
+      "stall_ns": 613003000
+    },
+    "udp_losses": 0,
+    "total_losses": 0,
+    "errors": []
+  },
+  "live4": {
+    "source": "docs/poc/G2-followup35-evidence/runs/live4/TestAT10_AT13_ReloadRevokeBaseline",
+    "original_verdict": "AT10 PASS under D-120",
+    "replay_verdict": "AT10 PASS under D-120",
+    "combined_captures": true,
+    "tcp_reads": 66,
+    "tcp_timeouts": 0,
+    "tcp_guard_losses": [
+      {
+        "id": 23,
+        "direction": "request",
+        "seq_start": 568514324,
+        "seq_end": 568514328,
+        "ip_id": 55313,
+        "origin_ns": 1793777137166716000,
+        "node_entry_ns": 1793777137167039000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 12,
+        "classification": "boundary",
+        "generation": "1015",
+        "failures": [],
+        "sequences": [
+          12
+        ]
+      },
+      {
+        "id": 50,
+        "direction": "request",
+        "seq_start": 568514376,
+        "seq_end": 568514380,
+        "ip_id": 55340,
+        "origin_ns": 1793777139989700000,
+        "node_entry_ns": 1793777139991123000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 25,
+        "classification": "boundary",
+        "generation": "1037",
+        "failures": [],
+        "sequences": [
+          25
+        ]
+      },
+      {
+        "id": 63,
+        "direction": "request",
+        "seq_start": 568514400,
+        "seq_end": 568514404,
+        "ip_id": 55353,
+        "origin_ns": 1793777141409498000,
+        "node_entry_ns": 1793777141409564000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 31,
+        "classification": "boundary",
+        "generation": "1048",
+        "failures": [],
+        "sequences": [
+          31
+        ]
+      },
+      {
+        "id": 86,
+        "direction": "request",
+        "seq_start": 568514444,
+        "seq_end": 568514448,
+        "ip_id": 55376,
+        "origin_ns": 1793777143831040000,
+        "node_entry_ns": 1793777143831110000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 42,
+        "classification": "boundary",
+        "generation": "1054",
+        "failures": [],
+        "sequences": [
+          42
+        ]
+      },
+      {
+        "id": 99,
+        "direction": "request",
+        "seq_start": 568514468,
+        "seq_end": 568514472,
+        "ip_id": 55389,
+        "origin_ns": 1793777145242996000,
+        "node_entry_ns": 1793777145243059000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 48,
+        "classification": "boundary",
+        "generation": "1065",
+        "failures": [],
+        "sequences": [
+          48
+        ]
+      },
+      {
+        "id": 104,
+        "direction": "request",
+        "seq_start": 568514476,
+        "seq_end": 568514480,
+        "ip_id": 55394,
+        "origin_ns": 1793777145855153000,
+        "node_entry_ns": 1793777145855284000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 50,
+        "classification": "boundary",
+        "generation": "1070",
+        "failures": [],
+        "sequences": [
+          50
+        ]
+      },
+      {
+        "id": 107,
+        "direction": "request",
+        "seq_start": 568514480,
+        "seq_end": 568514484,
+        "ip_id": 55397,
+        "origin_ns": 1793777146260329000,
+        "node_entry_ns": 1793777146260369000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 51,
+        "classification": "boundary",
+        "generation": "1073",
+        "failures": [],
+        "sequences": [
+          51
+        ]
+      },
+      {
+        "id": 114,
+        "direction": "request",
+        "seq_start": 568514492,
+        "seq_end": 568514496,
+        "ip_id": 55404,
+        "origin_ns": 1793777147074521000,
+        "node_entry_ns": 1793777147077405000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 54,
+        "classification": "boundary",
+        "generation": "1079",
+        "failures": [],
+        "sequences": [
+          54
+        ]
+      },
+      {
+        "id": 127,
+        "direction": "request",
+        "seq_start": 568514516,
+        "seq_end": 568514520,
+        "ip_id": 55417,
+        "origin_ns": 1793777148487099000,
+        "node_entry_ns": 1793777148487438000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 60,
+        "classification": "boundary",
+        "generation": "1090",
+        "failures": [],
+        "sequences": [
+          60
+        ]
+      }
+    ],
+    "guard_attributed_timeouts": [],
+    "unattributed_timeouts": [],
+    "longest_tcp_stall": {
+      "sequence": 51,
+      "first_origin_ns": 1793777146260329000,
+      "echo_arrival_ns": 1793777146470823000,
+      "stall_ns": 210494000
+    },
+    "udp_losses": 0,
+    "total_losses": 0,
+    "errors": []
+  },
+  "live5": {
+    "source": "docs/poc/G2-followup35-evidence/runs/live5/TestAT10_AT13_ReloadRevokeBaseline",
+    "original_verdict": "AT10 PASS under D-120",
+    "replay_verdict": "AT10 PASS under D-120",
+    "combined_captures": true,
+    "tcp_reads": 67,
+    "tcp_timeouts": 0,
+    "tcp_guard_losses": [
+      {
+        "id": 23,
+        "direction": "request",
+        "seq_start": 4189226892,
+        "seq_end": 4189226896,
+        "ip_id": 7743,
+        "origin_ns": 1793777195552234000,
+        "node_entry_ns": 1793777195552295000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 12,
+        "classification": "boundary",
+        "generation": "1015",
+        "failures": [],
+        "sequences": [
+          12
+        ]
+      },
+      {
+        "id": 40,
+        "direction": "request",
+        "seq_start": 4189226924,
+        "seq_end": 4189226928,
+        "ip_id": 7760,
+        "origin_ns": 1793777197369386000,
+        "node_entry_ns": 1793777197369597000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 20,
+        "classification": "boundary",
+        "generation": "1029",
+        "failures": [],
+        "sequences": [
+          20
+        ]
+      },
+      {
+        "id": 49,
+        "direction": "request",
+        "seq_start": 4189226940,
+        "seq_end": 4189226944,
+        "ip_id": 7769,
+        "origin_ns": 1793777198377100000,
+        "node_entry_ns": 1793777198377160000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 24,
+        "classification": "boundary",
+        "generation": "1037",
+        "failures": [],
+        "sequences": [
+          24
+        ]
+      },
+      {
+        "id": 62,
+        "direction": "request",
+        "seq_start": 4189226964,
+        "seq_end": 4189226968,
+        "ip_id": 7782,
+        "origin_ns": 1793777199790922000,
+        "node_entry_ns": 1793777199791209000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 30,
+        "classification": "boundary",
+        "generation": "1048",
+        "failures": [],
+        "sequences": [
+          30
+        ]
+      },
+      {
+        "id": 93,
+        "direction": "request",
+        "seq_start": 4189227024,
+        "seq_end": 4189227028,
+        "ip_id": 7813,
+        "origin_ns": 1793777203017480000,
+        "node_entry_ns": 1793777203017542000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 45,
+        "classification": "boundary",
+        "generation": "1060",
+        "failures": [],
+        "sequences": [
+          45
+        ]
+      },
+      {
+        "id": 98,
+        "direction": "request",
+        "seq_start": 4189227032,
+        "seq_end": 4189227036,
+        "ip_id": 7818,
+        "origin_ns": 1793777203626526000,
+        "node_entry_ns": 1793777203626578000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 47,
+        "classification": "boundary",
+        "generation": "1065",
+        "failures": [],
+        "sequences": [
+          47
+        ]
+      },
+      {
+        "id": 121,
+        "direction": "request",
+        "seq_start": 4189227076,
+        "seq_end": 4189227080,
+        "ip_id": 7841,
+        "origin_ns": 1793777206043668000,
+        "node_entry_ns": 1793777206043846000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 58,
+        "classification": "boundary",
+        "generation": "1084",
+        "failures": [],
+        "sequences": [
+          58
+        ]
+      },
+      {
+        "id": 130,
+        "direction": "request",
+        "seq_start": 4189227092,
+        "seq_end": 4189227096,
+        "ip_id": 7850,
+        "origin_ns": 1793777207061964000,
+        "node_entry_ns": 1793777207062092000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 62,
+        "classification": "boundary",
+        "generation": "1092",
+        "failures": [],
+        "sequences": [
+          62
+        ]
+      }
+    ],
+    "guard_attributed_timeouts": [],
+    "unattributed_timeouts": [],
+    "longest_tcp_stall": {
+      "sequence": 58,
+      "first_origin_ns": 1793777206043668000,
+      "echo_arrival_ns": 1793777206252609000,
+      "stall_ns": 208941000
+    },
+    "udp_losses": 0,
+    "total_losses": 0,
+    "errors": []
+  },
+  "gate2": {
+    "source": "docs/poc/G2-followup35-evidence/runs/gate2/TestAT10_AT13_ReloadRevokeBaseline",
+    "original_verdict": "AT10 PASS under D-120",
+    "replay_verdict": "AT10 PASS under D-120",
+    "combined_captures": true,
+    "tcp_reads": 60,
+    "tcp_timeouts": 0,
+    "tcp_guard_losses": [
+      {
+        "id": 5,
+        "direction": "request",
+        "seq_start": 1627420715,
+        "seq_end": 1627420718,
+        "ip_id": 2241,
+        "origin_ns": 1793777342498039000,
+        "node_entry_ns": 1793777342498658000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 3,
+        "classification": "boundary",
+        "generation": "1001",
+        "failures": [],
+        "sequences": [
+          3
+        ]
+      },
+      {
+        "id": 20,
+        "direction": "request",
+        "seq_start": 1627420736,
+        "seq_end": 1627420740,
+        "ip_id": 2256,
+        "origin_ns": 1793777344110815000,
+        "node_entry_ns": 1793777344111140000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 10,
+        "classification": "boundary",
+        "generation": "1014",
+        "failures": [],
+        "sequences": [
+          10
+        ]
+      },
+      {
+        "id": 27,
+        "direction": "request",
+        "seq_start": 1627420748,
+        "seq_end": 1627420752,
+        "ip_id": 2263,
+        "origin_ns": 1793777344923097000,
+        "node_entry_ns": 1793777344923375000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 13,
+        "classification": "boundary",
+        "generation": "1021",
+        "failures": [],
+        "sequences": [
+          13
+        ]
+      },
+      {
+        "id": 54,
+        "direction": "request",
+        "seq_start": 1627420800,
+        "seq_end": 1627420804,
+        "ip_id": 2290,
+        "origin_ns": 1793777347755932000,
+        "node_entry_ns": 1793777347756083000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 26,
+        "classification": "boundary",
+        "generation": "1045",
+        "failures": [],
+        "sequences": [
+          26
+        ]
+      },
+      {
+        "id": 87,
+        "direction": "request",
+        "seq_start": 1627420864,
+        "seq_end": 1627420868,
+        "ip_id": 2323,
+        "origin_ns": 1793777351197932000,
+        "node_entry_ns": 1793777351198359000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 42,
+        "classification": "boundary",
+        "generation": "1059",
+        "failures": [],
+        "sequences": [
+          42
+        ]
+      },
+      {
+        "id": 92,
+        "direction": "request",
+        "seq_start": 1627420872,
+        "seq_end": 1627420876,
+        "ip_id": 2328,
+        "origin_ns": 1793777351807926000,
+        "node_entry_ns": 1793777351808243000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 44,
+        "classification": "boundary",
+        "generation": "1064",
+        "failures": [],
+        "sequences": [
+          44
+        ]
+      },
+      {
+        "id": 95,
+        "direction": "request",
+        "seq_start": 1627420876,
+        "seq_end": 1627420880,
+        "ip_id": 2331,
+        "origin_ns": 1793777352213264000,
+        "node_entry_ns": 1793777352213619000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 45,
+        "classification": "boundary",
+        "generation": "1067",
+        "failures": [],
+        "sequences": [
+          45
+        ]
+      },
+      {
+        "id": 100,
+        "direction": "request",
+        "seq_start": 1627420884,
+        "seq_end": 1627420888,
+        "ip_id": 2336,
+        "origin_ns": 1793777352825345000,
+        "node_entry_ns": 1793777352825515000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 47,
+        "classification": "boundary",
+        "generation": "1072",
+        "failures": [],
+        "sequences": [
+          47
+        ]
+      },
+      {
+        "id": 105,
+        "direction": "request",
+        "seq_start": 1627420892,
+        "seq_end": 1627420896,
+        "ip_id": 2341,
+        "origin_ns": 1793777353431476000,
+        "node_entry_ns": 1793777353431662000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 49,
+        "classification": "boundary",
+        "generation": "1077",
+        "failures": [],
+        "sequences": [
+          49
+        ]
+      },
+      {
+        "id": 116,
+        "direction": "request",
+        "seq_start": 1627420912,
+        "seq_end": 1627420916,
+        "ip_id": 2352,
+        "origin_ns": 1793777354644993000,
+        "node_entry_ns": 1793777354645326000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 54,
+        "classification": "boundary",
+        "generation": "1087",
+        "failures": [],
+        "sequences": [
+          54
+        ]
+      },
+      {
+        "id": 121,
+        "direction": "request",
+        "seq_start": 1627420920,
+        "seq_end": 1627420924,
+        "ip_id": 2357,
+        "origin_ns": 1793777355254588000,
+        "node_entry_ns": 1793777355255109000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 56,
+        "classification": "boundary",
+        "generation": "1092",
+        "failures": [],
+        "sequences": [
+          56
+        ]
+      }
+    ],
+    "guard_attributed_timeouts": [],
+    "unattributed_timeouts": [],
+    "longest_tcp_stall": {
+      "sequence": 13,
+      "first_origin_ns": 1793777344923097000,
+      "echo_arrival_ns": 1793777345133247000,
+      "stall_ns": 210150000
+    },
+    "udp_losses": 0,
+    "total_losses": 0,
+    "errors": []
+  },
+  "F22-01": {
+    "source": "docs/e2e/at/isolation/history/follow-up-22-run/reload-stream/TestAT10_AT13_ReloadRevokeBaseline",
+    "original_verdict": "AT10 FAIL",
+    "replay_verdict": "AT10 FAIL",
+    "combined_captures": false,
+    "tcp_reads": 104,
+    "tcp_timeouts": 1,
+    "tcp_guard_losses": [],
+    "guard_attributed_timeouts": [],
+    "unattributed_timeouts": [
+      {
+        "sequence": 101,
+        "lost_transmissions": [],
+        "delivery": null,
+        "echo_arrival": null,
+        "failed_conditions": [
+          "origin: missing TCP capture",
+          "node: missing TCP capture",
+          "responder: missing TCP capture",
+          "missing TCP request/echo capture facts",
+          "no captured lost transmission of stalled bytes"
+        ]
+      }
+    ],
+    "longest_tcp_stall": null,
+    "udp_losses": 0,
+    "total_losses": 0,
+    "errors": [
+      "evidence: TCP: origin: missing TCP capture",
+      "evidence: TCP: node: missing TCP capture",
+      "evidence: TCP: responder: missing TCP capture",
+      "(iv): TCP failure: 101:TimeoutError unattributable: origin: missing TCP capture; node: missing TCP capture; responder: missing TCP capture; missing TCP request/echo capture facts; no captured lost transmission of stalled bytes"
+    ]
+  },
+  "F27-01-B1": {
+    "source": "docs/poc/G2-followup27-evidence/comparison/B1/reload/TestAT10_AT13_ReloadRevokeBaseline",
+    "original_verdict": "AT10 FAIL",
+    "replay_verdict": "AT10 FAIL",
+    "combined_captures": false,
+    "tcp_reads": 48,
+    "tcp_timeouts": 1,
+    "tcp_guard_losses": [],
+    "guard_attributed_timeouts": [],
+    "unattributed_timeouts": [
+      {
+        "sequence": 43,
+        "lost_transmissions": [],
+        "delivery": null,
+        "echo_arrival": null,
+        "failed_conditions": [
+          "origin: missing TCP capture",
+          "node: missing TCP capture",
+          "responder: missing TCP capture",
+          "missing TCP request/echo capture facts",
+          "no captured lost transmission of stalled bytes"
+        ]
+      }
+    ],
+    "longest_tcp_stall": null,
+    "udp_losses": 1,
+    "total_losses": 1,
+    "errors": [
+      "evidence: TCP: origin: missing TCP capture",
+      "evidence: TCP: node: missing TCP capture",
+      "evidence: TCP: responder: missing TCP capture",
+      "(iv): TCP failure: 43:TimeoutError unattributable: origin: missing TCP capture; node: missing TCP capture; responder: missing TCP capture; missing TCP request/echo capture facts; no captured lost transmission of stalled bytes"
+    ]
+  }
+}

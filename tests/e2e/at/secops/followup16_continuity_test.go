@@ -290,6 +290,8 @@ func (p *liveProbe) liveAgentExpiry16(stack *labstack.Stack, node uuid.UUID, row
 		t.Error("read-only lease probe install")
 		return
 	}
+	endTimed := p.beginTimed18("control_lost_agent_alive", row)
+	defer endTimed()
 	var lease nodeLease16
 	var setupErr error
 	qualified := false
@@ -364,6 +366,7 @@ func (p *liveProbe) liveAgentExpiry16(stack *labstack.Stack, node uuid.UUID, row
 		next += continuityCadence16.Seconds()
 	}
 	row["samples"] = samples
+	endTimed()
 	log, logErr := p.docker("node", "cat", "/var/lib/vpn-node/e2e/agent.log")
 	lines, timeoutProved := timeoutLog16(log, loss, time.Duration(bounds.Budget*1e9))
 	row["agent_timeout_log"] = lines

@@ -91,6 +91,7 @@ func (l *live) restoreHoldMember(r *record, reason string) {
 }
 
 func (l *live) populatedHold(r *record, name string, count, capacity int) {
+	defer l.timedSection("populated-hold")()
 	role, node, inc := l.nodeContainer(), l.node, l.inc
 	ev := map[string]any{"run_id": l.runID, "source_commit": l.build.Source, "row": name, "node_id": node, "incarnation_id": inc, "test_only": true, "started_at": time.Now().UTC(), "coverage": "not exercised", "service_recovery_claimed": false}
 	var incident, lease, gen string

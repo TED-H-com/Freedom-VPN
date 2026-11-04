@@ -1,0 +1,30 @@
+{
+  "setup_commit": "6461a88a",
+  "checks": [
+    {
+      "name": "offline.log",
+      "exit_code": 0,
+      "output": "=== RUN   TestAT29_LiveAgentContinuitySynthetic\n=== RUN   TestAT29_LiveAgentContinuitySynthetic/continuous_until_D_then_quiet\n=== RUN   TestAT29_LiveAgentContinuitySynthetic/H1_withdrawal_five_seconds_after_control_loss\n=== RUN   TestAT29_LiveAgentContinuitySynthetic/forwarding_after_D_bound\n=== RUN   TestAT29_LiveAgentContinuitySynthetic/refused_control_is_not_timeout_evidence\n=== RUN   TestAT29_LiveAgentContinuitySynthetic/agent_restart\n=== RUN   TestAT29_LiveAgentContinuitySynthetic/early_heartbeat_withdrawal\n=== RUN   TestAT29_LiveAgentContinuitySynthetic/UDP_stops_early\n=== RUN   TestAT29_LiveAgentContinuitySynthetic/dead_sender_after_D\n=== RUN   TestAT29_LiveAgentContinuitySynthetic/stalled_TCP_sender_throughout_quiet\n=== RUN   TestAT29_LiveAgentContinuitySynthetic/missing_heartbeat\n=== RUN   TestAT29_LiveAgentContinuitySynthetic/less_than_three_Steps\n--- PASS: TestAT29_LiveAgentContinuitySynthetic (0.00s)\n    --- PASS: TestAT29_LiveAgentContinuitySynthetic/continuous_until_D_then_quiet (0.00s)\n    --- PASS: TestAT29_LiveAgentContinuitySynthetic/H1_withdrawal_five_seconds_after_control_loss (0.00s)\n    --- PASS: TestAT29_LiveAgentContinuitySynthetic/forwarding_after_D_bound (0.00s)\n    --- PASS: TestAT29_LiveAgentContinuitySynthetic/refused_control_is_not_timeout_evidence (0.00s)\n    --- PASS: TestAT29_LiveAgentContinuitySynthetic/agent_restart (0.00s)\n    --- PASS: TestAT29_LiveAgentContinuitySynthetic/early_heartbeat_withdrawal (0.00s)\n    --- PASS: TestAT29_LiveAgentContinuitySynthetic/UDP_stops_early (0.00s)\n    --- PASS: TestAT29_LiveAgentContinuitySynthetic/dead_sender_after_D (0.00s)\n    --- PASS: TestAT29_LiveAgentContinuitySynthetic/stalled_TCP_sender_throughout_quiet (0.00s)\n    --- PASS: TestAT29_LiveAgentContinuitySynthetic/missing_heartbeat (0.00s)\n    --- PASS: TestAT29_LiveAgentContinuitySynthetic/less_than_three_Steps (0.00s)\n=== RUN   TestAT29_PostCapLeaseSetup17\n    lease_setup_test.go:44: run 1bfd5cff still rejected: lease f6b7e639-c508-44f6-af68-b25ac251a9d3 issued 2026-11-04T04:33:00.436641756Z cap=86400s lifetime=24h0m0s: require issuance after 2026-11-04T04:35:23.829257Z, cap=60s, lifetime in (0,60s], accepted monotonic deadline\n=== RUN   TestAT29_PostCapLeaseSetup17/before_cap\n=== RUN   TestAT29_PostCapLeaseSetup17/at_cap\n=== RUN   TestAT29_PostCapLeaseSetup17/long_lifetime\n=== RUN   TestAT29_PostCapLeaseSetup17/missing_member\n=== RUN   TestAT29_PostCapLeaseSetup17/expired_window\n=== RUN   TestAT29_PostCapLeaseSetup17/missing_stamp\n=== RUN   TestAT29_PostCapLeaseSetup17/heartbeat_mismatch\n=== RUN   TestAT29_PostCapLeaseSetup17/not_serving\n--- PASS: TestAT29_PostCapLeaseSetup17 (0.00s)\n    --- PASS: TestAT29_PostCapLeaseSetup17/before_cap (0.00s)\n    --- PASS: TestAT29_PostCapLeaseSetup17/at_cap (0.00s)\n    --- PASS: TestAT29_PostCapLeaseSetup17/long_lifetime (0.00s)\n    --- PASS: TestAT29_PostCapLeaseSetup17/missing_member (0.00s)\n    --- PASS: TestAT29_PostCapLeaseSetup17/expired_window (0.00s)\n    --- PASS: TestAT29_PostCapLeaseSetup17/missing_stamp (0.00s)\n    --- PASS: TestAT29_PostCapLeaseSetup17/heartbeat_mismatch (0.00s)\n    --- PASS: TestAT29_PostCapLeaseSetup17/not_serving (0.00s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t0.011s\n"
+    },
+    {
+      "name": "integration-compile.log",
+      "exit_code": 0,
+      "output": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops\t0.010s\n"
+    },
+    {
+      "name": "python-tests.log",
+      "exit_code": 0,
+      "output": "......................................\n----------------------------------------------------------------------\nRan 38 tests in 0.009s\n\nOK\n"
+    }
+  ],
+  "unchanged_continuity_sources": [
+    {
+      "path": "tests/e2e/at/secops/lease_continuity.go",
+      "byte_identical_to_application_base": true
+    },
+    {
+      "path": "tests/e2e/at/secops/lease_continuity_test.go",
+      "byte_identical_to_application_base": true
+    }
+  ]
+}

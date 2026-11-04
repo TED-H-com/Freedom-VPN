@@ -1,0 +1,174 @@
+{
+  "verdict": "AT10 PASS under D-120",
+  "tcp_reads": 64,
+  "tcp_timeouts": 0,
+  "tcp_guard_losses": [
+    {
+      "id": 137,
+      "direction": "echo",
+      "seq_start": 3527756250,
+      "seq_end": 3527756253,
+      "ip_id": 11634,
+      "origin_ns": 1793783374569911000,
+      "node_entry_ns": 1793783374569916000,
+      "node_exit_ns": null,
+      "far_side_ns": null,
+      "delivered": false,
+      "sequence": 3,
+      "classification": "boundary",
+      "generation": "1001",
+      "failures": [],
+      "sequences": [
+        3
+      ]
+    },
+    {
+      "id": 24,
+      "direction": "request",
+      "seq_start": 2537690033,
+      "seq_end": 2537690037,
+      "ip_id": 5481,
+      "origin_ns": 1793783376586459000,
+      "node_entry_ns": 1793783376586680000,
+      "node_exit_ns": null,
+      "far_side_ns": null,
+      "delivered": false,
+      "sequence": 12,
+      "classification": "boundary",
+      "generation": "1017",
+      "failures": [],
+      "sequences": [
+        12
+      ]
+    },
+    {
+      "id": 39,
+      "direction": "request",
+      "seq_start": 2537690061,
+      "seq_end": 2537690065,
+      "ip_id": 5496,
+      "origin_ns": 1793783378213189000,
+      "node_entry_ns": 1793783378213372000,
+      "node_exit_ns": null,
+      "far_side_ns": null,
+      "delivered": false,
+      "sequence": 19,
+      "classification": "boundary",
+      "generation": "1031",
+      "failures": [],
+      "sequences": [
+        19
+      ]
+    },
+    {
+      "id": 80,
+      "direction": "request",
+      "seq_start": 2537690141,
+      "seq_end": 2537690145,
+      "ip_id": 5537,
+      "origin_ns": 1793783382451513000,
+      "node_entry_ns": 1793783382451899000,
+      "node_exit_ns": null,
+      "far_side_ns": null,
+      "delivered": false,
+      "sequence": 39,
+      "classification": "boundary",
+      "generation": "1052",
+      "failures": [],
+      "sequences": [
+        39
+      ]
+    },
+    {
+      "id": 89,
+      "direction": "request",
+      "seq_start": 2537690157,
+      "seq_end": 2537690161,
+      "ip_id": 5546,
+      "origin_ns": 1793783383469834000,
+      "node_entry_ns": 1793783383470057000,
+      "node_exit_ns": null,
+      "far_side_ns": null,
+      "delivered": false,
+      "sequence": 43,
+      "classification": "boundary",
+      "generation": "1060",
+      "failures": [],
+      "sequences": [
+        43
+      ]
+    },
+    {
+      "id": 94,
+      "direction": "request",
+      "seq_start": 2537690165,
+      "seq_end": 2537690169,
+      "ip_id": 5551,
+      "origin_ns": 1793783384080071000,
+      "node_entry_ns": 1793783384080274000,
+      "node_exit_ns": null,
+      "far_side_ns": null,
+      "delivered": false,
+      "sequence": 45,
+      "classification": "boundary",
+      "generation": "1065",
+      "failures": [],
+      "sequences": [
+        45
+      ]
+    },
+    {
+      "id": 105,
+      "direction": "request",
+      "seq_start": 2537690185,
+      "seq_end": 2537690189,
+      "ip_id": 5562,
+      "origin_ns": 1793783385295843000,
+      "node_entry_ns": 1793783385298650000,
+      "node_exit_ns": null,
+      "far_side_ns": null,
+      "delivered": false,
+      "sequence": 50,
+      "classification": "boundary",
+      "generation": "1075",
+      "failures": [],
+      "sequences": [
+        50
+      ]
+    },
+    {
+      "id": 132,
+      "direction": "request",
+      "seq_start": 2537690237,
+      "seq_end": 2537690241,
+      "ip_id": 5589,
+      "origin_ns": 1793783388123299000,
+      "node_entry_ns": 1793783388123502000,
+      "node_exit_ns": null,
+      "far_side_ns": null,
+      "delivered": false,
+      "sequence": 63,
+      "classification": "boundary",
+      "generation": "1098",
+      "failures": [],
+      "sequences": [
+        63
+      ]
+    }
+  ],
+  "guard_attributed_timeouts": [],
+  "unattributed_timeouts": [],
+  "longest_tcp_stall": {
+    "sequence": 12,
+    "first_origin_ns": 1793783376586459000,
+    "echo_arrival_ns": 1793783376804126000,
+    "stall_ns": 217667000
+  },
+  "udp_losses": 0,
+  "total_losses": 0,
+  "errors": [],
+  "apply_count": 101,
+  "verified_applies": 101,
+  "guard_upper_max_ns": 49284282,
+  "render_to_installed_max_ns": 29398297
+}

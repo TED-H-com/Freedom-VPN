@@ -36,6 +36,10 @@ Policy routing in `fv-fwd` stops hairpin: traffic from the host is routed to the
 
 `203.0.113.0/24` is removed from the lab deny set only because that prefix is the simulated Internet. Production must keep `SpecDeniedV4()` intact. The resolver prefix stays denied except TCP/UDP 53.
 
+## Current reload continuity acceptance
+
+The 100-reload campaign keeps the `AT10 PASS under D-120` verdict and uses provisional D-161 for TCP timeouts. Complete checked combined captures must attribute every lost transmission of the stalled request/echo bytes to node entry without node exit, inside/boundary of exactly one verified guard bracket; both guard upper bound and render→installed must be ≤100 ms. The bytes and in-order echo must subsequently arrive on the same connection before trace end, with no reset or FIN. Other TCP failures and unattributable timeouts fail. UDP losses plus guard-attributed TCP timeouts may total at most five per 100 reloads; UDP's next-datagram-success rule remains. Each campaign reports its TCP reads, longest capture stall and every guard-attributed TCP transmission. This acceptance definition retains the D-145 guard. See the [D-161 implementation, proofs and captures](G2-followup36-2026-11-04.md); historical failures remain unchanged.
+
 ## Special-purpose deny list
 
 `SpecDeniedV4()` follows the IANA IPv4 Special-Purpose Address Registry (last updated 2025-10-09). Globally Reachable means a destination in that block is forwardable beyond a specified administrative domain. A block is denied when that cell is not True. Multicast `224.0.0.0/4` is not a row of that registry and stays denied.
