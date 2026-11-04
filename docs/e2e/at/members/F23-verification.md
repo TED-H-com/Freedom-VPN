@@ -22,6 +22,8 @@ Post-run hygiene admission waited one 60-second interval (60.079 s including che
 | 09-diff | 0 | 0.485 |
 | 10-hygiene | 0 | 92.028 |
 | 11-final-handover | 0 | 4.268 |
+| 12-final-diff | 0 | 0.754 |
+| 13-final-diff | 0 | 0.744 |
 
 ## Archive, links and scope
 
@@ -29,7 +31,7 @@ Post-run hygiene admission waited one 60-second interval (60.079 s including che
 
 ## Real output tails
 
-Only worktree/home paths are labeled; other text is retained.
+Worktree/home paths are labeled. Markdown trims trailing whitespace from Docker progress lines; JSON retains the original tails apart from path labels. A final staged whitespace check caught those Docker line endings after the earlier diff gate; they were removed without changing evidence bytes or dated notes.
 
 ### 01-area-lint
 
@@ -101,20 +103,20 @@ ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe	0.002s
 Command: `python3 -B .agent/tmp/f23/live.py`
 
 ```text
- Container fvpn-w4-members-netbird Stopping 
- Container fvpn-w4-members-netbird Stopped 
- Container fvpn-w4-members-netbird Removing 
- Container fvpn-w4-members-netbird Removed 
- Volume fvpn-w4-members-nb Removing 
- Volume fvpn-w4-members-pg Removing 
- Network fvpn-w4-members Removing 
- Network fvpn-w4-members-origin Removing 
- Volume fvpn-w4-members-pgbackrest-repo Removing 
- Network fvpn-w4-members Resource is still in use 
- Network fvpn-w4-members-origin Resource is still in use 
- Volume fvpn-w4-members-nb Removed 
- Volume fvpn-w4-members-pg Removed 
- Volume fvpn-w4-members-pgbackrest-repo Removed 
+ Container fvpn-w4-members-netbird Stopping
+ Container fvpn-w4-members-netbird Stopped
+ Container fvpn-w4-members-netbird Removing
+ Container fvpn-w4-members-netbird Removed
+ Volume fvpn-w4-members-nb Removing
+ Volume fvpn-w4-members-pg Removing
+ Network fvpn-w4-members Removing
+ Network fvpn-w4-members-origin Removing
+ Volume fvpn-w4-members-pgbackrest-repo Removing
+ Network fvpn-w4-members Resource is still in use
+ Network fvpn-w4-members-origin Resource is still in use
+ Volume fvpn-w4-members-nb Removed
+ Volume fvpn-w4-members-pg Removed
+ Volume fvpn-w4-members-pgbackrest-repo Removed
 e2e stack is down
 Owned teardown exit: 0 inventory: {"containers": {"exit": 0, "owned": []}, "networks": {"exit": 0, "owned": []}, "volumes": {"exit": 0, "owned": []}, "images": {"exit": 0, "owned": []}}
 ```
@@ -188,4 +190,20 @@ Command: `go test -count=1 ./tests/handover/...`
 
 ```text
 ok  	github.com/TED-H-com/Freedom-VPN/tests/handover	3.906s
+```
+
+### 12-final-diff
+
+Command: `git diff --check main`
+
+```text
+(no stdout/stderr)
+```
+
+### 13-final-diff
+
+Command: `git diff --check main`
+
+```text
+(no stdout/stderr)
 ```

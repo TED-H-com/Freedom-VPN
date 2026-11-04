@@ -259,6 +259,38 @@
       "log_bytes": 60,
       "log_sha256": "5972492890a6d3a9eb0c6512d7ec26ab60e03e4736ec39541230b0eb594db371",
       "output_tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t3.906s"
+    },
+    {
+      "name": "12-final-diff",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "main"
+      ],
+      "started_at": "2026-11-04T12:57:10.443247+00:00",
+      "ended_at": "2026-11-04T12:57:11.197294+00:00",
+      "elapsed_seconds": 0.754,
+      "exit": 0,
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_tail": ""
+    },
+    {
+      "name": "13-final-diff",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "main"
+      ],
+      "started_at": "2026-11-04T12:58:05.463870+00:00",
+      "ended_at": "2026-11-04T12:58:06.207552+00:00",
+      "elapsed_seconds": 0.744,
+      "exit": 0,
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_tail": ""
     }
   ]
 }
