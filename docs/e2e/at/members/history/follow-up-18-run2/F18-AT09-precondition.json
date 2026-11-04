@@ -1,0 +1,751 @@
+{
+  "run_id": "50117c68-d1b3-431d-a2be-cd94d27a2447",
+  "source_commit": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
+  "member_id": "01a1a33c-d268-74de-a87b-c6d3dbe2a3c3",
+  "original_finite_transition": {
+    "name": "finite grant production transition",
+    "status": "pass",
+    "expected": "accepted, replayed and worker projected; finite deadline; export partial result on error",
+    "actual": "{\"before_authorized\":3,\"before_pending\":0,\"error\":\"\",\"http\":[{\"method\":\"POST\",\"path\":\"/api/v1/admin/members/01a1a33c-d268-74de-a87b-c6d3dbe2a3c3/grants\",\"status\":202,\"body\":{\"completed_at\":null,\"created_at\":\"2026-11-03T21:15:28.257697Z\",\"desired_generation\":\"8\",\"error\":null,\"kind\":\"member.grant\",\"observed_generation\":null,\"operation_id\":\"01a1a344-5a85-7405-a06c-02c5b7af1196\",\"request_id\":\"01a1a344-5a80-73b8-a785-e5ef050f1f6b\",\"resource\":{\"id\":\"01a1a344-5a82-7591-af1d-5d1eecbd2895\",\"type\":\"entitlement_grant\"},\"resource_version\":null,\"status\":\"pending\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"netbird\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"},{\"error_code\":null,\"message\":null,\"name\":\"nodes\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"}],\"updated_at\":\"2026-11-03T21:15:28.257697Z\"},\"at\":\"2026-11-03T21:15:28.263097981Z\"},{\"method\":\"POST\",\"path\":\"/api/v1/admin/members/01a1a33c-d268-74de-a87b-c6d3dbe2a3c3/grants\",\"status\":202,\"body\":{\"completed_at\":null,\"created_at\":\"2026-11-03T21:15:28.257697Z\",\"desired_generation\":\"8\",\"error\":null,\"kind\":\"member.grant\",\"observed_generation\":null,\"operation_id\":\"01a1a344-5a85-7405-a06c-02c5b7af1196\",\"request_id\":\"01a1a344-5a80-73b8-a785-e5ef050f1f6b\",\"resource\":{\"id\":\"01a1a344-5a82-7591-af1d-5d1eecbd2895\",\"type\":\"entitlement_grant\"},\"resource_version\":null,\"status\":\"pending\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"netbird\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"},{\"error_code\":null,\"message\":null,\"name\":\"nodes\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"}],\"updated_at\":\"2026-11-03T21:15:28.257697Z\"},\"at\":\"2026-11-03T21:15:28.267515256Z\"},{\"method\":\"GET\",\"path\":\"/api/v1/admin/operations/01a1a344-5a85-7405-a06c-02c5b7af1196\",\"status\":200,\"body\":{\"completed_at\":null,\"created_at\":\"2026-11-03T21:15:28.257697Z\",\"desired_generation\":\"8\",\"error\":null,\"kind\":\"member.grant\",\"observed_generation\":null,\"operation_id\":\"01a1a344-5a85-7405-a06c-02c5b7af1196\",\"request_id\":\"01a1a344-5a80-73b8-a785-e5ef050f1f6b\",\"resource\":{\"id\":\"01a1a344-5a82-7591-af1d-5d1eecbd2895\",\"type\":\"entitlement_grant\"},\"resource_version\":null,\"status\":\"pending\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"netbird\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"},{\"error_code\":null,\"message\":null,\"name\":\"nodes\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"}],\"updated_at\":\"2026-11-03T21:15:28.257697Z\"},\"at\":\"2026-11-03T21:15:28.270250115Z\"},{\"method\":\"GET\",\"path\":\"/api/v1/admin/operations/01a1a344-5a85-7405-a06c-02c5b7af1196\",\"status\":200,\"body\":{\"completed_at\":null,\"created_at\":\"2026-11-03T21:15:28.257697Z\",\"desired_generation\":\"8\",\"error\":null,\"kind\":\"member.grant\",\"observed_generation\":null,\"operation_id\":\"01a1a344-5a85-7405-a06c-02c5b7af1196\",\"request_id\":\"01a1a344-5a80-73b8-a785-e5ef050f1f6b\",\"resource\":{\"id\":\"01a1a344-5a82-7591-af1d-5d1eecbd2895\",\"type\":\"entitlement_grant\"},\"resource_version\":null,\"status\":\"running\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"netbird\",\"observed_at\":\"2026-11-03T21:15:28.954587Z\",\"required\":true,\"status\":\"succeeded\"},{\"error_code\":null,\"message\":null,\"name\":\"nodes\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"}],\"updated_at\":\"2026-11-03T21:15:28.955999Z\"},\"at\":\"2026-11-03T21:15:29.279621042Z\"},{\"method\":\"GET\",\"path\":\"/api/v1/admin/operations/01a1a344-5a85-7405-a06c-02c5b7af1196\",\"status\":200,\"body\":{\"completed_at\":null,\"created_at\":\"2026-11-03T21:15:28.257697Z\",\"desired_generation\":\"8\",\"error\":null,\"kind\":\"member.grant\",\"observed_generation\":null,\"operation_id\":\"01a1a344-5a85-7405-a06c-02c5b7af1196\",\"request_id\":\"01a1a344-5a80-73b8-a785-e5ef050f1f6b\",\"resource\":{\"id\":\"01a1a344-5a82-7591-af1d-5d1eecbd2895\",\"type\":\"entitlement_grant\"},\"resource_version\":null,\"status\":\"running\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"netbird\",\"observed_at\":\"2026-11-03T21:15:28.954587Z\",\"required\":true,\"status\":\"succeeded\"},{\"error_code\":null,\"message\":null,\"name\":\"nodes\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"}],\"updated_at\":\"2026-11-03T21:15:28.955999Z\"},\"at\":\"2026-11-03T21:15:30.283689793Z\"},{\"method\":\"GET\",\"path\":\"/api/v1/admin/operations/01a1a344-5a85-7405-a06c-02c5b7af1196\",\"status\":200,\"body\":{\"completed_at\":\"2026-11-03T21:15:30.510755Z\",\"created_at\":\"2026-11-03T21:15:28.257697Z\",\"desired_generation\":\"8\",\"error\":null,\"kind\":\"member.grant\",\"observed_generation\":null,\"operation_id\":\"01a1a344-5a85-7405-a06c-02c5b7af1196\",\"request_id\":\"01a1a344-5a80-73b8-a785-e5ef050f1f6b\",\"resource\":{\"id\":\"01a1a344-5a82-7591-af1d-5d1eecbd2895\",\"type\":\"entitlement_grant\"},\"resource_version\":null,\"status\":\"succeeded\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"netbird\",\"observed_at\":\"2026-11-03T21:15:28.954587Z\",\"required\":true,\"status\":\"succeeded\"},{\"error_code\":null,\"message\":null,\"name\":\"nodes\",\"observed_at\":\"2026-11-03T21:15:30.507072Z\",\"required\":true,\"status\":\"succeeded\"}],\"updated_at\":\"2026-11-03T21:15:30.5108Z\"},\"at\":\"2026-11-03T21:15:31.295577Z\"}],\"transition\":{\"revoke_replay_verified\":true,\"create_replay_verified\":true,\"member_id\":\"01a1a33c-d268-74de-a87b-c6d3dbe2a3c3\",\"plan_revision_id\":\"01a1a33d-00a4-7081-ac8d-21fcce03a8cc\",\"revoked_grants\":[\"01a1a343-ee41-73ef-9dda-5ce2152d8f77\"],\"operation_id\":\"01a1a344-5a85-7405-a06c-02c5b7af1196\",\"accepted\":true,\"projected\":true,\"before_revision\":\"6\",\"after_revision\":\"8\",\"device_limit\":3,\"authorized\":3,\"pending\":0,\"valid_until\":\"2026-11-03T21:16:43Z\",\"observed_at\":\"2026-11-03T21:15:31.296719295Z\"}}",
+    "command": "Stack.ReplaceFiniteGrant: authenticated domain revoke + public grant POST + worker operation GET; no projection writes",
+    "at": "2026-11-03T21:15:31Z"
+  },
+  "valid_until": "2026-11-03T21:16:43Z",
+  "subsequent_readiness_checks": [
+    {
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+      "actual": "{\"accepted\":{\"applied\":\"22\",\"desired\":\"22\",\"lease_id\":\"d95d6fe9-33a4-4844-b050-9c9a9ba29637\",\"device_id\":\"00000000-0000-0000-0000-000000000000\",\"expires_at\":\"2026-11-04T21:15:30.337885+00:00\",\"observation\":{\"lease\":{\"lease_id\":\"d95d6fe9-33a4-4844-b050-9c9a9ba29637\",\"expires_at\":\"2026-11-04T21:15:30.337885963Z\"},\"usage\":{\"blocked_seq\":\"24\",\"ledger_epoch\":\"cf8f6d40-c417-453c-93bd-d086f26ae619\",\"meter_epoch_id\":\"01a1a344-62bf-7716-9ca3-b1a62ede1be1\",\"oldest_unacked_at\":\"2026-11-03T21:14:30.221219885Z\",\"acked_archive_bytes\":\"15096\",\"unacked_event_count\":4,\"central_acked_through\":\"23\",\"unacked_payload_bytes\":\"2590\",\"last_durable_event_seq\":\"27\"},\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"qos\",\"detail\":\"read_at=2026-11-03T21:15:30.47961719Z source=live candidate=22 verified=true {\\\"generation\\\":\\\"22\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\\\"}\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"}],\"errors\":[{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"candidate_generation\\\":\\\"12\\\",\\\"read_at\\\":\\\"2026-11-03T21:13:40.065045599Z\\\",\\\"source\\\":\\\"rejected\\\"}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"clsact\\\",\\\"handle\\\":\\\"ffff:\\\",\\\"parent\\\":\\\"ffff:fff1\\\"}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"ingress\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"flower\\\",\\\"handle\\\":\\\"1\\\",\\\"actions\\\":[\\\"gact\\\"]}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"ingress\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"flower\\\"}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvup0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"fq_codel\\\",\\\"handle\\\":\\\"8ce4:\\\",\\\"parent\\\":\\\"1:8ce4\\\"}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvup0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"htb\\\",\\\"handle\\\":\\\"1:\\\",\\\"root\\\":true}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"initial_quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":true,\\\"operstate\\\":\\\"UNKNOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:15:30.501428423Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:15:30.501428423Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"apply_quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:15:30.501428423Z\"}],\"update\":{\"stage\":null,\"state\":null,\"job_id\":null,\"generation\":null},\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"netbird\":{\"backend\":\"kernel\",\"peer_id\":null,\"version\":null},\"node_id\":\"01a1a33d-0a2b-7085-8308-312dbc164ea2\",\"report_id\":\"01a1a344-6345-76ba-9740-ca66af9a141e\",\"data_health\":\"healthy\",\"observed_at\":\"2026-11-03T21:15:30.501428423Z\",\"tc_evidence\":{\"phase\":\"verify\",\"sha256\":\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\",\"read_at\":\"2026-11-03T21:15:30.479514683Z\",\"rejected\":null,\"verified\":true,\"truncated\":false,\"error_code\":null,\"attachments\":[{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"8ce4:\",\"parent\":\"1:8ce4\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvmb0\",\"attachment\":\"qdisc\"},{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"8ce4:\",\"parent\":\"1:8ce4\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvup0\",\"attachment\":\"qdisc\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:8ce4\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"8ce4:\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"root\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:8ce4\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"8ce4:\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"root\"}],\"reads_total\":16,\"objects_total\":4,\"candidate_generation\":\"22\"},\"agent_version\":\"0.1.0\",\"safety_status\":\"passed\",\"current_release_id\":\"01a1a33c-e69b-7e16-97c7-7dad4eee6f3a\",\"provisioning_state\":\"ready\",\"applied_policy_refs\":{\"dns_generation\":\"1\",\"fup_generation\":\"1\",\"authorization_generation\":\"1\"},\"dns_policy_evidence\":{\"feeds\":[],\"outcome\":\"applied\",\"applied_at\":\"2026-11-03T21:15:30.360181539Z\",\"error_code\":null,\"generation\":\"1\",\"document_id\":\"01a1a33c-ff30-7763-bc07-49f3aa6ab540\",\"content_sha256\":\"2a095bc4eb29c144ab0e99ada32ca363fb21f0fe99a435aa1d7ee343f36eb0ff\"},\"node_incarnation_id\":\"01a1a33d-0cf5-7555-be0a-6ae079700a69\",\"last_good_release_id\":\"01a1a33c-e69b-7e16-97c7-7dad4eee6f3a\",\"applied_binding_revision\":\"4\",\"forwarding_block_reasons\":[],\"applied_config_generation\":\"22\",\"member_forwarding_enabled\":true},\"member_count\":1,\"lease_generation\":\"22\"},\"device_id\":\"00000000-0000-0000-0000-000000000000\",\"last_stage\":\"producer_serving_join\",\"producer_record\":{\"run_id\":\"e0db71a1-d10e-4b35-ae15-79760ca63a88\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"sequence\":\"747\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"63972996729957\",\"wall\":\"2026-11-03T21:15:30.545353561Z\",\"mono_after_ns\":\"63972996730398\"},\"lease\":{\"lease_id\":\"d95d6fe9-33a4-4844-b050-9c9a9ba29637\",\"generation\":\"22\",\"issued_at\":\"2026-11-03T21:15:30.337885963Z\",\"expires_at\":\"2026-11-04T21:15:30.337885963Z\",\"request_mono_ns\":\"63972785133452\",\"node_deadline_ns\":\"150372785133452\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"63972994635180\",\"policy_expires_mono_ns\":\"64045447247489\",\"generation\":\"22\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"producer_stream\":{\"bytes\":\"2595114\",\"sha256\":\"96a55e9993e8ed01067ff9995e69a31b1944d1bd64c3c2c7526abf5c12913916\",\"node\":\"node\",\"records\":747,\"last_original_record\":{\"run_id\":\"e0db71a1-d10e-4b35-ae15-79760ca63a88\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"sequence\":\"747\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"63972996729957\",\"wall\":\"2026-11-03T21:15:30.545353561Z\",\"mono_after_ns\":\"63972996730398\"},\"lease\":{\"lease_id\":\"d95d6fe9-33a4-4844-b050-9c9a9ba29637\",\"generation\":\"22\",\"issued_at\":\"2026-11-03T21:15:30.337885963Z\",\"expires_at\":\"2026-11-04T21:15:30.337885963Z\",\"request_mono_ns\":\"63972785133452\",\"node_deadline_ns\":\"150372785133452\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"63972994635180\",\"policy_expires_mono_ns\":\"64045447247489\",\"generation\":\"22\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"complete_records\":true},\"reader_error\":\"\",\"ready\":true}",
+      "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable",
+      "at": "2026-11-03T21:15:31Z"
+    },
+    {
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+      "actual": "{\"accepted\":{\"applied\":\"22\",\"desired\":\"22\",\"lease_id\":\"d95d6fe9-33a4-4844-b050-9c9a9ba29637\",\"device_id\":\"01a1a341-2c34-7006-a0e9-26797f7a60cb\",\"expires_at\":\"2026-11-04T21:15:30.337885+00:00\",\"observation\":{\"lease\":{\"lease_id\":\"d95d6fe9-33a4-4844-b050-9c9a9ba29637\",\"expires_at\":\"2026-11-04T21:15:30.337885963Z\"},\"usage\":{\"blocked_seq\":\"24\",\"ledger_epoch\":\"cf8f6d40-c417-453c-93bd-d086f26ae619\",\"meter_epoch_id\":\"01a1a344-62bf-7716-9ca3-b1a62ede1be1\",\"oldest_unacked_at\":\"2026-11-03T21:14:30.221219885Z\",\"acked_archive_bytes\":\"15096\",\"unacked_event_count\":4,\"central_acked_through\":\"23\",\"unacked_payload_bytes\":\"2590\",\"last_durable_event_seq\":\"27\"},\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"qos\",\"detail\":\"read_at=2026-11-03T21:15:30.47961719Z source=live candidate=22 verified=true {\\\"generation\\\":\\\"22\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\\\"}\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:15:30.505535165Z\"}],\"errors\":[{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"candidate_generation\\\":\\\"12\\\",\\\"read_at\\\":\\\"2026-11-03T21:13:40.065045599Z\\\",\\\"source\\\":\\\"rejected\\\"}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"clsact\\\",\\\"handle\\\":\\\"ffff:\\\",\\\"parent\\\":\\\"ffff:fff1\\\"}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"ingress\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"flower\\\",\\\"handle\\\":\\\"1\\\",\\\"actions\\\":[\\\"gact\\\"]}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"ingress\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"flower\\\"}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvup0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"fq_codel\\\",\\\"handle\\\":\\\"8ce4:\\\",\\\"parent\\\":\\\"1:8ce4\\\"}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvup0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"htb\\\",\\\"handle\\\":\\\"1:\\\",\\\"root\\\":true}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"initial_quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":true,\\\"operstate\\\":\\\"UNKNOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:15:30.501428423Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:15:30.501428423Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"apply_quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:15:30.501428423Z\"}],\"update\":{\"stage\":null,\"state\":null,\"job_id\":null,\"generation\":null},\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"netbird\":{\"backend\":\"kernel\",\"peer_id\":null,\"version\":null},\"node_id\":\"01a1a33d-0a2b-7085-8308-312dbc164ea2\",\"report_id\":\"01a1a344-6345-76ba-9740-ca66af9a141e\",\"data_health\":\"healthy\",\"observed_at\":\"2026-11-03T21:15:30.501428423Z\",\"tc_evidence\":{\"phase\":\"verify\",\"sha256\":\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\",\"read_at\":\"2026-11-03T21:15:30.479514683Z\",\"rejected\":null,\"verified\":true,\"truncated\":false,\"error_code\":null,\"attachments\":[{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"8ce4:\",\"parent\":\"1:8ce4\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvmb0\",\"attachment\":\"qdisc\"},{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"8ce4:\",\"parent\":\"1:8ce4\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvup0\",\"attachment\":\"qdisc\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:8ce4\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"8ce4:\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"root\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:8ce4\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"8ce4:\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"root\"}],\"reads_total\":16,\"objects_total\":4,\"candidate_generation\":\"22\"},\"agent_version\":\"0.1.0\",\"safety_status\":\"passed\",\"current_release_id\":\"01a1a33c-e69b-7e16-97c7-7dad4eee6f3a\",\"provisioning_state\":\"ready\",\"applied_policy_refs\":{\"dns_generation\":\"1\",\"fup_generation\":\"1\",\"authorization_generation\":\"1\"},\"dns_policy_evidence\":{\"feeds\":[],\"outcome\":\"applied\",\"applied_at\":\"2026-11-03T21:15:30.360181539Z\",\"error_code\":null,\"generation\":\"1\",\"document_id\":\"01a1a33c-ff30-7763-bc07-49f3aa6ab540\",\"content_sha256\":\"2a095bc4eb29c144ab0e99ada32ca363fb21f0fe99a435aa1d7ee343f36eb0ff\"},\"node_incarnation_id\":\"01a1a33d-0cf5-7555-be0a-6ae079700a69\",\"last_good_release_id\":\"01a1a33c-e69b-7e16-97c7-7dad4eee6f3a\",\"applied_binding_revision\":\"4\",\"forwarding_block_reasons\":[],\"applied_config_generation\":\"22\",\"member_forwarding_enabled\":true},\"member_count\":1,\"lease_generation\":\"22\"},\"device_id\":\"01a1a341-2c34-7006-a0e9-26797f7a60cb\",\"last_stage\":\"producer_serving_join\",\"producer_record\":{\"run_id\":\"e0db71a1-d10e-4b35-ae15-79760ca63a88\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"sequence\":\"747\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"63972996729957\",\"wall\":\"2026-11-03T21:15:30.545353561Z\",\"mono_after_ns\":\"63972996730398\"},\"lease\":{\"lease_id\":\"d95d6fe9-33a4-4844-b050-9c9a9ba29637\",\"generation\":\"22\",\"issued_at\":\"2026-11-03T21:15:30.337885963Z\",\"expires_at\":\"2026-11-04T21:15:30.337885963Z\",\"request_mono_ns\":\"63972785133452\",\"node_deadline_ns\":\"150372785133452\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"63972994635180\",\"policy_expires_mono_ns\":\"64045447247489\",\"generation\":\"22\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"producer_stream\":{\"bytes\":\"2595114\",\"sha256\":\"96a55e9993e8ed01067ff9995e69a31b1944d1bd64c3c2c7526abf5c12913916\",\"node\":\"node\",\"records\":747,\"last_original_record\":{\"run_id\":\"e0db71a1-d10e-4b35-ae15-79760ca63a88\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"sequence\":\"747\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"63972996729957\",\"wall\":\"2026-11-03T21:15:30.545353561Z\",\"mono_after_ns\":\"63972996730398\"},\"lease\":{\"lease_id\":\"d95d6fe9-33a4-4844-b050-9c9a9ba29637\",\"generation\":\"22\",\"issued_at\":\"2026-11-03T21:15:30.337885963Z\",\"expires_at\":\"2026-11-04T21:15:30.337885963Z\",\"request_mono_ns\":\"63972785133452\",\"node_deadline_ns\":\"150372785133452\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"63972994635180\",\"policy_expires_mono_ns\":\"64045447247489\",\"generation\":\"22\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"complete_records\":true},\"reader_error\":\"\",\"ready\":true}",
+      "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable",
+      "at": "2026-11-03T21:15:32Z"
+    },
+    {
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+      "actual": "{\"accepted\":{\"applied\":\"25\",\"desired\":\"25\",\"lease_id\":\"641915a6-e9e5-4a40-ac4c-ec263cf8d841\",\"device_id\":\"00000000-0000-0000-0000-000000000000\",\"expires_at\":\"2026-11-04T21:16:58.269631+00:00\",\"observation\":{\"lease\":{\"lease_id\":\"641915a6-e9e5-4a40-ac4c-ec263cf8d841\",\"expires_at\":\"2026-11-04T21:16:58.269631705Z\"},\"usage\":{\"blocked_seq\":\"24\",\"ledger_epoch\":\"cf8f6d40-c417-453c-93bd-d086f26ae619\",\"meter_epoch_id\":\"01a1a345-ba3b-71eb-a498-e2a19689d180\",\"oldest_unacked_at\":\"2026-11-03T21:14:30.221219885Z\",\"acked_archive_bytes\":\"15096\",\"unacked_event_count\":12,\"central_acked_through\":\"23\",\"unacked_payload_bytes\":\"7776\",\"last_durable_event_seq\":\"35\"},\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"qos\",\"detail\":\"read_at=2026-11-03T21:16:58.403632398Z source=live candidate=25 verified=true {\\\"generation\\\":\\\"25\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\\\"}\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"}],\"errors\":[{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"candidate_generation\\\":\\\"12\\\",\\\"read_at\\\":\\\"2026-11-03T21:13:40.065045599Z\\\",\\\"source\\\":\\\"rejected\\\"}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"clsact\\\",\\\"handle\\\":\\\"ffff:\\\",\\\"parent\\\":\\\"ffff:fff1\\\"}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"ingress\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"flower\\\",\\\"handle\\\":\\\"1\\\",\\\"actions\\\":[\\\"gact\\\"]}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"ingress\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"flower\\\"}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvup0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"fq_codel\\\",\\\"handle\\\":\\\"8ce4:\\\",\\\"parent\\\":\\\"1:8ce4\\\"}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvup0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"htb\\\",\\\"handle\\\":\\\"1:\\\",\\\"root\\\":true}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"initial_quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":true,\\\"operstate\\\":\\\"UNKNOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:16:58.418506238Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:16:58.418506238Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"apply_quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:16:58.418506238Z\"}],\"update\":{\"stage\":null,\"state\":null,\"job_id\":null,\"generation\":null},\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"netbird\":{\"backend\":\"kernel\",\"peer_id\":null,\"version\":null},\"node_id\":\"01a1a33d-0a2b-7085-8308-312dbc164ea2\",\"report_id\":\"01a1a345-bab2-77f9-9828-eb97a9ccf383\",\"data_health\":\"healthy\",\"observed_at\":\"2026-11-03T21:16:58.418506238Z\",\"tc_evidence\":{\"phase\":\"verify\",\"sha256\":\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\",\"read_at\":\"2026-11-03T21:16:58.403522282Z\",\"rejected\":null,\"verified\":true,\"truncated\":false,\"error_code\":null,\"attachments\":[{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"8ce4:\",\"parent\":\"1:8ce4\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvmb0\",\"attachment\":\"qdisc\"},{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"8ce4:\",\"parent\":\"1:8ce4\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvup0\",\"attachment\":\"qdisc\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:8ce4\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"8ce4:\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"root\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:8ce4\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"8ce4:\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"root\"}],\"reads_total\":16,\"objects_total\":4,\"candidate_generation\":\"25\"},\"agent_version\":\"0.1.0\",\"safety_status\":\"passed\",\"current_release_id\":\"01a1a33c-e69b-7e16-97c7-7dad4eee6f3a\",\"provisioning_state\":\"ready\",\"applied_policy_refs\":{\"dns_generation\":\"1\",\"fup_generation\":\"1\",\"authorization_generation\":\"1\"},\"dns_policy_evidence\":{\"feeds\":[],\"outcome\":\"applied\",\"applied_at\":\"2026-11-03T21:16:58.291035196Z\",\"error_code\":null,\"generation\":\"1\",\"document_id\":\"01a1a33c-ff30-7763-bc07-49f3aa6ab540\",\"content_sha256\":\"2a095bc4eb29c144ab0e99ada32ca363fb21f0fe99a435aa1d7ee343f36eb0ff\"},\"node_incarnation_id\":\"01a1a33d-0cf5-7555-be0a-6ae079700a69\",\"last_good_release_id\":\"01a1a33c-e69b-7e16-97c7-7dad4eee6f3a\",\"applied_binding_revision\":\"5\",\"forwarding_block_reasons\":[],\"applied_config_generation\":\"25\",\"member_forwarding_enabled\":true},\"member_count\":1,\"lease_generation\":\"25\"},\"device_id\":\"00000000-0000-0000-0000-000000000000\",\"last_stage\":\"producer_serving_join\",\"producer_record\":{\"run_id\":\"e0db71a1-d10e-4b35-ae15-79760ca63a88\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"sequence\":\"895\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"64060913869647\",\"wall\":\"2026-11-03T21:16:58.4624933Z\",\"mono_after_ns\":\"64060913870144\"},\"lease\":{\"lease_id\":\"641915a6-e9e5-4a40-ac4c-ec263cf8d841\",\"generation\":\"25\",\"issued_at\":\"2026-11-03T21:16:58.269631705Z\",\"expires_at\":\"2026-11-04T21:16:58.269631705Z\",\"request_mono_ns\":\"64060718302931\",\"node_deadline_ns\":\"150460718302931\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"64060911871502\",\"policy_expires_mono_ns\":\"64657866161119\",\"generation\":\"25\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"producer_stream\":{\"bytes\":\"3087042\",\"sha256\":\"026e12e72e00ada37325c59fcef0a3f2f41c223286eaeac03e67a6fcb3a1a4be\",\"node\":\"node\",\"records\":895,\"last_original_record\":{\"run_id\":\"e0db71a1-d10e-4b35-ae15-79760ca63a88\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"sequence\":\"895\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"64060913869647\",\"wall\":\"2026-11-03T21:16:58.4624933Z\",\"mono_after_ns\":\"64060913870144\"},\"lease\":{\"lease_id\":\"641915a6-e9e5-4a40-ac4c-ec263cf8d841\",\"generation\":\"25\",\"issued_at\":\"2026-11-03T21:16:58.269631705Z\",\"expires_at\":\"2026-11-04T21:16:58.269631705Z\",\"request_mono_ns\":\"64060718302931\",\"node_deadline_ns\":\"150460718302931\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"64060911871502\",\"policy_expires_mono_ns\":\"64657866161119\",\"generation\":\"25\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"complete_records\":true},\"reader_error\":\"\",\"ready\":true}",
+      "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable",
+      "at": "2026-11-03T21:16:58Z"
+    },
+    {
+      "name": "populated-grant serving readiness",
+      "status": "pass",
+      "expected": "fresh accepted serving observation; desired=applied=observed lease generation; unexpired populated lease, live intended binding and same-boot producer serving row",
+      "actual": "{\"accepted\":{\"applied\":\"25\",\"desired\":\"25\",\"lease_id\":\"641915a6-e9e5-4a40-ac4c-ec263cf8d841\",\"device_id\":\"01a1a341-2c34-7006-a0e9-26797f7a60cb\",\"expires_at\":\"2026-11-04T21:16:58.269631+00:00\",\"observation\":{\"lease\":{\"lease_id\":\"641915a6-e9e5-4a40-ac4c-ec263cf8d841\",\"expires_at\":\"2026-11-04T21:16:58.269631705Z\"},\"usage\":{\"blocked_seq\":\"24\",\"ledger_epoch\":\"cf8f6d40-c417-453c-93bd-d086f26ae619\",\"meter_epoch_id\":\"01a1a345-ba3b-71eb-a498-e2a19689d180\",\"oldest_unacked_at\":\"2026-11-03T21:14:30.221219885Z\",\"acked_archive_bytes\":\"15096\",\"unacked_event_count\":12,\"central_acked_through\":\"23\",\"unacked_payload_bytes\":\"7776\",\"last_durable_event_seq\":\"35\"},\"checks\":[{\"name\":\"dns_policy\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"internet_only\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"lease\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"meter_path\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"policy_signature\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"qos\",\"detail\":\"read_at=2026-11-03T21:16:58.403632398Z source=live candidate=25 verified=true {\\\"generation\\\":\\\"25\\\",\\\"phase\\\":\\\"verify\\\",\\\"reads\\\":16,\\\"objects\\\":4,\\\"truncated\\\":false,\\\"sha256\\\":\\\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\\\"}\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"release_supported\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"source_binding\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"storage\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"},{\"name\":\"tunnel_probe\",\"detail\":\"Egress probe used no extra target.\",\"status\":\"passed\",\"error_code\":null,\"observed_at\":\"2026-11-03T21:16:58.421175606Z\"}],\"errors\":[{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"candidate_generation\\\":\\\"12\\\",\\\"read_at\\\":\\\"2026-11-03T21:13:40.065045599Z\\\",\\\"source\\\":\\\"rejected\\\"}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"clsact\\\",\\\"handle\\\":\\\"ffff:\\\",\\\"parent\\\":\\\"ffff:fff1\\\"}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"ingress\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"flower\\\",\\\"handle\\\":\\\"1\\\",\\\"actions\\\":[\\\"gact\\\"]}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvmb0\\\",\\\"attachment\\\":\\\"ingress\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"flower\\\"}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvup0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"fq_codel\\\",\\\"handle\\\":\\\"8ce4:\\\",\\\"parent\\\":\\\"1:8ce4\\\"}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"tc_evidence\",\"message\":\"{\\\"interface\\\":\\\"fvup0\\\",\\\"attachment\\\":\\\"qdisc\\\",\\\"objects\\\":[{\\\"kind\\\":\\\"htb\\\",\\\"handle\\\":\\\"1:\\\",\\\"root\\\":true}]}\",\"observed_at\":\"2026-11-03T21:13:40.065045599Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"initial_quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":true,\\\"operstate\\\":\\\"UNKNOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:16:58.418506238Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:16:58.418506238Z\"},{\"code\":\"TC_FOREIGN_FILTER\",\"stage\":\"apply_quarantine\",\"message\":\"{\\\"quarantined\\\":true,\\\"recorded\\\":true,\\\"links\\\":[{\\\"interface\\\":\\\"fvmb0\\\",\\\"before\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"},\\\"after\\\":{\\\"admin_up\\\":false,\\\"operstate\\\":\\\"DOWN\\\"}}],\\\"baseline\\\":{\\\"installed\\\":true,\\\"verified\\\":true}}\",\"observed_at\":\"2026-11-03T21:16:58.418506238Z\"}],\"update\":{\"stage\":null,\"state\":null,\"job_id\":null,\"generation\":null},\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"netbird\":{\"backend\":\"kernel\",\"peer_id\":null,\"version\":null},\"node_id\":\"01a1a33d-0a2b-7085-8308-312dbc164ea2\",\"report_id\":\"01a1a345-bab2-77f9-9828-eb97a9ccf383\",\"data_health\":\"healthy\",\"observed_at\":\"2026-11-03T21:16:58.418506238Z\",\"tc_evidence\":{\"phase\":\"verify\",\"sha256\":\"3bc9e733bc811ccb446f342c5026683a7dff5b8762fe4544bc64fe7658ec8545\",\"read_at\":\"2026-11-03T21:16:58.403522282Z\",\"rejected\":null,\"verified\":true,\"truncated\":false,\"error_code\":null,\"attachments\":[{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"8ce4:\",\"parent\":\"1:8ce4\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvmb0\",\"attachment\":\"qdisc\"},{\"objects\":[{\"kind\":\"fq_codel\",\"handle\":\"8ce4:\",\"parent\":\"1:8ce4\"},{\"kind\":\"htb\",\"root\":true,\"handle\":\"1:\"}],\"interface\":\"fvup0\",\"attachment\":\"qdisc\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:8ce4\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"8ce4:\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvmb0\",\"attachment\":\"root\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:1\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:8ce4\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"1:fffe\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"8ce4:\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"egress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"ingress\"},{\"objects\":[],\"interface\":\"fvup0\",\"attachment\":\"root\"}],\"reads_total\":16,\"objects_total\":4,\"candidate_generation\":\"25\"},\"agent_version\":\"0.1.0\",\"safety_status\":\"passed\",\"current_release_id\":\"01a1a33c-e69b-7e16-97c7-7dad4eee6f3a\",\"provisioning_state\":\"ready\",\"applied_policy_refs\":{\"dns_generation\":\"1\",\"fup_generation\":\"1\",\"authorization_generation\":\"1\"},\"dns_policy_evidence\":{\"feeds\":[],\"outcome\":\"applied\",\"applied_at\":\"2026-11-03T21:16:58.291035196Z\",\"error_code\":null,\"generation\":\"1\",\"document_id\":\"01a1a33c-ff30-7763-bc07-49f3aa6ab540\",\"content_sha256\":\"2a095bc4eb29c144ab0e99ada32ca363fb21f0fe99a435aa1d7ee343f36eb0ff\"},\"node_incarnation_id\":\"01a1a33d-0cf5-7555-be0a-6ae079700a69\",\"last_good_release_id\":\"01a1a33c-e69b-7e16-97c7-7dad4eee6f3a\",\"applied_binding_revision\":\"5\",\"forwarding_block_reasons\":[],\"applied_config_generation\":\"25\",\"member_forwarding_enabled\":true},\"member_count\":1,\"lease_generation\":\"25\"},\"device_id\":\"01a1a341-2c34-7006-a0e9-26797f7a60cb\",\"last_stage\":\"producer_serving_join\",\"producer_record\":{\"run_id\":\"e0db71a1-d10e-4b35-ae15-79760ca63a88\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"sequence\":\"895\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"64060913869647\",\"wall\":\"2026-11-03T21:16:58.4624933Z\",\"mono_after_ns\":\"64060913870144\"},\"lease\":{\"lease_id\":\"641915a6-e9e5-4a40-ac4c-ec263cf8d841\",\"generation\":\"25\",\"issued_at\":\"2026-11-03T21:16:58.269631705Z\",\"expires_at\":\"2026-11-04T21:16:58.269631705Z\",\"request_mono_ns\":\"64060718302931\",\"node_deadline_ns\":\"150460718302931\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"64060911871502\",\"policy_expires_mono_ns\":\"64657866161119\",\"generation\":\"25\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"producer_stream\":{\"bytes\":\"3087042\",\"sha256\":\"026e12e72e00ada37325c59fcef0a3f2f41c223286eaeac03e67a6fcb3a1a4be\",\"node\":\"node\",\"records\":895,\"last_original_record\":{\"run_id\":\"e0db71a1-d10e-4b35-ae15-79760ca63a88\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"sequence\":\"895\",\"source\":\"heartbeat\",\"anchor\":{\"mono_before_ns\":\"64060913869647\",\"wall\":\"2026-11-03T21:16:58.4624933Z\",\"mono_after_ns\":\"64060913870144\"},\"lease\":{\"lease_id\":\"641915a6-e9e5-4a40-ac4c-ec263cf8d841\",\"generation\":\"25\",\"issued_at\":\"2026-11-03T21:16:58.269631705Z\",\"expires_at\":\"2026-11-04T21:16:58.269631705Z\",\"request_mono_ns\":\"64060718302931\",\"node_deadline_ns\":\"150460718302931\",\"members\":1},\"heartbeat\":{\"mono_ns\":\"64060911871502\",\"policy_expires_mono_ns\":\"64657866161119\",\"generation\":\"25\",\"baseline_ok\":true,\"serving\":true,\"reason\":\"serving\",\"written\":true}},\"complete_records\":true},\"reader_error\":\"\",\"ready\":true}",
+      "command": "read-only SQL + local desired state + streamed ExportContainerFile; stop positive probe when unavailable",
+      "at": "2026-11-03T21:16:59Z"
+    }
+  ],
+  "restoration_steps": [
+    {
+      "name": "finite expiry restoration HTTP",
+      "status": "pass",
+      "expected": "202",
+      "actual": "{\"completed_at\":null,\"created_at\":\"2026-11-03T21:16:54.655276Z\",\"desired_generation\":\"10\",\"error\":null,\"kind\":\"member.grant\",\"observed_generation\":null,\"operation_id\":\"01a1a345-ac05-72f5-b072-2da1a8283f3f\",\"request_id\":\"01a1a345-abf7-74fc-9923-31e286510d1d\",\"resource\":{\"id\":\"01a1a345-ac00-72f6-9a93-73705493054b\",\"type\":\"entitlement_grant\"},\"resource_version\":null,\"status\":\"pending\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"netbird\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"},{\"error_code\":null,\"message\":null,\"name\":\"nodes\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"}],\"updated_at\":\"2026-11-03T21:16:54.655276Z\"}\n",
+      "command": "POST /admin/members/{id}/grants after expiry",
+      "at": "2026-11-03T21:16:54Z"
+    },
+    {
+      "name": "finite expiry restored 3/0",
+      "status": "pass",
+      "expected": "three authorized, zero pending; worker succeeded",
+      "actual": "restored=true; operation={\"completed_at\":\"2026-11-03T21:16:58.42775Z\",\"created_at\":\"2026-11-03T21:16:54.655276Z\",\"desired_generation\":\"10\",\"error\":null,\"kind\":\"member.grant\",\"observed_generation\":null,\"operation_id\":\"01a1a345-ac05-72f5-b072-2da1a8283f3f\",\"request_id\":\"01a1a345-abf7-74fc-9923-31e286510d1d\",\"resource\":{\"id\":\"01a1a345-ac00-72f6-9a93-73705493054b\",\"type\":\"entitlement_grant\"},\"resource_version\":null,\"status\":\"succeeded\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"netbird\",\"observed_at\":\"2026-11-03T21:16:55.415543Z\",\"required\":true,\"status\":\"succeeded\"},{\"error_code\":null,\"message\":null,\"name\":\"nodes\",\"observed_at\":\"2026-11-03T21:16:58.425695Z\",\"required\":true,\"status\":\"succeeded\"}],\"updated_at\":\"2026-11-03T21:16:58.427835Z\"}\n",
+      "command": "read devices and worker operation after production grant creation",
+      "at": "2026-11-03T21:16:58Z"
+    }
+  ],
+  "AT09_reauthentication": {
+    "name": "AT09 member OIDC reauthentication",
+    "status": "pass",
+    "expected": "fresh authenticated member session before member endpoints",
+    "actual": "{\"completed_at\":\"2026-11-03T21:48:29.959894851Z\",\"member_id\":\"01a1a33c-d268-74de-a87b-c6d3dbe2a3c3\",\"started_at\":\"2026-11-03T21:48:29.275486178Z\"}",
+    "command": "real OIDC redirects and GET auth/session validated by login",
+    "at": "2026-11-03T21:48:29Z"
+  },
+  "AT09_visible_exits": {
+    "name": "member sees both published exits",
+    "status": "pass",
+    "expected": "200 and two exits",
+    "actual": "HTTP=200; exits=2",
+    "command": "GET /member/exits through member session",
+    "at": "2026-11-03T21:48:52Z"
+  },
+  "AT09_original_forwarding": [
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a1a33d-0cf5-7555-be0a-6ae079700a69",
+      "origin_verified": true,
+      "origin_requests": 1,
+      "origin_snat_matches": true,
+      "probe_sha256": "ff094964be41593986559669494aa1b5ebe3de2aee51dbb416a771dbce842928",
+      "at": "2026-11-03T21:49:12Z",
+      "first_counted_byte_at": "2026-11-03T21:49:18.260773343Z",
+      "member_container_role": "member",
+      "route_selected": true,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "75",
+        "device_upload_bytes": "279723",
+        "device_download_bytes": "23967",
+        "member_accept_rules": 27,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "1389",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "960",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "17673",
+          "ctv6": "0",
+          "nd_01a1a33d98547f04b823224e02ae49e5": "10879",
+          "nd_01a1a33e48d479ac9d07598a7c5b749e": "0",
+          "nd_01a1a33e83cb70a18e3e513379a820c2": "0",
+          "nd_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nd_01a1a3412c347006a0e926797f7a60cb": "0",
+          "nd_01a1a34e8860740883f18e6d92065b6a": "0",
+          "nd_01a1a3505be9733dac2fadd8230b768e": "0",
+          "nd_01a1a3531b3971619df37faaebcc0266": "0",
+          "nd_01a1a35391697965bb921faf902b2167": "0",
+          "nd_01a1a356c6f374aea5399a69011f4e4a": "0",
+          "nd_01a1a3573ce77adda98db224d3889a61": "0",
+          "nu_01a1a33d98547f04b823224e02ae49e5": "9857",
+          "nu_01a1a33e48d479ac9d07598a7c5b749e": "0",
+          "nu_01a1a33e83cb70a18e3e513379a820c2": "0",
+          "nu_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nu_01a1a3412c347006a0e926797f7a60cb": "0",
+          "nu_01a1a34e8860740883f18e6d92065b6a": "0",
+          "nu_01a1a3505be9733dac2fadd8230b768e": "0",
+          "nu_01a1a3531b3971619df37faaebcc0266": "0",
+          "nu_01a1a35391697965bb921faf902b2167": "0",
+          "nu_01a1a356c6f374aea5399a69011f4e4a": "0",
+          "nu_01a1a3573ce77adda98db224d3889a61": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "75",
+        "device_upload_bytes": "281988",
+        "device_download_bytes": "26377",
+        "member_accept_rules": 27,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "1389",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "960",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "17673",
+          "ctv6": "0",
+          "nd_01a1a33d98547f04b823224e02ae49e5": "10879",
+          "nd_01a1a33e48d479ac9d07598a7c5b749e": "0",
+          "nd_01a1a33e83cb70a18e3e513379a820c2": "0",
+          "nd_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nd_01a1a3412c347006a0e926797f7a60cb": "0",
+          "nd_01a1a34e8860740883f18e6d92065b6a": "0",
+          "nd_01a1a3505be9733dac2fadd8230b768e": "0",
+          "nd_01a1a3531b3971619df37faaebcc0266": "0",
+          "nd_01a1a35391697965bb921faf902b2167": "0",
+          "nd_01a1a356c6f374aea5399a69011f4e4a": "0",
+          "nd_01a1a3573ce77adda98db224d3889a61": "0",
+          "nu_01a1a33d98547f04b823224e02ae49e5": "9857",
+          "nu_01a1a33e48d479ac9d07598a7c5b749e": "0",
+          "nu_01a1a33e83cb70a18e3e513379a820c2": "0",
+          "nu_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nu_01a1a3412c347006a0e926797f7a60cb": "0",
+          "nu_01a1a34e8860740883f18e6d92065b6a": "0",
+          "nu_01a1a3505be9733dac2fadd8230b768e": "0",
+          "nu_01a1a3531b3971619df37faaebcc0266": "0",
+          "nu_01a1a35391697965bb921faf902b2167": "0",
+          "nu_01a1a356c6f374aea5399a69011f4e4a": "0",
+          "nu_01a1a3573ce77adda98db224d3889a61": "0"
+        }
+      },
+      "packet_observations": {
+        "member": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9049,
+          "filter": "controlled-origin TCP/443, client port 20039",
+          "interfaces": {
+            "fvnb0": {
+              "from_origin": 7,
+              "to_origin": 9
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9056,
+          "filter": "controlled-origin TCP/443, client port 20039",
+          "interfaces": {
+            "fvmb0": {
+              "from_origin": 7,
+              "to_origin": 9
+            },
+            "fvup0": {
+              "from_origin": 7,
+              "to_origin": 9
+            }
+          }
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9044,
+          "filter": "controlled-origin TCP/443, client port 20039",
+          "interfaces": {
+            "eth0": {
+              "from_origin": 7,
+              "to_origin": 9
+            }
+          }
+        }
+      },
+      "transfer": {
+        "body_bytes": 3,
+        "http_status": 200,
+        "origin_receipt": true
+      },
+      "counted": true,
+      "first_unconfirmed_hop": "none: origin HTTP response and both device admission counters increased"
+    },
+    {
+      "node_container_role": "node2",
+      "node_incarnation": "01a1a346-31b2-7acc-8165-0a04d85ab291",
+      "origin_verified": true,
+      "origin_requests": 1,
+      "origin_snat_matches": true,
+      "probe_sha256": "ff094964be41593986559669494aa1b5ebe3de2aee51dbb416a771dbce842928",
+      "at": "2026-11-03T21:49:26Z",
+      "first_counted_byte_at": "2026-11-03T21:49:32.185754134Z",
+      "member_container_role": "member",
+      "route_selected": true,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "66",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 27,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "186",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "3209",
+          "ctv6": "0",
+          "nd_01a1a33d98547f04b823224e02ae49e5": "0",
+          "nd_01a1a33e83cb70a18e3e513379a820c2": "0",
+          "nd_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nd_01a1a3412c347006a0e926797f7a60cb": "0",
+          "nd_01a1a34e8860740883f18e6d92065b6a": "0",
+          "nd_01a1a3505be9733dac2fadd8230b768e": "0",
+          "nd_01a1a3531b3971619df37faaebcc0266": "0",
+          "nd_01a1a35391697965bb921faf902b2167": "0",
+          "nd_01a1a356c6f374aea5399a69011f4e4a": "0",
+          "nd_01a1a3573ce77adda98db224d3889a61": "0",
+          "nu_01a1a33d98547f04b823224e02ae49e5": "0",
+          "nu_01a1a33e83cb70a18e3e513379a820c2": "0",
+          "nu_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nu_01a1a3412c347006a0e926797f7a60cb": "0",
+          "nu_01a1a34e8860740883f18e6d92065b6a": "0",
+          "nu_01a1a3505be9733dac2fadd8230b768e": "0",
+          "nu_01a1a3531b3971619df37faaebcc0266": "0",
+          "nu_01a1a35391697965bb921faf902b2167": "0",
+          "nu_01a1a356c6f374aea5399a69011f4e4a": "0",
+          "nu_01a1a3573ce77adda98db224d3889a61": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "66",
+        "device_upload_bytes": "2305",
+        "device_download_bytes": "2411",
+        "member_accept_rules": 27,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "186",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "3209",
+          "ctv6": "0",
+          "nd_01a1a33d98547f04b823224e02ae49e5": "0",
+          "nd_01a1a33e83cb70a18e3e513379a820c2": "0",
+          "nd_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nd_01a1a3412c347006a0e926797f7a60cb": "0",
+          "nd_01a1a34e8860740883f18e6d92065b6a": "0",
+          "nd_01a1a3505be9733dac2fadd8230b768e": "0",
+          "nd_01a1a3531b3971619df37faaebcc0266": "0",
+          "nd_01a1a35391697965bb921faf902b2167": "0",
+          "nd_01a1a356c6f374aea5399a69011f4e4a": "0",
+          "nd_01a1a3573ce77adda98db224d3889a61": "0",
+          "nu_01a1a33d98547f04b823224e02ae49e5": "0",
+          "nu_01a1a33e83cb70a18e3e513379a820c2": "0",
+          "nu_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nu_01a1a3412c347006a0e926797f7a60cb": "0",
+          "nu_01a1a34e8860740883f18e6d92065b6a": "0",
+          "nu_01a1a3505be9733dac2fadd8230b768e": "0",
+          "nu_01a1a3531b3971619df37faaebcc0266": "0",
+          "nu_01a1a35391697965bb921faf902b2167": "0",
+          "nu_01a1a356c6f374aea5399a69011f4e4a": "0",
+          "nu_01a1a3573ce77adda98db224d3889a61": "0"
+        }
+      },
+      "packet_observations": {
+        "member": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9007,
+          "filter": "controlled-origin TCP/443, client port 20040",
+          "interfaces": {
+            "fvnb0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
+        },
+        "node2": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9023,
+          "filter": "controlled-origin TCP/443, client port 20040",
+          "interfaces": {
+            "fvmb0": {
+              "from_origin": 7,
+              "to_origin": 10
+            },
+            "fvup0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9046,
+          "filter": "controlled-origin TCP/443, client port 20040",
+          "interfaces": {
+            "eth0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
+        }
+      },
+      "transfer": {
+        "body_bytes": 3,
+        "http_status": 200,
+        "origin_receipt": true
+      },
+      "counted": true,
+      "first_unconfirmed_hop": "none: origin HTTP response and both device admission counters increased"
+    },
+    {
+      "node_container_role": "node2",
+      "node_incarnation": "01a1a346-31b2-7acc-8165-0a04d85ab291",
+      "origin_verified": true,
+      "origin_requests": 1,
+      "origin_snat_matches": true,
+      "probe_sha256": "ff094964be41593986559669494aa1b5ebe3de2aee51dbb416a771dbce842928",
+      "at": "2026-11-03T21:49:59Z",
+      "first_counted_byte_at": "2026-11-03T21:50:05.120403465Z",
+      "member_container_role": "member",
+      "route_selected": true,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "66",
+        "device_upload_bytes": "0",
+        "device_download_bytes": "0",
+        "member_accept_rules": 27,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "0",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "0",
+          "ctv6": "0",
+          "nd_01a1a33d98547f04b823224e02ae49e5": "0",
+          "nd_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nd_01a1a3412c347006a0e926797f7a60cb": "0",
+          "nu_01a1a33d98547f04b823224e02ae49e5": "0",
+          "nu_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nu_01a1a3412c347006a0e926797f7a60cb": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "66",
+        "device_upload_bytes": "2317",
+        "device_download_bytes": "2411",
+        "member_accept_rules": 27,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "0",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "0",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "0",
+          "ctv6": "0",
+          "nd_01a1a33d98547f04b823224e02ae49e5": "0",
+          "nd_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nd_01a1a3412c347006a0e926797f7a60cb": "0",
+          "nu_01a1a33d98547f04b823224e02ae49e5": "0",
+          "nu_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nu_01a1a3412c347006a0e926797f7a60cb": "0"
+        }
+      },
+      "packet_observations": {
+        "member": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9074,
+          "filter": "controlled-origin TCP/443, client port 20041",
+          "interfaces": {
+            "fvnb0": {
+              "from_origin": 8,
+              "to_origin": 10
+            }
+          }
+        },
+        "node2": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9017,
+          "filter": "controlled-origin TCP/443, client port 20041",
+          "interfaces": {
+            "fvmb0": {
+              "from_origin": 7,
+              "to_origin": 10
+            },
+            "fvup0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9020,
+          "filter": "controlled-origin TCP/443, client port 20041",
+          "interfaces": {
+            "eth0": {
+              "from_origin": 7,
+              "to_origin": 10
+            }
+          }
+        }
+      },
+      "transfer": {
+        "body_bytes": 3,
+        "http_status": 200,
+        "origin_receipt": true
+      },
+      "counted": true,
+      "first_unconfirmed_hop": "none: origin HTTP response and both device admission counters increased"
+    },
+    {
+      "node_container_role": "node",
+      "node_incarnation": "01a1a33d-0cf5-7555-be0a-6ae079700a69",
+      "origin_verified": true,
+      "origin_requests": 1,
+      "origin_snat_matches": true,
+      "probe_sha256": "ff094964be41593986559669494aa1b5ebe3de2aee51dbb416a771dbce842928",
+      "at": "2026-11-03T21:51:42Z",
+      "first_counted_byte_at": "2026-11-03T21:51:48.000733414Z",
+      "member_container_role": "member",
+      "route_selected": true,
+      "route_before": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "route_after": [
+        {
+          "cache": [],
+          "dev": "fvnb0",
+          "flags": [],
+          "table": "netbird",
+          "uid": 0
+        }
+      ],
+      "peer_status": {
+        "daemonStatus": "Connected",
+        "daemonVersion": "0.82.0",
+        "networks": null,
+        "usesKernelInterface": true
+      },
+      "node_before": {
+        "available": true,
+        "generation": "75",
+        "device_upload_bytes": "281988",
+        "device_download_bytes": "26377",
+        "member_accept_rules": 27,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "1389",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "960",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "17673",
+          "ctv6": "0",
+          "nd_01a1a33d98547f04b823224e02ae49e5": "10879",
+          "nd_01a1a33e48d479ac9d07598a7c5b749e": "0",
+          "nd_01a1a33e83cb70a18e3e513379a820c2": "0",
+          "nd_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nd_01a1a3412c347006a0e926797f7a60cb": "0",
+          "nd_01a1a34e8860740883f18e6d92065b6a": "0",
+          "nd_01a1a3505be9733dac2fadd8230b768e": "0",
+          "nd_01a1a3531b3971619df37faaebcc0266": "0",
+          "nd_01a1a35391697965bb921faf902b2167": "0",
+          "nd_01a1a356c6f374aea5399a69011f4e4a": "0",
+          "nd_01a1a3573ce77adda98db224d3889a61": "0",
+          "nu_01a1a33d98547f04b823224e02ae49e5": "9857",
+          "nu_01a1a33e48d479ac9d07598a7c5b749e": "0",
+          "nu_01a1a33e83cb70a18e3e513379a820c2": "0",
+          "nu_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nu_01a1a3412c347006a0e926797f7a60cb": "0",
+          "nu_01a1a34e8860740883f18e6d92065b6a": "0",
+          "nu_01a1a3505be9733dac2fadd8230b768e": "0",
+          "nu_01a1a3531b3971619df37faaebcc0266": "0",
+          "nu_01a1a35391697965bb921faf902b2167": "0",
+          "nu_01a1a356c6f374aea5399a69011f4e4a": "0",
+          "nu_01a1a3573ce77adda98db224d3889a61": "0"
+        }
+      },
+      "node_after": {
+        "available": true,
+        "generation": "75",
+        "device_upload_bytes": "284253",
+        "device_download_bytes": "28788",
+        "member_accept_rules": 27,
+        "diagnostic_bytes": {
+          "ctbadns": "0",
+          "ctbase": "1389",
+          "ctdeny": "0",
+          "ctdenyd": "0",
+          "cthost": "0",
+          "ctin": "960",
+          "ctinv": "0",
+          "ctnodn": "0",
+          "ctunkd": "0",
+          "ctunku": "17673",
+          "ctv6": "0",
+          "nd_01a1a33d98547f04b823224e02ae49e5": "10879",
+          "nd_01a1a33e48d479ac9d07598a7c5b749e": "0",
+          "nd_01a1a33e83cb70a18e3e513379a820c2": "0",
+          "nd_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nd_01a1a3412c347006a0e926797f7a60cb": "0",
+          "nd_01a1a34e8860740883f18e6d92065b6a": "0",
+          "nd_01a1a3505be9733dac2fadd8230b768e": "0",
+          "nd_01a1a3531b3971619df37faaebcc0266": "0",
+          "nd_01a1a35391697965bb921faf902b2167": "0",
+          "nd_01a1a356c6f374aea5399a69011f4e4a": "0",
+          "nd_01a1a3573ce77adda98db224d3889a61": "0",
+          "nu_01a1a33d98547f04b823224e02ae49e5": "9857",
+          "nu_01a1a33e48d479ac9d07598a7c5b749e": "0",
+          "nu_01a1a33e83cb70a18e3e513379a820c2": "0",
+          "nu_01a1a33fdc8b774b85235a07b6d20e6f": "0",
+          "nu_01a1a3412c347006a0e926797f7a60cb": "0",
+          "nu_01a1a34e8860740883f18e6d92065b6a": "0",
+          "nu_01a1a3505be9733dac2fadd8230b768e": "0",
+          "nu_01a1a3531b3971619df37faaebcc0266": "0",
+          "nu_01a1a35391697965bb921faf902b2167": "0",
+          "nu_01a1a356c6f374aea5399a69011f4e4a": "0",
+          "nu_01a1a3573ce77adda98db224d3889a61": "0"
+        }
+      },
+      "packet_observations": {
+        "member": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9043,
+          "filter": "controlled-origin TCP/443, client port 20042",
+          "interfaces": {
+            "fvnb0": {
+              "from_origin": 7,
+              "to_origin": 9
+            }
+          }
+        },
+        "node": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9059,
+          "filter": "controlled-origin TCP/443, client port 20042",
+          "interfaces": {
+            "fvmb0": {
+              "from_origin": 7,
+              "to_origin": 9
+            },
+            "fvup0": {
+              "from_origin": 7,
+              "to_origin": 9
+            }
+          }
+        },
+        "origin": {
+          "available": true,
+          "duration_seconds": 9,
+          "elapsed_ms": 9069,
+          "filter": "controlled-origin TCP/443, client port 20042",
+          "interfaces": {
+            "eth0": {
+              "from_origin": 7,
+              "to_origin": 9
+            }
+          }
+        }
+      },
+      "transfer": {
+        "body_bytes": 3,
+        "http_status": 200,
+        "origin_receipt": true
+      },
+      "counted": true,
+      "first_unconfirmed_hop": "none: origin HTTP response and both device admission counters increased"
+    }
+  ],
+  "AT09_original_blockers": [
+    "F4-03 linux/quic: requires a pinned QUIC client/server at the controlled origin; UDP echo is not QUIC",
+    "F4-03 android/tcp: requires the named real platform and operator client; no emulation by the Linux container",
+    "F4-03 ios/tcp: requires the named real platform and operator client; no emulation by the Linux container",
+    "F4-03 windows/tcp: requires the named real platform and operator client; no emulation by the Linux container",
+    "F4-03 macos/tcp: requires the named real platform and operator client; no emulation by the Linux container",
+    "D-123: v1.0 IPv6Block. IPv6 no-leak evidence is the independent rendered-policy netlab follow-up 18 measurement (docs/poc/G2-f802-mtu1280-2026-10-31.md); this native fixture measures IPv4 payload over the selected underlay, not end-to-end IPv6 MTU/PMTU. D-137 is provisional; historical F8-02 stays failed. Known route MTU is separate from reactive PTB.",
+    "F4-03: physical second NAT/roaming and ICMP-black-hole PMTU remain platform/operator work; finite TCP transfers at 1500/1280 are not a full PMTU campaign."
+  ],
+  "AT09_original_member_responses": [
+    {
+      "method": "GET",
+      "path": "/api/v1/member/exits",
+      "started_at": "2026-11-03T21:48:51.603741127Z",
+      "completed_at": "2026-11-03T21:48:52.214791634Z",
+      "status": 200
+    }
+  ],
+  "AT02_original_blockers": [],
+  "source_sha256": {
+    "tests/e2e/at/members/finite_grant_test.go": "aa2acdb20503de3a6b722f9f8dba11a20b001f1b903120b1c92c01d88272304c",
+    "tests/e2e/at/members/forwarding_test.go": "c8df486232f54c63724ec450db9d2ff798af9af7bc251c9b61b06ffe9021341c",
+    "tests/e2e/at/members/native_matrix_test.go": "f110eb4d2209fa36ed69fc185468e8dd90614917d10e0bcd113736f825dd0280"
+  },
+  "source_path_explanation": "finiteExpiry installs a 75-second grant and returns on a failed positive trace before its normal restoration. Successful paths continue to the restoration steps retained below. nativeMatrix returns before applying inputs only when awaitDevice yields no admitted device.",
+  "interpretation": "Same member UUID joins the accepted finite transition to the later AT09 session. Restoration steps, member response and original blockers below determine whether the prerequisite remained available. Do not infer a missing restoration or unexercised matrix when the original rows show restoration and executed inputs.",
+  "limits": "The early-return explanation combines original records with the measured source path; no newly queried database state or synthetic expiry observation is substituted for a missing original check."
+}

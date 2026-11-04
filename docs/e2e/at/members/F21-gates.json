@@ -1,0 +1,146 @@
+{
+  "scope": "All nine actual foreground gates in required order; admission captured separately. Live exit 2 is the retained acceptance result, with no rerun. Committed-evidence hygiene passed after records commit d70f3e16.",
+  "gates": [
+    {
+      "name": "01-area-lint",
+      "command": [
+        "make",
+        "-f",
+        "mk/at-members.mk",
+        "at-members-lint"
+      ],
+      "started_at": "2026-11-04T02:49:16.371371+00:00",
+      "ended_at": "2026-11-04T02:49:18.412213+00:00",
+      "elapsed_seconds": 2.041,
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "output_tail": ""
+    },
+    {
+      "name": "02-assembled",
+      "command": [
+        "python3",
+        "-B",
+        ".agent/tmp/f21/live.py"
+      ],
+      "started_at": "2026-11-04T02:50:12.408311+00:00",
+      "ended_at": "2026-11-04T04:12:46.722862+00:00",
+      "elapsed_seconds": 4954.315,
+      "exit": 2,
+      "log_sha256": "5486cce498757b35db06084360e773b41398f9cfc488b0960ac90ade9864c966",
+      "log_bytes": 25626,
+      "output_tail": " Container fvpn-w4-members-netbird Removing \n Container fvpn-w4-members-netbird Removed \n Volume fvpn-w4-members-pgbackrest-repo Removing \n Volume fvpn-w4-members-pg Removing \n Volume fvpn-w4-members-nb Removing \n Network fvpn-w4-members-origin Removing \n Network fvpn-w4-members Removing \n Network fvpn-w4-members-origin Resource is still in use \n Network fvpn-w4-members Resource is still in use \n Volume fvpn-w4-members-pgbackrest-repo Removed \n Volume fvpn-w4-members-pg Removed \n Volume fvpn-w4-members-nb Removed \ne2e stack is down\nOwned teardown exit: 0 inventory: {\"containers\": {\"exit\": 0, \"owned\": []}, \"networks\": {\"exit\": 0, \"owned\": []}, \"volumes\": {\"exit\": 0, \"owned\": []}, \"images\": {\"exit\": 0, \"owned\": []}}"
+    },
+    {
+      "name": "03-offline-members",
+      "command": [
+        "go",
+        "test",
+        "./tests/e2e/at/members/..."
+      ],
+      "started_at": "2026-11-04T04:16:01.017960+00:00",
+      "ended_at": "2026-11-04T04:16:29.355723+00:00",
+      "elapsed_seconds": 28.338,
+      "exit": 0,
+      "log_sha256": "4f4b51f9f3a6d4607bff978f554bc431bae483b9430c3163d09076235f9491a2",
+      "log_bytes": 145,
+      "output_tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members\t27.844s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe\t(cached)"
+    },
+    {
+      "name": "04-handover",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "started_at": "2026-11-04T04:16:52.464448+00:00",
+      "ended_at": "2026-11-04T04:16:56.601815+00:00",
+      "elapsed_seconds": 4.137,
+      "exit": 0,
+      "log_sha256": "36576f56c62275fe1040c5a98ae1ccf1bbf2c502323af5913bca05c06ad22469",
+      "log_bytes": 60,
+      "output_tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t3.749s"
+    },
+    {
+      "name": "05-root-lint",
+      "command": [
+        "make",
+        "go-lint",
+        "go-with-disk-tmp="
+      ],
+      "started_at": "2026-11-04T04:17:02.389444+00:00",
+      "ended_at": "2026-11-04T04:17:06.425769+00:00",
+      "elapsed_seconds": 4.036,
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "output_tail": ""
+    },
+    {
+      "name": "06-vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "started_at": "2026-11-04T04:17:31.311404+00:00",
+      "ended_at": "2026-11-04T04:17:31.760368+00:00",
+      "elapsed_seconds": 0.449,
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "output_tail": ""
+    },
+    {
+      "name": "07-gofmt",
+      "command": [
+        "bash",
+        ".agent/tmp/f21/gofmt.sh"
+      ],
+      "started_at": "2026-11-04T04:17:42.425775+00:00",
+      "ended_at": "2026-11-04T04:17:42.558516+00:00",
+      "elapsed_seconds": 0.133,
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "output_tail": ""
+    },
+    {
+      "name": "08-diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at": "2026-11-04T04:17:42.592917+00:00",
+      "ended_at": "2026-11-04T04:17:43.050855+00:00",
+      "elapsed_seconds": 0.458,
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "log_bytes": 0,
+      "output_tail": ""
+    },
+    {
+      "name": "09-hygiene",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-run",
+        "^TestCommittedEvidenceHygiene$",
+        "-v",
+        "./tests/e2e/at/members/..."
+      ],
+      "started_at": "2026-11-04T04:18:29.568567+00:00",
+      "ended_at": "2026-11-04T04:19:51.565696+00:00",
+      "elapsed_seconds": 81.997,
+      "exit": 0,
+      "log_sha256": "6292aa1ffd8a7257c7ff81b5378ef5e0ef199b271b1d36b432af379ee382b091",
+      "log_bytes": 381,
+      "output_tail": "=== RUN   TestCommittedEvidenceHygiene\n    evidence_test.go:65: scanned 250 acceptance JSON records plus 523 Markdown documents\n--- PASS: TestCommittedEvidenceHygiene (21.61s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members\t21.628s\ntesting: warning: no tests to run\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe\t0.002s [no tests to run]",
+      "admission_wait_seconds": 60.083
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "node_incarnations": {
-    "node": "01a1a33d-0cf5-7555-be0a-6ae079700a69",
-    "node2": "01a1a346-31b2-7acc-8165-0a04d85ab291"
+    "node": "01a1a495-e051-7b0c-9e12-a61e03dc7619",
+    "node2": "01a1a49e-e372-793c-8eb4-6dad3a928a92"
   },
   "complete": true,
   "id": "AT22",
@@ -19,7 +19,7 @@
     },
     {
       "name": "privacy sentinel query",
-      "detail": "pass; expected: F8-A scope W / F8-TTL5: RCODE 3, zero answers, SOA TTL 5; actual: {\"dns_wire_id\":58927,\"authority_serial\":0,\"dns_trace\":{\"resolver_observation_boundary\":\"relay_write_completed_not_client_received\",\"trace_streams\":{\"authority\":[\"c4a33ae0-d271-4125-ab18-fdf901de8936\"],\"primary\":[\"534937fd-34be-4e2c-962a-64a013ce2c54\",\"400d05ea-ce64-4a75-867b-1feebb3da1aa\"],\"secondary\":[\"f55d3e9e-ef77-4aa4-999c-ce84bf34eab3\"]},\"started\":\"2026-11-03T21:42:18.460622842Z\",\"completed\":\"2026-11-03T21:42:18.562887158Z\",\"responder\":\"unattributed\",\"cache_state\":\"unknown\",\"trace_complete\":false,\"resolver_events\":[],\"authority_events\":[],\"authority_history\":[],\"authority_outstanding_at_query_start\":[],\"authority_outstanding_at_query_completion\":[],\"authority_outstanding_at_trace_read\":[],\"trace_read_at\":{\"authority\":\"2026-11-03T21:42:18.860883757Z\",\"primary\":\"2026-11-03T21:42:18.661869614Z\",\"secondary\":\"2026-11-03T21:42:18.76119848Z\"},\"authority_serial_after_query\":1001,\"authority_read_at\":\"2026-11-03T21:42:18.942628111Z\",\"answer_ttl_remaining\":[]},\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1}; command: native OS stub sentinel under explicit lab block; docs/dns/BACKEND.md §2.1.4"
+      "detail": "pass; expected: F8-A scope W / F8-TTL5: RCODE 3, zero answers, SOA TTL 5; actual: {\"dns_wire_id\":17674,\"authority_serial\":0,\"dns_trace\":{\"resolver_observation_boundary\":\"relay_write_completed_not_client_received\",\"trace_streams\":{\"authority\":[\"2746c8a4-c51c-403a-968d-d97356d809d5\"],\"primary\":[\"7c8b849a-0fe0-4115-8c51-38c9263a97cf\",\"fdadcd65-1341-47e1-9b44-61bb38b398c2\"],\"secondary\":[\"cd766227-7061-4a46-9720-0fda91b54d1a\"]},\"started\":\"2026-11-04T03:58:25.543775432Z\",\"completed\":\"2026-11-04T03:58:25.645149564Z\",\"responder\":\"unattributed\",\"cache_state\":\"unknown\",\"trace_complete\":false,\"resolver_events\":[],\"authority_events\":[],\"authority_history\":[],\"authority_outstanding_at_query_start\":[],\"authority_outstanding_at_query_completion\":[],\"authority_outstanding_at_trace_read\":[],\"trace_read_at\":{\"authority\":\"2026-11-04T03:58:25.926608019Z\",\"primary\":\"2026-11-04T03:58:25.745247683Z\",\"secondary\":\"2026-11-04T03:58:25.836234975Z\"},\"authority_serial_after_query\":1001,\"authority_read_at\":\"2026-11-04T03:58:26.00776585Z\",\"answer_ttl_remaining\":[]},\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1}; command: native OS stub sentinel under explicit lab block; docs/dns/BACKEND.md §2.1.4"
     },
     {
       "name": "/control/querylog/config",
@@ -135,7 +135,7 @@
     },
     {
       "name": "feed positive DNS control",
-      "detail": "pass; expected: known controlled upstream name resolves before feed profile; actual: {\"answers\":1,\"authority_ttl\":0,\"available\":true,\"has_soa\":false,\"rcode\":0,\"ttl\":55,\"types\":[1]}; command: node loopback query after explicit positive-control profile"
+      "detail": "pass; expected: known controlled upstream name resolves before feed profile; actual: {\"answers\":1,\"authority_ttl\":0,\"available\":true,\"has_soa\":false,\"rcode\":0,\"ttl\":54,\"types\":[1]}; command: node loopback query after explicit positive-control profile"
     },
     {
       "name": "feed profile creation",
@@ -167,11 +167,11 @@
     },
     {
       "name": "node last-good block response",
-      "detail": "pass; expected: F8-A / F8-TTL5: RCODE 3, zero answers, SOA TTL 5 after invalid feed update; actual: {\"dns_wire_id\":42070,\"authority_serial\":0,\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}; command: node loopback DNS after actual 300-second failed refresh; docs/dns/BACKEND.md §2.1.4; not native member DNS"
+      "detail": "pass; expected: F8-A / F8-TTL5: RCODE 3, zero answers, SOA TTL 5 after invalid feed update; actual: {\"dns_wire_id\":59704,\"authority_serial\":0,\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}; command: node loopback DNS after actual 300-second failed refresh; docs/dns/BACKEND.md §2.1.4; not native member DNS"
     },
     {
       "name": "r18 M-3 accepted hold and central ID join",
-      "detail": "pass; expected: retain incidents, exact reports, lease members, revocation and escalation IDs; markers and retained safety precedence when exercised; actual: samples=17; valid=true; details=F18-AT22-generation-holds.json; no matching scenario is not exercised; command: read-only own-stack durable holds/audits; replay publication classification, no new observation"
+      "detail": "pass; expected: retain incidents, exact reports, lease members, revocation and escalation IDs; markers and retained safety precedence when exercised; actual: samples=19; valid=true; details=F18-AT22-generation-holds.json; no matching scenario is not exercised; command: read-only own-stack durable holds/audits; replay publication classification, no new observation"
     },
     {
       "name": "blocked",
@@ -183,83 +183,83 @@
     },
     {
       "name": "provenance",
-      "detail": "source=4eb5d7d32c449da7689e749fd8ecb208657937dd; applied generation=73; incarnation=01a1a33d-0cf5-7555-be0a-6ae079700a69; image/binary digests in JSON"
+      "detail": "source=dbfccc6fc7d076ec73f4f8575eb27efe39337a23; applied generation=74; incarnation=01a1a495-e051-7b0c-9e12-a61e03dc7619; image/binary digests in JSON"
     }
   ],
-  "at": "2026-11-03T21:42:17Z",
-  "run_id": "50117c68-d1b3-431d-a2be-cd94d27a2447",
-  "source_commit": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
+  "at": "2026-11-04T03:58:24Z",
+  "run_id": "5715939e-3943-48f1-8bd5-c869bf7c91c2",
+  "source_commit": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
   "release_digests": {
-    "artifact_sha256_0.1.0_amd64": "713820ef887a67dcfdf8422add4f23cf510c593da936726db5832156f14cbbde",
-    "artifact_sha256_0.1.0_arm64": "d6aba34ec4b229c3c342861dd803ba832c4961a2c61b554a21b56b909a83a4ae",
-    "manifest_sha256_0.1.0": "8d18e0e710dad86b2d77949b2ef789aa985dab4e6e3ddfad07f9b688c5fb0faa",
-    "signed_manifest_sha256_0.1.0": "76b7caceb7b9b7d0915a67d6c8f132e55c914d9ba541d3cba8c18e37d46525b1"
+    "artifact_sha256_0.1.0_amd64": "7ebb0fd4ac60c2bc83439a94a1cfa47fef62283afe584867a3dde6623b6401c1",
+    "artifact_sha256_0.1.0_arm64": "d141266765ef944d999f816699d4175a991c16d20b304795966ec9e08a02e528",
+    "manifest_sha256_0.1.0": "2a2c03b350b1023755a9d56bcc568d0bcd56663686f8c2d3b744db9aec7a8fa4",
+    "signed_manifest_sha256_0.1.0": "57f319ac78d6944edfc7845a5b2ca88b862d5e043c4fb61a5746023e0033b4a7"
   },
   "build": {
-    "test_binary_sha256": "ea35e81e4ac817105bb6475a01329845be94e758178bd51e1900db5e095a342e",
-    "source_commit": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
-    "source_dirty": true,
+    "test_binary_sha256": "455cdbb9794776a99e97064945f2d8f6114e7d7cd6704ac64305f9f1c0ccd7d4",
+    "source_commit": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+    "source_dirty": false,
     "image_digests": {
       "adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "control": "sha256:d9fb3357a0592dbc0a8c6104c22ab3b076593a452ede0159117e37c511be2355",
+      "control": "sha256:b8a96ff56fd370ec72ee3208d2c72e583733c0c70c23470dc0aba744f14acef6",
       "coredns": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
       "gateway": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
-      "idp": "sha256:cb2313f9c4771e028c062bca35b7efafa4e928f9f872006ba4ebbfba63c4b8af",
-      "member": "sha256:3f46d1ccea48d811934f49aadb1f7b9bb29c28222a5c04a8093e19275809e7d6",
+      "idp": "sha256:0758d88636e7bb7222704b27c8d0f38cbd812001f16ffca57887fabd221d5bcb",
+      "member": "sha256:2a71faa3f8b6996dd1c76801e29a02412bb4e460ce8cc51091521ba42a617d45",
       "netbird": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
-      "node": "sha256:3f46d1ccea48d811934f49aadb1f7b9bb29c28222a5c04a8093e19275809e7d6",
-      "node-netns": "sha256:3f46d1ccea48d811934f49aadb1f7b9bb29c28222a5c04a8093e19275809e7d6",
-      "node2": "sha256:3f46d1ccea48d811934f49aadb1f7b9bb29c28222a5c04a8093e19275809e7d6",
+      "node": "sha256:2a71faa3f8b6996dd1c76801e29a02412bb4e460ce8cc51091521ba42a617d45",
+      "node-netns": "sha256:2a71faa3f8b6996dd1c76801e29a02412bb4e460ce8cc51091521ba42a617d45",
+      "node2": "sha256:2a71faa3f8b6996dd1c76801e29a02412bb4e460ce8cc51091521ba42a617d45",
       "node2-adguard": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
-      "node2-netns": "sha256:3f46d1ccea48d811934f49aadb1f7b9bb29c28222a5c04a8093e19275809e7d6",
-      "origin": "sha256:cb326d9a327a967e7c1e17055d2fbf1ed7a363079cf4d1fad43ef8ac971ba034",
-      "payment": "sha256:36de81e2b8a2ed04bc645184f1124181a22e0c9570b77caf93f0b3b507baa3b1",
-      "postgres": "sha256:11c41597e304e839e4826b2879355a48ade294001e6bd6cb5357319b7cea7078",
-      "worker": "sha256:aef7db30a26f08a755e998b22faf87ba0e2b34c0609de3f836b8bb10b239bc08"
+      "node2-netns": "sha256:2a71faa3f8b6996dd1c76801e29a02412bb4e460ce8cc51091521ba42a617d45",
+      "origin": "sha256:539a0ddba04aafab8d86abdaaf3ee14c8d8e2107fd71c22b02fbd8553ecbd3c5",
+      "payment": "sha256:e03ab8e74d9b81e473683247fe2b75275d7aef0d01d25d2720255b469392faf5",
+      "postgres": "sha256:ed6b2d4068d655bea6fd0ffb5a05d99fb7ce595431c35c40948631d10c3be774",
+      "worker": "sha256:62fccbe5edf377fb666dae0c8d5da013fc8ec068a5c06f4dbb707a039fa860ab"
     },
     "binary_sha256": {
-      "fvpn-agent": "054502d29710fd3889988fbe93f3ae0983a119b221365ad0ce1c4020c0d438a7",
-      "fvpn-control": "26e21b7ceae56f49ba1145ff1b3653b4654df1b362950dda19ac1cce638d1a5c",
-      "fvpn-updater": "b03fb778acd493571f519e9e34048406f23f54af85527c01f27149d955952438",
-      "fvpn-worker": "c7a7f5d60922384b025ea1fbec69ad844e435921cfca96b7c154d80af380a7f6"
+      "fvpn-agent": "c066d05df30d53e9b1e99187b59881034ffbde4aba4a0b77445d0e26a6472631",
+      "fvpn-control": "74716e229d95fc731c35b57613a7764482461a46d4e60ce0303cf94d471f6241",
+      "fvpn-updater": "0c56e2f1bcf313a30869bc2efc38fcae4dca9cfa67be76930b80ea7099bd37cd",
+      "fvpn-worker": "9fc02e52b0136eea985c82a093297d80fd45072e219632b126a50338526e0ae4"
     },
     "binary_vcs": {
       "fvpn-agent": {
         "go_version": "go1.27.3",
-        "vcs.modified": "true",
-        "vcs.revision": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
-        "vcs.time": "2026-11-03T21:05:48Z"
+        "vcs.modified": "false",
+        "vcs.revision": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+        "vcs.time": "2026-11-04T02:48:49Z"
       },
       "fvpn-control": {
         "go_version": "go1.27.3",
-        "vcs.modified": "true",
-        "vcs.revision": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
-        "vcs.time": "2026-11-03T21:05:48Z"
+        "vcs.modified": "false",
+        "vcs.revision": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+        "vcs.time": "2026-11-04T02:48:49Z"
       },
       "fvpn-updater": {
         "go_version": "go1.27.3",
-        "vcs.modified": "true",
-        "vcs.revision": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
-        "vcs.time": "2026-11-03T21:05:48Z"
+        "vcs.modified": "false",
+        "vcs.revision": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+        "vcs.time": "2026-11-04T02:48:49Z"
       },
       "fvpn-worker": {
         "go_version": "go1.27.3",
-        "vcs.modified": "true",
-        "vcs.revision": "4eb5d7d32c449da7689e749fd8ecb208657937dd",
-        "vcs.time": "2026-11-03T21:05:48Z"
+        "vcs.modified": "false",
+        "vcs.revision": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+        "vcs.time": "2026-11-04T02:48:49Z"
       }
     }
   },
-  "policy_revision": "73",
+  "policy_revision": "74",
   "active_policy_revisions": {
-    "dns_profile": "01a1a35d-36b6-7c82-8808-c2af3d8a30b7",
-    "domain_rule_set": "01a1a33c-f725-77e9-831d-0893c4140c40",
-    "fair_use": "01a1a33c-f259-7ac9-89e0-3c44fc526bf6",
-    "plan": "01a1a343-2b49-7d29-8ce7-6b16c95616a6",
-    "release_support": "01a1a33c-eb13-702b-8bec-f7b9cd6944cb",
-    "threat_feed": "01a1a35d-00f6-78a0-bcf7-8a9bb874b80a"
+    "dns_profile": "01a1a4b5-955f-779c-97f7-0769bcfd6a1e",
+    "domain_rule_set": "01a1a495-c94a-7993-a0d9-5e51a13bc22d",
+    "fair_use": "01a1a495-c481-7116-82ae-c4409175ae43",
+    "plan": "01a1a49b-ebed-7967-81eb-323b1f0b5b8d",
+    "release_support": "01a1a495-bd2c-7057-8ff5-2de389ed4ec7",
+    "threat_feed": "01a1a4b5-5966-768c-9a4e-f225df56eb6b"
   },
-  "node_incarnation": "01a1a33d-0cf5-7555-be0a-6ae079700a69",
+  "node_incarnation": "01a1a495-e051-7b0c-9e12-a61e03dc7619",
   "steps": [
     {
       "name": "privacy native stub in use",
@@ -267,15 +267,15 @@
       "expected": "native two-resolver configuration available",
       "actual": "native_configured=true; probe_ok=true",
       "command": "AT20 native DNS configuration and member OS stub",
-      "at": "2026-11-03T21:42:18Z"
+      "at": "2026-11-04T03:58:26Z"
     },
     {
       "name": "privacy sentinel query",
       "status": "pass",
       "expected": "F8-A scope W / F8-TTL5: RCODE 3, zero answers, SOA TTL 5",
-      "actual": "{\"dns_wire_id\":58927,\"authority_serial\":0,\"dns_trace\":{\"resolver_observation_boundary\":\"relay_write_completed_not_client_received\",\"trace_streams\":{\"authority\":[\"c4a33ae0-d271-4125-ab18-fdf901de8936\"],\"primary\":[\"534937fd-34be-4e2c-962a-64a013ce2c54\",\"400d05ea-ce64-4a75-867b-1feebb3da1aa\"],\"secondary\":[\"f55d3e9e-ef77-4aa4-999c-ce84bf34eab3\"]},\"started\":\"2026-11-03T21:42:18.460622842Z\",\"completed\":\"2026-11-03T21:42:18.562887158Z\",\"responder\":\"unattributed\",\"cache_state\":\"unknown\",\"trace_complete\":false,\"resolver_events\":[],\"authority_events\":[],\"authority_history\":[],\"authority_outstanding_at_query_start\":[],\"authority_outstanding_at_query_completion\":[],\"authority_outstanding_at_trace_read\":[],\"trace_read_at\":{\"authority\":\"2026-11-03T21:42:18.860883757Z\",\"primary\":\"2026-11-03T21:42:18.661869614Z\",\"secondary\":\"2026-11-03T21:42:18.76119848Z\"},\"authority_serial_after_query\":1001,\"authority_read_at\":\"2026-11-03T21:42:18.942628111Z\",\"answer_ttl_remaining\":[]},\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1}",
+      "actual": "{\"dns_wire_id\":17674,\"authority_serial\":0,\"dns_trace\":{\"resolver_observation_boundary\":\"relay_write_completed_not_client_received\",\"trace_streams\":{\"authority\":[\"2746c8a4-c51c-403a-968d-d97356d809d5\"],\"primary\":[\"7c8b849a-0fe0-4115-8c51-38c9263a97cf\",\"fdadcd65-1341-47e1-9b44-61bb38b398c2\"],\"secondary\":[\"cd766227-7061-4a46-9720-0fda91b54d1a\"]},\"started\":\"2026-11-04T03:58:25.543775432Z\",\"completed\":\"2026-11-04T03:58:25.645149564Z\",\"responder\":\"unattributed\",\"cache_state\":\"unknown\",\"trace_complete\":false,\"resolver_events\":[],\"authority_events\":[],\"authority_history\":[],\"authority_outstanding_at_query_start\":[],\"authority_outstanding_at_query_completion\":[],\"authority_outstanding_at_trace_read\":[],\"trace_read_at\":{\"authority\":\"2026-11-04T03:58:25.926608019Z\",\"primary\":\"2026-11-04T03:58:25.745247683Z\",\"secondary\":\"2026-11-04T03:58:25.836234975Z\"},\"authority_serial_after_query\":1001,\"authority_read_at\":\"2026-11-04T03:58:26.00776585Z\",\"answer_ttl_remaining\":[]},\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":1}",
       "command": "native OS stub sentinel under explicit lab block; docs/dns/BACKEND.md §2.1.4",
-      "at": "2026-11-03T21:42:18Z"
+      "at": "2026-11-04T03:58:26Z"
     },
     {
       "name": "/control/querylog/config",
@@ -283,7 +283,7 @@
       "expected": "disabled",
       "actual": "read_ok=true; enabled=false; file_enabled=false",
       "command": "AdGuard GET /control/querylog/config",
-      "at": "2026-11-03T21:42:19Z"
+      "at": "2026-11-04T03:58:26Z"
     },
     {
       "name": "/control/stats/config",
@@ -291,7 +291,7 @@
       "expected": "disabled",
       "actual": "read_ok=true; enabled=false; file_enabled=false",
       "command": "AdGuard GET /control/stats/config",
-      "at": "2026-11-03T21:42:19Z"
+      "at": "2026-11-04T03:58:26Z"
     },
     {
       "name": "/control/querylog sentinel scan",
@@ -299,7 +299,7 @@
       "expected": "no sentinel retained",
       "actual": "read_ok=true; sentinel_matches=0",
       "command": "scan actual resolver API response in memory",
-      "at": "2026-11-03T21:42:19Z"
+      "at": "2026-11-04T03:58:26Z"
     },
     {
       "name": "/control/stats sentinel scan",
@@ -307,7 +307,7 @@
       "expected": "no sentinel retained",
       "actual": "read_ok=true; sentinel_matches=0",
       "command": "scan actual resolver API response in memory",
-      "at": "2026-11-03T21:42:19Z"
+      "at": "2026-11-04T03:58:26Z"
     },
     {
       "name": "on-disk privacy config",
@@ -315,7 +315,7 @@
       "expected": "query history and statistics disabled",
       "actual": "read_ok=true; querylog=false; querylog_file=false; statistics=false",
       "command": "read assigned AdGuardHome.yaml; emit only booleans",
-      "at": "2026-11-03T21:42:19Z"
+      "at": "2026-11-04T03:58:26Z"
     },
     {
       "name": "service log scan",
@@ -323,7 +323,7 @@
       "expected": "12 services; no sentinel",
       "actual": "services_scanned=12; sentinel_matches=0",
       "command": "docker logs assigned containers; count sentinel in memory",
-      "at": "2026-11-03T21:42:20Z"
+      "at": "2026-11-04T03:58:27Z"
     },
     {
       "name": "metrics scan",
@@ -331,7 +331,7 @@
       "expected": "record endpoint availability and sentinel matches",
       "actual": "read_ok=true; sentinel_matches=0",
       "command": "control loopback /metrics via probe",
-      "at": "2026-11-03T21:42:20Z"
+      "at": "2026-11-04T03:58:27Z"
     },
     {
       "name": "database backup scan",
@@ -339,7 +339,7 @@
       "expected": "dump succeeds; no query sentinel",
       "actual": "dump_ok=true; sentinel_matches=0",
       "command": "pg_dump own lab DB into memory only; scan sentinel",
-      "at": "2026-11-03T21:42:20Z"
+      "at": "2026-11-04T03:58:27Z"
     },
     {
       "name": "audit scan",
@@ -347,7 +347,7 @@
       "expected": "no query sentinel",
       "actual": "sentinel_rows=0",
       "command": "SELECT count audit JSON containing sentinel",
-      "at": "2026-11-03T21:42:20Z"
+      "at": "2026-11-04T03:58:27Z"
     },
     {
       "name": "bounded audit retention",
@@ -355,7 +355,7 @@
       "expected": "reject early cutoff; delete only expired synthetic row",
       "actual": "early_rejected=true; purge_ok=true; deleted=1; old_remaining=0; young_remaining=1",
       "command": "SELECT purge_retained audit_events; inspect old/young IDs",
-      "at": "2026-11-03T21:42:20Z"
+      "at": "2026-11-04T03:58:27Z"
     },
     {
       "name": "feed inventory",
@@ -363,7 +363,7 @@
       "expected": "record actual active feed count",
       "actual": "active_feed_definitions=0",
       "command": "SELECT active threat_feed policies",
-      "at": "2026-11-03T21:42:20Z"
+      "at": "2026-11-04T03:58:27Z"
     },
     {
       "name": "second resolver privacy sample",
@@ -371,7 +371,7 @@
       "expected": "controlled DNS response",
       "actual": "{\"answers\":0,\"authority_ttl\":5,\"available\":true,\"has_soa\":true,\"rcode\":3,\"ttl\":5,\"types\":[]}\n",
       "command": "node2 loopback synthetic DNS sample",
-      "at": "2026-11-03T21:42:20Z"
+      "at": "2026-11-04T03:58:27Z"
     },
     {
       "name": "second resolver on-disk privacy",
@@ -379,7 +379,7 @@
       "expected": "query log/file and statistics disabled",
       "actual": "read_ok=true; querylog=false; file=false; statistics=false",
       "command": "parse second resolver config in memory; no credentials retained",
-      "at": "2026-11-03T21:42:20Z"
+      "at": "2026-11-04T03:58:27Z"
     },
     {
       "name": "node2 service log privacy",
@@ -387,7 +387,7 @@
       "expected": "zero synthetic qname matches",
       "actual": "read_ok=true; matches=0",
       "command": "scan assigned secondary service logs in memory",
-      "at": "2026-11-03T21:42:20Z"
+      "at": "2026-11-04T03:58:27Z"
     },
     {
       "name": "node2-adguard service log privacy",
@@ -395,7 +395,7 @@
       "expected": "zero synthetic qname matches",
       "actual": "read_ok=true; matches=0",
       "command": "scan assigned secondary service logs in memory",
-      "at": "2026-11-03T21:42:20Z"
+      "at": "2026-11-04T03:58:27Z"
     },
     {
       "name": "TEST ONLY feed cadence",
@@ -403,7 +403,7 @@
       "expected": "300 seconds through normal settings; restored afterwards",
       "actual": "worker restarted; cadence=300",
       "command": "set generated DNS config feed_update_cadence_seconds=300; restart own worker",
-      "at": "2026-11-03T21:42:21Z"
+      "at": "2026-11-04T03:58:28Z"
     },
     {
       "name": "controlled feed input",
@@ -411,7 +411,7 @@
       "expected": "204 uploaded to existing controlled origin",
       "actual": "HTTP 204 ",
       "command": "PUT lab origin /e2e/object with synthetic feed bytes",
-      "at": "2026-11-03T21:42:21Z"
+      "at": "2026-11-04T03:58:28Z"
     },
     {
       "name": "blank attribution rejected",
@@ -419,7 +419,7 @@
       "expected": "422 for blank or whitespace notes",
       "actual": "HTTP 422 VALIDATION_FAILED",
       "command": "POST threat_feed with blank attribution",
-      "at": "2026-11-03T21:42:22Z"
+      "at": "2026-11-04T03:58:29Z"
     },
     {
       "name": "blank attribution rejected",
@@ -427,7 +427,7 @@
       "expected": "422 for blank or whitespace notes",
       "actual": "HTTP 422 VALIDATION_FAILED",
       "command": "POST threat_feed with blank attribution",
-      "at": "2026-11-03T21:42:23Z"
+      "at": "2026-11-04T03:58:30Z"
     },
     {
       "name": "feed source and licensing record",
@@ -435,7 +435,7 @@
       "expected": "201 with attribution:null, TEST ONLY basis and pin",
       "actual": "HTTP 201 ",
       "command": "POST /admin/policies threat_feed",
-      "at": "2026-11-03T21:42:23Z"
+      "at": "2026-11-04T03:58:30Z"
     },
     {
       "name": "feed approval activation",
@@ -443,7 +443,7 @@
       "expected": "202, normal worker fetch",
       "actual": "HTTP 202 ",
       "command": "POST policy activate with If-Match",
-      "at": "2026-11-03T21:42:24Z"
+      "at": "2026-11-04T03:58:31Z"
     },
     {
       "name": "production feed bootstrap",
@@ -451,7 +451,7 @@
       "expected": "record verified content or exact fetch precondition",
       "actual": "hash_matches_pin=true; last_error=; failures=0",
       "command": "poll dns_feed_refresh_state written by running worker",
-      "at": "2026-11-03T21:42:26Z"
+      "at": "2026-11-04T03:58:33Z"
     },
     {
       "name": "feed positive rules",
@@ -459,7 +459,7 @@
       "expected": "201 nonempty synthetic control rules",
       "actual": "HTTP 201 ",
       "command": "POST domain_rule_set with explicit controlled-name allow",
-      "at": "2026-11-03T21:42:26Z"
+      "at": "2026-11-04T03:58:33Z"
     },
     {
       "name": "feed positive profile",
@@ -467,7 +467,7 @@
       "expected": "201",
       "actual": "HTTP 201 ",
       "command": "POST DNS profile referencing nonempty control rules",
-      "at": "2026-11-03T21:42:27Z"
+      "at": "2026-11-04T03:58:34Z"
     },
     {
       "name": "feed positive activation",
@@ -475,7 +475,7 @@
       "expected": "202",
       "actual": "HTTP 202 ",
       "command": "POST policy activation; completion is observed separately",
-      "at": "2026-11-03T21:42:28Z"
+      "at": "2026-11-04T03:58:35Z"
     },
     {
       "name": "typed DNS evidence",
@@ -483,7 +483,7 @@
       "expected": "record exact issued-document application, or explicit null",
       "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
       "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
-      "at": "2026-11-03T21:42:32Z"
+      "at": "2026-11-04T03:58:41Z"
     },
     {
       "name": "issued resolver document mTLS fetch",
@@ -491,7 +491,7 @@
       "expected": "200 canonical bytes match node evidence digest",
       "actual": "HTTP=200; hash_matches=true; bytes=696",
       "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
-      "at": "2026-11-03T21:42:34Z"
+      "at": "2026-11-04T03:58:43Z"
     },
     {
       "name": "current desired-state DNS selection",
@@ -499,15 +499,15 @@
       "expected": "record response independently of previously issued document",
       "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
       "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
-      "at": "2026-11-03T21:42:36Z"
+      "at": "2026-11-04T03:58:45Z"
     },
     {
       "name": "feed positive DNS control",
       "status": "pass",
       "expected": "known controlled upstream name resolves before feed profile",
-      "actual": "{\"answers\":1,\"authority_ttl\":0,\"available\":true,\"has_soa\":false,\"rcode\":0,\"ttl\":55,\"types\":[1]}",
+      "actual": "{\"answers\":1,\"authority_ttl\":0,\"available\":true,\"has_soa\":false,\"rcode\":0,\"ttl\":54,\"types\":[1]}",
       "command": "node loopback query after explicit positive-control profile",
-      "at": "2026-11-03T21:42:36Z"
+      "at": "2026-11-04T03:58:45Z"
     },
     {
       "name": "feed profile creation",
@@ -515,7 +515,7 @@
       "expected": "record reference validation result",
       "actual": "HTTP 201 ",
       "command": "POST DNS profile referencing approved feed",
-      "at": "2026-11-03T21:42:37Z"
+      "at": "2026-11-04T03:58:46Z"
     },
     {
       "name": "feed document publication",
@@ -523,7 +523,7 @@
       "expected": "worker compiles approved last-good into resolver document",
       "actual": "published=true",
       "command": "activate DNS profile referencing feed; poll dns_resolver_documents",
-      "at": "2026-11-03T21:42:39Z"
+      "at": "2026-11-04T03:58:47Z"
     },
     {
       "name": "controlled bad update",
@@ -531,7 +531,7 @@
       "expected": "204; no product projection modified",
       "actual": "HTTP 204 ",
       "command": "PUT same origin object with comment-only content",
-      "at": "2026-11-03T21:42:39Z"
+      "at": "2026-11-04T03:58:48Z"
     },
     {
       "name": "real scheduled last-good retention",
@@ -539,7 +539,7 @@
       "expected": "empty/invalid-list failure preserves original hash and one content row",
       "actual": "failure_observed=true; error=zero_rules; hash_preserved=true; content_rows=1; failures=1",
       "command": "wait actual 300-second cadence plus worker sweep; poll product refresh projection",
-      "at": "2026-11-03T21:48:22Z"
+      "at": "2026-11-04T04:04:28Z"
     },
     {
       "name": "typed DNS evidence",
@@ -547,7 +547,7 @@
       "expected": "record exact issued-document application, or explicit null",
       "actual": "HTTP=200; decoded=true; specified=true; null=false; present=true; outcome=applied; error_code=; issued_document_matches=true",
       "command": "GET NodeDetail.dns_policy_evidence using generated 1.2.0 type; read issued document",
-      "at": "2026-11-03T21:48:23Z"
+      "at": "2026-11-04T04:04:29Z"
     },
     {
       "name": "issued resolver document mTLS fetch",
@@ -555,7 +555,7 @@
       "expected": "200 canonical bytes match node evidence digest",
       "actual": "HTTP=200; hash_matches=true; bytes=670",
       "command": "GET /agent/resolver-documents/{issued_id} using actual node mTLS; hash in memory",
-      "at": "2026-11-03T21:48:25Z"
+      "at": "2026-11-04T04:04:32Z"
     },
     {
       "name": "current desired-state DNS selection",
@@ -563,23 +563,23 @@
       "expected": "record response independently of previously issued document",
       "actual": "HTTP=200; code=; ambiguous_active_profiles=false",
       "command": "GET /agent/desired-state via actual mTLS; retain only allowlisted error",
-      "at": "2026-11-03T21:48:27Z"
+      "at": "2026-11-04T04:04:34Z"
     },
     {
       "name": "node last-good block response",
       "status": "pass",
       "expected": "F8-A / F8-TTL5: RCODE 3, zero answers, SOA TTL 5 after invalid feed update",
-      "actual": "{\"dns_wire_id\":42070,\"authority_serial\":0,\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
+      "actual": "{\"dns_wire_id\":59704,\"authority_serial\":0,\"authority_ttl\":5,\"has_soa\":true,\"available\":true,\"rcode\":3,\"types\":[],\"ttls\":[],\"address_classes\":[],\"expected_answer\":false,\"connected\":false,\"bytes\":0,\"milliseconds\":0}",
       "command": "node loopback DNS after actual 300-second failed refresh; docs/dns/BACKEND.md §2.1.4; not native member DNS",
-      "at": "2026-11-03T21:48:27Z"
+      "at": "2026-11-04T04:04:34Z"
     },
     {
       "name": "r18 M-3 accepted hold and central ID join",
       "status": "pass",
       "expected": "retain incidents, exact reports, lease members, revocation and escalation IDs; markers and retained safety precedence when exercised",
-      "actual": "samples=17; valid=true; details=F18-AT22-generation-holds.json; no matching scenario is not exercised",
+      "actual": "samples=19; valid=true; details=F18-AT22-generation-holds.json; no matching scenario is not exercised",
       "command": "read-only own-stack durable holds/audits; replay publication classification, no new observation",
-      "at": "2026-11-03T21:48:28Z"
+      "at": "2026-11-04T04:04:35Z"
     }
   ],
   "blockers": [
