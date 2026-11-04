@@ -46,6 +46,16 @@ type finiteGrantSteps struct {
 	project func(context.Context, *GrantTransition) bool
 }
 
+// Preserve the cause for errors.Is without exposing database/connection text in
+// the consumer's public error record. These messages match the original helper.
+type finiteGrantStepError struct {
+	message string
+	cause   error
+}
+
+func (e *finiteGrantStepError) Error() string { return e.message }
+func (e *finiteGrantStepError) Unwrap() error { return e.cause }
+
 // The production path and stub harness execute this same transition, including
 // every early return. Recovery has its own bounded context so caller cancellation
 // cannot skip restoring already revoked grants.
@@ -70,12 +80,12 @@ func runFiniteGrantTransition(ctx context.Context, out *GrantTransition, grants 
 	for _, grant := range grants {
 		key := uuid.New()
 		if err := steps.revoke(ctx, grant.ID, key); err != nil {
-			return *out, fmt.Errorf("finite grant: production revoke failed: %w", err)
+			return *out, &finiteGrantStepError{"finite grant: production revoke failed", err}
 		}
 		*revoked = append(*revoked, grant)
 		out.Revoked = append(out.Revoked, grant.ID)
 		if err := steps.revoke(ctx, grant.ID, key); err != nil {
-			return *out, fmt.Errorf("finite grant: revoke replay failed: %w", err)
+			return *out, &finiteGrantStepError{"finite grant: revoke replay failed", err}
 		}
 	}
 	out.RevokeReplayVerified = true

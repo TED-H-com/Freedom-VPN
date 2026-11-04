@@ -154,6 +154,9 @@ func TestENT01_FiniteGrantRecovery(t *testing.T) {
 				if !errors.Is(err, sentinel) {
 					t.Fatal("original error lost")
 				}
+				if strings.Contains(err.Error(), sentinel.Error()) {
+					t.Fatal("raw domain error leaked into public record")
+				}
 			}
 			wantOriginal := map[string]string{"create": "create HTTP 503", "lost_create_response": "create HTTP 0", "replay": "create replay did not return the same operation", "projection": "worker operation/projection deadline", "restoration_failure": "create HTTP 503"}[mode]
 			if !strings.Contains(err.Error(), wantOriginal) {
