@@ -216,7 +216,19 @@ func (s *liveSuite) addHandoffCheck(rec *Record, name string, ok bool, detail st
 		rec.Status = StatusFail
 		rec.Blockers = append(rec.Blockers, name+": "+detail)
 	}
-	rec.MechanismChecks = append(rec.MechanismChecks, MechanismCheck{Name: name, SpecRef: "ENR-05, D-105, D-112, §10.5–§10.8", Status: status, Summary: detail})
+	details := map[string]any{}
+	for _, key := range []string{"node_capacity_write", "node_initial_publication_write", "node_revoke_write", "d130_republish_write"} {
+		if v, present := rec.Observations[key]; present {
+			details[key] = v
+		}
+	}
+	rec.MechanismChecks = append(rec.MechanismChecks, MechanismCheck{
+		Name:    name,
+		SpecRef: "ENR-05, D-105, D-112, §10.5–§10.8",
+		Status:  status,
+		Summary: detail,
+		Details: details,
+	})
 }
 
 func (s *liveSuite) installerToken(node uuid.UUID) string {
@@ -324,7 +336,8 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	rec.Observations["d112_configuration"] = s.d112Configuration("installer-node")
 	patch := s.nodeMutation(node, http.MethodPatch, "", map[string]any{
 		"capacity": map[string]any{"down_bps": 1000000000, "up_bps": 1000000000, "member_down_bps_cap": 60000000, "member_up_bps_cap": 30000000}})
-	if patch.status != http.StatusAccepted && patch.status != http.StatusOK {
+	rec.Observations["node_capacity_write"] = patch.write.Receipt
+	if !patch.accepted(http.StatusOK, http.StatusAccepted) {
 		t.Fatalf("AT20 capacity: %d %s", patch.status, string(patch.body))
 	}
 	if !s.waitFor(90*time.Second, func() bool {
@@ -335,7 +348,8 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 		t.Fatal("AT20 installer did not reach ready safety baseline")
 	}
 	pub := s.nodeMutation(node, http.MethodPut, "/publication", map[string]any{"publication_intent": "published", "group_ids": []string{s.groupID.String()}, "reason": "TEST ONLY AT20 serving"})
-	if pub.status != http.StatusAccepted {
+	rec.Observations["node_initial_publication_write"] = pub.write.Receipt
+	if !pub.accepted(http.StatusAccepted) {
 		t.Fatalf("AT20 publication: %d %s", pub.status, string(pub.body))
 	}
 	var exit uuid.UUID
@@ -434,7 +448,8 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 	rec.Observations["services_before_stop"] = states
 	stage("API retirement and controlled same-node reinstall")
 	revoked := s.nodeMutation(node, http.MethodPost, "/revoke", map[string]any{"reason": "TEST ONLY AT20 controlled reinstall"})
-	if revoked.status != http.StatusAccepted {
+	rec.Observations["node_revoke_write"] = revoked.write.Receipt
+	if !revoked.accepted(http.StatusAccepted) {
 		t.Fatalf("AT20 revoke: %d %s", revoked.status, revoked.code)
 	}
 	rec.Observations["revoke_operation"] = json.RawMessage(revoked.body)
@@ -452,7 +467,13 @@ func (s *liveSuite) evalAT20(t *testing.T) (rec Record) {
 		t.Fatal("AT20 origin did not retire")
 	}
 	var accepted api.OperationAccepted
-	must(json.Unmarshal(revoked.body, &accepted))
+	_ = json.Unmarshal(revoked.body, &accepted)
+	if accepted.OperationId == uuid.Nil && revoked.write.AlreadyIntended && s.pool != nil {
+		_ = s.pool.QueryRow(s.ctx, `SELECT o.id FROM operations o JOIN nodes n ON n.id = o.resource_id WHERE o.resource_type = 'node' AND o.resource_id = $1 AND o.kind = 'node.revoke' AND o.desired_generation = n.desired_config_generation ORDER BY o.created_at DESC LIMIT 1`, node).Scan(&accepted.OperationId)
+	}
+	if accepted.OperationId == uuid.Nil {
+		t.Fatalf("AT20 revoke operation missing: %s", revoked.detail())
+	}
 	var operation api.Operation
 	if !s.waitFor(45*time.Second, func() bool {
 		response := s.apiCall(s.admin, http.MethodGet, "/api/v1/admin/operations/"+accepted.OperationId.String(), nil, nil)
