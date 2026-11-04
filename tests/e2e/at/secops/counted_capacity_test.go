@@ -12,6 +12,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labstack"
 	"github.com/google/uuid"
 )
 
@@ -101,7 +102,8 @@ func (p *liveProbe) countedCapacity(admin *liveSession, node uuid.UUID, members 
 			mark := time.Now()
 			var previous string
 			_ = p.db.QueryRow(p.t.Context(), `SELECT desired_config_generation::text FROM nodes WHERE id=$1`, node).Scan(&previous)
-			changed := p.call(admin, "PATCH", path, map[string]any{"capacity": map[string]any{"down_bps": capacity, "up_bps": capacity, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}, map[string]string{"If-Match": r.header.Get("ETag")})
+			body := map[string]any{"capacity": map[string]any{"down_bps": capacity, "up_bps": capacity, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
+			changed := p.writeNode("counted capacity change", admin, "PATCH", path, path, body, r.header.Get("ETag"), labstack.NodeFieldsMatch(body))
 			ack := false
 			var desired, applied string
 			for deadline := time.Now().Add(60 * time.Second); time.Now().Before(deadline); {
@@ -112,7 +114,7 @@ func (p *liveProbe) countedCapacity(admin *liveSession, node uuid.UUID, members 
 				}
 				time.Sleep(time.Second)
 			}
-			policies = append(policies, map[string]any{"offset_seconds": elapsed, "http_status": changed.status, "desired_generation": desired, "applied_generation": applied, "ack_seconds": time.Since(mark).Seconds(), "ack_within_60s": ack, "counted_after": p.selectedFlow(peers[0])})
+			policies = append(policies, map[string]any{"offset_seconds": elapsed, "http_status": changed.Reply.Status, "node_write_receipt": changed.Receipt, "desired_generation": desired, "applied_generation": applied, "ack_seconds": time.Since(mark).Seconds(), "ack_within_60s": ack, "counted_after": p.selectedFlow(peers[0])})
 			nextChange++
 		}
 		raw, e := exec.CommandContext(p.t.Context(), "docker", "stats", "--no-stream", "--format", "{{json .}}", livePrefix+"control", livePrefix+"worker", livePrefix+"postgres", livePrefix+"node").Output()

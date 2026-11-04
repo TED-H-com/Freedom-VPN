@@ -51,7 +51,8 @@ func TestAT28_AT31_Followup4(t *testing.T) {
 	p.metadata["publication_without_capacity"] = p.publicationSnapshot(nodeA)
 	path := "/api/v1/admin/nodes/" + nodeA.String()
 	detail := p.call(admin, "GET", path, nil, nil)
-	p.check("finite node capacity input", p.call(admin, "PATCH", path, map[string]any{"capacity": map[string]any{"down_bps": 200000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}, map[string]string{"If-Match": detail.header.Get("ETag")}), 202, "")
+	body := map[string]any{"capacity": map[string]any{"down_bps": 200000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
+	p.writeNode("finite node capacity input", admin, "PATCH", path, path, body, detail.header.Get("ETag"), labstack.NodeFieldsMatch(body))
 	// Let the real agent acknowledge the capacity input before the next command.
 	time.Sleep(12 * time.Second)
 	t.Log("SECOPS-11: repeat publication with capacity and zero device bindings (#148)")

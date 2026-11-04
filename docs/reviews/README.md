@@ -32,6 +32,8 @@
 | `r24-hitless-guard-review` | [`r24-hitless-guard-review.md`](r24-hitless-guard-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Netlab 31 design at 52a7e59b; review ba5d3004, 08:19:51 EST; G5/G6 owner trade | 8 (0 Critical, 4 High, 3 Medium, 1 Low); #423 enforcement fixes, C1 revision documents only, H-1/H-3 returned to agent-core 41; [#426 additive L-1 / M-3 corrections](../poc/G2-followup33-design/corrections.md) | [`node/enforce/review_r24_test.go`](../../node/enforce/review_r24_test.go) adopted by #423; copied M-3 dropped; agent/watchdog proofs review-branch only |
 | `r25-retain-review` | [r25-retain-review.md](r25-retain-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `8cc27609` | Agent-core 40/41, carrying 37–41; unmerged | 0 Critical / 1 High / 1 Medium / 0 Low; RETURNED to agent-core 42 before merge, not yet judged | None; 680-line node/agent/review_r25_test.go on `1afecb29` only; exact archive only. |
 | `r26-expiry-fixes-review` | [`r26-expiry-fixes-review.md`](r26-expiry-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Agent-core 42 at 8dec4100 and 37–42 together; expiry, retention and jitter | 0 Critical, 0 High, 0 Medium, 0 Low; reviewer recommends merge 37–42; orchestrator merged 37–43 as #429 under D-150 | [`node/agent/review_r26_test.go`](../../node/agent/review_r26_test.go), six TestR26_Held_* proofs imported by 43; [cut dispositions and errata](#r26-dispositions-at-the-follow-up-39-cutoff-2026-11-03-est) |
+| `r27-members-failures-review` | [r27-members-failures-review.md](r27-members-failures-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Members 18 run 2; proofs 62146ff1, report committed by orchestrator in dfde8d25 | 0 Critical, 1 High, 3 Medium, 1 Low; [cut dispositions](#r27-dispositions-at-the-follow-up-42-cutoff-2026-11-03-est) | [Members proofs](../../tests/e2e/at/members/review_r27_test.go) in #445; agent/enforce proofs review-branch only |
+| `r28-expiry-probe-review` | [r28-expiry-probe-review.md](r28-expiry-probe-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Isolation 20 delivered head 9be409f8; review 34a8d61f, F20-01 | 0 Critical, 1 High, 1 Medium; [cut dispositions](#r28-dispositions-at-the-follow-up-42-cutoff-2026-11-03-est) | Review-branch only at cutoff; agent-core 48 running |
 
 ## What Held Across the Reviews
 
@@ -765,3 +767,68 @@ attribution adopted wholesale. The earlier open question remains historical.
 `TestR25_Held_AQ1_RetainedTickVerifiesUnderLockAndBlocksOnAnyPendingGateOrClockSkew`,
 `TestR25_Held_AQ2_PerDeviceDeadlinesAndEdgeCases`, and
 `TestR25_Held_AQ3_SameCountingIntervalAndHandoffRecoveryInvariants`.
+
+## r27 dispositions at the follow-up 42 cutoff (2026-11-03 EST)
+
+The [raw r27 archive](r27-members-failures-review.md) is byte-for-byte from
+`r27-members-failures-review` at **dfde8d25**: **221 lines**, SHA-256
+`3f4cc753495fe24edb1bc48a33ab8748231c14414d3056fcc7c33e4ca30abb10`.
+The reviewer committed its proofs in **62146ff1**, but not the report. The
+orchestrator committed the report byte-for-byte in **dfde8d25**. These are
+separate provenance facts; the archive is now a D-098 input.
+
+Findings: **0 Critical, 1 High, 3 Medium, 1 Low**. The archive's original
+recommendations stay intact; the dispositions below apply at #445.
+
+| Finding | Disposition at #445 | Boundary |
+|---|---|---|
+| H-1 | OPEN — agent-core 48, running at the cutoff | Missing interface at restart falsely triggers TC_FOREIGN_FILTER. Members' new negative subcheck fails on run 2; no product fix here. |
+| M-1 | OPEN — agent-core 48, running at the cutoff | Closed recovery and provisional-timer race delay the populated lease. Deny-all Apply 584 remains inside the recovery bracket. |
+| M-2 | ANSWERED — members 20 #445 | Restart boundary and each observation's held lease; no grant-less lease means D-067 blocked / not exercised, never pass. |
+| M-3 | ANSWERED — members 20 #445 | Confirmed D-135/D-136 brackets, all losses counted, verified sibling-serving recovery required. Offline replay is a proof, not a verdict. |
+| L-1 | OPEN — agent-core 48, running at the cutoff | Repeated quarantine/baseline writes within one Step. |
+| Question to the owner | ANSWERED — confirmed D-135 and D-136, applied by the orchestrator | No new decision; no outage ceiling or zero-loss criterion. |
+
+Members imported all four proofs first, unchanged, in **e0844864**: the two
+TODO proofs failed and the two Held proofs passed. M-2 now calls the repaired
+predicate with its original reports/held leases; M-3 already called
+`siblingRecovery` and now supplies the verified Apply/written heartbeat facts
+its scenario states. The Held proofs stay byte-identical. Main carries
+`TestR27_M2_AT09_RestartProvisionalPredicateAndTimelineScope`,
+`TestR27_M3_AT02_SiblingRecoveryBracketAndQuarantinePredicates`,
+`TestR27_Held_AT09_RestartRecoveryConjunctsAndTimelineTrace`, and
+`TestR27_Held_AT02_CapturedRecoveryPacketAndBracketAccounting` in
+[the members proof file](../../tests/e2e/at/members/review_r27_test.go).
+Agent/enforce proofs remain on the review branch at this cutoff. Every
+historical run stays failed; the next assembled members run waits for
+agent-core 48.
+
+## r28 dispositions at the follow-up 42 cutoff (2026-11-03 EST)
+
+The [raw r28 archive](r28-expiry-probe-review.md) is byte-for-byte from
+`r28-expiry-probe-review` at **34a8d61f**: **231 lines**, SHA-256
+`0af3db0ca803a0e37497618d9dca852df667d2e9a5a643f72a56676b07e593d3`.
+Its base is isolation 20's delivered head **9be409f8**. This archive is now a
+D-098 input. Findings: **0 Critical, 1 High, 1 Medium**.
+
+| Finding | Disposition at #445 | Boundary |
+|---|---|---|
+| H-1 | OPEN — product defect; agent-core 48, running | The hung desired-state request spends the Step's control budget; the tunnel probe receives that expired context and fails without running. This diagnoses F20-01. See [operator behaviour](../handover/operator-guide.md#r28-h-1). |
+| M-1 | OPEN — isolation, after agent-core 48 | memberExpiry passed in c52bea6c while H-1 had withdrawn all forwarding. The recorded pass stays unchanged; it is not evidence for AT13 per-member expiry under a serving node. Isolation's next run after agent-core 48 decides it. F20-01's failure stays failed. |
+| Optional NetBird management-loss note | RECORDED — no action now | Readable status with management disconnected is a separate question; no new decision or expanded F20-01 fix is assigned. |
+
+**Orchestrator verification, on main at dd052c60**, as supplied in the
+follow-up 42 brief: H-1's TODO proof fails and the three Held proofs pass.
+Swapping the probe's context alone turns the TODO proof green, but fails
+`TestR21_M2_OneBootBudgetAllStages/adoption_probe`. Agent-core 48 is briefed
+to keep both. This is the orchestrator's reported verification, not a new
+handover execution or an implemented fix.
+
+The review-branch proof names are
+`TestR28_ControlOutageDoesNotFailTunnelProbeBeforeLeaseExpiry`,
+`TestR28_WhatHeld_RefreshProbeAndNetbirdProberContextPropagation`,
+`TestR28_WhatHeld_FastControlRefusalPreservesServingUntilDeadline`, and
+`TestR28_WhatHeld_PostDeadlineReasonOrderingInDecideAndBaseline`.
+They are pinned through the review archive, not claimed as declarations on
+main. The existing R21 budget proof is on main. No merged fix or date is
+promised. **r29 is running, status only, and is not archived in this cut.**

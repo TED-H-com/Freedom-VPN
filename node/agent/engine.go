@@ -74,6 +74,8 @@ type Engine struct {
 	meterSource meter.Source
 	ownStore    bool
 
+	closedRecoveryHeld bool // verified deny-all Apply, awaiting scheduled grants
+
 	usage           *usagestore.Store
 	meter           *meter.Meter
 	kernel          *kernelSource
@@ -445,7 +447,9 @@ var ErrBoot = errors.New("agent: boot failed")
 
 func bootLocal(caller context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
 	control, stop := context.WithTimeout(caller, timeout)
-	ctx, cancel := newLocalBudget(context.WithValue(caller, controlBudgetKey{}, control), timeout)
+	parent := context.WithValue(caller, controlBudgetKey{}, control)
+	parent = context.WithValue(parent, bootCallerKey{}, control)
+	ctx, cancel := newLocalBudget(parent, timeout)
 	return ctx, func() { stop(); cancel() }
 }
 
@@ -489,7 +493,7 @@ func (e *Engine) bootWithBudget(caller context.Context, timeout time.Duration) e
 }
 
 func (e *Engine) boot(ctx context.Context) (bootErr error) {
-	caller := controlContext(ctx)
+	caller := localWorkContext(ctx)
 	previous, _ := watchdog.ReadHeartbeat(e.cfg.HeartbeatPath)
 	// Publish uncertainty before any stage can block. Adoption checks the
 	// captured prior receipt, never this new startup heartbeat (r22 M-3).
@@ -613,7 +617,7 @@ func (e *Engine) Run(ctx context.Context) error {
 		if signaled(hup) {
 			e.reloadResolvers()
 		}
-		timer := time.NewTimer(min(e.nextStepDelay(interval), e.remainingStepDelay(started, interval)))
+		timer := time.NewTimer(e.runStepDelay(started, interval))
 		select {
 		case <-ctx.Done():
 			timer.Stop()
@@ -945,7 +949,7 @@ func (e *Engine) refreshProbe(ctx context.Context) {
 		published := e.desired != nil && e.desired.PublicationIntent == api.PublicationIntentPublished
 		targets, timeout, source, bad := egressTargets(e.desired, e.desiredOK, e.cfg.EgressProbeTarget)
 		e.probeSource = probeSourceDetail(source, bad)
-		e.lastProbe = p.Probe(controlContext(ctx), ProbeRequest{
+		e.lastProbe = p.Probe(localWorkContext(ctx), ProbeRequest{
 			Published: published,
 			Targets:   targets,
 			Timeout:   timeout,
@@ -1059,6 +1063,7 @@ func (e *Engine) recoverOnce(ctx context.Context) {
 }
 
 func (e *Engine) baseline(ctx context.Context) error {
+	e.closedRecoveryHeld = false
 	// A planned baseline is not an external meter reset. Clear this before
 	// FinalSample reads the counters.
 	e.expectServing.Store(false)
@@ -1066,9 +1071,16 @@ func (e *Engine) baseline(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := e.baselineCall(e.baselineReason(), func() error { return e.plane.Baseline(ctx, dp) }); err != nil {
-		e.baselineOK = false
-		return err
+	budget, _ := ctx.Value(localBudgetKey{}).(*localBudget)
+	reused := budget != nil && budget.quarantineBaseline && e.baselineOK
+	if !reused {
+		if err := e.baselineCall(e.baselineReason(), func() error { return e.plane.Baseline(ctx, dp) }); err != nil {
+			e.baselineOK = false
+			return err
+		}
+	}
+	if budget != nil && budget.quarantineAttempted {
+		budget.quarantineBaseline = true
 	}
 	e.baselineOK = true
 	e.policyExpires = 0
@@ -1140,6 +1152,9 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		}
 	}
 	if !d.Serve {
+		if e.retainClosedRecovery(ctx) {
+			return nil
+		}
 		e.handoff(ctx)
 		e.serving = false
 		e.policyExpires = 0
@@ -1307,6 +1322,8 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 			return nil
 		}
 	}
+	e.closedRecoveryHeld = false
+	invalidateQuarantineBaseline(ctx)
 	res, err := e.plane.Apply(applyCtx, model, prev)
 	host.finish(err)
 	e.measureTiming(res.Evidence, "apply", host)
@@ -1330,6 +1347,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	pending := verifiedDelete && len(ctErr.Failed) > 0
 	if res.Quarantine != nil {
 		e.recordApplyQuarantine(res, err)
+		noteQuarantineBaseline(ctx, res.Quarantine.Baseline.Verified)
 	}
 	if res.Verified || res.Evidence.TCSummary.Phase == "verify" {
 		// Apply reached its installed-rules verification. Even a rollback or
@@ -1373,6 +1391,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	} else if !e.checkMemberPath(ctx, model) {
 		return nil
 	}
+	e.closedRecoveryHeld = closedRecovery
 	e.serving = !closedRecovery
 	e.applyError = nil
 	e.expectServing.Store(!closedRecovery)

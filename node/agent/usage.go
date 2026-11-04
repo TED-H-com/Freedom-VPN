@@ -277,7 +277,7 @@ func (e *Engine) openUsage(ctx context.Context) (*usagestore.Store, error) {
 	}
 	// Same-incarnation update restarts can open while the updater owns the
 	// node lock. Only adoption of a different incarnation requires it here.
-	lock, err := nodelock.Acquire(controlContext(ctx), e.cfg.LockPath, 3, 50*time.Millisecond)
+	lock, err := nodelock.Acquire(localWorkContext(ctx), e.cfg.LockPath, 3, 50*time.Millisecond)
 	if err != nil {
 		return nil, err
 	}
