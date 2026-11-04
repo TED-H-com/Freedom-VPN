@@ -37,6 +37,7 @@
 | `r29-update-recover-review` | [r29-update-recover-review.md](r29-update-recover-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | F30-01 design diagnosis; base dd052c60, report and proofs committed by the reviewer at 5b1ca726 | 0 Critical, 1 High, 1 Medium, 2 Low; [cut dispositions](#r29-dispositions-at-the-follow-up-43-cutoff-2026-11-04-est) | [Updater proofs](../../node/updater/review_r29_test.go) in #446 and [agent proofs](../../node/agent/review_r29_test.go) in #454, byte-identical |
 | `r30-update-fixes-review` | [r30-update-fixes-review.md](r30-update-fixes-review.md) | 2026-11-04 | `agy/gemini-4-argon-high` | Post-merge D-155–D-158 review (#446, #454, #461, #463); head da2560a9, base 9b9546c9; committed by Ted H | 0 Critical, 2 High, 3 Medium, 0 Low; [cut dispositions](#r30-dispositions-at-the-follow-up-46-cutoff-2026-11-04-est) | Agent/watchdog proofs adopted by #470; updater proofs by #471; all five findings fixed, r31 running at cutoff |
 | `r31-recovery-lock-fixes-review` | [r31-recovery-lock-fixes-review.md](r31-recovery-lock-fixes-review.md) | 2026-11-04 | `agy/gemini-4-argon-high` | Post-merge agent-core 51 #470 / updater 26 #471; head 0e33b9fe, base fd0f2494; committed by Ted H | 0 Critical, 0 High, 1 Medium, 0 Low; [cut dispositions](#r31-dispositions-at-the-follow-up-47-cutoff-2026-11-04-est) | Both proofs adopted by #477; M-1 fixed; updater needs nothing; no owner question |
+| `r32-dedup-records-review` | [r32-dedup-records-review.md](r32-dedup-records-review.md) | 2026-11-04 | `agy/gemini-4-argon-high` | Post-merge agent-core 52 #477 (`r31` M-1 & observation records); head 21e59029, base 1c39a0e7; committed by Ted H | 0 Critical, 0 High, 0 Medium, 0 Low; [cut dispositions](#r32-dispositions-at-the-follow-up-48-cutoff-2026-11-04-est) | None on `main` (0 findings); 4 `TestR32_Held_*` proofs on review branch `21e59029` ([frozen copy](../../tests/handover/testdata/history/follow-up-48/review-node_agent_review_r32_test.go.txt)); no owner question |
 
 ## What Held Across the Reviews
 
@@ -1030,3 +1031,33 @@ dispositions sections above stay byte-identical. **Review r32**, a post-merge
 review of agent-core 52 by **agy/gemini-4-argon-high**, is running at briefing,
 status only; no delivered or merged PR at the initial check. See the
 [follow-up 47 cut](../handover/follow-up-47.md).
+
+## r32 dispositions at the follow-up 48 cutoff (2026-11-04 EST)
+
+The [raw r32 archive](r32-dedup-records-review.md) is byte-for-byte from
+`r32-dedup-records-review`, head **21e59029934a34f7125805e116a2ffaaf61b60cb**,
+base **1c39a0e73825dbcf911dfd2bec6e75aed64c979b**: **201 lines**, **31,981 bytes**,
+SHA-256 `5b7ec63eecbe64e278e16bf24ef3a8e9ea3e625d6bde701d6d0c0e5735e1960f`.
+This is a **post-merge code review of agent-core 52 (#477, commit
+`341d099a6ebeeac5221275d6db748a6b3bfdc94d` merged as
+`1c39a0e73825dbcf911dfd2bec6e75aed64c979b`)**, by **agy/gemini-4-argon-high**,
+committed by **Ted H** as the branch records. It is now a **D-098 input**.
+Findings: **0 Critical, 0 High, 0 Medium, 0 Low**.
+
+| Item | Disposition at #481 | Boundary |
+|---|---|---|
+| `r31 M-1` (`canBindRecoveryReport(rep)`) | HELD in r32 (`implemented`) | `noteRecoveryReport` (`node/agent/recovery_renewal.go:27-31`) delegates directly to `canBindRecoveryReport(rep)` (`node/agent/recovery_renewal.go:35-67`), preserving every pre-`#477` binding check line-for-line while keeping `recoveryRenewalEligible()` as the coarse engine precondition (`node/agent/review_r31_test.go:80`). Pending-outbox dedup bypass in `node/agent/observe.go:46-57` is gated on `canBindRecoveryReport(rep)` across Cases A, B, and C. |
+| `observation enqueued` & `observation submission` records | HELD in r32 (`implemented`) | `node/agent/observe.go:74-77, 313-320, 341-343, 359-405`, `node/agent/observation_log.go:18-100`, and `docs/node/README.md:151-220` match runtime values. `submitObservation` preserves exact `flush` control flow (`202` accepted, `IdentityFrozen`, `403 IDENTITY_REVOKED`, `409`/`422` conflict continuation, retryable backoff with jitter and `Retry-After`). `observationAttempts` is bounded by the 32-entry outbox cap. |
+| What held (Invariants 1–6 & Questions 1–7) | HELD in r32 | Invariant 1 (D-157's renewal), Invariant 2 (Dedup across Cases A/B/C), Invariant 3 (No new authority), Invariant 4 (Delivery unchanged), Invariant 5 (Records leak nothing: finite `observationErrorClass` and validated `api.ErrorCode` tokens), and Invariant 6 (Records are exact). Under Q2, when `!e.canBindRecoveryReport(rep)` returns early before updating `e.lastObs`, `e.report` runs twice per `Step` after the first elapsed interval while armed and unbindable with pending items, performing only transient in-memory construction plus bounded read-only SQLite snapshots (`usage.db` 2 s, `journal.db` 1 s) without mutating any state observable by Central or later Steps. Under Q7, later state catch-up binds on the next due `observe` and dispatches at most one early renewal. |
+| Proof file (`node/agent/review_r32_test.go`) | Review branch only (`present_on_main: false`) | Because r32 found 0 defects and routed 0 owner actions, `node/agent/review_r32_test.go` (`20,346` bytes, SHA-256 `8625fecccc518a49c10551bbd63d26be2807dc60b558816855182cb5d7ad999a`, [frozen copy](../../tests/handover/testdata/history/follow-up-48/review-node_agent_review_r32_test.go.txt)) remains on `21e59029934a34f7125805e116a2ffaaf61b60cb` and is not on `main`. Its four top-level tests are `TestR32_Held_Q1_Q2_DedupExceptionAndRebuildCost`, `TestR32_Held_Q3_Q4_SubmitObservationBranchesAndDiagnosticMap`, `TestR32_Held_Q5_Q6_ObservationRecordFieldsAndErrorClasses`, and `TestR32_Held_Q7_RecoveryInteractionLateBindAndSingleEarlyRenewal`. |
+| Question to the owner | None | The review asks none (`0` findings, `0` owner questions). |
+
+In **#481**, [members follow-up 24](../../tests/handover/testdata/history/follow-up-48/docs_e2e_at_members_followup24-2026-11-04.md.txt)
+subsequently consumed the `observation enqueued` and `observation submission`
+records in live run `dee8492f` under `D-162`: **18 stored observations**,
+**18 `observation enqueued` records** and **18 `observation submission`
+attempts** across all nine native MTU windows, joined by report ID with zero
+missing joins, plus closed recovery report
+`01a1a782-6b90-74a8-bcd6-c9a06650a2ec` (`due_reason: "closed_recovery_binding"`)
+accepted on attempt 1 in **8 ms**. The r31 dispositions section above stays
+byte-identical. See the [follow-up 48 cut](../handover/follow-up-48.md).
