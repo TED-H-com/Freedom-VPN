@@ -1,0 +1,14 @@
+{
+  "command": [
+    "bash",
+    "-c",
+    "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+  ],
+  "source_commit": "13931f53c1a277073ff24519120a98c392451721",
+  "started_utc": "2026-11-04T09:27:27.061814+00:00",
+  "ended_utc": "2026-11-04T09:27:27.217056+00:00",
+  "elapsed_s": 0.155,
+  "exit_code": 0,
+  "output": "gate8.txt",
+  "console_host_paths_redacted": true
+}
