@@ -35,6 +35,7 @@
 | `r27-members-failures-review` | [r27-members-failures-review.md](r27-members-failures-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Members 18 run 2; proofs 62146ff1, report committed by orchestrator in dfde8d25 | 0 Critical, 1 High, 3 Medium, 1 Low; [current dispositions](#r27-and-r28-dispositions-at-the-follow-up-43-cutoff-2026-11-04-est) | [Members proofs](../../tests/e2e/at/members/review_r27_test.go) in #445; [agent](../../node/agent/review_r27_test.go) / [enforce](../../node/enforce/review_r27_test.go) proofs in #447 |
 | `r28-expiry-probe-review` | [r28-expiry-probe-review.md](r28-expiry-probe-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Isolation 20 delivered head 9be409f8; review 34a8d61f, F20-01 | 0 Critical, 1 High, 1 Medium; [current dispositions](#follow-up-44-dispositions) | [Agent proofs](../../node/agent/review_r28_test.go) in #447; [member-expiry proofs](../../tests/e2e/at/isolation/member_expiry_test.go) in #452 |
 | `r29-update-recover-review` | [r29-update-recover-review.md](r29-update-recover-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | F30-01 design diagnosis; base dd052c60, report and proofs committed by the reviewer at 5b1ca726 | 0 Critical, 1 High, 1 Medium, 2 Low; [cut dispositions](#r29-dispositions-at-the-follow-up-43-cutoff-2026-11-04-est) | [Updater proofs](../../node/updater/review_r29_test.go) in #446 and [agent proofs](../../node/agent/review_r29_test.go) in #454, byte-identical |
+| `r30-update-fixes-review` | [r30-update-fixes-review.md](r30-update-fixes-review.md) | 2026-11-04 | `agy/gemini-4-argon-high` | Post-merge D-155–D-158 review (#446, #454, #461, #463); head da2560a9, base 9b9546c9; committed by Ted H | 0 Critical, 2 High, 3 Medium, 0 Low; [cut dispositions](#r30-dispositions-at-the-follow-up-45-cutoff-2026-11-04-est) | None on main at cutoff; three proof files routed, not adopted |
 
 ## What Held Across the Reviews
 
@@ -917,3 +918,38 @@ requires update-good to start the candidate, deferred boot recovery under its
 parent's lock to clear, candidate member service, then a passing lease-expiry.
 Devstack 35 runs for it at cutoff. Every historical failure stays failed; raw
 review archives and imported proofs are unchanged. See [the cut](../handover/follow-up-44.md).
+
+
+## r30 dispositions at the follow-up 45 cutoff (2026-11-04 EST)
+
+The [raw r30 archive](r30-update-fixes-review.md) is byte-for-byte from
+`r30-update-fixes-review`, head **da2560a906a9db4fd3ed48708724f664a46a2053**,
+base **9b9546c9502fe21239dde26b156f38dfbb0c1a58**: **216 lines**, SHA-256
+`b7615f2de08ca6914fb85bd957c00ff7b903dcfa1ac03d229711d1eb38efb933`.
+This is a **post-merge code review of D-155 through D-158** (#446, #454, #461,
+#463), by **agy/gemini-4-argon-high**, committed by **Ted H** as the branch
+records. The archive is now a **D-098 input**. Findings: **0 Critical, 2 High,
+3 Medium, 0 Low**.
+
+| Finding | Disposition at #468 | Boundary |
+|---|---|---|
+| H-1 | OPEN — agent-core 51, running at cutoff | Canceled Boot context can skip or wedge recovery through the engine API. The orchestrator's reading: not reachable from fvpn-agent today; run and once modes pass one context to Boot and Step. Latent fail-open default in the engine API, routed for repair anyway. |
+| H-2 | OPEN — updater 26, running at cutoff | Stale-then-live lock answers terminate early. D-158 as clarified requires five consecutive stale answers, reset by a live answer, and the live budget from the first attempt. |
+| M-1 | OPEN — updater 26, running at cutoff | Non-busy first-attempt error emits a spurious wait record. D-158 as clarified emits it only after the first attempt misses on ErrBusy. |
+| M-2 | OPEN — agent-core 51, running at cutoff | Pre-enforce lease attempt can suppress post-recovery renewal after the applied generation advances. |
+| M-3 | OPEN — agent-core 51, running at cutoff | Pending-outbox deduplication can prevent a new closed recovery from binding its own report. |
+| Question to the owner | None | The review asks none. The orchestrator's D-158 clarification is provisional; the owner may overturn it. |
+
+The review branch's `node/agent/review_r30_test.go`,
+`node/updater/review_r30_test.go` and `node/watchdog/review_r30_test.go` are
+**routed, not adopted**: none is on main at this cutoff. Their branch identities
+are retained in the [provenance manifest](../../tests/handover/testdata/history/follow-up-45/review-provenance.json).
+No review proof is represented as a merged or rerun proof here.
+
+D-158's clarified contract is in the [decision row](../handover/README.md#follow-up-45-decisions-register-2026-11-04-est).
+Main still counts five attempts from the first stale answer; updater 26 is
+running for the consecutive-stale rule and wait-record correction. Its results
+belong to a later cut. The [follow-up 45 cut](../handover/follow-up-45.md) records
+F30-01's separate closure in devstack 35: the candidate deferred recovery,
+cleared and served, then lease-expiry passed. That run met no contended
+acquisition, so D-158's wait remains unit-proven, not measured live.
