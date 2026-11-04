@@ -12,7 +12,6 @@ import (
 	"maps"
 	"net/netip"
 	"os"
-	"os/exec"
 	"os/signal"
 	"sync"
 	"sync/atomic"
@@ -28,7 +27,6 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/usagestore"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/usageupload"
-	"github.com/TED-H-com/Freedom-VPN/node/updater"
 	"github.com/TED-H-com/Freedom-VPN/node/watchdog"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
@@ -169,6 +167,9 @@ type Engine struct {
 	conntrackDetail      string
 	recoverBlocked       bool
 	recovered            bool
+	recoverMu            sync.Mutex // serializes child start with Close
+	recoverJob           *recoveryJob
+	recoverClosed        bool
 	recoverRetryAt       time.Duration
 	latchBlocked         bool
 	outboxFull           bool
@@ -331,6 +332,7 @@ func (e *Engine) Close() error {
 	// work. A timed-out worker retains ledger ownership until it actually
 	// finishes or the process exits; never close a store under a live sampler.
 	e.closeOnce.Do(func() {
+		e.stopRecovery()
 		var cancel context.CancelFunc
 		e.closeCtx, cancel = newLocalBudget(context.Background(), closeLocalBudget)
 		e.closeDone = make(chan struct{})
@@ -597,6 +599,7 @@ func (e *Engine) boot(ctx context.Context) (bootErr error) {
 
 // Run boots, then steps until ctx ends.
 func (e *Engine) Run(ctx context.Context) error {
+	defer e.stopRecovery()
 	if err := e.Boot(ctx); err != nil {
 		return err
 	}
@@ -1032,48 +1035,6 @@ func (e *Engine) latch() {
 			e.usagePersist = true
 		}
 	}
-}
-
-func (e *Engine) recoverOnce(ctx context.Context) {
-	if e.recovered {
-		return
-	}
-	if e.cfg.UpdaterRecover == "" {
-		e.recovered = true
-		return
-	}
-	e.recoverBlocked = true
-	if e.cfg.UpdaterConfig == "" {
-		e.recovered = true
-		return
-	}
-	// The precheck also supports an older updater whose live-busy exit is 1.
-	// Do not consume an attempt or latch a result while the parent still runs.
-	if e.clock.Mono() < e.recoverRetryAt || e.updateLockHeld() {
-		return
-	}
-	e.recoverRetryAt = e.clock.Mono() + recoverRetryInterval
-	cmd := exec.CommandContext(ctx, e.cfg.UpdaterRecover, "recover", "-config", e.cfg.UpdaterConfig)
-	err := cmd.Run()
-	if ctx.Err() != nil {
-		e.recovered = false // interrupted recovery supplies no failure evidence
-		return
-	}
-	var ee *exec.ExitError
-	if errors.As(err, &ee) && ee.ExitCode() == updater.ExitBusy {
-		return
-	}
-	e.recovered = true
-	if err == nil {
-		e.recoverBlocked = false
-		return
-	}
-	if errors.As(err, &ee) && ee.ExitCode() == 2 {
-		e.recoverBlocked = true
-		return
-	}
-	e.recoverBlocked = true
-	e.log.Error("updater recover", "err", "forwarding stays blocked")
 }
 
 func (e *Engine) baseline(ctx context.Context) error {

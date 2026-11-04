@@ -48,11 +48,24 @@ func TestD155_OldUpdaterDefersBeforeSpawn(t *testing.T) {
 	// Pre-exit-3 updater: contention would be exit 1. A parent held through
 	// candidate startup is detected without executing that legacy failure.
 	count := f49RecoverCommand(t, r, fmt.Sprintf("exec 9>>%q\nflock -n 9 || exit 1\nexit 0", r.eng.cfg.LockPath))
+	cfg, boot, log := r.eng.cfg, r.eng.bootID, r.eng.log
+	if err := r.eng.Close(); err != nil {
+		t.Fatal(err)
+	}
+	cand, err := Start(Options{Config: cfg, Clock: r.clock, Plane: r.plane, Log: log, MeterSource: staticSource{boot: boot.String()}, Prober: passProbe{}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cand.Close()
+	r.eng = cand
 	lock, err := nodelock.Acquire(context.Background(), r.eng.cfg.LockPath, 1, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer lock.Release()
+	if err := cand.Boot(context.Background()); err != nil {
+		t.Fatal(err)
+	}
 	for range 3 {
 		if err := r.eng.Step(context.Background()); err != nil {
 			t.Fatal(err)
@@ -164,5 +177,58 @@ func TestD155_MissingConfigTerminal(t *testing.T) {
 	r.eng.recoverOnce(context.Background())
 	if !r.eng.recovered || !r.eng.recoverBlocked || f49Calls(t, count) != 0 {
 		t.Fatal("missing config not terminal")
+	}
+}
+
+func TestD155_RecoveryLocalBudgetSingleChildAndJoin(t *testing.T) {
+	for _, stop := range []string{"close", "request"} {
+		t.Run(stop, func(t *testing.T) {
+			r := newRig(t)
+			parent, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			r.eng.runCtx = parent
+			// exec avoids a shell descendant: the tracked child itself waits forever.
+			count := f49RecoverCommand(t, r, "exec sleep 60")
+			local, end := context.WithTimeout(context.Background(), 20*time.Millisecond)
+			start := time.Now()
+			r.eng.recoverOnce(local)
+			end()
+			if time.Since(start) > recoverFastWait {
+				t.Fatal("local wait exceeded bound")
+			}
+			job := r.eng.recoverJob
+			if job == nil || r.eng.recovered || !r.eng.recoverBlocked {
+				t.Fatal("untracked recovery")
+			}
+			for range 5 {
+				r.eng.recoverOnce(context.Background())
+			}
+			if f49Calls(t, count) != 1 {
+				t.Fatal("multiple children")
+			}
+			select {
+			case <-job.done:
+				t.Fatal("local deadline killed child")
+			default:
+			}
+			start = time.Now()
+			if stop == "request" {
+				cancel()
+			}
+			if err := r.eng.Close(); err != nil {
+				t.Fatal(err)
+			}
+			if time.Since(start) > time.Second {
+				t.Fatal("stop failed to join promptly")
+			}
+			select {
+			case <-job.done:
+			default:
+				t.Fatal("child outlived Close")
+			}
+			if !job.interrupted || r.eng.recovered {
+				t.Fatal("interruption latched as a result")
+			}
+		})
 	}
 }
