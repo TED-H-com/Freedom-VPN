@@ -1261,12 +1261,26 @@ func (x *isolationRun) deadline() {
 	frozen, available := r.admissionBytes()
 	denied := true
 	routed, probesOK := true, true
+	servingReads := []iso.MemberExpiryServingRead{}
+	readServing := func() {
+		read := iso.MemberExpiryServingRead{At: time.Now().UTC()}
+		heartbeat, hbErr := r.lab.docker(r.lab.node, "cat", "/run/vpn-node/heartbeat")
+		chain, chainErr := r.lab.docker(r.lab.node, "nft", "list", "chain", "inet", "fvpn", "forward")
+		read.End = time.Now().UTC()
+		read.Heartbeat, read.ForwardChain = string(heartbeat), string(chain)
+		if hbErr != nil || chainErr != nil {
+			read.ReadError = fmt.Sprintf("heartbeat=%v; forward_chain=%v", hbErr, chainErr)
+		}
+		servingReads = append(servingReads, read)
+	}
+	readServing()
 	for i := 0; i < 5; i++ {
 		route, result, ingress, delivered := x.capturedConnect(r, r.lab.prefix+"-origin", r.originIP(), 443, &c)
 		c.Observations = append(c.Observations, iso.Observation{Name: "post_deadline_" + strconv.Itoa(i), Detail: "result=" + result + "; route=" + route})
 		denied = denied && result == "timeout" && !delivered
 		routed = routed && strings.Contains(route, "dev fvnb0")
 		probesOK = probesOK && result != "probe_error" && ingress
+		readServing()
 		time.Sleep(time.Second)
 	}
 	after, ok := r.admissionBytes()
@@ -1277,6 +1291,13 @@ func (x *isolationRun) deadline() {
 	c.Observations = append(c.Observations, iso.Observation{Name: "node_lease_valid_through_last_probe", Detail: boolText(nodeStillValid) + "; completed=" + time.Now().UTC().Format(time.RFC3339Nano) + "; node_expires=" + bounds.Expires.UTC().Format(time.RFC3339Nano)})
 	c.Status = iso.NegativeStatus(c.Positive, available && ok && probesOK && nodeStillValid, denied && after == frozen)
 	c.Actual = "five new TCP requests after finite signed member deadline; control and worker stopped; admission bytes frozen=" + boolText(after == frozen) + "; route retained throughout=" + boolText(routed) + "; node lease has a later deadline"
+	// Read the node locally in the same probe window; a valid lease alone is
+	// insufficient when a safety baseline has withdrawn the whole node (r28 M-1).
+	servingRaw, _ := json.Marshal(servingReads)
+	c.Observations = append(c.Observations, iso.Observation{Name: "member_expiry_serving_reads", Detail: string(servingRaw)})
+	var servingEvidence string
+	c.Status, servingEvidence = iso.MemberExpiryStatus(c.Status, servingReads)
+	c.Actual += "; " + servingEvidence
 	x.observation(&c, r)
 	x.add("AT13", c)
 	if !routed {
