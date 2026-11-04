@@ -13154,7 +13154,7 @@ func TestHandover_Followup41Claims(t *testing.T) {
 	const cut = "c359d4a9447fded8b035d9a084ae24999850dbf0"
 	const prior = "8835912aa4f5b19da1ef65e0295994706ce7bdee"
 	const doc = "docs/handover/follow-up-41.md"
-	const register = "docs/handover/README.md"
+	const register = fixture + "history/follow-up-42/register41.md"
 	const runbase = "docs/e2e/runs/2026-11-03/followup32/"
 	const nodebase = "docs/node/followup45-"
 	hash := func(s string) string { sum := sha256.Sum256([]byte(s)); return hex.EncodeToString(sum[:]) }
@@ -13739,20 +13739,20 @@ func TestHandover_Followup41Claims(t *testing.T) {
 	})
 	t.Run("seven_entrypoints_unchanged_operator_member_guidance", func(t *testing.T) {
 		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
-			lines := strings.Split(readOwnedDoc(t, root, path), "\n")
+			lines := strings.Split(readOwnedDoc(t, root, fixture+"history/follow-up-42/entrypoint-"+strings.ReplaceAll(path, "/", "_")+".txt"), "\n")
 			if len(lines) < 4 || !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-41.md") || !strings.Contains(lines[2], "#435–#438") || !strings.Contains(lines[3], "follow-up-40.md") {
 				t.Errorf("entrypoint drift: %s", path)
 			}
 		}
 		before := strings.Split(readOwnedDoc(t, root, frozen+"operator-guide40.md.txt"), "\n")
-		after := strings.Split(readOwnedDoc(t, root, "docs/handover/operator-guide.md"), "\n")
+		after := strings.Split(readOwnedDoc(t, root, fixture+"history/follow-up-42/operator-guide41.md.txt"), "\n")
 		if strings.Join(before[4:], "\n") != strings.Join(after[4:], "\n") {
 			t.Fatal("operator procedure changed")
 		}
 		if strings.Count(strings.Join(after, "\n"), followup31Update) != 1 {
 			t.Fatal("F30-01 guidance changed")
 		}
-		require("docs/ops/README.md", "## Follow-up 41 acceptance snapshot", "three updated, three added, 99 unchanged", "55 decisions", "Earlier snapshot sections below describe their own cuts")
+		require(fixture+"history/follow-up-42/entrypoint-docs_ops_README.md.txt", "## Follow-up 41 acceptance snapshot", "three updated, three added, 99 unchanged", "55 decisions", "Earlier snapshot sections below describe their own cuts")
 		require(doc, "Nothing in this cut changes what an operator or a member sees", "No date is promised for anything not on main", "Every historical failure\nstays failed", "12 historical isolation checks stay blocked")
 	})
 	t.Run("status_only_running_work_r27_unarchived_and_dated_routing", func(t *testing.T) {
