@@ -1,6 +1,6 @@
 {
-  "run_id": "328ab9e0-7ff4-495a-81c1-410ae8a7d876",
-  "prior_run": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
+  "run_id": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
+  "prior_run": "328ab9e0-7ff4-495a-81c1-410ae8a7d876",
   "rows": [
     {
       "record": "AT10",
@@ -207,9 +207,9 @@
     }
   ],
   "lab": {
-    "prior": "fail",
+    "prior": "pass",
     "current": "AT10 PASS under D-120",
-    "evidence_change": "netlab 35 #462 combined checked captures and netlab 36 #465 D-161 analyzer are present in this run; original failed run lacks TCP captures",
-    "causal_limit": "The fresh run has its own TCP timeout count. No merged change is inferred to have removed the historical timeout."
+    "evidence_change": "Both runs use netlab 36 D-161 analysis with complete combined captures; this run has its own observed transmission/timeout counts",
+    "causal_limit": "The fresh run has its own TCP timeout count. No change is inferred from timing/count differences alone."
   }
 }

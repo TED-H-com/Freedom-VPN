@@ -1,0 +1,40 @@
+{
+  "run_id": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
+  "scheduled_status": "fail",
+  "acceptance": {
+    "pass_rows": 27,
+    "blocked_rows": 2,
+    "fail_rows": 0
+  },
+  "findings": [
+    {
+      "id": "F24-01",
+      "status": "open",
+      "owner": "w4-at-isolation / boundary planner and reviewer",
+      "summary": "Empty added-probe schedule serializes as null; unchanged reviewer crashes at sorted(None), leaving D-142 qualification unestablished.",
+      "evidence": [
+        "history/follow-up-24-run/boundary-schedule.json",
+        "history/follow-up-24-run/deadline-verdict.json",
+        "history/follow-up-24-run/boundary-review-failure.json",
+        "history/follow-up-24-run/scheduled-job.json"
+      ],
+      "requested_action": "Assign a future empty-schedule/null-handling follow-up without changing the cadence or D-142 qualification requirement; do not map this new error to expected or retry this run."
+    }
+  ],
+  "carried": [
+    {
+      "id": "AT11 IPv6 platform matrix",
+      "owner": "acceptance / platform operators"
+    },
+    {
+      "id": "AT13 full continuous fault matrix",
+      "owner": "acceptance / operator"
+    },
+    {
+      "id": "F17-01",
+      "owner": "w3-wire-nodes / w2-agent-core",
+      "status": "pure_stale_generation not exercised; D-163 mapping does not close the finding"
+    }
+  ],
+  "attribution": "No evidence connects the retained 19.132717245s to #470. The new boundary failure is explained by its own measured spacing and null schedule, not an inferred product change."
+}

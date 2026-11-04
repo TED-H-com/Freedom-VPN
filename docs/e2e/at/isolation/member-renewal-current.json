@@ -1,0 +1,105 @@
+{
+  "run_id": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
+  "anchor": {
+    "name": "fresh-renewal anchor",
+    "observed_at": "2026-11-04T14:21:21.181803143Z",
+    "anchor_issued_at": "2026-11-04T14:21:20.145036Z",
+    "anchor_expires_at": "2026-11-04T14:22:20.145036Z",
+    "next_expected_renewal": "2026-11-04T14:21:50.145036Z",
+    "member_deadline": "2026-11-04T14:22:04Z"
+  },
+  "post_grant_renewals": [
+    {
+      "generation": "29",
+      "lease_id": "bba70c6a-cffc-40d3-accc-d5b097b9573a",
+      "issued_at": "2026-11-04T14:21:22.262297699Z",
+      "latency_after_A_ns": "2117261699",
+      "expires_at": "2026-11-04T14:22:22.262297699Z",
+      "binding_present": false,
+      "binding_valid_from": null,
+      "preceding_desired_generation": "29",
+      "lease_request_ack": "29",
+      "desired_issued_at": "2026-11-04T14:21:22.051973154Z",
+      "poll_received_at": "2026-11-04T14:21:22.142117161Z",
+      "lease_request_received_at": "2026-11-04T14:21:22.258969149Z",
+      "lease_response_at": "2026-11-04T14:21:22.26444506Z"
+    },
+    {
+      "generation": "31",
+      "lease_id": "d3a3c513-88cb-4257-abe8-1ff98b12497e",
+      "issued_at": "2026-11-04T14:21:30.28874757Z",
+      "latency_after_A_ns": "10143711570",
+      "expires_at": "2026-11-04T14:22:30.28874757Z",
+      "binding_present": true,
+      "binding_valid_from": "2026-11-04T14:21:30.108258Z",
+      "preceding_desired_generation": "30",
+      "lease_request_ack": "30",
+      "desired_issued_at": "2026-11-04T14:21:30.144174057Z",
+      "poll_received_at": "2026-11-04T14:21:30.14293036Z",
+      "lease_request_received_at": "2026-11-04T14:21:30.285696736Z",
+      "lease_response_at": "2026-11-04T14:21:30.290898499Z"
+    },
+    {
+      "generation": "31",
+      "lease_id": "6298bba5-84c4-4200-9503-b9eed6a20eb6",
+      "issued_at": "2026-11-04T14:21:31.122426107Z",
+      "latency_after_A_ns": "10977390107",
+      "expires_at": "2026-11-04T14:22:31.122426107Z",
+      "binding_present": true,
+      "binding_valid_from": "2026-11-04T14:21:30.108258Z",
+      "preceding_desired_generation": "31",
+      "lease_request_ack": "30",
+      "desired_issued_at": "2026-11-04T14:21:30.151790411Z",
+      "poll_received_at": "2026-11-04T14:21:31.112417636Z",
+      "lease_request_received_at": "2026-11-04T14:21:31.121269479Z",
+      "lease_response_at": "2026-11-04T14:21:31.1244815Z"
+    },
+    {
+      "generation": "32",
+      "lease_id": "d0bcfd32-a928-44e1-9d96-e18459a0bb5e",
+      "issued_at": "2026-11-04T14:21:47.32018339Z",
+      "latency_after_A_ns": "27175147390",
+      "expires_at": "2026-11-04T14:22:47.32018339Z",
+      "binding_present": true,
+      "binding_valid_from": "2026-11-04T14:21:30.108258Z",
+      "preceding_desired_generation": "32",
+      "lease_request_ack": "32",
+      "desired_issued_at": "2026-11-04T14:21:47.156374791Z",
+      "poll_received_at": "2026-11-04T14:21:47.15429121Z",
+      "lease_request_received_at": "2026-11-04T14:21:47.317609556Z",
+      "lease_response_at": "2026-11-04T14:21:47.322360611Z"
+    }
+  ],
+  "qualified": true,
+  "qualifying_sample": {
+    "at": "2026-11-04T14:21:41.165307451Z",
+    "lease": {
+      "members": [
+        {
+          "lease_end": "2026-11-04T14:22:31.122426107Z",
+          "member_id": "01a1a6e3-1db9-7e1b-9947-e73c26a87a0f",
+          "entitlement_revision": "2",
+          "effective_service_end": "2026-11-04T15:08:01.424552Z"
+        },
+        {
+          "lease_end": "2026-11-04T14:22:31.122426107Z",
+          "member_id": "01a1a6e3-99d0-786d-92dd-81628a43f8cb",
+          "entitlement_revision": "1",
+          "effective_service_end": "2026-11-04T15:08:16.23106Z"
+        },
+        {
+          "lease_end": "2026-11-04T14:22:04Z",
+          "member_id": "01a1a6ef-9412-73e6-b7a4-66151a161a1b",
+          "entitlement_revision": "1",
+          "effective_service_end": "2026-11-04T14:22:04Z"
+        }
+      ],
+      "lease_id": "6298bba5-84c4-4200-9503-b9eed6a20eb6",
+      "issued_at": "2026-11-04T14:21:31.122426+00:00",
+      "expires_at": "2026-11-04T14:22:31.122426+00:00",
+      "generation": "31",
+      "accepted_serving": true
+    }
+  },
+  "scope": "Same-run retained lease-history/receiver records; grant POST completion not recorded separately. The first member-bearing lease and the binding-bearing renewal are distinct."
+}
