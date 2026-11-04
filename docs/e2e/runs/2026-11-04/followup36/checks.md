@@ -201,3 +201,23 @@ Exit 0; 0.26 s. UTC 2026-11-04T15:10:52.972509+00:00–2026-11-04T15:10:53.23279
 |---|---|---|---|---|
 | `member-ipv6` | **blocked** | w3-devstack-e2e / platform operators | Default native member container joins with --disable-ipv6 (DisableIPv6: true) and no IPv6 underlay or per-platform route/capture campaign is provisioned in the default devstack acceptance run (transport_scenario_test.go memberIPv6). |  |
 ```
+
+## 13-final-diff-check
+
+Exit 0; 60.131 s. UTC 2026-11-04T15:14:05.385745+00:00–2026-11-04T15:15:05.516395+00:00.
+
+`git diff --cached --check`
+
+```text
+(no output)
+```
+
+## 14-final-evidence-hygiene
+
+Exit 0; 8.757 s. UTC 2026-11-04T15:17:07.229024+00:00–2026-11-04T15:17:15.985756+00:00.
+
+`go test -count=1 ./tests/e2e -run '^TestCommittedFixtureEvidence_ValidAndHygieneClean$'`
+
+```text
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e	8.454s
+```

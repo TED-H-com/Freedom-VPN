@@ -1738,3 +1738,75 @@ handover, credited to updater 24, agent-core 49 and updater 25. Preserve the
 absence of contended acquisition in this run; do not call it a measured proof
 that the new wait budget caused the status change. Keep the existing operator
 AT29 and member IPv6 dispositions. No additional outside-path fix is requested.
+
+
+## 2026-11-04 — members 23 request 1, D-162 and updater 26 guidance (follow-up 36)
+
+**Members 23 request 1 is implemented under provisional D-162:** the shared
+prepared-config map now explicitly sets TEST ONLY `observation_seconds: 5`.
+Both `agent-run.json` and `agent-enroll.json` carry heartbeat/poll/observation
+5/5/5 seconds. Offline tests check the serialized fields, production loading,
+the unchanged 30-second default without the override, and the unchanged
+installer transformation. Every acceptance predicate, including 15 seconds,
+remains unchanged. No AT file or historical evidence was edited.
+
+Run **`c17589fa-7e48-4dee-b574-7e29aca1effa`**, measured code `f6edbda9` on
+baseline `52b93845`, observed **32 pass / 1 blocked / 0 fail**, make exit 2.
+The unchanged scheduled-job evaluator returned **PASS (exit 0)**. Every status
+matches follow-up 35; no scenario or full run was retried. This is the first
+run with agent-core 51, updater 26 and D-162 together. See the
+[analysis, consumer tables and all records](runs/2026-11-04/followup36/analysis.md).
+
+Before teardown, the owned database returned **123 accepted regular-node
+observations** in the acceptance window: 122 successive intervals, minimum
+**0.081075 s**, median **5.162159 s**, maximum **10.254596 s**. The final
+**622.437456 s** has no new accepted receipt, covering the control-loss and
+brief restart/revocation tail; that tail is explicitly separate from intervals
+between two rows. The ordinary full acceptance path executed **no** regular-node
+15-second observation query; the opt-in consumers were skipped. This does not
+re-score or close members' dual-1280 finding. All three exercised node writers
+(capacity, publication and revocation) returned 202 on their first attempt,
+with **zero 412s**. Owned consumers already have the bounded reread/retry and
+retain every attempt; their offline conflict tests passed.
+
+**Updater 26 guidance:** each invocation's complete output and wait record are
+retained, with the good invocation unchanged inside the bad-update archive.
+`update-good` exited **0** with one wait record: **446 ms**, `acquired=true`,
+`budget_ms=10000`. Lock samples identify original agent **PID 894** holding
+`update.lock` at **14:45:49.155531064** and **14:45:49.367913641 UTC**, followed
+by updater **PID 186378** at **14:45:49.584005669**. Candidate **PID 189738**
+starts under its parent's lock at **14:45:54.577655841**, reports deferred
+recovery at **14:45:54.789907759**, clears by **14:46:04.707**, and first writes
+a serving heartbeat at **14:46:05.436664574**, sampled **14:46:05.451947393**.
+`update-bad` exits **1 / HASH_MISMATCH**, with no wait record. No contention
+was staged. **Stale-then-live contention is unobserved**: sampled ownership
+and the terminal wait summary do not retain individual acquisition answers.
+The changed wait observation cannot be assigned to one of the combined changes.
+
+`lease-expiry` passed after candidate service: the counted-flow poll succeeds
+in **2.343563389 s**, control stops, the earlier desired-policy deadline D is
+reached, member accept rules go **558 → 0**, and active established senders
+produce no additional replies or counted bytes in the quiet samples. Control
+restarts successfully. The analysis retains exact deadlines, timestamps,
+counters and observational limits. AT29 guest-clock rollback remains
+[operator-run](at29-guest-clock.md); `member-ipv6` stays listed.
+
+All required offline gates pass. D-160 records 30 admitted sections, 2031 wrapped
+commands and zero checks inside sections. No foreign overlap was sampled.
+Admission waits totaled **32 minutes**: 21 before the first gate, zero in
+acceptance preflight, 10 after acceptance before the database export, and one
+before the final documentation check.
+Teardown completed and inventory proves zero owned Docker containers, images,
+networks and volumes. No workflow was triggered.
+
+### Requests to orchestrator
+
+2026-11-04 — Route the analysis's complete source-audit table to all AT owners.
+Isolation's **`tests/e2e/at/isolation/assist.py:22`** remains a one-attempt
+GET/If-Match capacity PATCH: adopt the shared bounded retry with an offline
+conflict test and retain every attempt, preserving its explicit assisted-run
+classification. Normal AT node-write wrappers already retry. Members should
+retain the strict bound and assess F22-D146 only in a separately authorized
+owner campaign. The analysis gives dated file/line hand-offs for members,
+enrollment, security-ops, usage, updates and isolation; no outside-path item
+was edited. Preserve the operator AT29 and listed member IPv6 dispositions.

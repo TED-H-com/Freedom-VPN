@@ -198,5 +198,35 @@
     "seconds": 0.26,
     "exit": 0,
     "receipt": "12-nightly-gate.meta.json"
+  },
+  {
+    "name": "13-final-diff-check",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "start": "2026-11-04T15:14:05.385745+00:00",
+    "end": "2026-11-04T15:15:05.516395+00:00",
+    "seconds": 60.131,
+    "exit": 0,
+    "receipt": "13-final-diff-check.meta.json"
+  },
+  {
+    "name": "14-final-evidence-hygiene",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/e2e",
+      "-run",
+      "^TestCommittedFixtureEvidence_ValidAndHygieneClean$"
+    ],
+    "start": "2026-11-04T15:17:07.229024+00:00",
+    "end": "2026-11-04T15:17:15.985756+00:00",
+    "seconds": 8.757,
+    "exit": 0,
+    "receipt": "14-final-evidence-hygiene.meta.json"
   }
 ]
