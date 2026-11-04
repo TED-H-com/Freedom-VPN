@@ -109,38 +109,43 @@ func (p *liveProbe) manualGrantWithdrawal15(stack *labstack.Stack, node uuid.UUI
 	row["service_end"] = end
 	// Retain actual signed lease deadlines without signatures or private material.
 	var lease json.RawMessage
-	if err := p.db.QueryRow(t.Context(), `SELECT jsonb_build_object('generation',s.policy_generation::text,'issued_at',s.issued_at,'expires_at',s.expires_at,'members',s.envelope->'signed'->'members')
+	var offlineEnd time.Time
+	leaseReadStart := time.Now()
+	for until := leaseReadStart.Add(90 * time.Second); time.Now().Before(until); {
+		// The central observation can lag local forwarding by its own report
+		// cadence. Wait for the exact observed lease containing this member;
+		// never substitute the latest issued (possibly unapplied) lease.
+		readErr := p.db.QueryRow(t.Context(), `SELECT jsonb_build_object('generation',s.policy_generation::text,'issued_at',s.issued_at,'expires_at',s.expires_at,'members',s.envelope->'signed'->'members')
 FROM nodes n JOIN node_observations o ON o.node_id=n.id AND o.incarnation_id=n.current_incarnation_id AND o.observed_at=n.last_observed_at
-JOIN serving_leases s ON s.id=(o.report_payload->'lease'->>'lease_id')::uuid WHERE n.id=$1 ORDER BY o.received_at DESC LIMIT 1`, node).Scan(&lease); err != nil {
-		t.Error("withdrawal lease read")
-		return
-	}
-	row["signed_lease"] = lease
-	var leaseWindow struct {
-		Expires time.Time `json:"expires_at"`
-		Members []struct {
-			Member string    `json:"member_id"`
-			End    time.Time `json:"lease_end"`
-		} `json:"members"`
-	}
-	if json.Unmarshal(lease, &leaseWindow) != nil || leaseWindow.Expires.IsZero() {
-		t.Error("lease deadline missing")
-		return
-	}
-	offlineEnd := end
-	if leaseWindow.Expires.Before(offlineEnd) {
-		offlineEnd = leaseWindow.Expires
-	}
-	found := false
-	for _, member := range leaseWindow.Members {
-		if member.Member == m.member && !member.End.IsZero() {
-			found = true
-			if member.End.Before(offlineEnd) {
-				offlineEnd = member.End
+JOIN serving_leases s ON s.id=(o.report_payload->'lease'->>'lease_id')::uuid WHERE n.id=$1 ORDER BY o.received_at DESC LIMIT 1`, node).Scan(&lease)
+		var window struct {
+			Expires time.Time `json:"expires_at"`
+			Members []struct {
+				Member string    `json:"member_id"`
+				End    time.Time `json:"lease_end"`
+			} `json:"members"`
+		}
+		if readErr == nil && json.Unmarshal(lease, &window) == nil && !window.Expires.IsZero() {
+			for _, member := range window.Members {
+				if member.Member == m.member && !member.End.IsZero() {
+					offlineEnd = end
+					if window.Expires.Before(offlineEnd) {
+						offlineEnd = window.Expires
+					}
+					if member.End.Before(offlineEnd) {
+						offlineEnd = member.End
+					}
+				}
 			}
 		}
+		if offlineEnd.After(time.Now()) {
+			break
+		}
+		time.Sleep(time.Second)
 	}
-	if !found || !offlineEnd.After(time.Now()) {
+	row["lease_observation_wait_seconds"] = time.Since(leaseReadStart).Seconds()
+	row["signed_lease"] = lease
+	if !offlineEnd.After(time.Now()) {
 		t.Error("observed lease does not authorize withdrawal subject")
 		return
 	}
