@@ -21,6 +21,16 @@ func (e *Engine) remainingStepDelay(started, interval time.Duration) time.Durati
 	return max(0, interval-max(0, e.clock.Mono()-started))
 }
 
+// Serving retains its start-anchored watchdog cadence. Grant-less steps are
+// already closed: use the renewal deadline directly rather than racing it
+// against a poll anchored before that request was sent.
+func (e *Engine) runStepDelay(started, interval time.Duration) time.Duration {
+	if e.leaseGrantless() && !e.serving {
+		return e.nextStepDelay(interval)
+	}
+	return min(e.nextStepDelay(interval), e.remainingStepDelay(started, interval))
+}
+
 // Each read gets at most half the shorter heartbeat/poll cadence, capped at
 // one second. Slow or canceled reads cannot refresh a cached serving claim.
 func (e *Engine) servingReadTimeout() time.Duration {
@@ -206,6 +216,12 @@ func (e *Engine) auditBlocked(ctx context.Context) {
 	e.retainTCReadback(ev)
 	var check *enforce.CheckError
 	if errors.As(err, &check) && check.Reason == enforce.ReasonTCForeignFilter {
+		// An unreadable tc attachment on a proven absent member link is
+		// missing topology, not a foreign filter. The verified baseline stays
+		// closed; no containment latch may obstruct the later clean Apply.
+		if e.missingMemberInterface(readCtx, ev) {
+			return
+		}
 		e.noteApply(err)
 		if e.containment == nil || len(e.containment.TC) == 0 {
 			e.recordForeign(ev)
@@ -244,4 +260,20 @@ func controlContext(ctx context.Context) context.Context {
 		return budget
 	}
 	return ctx
+}
+
+func (e *Engine) missingMemberInterface(ctx context.Context, ev enforce.ServingEvidence) bool {
+	r := ev.TCSummary.Rejected
+	if e.serving || ev.Quarantined || r == nil || r.Error != "read_failed" ||
+		len(r.Objects) != 0 || r.Interface != e.appliedModel.Datapath.MemberIngress {
+		return false
+	}
+	reader, ok := e.plane.(interface {
+		InterfaceExists(context.Context, string) (bool, error)
+	})
+	if !ok {
+		return false
+	}
+	exists, err := reader.InterfaceExists(ctx, r.Interface)
+	return err == nil && ctx.Err() == nil && !exists
 }

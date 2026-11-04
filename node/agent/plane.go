@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/netip"
 	"strings"
@@ -117,4 +118,34 @@ func (p SystemPlane) BaselineModel(ctx context.Context, m enforce.Model) error {
 // Quarantine uses exactly the executor (and namespace) used by Apply.
 func (p SystemPlane) Quarantine(ctx context.Context, m enforce.Model) (enforce.QuarantineEvidence, error) {
 	return enforce.Quarantine(ctx, p.executor(), m)
+}
+
+// InterfaceExists reads the namespace link inventory. Only a successful full
+// inventory can prove absence; permission/command/parse errors remain unknown.
+func (p SystemPlane) InterfaceExists(ctx context.Context, name string) (bool, error) {
+	raw, err := p.executor().Output(ctx, "ip", "-j", "link", "show")
+	if err != nil {
+		return false, err
+	}
+	var links []struct {
+		Name string `json:"ifname"`
+	}
+	if err := json.Unmarshal(raw, &links); err != nil {
+		return false, err
+	}
+	if links == nil {
+		return false, errors.New("agent: missing link inventory")
+	}
+	if err := ctx.Err(); err != nil {
+		return false, err
+	}
+	for _, link := range links {
+		if link.Name == "" {
+			return false, errors.New("agent: incomplete link inventory")
+		}
+		if link.Name == name {
+			return true, nil
+		}
+	}
+	return false, nil
 }

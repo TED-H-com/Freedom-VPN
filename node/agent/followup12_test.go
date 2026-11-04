@@ -350,9 +350,19 @@ func TestReviewR15_TCForeignFilterWithdrawsServingOnApply(t *testing.T) {
 	requireApplyChangeForTest(r)
 	stepOK(t, r)
 	last := len(p.results) - 1
-	if r.eng.serving || p.results[last].Verified || p.errors[last] == nil || !strings.Contains(p.errors[last].Error(), "TC_FOREIGN_FILTER") || p.baselinesAfterApply == 0 {
+	if r.eng.serving || p.results[last].Verified || p.errors[last] == nil || !strings.Contains(p.errors[last].Error(), "TC_FOREIGN_FILTER") || p.results[last].Quarantine == nil || !p.results[last].Quarantine.Baseline.Verified {
 		t.Fatalf("foreign tc did not withdraw serving: serving=%v result=%+v errors=%v baselines=%d", r.eng.serving, p.results[last], p.errors, p.baselinesAfterApply)
 	}
+	// Apply's verified quarantine already installed the baseline. Check its
+	// rendered kernel state instead of requiring a duplicate agent Baseline.
+	if err := p.ex.fold(); err != nil {
+		t.Fatal(err)
+	}
+	allowed := p.ex.table.sets["allowed_v4"]
+	if !p.ex.linkDown || (allowed != nil && len(allowed.elems) != 0) || p.baselinesAfterApply != 0 {
+		t.Fatal("quarantine failed to close admission or agent repeated its baseline")
+	}
+
 	// The contract does not yet contain the new reason enum. Preserve the
 	// specific reason in the message through the existing fallback code.
 	if r.eng.applyError == nil || r.eng.applyError.Code != api.ErrorCodeTCFOREIGNFILTER || r.eng.applyError.Message != "TC_FOREIGN_FILTER" {
