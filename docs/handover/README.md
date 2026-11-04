@@ -119,21 +119,24 @@ is frozen at #418, with its 81 findings and nine owner requests.
 
 <a id="follow-up-42-decisions-register-2026-11-03-est"></a>
 
-## Follow-up 43 decisions register (2026-11-04 EST)
+<a id="follow-up-43-decisions-register-2026-11-04-est"></a>
 
-Verified against main **04d31ea5cd10cb90527e0b4efc10b42522dd9569**, through
-**#456**: **#446–#456**, immediately after #445 / 5a942aa1. Exactly eleven
-briefed PRs; no unbriefed PR. [Evidence cut](follow-up-43.md) and
-[acceptance snapshot](../ops/README.md#follow-up-43-acceptance-snapshot-2026-11-04-est).
-Main had **57 decisions**, with none after D-154. This cut adds **D-155,
-D-156 and D-157: 60 decisions**. Every earlier row is byte-identical.
-All three are the orchestrator's provisional decisions; the owner may overturn
-them. D-155's code halves are merged; acceptance closure remains pending.
-D-156 is merged. D-157 has no merged implementation at this cutoff.
+## Follow-up 44 decisions register (2026-11-04 EST)
+
+Verified against main **5c21e670596f5b0b7029f6a02648305a24f0f22a**, through
+**#463**: **#457–#463**, immediately after #456 / 04d31ea5. Exactly seven
+briefed PRs; no unbriefed PR. [Evidence cut](follow-up-44.md) and
+[acceptance snapshot](../ops/README.md#follow-up-44-acceptance-snapshot-2026-11-04-est).
+Main had **60 decisions**, with none after D-157. This cut adds **D-158,
+D-159, D-160 and D-161: 64 decisions**. All 60 earlier rows are byte-identical;
+their dated status text is historical. All four new rows are the orchestrator's
+provisional decisions; the owner may overturn them. D-157 is now implemented
+in #461; its live AT02 measurement remains pending. D-158 is implemented in
+#463. D-159's condition is false; D-161 has no merged implementation at cutoff.
 All ten earlier owner requests remain answered; their original text stays in
 [follow-up 38](follow-up-38.md#requests-to-orchestrator), with answers in
 [follow-up 39](follow-up-39.md#owner-answers). Current routing is in
-[follow-up 43](follow-up-43.md#requests-to-orchestrator).
+[follow-up 44](follow-up-44.md#requests-to-orchestrator).
 
 | Decision | Operator meaning and delivery boundary |
 |---|---|
@@ -197,6 +200,10 @@ All ten earlier owner requests remain answered; their original text stays in
 | D-155 | **21:0x EST, 2026-11-03, orchestrator — provisional; the owner may overturn.** F30-01 is fixed by review r29's Option B. `fvpn-updater` exits `3` (`ExitBusy`) only for a live same-boot `update.lock` holder: `UPDATE_BUSY` with detail exactly `lock`. Stale-holder details stay `1`; `ErrMembersBlocked` stays `2` and wins. The agent defers boot recovery while the live lock is held or on exit `3`, retries at the top of Step as one tracked background recovery with a short first wait (r29 M-1); exit `0` clears, exits `1` and `2` stay terminal. Rejected: A, exit `0` on busy, breaks invariants 2 and 6; C, a narrower lock; D1, a restart after seal, conflicts with D-053; D2, a completion marker, breaks invariant 2. Updater half #446, agent half #454. F30-01 remains open until an acceptance run passes `lease-expiry` with the nightly quarantine entry removed; devstack 34 running at the cutoff. |
 | D-156 | **21:3x EST, 2026-11-03, orchestrator — provisional; the owner may overturn.** A same-boot process replacement keeps a verified retained ruleset until the successor adopts or refuses it. Startup uncertainty must not let the watchdog withdraw rules the successor has not judged. A stalled successor remains bounded by the predecessor's watchdog staleness limit and kernel timeout at D; r22 M-3's protection is kept. Agent-core 49 #454 fixes F48-01 with a pending-adoption receipt retaining the original age and deadline without a serving claim. See the [agent/watchdog release rule](operator-guide.md#d156-release-rule). |
 | D-157 | **00:2x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** After a closed recovery, send the node's first renewal as soon as central holds every input its grant decision reads, rather than at D-067's next provisional slot. At most once per closed recovery. D-067's cadence is unchanged for every other grant-less lease, including a grant-less answer to that early renewal. The trigger must be something the agent observes. If central moves readiness in a job the agent cannot observe, stop and route the change; no polling faster than D-067. Answers members 21's AT02 deny-all interval; diagnosis first in agent-core 50, running at the cutoff, no merged fix. See [known behaviour](operator-guide.md#at02-closed-recovery). |
+| D-158 | **01:4x EST, 2026-11-04; revised 02:2x EST, orchestrator — provisional; the owner may overturn.** `run`, `seed`, `apply` and standalone `flush` wait for a live `update.lock` holder within one 10 s budget, polling every 20 ms, before exit 3. `recover` and standalone `Retain` keep five attempts 20 ms apart; nested callers reuse ownership and wait for nothing. Stale details retain exit 1 after five attempts counted from the first stale answer, never after the live budget; unreadable metadata counts as a live holder. One `update lock wait` record only after a missed first attempt. The common lock library and its other consumers are unchanged. Basis: the agent's ordinary hold is bounded by its Step's local deadline, about 10 s; the first version's 2 s was not supported by the code. Implemented by updater 25 #463; F30-01 candidate-path acceptance remains open. |
+| D-159 | **01:5x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** If the campaign's back-to-back cadence resonates with TCP's retry interval, and the agent's minimum Apply spacing is at least about 1 s, the D-120 campaign reloads no faster than that minimum spacing; otherwise nothing changes. Netlab 35 #462 found no positive minimum Apply spacing (binding-deadline wake-ups, zero remaining Step delay, second Apply in the same closed-recovery Step). The condition is false and the campaign cadence is unchanged. |
+| D-160 | **02:2x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** A timed sub-case never waits for host admission inside its timed section, from reading the deadline it measures to its last cutoff sample. Admission is checked before that section. Overlap that happens anyway is confounded under D-133, never delayed. Source: SECOPS-F17-01, the two admission holds that delayed the killed-agent fault beyond its cached deadline. Secops 18 running at cutoff; no result imported. |
+| D-161 | **03:0x EST, 2026-11-04, orchestrator — provisional; the owner may overturn.** D-120's “zero TCP timeouts” becomes “zero TCP timeouts not attributed to the guard”. A TCP read timeout is a guard loss only if the run's complete, checked captures show every lost transmission of the stalled bytes entering the node inside, or on the boundary of, exactly one verified outer guard bracket, within both 100 ms bounds, and never leaving it; a later transmission delivers the bytes in order on the same connection; and that connection is never reset or closed. Guard-attributed timeouts count toward “≤ 5 losses per 100 reloads”. Every campaign reports its longest TCP stall and guard-attributed TCP drops. Every other D-120 predicate is unchanged; historical failures stay failed. Basis: D-145 keeps the guard; TCP needs retransmission to recover a dropped segment and a retry can hit a later reload's guard; D-120 is a test-acceptance definition, not a product guarantee. Netlab 36 implements it and is running at cutoff; nothing is merged. |
 
 Current contract is revision 14: OpenAPI `1.10.0`, `50` operations (#289).
 Wire-members follow-up 11 (#297) registers `revokeMemberGrant` at
