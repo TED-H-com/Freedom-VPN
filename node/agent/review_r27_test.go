@@ -365,6 +365,16 @@ func TestR27_L1_ForeignTCQuarantineStepRedundantBaselinesAndReQuarantine(t *test
 		t.Fatalf("TODO(review r27): L-1: single foreign-TC Step ran Quarantine %d times and Baseline %d times (want 1 Quarantine)",
 			plane.quarantines, plane.baselineCalls)
 	}
+	if plane.quarantines != 1 || plane.baselineCalls != 1 {
+		t.Fatalf("redundant containment: quarantines=%d baselines=%d", plane.quarantines, plane.baselineCalls)
+	}
+	// The next Step owns a new allowance and must recheck containment.
+	checks := plane.verifyCalls
+	stepOK(t, r)
+	if plane.verifyCalls <= checks || plane.quarantines != 2 || plane.baselineCalls != 2 {
+		t.Fatalf("next Step containment: checks=%d->%d quarantine=%d baseline=%d", checks, plane.verifyCalls, plane.quarantines, plane.baselineCalls)
+	}
+
 }
 
 // TestR27_Held_SameGenerationRestartRenewsBeforeObserveAndSkipsProvisionalWhenPopulated

@@ -1071,9 +1071,16 @@ func (e *Engine) baseline(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if err := e.baselineCall(e.baselineReason(), func() error { return e.plane.Baseline(ctx, dp) }); err != nil {
-		e.baselineOK = false
-		return err
+	budget, _ := ctx.Value(localBudgetKey{}).(*localBudget)
+	reused := budget != nil && budget.quarantineBaseline && e.baselineOK
+	if !reused {
+		if err := e.baselineCall(e.baselineReason(), func() error { return e.plane.Baseline(ctx, dp) }); err != nil {
+			e.baselineOK = false
+			return err
+		}
+	}
+	if budget != nil && budget.quarantineAttempted {
+		budget.quarantineBaseline = true
 	}
 	e.baselineOK = true
 	e.policyExpires = 0
@@ -1316,6 +1323,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 		}
 	}
 	e.closedRecoveryHeld = false
+	invalidateQuarantineBaseline(ctx)
 	res, err := e.plane.Apply(applyCtx, model, prev)
 	host.finish(err)
 	e.measureTiming(res.Evidence, "apply", host)
@@ -1339,6 +1347,7 @@ func (e *Engine) enforce(ctx context.Context, d Decision) error {
 	pending := verifiedDelete && len(ctErr.Failed) > 0
 	if res.Quarantine != nil {
 		e.recordApplyQuarantine(res, err)
+		noteQuarantineBaseline(ctx, res.Quarantine.Baseline.Verified)
 	}
 	if res.Verified || res.Evidence.TCSummary.Phase == "verify" {
 		// Apply reached its installed-rules verification. Even a rollback or

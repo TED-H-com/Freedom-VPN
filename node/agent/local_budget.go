@@ -9,9 +9,11 @@ import (
 // through cancellation-independent helpers. Engine.Step is single-threaded.
 type localBudgetKey struct{}
 type localBudget struct {
-	ctx              context.Context
-	quarantine       context.Context
-	cancelQuarantine context.CancelFunc
+	quarantineAttempted bool
+	quarantineBaseline  bool
+	ctx                 context.Context
+	quarantine          context.Context
+	cancelQuarantine    context.CancelFunc
 }
 
 func newLocalBudget(parent context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
