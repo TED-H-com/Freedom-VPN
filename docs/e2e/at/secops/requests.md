@@ -1,3 +1,25 @@
+# 2026-11-04 — Follow-up 18 disposition
+
+SECOPS-F17-01 is answered; AT29 changes to blocked. All runnable cases passed,
+but D-133 overlap and the missing clock guest prevent full acceptance.
+
+### Requests to orchestrator
+
+- **2026-11-04 — handover/acceptance:** carry current blocked status, finding
+  resolution and limits; retain every historical failed row as failed.
+- **2026-11-04 — scheduling:** any future unconfounded campaign requires
+  separate authorization; no further rerun belongs to this session.
+- **2026-11-04 — w3-devstack-e2e/operator:** provide the independent clock guest.
+- **2026-11-04 — harness/evidence:** retain the stopped pre-subject recursive
+  wrapper incident and tested PATH correction, and the historical renewal-ID
+  evidence gap. No corrected old-case product failure needs routing.
+
+See [full diagnosis, receipts and hand-off](2026-11-04-follow-up-18.md).
+
+---
+
+The following requests and dispositions are historical:
+
 # 2026-11-04 — Follow-up 17 disposition
 
 **SECOPS-F16-01 answered:** the new case reached its outage using lease

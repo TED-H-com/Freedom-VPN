@@ -1,0 +1,37 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-count=1",
+    "./tests/netlab",
+    "-run",
+    "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
+    "-v"
+  ],
+  "exit": 0,
+  "started": "2026-11-04T07:41:09.239237+00:00",
+  "ended": "2026-11-04T07:41:13.111378+00:00",
+  "samples": [
+    {
+      "wall_ns": "1793778069239448448",
+      "foreign": [
+        {
+          "pid": 2590384,
+          "comm": "bash",
+          "ticks": 0
+        }
+      ]
+    },
+    {
+      "wall_ns": "1793778071257266191",
+      "foreign": [
+        {
+          "pid": 2590384,
+          "comm": "bash",
+          "ticks": 0
+        }
+      ]
+    }
+  ],
+  "confounded": true
+}

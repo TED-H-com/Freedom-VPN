@@ -1,0 +1,444 @@
+{
+  "audit_rows_scanned": 44,
+  "authorized_devices": 1,
+  "backup_check": {
+    "command": [
+      "deploy/backup/backup.sh",
+      "--container",
+      "fvpn-w4-secops-postgres",
+      "check"
+    ],
+    "elapsed_seconds": 0.257473068,
+    "passed": true
+  },
+  "backup_full": {
+    "command": [
+      "deploy/backup/backup.sh",
+      "--container",
+      "fvpn-w4-secops-postgres",
+      "full"
+    ],
+    "elapsed_seconds": 3.798480461,
+    "passed": true
+  },
+  "backup_info": {
+    "command": [
+      "deploy/backup/backup.sh",
+      "--container",
+      "fvpn-w4-secops-postgres",
+      "info"
+    ],
+    "elapsed_seconds": 0.049447469,
+    "passed": true
+  },
+  "backup_wal-switch": {
+    "command": [
+      "deploy/backup/backup.sh",
+      "--container",
+      "fvpn-w4-secops-postgres",
+      "wal-switch"
+    ],
+    "elapsed_seconds": 0.347813889,
+    "passed": true
+  },
+  "checks": [
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create member group input",
+      "passed": true,
+      "utc": "2026-10-30T03:59:35.534137416Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create fair_use policy input",
+      "passed": true,
+      "utc": "2026-10-30T03:59:35.541862158Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "activate fair_use policy input",
+      "passed": true,
+      "utc": "2026-10-30T03:59:35.550325431Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create dns_profile policy input",
+      "passed": true,
+      "utc": "2026-10-30T03:59:35.556930177Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "activate dns_profile policy input",
+      "passed": true,
+      "utc": "2026-10-30T03:59:35.563851303Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create plan policy input",
+      "passed": true,
+      "utc": "2026-10-30T03:59:35.570282548Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "activate plan policy input",
+      "passed": true,
+      "utc": "2026-10-30T03:59:35.577019624Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 00 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T03:59:35.587028543Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 01 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T03:59:35.743948062Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "member 02 grant accepted",
+      "passed": true,
+      "utc": "2026-10-30T03:59:35.900844842Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "create enrollment secops-node-b",
+      "passed": true,
+      "utc": "2026-10-30T03:59:36.058605298Z"
+    },
+    {
+      "actual_code": "no-store",
+      "actual_status": 201,
+      "expected_code": "no-store",
+      "expected_status": 201,
+      "name": "enrollment secret no-store",
+      "passed": true,
+      "utc": "2026-10-30T03:59:36.058686702Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "enrollment duplicate",
+      "passed": true,
+      "utc": "2026-10-30T03:59:36.061706021Z"
+    },
+    {
+      "actual_code": "IDEMPOTENCY_CONFLICT",
+      "actual_status": 409,
+      "expected_code": "IDEMPOTENCY_CONFLICT",
+      "expected_status": 409,
+      "name": "enrollment idempotency conflict",
+      "passed": true,
+      "utc": "2026-10-30T03:59:36.063885207Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 201,
+      "expected_code": "",
+      "expected_status": 201,
+      "name": "node B certificate enrollment",
+      "passed": true,
+      "utc": "2026-10-30T03:59:36.073919329Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "node B CSR replay",
+      "passed": true,
+      "utc": "2026-10-30T03:59:36.07750297Z"
+    },
+    {
+      "actual_code": "TRANSPORT_REFUSED",
+      "actual_status": 0,
+      "expected_code": "TRANSPORT_REFUSED",
+      "expected_status": 0,
+      "name": "expired certificate actual TLS",
+      "passed": true,
+      "utc": "2026-10-30T03:59:36.079267844Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "PITR upload",
+      "passed": true,
+      "utc": "2026-10-30T04:00:16.596076933Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "PITR upload",
+      "passed": true,
+      "utc": "2026-10-30T04:00:20.461810966Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "PITR before-target grant",
+      "passed": true,
+      "utc": "2026-10-30T04:00:20.469685362Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 200,
+      "expected_code": "",
+      "expected_status": 200,
+      "name": "PITR upload",
+      "passed": true,
+      "utc": "2026-10-30T04:00:21.499651653Z"
+    },
+    {
+      "actual_code": "",
+      "actual_status": 202,
+      "expected_code": "",
+      "expected_status": 202,
+      "name": "PITR after-target grant",
+      "passed": true,
+      "utc": "2026-10-30T04:00:21.511787393Z"
+    }
+  ],
+  "device_fixture": "native NetBird user device flow; production devices.discover writes admission/binding",
+  "device_scale_blocker": "deploy/devstack/entrypoint-member.sh exposes one fixed daemon/interface and one user-auth trigger. Need a documented 20-user/3-native-peer-per-user fixture hook before claiming 60 devices.",
+  "finished_at": "2026-10-30T04:00:21.861625464Z",
+  "go_test_failed": false,
+  "grant_projection": {
+    "active_members": 3,
+    "commands": 3,
+    "finite_end": "2026-10-30T04:59:35Z",
+    "writes": "admin grants only; projected tables read-only"
+  },
+  "grant_survived_two_device_sweeps": true,
+  "image_digests": [
+    {
+      "image_id": "sha256:5f423c5e70b8149490599c3b7a428c764c5128476dd9cde1e00d4cb29507f0c2",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:703b033da49e227cc3dd96607ffa338f1444ae4eefeafc2bed1210bdc6c962dd",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:b82c974899207eb76b9dccdd7849f97162e4d06a7e1c5de54c7b2d6e89b118cf",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:6829ac95c2c0e83b6bda12c8dd4a25bc980101f88a1901ccde7b711a7b196f4a",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:734c400b2e5d3d04c87fb128dcbc58a4161b1e521a3d34ad43cd2c5cbb66c956",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:7c7700cd490c7b0d280ea7d12154fbb2ae6d4daf89f8a6e54e29de6c9613acb1",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:7b80f83919c26ccbf3324cefdf4c3d45c2c924ddf83e35f1b1535fbde059947a",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:7b80f83919c26ccbf3324cefdf4c3d45c2c924ddf83e35f1b1535fbde059947a",
+      "service": "member"
+    }
+  ],
+  "known_secret_canaries": 28,
+  "ledger_binding_source": "read-only device_bindings produced by devices.discover; not a serving-policy assertion",
+  "native_device_login": {
+    "completed": true,
+    "flow_path": "/oauth2/device",
+    "initial_http_status": 200
+  },
+  "native_projection": {
+    "bindings": 1,
+    "devices": 1,
+    "same_public_subject": true,
+    "user_bindings": 1
+  },
+  "node_incarnation": "3b7abd62-26fa-41ee-9c76-d155747e43ba",
+  "physical_source": {
+    "archive_source": "original mTLS-uploaded events retained by test sender; not node SQLite archive",
+    "backup_label": "20261030-040016F",
+    "backup_lsn": {
+      "start": "0/6000028",
+      "stop": "0/6006DA8"
+    },
+    "backup_timestamp": {
+      "start": 1793332816,
+      "stop": 1793332819
+    },
+    "db_rpo_seconds": 1.040352,
+    "expected_restored_ack": "7",
+    "full_service_rpo_seconds": null,
+    "full_service_rto_seconds": null,
+    "post_target_audit_present": true,
+    "pre_and_post_grants_present": true,
+    "pre_target_audit_rows": 2,
+    "projector_owned_rows_written": [],
+    "source_ack": "10",
+    "source_watermark": "2026-10-30T04:00:21.51213Z",
+    "target_lsn": "0/7012AD8",
+    "target_time": "2026-10-30T04:00:20.471778Z"
+  },
+  "policy_revision": "01a18af6-8a90-793e-aae9-1c3176207820",
+  "projected_bindings": 1,
+  "projector_owned_rows_written": [],
+  "purpose": "AT30 physical PITR product-input source; not serving/capacity acceptance",
+  "requested_devices": 60,
+  "secret_scan": [
+    {
+      "bytes": 5259,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "postgres stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "idp stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "payment stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "origin stdout/stderr"
+    },
+    {
+      "bytes": 888,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "netbird stdout/stderr"
+    },
+    {
+      "bytes": 266,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "gateway stdout/stderr"
+    },
+    {
+      "bytes": 124,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "coredns stdout/stderr"
+    },
+    {
+      "bytes": 1900,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "adguard stdout/stderr"
+    },
+    {
+      "bytes": 14746,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "control stdout/stderr"
+    },
+    {
+      "bytes": 4271,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "worker stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "node stdout/stderr"
+    },
+    {
+      "bytes": 0,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member stdout/stderr"
+    },
+    {
+      "bytes": 3853,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member file /var/lib/vpn-node/e2e/netbird-service.log"
+    },
+    {
+      "bytes": 103,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "member file /var/lib/vpn-node/e2e/netbird-up.log"
+    },
+    {
+      "bytes": 23164,
+      "known_secret_matches": 0,
+      "read_ok": true,
+      "stream": "audit_events"
+    }
+  ],
+  "security_matrix_complete": false,
+  "source_revision": "e48c6af582a599447e90afc446ca56f5bcd8c5ba",
+  "sql_input_fixtures": [],
+  "started_at": "2026-10-30T03:59:31.913206335Z"
+}

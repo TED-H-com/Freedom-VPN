@@ -1,0 +1,87 @@
+{
+  "command": [
+    "make",
+    "-f",
+    "mk/netlab.mk",
+    "netlab-lint",
+    "netlab-unit",
+    "netlab-integration",
+    "netlab-build"
+  ],
+  "exit": 0,
+  "started": "2026-11-04T07:27:59.313603+00:00",
+  "ended": "2026-11-04T07:28:11.090693+00:00",
+  "samples": [
+    {
+      "wall_ns": "1793777279313788881",
+      "foreign": [
+        {
+          "pid": 2454422,
+          "comm": "bash",
+          "ticks": 0
+        }
+      ]
+    },
+    {
+      "wall_ns": "1793777281330466425",
+      "foreign": [
+        {
+          "pid": 2454422,
+          "comm": "bash",
+          "ticks": 0
+        }
+      ]
+    },
+    {
+      "wall_ns": "1793777283347496248",
+      "foreign": [
+        {
+          "pid": 2454422,
+          "comm": "bash",
+          "ticks": 0
+        }
+      ]
+    },
+    {
+      "wall_ns": "1793777285364877578",
+      "foreign": [
+        {
+          "pid": 2454422,
+          "comm": "bash",
+          "ticks": 0
+        }
+      ]
+    },
+    {
+      "wall_ns": "1793777287381764265",
+      "foreign": [
+        {
+          "pid": 2454422,
+          "comm": "bash",
+          "ticks": 0
+        },
+        {
+          "pid": 2510563,
+          "comm": "make",
+          "ticks": 0
+        }
+      ]
+    },
+    {
+      "wall_ns": "1793777289398537926",
+      "foreign": [
+        {
+          "pid": 2454422,
+          "comm": "bash",
+          "ticks": 0
+        },
+        {
+          "pid": 2510563,
+          "comm": "make",
+          "ticks": 0
+        }
+      ]
+    }
+  ],
+  "confounded": true
+}

@@ -38,7 +38,17 @@ func finishReloadTrace(t *testing.T) {
 			t.Errorf("stream end: %v %s%s", err, out, errOut)
 		}
 	}
-	mustExec(t, "python3", "/opt/netlab/scripts/trace_capture.py", "stop", "/scratch/at10")
+	if out, stderr, err := dockerExec("python3", "/opt/netlab/scripts/trace_capture.py", "stop", "/scratch/at10"); err != nil {
+		t.Errorf("combined capture incomplete: %v %s%s", err, out, stderr)
+	}
+	for _, role := range []string{"origin", "node", "responder"} {
+		for _, suffix := range []string{"-headers.txt", "-headers.err", ".projection.json"} {
+			name := "at10-" + role + suffix
+			if scratchExists("/scratch/" + name) {
+				save(t, name, readScratch(t, "/scratch/"+name))
+			}
+		}
+	}
 	if os.Getenv("FVPN_NETLAB_GUARD_LOG") == "1" {
 		out, stderr, err := dockerExec("python3", "/opt/netlab/scripts/guard_observe.py", "stop", "/scratch/at10-guard")
 		if err != nil {

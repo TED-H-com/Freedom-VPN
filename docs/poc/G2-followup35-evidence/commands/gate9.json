@@ -1,0 +1,28 @@
+{
+  "command": [
+    "git",
+    "diff",
+    "--check"
+  ],
+  "exit": 0,
+  "started": "2026-11-04T07:43:55.231150+00:00",
+  "ended": "2026-11-04T07:43:55.354500+00:00",
+  "samples": [
+    {
+      "wall_ns": "1793778235231362394",
+      "foreign": [
+        {
+          "pid": 2669101,
+          "comm": "python3",
+          "ticks": 1
+        },
+        {
+          "pid": 2669105,
+          "comm": "make",
+          "ticks": 0
+        }
+      ]
+    }
+  ],
+  "confounded": true
+}

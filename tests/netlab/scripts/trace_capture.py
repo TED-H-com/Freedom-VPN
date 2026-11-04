@@ -9,6 +9,7 @@ import sys
 import time
 
 from reload_analysis import guards, json_rows
+from trace_split import udp_projection
 
 
 def paths(base):
@@ -17,10 +18,10 @@ def paths(base):
 
 def start(base):
     for role, ns in paths(base):
-        path = Path(base + "-" + role)
+        path = Path(base + "-" + role + "-headers")
         cmd = (["ip", "netns", "exec", ns] if ns else []) + [
-            "tcpdump", "--immediate-mode", "-nn", "-tt", "-v", "-l", "-s", "96",
-            "-i", "any", "udp port 9000"]
+            "tcpdump", "--immediate-mode", "-nn", "-tt", "-v", "-S", "-l", "-s", "96",
+            "-i", "any", "udp port 9000 or tcp port 9001"]
         with path.with_suffix(".txt").open("w") as out, path.with_suffix(".err").open("w") as err:
             proc = subprocess.Popen(cmd, stdout=out, stderr=err, start_new_session=True)
         path.with_suffix(".pid").write_text(str(proc.pid))
@@ -32,15 +33,32 @@ def start(base):
 
 
 def stop(base):
+    # Signal all three before validating any one, so a rejected projection
+    # cannot leave the other collectors running.
     for role, _ in paths(base):
-        path = Path(base + "-" + role)
+        path = Path(base + "-" + role + "-headers")
         pid = int(path.with_suffix(".pid").read_text())
         os.kill(pid, signal.SIGINT)
+    errors = []
+    for role, _ in paths(base):
+        path = Path(base + "-" + role + "-headers")
         end = time.monotonic() + 5
         while "packets dropped by kernel" not in path.with_suffix(".err").read_text():
             if time.monotonic() > end:
                 raise RuntimeError("trace capture did not stop: " + role)
             time.sleep(.01)
+        try:
+            udp, stats, metadata = udp_projection(path.with_suffix('.txt').read_text(),
+                                                   path.with_suffix('.err').read_text())
+        except ValueError as exc:
+            errors.append(role + ': ' + str(exc))
+            continue
+        projected = Path(base + '-' + role)
+        projected.with_suffix('.txt').write_text(udp)
+        projected.with_suffix('.err').write_text(stats)
+        projected.with_suffix('.projection.json').write_text(json.dumps(metadata, indent=2) + '\n')
+    if errors:
+        raise ValueError('; '.join(errors))
 
 
 def final_guard(apply_path):
