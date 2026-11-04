@@ -1,6 +1,6 @@
 """Checked UDP projection of a combined TCP/UDP header-only tcpdump trace.
 
-The D-120 analyzer stays byte-identical. Retain the combined original and its
+Retain the combined original and its
 real capture statistics; reject any unparsed TCP or UDP packet before deriving
 the legacy UDP input. No payload decoder, pcap file, or payload output is used.
 """
@@ -10,7 +10,7 @@ import re
 from reload_analysis import parse_capture
 
 
-def udp_projection(text, stats):
+def checked_blocks(text, stats):
     blocks = []
     for line in text.splitlines(keepends=True):
         if not line.strip():
@@ -39,12 +39,17 @@ def udp_projection(text, stats):
             tcp.append(block)
         else:
             raise ValueError('unparsed combined packet header')
+    return udp, tcp
+
+
+def udp_projection(text, stats):
+    udp, tcp = checked_blocks(text, stats)
     projected = ''.join(udp)
     projected_stats = ('# Derived UDP projection; original combined statistics in -headers.err\n'
                        f'{len(udp)} packets captured\n0 packets dropped by kernel\n')
     # The unchanged consumer independently checks every UDP record again.
     parse_capture(projected, projected_stats)
-    metadata = dict(complete=True, combined_packets=len(blocks), udp_packets=len(udp),
+    metadata = dict(complete=True, combined_packets=len(udp) + len(tcp), udp_packets=len(udp),
                     tcp_packets=len(tcp), dropped_by_kernel=0,
                     headers_sha256=hashlib.sha256(text.encode()).hexdigest(),
                     stats_sha256=hashlib.sha256(stats.encode()).hexdigest(),
