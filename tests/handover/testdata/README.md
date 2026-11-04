@@ -455,3 +455,17 @@ old decision statuses change, two provisional decisions are added; four finding
 rows change, three are added and 95 remain byte-identical. Live scope-review
 digests are separate from immutable claims. Agent-core 45, devstack 32 and
 members 19 are recorded by briefing status only, with no post-cutoff results.
+
+Follow-up 41 seals #435–#438 at c359d4a9: four final roadmap rows and public
+PR excerpts, ten exact #435 handover inputs and three cutoff-frozen members
+19 notes, 101 immutable agent-core 45/devstack 32 records and 36 Go declarations.
+The source audit records #437's complete changed-file list and nine excerpts
+supporting the product/contract reading. Four follow-up 40 reads now use #435
+bytes; all 34 earlier claims functions remain exact after reversing those
+redirects. Prior 14-subtest/76-record/11-run/84-declaration counts and the
+members ten-case/77-subcheck inventory are independently checked. Five live
+publisher invocations retain their outcomes; neither a later pass nor the
+zero-header proof upgrades a historical failure or establishes the observation
+race. Only D-150's status changes: 55 decisions, 105 findings (three updated,
+three added, 99 unchanged). No living members/isolation/usage evidence root
+is a claims input. TEST ONLY — all run IDs and keys here identify lab fixtures.

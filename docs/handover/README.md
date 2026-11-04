@@ -250,7 +250,7 @@ is frozen from #430: 99 findings and 53 decisions, all ten owner requests answer
 
 ## Findings register at the follow-up 41 cutoff
 
-| Finding | Status at #434 | Evidence / next owner |
+| Finding | Status at #438 | Evidence / next owner |
 |---|---|---|
 | ENR-07 | CLOSED | D-130 #330/#331 plus enrollment #333: AT06 662/0/0, AT07 48/0/0, fresh gap ACK 1 then sequence 2 ACK 2, 908 bytes; planBaseline attribution corrected. |
 | Members F9-01 | CLOSED | #325 / #328 under D-126 / D-128; deliberate cumulative report accepted. Full AT09 fails in #348; provisional acceptance is a separate row. |
