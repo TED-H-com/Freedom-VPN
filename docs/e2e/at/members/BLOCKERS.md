@@ -1,3 +1,21 @@
+# Follow-up 24 blockers and evidence limits — 2026-11-04
+
+Run `dee8492f-4a7e-4f3c-9063-3ab27f66dcec`, measured source `55588821291e335ef72fbd7fe1f5ff052dea92bf`, baseline `df61fd68add1678729ef32ae1ef93719124035e3`: **3 / 7 / 0 cases (PASS / BLOCKED / FAIL); 708 / 6 / 0 subchecks**. One live assembled acceptance, after the sole permitted pre-check retry; no case retry. Original predicates, the strict 15 s freshness bound, report/lease joins and traffic checks are unchanged.
+
+[Dated analysis](followup24-2026-11-04.md), [all original subchecks](F24-subchecks.md), [result index](F24-results.json), [verification receipts](F24-verification.md).
+
+The [follow-up 23 archive](history/follow-up-23/INDEX.md) preserves all 145 regular root records byte-for-byte, including gzip and SHA-256 pins. `6a25221b` remains **3/7/0 cases and 706/8/0 subchecks**; `3eb3960d` and every earlier archive/dated note retain their original outcomes. Historical sections below describe those runs; use their frozen archives for the corresponding case payloads.
+
+**F22-D146 closes for the tested D-162 cadence:** dual/IPv4 1280 indexes **44 and 46 PASS**, with serving observation age **0.739651 s**. IPv6 and IPv4 ages are **6.849400 s** and **1.441758 s**; all pass the unchanged strict 15 s bound. Nine native windows retain all **18 reports, 18 enqueues and 18 attempts**, complete report-ID joins and no row-log overwrite. Prepared regular-node configs explicitly use **5 s**; this is TEST ONLY and the product default remains **30 s**. [Series, states, intervals and attempts](F24-observation-windows.json), [serving read joins](F24-serving-read-records.json), [config pins](F24-observation-config.json).
+
+AT01 and AT08 initial transfers are counted, with both endpoint paths and original packet joins retained. F11-01 stays **OPEN/upstream-dependent (D-148)**, and the historical node packet 158/member packet 161 evidence stays with that owner. AT02's closed recovery is Apply **540 → renewal 545 → populated lease → serving Apply 546**, deny-all **187.308830 ms / seven losses**; its report is enqueued for `closed_recovery_binding` and accepted on attempt 1. AT09 indexes **25 BLOCKED, 26 PASS, 27 PASS**, with all **12** post-restart reports retained; D-067's grant-less provisional path remains unexercised. No retained F48-01 signature; **30 writes / zero 412s**, each accepted on its first attempt. Combined-change attribution is limited to what the records support.
+
+The six blocked subchecks are AT09 index **25** (D-067 provisional path), **60** (Linux QUIC), and **61–64** (Android, iOS, Windows, macOS TCP). Other case-level blockers remain in their original case records: boot flavours/hardware, platform actions, rendered member screens, production DNS distribution/private DNS/DoH, privacy/retention/backup coverage, commercial feed approval, physical NAT/roaming and broader PMTU resources. Existing F4 owner-resource groups are unchanged and are not re-asked.
+
+The cadence observation supports D-162; the first combined run with #470/#471/#476/#477 cannot separate every other timing, report-count or selected-route difference. The successful AT01/AT08 initial transfers do not establish the old failure's mechanism or close F11-01. F48 absence is limited to retained logs. No serving read fails on age in this run, so no agent, transport or Central late-stage finding is assigned. [Complete analysis and coverage limits](followup24-2026-11-04.md).
+
+D-133 marks all four sampled foreign-activity windows as confounded, with no intersecting acceptance case. The 48 held admission replies inside timed sections identify this lane's own assembled process from independent snapshot callers; no in-section sleep occurred. No overlap or result retry was made.
+
 # Follow-up 23 blockers and evidence limits — 2026-11-04
 
 Run `6a25221b-1dcf-4f4d-b866-cd04f57f58f6`, measured source `8bde2b6acc0b116515148eeb0ff4448c65453a92`, baseline/current main at preflight `c148cf349df219124e457113ce90c010016a308e`. **3 PASS / 7 BLOCKED / 0 FAIL; 706 passed / 8 blocked / 0 failed subchecks**. No predicate changed, no case retried. [All original subchecks](F23-subchecks.md), [result index](F23-results.json), [verification receipts](F23-verification.md).

@@ -1,0 +1,216 @@
+{
+  "baseline_commit": "df61fd68add1678729ef32ae1ef93719124035e3",
+  "measured_source": "55588821291e335ef72fbd7fe1f5ff052dea92bf",
+  "scope": "Actual foreground receipts and log tails. Exit 125 is admission denial, never a test result. Root lint disables its shell temp wrapper because this runner supplies disk scratch. Live exit 2 retains blocked cases. Final handover repeated only because new records/links were added after its first pass.",
+  "gates": [
+    {
+      "name": "01-area-lint",
+      "command": [
+        "make",
+        "-f",
+        "mk/at-members.mk",
+        "at-members-lint"
+      ],
+      "started_at": "2026-11-04T16:50:37.142393+00:00",
+      "ended_at": "2026-11-04T16:50:38.601591+00:00",
+      "elapsed_seconds": 1.459,
+      "exit": 0,
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_tail": ""
+    },
+    {
+      "name": "02-e2e-lint",
+      "command": [
+        "make",
+        "-f",
+        "mk/e2e.mk",
+        "e2e-lint"
+      ],
+      "started_at": "2026-11-04T16:51:02.055627+00:00",
+      "ended_at": "2026-11-04T16:51:03.939554+00:00",
+      "elapsed_seconds": 1.884,
+      "exit": 0,
+      "log_bytes": 420,
+      "log_sha256": "dc22eabf4527c6a9e71b1d23615e41a43e4215ba7a00c654ae8da06245a26dea",
+      "output_tail": "cd <worktree> && go vet ./tests/e2e/...\ncd <worktree> && go vet -tags e2e ./tests/e2e/...\ncd <worktree> && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/...\ncd <worktree> && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e ./tests/e2e/..."
+    },
+    {
+      "name": "03a-members",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/e2e/at/members/..."
+      ],
+      "started_at": "2026-11-04T16:51:28.679956+00:00",
+      "ended_at": "2026-11-04T16:52:12.630887+00:00",
+      "elapsed_seconds": 43.951,
+      "exit": 0,
+      "log_bytes": 143,
+      "log_sha256": "f89188b09420cc59cdeabd5d1149d42cc579db20d2425dec6d414bd69bbe66c6",
+      "output_tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members\t43.612s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe\t0.002s"
+    },
+    {
+      "name": "03b-members-e2e",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-tags",
+        "e2e",
+        "./tests/e2e/at/members/..."
+      ],
+      "started_at": "2026-11-04T16:52:26.620306+00:00",
+      "ended_at": "2026-11-04T16:53:16.035353+00:00",
+      "elapsed_seconds": 49.415,
+      "exit": 0,
+      "log_bytes": 143,
+      "log_sha256": "4b46b4bd8645c58897a9676fa1f05c8c1fb462296a9eda00034ae1982bfc8545",
+      "output_tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members\t48.877s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe\t0.002s"
+    },
+    {
+      "name": "04-assembled",
+      "command": [
+        "python3",
+        "-B",
+        ".agent/tmp/f24/live.py"
+      ],
+      "started_at": "2026-11-04T16:53:26.365822+00:00",
+      "ended_at": "2026-11-04T17:52:49.586858+00:00",
+      "elapsed_seconds": 3563.221,
+      "exit": 2,
+      "log_bytes": 24178,
+      "log_sha256": "0bf11dc27aaf540690100f925a91184556b4d8e4e2c4ee7689351054f7e4d4df",
+      "output_tail": " Container fvpn-w4-members-netbird Stopping \n Container fvpn-w4-members-netbird Stopped \n Container fvpn-w4-members-netbird Removing \n Container fvpn-w4-members-netbird Removed \n Volume fvpn-w4-members-pgbackrest-repo Removing \n Volume fvpn-w4-members-nb Removing \n Network fvpn-w4-members-origin Removing \n Volume fvpn-w4-members-pg Removing \n Network fvpn-w4-members Removing \n Network fvpn-w4-members Resource is still in use \n Network fvpn-w4-members-origin Resource is still in use \n Volume fvpn-w4-members-pgbackrest-repo Removed \n Volume fvpn-w4-members-pg Removed \n Volume fvpn-w4-members-nb Removed \ne2e stack is down\nOwned teardown exit: 0 inventory: {\"containers\": {\"exit\": 0, \"owned\": []}, \"networks\": {\"exit\": 0, \"owned\": []}, \"volumes\": {\"exit\": 0, \"owned\": []}, \"images\": {\"exit\": 0, \"owned\": []}}"
+    },
+    {
+      "name": "05-handover",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "started_at": "2026-11-04T17:54:31.654630+00:00",
+      "ended_at": "2026-11-04T17:54:36.861848+00:00",
+      "elapsed_seconds": 5.207,
+      "exit": 0,
+      "log_bytes": 60,
+      "log_sha256": "8a002293b255afc5012d6c54e2ab7a7cb9847f68446446d0ab28677cdbe0d4e3",
+      "output_tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t4.315s"
+    },
+    {
+      "name": "06-root-lint",
+      "command": [
+        "make",
+        "go-lint",
+        "go-with-disk-tmp="
+      ],
+      "started_at": "2026-11-04T17:55:10.149972+00:00",
+      "ended_at": "2026-11-04T18:12:15.140848+00:00",
+      "elapsed_seconds": 1024.991,
+      "exit": 0,
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_tail": ""
+    },
+    {
+      "name": "07a-vet",
+      "command": [
+        "go",
+        "vet",
+        "./..."
+      ],
+      "started_at": "2026-11-04T18:13:18.364863+00:00",
+      "ended_at": "2026-11-04T18:13:18.833776+00:00",
+      "elapsed_seconds": 0.469,
+      "exit": 0,
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_tail": ""
+    },
+    {
+      "name": "07b-e2e-vet",
+      "command": [
+        "go",
+        "vet",
+        "-tags",
+        "e2e",
+        "./tests/e2e/..."
+      ],
+      "started_at": "2026-11-04T18:13:18.856597+00:00",
+      "ended_at": "2026-11-04T18:13:19.078714+00:00",
+      "elapsed_seconds": 0.222,
+      "exit": 0,
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_tail": ""
+    },
+    {
+      "name": "08-gofmt",
+      "command": [
+        "bash",
+        "-c",
+        "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+      ],
+      "started_at": "2026-11-04T18:13:47.783716+00:00",
+      "ended_at": "2026-11-04T18:13:47.906552+00:00",
+      "elapsed_seconds": 0.123,
+      "exit": 0,
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_tail": ""
+    },
+    {
+      "name": "09-diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at": "2026-11-04T18:13:47.929126+00:00",
+      "ended_at": "2026-11-04T18:13:47.953406+00:00",
+      "elapsed_seconds": 0.024,
+      "exit": 0,
+      "log_bytes": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "output_tail": ""
+    },
+    {
+      "name": "10-hygiene",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-run",
+        "^TestCommittedEvidenceHygiene$",
+        "-v",
+        "./tests/e2e/at/members/..."
+      ],
+      "started_at": "2026-11-04T18:13:47.975752+00:00",
+      "ended_at": "2026-11-04T18:14:25.114910+00:00",
+      "elapsed_seconds": 37.139,
+      "exit": 0,
+      "log_bytes": 381,
+      "log_sha256": "501408ba761ca6a2a0b5deab678b0aaf9b7e6e28e14308e6802bbd1de8f4577a",
+      "output_tail": "=== RUN   TestCommittedEvidenceHygiene\n    evidence_test.go:65: scanned 330 acceptance JSON records plus 820 Markdown documents\n--- PASS: TestCommittedEvidenceHygiene (36.81s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members\t36.814s\ntesting: warning: no tests to run\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/members/cmd/probe\t0.002s [no tests to run]"
+    },
+    {
+      "name": "11-handover-final",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "started_at": "2026-11-04T18:14:53.310831+00:00",
+      "ended_at": "2026-11-04T18:14:57.991402+00:00",
+      "elapsed_seconds": 4.681,
+      "exit": 0,
+      "log_bytes": 60,
+      "log_sha256": "2cd83e7c34688aafb3e7edc8a82be63e187034d289eb89863c5b3b7f537e59e0",
+      "output_tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t4.332s"
+    }
+  ]
+}
