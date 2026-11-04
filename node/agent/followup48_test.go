@@ -167,6 +167,18 @@ func TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate(t *testing.T) {
 	if slot-sent != 5*time.Second {
 		t.Fatalf("first renewal gap=%s", slot-sent)
 	}
+	// D-157 permits exactly one attempt after the clean recovery report is
+	// accepted. Its empty answer continues the existing D-067 streak.
+	stepOK(t, r)
+	if r.srv.LeaseRenewals() != renewals+1 || p.baselineCalls != baseline || r.eng.serving {
+		t.Fatal("missing single early renewal or deny-all retention changed")
+	}
+	renewals++
+	slot = r.eng.provisionalRetryAt
+	sent = r.eng.leaseAttemptAt
+	if slot-sent != 10*time.Second {
+		t.Fatalf("empty early answer gap=%s", slot-sent)
+	}
 	for r.clock.Mono() < slot-time.Second {
 		r.clock.Advance(time.Second)
 		stepOK(t, r)
@@ -176,7 +188,7 @@ func TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate(t *testing.T) {
 	}
 	r.clock.Advance(slot - r.clock.Mono())
 	stepOK(t, r)
-	if r.srv.LeaseRenewals() != renewals+1 || r.eng.provisionalRetryAt-slot != 10*time.Second {
+	if r.srv.LeaseRenewals() != renewals+1 || r.eng.provisionalRetryAt-slot != 20*time.Second {
 		t.Fatal("grant-less backoff changed")
 	}
 	if p.baselineCalls != baseline {
@@ -184,10 +196,10 @@ func TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate(t *testing.T) {
 		t.Fatalf("baseline at empty renewal; applied=%+v candidate=%+v", r.eng.appliedModel, d.Model)
 	}
 	// Retry-After remains an independent lower bound, even after recovery.
-	r.eng.leaseRetryAt = r.clock.Mono() + 20*time.Second
+	r.eng.leaseRetryAt = r.clock.Mono() + 30*time.Second
 	renewals = r.srv.LeaseRenewals()
 	r.srv.SetMemberGrantsReady(true)
-	r.clock.Advance(10 * time.Second)
+	r.clock.Advance(20 * time.Second)
 	stepOK(t, r)
 	if r.srv.LeaseRenewals() != renewals || p.baselineCalls != baseline || r.eng.serving {
 		t.Fatalf("Retry-After or deny-all retention changed: renewals=%d want=%d baseline=%d want=%d held=%v decision=%+v", r.srv.LeaseRenewals(), renewals, p.baselineCalls, baseline, r.eng.closedRecoveryHeld, r.eng.decision)
