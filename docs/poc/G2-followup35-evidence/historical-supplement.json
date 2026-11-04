@@ -1,0 +1,44 @@
+{
+  "isolation_host": {
+    "source": "docs/e2e/at/isolation/history/follow-up-22-run/host-admission-review.json",
+    "commit": "4e77e816",
+    "sha256": "1efa158feeaf3c1291ed8b13869d6ed38f8aa9ff85795b2a647a0cc87af300cb",
+    "overlap_samples": 53,
+    "overlap_observed": false,
+    "scope": "Periodic sampling cannot exclude shorter activity; foreign processes retained only as pid/comm/ticks. No reservation or retry."
+  },
+  "f28": {
+    "source": "docs/poc/G2-followup28-evidence/tcp-summary.json",
+    "sha256": "d373a5124c3f7ec2be364996d5cb415fbb8acb816f620e7dbb2e3f6ab36c27e0",
+    "cycle40_retries": [
+      {
+        "cycle": 40,
+        "segment": 123,
+        "after_original_ms": 210.037466,
+        "after_previous_ms": 210.037466,
+        "missing_stages": [
+          "node_out_fv-ih",
+          "responder_in_fv-ii"
+        ]
+      },
+      {
+        "cycle": 40,
+        "segment": 124,
+        "after_original_ms": 417.157518,
+        "after_previous_ms": 207.120052,
+        "missing_stages": [
+          "node_out_fv-ih",
+          "responder_in_fv-ii"
+        ]
+      },
+      {
+        "cycle": 40,
+        "segment": 125,
+        "after_original_ms": 826.029367,
+        "after_previous_ms": 408.871849,
+        "missing_stages": []
+      }
+    ],
+    "read_elapsed_ms": 827.017314
+  }
+}

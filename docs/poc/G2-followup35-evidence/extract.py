@@ -29,7 +29,7 @@ for label, path, historical in [
         if t - 100_000_000 <= times[0] <= t + 1_800_000_000:
             windows.append(dict(generation=a['generation'], relative_ns=[n-t for n in times]))
     replay = []
-    for offset in [0, 208154467, 416030325, 832000000, 1664000000]:
+    for offset in [0, 208154467, 416030325, 826029367, 832000000, 1664000000]:
         hits = []
         for w in windows:
             a, b, c, d = w['relative_ns']
@@ -37,6 +37,7 @@ for label, path, historical in [
                 hits.append(dict(generation=w['generation'], phase='install' if offset <= b else 'certain' if offset < c else 'release'))
         replay.append(dict(offset_ns=offset, source='send' if offset == 0 else
                            'f30 cycle26 offset transplanted; not observed here' if offset < 800000000 else
+                           'f28 cycle40 measured third retry offset transplanted; not observed here' if offset == 826029367 else
                            'hypothetical backoff; not measured by f30', hits=hits))
     counts = {}
     for role in ['origin', 'node', 'responder']:

@@ -1,0 +1,148 @@
+{
+  "scope": "TEST ONLY assembled agent/kernel/TLS fake control; 80ms dual-phase diagnostic; no D-120 tolerance",
+  "snapshots": 724,
+  "runs": [
+    {
+      "run_id": "272208c3-04bf-4b5d-bdc7-70aee4bdabc1",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe"
+    },
+    {
+      "run_id": "3dc516d5-a26c-4122-9d4f-385b9bea8c07",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe"
+    }
+  ],
+  "brackets": {
+    "verify": {
+      "count": 303,
+      "median_ns": "32236277",
+      "worst_ns": "37014701"
+    },
+    "verifier": {
+      "count": 306,
+      "median_ns": "32279450",
+      "worst_ns": "37176442"
+    },
+    "nft_read": {
+      "count": 306,
+      "median_ns": "3324597",
+      "worst_ns": "4859465"
+    },
+    "precision_read": {
+      "count": 301,
+      "median_ns": "3039755",
+      "worst_ns": "3662595"
+    },
+    "tc_read": {
+      "count": 306,
+      "median_ns": "16834380",
+      "worst_ns": "21460762"
+    },
+    "baseline": {
+      "count": 8,
+      "median_ns": "28152556",
+      "worst_ns": "45927337"
+    },
+    "apply": {
+      "count": 3,
+      "median_ns": "93276528",
+      "worst_ns": "94843862"
+    },
+    "install_command": {
+      "count": 3,
+      "median_ns": "12646487",
+      "worst_ns": "13646807"
+    },
+    "release_command": {
+      "count": 3,
+      "median_ns": "16856847",
+      "worst_ns": "17912328"
+    },
+    "outer_guard": {
+      "count": 3,
+      "median_ns": "29608897",
+      "worst_ns": "30505266"
+    },
+    "inner_guard": {
+      "count": 3,
+      "median_ns": "2526",
+      "worst_ns": "4214"
+    },
+    "render_to_installed": {
+      "count": 3,
+      "median_ns": "12771054",
+      "worst_ns": "13742496"
+    }
+  },
+  "renewal": {
+    "probes": 1518,
+    "delivered": 1518,
+    "losses": [],
+    "actual_renewals": [
+      {
+        "run_id": "3dc516d5-a26c-4122-9d4f-385b9bea8c07",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "sequence": "230",
+        "source": "renewal",
+        "anchor": {
+          "mono_before_ns": "101300843954768",
+          "wall": "2026-11-04T07:37:38.392578142Z",
+          "mono_after_ns": "101300843954939"
+        },
+        "lease": {
+          "lease_id": "01a1a57d-f755-7c0f-be97-79d5ab50ba46",
+          "generation": "3",
+          "issued_at": "2026-11-04T07:37:38.389788099Z",
+          "expires_at": "2026-11-04T07:38:38.389788099Z",
+          "request_mono_ns": "101300839570277",
+          "node_deadline_ns": "101360839570277",
+          "members": 2
+        },
+        "renewal": {
+          "request_id": "01a1a57d-f754-72fe-9e9d-3758a1ebfb29",
+          "start_ns": "101300839570277",
+          "end_ns": "101300843954257",
+          "request_wall": "2026-11-04T07:37:38.38819366Z",
+          "new_lease": true
+        }
+      },
+      {
+        "run_id": "3dc516d5-a26c-4122-9d4f-385b9bea8c07",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "sequence": "463",
+        "source": "renewal",
+        "anchor": {
+          "mono_before_ns": "101333870381370",
+          "wall": "2026-11-04T07:38:11.419004767Z",
+          "mono_after_ns": "101333870381559"
+        },
+        "lease": {
+          "lease_id": "01a1a57e-7856-7545-b1d7-5f90839c5589",
+          "generation": "3",
+          "issued_at": "2026-11-04T07:38:11.414343722Z",
+          "expires_at": "2026-11-04T07:39:11.414343722Z",
+          "request_mono_ns": "101333864272599",
+          "node_deadline_ns": "101393864272599",
+          "members": 2
+        },
+        "renewal": {
+          "request_id": "01a1a57e-7854-7db5-92c0-e28cc201400f",
+          "start_ns": "101333864272599",
+          "end_ns": "101333870380750",
+          "request_wall": "2026-11-04T07:38:11.41289597Z",
+          "new_lease": true
+        }
+      }
+    ],
+    "loss_windows_overlapping_install": 0,
+    "ingress_in_outer_guard": 0,
+    "unresolved_ingress": 0
+  },
+  "expiry": {
+    "deadline_ns": "101393864272599",
+    "last_positive_offset_ns": "-100437900",
+    "first_drop_offset_ns": "-63893865",
+    "positives": 97,
+    "drops": 15,
+    "packet_predicate": "pass"
+  }
+}
