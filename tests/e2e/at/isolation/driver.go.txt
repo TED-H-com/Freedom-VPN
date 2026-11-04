@@ -638,7 +638,7 @@ func isolationPublicationMatches(intent string, groups []uuid.UUID) func([]byte)
 }
 
 func (x *isolationRun) publication(intent string, groups []uuid.UUID, c *iso.Check) bool {
-	note := isolationCheckNote(c)
+	note := iso.PublicationNote(c, x.records["AT10"])
 	// Long capture matrices can outlive a browser session. Obtain a fresh one
 	// before each mutation; never replay an unasserted side effect.
 	var loginErr error

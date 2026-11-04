@@ -60,7 +60,7 @@ def review(root):
     for row in rows:
         receipt=row['parent_wait_receipt'];row['agent_exit_code']=receipt.get('exit_code');row['agent_signal']=receipt.get('signal')
         row['cooperative_exit']=row['parent_identity_matched'] and receipt.get('exit_code')==0 and receipt.get('signal') is None
-    out=dict(run_id=read('AT13.json')['run_id'],all_parent_receipts_matched=bool(rows) and all(r['parent_identity_matched'] for r in rows),stops=rows,
+    out=dict(run_id=read('AT13.json')['run_id'],all_parent_receipts_matched=not unavailable_stages and bool(rows) and all(r['parent_identity_matched'] for r in rows),stops=rows,
         status='unavailable' if unavailable_stages else 'reviewed', unavailable_stages=unavailable_stages,
         scope='Each original stop only. Parent wait receipts supply actual agent exit code/signal. Container exit means PID1 handler completion. Escalation sidecars are intent only. Receipt and pidfd times are observation bounds, not exact kernel exit instants; Step cancellation is unavailable. Historical 10.087s/20.153s exit-137 rows are unchanged.')
     (root/'stop-receipt-review.json').write_text(json.dumps(out,indent=2)+'\n')

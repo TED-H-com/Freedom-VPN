@@ -115,3 +115,18 @@ func TestF20_EarlyAbortReviewers(t *testing.T) {
 	}
 	t.Log(string(out))
 }
+
+func TestF19_02_SuccessfulSetupKeepsPublicationReceipt(t *testing.T) {
+	record := &Record{}
+	check := &Check{Name: "serving setup"}
+	note := PublicationNote(check, record)
+	const trace = `{"outcome":"accepted","attempts":[{"status":412},{"status":202}]}`
+	note("node_write", trace)
+	note("publication_put", "202")
+	if len(check.Observations) != 2 || len(record.Observations) != 1 || record.Observations[0].Name != "node_write" || record.Observations[0].Detail != trace {
+		t.Fatal("setup receipt must survive without adding an acceptance check")
+	}
+	if len(record.Checks) != 0 {
+		t.Fatal("receipt retention must not add or promote a check")
+	}
+}

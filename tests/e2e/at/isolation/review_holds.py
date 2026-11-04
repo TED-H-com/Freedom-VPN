@@ -129,12 +129,19 @@ def joins(central):
 
 
 def review(root):
-    from review_unexecuted import populated_holds, present
+    from review_unexecuted import populated_holds, present, run_id
     populated, unavailable = populated_holds(root)
     if not present(root, 'generation-holds-central.json'):
-        result = dict(unavailable or {}, status='unavailable', passed=False, stage='generation_holds',
+        result = dict(unavailable or dict(run_id=run_id(root), reason='generation hold capture unavailable'), status='unavailable', passed=False, stage='generation_holds',
                       accepted_hold_count=0, applied_equals_delivered_desired=0,
                       applied_equals_desired_at_read=0, problems=[], populated_hold_retention=[])
+        (root/'generation-holds-review.json').write_text(json.dumps(result, indent=2)+'\n')
+        return result
+    if not present(root, 'publication-operation-history.json'):
+        result = dict(run_id=run_id(root), status='unavailable', passed=False,
+                      stage='publication_operation_history', reason='unavailable: publication operation history was not collected',
+                      accepted_hold_count=0, applied_equals_delivered_desired=0,
+                      applied_equals_desired_at_read=0, problems=[], populated_holds_diagnostic=unavailable)
         (root/'generation-holds-review.json').write_text(json.dumps(result, indent=2)+'\n')
         return result
     central = read(root, 'generation-holds-central.json')

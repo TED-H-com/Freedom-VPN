@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from review_populated_holds import review as holds
 from review_holds import review as general_holds
@@ -67,6 +68,28 @@ class EarlyAbort(unittest.TestCase):
                 result = json.loads((self.root/'recovery-verdict.json').read_text())
                 self.assertEqual('injected_creator' in result, creator)
                 self.assertFalse(result['passed'])
+
+    def test_operation_collector_without_lab_record(self):
+        from capture_hold_operations import capture
+        stopped = subprocess.CompletedProcess([], 1, '', 'TEST ONLY database unavailable')
+        # No lab record exists. The runner sets the invocation ID before any AT
+        # record is emitted, so the collector can start before acceptance.
+        (self.root/'AT10.json').unlink()
+        (self.root/'AT13.json').unlink()
+        (self.root/'receiver-capture.json').unlink()
+        with patch.dict(os.environ, {'FVPN_AT_RUN_ID': FIXTURE['run_id']}), patch('capture_hold_operations.subprocess.run', return_value=stopped):
+            result = capture(self.root)
+        self.assertEqual(result['run_id'], FIXTURE['run_id'])
+        self.assertEqual(result['snapshots'], [])
+        self.assertEqual(json.loads((self.root/'publication-operation-history.json').read_text())['run_id'], FIXTURE['run_id'])
+
+    def test_operation_history_failure_is_unavailable(self):
+        self.write('generation-holds-central.json', dict(run_id=FIXTURE['run_id'], reports=[], final={}))
+        result = general_holds(self.root)
+        self.assertEqual(result['run_id'], FIXTURE['run_id'])
+        self.assertEqual(result['status'], 'unavailable')
+        self.assertEqual(result['stage'], 'publication_operation_history')
+        self.assertFalse(result['passed'])
 
     def test_old_populated_evidence_cannot_pass_current_abort(self):
         self.write('populated-holds.json', dict(run_id='previous-run', attempts=[]))
