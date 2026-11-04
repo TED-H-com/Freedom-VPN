@@ -1,0 +1,10 @@
+live1 AT10 FAIL => AT10 PASS under D-120 reads 56 timeouts 0 guard transmissions 10 longest {'sequence': 54, 'first_origin_ns': 1793776923930980000, 'echo_arrival_ns': 1793776924140493000, 'stall_ns': 209513000}
+live2 AT10 PASS under D-120 => AT10 PASS under D-120 reads 53 timeouts 0 guard transmissions 6 longest {'sequence': 5, 'first_origin_ns': 1793777002457017000, 'echo_arrival_ns': 1793777002668895000, 'stall_ns': 211878000}
+live3 AT10 PASS under D-120 => AT10 PASS under D-120 reads 67 timeouts 0 guard transmissions 14 longest {'sequence': 47, 'first_origin_ns': 1793777054039785000, 'echo_arrival_ns': 1793777054652788000, 'stall_ns': 613003000}
+live4 AT10 PASS under D-120 => AT10 PASS under D-120 reads 66 timeouts 0 guard transmissions 9 longest {'sequence': 51, 'first_origin_ns': 1793777146260329000, 'echo_arrival_ns': 1793777146470823000, 'stall_ns': 210494000}
+live5 AT10 PASS under D-120 => AT10 PASS under D-120 reads 67 timeouts 0 guard transmissions 8 longest {'sequence': 58, 'first_origin_ns': 1793777206043668000, 'echo_arrival_ns': 1793777206252609000, 'stall_ns': 208941000}
+Traceback (most recent call last):
+  File "<worktree>/docs/poc/G2-followup36-evidence/replay.py", line 60, in <module>
+    assert v['verdict'] == original_verdict, label
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: gate2
