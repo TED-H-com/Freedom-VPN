@@ -6,15 +6,73 @@
       "id": "F19-01",
       "status": "answered",
       "decision": "D-152, provisional orchestrator decision",
-      "resolver_only": {"drop_rule": "ctbadns", "upload_usage_bytes": 0, "meets_requirement": true},
-      "host_only": {"drop_rule": "cthost", "upload_usage_bytes": 0, "meets_requirement": true},
+      "resolver_only": {
+        "drop_rule": "ctbadns",
+        "upload_usage_bytes": 0,
+        "meets_requirement": true
+      },
+      "host_only": {
+        "drop_rule": "cthost",
+        "upload_usage_bytes": 0,
+        "meets_requirement": true
+      },
       "denied_only_and_denied_host": "ctdeny",
       "historical_run": "1d746f9a-e2df-4baf-af8d-f2d3074c8cbf",
       "evidence": "history/follow-up-19-lab-final/lab-AT13-d147-detail.json",
       "new_lab_run": false,
       "historical_records_rewritten": false
     },
-    {"id": "F19-02", "status": "pending fresh assembled publication evidence", "owner": "w3-devstack-e2e", "fix": "devstack 32 (#438) shared bounded writeNode helper"}
+    {
+      "id": "F19-02",
+      "status": "answered by devstack 32",
+      "owner": "w3-devstack-e2e",
+      "fix": "devstack 32 (#438) shared bounded writeNode helper",
+      "evidence": "history/follow-up-20-run/support/publish.json",
+      "observed": "capacity PATCH and publication PUT each 202 on attempt 1; operation/read-back and native counted controls pass",
+      "historical_run_70beb28e": "unchanged: blocked"
+    },
+    {
+      "id": "F20-01",
+      "status": "fail",
+      "owner": "w2-agent-core; coordinate w3-devstack-e2e",
+      "scope": "short whole-node lease expiry",
+      "failed_check": "tunnel_probe / HEALTH_CHECK_FAILED",
+      "baseline_end_offset_ns": "-40992498819",
+      "boundary_positives": 0,
+      "boundary_drops": 202,
+      "first_drop_offset_ns": "-8099593185",
+      "last_positive": null,
+      "precise_probe_subcause": "unproven",
+      "evidence": [
+        "history/follow-up-20-run/expiry-early-baseline.json",
+        "history/follow-up-20-run/expiry-failure-wire-extract.json",
+        "history/follow-up-20-run/boundary-review.json"
+      ]
+    },
+    {
+      "id": "F20-02",
+      "status": "fixed offline; live evidence gap remains",
+      "owner": "isolation",
+      "scope": "operation collector required skipped lab record",
+      "fix_commit": "4fc47dd1",
+      "evidence": "history/follow-up-20-run/recording-limitations.json"
+    },
+    {
+      "id": "F20-03",
+      "status": "fixed offline; live attempt trace unavailable",
+      "owner": "isolation",
+      "scope": "successful setup publication discarded temporary check",
+      "fix_commit": "4fc47dd1",
+      "evidence": "history/follow-up-20-run/node-write-audit.json"
+    }
   ],
-  "carried_requests": ["AT11 native platform matrix", "AT13 full continuous fault matrix", "F17-01 pure stale_generation"]
+  "carried_requests": [
+    "AT11 native platform matrix",
+    "AT13 full continuous fault matrix",
+    "F17-01 pure stale_generation"
+  ],
+  "run_id": "c52bea6c-cd91-4086-a779-656b01277dcc",
+  "build": "037f44187aaac256c82682de01af2ef61bbb90f0",
+  "retry": false,
+  "confounded_overlap_observed": false
 }
