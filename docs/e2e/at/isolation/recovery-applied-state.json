@@ -1,42 +1,42 @@
 {
-  "applied_generation": "37",
+  "applied_generation": "35",
   "lease": {
-    "lease_id": "9882df0a-e754-4fe0-af62-e109953478ef",
-    "issued_at": "2026-11-04T06:23:09.653540088Z",
-    "expires_at": "2026-11-04T06:24:09.653540088Z",
-    "generation": "37",
+    "lease_id": "e79a3f74-a781-4d74-b000-efa2bff60da7",
+    "issued_at": "2026-11-04T10:49:26.786084228Z",
+    "expires_at": "2026-11-04T10:50:26.786084228Z",
+    "generation": "35",
     "max_offline_seconds": 60,
     "member_count": 2,
     "source": "",
-    "mono_sent_ns": "96832100919487",
-    "deadline_mono_ns": "96892100919487",
+    "mono_sent_ns": "112809234780637",
+    "deadline_mono_ns": "112869234780637",
     "anchor": {
-      "mono_ns": "96832100919487",
-      "server_unix_ns": "1793773389653540088",
-      "wall_unix_ns": "1793773389649542869",
+      "mono_ns": "112809234780637",
+      "server_unix_ns": "1793789366786084228",
+      "wall_unix_ns": "1793789366783404010",
       "trusted": 1
     }
   },
   "member_path": {
-    "generation": "37",
+    "generation": "35",
     "interface": "fvmb0",
     "addresses": [
-      "f85e8cbc445c970f977774d8301da74abe84df787198d91faaa6b21e7a8b0466"
+      "b161ad865f8d39414f4938612184d22921429c66725c1428446e8fad30f0f3f0"
     ],
     "routes": [
-      "1eb7201ac000f7de3d1990669947fbe5b805f79021cc2601618a735e0a0895ae",
-      "0910153a68da9225b3e164e0ea6fa922de083c2b8633a9054d0bd6a116e2b4e6",
-      "0b38a41772235226b5b5eb8a15a05d135ff78e5043dbcb15af2f0b9b2ded0516",
+      "f66c94f154e26e6e16dcbed6e18dec892dda9976c865199b01636a4e5349a54b",
+      "5e95cebf5c0fb29d9faa560a33f040f366c8f65c8a47fd8896a1c53d2c3690f6",
+      "c7b4074e7fffb296103af01f75a8b80b7b4fa405b20c0ac7a8c4f3bf5f0a0d6e",
       "4c531061c743132243c3420573a46d3eb3a1ff0dbc5b0c2bef91c952fcdc2ff9"
     ]
   },
-  "read_at": "2026-11-04T06:23:22.496483466Z",
+  "read_at": "2026-11-04T10:49:36.493919081Z",
   "retained_applied": {
     "model": {
-      "generation": 37,
+      "generation": 35,
       "ipv6_mode": "block",
-      "now": "2026-11-04T06:23:09.691423686Z",
-      "now_mono_ns": "96832138803085",
+      "now": "2026-11-04T10:49:26.815257272Z",
+      "now_mono_ns": "112809263953681",
       "datapath": {
         "member_ingress": "fvmb0",
         "uplink": "fvup0",
@@ -44,44 +44,44 @@
       },
       "bindings": [
         {
-          "member_id": "01a1a528-035e-71fd-9102-53e0f3a6404d",
-          "device_id": "01a1a528-3fc2-7ed8-871f-f49125b995ed",
-          "peer_id": "dblcli78k4c0009p8erg",
+          "member_id": "01a1a61d-0e66-7d28-9961-e33705013197",
+          "device_id": "01a1a61d-48ae-7743-b521-4dbb1b98ec14",
+          "peer_id": "dblgj0v8k4c000a4p6o0",
           "allowed_v4": [
-            "100.123.138.97/32"
+            "100.74.210.208/32"
           ],
           "binding_revision": 1,
-          "valid_from": "2026-11-04T06:04:00.834973Z",
-          "valid_until": "2026-11-04T07:04:01.222397Z"
+          "valid_from": "2026-11-04T10:31:39.438476Z",
+          "valid_until": "2026-11-04T11:31:41.363997Z"
         },
         {
-          "member_id": "01a1a528-7fad-711c-95a2-008f3044e77f",
-          "device_id": "01a1a528-b5f1-7acf-902a-a78ba6f1a443",
-          "peer_id": "dblclpv8k4c0009p8l2g",
+          "member_id": "01a1a61d-8a97-727c-8d0f-fb2fdaafbfe8",
+          "device_id": "01a1a61d-becf-77da-9959-aa16830819e2",
+          "peer_id": "dblgj8n8k4c000a4pd6g",
           "allowed_v4": [
-            "100.123.90.58/32"
+            "100.74.30.177/32"
           ],
           "binding_revision": 1,
-          "valid_from": "2026-11-04T06:04:31.089708Z",
-          "valid_until": "2026-11-04T07:04:17.075616Z"
+          "valid_from": "2026-11-04T10:32:09.679514Z",
+          "valid_until": "2026-11-04T11:31:56.201291Z"
         }
       ],
       "leases": [
         {
-          "member_id": "01a1a528-035e-71fd-9102-53e0f3a6404d",
-          "effective_service_end": "2026-11-04T06:24:09.653540088Z",
-          "node_lease_end": "2026-11-04T06:24:09.653540088Z",
-          "signed_server_time": "2026-11-04T06:23:09.653540088Z",
+          "member_id": "01a1a61d-0e66-7d28-9961-e33705013197",
+          "effective_service_end": "2026-11-04T10:50:26.786084228Z",
+          "node_lease_end": "2026-11-04T10:50:26.786084228Z",
+          "signed_server_time": "2026-11-04T10:49:26.786084228Z",
           "max_offline_seconds": 60,
-          "deadline_mono_ns": "96892100919487"
+          "deadline_mono_ns": "112869234780637"
         },
         {
-          "member_id": "01a1a528-7fad-711c-95a2-008f3044e77f",
-          "effective_service_end": "2026-11-04T06:24:09.653540088Z",
-          "node_lease_end": "2026-11-04T06:24:09.653540088Z",
-          "signed_server_time": "2026-11-04T06:23:09.653540088Z",
+          "member_id": "01a1a61d-8a97-727c-8d0f-fb2fdaafbfe8",
+          "effective_service_end": "2026-11-04T10:50:26.786084228Z",
+          "node_lease_end": "2026-11-04T10:50:26.786084228Z",
+          "signed_server_time": "2026-11-04T10:49:26.786084228Z",
           "max_offline_seconds": 60,
-          "deadline_mono_ns": "96892100919487"
+          "deadline_mono_ns": "112869234780637"
         }
       ],
       "resolvers": [
@@ -106,7 +106,7 @@
         },
         "members": [
           {
-            "member_id": "01a1a528-035e-71fd-9102-53e0f3a6404d",
+            "member_id": "01a1a61d-0e66-7d28-9961-e33705013197",
             "up": {
               "rate_bps": 99500000,
               "ceil_bps": 100000000
@@ -117,7 +117,7 @@
             }
           },
           {
-            "member_id": "01a1a528-7fad-711c-95a2-008f3044e77f",
+            "member_id": "01a1a61d-8a97-727c-8d0f-fb2fdaafbfe8",
             "up": {
               "rate_bps": 99500000,
               "ceil_bps": 100000000
@@ -131,8 +131,8 @@
       }
     },
     "assignments": {
-      "01a1a528-035e-71fd-9102-53e0f3a6404d": 48419,
-      "01a1a528-7fad-711c-95a2-008f3044e77f": 24863
+      "01a1a61d-0e66-7d28-9961-e33705013197": 52006,
+      "01a1a61d-8a97-727c-8d0f-fb2fdaafbfe8": 4949
     }
   },
   "source": "read-only node SQLite snapshot; production persistence after verified Apply"

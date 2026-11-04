@@ -52,6 +52,7 @@ func (l *live) useSecond() func() {
 }
 
 func (l *live) twoExits(r *record) {
+	defer l.timedSection("selected-exit-restart")()
 	// The full assembled campaign can outlast a member browser idle session.
 	// Reauthenticate through OIDC; do not lengthen the product timeout.
 	reauthStarted := time.Now().UTC()
@@ -94,7 +95,9 @@ func (l *live) twoExits(r *record) {
 	time.Sleep(3 * time.Second)
 	probeID := uuid.NewString()
 	l.request(nil, "PUT", "https://releases.example.invalid/e2e/traffic", map[string]string{"id": probeID}, map[string]string{"X-E2E-Secret": l.secret("origin.secret")})
+	peerBefore := l.transferPeerViews("member")
 	raw, e := l.inside("member", "/tmp/at-members-probe", "transfer", probeID)
+	peerAfter := l.transferPeerViews("member")
 	arrival := l.request(nil, "GET", "https://releases.example.invalid/e2e/traffic", nil, map[string]string{"X-E2E-Secret": l.secret("origin.secret")})
 	var received struct {
 		Requests int    `json:"requests"`
@@ -113,7 +116,7 @@ func (l *live) twoExits(r *record) {
 	}
 	var v map[string]any
 	_ = json.Unmarshal(raw, &v)
-	safe, _ := json.Marshal(map[string]any{"probe": v, "route": l.routeObservation("member"), "origin_requests": received.Requests, "origin_node": source})
+	safe, _ := json.Marshal(map[string]any{"peer_status": peerBefore, "peer_status_after": peerAfter, "probe": v, "route": l.routeObservation("member"), "origin_requests": received.Requests, "origin_node": source})
 	r.check("selected exit offline behavior", "record bounded origin result and actual route", string(safe), "stop node2, its resolver and namespace holder; bounded HTTPS; authenticated origin arrival; restart same durable identity", stop == nil && e == nil)
 	// Keep the original stop/offline probe sequence, then let the shared hook
 	// restart the already-stopped namespace and retain the entire 90-second

@@ -33,7 +33,7 @@
 | `r25-retain-review` | [r25-retain-review.md](r25-retain-review.md) | 2026-11-03 | `agy/gemini-4-argon-high`, target `8cc27609` | Agent-core 40/41, carrying 37–41; unmerged | 0 Critical / 1 High / 1 Medium / 0 Low; RETURNED to agent-core 42 before merge, not yet judged | None; 680-line node/agent/review_r25_test.go on `1afecb29` only; exact archive only. |
 | `r26-expiry-fixes-review` | [`r26-expiry-fixes-review.md`](r26-expiry-fixes-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Agent-core 42 at 8dec4100 and 37–42 together; expiry, retention and jitter | 0 Critical, 0 High, 0 Medium, 0 Low; reviewer recommends merge 37–42; orchestrator merged 37–43 as #429 under D-150 | [`node/agent/review_r26_test.go`](../../node/agent/review_r26_test.go), six TestR26_Held_* proofs imported by 43; [cut dispositions and errata](#r26-dispositions-at-the-follow-up-39-cutoff-2026-11-03-est) |
 | `r27-members-failures-review` | [r27-members-failures-review.md](r27-members-failures-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Members 18 run 2; proofs 62146ff1, report committed by orchestrator in dfde8d25 | 0 Critical, 1 High, 3 Medium, 1 Low; [current dispositions](#r27-and-r28-dispositions-at-the-follow-up-43-cutoff-2026-11-04-est) | [Members proofs](../../tests/e2e/at/members/review_r27_test.go) in #445; [agent](../../node/agent/review_r27_test.go) / [enforce](../../node/enforce/review_r27_test.go) proofs in #447 |
-| `r28-expiry-probe-review` | [r28-expiry-probe-review.md](r28-expiry-probe-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Isolation 20 delivered head 9be409f8; review 34a8d61f, F20-01 | 0 Critical, 1 High, 1 Medium; [current dispositions](#r27-and-r28-dispositions-at-the-follow-up-43-cutoff-2026-11-04-est) | [Agent proofs](../../node/agent/review_r28_test.go) in #447; [member-expiry proofs](../../tests/e2e/at/isolation/member_expiry_test.go) in #452 |
+| `r28-expiry-probe-review` | [r28-expiry-probe-review.md](r28-expiry-probe-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | Isolation 20 delivered head 9be409f8; review 34a8d61f, F20-01 | 0 Critical, 1 High, 1 Medium; [current dispositions](#follow-up-44-dispositions) | [Agent proofs](../../node/agent/review_r28_test.go) in #447; [member-expiry proofs](../../tests/e2e/at/isolation/member_expiry_test.go) in #452 |
 | `r29-update-recover-review` | [r29-update-recover-review.md](r29-update-recover-review.md) | 2026-11-03 | `agy/gemini-4-argon-high` | F30-01 design diagnosis; base dd052c60, report and proofs committed by the reviewer at 5b1ca726 | 0 Critical, 1 High, 1 Medium, 2 Low; [cut dispositions](#r29-dispositions-at-the-follow-up-43-cutoff-2026-11-04-est) | [Updater proofs](../../node/updater/review_r29_test.go) in #446 and [agent proofs](../../node/agent/review_r29_test.go) in #454, byte-identical |
 
 ## What Held Across the Reviews
@@ -898,3 +898,22 @@ The [cut](../handover/follow-up-43.md) pins the imported proof identities and
 producer evidence. Handover did not rerun the review proofs or acceptance.
 **F30-01 stays open** until an acceptance run passes `lease-expiry` with the
 nightly quarantine entry removed. Devstack 34 is running for that at cutoff.
+
+
+<a id="follow-up-44-dispositions"></a>
+
+## Follow-up 44 dispositions (2026-11-04 EST)
+
+The earlier dated tables describe their original cuts. At #463:
+
+| Finding | Current disposition | Frozen evidence |
+|---|---|---|
+| r29 L-2 | ANSWERED — #458; stale citations left with the removed lease-expiry entry. member-ipv6 remains. | [Devstack 34](../../tests/handover/testdata/history/follow-up-44/docs_e2e_runs_2026-11-04_followup34_analysis.md.txt) |
+| r28 M-1 / Isolation F21-01 | ANSWERED — #459, first live pass under a serving node, all five requests time out with a 26.3 s node-lease extension. | [Isolation 22](../../tests/handover/testdata/history/follow-up-44/docs_e2e_at_isolation_followup22-2026-11-04.md.txt) |
+
+F30-01 remains open despite lease-expiry's pass: devstack 34 never started a
+candidate. Updater 25 #463 adds D-158's bounded live-lock wait; closure now
+requires update-good to start the candidate, deferred boot recovery under its
+parent's lock to clear, candidate member service, then a passing lease-expiry.
+Devstack 35 runs for it at cutoff. Every historical failure stays failed; raw
+review archives and imported proofs are unchanged. See [the cut](../handover/follow-up-44.md).

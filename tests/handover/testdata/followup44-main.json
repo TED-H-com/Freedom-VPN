@@ -1,0 +1,131 @@
+{
+  "source_commit": "5c21e670596f5b0b7029f6a02648305a24f0f22a",
+  "previous_cut": "04d31ea5cd10cb90527e0b4efc10b42522dd9569",
+  "merged_prs": [
+    457,
+    458,
+    459,
+    460,
+    461,
+    462,
+    463
+  ],
+  "history": [
+    "b98c2d76133d1fd0adbec49da04babcb7f1df549 handover: follow-up 43 — cut #446–#456 (11 PRs): D-155, D-156, D-157, 60 decisions; r29 archived; register at 124 rows; operator guide: F30-01 both halves merged, updater exit statuses, D-156 release rule, AT02 deny-all (w4-handover follow-up 43) (#457)",
+    "e08ebb71588cd0623df435025180fad9a5f51bde roadmap: w4-handover follow-up 43 merged (#457)",
+    "4aa1fb0dc9b74466855dfa3b2c52baae83456d27 e2e: follow-up 34 — acceptance af4c130b: 31 pass / 2 blocked; lease-expiry passes and leaves the nightly quarantine; update-good blocked at updater exit 3 before any candidate, so F30-01 stays open; D-154 comment (w3-devstack-e2e follow-up 34) (#458)",
+    "3cd48798266c3c1fe8d1feb876a3a998a47e17c2 roadmap: w3-devstack-e2e follow-up 34 merged (#458)",
+    "4e77e816e6e6626c293440374b6433814384a47d isolation: follow-up 22 — AT13's member expiry anchored on a fresh renewal (F21-01); assembled run 7b0db5f2 on agent-core 49: 27 pass, 2 blocked, 0 fail; r28 M-1's first live pass; D-120 lab TCP timeout routed (w4-at-isolation follow-up 22) (#459)",
+    "870a931ad6e8e030d1855131fa5f83f2de78fef4 roadmap: w4-at-isolation follow-up 22 merged (#459)",
+    "f9dbe5e69632498af6e819ab1b86e58eb37c80f1 secops: follow-up 17 — AT29's control-loss case gets a 60 s lease by construction: SECOPS-F16-01 answered, continuity passes; AT29 stays failed on the old lease-expiry case's stale deadline after admission holds (w4-at-security-ops follow-up 17) (#460)",
+    "6f52dfc9491db5c6893c681e88742f43b2251117 roadmap: w4-at-security-ops follow-up 17 merged (#460)",
+    "3f39c1cc394f571ce6d2d76bb0c3cdbefaca4769 agent: follow-up 50 — D-157: one renewal right after a verified closed recovery's accepted clean report, not at D-067's next slot (members 21's 4.968 s AT02 deny-all); F48's proof updated for it, with approval; lab 13/13 (w2-agent-core follow-up 50) (#461)",
+    "55f2765dac6e1c6871045ee6182d6cc23ccf8a33 roadmap: w2-agent-core follow-up 50 merged (#461)",
+    "d228518ec6e9a5a47e9009f054dbf4bdbe61cdd7 netlab: follow-up 35 — F22-01: the agent has no minimum Apply spacing, so D-159's spacing does not apply; stacked guard drops timing-compatible, not proven; TCP headers now captured with checked UDP projections (w1-netlab follow-up 35) (#462)",
+    "0d9448800b9e50392b1365a54fed89d4fdb333ba roadmap: w1-netlab follow-up 35 merged (#462)",
+    "d733b35295867b39419bb8e455dc45c3f67c79f1 updater: follow-up 25 — D-158 revised: run, seed, apply and standalone flush wait up to 10 s for a live update.lock holder, polling every 20 ms, with one wait record; recover, nested calls and stale details unchanged (w2-updater follow-up 25) (#463)",
+    "5c21e670596f5b0b7029f6a02648305a24f0f22a roadmap: w2-updater follow-up 25 merged (#463)"
+  ],
+  "rows": [
+    {
+      "pr": 457,
+      "lane": "w4-handover follow-up 43",
+      "row": "| w4-handover follow-up 43 | Cut #446 to #456 at `04d31ea5` (updater 24, agent-core 48 and 49, secops 15 and 16, handover 42, enrollment 10, updates 15, isolation 21, usage 9 and members 21; no unbriefed PR). `TestHandover_Followup43Claims` (16 subtests) pins the eleven final roadmap rows and PR excerpts, 35 frozen inputs, Go test declarations, archived code readings, and the r29 raw archive with its two imported proof files by digest; the 36 earlier claims functions stay exact, with follow-up 42's two lane-file reads now on frozen bytes. D-155 (F30-01 by r29 Option B), D-156 (a same-boot replacement keeps verified retained rules until the successor adopts or refuses them) and D-157 (one early renewal after a closed recovery): 60 decisions, the 57 earlier rows unchanged. Review r29 archived byte-for-byte (180 lines). Findings register at 124 rows: 11 updated, 11 added (AT29's current failure among them), 102 byte-identical; the AT-owned node-write sites close; F30-01 stays open until an acceptance run passes lease-expiry without the nightly quarantine entry. Operator guide: the F30-01 paragraph states both halves merged, updater 24's exit-status paragraph is added verbatim, r28 H-1 is fixed in place, and the D-156 release rule and AT02 deny-all behaviour get their own anchors; seven entrypoints point at the cut. Devstack 34, isolation 22, secops 17 and agent-core 50 recorded as running. Codex gpt-6-astra. | done (#457) |",
+      "sha256": "9f2dc0ae965e029f8ea964ca30052822abff7484ecacb695423df794baa7b2f4"
+    },
+    {
+      "pr": 458,
+      "lane": "w3-devstack-e2e follow-up 34",
+      "row": "| w3-devstack-e2e follow-up 34 | One full acceptance run, `af4c130b`, on updater 24 (#446), agent-core 48 (#447) and agent-core 49 (#454): 31 pass, 2 blocked, 0 fail, make exit 2, no rerun. `lease-expiry` passes: `countedFlow` found admission in 244 ms, the node kept serving through the control outage, and forwarding stopped at the desired policy's deadline D, about ten minutes after the stop, with replies and bytes flat while senders kept sending. Its entry leaves `tests/e2e/nightly_expected_blocked.json`; `member-ipv6`'s entry stays byte-identical, and the nightly gate tests that read follow-up 29's list now read a frozen copy. `update-good` is newly blocked: `fvpn-updater run` exited 3 (`ExitBusy`) before it started a candidate. The lock samples show the running agent holding `update.lock` for about half a second at each new generation, every 5 s, against the updater's 80 ms acquisition window. So the candidate's deferred recovery under D-155 was never exercised, F30-01 stays open, and the run's nightly verdict is fail on `update-good`; routed to updater 25 under D-158. New observers retain the lock holder and heartbeat about every 215 ms, the control stop and restart, and the closed-path quiet samples. The window is confounded under D-133, and three setup sub-makes bypassed the admission wrapper; both are disclosed. `publisherTrace32`'s comment now describes D-154. 4 commits, 115 owned files. Codex gpt-6-astra. | done (#458) |",
+      "sha256": "47a30a34ec7e4881d910d738046a406fea31eb09628b7985a15deb260f351c8c"
+    },
+    {
+      "pr": 459,
+      "lane": "w4-at-isolation follow-up 22",
+      "row": "| w4-at-isolation follow-up 22 | D-098 first: run `7599576e`'s 173 root files archived byte-identically under `history/follow-up-21/`. F21-01 diagnosed from the product: for a 60 s window the agent renews 27 to 33 s after its request (lead 30 s, jitter ±3 s), so whether a renewal landed in the member-expiry window was a matter of phase; run 21's next issue came 80.5 ms after the cutoff. The schedule now anchors on a freshly accepted 60 s lease at most 5 s old and creates the finite grant once with D = floor(issue + 55 s). Every bound, probe and serving read is unchanged, with an original-time replay and synthetic interval, jitter and early-renewal proofs. One assembled run, `7b0db5f2`, on agent-core 49 (#454): 27 pass, 2 blocked (the two operator matrices), 0 fail, exit 2, no rerun. r28 M-1's first live pass: after the member's deadline all five of its requests timed out with bytes flat, while all six reads showed the node still serving, 26.3 s before its own lease expired; F21-01 is answered. The short whole-node expiry again passes D-140 and qualifies under D-142 (165 positives, 90 drops). 15 node writes in 16 attempts, one 412 answered by a re-read. No F48-01 signature. The included D-120 reload/revoke lab failed on one TCP read timeout at sequence 101, with all 101 Applies verified and no UDP loss; it stays failed, routed to netlab as F22-01. 4 commits, 444 owned files. Codex gpt-6-astra. | done (#459) |",
+      "sha256": "c24b0d198333b74482731f41d88ce089ce9d4123a27e5c45b32237b73be951a7"
+    },
+    {
+      "pr": 460,
+      "lane": "w4-at-security-ops follow-up 17",
+      "row": "| w4-at-security-ops follow-up 17 | SECOPS-F16-01 diagnosed from the product: a fleet cap change is non-retroactive and changes no generation, so a running node keeps its 86,400 s lease until its own renewal falls due; public routes that change a node's generation exist, so there is no product finding. The control-loss case's setup now writes the 60 s cap before its finite grant and native device admission, whose new generation makes the node take a fresh lease. Its wait accepts only a locally accepted lease issued after the cap's read-back, signed at 60 s, with a serving heartbeat whose policy deadline is D, and fails closed naming what it saw. Offline: run `1bfd5cff` still fails naming its 86,400 s lease, a post-cap 60 s lease passes, pre-cap and equal-time leases fail, and follow-up 16's continuity proofs are unchanged. D-098 archive of 127 root records first. One live AT29 run, `b2de46c8`, on agent-core 49 (#454), confounded under D-133 by other lanes from 06:29:11Z, no rerun. The control-loss case passed on lease `bef669a3` (60 s, issued 13 s after the cap), with one agent identity throughout and both transports continuous to D − 0.94 s and quiet by D + 1.06 s. Grant expiry, device revoke, manual withdrawal and forced relay passed; guest clock rollback stays blocked. The old killed-agent lease-expiry case failed: two 60 s admission holds inside it delayed its fault 60.7 s past its cached deadline, after the node had renewed, so replies still flowed. AT29 stays failed; routed as SECOPS-F17-01 to the lane's own harness. No node_write conflicts. 3 commits, 183 owned files. Codex gpt-6-astra. | done (#460) |",
+      "sha256": "87cf0da79074333fbaecd455ef32ce1bade32e59792210b196c5633ae0c4c456"
+    },
+    {
+      "pr": 461,
+      "lane": "w2-agent-core follow-up 50",
+      "row": "| w2-agent-core follow-up 50 | D-157 for members 21's AT02 availability finding. Diagnosis first: central restores a node's readiness synchronously from its clean observation, not in a job, so members 21's 4.968 s deny-all after a closed recovery was central's readiness and D-067's five-second slot in series. The agent now binds one renewal to a verified closed Apply and central's acceptance of that recovery's newly queued clean report, and renews at once. The opportunity is consumed on dispatch; Retry-After and one request per Step still hold, and an empty answer continues D-067's streak. Forwarding still opens only on a populated lease and a verified Apply. F48's closed-recovery proof now expects exactly that one early renewal, with the orchestrator's approval; its other invariants are unchanged. Lab 13/13 on one attempt. | done (#461) |",
+      "sha256": "1cff8062c972363869c417e773dc46b7573196ea9c810609d7a5eea1ea81583a"
+    },
+    {
+      "pr": 462,
+      "lane": "w1-netlab follow-up 35",
+      "row": "| w1-netlab follow-up 35 | F22-01's diagnosis and new TCP evidence (`docs/poc/G2-followup35-2026-11-04.md`). The agent has no positive minimum Apply spacing: binding-deadline wake-ups, a zero remaining Step delay and a closed recovery's second Apply in the same Step can all apply within 400 ms. So D-159's condition is false, and the campaign's cadence is unchanged. Measured retry offsets (+208, +416 and +826 ms), transplanted onto F22-01's and F27-01/B1's sends, meet later install brackets: timing-compatible, not proven, since neither run retained TCP packets. The three collectors now keep combined TCP/UDP headers with absolute sequence numbers and their original counters; a checked projection feeds the byte-identical D-120 analyzer, and the stream records each TCP echo as match, EOF, stale or mismatch. Five standalone attempts: the first failed on the new splitter and stays failed (fixed, with a regression test); four passed with zero TCP timeouts and a TCP p95 of 205 to 209 ms; attempts 3 to 5 conservatively confounded. In attempt 3, sequence 47 entered the node twice inside generations 1069 and 1070's install brackets before a 613 ms read. The full netlab gate and all 13 agent scenarios pass. Historical failures stay failed. 7 commits, 397 owned files, mostly evidence. Session on codex gpt-6-astra. | done (#462) |",
+      "sha256": "5bd06f66b5e3a6d1c632582b11b5ba99ba557f58a6d62b38646f06e7a35f3967"
+    },
+    {
+      "pr": 463,
+      "lane": "w2-updater follow-up 25",
+      "row": "| w2-updater follow-up 25 | F30-01's update-good exit 3, diagnosed and addressed under D-158 as revised (`docs/updates/node-followup25-2026-11-04.md`). Ordinary agent Apply contention is the supported explanation: the agent's hold is bounded by its Step's local deadline, about 10 s, not by the sampled half-second, so the brief's 2 s bound was not supported and the lane stopped; the orchestrator revised D-158. Now `run`, `seed`, `apply` and standalone `flush` wait for a live `update.lock` holder within one 10 s budget, polling every 20 ms; past it they exit 3 with the unchanged `UPDATE_BUSY: lock` line. `recover` and standalone `Retain` keep five attempts 20 ms apart; nested calls reuse ownership; stale details keep exit 1 after five attempts counted from the first stale answer; unreadable metadata stays busy; cancellation ends the wait. One JSON record, `update lock wait` with command, waited_ms, acquired and budget_ms, only after a missed first attempt; an uncontended command's stderr is unchanged. Proofs with a real second holder: a 600 ms holder gave exit 3 at about 81 ms before the change and exit 0 at about 617 ms after it, for all four commands; the CLI's real default budget exits 3 at 10.006 s. Common lock APIs, the exit table and the agent, installer and update AT consumers are unchanged. F30-01 stays open until an acceptance run reaches the candidate. 8 commits, 9 owned files. Session on codex gpt-6-astra, with one resume. | done (#463) |",
+      "sha256": "725b8bd571449ab6eb6f62f4725bcb7e049def86d1957d833596e55b33f69a5a"
+    }
+  ],
+  "prs": [
+    {
+      "number": 457,
+      "path": "tests/handover/testdata/history/follow-up-44/pr457-excerpt.json",
+      "bytes": 4293,
+      "sha256": "0999c4d68a3b2c1e91a89b3288ccc1d9eed76ebb5148d24e46c809e8c156ccc1",
+      "decoded_sha256": "11a38134f4e24c6c080512e9272bc86f0d65070c862b2ed7d664d32c04b9819f",
+      "merge_commit": "b98c2d76133d1fd0adbec49da04babcb7f1df549"
+    },
+    {
+      "number": 458,
+      "path": "tests/handover/testdata/history/follow-up-44/pr458-excerpt.json",
+      "bytes": 4950,
+      "sha256": "a2caeadcc5be2745113d04e83410972bcec27a849b735ad82f61dcea0f857ac8",
+      "decoded_sha256": "5ed5a4f026bb17d5a1c315e03fd40dbdad5c5dadaeef05373dd89768eaad564c",
+      "merge_commit": "4aa1fb0dc9b74466855dfa3b2c52baae83456d27"
+    },
+    {
+      "number": 459,
+      "path": "tests/handover/testdata/history/follow-up-44/pr459-excerpt.json",
+      "bytes": 5344,
+      "sha256": "c15ffc18f9afd74ba7bab9515a6ee153eefef7a11f6fcd1e6c3dad0d47141412",
+      "decoded_sha256": "2483f404d8a24f5b13bfcba3b0485b80d1e9d253d37b3787d66e2f45d4ac8f7e",
+      "merge_commit": "4e77e816e6e6626c293440374b6433814384a47d"
+    },
+    {
+      "number": 460,
+      "path": "tests/handover/testdata/history/follow-up-44/pr460-excerpt.json",
+      "bytes": 5765,
+      "sha256": "68662d9d50b58e35976d262831ffec94acf547c58e2e7cf58eae7310a9d82ee8",
+      "decoded_sha256": "fbd53dafba92e794f0a433365bea088f1c70a01b45851c9c756f0092e10ff0e2",
+      "merge_commit": "f9dbe5e69632498af6e819ab1b86e58eb37c80f1"
+    },
+    {
+      "number": 461,
+      "path": "tests/handover/testdata/history/follow-up-44/pr461-excerpt.json",
+      "bytes": 5312,
+      "sha256": "7b9c32f7a2aed60af266a87f0a7cb659a93a4186bef396fb66c07587e0411326",
+      "decoded_sha256": "b9f612f22fbb031a366a59c6d655fd7d6cec109148bcdf95db15fbf2ee5f11c5",
+      "merge_commit": "3f39c1cc394f571ce6d2d76bb0c3cdbefaca4769"
+    },
+    {
+      "number": 462,
+      "path": "tests/handover/testdata/history/follow-up-44/pr462-excerpt.json",
+      "bytes": 5638,
+      "sha256": "04e9001414c9266cd1bbba5f9fcb48100e01f7acb95dbfd4f525033dda20b8ad",
+      "decoded_sha256": "ca3d7dcbfd2bdd687bb715a2724607d30de01c24e3450ca1e7a5dac77438267a",
+      "merge_commit": "d228518ec6e9a5a47e9009f054dbf4bdbe61cdd7"
+    },
+    {
+      "number": 463,
+      "path": "tests/handover/testdata/history/follow-up-44/pr463-excerpt.json",
+      "bytes": 4967,
+      "sha256": "a7d4b98b209c03b9235fe38a1f93c225f11940d8e6ee580f90f8b207f4ca6611",
+      "decoded_sha256": "4bd1d2d6b9766720d290ce88efc2afc3cea9c9d73cf1c2b60fb2c9751aab35a8",
+      "merge_commit": "d733b35295867b39419bb8e455dc45c3f67c79f1"
+    }
+  ]
+}

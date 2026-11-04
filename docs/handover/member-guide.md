@@ -1,7 +1,7 @@
 # Freedom VPN 會員使用手冊 / Member Guide (`docs/handover/member-guide.md`)
 
-**Current cut — [follow-up 43](follow-up-43.md) (2026-11-04 EST):** #446–#456 at 04d31ea5; D-155/D-156 fixes merged, F30-01 acceptance pending; D-157 routed, no merged fix. 60 decisions, 124 findings; r29 archived. AT29 failed at setup. See [update recovery](operator-guide.md#f30-01), [r28 H-1 fixed](operator-guide.md#r28-h-1), [release rule](operator-guide.md#d156-release-rule) and [closed-recovery interval](operator-guide.md#at02-closed-recovery).
-**Previous cut — [follow-up 42](follow-up-42.md):** #439–#445 at 5a942aa1; 15 subtests, 57 decisions and 113 findings; historical verdicts unchanged.
+**Current cut — [follow-up 44](follow-up-44.md) (2026-11-04 EST):** #457–#463 at 5c21e670; D-158 lock wait and D-157 renewal merged, F30-01 candidate proof and live AT02 measurement pending. 64 decisions, 126 findings; F22-01 and SECOPS-F17-01 open, AT29 failed and confounded. See [update recovery](operator-guide.md#f30-01), [closed recovery](operator-guide.md#at02-closed-recovery) and [TCP guard limitation](operator-guide.md#tcp-reload-guard).
+**Previous cut — [follow-up 43](follow-up-43.md) (2026-11-04 EST):** #446–#456 at 04d31ea5; D-155/D-156 fixes merged, F30-01 acceptance pending; D-157 routed, no merged fix. 60 decisions, 124 findings; r29 archived. AT29 failed at setup. See [update recovery](operator-guide.md#f30-01), [r28 H-1 fixed](operator-guide.md#r28-h-1), [release rule](operator-guide.md#d156-release-rule) and [closed-recovery interval](operator-guide.md#at02-closed-recovery).
 
 **2026-10-31 服務通知（#351 截止）：** DNS 的 TTL 是快取最長有效時間，
 不保證期間內每次查詢答案相同；較早送出的上游請求若較晚完成，可能覆蓋較新的

@@ -44,3 +44,12 @@ F48-01's paired restart signature is not observed in the retained agent/watchdog
 2. Carried: native platform matrix, full continuous fault matrix, F17-01 pure `stale_generation`.
 
 Acceptance rows are **27 pass / 2 blocked / 0 fail**; the separate lab failure remains failed. One node-write 412 was resolved on attempt 2 with a fresh ETag and unchanged key/body; all 16 attempts are retained. F48-01's paired restart signature was not observed, not declared globally fixed. D-144/workflow and earlier archives are unchanged. Owned inventory is zero.
+
+
+## Follow-up 23 — 2026-11-04 EST (additive)
+
+**F22-01 answered; no new owner request.** Run `328ab9e0-7ff4-495a-81c1-410ae8a7d876` judges all 65 TCP reads on complete checked combined captures under D-161: lab **pass**, zero TCP timeouts, six recovered guard-attributed transmissions, zero UDP losses, longest stall 210.082 ms. Original 7b0db5f2 stays failed; its missing TCP captures cannot establish its cause. Netlab 35/36 supply the observed capture/analyzer changes; no causal product fix is inferred. [Analyzer and every row](followup23-2026-11-04.md).
+
+All 29 acceptance statuses are unchanged: **27 pass / 2 blocked / 0 fail**. Member expiry is r28 M-1’s second live pass; whole-node boundary qualifies under D-142. No node-write conflicts, no F48-01 paired signature, no observed overlap or retry. D-160 requires no committed harness change, and the inherited private nested-admission wrappers are not used. Handover repoint lines changed: **none**.
+
+Carried unchanged: **AT11 native IPv6/member-platform matrix**, **AT13 full continuous fault matrix**, **F17-01 pure stale_generation**. The hold review stays incomplete. D-144 and the workflow are unchanged; owned Docker inventory is zero.

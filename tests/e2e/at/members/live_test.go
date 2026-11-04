@@ -189,6 +189,8 @@ func TestATMembers_Live(t *testing.T) {
 			if focused && (task.id == "AT01" || task.id == "AT09") {
 				t.Skip("Follow-up 12: retain prior case; wait for devstack 22 exports/captures")
 			}
+			endTimedCase := l.admitTimedCase(task.id)
+			defer endTimedCase()
 			l.memberHTTP = nil
 			r := l.newRecord(task.id)
 			// Each independent case performs real OIDC reauthentication; never lengthen recent-auth policy.
@@ -445,6 +447,7 @@ func (l *live) count(query string, args ...any) int {
 	return n
 }
 func (l *live) wait(timeout time.Duration, fn func() bool) bool {
+	defer l.timedSection("bounded-poll")()
 	ctx, cancel := context.WithTimeout(l.ctx, timeout)
 	defer cancel()
 	for {

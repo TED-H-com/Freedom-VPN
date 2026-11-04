@@ -1,0 +1,51 @@
+{
+  "run_id": "5715939e-3943-48f1-8bd5-c869bf7c91c2",
+  "source_commit": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+  "source_path": "docs/e2e/at/members/history/follow-up-21/AT09.json",
+  "source_sha256": "018a9cfdb0867512279df23a6d304afa1fc62f8e670d5ccfd46f9b8a99ce1c58",
+  "indexes": [
+    49,
+    51
+  ],
+  "recorded_rule_read": {
+    "available": true,
+    "ended_at": "2026-11-04T04:08:38.494516965Z",
+    "generation": "76",
+    "node_incarnation": "01a1a495-e051-7b0c-9e12-a61e03dc7619",
+    "node_role": "node",
+    "serving": false,
+    "serving_read_ok": false,
+    "started_at": "2026-11-04T04:08:38.41115832Z",
+    "table_sha256": "b09eba9a3798f847c1eb8acc46e3e3de16cf5b7c7eb11609ef3d954baef20721"
+  },
+  "adjacent_retained_qualified_reads": [
+    {
+      "index": 46,
+      "name": "native dual MTU 1280 D-146 clamp evidence",
+      "rules_started_at": "2026-11-04T04:08:25.8519749Z",
+      "rules_ended_at": "2026-11-04T04:08:25.937491602Z",
+      "accepted_observation": {
+        "reasons": [],
+        "report_id": "01a1a4be-40e4-7b19-9672-950453466051",
+        "forwarding": true,
+        "generation": "76",
+        "received_at": "2026-11-04T04:08:14.316638+00:00"
+      }
+    },
+    {
+      "index": 59,
+      "name": "native ipv4 MTU 1280 D-146 clamp evidence",
+      "rules_started_at": "2026-11-04T04:08:55.890524775Z",
+      "rules_ended_at": "2026-11-04T04:08:55.973263641Z",
+      "accepted_observation": {
+        "reasons": [],
+        "report_id": "01a1a4be-b61d-7e9c-af54-51bb7132d312",
+        "forwarding": true,
+        "generation": "76",
+        "received_at": "2026-11-04T04:08:44.323911+00:00"
+      }
+    }
+  ],
+  "failed_condition_determined": false,
+  "reason": "The failed combined SELECT retains no row and no snapshot of the node/latest-current-observation inputs. Adjacent successful reads are at other times and do not establish absence of intervening reports, generation changes or forwarding reasons. No original conjunct can be identified conclusively; the new later-read diagnostic cannot retroactively supply it."
+}

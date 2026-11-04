@@ -1,0 +1,248 @@
+{
+  "run_id": "328ab9e0-7ff4-495a-81c1-410ae8a7d876",
+  "explicit_restart": {
+    "agent_budget_seconds": 15,
+    "agent_stop": {
+      "container_state_at_read": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-11-04T10:31:10.421873078Z",
+        "FinishedAt": "2026-11-04T10:44:23.338995874Z"
+      },
+      "cooperative_exit": true,
+      "identity_before_stop": {
+        "available": true,
+        "captured_at": "2026-11-04T10:44:22.84683622Z",
+        "launch_id": "ae843218-c09d-4934-85f2-48682ff9bed0",
+        "pid": 137662,
+        "start_ticks": "11207690"
+      },
+      "parent_identity_matched": true,
+      "parent_wait_available": true,
+      "parent_wait_receipt": {
+        "id": "ae843218-c09d-4934-85f2-48682ff9bed0",
+        "pid": 137662,
+        "start_ticks": "11207690",
+        "started_at": "2026-11-04T10:37:14.45263947Z",
+        "wait_observed_at": "2026-11-04T10:44:22.949122106Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "scope": "Actual agent exit from matching parent wait receipt; container exit is shutdown-handler completion only; sigkill sidecar is an attempted escalation"
+    },
+    "before": {
+      "lease_id": "c3b1d424-8c95-47ad-8e78-820c2365e0db",
+      "issued_at": "2026-11-04T10:44:18.942367355Z",
+      "expires_at": "2026-11-04T10:45:18.942367355Z",
+      "generation": "27",
+      "max_offline_seconds": 60,
+      "member_count": 2,
+      "source": "",
+      "mono_sent_ns": "112501392036360",
+      "deadline_mono_ns": "112561392036360",
+      "anchor": {
+        "mono_ns": "112501392036360",
+        "server_unix_ns": "1793789058942367355",
+        "wall_unix_ns": "1793789058940659734",
+        "trusted": 1
+      }
+    },
+    "before_available": true,
+    "container_grace_seconds": 25,
+    "restart_duration_ns": "655181937",
+    "run_id": "328ab9e0-7ff4-495a-81c1-410ae8a7d876",
+    "scope": "Docker stop/start command brackets; stopped SQLite snapshot adds measured downtime. Same boot, not OS reboot or exact SIGTERM/exit timestamps.",
+    "start_completed": "2026-11-04T10:44:23.526078071Z",
+    "start_ok": true,
+    "start_requested": "2026-11-04T10:44:23.446471094Z",
+    "stop_completed": "2026-11-04T10:44:23.364754301Z",
+    "stop_duration_ns": "493858187",
+    "stop_ok": true,
+    "stop_started": "2026-11-04T10:44:22.870896133Z",
+    "stopped": {
+      "lease_id": "c3b1d424-8c95-47ad-8e78-820c2365e0db",
+      "issued_at": "2026-11-04T10:44:18.942367355Z",
+      "expires_at": "2026-11-04T10:45:18.942367355Z",
+      "generation": "27",
+      "max_offline_seconds": 60,
+      "member_count": 2,
+      "source": "",
+      "mono_sent_ns": "112501392036360",
+      "deadline_mono_ns": "112561392036360",
+      "anchor": {
+        "mono_ns": "112501392036360",
+        "server_unix_ns": "1793789058942367355",
+        "wall_unix_ns": "1793789058940659734",
+        "trusted": 1
+      }
+    },
+    "stopped_available": true,
+    "stopped_snapshot_duration_ns": "81716769",
+    "stored_lease_survived_stop": true
+  },
+  "other_restart_receipts": [
+    {
+      "path": "populated-holds.json",
+      "pointer": "/attempts/0/restart",
+      "receipt": {
+        "end": "2026-11-04T10:35:33.356753862Z",
+        "ok": true,
+        "start": "2026-11-04T10:35:32.882291774Z"
+      }
+    },
+    {
+      "path": "populated-holds.json",
+      "pointer": "/attempts/2/restart",
+      "receipt": {
+        "end": "2026-11-04T10:37:14.698729136Z",
+        "ok": true,
+        "start": "2026-11-04T10:37:14.22259438Z"
+      }
+    }
+  ],
+  "agent_exit_receipts": [
+    {
+      "receipt": {
+        "id": "5e69564d-806c-4b10-ad3b-8cb68bc24f05",
+        "pid": 955,
+        "start_ticks": "11250625",
+        "started_at": "2026-11-04T10:44:23.804045096Z",
+        "wait_observed_at": "2026-11-04T10:50:38.317805749Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sources": [
+        {
+          "path": "identity-freeze.json",
+          "pointer": "/agent_stop"
+        }
+      ]
+    },
+    {
+      "receipt": {
+        "id": "ae843218-c09d-4934-85f2-48682ff9bed0",
+        "pid": 137662,
+        "start_ticks": "11207690",
+        "started_at": "2026-11-04T10:37:14.45263947Z",
+        "wait_observed_at": "2026-11-04T10:44:22.949122106Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sources": [
+        {
+          "path": "restart-lifecycle.json",
+          "pointer": "/agent_stop"
+        }
+      ]
+    }
+  ],
+  "source_boot_and_retention_lines": [
+    {
+      "path": "agent.log.txt",
+      "line": 1,
+      "text": "time=2026-11-04T10:31:15.956Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=111718407448470 generation=0"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 2,
+      "text": "time=2026-11-04T10:31:15.971Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=111718422943306 succeeded=true"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 126,
+      "text": "time=2026-11-04T10:37:14.474Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=112076925918573 generation=16"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 127,
+      "text": "time=2026-11-04T10:37:14.500Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=112076951598368 succeeded=true"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 209,
+      "text": "time=2026-11-04T10:44:22.942Z level=INFO msg=\"serving rules retained for restart\" generation=27 policy_expires_mono_ns=112561392036360 next_binding_expiry_mono_ns=112561392036360"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 210,
+      "text": "time=2026-11-04T10:44:23.847Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=112506298550723 generation=27"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 211,
+      "text": "time=2026-11-04T10:44:23.887Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=112506338771934 succeeded=true"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 321,
+      "text": "time=2026-11-04T10:50:38.310Z level=INFO msg=\"serving rules retained for restart\" generation=35 policy_expires_mono_ns=112933308720655 next_binding_expiry_mono_ns=112933308720655"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 322,
+      "text": "time=2026-11-04T10:50:40.141Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=112882593049176 generation=35"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 323,
+      "text": "time=2026-11-04T10:50:40.186Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=112882637627073 succeeded=true"
+    }
+  ],
+  "watchdog_lines": [
+    {
+      "path": "watchdog.log.txt",
+      "line": 1,
+      "text": "{\"time\":\"2026-11-04T10:31:15.872976455Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":111718324329464,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+    },
+    {
+      "path": "watchdog.log.txt",
+      "line": 2,
+      "text": "{\"time\":\"2026-11-04T10:31:15.873056515Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":111718324432269,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+    },
+    {
+      "path": "watchdog.log.txt",
+      "line": 3,
+      "text": "{\"time\":\"2026-11-04T10:31:15.889317642Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":111718340691453,\"succeeded\":true}"
+    },
+    {
+      "path": "watchdog.log.txt",
+      "line": 4,
+      "text": "{\"time\":\"2026-11-04T10:48:25.172689099Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"policy_expired\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":112747624051940,\"heartbeat_mono_ns\":112744586193688,\"policy_expires_mono_ns\":112747257319773,\"generation\":32,\"serving\":true,\"baseline_ok\":true}"
+    },
+    {
+      "path": "watchdog.log.txt",
+      "line": 5,
+      "text": "{\"time\":\"2026-11-04T10:48:25.172886458Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"policy_expired\",\"mono_ns\":112747624262138,\"heartbeat_mono_ns\":112744586193688,\"policy_expires_mono_ns\":112747257319773,\"generation\":32}"
+    },
+    {
+      "path": "watchdog.log.txt",
+      "line": 6,
+      "text": "{\"time\":\"2026-11-04T10:48:25.213570736Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"policy_expired\",\"mono_ns\":112747664943413,\"succeeded\":true}"
+    }
+  ],
+  "baseline_unverified_unique": 0,
+  "generation_mismatch_unique": 0,
+  "scope": "All retained restart/parent-wait receipts and source-agent boot lines. Container PID1 exits and clone teardown are separate from agent exit evidence. Watchdog retaining passes do not log decisions; absence is not proof of a forced D-156 interleaving.",
+  "identity_freeze_restart": {
+    "source": "identity-freeze.json",
+    "started_at": "2026-11-04T10:50:38.121963147Z",
+    "completed_at": "2026-11-04T10:50:39.816546237Z",
+    "fixture_duration_ns": "1694583093",
+    "stored_lease_survived_restart": true,
+    "container_stop_available": true,
+    "owner": "ENR-02 / ENR-03; this is the consumer latch observation only"
+  }
+}

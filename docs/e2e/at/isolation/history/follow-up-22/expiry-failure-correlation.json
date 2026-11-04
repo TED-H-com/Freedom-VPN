@@ -1,0 +1,5862 @@
+{
+  "run_id": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
+  "status": "pass",
+  "owner": null,
+  "premise": "Fresh agent baseline/heartbeat rows and watchdog reason logs are retained. A generation-0 read alone does not name a writer; historical follow-up 9 remains unattributed.",
+  "producer_sources": {
+    "baseline": 224,
+    "renewal": 107,
+    "heartbeat": 4803,
+    "apply": 100,
+    "live": 3524,
+    "blocked_audit": 100
+  },
+  "baseline_rows": [
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95660863424353",
+        "wall": "2026-11-04T06:03:38.412047731Z",
+        "mono_after_ns": "95660863424522"
+      },
+      "baseline": {
+        "cause": "boot_unverified",
+        "start_ns": "95660833807963",
+        "end_ns": "95660863374882",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "3",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95661082932656",
+        "wall": "2026-11-04T06:03:38.631556018Z",
+        "mono_after_ns": "95661082932822"
+      },
+      "lease": {
+        "lease_id": "9df02685-f007-47bc-868a-44dc8b627dce",
+        "generation": "1",
+        "issued_at": "2026-11-04T06:03:38.462732517Z",
+        "expires_at": "2026-11-04T06:04:38.462732517Z",
+        "request_mono_ns": "95660910470398",
+        "node_deadline_ns": "95720910470398",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "not_published",
+        "start_ns": "95661062318462",
+        "end_ns": "95661082914989",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "6",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95661967418310",
+        "wall": "2026-11-04T06:03:39.516041706Z",
+        "mono_after_ns": "95661967418503"
+      },
+      "lease": {
+        "lease_id": "e1f2df6b-8d4d-4caa-918d-d2d33eb88460",
+        "generation": "1",
+        "issued_at": "2026-11-04T06:03:39.462154403Z",
+        "expires_at": "2026-11-04T06:04:39.462154403Z",
+        "request_mono_ns": "95661911219800",
+        "node_deadline_ns": "95721911219800",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "not_published",
+        "start_ns": "95661945638230",
+        "end_ns": "95661967399386",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "8",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95663021374544",
+        "wall": "2026-11-04T06:03:40.569997919Z",
+        "mono_after_ns": "95663021374709"
+      },
+      "lease": {
+        "lease_id": "e1f2df6b-8d4d-4caa-918d-d2d33eb88460",
+        "generation": "1",
+        "issued_at": "2026-11-04T06:03:39.462154403Z",
+        "expires_at": "2026-11-04T06:04:39.462154403Z",
+        "request_mono_ns": "95661911219800",
+        "node_deadline_ns": "95721911219800",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "not_published",
+        "start_ns": "95662995345212",
+        "end_ns": "95663021356417",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "11",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95663978142077",
+        "wall": "2026-11-04T06:03:41.526765492Z",
+        "mono_after_ns": "95663978142306"
+      },
+      "lease": {
+        "lease_id": "d816cc90-7705-43c1-b379-1bc9e53722de",
+        "generation": "2",
+        "issued_at": "2026-11-04T06:03:41.463281843Z",
+        "expires_at": "2026-11-04T06:04:41.463281843Z",
+        "request_mono_ns": "95663912178114",
+        "node_deadline_ns": "95723912178114",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95663943813304",
+        "end_ns": "95663978119748",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "22",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95666062068975",
+        "wall": "2026-11-04T06:03:43.610692375Z",
+        "mono_after_ns": "95666062069158"
+      },
+      "lease": {
+        "lease_id": "95f295a6-3d49-4266-9d50-7dc33cadd7e9",
+        "generation": "3",
+        "issued_at": "2026-11-04T06:03:42.545590152Z",
+        "expires_at": "2026-11-04T06:04:42.545590152Z",
+        "request_mono_ns": "95664995167226",
+        "node_deadline_ns": "95724995167226",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95666029398835",
+        "end_ns": "95666062044406",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "23",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95666090730781",
+        "wall": "2026-11-04T06:03:43.639354158Z",
+        "mono_after_ns": "95666090730957"
+      },
+      "lease": {
+        "lease_id": "95f295a6-3d49-4266-9d50-7dc33cadd7e9",
+        "generation": "3",
+        "issued_at": "2026-11-04T06:03:42.545590152Z",
+        "expires_at": "2026-11-04T06:04:42.545590152Z",
+        "request_mono_ns": "95664995167226",
+        "node_deadline_ns": "95724995167226",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95666064902030",
+        "end_ns": "95666090702752",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "24",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95666135279510",
+        "wall": "2026-11-04T06:03:43.683903011Z",
+        "mono_after_ns": "95666135279842"
+      },
+      "lease": {
+        "lease_id": "95f295a6-3d49-4266-9d50-7dc33cadd7e9",
+        "generation": "3",
+        "issued_at": "2026-11-04T06:03:42.545590152Z",
+        "expires_at": "2026-11-04T06:04:42.545590152Z",
+        "request_mono_ns": "95664995167226",
+        "node_deadline_ns": "95724995167226",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95666106781451",
+        "end_ns": "95666135235401",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "41",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95668096045195",
+        "wall": "2026-11-04T06:03:45.644668624Z",
+        "mono_after_ns": "95668096045416"
+      },
+      "lease": {
+        "lease_id": "0f6074f8-e5d4-4763-a2c2-1415a299f723",
+        "generation": "5",
+        "issued_at": "2026-11-04T06:03:43.696409357Z",
+        "expires_at": "2026-11-04T06:04:43.696409357Z",
+        "request_mono_ns": "95666140066073",
+        "node_deadline_ns": "95726140066073",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95668059518009",
+        "end_ns": "95668095992793",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "42",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95668124319279",
+        "wall": "2026-11-04T06:03:45.672942747Z",
+        "mono_after_ns": "95668124319674"
+      },
+      "lease": {
+        "lease_id": "0f6074f8-e5d4-4763-a2c2-1415a299f723",
+        "generation": "5",
+        "issued_at": "2026-11-04T06:03:43.696409357Z",
+        "expires_at": "2026-11-04T06:04:43.696409357Z",
+        "request_mono_ns": "95666140066073",
+        "node_deadline_ns": "95726140066073",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95668100299297",
+        "end_ns": "95668124284203",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "43",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95668166170639",
+        "wall": "2026-11-04T06:03:45.714794115Z",
+        "mono_after_ns": "95668166170938"
+      },
+      "lease": {
+        "lease_id": "0f6074f8-e5d4-4763-a2c2-1415a299f723",
+        "generation": "5",
+        "issued_at": "2026-11-04T06:03:43.696409357Z",
+        "expires_at": "2026-11-04T06:04:43.696409357Z",
+        "request_mono_ns": "95666140066073",
+        "node_deadline_ns": "95726140066073",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95668140524267",
+        "end_ns": "95668166140905",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "53",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95669070846486",
+        "wall": "2026-11-04T06:03:46.619469913Z",
+        "mono_after_ns": "95669070846733"
+      },
+      "lease": {
+        "lease_id": "9b0cbdd7-9041-4622-9e40-eb29dc983539",
+        "generation": "6",
+        "issued_at": "2026-11-04T06:03:45.718803387Z",
+        "expires_at": "2026-11-04T06:04:45.718803387Z",
+        "request_mono_ns": "95668167546175",
+        "node_deadline_ns": "95728167546175",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95669034056942",
+        "end_ns": "95669070803721",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "54",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95669097726164",
+        "wall": "2026-11-04T06:03:46.646349607Z",
+        "mono_after_ns": "95669097726696"
+      },
+      "lease": {
+        "lease_id": "9b0cbdd7-9041-4622-9e40-eb29dc983539",
+        "generation": "6",
+        "issued_at": "2026-11-04T06:03:45.718803387Z",
+        "expires_at": "2026-11-04T06:04:45.718803387Z",
+        "request_mono_ns": "95668167546175",
+        "node_deadline_ns": "95728167546175",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95669074345221",
+        "end_ns": "95669097690294",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "55",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95669145068997",
+        "wall": "2026-11-04T06:03:46.69369247Z",
+        "mono_after_ns": "95669145069295"
+      },
+      "lease": {
+        "lease_id": "9b0cbdd7-9041-4622-9e40-eb29dc983539",
+        "generation": "6",
+        "issued_at": "2026-11-04T06:03:45.718803387Z",
+        "expires_at": "2026-11-04T06:04:45.718803387Z",
+        "request_mono_ns": "95668167546175",
+        "node_deadline_ns": "95728167546175",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95669113832417",
+        "end_ns": "95669145032349",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "163",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95684070652335",
+        "wall": "2026-11-04T06:04:01.61927575Z",
+        "mono_after_ns": "95684070652542"
+      },
+      "lease": {
+        "lease_id": "d501a3d8-7a17-4958-89d4-5b5829bb2168",
+        "generation": "7",
+        "issued_at": "2026-11-04T06:03:46.69811722Z",
+        "expires_at": "2026-11-04T06:04:46.69811722Z",
+        "request_mono_ns": "95669146654261",
+        "node_deadline_ns": "95729146654261",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95684040824855",
+        "end_ns": "95684070618145",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "164",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95684100852092",
+        "wall": "2026-11-04T06:04:01.649475545Z",
+        "mono_after_ns": "95684100852375"
+      },
+      "lease": {
+        "lease_id": "d501a3d8-7a17-4958-89d4-5b5829bb2168",
+        "generation": "7",
+        "issued_at": "2026-11-04T06:03:46.69811722Z",
+        "expires_at": "2026-11-04T06:04:46.69811722Z",
+        "request_mono_ns": "95669146654261",
+        "node_deadline_ns": "95729146654261",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95684074938936",
+        "end_ns": "95684100820527",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "165",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95684144867545",
+        "wall": "2026-11-04T06:04:01.693491054Z",
+        "mono_after_ns": "95684144867876"
+      },
+      "lease": {
+        "lease_id": "d501a3d8-7a17-4958-89d4-5b5829bb2168",
+        "generation": "7",
+        "issued_at": "2026-11-04T06:03:46.69811722Z",
+        "expires_at": "2026-11-04T06:04:46.69811722Z",
+        "request_mono_ns": "95669146654261",
+        "node_deadline_ns": "95729146654261",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95684117613683",
+        "end_ns": "95684144843483",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "175",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95685092110984",
+        "wall": "2026-11-04T06:04:02.640734352Z",
+        "mono_after_ns": "95685092111169"
+      },
+      "lease": {
+        "lease_id": "28fb825a-e11c-4e9e-a173-281566a78fcb",
+        "generation": "9",
+        "issued_at": "2026-11-04T06:04:01.697065882Z",
+        "expires_at": "2026-11-04T06:05:01.697065882Z",
+        "request_mono_ns": "95684146037900",
+        "node_deadline_ns": "95744146037900",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95685050861506",
+        "end_ns": "95685092083709",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "176",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95685127692022",
+        "wall": "2026-11-04T06:04:02.676315397Z",
+        "mono_after_ns": "95685127692212"
+      },
+      "lease": {
+        "lease_id": "28fb825a-e11c-4e9e-a173-281566a78fcb",
+        "generation": "9",
+        "issued_at": "2026-11-04T06:04:01.697065882Z",
+        "expires_at": "2026-11-04T06:05:01.697065882Z",
+        "request_mono_ns": "95684146037900",
+        "node_deadline_ns": "95744146037900",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95685095881801",
+        "end_ns": "95685127662792",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "177",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95685168693764",
+        "wall": "2026-11-04T06:04:02.717317225Z",
+        "mono_after_ns": "95685168694038"
+      },
+      "lease": {
+        "lease_id": "28fb825a-e11c-4e9e-a173-281566a78fcb",
+        "generation": "9",
+        "issued_at": "2026-11-04T06:04:01.697065882Z",
+        "expires_at": "2026-11-04T06:05:01.697065882Z",
+        "request_mono_ns": "95684146037900",
+        "node_deadline_ns": "95744146037900",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95685144894256",
+        "end_ns": "95685168660174",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "278",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95699084341548",
+        "wall": "2026-11-04T06:04:16.632965021Z",
+        "mono_after_ns": "95699084341844"
+      },
+      "lease": {
+        "lease_id": "4c5a802f-7bce-4f19-81f4-1f61c2ca902e",
+        "generation": "10",
+        "issued_at": "2026-11-04T06:04:02.721670493Z",
+        "expires_at": "2026-11-04T06:05:02.721670493Z",
+        "request_mono_ns": "95685170149236",
+        "node_deadline_ns": "95745170149236",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95699051921516",
+        "end_ns": "95699084306426",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "279",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95699114947257",
+        "wall": "2026-11-04T06:04:16.66357068Z",
+        "mono_after_ns": "95699114947482"
+      },
+      "lease": {
+        "lease_id": "4c5a802f-7bce-4f19-81f4-1f61c2ca902e",
+        "generation": "10",
+        "issued_at": "2026-11-04T06:04:02.721670493Z",
+        "expires_at": "2026-11-04T06:05:02.721670493Z",
+        "request_mono_ns": "95685170149236",
+        "node_deadline_ns": "95745170149236",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95699088326123",
+        "end_ns": "95699114919545",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "280",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95699152410545",
+        "wall": "2026-11-04T06:04:16.701034007Z",
+        "mono_after_ns": "95699152410812"
+      },
+      "lease": {
+        "lease_id": "4c5a802f-7bce-4f19-81f4-1f61c2ca902e",
+        "generation": "10",
+        "issued_at": "2026-11-04T06:04:02.721670493Z",
+        "expires_at": "2026-11-04T06:05:02.721670493Z",
+        "request_mono_ns": "95685170149236",
+        "node_deadline_ns": "95745170149236",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95699129829123",
+        "end_ns": "95699152389093",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "290",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95700087801392",
+        "wall": "2026-11-04T06:04:17.636424964Z",
+        "mono_after_ns": "95700087801769"
+      },
+      "lease": {
+        "lease_id": "5aa35b10-bda2-4c61-b420-4e55a8d4ce97",
+        "generation": "11",
+        "issued_at": "2026-11-04T06:04:16.70446749Z",
+        "expires_at": "2026-11-04T06:05:16.70446749Z",
+        "request_mono_ns": "95699153815387",
+        "node_deadline_ns": "95759153815387",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95700054539767",
+        "end_ns": "95700087768594",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "291",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95700118079052",
+        "wall": "2026-11-04T06:04:17.666702415Z",
+        "mono_after_ns": "95700118079262"
+      },
+      "lease": {
+        "lease_id": "5aa35b10-bda2-4c61-b420-4e55a8d4ce97",
+        "generation": "11",
+        "issued_at": "2026-11-04T06:04:16.70446749Z",
+        "expires_at": "2026-11-04T06:05:16.70446749Z",
+        "request_mono_ns": "95699153815387",
+        "node_deadline_ns": "95759153815387",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95700091581007",
+        "end_ns": "95700118059393",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "292",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95700156673357",
+        "wall": "2026-11-04T06:04:17.705296731Z",
+        "mono_after_ns": "95700156673526"
+      },
+      "lease": {
+        "lease_id": "5aa35b10-bda2-4c61-b420-4e55a8d4ce97",
+        "generation": "11",
+        "issued_at": "2026-11-04T06:04:16.70446749Z",
+        "expires_at": "2026-11-04T06:05:16.70446749Z",
+        "request_mono_ns": "95699153815387",
+        "node_deadline_ns": "95759153815387",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95700133090808",
+        "end_ns": "95700156648910",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "302",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95701090433998",
+        "wall": "2026-11-04T06:04:18.639057397Z",
+        "mono_after_ns": "95701090434199"
+      },
+      "lease": {
+        "lease_id": "81596ba9-5ab0-4da8-bdbb-aa08b35d1b11",
+        "generation": "12",
+        "issued_at": "2026-11-04T06:04:17.708941348Z",
+        "expires_at": "2026-11-04T06:05:17.708941348Z",
+        "request_mono_ns": "95700158289260",
+        "node_deadline_ns": "95760158289260",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95701052676081",
+        "end_ns": "95701090395918",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "303",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95701120492738",
+        "wall": "2026-11-04T06:04:18.669116109Z",
+        "mono_after_ns": "95701120492892"
+      },
+      "lease": {
+        "lease_id": "81596ba9-5ab0-4da8-bdbb-aa08b35d1b11",
+        "generation": "12",
+        "issued_at": "2026-11-04T06:04:17.708941348Z",
+        "expires_at": "2026-11-04T06:05:17.708941348Z",
+        "request_mono_ns": "95700158289260",
+        "node_deadline_ns": "95760158289260",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95701093994093",
+        "end_ns": "95701120469731",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "304",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95701161754873",
+        "wall": "2026-11-04T06:04:18.710378319Z",
+        "mono_after_ns": "95701161755139"
+      },
+      "lease": {
+        "lease_id": "81596ba9-5ab0-4da8-bdbb-aa08b35d1b11",
+        "generation": "12",
+        "issued_at": "2026-11-04T06:04:17.708941348Z",
+        "expires_at": "2026-11-04T06:05:17.708941348Z",
+        "request_mono_ns": "95700158289260",
+        "node_deadline_ns": "95760158289260",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95701136729913",
+        "end_ns": "95701161725555",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "398",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95714106734623",
+        "wall": "2026-11-04T06:04:31.655358004Z",
+        "mono_after_ns": "95714106734785"
+      },
+      "lease": {
+        "lease_id": "6fda2a35-d1f7-42c3-a024-39ea7573382b",
+        "generation": "13",
+        "issued_at": "2026-11-04T06:04:18.713572294Z",
+        "expires_at": "2026-11-04T06:05:18.713572294Z",
+        "request_mono_ns": "95701163008946",
+        "node_deadline_ns": "95761163008946",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95714061404418",
+        "end_ns": "95714106705905",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "399",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95714135720004",
+        "wall": "2026-11-04T06:04:31.68434341Z",
+        "mono_after_ns": "95714135720268"
+      },
+      "lease": {
+        "lease_id": "6fda2a35-d1f7-42c3-a024-39ea7573382b",
+        "generation": "13",
+        "issued_at": "2026-11-04T06:04:18.713572294Z",
+        "expires_at": "2026-11-04T06:05:18.713572294Z",
+        "request_mono_ns": "95701163008946",
+        "node_deadline_ns": "95761163008946",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95714110231077",
+        "end_ns": "95714135692378",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "400",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95714174746871",
+        "wall": "2026-11-04T06:04:31.723370281Z",
+        "mono_after_ns": "95714174747105"
+      },
+      "lease": {
+        "lease_id": "6fda2a35-d1f7-42c3-a024-39ea7573382b",
+        "generation": "13",
+        "issued_at": "2026-11-04T06:04:18.713572294Z",
+        "expires_at": "2026-11-04T06:05:18.713572294Z",
+        "request_mono_ns": "95701163008946",
+        "node_deadline_ns": "95761163008946",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95714150422469",
+        "end_ns": "95714174712822",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "876",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95781142478361",
+        "wall": "2026-11-04T06:05:38.691101759Z",
+        "mono_after_ns": "95781142478582"
+      },
+      "lease": {
+        "lease_id": "be17de96-873a-483f-b726-fe5a4fa7754e",
+        "generation": "14",
+        "issued_at": "2026-11-04T06:05:31.655340498Z",
+        "expires_at": "2026-11-04T06:06:31.655340498Z",
+        "request_mono_ns": "95774103937667",
+        "node_deadline_ns": "95834103937667",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95781102257461",
+        "end_ns": "95781142454697",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "877",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95781175085102",
+        "wall": "2026-11-04T06:05:38.723708472Z",
+        "mono_after_ns": "95781175085255"
+      },
+      "lease": {
+        "lease_id": "be17de96-873a-483f-b726-fe5a4fa7754e",
+        "generation": "14",
+        "issued_at": "2026-11-04T06:05:31.655340498Z",
+        "expires_at": "2026-11-04T06:06:31.655340498Z",
+        "request_mono_ns": "95774103937667",
+        "node_deadline_ns": "95834103937667",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95781145659516",
+        "end_ns": "95781175062783",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "878",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95781224565831",
+        "wall": "2026-11-04T06:05:38.773189273Z",
+        "mono_after_ns": "95781224566081"
+      },
+      "lease": {
+        "lease_id": "be17de96-873a-483f-b726-fe5a4fa7754e",
+        "generation": "14",
+        "issued_at": "2026-11-04T06:05:31.655340498Z",
+        "expires_at": "2026-11-04T06:06:31.655340498Z",
+        "request_mono_ns": "95774103937667",
+        "node_deadline_ns": "95834103937667",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95781191636692",
+        "end_ns": "95781224544814",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1516",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95871196368965",
+        "wall": "2026-11-04T06:07:08.744992391Z",
+        "mono_after_ns": "95871196369182"
+      },
+      "lease": {
+        "lease_id": "2c9634ef-ff0b-4830-99ba-257c00da1d9d",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:08.70028679Z",
+        "expires_at": "2026-11-04T06:08:08.70028679Z",
+        "request_mono_ns": "95871150165668",
+        "node_deadline_ns": "95931150165668",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "awaiting_member_grants",
+        "start_ns": "95871155765448",
+        "end_ns": "95871196338794",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1517",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95871225836545",
+        "wall": "2026-11-04T06:07:08.774459955Z",
+        "mono_after_ns": "95871225836770"
+      },
+      "lease": {
+        "lease_id": "2c9634ef-ff0b-4830-99ba-257c00da1d9d",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:08.70028679Z",
+        "expires_at": "2026-11-04T06:08:08.70028679Z",
+        "request_mono_ns": "95871150165668",
+        "node_deadline_ns": "95931150165668",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "awaiting_member_grants",
+        "start_ns": "95871199676814",
+        "end_ns": "95871225820255",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1518",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95871272313483",
+        "wall": "2026-11-04T06:07:08.820936861Z",
+        "mono_after_ns": "95871272313664"
+      },
+      "lease": {
+        "lease_id": "2c9634ef-ff0b-4830-99ba-257c00da1d9d",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:08.70028679Z",
+        "expires_at": "2026-11-04T06:08:08.70028679Z",
+        "request_mono_ns": "95871150165668",
+        "node_deadline_ns": "95931150165668",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "awaiting_member_grants",
+        "start_ns": "95871240766208",
+        "end_ns": "95871272295052",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1522",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95872203336151",
+        "wall": "2026-11-04T06:07:09.751959535Z",
+        "mono_after_ns": "95872203336343"
+      },
+      "lease": {
+        "lease_id": "df5b3138-fc67-4588-959c-44c01a677cee",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:09.702392122Z",
+        "expires_at": "2026-11-04T06:08:09.702392122Z",
+        "request_mono_ns": "95872151232022",
+        "node_deadline_ns": "95932151232022",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "awaiting_member_grants",
+        "start_ns": "95872178282582",
+        "end_ns": "95872203314003",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1525",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95873275505145",
+        "wall": "2026-11-04T06:07:10.824128555Z",
+        "mono_after_ns": "95873275505353"
+      },
+      "lease": {
+        "lease_id": "df5b3138-fc67-4588-959c-44c01a677cee",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:09.702392122Z",
+        "expires_at": "2026-11-04T06:08:09.702392122Z",
+        "request_mono_ns": "95872151232022",
+        "node_deadline_ns": "95932151232022",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "awaiting_member_grants",
+        "start_ns": "95873247715575",
+        "end_ns": "95873275485318",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1756",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95906252534460",
+        "wall": "2026-11-04T06:07:43.801157896Z",
+        "mono_after_ns": "95906252534696"
+      },
+      "lease": {
+        "lease_id": "29073aae-06a3-4005-824a-e792afca125f",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:42.759469133Z",
+        "expires_at": "2026-11-04T06:08:42.759469133Z",
+        "request_mono_ns": "95905208519898",
+        "node_deadline_ns": "95965208519898",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95906215118574",
+        "end_ns": "95906252507810",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1757",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95906279055332",
+        "wall": "2026-11-04T06:07:43.827678758Z",
+        "mono_after_ns": "95906279055563"
+      },
+      "lease": {
+        "lease_id": "29073aae-06a3-4005-824a-e792afca125f",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:42.759469133Z",
+        "expires_at": "2026-11-04T06:08:42.759469133Z",
+        "request_mono_ns": "95905208519898",
+        "node_deadline_ns": "95965208519898",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95906256335457",
+        "end_ns": "95906279030095",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1758",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95906328570706",
+        "wall": "2026-11-04T06:07:43.877194053Z",
+        "mono_after_ns": "95906328570835"
+      },
+      "lease": {
+        "lease_id": "29073aae-06a3-4005-824a-e792afca125f",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:42.759469133Z",
+        "expires_at": "2026-11-04T06:08:42.759469133Z",
+        "request_mono_ns": "95905208519898",
+        "node_deadline_ns": "95965208519898",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95906296311990",
+        "end_ns": "95906328548329",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1763",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95907231076340",
+        "wall": "2026-11-04T06:07:44.779699754Z",
+        "mono_after_ns": "95907231076561"
+      },
+      "lease": {
+        "lease_id": "29073aae-06a3-4005-824a-e792afca125f",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:42.759469133Z",
+        "expires_at": "2026-11-04T06:08:42.759469133Z",
+        "request_mono_ns": "95905208519898",
+        "node_deadline_ns": "95965208519898",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95907205593359",
+        "end_ns": "95907231059298",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1767",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95908243955829",
+        "wall": "2026-11-04T06:07:45.792579279Z",
+        "mono_after_ns": "95908243956123"
+      },
+      "lease": {
+        "lease_id": "29073aae-06a3-4005-824a-e792afca125f",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:42.759469133Z",
+        "expires_at": "2026-11-04T06:08:42.759469133Z",
+        "request_mono_ns": "95905208519898",
+        "node_deadline_ns": "95965208519898",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95908209227812",
+        "end_ns": "95908243935257",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1771",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95909227998731",
+        "wall": "2026-11-04T06:07:46.776622176Z",
+        "mono_after_ns": "95909227998988"
+      },
+      "lease": {
+        "lease_id": "29073aae-06a3-4005-824a-e792afca125f",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:42.759469133Z",
+        "expires_at": "2026-11-04T06:08:42.759469133Z",
+        "request_mono_ns": "95905208519898",
+        "node_deadline_ns": "95965208519898",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95909199581180",
+        "end_ns": "95909227976772",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1775",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95910239385085",
+        "wall": "2026-11-04T06:07:47.788008509Z",
+        "mono_after_ns": "95910239385332"
+      },
+      "lease": {
+        "lease_id": "29073aae-06a3-4005-824a-e792afca125f",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:42.759469133Z",
+        "expires_at": "2026-11-04T06:08:42.759469133Z",
+        "request_mono_ns": "95905208519898",
+        "node_deadline_ns": "95965208519898",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95910203073010",
+        "end_ns": "95910239356178",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1779",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95911227619521",
+        "wall": "2026-11-04T06:07:48.776242921Z",
+        "mono_after_ns": "95911227619722"
+      },
+      "lease": {
+        "lease_id": "29073aae-06a3-4005-824a-e792afca125f",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:42.759469133Z",
+        "expires_at": "2026-11-04T06:08:42.759469133Z",
+        "request_mono_ns": "95905208519898",
+        "node_deadline_ns": "95965208519898",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95911200366832",
+        "end_ns": "95911227599709",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6f105928-55e1-407b-9b9b-26ab736d997a",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1783",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95912233497557",
+        "wall": "2026-11-04T06:07:49.782121001Z",
+        "mono_after_ns": "95912233497819"
+      },
+      "lease": {
+        "lease_id": "29073aae-06a3-4005-824a-e792afca125f",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:42.759469133Z",
+        "expires_at": "2026-11-04T06:08:42.759469133Z",
+        "request_mono_ns": "95905208519898",
+        "node_deadline_ns": "95965208519898",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "conntrack_blocked",
+        "start_ns": "95912204190766",
+        "end_ns": "95912233457144",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a21f41fc-3f61-453d-a45f-84b824b13778",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95913581575590",
+        "wall": "2026-11-04T06:07:51.130198968Z",
+        "mono_after_ns": "95913581575788"
+      },
+      "lease": {
+        "lease_id": "29073aae-06a3-4005-824a-e792afca125f",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:42.759469133Z",
+        "expires_at": "2026-11-04T06:08:42.759469133Z",
+        "request_mono_ns": "95905208519898",
+        "node_deadline_ns": "95965208519898",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "boot_unverified",
+        "start_ns": "95913560563187",
+        "end_ns": "95913581531996",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a21f41fc-3f61-453d-a45f-84b824b13778",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "3",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95913649198467",
+        "wall": "2026-11-04T06:07:51.197821862Z",
+        "mono_after_ns": "95913649198665"
+      },
+      "lease": {
+        "lease_id": "29073aae-06a3-4005-824a-e792afca125f",
+        "generation": "15",
+        "issued_at": "2026-11-04T06:07:42.759469133Z",
+        "expires_at": "2026-11-04T06:08:42.759469133Z",
+        "request_mono_ns": "95905208519898",
+        "node_deadline_ns": "95965208519898",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95913624930263",
+        "end_ns": "95913649178391",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a21f41fc-3f61-453d-a45f-84b824b13778",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "7",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95914658501449",
+        "wall": "2026-11-04T06:07:52.207124819Z",
+        "mono_after_ns": "95914658501611"
+      },
+      "lease": {
+        "lease_id": "7cb54407-7b81-4c35-8d09-816e538c925d",
+        "generation": "16",
+        "issued_at": "2026-11-04T06:07:52.153730244Z",
+        "expires_at": "2026-11-04T06:08:52.153730244Z",
+        "request_mono_ns": "95914603486202",
+        "node_deadline_ns": "95974603486202",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "awaiting_member_grants",
+        "start_ns": "95914626910508",
+        "end_ns": "95914658478068",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a21f41fc-3f61-453d-a45f-84b824b13778",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "231",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95946700191613",
+        "wall": "2026-11-04T06:08:24.248815031Z",
+        "mono_after_ns": "95946700191852"
+      },
+      "lease": {
+        "lease_id": "674f4f54-91d8-48b1-944d-73106cee221f",
+        "generation": "16",
+        "issued_at": "2026-11-04T06:08:23.212830232Z",
+        "expires_at": "2026-11-04T06:09:23.212830232Z",
+        "request_mono_ns": "95945661568915",
+        "node_deadline_ns": "96005661568915",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95946665471626",
+        "end_ns": "95946700157764",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a21f41fc-3f61-453d-a45f-84b824b13778",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "232",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95946745665465",
+        "wall": "2026-11-04T06:08:24.294288899Z",
+        "mono_after_ns": "95946745665694"
+      },
+      "lease": {
+        "lease_id": "674f4f54-91d8-48b1-944d-73106cee221f",
+        "generation": "16",
+        "issued_at": "2026-11-04T06:08:23.212830232Z",
+        "expires_at": "2026-11-04T06:09:23.212830232Z",
+        "request_mono_ns": "95945661568915",
+        "node_deadline_ns": "96005661568915",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95946703973270",
+        "end_ns": "95946745642366",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a21f41fc-3f61-453d-a45f-84b824b13778",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "233",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95946799711821",
+        "wall": "2026-11-04T06:08:24.34833519Z",
+        "mono_after_ns": "95946799712068"
+      },
+      "lease": {
+        "lease_id": "674f4f54-91d8-48b1-944d-73106cee221f",
+        "generation": "16",
+        "issued_at": "2026-11-04T06:08:23.212830232Z",
+        "expires_at": "2026-11-04T06:09:23.212830232Z",
+        "request_mono_ns": "95945661568915",
+        "node_deadline_ns": "96005661568915",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95946761190095",
+        "end_ns": "95946799692202",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a21f41fc-3f61-453d-a45f-84b824b13778",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "238",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95947703712917",
+        "wall": "2026-11-04T06:08:25.252336382Z",
+        "mono_after_ns": "95947703713198"
+      },
+      "lease": {
+        "lease_id": "674f4f54-91d8-48b1-944d-73106cee221f",
+        "generation": "16",
+        "issued_at": "2026-11-04T06:08:23.212830232Z",
+        "expires_at": "2026-11-04T06:09:23.212830232Z",
+        "request_mono_ns": "95945661568915",
+        "node_deadline_ns": "96005661568915",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95947648836860",
+        "end_ns": "95947703690112",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a21f41fc-3f61-453d-a45f-84b824b13778",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "242",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95948681225431",
+        "wall": "2026-11-04T06:08:26.229848854Z",
+        "mono_after_ns": "95948681225661"
+      },
+      "lease": {
+        "lease_id": "674f4f54-91d8-48b1-944d-73106cee221f",
+        "generation": "16",
+        "issued_at": "2026-11-04T06:08:23.212830232Z",
+        "expires_at": "2026-11-04T06:09:23.212830232Z",
+        "request_mono_ns": "95945661568915",
+        "node_deadline_ns": "96005661568915",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95948656956206",
+        "end_ns": "95948681205205",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a21f41fc-3f61-453d-a45f-84b824b13778",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "246",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95949685154055",
+        "wall": "2026-11-04T06:08:27.2337775Z",
+        "mono_after_ns": "95949685154313"
+      },
+      "lease": {
+        "lease_id": "674f4f54-91d8-48b1-944d-73106cee221f",
+        "generation": "16",
+        "issued_at": "2026-11-04T06:08:23.212830232Z",
+        "expires_at": "2026-11-04T06:09:23.212830232Z",
+        "request_mono_ns": "95945661568915",
+        "node_deadline_ns": "96005661568915",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95949649902811",
+        "end_ns": "95949685131600",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a21f41fc-3f61-453d-a45f-84b824b13778",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "250",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95950677395705",
+        "wall": "2026-11-04T06:08:28.226019092Z",
+        "mono_after_ns": "95950677395879"
+      },
+      "lease": {
+        "lease_id": "674f4f54-91d8-48b1-944d-73106cee221f",
+        "generation": "16",
+        "issued_at": "2026-11-04T06:08:23.212830232Z",
+        "expires_at": "2026-11-04T06:09:23.212830232Z",
+        "request_mono_ns": "95945661568915",
+        "node_deadline_ns": "96005661568915",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95950648967197",
+        "end_ns": "95950677370849",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a21f41fc-3f61-453d-a45f-84b824b13778",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "254",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95951690573802",
+        "wall": "2026-11-04T06:08:29.23919723Z",
+        "mono_after_ns": "95951690574066"
+      },
+      "lease": {
+        "lease_id": "674f4f54-91d8-48b1-944d-73106cee221f",
+        "generation": "16",
+        "issued_at": "2026-11-04T06:08:23.212830232Z",
+        "expires_at": "2026-11-04T06:09:23.212830232Z",
+        "request_mono_ns": "95945661568915",
+        "node_deadline_ns": "96005661568915",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95951659158220",
+        "end_ns": "95951690542719",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a21f41fc-3f61-453d-a45f-84b824b13778",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "478",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95983723482702",
+        "wall": "2026-11-04T06:09:01.272106147Z",
+        "mono_after_ns": "95983723482950"
+      },
+      "lease": {
+        "lease_id": "494184cd-f631-4206-9459-18ee865bc5e4",
+        "generation": "17",
+        "issued_at": "2026-11-04T06:09:00.237168908Z",
+        "expires_at": "2026-11-04T06:10:00.237168908Z",
+        "request_mono_ns": "95982686115131",
+        "node_deadline_ns": "96042686115131",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95983686046384",
+        "end_ns": "95983723444320",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a21f41fc-3f61-453d-a45f-84b824b13778",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "479",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95983752280271",
+        "wall": "2026-11-04T06:09:01.300903695Z",
+        "mono_after_ns": "95983752280486"
+      },
+      "lease": {
+        "lease_id": "494184cd-f631-4206-9459-18ee865bc5e4",
+        "generation": "17",
+        "issued_at": "2026-11-04T06:09:00.237168908Z",
+        "expires_at": "2026-11-04T06:10:00.237168908Z",
+        "request_mono_ns": "95982686115131",
+        "node_deadline_ns": "96042686115131",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95983726904113",
+        "end_ns": "95983752258732",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a21f41fc-3f61-453d-a45f-84b824b13778",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "480",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "95983791729077",
+        "wall": "2026-11-04T06:09:01.340352491Z",
+        "mono_after_ns": "95983791729294"
+      },
+      "lease": {
+        "lease_id": "494184cd-f631-4206-9459-18ee865bc5e4",
+        "generation": "17",
+        "issued_at": "2026-11-04T06:09:00.237168908Z",
+        "expires_at": "2026-11-04T06:10:00.237168908Z",
+        "request_mono_ns": "95982686115131",
+        "node_deadline_ns": "96042686115131",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "95983767613867",
+        "end_ns": "95983791699054",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96014417922480",
+        "wall": "2026-11-04T06:09:31.966545866Z",
+        "mono_after_ns": "96014417922684"
+      },
+      "lease": {
+        "lease_id": "494184cd-f631-4206-9459-18ee865bc5e4",
+        "generation": "17",
+        "issued_at": "2026-11-04T06:09:00.237168908Z",
+        "expires_at": "2026-11-04T06:10:00.237168908Z",
+        "request_mono_ns": "95982686115131",
+        "node_deadline_ns": "96042686115131",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "boot_unverified",
+        "start_ns": "96014392419161",
+        "end_ns": "96014417891938",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "3",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96014482405713",
+        "wall": "2026-11-04T06:09:32.031029111Z",
+        "mono_after_ns": "96014482405916"
+      },
+      "lease": {
+        "lease_id": "494184cd-f631-4206-9459-18ee865bc5e4",
+        "generation": "17",
+        "issued_at": "2026-11-04T06:09:00.237168908Z",
+        "expires_at": "2026-11-04T06:10:00.237168908Z",
+        "request_mono_ns": "95982686115131",
+        "node_deadline_ns": "96042686115131",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96014460966443",
+        "end_ns": "96014482389689",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "7",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96015506878483",
+        "wall": "2026-11-04T06:09:33.055501906Z",
+        "mono_after_ns": "96015506878708"
+      },
+      "lease": {
+        "lease_id": "494184cd-f631-4206-9459-18ee865bc5e4",
+        "generation": "17",
+        "issued_at": "2026-11-04T06:09:00.237168908Z",
+        "expires_at": "2026-11-04T06:10:00.237168908Z",
+        "request_mono_ns": "95982686115131",
+        "node_deadline_ns": "96042686115131",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96015467107483",
+        "end_ns": "96015506860689",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "11",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96016485515558",
+        "wall": "2026-11-04T06:09:34.034138989Z",
+        "mono_after_ns": "96016485515815"
+      },
+      "lease": {
+        "lease_id": "494184cd-f631-4206-9459-18ee865bc5e4",
+        "generation": "17",
+        "issued_at": "2026-11-04T06:09:00.237168908Z",
+        "expires_at": "2026-11-04T06:10:00.237168908Z",
+        "request_mono_ns": "95982686115131",
+        "node_deadline_ns": "96042686115131",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96016460769273",
+        "end_ns": "96016485492888",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "15",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96017501527777",
+        "wall": "2026-11-04T06:09:35.050151245Z",
+        "mono_after_ns": "96017501528076"
+      },
+      "lease": {
+        "lease_id": "494184cd-f631-4206-9459-18ee865bc5e4",
+        "generation": "17",
+        "issued_at": "2026-11-04T06:09:00.237168908Z",
+        "expires_at": "2026-11-04T06:10:00.237168908Z",
+        "request_mono_ns": "95982686115131",
+        "node_deadline_ns": "96042686115131",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96017473133519",
+        "end_ns": "96017501500893",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "19",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96018498187754",
+        "wall": "2026-11-04T06:09:36.0468112Z",
+        "mono_after_ns": "96018498188029"
+      },
+      "lease": {
+        "lease_id": "8fb0c055-d3a8-4fce-bf7b-54a76115acf5",
+        "generation": "18",
+        "issued_at": "2026-11-04T06:09:36.002741429Z",
+        "expires_at": "2026-11-04T06:10:36.002741429Z",
+        "request_mono_ns": "96018451465975",
+        "node_deadline_ns": "96078451465975",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "awaiting_member_grants",
+        "start_ns": "96018475110649",
+        "end_ns": "96018498169243",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "856",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96137609583412",
+        "wall": "2026-11-04T06:11:35.158206952Z",
+        "mono_after_ns": "96137609583770"
+      },
+      "lease": {
+        "lease_id": "80235df5-d9bc-47b3-8330-5a8356a3dfb4",
+        "generation": "18",
+        "issued_at": "2026-11-04T06:11:08.097869568Z",
+        "expires_at": "2026-11-04T06:12:08.097869568Z",
+        "request_mono_ns": "96110547805374",
+        "node_deadline_ns": "96170547805374",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96137567071459",
+        "end_ns": "96137609552551",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "857",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96137638658229",
+        "wall": "2026-11-04T06:11:35.187281587Z",
+        "mono_after_ns": "96137638658390"
+      },
+      "lease": {
+        "lease_id": "80235df5-d9bc-47b3-8330-5a8356a3dfb4",
+        "generation": "18",
+        "issued_at": "2026-11-04T06:11:08.097869568Z",
+        "expires_at": "2026-11-04T06:12:08.097869568Z",
+        "request_mono_ns": "96110547805374",
+        "node_deadline_ns": "96170547805374",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96137613564484",
+        "end_ns": "96137638633602",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "858",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96137682589267",
+        "wall": "2026-11-04T06:11:35.231212654Z",
+        "mono_after_ns": "96137682589443"
+      },
+      "lease": {
+        "lease_id": "80235df5-d9bc-47b3-8330-5a8356a3dfb4",
+        "generation": "18",
+        "issued_at": "2026-11-04T06:11:08.097869568Z",
+        "expires_at": "2026-11-04T06:12:08.097869568Z",
+        "request_mono_ns": "96110547805374",
+        "node_deadline_ns": "96170547805374",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96137654453794",
+        "end_ns": "96137682570767",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2110",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96314706013782",
+        "wall": "2026-11-04T06:14:32.254637185Z",
+        "mono_after_ns": "96314706013978"
+      },
+      "lease": {
+        "lease_id": "c5e2ff08-34f8-4872-b9f3-f1eaf9728e05",
+        "generation": "19",
+        "issued_at": "2026-11-04T06:14:09.203346182Z",
+        "expires_at": "2026-11-04T06:15:09.203346182Z",
+        "request_mono_ns": "96291652063560",
+        "node_deadline_ns": "96351652063560",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96314668135874",
+        "end_ns": "96314705982341",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2111",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96314736478796",
+        "wall": "2026-11-04T06:14:32.285102198Z",
+        "mono_after_ns": "96314736478985"
+      },
+      "lease": {
+        "lease_id": "c5e2ff08-34f8-4872-b9f3-f1eaf9728e05",
+        "generation": "19",
+        "issued_at": "2026-11-04T06:14:09.203346182Z",
+        "expires_at": "2026-11-04T06:15:09.203346182Z",
+        "request_mono_ns": "96291652063560",
+        "node_deadline_ns": "96351652063560",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96314709249776",
+        "end_ns": "96314736461022",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2112",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96314778787668",
+        "wall": "2026-11-04T06:14:32.327411081Z",
+        "mono_after_ns": "96314778787891"
+      },
+      "lease": {
+        "lease_id": "c5e2ff08-34f8-4872-b9f3-f1eaf9728e05",
+        "generation": "19",
+        "issued_at": "2026-11-04T06:14:09.203346182Z",
+        "expires_at": "2026-11-04T06:15:09.203346182Z",
+        "request_mono_ns": "96291652063560",
+        "node_deadline_ns": "96351652063560",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96314752171092",
+        "end_ns": "96314778764023",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2588",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96381746339283",
+        "wall": "2026-11-04T06:15:39.29496272Z",
+        "mono_after_ns": "96381746339529"
+      },
+      "lease": {
+        "lease_id": "246ae22b-d93e-42ee-8b88-eb26e3f2cf44",
+        "generation": "20",
+        "issued_at": "2026-11-04T06:15:36.248156666Z",
+        "expires_at": "2026-11-04T06:16:36.248156666Z",
+        "request_mono_ns": "96378696633267",
+        "node_deadline_ns": "96438696633267",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96381703973561",
+        "end_ns": "96381746313028",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2589",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96381767187129",
+        "wall": "2026-11-04T06:15:39.315810544Z",
+        "mono_after_ns": "96381767187348"
+      },
+      "lease": {
+        "lease_id": "246ae22b-d93e-42ee-8b88-eb26e3f2cf44",
+        "generation": "20",
+        "issued_at": "2026-11-04T06:15:36.248156666Z",
+        "expires_at": "2026-11-04T06:16:36.248156666Z",
+        "request_mono_ns": "96378696633267",
+        "node_deadline_ns": "96438696633267",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96381749484172",
+        "end_ns": "96381767175803",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2590",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96381809504132",
+        "wall": "2026-11-04T06:15:39.358127501Z",
+        "mono_after_ns": "96381809504290"
+      },
+      "lease": {
+        "lease_id": "246ae22b-d93e-42ee-8b88-eb26e3f2cf44",
+        "generation": "20",
+        "issued_at": "2026-11-04T06:15:36.248156666Z",
+        "expires_at": "2026-11-04T06:16:36.248156666Z",
+        "request_mono_ns": "96378696633267",
+        "node_deadline_ns": "96438696633267",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96381782474130",
+        "end_ns": "96381809487217",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2754",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96404755628430",
+        "wall": "2026-11-04T06:16:02.304251844Z",
+        "mono_after_ns": "96404755628638"
+      },
+      "lease": {
+        "lease_id": "d9eee4a4-28e1-459f-be5e-4961183af671",
+        "generation": "22",
+        "issued_at": "2026-11-04T06:15:39.361887582Z",
+        "expires_at": "2026-11-04T06:16:39.361887582Z",
+        "request_mono_ns": "96381810677602",
+        "node_deadline_ns": "96441810677602",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96404719043725",
+        "end_ns": "96404755583109",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2755",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96404782784444",
+        "wall": "2026-11-04T06:16:02.331407814Z",
+        "mono_after_ns": "96404782784603"
+      },
+      "lease": {
+        "lease_id": "d9eee4a4-28e1-459f-be5e-4961183af671",
+        "generation": "22",
+        "issued_at": "2026-11-04T06:15:39.361887582Z",
+        "expires_at": "2026-11-04T06:16:39.361887582Z",
+        "request_mono_ns": "96381810677602",
+        "node_deadline_ns": "96441810677602",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96404759590048",
+        "end_ns": "96404782762269",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2756",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96404823052169",
+        "wall": "2026-11-04T06:16:02.371675579Z",
+        "mono_after_ns": "96404823052391"
+      },
+      "lease": {
+        "lease_id": "d9eee4a4-28e1-459f-be5e-4961183af671",
+        "generation": "22",
+        "issued_at": "2026-11-04T06:15:39.361887582Z",
+        "expires_at": "2026-11-04T06:16:39.361887582Z",
+        "request_mono_ns": "96381810677602",
+        "node_deadline_ns": "96441810677602",
+        "members": 1
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96404798136010",
+        "end_ns": "96404823033887",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2857",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96418767458752",
+        "wall": "2026-11-04T06:16:16.316082125Z",
+        "mono_after_ns": "96418767458908"
+      },
+      "lease": {
+        "lease_id": "9216af30-95a4-4c9a-ba69-ebe14b5d9a1f",
+        "generation": "24",
+        "issued_at": "2026-11-04T06:16:02.37589512Z",
+        "expires_at": "2026-11-04T06:17:02.37589512Z",
+        "request_mono_ns": "96404824439481",
+        "node_deadline_ns": "96464824439481",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "not_published",
+        "start_ns": "96418728955421",
+        "end_ns": "96418767433412",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2858",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96418797461371",
+        "wall": "2026-11-04T06:16:16.346084719Z",
+        "mono_after_ns": "96418797461501"
+      },
+      "lease": {
+        "lease_id": "9216af30-95a4-4c9a-ba69-ebe14b5d9a1f",
+        "generation": "24",
+        "issued_at": "2026-11-04T06:16:02.37589512Z",
+        "expires_at": "2026-11-04T06:17:02.37589512Z",
+        "request_mono_ns": "96404824439481",
+        "node_deadline_ns": "96464824439481",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "not_published",
+        "start_ns": "96418770810224",
+        "end_ns": "96418797437746",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2859",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96418833356624",
+        "wall": "2026-11-04T06:16:16.381980083Z",
+        "mono_after_ns": "96418833356886"
+      },
+      "lease": {
+        "lease_id": "9216af30-95a4-4c9a-ba69-ebe14b5d9a1f",
+        "generation": "24",
+        "issued_at": "2026-11-04T06:16:02.37589512Z",
+        "expires_at": "2026-11-04T06:17:02.37589512Z",
+        "request_mono_ns": "96404824439481",
+        "node_deadline_ns": "96464824439481",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "not_published",
+        "start_ns": "96418811780241",
+        "end_ns": "96418833339128",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2861",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96418880653041",
+        "wall": "2026-11-04T06:16:16.429276416Z",
+        "mono_after_ns": "96418880653205"
+      },
+      "lease": {
+        "lease_id": "c513bb0d-5906-4445-b1ec-c8d853ca133a",
+        "generation": "26",
+        "issued_at": "2026-11-04T06:16:16.385178929Z",
+        "expires_at": "2026-11-04T06:17:16.385178929Z",
+        "request_mono_ns": "96418834421066",
+        "node_deadline_ns": "96478834421066",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "not_published",
+        "start_ns": "96418857583645",
+        "end_ns": "96418880636821",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2865",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96419892565159",
+        "wall": "2026-11-04T06:16:17.441188524Z",
+        "mono_after_ns": "96419892565304"
+      },
+      "lease": {
+        "lease_id": "e25f2af5-fdc3-4282-9a01-eb37d3e5a983",
+        "generation": "26",
+        "issued_at": "2026-11-04T06:16:17.386340175Z",
+        "expires_at": "2026-11-04T06:17:17.386340175Z",
+        "request_mono_ns": "96419835259035",
+        "node_deadline_ns": "96479835259035",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "not_published",
+        "start_ns": "96419870956296",
+        "end_ns": "96419892547661",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2868",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96420967548475",
+        "wall": "2026-11-04T06:16:18.516172057Z",
+        "mono_after_ns": "96420967548864"
+      },
+      "lease": {
+        "lease_id": "e25f2af5-fdc3-4282-9a01-eb37d3e5a983",
+        "generation": "26",
+        "issued_at": "2026-11-04T06:16:17.386340175Z",
+        "expires_at": "2026-11-04T06:17:17.386340175Z",
+        "request_mono_ns": "96419835259035",
+        "node_deadline_ns": "96479835259035",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "not_published",
+        "start_ns": "96420936092145",
+        "end_ns": "96420967518877",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2872",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96421903650001",
+        "wall": "2026-11-04T06:16:19.452273387Z",
+        "mono_after_ns": "96421903650202"
+      },
+      "lease": {
+        "lease_id": "29668526-dc78-4e37-bfdc-8c92945df79e",
+        "generation": "27",
+        "issued_at": "2026-11-04T06:16:19.387611817Z",
+        "expires_at": "2026-11-04T06:17:19.387611817Z",
+        "request_mono_ns": "96421835913146",
+        "node_deadline_ns": "96481835913146",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96421869590301",
+        "end_ns": "96421903630407",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2996",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96439927543544",
+        "wall": "2026-11-04T06:16:37.476166918Z",
+        "mono_after_ns": "96439927543742"
+      },
+      "lease": {
+        "lease_id": "08c97ea7-536f-4077-8092-75af28881ede",
+        "generation": "28",
+        "issued_at": "2026-11-04T06:16:20.391475375Z",
+        "expires_at": "2026-11-04T06:17:20.391475375Z",
+        "request_mono_ns": "96422841438607",
+        "node_deadline_ns": "96482841438607",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96439887672001",
+        "end_ns": "96439927521244",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2997",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96439959480746",
+        "wall": "2026-11-04T06:16:37.508104127Z",
+        "mono_after_ns": "96439959480920"
+      },
+      "lease": {
+        "lease_id": "08c97ea7-536f-4077-8092-75af28881ede",
+        "generation": "28",
+        "issued_at": "2026-11-04T06:16:20.391475375Z",
+        "expires_at": "2026-11-04T06:17:20.391475375Z",
+        "request_mono_ns": "96422841438607",
+        "node_deadline_ns": "96482841438607",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96439930956853",
+        "end_ns": "96439959464825",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "2998",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96440001901703",
+        "wall": "2026-11-04T06:16:37.550525148Z",
+        "mono_after_ns": "96440001901945"
+      },
+      "lease": {
+        "lease_id": "08c97ea7-536f-4077-8092-75af28881ede",
+        "generation": "28",
+        "issued_at": "2026-11-04T06:16:20.391475375Z",
+        "expires_at": "2026-11-04T06:17:20.391475375Z",
+        "request_mono_ns": "96422841438607",
+        "node_deadline_ns": "96482841438607",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96439974622054",
+        "end_ns": "96440001882301",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "3008",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96440932902775",
+        "wall": "2026-11-04T06:16:38.481526148Z",
+        "mono_after_ns": "96440932902934"
+      },
+      "lease": {
+        "lease_id": "573c7981-aa5b-4a60-83c6-8cd8e6aeab94",
+        "generation": "29",
+        "issued_at": "2026-11-04T06:16:37.55460215Z",
+        "expires_at": "2026-11-04T06:17:37.55460215Z",
+        "request_mono_ns": "96440003398659",
+        "node_deadline_ns": "96500003398659",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96440885435681",
+        "end_ns": "96440932880951",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "3009",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96440957965127",
+        "wall": "2026-11-04T06:16:38.506588499Z",
+        "mono_after_ns": "96440957965302"
+      },
+      "lease": {
+        "lease_id": "573c7981-aa5b-4a60-83c6-8cd8e6aeab94",
+        "generation": "29",
+        "issued_at": "2026-11-04T06:16:37.55460215Z",
+        "expires_at": "2026-11-04T06:17:37.55460215Z",
+        "request_mono_ns": "96440003398659",
+        "node_deadline_ns": "96500003398659",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96440936519059",
+        "end_ns": "96440957948088",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "34d3f22f-be91-447e-8c12-64abbea8be79",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "3010",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96440997412609",
+        "wall": "2026-11-04T06:16:38.54603602Z",
+        "mono_after_ns": "96440997412825"
+      },
+      "lease": {
+        "lease_id": "573c7981-aa5b-4a60-83c6-8cd8e6aeab94",
+        "generation": "29",
+        "issued_at": "2026-11-04T06:16:37.55460215Z",
+        "expires_at": "2026-11-04T06:17:37.55460215Z",
+        "request_mono_ns": "96440003398659",
+        "node_deadline_ns": "96500003398659",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96440975233471",
+        "end_ns": "96440997395831",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96518535536977",
+        "wall": "2026-11-04T06:17:56.084160425Z",
+        "mono_after_ns": "96518535537271"
+      },
+      "lease": {
+        "lease_id": "59071136-e9cc-4a39-be3f-f60e0637866b",
+        "generation": "30",
+        "issued_at": "2026-11-04T06:17:39.463848747Z",
+        "expires_at": "2026-11-04T06:18:39.463848747Z",
+        "request_mono_ns": "96501912183505",
+        "node_deadline_ns": "96561912183505",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "boot_unverified",
+        "start_ns": "96518495809221",
+        "end_ns": "96518535496435",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "3",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96518615215624",
+        "wall": "2026-11-04T06:17:56.16383919Z",
+        "mono_after_ns": "96518615216005"
+      },
+      "lease": {
+        "lease_id": "f830ad6c-f316-4b83-9d66-48dbb963d428",
+        "generation": "30",
+        "issued_at": "2026-11-04T06:17:56.11765225Z",
+        "expires_at": "2026-11-04T06:18:56.11765225Z",
+        "request_mono_ns": "96518566286659",
+        "node_deadline_ns": "96578566286659",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96518591983095",
+        "end_ns": "96518615172592",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "219",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96549656391839",
+        "wall": "2026-11-04T06:18:27.205015229Z",
+        "mono_after_ns": "96549656392056"
+      },
+      "lease": {
+        "lease_id": "91da33db-e832-4c74-a673-c4cfa77d9a76",
+        "generation": "30",
+        "issued_at": "2026-11-04T06:18:26.165788228Z",
+        "expires_at": "2026-11-04T06:19:26.165788228Z",
+        "request_mono_ns": "96548614388437",
+        "node_deadline_ns": "96608614388437",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96549616903867",
+        "end_ns": "96549656368317",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "220",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96549685592178",
+        "wall": "2026-11-04T06:18:27.234215558Z",
+        "mono_after_ns": "96549685592352"
+      },
+      "lease": {
+        "lease_id": "91da33db-e832-4c74-a673-c4cfa77d9a76",
+        "generation": "30",
+        "issued_at": "2026-11-04T06:18:26.165788228Z",
+        "expires_at": "2026-11-04T06:19:26.165788228Z",
+        "request_mono_ns": "96548614388437",
+        "node_deadline_ns": "96608614388437",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96549659970587",
+        "end_ns": "96549685574356",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "221",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96549725099434",
+        "wall": "2026-11-04T06:18:27.273722801Z",
+        "mono_after_ns": "96549725099630"
+      },
+      "lease": {
+        "lease_id": "91da33db-e832-4c74-a673-c4cfa77d9a76",
+        "generation": "30",
+        "issued_at": "2026-11-04T06:18:26.165788228Z",
+        "expires_at": "2026-11-04T06:19:26.165788228Z",
+        "request_mono_ns": "96548614388437",
+        "node_deadline_ns": "96608614388437",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96549700749389",
+        "end_ns": "96549725076417",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "364",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96569680914483",
+        "wall": "2026-11-04T06:18:47.229537956Z",
+        "mono_after_ns": "96569680914775"
+      },
+      "lease": {
+        "lease_id": "119fd24f-4833-48c0-9852-d3e16418937c",
+        "generation": "31",
+        "issued_at": "2026-11-04T06:18:27.277015177Z",
+        "expires_at": "2026-11-04T06:19:27.277015177Z",
+        "request_mono_ns": "96549726643768",
+        "node_deadline_ns": "96609726643768",
+        "members": 3
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96569629018653",
+        "end_ns": "96569680877240",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "365",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96569705949714",
+        "wall": "2026-11-04T06:18:47.254573154Z",
+        "mono_after_ns": "96569705949948"
+      },
+      "lease": {
+        "lease_id": "119fd24f-4833-48c0-9852-d3e16418937c",
+        "generation": "31",
+        "issued_at": "2026-11-04T06:18:27.277015177Z",
+        "expires_at": "2026-11-04T06:19:27.277015177Z",
+        "request_mono_ns": "96549726643768",
+        "node_deadline_ns": "96609726643768",
+        "members": 3
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96569684819667",
+        "end_ns": "96569705923847",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "366",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96569775983371",
+        "wall": "2026-11-04T06:18:47.324606805Z",
+        "mono_after_ns": "96569775983611"
+      },
+      "lease": {
+        "lease_id": "119fd24f-4833-48c0-9852-d3e16418937c",
+        "generation": "31",
+        "issued_at": "2026-11-04T06:18:27.277015177Z",
+        "expires_at": "2026-11-04T06:19:27.277015177Z",
+        "request_mono_ns": "96549726643768",
+        "node_deadline_ns": "96609726643768",
+        "members": 3
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96569721443590",
+        "end_ns": "96569775952727",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "622",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96630553819952",
+        "wall": "2026-11-04T06:19:48.102443413Z",
+        "mono_after_ns": "96630553820215"
+      },
+      "lease": {
+        "lease_id": "e01e9040-0ef3-4d01-80b0-1d6cd01da207",
+        "generation": "32",
+        "issued_at": "2026-11-04T06:18:47.328240443Z",
+        "expires_at": "2026-11-04T06:19:47.328240443Z",
+        "request_mono_ns": "96569777625440",
+        "node_deadline_ns": "96629777625440",
+        "members": 3
+      },
+      "baseline": {
+        "cause": "lease_expired",
+        "start_ns": "96630509597206",
+        "end_ns": "96630553783522",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "623",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96630591303513",
+        "wall": "2026-11-04T06:19:48.139926975Z",
+        "mono_after_ns": "96630591303803"
+      },
+      "lease": {
+        "lease_id": "e01e9040-0ef3-4d01-80b0-1d6cd01da207",
+        "generation": "32",
+        "issued_at": "2026-11-04T06:18:47.328240443Z",
+        "expires_at": "2026-11-04T06:19:47.328240443Z",
+        "request_mono_ns": "96569777625440",
+        "node_deadline_ns": "96629777625440",
+        "members": 3
+      },
+      "baseline": {
+        "cause": "lease_expired",
+        "start_ns": "96630564080186",
+        "end_ns": "96630591272831",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "624",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96630642018083",
+        "wall": "2026-11-04T06:19:48.190641558Z",
+        "mono_after_ns": "96630642018371"
+      },
+      "lease": {
+        "lease_id": "e01e9040-0ef3-4d01-80b0-1d6cd01da207",
+        "generation": "32",
+        "issued_at": "2026-11-04T06:18:47.328240443Z",
+        "expires_at": "2026-11-04T06:19:47.328240443Z",
+        "request_mono_ns": "96569777625440",
+        "node_deadline_ns": "96629777625440",
+        "members": 3
+      },
+      "baseline": {
+        "cause": "lease_expired",
+        "start_ns": "96630606989161",
+        "end_ns": "96630641976021",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "657",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96638651108242",
+        "wall": "2026-11-04T06:19:56.199731648Z",
+        "mono_after_ns": "96638651108500"
+      },
+      "lease": {
+        "lease_id": "1067a1fb-55e9-453e-8af1-16d62881b129",
+        "generation": "33",
+        "issued_at": "2026-11-04T06:19:52.870644884Z",
+        "expires_at": "2026-11-04T06:20:52.870644884Z",
+        "request_mono_ns": "96635317632686",
+        "node_deadline_ns": "96695317632686",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96638615182003",
+        "end_ns": "96638651084248",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "658",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96638686505115",
+        "wall": "2026-11-04T06:19:56.235128527Z",
+        "mono_after_ns": "96638686505337"
+      },
+      "lease": {
+        "lease_id": "1067a1fb-55e9-453e-8af1-16d62881b129",
+        "generation": "33",
+        "issued_at": "2026-11-04T06:19:52.870644884Z",
+        "expires_at": "2026-11-04T06:20:52.870644884Z",
+        "request_mono_ns": "96635317632686",
+        "node_deadline_ns": "96695317632686",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96638655034618",
+        "end_ns": "96638686485780",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "659",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96638725742724",
+        "wall": "2026-11-04T06:19:56.274366161Z",
+        "mono_after_ns": "96638725742968"
+      },
+      "lease": {
+        "lease_id": "1067a1fb-55e9-453e-8af1-16d62881b129",
+        "generation": "33",
+        "issued_at": "2026-11-04T06:19:52.870644884Z",
+        "expires_at": "2026-11-04T06:20:52.870644884Z",
+        "request_mono_ns": "96635317632686",
+        "node_deadline_ns": "96695317632686",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96638702718315",
+        "end_ns": "96638725725161",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1260",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96756363653697",
+        "wall": "2026-11-04T06:21:53.91227712Z",
+        "mono_after_ns": "96756363653925"
+      },
+      "lease": {
+        "lease_id": "eec3f969-ba9f-4d03-92f6-06b1c082aef8",
+        "generation": "34",
+        "issued_at": "2026-11-04T06:20:53.180413181Z",
+        "expires_at": "2026-11-04T06:21:53.180413181Z",
+        "request_mono_ns": "96695630317208",
+        "node_deadline_ns": "96755630317208",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "lease_expired",
+        "start_ns": "96756330399896",
+        "end_ns": "96756363627150",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1261",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96756393188496",
+        "wall": "2026-11-04T06:21:53.941811853Z",
+        "mono_after_ns": "96756393188634"
+      },
+      "lease": {
+        "lease_id": "eec3f969-ba9f-4d03-92f6-06b1c082aef8",
+        "generation": "34",
+        "issued_at": "2026-11-04T06:20:53.180413181Z",
+        "expires_at": "2026-11-04T06:21:53.180413181Z",
+        "request_mono_ns": "96695630317208",
+        "node_deadline_ns": "96755630317208",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "lease_expired",
+        "start_ns": "96756367652900",
+        "end_ns": "96756393165353",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1262",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96756430093939",
+        "wall": "2026-11-04T06:21:53.978717375Z",
+        "mono_after_ns": "96756430094182"
+      },
+      "lease": {
+        "lease_id": "eec3f969-ba9f-4d03-92f6-06b1c082aef8",
+        "generation": "34",
+        "issued_at": "2026-11-04T06:20:53.180413181Z",
+        "expires_at": "2026-11-04T06:21:53.180413181Z",
+        "request_mono_ns": "96695630317208",
+        "node_deadline_ns": "96755630317208",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "lease_expired",
+        "start_ns": "96756408920662",
+        "end_ns": "96756430069617",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1266",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96761483535377",
+        "wall": "2026-11-04T06:21:59.032158797Z",
+        "mono_after_ns": "96761483535603"
+      },
+      "lease": {
+        "lease_id": "eec3f969-ba9f-4d03-92f6-06b1c082aef8",
+        "generation": "34",
+        "issued_at": "2026-11-04T06:20:53.180413181Z",
+        "expires_at": "2026-11-04T06:21:53.180413181Z",
+        "request_mono_ns": "96695630317208",
+        "node_deadline_ns": "96755630317208",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "lease_expired",
+        "start_ns": "96761463648413",
+        "end_ns": "96761483515654",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1270",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96766550495821",
+        "wall": "2026-11-04T06:22:04.099119262Z",
+        "mono_after_ns": "96766550496086"
+      },
+      "lease": {
+        "lease_id": "eec3f969-ba9f-4d03-92f6-06b1c082aef8",
+        "generation": "34",
+        "issued_at": "2026-11-04T06:20:53.180413181Z",
+        "expires_at": "2026-11-04T06:21:53.180413181Z",
+        "request_mono_ns": "96695630317208",
+        "node_deadline_ns": "96755630317208",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "lease_expired",
+        "start_ns": "96766515346030",
+        "end_ns": "96766550469378",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1274",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96771612750488",
+        "wall": "2026-11-04T06:22:09.161373894Z",
+        "mono_after_ns": "96771612750705"
+      },
+      "lease": {
+        "lease_id": "eec3f969-ba9f-4d03-92f6-06b1c082aef8",
+        "generation": "34",
+        "issued_at": "2026-11-04T06:20:53.180413181Z",
+        "expires_at": "2026-11-04T06:21:53.180413181Z",
+        "request_mono_ns": "96695630317208",
+        "node_deadline_ns": "96755630317208",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "lease_expired",
+        "start_ns": "96771584581670",
+        "end_ns": "96771612728374",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1489",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96801916737567",
+        "wall": "2026-11-04T06:22:39.465361006Z",
+        "mono_after_ns": "96801916737823"
+      },
+      "lease": {
+        "lease_id": "692f2f3b-73a7-4b47-b3c9-7af13fe69343",
+        "generation": "34",
+        "issued_at": "2026-11-04T06:22:10.178176823Z",
+        "expires_at": "2026-11-04T06:23:10.178176823Z",
+        "request_mono_ns": "96772626402037",
+        "node_deadline_ns": "96832626402037",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96801876647745",
+        "end_ns": "96801916702953",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1490",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96801941675908",
+        "wall": "2026-11-04T06:22:39.490299353Z",
+        "mono_after_ns": "96801941676155"
+      },
+      "lease": {
+        "lease_id": "692f2f3b-73a7-4b47-b3c9-7af13fe69343",
+        "generation": "34",
+        "issued_at": "2026-11-04T06:22:10.178176823Z",
+        "expires_at": "2026-11-04T06:23:10.178176823Z",
+        "request_mono_ns": "96772626402037",
+        "node_deadline_ns": "96832626402037",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96801920432945",
+        "end_ns": "96801941648837",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1491",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96801983187861",
+        "wall": "2026-11-04T06:22:39.531811277Z",
+        "mono_after_ns": "96801983188071"
+      },
+      "lease": {
+        "lease_id": "692f2f3b-73a7-4b47-b3c9-7af13fe69343",
+        "generation": "34",
+        "issued_at": "2026-11-04T06:22:10.178176823Z",
+        "expires_at": "2026-11-04T06:23:10.178176823Z",
+        "request_mono_ns": "96772626402037",
+        "node_deadline_ns": "96832626402037",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "policy_missing",
+        "start_ns": "96801956750635",
+        "end_ns": "96801983161699",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1682",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96828926496626",
+        "wall": "2026-11-04T06:23:06.475120039Z",
+        "mono_after_ns": "96828926496841"
+      },
+      "lease": {
+        "lease_id": "19d0d147-4d1c-480c-a57c-de1d11ad1fe6",
+        "generation": "35",
+        "issued_at": "2026-11-04T06:22:39.535290589Z",
+        "expires_at": "2026-11-04T06:23:39.535290589Z",
+        "request_mono_ns": "96801984487737",
+        "node_deadline_ns": "96861984487737",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "foreign_tc_quarantine",
+        "start_ns": "96828875654987",
+        "end_ns": "96828926474420",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1687",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96829946461418",
+        "wall": "2026-11-04T06:23:07.495084942Z",
+        "mono_after_ns": "96829946461722"
+      },
+      "lease": {
+        "lease_id": "fe4f819e-9cf1-4231-b450-2d8d317a0dad",
+        "generation": "36",
+        "issued_at": "2026-11-04T06:23:07.413882313Z",
+        "expires_at": "2026-11-04T06:24:07.413882313Z",
+        "request_mono_ns": "96829863645375",
+        "node_deadline_ns": "96889863645375",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "apply_quarantine",
+        "start_ns": "96829921749863",
+        "end_ns": "96829943659834",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96907178721897",
+        "wall": "2026-11-04T06:24:24.727345254Z",
+        "mono_after_ns": "96907178722042"
+      },
+      "lease": {
+        "lease_id": "0e08b678-42a7-493f-8dbe-e81666effa70",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:12.728445534Z",
+        "expires_at": "2026-11-04T06:25:12.728445534Z",
+        "request_mono_ns": "96895177073270",
+        "node_deadline_ns": "96955177073270",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "boot_unverified",
+        "start_ns": "96907144144139",
+        "end_ns": "96907178702148",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "3",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96907287903104",
+        "wall": "2026-11-04T06:24:24.836526517Z",
+        "mono_after_ns": "96907287903330"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96907249046617",
+        "end_ns": "96907287876342",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "14",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96909293949022",
+        "wall": "2026-11-04T06:24:26.84257242Z",
+        "mono_after_ns": "96909293949203"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96909254326779",
+        "end_ns": "96909293923346",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "15",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96909319845769",
+        "wall": "2026-11-04T06:24:26.868469209Z",
+        "mono_after_ns": "96909319846013"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96909297286091",
+        "end_ns": "96909319809910",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "26",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96911294875359",
+        "wall": "2026-11-04T06:24:28.843498729Z",
+        "mono_after_ns": "96911294875517"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96911253464678",
+        "end_ns": "96911294849331",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "27",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96911327296699",
+        "wall": "2026-11-04T06:24:28.875920073Z",
+        "mono_after_ns": "96911327296906"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96911298843631",
+        "end_ns": "96911327283909",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "59",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96916291296064",
+        "wall": "2026-11-04T06:24:33.839919515Z",
+        "mono_after_ns": "96916291296314"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96916253750194",
+        "end_ns": "96916291269714",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "60",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96916321278616",
+        "wall": "2026-11-04T06:24:33.869902312Z",
+        "mono_after_ns": "96916321279146"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96916295061947",
+        "end_ns": "96916321228906",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "78",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96919308261634",
+        "wall": "2026-11-04T06:24:36.856885064Z",
+        "mono_after_ns": "96919308261888"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96919258064457",
+        "end_ns": "96919308225141",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "79",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96919333432058",
+        "wall": "2026-11-04T06:24:36.882055423Z",
+        "mono_after_ns": "96919333432219"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96919312063058",
+        "end_ns": "96919333414725",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "90",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96921297390294",
+        "wall": "2026-11-04T06:24:38.846013773Z",
+        "mono_after_ns": "96921297390585"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96921257101525",
+        "end_ns": "96921297357701",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "91",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96921322144444",
+        "wall": "2026-11-04T06:24:38.870767811Z",
+        "mono_after_ns": "96921322144595"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96921300985515",
+        "end_ns": "96921322128982",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "94",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96922256783866",
+        "wall": "2026-11-04T06:24:39.805407295Z",
+        "mono_after_ns": "96922256784091"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96922229865642",
+        "end_ns": "96922256763857",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "97",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96923260044196",
+        "wall": "2026-11-04T06:24:40.80866765Z",
+        "mono_after_ns": "96923260044461"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96923228926494",
+        "end_ns": "96923260010205",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "108",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96925296848226",
+        "wall": "2026-11-04T06:24:42.845471676Z",
+        "mono_after_ns": "96925296848484"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96925260546999",
+        "end_ns": "96925296673427",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "109",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96925328484606",
+        "wall": "2026-11-04T06:24:42.87710803Z",
+        "mono_after_ns": "96925328484832"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96925300959965",
+        "end_ns": "96925328468604",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "112",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96926260190243",
+        "wall": "2026-11-04T06:24:43.808813682Z",
+        "mono_after_ns": "96926260190502"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96926232301763",
+        "end_ns": "96926260164482",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "115",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96927277638703",
+        "wall": "2026-11-04T06:24:44.826262082Z",
+        "mono_after_ns": "96927277638866"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96927232984301",
+        "end_ns": "96927277615940",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "118",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96928265380645",
+        "wall": "2026-11-04T06:24:45.814003997Z",
+        "mono_after_ns": "96928265380779"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96928233445095",
+        "end_ns": "96928265363519",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "121",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96929256654957",
+        "wall": "2026-11-04T06:24:46.805278322Z",
+        "mono_after_ns": "96929256655147"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96929235093698",
+        "end_ns": "96929256636095",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "153",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96934306655963",
+        "wall": "2026-11-04T06:24:51.855279396Z",
+        "mono_after_ns": "96934306656219"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96934268641689",
+        "end_ns": "96934306620606",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "154",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96934336600669",
+        "wall": "2026-11-04T06:24:51.885224027Z",
+        "mono_after_ns": "96934336600806"
+      },
+      "lease": {
+        "lease_id": "f7d09739-0877-440e-8213-26ccfe3bf368",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:24.771066665Z",
+        "expires_at": "2026-11-04T06:25:24.771066665Z",
+        "request_mono_ns": "96907219127286",
+        "node_deadline_ns": "96967219127286",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96934310584481",
+        "end_ns": "96934336584907",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "181",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96938316154018",
+        "wall": "2026-11-04T06:24:55.864777383Z",
+        "mono_after_ns": "96938316154173"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96938268852820",
+        "end_ns": "96938316127487",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "182",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96938347418654",
+        "wall": "2026-11-04T06:24:55.896042053Z",
+        "mono_after_ns": "96938347418843"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96938319469448",
+        "end_ns": "96938347399069",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "185",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96939276274715",
+        "wall": "2026-11-04T06:24:56.824898064Z",
+        "mono_after_ns": "96939276274860"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96939239858945",
+        "end_ns": "96939276260383",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "188",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96940281757860",
+        "wall": "2026-11-04T06:24:57.830381292Z",
+        "mono_after_ns": "96940281758089"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96940243199209",
+        "end_ns": "96940281730451",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "213",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96944319911495",
+        "wall": "2026-11-04T06:25:01.868534862Z",
+        "mono_after_ns": "96944319911682"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96944272350724",
+        "end_ns": "96944319891405",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "214",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96944346594468",
+        "wall": "2026-11-04T06:25:01.895217854Z",
+        "mono_after_ns": "96944346594666"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96944323658158",
+        "end_ns": "96944346576102",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "232",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96947311505442",
+        "wall": "2026-11-04T06:25:04.860128896Z",
+        "mono_after_ns": "96947311505726"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96947272706982",
+        "end_ns": "96947311474636",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "233",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96947337362710",
+        "wall": "2026-11-04T06:25:04.88598614Z",
+        "mono_after_ns": "96947337362947"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96947315716574",
+        "end_ns": "96947337346271",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "251",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96950321678270",
+        "wall": "2026-11-04T06:25:07.870301673Z",
+        "mono_after_ns": "96950321678472"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96950275956712",
+        "end_ns": "96950321649048",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "252",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96950351848558",
+        "wall": "2026-11-04T06:25:07.900471927Z",
+        "mono_after_ns": "96950351848712"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96950325488927",
+        "end_ns": "96950351833515",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "270",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96953311549775",
+        "wall": "2026-11-04T06:25:10.860173225Z",
+        "mono_after_ns": "96953311550042"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96953277250700",
+        "end_ns": "96953311529191",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "271",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96953333912749",
+        "wall": "2026-11-04T06:25:10.882536102Z",
+        "mono_after_ns": "96953333912900"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96953315185796",
+        "end_ns": "96953333899857",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "274",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96954277801600",
+        "wall": "2026-11-04T06:25:11.82642507Z",
+        "mono_after_ns": "96954277801845"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96954247686612",
+        "end_ns": "96954277776797",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "285",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96956325061928",
+        "wall": "2026-11-04T06:25:13.873685279Z",
+        "mono_after_ns": "96956325062067"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96956277936224",
+        "end_ns": "96956325043715",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "286",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96956354934346",
+        "wall": "2026-11-04T06:25:13.903557773Z",
+        "mono_after_ns": "96956354934575"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96956328363645",
+        "end_ns": "96956354916226",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "297",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96958314762491",
+        "wall": "2026-11-04T06:25:15.863385939Z",
+        "mono_after_ns": "96958314762743"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96958280044339",
+        "end_ns": "96958314736648",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "298",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96958345890237",
+        "wall": "2026-11-04T06:25:15.894513603Z",
+        "mono_after_ns": "96958345890384"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96958318728855",
+        "end_ns": "96958345869458",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "301",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96959279038692",
+        "wall": "2026-11-04T06:25:16.827662067Z",
+        "mono_after_ns": "96959279038855"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96959250336855",
+        "end_ns": "96959279018628",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "312",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96961320286291",
+        "wall": "2026-11-04T06:25:18.868909715Z",
+        "mono_after_ns": "96961320286522"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96961280629488",
+        "end_ns": "96961320265122",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "313",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96961354727519",
+        "wall": "2026-11-04T06:25:18.903350954Z",
+        "mono_after_ns": "96961354727766"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96961323960355",
+        "end_ns": "96961354697313",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "331",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96964314688894",
+        "wall": "2026-11-04T06:25:21.86331226Z",
+        "mono_after_ns": "96964314689054"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96964281495630",
+        "end_ns": "96964314664101",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "332",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96964347357151",
+        "wall": "2026-11-04T06:25:21.89598058Z",
+        "mono_after_ns": "96964347357399"
+      },
+      "lease": {
+        "lease_id": "43e5be02-e6e4-44ea-811b-d65e9db2339c",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:24:54.806450678Z",
+        "expires_at": "2026-11-04T06:25:54.806450678Z",
+        "request_mono_ns": "96937255276316",
+        "node_deadline_ns": "96997255276316",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96964318719787",
+        "end_ns": "96964347328302",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "336",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96965282626422",
+        "wall": "2026-11-04T06:25:22.831249782Z",
+        "mono_after_ns": "96965282626570"
+      },
+      "lease": {
+        "lease_id": "c043c86a-ae06-46c1-bd0a-b45c4d34ca5b",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:22.78573711Z",
+        "expires_at": "2026-11-04T06:26:22.78573711Z",
+        "request_mono_ns": "96965235520998",
+        "node_deadline_ns": "97025235520998",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "awaiting_member_grants",
+        "start_ns": "96965256865224",
+        "end_ns": "96965282602116",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "340",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96966303051314",
+        "wall": "2026-11-04T06:25:23.851674749Z",
+        "mono_after_ns": "96966303051573"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96966265694469",
+        "end_ns": "96966303023692",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "343",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96967283598446",
+        "wall": "2026-11-04T06:25:24.832221851Z",
+        "mono_after_ns": "96967283598670"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96967258830357",
+        "end_ns": "96967283569515",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "354",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96969319538522",
+        "wall": "2026-11-04T06:25:26.868161889Z",
+        "mono_after_ns": "96969319538674"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96969288378494",
+        "end_ns": "96969319508936",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "355",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96969343618670",
+        "wall": "2026-11-04T06:25:26.892242092Z",
+        "mono_after_ns": "96969343618910"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96969322902391",
+        "end_ns": "96969343592233",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "366",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96971325600048",
+        "wall": "2026-11-04T06:25:28.874223465Z",
+        "mono_after_ns": "96971325600266"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96971288277082",
+        "end_ns": "96971325563842",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "367",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96971351431937",
+        "wall": "2026-11-04T06:25:28.900055293Z",
+        "mono_after_ns": "96971351432093"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96971329219872",
+        "end_ns": "96971351412761",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "370",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96972291014680",
+        "wall": "2026-11-04T06:25:29.839638075Z",
+        "mono_after_ns": "96972291014867"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96972259181631",
+        "end_ns": "96972290987098",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "381",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96974338617567",
+        "wall": "2026-11-04T06:25:31.887240985Z",
+        "mono_after_ns": "96974338617785"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96974292570842",
+        "end_ns": "96974338584976",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "382",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96974371077598",
+        "wall": "2026-11-04T06:25:31.919700945Z",
+        "mono_after_ns": "96974371077730"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96974342884705",
+        "end_ns": "96974371053070",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "393",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96976331737581",
+        "wall": "2026-11-04T06:25:33.880360971Z",
+        "mono_after_ns": "96976331737758"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96976291949743",
+        "end_ns": "96976331569051",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "394",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96976365151040",
+        "wall": "2026-11-04T06:25:33.913774475Z",
+        "mono_after_ns": "96976365151283"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96976335866001",
+        "end_ns": "96976365131815",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "405",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96978339533705",
+        "wall": "2026-11-04T06:25:35.888157142Z",
+        "mono_after_ns": "96978339533976"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96978296232500",
+        "end_ns": "96978339506772",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "406",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96978375841688",
+        "wall": "2026-11-04T06:25:35.924465066Z",
+        "mono_after_ns": "96978375841846"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96978343594717",
+        "end_ns": "96978375820799",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "417",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96980334921743",
+        "wall": "2026-11-04T06:25:37.883545097Z",
+        "mono_after_ns": "96980334921877"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96980294613750",
+        "end_ns": "96980334891541",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "418",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96980368988267",
+        "wall": "2026-11-04T06:25:37.917611779Z",
+        "mono_after_ns": "96980368988602"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96980338643089",
+        "end_ns": "96980368957739",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "436",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96983336848309",
+        "wall": "2026-11-04T06:25:40.885471733Z",
+        "mono_after_ns": "96983336848528"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96983298874914",
+        "end_ns": "96983336823268",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "437",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96983365745662",
+        "wall": "2026-11-04T06:25:40.91436911Z",
+        "mono_after_ns": "96983365745915"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96983340743350",
+        "end_ns": "96983365716266",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "469",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96988364493896",
+        "wall": "2026-11-04T06:25:45.913117354Z",
+        "mono_after_ns": "96988364494163"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96988298534869",
+        "end_ns": "96988364456600",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "470",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96988404449203",
+        "wall": "2026-11-04T06:25:45.953072578Z",
+        "mono_after_ns": "96988404449362"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96988368122911",
+        "end_ns": "96988404426262",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "481",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96990334171666",
+        "wall": "2026-11-04T06:25:47.882795072Z",
+        "mono_after_ns": "96990334171872"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96990300114343",
+        "end_ns": "96990334146572",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "482",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96990371801535",
+        "wall": "2026-11-04T06:25:47.920424958Z",
+        "mono_after_ns": "96990371801763"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96990337739191",
+        "end_ns": "96990371777454",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "485",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96991299856069",
+        "wall": "2026-11-04T06:25:48.848479439Z",
+        "mono_after_ns": "96991299856253"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96991273680479",
+        "end_ns": "96991299830664",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "496",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96993343654468",
+        "wall": "2026-11-04T06:25:50.892277831Z",
+        "mono_after_ns": "96993343654612"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96993300904787",
+        "end_ns": "96993343630748",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "497",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96993377940334",
+        "wall": "2026-11-04T06:25:50.926563687Z",
+        "mono_after_ns": "96993377940469"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96993347033627",
+        "end_ns": "96993377929579",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "508",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96995338752791",
+        "wall": "2026-11-04T06:25:52.887376239Z",
+        "mono_after_ns": "96995338753054"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96995303998558",
+        "end_ns": "96995338729807",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "509",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96995368520281",
+        "wall": "2026-11-04T06:25:52.917143698Z",
+        "mono_after_ns": "96995368520507"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96995343160744",
+        "end_ns": "96995368504574",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "520",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96997341604862",
+        "wall": "2026-11-04T06:25:54.89022829Z",
+        "mono_after_ns": "96997341605085"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96997303411522",
+        "end_ns": "96997341577090",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "521",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "96997371068511",
+        "wall": "2026-11-04T06:25:54.919691872Z",
+        "mono_after_ns": "96997371068656"
+      },
+      "lease": {
+        "lease_id": "73ca894a-40a7-4a34-8781-a81fe5e8bab5",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:23.786847259Z",
+        "expires_at": "2026-11-04T06:26:23.786847259Z",
+        "request_mono_ns": "96966236143410",
+        "node_deadline_ns": "97026236143410",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "96997345783241",
+        "end_ns": "96997371049161",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "569",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97004349570071",
+        "wall": "2026-11-04T06:26:01.89819348Z",
+        "mono_after_ns": "97004349570286"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97004305497419",
+        "end_ns": "97004349546200",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "570",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97004380457220",
+        "wall": "2026-11-04T06:26:01.929080646Z",
+        "mono_after_ns": "97004380457446"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97004353067416",
+        "end_ns": "97004380437260",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "581",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97006346334721",
+        "wall": "2026-11-04T06:26:03.894958083Z",
+        "mono_after_ns": "97006346334873"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97006306653049",
+        "end_ns": "97006346309915",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "582",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97006376522470",
+        "wall": "2026-11-04T06:26:03.925145822Z",
+        "mono_after_ns": "97006376522618"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97006349971533",
+        "end_ns": "97006376510077",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "600",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97009353249114",
+        "wall": "2026-11-04T06:26:06.901872603Z",
+        "mono_after_ns": "97009353249401"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97009308694161",
+        "end_ns": "97009353227549",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "601",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97009381283401",
+        "wall": "2026-11-04T06:26:06.929906771Z",
+        "mono_after_ns": "97009381283563"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97009356892846",
+        "end_ns": "97009381270183",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "612",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97011354102539",
+        "wall": "2026-11-04T06:26:08.902725995Z",
+        "mono_after_ns": "97011354102813"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97011311572233",
+        "end_ns": "97011354064080",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "613",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97011382179863",
+        "wall": "2026-11-04T06:26:08.930803274Z",
+        "mono_after_ns": "97011382180072"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97011357740358",
+        "end_ns": "97011382150238",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "624",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97013353025159",
+        "wall": "2026-11-04T06:26:10.90164859Z",
+        "mono_after_ns": "97013353025386"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97013315501363",
+        "end_ns": "97013352989852",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "625",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97013380558088",
+        "wall": "2026-11-04T06:26:10.929181462Z",
+        "mono_after_ns": "97013380558243"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97013356724663",
+        "end_ns": "97013380537106",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "643",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97016360433961",
+        "wall": "2026-11-04T06:26:13.909057394Z",
+        "mono_after_ns": "97016360434195"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97016317902844",
+        "end_ns": "97016360392758",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "644",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97016396513078",
+        "wall": "2026-11-04T06:26:13.945136516Z",
+        "mono_after_ns": "97016396513323"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97016364709808",
+        "end_ns": "97016396487352",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "676",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97021361692462",
+        "wall": "2026-11-04T06:26:18.910315862Z",
+        "mono_after_ns": "97021361692666"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97021319030624",
+        "end_ns": "97021361666509",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "677",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97021389869651",
+        "wall": "2026-11-04T06:26:18.938493052Z",
+        "mono_after_ns": "97021389869843"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97021365616867",
+        "end_ns": "97021389856826",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "680",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97022314025509",
+        "wall": "2026-11-04T06:26:19.862648905Z",
+        "mono_after_ns": "97022314025711"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97022288115731",
+        "end_ns": "97022313996130",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "691",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97024367436169",
+        "wall": "2026-11-04T06:26:21.916059538Z",
+        "mono_after_ns": "97024367436329"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97024321126512",
+        "end_ns": "97024367414208",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "692",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97024405533011",
+        "wall": "2026-11-04T06:26:21.954156366Z",
+        "mono_after_ns": "97024405533180"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97024370981293",
+        "end_ns": "97024405516492",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "695",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97025321388147",
+        "wall": "2026-11-04T06:26:22.87001162Z",
+        "mono_after_ns": "97025321388415"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97025290715836",
+        "end_ns": "97025321366593",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "698",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97026318021156",
+        "wall": "2026-11-04T06:26:23.866644569Z",
+        "mono_after_ns": "97026318021384"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97026290719217",
+        "end_ns": "97026318003233",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "701",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97027336697402",
+        "wall": "2026-11-04T06:26:24.885320861Z",
+        "mono_after_ns": "97027336697683"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97027292801612",
+        "end_ns": "97027336667949",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "712",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97029359637640",
+        "wall": "2026-11-04T06:26:26.90826108Z",
+        "mono_after_ns": "97029359637885"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97029320968178",
+        "end_ns": "97029359608439",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "713",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97029390439367",
+        "wall": "2026-11-04T06:26:26.93906278Z",
+        "mono_after_ns": "97029390439589"
+      },
+      "lease": {
+        "lease_id": "99e2a018-60ed-4f2c-895c-210de4f0d7c6",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:25:56.840125909Z",
+        "expires_at": "2026-11-04T06:26:56.840125909Z",
+        "request_mono_ns": "96999289485092",
+        "node_deadline_ns": "97059289485092",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97029363225141",
+        "end_ns": "97029390426275",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "717",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97030333419371",
+        "wall": "2026-11-04T06:26:27.88204282Z",
+        "mono_after_ns": "97030333419636"
+      },
+      "lease": {
+        "lease_id": "fe0d6aff-2524-4b41-9104-b2edbc49a764",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:26:27.827111906Z",
+        "expires_at": "2026-11-04T06:27:27.827111906Z",
+        "request_mono_ns": "97030274950775",
+        "node_deadline_ns": "97090274950775",
+        "members": 0
+      },
+      "baseline": {
+        "cause": "awaiting_member_grants",
+        "start_ns": "97030298560322",
+        "end_ns": "97030333381402",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "721",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97031338101681",
+        "wall": "2026-11-04T06:26:28.886725065Z",
+        "mono_after_ns": "97031338101862"
+      },
+      "lease": {
+        "lease_id": "1b14a02f-ccf7-447c-bdfd-c48a281452f4",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:26:28.826686393Z",
+        "expires_at": "2026-11-04T06:27:28.826686393Z",
+        "request_mono_ns": "97031276076815",
+        "node_deadline_ns": "97091276076815",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97031308412841",
+        "end_ns": "97031338085140",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "732",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97033372748537",
+        "wall": "2026-11-04T06:26:30.92137191Z",
+        "mono_after_ns": "97033372748697"
+      },
+      "lease": {
+        "lease_id": "1b14a02f-ccf7-447c-bdfd-c48a281452f4",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:26:28.826686393Z",
+        "expires_at": "2026-11-04T06:27:28.826686393Z",
+        "request_mono_ns": "97031276076815",
+        "node_deadline_ns": "97091276076815",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97033332676636",
+        "end_ns": "97033372722378",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "733",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97033398256829",
+        "wall": "2026-11-04T06:26:30.946880252Z",
+        "mono_after_ns": "97033398257068"
+      },
+      "lease": {
+        "lease_id": "1b14a02f-ccf7-447c-bdfd-c48a281452f4",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:26:28.826686393Z",
+        "expires_at": "2026-11-04T06:27:28.826686393Z",
+        "request_mono_ns": "97031276076815",
+        "node_deadline_ns": "97091276076815",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97033375895601",
+        "end_ns": "97033398226579",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "772",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97039379278810",
+        "wall": "2026-11-04T06:26:36.927902276Z",
+        "mono_after_ns": "97039379279055"
+      },
+      "lease": {
+        "lease_id": "1b14a02f-ccf7-447c-bdfd-c48a281452f4",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:26:28.826686393Z",
+        "expires_at": "2026-11-04T06:27:28.826686393Z",
+        "request_mono_ns": "97031276076815",
+        "node_deadline_ns": "97091276076815",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97039338627484",
+        "end_ns": "97039379252260",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "773",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97039411166663",
+        "wall": "2026-11-04T06:26:36.959790017Z",
+        "mono_after_ns": "97039411166835"
+      },
+      "lease": {
+        "lease_id": "1b14a02f-ccf7-447c-bdfd-c48a281452f4",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:26:28.826686393Z",
+        "expires_at": "2026-11-04T06:27:28.826686393Z",
+        "request_mono_ns": "97031276076815",
+        "node_deadline_ns": "97091276076815",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97039382910693",
+        "end_ns": "97039411144257",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "812",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97045381416954",
+        "wall": "2026-11-04T06:26:42.930040599Z",
+        "mono_after_ns": "97045381417402"
+      },
+      "lease": {
+        "lease_id": "1b14a02f-ccf7-447c-bdfd-c48a281452f4",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:26:28.826686393Z",
+        "expires_at": "2026-11-04T06:27:28.826686393Z",
+        "request_mono_ns": "97031276076815",
+        "node_deadline_ns": "97091276076815",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97045339589381",
+        "end_ns": "97045381316408",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "813",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97045417946290",
+        "wall": "2026-11-04T06:26:42.966569668Z",
+        "mono_after_ns": "97045417946492"
+      },
+      "lease": {
+        "lease_id": "1b14a02f-ccf7-447c-bdfd-c48a281452f4",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:26:28.826686393Z",
+        "expires_at": "2026-11-04T06:27:28.826686393Z",
+        "request_mono_ns": "97031276076815",
+        "node_deadline_ns": "97091276076815",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97045384840218",
+        "end_ns": "97045417931965",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "824",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97047379672961",
+        "wall": "2026-11-04T06:26:44.928296322Z",
+        "mono_after_ns": "97047379673113"
+      },
+      "lease": {
+        "lease_id": "1b14a02f-ccf7-447c-bdfd-c48a281452f4",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:26:28.826686393Z",
+        "expires_at": "2026-11-04T06:27:28.826686393Z",
+        "request_mono_ns": "97031276076815",
+        "node_deadline_ns": "97091276076815",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97047339776918",
+        "end_ns": "97047379644940",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "b1949114-fa03-4870-a31f-557c0392aa9b",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "825",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "97047412497660",
+        "wall": "2026-11-04T06:26:44.961121134Z",
+        "mono_after_ns": "97047412497946"
+      },
+      "lease": {
+        "lease_id": "1b14a02f-ccf7-447c-bdfd-c48a281452f4",
+        "generation": "37",
+        "issued_at": "2026-11-04T06:26:28.826686393Z",
+        "expires_at": "2026-11-04T06:27:28.826686393Z",
+        "request_mono_ns": "97031276076815",
+        "node_deadline_ns": "97091276076815",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "97047383718182",
+        "end_ns": "97047412475847",
+        "succeeded": true
+      }
+    }
+  ],
+  "watchdog_reason_log": "watchdog.log.txt",
+  "agent_reason_log": "agent.log.txt",
+  "deadline_ns": "96755630317208",
+  "producer_run_id": "a9a328d5-852f-4742-a2db-d36443a1db9b",
+  "early_dropout": {
+    "count": 0,
+    "packet_ids": [],
+    "first_ingress_offset_ns": null,
+    "first_subsequent_positive_offset_ns": "-8099501768",
+    "ingress_inside_guard": 0,
+    "outside_guard": 0
+  },
+  "final_expiry_drops": {
+    "count": 90,
+    "first_ingress_offset_ns": "-96710276",
+    "post_deadline_positives": 0
+  },
+  "exact_producer_sequence": [],
+  "wire_reports": [],
+  "first_baseline_read": {
+    "read_end": "2026-11-04T06:21:54.013384595Z",
+    "read_start": "2026-11-04T06:21:53.91853029Z",
+    "readback": "{\"mono_ns\":\"96756457740270\",\"wall\":\"2026-11-04T06:21:54.006364065Z\"}\ntable inet fvpn {\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t}\n}\ntable inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a528-035e-71fd-9102-53e0f3a6404d:bd23\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a528-7fad-711c-95a2-008f3044e77f:611f\"\n\t\tiifname \"fvmb0\" counter name \"ctbase\" drop\n\t\toifname \"fvmb0\" counter name \"ctbase\" drop\n\t\tiifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\toifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t}\n}\nv1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 96756442721097\nwall_unix_ns 1793773313991345412\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 34\nreason lease_expired\n{\"mono_ns\":\"96756462082353\",\"wall\":\"2026-11-04T06:21:54.010706153Z\"}\n"
+  },
+  "last_baseline_read": {
+    "read_end": "2026-11-04T06:22:08.415173836Z",
+    "read_start": "2026-11-04T06:22:08.320850969Z",
+    "readback": "{\"mono_ns\":\"96770859607449\",\"wall\":\"2026-11-04T06:22:08.408231816Z\"}\ntable inet fvpn {\n\tset allowed_v4 {\n\t\ttype ipv4_addr\n\t\tflags timeout\n\t}\n}\ntable inet fvpn {\n\tchain forward {\n\t\ttype filter hook forward priority mangle; policy drop;\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a528-035e-71fd-9102-53e0f3a6404d:bd23\"\n\t\tip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a528-7fad-711c-95a2-008f3044e77f:611f\"\n\t\tiifname \"fvmb0\" counter name \"ctbase\" drop\n\t\toifname \"fvmb0\" counter name \"ctbase\" drop\n\t\tiifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t\toifname \"fvmb0\" meta nfproto ipv6 counter name \"ctv6\" drop\n\t}\n}\nv1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 96766561790871\nwall_unix_ns 1793773324110415125\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 34\nreason lease_expired\n{\"mono_ns\":\"96770864402262\",\"wall\":\"2026-11-04T06:22:08.413026176Z\"}\n"
+  },
+  "writer_evidence": "Actual agent baseline calls are bracketed in baseline_rows; watchdog decisions/writes are in the retained reason log. No historical attribution is inferred.",
+  "all_loss_windows": "producer-timing-analysis.json and expiry-timing-analysis.json retain every loss, with command and verifier references."
+}

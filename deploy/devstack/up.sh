@@ -131,7 +131,7 @@ ctx=$ROOT/.agent/e2e-build/ctx-node
 rm -rf "$ctx"
 mkdir -p "$ctx"
 cp "$ROOT/.agent/e2e-build/fvpn-agent" "$ROOT/.agent/e2e-build/fvpn-watchdog" "$ROOT/.agent/e2e-build/fvpn-updater" "$ROOT/.agent/e2e-build/fvpn-e2e-nodeconfig" "$ctx/"
-cp "$ROOT/deploy/devstack/entrypoint-node.sh" "$ROOT/deploy/devstack/entrypoint-member.sh" "$ROOT/deploy/devstack/agent-service.sh" "$ctx/"
+cp "$ROOT/deploy/devstack/entrypoint-node.sh" "$ROOT/deploy/devstack/entrypoint-member.sh" "$ROOT/deploy/devstack/agent-service.sh" "$ROOT/deploy/devstack/updater-invocation.sh" "$ctx/"
 cp "$ROOT/deploy/devstack/Dockerfile.node" "$ctx/Dockerfile"
 docker build --iidfile "$ctx/image.id" -t "$PREFIX-node:run" "$ctx"
 export FVPN_E2E_IMAGE_NODE=$(cat "$ctx/image.id")

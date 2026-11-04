@@ -1,12 +1,12 @@
 {
-  "run_id": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
+  "run_id": "328ab9e0-7ff4-495a-81c1-410ae8a7d876",
   "operation_collector": {
     "evidence": "publication-operation-history.json",
-    "run_id": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
+    "run_id": "328ab9e0-7ff4-495a-81c1-410ae8a7d876",
     "matches_invocation": true,
-    "snapshots": 32,
-    "first_read": "2026-11-04T06:03:32.003268Z",
-    "last_successful_read": "2026-11-04T06:26:49.596825Z",
+    "snapshots": 30,
+    "first_read": "2026-11-04T10:31:10.560341Z",
+    "last_successful_read": "2026-11-04T10:52:26.898935Z",
     "end": "final read after the assembled central report export"
   },
   "successful_setup_publication": {
@@ -15,8 +15,8 @@
     "receipt": {
       "pointer": "/observations/1",
       "trace": {
-        "started_at": "2026-11-04T06:03:43.234232728Z",
-        "finished_at": "2026-11-04T06:03:43.240209335Z",
+        "started_at": "2026-11-04T10:31:22.382260855Z",
+        "finished_at": "2026-11-04T10:31:22.388673202Z",
         "max_attempts": 3,
         "limit_seconds": 10,
         "status": "pass",
@@ -24,12 +24,12 @@
         "attempts": [
           {
             "method": "PUT",
-            "path": "/api/v1/admin/nodes/01a1a527-e4a0-7bd8-aeab-c050db6c950c/publication",
-            "if_match": "\"14\"",
-            "idempotency_key": "5c3bcd86-fc36-452b-9130-05d6e011ff81",
-            "body_sha256": "fd20c5c488f3197e98c5f266197dc56db6ebacff54ed5373c1e9180132c22c34",
-            "started_at": "2026-11-04T06:03:43.234238569Z",
-            "finished_at": "2026-11-04T06:03:43.240204109Z",
+            "path": "/api/v1/admin/nodes/01a1a61c-e996-7746-895d-1ae813c5020e/publication",
+            "if_match": "\"15\"",
+            "idempotency_key": "393fb959-e58c-4b57-a64f-9afcf36c3260",
+            "body_sha256": "c93fb2f30e7b923ecb1bd83051852354d0aecb775451281ef16e4001e94cb185",
+            "started_at": "2026-11-04T10:31:22.38226699Z",
+            "finished_at": "2026-11-04T10:31:22.388667255Z",
             "status": 202,
             "error_code": "",
             "transport_error": false

@@ -95,6 +95,7 @@ func (l *live) invalidFiniteGrant(r *record, b *browser, plan uuid.UUID) {
 // through POST /admin/members/{id}/grants (see finiteExpirySteps in
 // grant_restore.go for each path's grant state and entitlement rule).
 func (l *live) finiteExpiry(r *record, id uuid.UUID, service string) {
+	defer l.timedSection("finite-expiry")()
 	until := time.Now().UTC().Add(75 * time.Second).Truncate(time.Second)
 	runFiniteExpiry(r, finiteExpirySteps{
 		until: until,

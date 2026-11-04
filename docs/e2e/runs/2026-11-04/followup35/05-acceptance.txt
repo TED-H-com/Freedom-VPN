@@ -1,0 +1,880 @@
+python3 -B <worktree>/deploy/devstack/admission.py run make -f mk/e2e.mk e2e-acceptance
+make[1]: Entering directory '<worktree>'
+make -f mk/e2e.mk e2e-down
+make[2]: Entering directory '<worktree>'
+FVPN_E2E_PREFIX=e2e FVPN_E2E_PORT_BASE=18000 FVPN_E2E_STATE=<worktree>/.agent/e2e-state-e2e <worktree>/deploy/devstack/down.sh
+e2e stack is down
+make[2]: Leaving directory '<worktree>'
+make -f mk/e2e.mk e2e-up E2E_RESET=1
+make[2]: Entering directory '<worktree>'
+FVPN_E2E_PREFIX=e2e FVPN_E2E_PORT_BASE=18000 FVPN_E2E_STATE=<worktree>/.agent/e2e-state-e2e E2E_RESET=1 <worktree>/deploy/devstack/up.sh
+e2e state ready
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.43kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/postgres@sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f
+#2 DONE 0.5s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [internal] load build context
+#4 transferring context: 5.00kB done
+#4 DONE 0.0s
+
+#5 [1/5] FROM docker.io/library/postgres@sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f
+#5 resolve docker.io/library/postgres@sha256:31ba9c94a03ada9988f2bb493a22a75eef3a185884533e5cdbcd498ea835b08f 0.0s done
+#5 DONE 0.0s
+
+#6 [2/5] RUN set -eux;     apt-get update;     apt-get install -y --no-install-recommends         "pgbackrest=2.60.0-1.pgdg13+1"         ca-certificates;     rm -rf /var/lib/apt/lists/*;     install -d -o postgres -g postgres -m 0750         /var/lib/pgbackrest         /var/log/pgbackrest         /var/spool/pgbackrest         /etc/pgbackrest         /etc/postgresql/conf.d;     if ! grep -qF "include_dir = '/etc/postgresql/conf.d'" /usr/share/postgresql/postgresql.conf.sample; then         printf "\ninclude_dir = '/etc/postgresql/conf.d'\n" >> /usr/share/postgresql/postgresql.conf.sample;     fi
+#6 CACHED
+
+#7 [3/5] COPY --chmod=0644 fvpn-archiving.conf /etc/postgresql/conf.d/50-fvpn-archiving.conf
+#7 CACHED
+
+#8 [4/5] COPY --chmod=0755 fvpn-postgres-entrypoint.sh /usr/local/bin/fvpn-postgres-entrypoint.sh
+#8 CACHED
+
+#9 [5/5] COPY --chmod=0755 10-pgbackrest-stanza.sh /docker-entrypoint-initdb.d/10-pgbackrest-stanza.sh
+#9 CACHED
+
+#10 exporting to image
+#10 exporting layers done
+#10 exporting manifest sha256:d4e0490193e87f6d0eb0c8b0d880f105699d1684a398d238c2c3abe843209d64 done
+#10 exporting config sha256:116a68bd24a940806c3ff1c938efd2556ebf23ae1be500cefa6afd4b85c1d098 done
+#10 exporting attestation manifest sha256:327dc24939a4c3ea8e8f8851f79fd0b37dcb9ece693d0af3444059901df53f44 0.0s done
+#10 exporting manifest list sha256:c809d72fff38198e02794febd513afb5a5a51e7adf294a9ef3d8635af8963c82 done
+#10 naming to docker.io/library/fvpn-e2e-postgres:run done
+#10 unpacking to docker.io/library/fvpn-e2e-postgres:run done
+#10 DONE 0.1s
+building fvpn-control
+building fvpn-worker
+building fvpn-agent
+building fvpn-watchdog
+building fvpn-updater
+building fvpn-e2e-idp
+building fvpn-e2e-payment
+building fvpn-e2e-nodeconfig
+building fvpn-e2e-origin
+building fvpn-e2e-nbbootstrap
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 415B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/3] FROM docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#4 resolve docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 11.35MB 0.0s done
+#5 DONE 0.0s
+
+#6 [2/3] RUN apt-get update     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget      && rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [3/3] COPY service /usr/local/bin/service
+#7 DONE 0.2s
+
+#8 exporting to image
+#8 exporting layers
+#8 exporting layers 0.3s done
+#8 exporting manifest sha256:9a801b9d042a660b1b038b88af4d8c1103893542ecc0a90efefe4386ad214f2b done
+#8 exporting config sha256:24107a3a0c1302a9482ddf8d6bdba581e2b7a8ff140b420837357d23e1c3a3b6 0.0s done
+#8 exporting attestation manifest sha256:a2c33ee27a8317b3246b9b134a9da58dbca2f1d27e1ff52715244dc738a91c84 done
+#8 exporting manifest list sha256:0d7c99354a5e03bd08eb0940dc11fbfbc642bea92d17b770e9a21d3b2e57597a done
+#8 naming to docker.io/library/fvpn-e2e-idp:run done
+#8 unpacking to docker.io/library/fvpn-e2e-idp:run 0.1s done
+#8 DONE 0.4s
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 415B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/3] FROM docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#4 resolve docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 16.85MB 0.0s done
+#5 DONE 0.0s
+
+#6 [2/3] RUN apt-get update     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget      && rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [3/3] COPY service /usr/local/bin/service
+#7 DONE 0.0s
+
+#8 exporting to image
+#8 exporting layers
+#8 exporting layers 0.4s done
+#8 exporting manifest sha256:7720a81c2a9a858ed568e04ee250e83c1ffd595ccdf57dcee73fba9c0f8823e4 done
+#8 exporting config sha256:949fb39b554522fc5496b3742c431d95e175264f78959be433a04ec49157a9da done
+#8 exporting attestation manifest sha256:be8f112d4cfd1d4892f02f90ee8c7e3e7e0e1788238c660a1cf266261b829be5 0.0s done
+#8 exporting manifest list sha256:8f5b45dfc117470bbbdc2c52d23668450df8077a8b60083bc56ec939dc201f2a done
+#8 naming to docker.io/library/fvpn-e2e-payment:run done
+#8 unpacking to docker.io/library/fvpn-e2e-payment:run 0.1s done
+#8 DONE 0.5s
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 DONE 0.0s
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 415B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/3] FROM docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#4 resolve docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 11.00MB 0.0s done
+#5 DONE 0.0s
+
+#6 [2/3] RUN apt-get update     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget tcpdump iproute2     && rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [3/3] COPY service /usr/local/bin/service
+#7 DONE 0.0s
+
+#8 exporting to image
+#8 exporting layers
+#8 exporting layers 0.3s done
+#8 exporting manifest sha256:0de0a10748b47b574e7352b1052a1224e585cb0833f738be9cbc73e596773b32 done
+#8 exporting config sha256:e6810a81df6a0ca40b01861fbbcb6f3a3088c5f374ad2eccfdf743fe1add4c76 done
+#8 exporting attestation manifest sha256:6a63e49a1098b39f5a42b5f2d0104632223db4e3ea22b28f3099a4a5ba631ddd 0.0s done
+#8 exporting manifest list sha256:f4ba587aa27e69c8a990753bedbe7a36abc316309e0477ff4d5f303973974de6 0.0s done
+#8 naming to docker.io/library/fvpn-e2e-origin:run done
+#8 unpacking to docker.io/library/fvpn-e2e-origin:run 0.1s done
+#8 DONE 0.4s
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 415B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/3] FROM docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#4 resolve docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 35.74MB 0.1s done
+#5 DONE 0.1s
+
+#6 [2/3] RUN apt-get update     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget      && rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [3/3] COPY service /usr/local/bin/service
+#7 DONE 0.0s
+
+#8 exporting to image
+#8 exporting layers
+#8 exporting layers 0.8s done
+#8 exporting manifest sha256:e6021137680806269c7b71a28094c4cc5952f6540a4326d93c38fbdfc65db531 0.0s done
+#8 exporting config sha256:4051a5f279637ab26ace14695c70014b9f5ecf205f15b283bf7d88b06eb7bdc5 done
+#8 exporting attestation manifest sha256:21a4efb78207916dd70ce8c36da5529c8505086324d2652cdce61593b4725658 0.0s done
+#8 exporting manifest list sha256:c4e67e7477b921d2d3901ef6c6999640cd2a6754509211fe55b68ba137840433 done
+#8 naming to docker.io/library/fvpn-e2e-control:run done
+#8 unpacking to docker.io/library/fvpn-e2e-control:run 0.1s done
+#8 DONE 1.0s
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 415B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#2 DONE 0.0s
+
+#3 [internal] load .dockerignore
+#3 transferring context: 2B done
+#3 DONE 0.0s
+
+#4 [1/3] FROM docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#4 resolve docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852 0.0s done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 26.62MB 0.0s done
+#5 DONE 0.0s
+
+#6 [2/3] RUN apt-get update     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates wget      && rm -rf /var/lib/apt/lists/*
+#6 CACHED
+
+#7 [3/3] COPY service /usr/local/bin/service
+#7 DONE 0.0s
+
+#8 exporting to image
+#8 exporting layers
+#8 exporting layers 0.6s done
+#8 exporting manifest sha256:5e79530b907c0e3ea5ad5b58d1cc4b609d380b0f7bda4448bc39fa68330bb20b
+#8 exporting manifest sha256:5e79530b907c0e3ea5ad5b58d1cc4b609d380b0f7bda4448bc39fa68330bb20b done
+#8 exporting config sha256:d4cc341ac2002eac79f5c12c9ff56b1c507f5e4087371b1f6cda500f6b90da1d done
+#8 exporting attestation manifest sha256:ce032c77145d73d989cfff94982be43d318f42695dda71caecb0fabeaeb4c91e 0.0s done
+#8 exporting manifest list sha256:6c619df3883eecd31420cbeb1c9baefce178df11d89e046b802f260d158eb8ae done
+#8 naming to docker.io/library/fvpn-e2e-worker:run done
+#8 unpacking to docker.io/library/fvpn-e2e-worker:run 0.1s done
+#8 DONE 0.7s
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 982B done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/netbirdio/netbird:0.82.0@sha256:eca5b274c635bfbb04ec6724a0712d1146190dd450eea199eeb83916fdd94965
+#3 DONE 0.4s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [nb 1/1] FROM docker.io/netbirdio/netbird:0.82.0@sha256:eca5b274c635bfbb04ec6724a0712d1146190dd450eea199eeb83916fdd94965
+#5 resolve docker.io/netbirdio/netbird:0.82.0@sha256:eca5b274c635bfbb04ec6724a0712d1146190dd450eea199eeb83916fdd94965 0.0s done
+#5 DONE 0.0s
+
+#6 [stage-1 1/5] FROM docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852
+#6 resolve docker.io/library/ubuntu:24.04@sha256:fe81560990fae86dc4743202b2cb4d3df98d0bcf949173cecef15ce1127ef852 0.0s done
+#6 DONE 0.0s
+
+#7 [stage-1 2/5] RUN apt-get update     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates iproute2 nftables wget conntrack tcpdump wireguard-tools     && rm -rf /var/lib/apt/lists/*
+#7 CACHED
+
+#8 [stage-1 3/5] COPY --from=nb /usr/local/bin/netbird /usr/local/bin/netbird
+#8 CACHED
+
+#9 [internal] load build context
+#9 transferring context: 70.86MB 0.1s done
+#9 DONE 0.1s
+
+#10 [stage-1 4/5] COPY fvpn-agent fvpn-watchdog fvpn-updater fvpn-e2e-nodeconfig entrypoint-node.sh entrypoint-member.sh agent-service.sh updater-invocation.sh /usr/local/bin/
+#10 DONE 0.1s
+
+#11 [stage-1 5/5] RUN chmod 755 /usr/local/bin/fvpn-agent /usr/local/bin/fvpn-watchdog /usr/local/bin/fvpn-updater     /usr/local/bin/netbird /usr/local/bin/entrypoint-node.sh /usr/local/bin/entrypoint-member.sh /usr/local/bin/agent-service.sh /usr/local/bin/updater-invocation.sh
+#11 DONE 0.2s
+
+#12 exporting to image
+#12 exporting layers
+#12 exporting layers 1.5s done
+#12 exporting manifest sha256:d615395de10de44f4552408d1495cdafb3d4944f233c23fb489d13872c76b13a done
+#12 exporting config sha256:7443d91f3afcd5ceba1a926330df7c35d7c719def2a2b53226c640f063a62958 done
+#12 exporting attestation manifest sha256:eac07e1b40611a6a07b870ff9b844d01ff6d32df146e72e48b85d1dd472ec187 0.0s done
+#12 exporting manifest list sha256:ae12df2b24d9062657112035e589b8759301624fac3aca758cffb4493933f0ee done
+#12 naming to docker.io/library/fvpn-e2e-node:run done
+#12 unpacking to docker.io/library/fvpn-e2e-node:run
+#12 unpacking to docker.io/library/fvpn-e2e-node:run 0.5s done
+#12 DONE 2.0s
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+
+added 482 packages in 1s
+npm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:
+npm warn install-scripts   esbuild@0.25.12 (postinstall: node install.js)
+npm warn install-scripts   msw@2.7.3 (postinstall: node -e "try{require('./config/scripts/postinstall')}catch(e){}")
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+
+> @freedom-vpn/portal@0.1.0 build
+> tsc --noEmit && vite build
+
+vite v6.4.5 building for production...
+transforming...
+✓ 128 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.41 kB │ gzip:   0.28 kB
+dist/assets/index-BqlzUxff.css    7.76 kB │ gzip:   2.16 kB
+dist/assets/index-CoHe1VRr.js   538.37 kB │ gzip: 154.54 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 636ms
+ Volume fvpn-e2e-pgbackrest-repo Creating
+ Volume fvpn-e2e-pgbackrest-repo Creating
+ Network fvpn-e2e Creating
+ Volume fvpn-e2e-nb Creating
+ Network fvpn-e2e Creating
+ Volume fvpn-e2e-nb Creating
+ Network fvpn-e2e-origin Creating
+ Network fvpn-e2e-origin Creating
+ Volume fvpn-e2e-pg Creating
+ Volume fvpn-e2e-pg Creating
+ Volume fvpn-e2e-pgbackrest-repo Created
+ Volume fvpn-e2e-pgbackrest-repo Created
+ Volume fvpn-e2e-pg Created
+ Volume fvpn-e2e-pg Created
+ Volume fvpn-e2e-nb Created
+ Volume fvpn-e2e-nb Created
+ Network fvpn-e2e-origin Created
+ Network fvpn-e2e-origin Created
+ Container fvpn-e2e-origin Creating
+ Container fvpn-e2e-origin-dns Creating
+ Network fvpn-e2e Created
+ Network fvpn-e2e Created
+ Container fvpn-e2e-postgres Creating
+ Container fvpn-e2e-netbird Creating
+ Container fvpn-e2e-payment Creating
+ Container fvpn-e2e-authority-dns Creating
+ Container fvpn-e2e-idp Creating
+ Container fvpn-e2e-coredns Creating
+ Container fvpn-e2e-authority-dns Created
+ Container fvpn-e2e-idp Created
+ Container fvpn-e2e-origin-dns Created
+ Container fvpn-e2e-origin Created
+ Container fvpn-e2e-payment Created
+ Container fvpn-e2e-netbird Created
+ Container fvpn-e2e-gateway Creating
+ Container fvpn-e2e-coredns Created
+ Container fvpn-e2e-postgres Created
+ Container fvpn-e2e-gateway Created
+ Container fvpn-e2e-netbird Starting
+ Container fvpn-e2e-idp Starting
+ Container fvpn-e2e-payment Starting
+ Container fvpn-e2e-authority-dns Starting
+ Container fvpn-e2e-coredns Starting
+ Container fvpn-e2e-origin-dns Starting
+ Container fvpn-e2e-postgres Starting
+ Container fvpn-e2e-origin Starting
+ Container fvpn-e2e-netbird Started
+ Container fvpn-e2e-netbird Waiting
+ Container fvpn-e2e-idp Started
+ Container fvpn-e2e-payment Started
+ Container fvpn-e2e-authority-dns Started
+ Container fvpn-e2e-coredns Started
+ Container fvpn-e2e-origin-dns Started
+ Container fvpn-e2e-postgres Started
+ Container fvpn-e2e-origin Started
+ Container fvpn-e2e-netbird Healthy
+ Container fvpn-e2e-gateway Starting
+ Container fvpn-e2e-gateway Started
+netbird bootstrap verified
+ Container fvpn-e2e-idp Running
+ Container fvpn-e2e-postgres Running
+ Container fvpn-e2e-control Creating
+ Container fvpn-e2e-control Created
+ Container fvpn-e2e-worker Creating
+ Container fvpn-e2e-worker Created
+ Container fvpn-e2e-postgres Waiting
+ Container fvpn-e2e-idp Waiting
+ Container fvpn-e2e-postgres Healthy
+ Container fvpn-e2e-idp Healthy
+ Container fvpn-e2e-control Starting
+ Container fvpn-e2e-control Started
+ Container fvpn-e2e-postgres Waiting
+ Container fvpn-e2e-control Waiting
+ Container fvpn-e2e-postgres Healthy
+ Container fvpn-e2e-control Healthy
+ Container fvpn-e2e-worker Starting
+ Container fvpn-e2e-worker Started
+ Container fvpn-e2e-netbird Running
+ Container fvpn-e2e-control Running
+ Container fvpn-e2e-gateway Running
+ Container fvpn-e2e-coredns Running
+ Container fvpn-e2e-idp Running
+ Container fvpn-e2e-postgres Running
+ Container fvpn-e2e-member Creating
+ Container fvpn-e2e-node-netns Creating
+ Container fvpn-e2e-member Created
+ Container fvpn-e2e-node-netns Created
+ Container fvpn-e2e-adguard Creating
+ Container fvpn-e2e-adguard Created
+ Container fvpn-e2e-node Creating
+ Container fvpn-e2e-node Created
+ Container fvpn-e2e-netbird Waiting
+ Container fvpn-e2e-node-netns Starting
+ Container fvpn-e2e-idp Waiting
+ Container fvpn-e2e-postgres Waiting
+ Container fvpn-e2e-node-netns Started
+ Container fvpn-e2e-adguard Starting
+ Container fvpn-e2e-adguard Started
+ Container fvpn-e2e-postgres Healthy
+ Container fvpn-e2e-netbird Healthy
+ Container fvpn-e2e-idp Healthy
+ Container fvpn-e2e-member Starting
+ Container fvpn-e2e-control Waiting
+ Container fvpn-e2e-member Started
+ Container fvpn-e2e-control Healthy
+ Container fvpn-e2e-node Starting
+ Container fvpn-e2e-node Started
+e2e stack is up
+make[2]: Leaving directory '<worktree>'
+make -f mk/e2e.mk e2e-browser
+make[2]: Entering directory '<worktree>'
+cd <worktree>/apps/portal && ./node_modules/.bin/playwright install --only-shell --no-remove --no-progress chromium
+make[2]: Leaving directory '<worktree>'
+cd <worktree> && FVPN_E2E=1 FVPN_E2E_PREFIX=e2e FVPN_E2E_PORT_BASE=18000 FVPN_E2E_STATE=<worktree>/.agent/e2e-state-e2e go test -v -tags e2e -count=1 -timeout 65m ./tests/e2e
+=== RUN   TestRewriteLabHostReplacesAgentOnly
+--- PASS: TestRewriteLabHostReplacesAgentOnly (0.01s)
+=== RUN   TestISO01CompleteCaptureExport
+--- PASS: TestISO01CompleteCaptureExport (0.02s)
+=== RUN   TestAT04_CounterFailureExport
+=== RUN   TestAT04_CounterFailureExport/false
+=== RUN   TestAT04_CounterFailureExport/true
+--- PASS: TestAT04_CounterFailureExport (0.01s)
+    --- PASS: TestAT04_CounterFailureExport/false (0.01s)
+    --- PASS: TestAT04_CounterFailureExport/true (0.00s)
+=== RUN   TestUPD05_AllowlistedReleaseIsNotAnUpdateIntent
+--- PASS: TestUPD05_AllowlistedReleaseIsNotAnUpdateIntent (0.00s)
+=== RUN   TestAT20_EarlierAuthorityCompletionAcrossQueries
+--- PASS: TestAT20_EarlierAuthorityCompletionAcrossQueries (0.00s)
+=== RUN   TestAT06_PrivateEnrollmentPathsStayInsideTheContainer
+--- PASS: TestAT06_PrivateEnrollmentPathsStayInsideTheContainer (0.00s)
+=== RUN   TestEnrollmentPeerIDsAcceptStringOrObject
+--- PASS: TestEnrollmentPeerIDsAcceptStringOrObject (0.00s)
+=== RUN   TestRedact_StripsSecrets
+--- PASS: TestRedact_StripsSecrets (0.00s)
+=== RUN   TestWrite_RoundTrip
+--- PASS: TestWrite_RoundTrip (0.00s)
+=== RUN   TestSEC02_WriteRedactsIdentitySubjects
+--- PASS: TestSEC02_WriteRedactsIdentitySubjects (0.00s)
+=== RUN   TestCommittedFixtureEvidence_ValidAndHygieneClean
+--- PASS: TestCommittedFixtureEvidence_ValidAndHygieneClean (8.49s)
+=== RUN   TestE2E_HarnessExports
+    exports_live_test.go:24: set FVPN_E2E_EXPORTS=1 with a fresh owned stack
+--- SKIP: TestE2E_HarnessExports (0.00s)
+=== RUN   TestE2E_Followup16Fixtures
+    fixtures16_live_test.go:23: set FVPN_E2E_FIXTURES16=1 with a fresh two-resolver owned stack
+--- SKIP: TestE2E_Followup16Fixtures (0.00s)
+=== RUN   TestE2E_Followup17Installer
+    followup17_live_test.go:25: set FVPN_E2E_FOLLOWUP17=1 with a fresh owned stack
+--- SKIP: TestE2E_Followup17Installer (0.00s)
+=== RUN   TestE2E_Followup18Installer
+    followup18_live_test.go:25: set FVPN_E2E_FOLLOWUP18=1 with a fresh owned stack
+--- SKIP: TestE2E_Followup18Installer (0.00s)
+=== RUN   TestE2E_Followup18Native
+    followup18_native_test.go:22: set FVPN_E2E_NATIVE18=1 with a fresh owned stack
+--- SKIP: TestE2E_Followup18Native (0.00s)
+=== RUN   TestE2E_Followup18FirstOffer
+    followup18_native_test.go:146: set FVPN_E2E_FIRST_OFFER18=1 with a retained enrolled primary
+--- SKIP: TestE2E_Followup18FirstOffer (0.00s)
+=== RUN   TestE2E_Followup22Native
+    followup18_native_test.go:428: set FVPN_E2E_FOLLOWUP22=1 with a fresh owned stack
+--- SKIP: TestE2E_Followup22Native (0.00s)
+=== RUN   TestE2E_Followup19Installer
+    followup19_live_test.go:31: set FVPN_E2E_FOLLOWUP19=1 with a fresh owned stack
+--- SKIP: TestE2E_Followup19Installer (0.00s)
+=== RUN   TestE2E_Followup19Native
+    followup19_native_test.go:18: set FVPN_E2E_FOLLOWUP19=1 with fresh stack
+--- SKIP: TestE2E_Followup19Native (0.00s)
+=== RUN   TestE2E_Followup20CounterExpiry
+    followup20_counter_test.go:18: set FVPN_E2E_COUNTER20=1 after Followup20Grants on the retained stack
+--- SKIP: TestE2E_Followup20CounterExpiry (0.00s)
+=== RUN   TestE2E_Followup20Grants
+    followup20_live_test.go:22: set FVPN_E2E_FOLLOWUP20=1 with a fresh owned stack
+--- SKIP: TestE2E_Followup20Grants (0.00s)
+=== RUN   TestD087_RequiresCleanAcceptedProvisionalReport
+--- PASS: TestD087_RequiresCleanAcceptedProvisionalReport (0.00s)
+=== RUN   TestE2E_Followup20Regular
+    followup20_regular_test.go:19: set FVPN_E2E_FOLLOWUP20=1 with a fresh owned stack
+--- SKIP: TestE2E_Followup20Regular (0.00s)
+=== RUN   TestE2E_Followup21DNS
+    followup21_live_test.go:25: set FVPN_E2E_FOLLOWUP21=1 with a fresh two-resolver stack
+--- SKIP: TestE2E_Followup21DNS (0.00s)
+=== RUN   TestE2E_Followup21Installer
+    followup21_live_test.go:32: set FVPN_E2E_FOLLOWUP21=1 with an owned stack
+--- SKIP: TestE2E_Followup21Installer (0.00s)
+=== RUN   TestE2E_Followup23Native
+    followup23_live_test.go:17: set FVPN_E2E_FOLLOWUP23=1 with a fresh owned stack
+--- SKIP: TestE2E_Followup23Native (0.00s)
+=== RUN   TestE2E_Followup23DNS
+    followup23_live_test.go:103: set FVPN_E2E_FOLLOWUP23=1 with a fresh two-resolver stack
+--- SKIP: TestE2E_Followup23DNS (0.00s)
+=== RUN   TestAT09_RouterSlotsDoNotOverlap
+--- PASS: TestAT09_RouterSlotsDoNotOverlap (0.00s)
+=== RUN   TestE2E_Followup24Native
+    followup24_live_test.go:15: set FVPN_E2E_FOLLOWUP24=1 with a fresh owned stack
+--- SKIP: TestE2E_Followup24Native (0.00s)
+=== RUN   TestE2E_Followup25Native
+    followup25_live_test.go:21: set FVPN_E2E_FOLLOWUP25=1 with a fresh owned stack
+--- SKIP: TestE2E_Followup25Native (0.00s)
+=== RUN   TestE2E_AgentExitReadback
+    followup25_live_test.go:56: set FVPN_E2E_EXIT25=1 after an enrolled first-selection attempt
+--- SKIP: TestE2E_AgentExitReadback (0.00s)
+=== RUN   TestE2E_Followup26Native
+    followup26_live_test.go:25: set FVPN_E2E_FOLLOWUP26=1 on a fresh owned kernel stack
+--- SKIP: TestE2E_Followup26Native (0.00s)
+=== RUN   TestE2E_ContainerStop26
+    followup26_stop_live_test.go:43: set FVPN_E2E_STOP26=1 on the enrolled owned stack
+--- SKIP: TestE2E_ContainerStop26 (0.00s)
+=== RUN   TestE2E_Followup27
+    followup27_live_test.go:16: set FVPN_E2E_FOLLOWUP27=hold|native on a fresh owned stack
+--- SKIP: TestE2E_Followup27 (0.00s)
+=== RUN   TestE2E_Followup30SurvivorHold
+    followup30_live_test.go:20: set FVPN_E2E_FOLLOWUP30=1 on a fresh owned stack
+--- SKIP: TestE2E_Followup30SurvivorHold (0.00s)
+=== RUN   TestE2E_Followup32Publisher
+    followup32_live_test.go:23: set FVPN_E2E_FOLLOWUP32=1 on a fresh owned stack
+--- SKIP: TestE2E_Followup32Publisher (0.00s)
+=== RUN   TestParseForwardChainIgnoresOtherAccepts
+--- PASS: TestParseForwardChainIgnoresOtherAccepts (0.00s)
+=== RUN   TestPickAutoGroupSkipsAll
+--- PASS: TestPickAutoGroupSkipsAll (0.00s)
+=== RUN   TestENT01_FiniteGrantRecovery
+=== RUN   TestENT01_FiniteGrantRecovery/create
+=== RUN   TestENT01_FiniteGrantRecovery/lost_create_response
+=== RUN   TestENT01_FiniteGrantRecovery/replay
+=== RUN   TestENT01_FiniteGrantRecovery/projection
+=== RUN   TestENT01_FiniteGrantRecovery/revoke_replay
+=== RUN   TestENT01_FiniteGrantRecovery/later_revoke
+=== RUN   TestENT01_FiniteGrantRecovery/restoration_failure
+=== RUN   TestENT01_FiniteGrantRecovery/success
+--- PASS: TestENT01_FiniteGrantRecovery (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/create (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/lost_create_response (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/replay (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/projection (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/revoke_replay (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/later_revoke (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/restoration_failure (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/success (0.00s)
+=== RUN   TestENT01_ExpiredFiniteGrantHasNoEffects
+--- PASS: TestENT01_ExpiredFiniteGrantHasNoEffects (0.00s)
+=== RUN   TestInstallerServingReadbackRejectsRetainedHeartbeat
+--- PASS: TestInstallerServingReadbackRejectsRetainedHeartbeat (0.00s)
+=== RUN   TestIngressCounterDelta
+--- PASS: TestIngressCounterDelta (0.00s)
+=== RUN   TestE2E_InstallerExports
+    installer_exports_test.go:281: set FVPN_E2E_INSTALLER=1 with an owned stack
+--- SKIP: TestE2E_InstallerExports (0.00s)
+=== RUN   TestENR06InstallerOutcomeRetainsFailureWithStagedStatus
+--- PASS: TestENR06InstallerOutcomeRetainsFailureWithStagedStatus (0.00s)
+=== RUN   TestENR06InstallerHashesNameTheirDigests
+--- PASS: TestENR06InstallerHashesNameTheirDigests (0.00s)
+=== RUN   TestENR02_InstallerFixtureLoopbackOptInScope
+--- PASS: TestENR02_InstallerFixtureLoopbackOptInScope (0.00s)
+=== RUN   TestAT01_HistoricalNodeTraceRejectedByServingVerifier
+--- PASS: TestAT01_HistoricalNodeTraceRejectedByServingVerifier (0.00s)
+=== RUN   TestReadProjectedBindingMatchesTheDevice
+--- PASS: TestReadProjectedBindingMatchesTheDevice (0.00s)
+=== RUN   TestParseLoginPageFillsLocalUser
+--- PASS: TestParseLoginPageFillsLocalUser (0.00s)
+=== RUN   TestResolveLoginRefKeepsState
+--- PASS: TestResolveLoginRefKeepsState (0.00s)
+=== RUN   TestDeviceFlowURLTakesTheLastMatch
+--- PASS: TestDeviceFlowURLTakesTheLastMatch (0.00s)
+=== RUN   TestDeviceFlowPathDropsTheUserCode
+--- PASS: TestDeviceFlowPathDropsTheUserCode (0.00s)
+=== RUN   TestCoveredIntervalStaysInsideTheWindow
+--- PASS: TestCoveredIntervalStaysInsideTheWindow (0.00s)
+=== RUN   TestForwardGeneration
+--- PASS: TestForwardGeneration (0.00s)
+=== RUN   TestAT01_CaptureMissingStatsNeverMeansZeroDrops
+--- PASS: TestAT01_CaptureMissingStatsNeverMeansZeroDrops (0.00s)
+=== RUN   TestAT01_CaptureSingularStatistics
+--- PASS: TestAT01_CaptureSingularStatistics (0.00s)
+=== RUN   TestAT09_NativeInputsDoNotSubstitutePlatformsOrQUIC
+--- PASS: TestAT09_NativeInputsDoNotSubstitutePlatformsOrQUIC (0.00s)
+=== RUN   TestAT02_NativeRouterRollbackEveryStep
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_0/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_0/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_1/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_1/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_2/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_2/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_3/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_3/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_4/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_4/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_5/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_5/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_6/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_6/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_7/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_7/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_8/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_8/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_9/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_9/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_10/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_10/rollback_fails_true
+--- PASS: TestAT02_NativeRouterRollbackEveryStep (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_0/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_0/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_1/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_1/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_2/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_2/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_3/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_3/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_4/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_4/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_5/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_5/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_6/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_6/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_7/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_7/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_8/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_8/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_9/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_9/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_10/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_10/rollback_fails_true (0.00s)
+=== RUN   TestD144_CommittedExpectedBlockedListAndFollowup29FullSummary
+--- PASS: TestD144_CommittedExpectedBlockedListAndFollowup29FullSummary (0.00s)
+=== RUN   TestD144_ListedBlockedRowKeepsJobGreenAndPreservesBlockedStatus
+--- PASS: TestD144_ListedBlockedRowKeepsJobGreenAndPreservesBlockedStatus (0.00s)
+=== RUN   TestD144_ListedRowThatPassesIsReportedUnblockedAndSucceeds
+--- PASS: TestD144_ListedRowThatPassesIsReportedUnblockedAndSucceeds (0.00s)
+=== RUN   TestD144_UnlistedBlockedRowFails
+--- PASS: TestD144_UnlistedBlockedRowFails (0.00s)
+=== RUN   TestD144_FailRowFails
+--- PASS: TestD144_FailRowFails (0.00s)
+=== RUN   TestD144_ErrorRowAndRunnerErrorFail
+--- PASS: TestD144_ErrorRowAndRunnerErrorFail (0.00s)
+=== RUN   TestD144_MissingOrUnreadableSummaryFails
+--- PASS: TestD144_MissingOrUnreadableSummaryFails (0.00s)
+=== RUN   TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails
+=== RUN   TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails/wrong_schema
+=== RUN   TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails/missing_owner
+=== RUN   TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails/missing_reason
+=== RUN   TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails/duplicate_entry
+=== RUN   TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails/invalid_json
+--- PASS: TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails (0.00s)
+    --- PASS: TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails/wrong_schema (0.00s)
+    --- PASS: TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails/missing_owner (0.00s)
+    --- PASS: TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails/missing_reason (0.00s)
+    --- PASS: TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails/duplicate_entry (0.00s)
+    --- PASS: TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails/invalid_json (0.00s)
+=== RUN   TestD144_CurrentExpectedBlockedListAfterFollowup34
+--- PASS: TestD144_CurrentExpectedBlockedListAfterFollowup34 (0.00s)
+=== RUN   TestAPI01_ExportedNodeWrite
+=== RUN   TestAPI01_ExportedNodeWrite/retry
+=== RUN   TestAPI01_ExportedNodeWrite/already
+=== RUN   TestAPI01_ExportedNodeWrite/exhausted
+=== RUN   TestAPI01_ExportedNodeWrite/other412
+=== RUN   TestAPI01_ExportedNodeWrite/redirect
+--- PASS: TestAPI01_ExportedNodeWrite (0.00s)
+    --- PASS: TestAPI01_ExportedNodeWrite/retry (0.00s)
+    --- PASS: TestAPI01_ExportedNodeWrite/already (0.00s)
+    --- PASS: TestAPI01_ExportedNodeWrite/exhausted (0.00s)
+    --- PASS: TestAPI01_ExportedNodeWrite/other412 (0.00s)
+    --- PASS: TestAPI01_ExportedNodeWrite/redirect (0.00s)
+=== RUN   TestAPI01_ExportedNodePredicates
+--- PASS: TestAPI01_ExportedNodePredicates (0.00s)
+=== RUN   TestAPI01_NodeWriteConflict
+=== RUN   TestAPI01_NodeWriteConflict/PATCH
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/one_conflict
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/persistent
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/already_intended
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/wrong_412_code
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/unauthorized
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/forbidden
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/not_found
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/idempotency_conflict
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/precondition_required
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/rate_limited
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/server_error
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/unavailable
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/success
+=== RUN   TestAPI01_NodeWriteConflict/PUT
+=== RUN   TestAPI01_NodeWriteConflict/PUT/one_conflict
+=== RUN   TestAPI01_NodeWriteConflict/PUT/persistent
+=== RUN   TestAPI01_NodeWriteConflict/PUT/already_intended
+=== RUN   TestAPI01_NodeWriteConflict/PUT/wrong_412_code
+=== RUN   TestAPI01_NodeWriteConflict/PUT/unauthorized
+=== RUN   TestAPI01_NodeWriteConflict/PUT/forbidden
+=== RUN   TestAPI01_NodeWriteConflict/PUT/not_found
+=== RUN   TestAPI01_NodeWriteConflict/PUT/idempotency_conflict
+=== RUN   TestAPI01_NodeWriteConflict/PUT/precondition_required
+=== RUN   TestAPI01_NodeWriteConflict/PUT/rate_limited
+=== RUN   TestAPI01_NodeWriteConflict/PUT/server_error
+=== RUN   TestAPI01_NodeWriteConflict/PUT/unavailable
+=== RUN   TestAPI01_NodeWriteConflict/PUT/success
+=== RUN   TestAPI01_NodeWriteConflict/POST
+=== RUN   TestAPI01_NodeWriteConflict/POST/one_conflict
+=== RUN   TestAPI01_NodeWriteConflict/POST/persistent
+=== RUN   TestAPI01_NodeWriteConflict/POST/already_intended
+=== RUN   TestAPI01_NodeWriteConflict/POST/wrong_412_code
+=== RUN   TestAPI01_NodeWriteConflict/POST/unauthorized
+=== RUN   TestAPI01_NodeWriteConflict/POST/forbidden
+=== RUN   TestAPI01_NodeWriteConflict/POST/not_found
+=== RUN   TestAPI01_NodeWriteConflict/POST/idempotency_conflict
+=== RUN   TestAPI01_NodeWriteConflict/POST/precondition_required
+=== RUN   TestAPI01_NodeWriteConflict/POST/rate_limited
+=== RUN   TestAPI01_NodeWriteConflict/POST/server_error
+=== RUN   TestAPI01_NodeWriteConflict/POST/unavailable
+=== RUN   TestAPI01_NodeWriteConflict/POST/success
+--- PASS: TestAPI01_NodeWriteConflict (0.01s)
+    --- PASS: TestAPI01_NodeWriteConflict/PATCH (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/one_conflict (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/persistent (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/already_intended (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/wrong_412_code (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/unauthorized (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/forbidden (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/not_found (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/idempotency_conflict (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/precondition_required (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/rate_limited (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/server_error (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/unavailable (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/success (0.00s)
+    --- PASS: TestAPI01_NodeWriteConflict/PUT (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/one_conflict (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/persistent (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/already_intended (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/wrong_412_code (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/unauthorized (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/forbidden (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/not_found (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/idempotency_conflict (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/precondition_required (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/rate_limited (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/server_error (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/unavailable (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/success (0.00s)
+    --- PASS: TestAPI01_NodeWriteConflict/POST (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/one_conflict (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/persistent (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/already_intended (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/wrong_412_code (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/unauthorized (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/forbidden (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/not_found (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/idempotency_conflict (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/precondition_required (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/rate_limited (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/server_error (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/unavailable (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/success (0.00s)
+=== RUN   TestAPI01_NodeWriteStopsOnReadOrTransportFailure
+=== RUN   TestAPI01_NodeWriteStopsOnReadOrTransportFailure/write_transport
+=== RUN   TestAPI01_NodeWriteStopsOnReadOrTransportFailure/read_transport
+=== RUN   TestAPI01_NodeWriteStopsOnReadOrTransportFailure/read_503
+=== RUN   TestAPI01_NodeWriteStopsOnReadOrTransportFailure/missing_etag
+=== RUN   TestAPI01_NodeWriteStopsOnReadOrTransportFailure/deadline
+--- PASS: TestAPI01_NodeWriteStopsOnReadOrTransportFailure (0.10s)
+    --- PASS: TestAPI01_NodeWriteStopsOnReadOrTransportFailure/write_transport (0.00s)
+    --- PASS: TestAPI01_NodeWriteStopsOnReadOrTransportFailure/read_transport (0.00s)
+    --- PASS: TestAPI01_NodeWriteStopsOnReadOrTransportFailure/read_503 (0.00s)
+    --- PASS: TestAPI01_NodeWriteStopsOnReadOrTransportFailure/missing_etag (0.00s)
+    --- PASS: TestAPI01_NodeWriteStopsOnReadOrTransportFailure/deadline (0.10s)
+=== RUN   TestAPI01_NodeIntendedRequiresEveryDesiredValue
+--- PASS: TestAPI01_NodeIntendedRequiresEveryDesiredValue (0.00s)
+=== RUN   TestAPI01_NodeWriteTotalDeadline
+--- PASS: TestAPI01_NodeWriteTotalDeadline (10.01s)
+=== RUN   TestAPI01_NodeWriteNoImplicitReplayOrRedirect
+=== RUN   TestAPI01_NodeWriteNoImplicitReplayOrRedirect/reused_connection_eof
+=== RUN   TestAPI01_NodeWriteNoImplicitReplayOrRedirect/redirect
+--- PASS: TestAPI01_NodeWriteNoImplicitReplayOrRedirect (0.00s)
+    --- PASS: TestAPI01_NodeWriteNoImplicitReplayOrRedirect/reused_connection_eof (0.00s)
+    --- PASS: TestAPI01_NodeWriteNoImplicitReplayOrRedirect/redirect (0.00s)
+=== RUN   TestE2E_PortalBilling
+    portal_billing_live_test.go:25: set FVPN_E2E=1 FVPN_E2E_PORTAL_BILLING=1 on a fresh stack for the focused billing run
+--- SKIP: TestE2E_PortalBilling (0.00s)
+=== RUN   TestPrefixE2EDoesNotMatchE2EExports
+--- PASS: TestPrefixE2EDoesNotMatchE2EExports (0.06s)
+=== RUN   TestPrefixFilterKeepsTheImageTag
+--- PASS: TestPrefixFilterKeepsTheImageTag (0.00s)
+=== RUN   TestConfiguredProbeIssuedComparesTheChallengeProbeOnly
+--- PASS: TestConfiguredProbeIssuedComparesTheChallengeProbeOnly (0.00s)
+=== RUN   TestAPI01_PublisherProofOptionalConflictVersion
+=== RUN   TestAPI01_PublisherProofOptionalConflictVersion/{}
+=== RUN   TestAPI01_PublisherProofOptionalConflictVersion/{"current_resource_version":"6"}
+--- PASS: TestAPI01_PublisherProofOptionalConflictVersion (0.00s)
+    --- PASS: TestAPI01_PublisherProofOptionalConflictVersion/{} (0.00s)
+    --- PASS: TestAPI01_PublisherProofOptionalConflictVersion/{"current_resource_version":"6"} (0.00s)
+=== RUN   TestClassifyNetbirdCountsPathsOnly
+--- PASS: TestClassifyNetbirdCountsPathsOnly (0.00s)
+=== RUN   TestD034e_SignedManifestPreservesRollbackAllowlist
+--- PASS: TestD034e_SignedManifestPreservesRollbackAllowlist (0.01s)
+=== RUN   TestD034e_RollbackAllowlistRetainsLastGood
+--- PASS: TestD034e_RollbackAllowlistRetainsLastGood (0.00s)
+=== RUN   TestRunDir_LabelSelectsConfinedDirectory
+--- PASS: TestRunDir_LabelSelectsConfinedDirectory (0.00s)
+=== RUN   TestWriteSummary_CountsEveryStatus
+--- PASS: TestWriteSummary_CountsEveryStatus (0.00s)
+=== RUN   TestSEC02_ProbeFailureDetailRedactsCookiesAndPaths
+--- PASS: TestSEC02_ProbeFailureDetailRedactsCookiesAndPaths (0.00s)
+=== RUN   TestE2E_Acceptance
+    scenarios_test.go:151: scenario stack-health: pass
+    scenarios_test.go:151: scenario control-metrics: pass
+    scenarios_test.go:151: scenario gateway-principals: pass
+    scenarios_test.go:151: scenario admin-login: pass
+    scenarios_test.go:151: scenario backup: pass
+    scenarios_test.go:151: scenario threat-feed-central: pass
+    scenarios_test.go:151: scenario serving-catalogue: pass
+    scenarios_test.go:151: scenario portal-billing-return: pass
+    scenarios_test.go:151: scenario billing: pass
+    scenarios_test.go:151: scenario release-register: pass
+    scenarios_test.go:151: scenario enroll-bootstrap: pass
+    scenarios_test.go:151: scenario agent-supervisor: pass
+    scenarios_test.go:151: scenario desired-state: pass
+    scenarios_test.go:151: scenario threat-feed-node: pass
+    scenarios_test.go:151: scenario node-restart: pass
+    scenarios_test.go:151: scenario publish: pass
+    scenarios_test.go:151: scenario forwarding: pass
+    scenarios_test.go:151: scenario usage: pass
+    scenarios_test.go:151: scenario member-traffic: pass
+    scenarios_test.go:151: scenario established-transports: pass
+    scenarios_test.go:151: scenario forced-relay: pass
+    scenarios_test.go:151: scenario exit-dns: pass
+    scenarios_test.go:151: scenario member-ipv6: blocked
+    scenarios_test.go:151: scenario worker-restart: pass
+    scenarios_test.go:151: scenario device-revoke: pass
+    scenarios_test.go:151: scenario native-scale-hook: pass
+    scenarios_test.go:151: scenario gateway-privacy: pass
+    scenarios_test.go:151: scenario threat-feed-tamper: pass
+    scenarios_test.go:151: scenario update-good: pass
+    scenarios_test.go:151: scenario update-bad: pass
+    scenarios_test.go:151: scenario lease-expiry: pass
+    scenarios_test.go:151: scenario revoke: pass
+    scenarios_test.go:151: scenario second-exit: pass
+    scenarios_test.go:184: acceptance summary: pass=32 blocked=1 fail=0 run=8a436a87-5efe-4c18-a7ec-72be170cb69b source=9fbff94c84b0d29c2d78f420e76726f7c9a706ad
+    scenarios_test.go:191: one or more scenarios are blocked or failed; see docs/e2e/runs
+--- FAIL: TestE2E_Acceptance (1367.82s)
+=== RUN   TestD160_AdmissionPrecedesSectionAndNeverRunsInside
+    timing_test.go:74: admission precedes start; held host inside section does not check/wait or contaminate tool output; end recorded
+--- PASS: TestD160_AdmissionPrecedesSectionAndNeverRunsInside (0.05s)
+=== RUN   TestD160_HeldBeforeSectionWaitsBeforeStart
+    timing_test.go:91: held/free answers retained; exactly one 60-second recheck interval requested before section
+--- PASS: TestD160_HeldBeforeSectionWaitsBeforeStart (0.02s)
+=== RUN   TestD158_TwoUpdaterInvocationOutputsSurvive
+    updater_invocations_test.go:56: two invocations retained byte-for-byte; exits 0/3 and start/end/PID receipts verified
+--- PASS: TestD158_TwoUpdaterInvocationOutputsSurvive (0.02s)
+FAIL
+FAIL	github.com/TED-H-com/Freedom-VPN/tests/e2e	1386.659s
+FAIL
+make[1]: *** [mk/e2e.mk:67: e2e-acceptance] Error 1
+make[1]: Leaving directory '<worktree>'
+make: *** [mk/e2e.mk:60: e2e-test] Error 2

@@ -1,0 +1,67 @@
+{
+  "run_id": "5715939e-3943-48f1-8bd5-c869bf7c91c2",
+  "source_commit": "dbfccc6fc7d076ec73f4f8575eb27efe39337a23",
+  "logs": [
+    {
+      "role": "node",
+      "log": "agent.log",
+      "bytes": 13483,
+      "sha256": "484676edb31fe0e21fc3e29068159f608cd08c1949d4aa95fdbe01275bb5e758",
+      "diagnostic_lines": [
+        {
+          "line": 1,
+          "text": "time=2026-11-04T03:55:48.711Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=87991162761210 generation=66"
+        },
+        {
+          "line": 2,
+          "text": "time=2026-11-04T03:55:48.735Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=87991187013156 succeeded=true"
+        }
+      ]
+    },
+    {
+      "role": "node",
+      "log": "watchdog.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "diagnostic_lines": []
+    },
+    {
+      "role": "node2",
+      "log": "agent.log",
+      "bytes": 2961,
+      "sha256": "175b855cc4a6c1ae2c22db8adee61ee00c483491066354ae780a56286942ba8a",
+      "diagnostic_lines": [
+        {
+          "line": 1,
+          "text": "time=2026-11-04T04:05:48.360Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=88590811912332 generation=67"
+        },
+        {
+          "line": 2,
+          "text": "time=2026-11-04T04:05:48.378Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=88590829759406 succeeded=true"
+        }
+      ]
+    },
+    {
+      "role": "node2",
+      "log": "watchdog.log",
+      "bytes": 780,
+      "sha256": "35d9c9fc11dd25c54ceca2a35bb20156f7c869e189daee9565106d7ca7ee1218",
+      "diagnostic_lines": [
+        {
+          "line": 1,
+          "text": "{\"time\":\"2026-11-04T04:05:48.281765307Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"baseline_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":88590731926267,\"heartbeat_mono_ns\":88579649456070,\"policy_expires_mono_ns\":89128364137125,\"generation\":67,\"serving\":true,\"baseline_ok\":true}"
+        },
+        {
+          "line": 2,
+          "text": "{\"time\":\"2026-11-04T04:05:48.282796836Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"baseline_unreadable\",\"mono_ns\":88590733217750,\"heartbeat_mono_ns\":88579649456070,\"policy_expires_mono_ns\":89128364137125,\"generation\":67}"
+        },
+        {
+          "line": 3,
+          "text": "{\"time\":\"2026-11-04T04:05:48.301374906Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"baseline_unreadable\",\"mono_ns\":88590752747971,\"succeeded\":true}"
+        }
+      ]
+    }
+  ],
+  "F48_01": "Not demonstrated by retained restart logs: AT09 watchdog cause is baseline_unreadable, not baseline_unverified; no GENERATION_MISMATCH appears in these retained agent logs. Do not assign this to F48-01 or r27 H-1.",
+  "limits": "Final logs cover each container latest startup. The fixture overwrites agent logs on process starts and watchdog logs on namespace/container starts; absence here cannot exclude an earlier same-boot restart race. No F48-01 closure claimed."
+}

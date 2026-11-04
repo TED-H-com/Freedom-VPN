@@ -237,3 +237,12 @@ Run `7b0db5f2-eab5-4534-824a-b54781eed3fd` on clean source `0b95e69a`, baseline 
 **15 node-write commands / 16 attempts / one 412**, resolved by fresh ETag 917→918 and same-key/body retry to 202; all attempts retained. Restart/watchdog records show no F48-01 paired signature. Four source restart-command windows and the initial heartbeat-unreadable watchdog decision are documented; absence of a decision is not proof of a forced D-156 interleaving.
 
 Wait **1414.753 s**, 53 clear overlap samples, zero owned Docker inventory. [173-file root archive](history/follow-up-21/archive.json), [125-file run archive](history/follow-up-22-run/archive.json). **New F22-01** routes the unchanged lab failure to its owner. Native platform/full fault matrices and pure stale_generation remain carried. [Requests](requests.md). Earlier root-link contexts are frozen under follow-up 21.
+
+
+## Follow-up 23 — 2026-11-04 EST (additive current result)
+
+Run `328ab9e0-7ff4-495a-81c1-410ae8a7d876`, baseline `2d3aaeed`, clean measured source `89accd8d`: **27 pass / 2 blocked / 0 fail acceptance rows**, all 29 statuses unchanged. **D-120 passes under D-161**, with complete checked combined captures: **65 TCP reads, zero timeouts, six guard-attributed lost transmissions, zero attributed or unattributed timeouts, zero UDP losses, longest stall 210.082 ms**. **F22-01 answered**; original run 7b0db5f2 stays failed. [Every row and retained evidence](followup23-2026-11-04.md).
+
+Member expiry opens and passes five denied probes/six serving reads (**r28 M-1’s second live pass**). Whole-node expiry passes D-140 and qualifies under D-142: **164 positives / 69 drops**, bracket **(D−99.957279 ms,D−94.057588 ms]**, zero interleavings. **15 node-write commands / 15 first-attempt 202s / no conflicts**. Four source restart-command windows; no F48-01 paired signature. Watchdog initial heartbeat-unreadable and later policy-expired decisions are retained without inferring a recovery pass.
+
+No other-run wait; admission checks **0.175 s**, **48 clear overlap samples**, run **1430.476 s**, exit **2** for the carried operator blocks, no retry, zero owned Docker inventory. D-160’s static/runtime audit finds no timed-section admission wait; no harness code change. [184-file original root archive](history/follow-up-22/archive.json), [139-file new runtime archive](history/follow-up-23-run/archive.json). Native platform/full fault matrices and pure stale_generation remain carried; no new request. Earlier root-link contexts are frozen under follow-up 22.
