@@ -67,3 +67,10 @@ D-138 requires at least two pooled legs per arm, repeated direction in both wind
 - B4 / 2: dry prerequisite failed; declaration withheld; no reservation.
 
 No pooled legs in either arm; no comparison or attribution.
+
+## Ordinary production gate
+
+The separate uninstrumented main lab passed all 13 scenarios on
+`6548329f8f82a01de99d46392e70018a7cdbedcd`. Its receipt is
+[the production lab record](followup47-production-lab-2026-11-03.json).
+This is functional only and adds no timing leg or pooled span.
