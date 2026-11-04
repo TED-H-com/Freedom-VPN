@@ -1,0 +1,79 @@
+{
+  "prior_run": "6a25221b-1dcf-4f4d-b866-cd04f57f58f6",
+  "current_run": "dee8492f-4a7e-4f3c-9063-3ab27f66dcec",
+  "status_changes": [
+    {
+      "case": "AT09",
+      "index": 44,
+      "name": "native dual MTU 1280 transfer",
+      "prior": "blocked",
+      "current": "pass"
+    },
+    {
+      "case": "AT09",
+      "index": 46,
+      "name": "native dual MTU 1280 D-146 clamp evidence",
+      "prior": "blocked",
+      "current": "pass"
+    }
+  ],
+  "runtime_label_changes": [
+    {
+      "case": "AT02",
+      "index": 46,
+      "prior": "native capture completeness regrant-01a1a66b-9178-7839-ac86-aaf53466f2c3",
+      "current": "native capture completeness regrant-01a1a77d-5f3f-7bea-9662-2b7f9843e48e",
+      "prior_status": "pass",
+      "current_status": "pass"
+    },
+    {
+      "case": "AT02",
+      "index": 92,
+      "prior": "persistent TCP/UDP positive member-a4",
+      "current": "persistent TCP/UDP positive member-a3",
+      "prior_status": "pass",
+      "current_status": "pass"
+    },
+    {
+      "case": "AT02",
+      "index": 96,
+      "prior": "persistent withdrawal member-a4",
+      "current": "persistent withdrawal member-a3",
+      "prior_status": "pass",
+      "current_status": "pass"
+    },
+    {
+      "case": "AT02",
+      "index": 123,
+      "prior": "persistent TCP/UDP positive member-a4",
+      "current": "persistent TCP/UDP positive member-a3",
+      "prior_status": "pass",
+      "current_status": "pass"
+    },
+    {
+      "case": "AT02",
+      "index": 127,
+      "prior": "persistent withdrawal member-a4",
+      "current": "persistent withdrawal member-a3",
+      "prior_status": "pass",
+      "current_status": "pass"
+    },
+    {
+      "case": "AT02",
+      "index": 133,
+      "prior": "native capture completeness regrant-01a1a66f-068b-7048-ab88-e696490b191e",
+      "current": "native capture completeness regrant-01a1a780-d857-7c7f-8db0-cafacc5a69a9",
+      "prior_status": "pass",
+      "current_status": "pass"
+    },
+    {
+      "case": "AT03",
+      "index": 96,
+      "prior": "native capture completeness regrant-01a1a67c-477d-7e33-9919-3638ab99779b",
+      "current": "native capture completeness regrant-01a1a78d-da24-75e1-a65c-d9f72b9f5b46",
+      "prior_status": "pass",
+      "current_status": "pass"
+    }
+  ],
+  "scope": "Compare original check positions; predicates and original check counts unchanged. Keep both names instead of treating generated IDs or selected sibling labels as missing prior tests."
+}

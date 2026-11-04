@@ -1,0 +1,62 @@
+[
+  {
+    "run_id": 41782791081,
+    "branch": "main",
+    "head_sha": "0cf5a5dbef26000ee25bd5b415a01bc40fa94ce4",
+    "short_sha": "0cf5a5d",
+    "pr": 456,
+    "test": "TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat/term_after_baseline_with_ledger_timeout_leaves_stale_serving_true_heartbeat",
+    "parent_test": "TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat",
+    "file": "node/agent/review_r22_test.go",
+    "line": 880,
+    "failure": "expected context.Canceled on TERM after baseline, got agent: boot failed: local deadline: context deadline exceeded"
+  },
+  {
+    "run_id": 41787173794,
+    "branch": "w4-handover",
+    "head_sha": "eea0abd0828070f52ab2c7bc5d33814db2dc04e5",
+    "short_sha": "eea0abd",
+    "pr": null,
+    "test": "TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample/delivered_ACK",
+    "parent_test": "TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample",
+    "file": "node/agent/followup25_usage_test.go",
+    "line": 108,
+    "failure": "retired posts=2, accepted batches=1, accepted events=1"
+  },
+  {
+    "run_id": 41794009264,
+    "branch": "w2-agent-core",
+    "head_sha": "84e7198e2c525f6a1004cb3527549d292d4bc745",
+    "short_sha": "84e7198",
+    "pr": null,
+    "test": "TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery",
+    "parent_test": "TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery",
+    "file": "node/agent/review_r29_test.go",
+    "line": 187,
+    "failure": "agent: boot failed: local deadline: context deadline exceeded"
+  },
+  {
+    "run_id": 41808885873,
+    "branch": "main",
+    "head_sha": "48ee50ec4f72f05f18e677a1f6216526cc27bf94",
+    "short_sha": "48ee50e",
+    "pr": 464,
+    "test": "TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption",
+    "parent_test": "TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption",
+    "file": "node/agent/review_r23_test.go",
+    "line": 196,
+    "failure": "same-boot adoption was refused after switchEpoch left usage_apply_intent on E1"
+  },
+  {
+    "run_id": 41871089749,
+    "branch": "main",
+    "head_sha": "014b59ab15288dc6bc053932104e26a8f3327e9e",
+    "short_sha": "014b59a",
+    "pr": 478,
+    "test": "TestD155_CrashedTransactionsKeepAgentRunning/blocked",
+    "parent_test": "TestD155_CrashedTransactionsKeepAgentRunning",
+    "file": "node/agent/followup49_transaction_test.go",
+    "line": 258,
+    "failure": "agent: boot failed: local deadline: context deadline exceeded"
+  }
+]
