@@ -1,0 +1,385 @@
+# 2026-11-04 — Follow-up 18
+
+## Diagnosis before changes
+
+At baseline `6f52dfc9491db5c6893c681e88742f43b2251117`, the stale-deadline
+reading is supported. Run `b2de46c8-7611-4b7c-8863-2345ff2b0240` does **not**
+show forwarding beyond the node's accepted deadline. Its failed row remains
+failed. Two details cannot be stated as the prompt suggests: the two held
+checks were retries of one Docker invocation, and the retained records omit
+the renewed lease's ID and signed issue time. Those omissions are explicit
+below; neither is evidence of a product deadline breach. PR #460's body and
+Follow-up 17's report were read and compared with the actual records.
+
+### Held checks and all waits
+
+`tests/e2e/at/secops/followup11_transports_test.go:151–180` first polls central
+`serving_leases` for up to 90s (one-second sleeps), stores the latest issued
+row, then calls `timeoutView` followed by `heartbeatView`. The lease-expiry
+case's first Docker invocation after the successful read is therefore
+`docker exec fvpn-w4-secops-node nft -j list set inet fvpn allowed_v4`
+(`deadline_live_test.go:289–299`). `live_test.go:366–367` passes it through PATH
+with only the test context. The nested wrapper generated under `.agent/tmp`
+by `admitted.py:21–39` checks `$FVPN_HOLD_SH`, logs one line, sleeps **60s**,
+and retries that **same command**, up to ten checks (nine sleeps, 540s).
+It does not return to Go between checks.
+
+[Admission receipts](history/follow-up-17/followup17-admission.json) contain
+held answers at 06:34:21Z and 06:35:21Z, then free at 06:36:21Z and another
+free at 06:36:22Z. The separate private admission log lines 2305–2308 agree.
+Both held checks therefore precede the timeout-set read; the following
+`docker exec ... cat /run/vpn-node/heartbeat` is a separate free check.
+This command attribution follows sequential control flow, not recorded argv:
+the historical receipt records only command basename. It would be inaccurate
+to claim two different Docker commands each independently waited once.
+
+From the deadline read through the last cutoff sample, all potential waits are:
+
+- The remainder of the 90s central query loop, including SQL calls bounded only
+  by the test context and one-second retries. Its final successful row supplies
+  the old D; no later lease read exists in this case.
+- Both view commands above, worker `docker pause`, control `docker stop --time
+  2`, each status/counter Docker read, `PauseAgent`'s Docker touch, and the
+  agent SIGKILL Docker exec. Each could invoke the wrapper's 540s admission
+  loop; otherwise most use only the test context, whose enclosing Go timeout
+  is **45m** (`followup11_run.py:61`). The stop grace is 2s, not a 2s command
+  timeout. No fault-command retry exists in Go.
+- Two status/counter reads surrounding the unchanged **3s** diagnostic
+  (`followup11_transports_test.go:210–219`), then samples with **1s** sleeps
+  until D+3s (227–230), followed by two cutoff samples separated by **10s**
+  (231–235). `sampleTransport11:19–22` reads status and counters sequentially.
+- Status and counter commands have no shorter outer timeout
+  (`tests/e2e/established.go:38–65,181–202`). Counter parse-failure evidence
+  export can run further Docker reads with a **5s** context (62 onward).
+  These are diagnostic reads, not a transport retry.
+
+Recovery readiness (40s), flow retries (120s, 2s sleeps), restart/unpause,
+post-cutoff views and fleet restoration follow the last cutoff sample; they
+are outside the requested section. No predicate or timeout is changed here.
+
+### The enforced deadline and what the records prove
+
+`node/agent/sync.go:300–344` verifies and accepts the signed lease, stores its
+request CLOCK_MONOTONIC anchor and envelope in local SQLite. Same-ID replay
+retains the original anchor. `decide.go:620–700` intersects node lease duration,
+member/grant and binding limits with that anchor and hands `DeadlineMono` to
+enforcement. `node/enforce/deadline.go:36–60`, `apply.go:180–217` and
+`render_nft.go:98,138–140,189–191` install bounded timeout elements in
+`inet fvpn allowed_v4`; source/destination membership drops precede forwarding.
+Those kernel elements expire even with control down and the agent killed.
+The temporary `fv_deadline_guard` chain protects installation and is removed
+after success; it is not a timer that must be driven by the killed agent.
+The independent watchdog can also withdraw the baseline.
+
+Read-only views are the accepted local lease/anchor (`leaseprobe/main.go:24–49`),
+heartbeat `policy_expires_mono_ns` (`engine.go:1535–1539`,
+`deadlines.go:32–53`: last installed binding deadline), and nft JSON timeout /
+expires for `allowed_v4`. The heartbeat need not equal an individual earlier
+grant end; the case must take the earlier grant end where appropriate.
+
+[Failure receipt](history/follow-up-17/followup17-lease-expiry-finding.json)
+`details.recorded_lease` names generation **14**, issued
+**06:34:21.397505Z**, expired **06:35:21.397505Z**. It contains neither lease ID
+nor anchor nor signed cap. Fault start is **06:36:22.059987198Z**, 60.662482s
+past that cached expiry. [Live record](history/follow-up-17/followup17-transports-live.json)
+`transport_cases.lease_expiry.before_heartbeat` and `after_heartbeat` both
+show generation14 and **D=97658778490379 ns**, heartbeat wall
+1793774181418229445 / mono97623869605414. Its kernel timeout view has 34s
+remaining before the fault and 19s after the cutoff samples. The restart
+actually adopts the same installed generation14/D at **06:36:37.101Z**
+([diagnostic](history/follow-up-17/followup17-diagnostic.json),
+`agent_restart_excerpts`, source `lease_expiry-after-agent.log:2`).
+
+The wall/monotonic pair maps D to approximately **06:36:56.327115Z**, not the
+cached 06:35:21.397505Z. A 60s lease's request anchor would be approximately
+**06:35:56.327115Z**. This is an **inference about request time**, not a signed
+issue timestamp. The generation14 renewal is demonstrated by the later
+installed deadline, positive kernel remaining lifetime and restart adoption;
+its exact lease ID and signed issue time were **not retained**. The case never
+read its local lease; the next local read belongs to the subsequent live-agent
+case, lease `bef669a3`, generation16, issued06:36:52.273355057Z, and cannot be
+substituted. Cleanup removed the old store. Exact historical renewal identity
+cannot honestly be reconstructed from these records.
+
+Cutoff observations at **06:36:26.006219887Z** and **06:36:36.221762235Z**
+ended 30.325212390s and 20.117164530s before the held heartbeat D; both TCP
+and UDP counts increased **322→342**. The sampling loop to cached D+3s was
+already over. The quiet predicate correctly failed a wrongly timed window.
+
+### Every timed sub-case
+
+All six measured sub-cases previously inherited nested Docker admission and
+could wait inside the section. D-160 must protect these boundaries, including
+lease reads and their diagnostic views:
+
+| Case | Start | End | Existing waits within it |
+|---|---|---|---|
+| lease_expiry | first deadline read, conservatively before its 90s qualification loop (followup11:151) | second cutoff sample (233) | SQL poll, views, worker/control/agent commands, 3s diagnostic, 1s samples to D+3s, 10s quiet |
+| grant_expiry | first lease read (151); includes wait to end−25s and re-read (165–172) | second cutoff sample (233) | same as lease expiry plus wait to end−25s; both views occur after re-read |
+| device_revoke | deadline read after the relay case (151), before revoke (195) | second cutoff sample (233) | views, public DELETE, samples to request-return+60s+3s and 10s quiet |
+| forced_relay | before starting its clock / direct-path read (followup11:273–279) | last restored-path transport sample (313) | force and restore each poll paths up to90s every2s; 180s automatic fault expiry; two5s windows |
+| manual_grant_withdrawal | before views and immutable-observation lease read (followup15:108–114) | independent second cutoff sample (213–214) | 90s lease poll; public revoke retries/operation reads; samples to min(online60s,offlineD)+10s; agent stop and independent10s quiet |
+| control_lost_agent_alive | before first accepted-lease qualification read (followup16:296) | last continuity/cutoff sample (363–366) | 90s qualification; views, worker pause/control stop, post-stop lease read; original scheduled cadence through D+3s+10s+one cadence |
+
+Guest clock rollback has no timed section because its prerequisite is absent.
+Follow-up17 qualification (`lease_setup.go:29–49`, followup16:197–221,296–351)
+already requires a local post-cap60s lease and re-reads after control stops.
+Its predicates and Follow-ups16/17 offline proofs must remain unchanged.
+
+### Requests to orchestrator
+
+**2026-11-04 — evidence owner:** the exact ID and signed issue time of the
+historical generation14 renewal were not recorded. Retain this limitation;
+do not label the derived06:35:56 request time as signed issuance. Future
+fault-time local snapshots close this evidence gap. No product breach is
+established and the harness repair can proceed.
+
+## Harness change and offline proof
+
+`timing_admission.py` owns D-160's journal and marker protocol. Each Go case
+calls `beginTimed18` before its first deadline read (or relay clock), waits for
+free there, then records the start. The private generated wrappers consult
+that marker, recording command execution without asking admission. The case
+records its end after its last cutoff sample, including early-return closure.
+Checks outside sections retain their UTC/monotonic start, completion and
+free/held answer without private reasons or foreign arguments. The committed
+offline validator rejects missing boundaries, missing free boundary admission,
+any check overlapping a section, or a mismatch between Go rows and the journal.
+D-133 monitoring is independent and never delays a timed section.
+
+The old case retains the central read and now also records its accepted local
+lease before the fault. After `docker stop` returns it reads local SQLite and
+the heartbeat again. `faultDeadline18` requires a successful local read,
+identity/anchor, signed cap60, duration(0,60s], exact heartbeat D and a future
+D at read completion. An earlier grant end wins. The loop uses a Go monotonic
+clock deadline mapped from that accepted CLOCK_MONOTONIC D. Rejection names
+ID, generation, issue time, cap, duration, lease D, heartbeat D and local-read
+status. Stop/kill/read times and both leases are retained. The original cap
+is read and restoration registered before its mutation; process restoration
+closes the section first. No product or SQL mutation is introduced.
+
+The three-second diagnostic, D+3s loop, ten-second quiet test, recovery and
+attribution limit are unchanged. All other case predicates are unchanged;
+Follow-up16's evaluator/synthetic tests and Follow-up17's qualification/tests
+are byte-identical to baseline. Their offline proofs pass, including H-1
+early withdrawal and replies beyond D+3s. New proofs select a renewed lease's
+D, reject expired/over-cap/nonlocal/mismatching rereads and reject the historical generation14 record with heartbeat
+D97658778490379. Missing fields in that historical record remain missing;
+zero-valued decoded fields do not assert an actual signed cap0.
+
+The Python admission proof exercises held→free, proving the section waits
+60s before starting; no check is made for a nested command during the section.
+Injected held **and free** checks inside a section both invalidate evidence.
+A synthetic clock fixture initially reused a timestamp and failed this strict
+audit; the fixture was corrected. Initial e2e-only staticcheck found an
+integration-only helper in the e2e file; it was moved to the integration file.
+Both initial failures and final verification are retained in this run's records.
+
+## Pre-subject wrapper stop and authorized rerun
+
+The first dispatch on `b3c5d680` passed preflight at07:43Z but never reached
+`make`, stack setup or a Go sub-case. The new admission implementation inherited
+the wrapped PATH; `$FVPN_HOLD_SH` invokes Python, which recursively entered the
+wrapper. The foreground owner's tree was stopped and killed (11,215 owned
+processes); no foreign process was signalled. Independent inventory found zero
+owned containers/images/networks/volumes and zero active timing-helper processes.
+This is a harness defect, not a sub-case result. The invocation now uses the
+original unwrapped PATH, as the previous wrapper did. A regression test runs a
+hold script that itself invokes Python while a failing fake Python wrapper is
+first on PATH. It passes only with the original PATH restored. All45 Python
+tests and Go area tests pass; an actual nested-admission smoke check also passed.
+
+The original preflight, overlap journal and two admission receipts are retained
+at `history/follow-up-18-pre-subject/`, with stop/inventory receipts and SHA-256
+pins. The sole allowed pre-subject harness rerun is used after this fix is
+committed. There is no authorization for any further rerun or failed sub-case
+retry. The recorded 180s initial admission wait remains part of the120-minute
+budget. The recursion is routed as a harness incident with its receipts.
+
+## One live AT29 run
+
+Run **`9d927350-eaa5-4461-ad11-8cf2f4d54c95`**, driver`b02a5d06-ffd8-4403-8ca9-b5a425086a89`, source
+`e20414b1003d473e48b11a6299ffa190ef2ae8b7`, application baseline`6f52dfc9491db5c6893c681e88742f43b2251117`,
+ran **2026-11-04T07:47:03Z–2026-11-04T08:02:12Z**. Go passed in843.687s.
+This was the sole completed live attempt, following the permitted pre-subject
+wrapper rerun; no sub-case was retried. [Full live record](history/follow-up-18/followup18-transports-live.json),
+[driver/cleanup record](history/follow-up-18/followup18-transports-run.json).
+
+**SECOPS-F17-01 is answered.** The old case reached cutoff with its accepted
+D read at the fault and no admission inside its section. All runnable AT29
+cases and the bounded relay case passed. **AT29 changes from failed to blocked**:
+guest clock rollback is unavailable and the attempt is **confounded under
+D-133**. Run`b2de46c8` remains failed in its byte-identical
+[145-file D-098 archive](history/before-follow-up-18/archive-index.json).
+AT30 and full AT31 are not rerun or promoted.
+
+| Case | Result | Go elapsed |
+|---|---|---|
+| grant_expiry | passed | 200.76s |
+| lease_expiry | passed | 256.79s, including120s post-cutoff admission sleep |
+| control_lost_agent_alive | passed | 92.64s |
+| device_revoke | passed | 148.08s, including bounded relay |
+| forced_relay | passed | inside device-revoke setup |
+| manual_grant_withdrawal | passed | 112.98s |
+| guest_clock_rollback | blocked | independently clocked disposable guest absent |
+
+### Old case: actual fault lease and cutoff
+
+Before-fault local read and fault-time local read both held lease
+**`103d521b-4af2-44a0-a1d4-8db90c46b210`**, generation**13**, signed cap**60s**,
+issued**07:52:27.909612618Z**, expires**07:53:27.909612618Z**. Its request
+anchor is**102190356706715 ns**, hence **D=102250356706715 CLOCK_MONOTONIC ns**.
+The central pre-fault observation is also retained as`signed_lease`; it is not
+used instead of the accepted local read. Grant end is later, so lease D wins.
+
+Control stop ran **07:52:29.069599301–07:52:29.334933528Z**. The post-stop read
+ran **07:52:29.334936647–07:52:29.422331197Z**, with locally_accepted=true,
+read mono102191873706405, heartbeat serving1/reason serving/generation13 and
+policy deadline**102250356706715**. D remained58.483000310s in the future.
+The supervisor was paused, then SIGKILL ran
+**07:52:32.686632449–07:52:32.729190192Z**. The three-second diagnostic stayed
+unchanged. [Focused receipts](history/follow-up-18/followup18-diagnostic.json),
+[qualification audit](history/follow-up-18/followup18-audit.json).
+
+| Transport | Last reply observation before D | First quiet sample after D |
+|---|---|---|
+| TCP/9446 | 07:53:01.708266445Z, D−26.197063264s, count148 | 07:53:28.295765854Z, D+0.390436151s, count148 |
+| Authenticated UDP/9445 | 07:53:01.708266445Z, D−26.197063264s, count148 | 07:53:28.295765854Z, D+0.390436151s, count148 |
+
+These are sampler observations, not packet timestamps. The watchdog's
+`heartbeat_stale` decision at**07:53:00.928068131Z**, watchdog.log line13,
+explains earlier independent withdrawal with the agent killed. This result
+proves the unchanged cutoff predicate; it does **not** isolate kernel expiry
+at D or require continuity with the killed agent. The live-agent case below
+supplies the unchanged full continuity test. Both final cutoff samples at
+**07:53:31.616590452Z** and **07:53:41.734181866Z** retain count148 for each
+transport (D+3.711260935s and D+13.828852174s). Native route withdrawal,
+watchdog withdrawal and kernel enforcement retain their existing attribution
+limit. Recovery flow and ACK passed; control restart, worker unpause and agent
+resume all succeeded. Fleet cap restoration returned200 and read back the
+original86400. No database row was edited.
+
+### Live-agent control loss
+
+The unchanged Follow-up17 setup confirmed cap60 at**07:55:45.985249Z**.
+Accepted lease**`6a84a77c-d261-45d9-bf0c-482d90b71948`**, generation**15**,
+was issued**07:55:57.721128329Z**, expires**07:56:57.721128329Z**, signed
+cap/lifetime**60s**. Request anchor**102400167899142**, **D=102460167899142 ns**.
+Control loss began**07:56:07.532008351Z** and stop completed**07:56:07.845510741Z**.
+The agent remained PID**154725**, start ticks**10238491**, in all**65** samples
+and recovery. Eleven retained `control request ended` warnings span
+07:56:17.558–07:57:09.086Z, with actual Step/control budget5s/5s and watchdog
+staleness30s. [Full diagnostics](history/follow-up-18/followup18-diagnostic.json).
+
+The original continuity window is**49.083512775s**, through elapsed
+55.582408333s (D−101ms−1s); D is elapsed56.683408333s. The final continuity
+heartbeat is serving1/reason serving with exact policy D. Afterwards it is
+serving0/reason lease_expired/policy deadline0; recovery returns serving1.
+
+| Transport | Last reply observation before D | First quiet sample after D |
+|---|---|---|
+| TCP/9446 | elapsed55.697228772s, D−0.986179561s | elapsed58.690929268s, D+2.007520935s |
+| Authenticated UDP/9445 | elapsed55.697228772s, D−0.986179561s | elapsed58.690929268s, D+2.007520935s |
+
+The final count increase was observed at elapsed57.697218615s
+(D+1.013810282s). This is a sample-time statement; no packet-level deadline
+claim is inferred. D+3s cutoff and full ten-second quiet passed. Last read
+ended elapsed70.734063294s (D+14.050654961s). Control restart/worker unpause
+succeeded; fleet restoration HTTP200/read-back matched86400. Original finite
+member end**08:25:45Z** and authorized device standing were restored through
+public APIs. No restart occurred in this case.
+
+### Admission and overlap
+
+Both pre-dispatch process inventories were empty, including the recheck after
+`vmstat 5 7`; the baseline and complete vmstat output are in
+[preflight](history/follow-up-18/followup18-preflight.json). Initial waiting was
+**180.109s** (~3m). This run requested **120s** of
+admission sleeping after the old cutoff, for **300.109s**
+(~5m) pre/live waiting. The pre-subject wrapper runtime is reported separately,
+not mislabelled as admission waiting.
+
+All**509 admission checks**, with UTC/monotonic start, answer and completion,
+are retained individually with their before/after-section placement in
+[admission placements](history/follow-up-18/followup18-admission-placement.json). All**507 free**
+and **two held** answers are outside the sections. The held checks are
+**07:53:41.828536Z** and **07:54:41.870603Z**, both after lease_expiry end
+**07:53:41.770703Z** and before the next section. They delay the post-cutoff
+view/recovery, not the deadline measurement. Raw committed harness records
+are in [the journal](history/follow-up-18/followup18-admission.json); offline audit passes.
+
+| Timed section | Start UTC | End UTC | Foreign monitor samples within |
+|---|---|---|---|
+| grant_expiry | 07:48:38.532017Z | 07:51:22.017344Z | 0 |
+| lease_expiry | 07:51:51.856330Z | 07:53:41.770703Z | 0 |
+| control_lost_agent_alive | 07:56:07.251265Z | 07:57:11.803277Z | 13 |
+| forced_relay | 07:57:52.975193Z | 07:58:31.004321Z | 8 |
+| device_revoke | 07:58:31.328812Z | 07:59:45.071592Z | 14 |
+| manual_grant_withdrawal | 08:00:02.804198Z | 08:01:25.598545Z | 16 |
+
+The monitor observed**77 occupied samples**, first07:55:20Z, after the old
+case's timed section. Subsequent sections overlap other lane activity; the
+attempt remains**confounded under D-133**, including passing rows. Foreign
+records contain only pid, comm and ticks. No reservation or overlap retry was
+taken. [Complete overlap evidence](history/follow-up-18/followup18-overlap.json).
+
+### Node writes, restarts and watchdog
+
+There are **zero node_write conflicts**. Capacity PATCH and publication PUT
+each have one attempt, HTTP202; the duplicate publication receipt is retained
+without counting a third command. Every attempt is retained in
+[node-write evidence](history/follow-up-18/followup18-node-writes.json).
+
+| Case | Before → after PID/start ticks | Restart log evidence |
+|---|---|---|
+| grant_expiry | 1136/10190762 → 58400/10212507 | grant_expiry-after-agent.log:1–2: boot_unverified baseline07:51:22.645–.670Z after expired generation7 |
+| lease_expiry | 58400/10212507 → 154725/10238491 | lease_expiry-after-agent.log:1–2: boot_unverified baseline07:55:42.489–.514Z after expired generation13 |
+| manual_grant_withdrawal | 154725/10238491 → 244201/10272829 | manual_grant_withdrawal-after-agent.log:2: serving rules adopted generation24 at08:01:25.968Z, D103245445403184 |
+
+The unchanged manual case intentionally pauses/resumes its supervisor. Device
+revoke and live-agent control loss have no identity change. All numbered
+watchdog/agent excerpts are retained in the focused diagnostics and full live
+record. Watchdog line1 is heartbeat_unreadable at07:47:45.128518621Z;
+lines4/7 are policy_expired at07:51:10.473455398Z and07:51:15.508283446Z;
+line10 is heartbeat_stale at07:51:20.534364762Z. Lines13,16,…,109 are
+heartbeat_stale decisions every approximately5s from07:53:00.928068131Z
+through07:55:42.415209187Z, with their write begin/end lines retained.
+The last of those precedes the successor's boot baseline by74ms. No watchdog
+decision occurs during the later valid-rule adoption interval or the new
+live-agent continuity case. There is no`baseline_unverified` or
+`GENERATION_MISMATCH` signature in any captured restart log: **F48-01 did not
+recur in these observed restarts**. Other restart lifecycles remain unqualified.
+
+Driver and independent post-driver inventories are zero for owned containers,
+images, networks and volumes; generated state was removed.
+[Independent cleanup](history/follow-up-18/followup18-cleanup.json).
+
+### Requests to orchestrator — final disposition
+
+- **2026-11-04 — handover/acceptance owner:** carry SECOPS-F17-01 answered and
+  current AT29 blocked, with all runnable cases passed but D-133 confounding
+  and missing guest-clock evidence. Preserve b2de46c8 and1bfd5cff as failed.
+- **2026-11-04 — orchestrator/scheduling:** retain the D-133 limitation;
+  no unconfounded acceptance claim or automatic rerun is authorized here.
+- **2026-11-04 — w3-devstack-e2e/operator:** supply the independently clocked
+  disposable guest. No shared-host clock substitute was used.
+- **2026-11-04 — harness/evidence owners:** retain the pre-subject wrapper
+  incident and PATH regression proof, and the missing exact historical renewal
+  identity. No product deadline failure was observed in the corrected old case.
+
+## Final verification
+
+All nine gates passed sequentially after a separate **301s** final-gate
+admission wait (2026-11-04T08:04:33Z–2026-11-04T08:09:34Z). Area tests include **45 Python tests**;
+amd64/arm64 test and leaseprobe builds pass. Exact e2e-lint, handover tests,
+root go-lint (shell cleanup trap disabled), whole-module gofmt, diff check
+and committed-evidence hygiene pass. [Actual output tails](history/follow-up-18/followup18-gates.json).
+The initial staticcheck failure is retained in the initial-gate receipt.
+
+All1,119 prior history files remain unchanged. All145 pre-run root records
+match the archive source commit byte-for-byte. Eight prior evaluator/setup/
+proof files remain unchanged. New files are below20MB; no gzip is required.
+New evidence pins target immutable history paths only. Five historical scope
+pin mismatches were already present at baseline (three mutable history-index
+references and two handover-source references); none was silently repaired.
+[Verification receipt](history/follow-up-18/followup18-verification.json).

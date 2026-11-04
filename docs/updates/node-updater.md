@@ -34,9 +34,12 @@ Acquisition timing does not change these exit meanings. Revised D-158 gives
 budget**, polling every 20 ms. A live holder beyond that budget still produces
 exit 3 and the exact error line below. `recover` and standalone library `Retain`
 keep five attempts 20 ms apart (80 ms of retry delays). Stale-holder diagnostics
-keep that five-attempt window, counted from the first stale answer, and exit 1;
-unreadable metadata retains the existing conservative live-busy classification.
-See [follow-up 25](node-followup25-2026-11-04.md) for the diagnosis and proofs.
+on the four budgeted commands exit 1 after five consecutive stale answers
+20 ms apart, with the final stale detail. A live answer resets the stale count;
+empty or unreadable metadata retains the conservative live-busy classification.
+See [follow-up 26](node-followup26-2026-11-04.md) for the clarified D-158
+diagnosis and proofs; [follow-up 25](node-followup25-2026-11-04.md) records the
+original contention policy.
 
 `run` holds the node lock, calls `recover`, applies an installer pending release when that file exists, then takes the current desired state. `apply` holds the same lock, calls `recover`, and applies the `-pending` file. It does not also read desired state. `flush` posts pending results and does not start an update. `flush` requires `result_url`. `Run`, `ApplyPending`, `Seed`, `Recover`, `Flush` and `Retain` take the node lock at entry, before they supersede an older job, claim, download or install.
 
@@ -45,18 +48,25 @@ D-155 orders lock acquisition before layout setup and opening or migrating `jour
 D-158's `updateLockWaitBudget` is a bounded contention policy, not a promise
 that a holder releases. The live budget uses monotonic elapsed time; context
 cancellation ends the retry wait. Individual filesystem operations and
-scheduling can add elapsed time. A first stale answer switches to the prompt
-five-attempt policy even after earlier live contention. Nested calls reuse the
-outer lock without waiting. The common lock library and its agent, watchdog
-and installer consumers are unchanged.
+scheduling can add elapsed time. Five consecutive stale answers end the wait
+with exit 1 after four 20 ms retry delays, even if live answers preceded them.
+Every live answer resets that count and is governed by the 10 s budget from
+the first attempt: it cannot end the command with exit 3 before that budget,
+and the first live answer at or past the deadline returns exit 3. Stale answers
+may extend the wait to nominally about 100 ms past the deadline. Nested calls
+reuse the outer lock without waiting. The common lock library and its agent,
+watchdog and installer consumers are unchanged.
 
-For the four budgeted commands, a failed first acquisition produces exactly
-one JSON slog record on the CLI's existing stderr stream when acquisition ends:
+For the four budgeted commands, a first acquisition that misses on `ErrBusy`
+produces exactly one JSON slog record on the CLI's existing stderr stream when
+acquisition ends:
 `msg="update lock wait"`, `command`, `waited_ms`, `acquired`, and `budget_ms=10000`.
-It measures acquisition only, before journal open or command work. A successful
-first attempt emits no wait record; existing uncontended logs and error lines
-are unchanged. `recover` and `Retain` gain no wait record. Devstack must retain
-each `updater.out` before the next invocation overwrites it.
+It measures acquisition only, before journal open or command work, including
+when cancellation ends the wait. A successful first attempt, a non-busy first
+error, or cancellation before any attempt emits no wait record; existing
+uncontended logs and error lines are unchanged. `recover` and `Retain` gain no
+wait record. Devstack must retain each `updater.out` before the next invocation
+overwrites it.
 
 | Command | Can return live-holder `UPDATE_BUSY: lock`? | Exit before D-155 | Exit after D-155 |
 |---|---|---|---|

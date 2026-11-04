@@ -1,0 +1,42 @@
+{
+  "run_id": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
+  "operation_collector": {
+    "evidence": "publication-operation-history.json",
+    "run_id": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
+    "matches_invocation": true,
+    "snapshots": 32,
+    "first_read": "2026-11-04T06:03:32.003268Z",
+    "last_successful_read": "2026-11-04T06:26:49.596825Z",
+    "end": "final read after the assembled central report export"
+  },
+  "successful_setup_publication": {
+    "evidence": "AT10.json",
+    "retained": true,
+    "receipt": {
+      "pointer": "/observations/1",
+      "trace": {
+        "started_at": "2026-11-04T06:03:43.234232728Z",
+        "finished_at": "2026-11-04T06:03:43.240209335Z",
+        "max_attempts": 3,
+        "limit_seconds": 10,
+        "status": "pass",
+        "outcome": "accepted",
+        "attempts": [
+          {
+            "method": "PUT",
+            "path": "/api/v1/admin/nodes/01a1a527-e4a0-7bd8-aeab-c050db6c950c/publication",
+            "if_match": "\"14\"",
+            "idempotency_key": "5c3bcd86-fc36-452b-9130-05d6e011ff81",
+            "body_sha256": "fd20c5c488f3197e98c5f266197dc56db6ebacff54ed5373c1e9180132c22c34",
+            "started_at": "2026-11-04T06:03:43.234238569Z",
+            "finished_at": "2026-11-04T06:03:43.240204109Z",
+            "status": 202,
+            "error_code": "",
+            "transport_error": false
+          }
+        ]
+      }
+    }
+  },
+  "scope": "Live verification of follow-up 20 request 2; original run 20 recording gaps remain unchanged."
+}

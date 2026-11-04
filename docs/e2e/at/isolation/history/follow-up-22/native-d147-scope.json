@@ -1,0 +1,19 @@
+{
+  "run_id": "c52bea6c-cd91-4086-a779-656b01277dcc",
+  "source": "foreign-redirect.json: before injection; AT10/AT12 counted controls",
+  "forward_view": {
+    "Present": true,
+    "Policy": "drop",
+    "Baseline": false,
+    "Generation": 34,
+    "MemberAccept": 18,
+    "LabMemberAccept": 18,
+    "MSSClamp": 4,
+    "PMTUAccept": 6,
+    "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=34 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a3e1-48ff-768a-ad77-0524791db351:4d89\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a3e1-c457-7afa-bb08-c96c4c32c9ae:8c3d\" | iifname \"fvmb0\" oifname \"fvup0\" meta nfproto ipv6 counter name \"ctv6\" drop | iifname \"fvup0\" oifname \"fvmb0\" meta nfproto"
+  },
+  "native_counted_member_path": "observed; AT10/AT12 controls pass with production D-147 rules installed",
+  "related_fragmentation_needed_delivery": "not exercised: assembled isolation driver has no native routed fragmentation-needed experiment",
+  "four_source_rule_usage_proof": "historical history/follow-up-19-lab-final/lab-AT13-d147-detail.json; no lab run in follow-up 20",
+  "no_pmtu_acceptance_promotion": true
+}

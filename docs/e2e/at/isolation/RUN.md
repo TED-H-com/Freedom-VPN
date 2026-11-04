@@ -114,3 +114,15 @@ The single authorized `make -f mk/at-isolation.mk at-isolation` invocation is co
 Archive first `dfad736e` (173 byte-identical files), then commit fresh-renewal schedule and offline proofs `0b95e69a`. Require `$FVPN_HOLD_SH` free before every make, Go test and Docker command, with separate admission streams. Record `vmstat 5 7` and `ps -eo pid,etimes,args | grep -E '[g]ates\.sh|[m]k/at-|[n]ode-test-netlab|[n]etlab-test|[e]2e-test'`. Wait up to 120 minutes, no reservation; disk scratch under `.agent/tmp`, Python `-B`, cache discovered with `go env GOCACHE`. No lease/grant edit or predicate change.
 
 The one authorized assembled invocation is consumed: `7b0db5f2-eab5-4534-824a-b54781eed3fd`, **06:01:16.716438Z–06:27:35.324871Z**, clean measured source `0b95e69a`, **27 pass / 2 blocked / 0 fail acceptance**, with **failed D-120 lab TCP continuity** and command exit **2**. Wait **1414.753 s** after another suite started during vmstat; no sampled run overlap; no rerun eligible. Both expiry rows pass; D-142 qualifies the whole-node bracket. Inventory zero. [Full results](followup22-2026-11-04.md). Later `2460932f` only normalizes schedule metadata to UTC and is verified offline; original live bytes are retained.
+
+
+## Follow-up 23 — 2026-11-04 EST (current procedure)
+
+D-120 retains the UDP ingress/bracket bounds and next-datagram-success rule. Under D-161, a TCP timeout is accepted only when complete checked combined captures attribute every lost transmission of the request and echo bytes to exactly one verified ≤100 ms guard bracket, render→installed is ≤100 ms, the bytes and in-order echo arrive on the same connection before trace end, and no FIN or reset occurs. Any other TCP failure, including a timeout with missing, incomplete or unparsed TCP evidence, fails clause (iv). UDP losses plus guard-attributed TCP timeouts must total at most five per 100 reloads.
+
+[D-098 archive, D-160 audit and predeclared run](followup23-2026-11-04.md). Earlier procedure sections and results remain historical. Check host admission before the top-level command; nested Make/Docker calls do not wait inside timed sections. The assembled invocation includes netlab 36’s analyzer and complete combined captures. Preserve D-104/D-140/D-142 bounds, diagnostic exclusions and every historical failure.
+
+
+### Follow-up 23 recorded outcome
+
+Archive `29c2e8be`, D-160 audit/D-161 procedure `89accd8d`, then the one assembled invocation above. Run `328ab9e0-7ff4-495a-81c1-410ae8a7d876`: **10:29:20.007992Z–10:53:10.483784Z**, **1430.476 s**, **27 pass / 2 blocked / 0 fail**, included D-120 **pass**, exit **2**. No other-run wait (0.175 s admission checks); 48 overlap samples clear. No retry eligible or performed. Both expiry rows pass; D-142 qualifies; member expiry is M-1’s second live pass. Four internal admission checks precede timed sections; no script admission overlaps the lab campaign or assembled driver. Zero owned inventory. [All results, conflicts, restarts and limits](followup23-2026-11-04.md). The authorized live invocation is consumed.

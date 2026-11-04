@@ -1,0 +1,260 @@
+{
+  "heartbeat_source": "update-recovery-heartbeats.txt.gz",
+  "agent_log_source": "update-recovery-agent.txt",
+  "selected_samples": [
+    {
+      "sample_at": "2026-11-04T09:52:28.339161088Z",
+      "agent_pid": "895",
+      "lock_holder_pids": "178784",
+      "lock_holder_comm": "178784 fvpn-updater",
+      "agent_executable": "/usr/local/bin/fvpn-agent",
+      "forwarding_blocked": "0",
+      "v1": "",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "mono_ns": "109389437345106",
+      "wall_unix_ns": "1793785946985970316",
+      "policy_expires_mono_ns": "109988222948350",
+      "baseline_ok": "1",
+      "serving": "1",
+      "generation": "91",
+      "reason": "serving"
+    },
+    {
+      "sample_at": "2026-11-04T09:52:32.026315972Z",
+      "agent_pid": "181291",
+      "lock_holder_pids": "178784",
+      "lock_holder_comm": "178784 fvpn-updater",
+      "agent_executable": "/opt/vpn-node/releases/01a1a5ee-f13e-7155-bea1-b22ce5a34a9f/fvpn-agent",
+      "forwarding_blocked": "1",
+      "v1": "",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "mono_ns": "109394464510379",
+      "wall_unix_ns": "1793785952013134128",
+      "policy_expires_mono_ns": "0",
+      "baseline_ok": "1",
+      "serving": "0",
+      "generation": "0",
+      "reason": "boot_baseline"
+    },
+    {
+      "sample_at": "2026-11-04T09:52:32.243095448Z",
+      "agent_pid": "181291",
+      "lock_holder_pids": "178784",
+      "lock_holder_comm": "178784 fvpn-updater",
+      "agent_executable": "/opt/vpn-node/releases/01a1a5ee-f13e-7155-bea1-b22ce5a34a9f/fvpn-agent",
+      "forwarding_blocked": "1",
+      "v1": "",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "mono_ns": "109394616711824",
+      "wall_unix_ns": "1793785952165335956",
+      "policy_expires_mono_ns": "0",
+      "baseline_ok": "1",
+      "serving": "0",
+      "generation": "93",
+      "reason": "recovery_required"
+    },
+    {
+      "sample_at": "2026-11-04T09:52:37.440685257Z",
+      "agent_pid": "181291",
+      "lock_holder_pids": "178784",
+      "lock_holder_comm": "178784 fvpn-updater",
+      "agent_executable": "/opt/vpn-node/releases/01a1a5ee-f13e-7155-bea1-b22ce5a34a9f/fvpn-agent",
+      "forwarding_blocked": "0",
+      "v1": "",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "mono_ns": "109399735992193",
+      "wall_unix_ns": "1793785957284616053",
+      "policy_expires_mono_ns": "0",
+      "baseline_ok": "1",
+      "serving": "0",
+      "generation": "94",
+      "reason": "recovery_required"
+    },
+    {
+      "sample_at": "2026-11-04T09:52:37.654699088Z",
+      "agent_pid": "181291",
+      "lock_holder_pids": "",
+      "agent_executable": "/opt/vpn-node/releases/01a1a5ee-f13e-7155-bea1-b22ce5a34a9f/fvpn-agent",
+      "forwarding_blocked": "0",
+      "v1": "",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "mono_ns": "109399735992193",
+      "wall_unix_ns": "1793785957284616053",
+      "policy_expires_mono_ns": "0",
+      "baseline_ok": "1",
+      "serving": "0",
+      "generation": "94",
+      "reason": "recovery_required"
+    },
+    {
+      "sample_at": "2026-11-04T09:52:42.906726464Z",
+      "agent_pid": "181291",
+      "lock_holder_pids": "",
+      "agent_executable": "/opt/vpn-node/releases/01a1a5ee-f13e-7155-bea1-b22ce5a34a9f/fvpn-agent",
+      "forwarding_blocked": "0",
+      "v1": "",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "mono_ns": "109405354343521",
+      "wall_unix_ns": "1793785962902971300",
+      "policy_expires_mono_ns": "110004533809998",
+      "baseline_ok": "1",
+      "serving": "1",
+      "generation": "95",
+      "reason": "serving"
+    },
+    {
+      "sample_at": "2026-11-04T10:02:58.110610199Z",
+      "agent_pid": "181291",
+      "lock_holder_pids": "",
+      "agent_executable": "/opt/vpn-node/releases/01a1a5ee-f13e-7155-bea1-b22ce5a34a9f/fvpn-agent",
+      "forwarding_blocked": "0",
+      "v1": "",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "mono_ns": "110020503545952",
+      "wall_unix_ns": "1793786578052170124",
+      "policy_expires_mono_ns": "0",
+      "baseline_ok": "1",
+      "serving": "0",
+      "generation": "98",
+      "reason": "policy_expired"
+    },
+    {
+      "sample_at": "2026-11-04T10:02:57.892332731Z",
+      "agent_pid": "181291",
+      "lock_holder_pids": "",
+      "agent_executable": "/opt/vpn-node/releases/01a1a5ee-f13e-7155-bea1-b22ce5a34a9f/fvpn-agent",
+      "forwarding_blocked": "0",
+      "v1": "",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "mono_ns": "110015486801731",
+      "wall_unix_ns": "1793786573035427572",
+      "policy_expires_mono_ns": "110019755610444",
+      "baseline_ok": "1",
+      "serving": "1",
+      "generation": "98",
+      "reason": "serving"
+    }
+  ],
+  "agent_log_excerpt": [
+    {
+      "line": 1,
+      "text": "time=2026-11-04T09:52:31.986Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=109394438163632 generation=92"
+    },
+    {
+      "line": 2,
+      "text": "time=2026-11-04T09:52:32.013Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=109394464478192 succeeded=true"
+    },
+    {
+      "line": 3,
+      "text": "time=2026-11-04T09:52:32.024Z level=INFO msg=\"usage checkpoint applied\""
+    },
+    {
+      "line": 4,
+      "text": "time=2026-11-04T09:52:32.024Z level=INFO msg=\"baseline write\" writer=agent cause=updater_barrier phase=begin mono_ns=109394475741728 generation=92"
+    },
+    {
+      "line": 5,
+      "text": "time=2026-11-04T09:52:32.025Z level=INFO msg=\"usage batch acknowledged\" highest_contiguous_seq=7"
+    },
+    {
+      "line": 6,
+      "text": "time=2026-11-04T09:52:32.057Z level=INFO msg=\"baseline write\" writer=agent cause=updater_barrier phase=end mono_ns=109394508962013 succeeded=true"
+    },
+    {
+      "line": 7,
+      "text": "time=2026-11-04T09:52:32.104Z level=INFO msg=\"baseline write\" writer=agent cause=updater_barrier phase=begin mono_ns=109394556351743 generation=92"
+    },
+    {
+      "line": 8,
+      "text": "time=2026-11-04T09:52:32.138Z level=INFO msg=\"baseline write\" writer=agent cause=updater_barrier phase=end mono_ns=109394589962334 succeeded=true"
+    },
+    {
+      "line": 9,
+      "text": "time=2026-11-04T09:52:32.139Z level=INFO msg=\"usage status available\""
+    },
+    {
+      "line": 10,
+      "text": "time=2026-11-04T09:52:37.086Z level=INFO msg=\"baseline write\" writer=agent cause=probe_install phase=begin mono_ns=109399538086904 generation=93"
+    },
+    {
+      "line": 11,
+      "text": "time=2026-11-04T09:52:37.113Z level=INFO msg=\"baseline write\" writer=agent cause=probe_install phase=end mono_ns=109399565321516 succeeded=true"
+    },
+    {
+      "line": 12,
+      "text": "time=2026-11-04T09:52:37.125Z level=INFO msg=\"baseline write\" writer=agent cause=probe_clear phase=begin mono_ns=109399577259867 generation=93"
+    },
+    {
+      "line": 13,
+      "text": "time=2026-11-04T09:52:37.159Z level=INFO msg=\"baseline write\" writer=agent cause=probe_clear phase=end mono_ns=109399610428343 succeeded=true"
+    },
+    {
+      "line": 14,
+      "text": "time=2026-11-04T09:52:37.165Z level=INFO msg=\"baseline write\" writer=agent cause=updater_barrier phase=begin mono_ns=109399617152471 generation=93"
+    },
+    {
+      "line": 15,
+      "text": "time=2026-11-04T09:52:37.198Z level=INFO msg=\"baseline write\" writer=agent cause=updater_barrier phase=end mono_ns=109399649694353 succeeded=true"
+    },
+    {
+      "line": 16,
+      "text": "time=2026-11-04T09:52:37.226Z level=INFO msg=\"baseline write\" writer=agent cause=updater_barrier phase=begin mono_ns=109399677984028 generation=94"
+    },
+    {
+      "line": 17,
+      "text": "time=2026-11-04T09:52:37.258Z level=INFO msg=\"baseline write\" writer=agent cause=updater_barrier phase=end mono_ns=109399709881623 succeeded=true"
+    },
+    {
+      "line": 18,
+      "text": "time=2026-11-04T09:52:42.112Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=109404563633196 generation=94"
+    },
+    {
+      "line": 19,
+      "text": "time=2026-11-04T09:52:42.141Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=109404592733519 succeeded=true"
+    },
+    {
+      "line": 20,
+      "text": "time=2026-11-04T09:52:42.145Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=begin mono_ns=109404596764791 generation=94"
+    },
+    {
+      "line": 21,
+      "text": "time=2026-11-04T09:52:42.173Z level=INFO msg=\"baseline write\" writer=agent cause=policy_missing phase=end mono_ns=109404625191909 succeeded=true"
+    },
+    {
+      "line": 22,
+      "text": "time=2026-11-04T09:52:42.247Z level=INFO msg=\"meter epoch opened\" epoch_id=01a1a5f9-9f05-7316-929c-ccc57c592ae6 reason=after_final_sample boot_id=56e68667-9243-4933-83af-c70d575ff5fe event_seq=0"
+    },
+    {
+      "line": 173,
+      "text": "time=2026-11-04T10:02:57.811Z level=WARN msg=\"desired state\" err=\"control request ended\""
+    },
+    {
+      "line": 174,
+      "text": "time=2026-11-04T10:02:57.812Z level=INFO msg=\"baseline write\" writer=agent cause=policy_expired phase=begin mono_ns=110020263620219 generation=98"
+    },
+    {
+      "line": 175,
+      "text": "time=2026-11-04T10:02:57.955Z level=INFO msg=\"baseline write\" writer=agent cause=policy_expired phase=end mono_ns=110020406789739 succeeded=true"
+    },
+    {
+      "line": 176,
+      "text": "time=2026-11-04T10:02:57.962Z level=INFO msg=\"meter epoch closed\" epoch_id=01a1a5f9-db26-74cf-a8ef-17a2b6736aa6 reason=final_sample event_seq=73"
+    },
+    {
+      "line": 177,
+      "text": "time=2026-11-04T10:02:57.962Z level=INFO msg=\"baseline write\" writer=agent cause=policy_expired phase=begin mono_ns=110020413838877 generation=98"
+    },
+    {
+      "line": 178,
+      "text": "time=2026-11-04T10:02:57.996Z level=INFO msg=\"baseline write\" writer=agent cause=policy_expired phase=end mono_ns=110020447967640 succeeded=true"
+    },
+    {
+      "line": 179,
+      "text": "time=2026-11-04T10:02:58.008Z level=INFO msg=\"baseline write\" writer=agent cause=policy_expired phase=begin mono_ns=110020459760881 generation=98"
+    },
+    {
+      "line": 180,
+      "text": "time=2026-11-04T10:02:58.037Z level=INFO msg=\"baseline write\" writer=agent cause=policy_expired phase=end mono_ns=110020488579757 succeeded=true"
+    }
+  ]
+}

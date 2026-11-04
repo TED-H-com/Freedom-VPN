@@ -100,6 +100,7 @@ type Server struct {
 	leaseRetryN         int
 	leaseRetryFor       time.Duration
 	observationRetryN   int
+	observationPassN    int // TEST ONLY successful posts before injected retries
 	observationRetryFor time.Duration
 	observationPosts    int
 	// leasePosts counts POST /lease-renewals, including a forced failure.
@@ -351,6 +352,15 @@ func (s *Server) SetObservationRetryAfter(n, seconds int) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.observationRetryN, s.observationRetryFor = n, time.Duration(seconds)*time.Second
+	s.observationPassN = 0
+}
+
+// AllowObservationsBeforeRetry permits n posts before the configured retry
+// fault. TEST ONLY: models a partial outbox drain followed by an outage.
+func (s *Server) AllowObservationsBeforeRetry(n int) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.observationPassN = n
 }
 
 func (s *Server) ObservationPosts() int {
