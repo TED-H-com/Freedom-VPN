@@ -81,3 +81,7 @@ build, `go vet -tags e2e ./tests/e2e/...`, `go test -count=1 ./tests/handover/..
 the committed-evidence hygiene test. For `make go-lint`, use `diskexec.py` and
 `go-with-disk-tmp=` to avoid the root makefile's shell cleanup trap. Exit 125 is
 not admission and is never a test verdict.
+
+The single Follow-up 16 live attempt is complete. The new prerequisite failed;
+do not rerun that sub-case under this authorization. See
+[the finding](followup16-finding.json) and [dated hand-off](2026-11-03-follow-up-16.md).

@@ -48,12 +48,22 @@ def main():
                   spec=['§9.4', '§16.3', '§17.1', '§16.5', '§19 AT29'], actual=actual, blockers=blockers,
                   evidence=['followup16-transports-live.json', 'followup16-transports-run.json'],
                   previous_records='history/before-follow-up-16/', record_kind='one fresh transport run; no failed-sub-case retry')
+    new_case = actual['control_lost_agent_alive']
+    record['continuity_fault_reached'] = 'control_loss_started_at' in new_case
+    limitation = ''
+    if new_case.get('status') == 'failed' and not record['continuity_fault_reached']:
+        limitation = ('The new case failed before control loss: no locally accepted short lease. '
+                      'This run supplies no live timeout/continuity/deadline verdict for agent-core 48. '
+                      'The failed row is retained without rerun; see followup16-finding.json.')
+        record['continuity_measurement_limitation'] = limitation
     write_json(PUBLIC / 'AT29.json', record)
     table = '\n'.join('| '+name+' | '+row.get('status', 'unmeasured')+' |' for name, row in actual.items())
     (PUBLIC / 'AT29.md').write_text(f'''# AT29 — Follow-up 16
 
 Overall **{record['status']}**, previously **blocked**. Run `{common['run_id']}`;
 application base `{common['application_base']}`. Shared development host only.
+
+{limitation}
 
 | Sub-case | Result |
 |---|---|
