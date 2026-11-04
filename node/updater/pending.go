@@ -62,7 +62,7 @@ func (e *Engine) ApplyPending(ctx context.Context, path string) error {
 	if err != nil {
 		return err
 	}
-	return e.withLock(ctx, func() error {
+	return e.withLockFor(ctx, "apply", func() error {
 		if err := e.open(ctx); err != nil {
 			return err
 		}

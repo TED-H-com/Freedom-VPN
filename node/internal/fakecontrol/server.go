@@ -103,7 +103,8 @@ type Server struct {
 	observationRetryFor time.Duration
 	observationPosts    int
 	// leasePosts counts POST /lease-renewals, including a forced failure.
-	leasePosts int
+	leasePosts    int
+	leaseRequests []api.LeaseRenewalRequest
 	// lastLeaseIssued keeps a new lease strictly after the previous one
 	// when two renewals land in the same wall-clock tick.
 	lastLeaseIssued time.Time
@@ -739,4 +740,12 @@ func (s *Server) SetIdentityFrozen(v *bool) {
 		s.identityFrozen = &b
 	}
 	s.stickyRaw = nil
+}
+
+// LeaseRequests returns decoded renewal requests for offline ordering/ACK proofs.
+// TEST ONLY; transport failures before decoding are counted by LeaseRenewals.
+func (s *Server) LeaseRequests() []api.LeaseRenewalRequest {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return append([]api.LeaseRenewalRequest(nil), s.leaseRequests...)
 }

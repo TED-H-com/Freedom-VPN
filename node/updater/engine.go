@@ -104,7 +104,7 @@ func (e *Engine) Close() error {
 // first (§13.5). Nil means the local transaction finished or there was no
 // work. It does not mean the center has accepted the result.
 func (e *Engine) Run(ctx context.Context) error {
-	return e.withLock(ctx, func() error {
+	return e.withLockFor(ctx, "run", func() error {
 		if err := e.open(ctx); err != nil {
 			return err
 		}
@@ -142,11 +142,23 @@ func (e *Engine) Run(ctx context.Context) error {
 // A caller that already holds the lock, such as Flush during seal, runs fn
 // directly (D-034d).
 func (e *Engine) withLock(ctx context.Context, fn func() error) error {
+	return e.withLockFor(ctx, "", fn)
+}
+
+// An empty command retains the prompt recovery/library window. The four
+// serving-agent commands select D-158's longer contention budget instead.
+func (e *Engine) withLockFor(ctx context.Context, command string, fn func() error) error {
 	if e.lockHeld {
 		e.noteBootFallback()
 		return fn()
 	}
-	lk, err := nodelock.AcquireWithBootID(ctx, e.Layout.Lock, 5, 20*time.Millisecond, e.Node.BootID.String())
+	var lk *nodelock.Lock
+	var err error
+	if command == "" {
+		lk, err = nodelock.AcquireWithBootID(ctx, e.Layout.Lock, promptLockAttempts, lockRetryInterval, e.Node.BootID.String())
+	} else {
+		lk, err = e.acquireCommandLock(ctx, command)
+	}
 	if err != nil {
 		if errors.Is(err, nodelock.ErrBusy) {
 			return transient(apierr.UpdateBusy, lockBusyDetail(err))

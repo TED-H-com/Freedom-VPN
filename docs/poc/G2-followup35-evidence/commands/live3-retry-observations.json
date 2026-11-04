@@ -1,0 +1,127 @@
+{
+  "run": "live3",
+  "confounded": true,
+  "sequence": 47,
+  "read_elapsed_ns": 613181304,
+  "tcp_sequence_start": 2565188707,
+  "tcp_sequence_end": 2565188711,
+  "observations": [
+    {
+      "role": "origin",
+      "interface": "fv-wg0",
+      "direction": "Out",
+      "wall_ns": "1793777054039785000",
+      "since_send_ns": 58722,
+      "guards": [
+        {
+          "generation": "1069",
+          "phase": "install",
+          "brackets_ns": [
+            1793777054013994052,
+            1793777054040214276,
+            1793777054040224712,
+            1793777054052250670
+          ]
+        }
+      ],
+      "header": "100.64.1.1.39090 > 203.0.113.10.9001: Flags [P.], cksum 0xa176 (incorrect -> 0x84ef), seq 2565188707:2565188711, ack 672356569, win 64, options [nop,nop,TS val 62538787 ecr 2702260727], length 4"
+    },
+    {
+      "role": "origin",
+      "interface": "fv-wg0",
+      "direction": "Out",
+      "wall_ns": "1793777054245636000",
+      "since_send_ns": 205909722,
+      "guards": [
+        {
+          "generation": "1070",
+          "phase": "install",
+          "brackets_ns": [
+            1793777054230835293,
+            1793777054249401588,
+            1793777054249417169,
+            1793777054267526486
+          ]
+        }
+      ],
+      "header": "100.64.1.1.39090 > 203.0.113.10.9001: Flags [P.], cksum 0xa176 (incorrect -> 0x8421), seq 2565188707:2565188711, ack 672356569, win 64, options [nop,nop,TS val 62538993 ecr 2702260727], length 4"
+    },
+    {
+      "role": "origin",
+      "interface": "fv-wg0",
+      "direction": "Out",
+      "wall_ns": "1793777054651651000",
+      "since_send_ns": 611924722,
+      "guards": [],
+      "header": "100.64.1.1.39090 > 203.0.113.10.9001: Flags [P.], cksum 0xa176 (incorrect -> 0x828b), seq 2565188707:2565188711, ack 672356569, win 64, options [nop,nop,TS val 62539399 ecr 2702260727], length 4"
+    },
+    {
+      "role": "node",
+      "interface": "fv-fh",
+      "direction": "In",
+      "wall_ns": "1793777054039852000",
+      "since_send_ns": 125722,
+      "guards": [
+        {
+          "generation": "1069",
+          "phase": "install",
+          "brackets_ns": [
+            1793777054013994052,
+            1793777054040214276,
+            1793777054040224712,
+            1793777054052250670
+          ]
+        }
+      ],
+      "header": "100.64.1.1.39090 > 203.0.113.10.9001: Flags [P.], cksum 0x84ef (correct), seq 2565188707:2565188711, ack 672356569, win 64, options [nop,nop,TS val 62538787 ecr 2702260727], length 4"
+    },
+    {
+      "role": "node",
+      "interface": "fv-fh",
+      "direction": "In",
+      "wall_ns": "1793777054245826000",
+      "since_send_ns": 206099722,
+      "guards": [
+        {
+          "generation": "1070",
+          "phase": "install",
+          "brackets_ns": [
+            1793777054230835293,
+            1793777054249401588,
+            1793777054249417169,
+            1793777054267526486
+          ]
+        }
+      ],
+      "header": "100.64.1.1.39090 > 203.0.113.10.9001: Flags [P.], cksum 0x8421 (correct), seq 2565188707:2565188711, ack 672356569, win 64, options [nop,nop,TS val 62538993 ecr 2702260727], length 4"
+    },
+    {
+      "role": "node",
+      "interface": "fv-fh",
+      "direction": "In",
+      "wall_ns": "1793777054651948000",
+      "since_send_ns": 612221722,
+      "guards": [],
+      "header": "100.64.1.1.39090 > 203.0.113.10.9001: Flags [P.], cksum 0x828b (correct), seq 2565188707:2565188711, ack 672356569, win 64, options [nop,nop,TS val 62539399 ecr 2702260727], length 4"
+    },
+    {
+      "role": "node",
+      "interface": "fv-ih",
+      "direction": "Out",
+      "wall_ns": "1793777054652010000",
+      "since_send_ns": 612283722,
+      "guards": [],
+      "header": "192.0.2.37.39090 > 203.0.113.10.9001: Flags [P.], cksum 0x25a7 (correct), seq 2565188707:2565188711, ack 672356569, win 64, options [nop,nop,TS val 62539399 ecr 2702260727], length 4"
+    },
+    {
+      "role": "responder",
+      "interface": "fv-ii",
+      "direction": "In",
+      "wall_ns": "1793777054652012000",
+      "since_send_ns": 612285722,
+      "guards": [],
+      "header": "192.0.2.37.39090 > 203.0.113.10.9001: Flags [P.], cksum 0x25a7 (correct), seq 2565188707:2565188711, ack 672356569, win 64, options [nop,nop,TS val 62539399 ecr 2702260727], length 4"
+    }
+  ],
+  "interpretation": "Observed request retries at about +206 and +612 ms, unlike the f30 cycle26 +208/+416 pattern. First two requests have node ingress but no node egress in captured guard-install brackets; final retry crosses all three roles and read recovers. No NFLOG attribution and no historical 1.5s claim."
+}
