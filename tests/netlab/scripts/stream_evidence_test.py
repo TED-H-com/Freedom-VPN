@@ -85,6 +85,11 @@ class CombinedCaptureTest(unittest.TestCase):
             with self.assertRaises(ValueError):
                 udp_projection(text, stats)
 
+    def test_tcpdump_blank_separator_and_trailing_line_are_not_packets(self):
+        text, _, meta = udp_projection(self.udp + '\n' + self.tcp + '\n', self.stats)
+        self.assertEqual(text, self.udp)
+        self.assertEqual(meta['combined_packets'], 2)
+
 
 if __name__ == '__main__':
     unittest.main()

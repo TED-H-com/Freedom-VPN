@@ -13,6 +13,8 @@ from reload_analysis import parse_capture
 def udp_projection(text, stats):
     blocks = []
     for line in text.splitlines(keepends=True):
+        if not line.strip():
+            continue
         if re.match(r'^\d+\.\d+\s+\S+\s+(In|Out)\s+IP \(', line):
             blocks.append([line])
         elif blocks and line[:1].isspace():
