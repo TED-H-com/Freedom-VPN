@@ -21,3 +21,7 @@ The [enrollment and usage responses](../../RESPONSES.md) supply the installer-no
 ## Known gaps
 
 Physical arm64 and OS reboot remain unmeasured; arm64 compilation and agent process restart are separate evidence. Post-upgrade seed behaviour belongs to **devstack 19 / installer 7 / updater 18** and is not re-measured here. The [historical devstack 18 seed failure](../../runs/2026-10-31/followup18/README.md#candidate-health-and-post-upgrade-reenrollment) and [updater diagnosis](../../../updates/node-updater.md#post-upgrade-seed-diagnosis--2026-10-31) remain references, not new enrollment acceptance. This run performs no upgrade.
+
+## 2026-11-03 — Follow-up 10: devstack 33 adoption answered
+
+**Answered; 0 new requests.** The two capacity/publication sites and the revoke helper now use `Stack.WriteNode`, exact desired-state predicates and embedded receipts. The stack-free audit has no node-write exceptions. See the [dated adoption note](2026-11-03-follow-up-10-node-writes.md) for each site, transport-boundary exceptions and offline coverage. Live proof waits for the next authorized assembled enrollment run; the follow-up 9 run records above remain historical evidence.
