@@ -24,6 +24,15 @@ type MatchingLeaseHoldEvidence = e2e.MatchingLeaseHoldEvidence
 type LocalLeaseReceipt = e2e.LocalLeaseReceipt
 type BrowserSession = e2e.BrowserSession
 type Response = e2e.Response
+type NodeWriteResult = e2e.NodeWriteResult
+type NodeWriteReceipt = e2e.NodeWriteReceipt
+type NodeWriteAttempt = e2e.NodeWriteAttempt
+type NodeWriteRead = e2e.NodeWriteRead
+
+func NodeFieldsMatch(want any) func([]byte) bool          { return e2e.NodeFieldsMatch(want) }
+func NodeRevoked(body []byte) bool                        { return e2e.NodeRevoked(body) }
+func NodePublished(groups ...uuid.UUID) func([]byte) bool { return e2e.NodePublished(groups...) }
+
 type BuiltRelease = e2e.BuiltRelease
 type EnrolledNode = e2e.EnrolledNode
 type ReleaseOptions = e2e.ReleaseOptions
