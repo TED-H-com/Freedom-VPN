@@ -1,5 +1,5 @@
 {
-  "run_id": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
+  "run_id": "bd73d7a4-03f1-4b17-97c2-9c25a39ac0db",
   "explicit_restart": {
     "agent_budget_seconds": 15,
     "agent_stop": {
@@ -13,25 +13,25 @@
         "Pid": 0,
         "ExitCode": 0,
         "Error": "",
-        "StartedAt": "2026-11-04T14:07:30.419678393Z",
-        "FinishedAt": "2026-11-04T14:20:46.520128771Z"
+        "StartedAt": "2026-11-04T15:49:41.247546325Z",
+        "FinishedAt": "2026-11-04T16:02:48.234241946Z"
       },
       "cooperative_exit": true,
       "identity_before_stop": {
         "available": true,
-        "captured_at": "2026-11-04T14:20:45.815292206Z",
-        "launch_id": "5abe2acb-37b4-410f-8ffa-d34b8606ce23",
-        "pid": 138382,
-        "start_ticks": "12505935"
+        "captured_at": "2026-11-04T16:02:47.518953547Z",
+        "launch_id": "834b09e6-d635-4777-9630-46d0ebb1a97e",
+        "pid": 136061,
+        "start_ticks": "13118391"
       },
       "parent_identity_matched": true,
       "parent_wait_available": true,
       "parent_wait_receipt": {
-        "id": "5abe2acb-37b4-410f-8ffa-d34b8606ce23",
-        "pid": 138382,
-        "start_ticks": "12505935",
-        "started_at": "2026-11-04T14:13:36.902721094Z",
-        "wait_observed_at": "2026-11-04T14:20:46.089034003Z",
+        "id": "834b09e6-d635-4777-9630-46d0ebb1a97e",
+        "pid": 136061,
+        "start_ticks": "13118391",
+        "started_at": "2026-11-04T15:55:41.460363164Z",
+        "wait_observed_at": "2026-11-04T16:02:47.79195026Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -40,53 +40,53 @@
       "scope": "Actual agent exit from matching parent wait receipt; container exit is shutdown-handler completion only; sigkill sidecar is an attempted escalation"
     },
     "before": {
-      "lease_id": "2de22114-4c5d-4d93-b538-1e35792100a5",
-      "issued_at": "2026-11-04T14:20:42.515911657Z",
-      "expires_at": "2026-11-04T14:21:42.515911657Z",
-      "generation": "28",
+      "lease_id": "8394a8f0-536c-4850-94b8-77e572be6540",
+      "issued_at": "2026-11-04T16:02:44.072789791Z",
+      "expires_at": "2026-11-04T16:03:44.072789791Z",
+      "generation": "27",
       "max_offline_seconds": 60,
       "member_count": 2,
       "source": "",
-      "mono_sent_ns": "125484964354136",
-      "deadline_mono_ns": "125544964354136",
+      "mono_sent_ns": "131606520297736",
+      "deadline_mono_ns": "131666520297736",
       "anchor": {
-        "mono_ns": "125484964354136",
-        "server_unix_ns": "1793802042515911657",
-        "wall_unix_ns": "1793802042512977513",
+        "mono_ns": "131606520297736",
+        "server_unix_ns": "1793808164072789791",
+        "wall_unix_ns": "1793808164068921114",
         "trusted": 1
       }
     },
     "before_available": true,
     "container_grace_seconds": 25,
-    "restart_duration_ns": "860392890",
-    "run_id": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
+    "restart_duration_ns": "868512801",
+    "run_id": "bd73d7a4-03f1-4b17-97c2-9c25a39ac0db",
     "scope": "Docker stop/start command brackets; stopped SQLite snapshot adds measured downtime. Same boot, not OS reboot or exact SIGTERM/exit timestamps.",
-    "start_completed": "2026-11-04T14:20:46.697675512Z",
+    "start_completed": "2026-11-04T16:02:48.409947463Z",
     "start_ok": true,
-    "start_requested": "2026-11-04T14:20:46.626058369Z",
-    "stop_completed": "2026-11-04T14:20:46.544900507Z",
-    "stop_duration_ns": "707617885",
+    "start_requested": "2026-11-04T16:02:48.341093828Z",
+    "stop_completed": "2026-11-04T16:02:48.260062238Z",
+    "stop_duration_ns": "718627577",
     "stop_ok": true,
-    "stop_started": "2026-11-04T14:20:45.837282623Z",
+    "stop_started": "2026-11-04T16:02:47.54143468Z",
     "stopped": {
-      "lease_id": "2de22114-4c5d-4d93-b538-1e35792100a5",
-      "issued_at": "2026-11-04T14:20:42.515911657Z",
-      "expires_at": "2026-11-04T14:21:42.515911657Z",
-      "generation": "28",
+      "lease_id": "8394a8f0-536c-4850-94b8-77e572be6540",
+      "issued_at": "2026-11-04T16:02:44.072789791Z",
+      "expires_at": "2026-11-04T16:03:44.072789791Z",
+      "generation": "27",
       "max_offline_seconds": 60,
       "member_count": 2,
       "source": "",
-      "mono_sent_ns": "125484964354136",
-      "deadline_mono_ns": "125544964354136",
+      "mono_sent_ns": "131606520297736",
+      "deadline_mono_ns": "131666520297736",
       "anchor": {
-        "mono_ns": "125484964354136",
-        "server_unix_ns": "1793802042515911657",
-        "wall_unix_ns": "1793802042512977513",
+        "mono_ns": "131606520297736",
+        "server_unix_ns": "1793808164072789791",
+        "wall_unix_ns": "1793808164068921114",
         "trusted": 1
       }
     },
     "stopped_available": true,
-    "stopped_snapshot_duration_ns": "81157860",
+    "stopped_snapshot_duration_ns": "81031567",
     "stored_lease_survived_stop": true
   },
   "other_restart_receipts": [
@@ -94,29 +94,29 @@
       "path": "populated-holds.json",
       "pointer": "/attempts/0/restart",
       "receipt": {
-        "end": "2026-11-04T14:11:52.545239522Z",
+        "end": "2026-11-04T15:54:01.071489936Z",
         "ok": true,
-        "start": "2026-11-04T14:11:51.851358396Z"
+        "start": "2026-11-04T15:54:00.598537556Z"
       }
     },
     {
       "path": "populated-holds.json",
       "pointer": "/attempts/2/restart",
       "receipt": {
-        "end": "2026-11-04T14:13:37.213548559Z",
+        "end": "2026-11-04T15:55:41.888803392Z",
         "ok": true,
-        "start": "2026-11-04T14:13:36.734838582Z"
+        "start": "2026-11-04T15:55:41.196878886Z"
       }
     }
   ],
   "agent_exit_receipts": [
     {
       "receipt": {
-        "id": "4b66a21e-2c5f-4af0-a690-f19fbfe76bcd",
-        "pid": 945,
-        "start_ticks": "12548943",
-        "started_at": "2026-11-04T14:20:46.984148984Z",
-        "wait_observed_at": "2026-11-04T14:26:59.53657165Z",
+        "id": "2f54302b-8d98-4eaa-a972-afc9b5779772",
+        "pid": 941,
+        "start_ticks": "13161114",
+        "started_at": "2026-11-04T16:02:48.696469104Z",
+        "wait_observed_at": "2026-11-04T16:08:54.475526839Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -131,11 +131,11 @@
     },
     {
       "receipt": {
-        "id": "d9d0348c-dba9-4d62-b138-d7de14c73635",
-        "pid": 1211,
-        "start_ticks": "12469838",
-        "started_at": "2026-11-04T14:07:35.934278121Z",
-        "wait_observed_at": "2026-11-04T14:11:51.578570621Z",
+        "id": "0c002ab9-c91f-4be0-822d-a3c2b87a054c",
+        "pid": 1201,
+        "start_ticks": "13082918",
+        "started_at": "2026-11-04T15:49:46.734027586Z",
+        "wait_observed_at": "2026-11-04T15:54:00.330660527Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -150,11 +150,11 @@
     },
     {
       "receipt": {
-        "id": "ac28e632-be18-46ac-8ffb-4d69d435ed8b",
-        "pid": 94155,
-        "start_ticks": "12495458",
-        "started_at": "2026-11-04T14:11:52.134980522Z",
-        "wait_observed_at": "2026-11-04T14:13:06.56356287Z",
+        "id": "6b93ab76-c281-4c5a-9082-1e339343f8e8",
+        "pid": 93177,
+        "start_ticks": "13108325",
+        "started_at": "2026-11-04T15:54:00.807952732Z",
+        "wait_observed_at": "2026-11-04T15:55:11.274389935Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -169,11 +169,11 @@
     },
     {
       "receipt": {
-        "id": "75fcb161-4a09-4ab3-bb13-fea82d588e8e",
-        "pid": 918,
-        "start_ticks": "12586385",
-        "started_at": "2026-11-04T14:27:01.402042091Z",
-        "wait_observed_at": "2026-11-04T14:28:45.230348777Z",
+        "id": "ecb25397-103f-4adb-9556-3441006987dd",
+        "pid": 902,
+        "start_ticks": "13197907",
+        "started_at": "2026-11-04T16:08:56.624833496Z",
+        "wait_observed_at": "2026-11-04T16:10:40.475026152Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -188,11 +188,11 @@
     },
     {
       "receipt": {
-        "id": "8f144bd4-48c0-4bfc-8d62-5f4949afa250",
-        "pid": 1136,
-        "start_ticks": "12586389",
-        "started_at": "2026-11-04T14:27:01.445660581Z",
-        "wait_observed_at": "2026-11-04T14:28:45.624806917Z",
+        "id": "4cd727e6-f123-4ba6-bfaa-0c82f045c5e1",
+        "pid": 1141,
+        "start_ticks": "13197911",
+        "started_at": "2026-11-04T16:08:56.663660771Z",
+        "wait_observed_at": "2026-11-04T16:10:40.863250495Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -207,11 +207,11 @@
     },
     {
       "receipt": {
-        "id": "5abe2acb-37b4-410f-8ffa-d34b8606ce23",
-        "pid": 138382,
-        "start_ticks": "12505935",
-        "started_at": "2026-11-04T14:13:36.902721094Z",
-        "wait_observed_at": "2026-11-04T14:20:46.089034003Z",
+        "id": "834b09e6-d635-4777-9630-46d0ebb1a97e",
+        "pid": 136061,
+        "start_ticks": "13118391",
+        "started_at": "2026-11-04T15:55:41.460363164Z",
+        "wait_observed_at": "2026-11-04T16:02:47.79195026Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -229,121 +229,91 @@
     {
       "path": "agent.log.txt",
       "line": 1,
-      "text": "time=2026-11-04T14:07:35.960Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=124698412265194 generation=0"
+      "text": "time=2026-11-04T15:49:46.762Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=130829213609636 generation=0"
     },
     {
       "path": "agent.log.txt",
       "line": 2,
-      "text": "time=2026-11-04T14:07:35.983Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=124698434950560 succeeded=true"
+      "text": "time=2026-11-04T15:49:46.782Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=130829233536669 succeeded=true"
     },
     {
       "path": "agent.log.txt",
-      "line": 126,
-      "text": "time=2026-11-04T14:13:36.925Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=125059376568787 generation=16"
+      "line": 130,
+      "text": "time=2026-11-04T15:55:41.483Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131183934624100 generation=16"
     },
     {
       "path": "agent.log.txt",
-      "line": 127,
-      "text": "time=2026-11-04T14:13:36.962Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=125059413590966 succeeded=true"
+      "line": 131,
+      "text": "time=2026-11-04T15:55:41.504Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131183956066491 succeeded=true"
     },
     {
       "path": "agent.log.txt",
-      "line": 208,
-      "text": "time=2026-11-04T14:20:46.082Z level=INFO msg=\"serving rules retained for restart\" generation=28 policy_expires_mono_ns=125544964354136 next_binding_expiry_mono_ns=125544964354136"
+      "line": 212,
+      "text": "time=2026-11-04T16:02:47.785Z level=INFO msg=\"serving rules retained for restart\" generation=27 policy_expires_mono_ns=131666520297736 next_binding_expiry_mono_ns=131666520297736"
     },
     {
       "path": "agent.log.txt",
-      "line": 209,
-      "text": "time=2026-11-04T14:20:47.026Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=125489477464640 generation=28"
+      "line": 213,
+      "text": "time=2026-11-04T16:02:48.739Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131611191227055 generation=27"
     },
     {
       "path": "agent.log.txt",
-      "line": 210,
-      "text": "time=2026-11-04T14:20:47.065Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=125489516641709 succeeded=true"
+      "line": 214,
+      "text": "time=2026-11-04T16:02:48.784Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131611235488784 succeeded=true"
     },
     {
       "path": "agent.log.txt",
-      "line": 320,
-      "text": "time=2026-11-04T14:26:59.529Z level=INFO msg=\"serving rules retained for restart\" generation=37 policy_expires_mono_ns=125911766043084 next_binding_expiry_mono_ns=125911766043084"
+      "line": 316,
+      "text": "time=2026-11-04T16:08:54.467Z level=INFO msg=\"serving rules retained for restart\" generation=34 policy_expires_mono_ns=132027008883289 next_binding_expiry_mono_ns=132027008883289"
     },
     {
       "path": "agent.log.txt",
-      "line": 321,
-      "text": "time=2026-11-04T14:27:01.446Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=125863897738261 generation=37"
+      "line": 317,
+      "text": "time=2026-11-04T16:08:56.668Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131979120293880 generation=34"
     },
     {
       "path": "agent.log.txt",
-      "line": 322,
-      "text": "time=2026-11-04T14:27:01.484Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=125863935592902 succeeded=true"
+      "line": 318,
+      "text": "time=2026-11-04T16:08:56.709Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131979160705016 succeeded=true"
     }
   ],
   "watchdog_lines": [
     {
       "path": "watchdog.log.txt",
       "line": 1,
-      "text": "{\"time\":\"2026-11-04T14:07:35.879901791Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":124698331257359,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.676579611Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":130829127935194,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
     },
     {
       "path": "watchdog.log.txt",
       "line": 2,
-      "text": "{\"time\":\"2026-11-04T14:07:35.879970076Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":124698331345940,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.676670959Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829128046750,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
     },
     {
       "path": "watchdog.log.txt",
       "line": 3,
-      "text": "{\"time\":\"2026-11-04T14:07:35.908753499Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":124698360126618,\"succeeded\":true}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 4,
-      "text": "{\"time\":\"2026-11-04T14:13:36.937802751Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"baseline_unverified\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125059389172211,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 5,
-      "text": "{\"time\":\"2026-11-04T14:13:36.937857372Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059389232188,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 6,
-      "text": "{\"time\":\"2026-11-04T14:13:36.971576975Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059422950818,\"succeeded\":true}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 7,
-      "text": "{\"time\":\"2026-11-04T14:24:48.153064181Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"policy_expired\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125730604423718,\"heartbeat_mono_ns\":125726538448466,\"policy_expires_mono_ns\":125728711630414,\"generation\":34,\"serving\":true,\"baseline_ok\":true}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 8,
-      "text": "{\"time\":\"2026-11-04T14:24:48.1532589Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"policy_expired\",\"mono_ns\":125730604634181,\"heartbeat_mono_ns\":125726538448466,\"policy_expires_mono_ns\":125728711630414,\"generation\":34}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 9,
-      "text": "{\"time\":\"2026-11-04T14:24:48.200037095Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"policy_expired\",\"mono_ns\":125730651410544,\"succeeded\":true}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.697288833Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829148660831,\"succeeded\":true}"
     }
   ],
-  "baseline_unverified_unique": 3,
+  "baseline_unverified_unique": 0,
   "generation_mismatch_unique": 0,
   "scope": "All retained restart/parent-wait receipts and source-agent boot lines. Container PID1 exits and clone teardown are separate from agent exit evidence. Watchdog retaining passes do not log decisions; absence is not proof of a forced D-156 interleaving.",
   "restart_windows": [
     {
       "source": "populated-holds.json",
       "purpose": "hold attempt 1",
-      "start": "2026-11-04T14:11:51.545772658Z",
-      "end": "2026-11-04T14:11:52.545239522Z",
+      "start": "2026-11-04T15:54:00.301949912Z",
+      "end": "2026-11-04T15:54:01.071489936Z",
       "restart": {
-        "end": "2026-11-04T14:11:52.545239522Z",
+        "end": "2026-11-04T15:54:01.071489936Z",
         "ok": true,
-        "start": "2026-11-04T14:11:51.851358396Z"
+        "start": "2026-11-04T15:54:00.598537556Z"
       },
       "parent_wait": {
-        "id": "d9d0348c-dba9-4d62-b138-d7de14c73635",
-        "pid": 1211,
-        "start_ticks": "12469838",
-        "started_at": "2026-11-04T14:07:35.934278121Z",
-        "wait_observed_at": "2026-11-04T14:11:51.578570621Z",
+        "id": "0c002ab9-c91f-4be0-822d-a3c2b87a054c",
+        "pid": 1201,
+        "start_ticks": "13082918",
+        "started_at": "2026-11-04T15:49:46.734027586Z",
+        "wait_observed_at": "2026-11-04T15:54:00.330660527Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -356,79 +326,39 @@
     {
       "source": "populated-holds.json",
       "purpose": "hold attempt 3",
-      "start": "2026-11-04T14:13:06.531890719Z",
-      "end": "2026-11-04T14:13:37.213548559Z",
+      "start": "2026-11-04T15:55:11.243017436Z",
+      "end": "2026-11-04T15:55:41.888803392Z",
       "restart": {
-        "end": "2026-11-04T14:13:37.213548559Z",
+        "end": "2026-11-04T15:55:41.888803392Z",
         "ok": true,
-        "start": "2026-11-04T14:13:36.734838582Z"
+        "start": "2026-11-04T15:55:41.196878886Z"
       },
       "parent_wait": {
-        "id": "ac28e632-be18-46ac-8ffb-4d69d435ed8b",
-        "pid": 94155,
-        "start_ticks": "12495458",
-        "started_at": "2026-11-04T14:11:52.134980522Z",
-        "wait_observed_at": "2026-11-04T14:13:06.56356287Z",
+        "id": "6b93ab76-c281-4c5a-9082-1e339343f8e8",
+        "pid": 93177,
+        "start_ticks": "13108325",
+        "started_at": "2026-11-04T15:54:00.807952732Z",
+        "wait_observed_at": "2026-11-04T15:55:11.274389935Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
         "core_dump": false
       },
       "parent_identity_matched": true,
-      "watchdog_lines_in_window": [
-        {
-          "text": "{\"time\":\"2026-11-04T14:13:36.937802751Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"baseline_unverified\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125059389172211,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}",
-          "sources": [
-            {
-              "path": "watchdog-before-populated-hold-stop.log.txt",
-              "line": 4
-            },
-            {
-              "path": "watchdog.log.txt",
-              "line": 4
-            }
-          ]
-        },
-        {
-          "text": "{\"time\":\"2026-11-04T14:13:36.937857372Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059389232188,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0}",
-          "sources": [
-            {
-              "path": "watchdog-before-populated-hold-stop.log.txt",
-              "line": 5
-            },
-            {
-              "path": "watchdog.log.txt",
-              "line": 5
-            }
-          ]
-        },
-        {
-          "text": "{\"time\":\"2026-11-04T14:13:36.971576975Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059422950818,\"succeeded\":true}",
-          "sources": [
-            {
-              "path": "watchdog-before-populated-hold-stop.log.txt",
-              "line": 6
-            },
-            {
-              "path": "watchdog.log.txt",
-              "line": 6
-            }
-          ]
-        }
-      ],
+      "watchdog_lines_in_window": [],
       "interpretation": "Recorded watchdog lines only; no log does not prove a retaining pass or a forced recovery interleaving."
     },
     {
       "source": "restart-lifecycle.json",
       "purpose": "durable identity restart",
-      "start": "2026-11-04T14:20:45.837282623Z",
-      "end": "2026-11-04T14:20:46.697675512Z",
+      "start": "2026-11-04T16:02:47.54143468Z",
+      "end": "2026-11-04T16:02:48.409947463Z",
       "parent_wait": {
-        "id": "5abe2acb-37b4-410f-8ffa-d34b8606ce23",
-        "pid": 138382,
-        "start_ticks": "12505935",
-        "started_at": "2026-11-04T14:13:36.902721094Z",
-        "wait_observed_at": "2026-11-04T14:20:46.089034003Z",
+        "id": "834b09e6-d635-4777-9630-46d0ebb1a97e",
+        "pid": 136061,
+        "start_ticks": "13118391",
+        "started_at": "2026-11-04T15:55:41.460363164Z",
+        "wait_observed_at": "2026-11-04T16:02:47.79195026Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -441,14 +371,14 @@
     {
       "source": "identity-freeze.json",
       "purpose": "identity freeze restart",
-      "start": "2026-11-04T14:26:59.334771851Z",
-      "end": "2026-11-04T14:27:01.102539402Z",
+      "start": "2026-11-04T16:08:54.308150275Z",
+      "end": "2026-11-04T16:08:56.337712501Z",
       "parent_wait": {
-        "id": "4b66a21e-2c5f-4af0-a690-f19fbfe76bcd",
-        "pid": 945,
-        "start_ticks": "12548943",
-        "started_at": "2026-11-04T14:20:46.984148984Z",
-        "wait_observed_at": "2026-11-04T14:26:59.53657165Z",
+        "id": "2f54302b-8d98-4eaa-a972-afc9b5779772",
+        "pid": 941,
+        "start_ticks": "13161114",
+        "started_at": "2026-11-04T16:02:48.696469104Z",
+        "wait_observed_at": "2026-11-04T16:08:54.475526839Z",
         "wait_status": 0,
         "exit_code": 0,
         "signal": null,
@@ -461,46 +391,7 @@
   ],
   "watchdog_unique_lines": [
     {
-      "text": "{\"time\":\"2026-11-04T14:24:48.153064181Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"policy_expired\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125730604423718,\"heartbeat_mono_ns\":125726538448466,\"policy_expires_mono_ns\":125728711630414,\"generation\":34,\"serving\":true,\"baseline_ok\":true}",
-      "sources": [
-        {
-          "path": "watchdog-before-clone.log.txt",
-          "line": 1
-        },
-        {
-          "path": "watchdog.log.txt",
-          "line": 7
-        }
-      ]
-    },
-    {
-      "text": "{\"time\":\"2026-11-04T14:24:48.1532589Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"policy_expired\",\"mono_ns\":125730604634181,\"heartbeat_mono_ns\":125726538448466,\"policy_expires_mono_ns\":125728711630414,\"generation\":34}",
-      "sources": [
-        {
-          "path": "watchdog-before-clone.log.txt",
-          "line": 2
-        },
-        {
-          "path": "watchdog.log.txt",
-          "line": 8
-        }
-      ]
-    },
-    {
-      "text": "{\"time\":\"2026-11-04T14:24:48.200037095Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"policy_expired\",\"mono_ns\":125730651410544,\"succeeded\":true}",
-      "sources": [
-        {
-          "path": "watchdog-before-clone.log.txt",
-          "line": 3
-        },
-        {
-          "path": "watchdog.log.txt",
-          "line": 9
-        }
-      ]
-    },
-    {
-      "text": "{\"time\":\"2026-11-04T14:07:35.879901791Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":124698331257359,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}",
+      "text": "{\"time\":\"2026-11-04T15:49:46.676579611Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":130829127935194,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}",
       "sources": [
         {
           "path": "watchdog-before-populated-hold-stop.log.txt",
@@ -513,7 +404,7 @@
       ]
     },
     {
-      "text": "{\"time\":\"2026-11-04T14:07:35.879970076Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":124698331345940,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}",
+      "text": "{\"time\":\"2026-11-04T15:49:46.676670959Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829128046750,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}",
       "sources": [
         {
           "path": "watchdog-before-populated-hold-stop.log.txt",
@@ -526,7 +417,7 @@
       ]
     },
     {
-      "text": "{\"time\":\"2026-11-04T14:07:35.908753499Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":124698360126618,\"succeeded\":true}",
+      "text": "{\"time\":\"2026-11-04T15:49:46.697288833Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829148660831,\"succeeded\":true}",
       "sources": [
         {
           "path": "watchdog-before-populated-hold-stop.log.txt",
@@ -535,53 +426,14 @@
         {
           "path": "watchdog.log.txt",
           "line": 3
-        }
-      ]
-    },
-    {
-      "text": "{\"time\":\"2026-11-04T14:13:36.937802751Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"baseline_unverified\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125059389172211,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}",
-      "sources": [
-        {
-          "path": "watchdog-before-populated-hold-stop.log.txt",
-          "line": 4
-        },
-        {
-          "path": "watchdog.log.txt",
-          "line": 4
-        }
-      ]
-    },
-    {
-      "text": "{\"time\":\"2026-11-04T14:13:36.937857372Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059389232188,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0}",
-      "sources": [
-        {
-          "path": "watchdog-before-populated-hold-stop.log.txt",
-          "line": 5
-        },
-        {
-          "path": "watchdog.log.txt",
-          "line": 5
-        }
-      ]
-    },
-    {
-      "text": "{\"time\":\"2026-11-04T14:13:36.971576975Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059422950818,\"succeeded\":true}",
-      "sources": [
-        {
-          "path": "watchdog-before-populated-hold-stop.log.txt",
-          "line": 6
-        },
-        {
-          "path": "watchdog.log.txt",
-          "line": 6
         }
       ]
     }
   ],
   "identity_freeze_restart": {
-    "started_at": "2026-11-04T14:26:59.334771851Z",
-    "completed_at": "2026-11-04T14:27:01.102539402Z",
-    "fixture_duration_ns": "1767767552",
+    "started_at": "2026-11-04T16:08:54.308150275Z",
+    "completed_at": "2026-11-04T16:08:56.337712501Z",
+    "fixture_duration_ns": "2029562225",
     "stored_lease_survived_restart": true,
     "container_stop_available": true,
     "owner": "ENR-02 / ENR-03; this is the consumer latch observation only"

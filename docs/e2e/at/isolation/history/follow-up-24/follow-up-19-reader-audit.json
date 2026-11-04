@@ -1,0 +1,53 @@
+{
+  "baseline": "27ff63928222c9642e4f5e180cf225108327a1e5",
+  "command_kinds": [
+    "nft",
+    "tc",
+    "conntrack",
+    "ip",
+    "other"
+  ],
+  "command_phases": [
+    "prepare",
+    "shape",
+    "install",
+    "retire",
+    "release",
+    "verify",
+    "quarantine",
+    "revoke",
+    "rollback"
+  ],
+  "operations": [
+    "apply",
+    "verify"
+  ],
+  "timed_record_sources": [
+    "apply",
+    "live",
+    "blocked_audit"
+  ],
+  "untimed_record_sources": [
+    "renewal",
+    "baseline",
+    "heartbeat"
+  ],
+  "mismatch_fixed": "producer_timing.COMMAND_PHASES omitted retire; added with successful nft-install then tc-retire test and unknown-phase rejection.",
+  "other_readers": "review_commands and review_followup10 consume shared validate_operations; diagnostic failure stages are derived by this reader, not production enums. No other mismatch in closed command-kind, operation, source or stage lists.",
+  "separate_d147_fixture_corrections": {
+    "ctdns": "ctbadns",
+    "ctnodown": "ctnodn",
+    "du_<device>": "nu_<device>",
+    "dd_<device>": "nd_<device>"
+  },
+  "unchanged": "All other reader predicates and existing fvmb0 memberAcceptRule results.",
+  "sources": [
+    "node/enforce/command_lifecycle.go",
+    "node/enforce/apply.go",
+    "node/enforce/verify_tc.go",
+    "node/agent/engine.go",
+    "node/agent/measurement.go",
+    "node/agent/serving.go",
+    "node/enforce/render_nft.go"
+  ]
+}

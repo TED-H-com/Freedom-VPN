@@ -1,0 +1,47 @@
+[
+  {
+    "name": "df9dbad7",
+    "source": "docs/e2e/at/isolation/history/follow-up-24-run",
+    "spacing_ns": "33200000",
+    "planned_probes": 0,
+    "qualified": false,
+    "discounted_samples": [],
+    "original_added_json_sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+    "replayed_added_json_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "added_schedule_bytes_identical": false,
+    "full_plan_bytes_identical": false,
+    "full_plan_change": "Explicit qualification/reason, array representation and candidate arithmetic added; typed sample serialization changes key order. All input sample values and scheduling arithmetic preserved.",
+    "review_original": "fail",
+    "review_new_plan": "fail"
+  },
+  {
+    "name": "328ab9e0",
+    "source": "docs/e2e/at/isolation/history/follow-up-23-run",
+    "spacing_ns": "6100000",
+    "planned_probes": 31,
+    "qualified": true,
+    "discounted_samples": [],
+    "original_added_json_sha256": "9851805caab2c14dd04de0456ef7b886315916ec5678b3cc7c2c4de7a58d9193",
+    "replayed_added_json_sha256": "9851805caab2c14dd04de0456ef7b886315916ec5678b3cc7c2c4de7a58d9193",
+    "added_schedule_bytes_identical": true,
+    "full_plan_bytes_identical": false,
+    "full_plan_change": "Explicit qualification/reason, array representation and candidate arithmetic added; typed sample serialization changes key order. All input sample values and scheduling arithmetic preserved.",
+    "review_original": "pass",
+    "review_new_plan": "pass"
+  },
+  {
+    "name": "runner-1104",
+    "source": "docs/e2e/at/isolation/history/follow-up-25-runner-replay",
+    "spacing_ns": "4000000",
+    "planned_probes": 49,
+    "qualified": true,
+    "discounted_samples": [],
+    "original_added_json_sha256": "6ef7e7ac938244374a129c6962822d25efe3a1f2987fa586ec596ec07b0ebcc9",
+    "replayed_added_json_sha256": "6ef7e7ac938244374a129c6962822d25efe3a1f2987fa586ec596ec07b0ebcc9",
+    "added_schedule_bytes_identical": true,
+    "full_plan_bytes_identical": false,
+    "full_plan_change": "Explicit qualification/reason, array representation and candidate arithmetic added; typed sample serialization changes key order. All input sample values and scheduling arithmetic preserved.",
+    "review_original": "pass",
+    "review_new_plan": "pass"
+  }
+]

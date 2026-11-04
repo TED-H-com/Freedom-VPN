@@ -1,0 +1,297 @@
+{
+  "run_id": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
+  "scope": "D-141 read-only diagnosis; original failed boundary review and passing packet verdict unchanged.",
+  "packet56": {
+    "sample": {
+      "egress_mono_ns": "125723364189738",
+      "ingress_mono_ns": "125723349014035",
+      "latency_ns": "1190251",
+      "packet_id": 56,
+      "send_mono_ns": "125723347823784",
+      "transit_ns": "15175703"
+    },
+    "ingress_offset_ns": "-5362616379",
+    "egress_offset_ns": "-5347440676",
+    "capture_reader": [
+      {
+        "capture_read": {
+          "mono_ns": "125723349014035",
+          "wall": "2026-11-04T14:24:40.897637926Z"
+        },
+        "destination_port": 8080,
+        "interface": "fvmb0",
+        "packet_id": 56,
+        "packet_type": 0,
+        "source_port": 42056
+      },
+      {
+        "capture_read": {
+          "mono_ns": "125723364189738",
+          "wall": "2026-11-04T14:24:40.912814377Z"
+        },
+        "destination_port": 8080,
+        "interface": "fvup0",
+        "packet_id": 56,
+        "packet_type": 4,
+        "source_port": 42056
+      }
+    ],
+    "probe": {
+      "deadline_mono_ns": "125728711630414",
+      "packet_id": 56,
+      "phase": "arbitrary_37ms",
+      "read_completion": {
+        "mono_ns": "125723348532885",
+        "wall": "2026-11-04T14:24:40.897156388Z"
+      },
+      "result": "ok",
+      "scheduled_mono_ns": "125723347630414",
+      "send": {
+        "mono_ns": "125723347823784",
+        "wall": "2026-11-04T14:24:40.89644754Z"
+      },
+      "source_port": 42056,
+      "trace_clock": {
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "clock": "CLOCK_MONOTONIC",
+        "offsets": "monotonic           0         0\nboottime            0         0\n",
+        "time_namespace": "time:[4026535270]"
+      }
+    },
+    "tcpdump": [
+      {
+        "line": 224,
+        "text": "1793802280.896752363 fvmb0 In  IP 100.77.187.94.42056 > 192.0.6.10.8080: UDP, length 9"
+      },
+      {
+        "line": 225,
+        "text": "1793802280.896775337 fvup0 Out IP 192.0.6.20.42056 > 192.0.6.10.8080: UDP, length 9"
+      },
+      {
+        "line": 226,
+        "text": "1793802280.896804500 fvup0 In  IP 192.0.6.10.8080 > 192.0.6.20.42056: UDP, length 9"
+      },
+      {
+        "line": 227,
+        "text": "1793802280.896813538 fvmb0 Out IP 192.0.6.10.8080 > 100.77.187.94.42056: UDP, length 9"
+      }
+    ],
+    "tcpdump_forward_transit_ns": "22974",
+    "tcpdump_four_observation_span_ns": "61175",
+    "ingress_capture_read_after_tcpdump_ns": "885563",
+    "egress_capture_read_after_tcpdump_ns": "16039040",
+    "reply_read_before_capture_ingress_ns": "481150",
+    "conclusion": "The retained independent tcpdump times and successful member reply preceding both calibration reads show capture-read delay, not a 15.2ms datapath transit. No scheduler trace or syscall/write duration was retained; why the reader was delayed is unestablished."
+  },
+  "producer": {
+    "source": "docs/e2e/at/isolation/history/follow-up-24-run/producer-operations.jsonl.gz",
+    "apply": {
+      "overlapping": [],
+      "last_before": {
+        "line": 6442,
+        "sequence": "1080",
+        "start_ns": "125668738285472",
+        "end_ns": "125668836014346",
+        "anchor_wall": "2026-11-04T14:23:46.384725525Z",
+        "deadline": {
+          "granularity_ns": "1000000",
+          "install_bound_ns": "100000000",
+          "apply_start_ns": "125668738285472",
+          "render_start_ns": "125668767536731",
+          "install_start_ns": "125668767623705",
+          "installed_by_ns": "125668784490739",
+          "install_ok": true,
+          "release_start_ns": "125668784494413",
+          "release_end_ns": "125668807584888",
+          "guard_released": true
+        }
+      },
+      "first_after": {
+        "line": 6611,
+        "sequence": "1249",
+        "start_ns": "125746203266553",
+        "end_ns": "125746295753057",
+        "anchor_wall": "2026-11-04T14:25:03.844460873Z",
+        "deadline": {
+          "granularity_ns": "1000000",
+          "install_bound_ns": "100000000",
+          "apply_start_ns": "125746203266553",
+          "render_start_ns": "125746218752210",
+          "install_start_ns": "125746218835314",
+          "installed_by_ns": "125746240498948",
+          "install_ok": true,
+          "release_start_ns": "125746240505253",
+          "release_end_ns": "125746266496445",
+          "guard_released": true
+        }
+      }
+    },
+    "renewal": {
+      "overlapping": [],
+      "last_before": {
+        "line": 6580,
+        "sequence": "1218",
+        "start_ns": "125721328673931",
+        "end_ns": "125721328707462",
+        "anchor_wall": "2026-11-04T14:24:38.877331391Z",
+        "new_lease": false
+      },
+      "first_after": {
+        "line": 6588,
+        "sequence": "1226",
+        "start_ns": "125726418223304",
+        "end_ns": "125726418268606",
+        "anchor_wall": "2026-11-04T14:24:43.966892813Z",
+        "new_lease": false
+      }
+    }
+  },
+  "receiver": {
+    "source": "docs/e2e/at/isolation/history/follow-up-24-run/receiver-capture.json.gz",
+    "overlapping": [
+      {
+        "index": 1600,
+        "path": "/api/v1/agent/desired-state",
+        "received_at": "2026-11-04T14:24:38.993316687Z",
+        "response_at": "2026-11-04T14:24:43.966877739Z",
+        "status": 502
+      }
+    ]
+  },
+  "agent_log": {
+    "source": "docs/e2e/at/isolation/history/follow-up-24-run/agent.log.txt",
+    "nearby": [
+      {
+        "line": 276,
+        "text": "time=2026-11-04T14:24:38.877Z level=WARN msg=\"desired state\" err=\"control request ended\""
+      },
+      {
+        "line": 277,
+        "text": "time=2026-11-04T14:24:38.877Z level=WARN msg=lease err=\"control request ended\""
+      },
+      {
+        "line": 278,
+        "text": "time=2026-11-04T14:24:43.966Z level=WARN msg=\"desired state\" err=\"control request ended\""
+      },
+      {
+        "line": 279,
+        "text": "time=2026-11-04T14:24:43.966Z level=WARN msg=lease err=\"control request ended\""
+      }
+    ]
+  },
+  "arithmetic": {
+    "latency_spread_ns": "2673957",
+    "maximum_transit_ns": "15175703",
+    "unrounded_spacing_ns": "33125363",
+    "spacing_ns": "33200000",
+    "next_largest": {
+      "egress_mono_ns": "125720848398642",
+      "ingress_mono_ns": "125720848231563",
+      "latency_ns": "486429",
+      "packet_id": 6,
+      "send_mono_ns": "125720847745134",
+      "transit_ns": "167079"
+    },
+    "without_packet56_unrounded_ns": "3108115",
+    "without_packet56_rounded_ns": "3200000",
+    "cadence_gaps_ns": [
+      "37000000",
+      "63000000"
+    ],
+    "gap_half_ns": [
+      "18500000",
+      "31500000"
+    ],
+    "rule": "Interior placement requires gap >= 2*spacing; equality allows just the midpoint. Above 18.5ms no point fits a 37ms gap; above 31.5ms neither gap fits. At 33.2ms all 14 proposed candidates are excluded."
+  },
+  "table": [
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-15/boundary-schedule.json",
+      "samples": 103,
+      "max_transit_ns": "221923",
+      "max_transit_packet_id": 1,
+      "latency_spread_ns": "3675698",
+      "spacing_ns": "600000",
+      "added_probes": 344
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-16/boundary-schedule.json",
+      "samples": 103,
+      "max_transit_ns": "181849",
+      "max_transit_packet_id": 4,
+      "latency_spread_ns": "1698918",
+      "spacing_ns": "2200000",
+      "added_probes": 90
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-17/boundary-schedule.json",
+      "samples": 103,
+      "max_transit_ns": "178905",
+      "max_transit_packet_id": 3,
+      "latency_spread_ns": "1916857",
+      "spacing_ns": "2400000",
+      "added_probes": 83
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-18/boundary-schedule.json",
+      "samples": 103,
+      "max_transit_ns": "1850952",
+      "max_transit_packet_id": 103,
+      "latency_spread_ns": "1977725",
+      "spacing_ns": "5800000",
+      "added_probes": 32
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-21-run/boundary-schedule.json",
+      "samples": 104,
+      "max_transit_ns": "207905",
+      "max_transit_packet_id": 3,
+      "latency_spread_ns": "3344410",
+      "spacing_ns": "3900000",
+      "added_probes": 51
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-22-run/boundary-schedule.json",
+      "samples": 104,
+      "max_transit_ns": "237105",
+      "max_transit_packet_id": 3,
+      "latency_spread_ns": "3092525",
+      "spacing_ns": "3700000",
+      "added_probes": 53
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-23-run/boundary-schedule.json",
+      "samples": 103,
+      "max_transit_ns": "656338",
+      "max_transit_packet_id": 66,
+      "latency_spread_ns": "4673151",
+      "spacing_ns": "6100000",
+      "added_probes": 31
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-25-runner-replay/boundary-schedule.json",
+      "samples": 103,
+      "max_transit_ns": "117367",
+      "max_transit_packet_id": 1,
+      "latency_spread_ns": "3571199",
+      "spacing_ns": "4000000",
+      "added_probes": 49
+    },
+    {
+      "path": "docs/e2e/at/isolation/history/follow-up-24-run/boundary-schedule.json",
+      "samples": 103,
+      "max_transit_ns": "15175703",
+      "max_transit_packet_id": 56,
+      "latency_spread_ns": "2673957",
+      "spacing_ns": "33200000",
+      "added_probes": 0
+    }
+  ],
+  "no_samples_source": "docs/e2e/at/isolation/history/follow-up-20-run/boundary-schedule.json",
+  "interpretation": "The table agrees with the orchestrator, allowing rounding: follow-up18 maximum is 1.850952ms, slightly above a literal 1.85ms. Nine sampled runs, one empty schedule. Follow-up20 has no samples, qualified=false and a missing added key, so the old default [] avoided sorted(None). No discounts proposed.",
+  "netlink": {
+    "source": "docs/e2e/at/isolation/history/follow-up-24-run/nft-event-receipts.json.gz",
+    "events_in_interval": [],
+    "scope": "Passive netlink userspace receipts, not exact kernel operation times."
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "source": "docs/e2e/at/isolation/history/follow-up-24-run/reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-apply.jsonl.gz",
+  "applies": 101,
+  "first_start": {
+    "wall_ns": "1793801146903352630",
+    "mono_ns": "124589354728697"
+  },
+  "last_end": {
+    "wall_ns": "1793801161828183384",
+    "mono_ns": "124604279559959"
+  },
+  "first_guard": {
+    "granularity_ns": "1000000",
+    "install_bound_ns": "100000000",
+    "apply_start_ns": "124589354732942",
+    "render_start_ns": "124589369849899",
+    "install_start_ns": "124589369990353",
+    "installed_by_ns": "124589381274841",
+    "install_ok": true,
+    "release_start_ns": "124589381277333",
+    "release_end_ns": "124589393349928",
+    "guard_released": true
+  },
+  "last_guard": {
+    "granularity_ns": "1000000",
+    "install_bound_ns": "100000000",
+    "apply_start_ns": "124604191785356",
+    "render_start_ns": "124604220667089",
+    "install_start_ns": "124604220766677",
+    "installed_by_ns": "124604237367584",
+    "install_ok": true,
+    "release_start_ns": "124604237370893",
+    "release_end_ns": "124604249340606",
+    "guard_released": true
+  }
+}

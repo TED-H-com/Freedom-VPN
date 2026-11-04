@@ -1,12 +1,12 @@
 {
-  "run_id": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
+  "run_id": "bd73d7a4-03f1-4b17-97c2-9c25a39ac0db",
   "operation_collector": {
     "evidence": "publication-operation-history.json",
-    "run_id": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
+    "run_id": "bd73d7a4-03f1-4b17-97c2-9c25a39ac0db",
     "matches_invocation": true,
-    "snapshots": 32,
-    "first_read": "2026-11-04T14:07:30.550530Z",
-    "last_successful_read": "2026-11-04T14:28:48.145891Z",
+    "snapshots": 33,
+    "first_read": "2026-11-04T15:49:41.365332Z",
+    "last_successful_read": "2026-11-04T16:10:43.983732Z",
     "end": "final read after the assembled central report export"
   },
   "successful_setup_publication": {
@@ -15,8 +15,8 @@
     "receipt": {
       "pointer": "/observations/1",
       "trace": {
-        "started_at": "2026-11-04T14:07:42.450582059Z",
-        "finished_at": "2026-11-04T14:07:42.455331827Z",
+        "started_at": "2026-11-04T15:49:53.20564101Z",
+        "finished_at": "2026-11-04T15:49:53.211362452Z",
         "max_attempts": 3,
         "limit_seconds": 10,
         "status": "pass",
@@ -24,12 +24,12 @@
         "attempts": [
           {
             "method": "PUT",
-            "path": "/api/v1/admin/nodes/01a1a6e2-f90b-7629-ba41-ef37246f9bcd/publication",
-            "if_match": "\"16\"",
-            "idempotency_key": "f55aca4d-af8a-4557-9d69-3151aef45efb",
-            "body_sha256": "65f18948e809edb9dd2db2b27a68013f172c9c5dda39aa3c16ab7a63bdd80134",
-            "started_at": "2026-11-04T14:07:42.450593224Z",
-            "finished_at": "2026-11-04T14:07:42.455305276Z",
+            "path": "/api/v1/admin/nodes/01a1a740-8552-7eb7-88ce-e72f0d8f6ccd/publication",
+            "if_match": "\"15\"",
+            "idempotency_key": "6639b797-c0d9-4910-b79a-be7e6c2a335a",
+            "body_sha256": "57c001da0c4a7f232719f738820775edb4a161e49cc23a33f322630e36276d83",
+            "started_at": "2026-11-04T15:49:53.205648905Z",
+            "finished_at": "2026-11-04T15:49:53.211356425Z",
             "status": 202,
             "error_code": "",
             "transport_error": false
