@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Read-only operation-reference observer for the owned assembled stack."""
 import json
+import os
 from pathlib import Path
 import subprocess
 import time
@@ -8,7 +9,10 @@ from datetime import datetime, timezone
 
 
 def capture(root):
-    run_id=json.loads((root/'lab-AT10.json').read_text())['run_id']
+    # The invocation owns identity even when its lab phase is explicitly skipped.
+    # Standalone readers may resolve it from current product evidence.
+    from review_unexecuted import run_id as current_run_id
+    run_id = os.environ.get('FVPN_AT_RUN_ID') or current_run_id(root)
     query="""SELECT coalesce(jsonb_agg(jsonb_build_object('id',id,'kind',kind,'resource_id',resource_id,
     'desired_generation',desired_generation::text,'status',status,'steps',steps,'observed_refs',observed_refs,
     'created_at',created_at,'completed_at',completed_at) ORDER BY created_at),'[]'::jsonb)
@@ -36,6 +40,7 @@ def capture(root):
         time.sleep(1)
     (root/'publication-operation-history.json').write_text(json.dumps(result,indent=2)+'\n')
     print('Retained',len(result['snapshots']),'operation snapshots;',result['end'])
+    return result
 
 
 if __name__=='__main__':

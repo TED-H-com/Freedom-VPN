@@ -21,7 +21,11 @@ reports = []
 for r in transactions:
     if r.get('path', '').endswith('/observations') and isinstance(r.get('body'), dict):
         reports.append(dict(report=r['body'], received_at=r['received_at'], status=r['status']))
+from review_unexecuted import run_id as current_run_id
+run_id = sys.argv[2] if len(sys.argv) > 2 else current_run_id(root)
 trace = read('foreign-redirect.json', {})
+if trace.get('run_id') != run_id:
+    trace = {}  # Never attribute an inherited injection to the current attempt.
 rows = trace.get('rows', [])
 def labelled(label):
     return [r for r in rows if r['label'] == label]
@@ -88,7 +92,7 @@ dirty_start = first('publish dirty newer generation').get('at') or injection.get
 dirty_end = removal.get('start') or removal.get('end')
 dirty_tc = (candidate_rejections(transactions, read_operations(root), initial_gen, dirty_start, dirty_end)
             if dirty_start and dirty_end else [])
-write('candidate-rejection-join.json', dict(run_id=trace.get('run_id'),
+write('candidate-rejection-join.json', dict(run_id=run_id,
     evidence_kind='pre-install only; no substitution for installed-verifier assertions',
     accepted_candidates=dirty_tc))
 negative_preserved = bool(negative) and all('flower' in current_tc(r) and 'mirred' in current_tc(r) and 'serving 0' in r.get('readback', '') and member_up(r) is False for r in negative)
@@ -127,8 +131,8 @@ checks = [
  dict(number=5, name='restored topology marker serving and counted packet control', passed=bool(matching and positive.get('counted') and int(positive.get('admission_bytes_after') or 0)>int(positive.get('admission_bytes_before') or 0) and 'serving 1' in final.get('readback', '') and 'quarantine_fvmb0' not in final.get('kernel_ruleset', 'missing')) and 'kernel_ruleset' in final and member_up(final) is True and capture_complete and packet_control),
  dict(number=6, name='dirty newer generation remains non-serving and preserves foreign objects', passed=bool(dirty_tc and negative_preserved)),
 ]
-write('recovery-verdict.json', dict(run_id=trace.get('run_id'), passed=all(c['passed'] for c in checks), status='pass' if all(c['passed'] for c in checks) else 'blocked', assertions=checks, initial_generation=str(initial_gen), durable_apply_generation=state_gen, durable_apply_verified=state_apply, node_any_capture_complete=capture_complete, recovered_packet_control=packet_control, apply_evidence='read-only retained_applied + member_path + installed generation + matching signed lease; qos source=apply is superseded by mandatory fresh live read before reporting', rejected_report_ids=[r['report']['report_id'] for r in rejections], apply_report_ids=[r['report']['report_id'] for r in apply], live_report_ids=[r['report']['report_id'] for r in live], matching_report_ids=[r['report']['report_id'] for r in matching], historical_error_rows=history, injected_creator='isolation harness explicitly installed clsact/flower/mirred', unsolicited_creator='No creator inferred from object kinds; see every retained rejected row in tc-evidence-index.json.'))
-write('tc-evidence-index.json', dict(run_id=trace.get('run_id'), reads=[dict(report_id=r['report'].get('report_id'), observation_at=r['report'].get('observed_at'), status=r['status'], qos_detail=qos(r['report']), digest_matches=digest(tc(r['report'])), tc_evidence=tc(r['report'])) for r in reports if tc(r['report'])]))
+write('recovery-verdict.json', dict(run_id=run_id, passed=all(c['passed'] for c in checks), status=('pass' if all(c['passed'] for c in checks) else 'blocked') if injection else 'unavailable', stage='foreign_redirect_injection', reason='injection executed' if injection else 'injection not reached', assertions=checks, initial_generation=str(initial_gen), durable_apply_generation=state_gen, durable_apply_verified=state_apply, node_any_capture_complete=capture_complete, recovered_packet_control=packet_control, apply_evidence='read-only retained_applied + member_path + installed generation + matching signed lease; qos source=apply is superseded by mandatory fresh live read before reporting', rejected_report_ids=[r['report']['report_id'] for r in rejections], apply_report_ids=[r['report']['report_id'] for r in apply], live_report_ids=[r['report']['report_id'] for r in live], matching_report_ids=[r['report']['report_id'] for r in matching], historical_error_rows=history, **({'injected_creator':'isolation harness explicitly installed clsact/flower/mirred'} if injection.get('ok') else {}), unsolicited_creator='No creator inferred from object kinds; see every retained rejected row in tc-evidence-index.json.'))
+write('tc-evidence-index.json', dict(run_id=run_id, reads=[dict(report_id=r['report'].get('report_id'), observation_at=r['report'].get('observed_at'), status=r['status'], qos_detail=qos(r['report']), digest_matches=digest(tc(r['report'])), tc_evidence=tc(r['report'])) for r in reports if tc(r['report'])]))
 # D-087: only real qualifying reports count, never force a fake-control switch on central.
 qualifying=[]
 for r in reports:
