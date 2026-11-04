@@ -5,6 +5,7 @@ from pathlib import Path
 from evidence_io import read_json
 from review_holds import joins, ns
 from review_stops import matched
+from review_unexecuted import populated_holds
 
 
 def incident_at(snapshot, hid):
@@ -45,7 +46,11 @@ def central_age_fallback(incident, audits):
 
 
 def review(root):
-    raw = read_json(root/'populated-holds.json')
+    raw, unavailable = populated_holds(root)
+    if unavailable:
+        unavailable.update(coverage={}, join_problems=[], attempts=[])
+        (root/'populated-holds-review.json').write_text(json.dumps(unavailable, indent=2)+'\n')
+        return unavailable
     central = read_json(root/'generation-holds-central.json')
     if raw['run_id'] != central['run_id']:
         raise ValueError('different runs')
@@ -116,5 +121,5 @@ def review(root):
 if __name__ == '__main__':
     import sys
     result = review(Path(sys.argv[1]))
-    print(json.dumps({k:result[k] for k in ('run_id','status','coverage','join_problems')},indent=2))
+    print(json.dumps({k:result[k] for k in ('run_id','status','coverage','join_problems','stage','reason') if k in result},indent=2))
     raise SystemExit(result['status'] != 'pass')

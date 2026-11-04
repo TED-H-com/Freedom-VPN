@@ -4,253 +4,15 @@
       "chain": {
         "Present": true,
         "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
+        "Baseline": true,
+        "Generation": 0,
+        "MemberAccept": 0,
+        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a3e1-48ff-768a-ad77-0524791db351:4d89\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a3e1-c457-7afa-bb08-c96c4c32c9ae:8c3d\" | iifnam"
       },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:56.475883413Z",
-      "read_end": "2026-11-03T14:24:56.45492451Z",
-      "read_start": "2026-11-03T14:24:56.433722568Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:56.719473063Z",
-      "read_end": "2026-11-03T14:24:56.698995983Z",
-      "read_start": "2026-11-03T14:24:56.67620439Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:56.964573975Z",
-      "read_end": "2026-11-03T14:24:56.944715809Z",
-      "read_start": "2026-11-03T14:24:56.920312663Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:57.212597423Z",
-      "read_end": "2026-11-03T14:24:57.190438061Z",
-      "read_start": "2026-11-03T14:24:57.165374096Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:57.461226691Z",
-      "read_end": "2026-11-03T14:24:57.43886109Z",
-      "read_start": "2026-11-03T14:24:57.412814624Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:57.705397071Z",
-      "read_end": "2026-11-03T14:24:57.685107013Z",
-      "read_start": "2026-11-03T14:24:57.662195205Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:57.950375063Z",
-      "read_end": "2026-11-03T14:24:57.930332658Z",
-      "read_start": "2026-11-03T14:24:57.905867432Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:58.195070104Z",
-      "read_end": "2026-11-03T14:24:58.173209317Z",
-      "read_start": "2026-11-03T14:24:58.1505716Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:58.438503579Z",
-      "read_end": "2026-11-03T14:24:58.418625932Z",
-      "read_start": "2026-11-03T14:24:58.395471486Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:58.681182513Z",
-      "read_end": "2026-11-03T14:24:58.660933112Z",
-      "read_start": "2026-11-03T14:24:58.638685089Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:58.923349817Z",
-      "read_end": "2026-11-03T14:24:58.902710475Z",
-      "read_start": "2026-11-03T14:24:58.881412534Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:59.169182547Z",
-      "read_end": "2026-11-03T14:24:59.148915331Z",
-      "read_start": "2026-11-03T14:24:59.123786772Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:59.415189146Z",
-      "read_end": "2026-11-03T14:24:59.39326484Z",
-      "read_start": "2026-11-03T14:24:59.369214809Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:59.660349529Z",
-      "read_end": "2026-11-03T14:24:59.639750394Z",
-      "read_start": "2026-11-03T14:24:59.615976019Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:24:59.906126036Z",
-      "read_end": "2026-11-03T14:24:59.885538631Z",
-      "read_start": "2026-11-03T14:24:59.861419934Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:25:00.150064934Z",
-      "read_end": "2026-11-03T14:25:00.129429257Z",
-      "read_start": "2026-11-03T14:25:00.107155938Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:25:00.393543712Z",
-      "read_end": "2026-11-03T14:25:00.37337716Z",
-      "read_start": "2026-11-03T14:25:00.351036305Z"
-    },
-    {
-      "chain": {
-        "Present": true,
-        "Policy": "drop",
-        "Baseline": false,
-        "Generation": 30,
-        "MemberAccept": 12,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=30 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifname \"fvmb0\" oifna"
-      },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:25:00.639506661Z",
-      "read_end": "2026-11-03T14:25:00.617051071Z",
-      "read_start": "2026-11-03T14:25:00.594388223Z"
+      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 75440710027938\nwall_unix_ns 1793751998258651698\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 33\nreason safety_check_failed",
+      "heartbeat_read_end": "2026-11-04T00:26:43.079063781Z",
+      "read_end": "2026-11-04T00:26:43.001998494Z",
+      "read_start": "2026-11-04T00:26:42.923797284Z"
     },
     {
       "chain": {
@@ -259,13 +21,27 @@
         "Baseline": true,
         "Generation": 0,
         "MemberAccept": 0,
-        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-0418-762e-939a-1488189d1cb2:db87\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a1bc-885c-7df2-8e54-281105d791a2:82a0\" | iifnam"
+        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a3e1-48ff-768a-ad77-0524791db351:4d89\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a3e1-c457-7afa-bb08-c96c4c32c9ae:8c3d\" | iifnam"
       },
-      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 39338439906944\nwall_unix_ns 1793715895988530355\npolicy_expires_mono_ns 39342658952178\nbaseline_ok 1\nserving 1\ngeneration 30\nreason serving",
-      "heartbeat_read_end": "2026-11-03T14:25:00.883370921Z",
-      "read_end": "2026-11-03T14:25:00.862562223Z",
-      "read_start": "2026-11-03T14:25:00.840475598Z"
+      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 75445750945534\nwall_unix_ns 1793752003299569470\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 33\nreason safety_check_failed",
+      "heartbeat_read_end": "2026-11-04T00:26:43.43759126Z",
+      "read_end": "2026-11-04T00:26:43.361457995Z",
+      "read_start": "2026-11-04T00:26:43.280201465Z"
+    },
+    {
+      "chain": {
+        "Present": true,
+        "Policy": "drop",
+        "Baseline": true,
+        "Generation": 0,
+        "MemberAccept": 0,
+        "Excerpt": "type filter hook forward priority mangle; policy drop; | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_generation=0 fvpn_baseline=1 fvpn_metering=forward_admission_v1\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a3e1-48ff-768a-ad77-0524791db351:4d89\" | ip saddr 192.0.2.255 ip daddr 192.0.2.255 comment \"fvpn_class=01a1a3e1-c457-7afa-bb08-c96c4c32c9ae:8c3d\" | iifnam"
+      },
+      "heartbeat": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 75445750945534\nwall_unix_ns 1793752003299569470\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 33\nreason safety_check_failed",
+      "heartbeat_read_end": "2026-11-04T00:26:43.796114813Z",
+      "read_end": "2026-11-04T00:26:43.718621794Z",
+      "read_start": "2026-11-04T00:26:43.638211995Z"
     }
   ],
-  "signed_deadline": "2026-11-03T14:25:00.209693198Z"
+  "signed_deadline": "2026-11-04T00:26:43.406500722Z"
 }

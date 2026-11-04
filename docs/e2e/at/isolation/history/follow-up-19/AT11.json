@@ -1,0 +1,142 @@
+{
+  "run_id": "70beb28e-4766-4004-932b-510fd01f986a",
+  "started_at": "2026-11-03T22:10:49Z",
+  "source_dirty": false,
+  "checks": [
+    {
+      "name": "serving setup",
+      "status": "blocked",
+      "at": "2026-11-03T22:13:27Z",
+      "actual": "publication did not complete; no foreign flowtable, xt statement, or base chain outside inet fvpn; no foreign flowtable, xt statement, or base chain outside inet fvpn",
+      "owner": "w2-agent-core / w3-wire-nodes",
+      "positive_control": {
+        "device_id": "",
+        "container": "",
+        "at": "",
+        "counted": false,
+        "admission_bytes_before": "",
+        "admission_bytes_after": "",
+        "observations": null
+      },
+      "observations": [
+        {
+          "name": "publication_put",
+          "detail": "202"
+        },
+        {
+          "name": "operation_transition",
+          "detail": "2026-11-03T22:10:56.899271801Z pending"
+        },
+        {
+          "name": "operation_transition",
+          "detail": "2026-11-03T22:10:58.904173212Z running"
+        },
+        {
+          "name": "operation",
+          "detail": "{\"completed_at\":null,\"created_at\":\"2026-11-03T22:10:56.893735Z\",\"desired_generation\":\"2\",\"error\":null,\"kind\":\"node.publish\",\"observed_generation\":\"3\",\"operation_id\":\"cfc779a5-6f49-4e79-8a1a-4597402393da\",\"request_id\":\"01a1a377-24fb-7352-9806-83b9fb90fc1f\",\"resource\":{\"id\":\"01a1a377-186a-797c-a0c1-c995dca174aa\",\"type\":\"node\"},\"resource_version\":\"25\",\"status\":\"running\",\"steps\":[{\"error_code\":null,\"message\":null,\"name\":\"agent_policy\",\"observed_at\":\"2026-11-03T22:12:25.306069103Z\",\"required\":true,\"status\":\"succeeded\"},{\"error_code\":\"NODE_NOT_SERVICEABLE\",\"message\":\"member_forwarding_unconfirmed (forwarding_disabled)\",\"name\":\"data_path_probe\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"},{\"error_code\":null,\"message\":null,\"name\":\"netbird_route_readback\",\"observed_at\":null,\"required\":true,\"status\":\"pending\"}],\"updated_at\":\"2026-11-03T22:12:25.310117Z\"}\n"
+        },
+        {
+          "name": "publication_intent",
+          "detail": "\"published\""
+        },
+        {
+          "name": "publication_observed",
+          "detail": "\"absent\""
+        },
+        {
+          "name": "provisioning_state",
+          "detail": "\"ready\""
+        },
+        {
+          "name": "safety_status",
+          "detail": "\"passed\""
+        },
+        {
+          "name": "checks",
+          "detail": "[{\"error_code\":null,\"name\":\"dns_policy\",\"observed_at\":\"2026-11-03T22:13:25.684241212Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"internet_only\",\"observed_at\":\"2026-11-03T22:13:25.684241212Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"lease\",\"observed_at\":\"2026-11-03T22:13:25.684241212Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"meter_path\",\"observed_at\":\"2026-11-03T22:13:25.684241212Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"policy_signature\",\"observed_at\":\"2026-11-03T22:13:25.684241212Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"qos\",\"observed_at\":\"2026-11-03T22:13:25.684241212Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"release_supported\",\"observed_at\":\"2026-11-03T22:13:25.684241212Z\",\"status\":\"passed\"},{\"error_code\":null,\"name\":\"source_binding\",\"observed_at\":\"2026-11-03T22:13:25.684241212Z\",\"status\":\"not_run\"},{\"error_code\":null,\"name\":\"storage\",\"observed_at\":\"2026-11-03T22:13:25.684241212Z\",\"status\":\"passed\"},{\"detail\":\"Egress probe used no extra target.\",\"error_code\":null,\"name\":\"tunnel_probe\",\"observed_at\":\"2026-11-03T22:13:25.684241212Z\",\"status\":\"passed\"}]"
+        },
+        {
+          "name": "config_generation",
+          "detail": "{\"applied\":\"3\",\"desired\":\"3\"}"
+        },
+        {
+          "name": "foreign_ruleset",
+          "detail": "no foreign flowtable, xt statement, or base chain outside inet fvpn"
+        },
+        {
+          "name": "d079_classifier",
+          "detail": "verify_foreign.go a4191fa1f93ac74a99f790e8bf33e9078a5969d5 enforce: tolerate loopback-scoped foreign nft rules (D-079) — a native ip/ip6 saddr/daddr match entirely inside 127.0.0.0/8 or ::1 proves the rule cannot touch forwarded member traffic and is recorded as loopback_scoped in the read-back evidence; xt matches never prove scope, names prove nothing, non-loopback NAT stays FLOWTABLE_BYPASS with the rule handle in the detail; lab proof with Docker's embedded DNS present (w1-netlab follow-up 11) (#241); loopback_scoped_in_source=true; this main's observation report has no foreign-rule classification field"
+        },
+        {
+          "name": "heartbeat",
+          "detail": "v1\nboot_id 56e68667-9243-4933-83af-c70d575ff5fe\nmono_ns 67449511140069\nwall_unix_ns 1793744007059764528\npolicy_expires_mono_ns 0\nbaseline_ok 1\nserving 0\ngeneration 3\nreason safety_check_failed"
+        },
+        {
+          "name": "accepted_observation",
+          "detail": "{\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-03T22:13:27.026392759Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-03T22:13:27.026392759Z\"}, {\"name\": \"lease\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-11-03T22:13:27.026392759Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-03T22:13:27.026392759Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-03T22:13:27.026392759Z\"}, {\"name\": \"qos\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-11-03T22:13:27.026392759Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-03T22:13:27.026392759Z\"}, {\"name\": \"source_binding\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-11-03T22:13:27.026392759Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-03T22:13:27.026392759Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-03T22:13:27.026392759Z\"}], \"errors\": [{\"code\": \"VALIDATION_FAILED\", \"stage\": \"qos\", \"message\": \"safety policy could not be rendered\", \"observed_at\": \"2026-11-03T22:13:27.026392759Z\"}], \"reasons\": [\"safety_check_failed\"], \"forwarding\": false, \"generation\": \"3\"}"
+        }
+      ]
+    },
+    {
+      "name": "IPv6 platform matrix",
+      "status": "blocked",
+      "at": "2026-11-03T22:13:27Z",
+      "actual": "devstack follow-up 13 did not export an IPv6 or member-platform path; harness-exports.md exposes only InjectMemberIngress and ObserveMemberIngress",
+      "owner": "w3-devstack-e2e: real IPv6 and platform paths are devstack backlog",
+      "positive_control": {
+        "device_id": "",
+        "container": "",
+        "at": "",
+        "counted": false,
+        "admission_bytes_before": "",
+        "admission_bytes_after": "",
+        "observations": null
+      }
+    }
+  ],
+  "id": "AT11",
+  "title": "Assembled isolation AT11",
+  "spec": [
+    "§19 AT11"
+  ],
+  "status": "blocked",
+  "at": "2026-11-03T22:13:28Z",
+  "build": "458b7a89f07c22dd4e66f839195b6549db4b883d",
+  "image_digests": [
+    "control sha256:c4fafd9bd185bb1729ab22b63326502bfbf6ea80839ab9f2d437ad93cfef682f",
+    "worker sha256:ebd570be26c1379bac968e4a28dc255b76f84eb523a8f38fcc0b5870ed84a506",
+    "node sha256:d7ab54fe29ee10f6f5ce6f00239f7ea7891dccea9eace5c906cd8c858732eee7",
+    "member sha256:d7ab54fe29ee10f6f5ce6f00239f7ea7891dccea9eace5c906cd8c858732eee7",
+    "netbird sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+    "adguard sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+    "gateway sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+    "origin sha256:bb928701b40a7773c35b2658152e904449ea80446fc4c6bdd00c04569b0ec815",
+    "idp sha256:b0b01d3f9fceb9878c3723735f47a8877d4af90733d61cec1c0d7f2d7ad738b1",
+    "postgres sha256:253b45e8c1e97dedff4229a31181116643b9faf818d05b3e67b7fd4f1f6b246c"
+  ],
+  "policy_revision": "3",
+  "node_incarnation": "01a1a377-1b53-7800-b7ab-a19815d6ec77",
+  "expected": "IPv4 and IPv6 platform routes cannot bypass protected destinations; unavailable platforms remain blocked.",
+  "actual": "See per-check positive controls, outcomes and owners.",
+  "commands": [
+    "make -f mk/at-isolation.mk at-isolation"
+  ],
+  "observations": [
+    {
+      "name": "boot_release",
+      "detail": "01a1a377-137a-7b88-8911-1f8220344323"
+    },
+    {
+      "name": "convergence_timeline",
+      "detail": "no counted member byte during the sampled window; samples=602"
+    },
+    {
+      "name": "owner",
+      "detail": "acceptance"
+    },
+    {
+      "name": "mechanism_control",
+      "detail": "lab-AT11.json; separate mechanism proof, never substitutes for a counted product control"
+    }
+  ]
+}

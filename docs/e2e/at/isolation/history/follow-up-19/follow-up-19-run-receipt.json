@@ -1,0 +1,35 @@
+{
+  "run_id": "70beb28e-4766-4004-932b-510fd01f986a",
+  "baseline": "27ff63928222c9642e4f5e180cf225108327a1e5",
+  "build": "458b7a89f07c22dd4e66f839195b6549db4b883d",
+  "started_at": "2026-11-03T22:08:56.001043Z",
+  "ended_at": "2026-11-03T22:13:50.863036Z",
+  "elapsed_seconds": 294.862,
+  "exit_code": 2,
+  "admission": [
+    {
+      "wait_seconds": 0.038,
+      "samples": [
+        {
+          "at": "2026-11-03T22:08:25.917552Z",
+          "result": "free",
+          "exit": 0
+        }
+      ]
+    },
+    {
+      "wait_seconds": 0.037,
+      "samples": [
+        {
+          "at": "2026-11-03T22:08:55.998711Z",
+          "result": "free",
+          "exit": 0
+        }
+      ]
+    }
+  ],
+  "overlap_observed": true,
+  "overlap_sampling_seconds": 30,
+  "scope": "One assembled invocation, no retry. Periodic process inventory cannot exclude sub-30-second overlaps.",
+  "gocache": "$HOME/.cache/go-build"
+}
