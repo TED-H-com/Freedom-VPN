@@ -1,7 +1,7 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 44](follow-up-44.md) (2026-11-04 EST):** #457–#463 at 5c21e670; D-158 lock wait and D-157 renewal merged, F30-01 candidate proof and live AT02 measurement pending. 64 decisions, 126 findings; F22-01 and SECOPS-F17-01 open, AT29 failed and confounded. See [update recovery](operator-guide.md#f30-01), [closed recovery](operator-guide.md#at02-closed-recovery) and [TCP guard limitation](operator-guide.md#tcp-reload-guard).
-**Previous cut — [follow-up 43](follow-up-43.md) (2026-11-04 EST):** #446–#456 at 04d31ea5; D-155/D-156 fixes merged, F30-01 acceptance pending; D-157 routed, no merged fix. 60 decisions, 124 findings; r29 archived. AT29 failed at setup. See [update recovery](operator-guide.md#f30-01), [r28 H-1 fixed](operator-guide.md#r28-h-1), [release rule](operator-guide.md#d156-release-rule) and [closed-recovery interval](operator-guide.md#at02-closed-recovery).
+**Current cut — [follow-up 45](follow-up-45.md) (2026-11-04 EST):** #464–#468 at c148cf34; F30-01 closed, AT02 deny-all measured at 205 ms / 8 losses, AT29 blocked on the guest clock. 64 decisions, 133 findings; D-161 implemented, r30 archived and routed. D-158's wait remains unmeasured live. See [update recovery](operator-guide.md#f30-01), [closed recovery](operator-guide.md#at02-closed-recovery) and [TCP guard limitation](operator-guide.md#tcp-reload-guard).
+**Previous cut — [follow-up 44](follow-up-44.md) (2026-11-04 EST):** #457–#463 at 5c21e670; D-158 lock wait and D-157 renewal merged, F30-01 candidate proof and live AT02 measurement pending. 64 decisions, 126 findings; F22-01 and SECOPS-F17-01 open, AT29 failed and confounded. See [update recovery](operator-guide.md#f30-01), [closed recovery](operator-guide.md#at02-closed-recovery) and [TCP guard limitation](operator-guide.md#tcp-reload-guard).
 
 ## Restart measurements at #433
 
@@ -685,20 +685,20 @@ curl -fsS -X POST "https://vpn.example.com:8443/api/v1/admin/update-batches" \
 
 <a id="f30-01"></a>
 
-**F30-01 at the #463 cutoff — D-155 recovery and D-158 lock wait merged.**
-Devstack 34 #458's `update-good` exited 3 before starting a candidate: the
-agent held `update.lock` for 0.43–0.86 s at each new generation, every 5 s,
-while the updater waited only 80 ms. Updater 25 #463 now waits within
-D-158's budget. While the parent holds the live lock, candidate boot recovery
-is deferred and retried on later Steps as one tracked child. Central can see
-`applying` with `recovery_required` and issue a zero-grant lease during this
-interval. Terminal recovery failures stay fail-closed.
+**F30-01 at the #468 cutoff — closed.** In devstack 35's acceptance run
+**8a436a87**, the candidate's boot recovery waited for its parent's
+`update.lock`, then cleared, and the candidate served members; `lease-expiry`
+passed afterward. Closure is credited to updater 24 **#446**, agent-core 49
+**#454** and updater 25 **#463**. While the parent holds the live lock,
+recovery is deferred and retried on later Steps as one tracked child. Central
+can see `applying` with `recovery_required` and issue a zero-grant lease during
+this interval. Terminal recovery failures stay fail-closed.
 
-**F30-01 remains open** until one acceptance run starts the candidate through
-`update-good`, observes its deferred boot recovery under the parent's
-`update.lock` clear, proves the candidate serves members, and passes
-`lease-expiry` afterward. Devstack 34's lease-expiry pass without a candidate
-cannot close it. Devstack 35 runs for that at this cutoff; no date is promised.
+That run's `fvpn-updater run` met **no lock contention**: it exited 0 with no
+`update lock wait` record, so its first acquisition succeeded. **D-158's wait
+has not yet run live** in this acceptance path. No merged change is credited
+with avoiding devstack 34's earlier collision; no date is promised for later
+work. See the [cut's evidence](follow-up-45.md).
 
 **Updater exit statuses (D-034g, D-155):** `0` means the command completed without an operation error; it does not authorize member forwarding. `1` means another failure, including stale-holder details `lock boot id`, `lock pid`, `lock process` and `lock start time`. `2` means only `ErrMembersBlocked`, and takes precedence if an error also matches busy. `3` (`ExitBusy`) means `UPDATE_BUSY` with detail exactly `lock`: recovery has not completed and can be retried after the live holder releases the lock. `64` means usage or flag error. `run`, `recover`, `apply`, `seed` and configured `flush` can return `3`; read-only `status` takes no update lock and returns `0` on a successful read or `1` on failure. Live busy stderr remains `fvpn-updater: updater: UPDATE_BUSY: lock`.
 
@@ -726,14 +726,16 @@ member-expiry live coverage. See the [current review disposition](../reviews/REA
 
 <a id="at02-closed-recovery"></a>
 
-**Known behaviour at #463 — AT02 deny-all after a closed recovery.**
+**Known behaviour at #468 — AT02 deny-all after a closed recovery.**
 Agent-core 50's change is merged in **#461 under D-157**: after a verified
 closed recovery, the node renews as soon as central accepts its clean report,
 at most once per recovery. The opportunity is consumed on dispatch; D-067
-continues otherwise, including after an empty answer. No live run has measured
-this change yet; members 22 runs at cutoff. Members 21's **4.968 s and 241
-losses** remain historical. This finding stays open pending that measurement,
-with no date or zero-loss availability promise.
+continues otherwise, including after an empty answer. Members 22 **#467** run
+**3eb3960d** measured **one early renewal**, 67.8 ms after the closed recovery,
+then a one-member lease and verified serving Apply. The **deny-all interval
+was 205 ms with 8 losses**, down from members 21's historical **4.968 s and
+241 losses**. Exact central readiness timing was not retained. The measurement
+answers this finding; it is no zero-loss availability promise.
 
 <a id="tcp-reload-guard"></a>
 
