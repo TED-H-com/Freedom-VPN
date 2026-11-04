@@ -14,6 +14,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation/boundaryplan"
 	"golang.org/x/sys/unix"
 	"io"
 	_ "modernc.org/sqlite"
@@ -230,8 +231,7 @@ func deadlineProbes() {
 			time.Sleep(time.Duration(delay))
 		}
 		if s.phase == "plan_dense" {
-			plan := map[string]any{"planned_at": clockSample(), "deadline_mono_ns": fmt.Sprint(deadline), "qualified": false,
-				"scope": "D-140 added schedule only; same-run original-cadence capture-read latency, not exact kernel timestamps"}
+			plannedAt := clockSample()
 			var captures []map[string]any
 			if len(os.Args) > 5 {
 				raw, err := os.ReadFile(os.Args[5])
@@ -257,64 +257,27 @@ func deadlineProbes() {
 					egress[int(n)] = at
 				}
 			}
-			var latencies []int64
-			var samples []map[string]any
-			var maxTransit int64
+			samples := []boundaryplan.Sample{}
 			mu.Lock()
 			for n, in := range ingress {
 				out, send := egress[n], sent[n]
 				if send <= 0 || in < send || out < in {
 					continue
 				}
-				latencies = append(latencies, in-send)
-				maxTransit = max(maxTransit, out-in)
-				samples = append(samples, map[string]any{"packet_id": n, "send_mono_ns": fmt.Sprint(send), "ingress_mono_ns": fmt.Sprint(in), "egress_mono_ns": fmt.Sprint(out), "latency_ns": fmt.Sprint(in - send), "transit_ns": fmt.Sprint(out - in)})
+				samples = append(samples, boundaryplan.Sample{PacketID: n, Send: send, Ingress: in, Egress: out, Latency: in - send, Transit: out - in})
 			}
 			mu.Unlock()
-			sort.Slice(samples, func(i, j int) bool { return samples[i]["packet_id"].(int) < samples[j]["packet_id"].(int) })
-			plan["samples"] = samples
-			if len(latencies) >= 20 {
-				sort.Slice(latencies, func(i, j int) bool { return latencies[i] < latencies[j] })
-				lo, hi, median := latencies[0], latencies[len(latencies)-1], latencies[len(latencies)/2]
-				// Include arrival-latency spread: a fast following packet can catch
-				// a slow predecessor even when send spacing exceeds node transit.
-				// Round upward to 0.1ms; actual noninterleaving still needs capture.
-				spacing := ((max(int64(500000), (hi-lo)+2*maxTransit+100000) + 99999) / 100000) * 100000
-				margin := hi - lo + 3*spacing
-				// Anchor the added grid at D-100ms; original cadence exclusion still wins.
-				anchor := deadline - 100000000
-				first := anchor - ((margin+1000000+spacing-1)/spacing)*spacing
-				last := deadline + 100000000 + margin
-				plan["qualified"] = true
-				plan["latency_min_ns"], plan["latency_median_ns"], plan["latency_max_ns"] = fmt.Sprint(lo), fmt.Sprint(median), fmt.Sprint(hi)
-				plan["latency_spread_ns"], plan["max_transit_ns"], plan["spacing_ns"] = fmt.Sprint(hi-lo), fmt.Sprint(maxTransit), fmt.Sprint(spacing)
-				plan["predicted_first_ingress_ns"], plan["predicted_last_ingress_ns"] = fmt.Sprint(first), fmt.Sprint(last)
-				plan["grid_anchor_offset_ns"] = "-100000000"
-				plan["decision_tradeoff"] = "one whole-node boundary; spacing protects observed-range separation but cannot guarantee a sample in a roughly 3ms positive window; original D-101ms send remains; every attempt counts"
-				plan["original_boundary_predicted_ingress_offset_ns"] = fmt.Sprint(-101000000 + median)
-				plan["spacing_reason"] = "max(0.5ms, measured latency spread + twice measured maximum transit + 0.1ms), rounded up to 0.1ms; avoid existing cadence sends within one spacing; verify actual ingress/egress order"
-				var added []string
-				for predicted := first; predicted <= last; predicted += spacing {
-					at := predicted - median
-					clear := true
-					for _, old := range schedule[index+1:] {
-						if old.phase == "dense_boundary" {
-							continue
-						}
-						delta := old.at - at
-						if delta > -spacing && delta < spacing {
-							clear = false
-							break
-						}
-					}
-					if clear {
-						schedule = append(schedule, scheduled{at, "dense_boundary"})
-						added = append(added, fmt.Sprint(at))
-					}
-				}
-				plan["added_scheduled_mono_ns"] = added
-				sort.Slice(schedule[index+1:], func(i, j int) bool { return schedule[index+1+i].at < schedule[index+1+j].at })
+			original := []boundaryplan.Send{}
+			for _, old := range schedule[index+1:] {
+				original = append(original, boundaryplan.Send{At: old.at, Phase: old.phase})
 			}
+			plan := boundaryplan.Plan(deadline, plannedAt, samples, original)
+			for _, at := range plan["added_scheduled_mono_ns"].([]string) {
+				n, err := strconv.ParseInt(at, 10, 64)
+				must(err)
+				schedule = append(schedule, scheduled{n, "dense_boundary"})
+			}
+			sort.Slice(schedule[index+1:], func(i, j int) bool { return schedule[index+1+i].at < schedule[index+1+j].at })
 			raw, err := json.MarshalIndent(plan, "", "  ")
 			must(err)
 			must(os.WriteFile(os.Args[4]+".schedule.json", append(raw, '\n'), 0600))
