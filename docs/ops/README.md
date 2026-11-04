@@ -1,7 +1,31 @@
 # Operations Runbooks Index (`docs/ops/`)
 
-**Current cut — [follow-up 43](../handover/follow-up-43.md) (2026-11-04 EST):** #446–#456 at 04d31ea5; D-155/D-156 fixes merged, F30-01 acceptance pending; D-157 routed, no merged fix. 60 decisions, 124 findings; r29 archived. AT29 failed at setup. See [update recovery](../handover/operator-guide.md#f30-01), [r28 H-1 fixed](../handover/operator-guide.md#r28-h-1), [release rule](../handover/operator-guide.md#d156-release-rule) and [closed-recovery interval](../handover/operator-guide.md#at02-closed-recovery).
-**Previous cut — [follow-up 42](../handover/follow-up-42.md):** #439–#445 at 5a942aa1; 15 subtests, 57 decisions and 113 findings; historical verdicts unchanged.
+**Current cut — [follow-up 44](../handover/follow-up-44.md) (2026-11-04 EST):** #457–#463 at 5c21e670; D-158 lock wait and D-157 renewal merged, F30-01 candidate proof and live AT02 measurement pending. 64 decisions, 126 findings; F22-01 and SECOPS-F17-01 open, AT29 failed and confounded. See [update recovery](../handover/operator-guide.md#f30-01), [closed recovery](../handover/operator-guide.md#at02-closed-recovery) and [TCP guard limitation](../handover/operator-guide.md#tcp-reload-guard).
+**Previous cut — [follow-up 43](../handover/follow-up-43.md) (2026-11-04 EST):** #446–#456 at 04d31ea5; D-155/D-156 fixes merged, F30-01 acceptance pending; D-157 routed, no merged fix. 60 decisions, 124 findings; r29 archived. AT29 failed at setup. See [update recovery](../handover/operator-guide.md#f30-01), [r28 H-1 fixed](../handover/operator-guide.md#r28-h-1), [release rule](../handover/operator-guide.md#d156-release-rule) and [closed-recovery interval](../handover/operator-guide.md#at02-closed-recovery).
+
+## Follow-up 44 acceptance snapshot (2026-11-04 EST)
+
+Current cut: **#457–#463 / 5c21e670**, seven merged PRs, no unbriefed PR.
+[Evidence and routing](../handover/follow-up-44.md). Earlier snapshot sections
+remain historical and do not override this cut.
+
+| Delivery | Current evidence boundary |
+|---|---|
+| Handover 43 #457 | Previous #446–#456 cut: 60 decisions, 124 findings; members F21-AT08/F21-D146 now routed to members. |
+| Devstack 34 #458 / updater 25 #463 | af4c130b 31/2/0; lease-expiry passed, but update-good exited 3 before any candidate. D-133 confounded. D-158's 10 s / 20 ms lock wait merged; F30-01 stays open for the full candidate path and lease-expiry afterward. r29 L-2 and publisherTrace32 comment answered. |
+| Isolation 22 #459 | 7b0db5f2 27/2/0; F21-01 answered and r28 M-1 first live pass, 26.3 s separation and all five denials under a serving node. D-140/D-142 short expiry passes. 15 writes / 16 attempts, one 412 then 202. Separate F22-01 TCP timeout stays failed. |
+| Secops 17 #460 | SECOPS-F16-01 answered by cap before admission; control-loss case passes on bef669a3. AT29 failed on SECOPS-F17-01's stale deadline after admission holds; b2de46c8 confounded under D-133. Guest clock rollback stays operator-blocked. |
+| Agent-core 50 #461 | D-157 early renewal merged; approved F48 interval change, lab 13/13. AT02 live measurement remains pending members 22. |
+| Netlab 35 #462 | F22-01 timing-compatible, not proven; no minimum Apply spacing, D-159 condition false. Combined captures and checked UDP projections; one failed splitter attempt and four passes, attempts 3–5 confounded. D-161 analyzer not merged. |
+
+**64 decisions; 126 findings: 10 updated / 2 added / 114 unchanged.**
+D-158–D-161 are provisional; every earlier decision row remains unchanged.
+Secops 18, members 22, netlab 36 and devstack 35 are running at briefing,
+status only. Later results are after the cutoff. Every historical failure stays
+failed; no date is promised. Operator statements are maintained once:
+[lock wait and F30-01](../handover/operator-guide.md#f30-01),
+[closed recovery](../handover/operator-guide.md#at02-closed-recovery),
+[TCP guard limitation](../handover/operator-guide.md#tcp-reload-guard).
 
 ## Follow-up 43 acceptance snapshot (2026-11-04 EST)
 
