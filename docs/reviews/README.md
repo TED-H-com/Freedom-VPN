@@ -940,8 +940,9 @@ records. The archive is now a **D-098 input**. Findings: **0 Critical, 2 High,
 | M-3 | OPEN — agent-core 51, running at cutoff | Pending-outbox deduplication can prevent a new closed recovery from binding its own report. |
 | Question to the owner | None | The review asks none. The orchestrator's D-158 clarification is provisional; the owner may overturn it. |
 
-The review branch's `node/agent/review_r30_test.go`,
-`node/updater/review_r30_test.go` and `node/watchdog/review_r30_test.go` are
+The review branch's `r30-update-fixes-review:node/agent/review_r30_test.go`,
+`r30-update-fixes-review:node/updater/review_r30_test.go` and
+`r30-update-fixes-review:node/watchdog/review_r30_test.go` are
 **routed, not adopted**: none is on main at this cutoff. Their branch identities
 are retained in the [provenance manifest](../../tests/handover/testdata/history/follow-up-45/review-provenance.json).
 No review proof is represented as a merged or rerun proof here.
