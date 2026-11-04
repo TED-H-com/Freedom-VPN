@@ -1,0 +1,596 @@
+{
+  "started_at": "2026-10-30T17:08:10Z",
+  "scope": "30-second samples beginning during the first admission run; boundaries are also recorded by each Go probe; socket states include gateway namespace connections, no private addresses",
+  "command": [
+    "docker",
+    "exec",
+    "fvpn-w4-secops-gateway",
+    "sh",
+    "-c",
+    "aggregate process, TCP state and nginx FD inventory"
+  ],
+  "samples": [
+    {
+      "utc": "2026-10-30T17:08:10Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 16,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "2644",
+        "tcp_state_06": "2511",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "130",
+        "fd_entries": "173"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:08:40Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 18,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "2960",
+        "tcp_state_06": "2814",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "143",
+        "fd_entries": "186"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:09:10Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 21,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "3658",
+        "tcp_state_06": "3499",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "156",
+        "fd_entries": "199"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:09:40Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 22,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "3952",
+        "tcp_state_06": "3778",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "171",
+        "fd_entries": "213"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:10:10Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 24,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "3260",
+        "tcp_state_06": "3058",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "199",
+        "fd_entries": "225"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:10:40Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 27,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "4256",
+        "tcp_state_06": "4061",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "192",
+        "fd_entries": "236"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:11:10Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 28,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "4544",
+        "tcp_state_06": "4336",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "205",
+        "fd_entries": "250"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:11:40Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 31,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "4895",
+        "tcp_state_06": "4672",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "220",
+        "fd_entries": "264"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:12:10Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 32,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "5196",
+        "tcp_state_06": "4962",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "231",
+        "fd_entries": "275"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:12:40Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 35,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "5198",
+        "tcp_state_06": "4946",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "249",
+        "fd_entries": "291"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:13:10Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 36,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "4650",
+        "tcp_state_06": "4387",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "260",
+        "fd_entries": "303"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:13:41Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 39,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "5924",
+        "tcp_state_06": "5655",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "266",
+        "fd_entries": "311"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:14:11Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 40,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "6447",
+        "tcp_state_06": "6166",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "278",
+        "fd_entries": "323"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:14:41Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 43,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "5575",
+        "tcp_state_06": "5278",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "294",
+        "fd_entries": "339"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:15:11Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 45,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "6782",
+        "tcp_state_06": "6473",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "306",
+        "fd_entries": "351"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:15:41Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 46,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "7213",
+        "tcp_state_06": "6884",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "326",
+        "fd_entries": "364"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:16:11Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 48,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "6346",
+        "tcp_state_06": "6011",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "332",
+        "fd_entries": "377"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:16:41Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 51,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "7679",
+        "tcp_state_06": "7336",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "340",
+        "fd_entries": "385"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:17:11Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 53,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "8070",
+        "tcp_state_06": "7712",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "355",
+        "fd_entries": "397"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:17:41Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 55,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "6972",
+        "tcp_state_06": "6598",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "371",
+        "fd_entries": "415"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:18:11Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 57,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "8822",
+        "tcp_state_06": "8437",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "382",
+        "fd_entries": "427"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:18:41Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 59,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "8444",
+        "tcp_state_06": "8045",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "396",
+        "fd_entries": "436"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:19:11Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 60,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "7738",
+        "tcp_state_06": "7324",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "411",
+        "fd_entries": "454"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:19:42Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 60,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "9343",
+        "tcp_state_06": "8939",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "401",
+        "fd_entries": "441"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:20:12Z",
+      "gateway_instance": "b8796cf7d6f938b07ff3e2d69a212a78c47a784bd2d00bc8d0a3a86e0a72fc69",
+      "native_peer_containers": 60,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "5919",
+        "tcp_state_06": "5621",
+        "tcp_state_0A": "1",
+        "tcp_state_01": "297",
+        "fd_entries": "333"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:20:42Z",
+      "gateway_instance": null,
+      "native_peer_containers": 0,
+      "read_ok": false,
+      "aggregates": {}
+    },
+    {
+      "utc": "2026-10-30T17:21:12Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 3,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "122",
+        "tcp_state_06": "100",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "19",
+        "fd_entries": "62"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:21:42Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 9,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "1085",
+        "tcp_state_06": "985",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "97",
+        "fd_entries": "140"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:22:12Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 15,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "2271",
+        "tcp_state_06": "2098",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "170",
+        "fd_entries": "213"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:22:42Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 21,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "2954",
+        "tcp_state_06": "2730",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "221",
+        "fd_entries": "264"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:23:12Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 27,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "3956",
+        "tcp_state_06": "3690",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "263",
+        "fd_entries": "299"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:23:42Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 33,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "4551",
+        "tcp_state_06": "4249",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "299",
+        "fd_entries": "342"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:24:12Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 39,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "5326",
+        "tcp_state_06": "4994",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "329",
+        "fd_entries": "372"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:24:42Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 45,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "6550",
+        "tcp_state_06": "6171",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "376",
+        "fd_entries": "417"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:25:12Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 51,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "7070",
+        "tcp_state_06": "6651",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "416",
+        "fd_entries": "451"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:25:42Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 57,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "7811",
+        "tcp_state_06": "7359",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "449",
+        "fd_entries": "484"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:26:13Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 60,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "8846",
+        "tcp_state_06": "8381",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "462",
+        "fd_entries": "499"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:26:43Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 60,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "8545",
+        "tcp_state_06": "8108",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "434",
+        "fd_entries": "473"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:27:13Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 60,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "8344",
+        "tcp_state_06": "7936",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "405",
+        "fd_entries": "442"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:27:43Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 60,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "8433",
+        "tcp_state_06": "8045",
+        "tcp_state_0A": "3",
+        "tcp_state_01": "385",
+        "fd_entries": "424"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:28:13Z",
+      "gateway_instance": "c90d6f4073b063879260260bca10c351f1d6b2cb36072b50b693ee913866335a",
+      "native_peer_containers": 60,
+      "read_ok": true,
+      "aggregates": {
+        "workers": "0",
+        "tcp_total": "5348",
+        "tcp_state_06": "5050",
+        "tcp_state_0A": "1",
+        "tcp_state_01": "297",
+        "fd_entries": "332"
+      }
+    },
+    {
+      "utc": "2026-10-30T17:28:43Z",
+      "gateway_instance": null,
+      "native_peer_containers": 0,
+      "read_ok": false,
+      "aggregates": {}
+    }
+  ],
+  "finished_at": "2026-10-30T17:28:43Z",
+  "worker_count_quality": {
+    "status": "unavailable for this observer",
+    "reason": "ps absent in gateway image; its stderr was excluded from the numeric stdout sample and yielded an invalid zero. All worker fields in these samples are invalid. TCP/FD counters are separate valid reads.",
+    "manual_proc_count": 2,
+    "helper_proc_count": 2,
+    "final_harness_fix": "Final observer source reads /proc cmdline instead; helper phase used that corrected command."
+  }
+}

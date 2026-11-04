@@ -53,7 +53,8 @@ func TestAT28_AT31_Followup5(t *testing.T) {
 	p.identities(admin, clientB, nodeB, node)
 	path := "/api/v1/admin/nodes/" + node.String()
 	detail := p.call(admin, "GET", path, nil, nil)
-	p.check("finite capacity input", p.call(admin, "PATCH", path, map[string]any{"capacity": map[string]any{"down_bps": 200000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}, map[string]string{"If-Match": detail.header.Get("ETag")}), 202, "")
+	body := map[string]any{"capacity": map[string]any{"down_bps": 200000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
+	p.writeNode("finite capacity input", admin, "PATCH", path, path, body, detail.header.Get("ETag"), labstack.NodeFieldsMatch(body))
 	time.Sleep(12 * time.Second)
 	// Publish empty, then let the real agent satisfy the populated generation.
 	p.serving(admin, node)

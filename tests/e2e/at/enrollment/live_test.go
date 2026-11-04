@@ -796,8 +796,9 @@ func (p *probe) incarnationHistory(t *testing.T, first issued, oldInc uuid.UUID)
 	p.keep(blockedResp)
 	blocked := blockedErr == nil && blockedResp.Status == 409 && blockedResp.Code == "NODE_INCARNATION_ACTIVE"
 
-	revResp, revErr := p.revokeNode(node)
-	revoked := revErr == nil && revResp.Status == 202
+	writes := map[string]any{}
+	rev := p.revokeNode(node, writes)
+	revoked := rev.Accepted(202)
 	mid, midResp, midErr := p.listIncarnations(node, "")
 	var midItem api.NodeIncarnation
 	if len(mid.Items) == 1 {
@@ -812,7 +813,7 @@ func (p *probe) incarnationHistory(t *testing.T, first issued, oldInc uuid.UUID)
 	if !issuedOK {
 		p.expect("AT06", "incarnation_history", false, map[string]any{
 			"unknown_node_404": notFound, "active_blocks_reinstall": blocked, "node_revoked": revoked,
-			"retired_before_replacement": midOK, "reinstall_issued": false, "node_id": node,
+			"node_writes": writes, "retired_before_replacement": midOK, "reinstall_issued": false, "node_id": node,
 		})
 		return
 	}
@@ -861,7 +862,7 @@ func (p *probe) incarnationHistory(t *testing.T, first issued, oldInc uuid.UUID)
 	wideOK := wideErr == nil && wideResp.Status == 200 && len(wide.Items) == 2 && len(wide.Items) <= 100
 	p.expect("AT06", "incarnation_history", notFound && blocked && midOK && enrolled && history && wideOK && cursorRound, map[string]any{
 		"operation": "listNodeIncarnations", "node_id": node, "unknown_node_404": notFound,
-		"active_blocks_reinstall": blocked, "revoke_http_status": revResp.Status,
+		"active_blocks_reinstall": blocked, "revoke_http_status": rev.Reply.Status, "node_writes": writes,
 		"retired_reason_before_replacement": string(midReason), "usage_before": usageView(usageBefore),
 		"usage_after_retirement": usageView(previous.Usage), "usage_unchanged": sameUsage(previous.Usage, usageBefore),
 		"count": len(page.Items), "newest_incarnation_id": fresh.IncarnationId, "newest_current": fresh.Current,
@@ -872,30 +873,12 @@ func (p *probe) incarnationHistory(t *testing.T, first issued, oldInc uuid.UUID)
 	})
 }
 
-func (p *probe) revokeNode(node uuid.UUID) (labstack.Response, error) {
-	return p.revokeNodeReason(node, "TEST ONLY AT06 reinstall")
+func (p *probe) revokeNode(node uuid.UUID, detail map[string]any) labstack.NodeWriteResult {
+	return p.revokeNodeReason(node, "TEST ONLY AT06 reinstall", detail)
 }
 
-func (p *probe) revokeNodeReason(node uuid.UUID, reason string) (labstack.Response, error) {
-	var last labstack.Response
-	var err error
-	for attempt := 0; attempt < 2; attempt++ {
-		got, gerr := p.call("GET", "/api/v1/admin/nodes/"+node.String(), nil)
-		p.keep(got)
-		if gerr != nil || got.Status != 200 {
-			return got, gerr
-		}
-		last, err = p.callHeaders("POST", "/api/v1/admin/nodes/"+node.String()+"/revoke", api.ReasonRequest{Reason: reason}, map[string]string{"If-Match": got.Header.Get("ETag")})
-		p.keep(last)
-		if err != nil {
-			continue
-		}
-		if last.Status == 412 && attempt == 0 {
-			continue
-		}
-		return last, nil
-	}
-	return last, err
+func (p *probe) revokeNodeReason(node uuid.UUID, reason string, detail map[string]any) labstack.NodeWriteResult {
+	return p.writeNode(node, "POST", "/revoke", api.ReasonRequest{Reason: reason}, labstack.NodeRevoked, detail, 202)
 }
 
 func (p *probe) at07(t *testing.T) {
@@ -1309,9 +1292,9 @@ func (p *probe) recoverCloneConflict(node, oldInc uuid.UUID, read func() (e2e.Cl
 		return out
 	}
 	out["clone_stopped"] = true
-	rev, revErr := p.revokeNodeReason(node, "TEST ONLY ENR-07 clone conflict")
-	out["revoke_http_status"] = rev.Status
-	if revErr != nil || rev.Status != 202 {
+	rev := p.revokeNodeReason(node, "TEST ONLY ENR-07 clone conflict", out)
+	out["revoke_http_status"] = rev.Reply.Status
+	if !rev.Accepted(202) {
 		out["step"] = "revoke"
 		return out
 	}

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "follow_up": 13,
+  "follow_up": 15,
   "id": "AT31",
   "status": "blocked",
   "requirements": [
@@ -11,9 +11,9 @@
   "spec": [
     "§19 AT31"
   ],
-  "run_id": "cf81f6f8-4ccf-43d2-aae2-10121f6b169d",
-  "application_base": "510a4ab7f73bdcfc28aaef53f8d1d6deef97ad67",
-  "source_revision": "44eff52b47f891bc829900c51b320a2e01f64cde",
+  "run_id": "35116d25-122c-4724-adfe-5a06d623c04f",
+  "application_base": "dd052c6012f10fbde147f61931a50c00bec1f98b",
+  "source_revision": "28fa2018a0217dc952ccb18be46d715e39c9090c",
   "actual": {
     "forced_relay": {
       "before_path": {
@@ -29,45 +29,119 @@
       },
       "direct_restored_samples": [
         {
-          "utc": "2026-10-31T07:38:23.256873977Z",
-          "monotonic_elapsed_seconds": 32.275271982,
+          "utc": "2026-11-04T01:48:38.941549634Z",
+          "monotonic_elapsed_seconds": 31.533768502,
           "status": {
-            "tcp_echoes": 62,
-            "udp_replies": 65,
-            "tcp_attempts": 68,
-            "udp_attempts": 74,
+            "read_diagnostic": {
+              "started": "2026-11-04T01:48:38.782096043Z",
+              "completed": "2026-11-04T01:48:38.864772061Z",
+              "stage": "member_status_read",
+              "category": "none"
+            },
+            "tcp_echoes": 60,
+            "udp_replies": 60,
+            "tcp_attempts": 66,
+            "udp_attempts": 72,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "14237",
-            "download_bytes": "12417",
-            "Present": true
+            "upload_bytes": "12702",
+            "download_bytes": "10530",
+            "Present": true,
+            "kernel_generation": "15",
+            "read_diagnostic": {
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "read_start_mono_ns": "80361384407765",
+              "read_end_mono_ns": "80361387539419",
+              "enforcement_before": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "enforcement_after": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "started": "2026-11-04T01:48:38.932983974Z",
+              "completed": "2026-11-04T01:48:38.936162925Z",
+              "stage": "nft_read",
+              "category": "none",
+              "exit": 0,
+              "heartbeat_before": {
+                "read_at": "2026-11-04T01:48:38.933009543Z",
+                "wall_unix_ns": "1793756918447831796",
+                "serving": true,
+                "read_ok": true
+              },
+              "heartbeat_after": {
+                "read_at": "2026-11-04T01:48:38.936163151Z",
+                "wall_unix_ns": "1793756918447831796",
+                "serving": true,
+                "read_ok": true
+              }
+            }
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:38:28.320268915Z",
-          "monotonic_elapsed_seconds": 37.338666919,
+          "utc": "2026-11-04T01:48:44.110376061Z",
+          "monotonic_elapsed_seconds": 36.702594932,
           "status": {
-            "tcp_echoes": 72,
-            "udp_replies": 75,
-            "tcp_attempts": 78,
-            "udp_attempts": 84,
+            "read_diagnostic": {
+              "started": "2026-11-04T01:48:43.944642577Z",
+              "completed": "2026-11-04T01:48:44.033331145Z",
+              "stage": "member_status_read",
+              "category": "none"
+            },
+            "tcp_echoes": 71,
+            "udp_replies": 71,
+            "tcp_attempts": 77,
+            "udp_attempts": 83,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "16097",
-            "download_bytes": "13807",
-            "Present": true
+            "upload_bytes": "14562",
+            "download_bytes": "11920",
+            "Present": true,
+            "kernel_generation": "15",
+            "read_diagnostic": {
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "read_start_mono_ns": "80366554666082",
+              "read_end_mono_ns": "80366557840431",
+              "enforcement_before": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "enforcement_after": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "started": "2026-11-04T01:48:44.103238836Z",
+              "completed": "2026-11-04T01:48:44.106464069Z",
+              "stage": "nft_read",
+              "category": "none",
+              "exit": 0,
+              "heartbeat_before": {
+                "read_at": "2026-11-04T01:48:44.10326405Z",
+                "wall_unix_ns": "1793756923445497820",
+                "serving": true,
+                "read_ok": true
+              },
+              "heartbeat_after": {
+                "read_at": "2026-11-04T01:48:44.106464307Z",
+                "wall_unix_ns": "1793756923445497820",
+                "serving": true,
+                "read_ok": true
+              }
+            }
           },
           "status_read_ok": true,
           "counter_read_ok": true
         }
       ],
-      "forced_after_seconds": 6.40928037,
+      "forced_after_seconds": 6.816759043,
       "forced_path": {
         "Relayed": 1,
         "Direct": 0,
@@ -75,58 +149,169 @@
       },
       "relay_samples": [
         {
-          "utc": "2026-10-31T07:37:51.092844048Z",
-          "monotonic_elapsed_seconds": 0.111242263,
+          "utc": "2026-11-04T01:48:07.672696406Z",
+          "monotonic_elapsed_seconds": 0.264915413,
           "status": {
-            "tcp_echoes": 9,
-            "udp_replies": 9,
-            "tcp_attempts": 10,
-            "udp_attempts": 9,
-            "running": true,
-            "error": ""
-          },
-          "counters": {
-            "upload_bytes": "4252",
-            "download_bytes": "4586",
-            "Present": true
-          },
-          "status_read_ok": true,
-          "counter_read_ok": true
-        },
-        {
-          "utc": "2026-10-31T07:37:57.450116314Z",
-          "monotonic_elapsed_seconds": 6.468514424,
-          "status": {
+            "read_diagnostic": {
+              "started": "2026-11-04T01:48:07.507281839Z",
+              "completed": "2026-11-04T01:48:07.593444433Z",
+              "stage": "member_status_read",
+              "category": "none"
+            },
             "tcp_echoes": 10,
-            "udp_replies": 13,
-            "tcp_attempts": 16,
-            "udp_attempts": 22,
+            "udp_replies": 10,
+            "tcp_attempts": 10,
+            "udp_attempts": 10,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "4483",
-            "download_bytes": "4817",
-            "Present": true
+            "upload_bytes": "3186",
+            "download_bytes": "3069",
+            "Present": true,
+            "kernel_generation": "15",
+            "read_diagnostic": {
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "read_start_mono_ns": "80330115784651",
+              "read_end_mono_ns": "80330119244299",
+              "enforcement_before": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "enforcement_after": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "started": "2026-11-04T01:48:07.664359059Z",
+              "completed": "2026-11-04T01:48:07.667867943Z",
+              "stage": "nft_read",
+              "category": "none",
+              "exit": 0,
+              "heartbeat_before": {
+                "read_at": "2026-11-04T01:48:07.66438486Z",
+                "wall_unix_ns": "1793756883436479023",
+                "serving": true,
+                "read_ok": true
+              },
+              "heartbeat_after": {
+                "read_at": "2026-11-04T01:48:07.667868291Z",
+                "wall_unix_ns": "1793756883436479023",
+                "serving": true,
+                "read_ok": true
+              }
+            }
           },
           "status_read_ok": true,
           "counter_read_ok": true
         },
         {
-          "utc": "2026-10-31T07:38:02.506553817Z",
-          "monotonic_elapsed_seconds": 11.524951885,
+          "utc": "2026-11-04T01:48:14.385786608Z",
+          "monotonic_elapsed_seconds": 6.978005571,
           "status": {
-            "tcp_echoes": 20,
-            "udp_replies": 23,
-            "tcp_attempts": 26,
-            "udp_attempts": 32,
+            "read_diagnostic": {
+              "started": "2026-11-04T01:48:14.22454285Z",
+              "completed": "2026-11-04T01:48:14.306758759Z",
+              "stage": "member_status_read",
+              "category": "none"
+            },
+            "tcp_echoes": 10,
+            "udp_replies": 11,
+            "tcp_attempts": 17,
+            "udp_attempts": 23,
             "running": true,
             "error": ""
           },
           "counters": {
-            "upload_bytes": "6425",
-            "download_bytes": "6579",
-            "Present": true
+            "upload_bytes": "3263",
+            "download_bytes": "3146",
+            "Present": true,
+            "kernel_generation": "15",
+            "read_diagnostic": {
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "read_start_mono_ns": "80336830519324",
+              "read_end_mono_ns": "80336833769886",
+              "enforcement_before": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "enforcement_after": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "started": "2026-11-04T01:48:14.379093031Z",
+              "completed": "2026-11-04T01:48:14.382393696Z",
+              "stage": "nft_read",
+              "category": "none",
+              "exit": 0,
+              "heartbeat_before": {
+                "read_at": "2026-11-04T01:48:14.379118855Z",
+                "wall_unix_ns": "1793756893425811272",
+                "serving": true,
+                "read_ok": true
+              },
+              "heartbeat_after": {
+                "read_at": "2026-11-04T01:48:14.382394046Z",
+                "wall_unix_ns": "1793756893425811272",
+                "serving": true,
+                "read_ok": true
+              }
+            }
+          },
+          "status_read_ok": true,
+          "counter_read_ok": true
+        },
+        {
+          "utc": "2026-11-04T01:48:19.550481088Z",
+          "monotonic_elapsed_seconds": 12.142700035,
+          "status": {
+            "read_diagnostic": {
+              "started": "2026-11-04T01:48:19.389656873Z",
+              "completed": "2026-11-04T01:48:19.473868962Z",
+              "stage": "member_status_read",
+              "category": "none"
+            },
+            "tcp_echoes": 21,
+            "udp_replies": 21,
+            "tcp_attempts": 28,
+            "udp_attempts": 34,
+            "running": true,
+            "error": ""
+          },
+          "counters": {
+            "upload_bytes": "5448",
+            "download_bytes": "5109",
+            "Present": true,
+            "kernel_generation": "15",
+            "read_diagnostic": {
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "read_start_mono_ns": "80341994867402",
+              "read_end_mono_ns": "80341998218224",
+              "enforcement_before": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "enforcement_after": {
+                "available": false,
+                "error": "timing_not_enabled_or_unreadable"
+              },
+              "started": "2026-11-04T01:48:19.543437041Z",
+              "completed": "2026-11-04T01:48:19.546842078Z",
+              "stage": "nft_read",
+              "category": "none",
+              "exit": 0,
+              "heartbeat_before": {
+                "read_at": "2026-11-04T01:48:19.543463992Z",
+                "wall_unix_ns": "1793756898435751469",
+                "serving": true,
+                "read_ok": true
+              },
+              "heartbeat_after": {
+                "read_at": "2026-11-04T01:48:19.546842388Z",
+                "wall_unix_ns": "1793756898435751469",
+                "serving": true,
+                "read_ok": true
+              }
+            }
           },
           "status_read_ok": true,
           "counter_read_ok": true
@@ -137,7 +322,7 @@
         "Direct": 0,
         "Forced": false
       },
-      "restore_after_seconds": 32.223808229,
+      "restore_after_seconds": 31.374313143,
       "restored_path": {
         "Relayed": 0,
         "Direct": 1,
@@ -153,10 +338,10 @@
     "The 180-second forced-relay match and 20-minute transport helper are export limits, not capacity guarantees."
   ],
   "evidence": [
-    "history/follow-up-12/AT31.json",
-    "history/follow-up-12/followup12-transports-live.json",
-    "history/follow-up-12/followup12-transports-run.json"
+    "followup15-transports-live.json",
+    "followup15-transports-run.json",
+    "history/before-follow-up-15/AT31.json"
   ],
-  "record_kind": "carried forward; no transport rerun",
-  "current_restore_run_id": "5218b7d5-1415-4e1b-8618-48ea2d3cf03e"
+  "record_kind": "bounded relay row produced again by the AT29 transport test; no capacity campaign",
+  "driver_run_id": "902881c0-471e-470e-a01a-54ed067fe389"
 }
