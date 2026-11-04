@@ -1,0 +1,1357 @@
+{
+  "run_id": "6a25221b-1dcf-4f4d-b866-cd04f57f58f6",
+  "source_commit": "8bde2b6acc0b116515148eeb0ff4448c65453a92",
+  "rows": [
+    {
+      "index": 35,
+      "check": "native ipv4 MTU 1500 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "timestamps bound retained log lines, not silent periods; replacement can lose the prefix; a shorter or replaced log cannot prove all submissions",
+        "end_bytes": "12136",
+        "end_export_ok": true,
+        "first_retained_log_time": "2026-11-04T12:28:27.734Z",
+        "last_retained_log_time": "2026-11-04T12:40:27.943Z",
+        "overwrite_or_replacement_detected": false,
+        "reason": "agent observe/flush and controlclient do not log individual submission times or outcomes",
+        "start_bytes": "12136",
+        "start_content_retained_as_prefix": true,
+        "start_export_ok": true,
+        "submission_events_available": false,
+        "timestamped_lines_in_window": 0,
+        "window_end": "2026-11-04T12:40:49.170914524Z",
+        "window_start": "2026-11-04T12:40:33.448960197Z",
+        "row_duration_seconds": "15.721954"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T12:40:49.082945741Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:40:48.978185032Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:40:48.897235515Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:40:48.734062576Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "32806",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.367/0.695",
+            "mss": "50688",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.368/0.734",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T12:40:33.800718905Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:40:33.693252256Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:40:33.611840385Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:40:33.448960617Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "32806",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.367/0.695",
+            "mss": "50688",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.831/0.968",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T12:40:49.170914524Z",
+      "fixture": "receive-only-1500",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "receive-only-1500",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "native ipv4 MTU 1500",
+      "started_at": "2026-11-04T12:40:33.448960197Z",
+      "stored_observations": [
+        {
+          "received_at": "2026-11-04T12:40:38.290902Z",
+          "report_id": "01a1a693-5e8d-7ce4-859f-4ffd654993ef",
+          "generation": "75",
+          "incarnation": "01a1a66b-190b-745a-8ac4-b9459c7ddc74"
+        }
+      ],
+      "stored_observations_read_ok": true
+    },
+    {
+      "index": 38,
+      "check": "native ipv6 MTU 1500 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "timestamps bound retained log lines, not silent periods; replacement can lose the prefix; a shorter or replaced log cannot prove all submissions",
+        "end_bytes": "12136",
+        "end_export_ok": true,
+        "first_retained_log_time": "2026-11-04T12:28:27.734Z",
+        "last_retained_log_time": "2026-11-04T12:40:27.943Z",
+        "overwrite_or_replacement_detected": false,
+        "reason": "agent observe/flush and controlclient do not log individual submission times or outcomes",
+        "start_bytes": "12136",
+        "start_content_retained_as_prefix": true,
+        "start_export_ok": true,
+        "submission_events_available": false,
+        "timestamped_lines_in_window": 0,
+        "window_end": "2026-11-04T12:41:05.031117698Z",
+        "window_start": "2026-11-04T12:40:49.175093704Z",
+        "row_duration_seconds": "15.856024"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T12:41:04.943128201Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:41:04.836647986Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:41:04.755033048Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:41:04.592843243Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.618/0.719",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T12:40:49.524641485Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:40:49.419238235Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:40:49.337646144Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:40:49.175094095Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "32806",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.367/0.695",
+            "mss": "50688",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.368/0.734",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T12:41:05.031117698Z",
+      "fixture": "receive-only-1500",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "receive-only-1500",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "native ipv6 MTU 1500",
+      "started_at": "2026-11-04T12:40:49.175093704Z",
+      "stored_observations": [],
+      "stored_observations_read_ok": true
+    },
+    {
+      "index": 41,
+      "check": "native dual MTU 1500 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "timestamps bound retained log lines, not silent periods; replacement can lose the prefix; a shorter or replaced log cannot prove all submissions",
+        "end_bytes": "12136",
+        "end_export_ok": true,
+        "first_retained_log_time": "2026-11-04T12:28:27.734Z",
+        "last_retained_log_time": "2026-11-04T12:40:27.943Z",
+        "overwrite_or_replacement_detected": false,
+        "reason": "agent observe/flush and controlclient do not log individual submission times or outcomes",
+        "start_bytes": "12136",
+        "start_content_retained_as_prefix": true,
+        "start_export_ok": true,
+        "submission_events_available": false,
+        "timestamped_lines_in_window": 0,
+        "window_end": "2026-11-04T12:41:20.854195251Z",
+        "window_start": "2026-11-04T12:41:05.035338171Z",
+        "row_duration_seconds": "15.818857"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T12:41:20.585548884Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:41:20.480682091Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:41:20.399181299Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:41:20.237819293Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.422/1.061",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T12:41:05.383900304Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:41:05.279431459Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:41:05.197638466Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:41:05.03533872Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.618/0.719",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T12:41:20.854195251Z",
+      "fixture": "receive-only-1500",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "receive-only-1500",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "native dual MTU 1500",
+      "started_at": "2026-11-04T12:41:05.035338171Z",
+      "stored_observations": [
+        {
+          "received_at": "2026-11-04T12:41:08.306704Z",
+          "report_id": "01a1a693-d3cc-727a-9dd0-1df82fd4f08f",
+          "generation": "75",
+          "incarnation": "01a1a66b-190b-745a-8ac4-b9459c7ddc74"
+        }
+      ],
+      "stored_observations_read_ok": true
+    },
+    {
+      "index": 44,
+      "check": "native dual MTU 1280 transfer",
+      "status": "blocked",
+      "agent_log": {
+        "coverage_limit": "timestamps bound retained log lines, not silent periods; replacement can lose the prefix; a shorter or replaced log cannot prove all submissions",
+        "end_bytes": "12234",
+        "end_export_ok": true,
+        "first_retained_log_time": "2026-11-04T12:28:27.734Z",
+        "last_retained_log_time": "2026-11-04T12:41:27.994Z",
+        "overwrite_or_replacement_detected": false,
+        "reason": "agent observe/flush and controlclient do not log individual submission times or outcomes",
+        "start_bytes": "12136",
+        "start_content_retained_as_prefix": true,
+        "start_export_ok": true,
+        "submission_events_available": false,
+        "timestamped_lines_in_window": 1,
+        "window_end": "2026-11-04T12:41:37.152111424Z",
+        "window_start": "2026-11-04T12:41:20.859358705Z",
+        "row_duration_seconds": "16.292753"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T12:41:37.061908721Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:41:36.954992013Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:41:36.871635894Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:41:36.709267323Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44184",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.029/0.028",
+            "mss": "50688",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.493/0.759",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T12:41:21.206593799Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:41:21.102169171Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:41:21.021951827Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:41:20.859359278Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.422/1.061",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T12:41:37.152111424Z",
+      "fixture": "receive-only-1280",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "receive-only-1280",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "native dual MTU 1280",
+      "started_at": "2026-11-04T12:41:20.859358705Z",
+      "stored_observations": [],
+      "stored_observations_read_ok": true
+    },
+    {
+      "index": 49,
+      "check": "native ipv6 MTU 1280 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "timestamps bound retained log lines, not silent periods; replacement can lose the prefix; a shorter or replaced log cannot prove all submissions",
+        "end_bytes": "12234",
+        "end_export_ok": true,
+        "first_retained_log_time": "2026-11-04T12:28:27.734Z",
+        "last_retained_log_time": "2026-11-04T12:41:27.994Z",
+        "overwrite_or_replacement_detected": false,
+        "reason": "agent observe/flush and controlclient do not log individual submission times or outcomes",
+        "start_bytes": "12234",
+        "start_content_retained_as_prefix": true,
+        "start_export_ok": true,
+        "submission_events_available": false,
+        "timestamped_lines_in_window": 0,
+        "window_end": "2026-11-04T12:41:53.352177905Z",
+        "window_start": "2026-11-04T12:41:37.157222886Z",
+        "row_duration_seconds": "16.194955"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T12:41:53.172522132Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:41:53.06635732Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:41:52.984711336Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:41:52.796956886Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44184",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.029/0.028",
+            "mss": "50688",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.13/0.617",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T12:41:37.502148373Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:41:37.397955629Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:41:37.316032743Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:41:37.157223392Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44184",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.029/0.028",
+            "mss": "50688",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.493/0.759",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T12:41:53.352177905Z",
+      "fixture": "receive-only-1280",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "receive-only-1280",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "native ipv6 MTU 1280",
+      "started_at": "2026-11-04T12:41:37.157222886Z",
+      "stored_observations": [
+        {
+          "received_at": "2026-11-04T12:41:38.325567Z",
+          "report_id": "01a1a694-4910-725c-8ca5-3af4d0f6cc9f",
+          "generation": "75",
+          "incarnation": "01a1a66b-190b-745a-8ac4-b9459c7ddc74"
+        }
+      ],
+      "stored_observations_read_ok": true
+    },
+    {
+      "index": 54,
+      "check": "D-137 supported known-PMTU 1280 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "timestamps bound retained log lines, not silent periods; replacement can lose the prefix; a shorter or replaced log cannot prove all submissions",
+        "end_bytes": "12234",
+        "end_export_ok": true,
+        "first_retained_log_time": "2026-11-04T12:28:27.734Z",
+        "last_retained_log_time": "2026-11-04T12:41:27.994Z",
+        "overwrite_or_replacement_detected": false,
+        "reason": "agent observe/flush and controlclient do not log individual submission times or outcomes",
+        "start_bytes": "12234",
+        "start_content_retained_as_prefix": true,
+        "start_export_ok": true,
+        "submission_events_available": false,
+        "timestamped_lines_in_window": 0,
+        "window_end": "2026-11-04T12:42:01.739682585Z",
+        "window_start": "2026-11-04T12:41:53.357216335Z",
+        "row_duration_seconds": "8.382466"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T12:42:01.652735042Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:42:01.547534827Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:42:01.464316931Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:42:01.30182169Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.507/0.93",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T12:41:53.704763839Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:41:53.599041323Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:41:53.517651231Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:41:53.357217053Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44184",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.029/0.028",
+            "mss": "50688",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.473/1.15",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T12:42:01.739682585Z",
+      "fixture": "known-pmtu1280",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "known-pmtu1280",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "D-137 supported known-PMTU 1280",
+      "started_at": "2026-11-04T12:41:53.357216335Z",
+      "stored_observations": [],
+      "stored_observations_read_ok": true
+    },
+    {
+      "index": 57,
+      "check": "native ipv4 MTU 1280 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "timestamps bound retained log lines, not silent periods; replacement can lose the prefix; a shorter or replaced log cannot prove all submissions",
+        "end_bytes": "12234",
+        "end_export_ok": true,
+        "first_retained_log_time": "2026-11-04T12:28:27.734Z",
+        "last_retained_log_time": "2026-11-04T12:41:27.994Z",
+        "overwrite_or_replacement_detected": false,
+        "reason": "agent observe/flush and controlclient do not log individual submission times or outcomes",
+        "start_bytes": "12234",
+        "start_content_retained_as_prefix": true,
+        "start_export_ok": true,
+        "submission_events_available": false,
+        "timestamped_lines_in_window": 0,
+        "window_end": "2026-11-04T12:42:17.806235063Z",
+        "window_start": "2026-11-04T12:42:01.744575778Z",
+        "row_duration_seconds": "16.06166"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T12:42:17.718601751Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:42:17.613800043Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:42:17.530340631Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:42:17.364590805Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.128/1.011",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T12:42:02.09535339Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:42:01.989836817Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:42:01.908511636Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:42:01.744576383Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.507/0.93",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T12:42:17.806235063Z",
+      "fixture": "receive-only-1280",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "receive-only-1280",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "native ipv4 MTU 1280",
+      "started_at": "2026-11-04T12:42:01.744575778Z",
+      "stored_observations": [
+        {
+          "received_at": "2026-11-04T12:42:08.339587Z",
+          "report_id": "01a1a694-be4d-7579-b9e7-5db727be206d",
+          "generation": "75",
+          "incarnation": "01a1a66b-190b-745a-8ac4-b9459c7ddc74"
+        }
+      ],
+      "stored_observations_read_ok": true
+    },
+    {
+      "index": 73,
+      "check": "D-137 routed ipv6 1280 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "timestamps bound retained log lines, not silent periods; replacement can lose the prefix; a shorter or replaced log cannot prove all submissions",
+        "end_bytes": "13545",
+        "end_export_ok": true,
+        "first_retained_log_time": "2026-11-04T12:28:27.734Z",
+        "last_retained_log_time": "2026-11-04T12:42:33.444Z",
+        "overwrite_or_replacement_detected": false,
+        "reason": "agent observe/flush and controlclient do not log individual submission times or outcomes",
+        "start_bytes": "13545",
+        "start_content_retained_as_prefix": true,
+        "start_export_ok": true,
+        "submission_events_available": false,
+        "timestamped_lines_in_window": 0,
+        "window_end": "2026-11-04T12:43:09.335323594Z",
+        "window_start": "2026-11-04T12:42:53.484628373Z",
+        "row_duration_seconds": "15.850695"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T12:43:09.248609843Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:43:09.143395773Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:43:09.060580876Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:43:08.898468814Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "3.963/0.691",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T12:42:53.838809518Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:42:53.733350246Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:42:53.649603219Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:42:53.484630269Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44284",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.039/0.059",
+            "mss": "39424",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.372/0.853",
+            "mss": "65483",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "52126",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.06/0.068",
+            "mss": "50688",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T12:43:09.335323594Z",
+      "fixture": "routed-1280",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "routed-1280",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "D-137 routed ipv6 1280",
+      "started_at": "2026-11-04T12:42:53.484628373Z",
+      "stored_observations": [
+        {
+          "received_at": "2026-11-04T12:43:08.375421Z",
+          "report_id": "01a1a695-a8d1-78de-be9e-1cb764c66e33",
+          "generation": "76",
+          "incarnation": "01a1a66b-190b-745a-8ac4-b9459c7ddc74"
+        }
+      ],
+      "stored_observations_read_ok": true
+    },
+    {
+      "index": 76,
+      "check": "D-137 routed ipv4 1280 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "timestamps bound retained log lines, not silent periods; replacement can lose the prefix; a shorter or replaced log cannot prove all submissions",
+        "end_bytes": "13545",
+        "end_export_ok": true,
+        "first_retained_log_time": "2026-11-04T12:28:27.734Z",
+        "last_retained_log_time": "2026-11-04T12:42:33.444Z",
+        "overwrite_or_replacement_detected": false,
+        "reason": "agent observe/flush and controlclient do not log individual submission times or outcomes",
+        "start_bytes": "13545",
+        "start_content_retained_as_prefix": true,
+        "start_export_ok": true,
+        "submission_events_available": false,
+        "timestamped_lines_in_window": 0,
+        "window_end": "2026-11-04T12:43:25.336306825Z",
+        "window_start": "2026-11-04T12:43:09.340471772Z",
+        "row_duration_seconds": "15.995835"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T12:43:25.25364134Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:43:25.148372921Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:43:25.065595641Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:43:24.902769809Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "8.882/9.961",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T12:43:09.693199991Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T12:43:09.58552956Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T12:43:09.502644001Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T12:43:09.340472356Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "45648",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "3.963/0.691",
+            "mss": "65483",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T12:43:25.336306825Z",
+      "fixture": "routed-1280",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "routed-1280",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "D-137 routed ipv4 1280",
+      "started_at": "2026-11-04T12:43:09.340471772Z",
+      "stored_observations": [],
+      "stored_observations_read_ok": true
+    }
+  ],
+  "failed_serving_reads": [
+    {
+      "index": 46,
+      "check": "native dual MTU 1280 D-146 clamp evidence",
+      "status": "blocked",
+      "rules": {
+        "available": true,
+        "ended_at": "2026-11-04T12:41:30.910303808Z",
+        "generation": "75",
+        "node_incarnation": "01a1a66b-190b-745a-8ac4-b9459c7ddc74",
+        "node_role": "node",
+        "serving": false,
+        "serving_read_diagnostic": {
+          "available": true,
+          "classification": {
+            "later_read": true,
+            "scope": "Second read after the combined serving query returned no row; conditions describe this later read, not a proven retrospective cause.",
+            "kernel_generation": "75",
+            "rows": {
+              "read_at": "2026-11-04T12:41:30.912797Z",
+              "node_found": true,
+              "current_incarnation": "01a1a66b-190b-745a-8ac4-b9459c7ddc74",
+              "desired_generation": "75",
+              "applied_generation": "75",
+              "latest_current_incarnation_observation": {
+                "report_id": "01a1a693-d3cc-727a-9dd0-1df82fd4f08f",
+                "incarnation": "01a1a66b-190b-745a-8ac4-b9459c7ddc74",
+                "generation": "75",
+                "received_at": "2026-11-04T12:41:08.306704Z",
+                "member_forwarding_enabled": true,
+                "forwarding_block_reasons": []
+              },
+              "latest_node_observation": {
+                "report_id": "01a1a693-d3cc-727a-9dd0-1df82fd4f08f",
+                "incarnation": "01a1a66b-190b-745a-8ac4-b9459c7ddc74",
+                "generation": "75",
+                "received_at": "2026-11-04T12:41:08.306704Z",
+                "member_forwarding_enabled": true,
+                "forwarding_block_reasons": []
+              }
+            },
+            "observation_age_ns": "22606093000",
+            "age_bound_ns": "15000000000",
+            "failed_conditions": [
+              "observation_age_below_15_seconds"
+            ]
+          },
+          "later_read": true
+        },
+        "serving_read_ok": false,
+        "started_at": "2026-11-04T12:41:30.825246133Z",
+        "table_sha256": "2755932927063438d93125a7e61e450be2f10e71a163b349b8d10a1e48800a8f"
+      }
+    }
+  ],
+  "scope": "All control-stored node observations in each recorded half-open row window; only received_at, report ID, generation and incarnation. Agent logs lack per-submission outcomes, explicitly unavailable; no freshness or D-151 policy change."
+}
