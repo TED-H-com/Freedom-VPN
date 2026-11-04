@@ -238,14 +238,22 @@ func readTrust(path string) (*envelope.TrustStore, error) {
 	return ts, nil
 }
 
+// ExitBusy identifies live update-lock contention (D-155). Recovery has not
+// completed; a caller may defer it and retry after the holder releases the lock.
+const ExitBusy = 3
+
 // ExitCode maps an engine error to a process status. 2 means member
-// forwarding must stay off (§13.5, §13.9).
+// forwarding must stay off (§13.5, §13.9) and takes precedence over ExitBusy.
 func ExitCode(err error) int {
 	if err == nil {
 		return 0
 	}
 	if errors.Is(err, ErrMembersBlocked) {
 		return 2
+	}
+	var op *OpError
+	if errors.As(err, &op) && op.Code == apierr.UpdateBusy && op.Detail == "lock" {
+		return ExitBusy
 	}
 	return 1
 }
