@@ -16640,10 +16640,13 @@ func TestHandover_Followup47Claims(t *testing.T) {
 		var job struct {
 			Status  string
 			Errors  []string
-			Reviews []struct{ Mapping, Item string }
+			Reviews []struct {
+				Mapping string
+				Items   []struct{ Item string }
+			}
 		}
 		readJSON(iso+"scheduled-job.json", &job)
-		if job.Status != "fail" || len(job.Errors) != 1 || !strings.Contains(job.Errors[0], "review_boundary.py") || len(job.Reviews) != 1 || job.Reviews[0].Mapping != "expected not exercised" || job.Reviews[0].Item != "pure_stale_generation" {
+		if job.Status != "fail" || len(job.Errors) != 1 || !strings.Contains(job.Errors[0], "review_boundary.py") || len(job.Reviews) != 1 || job.Reviews[0].Mapping != "expected not exercised" || len(job.Reviews[0].Items) != 1 || job.Reviews[0].Items[0].Item != "pure_stale_generation" {
 			t.Fatal("F24-01 alone; D163 only maps carried review gap")
 		}
 	})
@@ -16694,6 +16697,85 @@ func TestHandover_Followup47Claims(t *testing.T) {
 			t.Fatal("all intervals retained")
 		}
 		require(dev+"observation-coverage.txt", "622.437456", "No 15-second observation query was executed")
+	})
+	t.Run("actual_wait_outputs_guard_losses_and_watchdog_decision", func(t *testing.T) {
+		type invocation struct {
+			ID     string `json:"invocation_id"`
+			Exit   int    `json:"exit_code"`
+			Output string
+		}
+		invocations := func(path string) []invocation {
+			t.Helper()
+			var record struct {
+				Observations []struct{ Name, Detail string }
+			}
+			readJSON(path, &record)
+			for _, o := range record.Observations {
+				if o.Name == "updater_invocations" {
+					var result []invocation
+					if err := json.Unmarshal([]byte(o.Detail), &result); err != nil {
+						t.Fatal(err)
+					}
+					return result
+				}
+			}
+			t.Fatal("missing complete invocation output")
+			return nil
+		}
+		good, bad := invocations(dev+"update-good.json"), invocations(dev+"update-bad.json")
+		if len(good) != 1 || len(bad) != 2 || good[0] != bad[0] || good[0].Exit != 0 || bad[1].Exit != 1 || bad[1].Output != "fvpn-updater: updater: HASH_MISMATCH: artifact\n" || strings.Count(good[0].Output, "\n") != 1 {
+			t.Fatal("complete good/bad output and retention")
+		}
+		var wait struct {
+			Msg, Command string
+			Waited       int `json:"waited_ms"`
+			Acquired     bool
+			Budget       int `json:"budget_ms"`
+		}
+		if err := json.Unmarshal([]byte(good[0].Output), &wait); err != nil {
+			t.Fatal(err)
+		}
+		if wait.Msg != "update lock wait" || wait.Command != "run" || wait.Waited != 446 || !wait.Acquired || wait.Budget != 10000 {
+			t.Fatal("first live D158 wait")
+		}
+		var lab struct {
+			Complete bool `json:"complete_checked_combined_captures"`
+			D120     struct {
+				Passed bool
+				Reads  int `json:"tcp_reads"`
+				UDP    int `json:"udp_losses"`
+				Losses []struct {
+					Classification, Generation string
+					Failures                   []string
+				} `json:"tcp_guard_losses"`
+				Longest struct {
+					NS json.Number `json:"stall_ns"`
+				} `json:"longest_tcp_stall"`
+			}
+		}
+		readJSON(iso+"d161-review.json", &lab)
+		if !lab.Complete || !lab.D120.Passed || lab.D120.Reads != 65 || lab.D120.UDP != 0 || len(lab.D120.Losses) != 9 || lab.D120.Longest.NS.String() != "209623000" {
+			t.Fatal("D161 complete capture measurements")
+		}
+		for _, l := range lab.D120.Losses {
+			if l.Generation == "" || len(l.Failures) != 0 || (l.Classification != "boundary" && l.Classification != "inside") {
+				t.Fatal("guard attribution")
+			}
+		}
+		var restart struct {
+			Lines    []string `json:"unique_lines"`
+			Mismatch int      `json:"generation_mismatch_unique"`
+		}
+		readJSON(iso+"restart-signature-review.json", &restart)
+		decisions := 0
+		for _, line := range restart.Lines {
+			if strings.Contains(line, `"writer":"watchdog"`) && strings.Contains(line, `"cause":"baseline_unverified"`) && strings.Contains(line, `"msg":"baseline decision"`) {
+				decisions++
+			}
+		}
+		if restart.Mismatch != 0 || decisions != 1 {
+			t.Fatal("one watchdog decision, no generation mismatch; no closure inference")
+		}
 	})
 	t.Run("38_exact_evidence_values_without_float_conversion", func(t *testing.T) {
 		var values []struct {
