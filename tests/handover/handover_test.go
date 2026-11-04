@@ -13173,7 +13173,7 @@ func TestHandover_Followup41Claims(t *testing.T) {
 	require := func(path string, tokens ...string) { t.Helper(); requireHandoverClaimTokens(t, root, path, tokens...) }
 	// Manifest hashes also bind source identities, inventory and exact expected rows.
 	checkHash("tests/handover/testdata/followup41-main.json", "822ea103d25405e8e5b0a80b9a01cbe6fba6e15066dded6534ad5c0a3ba30315")
-	checkHash("tests/handover/testdata/followup41-snapshots.json", "c2e4f3b9565f20096d7f05238e7b30a975a850a98bd91f84a8987049b8e5dfb7")
+	checkHash("tests/handover/testdata/followup41-snapshots.json", "9296cbbb6e30d65da35fa9395196da9ee79c756f777bba8996cbe850f6adbf60")
 	checkHash("tests/handover/testdata/followup41-decisions.json", "df9686392bb9dc91924979cad467bd47638f51fd5cf1a02bfa84ff134217e1b9")
 	checkHash("tests/handover/testdata/followup41-findings.json", "9219f4ee94b7bbbf4f10043aeae25b182afb4bf7879f2308f3fb1731ace38083")
 	checkHash("tests/handover/testdata/followup41-evidence.json", "ccd16c56ded0a0a7c31725c21c0521e560585fb7a3318039ece3f5433127fe4a")

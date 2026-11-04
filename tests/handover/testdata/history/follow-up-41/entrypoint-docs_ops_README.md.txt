@@ -24,4 +24,3 @@ Members 18's grant-restoration request stays open with members 19. No scheduled
 exercise, complete platform acceptance, C1 implementation or comparison is
 claimed. Every historical failure stays failed. Earlier snapshot sections
 below describe their own cuts.
-
