@@ -103,7 +103,7 @@ func TestR31_M1_UnbindableClosedRecoveryFloodsPendingObservationOutbox(t *testin
 		// `Decide` / `recoveryDecision` and tears down `closedRecoveryHeld`.
 		stepOK(t, r)
 
-		// TODO(review r31): M-1 — Pending-outbox deduplication in observe.go:39 must
+		// Regression(review r31): M-1 — Pending-outbox deduplication in observe.go:39 must
 		// not enqueue 32 duplicate reports of an unchanged state and trip outboxFull
 		// when a closed recovery's report cannot bind (isolation error).
 		if len(pending) > 1 || r.eng.outboxFull || !r.eng.closedRecoveryHeld || slices.Contains(r.eng.decision.Reasons, api.ForwardingBlockReasonOutboxFull) {
@@ -150,7 +150,7 @@ func TestR31_M1_UnbindableClosedRecoveryFloodsPendingObservationOutbox(t *testin
 			t.Fatal(err)
 		}
 
-		// TODO(review r31): M-1 — Pending-outbox deduplication in observe.go:39 must
+		// Regression(review r31): M-1 — Pending-outbox deduplication in observe.go:39 must
 		// not enqueue duplicate reports at an unchanged state when meterFailed prevents binding.
 		if len(afterPending) > len(beforePending) {
 			t.Fatalf("M-1 (failed_meter_path): pending outbox grew from %d to %d at unchanged state when meterFailed prevented binding",
@@ -198,7 +198,7 @@ func TestR31_M1_UnbindableClosedRecoveryFloodsPendingObservationOutbox(t *testin
 			t.Fatal(err)
 		}
 
-		// TODO(review r31): M-1 — Pending-outbox deduplication in observe.go:39 must
+		// Regression(review r31): M-1 — Pending-outbox deduplication in observe.go:39 must
 		// check eligibility and not enqueue duplicate reports at an unchanged state
 		// when no `awaiting_member_grants` is present (`!recoveryRenewalEligible()`).
 		if len(afterPending) > len(beforePending) {

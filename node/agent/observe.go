@@ -35,19 +35,33 @@ func (e *Engine) observe(ctx context.Context) error {
 	}
 	// Retain the first deciding body through backoff. Repeated copies of the
 	// same pending state add no evidence; transitions always get their own ID.
-	// A closed recovery must bind its own report even at an unchanged state.
-	if state == e.lastObservationState && !(e.closedRecoveryRenewal.armed && e.closedRecoveryRenewal.reportID == uuid.Nil) {
+	var rep api.ObservationReport
+	if state == e.lastObservationState {
 		items, err := e.store.Pending(ctx)
 		if err != nil {
 			return err
 		}
 		if len(items) > 0 {
-			return nil
+			// Keep ordinary dedup free of report/journal reads. Only a waiting
+			// recovery might need a new body at this unchanged state.
+			if !e.closedRecoveryRenewal.armed || e.closedRecoveryRenewal.reportID != uuid.Nil {
+				return nil
+			}
+			rep, err = e.report(ctx, wall.UTC())
+			if err != nil {
+				return err
+			}
+			if !e.canBindRecoveryReport(rep) {
+				return nil
+			}
 		}
 	}
-	rep, err := e.report(ctx, wall.UTC())
-	if err != nil {
-		return err
+	if rep.ReportId == uuid.Nil {
+		var err error
+		rep, err = e.report(ctx, wall.UTC())
+		if err != nil {
+			return err
+		}
 	}
 	raw, err := json.Marshal(rep)
 	if err != nil {
