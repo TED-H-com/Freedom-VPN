@@ -141,16 +141,18 @@ func TestServingReadinessAndCheckPublishable(t *testing.T) {
 }
 
 func TestParseIfMatchAndFormatETag(t *testing.T) {
-	if _, err := ParseIfMatch(""); err == nil {
-		t.Fatalf("expected empty If-Match to fail")
-	} else {
-		var ae *apierr.Error
-		if !errors.As(err, &ae) || ae.Code != apierr.PreconditionRequired || ae.HTTPStatus() != 428 {
-			t.Fatalf("empty If-Match error = %v, want 428 PRECONDITION_REQUIRED", err)
+	for _, empty := range []string{"", " \t"} {
+		if _, err := ParseIfMatch(empty); err == nil {
+			t.Fatalf("expected empty If-Match to fail")
+		} else {
+			var ae *apierr.Error
+			if !errors.As(err, &ae) || ae.Code != apierr.PreconditionRequired || ae.HTTPStatus() != 428 {
+				t.Fatalf("empty If-Match error = %v, want 428 PRECONDITION_REQUIRED", err)
+			}
 		}
 	}
 
-	for _, bad := range []string{"*", `"*"`, `"abc"`, `"0"`, `"-5"`} {
+	for _, bad := range []string{"*", `"*"`, `"abc"`, `"-5"`, `0`, `""`, `W/"1"`, `"1", "2"`, `"00"`, `"01"`, `"+1"`, `"1.0"`, `"1e0"`, `" 1"`, `"18446744073709551616"`} {
 		if _, err := ParseIfMatch(bad); err == nil {
 			t.Errorf("ParseIfMatch(%q) succeeded, want error", bad)
 		} else {
@@ -167,5 +169,14 @@ func TestParseIfMatchAndFormatETag(t *testing.T) {
 	}
 	if got := FormatETag("42"); got != `"42"` {
 		t.Fatalf("FormatETag(\"42\") = %q, want \"42\"", got)
+	}
+}
+
+func TestAPI01_ParseIfMatchZero(t *testing.T) {
+	for _, header := range []string{`"0"`, " \t\"0\"\t "} {
+		version, err := ParseIfMatch(header)
+		if err != nil || version != "0" || FormatETag(version) != `"0"` {
+			t.Fatalf("ParseIfMatch(%q) = (%q, %v), want (0, nil) and ETag \"0\"", header, version, err)
+		}
 	}
 }

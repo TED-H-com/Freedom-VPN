@@ -92,3 +92,13 @@ ingress redirect containment and D-096 recovery` **pass**. D-104 mechanism passe
 all original seven hold categories and central-age fallback pass. Pure
 classification remains not exercised. AT11/AT13 remain operator-blocked on the
 two listed rows. Six agent exits are 0; no install overrun. [Full result](history/follow-up-18/summary.md).
+
+## Follow-up 20 procedure — 2026-11-03 (additive)
+
+The sections above describe historical runs; their original linked records are frozen in [follow-up 19](history/follow-up-19/archive.json). Current procedure: archive first (`f4f3ad6e`), commit all six shared-helper migrations and early-abort diagnostics, then run lane lint/test/build. Require `$FVPN_HOLD_SH` to print `free` before every Go test, make and Docker command, capturing admission separately from command streams. Wait up to 90 minutes; no reservation. Record `vmstat 5 7`, baseline commit and `ps -eo pid,etimes,args | grep -E '[g]ates\.sh|[m]k/at-'` before the run, and recheck suites after startup.
+
+Use `.agent/tmp` for TMPDIR/GOTMPDIR, `go env GOCACHE`, Python `-B`, and a fresh empty evidence directory. Invoke `FVPN_AT_SKIP_LAB=1 make -f mk/at-isolation.mk at-isolation` once. This explicit skip leaves default/scheduled behavior unchanged and preserves all root lab records. Report overlaps as D-133 confounded and retry nothing. Only an owned harness abort before the first acceptance check permits one recorded rerun. Final gates: handover, root go-lint, formatting, diff check, committed-evidence hygiene and zero owned Docker inventory. [Dated record](followup20-2026-11-03.md).
+
+### Follow-up 20 recorded outcome
+
+Run `c52bea6c-cd91-4086-a779-656b01277dcc` on `037f4418`, 00:06:02.834855Z–00:32:12.735944Z on 2026-11-04 UTC (2026-11-03 EST), 1569.901 s, exit 2. No lab, no rerun. 26 pass / 2 blocked / 1 fail. Initial admission 0.035 s; no other-suite overlap sampled; final owned inventory zero. The collector failure did not stop the main driver before acceptance, so no rerun exception applied. Post-run recording fixes `4fc47dd1` have offline coverage only. [Full outcome, limits and handoffs](followup20-2026-11-03.md).

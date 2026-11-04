@@ -1,0 +1,77 @@
+{
+  "source_commit": "c359d4a9447fded8b035d9a084ae24999850dbf0",
+  "excerpts": [
+    {
+      "source": "internal/members/service.go",
+      "source_sha256": "0879d77edfe19410a941e79e1f1227b34f8710b31c8819916f150b2018b41ef5",
+      "first_line": 460,
+      "last_line": 466,
+      "excerpt": "\t\tvar conflict bool\n\t\tif err = tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM entitlement_grants WHERE member_id=$1 AND revoked_at IS NULL AND plan_revision_id<>$2 AND valid_from<$4 AND valid_until>$3) OR EXISTS(SELECT 1 FROM subscriptions WHERE member_id=$1 AND is_primary AND plan_revision_id<>$2 AND paid_from<$4 AND greatest(paid_through,grace_until)>$3)`, id, plan, start, g.ValidUntil.UTC()).Scan(&conflict); err != nil {\n\t\t\treturn err\n\t\t}\n\t\tif conflict {\n\t\t\treturn entitlement.ErrConflict\n\t\t}\n",
+      "sha256": "19285726a76916f64ada0d1041c8acba7992e65db3410aa664f3f86a8ebcb76d"
+    },
+    {
+      "source": "internal/entitlement/engine.go",
+      "source_sha256": "8a332249d97fdc65334c688a93b6d78df263d4452cbebc978f2d9db565ddbd56",
+      "first_line": 171,
+      "last_line": 229,
+      "excerpt": "\t}\n\tfor _, g := range in.Grants {\n\t\tif g.ID == uuid.Nil || strings.TrimSpace(g.Reason) == \"\" || !validPlan(g.Plan) || !ValidPeriod(g.Start, g.End, in.Config.MaxGrantDuration) {\n\t\t\treturn r, ErrInvalid\n\t\t}\n\t\tif !slices.Contains([]string{\"admin_grant\", \"trial\", \"compensation\", \"migration\"}, g.Source) {\n\t\t\treturn r, ErrInvalid\n\t\t}\n\t\tif g.Source == \"trial\" && (in.Config.MaxTrialDuration == 0 || g.End.Sub(g.Start) > in.Config.MaxTrialDuration) {\n\t\t\treturn r, ErrInvalid\n\t\t}\n\t\tif !g.Revoked {\n\t\t\tp := g.Plan\n\t\t\tspans = append(spans, interval{Period{g.Start, g.End}, g.ID, &p, false})\n\t\t}\n\t}\n\tslices.SortFunc(spans, func(a, b interval) int { return a.Start.Compare(b.Start) })\n\t// Only the connected component containing now confers rights. Retain a past\n\t// interval for diagnostics after expiry without authorizing it.\n\tvar start, end *time.Time\n\tvar refs []uuid.UUID\n\tvar chosen *Plan\n\tgraceOnly := true\n\tfor _, s := range spans {\n\t\tif in.Now.Before(s.Start) || !in.Now.Before(s.End) {\n\t\t\tcontinue\n\t\t}\n\t\tif chosen != nil && s.plan != nil && chosen.ID != s.plan.ID {\n\t\t\treturn r, ErrInvalid\n\t\t}\n\t\tchosen = s.plan\n\t\trefs = append(refs, s.ref)\n\t\tgraceOnly = graceOnly && s.grace\n\t\tif start == nil || s.Start.Before(*start) {\n\t\t\tstart = utc(s.Start)\n\t\t}\n\t\tif end == nil || s.End.After(*end) {\n\t\t\tend = utc(s.End)\n\t\t}\n\t}\n\tif end != nil {\n\t\tfor _, s := range spans {\n\t\t\tif s.End.After(*end) && !s.Start.After(*end) && s.plan != nil && chosen != nil && s.plan.ID == chosen.ID {\n\t\t\t\tend = utc(s.End)\n\t\t\t\trefs = append(refs, s.ref)\n\t\t\t}\n\t\t}\n\t\tr.ValidFrom = start\n\t\tr.EffectiveServiceEnd = end\n\t\tr.SourceRefs = ids(refs)\n\t\tr.Plan = chosen\n\t\tr.State = \"active\"\n\t\tif graceOnly {\n\t\t\tr.State = \"grace\"\n\t\t} else if r.CancelAtPeriodEnd {\n\t\t\tr.State = \"cancel_at_period_end\"\n\t\t}\n\t} else {\n\t\tfor _, s := range spans {\n",
+      "sha256": "d39c9fd1d67b50cac0e1ddfcce6eb8a85c9da3e819f8e9abbfa7afae95a3a72b"
+    },
+    {
+      "source": "internal/entitlement/devices.go",
+      "source_sha256": "1fa81bda489f5ac8fb4e19aef9338cac11403ed81bc20e349b9decb567a8e0af",
+      "first_line": 57,
+      "last_line": 99,
+      "excerpt": "\t// Re-admit previously authorized (never revoked) pending devices oldest first\n\t// into newly available slots. New/unverified pending devices cannot qualify.\n\trows, err = tx.Query(ctx, `SELECT d.id FROM member_devices d WHERE d.member_id=$1 AND d.status='pending' AND d.authorized_at IS NOT NULL AND d.revoked_at IS NULL AND d.closed_at IS NULL\n AND EXISTS(SELECT 1 FROM device_bindings b WHERE b.device_id=d.id)\n AND EXISTS(SELECT 1 FROM netbird_user_bindings n JOIN identity_bindings i ON i.id=n.identity_binding_id AND i.member_id=n.member_id WHERE n.member_id=d.member_id AND n.deployment_id=d.deployment_id AND i.subject=n.external_user_id AND i.stable_claim_ref='sub' AND i.binding_method='oidc' AND n.mapping_proof='shared_issuer_public_subject:'||i.issuer AND n.revision>0 AND n.verified_at<=clock_timestamp() AND i.verified_at<=clock_timestamp())\n ORDER BY d.authorized_at ASC,d.id ASC LIMIT greatest(0,$2-(SELECT count(*) FROM member_devices WHERE member_id=$1 AND status='authorized'))`, member, result.DeviceLimit)\n\tif err != nil {\n\t\treturn err\n\t}\n\tvar resumed []uuid.UUID\n\tfor rows.Next() {\n\t\tvar id uuid.UUID\n\t\tif err = rows.Scan(&id); err != nil {\n\t\t\trows.Close()\n\t\t\treturn err\n\t\t}\n\t\tresumed = append(resumed, id)\n\t}\n\terr = rows.Err()\n\trows.Close()\n\tif err != nil {\n\t\treturn err\n\t}\n\tfor _, id := range resumed {\n\t\tif _, err = tx.Exec(ctx, `UPDATE member_devices SET status='authorized',resource_version=resource_version+1 WHERE id=$1`, id); err != nil {\n\t\t\treturn err\n\t\t}\n\t\tif err = Audit(ctx, tx, Actor{ID: audit.SystemActor.ID, Role: string(audit.SystemActor.Type)}, \"device.authorize\", api.ResourceTypeMemberDevice, id, map[string]any{\"status\": \"pending\"}, map[string]any{\"status\": \"authorized\", \"reason\": \"entitlement_restored\"}); err != nil {\n\t\t\treturn err\n\t\t}\n\t}\n\t// Renew only an interval which is still open now, never any historical rows.\n\tif _, err = tx.Exec(ctx, `UPDATE device_bindings b SET valid_until=$3 WHERE b.member_id=$1 AND b.valid_from<=$2 AND b.valid_until>greatest($2,b.valid_from+interval '1 microsecond') AND b.valid_until<>$3 AND b.device_id IN (`+AuthorizedDeviceIDsSQL+` AND ranked.member_id=$1)`, member, now, result.EffectiveServiceEnd); err != nil {\n\t\treturn err\n\t}\n\t// A resumed entitlement needs a new revision. A former IP reused by someone\n\t// else is not reclaimed; SyncDevice will withdraw until identity is reobserved.\n\t_, err = tx.Exec(ctx, `INSERT INTO device_bindings(device_id,member_id,overlay_scope,overlay_ip,binding_revision,valid_from,valid_until,peer_ref)\n SELECT b.device_id,b.member_id,b.overlay_scope,b.overlay_ip,b.binding_revision+1,greatest($2,b.valid_until),$3,b.peer_ref\n FROM (SELECT DISTINCT ON (device_id) * FROM device_bindings WHERE member_id=$1 ORDER BY device_id,binding_revision DESC) b\n WHERE b.valid_until<=greatest($2,b.valid_from+interval '1 microsecond') AND greatest($2,b.valid_until)<$3 AND b.device_id IN (`+AuthorizedDeviceIDsSQL+` AND ranked.member_id=$1)\n AND NOT EXISTS(SELECT 1 FROM device_bindings occupied WHERE occupied.overlay_scope=b.overlay_scope AND occupied.overlay_ip=b.overlay_ip AND occupied.valid_from<$3 AND occupied.valid_until>greatest($2,b.valid_until))`, member, now, result.EffectiveServiceEnd)\n\treturn err\n",
+      "sha256": "1c93cd9264c326d7a9921d2d9bdb62c47484c2c851c092d7fb58d243b10aa8f3"
+    },
+    {
+      "source": "internal/nodes/nodes.go",
+      "source_sha256": "df24bfe33c09ed21affec8a412cd32298d3d0cb55ad4d1568e865c0f1bba9dc7",
+      "first_line": 82,
+      "last_line": 100,
+      "excerpt": "\n// ParseIfMatch extracts the unquoted decimal resource_version from an If-Match header.\n// Returns a 428 PRECONDITION_REQUIRED error if the header is missing or empty,\n// or a 412 RESOURCE_VERSION_CONFLICT error if it is malformed (§14.5).\nfunc ParseIfMatch(ifMatch string) (string, error) {\n\ttrimmed := strings.TrimSpace(ifMatch)\n\tif trimmed == \"\" {\n\t\treturn \"\", apierr.New(apierr.PreconditionRequired, \"If-Match header is required for this mutation\")\n\t}\n\tif len(trimmed) < 3 || trimmed[0] != '\"' || trimmed[len(trimmed)-1] != '\"' {\n\t\treturn \"\", apierr.New(apierr.ResourceVersionConflict, \"Strong If-Match required\")\n\t}\n\tunquoted := trimmed[1 : len(trimmed)-1]\n\tif u, err := decstr.Parse(unquoted); err != nil || uint64(u) == 0 {\n\t\treturn \"\", apierr.New(apierr.ResourceVersionConflict, \"If-Match header does not match a valid resource_version\")\n\t}\n\treturn unquoted, nil\n}\n\n",
+      "sha256": "422f89650a7c68fa100950c1ae8348c072cb4e5dda07c245e7752c680187bac9"
+    },
+    {
+      "source": "contracts/openapi.yaml",
+      "source_sha256": "0894285c536a334fda5869c7b531afc48deb8cd5e975d68896bdacc98cb785c2",
+      "first_line": 2788,
+      "last_line": 2799,
+      "excerpt": "    IfMatch:\n      name: If-Match\n      in: header\n      required: true\n      description: |\n        Strong ETag of the resource as last read, `\"<resource_version>\"` (§14.5).\n        Missing: 428 PRECONDITION_REQUIRED. Mismatch: 412\n        RESOURCE_VERSION_CONFLICT with details.current_resource_version.\n      schema:\n        type: string\n        pattern: '^\"(0|[1-9][0-9]*)\"$'\n        maxLength: 22\n",
+      "sha256": "c0d516da36f9daa676f7a17776bb110c99a8a5e2f77e9d955c53c4e34a930ed8"
+    },
+    {
+      "source": "contracts/openapi.yaml",
+      "source_sha256": "0894285c536a334fda5869c7b531afc48deb8cd5e975d68896bdacc98cb785c2",
+      "first_line": 2990,
+      "last_line": 3000,
+      "excerpt": "    PreconditionFailed:\n      description: RESOURCE_VERSION_CONFLICT. Re-read the resource; details.current_resource_version holds the current version.\n      headers:\n        X-Request-ID:\n          $ref: '#/components/headers/X-Request-ID'\n      content:\n        application/json:\n          schema:\n            $ref: '#/components/schemas/ErrorEnvelope'\n    PayloadTooLarge:\n      description: PAYLOAD_TOO_LARGE. Body or batch exceeds the configured limit.\n",
+      "sha256": "b6faa8e3d09de34b7006d34d29a43dec8742eb23464c3677086104b3255ea7af"
+    },
+    {
+      "source": "internal/httpapi/commands.go",
+      "source_sha256": "0468d271933756f3d07c0096df8ccd1af83b0bc366eba63c52a514a5d8fd036c",
+      "first_line": 65,
+      "last_line": 75,
+      "excerpt": "\ts, ok := ctx.Value(commandKey{}).(*commandState)\n\tif !ok {\n\t\treturn errors.New(\"command transaction unavailable\")\n\t}\n\tif r.ResponseStatus < 200 || r.ResponseStatus >= 300 || (r.ResponseStatus == 202 && r.OperationID == nil && !s.agentReceipt) || (r.ResourceID == nil && r.OperationID == nil) {\n\t\treturn errors.New(\"command result must reference an accepted success\")\n\t}\n\tif s.result != nil {\n\t\treturn errors.New(\"command result already recorded\")\n\t}\n\ts.result = &r\n",
+      "sha256": "356ab9420961976fe2fb00d32c13a8628243c80ae64a533de201a9c64c940e35"
+    },
+    {
+      "source": "internal/httpapi/commands.go",
+      "source_sha256": "0468d271933756f3d07c0096df8ccd1af83b0bc366eba63c52a514a5d8fd036c",
+      "first_line": 150,
+      "last_line": 181,
+      "excerpt": "\t\t\tvar record db.IdempotencyRecord\n\t\t\terr = db.InTx(ctx, c.Pool, db.TxOptions{}, func(tx pgx.Tx) error {\n\t\t\t\tvar e error\n\t\t\t\trecord, e = db.BeginIdempotent(ctx, tx, db.IdempotencyScope{Principal: principalScope, Method: r.Method, Route: m.scope, KeyHash: kh[:], RequestHash: hash[:]}, c.Retention)\n\t\t\t\tif e != nil {\n\t\t\t\t\treturn e\n\t\t\t\t}\n\t\t\t\tif !record.New {\n\t\t\t\t\treturn nil\n\t\t\t\t}\n\t\t\t\tstate := &commandState{tx: tx, record: record, agentReceipt: p.Role == auth.Agent && (operationID == \"SubmitObservation\" || operationID == \"SubmitUpdateResult\")}\n\t\t\t\tcommandCtx := context.WithValue(ctx, commandKey{}, state)\n\t\t\t\tresponse, e = next(commandCtx, w, r, request)\n\t\t\t\tif e != nil {\n\t\t\t\t\treturn e\n\t\t\t\t}\n\t\t\t\tif state.result == nil || response == nil {\n\t\t\t\t\treturn errors.New(\"command did not record a durable result\")\n\t\t\t\t}\n\t\t\t\treturn db.CompleteIdempotent(ctx, tx, record.ID, *state.result)\n\t\t\t})\n\t\t\tif errors.Is(err, db.ErrIdempotencyConflict) {\n\t\t\t\treturn nil, apierr.New(apierr.IdempotencyConflict, \"Key was already used with a different payload.\")\n\t\t\t}\n\t\t\tif err != nil {\n\t\t\t\treturn nil, err\n\t\t\t}\n\t\t\tif !record.New {\n\t\t\t\tresponse, err := replay.Replay(ctx, operationID, record)\n\t\t\t\tif err != nil {\n\t\t\t\t\treturn nil, err\n\t\t\t\t}\n",
+      "sha256": "a2749a41c7525c7559cbfa651d64551433f1d7e9658cf30dab743d3e9a3be856"
+    },
+    {
+      "source": "internal/db/tx.go",
+      "source_sha256": "70a19bf10e69ac3c1926d35708226cd6b7d4a25b50ea24700375e86f2b12f7d0",
+      "first_line": 63,
+      "last_line": 84,
+      "excerpt": "func txAttempt(ctx context.Context, pool *pgxpool.Pool, opts pgx.TxOptions, fn func(pgx.Tx) error) error {\n\ttx, err := pool.BeginTx(ctx, opts)\n\tif err != nil {\n\t\treturn err\n\t}\n\tdefer func() {\n\t\t// Rollback must still work when a request was canceled or fn panicked.\n\t\tcleanup, cancel := context.WithTimeout(context.Background(), 5*time.Second)\n\t\tdefer cancel()\n\t\t_ = tx.Rollback(cleanup)\n\t}()\n\tif err = fn(tx); err != nil {\n\t\treturn err\n\t}\n\treturn tx.Commit(ctx)\n}\n",
+      "sha256": "64b4524bbd78de275c657110a81b90b013fd195f995ddf450fbd0e280adbd2e8"
+    }
+  ]
+}

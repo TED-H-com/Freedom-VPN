@@ -14,6 +14,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -49,6 +50,7 @@ type isolationRun struct {
 	firstCounted     string
 	fleetRequestID   string
 	lastControlStart time.Time
+	cloneAttempted   bool
 	holdStop         chan struct{}
 	holdDone         chan struct{}
 	holdRows         []map[string]any
@@ -603,12 +605,40 @@ func dockerEmbeddedDNS(summary string) bool {
 	return strings.Contains(summary, "nat") && strings.Contains(summary, "POSTROUTING") && strings.Contains(summary, "xt") && strings.Contains(summary, "127.0.0.11")
 }
 
-func (x *isolationRun) publication(intent string, groups []uuid.UUID, c *iso.Check) bool {
-	note := func(k, v string) {
-		if c != nil {
-			c.Observations = append(c.Observations, iso.Observation{Name: k, Detail: v})
-		}
+// Receipts belong to the check (including its restoration commands), or to the
+// incident's supplemental evidence. Every shared-helper attempt is retained.
+func isolationCheckNote(c *iso.Check) func(string, string) {
+	return func(k, v string) { c.Observations = append(c.Observations, iso.Observation{Name: k, Detail: v}) }
+}
+
+func isolationMapNote(row map[string]any) func(string, string) {
+	return func(k, v string) {
+		observations, _ := row["observations"].([]iso.Observation)
+		row["observations"] = append(observations, iso.Observation{Name: k, Detail: v})
 	}
+}
+
+func isolationPublicationMatches(intent string, groups []uuid.UUID) func([]byte) bool {
+	// Group order is immaterial; the exact membership and intent must match.
+	want := make([]string, len(groups))
+	for i, group := range groups {
+		want[i] = group.String()
+	}
+	slices.Sort(want)
+	return func(body []byte) bool {
+		var node struct {
+			Groups []string `json:"group_ids"`
+		}
+		if !nodeFieldsMatch(map[string]string{"publication_intent": intent})(body) || json.Unmarshal(body, &node) != nil || node.Groups == nil {
+			return false
+		}
+		slices.Sort(node.Groups)
+		return slices.Equal(want, node.Groups)
+	}
+}
+
+func (x *isolationRun) publication(intent string, groups []uuid.UUID, c *iso.Check) bool {
+	note := iso.PublicationNote(c, x.records["AT10"])
 	// Long capture matrices can outlive a browser session. Obtain a fresh one
 	// before each mutation; never replay an unasserted side effect.
 	var loginErr error
@@ -622,13 +652,26 @@ func (x *isolationRun) publication(intent string, groups []uuid.UUID, c *iso.Che
 	if e != nil || get.Status != 200 {
 		return false
 	}
-	put, e := x.admin.call(x.ctx, "PUT", path+"/publication", map[string]any{"publication_intent": intent, "group_ids": groups, "reason": "TEST ONLY isolation publication"}, map[string]string{"Idempotency-Key": uuid.NewString(), "If-Match": get.Header.Get("ETag")})
+	result := x.admin.writeNode(x.ctx, "PUT", path+"/publication", path, map[string]any{"publication_intent": intent, "group_ids": groups, "reason": "TEST ONLY isolation publication"}, get.Header.Get("ETag"), isolationPublicationMatches(intent, groups), []int{202}, note)
+	put, e := result.Reply, result.Err
 	note("publication_put", httpDetail(put, e))
-	if e != nil || put.Status != 202 {
+	if !result.accepted(202) {
 		note("publication_error", apiErrorText(put.Body))
 		return false
 	}
 	id := operationID(put.Body)
+	if result.AlreadyIntended {
+		kind := map[string]string{"published": nodes.OpKindPublish, "disabled": nodes.OpKindDisable, "unpublished": nodes.OpKindUnpublish}[intent]
+		conn, err := x.r.lab.db(x.ctx)
+		if err == nil {
+			_ = conn.QueryRow(x.ctx, `SELECT id::text FROM operations WHERE resource_type='node' AND resource_id=$1 AND kind=$2 ORDER BY created_at DESC,id DESC LIMIT 1`, x.r.nodeID, kind).Scan(&id)
+			conn.Close(x.ctx)
+		}
+		note("existing_publication_operation", id)
+	}
+	if id == "" {
+		return false
+	}
 	wait, cancel := context.WithTimeout(x.ctx, 150*time.Second)
 	defer cancel()
 	var last reply
@@ -819,7 +862,9 @@ func (x *isolationRun) intranet() {
 	_, _ = r.lab.docker(r.lab.node, "ip", "link", "del", "fvisotest")
 	path := r.lab.public + "/api/v1/admin/nodes/" + r.nodeID.String()
 	get, getErr := x.admin.call(x.ctx, "GET", path, nil, nil)
-	patch, patchErr := x.admin.call(x.ctx, "PATCH", path, map[string]any{"capacity": map[string]any{"down_bps": 201000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}, map[string]string{"If-Match": get.Header.Get("ETag"), "Idempotency-Key": uuid.NewString()})
+	capacity := map[string]any{"capacity": map[string]any{"down_bps": 201000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
+	write := x.admin.writeNode(x.ctx, "PATCH", path, path, capacity, get.Header.Get("ETag"), nodeFieldsMatch(capacity), []int{200, 202}, isolationCheckNote(&c))
+	patch, patchErr := write.Reply, write.Err
 	waitApply, stopApply := context.WithTimeout(x.ctx, 45*time.Second)
 	applied := waitUntil(waitApply, time.Second, func() bool {
 		return r.lab.forwardChain().Generation > oldGeneration && r.lab.forwardChain().MemberAccept > 0
@@ -838,7 +883,7 @@ func (x *isolationRun) intranet() {
 	loopValid := loopErr == nil && loopComplete && loopRead == nil && json.Unmarshal(loopRaw, &loop) == nil && loop.Seconds > 0 && float64(loop.Attempts)/loop.Seconds >= 10
 	after := x.proof(r)
 	c.Observations = append(c.Observations, iso.Observation{Name: "continuous_probe", Detail: string(loopRaw)}, iso.Observation{Name: "origin_after_flap", Detail: boolText(after.Valid())})
-	c.Status = iso.NegativeStatus(c.Positive, e == nil && getErr == nil && get.Status == 200 && patchErr == nil && (patch.Status == 200 || patch.Status == 202) && applied && strings.Contains(route, "dev fvnb0") && loopValid && after.Valid(), result == "timeout" && loop.Delivered == 0)
+	c.Status = iso.NegativeStatus(c.Positive, e == nil && getErr == nil && get.Status == 200 && write.accepted(200, 202) && applied && strings.Contains(route, "dev fvnb0") && loopValid && after.Valid(), result == "timeout" && loop.Delivered == 0)
 	c.Actual = "dummy added/addressed/removed and API capacity generation applied inside node under >=10 attempts/s; changed-interface result=" + result
 	x.add("AT10", c)
 	v6, _ := r.lab.docker(r.lab.member, "ip", "-6", "addr", "show")
@@ -922,16 +967,16 @@ func (x *isolationRun) groups() {
 	c.Observations = append(c.Observations, iso.Observation{Name: "A_remains_counted", Detail: boolText(sibling.Valid())})
 	c.Status = iso.NegativeStatus(c.Positive, ok && sibling.Valid(), result == "timeout" || result == "unreachable")
 	c.Actual = "B result=" + result + "; route=" + route + "; A counted=" + boolText(sibling.Valid())
+	_ = x.publication("published", []uuid.UUID{x.r.groupID, x.groupB}, &c)
 	x.add("AT12", c)
-	_ = x.publication("published", []uuid.UUID{x.r.groupID, x.groupB}, nil)
 	c = iso.Check{Name: "disable published exit", Positive: x.proof(x.a1), Owner: "w3-wire-nodes / w2-agent-core"}
 	ok = x.publication("disabled", []uuid.UUID{x.r.groupID, x.groupB}, &c)
 	route, result = x.connect(x.a1, x.a1.originIP(), 443)
 	c.Status = iso.NegativeStatus(c.Positive, ok, result == "timeout" || result == "unreachable")
 	c.Actual = "result=" + result + "; route=" + route
 	x.observation(&c, x.a1)
+	_ = x.publication("published", []uuid.UUID{x.r.groupID, x.groupB}, &c)
 	x.add("AT13", c)
-	_ = x.publication("published", []uuid.UUID{x.r.groupID, x.groupB}, nil)
 }
 
 func (x *isolationRun) revoke() {
@@ -1303,7 +1348,9 @@ func (x *isolationRun) wholeNodeExpiry() {
 	putAt := time.Now().UTC().Add(-2 * time.Second)
 	nodePath := x.r.lab.public + "/api/v1/admin/nodes/" + x.r.nodeID.String()
 	get, getErr := x.admin.call(x.ctx, "GET", nodePath, nil, nil)
-	patch, patchErr := x.admin.call(x.ctx, "PATCH", nodePath, map[string]any{"capacity": map[string]any{"down_bps": 204000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}, map[string]string{"If-Match": get.Header.Get("ETag"), "Idempotency-Key": uuid.NewString()})
+	capacity := map[string]any{"capacity": map[string]any{"down_bps": 204000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
+	write := x.admin.writeNode(x.ctx, "PATCH", nodePath, nodePath, capacity, get.Header.Get("ETag"), nodeFieldsMatch(capacity), []int{200, 202}, isolationCheckNote(&c))
+	patch, patchErr := write.Reply, write.Err
 	c.Observations = append(c.Observations, iso.Observation{Name: "renewal_capacity_patch", Detail: httpDetail(patch, patchErr) + " get=" + httpDetail(get, getErr)})
 	wait, cancel := context.WithTimeout(x.ctx, 90*time.Second)
 	var held leaseSnap
@@ -2241,6 +2288,10 @@ func (x *isolationRun) archiveReceiver() {
 	// shared stream exporter, then let the receiver finish its 100ms drain.
 	closure := []map[string]any{}
 	for _, container := range []string{x.r.lab.node, x.r.lab.prefix + "-node-clone"} {
+		if absent := iso.UncreatedCloneClosure(container, container == x.r.lab.node || x.cloneAttempted); absent != nil {
+			closure = append(closure, absent)
+			continue
+		}
 		if !x.install(container) {
 			continue
 		}
@@ -2441,13 +2492,15 @@ func (x *isolationRun) networkSnapshot(label string) map[string]any {
 	}
 	return row
 }
-func (x *isolationRun) capacityGeneration(down int) string {
+func (x *isolationRun) capacityGeneration(down int, note func(string, string)) string {
 	path := x.r.lab.public + "/api/v1/admin/nodes/" + x.r.nodeID.String()
 	get, e := x.admin.call(x.ctx, "GET", path, nil, nil)
 	if e != nil {
 		return "GET failed"
 	}
-	patch, e := x.admin.call(x.ctx, "PATCH", path, map[string]any{"capacity": map[string]any{"down_bps": down, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}, map[string]string{"If-Match": get.Header.Get("ETag"), "Idempotency-Key": uuid.NewString()})
+	capacity := map[string]any{"capacity": map[string]any{"down_bps": down, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
+	write := x.admin.writeNode(x.ctx, "PATCH", path, path, capacity, get.Header.Get("ETag"), nodeFieldsMatch(capacity), []int{200, 202}, note)
+	patch, e := write.Reply, write.Err
 	return httpDetail(patch, e)
 }
 func (x *isolationRun) foreignRedirect() {
@@ -2491,7 +2544,7 @@ func (x *isolationRun) foreignRedirect() {
 		time.Sleep(300 * time.Millisecond)
 	}
 	dirtyAt := time.Now().UTC()
-	response := x.capacityGeneration(206000000)
+	response := x.capacityGeneration(206000000, isolationCheckNote(&c))
 	rows = append(rows, map[string]any{"label": "publish dirty newer generation", "at": dirtyAt.Format(time.RFC3339Nano), "response": response})
 	dirtyAccepted := false
 	for range 12 {
@@ -2525,7 +2578,7 @@ func (x *isolationRun) foreignRedirect() {
 	out, e = x.r.lab.docker(x.r.lab.node, "tc", "qdisc", "del", "dev", "fvmb0", "clsact")
 	rows = append(rows, map[string]any{"label": "remove all injected objects", "start": at.UTC().Format(time.RFC3339Nano), "end": time.Now().UTC().Format(time.RFC3339Nano), "output": string(out), "ok": e == nil})
 	rows = append(rows, x.networkSnapshot("fresh removal read"))
-	rows = append(rows, map[string]any{"label": "publish clean newer generation", "at": time.Now().UTC().Format(time.RFC3339Nano), "response": x.capacityGeneration(207000000)})
+	rows = append(rows, map[string]any{"label": "publish clean newer generation", "at": time.Now().UTC().Format(time.RFC3339Nano), "response": x.capacityGeneration(207000000, isolationCheckNote(&c))})
 	recovered := false
 	for range 80 {
 		row := x.networkSnapshot("recovery wait")
@@ -2556,6 +2609,7 @@ func (x *isolationRun) freezeIdentity() {
 	leaseBefore, beforeOK := x.readNodeLease()
 	agentIdentity := x.agentStopIdentity(x.r.lab.node)
 	at := time.Now()
+	x.cloneAttempted = true
 	fixture, err := x.stack.StartClonedIdentityFixture(x.ctx, "node")
 	completed := time.Now()
 	leaseAfter, afterOK := x.readNodeLease()
@@ -2598,7 +2652,7 @@ func (x *isolationRun) freezeIdentity() {
 }
 
 func (x *isolationRun) reviewFollowup8() {
-	cmd := exec.Command("python3", filepath.Join(moduleRoot(), "tests/e2e/at/isolation/review_followup8.py"), x.dir)
+	cmd := exec.Command("python3", filepath.Join(moduleRoot(), "tests/e2e/at/isolation/review_followup8.py"), x.dir, x.records["AT10"].RunID)
 	if out, err := cmd.CombinedOutput(); err != nil {
 		x.t.Logf("review: %v %s", err, out)
 		return
@@ -2847,9 +2901,11 @@ func (x *isolationRun) generationHoldCut() {
 		return
 	}
 	start := time.Now().UTC()
-	patch, e := admin.call(x.ctx, "PATCH", path, map[string]any{"capacity": map[string]any{"down_bps": 205000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}, map[string]string{"If-Match": get.Header.Get("ETag"), "Idempotency-Key": uuid.NewString()})
-	evidence["patch"] = map[string]any{"at": start, "response": json.RawMessage(patch.Body), "status": patch.Status, "ok": e == nil}
-	if e != nil || patch.Status >= 300 {
+	capacity := map[string]any{"capacity": map[string]any{"down_bps": 205000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
+	write := admin.writeNode(x.ctx, "PATCH", path, path, capacity, get.Header.Get("ETag"), nodeFieldsMatch(capacity), []int{200, 202}, isolationMapNote(evidence))
+	patch, e := write.Reply, write.Err
+	evidence["patch"] = map[string]any{"at": start, "response": json.RawMessage(patch.Body), "status": patch.Status, "ok": e == nil, "timed_assertion_origin": "logical command start before first write; retries do not reset incident lower bound"}
+	if !write.accepted(200, 202) {
 		return
 	}
 	var incident, reportID, leaseID, leaseGen string
@@ -3005,9 +3061,11 @@ func (x *isolationRun) populatedHold(n int, row map[string]any) bool {
 		return false
 	}
 	start := time.Now().UTC()
-	patch, err := x.admin.call(x.ctx, "PATCH", path, map[string]any{"capacity": map[string]any{"down_bps": 210000000 + n*1000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}, map[string]string{"If-Match": get.Header.Get("ETag"), "Idempotency-Key": uuid.NewString()})
-	row["command"] = map[string]any{"start": start, "end": time.Now().UTC(), "status": patch.Status, "response": json.RawMessage(patch.Body), "ok": err == nil}
-	if err != nil || patch.Status != 202 {
+	capacity := map[string]any{"capacity": map[string]any{"down_bps": 210000000 + n*1000000, "up_bps": 200000000, "member_down_bps_cap": 100000000, "member_up_bps_cap": 100000000}}
+	write := x.admin.writeNode(x.ctx, "PATCH", path, path, capacity, get.Header.Get("ETag"), nodeFieldsMatch(capacity), []int{202}, isolationMapNote(row))
+	patch, err := write.Reply, write.Err
+	row["command"] = map[string]any{"start": start, "end": time.Now().UTC(), "status": patch.Status, "response": json.RawMessage(patch.Body), "ok": err == nil, "timed_assertion_origin": "logical command start before first write; retries do not reset incident lower bound"}
+	if !write.accepted(202) {
 		row["reason"] = "capacity command not accepted"
 		return false
 	}

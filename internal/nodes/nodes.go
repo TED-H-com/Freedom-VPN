@@ -83,6 +83,7 @@ func FormatETag(resourceVersion string) string {
 // ParseIfMatch extracts the unquoted decimal resource_version from an If-Match header.
 // Returns a 428 PRECONDITION_REQUIRED error if the header is missing or empty,
 // or a 412 RESOURCE_VERSION_CONFLICT error if it is malformed (§14.5).
+// Zero is a valid version; callers compare it against the stored resource version.
 func ParseIfMatch(ifMatch string) (string, error) {
 	trimmed := strings.TrimSpace(ifMatch)
 	if trimmed == "" {
@@ -92,7 +93,7 @@ func ParseIfMatch(ifMatch string) (string, error) {
 		return "", apierr.New(apierr.ResourceVersionConflict, "Strong If-Match required")
 	}
 	unquoted := trimmed[1 : len(trimmed)-1]
-	if u, err := decstr.Parse(unquoted); err != nil || uint64(u) == 0 {
+	if _, err := decstr.Parse(unquoted); err != nil {
 		return "", apierr.New(apierr.ResourceVersionConflict, "If-Match header does not match a valid resource_version")
 	}
 	return unquoted, nil

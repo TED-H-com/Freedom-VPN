@@ -14,3 +14,25 @@ def unexecuted_expiry(root, output, current=None):
                   scope='Current attempt only; no packet, schedule or producer evidence read.')
     (root/output).write_text(json.dumps(result, indent=2)+'\n')
     return result
+
+
+def present(root, name):
+    return (root/name).exists() or (root/(name+'.gz')).exists()
+
+
+def run_id(root):
+    for name in ('AT13.json', 'AT10.json', 'receiver-capture.json'):
+        if present(root, name):
+            return read_json(root/name)['run_id']
+    raise ValueError('current run identity unavailable')
+
+
+def populated_holds(root):
+    """Do not consume an older run's retained root evidence after setup aborts."""
+    current = run_id(root)
+    raw = read_json(root/'populated-holds.json') if present(root, 'populated-holds.json') else None
+    if raw is not None and raw.get('run_id') == current:
+        return raw, None
+    return None, dict(run_id=current, status='unavailable', passed=False,
+                      stage='populated_holds', reason='unavailable: populated holds were not executed',
+                      inherited_evidence_used=False)

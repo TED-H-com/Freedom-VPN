@@ -1,9 +1,1297 @@
 {
-  "run_id": "70beb28e-4766-4004-932b-510fd01f986a",
+  "run_id": "c52bea6c-cd91-4086-a779-656b01277dcc",
   "recipe": "D-087 real lease-only eligibility switch on a clean fixed-generation published node",
-  "recipe_executed": false,
+  "recipe_executed": true,
   "transition": "member-grants-transition.json",
-  "proof": null,
-  "qualifying_reports": [],
-  "observation_posts": 106
+  "proof": {
+    "distinct_reports_and_leases": true,
+    "empty_lease_report_join": true,
+    "generation": "13",
+    "invariants_byte_equal": true,
+    "populated_lease_report_join": true,
+    "true_to_serving_receipt_ms": 458,
+    "wire_hashes": 342,
+    "wire_hashes_valid": true
+  },
+  "qualifying_reports": [
+    {
+      "report": {
+        "agent_version": "0.1.0",
+        "applied_binding_revision": "1",
+        "applied_config_generation": "13",
+        "applied_policy_refs": {
+          "authorization_generation": "1",
+          "dns_generation": "1",
+          "fup_generation": "1"
+        },
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "checks": [
+          {
+            "error_code": null,
+            "name": "dns_policy",
+            "observed_at": "2026-11-04T00:10:16.675910907Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-11-04T00:10:16.675910907Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Serving lease has no member grants yet.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "lease",
+            "observed_at": "2026-11-04T00:10:16.675910907Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "observed_at": "2026-11-04T00:10:16.675910907Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "policy_signature",
+            "observed_at": "2026-11-04T00:10:16.675910907Z",
+            "status": "passed"
+          },
+          {
+            "detail": "read_at=2026-11-04T00:10:16.583261872Z source=live candidate=13 verified=true {\"generation\":\"13\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"7bc082300f8eb94193a4a6b0dc4476035265d0688fabae74aeef44d1992e2677\"}",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "qos",
+            "observed_at": "2026-11-04T00:10:16.675910907Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "release_supported",
+            "observed_at": "2026-11-04T00:10:16.675910907Z",
+            "status": "passed"
+          },
+          {
+            "detail": "No member binding was admitted.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "source_binding",
+            "observed_at": "2026-11-04T00:10:16.675910907Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "storage",
+            "observed_at": "2026-11-04T00:10:16.675910907Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Egress probe used no extra target.",
+            "error_code": null,
+            "name": "tunnel_probe",
+            "observed_at": "2026-11-04T00:10:16.675910907Z",
+            "status": "passed"
+          }
+        ],
+        "current_release_id": "01a1a3e1-220f-7d7d-af1f-a5e2e499ded9",
+        "data_health": "healthy",
+        "dns_policy_evidence": {
+          "applied_at": "2026-11-04T00:10:16.673772312Z",
+          "content_sha256": "6a3d61c8d570a359020ecf7f5185b158120f1a6adfda05d3d3c136f462e3d79e",
+          "document_id": "01a1a3e1-288b-7dc1-bff3-23fdfda896d0",
+          "error_code": null,
+          "feeds": [],
+          "generation": "1",
+          "outcome": "applied"
+        },
+        "errors": [
+          {
+            "code": "AWAITING_MEMBER_GRANTS",
+            "message": "Serving lease has no member grants yet.",
+            "observed_at": "2026-11-04T00:10:16.675910907Z",
+            "stage": "lease"
+          }
+        ],
+        "forwarding_block_reasons": [
+          "awaiting_member_grants"
+        ],
+        "last_good_release_id": "01a1a3e1-220f-7d7d-af1f-a5e2e499ded9",
+        "lease": {
+          "expires_at": "2026-11-04T00:11:16.592984369Z",
+          "lease_id": "abc4c402-a922-4055-941c-7f990a6cfb15"
+        },
+        "member_forwarding_enabled": false,
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": null,
+          "version": null
+        },
+        "node_id": "01a1a3e1-26ff-7e1d-a31d-368b83fa2c4c",
+        "node_incarnation_id": "01a1a3e1-2716-7c49-94ca-c07dfec06007",
+        "observed_at": "2026-11-04T00:10:16.693655759Z",
+        "provisioning_state": "ready",
+        "report_id": "01a1a3e4-64f5-7a2d-a19b-02120ffdd700",
+        "safety_status": "passed",
+        "tc_evidence": {
+          "attachments": [
+            {
+              "attachment": "qdisc",
+              "interface": "fvmb0",
+              "objects": [
+                {
+                  "handle": "4d89:",
+                  "kind": "fq_codel",
+                  "parent": "1:4d89"
+                },
+                {
+                  "handle": "8c3d:",
+                  "kind": "fq_codel",
+                  "parent": "1:8c3d"
+                },
+                {
+                  "handle": "1:",
+                  "kind": "htb",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "qdisc",
+              "interface": "fvup0",
+              "objects": [
+                {
+                  "handle": "4d89:",
+                  "kind": "fq_codel",
+                  "parent": "1:4d89"
+                },
+                {
+                  "handle": "8c3d:",
+                  "kind": "fq_codel",
+                  "parent": "1:8c3d"
+                },
+                {
+                  "handle": "1:",
+                  "kind": "htb",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "1:1",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:4d89",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:8c3d",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:fffe",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "4d89:",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "8c3d:",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "1:1",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "1:4d89",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "1:8c3d",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "1:fffe",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "4d89:",
+              "interface": "fvup0",
+              "objects": []
+            }
+          ],
+          "candidate_generation": "13",
+          "error_code": null,
+          "objects_total": 6,
+          "phase": "verify",
+          "read_at": "2026-11-04T00:10:16.583126133Z",
+          "reads_total": 20,
+          "rejected": null,
+          "sha256": "7bc082300f8eb94193a4a6b0dc4476035265d0688fabae74aeef44d1992e2677",
+          "truncated": true,
+          "verified": true
+        },
+        "update": {
+          "generation": null,
+          "job_id": null,
+          "stage": null,
+          "state": null
+        },
+        "usage": {
+          "acked_archive_bytes": "648",
+          "blocked_seq": null,
+          "central_acked_through": "1",
+          "last_durable_event_seq": "1",
+          "ledger_epoch": "3f91c222-ee40-440d-b9ee-a2f1a9a3e5dd",
+          "meter_epoch_id": null,
+          "oldest_unacked_at": null,
+          "unacked_event_count": 0,
+          "unacked_payload_bytes": "0"
+        }
+      },
+      "received_at": "2026-11-04T00:10:16.69627616Z",
+      "status": 202
+    },
+    {
+      "report": {
+        "agent_version": "0.1.0",
+        "applied_binding_revision": "1",
+        "applied_config_generation": "14",
+        "applied_policy_refs": {
+          "authorization_generation": "1",
+          "dns_generation": "1",
+          "fup_generation": "1"
+        },
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "checks": [
+          {
+            "error_code": null,
+            "name": "dns_policy",
+            "observed_at": "2026-11-04T00:11:00.001095438Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-11-04T00:11:00.001095438Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Serving lease has no member grants yet.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "lease",
+            "observed_at": "2026-11-04T00:11:00.001095438Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "observed_at": "2026-11-04T00:11:00.001095438Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "policy_signature",
+            "observed_at": "2026-11-04T00:11:00.001095438Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Rate policy could not be applied.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "qos",
+            "observed_at": "2026-11-04T00:11:00.001095438Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "release_supported",
+            "observed_at": "2026-11-04T00:11:00.001095438Z",
+            "status": "passed"
+          },
+          {
+            "detail": "No member binding was admitted.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "source_binding",
+            "observed_at": "2026-11-04T00:11:00.001095438Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "storage",
+            "observed_at": "2026-11-04T00:11:00.001095438Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Egress probe used no extra target.",
+            "error_code": null,
+            "name": "tunnel_probe",
+            "observed_at": "2026-11-04T00:11:00.001095438Z",
+            "status": "passed"
+          }
+        ],
+        "current_release_id": "01a1a3e1-220f-7d7d-af1f-a5e2e499ded9",
+        "data_health": "healthy",
+        "dns_policy_evidence": {
+          "applied_at": "2026-11-04T00:10:59.999626467Z",
+          "content_sha256": "6a3d61c8d570a359020ecf7f5185b158120f1a6adfda05d3d3c136f462e3d79e",
+          "document_id": "01a1a3e1-288b-7dc1-bff3-23fdfda896d0",
+          "error_code": null,
+          "feeds": [],
+          "generation": "1",
+          "outcome": "applied"
+        },
+        "errors": [
+          {
+            "code": "AWAITING_MEMBER_GRANTS",
+            "message": "Serving lease has no member grants yet.",
+            "observed_at": "2026-11-04T00:11:00.001095438Z",
+            "stage": "lease"
+          }
+        ],
+        "forwarding_block_reasons": [
+          "awaiting_member_grants"
+        ],
+        "last_good_release_id": "01a1a3e1-220f-7d7d-af1f-a5e2e499ded9",
+        "lease": {
+          "expires_at": "2026-11-04T00:11:59.978272166Z",
+          "lease_id": "0c2ea592-4876-4a9e-8235-05144a76ecee"
+        },
+        "member_forwarding_enabled": false,
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": null,
+          "version": null
+        },
+        "node_id": "01a1a3e1-26ff-7e1d-a31d-368b83fa2c4c",
+        "node_incarnation_id": "01a1a3e1-2716-7c49-94ca-c07dfec06007",
+        "observed_at": "2026-11-04T00:11:00.032088074Z",
+        "provisioning_state": "ready",
+        "report_id": "01a1a3e5-0e40-718c-a953-97c440391e73",
+        "safety_status": "passed",
+        "tc_evidence": {
+          "attachments": [
+            {
+              "attachment": "qdisc",
+              "interface": "fvmb0",
+              "objects": [
+                {
+                  "handle": "0:",
+                  "kind": "noqueue",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "qdisc",
+              "interface": "fvup0",
+              "objects": [
+                {
+                  "handle": "0:",
+                  "kind": "noqueue",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvup0",
+              "objects": []
+            }
+          ],
+          "candidate_generation": "13",
+          "error_code": "GENERATION_MISMATCH",
+          "objects_total": 2,
+          "phase": "verify",
+          "read_at": "2026-11-04T00:10:59.044074996Z",
+          "reads_total": 8,
+          "rejected": null,
+          "sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+          "truncated": false,
+          "verified": false
+        },
+        "update": {
+          "generation": null,
+          "job_id": null,
+          "stage": null,
+          "state": null
+        },
+        "usage": {
+          "acked_archive_bytes": "1944",
+          "blocked_seq": null,
+          "central_acked_through": "3",
+          "last_durable_event_seq": "3",
+          "ledger_epoch": "3f91c222-ee40-440d-b9ee-a2f1a9a3e5dd",
+          "meter_epoch_id": null,
+          "oldest_unacked_at": null,
+          "unacked_event_count": 0,
+          "unacked_payload_bytes": "0"
+        }
+      },
+      "received_at": "2026-11-04T00:11:00.035329183Z",
+      "status": 202
+    },
+    {
+      "report": {
+        "agent_version": "0.1.0",
+        "applied_binding_revision": "1",
+        "applied_config_generation": "16",
+        "applied_policy_refs": {
+          "authorization_generation": "1",
+          "dns_generation": "1",
+          "fup_generation": "1"
+        },
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "checks": [
+          {
+            "error_code": null,
+            "name": "dns_policy",
+            "observed_at": "2026-11-04T00:12:44.703435358Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-11-04T00:12:44.703435358Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Serving lease has no member grants yet.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "lease",
+            "observed_at": "2026-11-04T00:12:44.703435358Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "observed_at": "2026-11-04T00:12:44.703435358Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "policy_signature",
+            "observed_at": "2026-11-04T00:12:44.703435358Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Rate policy could not be applied.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "qos",
+            "observed_at": "2026-11-04T00:12:44.703435358Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "release_supported",
+            "observed_at": "2026-11-04T00:12:44.703435358Z",
+            "status": "passed"
+          },
+          {
+            "detail": "No member binding was admitted.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "source_binding",
+            "observed_at": "2026-11-04T00:12:44.703435358Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "storage",
+            "observed_at": "2026-11-04T00:12:44.703435358Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Egress probe used no extra target.",
+            "error_code": null,
+            "name": "tunnel_probe",
+            "observed_at": "2026-11-04T00:12:44.703435358Z",
+            "status": "passed"
+          }
+        ],
+        "current_release_id": "01a1a3e1-220f-7d7d-af1f-a5e2e499ded9",
+        "data_health": "healthy",
+        "dns_policy_evidence": {
+          "applied_at": "2026-11-04T00:12:44.698850531Z",
+          "content_sha256": "6a3d61c8d570a359020ecf7f5185b158120f1a6adfda05d3d3c136f462e3d79e",
+          "document_id": "01a1a3e1-288b-7dc1-bff3-23fdfda896d0",
+          "error_code": null,
+          "feeds": [],
+          "generation": "1",
+          "outcome": "applied"
+        },
+        "errors": [
+          {
+            "code": "AWAITING_MEMBER_GRANTS",
+            "message": "Serving lease has no member grants yet.",
+            "observed_at": "2026-11-04T00:12:44.703435358Z",
+            "stage": "lease"
+          }
+        ],
+        "forwarding_block_reasons": [
+          "awaiting_member_grants"
+        ],
+        "last_good_release_id": "01a1a3e1-220f-7d7d-af1f-a5e2e499ded9",
+        "lease": {
+          "expires_at": "2026-11-04T00:13:44.676880981Z",
+          "lease_id": "4237509e-5a25-4d90-ae12-f2846a82924a"
+        },
+        "member_forwarding_enabled": false,
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": null,
+          "version": null
+        },
+        "node_id": "01a1a3e1-26ff-7e1d-a31d-368b83fa2c4c",
+        "node_incarnation_id": "01a1a3e1-2716-7c49-94ca-c07dfec06007",
+        "observed_at": "2026-11-04T00:12:44.7266214Z",
+        "provisioning_state": "ready",
+        "report_id": "01a1a3e6-a736-79b6-b357-746c6154e37d",
+        "safety_status": "passed",
+        "tc_evidence": {
+          "attachments": [
+            {
+              "attachment": "qdisc",
+              "interface": "fvmb0",
+              "objects": [
+                {
+                  "handle": "0:",
+                  "kind": "noqueue",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "qdisc",
+              "interface": "fvup0",
+              "objects": [
+                {
+                  "handle": "0:",
+                  "kind": "noqueue",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvup0",
+              "objects": []
+            }
+          ],
+          "candidate_generation": "15",
+          "error_code": "GENERATION_MISMATCH",
+          "objects_total": 2,
+          "phase": "verify",
+          "read_at": "2026-11-04T00:12:43.743114173Z",
+          "reads_total": 8,
+          "rejected": null,
+          "sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+          "truncated": false,
+          "verified": false
+        },
+        "update": {
+          "generation": null,
+          "job_id": null,
+          "stage": null,
+          "state": null
+        },
+        "usage": {
+          "acked_archive_bytes": "4536",
+          "blocked_seq": null,
+          "central_acked_through": "7",
+          "last_durable_event_seq": "7",
+          "ledger_epoch": "3f91c222-ee40-440d-b9ee-a2f1a9a3e5dd",
+          "meter_epoch_id": null,
+          "oldest_unacked_at": null,
+          "unacked_event_count": 0,
+          "unacked_payload_bytes": "0"
+        }
+      },
+      "received_at": "2026-11-04T00:12:44.730331159Z",
+      "status": 202
+    },
+    {
+      "report": {
+        "agent_version": "0.1.0",
+        "applied_binding_revision": "1",
+        "applied_config_generation": "16",
+        "applied_policy_refs": {
+          "authorization_generation": "1",
+          "dns_generation": "1",
+          "fup_generation": "1"
+        },
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "checks": [
+          {
+            "error_code": null,
+            "name": "dns_policy",
+            "observed_at": "2026-11-04T00:12:45.693119318Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-11-04T00:12:45.693119318Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Serving lease has no member grants yet.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "lease",
+            "observed_at": "2026-11-04T00:12:45.693119318Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "observed_at": "2026-11-04T00:12:45.693119318Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "policy_signature",
+            "observed_at": "2026-11-04T00:12:45.693119318Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Rate policy could not be applied.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "qos",
+            "observed_at": "2026-11-04T00:12:45.693119318Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "release_supported",
+            "observed_at": "2026-11-04T00:12:45.693119318Z",
+            "status": "passed"
+          },
+          {
+            "detail": "No member binding was admitted.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "source_binding",
+            "observed_at": "2026-11-04T00:12:45.693119318Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "storage",
+            "observed_at": "2026-11-04T00:12:45.693119318Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Egress probe used no extra target.",
+            "error_code": null,
+            "name": "tunnel_probe",
+            "observed_at": "2026-11-04T00:12:45.693119318Z",
+            "status": "passed"
+          }
+        ],
+        "current_release_id": "01a1a3e1-220f-7d7d-af1f-a5e2e499ded9",
+        "data_health": "healthy",
+        "dns_policy_evidence": {
+          "applied_at": "2026-11-04T00:12:45.688536396Z",
+          "content_sha256": "6a3d61c8d570a359020ecf7f5185b158120f1a6adfda05d3d3c136f462e3d79e",
+          "document_id": "01a1a3e1-288b-7dc1-bff3-23fdfda896d0",
+          "error_code": null,
+          "feeds": [],
+          "generation": "1",
+          "outcome": "applied"
+        },
+        "errors": [
+          {
+            "code": "AWAITING_MEMBER_GRANTS",
+            "message": "Serving lease has no member grants yet.",
+            "observed_at": "2026-11-04T00:12:45.693119318Z",
+            "stage": "lease"
+          }
+        ],
+        "forwarding_block_reasons": [
+          "awaiting_member_grants"
+        ],
+        "last_good_release_id": "01a1a3e1-220f-7d7d-af1f-a5e2e499ded9",
+        "lease": {
+          "expires_at": "2026-11-04T00:13:44.676880981Z",
+          "lease_id": "4237509e-5a25-4d90-ae12-f2846a82924a"
+        },
+        "member_forwarding_enabled": false,
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": null,
+          "version": null
+        },
+        "node_id": "01a1a3e1-26ff-7e1d-a31d-368b83fa2c4c",
+        "node_incarnation_id": "01a1a3e1-2716-7c49-94ca-c07dfec06007",
+        "observed_at": "2026-11-04T00:12:45.731421222Z",
+        "provisioning_state": "ready",
+        "report_id": "01a1a3e6-ab23-7811-83eb-a1059b60a98c",
+        "safety_status": "passed",
+        "tc_evidence": {
+          "attachments": [
+            {
+              "attachment": "qdisc",
+              "interface": "fvmb0",
+              "objects": [
+                {
+                  "handle": "0:",
+                  "kind": "noqueue",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "qdisc",
+              "interface": "fvup0",
+              "objects": [
+                {
+                  "handle": "0:",
+                  "kind": "noqueue",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvup0",
+              "objects": []
+            }
+          ],
+          "candidate_generation": "15",
+          "error_code": "GENERATION_MISMATCH",
+          "objects_total": 2,
+          "phase": "verify",
+          "read_at": "2026-11-04T00:12:45.72935329Z",
+          "reads_total": 8,
+          "rejected": null,
+          "sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+          "truncated": false,
+          "verified": false
+        },
+        "update": {
+          "generation": null,
+          "job_id": null,
+          "stage": null,
+          "state": null
+        },
+        "usage": {
+          "acked_archive_bytes": "4536",
+          "blocked_seq": null,
+          "central_acked_through": "7",
+          "last_durable_event_seq": "7",
+          "ledger_epoch": "3f91c222-ee40-440d-b9ee-a2f1a9a3e5dd",
+          "meter_epoch_id": null,
+          "oldest_unacked_at": null,
+          "unacked_event_count": 0,
+          "unacked_payload_bytes": "0"
+        }
+      },
+      "received_at": "2026-11-04T00:12:45.734707079Z",
+      "status": 202
+    },
+    {
+      "report": {
+        "agent_version": "0.1.0",
+        "applied_binding_revision": "1",
+        "applied_config_generation": "32",
+        "applied_policy_refs": {
+          "authorization_generation": "1",
+          "dns_generation": "1",
+          "fup_generation": "1"
+        },
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "checks": [
+          {
+            "error_code": null,
+            "name": "dns_policy",
+            "observed_at": "2026-11-04T00:24:38.35444473Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-11-04T00:24:38.35444473Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Serving lease has no member grants yet.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "lease",
+            "observed_at": "2026-11-04T00:24:38.35444473Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "observed_at": "2026-11-04T00:24:38.35444473Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "policy_signature",
+            "observed_at": "2026-11-04T00:24:38.35444473Z",
+            "status": "passed"
+          },
+          {
+            "detail": "read_at=2026-11-04T00:24:02.17512487Z source=live candidate=31 verified=true {\"generation\":\"31\",\"phase\":\"verify\",\"reads\":24,\"objects\":8,\"truncated\":true,\"sha256\":\"7f42b7215547e19e1e3b7a9ad0fe26427fb0258181624f010fc15d9bb863a364\"}",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "qos",
+            "observed_at": "2026-11-04T00:24:38.35444473Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "release_supported",
+            "observed_at": "2026-11-04T00:24:38.35444473Z",
+            "status": "passed"
+          },
+          {
+            "detail": "No member binding was admitted.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "source_binding",
+            "observed_at": "2026-11-04T00:24:38.35444473Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "storage",
+            "observed_at": "2026-11-04T00:24:38.35444473Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Egress probe used no extra target.",
+            "error_code": null,
+            "name": "tunnel_probe",
+            "observed_at": "2026-11-04T00:24:38.35444473Z",
+            "status": "passed"
+          }
+        ],
+        "current_release_id": "01a1a3e1-220f-7d7d-af1f-a5e2e499ded9",
+        "data_health": "healthy",
+        "dns_policy_evidence": {
+          "applied_at": "2026-11-04T00:24:38.351044896Z",
+          "content_sha256": "6a3d61c8d570a359020ecf7f5185b158120f1a6adfda05d3d3c136f462e3d79e",
+          "document_id": "01a1a3e1-288b-7dc1-bff3-23fdfda896d0",
+          "error_code": null,
+          "feeds": [],
+          "generation": "1",
+          "outcome": "applied"
+        },
+        "errors": [
+          {
+            "code": "AWAITING_MEMBER_GRANTS",
+            "message": "Serving lease has no member grants yet.",
+            "observed_at": "2026-11-04T00:24:38.35444473Z",
+            "stage": "lease"
+          }
+        ],
+        "forwarding_block_reasons": [
+          "awaiting_member_grants"
+        ],
+        "last_good_release_id": "01a1a3e1-220f-7d7d-af1f-a5e2e499ded9",
+        "lease": {
+          "expires_at": "2026-11-04T00:25:38.325988311Z",
+          "lease_id": "407495ca-78ec-47ee-ab1c-bafe730a9b45"
+        },
+        "member_forwarding_enabled": false,
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": null,
+          "version": null
+        },
+        "node_id": "01a1a3e1-26ff-7e1d-a31d-368b83fa2c4c",
+        "node_incarnation_id": "01a1a3e1-2716-7c49-94ca-c07dfec06007",
+        "observed_at": "2026-11-04T00:24:38.384334904Z",
+        "provisioning_state": "ready",
+        "report_id": "01a1a3f1-8af0-7551-822a-08a5e1071074",
+        "safety_status": "passed",
+        "tc_evidence": {
+          "attachments": [
+            {
+              "attachment": "qdisc",
+              "interface": "fvmb0",
+              "objects": [
+                {
+                  "handle": "0:",
+                  "kind": "noqueue",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "qdisc",
+              "interface": "fvup0",
+              "objects": [
+                {
+                  "handle": "0:",
+                  "kind": "noqueue",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvup0",
+              "objects": []
+            }
+          ],
+          "candidate_generation": "31",
+          "error_code": "GENERATION_MISMATCH",
+          "objects_total": 2,
+          "phase": "verify",
+          "read_at": "2026-11-04T00:24:37.966377953Z",
+          "reads_total": 8,
+          "rejected": null,
+          "sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+          "truncated": false,
+          "verified": false
+        },
+        "update": {
+          "generation": null,
+          "job_id": null,
+          "stage": null,
+          "state": null
+        },
+        "usage": {
+          "acked_archive_bytes": "20102",
+          "blocked_seq": "32",
+          "central_acked_through": "31",
+          "last_durable_event_seq": "38",
+          "ledger_epoch": "3f91c222-ee40-440d-b9ee-a2f1a9a3e5dd",
+          "meter_epoch_id": null,
+          "oldest_unacked_at": "2026-11-04T00:19:37.218787036Z",
+          "unacked_event_count": 7,
+          "unacked_payload_bytes": "4538"
+        }
+      },
+      "received_at": "2026-11-04T00:24:38.388618666Z",
+      "status": 202
+    },
+    {
+      "report": {
+        "agent_version": "0.1.0",
+        "applied_binding_revision": "1",
+        "applied_config_generation": "36",
+        "applied_policy_refs": {
+          "authorization_generation": "1",
+          "dns_generation": "1",
+          "fup_generation": "1"
+        },
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "checks": [
+          {
+            "error_code": null,
+            "name": "dns_policy",
+            "observed_at": "2026-11-04T00:31:08.724773232Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-11-04T00:31:08.724773232Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Serving lease has no member grants yet.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "lease",
+            "observed_at": "2026-11-04T00:31:08.724773232Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "observed_at": "2026-11-04T00:31:08.724773232Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "policy_signature",
+            "observed_at": "2026-11-04T00:31:08.724773232Z",
+            "status": "passed"
+          },
+          {
+            "detail": "read_at=2026-11-04T00:31:07.714128542Z source=live candidate=36 verified=true {\"generation\":\"36\",\"phase\":\"verify\",\"reads\":20,\"objects\":6,\"truncated\":true,\"sha256\":\"7bc082300f8eb94193a4a6b0dc4476035265d0688fabae74aeef44d1992e2677\"}",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "qos",
+            "observed_at": "2026-11-04T00:31:08.724773232Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "release_supported",
+            "observed_at": "2026-11-04T00:31:08.724773232Z",
+            "status": "passed"
+          },
+          {
+            "detail": "No member binding was admitted.",
+            "error_code": "AWAITING_MEMBER_GRANTS",
+            "name": "source_binding",
+            "observed_at": "2026-11-04T00:31:08.724773232Z",
+            "status": "failed"
+          },
+          {
+            "error_code": null,
+            "name": "storage",
+            "observed_at": "2026-11-04T00:31:08.724773232Z",
+            "status": "passed"
+          },
+          {
+            "detail": "Egress probe used no extra target.",
+            "error_code": null,
+            "name": "tunnel_probe",
+            "observed_at": "2026-11-04T00:31:08.724773232Z",
+            "status": "passed"
+          }
+        ],
+        "current_release_id": "01a1a3e1-220f-7d7d-af1f-a5e2e499ded9",
+        "data_health": "healthy",
+        "dns_policy_evidence": {
+          "applied_at": "2026-11-04T00:31:08.720734347Z",
+          "content_sha256": "6a3d61c8d570a359020ecf7f5185b158120f1a6adfda05d3d3c136f462e3d79e",
+          "document_id": "01a1a3e1-288b-7dc1-bff3-23fdfda896d0",
+          "error_code": null,
+          "feeds": [],
+          "generation": "1",
+          "outcome": "applied"
+        },
+        "errors": [
+          {
+            "code": "AWAITING_MEMBER_GRANTS",
+            "message": "Serving lease has no member grants yet.",
+            "observed_at": "2026-11-04T00:31:08.724773232Z",
+            "stage": "lease"
+          }
+        ],
+        "forwarding_block_reasons": [
+          "awaiting_member_grants"
+        ],
+        "last_good_release_id": "01a1a3e1-220f-7d7d-af1f-a5e2e499ded9",
+        "lease": {
+          "expires_at": "2026-11-04T00:32:08.698707176Z",
+          "lease_id": "91745cf7-f7c7-4057-9c7b-3cb3edcace24"
+        },
+        "member_forwarding_enabled": false,
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": null,
+          "version": null
+        },
+        "node_id": "01a1a3e1-26ff-7e1d-a31d-368b83fa2c4c",
+        "node_incarnation_id": "01a1a3e1-2716-7c49-94ca-c07dfec06007",
+        "observed_at": "2026-11-04T00:31:08.753315492Z",
+        "provisioning_state": "ready",
+        "report_id": "01a1a3f7-7fd1-7500-8d2b-c60ed171d639",
+        "safety_status": "passed",
+        "tc_evidence": {
+          "attachments": [
+            {
+              "attachment": "qdisc",
+              "interface": "fvmb0",
+              "objects": [
+                {
+                  "handle": "0:",
+                  "kind": "noqueue",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "qdisc",
+              "interface": "fvup0",
+              "objects": [
+                {
+                  "handle": "0:",
+                  "kind": "noqueue",
+                  "root": true
+                }
+              ]
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvmb0",
+              "objects": []
+            },
+            {
+              "attachment": "egress",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "ingress",
+              "interface": "fvup0",
+              "objects": []
+            },
+            {
+              "attachment": "root",
+              "interface": "fvup0",
+              "objects": []
+            }
+          ],
+          "candidate_generation": "36",
+          "error_code": "GENERATION_MISMATCH",
+          "objects_total": 2,
+          "phase": "verify",
+          "read_at": "2026-11-04T00:31:07.831909237Z",
+          "reads_total": 8,
+          "rejected": null,
+          "sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+          "truncated": false,
+          "verified": false
+        },
+        "update": {
+          "generation": null,
+          "job_id": null,
+          "stage": null,
+          "state": null
+        },
+        "usage": {
+          "acked_archive_bytes": "20102",
+          "blocked_seq": "32",
+          "central_acked_through": "31",
+          "last_durable_event_seq": "60",
+          "ledger_epoch": "3f91c222-ee40-440d-b9ee-a2f1a9a3e5dd",
+          "meter_epoch_id": null,
+          "oldest_unacked_at": "2026-11-04T00:19:37.218787036Z",
+          "unacked_event_count": 29,
+          "unacked_payload_bytes": "18797"
+        }
+      },
+      "received_at": "2026-11-04T00:31:08.757603603Z",
+      "status": 202
+    }
+  ],
+  "observation_posts": 890
 }

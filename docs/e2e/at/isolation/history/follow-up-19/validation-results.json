@@ -1,0 +1,118 @@
+{
+  "follow_up": 19,
+  "baseline": "27ff63928222c9642e4f5e180cf225108327a1e5",
+  "measured_build": "458b7a89f07c22dd4e66f839195b6549db4b883d",
+  "checks": [
+    {
+      "command": "python3 -B tests/e2e/at/isolation/producer_timing_test.py",
+      "exit_code": 0,
+      "output_tail": [
+        ".......................",
+        "----------------------------------------------------------------------",
+        "Ran 23 tests in 1.454s",
+        "",
+        "OK"
+      ]
+    },
+    {
+      "command": "make -f mk/at-isolation.mk at-isolation-lint at-isolation-test at-isolation-build",
+      "exit_code": 0,
+      "output_tail": [
+        "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "+ go vet -tags netlab ./tests/netlab/at/...",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...",
+        "+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
+        "+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go",
+        "+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t14.392s",
+        "?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]",
+        "+ python3 tests/e2e/at/isolation/driver.py build",
+        "+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
+      ]
+    },
+    {
+      "command": "fresh lab: go test -tags netlab -count=1 -v -timeout 40m -p 1 -parallel 1 ./tests/netlab/at",
+      "exit_code": 0,
+      "build": "3e12f913418e6ee87cee5d43e4dcb93d86331237",
+      "output_tail": [
+        "=== RUN   TestAT13_D147RelatedFragNeeded",
+        "--- PASS: TestAT13_D147RelatedFragNeeded (24.49s)",
+        "=== RUN   TestAT10_HostAndUpstream",
+        "--- PASS: TestAT10_HostAndUpstream (7.38s)",
+        "=== RUN   TestAT11_IPv6Metadata",
+        "--- PASS: TestAT11_IPv6Metadata (2.95s)",
+        "=== RUN   TestAT12_CrossMemberDNS",
+        "--- PASS: TestAT12_CrossMemberDNS (4.56s)",
+        "=== RUN   TestAT13_RevokeAndCrash",
+        "--- PASS: TestAT13_RevokeAndCrash (5.64s)",
+        "PASS",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t45.018s"
+      ]
+    },
+    {
+      "command": "make -f mk/at-isolation.mk at-isolation",
+      "exit_code": 2,
+      "run_id": "70beb28e-4766-4004-932b-510fd01f986a",
+      "output_tail": [
+        " Network fvpn-w4-isolation Removed ",
+        "e2e stack is down",
+        "owned-prefix inventory: {\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}",
+        "at-isolation lab=0 stack=1",
+        "make: *** [mk/at-isolation.mk:57: at-isolation] Error 2"
+      ]
+    },
+    {
+      "command": "go test -count=1 ./tests/handover/... (after publication)",
+      "exit_code": 0,
+      "output_tail": [
+        "+ go test -count=1 ./tests/handover/...",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t3.546s"
+      ]
+    },
+    {
+      "command": "make go-lint go-with-disk-tmp= (disk runner)",
+      "exit_code": 0,
+      "output_tail": [
+        "+ make go-lint go-with-disk-tmp="
+      ]
+    },
+    {
+      "command": "test -z \"$(gofmt -l $(git ls-files '*.go'))\"",
+      "exit_code": 0
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0
+    },
+    {
+      "command": "go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation",
+      "exit_code": 0,
+      "output_tail": [
+        "+ go test -count=1 -v -run ^TestCommittedEvidenceFiles_ValidAndHygieneClean$ ./tests/e2e/at/isolation",
+        "=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean",
+        "--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (11.09s)",
+        "PASS",
+        "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t11.100s"
+      ]
+    },
+    {
+      "command": "D-098/retained archive SHA-256 and new-evidence size audit",
+      "exit_code": 0,
+      "archive_files_verified": 223,
+      "earlier_archives_unchanged": true,
+      "new_evidence_over_20MB_uncompressed": 0
+    },
+    {
+      "command": "git diff main...HEAD hygiene scan",
+      "exit_code": 0,
+      "matches": 0
+    }
+  ],
+  "notes": [
+    "No assembled retry; serving setup blocked and initial window confounded under D-133.",
+    "The continuation reservation wait lasted 30 seconds; no reservation requested.",
+    "All gates used disk scratch and Python bytecode disabled.",
+    "main advanced during the continuation to b246832b (#433); the inherited branch and measured baseline were retained without resync."
+  ]
+}

@@ -1,0 +1,194 @@
+=== RUN   TestENT01_FiniteGrantRecovery
+=== RUN   TestENT01_FiniteGrantRecovery/create
+=== RUN   TestENT01_FiniteGrantRecovery/lost_create_response
+=== RUN   TestENT01_FiniteGrantRecovery/replay
+=== RUN   TestENT01_FiniteGrantRecovery/projection
+=== RUN   TestENT01_FiniteGrantRecovery/revoke_replay
+=== RUN   TestENT01_FiniteGrantRecovery/later_revoke
+=== RUN   TestENT01_FiniteGrantRecovery/restoration_failure
+=== RUN   TestENT01_FiniteGrantRecovery/success
+--- PASS: TestENT01_FiniteGrantRecovery (0.01s)
+    --- PASS: TestENT01_FiniteGrantRecovery/create (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/lost_create_response (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/replay (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/projection (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/revoke_replay (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/later_revoke (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/restoration_failure (0.00s)
+    --- PASS: TestENT01_FiniteGrantRecovery/success (0.00s)
+=== RUN   TestENT01_ExpiredFiniteGrantHasNoEffects
+--- PASS: TestENT01_ExpiredFiniteGrantHasNoEffects (0.00s)
+=== RUN   TestAT02_NativeRouterRollbackEveryStep
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_0/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_0/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_1/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_1/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_2/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_2/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_3/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_3/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_4/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_4/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_5/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_5/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_6/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_6/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_7/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_7/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_8/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_8/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_9/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_9/rollback_fails_true
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_10/rollback_fails_false
+=== RUN   TestAT02_NativeRouterRollbackEveryStep/step_10/rollback_fails_true
+--- PASS: TestAT02_NativeRouterRollbackEveryStep (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_0/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_0/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_1/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_1/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_2/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_2/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_3/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_3/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_4/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_4/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_5/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_5/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_6/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_6/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_7/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_7/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_8/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_8/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_9/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_9/rollback_fails_true (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_10/rollback_fails_false (0.00s)
+    --- PASS: TestAT02_NativeRouterRollbackEveryStep/step_10/rollback_fails_true (0.00s)
+=== RUN   TestAPI01_ExportedNodeWrite
+=== RUN   TestAPI01_ExportedNodeWrite/retry
+=== RUN   TestAPI01_ExportedNodeWrite/already
+=== RUN   TestAPI01_ExportedNodeWrite/exhausted
+=== RUN   TestAPI01_ExportedNodeWrite/other412
+=== RUN   TestAPI01_ExportedNodeWrite/redirect
+--- PASS: TestAPI01_ExportedNodeWrite (0.00s)
+    --- PASS: TestAPI01_ExportedNodeWrite/retry (0.00s)
+    --- PASS: TestAPI01_ExportedNodeWrite/already (0.00s)
+    --- PASS: TestAPI01_ExportedNodeWrite/exhausted (0.00s)
+    --- PASS: TestAPI01_ExportedNodeWrite/other412 (0.00s)
+    --- PASS: TestAPI01_ExportedNodeWrite/redirect (0.00s)
+=== RUN   TestAPI01_ExportedNodePredicates
+--- PASS: TestAPI01_ExportedNodePredicates (0.00s)
+=== RUN   TestAPI01_NodeWriteConflict
+=== RUN   TestAPI01_NodeWriteConflict/PATCH
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/one_conflict
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/persistent
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/already_intended
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/wrong_412_code
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/unauthorized
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/forbidden
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/not_found
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/idempotency_conflict
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/precondition_required
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/rate_limited
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/server_error
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/unavailable
+=== RUN   TestAPI01_NodeWriteConflict/PATCH/success
+=== RUN   TestAPI01_NodeWriteConflict/PUT
+=== RUN   TestAPI01_NodeWriteConflict/PUT/one_conflict
+=== RUN   TestAPI01_NodeWriteConflict/PUT/persistent
+=== RUN   TestAPI01_NodeWriteConflict/PUT/already_intended
+=== RUN   TestAPI01_NodeWriteConflict/PUT/wrong_412_code
+=== RUN   TestAPI01_NodeWriteConflict/PUT/unauthorized
+=== RUN   TestAPI01_NodeWriteConflict/PUT/forbidden
+=== RUN   TestAPI01_NodeWriteConflict/PUT/not_found
+=== RUN   TestAPI01_NodeWriteConflict/PUT/idempotency_conflict
+=== RUN   TestAPI01_NodeWriteConflict/PUT/precondition_required
+=== RUN   TestAPI01_NodeWriteConflict/PUT/rate_limited
+=== RUN   TestAPI01_NodeWriteConflict/PUT/server_error
+=== RUN   TestAPI01_NodeWriteConflict/PUT/unavailable
+=== RUN   TestAPI01_NodeWriteConflict/PUT/success
+=== RUN   TestAPI01_NodeWriteConflict/POST
+=== RUN   TestAPI01_NodeWriteConflict/POST/one_conflict
+=== RUN   TestAPI01_NodeWriteConflict/POST/persistent
+=== RUN   TestAPI01_NodeWriteConflict/POST/already_intended
+=== RUN   TestAPI01_NodeWriteConflict/POST/wrong_412_code
+=== RUN   TestAPI01_NodeWriteConflict/POST/unauthorized
+=== RUN   TestAPI01_NodeWriteConflict/POST/forbidden
+=== RUN   TestAPI01_NodeWriteConflict/POST/not_found
+=== RUN   TestAPI01_NodeWriteConflict/POST/idempotency_conflict
+=== RUN   TestAPI01_NodeWriteConflict/POST/precondition_required
+=== RUN   TestAPI01_NodeWriteConflict/POST/rate_limited
+=== RUN   TestAPI01_NodeWriteConflict/POST/server_error
+=== RUN   TestAPI01_NodeWriteConflict/POST/unavailable
+=== RUN   TestAPI01_NodeWriteConflict/POST/success
+--- PASS: TestAPI01_NodeWriteConflict (0.01s)
+    --- PASS: TestAPI01_NodeWriteConflict/PATCH (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/one_conflict (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/persistent (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/already_intended (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/wrong_412_code (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/unauthorized (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/forbidden (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/not_found (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/idempotency_conflict (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/precondition_required (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/rate_limited (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/server_error (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/unavailable (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PATCH/success (0.00s)
+    --- PASS: TestAPI01_NodeWriteConflict/PUT (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/one_conflict (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/persistent (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/already_intended (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/wrong_412_code (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/unauthorized (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/forbidden (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/not_found (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/idempotency_conflict (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/precondition_required (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/rate_limited (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/server_error (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/unavailable (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/PUT/success (0.00s)
+    --- PASS: TestAPI01_NodeWriteConflict/POST (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/one_conflict (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/persistent (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/already_intended (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/wrong_412_code (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/unauthorized (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/forbidden (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/not_found (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/idempotency_conflict (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/precondition_required (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/rate_limited (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/server_error (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/unavailable (0.00s)
+        --- PASS: TestAPI01_NodeWriteConflict/POST/success (0.00s)
+=== RUN   TestAPI01_NodeWriteStopsOnReadOrTransportFailure
+=== RUN   TestAPI01_NodeWriteStopsOnReadOrTransportFailure/write_transport
+=== RUN   TestAPI01_NodeWriteStopsOnReadOrTransportFailure/read_transport
+=== RUN   TestAPI01_NodeWriteStopsOnReadOrTransportFailure/read_503
+=== RUN   TestAPI01_NodeWriteStopsOnReadOrTransportFailure/missing_etag
+=== RUN   TestAPI01_NodeWriteStopsOnReadOrTransportFailure/deadline
+--- PASS: TestAPI01_NodeWriteStopsOnReadOrTransportFailure (0.10s)
+    --- PASS: TestAPI01_NodeWriteStopsOnReadOrTransportFailure/write_transport (0.00s)
+    --- PASS: TestAPI01_NodeWriteStopsOnReadOrTransportFailure/read_transport (0.00s)
+    --- PASS: TestAPI01_NodeWriteStopsOnReadOrTransportFailure/read_503 (0.00s)
+    --- PASS: TestAPI01_NodeWriteStopsOnReadOrTransportFailure/missing_etag (0.00s)
+    --- PASS: TestAPI01_NodeWriteStopsOnReadOrTransportFailure/deadline (0.10s)
+=== RUN   TestAPI01_NodeIntendedRequiresEveryDesiredValue
+--- PASS: TestAPI01_NodeIntendedRequiresEveryDesiredValue (0.00s)
+=== RUN   TestAPI01_NodeWriteTotalDeadline
+--- PASS: TestAPI01_NodeWriteTotalDeadline (10.01s)
+=== RUN   TestAPI01_NodeWriteNoImplicitReplayOrRedirect
+=== RUN   TestAPI01_NodeWriteNoImplicitReplayOrRedirect/reused_connection_eof
+=== RUN   TestAPI01_NodeWriteNoImplicitReplayOrRedirect/redirect
+--- PASS: TestAPI01_NodeWriteNoImplicitReplayOrRedirect (0.00s)
+    --- PASS: TestAPI01_NodeWriteNoImplicitReplayOrRedirect/reused_connection_eof (0.00s)
+    --- PASS: TestAPI01_NodeWriteNoImplicitReplayOrRedirect/redirect (0.00s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e	10.138s
+=== RUN   TestAPI01_NodeWriteImportSurface
+--- PASS: TestAPI01_NodeWriteImportSurface (0.00s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labstack	0.007s

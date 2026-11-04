@@ -24,6 +24,15 @@ type MatchingLeaseHoldEvidence = e2e.MatchingLeaseHoldEvidence
 type LocalLeaseReceipt = e2e.LocalLeaseReceipt
 type BrowserSession = e2e.BrowserSession
 type Response = e2e.Response
+type NodeWriteResult = e2e.NodeWriteResult
+type NodeWriteReceipt = e2e.NodeWriteReceipt
+type NodeWriteAttempt = e2e.NodeWriteAttempt
+type NodeWriteRead = e2e.NodeWriteRead
+
+func NodeFieldsMatch(want any) func([]byte) bool          { return e2e.NodeFieldsMatch(want) }
+func NodeRevoked(body []byte) bool                        { return e2e.NodeRevoked(body) }
+func NodePublished(groups ...uuid.UUID) func([]byte) bool { return e2e.NodePublished(groups...) }
+
 type BuiltRelease = e2e.BuiltRelease
 type EnrolledNode = e2e.EnrolledNode
 type ReleaseOptions = e2e.ReleaseOptions
@@ -68,6 +77,8 @@ type MemberTransportStatus = e2e.MemberTransportStatus
 type DNSPathObservation = e2e.DNSPathObservation
 
 type GrantTransition = e2e.GrantTransition
+type GrantRestoration = e2e.GrantRestoration
+type GrantRecoveryOperation = e2e.GrantRecoveryOperation
 type GrantWireEvent = e2e.GrantWireEvent
 type DNSQueryTrace = e2e.DNSQueryTrace
 
@@ -93,3 +104,6 @@ type NativeCaptureEvidence = e2e.NativeCaptureEvidence
 type NativePathSample = e2e.NativePathSample
 
 type NativeRouter1280 = e2e.NativeRouter1280
+
+type NativeRouterSetupError = e2e.NativeRouterSetupError
+type NativeRouterRollback = e2e.NativeRouterRollback
