@@ -1,0 +1,53 @@
+{
+  "run_id": "3eb3960d-c411-4648-8d77-bba40b436ae3",
+  "source_commit": "8a6dcf34248f035a3a460fcdee3e1e19e80c9137",
+  "previous_retained_observation": {
+    "reasons": [],
+    "report_id": "01a1a5cf-25cb-77c5-9a66-95237383c67a",
+    "forwarding": true,
+    "generation": "75",
+    "received_at": "2026-11-04T09:06:18.705372+00:00"
+  },
+  "next_retained_observation": {
+    "reasons": [],
+    "report_id": "01a1a5cf-aded-7067-bc64-f284dd1418e1",
+    "forwarding": true,
+    "generation": "75",
+    "received_at": "2026-11-04T09:06:53.554771+00:00"
+  },
+  "later_read": {
+    "later_read": true,
+    "scope": "Second read after the combined serving query returned no row; conditions describe this later read, not a proven retrospective cause.",
+    "kernel_generation": "75",
+    "rows": {
+      "read_at": "2026-11-04T09:06:41.098555Z",
+      "node_found": true,
+      "current_incarnation": "01a1a5a6-649f-765c-bf51-66db9de1cc49",
+      "desired_generation": "75",
+      "applied_generation": "75",
+      "latest_current_incarnation_observation": {
+        "report_id": "01a1a5cf-25cb-77c5-9a66-95237383c67a",
+        "incarnation": "01a1a5a6-649f-765c-bf51-66db9de1cc49",
+        "generation": "75",
+        "received_at": "2026-11-04T09:06:18.705372Z",
+        "member_forwarding_enabled": true,
+        "forwarding_block_reasons": []
+      },
+      "latest_node_observation": {
+        "report_id": "01a1a5cf-25cb-77c5-9a66-95237383c67a",
+        "incarnation": "01a1a5a6-649f-765c-bf51-66db9de1cc49",
+        "generation": "75",
+        "received_at": "2026-11-04T09:06:18.705372Z",
+        "member_forwarding_enabled": true,
+        "forwarding_block_reasons": []
+      }
+    },
+    "observation_age_ns": "22393183000",
+    "age_bound_ns": "15000000000",
+    "failed_conditions": [
+      "observation_age_below_15_seconds"
+    ]
+  },
+  "retained_observation_spacing_seconds": "34.849399",
+  "correction": "The 34.849399-second spacing is between two retained latest observations, not a complete series. The later diagnostic proves the latest node observation was 22.393183 seconds old at its own read. Intermediate observations after that read and before the next retained latest row cannot be excluded. The missing agent log submission events prevent attribution of silence versus failed requests."
+}

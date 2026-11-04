@@ -1,0 +1,54 @@
+{
+  "at": "2026-11-04T12:44:14.867393+00:00",
+  "exports": [
+    {
+      "role": "node",
+      "file": "enforcement-timing.jsonl",
+      "exit": 0
+    },
+    {
+      "role": "node",
+      "file": "agent.log",
+      "exit": 0
+    },
+    {
+      "role": "node",
+      "file": "watchdog.log",
+      "exit": 0
+    },
+    {
+      "role": "node2",
+      "file": "enforcement-timing.jsonl",
+      "exit": 0
+    },
+    {
+      "role": "node2",
+      "file": "agent.log",
+      "exit": 0
+    },
+    {
+      "role": "node2",
+      "file": "watchdog.log",
+      "exit": 0
+    }
+  ],
+  "teardown_exit": 0,
+  "inventory": {
+    "containers": {
+      "exit": 0,
+      "owned": []
+    },
+    "networks": {
+      "exit": 0,
+      "owned": []
+    },
+    "volumes": {
+      "exit": 0,
+      "owned": []
+    },
+    "images": {
+      "exit": 0,
+      "owned": []
+    }
+  }
+}

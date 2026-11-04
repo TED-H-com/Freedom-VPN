@@ -1,0 +1,11 @@
+{
+  "at": "2026-11-04T11:54:37.281619+00:00",
+  "baseline_commit": "c148cf349df219124e457113ce90c010016a308e",
+  "harness_commit": "8bde2b6acc0b116515148eeb0ff4448c65453a92",
+  "main_ref_at_preflight": "c148cf349df219124e457113ce90c010016a308e",
+  "gocache": "<home>/.cache/go-build",
+  "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 6  0 3071224 16159060 3265864 156532608    9   35 17015 30562 26046   22  4  2 93  1  0  0\n 0  0 3071224 16058600 3265872 156532508    0    0     0  1741 23319 262416 15  5 79  0  0  0\n 0  0 3071224 16267336 3265880 156532544    0    0     0   683 2797 4055  0  0 99  0  0  0\n 0  0 3071224 16540316 3265888 156532632    0    0     0  5581 5459 6056  1  1 98  0  0  0\n 0  0 3071224 16673376 3265896 156532700    0    0     0   216 3165 5111  0  0 99  0  0  0\n 0  0 3071224 16765292 3265904 156532860    0    0     0   280 3074 4604  0  0 99  0  0  0\n 0  0 3071224 16816188 3265912 156532848    0    0     0    64 2680 3699  0  0 100  0  0  0\n",
+  "process_command": "ps -eo pid,etimes,args | grep -E '[g]ates\\.sh|[m]k/at-|[n]ode-test-netlab|[n]etlab-test|[e]2e-test'",
+  "foreign_processes": [],
+  "raw_process_output": "Private; public foreign inventory contains pid, comm and ticks only"
+}
