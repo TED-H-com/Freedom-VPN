@@ -16057,7 +16057,7 @@ func TestHandover_Followup46Claims(t *testing.T) {
 		readJSON(fixture+"followup45-claims.json", &groups)
 		oldFunc := regexp.MustCompile(`(?s)func TestHandover_Followup45Claims\(.*?\n}`).FindString(readOwnedDoc(t, root, "tests/handover/handover_test.go"))
 		old := readOwnedDoc(t, root, followup46PriorPath(register))
-		if strings.Count(oldFunc, `t.Run("`)+len(groups) != 15 || len(snaps) != 27 || len(e.Proofs) != 13 || len(e.Artifacts) != 9 || len(main.Rows) != 5 || len(main.PRs) != 5 || len(code) != 17 || len(prev.Claims) != 38 || len(rows(old, "## Findings register at the follow-up 45 cutoff")) != 133 || len(regexp.MustCompile(`(?m)^\| D-\d{3} \|`).FindAllString(old, -1)) != 64 {
+		if len(regexp.MustCompile(`(?m)^\tt\.Run\("`).FindAllString(oldFunc, -1))+len(groups) != 15 || len(snaps) != 27 || len(e.Proofs) != 13 || len(e.Artifacts) != 9 || len(main.Rows) != 5 || len(main.PRs) != 5 || len(code) != 17 || len(prev.Claims) != 38 || len(rows(old, "## Findings register at the follow-up 45 cutoff")) != 133 || len(regexp.MustCompile(`(?m)^\| D-\d{3} \|`).FindAllString(old, -1)) != 64 {
 			t.Fatal("#472 actual counts")
 		}
 	})
