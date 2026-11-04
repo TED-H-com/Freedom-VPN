@@ -1,0 +1,89 @@
+{
+  "agent_budget_seconds": 15,
+  "agent_stop": {
+    "container_state_at_read": {
+      "Status": "exited",
+      "Running": false,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 0,
+      "ExitCode": 0,
+      "Error": "",
+      "StartedAt": "2026-11-04T15:49:41.247546325Z",
+      "FinishedAt": "2026-11-04T16:02:48.234241946Z"
+    },
+    "cooperative_exit": true,
+    "identity_before_stop": {
+      "available": true,
+      "captured_at": "2026-11-04T16:02:47.518953547Z",
+      "launch_id": "834b09e6-d635-4777-9630-46d0ebb1a97e",
+      "pid": 136061,
+      "start_ticks": "13118391"
+    },
+    "parent_identity_matched": true,
+    "parent_wait_available": true,
+    "parent_wait_receipt": {
+      "id": "834b09e6-d635-4777-9630-46d0ebb1a97e",
+      "pid": 136061,
+      "start_ticks": "13118391",
+      "started_at": "2026-11-04T15:55:41.460363164Z",
+      "wait_observed_at": "2026-11-04T16:02:47.79195026Z",
+      "wait_status": 0,
+      "exit_code": 0,
+      "signal": null,
+      "core_dump": false
+    },
+    "scope": "Actual agent exit from matching parent wait receipt; container exit is shutdown-handler completion only; sigkill sidecar is an attempted escalation"
+  },
+  "before": {
+    "lease_id": "8394a8f0-536c-4850-94b8-77e572be6540",
+    "issued_at": "2026-11-04T16:02:44.072789791Z",
+    "expires_at": "2026-11-04T16:03:44.072789791Z",
+    "generation": "27",
+    "max_offline_seconds": 60,
+    "member_count": 2,
+    "source": "",
+    "mono_sent_ns": "131606520297736",
+    "deadline_mono_ns": "131666520297736",
+    "anchor": {
+      "mono_ns": "131606520297736",
+      "server_unix_ns": "1793808164072789791",
+      "wall_unix_ns": "1793808164068921114",
+      "trusted": 1
+    }
+  },
+  "before_available": true,
+  "container_grace_seconds": 25,
+  "restart_duration_ns": "868512801",
+  "run_id": "bd73d7a4-03f1-4b17-97c2-9c25a39ac0db",
+  "scope": "Docker stop/start command brackets; stopped SQLite snapshot adds measured downtime. Same boot, not OS reboot or exact SIGTERM/exit timestamps.",
+  "start_completed": "2026-11-04T16:02:48.409947463Z",
+  "start_ok": true,
+  "start_requested": "2026-11-04T16:02:48.341093828Z",
+  "stop_completed": "2026-11-04T16:02:48.260062238Z",
+  "stop_duration_ns": "718627577",
+  "stop_ok": true,
+  "stop_started": "2026-11-04T16:02:47.54143468Z",
+  "stopped": {
+    "lease_id": "8394a8f0-536c-4850-94b8-77e572be6540",
+    "issued_at": "2026-11-04T16:02:44.072789791Z",
+    "expires_at": "2026-11-04T16:03:44.072789791Z",
+    "generation": "27",
+    "max_offline_seconds": 60,
+    "member_count": 2,
+    "source": "",
+    "mono_sent_ns": "131606520297736",
+    "deadline_mono_ns": "131666520297736",
+    "anchor": {
+      "mono_ns": "131606520297736",
+      "server_unix_ns": "1793808164072789791",
+      "wall_unix_ns": "1793808164068921114",
+      "trusted": 1
+    }
+  },
+  "stopped_available": true,
+  "stopped_snapshot_duration_ns": "81031567",
+  "stored_lease_survived_stop": true
+}

@@ -1,0 +1,978 @@
+{
+  "run_id": "bd73d7a4-03f1-4b17-97c2-9c25a39ac0db",
+  "source": "reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-analysis.json",
+  "verdict": "AT10 PASS under D-120",
+  "summary": {
+    "apply_count": 101,
+    "verified_applies": 101,
+    "datagrams": 58,
+    "udp_timeouts": 1,
+    "timeouts_by_node_ingress": {
+      "boundary": 1
+    },
+    "timeouts_by_send": {
+      "boundary": 1
+    },
+    "timeouts_without_node_egress": 1,
+    "tcp_timeouts": 0,
+    "unobserved_node_ingress": 0,
+    "incomplete_udp_reads": 0,
+    "mismatched_echoes": 0,
+    "guard_lower_ns": {
+      "min": 2463,
+      "median": 5850,
+      "p95": 7992,
+      "max": 17202
+    },
+    "guard_upper_ns": {
+      "min": 17680917,
+      "median": 31800745,
+      "p95": 47502841,
+      "max": 57581897
+    },
+    "render_to_installed_ns": {
+      "min": 9693301,
+      "median": 16978246,
+      "p95": 26045048,
+      "max": 31879605
+    },
+    "guard_upper_over_100ms": 0,
+    "install_over_100ms": 0,
+    "capture_packets": {
+      "origin": 117,
+      "node": 233,
+      "responder": 116
+    },
+    "max_wall_mono_elapsed_difference_ns": 610,
+    "tcp_reads": 58,
+    "tcp_guard_losses": [
+      {
+        "id": 5,
+        "direction": "request",
+        "seq_start": 4276026540,
+        "seq_end": 4276026543,
+        "ip_id": 56071,
+        "origin_ns": 1793807278419377000,
+        "node_entry_ns": 1793807278419578000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 3,
+        "classification": "boundary",
+        "generation": "1001",
+        "failures": [],
+        "sequences": [
+          3
+        ]
+      },
+      {
+        "id": 10,
+        "direction": "request",
+        "seq_start": 4276026546,
+        "seq_end": 4276026549,
+        "ip_id": 56076,
+        "origin_ns": 1793807279031078000,
+        "node_entry_ns": 1793807279031279000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 5,
+        "classification": "boundary",
+        "generation": "1006",
+        "failures": [],
+        "sequences": [
+          5
+        ]
+      },
+      {
+        "id": 25,
+        "direction": "request",
+        "seq_start": 4276026569,
+        "seq_end": 4276026573,
+        "ip_id": 56091,
+        "origin_ns": 1793807280649711000,
+        "node_entry_ns": 1793807280649933000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 12,
+        "classification": "boundary",
+        "generation": "1019",
+        "failures": [],
+        "sequences": [
+          12
+        ]
+      },
+      {
+        "id": 52,
+        "direction": "request",
+        "seq_start": 4276026621,
+        "seq_end": 4276026625,
+        "ip_id": 56118,
+        "origin_ns": 1793807283471331000,
+        "node_entry_ns": 1793807283471512000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 25,
+        "classification": "boundary",
+        "generation": "1043",
+        "failures": [],
+        "sequences": [
+          25
+        ]
+      },
+      {
+        "id": 89,
+        "direction": "request",
+        "seq_start": 4276026693,
+        "seq_end": 4276026697,
+        "ip_id": 56155,
+        "origin_ns": 1793807287314451000,
+        "node_entry_ns": 1793807287314718000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 43,
+        "classification": "boundary",
+        "generation": "1060",
+        "failures": [],
+        "sequences": [
+          43
+        ]
+      },
+      {
+        "id": 92,
+        "direction": "request",
+        "seq_start": 4276026697,
+        "seq_end": 4276026701,
+        "ip_id": 56158,
+        "origin_ns": 1793807287718132000,
+        "node_entry_ns": 1793807287718431000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 44,
+        "classification": "boundary",
+        "generation": "1063",
+        "failures": [],
+        "sequences": [
+          44
+        ]
+      },
+      {
+        "id": 105,
+        "direction": "request",
+        "seq_start": 4276026721,
+        "seq_end": 4276026725,
+        "ip_id": 56171,
+        "origin_ns": 1793807289138846000,
+        "node_entry_ns": 1793807289139181000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 50,
+        "classification": "boundary",
+        "generation": "1075",
+        "failures": [],
+        "sequences": [
+          50
+        ]
+      }
+    ],
+    "guard_attributed_timeouts": [],
+    "longest_tcp_stall": {
+      "sequence": 44,
+      "first_origin_ns": 1793807287718132000,
+      "echo_arrival_ns": 1793807287928770000,
+      "stall_ns": 210638000
+    },
+    "unattributed_timeouts": []
+  },
+  "d120": {
+    "passed": true,
+    "verdict": "AT10 PASS under D-120",
+    "reloads": 100,
+    "udp_losses": 1,
+    "errors": [],
+    "losses": [
+      {
+        "sequence": 55,
+        "generation": "1085",
+        "bracket_start_ns": "1793807290355873863",
+        "bracket_end_ns": "1793807290399877234",
+        "upper_ns": 44003353,
+        "render_to_installed_ns": 19188304,
+        "classification": "boundary",
+        "next_datagram": "ok",
+        "failures": []
+      }
+    ],
+    "total_losses": 1,
+    "tcp_reads": 58,
+    "tcp_read_records": [
+      {
+        "event": "tcp_read",
+        "sequence": 1,
+        "wall_ns": "1793807278018476268",
+        "mono_ns": "130720469853707",
+        "size": 3,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 1
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 2,
+        "wall_ns": "1793807278219015535",
+        "mono_ns": "130720670392777",
+        "size": 3,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 2
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 3,
+        "wall_ns": "1793807278629178144",
+        "mono_ns": "130721080556789",
+        "size": 3,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 3
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 4,
+        "wall_ns": "1793807278830347889",
+        "mono_ns": "130721281725046",
+        "size": 3,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 4
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 5,
+        "wall_ns": "1793807279237185007",
+        "mono_ns": "130721688563741",
+        "size": 3,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 5
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 6,
+        "wall_ns": "1793807279438488479",
+        "mono_ns": "130721889865600",
+        "size": 3,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 6
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 7,
+        "wall_ns": "1793807279639733924",
+        "mono_ns": "130722091111082",
+        "size": 3,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 7
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 8,
+        "wall_ns": "1793807279841076756",
+        "mono_ns": "130722292453946",
+        "size": 3,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 8
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 9,
+        "wall_ns": "1793807280046322142",
+        "mono_ns": "130722497699301",
+        "size": 3,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 9
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 10,
+        "wall_ns": "1793807280247756233",
+        "mono_ns": "130722699133414",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 10
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 11,
+        "wall_ns": "1793807280448984283",
+        "mono_ns": "130722900361405",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 11
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 12,
+        "wall_ns": "1793807280853493577",
+        "mono_ns": "130723304872009",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 12
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 13,
+        "wall_ns": "1793807281054865796",
+        "mono_ns": "130723506242860",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 13
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 14,
+        "wall_ns": "1793807281255878537",
+        "mono_ns": "130723707255574",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 14
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 15,
+        "wall_ns": "1793807281457134003",
+        "mono_ns": "130723908511118",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 15
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 16,
+        "wall_ns": "1793807281658190266",
+        "mono_ns": "130724109568637",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 16
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 17,
+        "wall_ns": "1793807281859679746",
+        "mono_ns": "130724311056854",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 17
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 18,
+        "wall_ns": "1793807282061311463",
+        "mono_ns": "130724512688415",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 18
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 19,
+        "wall_ns": "1793807282262478181",
+        "mono_ns": "130724713855461",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 19
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 20,
+        "wall_ns": "1793807282463713378",
+        "mono_ns": "130724915090830",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 20
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 21,
+        "wall_ns": "1793807282665289710",
+        "mono_ns": "130725116666977",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 21
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 22,
+        "wall_ns": "1793807282866498818",
+        "mono_ns": "130725317876445",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 22
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 23,
+        "wall_ns": "1793807283068046667",
+        "mono_ns": "130725519423830",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 23
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 24,
+        "wall_ns": "1793807283269892865",
+        "mono_ns": "130725721270164",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 24
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 25,
+        "wall_ns": "1793807283676500495",
+        "mono_ns": "130726127878898",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 25
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 26,
+        "wall_ns": "1793807283878538403",
+        "mono_ns": "130726329916079",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 26
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 27,
+        "wall_ns": "1793807284080890732",
+        "mono_ns": "130726532267934",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 27
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 28,
+        "wall_ns": "1793807284282132245",
+        "mono_ns": "130726733510691",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 28
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 29,
+        "wall_ns": "1793807284484070180",
+        "mono_ns": "130726935447364",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 29
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 30,
+        "wall_ns": "1793807284685093791",
+        "mono_ns": "130727136470882",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 30
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 31,
+        "wall_ns": "1793807284886084136",
+        "mono_ns": "130727337461303",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 31
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 32,
+        "wall_ns": "1793807285088279579",
+        "mono_ns": "130727539657546",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 32
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 33,
+        "wall_ns": "1793807285290802350",
+        "mono_ns": "130727742179599",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 33
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 34,
+        "wall_ns": "1793807285493699943",
+        "mono_ns": "130727945077764",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 34
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 35,
+        "wall_ns": "1793807285696388712",
+        "mono_ns": "130728147766050",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 35
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 36,
+        "wall_ns": "1793807285899385285",
+        "mono_ns": "130728350762730",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 36
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 37,
+        "wall_ns": "1793807286101191108",
+        "mono_ns": "130728552568173",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 37
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 38,
+        "wall_ns": "1793807286302468059",
+        "mono_ns": "130728753845140",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 38
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 39,
+        "wall_ns": "1793807286504141691",
+        "mono_ns": "130728955519179",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 39
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 40,
+        "wall_ns": "1793807286705845305",
+        "mono_ns": "130729157222840",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 40
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 41,
+        "wall_ns": "1793807286910347018",
+        "mono_ns": "130729361724334",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 41
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 42,
+        "wall_ns": "1793807287113420022",
+        "mono_ns": "130729564797291",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 42
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 43,
+        "wall_ns": "1793807287517482603",
+        "mono_ns": "130729968861222",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 43
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 44,
+        "wall_ns": "1793807287928856832",
+        "mono_ns": "130730380235306",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 44
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 45,
+        "wall_ns": "1793807288130362569",
+        "mono_ns": "130730581740038",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 45
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 46,
+        "wall_ns": "1793807288331583608",
+        "mono_ns": "130730782960879",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 46
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 47,
+        "wall_ns": "1793807288532820385",
+        "mono_ns": "130730984197602",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 47
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 48,
+        "wall_ns": "1793807288734518539",
+        "mono_ns": "130731185895662",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 48
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 49,
+        "wall_ns": "1793807288936525093",
+        "mono_ns": "130731387902328",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 49
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 50,
+        "wall_ns": "1793807289349120205",
+        "mono_ns": "130731800498603",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 50
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 51,
+        "wall_ns": "1793807289551702417",
+        "mono_ns": "130732003079798",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 51
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 52,
+        "wall_ns": "1793807289752697627",
+        "mono_ns": "130732204074631",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 52
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 53,
+        "wall_ns": "1793807289953638664",
+        "mono_ns": "130732405016118",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 53
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 54,
+        "wall_ns": "1793807290155359100",
+        "mono_ns": "130732606736359",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 54
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 55,
+        "wall_ns": "1793807290358638538",
+        "mono_ns": "130732810016189",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 55
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 56,
+        "wall_ns": "1793807292060299237",
+        "mono_ns": "130734511676603",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 56
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 57,
+        "wall_ns": "1793807292261767259",
+        "mono_ns": "130734713144283",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 57
+      },
+      {
+        "event": "tcp_read",
+        "sequence": 58,
+        "wall_ns": "1793807292462903875",
+        "mono_ns": "130734914281077",
+        "size": 4,
+        "response_matches": true,
+        "echo_status": "match",
+        "response_sequence": 58
+      }
+    ],
+    "tcp_timeouts": 0,
+    "tcp_guard_losses": [
+      {
+        "id": 5,
+        "direction": "request",
+        "seq_start": 4276026540,
+        "seq_end": 4276026543,
+        "ip_id": 56071,
+        "origin_ns": 1793807278419377000,
+        "node_entry_ns": 1793807278419578000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 3,
+        "classification": "boundary",
+        "generation": "1001",
+        "failures": [],
+        "sequences": [
+          3
+        ]
+      },
+      {
+        "id": 10,
+        "direction": "request",
+        "seq_start": 4276026546,
+        "seq_end": 4276026549,
+        "ip_id": 56076,
+        "origin_ns": 1793807279031078000,
+        "node_entry_ns": 1793807279031279000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 5,
+        "classification": "boundary",
+        "generation": "1006",
+        "failures": [],
+        "sequences": [
+          5
+        ]
+      },
+      {
+        "id": 25,
+        "direction": "request",
+        "seq_start": 4276026569,
+        "seq_end": 4276026573,
+        "ip_id": 56091,
+        "origin_ns": 1793807280649711000,
+        "node_entry_ns": 1793807280649933000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 12,
+        "classification": "boundary",
+        "generation": "1019",
+        "failures": [],
+        "sequences": [
+          12
+        ]
+      },
+      {
+        "id": 52,
+        "direction": "request",
+        "seq_start": 4276026621,
+        "seq_end": 4276026625,
+        "ip_id": 56118,
+        "origin_ns": 1793807283471331000,
+        "node_entry_ns": 1793807283471512000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 25,
+        "classification": "boundary",
+        "generation": "1043",
+        "failures": [],
+        "sequences": [
+          25
+        ]
+      },
+      {
+        "id": 89,
+        "direction": "request",
+        "seq_start": 4276026693,
+        "seq_end": 4276026697,
+        "ip_id": 56155,
+        "origin_ns": 1793807287314451000,
+        "node_entry_ns": 1793807287314718000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 43,
+        "classification": "boundary",
+        "generation": "1060",
+        "failures": [],
+        "sequences": [
+          43
+        ]
+      },
+      {
+        "id": 92,
+        "direction": "request",
+        "seq_start": 4276026697,
+        "seq_end": 4276026701,
+        "ip_id": 56158,
+        "origin_ns": 1793807287718132000,
+        "node_entry_ns": 1793807287718431000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 44,
+        "classification": "boundary",
+        "generation": "1063",
+        "failures": [],
+        "sequences": [
+          44
+        ]
+      },
+      {
+        "id": 105,
+        "direction": "request",
+        "seq_start": 4276026721,
+        "seq_end": 4276026725,
+        "ip_id": 56171,
+        "origin_ns": 1793807289138846000,
+        "node_entry_ns": 1793807289139181000,
+        "node_exit_ns": null,
+        "far_side_ns": null,
+        "delivered": false,
+        "sequence": 50,
+        "classification": "boundary",
+        "generation": "1075",
+        "failures": [],
+        "sequences": [
+          50
+        ]
+      }
+    ],
+    "guard_attributed_timeouts": [],
+    "unattributed_timeouts": [],
+    "longest_tcp_stall": {
+      "sequence": 44,
+      "first_origin_ns": 1793807287718132000,
+      "echo_arrival_ns": 1793807287928770000,
+      "stall_ns": 210638000
+    },
+    "tcp_evidence_errors": [],
+    "tcp_failures": []
+  },
+  "tcp_errors": [],
+  "connection_errors": [],
+  "combined_projections": {
+    "origin": {
+      "complete": true,
+      "combined_packets": 307,
+      "udp_packets": 117,
+      "tcp_packets": 190,
+      "dropped_by_kernel": 0,
+      "headers_sha256": "fbae8853d3aee09d7773e5c20ffaa7e3212085ae9bb75d9820fe6164b15bcb4e",
+      "stats_sha256": "11f9e3e3316025e5b08df352d9a71d51186262c31e9309df6190843e5b9c277f",
+      "udp_sha256": "82796a92166f243402b8ed6aa2e535b535d566ec2581d0e00acf1f88a4b8c2d5"
+    },
+    "node": {
+      "complete": true,
+      "combined_packets": 605,
+      "udp_packets": 233,
+      "tcp_packets": 372,
+      "dropped_by_kernel": 0,
+      "headers_sha256": "1caf41dd5fb6a8f35f58cb110b28b57430538ea9a1ecf87611e5014a60ec2f03",
+      "stats_sha256": "672e39fe2bea2954e84d54eb50357a35e735a1e5f81b8860ae8009f894b8155c",
+      "udp_sha256": "ec2e4a4e2b14da4ad5c2cf0fa5931ea955f63c4242556253d9658a233806c096"
+    },
+    "responder": {
+      "complete": true,
+      "combined_packets": 298,
+      "udp_packets": 116,
+      "tcp_packets": 182,
+      "dropped_by_kernel": 0,
+      "headers_sha256": "33b5a6b8163683032612ac01e57ac637f73f97bcf7b1d457ac1880d8ff4abfb4",
+      "stats_sha256": "3d3de5e71b631cc17c9b0f7927188b7b89f7ada2867071b588639cb459cfa95e",
+      "udp_sha256": "3914fa84079b6b72a7da09195532365c1319d1f28fe50ee6308affcb6af33904"
+    }
+  },
+  "complete_checked_combined_captures": true,
+  "scope": "Fields copied from the analyzer and checked projection outputs, not a replacement verdict. Historical run 7b0db5f2 stays failed."
+}

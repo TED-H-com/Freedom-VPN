@@ -1,0 +1,441 @@
+{
+  "run_id": "bd73d7a4-03f1-4b17-97c2-9c25a39ac0db",
+  "explicit_restart": {
+    "agent_budget_seconds": 15,
+    "agent_stop": {
+      "container_state_at_read": {
+        "Status": "exited",
+        "Running": false,
+        "Paused": false,
+        "Restarting": false,
+        "OOMKilled": false,
+        "Dead": false,
+        "Pid": 0,
+        "ExitCode": 0,
+        "Error": "",
+        "StartedAt": "2026-11-04T15:49:41.247546325Z",
+        "FinishedAt": "2026-11-04T16:02:48.234241946Z"
+      },
+      "cooperative_exit": true,
+      "identity_before_stop": {
+        "available": true,
+        "captured_at": "2026-11-04T16:02:47.518953547Z",
+        "launch_id": "834b09e6-d635-4777-9630-46d0ebb1a97e",
+        "pid": 136061,
+        "start_ticks": "13118391"
+      },
+      "parent_identity_matched": true,
+      "parent_wait_available": true,
+      "parent_wait_receipt": {
+        "id": "834b09e6-d635-4777-9630-46d0ebb1a97e",
+        "pid": 136061,
+        "start_ticks": "13118391",
+        "started_at": "2026-11-04T15:55:41.460363164Z",
+        "wait_observed_at": "2026-11-04T16:02:47.79195026Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "scope": "Actual agent exit from matching parent wait receipt; container exit is shutdown-handler completion only; sigkill sidecar is an attempted escalation"
+    },
+    "before": {
+      "lease_id": "8394a8f0-536c-4850-94b8-77e572be6540",
+      "issued_at": "2026-11-04T16:02:44.072789791Z",
+      "expires_at": "2026-11-04T16:03:44.072789791Z",
+      "generation": "27",
+      "max_offline_seconds": 60,
+      "member_count": 2,
+      "source": "",
+      "mono_sent_ns": "131606520297736",
+      "deadline_mono_ns": "131666520297736",
+      "anchor": {
+        "mono_ns": "131606520297736",
+        "server_unix_ns": "1793808164072789791",
+        "wall_unix_ns": "1793808164068921114",
+        "trusted": 1
+      }
+    },
+    "before_available": true,
+    "container_grace_seconds": 25,
+    "restart_duration_ns": "868512801",
+    "run_id": "bd73d7a4-03f1-4b17-97c2-9c25a39ac0db",
+    "scope": "Docker stop/start command brackets; stopped SQLite snapshot adds measured downtime. Same boot, not OS reboot or exact SIGTERM/exit timestamps.",
+    "start_completed": "2026-11-04T16:02:48.409947463Z",
+    "start_ok": true,
+    "start_requested": "2026-11-04T16:02:48.341093828Z",
+    "stop_completed": "2026-11-04T16:02:48.260062238Z",
+    "stop_duration_ns": "718627577",
+    "stop_ok": true,
+    "stop_started": "2026-11-04T16:02:47.54143468Z",
+    "stopped": {
+      "lease_id": "8394a8f0-536c-4850-94b8-77e572be6540",
+      "issued_at": "2026-11-04T16:02:44.072789791Z",
+      "expires_at": "2026-11-04T16:03:44.072789791Z",
+      "generation": "27",
+      "max_offline_seconds": 60,
+      "member_count": 2,
+      "source": "",
+      "mono_sent_ns": "131606520297736",
+      "deadline_mono_ns": "131666520297736",
+      "anchor": {
+        "mono_ns": "131606520297736",
+        "server_unix_ns": "1793808164072789791",
+        "wall_unix_ns": "1793808164068921114",
+        "trusted": 1
+      }
+    },
+    "stopped_available": true,
+    "stopped_snapshot_duration_ns": "81031567",
+    "stored_lease_survived_stop": true
+  },
+  "other_restart_receipts": [
+    {
+      "path": "populated-holds.json",
+      "pointer": "/attempts/0/restart",
+      "receipt": {
+        "end": "2026-11-04T15:54:01.071489936Z",
+        "ok": true,
+        "start": "2026-11-04T15:54:00.598537556Z"
+      }
+    },
+    {
+      "path": "populated-holds.json",
+      "pointer": "/attempts/2/restart",
+      "receipt": {
+        "end": "2026-11-04T15:55:41.888803392Z",
+        "ok": true,
+        "start": "2026-11-04T15:55:41.196878886Z"
+      }
+    }
+  ],
+  "agent_exit_receipts": [
+    {
+      "receipt": {
+        "id": "2f54302b-8d98-4eaa-a972-afc9b5779772",
+        "pid": 941,
+        "start_ticks": "13161114",
+        "started_at": "2026-11-04T16:02:48.696469104Z",
+        "wait_observed_at": "2026-11-04T16:08:54.475526839Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sources": [
+        {
+          "path": "identity-freeze.json",
+          "pointer": "/agent_stop"
+        }
+      ]
+    },
+    {
+      "receipt": {
+        "id": "0c002ab9-c91f-4be0-822d-a3c2b87a054c",
+        "pid": 1201,
+        "start_ticks": "13082918",
+        "started_at": "2026-11-04T15:49:46.734027586Z",
+        "wait_observed_at": "2026-11-04T15:54:00.330660527Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sources": [
+        {
+          "path": "populated-holds.json",
+          "pointer": "/attempts/0/stop/output/decoded"
+        }
+      ]
+    },
+    {
+      "receipt": {
+        "id": "6b93ab76-c281-4c5a-9082-1e339343f8e8",
+        "pid": 93177,
+        "start_ticks": "13108325",
+        "started_at": "2026-11-04T15:54:00.807952732Z",
+        "wait_observed_at": "2026-11-04T15:55:11.274389935Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sources": [
+        {
+          "path": "populated-holds.json",
+          "pointer": "/attempts/2/stop/output/decoded"
+        }
+      ]
+    },
+    {
+      "receipt": {
+        "id": "ecb25397-103f-4adb-9556-3441006987dd",
+        "pid": 902,
+        "start_ticks": "13197907",
+        "started_at": "2026-11-04T16:08:56.624833496Z",
+        "wait_observed_at": "2026-11-04T16:10:40.475026152Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sources": [
+        {
+          "path": "receiver-closure.json",
+          "pointer": "/0/output/decoded"
+        }
+      ]
+    },
+    {
+      "receipt": {
+        "id": "4cd727e6-f123-4ba6-bfaa-0c82f045c5e1",
+        "pid": 1141,
+        "start_ticks": "13197911",
+        "started_at": "2026-11-04T16:08:56.663660771Z",
+        "wait_observed_at": "2026-11-04T16:10:40.863250495Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sources": [
+        {
+          "path": "receiver-closure.json",
+          "pointer": "/1/output/decoded"
+        }
+      ]
+    },
+    {
+      "receipt": {
+        "id": "834b09e6-d635-4777-9630-46d0ebb1a97e",
+        "pid": 136061,
+        "start_ticks": "13118391",
+        "started_at": "2026-11-04T15:55:41.460363164Z",
+        "wait_observed_at": "2026-11-04T16:02:47.79195026Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "sources": [
+        {
+          "path": "restart-lifecycle.json",
+          "pointer": "/agent_stop"
+        }
+      ]
+    }
+  ],
+  "source_boot_and_retention_lines": [
+    {
+      "path": "agent.log.txt",
+      "line": 1,
+      "text": "time=2026-11-04T15:49:46.762Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=130829213609636 generation=0"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 2,
+      "text": "time=2026-11-04T15:49:46.782Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=130829233536669 succeeded=true"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 130,
+      "text": "time=2026-11-04T15:55:41.483Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131183934624100 generation=16"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 131,
+      "text": "time=2026-11-04T15:55:41.504Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131183956066491 succeeded=true"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 212,
+      "text": "time=2026-11-04T16:02:47.785Z level=INFO msg=\"serving rules retained for restart\" generation=27 policy_expires_mono_ns=131666520297736 next_binding_expiry_mono_ns=131666520297736"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 213,
+      "text": "time=2026-11-04T16:02:48.739Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131611191227055 generation=27"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 214,
+      "text": "time=2026-11-04T16:02:48.784Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131611235488784 succeeded=true"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 316,
+      "text": "time=2026-11-04T16:08:54.467Z level=INFO msg=\"serving rules retained for restart\" generation=34 policy_expires_mono_ns=132027008883289 next_binding_expiry_mono_ns=132027008883289"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 317,
+      "text": "time=2026-11-04T16:08:56.668Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131979120293880 generation=34"
+    },
+    {
+      "path": "agent.log.txt",
+      "line": 318,
+      "text": "time=2026-11-04T16:08:56.709Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131979160705016 succeeded=true"
+    }
+  ],
+  "watchdog_lines": [
+    {
+      "path": "watchdog.log.txt",
+      "line": 1,
+      "text": "{\"time\":\"2026-11-04T15:49:46.676579611Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":130829127935194,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+    },
+    {
+      "path": "watchdog.log.txt",
+      "line": 2,
+      "text": "{\"time\":\"2026-11-04T15:49:46.676670959Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829128046750,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+    },
+    {
+      "path": "watchdog.log.txt",
+      "line": 3,
+      "text": "{\"time\":\"2026-11-04T15:49:46.697288833Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829148660831,\"succeeded\":true}"
+    }
+  ],
+  "baseline_unverified_unique": 0,
+  "generation_mismatch_unique": 0,
+  "scope": "All retained restart/parent-wait receipts and source-agent boot lines. Container PID1 exits and clone teardown are separate from agent exit evidence. Watchdog retaining passes do not log decisions; absence is not proof of a forced D-156 interleaving.",
+  "restart_windows": [
+    {
+      "source": "populated-holds.json",
+      "purpose": "hold attempt 1",
+      "start": "2026-11-04T15:54:00.301949912Z",
+      "end": "2026-11-04T15:54:01.071489936Z",
+      "restart": {
+        "end": "2026-11-04T15:54:01.071489936Z",
+        "ok": true,
+        "start": "2026-11-04T15:54:00.598537556Z"
+      },
+      "parent_wait": {
+        "id": "0c002ab9-c91f-4be0-822d-a3c2b87a054c",
+        "pid": 1201,
+        "start_ticks": "13082918",
+        "started_at": "2026-11-04T15:49:46.734027586Z",
+        "wait_observed_at": "2026-11-04T15:54:00.330660527Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "parent_identity_matched": true,
+      "watchdog_lines_in_window": [],
+      "interpretation": "Recorded watchdog lines only; no log does not prove a retaining pass or a forced recovery interleaving."
+    },
+    {
+      "source": "populated-holds.json",
+      "purpose": "hold attempt 3",
+      "start": "2026-11-04T15:55:11.243017436Z",
+      "end": "2026-11-04T15:55:41.888803392Z",
+      "restart": {
+        "end": "2026-11-04T15:55:41.888803392Z",
+        "ok": true,
+        "start": "2026-11-04T15:55:41.196878886Z"
+      },
+      "parent_wait": {
+        "id": "6b93ab76-c281-4c5a-9082-1e339343f8e8",
+        "pid": 93177,
+        "start_ticks": "13108325",
+        "started_at": "2026-11-04T15:54:00.807952732Z",
+        "wait_observed_at": "2026-11-04T15:55:11.274389935Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "parent_identity_matched": true,
+      "watchdog_lines_in_window": [],
+      "interpretation": "Recorded watchdog lines only; no log does not prove a retaining pass or a forced recovery interleaving."
+    },
+    {
+      "source": "restart-lifecycle.json",
+      "purpose": "durable identity restart",
+      "start": "2026-11-04T16:02:47.54143468Z",
+      "end": "2026-11-04T16:02:48.409947463Z",
+      "parent_wait": {
+        "id": "834b09e6-d635-4777-9630-46d0ebb1a97e",
+        "pid": 136061,
+        "start_ticks": "13118391",
+        "started_at": "2026-11-04T15:55:41.460363164Z",
+        "wait_observed_at": "2026-11-04T16:02:47.79195026Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "parent_identity_matched": true,
+      "watchdog_lines_in_window": [],
+      "interpretation": "Recorded watchdog lines only; no log does not prove a retaining pass or a forced recovery interleaving."
+    },
+    {
+      "source": "identity-freeze.json",
+      "purpose": "identity freeze restart",
+      "start": "2026-11-04T16:08:54.308150275Z",
+      "end": "2026-11-04T16:08:56.337712501Z",
+      "parent_wait": {
+        "id": "2f54302b-8d98-4eaa-a972-afc9b5779772",
+        "pid": 941,
+        "start_ticks": "13161114",
+        "started_at": "2026-11-04T16:02:48.696469104Z",
+        "wait_observed_at": "2026-11-04T16:08:54.475526839Z",
+        "wait_status": 0,
+        "exit_code": 0,
+        "signal": null,
+        "core_dump": false
+      },
+      "parent_identity_matched": true,
+      "watchdog_lines_in_window": [],
+      "interpretation": "Recorded watchdog lines only; no log does not prove a retaining pass or a forced recovery interleaving."
+    }
+  ],
+  "watchdog_unique_lines": [
+    {
+      "text": "{\"time\":\"2026-11-04T15:49:46.676579611Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":130829127935194,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}",
+      "sources": [
+        {
+          "path": "watchdog-before-populated-hold-stop.log.txt",
+          "line": 1
+        },
+        {
+          "path": "watchdog.log.txt",
+          "line": 1
+        }
+      ]
+    },
+    {
+      "text": "{\"time\":\"2026-11-04T15:49:46.676670959Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829128046750,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}",
+      "sources": [
+        {
+          "path": "watchdog-before-populated-hold-stop.log.txt",
+          "line": 2
+        },
+        {
+          "path": "watchdog.log.txt",
+          "line": 2
+        }
+      ]
+    },
+    {
+      "text": "{\"time\":\"2026-11-04T15:49:46.697288833Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829148660831,\"succeeded\":true}",
+      "sources": [
+        {
+          "path": "watchdog-before-populated-hold-stop.log.txt",
+          "line": 3
+        },
+        {
+          "path": "watchdog.log.txt",
+          "line": 3
+        }
+      ]
+    }
+  ],
+  "identity_freeze_restart": {
+    "started_at": "2026-11-04T16:08:54.308150275Z",
+    "completed_at": "2026-11-04T16:08:56.337712501Z",
+    "fixture_duration_ns": "2029562225",
+    "stored_lease_survived_restart": true,
+    "container_stop_available": true,
+    "owner": "ENR-02 / ENR-03; this is the consumer latch observation only"
+  }
+}

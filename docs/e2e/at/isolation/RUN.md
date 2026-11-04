@@ -159,3 +159,14 @@ of last positive/first drop through sweep end. It preserves the independent
 packet verdict and writes a failing review for malformed or unqualified plans.
 An exit 1 remains a scheduled error; F24-01 is not covered by D-163.
 The follow-up 24 member-expiry schedule and predicate remain unchanged.
+
+
+### Follow-up 25 execution receipt
+
+The one authorized invocation is consumed: `bd73d7a4-03f1-4b17-97c2-9c25a39ac0db`, **15:47:50Z–16:11:27Z**,
+**1416.556s**, exit **0**, scheduled **pass**. No retry. The recorded plan above
+was used unchanged. The host preflight had no additional wait after the earlier
+751.046s offline-gate reservation wait; 48 overlap samples found no foreign run.
+[Complete receipt and every observed row](followup25-2026-11-04.md),
+[original preflight](history/follow-up-25-run/preflight.json),
+[original vmstat](history/follow-up-25-run/vmstat.txt).

@@ -65,3 +65,22 @@ Carried unchanged: **AT11 native IPv6/member-platform matrix** (platform operato
 **F24-01, w4-at-isolation / boundary schedule and reviewer:** the single assembled run keeps 27 passing acceptance rows and two operator blocks, but scheduled-job is **fail** because review_boundary.py exits 1. All 14 added-probe candidates are excluded by the measured 33.2ms spacing against original 37ms/63ms cadence gaps. The plan serializes an empty slice as null; the reviewer crashes at sorted(None) and emits no boundary review. The unchanged packet evaluator passes, but D-142 qualification is not established. [Original schedule](history/follow-up-24-run/boundary-schedule.json), [packet verdict](history/follow-up-24-run/deadline-verdict.json), [read-only diagnosis](history/follow-up-24-run/boundary-review-failure.json), [scheduled error](history/follow-up-24-run/scheduled-job.json), [original console](history/follow-up-24-run/assembled.log.txt.gz). Please assign the empty-schedule/null-handling follow-up without weakening D-142 or adding this failure to D-163. Per this task's rule, the newly failing review is a finding, not a fix or retry in this session.
 
 A baseline_unverified watchdog decision is retained during hold attempt 3, with successful agent/watchdog baseline completion and no GENERATION_MISMATCH signature. All associated acceptance/hold recovery rows pass; no paired F48-01 recurrence or #470 attribution is claimed. [Restart evidence](history/follow-up-24-run/restart-timeline.json).
+
+
+## Follow-up 25 — 2026-11-04 requests and closure
+
+**F24-01 closed for the empty-plan qualification and reviewer traceback.** The
+planner/reviewer share replayed production scheduling code, preserve all samples,
+and make an empty or malformed schedule a written failed review. The single new
+run passes its scheduled verdict and D-142; historical `df9dbad7` remains failed
+for boundary review with its packet verdict unchanged. This does not guarantee
+future calibration can always produce added probes. [Diagnosis, replays, current
+run and precise closure scope](followup25-2026-11-04.md).
+
+No new failing acceptance row or outside-owned change request arose. Carried:
+**AT11 IPv6 platform matrix** (platform operators), **AT13 full continuous fault
+matrix** (acceptance/operator), and **F17-01 pure stale_generation**
+(w3-wire-nodes / w2-agent-core; D-163 mapping remains with isolation/acceptance).
+The follow-up 24 member-expiry plan is unchanged and qualified at A+22.129357191s.
+Handover re-pointing lines: **none**. No product, devstack helper/seam, netlab
+fixture/analyzer, workflow, expected list or deadline predicate was edited.

@@ -1,848 +1,1119 @@
 {
-  "added_scheduled_mono_ns": null,
-  "deadline_mono_ns": "125728711630414",
+  "added_scheduled_mono_ns": [
+    "131839192280318",
+    "131839197780318",
+    "131839203280318",
+    "131839219780318",
+    "131839225280318",
+    "131839230780318",
+    "131839236280318",
+    "131839241780318",
+    "131839258280318",
+    "131839263780318",
+    "131839269280318",
+    "131839274780318",
+    "131839280280318",
+    "131839285780318",
+    "131839291280318",
+    "131839296780318",
+    "131839302280318",
+    "131839307780318",
+    "131839324280318",
+    "131839329780318",
+    "131839335280318",
+    "131839340780318",
+    "131839357280318",
+    "131839362780318",
+    "131839368280318",
+    "131839373780318",
+    "131839379280318",
+    "131839384780318",
+    "131839390280318",
+    "131839395780318",
+    "131839401280318",
+    "131839406780318",
+    "131839423280318",
+    "131839428780318"
+  ],
+  "cadence_gap_rule": "an interior candidate needs gap \u003e= 2 * spacing; equality permits only the midpoint; actual grid exclusions listed for every candidate",
+  "cadence_gaps_ns": [
+    "37000000",
+    "63000000"
+  ],
+  "candidates": [
+    {
+      "scheduled_mono_ns": "131839192280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839197780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839203280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839208780318",
+      "excluded_by_original_sends": [
+        {
+          "scheduled_mono_ns": "131839214208411",
+          "phase": "phased"
+        }
+      ]
+    },
+    {
+      "scheduled_mono_ns": "131839214280318",
+      "excluded_by_original_sends": [
+        {
+          "scheduled_mono_ns": "131839214208411",
+          "phase": "phased"
+        }
+      ]
+    },
+    {
+      "scheduled_mono_ns": "131839219780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839225280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839230780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839236280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839241780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839247280318",
+      "excluded_by_original_sends": [
+        {
+          "scheduled_mono_ns": "131839251208411",
+          "phase": "arbitrary_37ms"
+        }
+      ]
+    },
+    {
+      "scheduled_mono_ns": "131839252780318",
+      "excluded_by_original_sends": [
+        {
+          "scheduled_mono_ns": "131839251208411",
+          "phase": "arbitrary_37ms"
+        }
+      ]
+    },
+    {
+      "scheduled_mono_ns": "131839258280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839263780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839269280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839274780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839280280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839285780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839291280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839296780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839302280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839307780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839313280318",
+      "excluded_by_original_sends": [
+        {
+          "scheduled_mono_ns": "131839314208411",
+          "phase": "phased"
+        }
+      ]
+    },
+    {
+      "scheduled_mono_ns": "131839318780318",
+      "excluded_by_original_sends": [
+        {
+          "scheduled_mono_ns": "131839314208411",
+          "phase": "phased"
+        }
+      ]
+    },
+    {
+      "scheduled_mono_ns": "131839324280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839329780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839335280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839340780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839346280318",
+      "excluded_by_original_sends": [
+        {
+          "scheduled_mono_ns": "131839351208411",
+          "phase": "arbitrary_37ms"
+        }
+      ]
+    },
+    {
+      "scheduled_mono_ns": "131839351780318",
+      "excluded_by_original_sends": [
+        {
+          "scheduled_mono_ns": "131839351208411",
+          "phase": "arbitrary_37ms"
+        }
+      ]
+    },
+    {
+      "scheduled_mono_ns": "131839357280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839362780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839368280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839373780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839379280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839384780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839390280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839395780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839401280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839406780318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839412280318",
+      "excluded_by_original_sends": [
+        {
+          "scheduled_mono_ns": "131839414208411",
+          "phase": "phased"
+        }
+      ]
+    },
+    {
+      "scheduled_mono_ns": "131839417780318",
+      "excluded_by_original_sends": [
+        {
+          "scheduled_mono_ns": "131839414208411",
+          "phase": "phased"
+        }
+      ]
+    },
+    {
+      "scheduled_mono_ns": "131839423280318",
+      "excluded_by_original_sends": []
+    },
+    {
+      "scheduled_mono_ns": "131839428780318",
+      "excluded_by_original_sends": []
+    }
+  ],
+  "deadline_mono_ns": "131839315208411",
   "decision_tradeoff": "one whole-node boundary; spacing protects observed-range separation but cannot guarantee a sample in a roughly 3ms positive window; original D-101ms send remains; every attempt counts",
+  "discounted_samples": [],
   "grid_anchor_offset_ns": "-100000000",
-  "latency_max_ns": "2796647",
-  "latency_median_ns": "786977",
-  "latency_min_ns": "122690",
-  "latency_spread_ns": "2673957",
-  "max_transit_ns": "15175703",
-  "original_boundary_predicted_ingress_offset_ns": "-100213023",
+  "latency_max_ns": "3314548",
+  "latency_median_ns": "928093",
+  "latency_min_ns": "140696",
+  "latency_spread_ns": "3173852",
+  "max_transit_ns": "1073914",
+  "original_boundary_predicted_ingress_offset_ns": "-100071907",
   "planned_at": {
-    "mono_ns": "125727711657242",
-    "wall": "2026-11-04T14:24:45.260291839Z"
+    "mono_ns": "131838315948155",
+    "wall": "2026-11-04T16:06:35.864572161Z"
   },
-  "predicted_first_ingress_ns": "125728478830414",
-  "predicted_last_ingress_ns": "125728913904371",
+  "predicted_first_ingress_ns": "131839193208411",
+  "predicted_last_ingress_ns": "131839434882263",
   "qualified": true,
   "samples": [
     {
-      "egress_mono_ns": "125720612798883",
-      "ingress_mono_ns": "125720612746296",
-      "latency_ns": "484095",
       "packet_id": 1,
-      "send_mono_ns": "125720612262201",
-      "transit_ns": "52587"
+      "send_mono_ns": "131831215183778",
+      "ingress_mono_ns": "131831216498545",
+      "egress_mono_ns": "131831216556623",
+      "latency_ns": "1314767",
+      "transit_ns": "58078"
     },
     {
-      "egress_mono_ns": "125720648778381",
-      "ingress_mono_ns": "125720648755784",
-      "latency_ns": "710176",
       "packet_id": 2,
-      "send_mono_ns": "125720648045608",
-      "transit_ns": "22597"
+      "send_mono_ns": "131831252179545",
+      "ingress_mono_ns": "131831252582562",
+      "egress_mono_ns": "131831252613652",
+      "latency_ns": "403017",
+      "transit_ns": "31090"
     },
     {
-      "egress_mono_ns": "125720712337949",
-      "ingress_mono_ns": "125720712308484",
-      "latency_ns": "764258",
       "packet_id": 3,
-      "send_mono_ns": "125720711544226",
-      "transit_ns": "29465"
+      "send_mono_ns": "131831315051788",
+      "ingress_mono_ns": "131831316019946",
+      "egress_mono_ns": "131831316219330",
+      "latency_ns": "968158",
+      "transit_ns": "199384"
     },
     {
-      "egress_mono_ns": "125720749335426",
-      "ingress_mono_ns": "125720749292862",
-      "latency_ns": "720884",
       "packet_id": 4,
-      "send_mono_ns": "125720748571978",
-      "transit_ns": "42564"
+      "send_mono_ns": "131831351668859",
+      "ingress_mono_ns": "131831352132847",
+      "egress_mono_ns": "131831352171969",
+      "latency_ns": "463988",
+      "transit_ns": "39122"
     },
     {
-      "egress_mono_ns": "125720812249670",
-      "ingress_mono_ns": "125720812172903",
-      "latency_ns": "1029798",
       "packet_id": 5,
-      "send_mono_ns": "125720811143105",
-      "transit_ns": "76767"
+      "send_mono_ns": "131831414444186",
+      "ingress_mono_ns": "131831414764816",
+      "egress_mono_ns": "131831414802093",
+      "latency_ns": "320630",
+      "transit_ns": "37277"
     },
     {
-      "egress_mono_ns": "125720848398642",
-      "ingress_mono_ns": "125720848231563",
-      "latency_ns": "486429",
       "packet_id": 6,
-      "send_mono_ns": "125720847745134",
-      "transit_ns": "167079"
+      "send_mono_ns": "131831452386188",
+      "ingress_mono_ns": "131831453129181",
+      "egress_mono_ns": "131831453165709",
+      "latency_ns": "742993",
+      "transit_ns": "36528"
     },
     {
-      "egress_mono_ns": "125720911919631",
-      "ingress_mono_ns": "125720911899402",
-      "latency_ns": "661552",
       "packet_id": 7,
-      "send_mono_ns": "125720911237850",
-      "transit_ns": "20229"
+      "send_mono_ns": "131831514797649",
+      "ingress_mono_ns": "131831515253007",
+      "egress_mono_ns": "131831515328207",
+      "latency_ns": "455358",
+      "transit_ns": "75200"
     },
     {
-      "egress_mono_ns": "125720948492710",
-      "ingress_mono_ns": "125720948450100",
-      "latency_ns": "591222",
       "packet_id": 8,
-      "send_mono_ns": "125720947858878",
-      "transit_ns": "42610"
+      "send_mono_ns": "131831551621482",
+      "ingress_mono_ns": "131831552961408",
+      "egress_mono_ns": "131831552976861",
+      "latency_ns": "1339926",
+      "transit_ns": "15453"
     },
     {
-      "egress_mono_ns": "125721012053404",
-      "ingress_mono_ns": "125721012013005",
-      "latency_ns": "740132",
       "packet_id": 9,
-      "send_mono_ns": "125721011272873",
-      "transit_ns": "40399"
+      "send_mono_ns": "131831614528305",
+      "ingress_mono_ns": "131831615456398",
+      "egress_mono_ns": "131831615482444",
+      "latency_ns": "928093",
+      "transit_ns": "26046"
     },
     {
-      "egress_mono_ns": "125721048973311",
-      "ingress_mono_ns": "125721048955661",
-      "latency_ns": "485483",
       "packet_id": 10,
-      "send_mono_ns": "125721048470178",
-      "transit_ns": "17650"
+      "send_mono_ns": "131831651880977",
+      "ingress_mono_ns": "131831652870896",
+      "egress_mono_ns": "131831652941158",
+      "latency_ns": "989919",
+      "transit_ns": "70262"
     },
     {
-      "egress_mono_ns": "125721111675842",
-      "ingress_mono_ns": "125721111644648",
-      "latency_ns": "647022",
       "packet_id": 11,
-      "send_mono_ns": "125721110997626",
-      "transit_ns": "31194"
+      "send_mono_ns": "131831715276828",
+      "ingress_mono_ns": "131831715874313",
+      "egress_mono_ns": "131831715927409",
+      "latency_ns": "597485",
+      "transit_ns": "53096"
     },
     {
-      "egress_mono_ns": "125721149038772",
-      "ingress_mono_ns": "125721149008859",
-      "latency_ns": "352140",
       "packet_id": 12,
-      "send_mono_ns": "125721148656719",
-      "transit_ns": "29913"
+      "send_mono_ns": "131831752130593",
+      "ingress_mono_ns": "131831753362366",
+      "egress_mono_ns": "131831753386652",
+      "latency_ns": "1231773",
+      "transit_ns": "24286"
     },
     {
-      "egress_mono_ns": "125721211877891",
-      "ingress_mono_ns": "125721211848656",
-      "latency_ns": "302988",
       "packet_id": 13,
-      "send_mono_ns": "125721211545668",
-      "transit_ns": "29235"
+      "send_mono_ns": "131831815021595",
+      "ingress_mono_ns": "131831816234822",
+      "egress_mono_ns": "131831816263135",
+      "latency_ns": "1213227",
+      "transit_ns": "28313"
     },
     {
-      "egress_mono_ns": "125721248973232",
-      "ingress_mono_ns": "125721248956055",
-      "latency_ns": "849166",
       "packet_id": 14,
-      "send_mono_ns": "125721248106889",
-      "transit_ns": "17177"
+      "send_mono_ns": "131831852056770",
+      "ingress_mono_ns": "131831852724827",
+      "egress_mono_ns": "131831852743348",
+      "latency_ns": "668057",
+      "transit_ns": "18521"
     },
     {
-      "egress_mono_ns": "125721312469159",
-      "ingress_mono_ns": "125721312445777",
-      "latency_ns": "752427",
       "packet_id": 15,
-      "send_mono_ns": "125721311693350",
-      "transit_ns": "23382"
+      "send_mono_ns": "131831915114331",
+      "ingress_mono_ns": "131831915810368",
+      "egress_mono_ns": "131831915833717",
+      "latency_ns": "696037",
+      "transit_ns": "23349"
     },
     {
-      "egress_mono_ns": "125721348574611",
-      "ingress_mono_ns": "125721348544684",
-      "latency_ns": "246557",
       "packet_id": 16,
-      "send_mono_ns": "125721348298127",
-      "transit_ns": "29927"
+      "send_mono_ns": "131831952103622",
+      "ingress_mono_ns": "131831953510736",
+      "egress_mono_ns": "131831953531471",
+      "latency_ns": "1407114",
+      "transit_ns": "20735"
     },
     {
-      "egress_mono_ns": "125721412103795",
-      "ingress_mono_ns": "125721412069563",
-      "latency_ns": "1149360",
       "packet_id": 17,
-      "send_mono_ns": "125721410920203",
-      "transit_ns": "34232"
+      "send_mono_ns": "131832015232015",
+      "ingress_mono_ns": "131832016614501",
+      "egress_mono_ns": "131832016640209",
+      "latency_ns": "1382486",
+      "transit_ns": "25708"
     },
     {
-      "egress_mono_ns": "125721449726848",
-      "ingress_mono_ns": "125721449701529",
-      "latency_ns": "972485",
       "packet_id": 18,
-      "send_mono_ns": "125721448729044",
-      "transit_ns": "25319"
+      "send_mono_ns": "131832052104147",
+      "ingress_mono_ns": "131832052962457",
+      "egress_mono_ns": "131832053008426",
+      "latency_ns": "858310",
+      "transit_ns": "45969"
     },
     {
-      "egress_mono_ns": "125721512372436",
-      "ingress_mono_ns": "125721512353661",
-      "latency_ns": "1029926",
       "packet_id": 19,
-      "send_mono_ns": "125721511323735",
-      "transit_ns": "18775"
+      "send_mono_ns": "131832115019071",
+      "ingress_mono_ns": "131832115591185",
+      "egress_mono_ns": "131832115606809",
+      "latency_ns": "572114",
+      "transit_ns": "15624"
     },
     {
-      "egress_mono_ns": "125721548336001",
-      "ingress_mono_ns": "125721548305906",
-      "latency_ns": "356478",
       "packet_id": 20,
-      "send_mono_ns": "125721547949428",
-      "transit_ns": "30095"
+      "send_mono_ns": "131832152011385",
+      "ingress_mono_ns": "131832152619830",
+      "egress_mono_ns": "131832152650390",
+      "latency_ns": "608445",
+      "transit_ns": "30560"
     },
     {
-      "egress_mono_ns": "125721611168454",
-      "ingress_mono_ns": "125721611120824",
-      "latency_ns": "376834",
       "packet_id": 21,
-      "send_mono_ns": "125721610743990",
-      "transit_ns": "47630"
+      "send_mono_ns": "131832215111012",
+      "ingress_mono_ns": "131832216083934",
+      "egress_mono_ns": "131832216127286",
+      "latency_ns": "972922",
+      "transit_ns": "43352"
     },
     {
-      "egress_mono_ns": "125721649321359",
-      "ingress_mono_ns": "125721649307631",
-      "latency_ns": "799638",
       "packet_id": 22,
-      "send_mono_ns": "125721648507993",
-      "transit_ns": "13728"
+      "send_mono_ns": "131832252097432",
+      "ingress_mono_ns": "131832252310135",
+      "egress_mono_ns": "131832252327321",
+      "latency_ns": "212703",
+      "transit_ns": "17186"
     },
     {
-      "egress_mono_ns": "125721712699803",
-      "ingress_mono_ns": "125721712670942",
-      "latency_ns": "1130508",
       "packet_id": 23,
-      "send_mono_ns": "125721711540434",
-      "transit_ns": "28861"
+      "send_mono_ns": "131832314975612",
+      "ingress_mono_ns": "131832315988703",
+      "egress_mono_ns": "131832316040208",
+      "latency_ns": "1013091",
+      "transit_ns": "51505"
     },
     {
-      "egress_mono_ns": "125721749145990",
-      "ingress_mono_ns": "125721749132527",
-      "latency_ns": "656236",
       "packet_id": 24,
-      "send_mono_ns": "125721748476291",
-      "transit_ns": "13463"
+      "send_mono_ns": "131832351931807",
+      "ingress_mono_ns": "131832355246355",
+      "egress_mono_ns": "131832355284421",
+      "latency_ns": "3314548",
+      "transit_ns": "38066"
     },
     {
-      "egress_mono_ns": "125721811419260",
-      "ingress_mono_ns": "125721811385527",
-      "latency_ns": "380249",
       "packet_id": 25,
-      "send_mono_ns": "125721811005278",
-      "transit_ns": "33733"
+      "send_mono_ns": "131832415340375",
+      "ingress_mono_ns": "131832416560201",
+      "egress_mono_ns": "131832416596070",
+      "latency_ns": "1219826",
+      "transit_ns": "35869"
     },
     {
-      "egress_mono_ns": "125721849151151",
-      "ingress_mono_ns": "125721849114654",
-      "latency_ns": "1229171",
       "packet_id": 26,
-      "send_mono_ns": "125721847885483",
-      "transit_ns": "36497"
+      "send_mono_ns": "131832451278810",
+      "ingress_mono_ns": "131832451614071",
+      "egress_mono_ns": "131832451640227",
+      "latency_ns": "335261",
+      "transit_ns": "26156"
     },
     {
-      "egress_mono_ns": "125721912257398",
-      "ingress_mono_ns": "125721912241585",
-      "latency_ns": "777053",
       "packet_id": 27,
-      "send_mono_ns": "125721911464532",
-      "transit_ns": "15813"
+      "send_mono_ns": "131832515121915",
+      "ingress_mono_ns": "131832516255752",
+      "egress_mono_ns": "131832516270548",
+      "latency_ns": "1133837",
+      "transit_ns": "14796"
     },
     {
-      "egress_mono_ns": "125721949297111",
-      "ingress_mono_ns": "125721949275239",
-      "latency_ns": "1044364",
       "packet_id": 28,
-      "send_mono_ns": "125721948230875",
-      "transit_ns": "21872"
+      "send_mono_ns": "131832552134171",
+      "ingress_mono_ns": "131832553324828",
+      "egress_mono_ns": "131832553356855",
+      "latency_ns": "1190657",
+      "transit_ns": "32027"
     },
     {
-      "egress_mono_ns": "125722011340116",
-      "ingress_mono_ns": "125722011319895",
-      "latency_ns": "537064",
       "packet_id": 29,
-      "send_mono_ns": "125722010782831",
-      "transit_ns": "20221"
+      "send_mono_ns": "131832614808133",
+      "ingress_mono_ns": "131832615803729",
+      "egress_mono_ns": "131832615846647",
+      "latency_ns": "995596",
+      "transit_ns": "42918"
     },
     {
-      "egress_mono_ns": "125722049147258",
-      "ingress_mono_ns": "125722049111980",
-      "latency_ns": "1296982",
       "packet_id": 30,
-      "send_mono_ns": "125722047814998",
-      "transit_ns": "35278"
+      "send_mono_ns": "131832651959638",
+      "ingress_mono_ns": "131832652974442",
+      "egress_mono_ns": "131832652992579",
+      "latency_ns": "1014804",
+      "transit_ns": "18137"
     },
     {
-      "egress_mono_ns": "125722111215926",
-      "ingress_mono_ns": "125722111178914",
-      "latency_ns": "438809",
       "packet_id": 31,
-      "send_mono_ns": "125722110740105",
-      "transit_ns": "37012"
+      "send_mono_ns": "131832715033634",
+      "ingress_mono_ns": "131832715584142",
+      "egress_mono_ns": "131832715619095",
+      "latency_ns": "550508",
+      "transit_ns": "34953"
     },
     {
-      "egress_mono_ns": "125722148786321",
-      "ingress_mono_ns": "125722148770866",
-      "latency_ns": "542974",
       "packet_id": 32,
-      "send_mono_ns": "125722148227892",
-      "transit_ns": "15455"
+      "send_mono_ns": "131832751961510",
+      "ingress_mono_ns": "131832752739688",
+      "egress_mono_ns": "131832752773025",
+      "latency_ns": "778178",
+      "transit_ns": "33337"
     },
     {
-      "egress_mono_ns": "125722211717682",
-      "ingress_mono_ns": "125722211677498",
-      "latency_ns": "635545",
       "packet_id": 33,
-      "send_mono_ns": "125722211041953",
-      "transit_ns": "40184"
+      "send_mono_ns": "131832814730034",
+      "ingress_mono_ns": "131832816184515",
+      "egress_mono_ns": "131832816213281",
+      "latency_ns": "1454481",
+      "transit_ns": "28766"
     },
     {
-      "egress_mono_ns": "125722249628866",
-      "ingress_mono_ns": "125722249613541",
-      "latency_ns": "932284",
       "packet_id": 34,
-      "send_mono_ns": "125722248681257",
-      "transit_ns": "15325"
+      "send_mono_ns": "131832851934451",
+      "ingress_mono_ns": "131832853216993",
+      "egress_mono_ns": "131832853278660",
+      "latency_ns": "1282542",
+      "transit_ns": "61667"
     },
     {
-      "egress_mono_ns": "125722312608748",
-      "ingress_mono_ns": "125722312576637",
-      "latency_ns": "1166074",
       "packet_id": 35,
-      "send_mono_ns": "125722311410563",
-      "transit_ns": "32111"
+      "send_mono_ns": "131832914959175",
+      "ingress_mono_ns": "131832915791597",
+      "egress_mono_ns": "131832915819811",
+      "latency_ns": "832422",
+      "transit_ns": "28214"
     },
     {
-      "egress_mono_ns": "125722348711218",
-      "ingress_mono_ns": "125722348689279",
-      "latency_ns": "469644",
       "packet_id": 36,
-      "send_mono_ns": "125722348219635",
-      "transit_ns": "21939"
+      "send_mono_ns": "131832952156088",
+      "ingress_mono_ns": "131832952837069",
+      "egress_mono_ns": "131832952884937",
+      "latency_ns": "680981",
+      "transit_ns": "47868"
     },
     {
-      "egress_mono_ns": "125722411389563",
-      "ingress_mono_ns": "125722411364747",
-      "latency_ns": "347520",
       "packet_id": 37,
-      "send_mono_ns": "125722411017227",
-      "transit_ns": "24816"
+      "send_mono_ns": "131833015045306",
+      "ingress_mono_ns": "131833015363598",
+      "egress_mono_ns": "131833015393350",
+      "latency_ns": "318292",
+      "transit_ns": "29752"
     },
     {
-      "egress_mono_ns": "125722449793370",
-      "ingress_mono_ns": "125722449778152",
-      "latency_ns": "1123237",
       "packet_id": 38,
-      "send_mono_ns": "125722448654915",
-      "transit_ns": "15218"
+      "send_mono_ns": "131833052157283",
+      "ingress_mono_ns": "131833053552169",
+      "egress_mono_ns": "131833053572636",
+      "latency_ns": "1394886",
+      "transit_ns": "20467"
     },
     {
-      "egress_mono_ns": "125722512696330",
-      "ingress_mono_ns": "125722512660271",
-      "latency_ns": "1073935",
       "packet_id": 39,
-      "send_mono_ns": "125722511586336",
-      "transit_ns": "36059"
+      "send_mono_ns": "131833114368876",
+      "ingress_mono_ns": "131833114790470",
+      "egress_mono_ns": "131833114823008",
+      "latency_ns": "421594",
+      "transit_ns": "32538"
     },
     {
-      "egress_mono_ns": "125722549294484",
-      "ingress_mono_ns": "125722549280890",
-      "latency_ns": "876856",
       "packet_id": 40,
-      "send_mono_ns": "125722548404034",
-      "transit_ns": "13594"
+      "send_mono_ns": "131833151383822",
+      "ingress_mono_ns": "131833151894757",
+      "egress_mono_ns": "131833151920874",
+      "latency_ns": "510935",
+      "transit_ns": "26117"
     },
     {
-      "egress_mono_ns": "125722614199463",
-      "ingress_mono_ns": "125722614162106",
-      "latency_ns": "2796647",
       "packet_id": 41,
-      "send_mono_ns": "125722611365459",
-      "transit_ns": "37357"
+      "send_mono_ns": "131833214633554",
+      "ingress_mono_ns": "131833215478840",
+      "egress_mono_ns": "131833215505563",
+      "latency_ns": "845286",
+      "transit_ns": "26723"
     },
     {
-      "egress_mono_ns": "125722649039602",
-      "ingress_mono_ns": "125722649012471",
-      "latency_ns": "918237",
       "packet_id": 42,
-      "send_mono_ns": "125722648094234",
-      "transit_ns": "27131"
+      "send_mono_ns": "131833251672200",
+      "ingress_mono_ns": "131833251912808",
+      "egress_mono_ns": "131833251953274",
+      "latency_ns": "240608",
+      "transit_ns": "40466"
     },
     {
-      "egress_mono_ns": "125722712196420",
-      "ingress_mono_ns": "125722712164555",
-      "latency_ns": "1129069",
       "packet_id": 43,
-      "send_mono_ns": "125722711035486",
-      "transit_ns": "31865"
+      "send_mono_ns": "131833314594895",
+      "ingress_mono_ns": "131833315587772",
+      "egress_mono_ns": "131833315610412",
+      "latency_ns": "992877",
+      "transit_ns": "22640"
     },
     {
-      "egress_mono_ns": "125722749241940",
-      "ingress_mono_ns": "125722749223496",
-      "latency_ns": "1151267",
       "packet_id": 44,
-      "send_mono_ns": "125722748072229",
-      "transit_ns": "18444"
+      "send_mono_ns": "131833351776177",
+      "ingress_mono_ns": "131833352229705",
+      "egress_mono_ns": "131833352259538",
+      "latency_ns": "453528",
+      "transit_ns": "29833"
     },
     {
-      "egress_mono_ns": "125722811948879",
-      "ingress_mono_ns": "125722811917602",
-      "latency_ns": "681637",
       "packet_id": 45,
-      "send_mono_ns": "125722811235965",
-      "transit_ns": "31277"
+      "send_mono_ns": "131833415152040",
+      "ingress_mono_ns": "131833415880276",
+      "egress_mono_ns": "131833415932836",
+      "latency_ns": "728236",
+      "transit_ns": "52560"
     },
     {
-      "egress_mono_ns": "125722848779593",
-      "ingress_mono_ns": "125722848734953",
-      "latency_ns": "403481",
       "packet_id": 46,
-      "send_mono_ns": "125722848331472",
-      "transit_ns": "44640"
+      "send_mono_ns": "131833452214010",
+      "ingress_mono_ns": "131833453092925",
+      "egress_mono_ns": "131833453135369",
+      "latency_ns": "878915",
+      "transit_ns": "42444"
     },
     {
-      "egress_mono_ns": "125722912567954",
-      "ingress_mono_ns": "125722912543105",
-      "latency_ns": "1330884",
       "packet_id": 47,
-      "send_mono_ns": "125722911212221",
-      "transit_ns": "24849"
+      "send_mono_ns": "131833514915349",
+      "ingress_mono_ns": "131833515366364",
+      "egress_mono_ns": "131833515387433",
+      "latency_ns": "451015",
+      "transit_ns": "21069"
     },
     {
-      "egress_mono_ns": "125722949243369",
-      "ingress_mono_ns": "125722949228639",
-      "latency_ns": "1096202",
       "packet_id": 48,
-      "send_mono_ns": "125722948132437",
-      "transit_ns": "14730"
+      "send_mono_ns": "131833552183062",
+      "ingress_mono_ns": "131833552887756",
+      "egress_mono_ns": "131833552902063",
+      "latency_ns": "704694",
+      "transit_ns": "14307"
     },
     {
-      "egress_mono_ns": "125723012008728",
-      "ingress_mono_ns": "125723011980350",
-      "latency_ns": "1074638",
       "packet_id": 49,
-      "send_mono_ns": "125723010905712",
-      "transit_ns": "28378"
+      "send_mono_ns": "131833615201939",
+      "ingress_mono_ns": "131833616310996",
+      "egress_mono_ns": "131833616333033",
+      "latency_ns": "1109057",
+      "transit_ns": "22037"
     },
     {
-      "egress_mono_ns": "125723048853896",
-      "ingress_mono_ns": "125723048832899",
-      "latency_ns": "1078515",
       "packet_id": 50,
-      "send_mono_ns": "125723047754384",
-      "transit_ns": "20997"
+      "send_mono_ns": "131833652320910",
+      "ingress_mono_ns": "131833652955195",
+      "egress_mono_ns": "131833652980062",
+      "latency_ns": "634285",
+      "transit_ns": "24867"
     },
     {
-      "egress_mono_ns": "125723111465709",
-      "ingress_mono_ns": "125723111438323",
-      "latency_ns": "670902",
       "packet_id": 51,
-      "send_mono_ns": "125723110767421",
-      "transit_ns": "27386"
+      "send_mono_ns": "131833715168565",
+      "ingress_mono_ns": "131833715905056",
+      "egress_mono_ns": "131833715929748",
+      "latency_ns": "736491",
+      "transit_ns": "24692"
     },
     {
-      "egress_mono_ns": "125723148344737",
-      "ingress_mono_ns": "125723148310169",
-      "latency_ns": "544615",
       "packet_id": 52,
-      "send_mono_ns": "125723147765554",
-      "transit_ns": "34568"
+      "send_mono_ns": "131833752060137",
+      "ingress_mono_ns": "131833752770853",
+      "egress_mono_ns": "131833752794024",
+      "latency_ns": "710716",
+      "transit_ns": "23171"
     },
     {
-      "egress_mono_ns": "125723211994799",
-      "ingress_mono_ns": "125723211955727",
-      "latency_ns": "454078",
       "packet_id": 53,
-      "send_mono_ns": "125723211501649",
-      "transit_ns": "39072"
+      "send_mono_ns": "131833815077865",
+      "ingress_mono_ns": "131833816315177",
+      "egress_mono_ns": "131833816360447",
+      "latency_ns": "1237312",
+      "transit_ns": "45270"
     },
     {
-      "egress_mono_ns": "125723249153066",
-      "ingress_mono_ns": "125723249129866",
-      "latency_ns": "786977",
       "packet_id": 54,
-      "send_mono_ns": "125723248342889",
-      "transit_ns": "23200"
+      "send_mono_ns": "131833852201280",
+      "ingress_mono_ns": "131833853442320",
+      "egress_mono_ns": "131833853497089",
+      "latency_ns": "1241040",
+      "transit_ns": "54769"
     },
     {
-      "egress_mono_ns": "125723311945820",
-      "ingress_mono_ns": "125723311922028",
-      "latency_ns": "687141",
       "packet_id": 55,
-      "send_mono_ns": "125723311234887",
-      "transit_ns": "23792"
+      "send_mono_ns": "131833914724971",
+      "ingress_mono_ns": "131833916076118",
+      "egress_mono_ns": "131833916131347",
+      "latency_ns": "1351147",
+      "transit_ns": "55229"
     },
     {
-      "egress_mono_ns": "125723364189738",
-      "ingress_mono_ns": "125723349014035",
-      "latency_ns": "1190251",
       "packet_id": 56,
-      "send_mono_ns": "125723347823784",
-      "transit_ns": "15175703"
+      "send_mono_ns": "131833951828362",
+      "ingress_mono_ns": "131833952193692",
+      "egress_mono_ns": "131833953267606",
+      "latency_ns": "365330",
+      "transit_ns": "1073914"
     },
     {
-      "egress_mono_ns": "125723411654911",
-      "ingress_mono_ns": "125723411627137",
-      "latency_ns": "350472",
       "packet_id": 57,
-      "send_mono_ns": "125723411276665",
-      "transit_ns": "27774"
+      "send_mono_ns": "131834014889066",
+      "ingress_mono_ns": "131834016291658",
+      "egress_mono_ns": "131834016319282",
+      "latency_ns": "1402592",
+      "transit_ns": "27624"
     },
     {
-      "egress_mono_ns": "125723449179967",
-      "ingress_mono_ns": "125723449135741",
-      "latency_ns": "1045638",
       "packet_id": 58,
-      "send_mono_ns": "125723448090103",
-      "transit_ns": "44226"
+      "send_mono_ns": "131834052229666",
+      "ingress_mono_ns": "131834053328436",
+      "egress_mono_ns": "131834053371979",
+      "latency_ns": "1098770",
+      "transit_ns": "43543"
     },
     {
-      "egress_mono_ns": "125723511795430",
-      "ingress_mono_ns": "125723511746829",
-      "latency_ns": "1025654",
       "packet_id": 59,
-      "send_mono_ns": "125723510721175",
-      "transit_ns": "48601"
+      "send_mono_ns": "131834115256033",
+      "ingress_mono_ns": "131834115884549",
+      "egress_mono_ns": "131834115916713",
+      "latency_ns": "628516",
+      "transit_ns": "32164"
     },
     {
-      "egress_mono_ns": "125723549203879",
-      "ingress_mono_ns": "125723549165286",
-      "latency_ns": "699489",
       "packet_id": 60,
-      "send_mono_ns": "125723548465797",
-      "transit_ns": "38593"
+      "send_mono_ns": "131834152084541",
+      "ingress_mono_ns": "131834152905713",
+      "egress_mono_ns": "131834152934575",
+      "latency_ns": "821172",
+      "transit_ns": "28862"
     },
     {
-      "egress_mono_ns": "125723611857915",
-      "ingress_mono_ns": "125723611809144",
-      "latency_ns": "567920",
       "packet_id": 61,
-      "send_mono_ns": "125723611241224",
-      "transit_ns": "48771"
+      "send_mono_ns": "131834215102690",
+      "ingress_mono_ns": "131834216537236",
+      "egress_mono_ns": "131834216586325",
+      "latency_ns": "1434546",
+      "transit_ns": "49089"
     },
     {
-      "egress_mono_ns": "125723649074156",
-      "ingress_mono_ns": "125723649048571",
-      "latency_ns": "815448",
       "packet_id": 62,
-      "send_mono_ns": "125723648233123",
-      "transit_ns": "25585"
+      "send_mono_ns": "131834252061907",
+      "ingress_mono_ns": "131834252528069",
+      "egress_mono_ns": "131834252566799",
+      "latency_ns": "466162",
+      "transit_ns": "38730"
     },
     {
-      "egress_mono_ns": "125723711736465",
-      "ingress_mono_ns": "125723711689786",
-      "latency_ns": "945012",
       "packet_id": 63,
-      "send_mono_ns": "125723710744774",
-      "transit_ns": "46679"
+      "send_mono_ns": "131834314938110",
+      "ingress_mono_ns": "131834316902249",
+      "egress_mono_ns": "131834316934993",
+      "latency_ns": "1964139",
+      "transit_ns": "32744"
     },
     {
-      "egress_mono_ns": "125723747841357",
-      "ingress_mono_ns": "125723747821047",
-      "latency_ns": "126992",
       "packet_id": 64,
-      "send_mono_ns": "125723747694055",
-      "transit_ns": "20310"
+      "send_mono_ns": "131834352078655",
+      "ingress_mono_ns": "131834353392650",
+      "egress_mono_ns": "131834353431642",
+      "latency_ns": "1313995",
+      "transit_ns": "38992"
     },
     {
-      "egress_mono_ns": "125723812587841",
-      "ingress_mono_ns": "125723812559997",
-      "latency_ns": "1148891",
       "packet_id": 65,
-      "send_mono_ns": "125723811411106",
-      "transit_ns": "27844"
+      "send_mono_ns": "131834415364083",
+      "ingress_mono_ns": "131834416569045",
+      "egress_mono_ns": "131834416608848",
+      "latency_ns": "1204962",
+      "transit_ns": "39803"
     },
     {
-      "egress_mono_ns": "125723848639139",
-      "ingress_mono_ns": "125723848607014",
-      "latency_ns": "844121",
       "packet_id": 66,
-      "send_mono_ns": "125723847762893",
-      "transit_ns": "32125"
+      "send_mono_ns": "131834452126415",
+      "ingress_mono_ns": "131834452410217",
+      "egress_mono_ns": "131834452429928",
+      "latency_ns": "283802",
+      "transit_ns": "19711"
     },
     {
-      "egress_mono_ns": "125723913226434",
-      "ingress_mono_ns": "125723913188097",
-      "latency_ns": "2017360",
       "packet_id": 67,
-      "send_mono_ns": "125723911170737",
-      "transit_ns": "38337"
+      "send_mono_ns": "131834515146850",
+      "ingress_mono_ns": "131834515287546",
+      "egress_mono_ns": "131834515359874",
+      "latency_ns": "140696",
+      "transit_ns": "72328"
     },
     {
-      "egress_mono_ns": "125723949455452",
-      "ingress_mono_ns": "125723949415816",
-      "latency_ns": "1062016",
       "packet_id": 68,
-      "send_mono_ns": "125723948353800",
-      "transit_ns": "39636"
+      "send_mono_ns": "131834552164327",
+      "ingress_mono_ns": "131834552444988",
+      "egress_mono_ns": "131834552461858",
+      "latency_ns": "280661",
+      "transit_ns": "16870"
     },
     {
-      "egress_mono_ns": "125724012028750",
-      "ingress_mono_ns": "125724012007125",
-      "latency_ns": "545192",
       "packet_id": 69,
-      "send_mono_ns": "125724011461933",
-      "transit_ns": "21625"
+      "send_mono_ns": "131834615329590",
+      "ingress_mono_ns": "131834616122787",
+      "egress_mono_ns": "131834616165445",
+      "latency_ns": "793197",
+      "transit_ns": "42658"
     },
     {
-      "egress_mono_ns": "125724049365687",
-      "ingress_mono_ns": "125724049309770",
-      "latency_ns": "910606",
       "packet_id": 70,
-      "send_mono_ns": "125724048399164",
-      "transit_ns": "55917"
+      "send_mono_ns": "131834651792661",
+      "ingress_mono_ns": "131834652973747",
+      "egress_mono_ns": "131834652997008",
+      "latency_ns": "1181086",
+      "transit_ns": "23261"
     },
     {
-      "egress_mono_ns": "125724112925470",
-      "ingress_mono_ns": "125724112871670",
-      "latency_ns": "1187172",
       "packet_id": 71,
-      "send_mono_ns": "125724111684498",
-      "transit_ns": "53800"
+      "send_mono_ns": "131834715097835",
+      "ingress_mono_ns": "131834716409576",
+      "egress_mono_ns": "131834716433556",
+      "latency_ns": "1311741",
+      "transit_ns": "23980"
     },
     {
-      "egress_mono_ns": "125724150021843",
-      "ingress_mono_ns": "125724149971167",
-      "latency_ns": "1297780",
       "packet_id": 72,
-      "send_mono_ns": "125724148673387",
-      "transit_ns": "50676"
+      "send_mono_ns": "131834752263976",
+      "ingress_mono_ns": "131834753487666",
+      "egress_mono_ns": "131834753501081",
+      "latency_ns": "1223690",
+      "transit_ns": "13415"
     },
     {
-      "egress_mono_ns": "125724211595510",
-      "ingress_mono_ns": "125724211569465",
-      "latency_ns": "439407",
       "packet_id": 73,
-      "send_mono_ns": "125724211130058",
-      "transit_ns": "26045"
+      "send_mono_ns": "131834814579852",
+      "ingress_mono_ns": "131834815928108",
+      "egress_mono_ns": "131834815952367",
+      "latency_ns": "1348256",
+      "transit_ns": "24259"
     },
     {
-      "egress_mono_ns": "125724249060864",
-      "ingress_mono_ns": "125724249020045",
-      "latency_ns": "771843",
       "packet_id": 74,
-      "send_mono_ns": "125724248248202",
-      "transit_ns": "40819"
+      "send_mono_ns": "131834851758287",
+      "ingress_mono_ns": "131834853098471",
+      "egress_mono_ns": "131834853337790",
+      "latency_ns": "1340184",
+      "transit_ns": "239319"
     },
     {
-      "egress_mono_ns": "125724312620686",
-      "ingress_mono_ns": "125724312581825",
-      "latency_ns": "1340834",
       "packet_id": 75,
-      "send_mono_ns": "125724311240991",
-      "transit_ns": "38861"
+      "send_mono_ns": "131834914613998",
+      "ingress_mono_ns": "131834915244292",
+      "egress_mono_ns": "131834915275167",
+      "latency_ns": "630294",
+      "transit_ns": "30875"
     },
     {
-      "egress_mono_ns": "125724348572221",
-      "ingress_mono_ns": "125724348547342",
-      "latency_ns": "288684",
       "packet_id": 76,
-      "send_mono_ns": "125724348258658",
-      "transit_ns": "24879"
+      "send_mono_ns": "131834952050379",
+      "ingress_mono_ns": "131834952322625",
+      "egress_mono_ns": "131834952345122",
+      "latency_ns": "272246",
+      "transit_ns": "22497"
     },
     {
-      "egress_mono_ns": "125724411142599",
-      "ingress_mono_ns": "125724411123027",
-      "latency_ns": "315640",
       "packet_id": 77,
-      "send_mono_ns": "125724410807387",
-      "transit_ns": "19572"
+      "send_mono_ns": "131835014960696",
+      "ingress_mono_ns": "131835015946112",
+      "egress_mono_ns": "131835015955659",
+      "latency_ns": "985416",
+      "transit_ns": "9547"
     },
     {
-      "egress_mono_ns": "125724449345478",
-      "ingress_mono_ns": "125724449309634",
-      "latency_ns": "650546",
       "packet_id": 78,
-      "send_mono_ns": "125724448659088",
-      "transit_ns": "35844"
+      "send_mono_ns": "131835052190054",
+      "ingress_mono_ns": "131835053462343",
+      "egress_mono_ns": "131835053487764",
+      "latency_ns": "1272289",
+      "transit_ns": "25421"
     },
     {
-      "egress_mono_ns": "125724511783125",
-      "ingress_mono_ns": "125724511756293",
-      "latency_ns": "916525",
       "packet_id": 79,
-      "send_mono_ns": "125724510839768",
-      "transit_ns": "26832"
+      "send_mono_ns": "131835115274023",
+      "ingress_mono_ns": "131835115992699",
+      "egress_mono_ns": "131835116054555",
+      "latency_ns": "718676",
+      "transit_ns": "61856"
     },
     {
-      "egress_mono_ns": "125724549916697",
-      "ingress_mono_ns": "125724549909931",
-      "latency_ns": "1212857",
       "packet_id": 80,
-      "send_mono_ns": "125724548697074",
-      "transit_ns": "6766"
+      "send_mono_ns": "131835151598489",
+      "ingress_mono_ns": "131835152029921",
+      "egress_mono_ns": "131835152075266",
+      "latency_ns": "431432",
+      "transit_ns": "45345"
     },
     {
-      "egress_mono_ns": "125724612405308",
-      "ingress_mono_ns": "125724612358394",
-      "latency_ns": "1222151",
       "packet_id": 81,
-      "send_mono_ns": "125724611136243",
-      "transit_ns": "46914"
+      "send_mono_ns": "131835214573991",
+      "ingress_mono_ns": "131835214998084",
+      "egress_mono_ns": "131835215031703",
+      "latency_ns": "424093",
+      "transit_ns": "33619"
     },
     {
-      "egress_mono_ns": "125724648450301",
-      "ingress_mono_ns": "125724648443790",
-      "latency_ns": "175547",
       "packet_id": 82,
-      "send_mono_ns": "125724648268243",
-      "transit_ns": "6511"
+      "send_mono_ns": "131835251368529",
+      "ingress_mono_ns": "131835252197016",
+      "egress_mono_ns": "131835252217623",
+      "latency_ns": "828487",
+      "transit_ns": "20607"
     },
     {
-      "egress_mono_ns": "125724712270386",
-      "ingress_mono_ns": "125724712237171",
-      "latency_ns": "965266",
       "packet_id": 83,
-      "send_mono_ns": "125724711271905",
-      "transit_ns": "33215"
+      "send_mono_ns": "131835314532231",
+      "ingress_mono_ns": "131835315811434",
+      "egress_mono_ns": "131835315833247",
+      "latency_ns": "1279203",
+      "transit_ns": "21813"
     },
     {
-      "egress_mono_ns": "125724749711245",
-      "ingress_mono_ns": "125724749666946",
-      "latency_ns": "910456",
       "packet_id": 84,
-      "send_mono_ns": "125724748756490",
-      "transit_ns": "44299"
+      "send_mono_ns": "131835351800104",
+      "ingress_mono_ns": "131835352462333",
+      "egress_mono_ns": "131835352494245",
+      "latency_ns": "662229",
+      "transit_ns": "31912"
     },
     {
-      "egress_mono_ns": "125724812327143",
-      "ingress_mono_ns": "125724812291562",
-      "latency_ns": "931929",
       "packet_id": 85,
-      "send_mono_ns": "125724811359633",
-      "transit_ns": "35581"
+      "send_mono_ns": "131835414437415",
+      "ingress_mono_ns": "131835415178879",
+      "egress_mono_ns": "131835415229655",
+      "latency_ns": "741464",
+      "transit_ns": "50776"
     },
     {
-      "egress_mono_ns": "125724848379629",
-      "ingress_mono_ns": "125724848353834",
-      "latency_ns": "642654",
       "packet_id": 86,
-      "send_mono_ns": "125724847711180",
-      "transit_ns": "25795"
+      "send_mono_ns": "131835451928864",
+      "ingress_mono_ns": "131835452892718",
+      "egress_mono_ns": "131835452928392",
+      "latency_ns": "963854",
+      "transit_ns": "35674"
     },
     {
-      "egress_mono_ns": "125724912418130",
-      "ingress_mono_ns": "125724912345118",
-      "latency_ns": "1197046",
       "packet_id": 87,
-      "send_mono_ns": "125724911148072",
-      "transit_ns": "73012"
+      "send_mono_ns": "131835514484907",
+      "ingress_mono_ns": "131835514899901",
+      "egress_mono_ns": "131835514947182",
+      "latency_ns": "414994",
+      "transit_ns": "47281"
     },
     {
-      "egress_mono_ns": "125724949397706",
-      "ingress_mono_ns": "125724949347216",
-      "latency_ns": "746317",
       "packet_id": 88,
-      "send_mono_ns": "125724948600899",
-      "transit_ns": "50490"
+      "send_mono_ns": "131835551652626",
+      "ingress_mono_ns": "131835552795892",
+      "egress_mono_ns": "131835552831500",
+      "latency_ns": "1143266",
+      "transit_ns": "35608"
     },
     {
-      "egress_mono_ns": "125725012100775",
-      "ingress_mono_ns": "125725012057023",
-      "latency_ns": "637291",
       "packet_id": 89,
-      "send_mono_ns": "125725011419732",
-      "transit_ns": "43752"
+      "send_mono_ns": "131835614541709",
+      "ingress_mono_ns": "131835616073260",
+      "egress_mono_ns": "131835616122125",
+      "latency_ns": "1531551",
+      "transit_ns": "48865"
     },
     {
-      "egress_mono_ns": "125725049241986",
-      "ingress_mono_ns": "125725049213056",
-      "latency_ns": "944685",
       "packet_id": 90,
-      "send_mono_ns": "125725048268371",
-      "transit_ns": "28930"
+      "send_mono_ns": "131835651431684",
+      "ingress_mono_ns": "131835652416274",
+      "egress_mono_ns": "131835652433972",
+      "latency_ns": "984590",
+      "transit_ns": "17698"
     },
     {
-      "egress_mono_ns": "125725112794508",
-      "ingress_mono_ns": "125725112771484",
-      "latency_ns": "1061582",
       "packet_id": 91,
-      "send_mono_ns": "125725111709902",
-      "transit_ns": "23024"
+      "send_mono_ns": "131835714377886",
+      "ingress_mono_ns": "131835715726667",
+      "egress_mono_ns": "131835715747977",
+      "latency_ns": "1348781",
+      "transit_ns": "21310"
     },
     {
-      "egress_mono_ns": "125725148812866",
-      "ingress_mono_ns": "125725148798836",
-      "latency_ns": "432713",
       "packet_id": 92,
-      "send_mono_ns": "125725148366123",
-      "transit_ns": "14030"
+      "send_mono_ns": "131835752191731",
+      "ingress_mono_ns": "131835753276981",
+      "egress_mono_ns": "131835753290917",
+      "latency_ns": "1085250",
+      "transit_ns": "13936"
     },
     {
-      "egress_mono_ns": "125725211602726",
-      "ingress_mono_ns": "125725211551107",
-      "latency_ns": "397729",
       "packet_id": 93,
-      "send_mono_ns": "125725211153378",
-      "transit_ns": "51619"
+      "send_mono_ns": "131835814928352",
+      "ingress_mono_ns": "131835816011272",
+      "egress_mono_ns": "131835816054160",
+      "latency_ns": "1082920",
+      "transit_ns": "42888"
     },
     {
-      "egress_mono_ns": "125725248920303",
-      "ingress_mono_ns": "125725248893190",
-      "latency_ns": "793950",
       "packet_id": 94,
-      "send_mono_ns": "125725248099240",
-      "transit_ns": "27113"
+      "send_mono_ns": "131835851692992",
+      "ingress_mono_ns": "131835852582954",
+      "egress_mono_ns": "131835852605340",
+      "latency_ns": "889962",
+      "transit_ns": "22386"
     },
     {
-      "egress_mono_ns": "125725311321468",
-      "ingress_mono_ns": "125725311310955",
-      "latency_ns": "432914",
       "packet_id": 95,
-      "send_mono_ns": "125725310878041",
-      "transit_ns": "10513"
+      "send_mono_ns": "131835914705292",
+      "ingress_mono_ns": "131835915106117",
+      "egress_mono_ns": "131835915123469",
+      "latency_ns": "400825",
+      "transit_ns": "17352"
     },
     {
-      "egress_mono_ns": "125725349630779",
-      "ingress_mono_ns": "125725349603999",
-      "latency_ns": "1157692",
       "packet_id": 96,
-      "send_mono_ns": "125725348446307",
-      "transit_ns": "26780"
+      "send_mono_ns": "131835951592848",
+      "ingress_mono_ns": "131835952553540",
+      "egress_mono_ns": "131835952576117",
+      "latency_ns": "960692",
+      "transit_ns": "22577"
     },
     {
-      "egress_mono_ns": "125725412089104",
-      "ingress_mono_ns": "125725412061618",
-      "latency_ns": "631395",
       "packet_id": 97,
-      "send_mono_ns": "125725411430223",
-      "transit_ns": "27486"
+      "send_mono_ns": "131836014308460",
+      "ingress_mono_ns": "131836015456579",
+      "egress_mono_ns": "131836015478455",
+      "latency_ns": "1148119",
+      "transit_ns": "21876"
     },
     {
-      "egress_mono_ns": "125725449106718",
-      "ingress_mono_ns": "125725449070406",
-      "latency_ns": "856335",
       "packet_id": 98,
-      "send_mono_ns": "125725448214071",
-      "transit_ns": "36312"
+      "send_mono_ns": "131836052153616",
+      "ingress_mono_ns": "131836052685173",
+      "egress_mono_ns": "131836052718943",
+      "latency_ns": "531557",
+      "transit_ns": "33770"
     },
     {
-      "egress_mono_ns": "125725511551085",
-      "ingress_mono_ns": "125725511502260",
-      "latency_ns": "485024",
       "packet_id": 99,
-      "send_mono_ns": "125725511017236",
-      "transit_ns": "48825"
+      "send_mono_ns": "131836115299262",
+      "ingress_mono_ns": "131836116116797",
+      "egress_mono_ns": "131836116142440",
+      "latency_ns": "817535",
+      "transit_ns": "25643"
     },
     {
-      "egress_mono_ns": "125725549949059",
-      "ingress_mono_ns": "125725549935513",
-      "latency_ns": "1231793",
       "packet_id": 100,
-      "send_mono_ns": "125725548703720",
-      "transit_ns": "13546"
+      "send_mono_ns": "131836152258691",
+      "ingress_mono_ns": "131836153187431",
+      "egress_mono_ns": "131836153207361",
+      "latency_ns": "928740",
+      "transit_ns": "19930"
     },
     {
-      "egress_mono_ns": "125725612616655",
-      "ingress_mono_ns": "125725612595285",
-      "latency_ns": "1171615",
       "packet_id": 101,
-      "send_mono_ns": "125725611423670",
-      "transit_ns": "21370"
+      "send_mono_ns": "131836214920976",
+      "ingress_mono_ns": "131836216191010",
+      "egress_mono_ns": "131836216227554",
+      "latency_ns": "1270034",
+      "transit_ns": "36544"
     },
     {
-      "egress_mono_ns": "125725649541880",
-      "ingress_mono_ns": "125725649521149",
-      "latency_ns": "988781",
       "packet_id": 102,
-      "send_mono_ns": "125725648532368",
-      "transit_ns": "20731"
+      "send_mono_ns": "131836252057121",
+      "ingress_mono_ns": "131836253309180",
+      "egress_mono_ns": "131836253329485",
+      "latency_ns": "1252059",
+      "transit_ns": "20305"
     },
     {
-      "egress_mono_ns": "125725711465683",
-      "ingress_mono_ns": "125725711419527",
-      "latency_ns": "122690",
       "packet_id": 103,
-      "send_mono_ns": "125725711296837",
-      "transit_ns": "46156"
+      "send_mono_ns": "131836314933856",
+      "ingress_mono_ns": "131836316192082",
+      "egress_mono_ns": "131836316230567",
+      "latency_ns": "1258226",
+      "transit_ns": "38485"
     }
   ],
   "scope": "D-140 added schedule only; same-run original-cadence capture-read latency, not exact kernel timestamps",
-  "spacing_ns": "33200000",
-  "spacing_reason": "max(0.5ms, measured latency spread + twice measured maximum transit + 0.1ms), rounded up to 0.1ms; avoid existing cadence sends within one spacing; verify actual ingress/egress order"
+  "spacing_ns": "5500000",
+  "spacing_reason": "max(0.5ms, measured latency spread + twice measured maximum transit + 0.1ms), rounded up to 0.1ms; avoid existing cadence sends within one spacing; verify actual ingress/egress order",
+  "spacing_unrounded_ns": "5421680",
+  "unqualified_reason": ""
 }

@@ -1,0 +1,234 @@
+{
+  "run_id": "bd73d7a4-03f1-4b17-97c2-9c25a39ac0db",
+  "scope": "Owned Docker lifecycle observer started before the assembled driver, stopped after stack teardown. Container PID1 events are separate from pidfd agent-stop samples.",
+  "events": [
+    {
+      "action": "kill",
+      "time_ns": "1793808167558321612",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node",
+        "signal": "15"
+      }
+    },
+    {
+      "action": "stop",
+      "time_ns": "1793808168255629895",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node"
+      }
+    },
+    {
+      "action": "die",
+      "time_ns": "1793808168258054171",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node",
+        "exitCode": "0"
+      }
+    },
+    {
+      "action": "start",
+      "time_ns": "1793808168408102858",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node"
+      }
+    },
+    {
+      "action": "kill",
+      "time_ns": "1793808534370759568",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node",
+        "signal": "15"
+      }
+    },
+    {
+      "action": "stop",
+      "time_ns": "1793808534848449360",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node"
+      }
+    },
+    {
+      "action": "die",
+      "time_ns": "1793808534850440783",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node",
+        "exitCode": "0"
+      }
+    },
+    {
+      "action": "start",
+      "time_ns": "1793808535029212641",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone-netns"
+      }
+    },
+    {
+      "action": "start",
+      "time_ns": "1793808535170138614",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone-adguard"
+      }
+    },
+    {
+      "action": "start",
+      "time_ns": "1793808535294576045",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone-copy"
+      }
+    },
+    {
+      "action": "die",
+      "time_ns": "1793808535341764684",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone-copy",
+        "exitCode": "0"
+      }
+    },
+    {
+      "action": "start",
+      "time_ns": "1793808535482900126",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone-copy"
+      }
+    },
+    {
+      "action": "die",
+      "time_ns": "1793808535510940065",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone-copy",
+        "exitCode": "0"
+      }
+    },
+    {
+      "action": "start",
+      "time_ns": "1793808535648130464",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone-copy"
+      }
+    },
+    {
+      "action": "die",
+      "time_ns": "1793808535680574639",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone-copy",
+        "exitCode": "0"
+      }
+    },
+    {
+      "action": "start",
+      "time_ns": "1793808536268527436",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone"
+      }
+    },
+    {
+      "action": "start",
+      "time_ns": "1793808536336139300",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node"
+      }
+    },
+    {
+      "action": "kill",
+      "time_ns": "1793808644582229858",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node",
+        "signal": "15"
+      }
+    },
+    {
+      "action": "stop",
+      "time_ns": "1793808644836016516",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node"
+      }
+    },
+    {
+      "action": "die",
+      "time_ns": "1793808644838808001",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node",
+        "exitCode": "0"
+      }
+    },
+    {
+      "action": "kill",
+      "time_ns": "1793808644952157198",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-netns",
+        "signal": "15"
+      }
+    },
+    {
+      "action": "kill",
+      "time_ns": "1793808664968393027",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-netns",
+        "signal": "9"
+      }
+    },
+    {
+      "action": "stop",
+      "time_ns": "1793808665095475920",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-netns"
+      }
+    },
+    {
+      "action": "die",
+      "time_ns": "1793808665097555793",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-netns",
+        "exitCode": "137"
+      }
+    },
+    {
+      "action": "kill",
+      "time_ns": "1793808685381200510",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone-netns",
+        "signal": "9"
+      }
+    },
+    {
+      "action": "kill",
+      "time_ns": "1793808685381225471",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone",
+        "signal": "9"
+      }
+    },
+    {
+      "action": "kill",
+      "time_ns": "1793808685382485162",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone-adguard",
+        "signal": "9"
+      }
+    },
+    {
+      "action": "die",
+      "time_ns": "1793808685418590757",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone-adguard",
+        "exitCode": "137"
+      }
+    },
+    {
+      "action": "die",
+      "time_ns": "1793808685424577981",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone",
+        "exitCode": "137"
+      }
+    },
+    {
+      "action": "die",
+      "time_ns": "1793808685732266427",
+      "attributes": {
+        "name": "fvpn-w4-isolation-node-clone-netns",
+        "exitCode": "137"
+      }
+    }
+  ]
+}
