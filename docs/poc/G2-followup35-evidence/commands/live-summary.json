@@ -1,0 +1,4479 @@
+[
+  {
+    "run": "live1",
+    "exit": 1,
+    "confounded": false,
+    "samples": 13,
+    "tcp_reads": 56,
+    "tcp_elapsed_ns": {
+      "min": 304147,
+      "median": 900751.0,
+      "p95": 208481293,
+      "max": 209874549
+    },
+    "timeouts": [],
+    "stale": [],
+    "d120": {
+      "passed": false,
+      "verdict": "AT10 FAIL",
+      "reloads": 100,
+      "udp_losses": 0,
+      "errors": [
+        "evidence: [Errno 2] No such file or directory: '/scratch/at10-origin.txt'",
+        "evidence: no datagrams"
+      ],
+      "losses": []
+    },
+    "reads": [
+      {
+        "sequence": 1,
+        "elapsed_ns": 403815,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 1,
+          "wall_ns": "1793776909887037109",
+          "mono_ns": "100352338414597",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 1
+        }
+      },
+      {
+        "sequence": 2,
+        "elapsed_ns": 889446,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 2,
+          "wall_ns": "1793776910088350692",
+          "mono_ns": "100352539727867",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 2
+        }
+      },
+      {
+        "sequence": 3,
+        "elapsed_ns": 730030,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 3,
+          "wall_ns": "1793776910290003829",
+          "mono_ns": "100352741381112",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 3
+        }
+      },
+      {
+        "sequence": 4,
+        "elapsed_ns": 875730,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 4,
+          "wall_ns": "1793776910491507453",
+          "mono_ns": "100352942884627",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 4
+        }
+      },
+      {
+        "sequence": 5,
+        "elapsed_ns": 1058414,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 5,
+          "wall_ns": "1793776910693217245",
+          "mono_ns": "100353144594865",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 5
+        }
+      },
+      {
+        "sequence": 6,
+        "elapsed_ns": 921810,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 6,
+          "wall_ns": "1793776910895607228",
+          "mono_ns": "100353346984454",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 6
+        }
+      },
+      {
+        "sequence": 7,
+        "elapsed_ns": 204249732,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 7,
+          "wall_ns": "1793776911300600002",
+          "mono_ns": "100353751978487",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 7
+        }
+      },
+      {
+        "sequence": 8,
+        "elapsed_ns": 1075236,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 8,
+          "wall_ns": "1793776911502523278",
+          "mono_ns": "100353953901211",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 8
+        }
+      },
+      {
+        "sequence": 9,
+        "elapsed_ns": 205928955,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 9,
+          "wall_ns": "1793776911909704522",
+          "mono_ns": "100354361082795",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 9
+        }
+      },
+      {
+        "sequence": 10,
+        "elapsed_ns": 2699231,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 10,
+          "wall_ns": "1793776912113332997",
+          "mono_ns": "100354564710480",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 10
+        }
+      },
+      {
+        "sequence": 11,
+        "elapsed_ns": 682486,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 11,
+          "wall_ns": "1793776912314517487",
+          "mono_ns": "100354765894686",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 11
+        }
+      },
+      {
+        "sequence": 12,
+        "elapsed_ns": 304147,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 12,
+          "wall_ns": "1793776912515430188",
+          "mono_ns": "100354966807410",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 12
+        }
+      },
+      {
+        "sequence": 13,
+        "elapsed_ns": 209342163,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 13,
+          "wall_ns": "1793776912925143151",
+          "mono_ns": "100355376521242",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 13
+        }
+      },
+      {
+        "sequence": 14,
+        "elapsed_ns": 676190,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 14,
+          "wall_ns": "1793776913126336579",
+          "mono_ns": "100355577713796",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 14
+        }
+      },
+      {
+        "sequence": 15,
+        "elapsed_ns": 662196,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 15,
+          "wall_ns": "1793776913327751077",
+          "mono_ns": "100355779128285",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 15
+        }
+      },
+      {
+        "sequence": 16,
+        "elapsed_ns": 1234878,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 16,
+          "wall_ns": "1793776913529800350",
+          "mono_ns": "100355981178328",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 16
+        }
+      },
+      {
+        "sequence": 17,
+        "elapsed_ns": 975287,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 17,
+          "wall_ns": "1793776913731476897",
+          "mono_ns": "100356182854043",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 17
+        }
+      },
+      {
+        "sequence": 18,
+        "elapsed_ns": 654782,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 18,
+          "wall_ns": "1793776913932963500",
+          "mono_ns": "100356384340738",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 18
+        }
+      },
+      {
+        "sequence": 19,
+        "elapsed_ns": 591070,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 19,
+          "wall_ns": "1793776914135227045",
+          "mono_ns": "100356586604280",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 19
+        }
+      },
+      {
+        "sequence": 20,
+        "elapsed_ns": 415826,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 20,
+          "wall_ns": "1793776914335968964",
+          "mono_ns": "100356787345877",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 20
+        }
+      },
+      {
+        "sequence": 21,
+        "elapsed_ns": 884694,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 21,
+          "wall_ns": "1793776914537318234",
+          "mono_ns": "100356988695161",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 21
+        }
+      },
+      {
+        "sequence": 22,
+        "elapsed_ns": 727412,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 22,
+          "wall_ns": "1793776914738677962",
+          "mono_ns": "100357190055226",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 22
+        }
+      },
+      {
+        "sequence": 23,
+        "elapsed_ns": 208481293,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 23,
+          "wall_ns": "1793776915147983517",
+          "mono_ns": "100357599361399",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 23
+        }
+      },
+      {
+        "sequence": 24,
+        "elapsed_ns": 832084,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 24,
+          "wall_ns": "1793776915349249254",
+          "mono_ns": "100357800626191",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 24
+        }
+      },
+      {
+        "sequence": 25,
+        "elapsed_ns": 206967814,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 25,
+          "wall_ns": "1793776915757013638",
+          "mono_ns": "100358208392175",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 25
+        }
+      },
+      {
+        "sequence": 26,
+        "elapsed_ns": 896387,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 26,
+          "wall_ns": "1793776915958340035",
+          "mono_ns": "100358409717278",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 26
+        }
+      },
+      {
+        "sequence": 27,
+        "elapsed_ns": 567398,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 27,
+          "wall_ns": "1793776916160058556",
+          "mono_ns": "100358611435459",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 27
+        }
+      },
+      {
+        "sequence": 28,
+        "elapsed_ns": 949281,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 28,
+          "wall_ns": "1793776916361298453",
+          "mono_ns": "100358812675702",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 28
+        }
+      },
+      {
+        "sequence": 29,
+        "elapsed_ns": 671157,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 29,
+          "wall_ns": "1793776916562296994",
+          "mono_ns": "100359013674268",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 29
+        }
+      },
+      {
+        "sequence": 30,
+        "elapsed_ns": 1147992,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 30,
+          "wall_ns": "1793776916763949631",
+          "mono_ns": "100359215326835",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 30
+        }
+      },
+      {
+        "sequence": 31,
+        "elapsed_ns": 740489,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 31,
+          "wall_ns": "1793776916965605596",
+          "mono_ns": "100359416982542",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 31
+        }
+      },
+      {
+        "sequence": 32,
+        "elapsed_ns": 1197974,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 32,
+          "wall_ns": "1793776917167983143",
+          "mono_ns": "100359619360970",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 32
+        }
+      },
+      {
+        "sequence": 33,
+        "elapsed_ns": 932965,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 33,
+          "wall_ns": "1793776917370180701",
+          "mono_ns": "100359821557909",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 33
+        }
+      },
+      {
+        "sequence": 34,
+        "elapsed_ns": 1127218,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 34,
+          "wall_ns": "1793776917573020451",
+          "mono_ns": "100360024398331",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 34
+        }
+      },
+      {
+        "sequence": 35,
+        "elapsed_ns": 1213272,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 35,
+          "wall_ns": "1793776917775670154",
+          "mono_ns": "100360227047792",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 35
+        }
+      },
+      {
+        "sequence": 36,
+        "elapsed_ns": 922682,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 36,
+          "wall_ns": "1793776917977903903",
+          "mono_ns": "100360429281089",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 36
+        }
+      },
+      {
+        "sequence": 37,
+        "elapsed_ns": 724294,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 37,
+          "wall_ns": "1793776918179780104",
+          "mono_ns": "100360631157058",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 37
+        }
+      },
+      {
+        "sequence": 38,
+        "elapsed_ns": 817237,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 38,
+          "wall_ns": "1793776918381341886",
+          "mono_ns": "100360832719076",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 38
+        }
+      },
+      {
+        "sequence": 39,
+        "elapsed_ns": 206634930,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 39,
+          "wall_ns": "1793776918789292482",
+          "mono_ns": "100361240670698",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 39
+        }
+      },
+      {
+        "sequence": 40,
+        "elapsed_ns": 811199,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 40,
+          "wall_ns": "1793776918990481926",
+          "mono_ns": "100361441859282",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 40
+        }
+      },
+      {
+        "sequence": 41,
+        "elapsed_ns": 205382214,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 41,
+          "wall_ns": "1793776919397021373",
+          "mono_ns": "100361848399320",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 41
+        }
+      },
+      {
+        "sequence": 42,
+        "elapsed_ns": 2358412,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 42,
+          "wall_ns": "1793776919599694329",
+          "mono_ns": "100362051071930",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 42
+        }
+      },
+      {
+        "sequence": 43,
+        "elapsed_ns": 822791,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 43,
+          "wall_ns": "1793776919803296197",
+          "mono_ns": "100362254673982",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 43
+        }
+      },
+      {
+        "sequence": 44,
+        "elapsed_ns": 651336,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 44,
+          "wall_ns": "1793776920004662069",
+          "mono_ns": "100362456039433",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 44
+        }
+      },
+      {
+        "sequence": 45,
+        "elapsed_ns": 1756511,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 45,
+          "wall_ns": "1793776920206930541",
+          "mono_ns": "100362658307717",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 45
+        }
+      },
+      {
+        "sequence": 46,
+        "elapsed_ns": 1099013,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 46,
+          "wall_ns": "1793776921908959044",
+          "mono_ns": "100364360336514",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 46
+        }
+      },
+      {
+        "sequence": 47,
+        "elapsed_ns": 432549,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 47,
+          "wall_ns": "1793776922110226219",
+          "mono_ns": "100364561603181",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 47
+        }
+      },
+      {
+        "sequence": 48,
+        "elapsed_ns": 206394657,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 48,
+          "wall_ns": "1793776922516926654",
+          "mono_ns": "100364968305086",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 48
+        }
+      },
+      {
+        "sequence": 49,
+        "elapsed_ns": 905115,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 49,
+          "wall_ns": "1793776922718621607",
+          "mono_ns": "100365169998960",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 49
+        }
+      },
+      {
+        "sequence": 50,
+        "elapsed_ns": 206054240,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 50,
+          "wall_ns": "1793776923125628846",
+          "mono_ns": "100365577006943",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 50
+        }
+      },
+      {
+        "sequence": 51,
+        "elapsed_ns": 774406,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 51,
+          "wall_ns": "1793776923327161274",
+          "mono_ns": "100365778538539",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 51
+        }
+      },
+      {
+        "sequence": 52,
+        "elapsed_ns": 599720,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 52,
+          "wall_ns": "1793776923528847022",
+          "mono_ns": "100365980223999",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 52
+        }
+      },
+      {
+        "sequence": 53,
+        "elapsed_ns": 525772,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 53,
+          "wall_ns": "1793776923730360933",
+          "mono_ns": "100366181738244",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 53
+        }
+      },
+      {
+        "sequence": 54,
+        "elapsed_ns": 209874549,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 54,
+          "wall_ns": "1793776924140804950",
+          "mono_ns": "100366592182749",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 54
+        }
+      },
+      {
+        "sequence": 55,
+        "elapsed_ns": 929897,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 55,
+          "wall_ns": "1793776924342928435",
+          "mono_ns": "100366794305596",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 55
+        }
+      },
+      {
+        "sequence": 56,
+        "elapsed_ns": 648930,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 56,
+          "wall_ns": "1793776924544656700",
+          "mono_ns": "100366996034083",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 56
+        }
+      }
+    ]
+  },
+  {
+    "run": "live2",
+    "exit": 0,
+    "confounded": false,
+    "samples": 16,
+    "tcp_reads": 53,
+    "tcp_elapsed_ns": {
+      "min": 274906,
+      "median": 629766,
+      "p95": 207882900,
+      "max": 212024176
+    },
+    "timeouts": [],
+    "stale": [],
+    "d120": {
+      "passed": true,
+      "verdict": "AT10 PASS under D-120",
+      "reloads": 100,
+      "udp_losses": 2,
+      "errors": [],
+      "losses": [
+        {
+          "sequence": 39,
+          "generation": "1052",
+          "bracket_start_ns": "1793777010337725540",
+          "bracket_end_ns": "1793777010385090889",
+          "upper_ns": 47365218,
+          "render_to_installed_ns": 24528806,
+          "classification": "boundary",
+          "next_datagram": "ok",
+          "failures": []
+        },
+        {
+          "sequence": 50,
+          "generation": "1083",
+          "bracket_start_ns": "1793777014259002060",
+          "bracket_end_ns": "1793777014296190925",
+          "upper_ns": 37188831,
+          "render_to_installed_ns": 21255949,
+          "classification": "boundary",
+          "next_datagram": "ok",
+          "failures": []
+        }
+      ]
+    },
+    "reads": [
+      {
+        "sequence": 1,
+        "elapsed_ns": 3609781,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 1,
+          "wall_ns": "1793777001647467718",
+          "mono_ns": "100444098845540",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 1
+        }
+      },
+      {
+        "sequence": 2,
+        "elapsed_ns": 679702,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 2,
+          "wall_ns": "1793777001851255281",
+          "mono_ns": "100444302632424",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 2
+        }
+      },
+      {
+        "sequence": 3,
+        "elapsed_ns": 2389013,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 3,
+          "wall_ns": "1793777002054073359",
+          "mono_ns": "100444505450740",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 3
+        }
+      },
+      {
+        "sequence": 4,
+        "elapsed_ns": 839459,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 4,
+          "wall_ns": "1793777002256062557",
+          "mono_ns": "100444707441028",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 4
+        }
+      },
+      {
+        "sequence": 5,
+        "elapsed_ns": 212024176,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 5,
+          "wall_ns": "1793777002668973301",
+          "mono_ns": "100445120352014",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 5
+        }
+      },
+      {
+        "sequence": 6,
+        "elapsed_ns": 820152,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 6,
+          "wall_ns": "1793777002870167195",
+          "mono_ns": "100445321544384",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 6
+        }
+      },
+      {
+        "sequence": 7,
+        "elapsed_ns": 431668,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 7,
+          "wall_ns": "1793777003071475634",
+          "mono_ns": "100445522852893",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 7
+        }
+      },
+      {
+        "sequence": 8,
+        "elapsed_ns": 577186,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 8,
+          "wall_ns": "1793777003275537225",
+          "mono_ns": "100445726914320",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 8
+        }
+      },
+      {
+        "sequence": 9,
+        "elapsed_ns": 734949,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 9,
+          "wall_ns": "1793777003476804066",
+          "mono_ns": "100445928183480",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 9
+        }
+      },
+      {
+        "sequence": 10,
+        "elapsed_ns": 447130,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 10,
+          "wall_ns": "1793777003678692652",
+          "mono_ns": "100446130071907",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 10
+        }
+      },
+      {
+        "sequence": 11,
+        "elapsed_ns": 307758,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 11,
+          "wall_ns": "1793777003879636699",
+          "mono_ns": "100446331013704",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 11
+        }
+      },
+      {
+        "sequence": 12,
+        "elapsed_ns": 594914,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 12,
+          "wall_ns": "1793777004080980950",
+          "mono_ns": "100446532358444",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 12
+        }
+      },
+      {
+        "sequence": 13,
+        "elapsed_ns": 203521299,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 13,
+          "wall_ns": "1793777004485084347",
+          "mono_ns": "100446936462162",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 13
+        }
+      },
+      {
+        "sequence": 14,
+        "elapsed_ns": 494086,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 14,
+          "wall_ns": "1793777004685950114",
+          "mono_ns": "100447137327242",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 14
+        }
+      },
+      {
+        "sequence": 15,
+        "elapsed_ns": 534348,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 15,
+          "wall_ns": "1793777004887195044",
+          "mono_ns": "100447338572074",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 15
+        }
+      },
+      {
+        "sequence": 16,
+        "elapsed_ns": 520729,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 16,
+          "wall_ns": "1793777005088136239",
+          "mono_ns": "100447539513511",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 16
+        }
+      },
+      {
+        "sequence": 17,
+        "elapsed_ns": 790010,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 17,
+          "wall_ns": "1793777005289235587",
+          "mono_ns": "100447740612536",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 17
+        }
+      },
+      {
+        "sequence": 18,
+        "elapsed_ns": 678597,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 18,
+          "wall_ns": "1793777005492853247",
+          "mono_ns": "100447944230308",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 18
+        }
+      },
+      {
+        "sequence": 19,
+        "elapsed_ns": 312591,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 19,
+          "wall_ns": "1793777005693475575",
+          "mono_ns": "100448144852636",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 19
+        }
+      },
+      {
+        "sequence": 20,
+        "elapsed_ns": 829458,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 20,
+          "wall_ns": "1793777005894615487",
+          "mono_ns": "100448345992684",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 20
+        }
+      },
+      {
+        "sequence": 21,
+        "elapsed_ns": 758397,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 21,
+          "wall_ns": "1793777006095973781",
+          "mono_ns": "100448547350803",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 21
+        }
+      },
+      {
+        "sequence": 22,
+        "elapsed_ns": 203693252,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 22,
+          "wall_ns": "1793777006500269484",
+          "mono_ns": "100448951648046",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 22
+        }
+      },
+      {
+        "sequence": 23,
+        "elapsed_ns": 1327734,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 23,
+          "wall_ns": "1793777006702003535",
+          "mono_ns": "100449153380551",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 23
+        }
+      },
+      {
+        "sequence": 24,
+        "elapsed_ns": 740889,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 24,
+          "wall_ns": "1793777006903269542",
+          "mono_ns": "100449354646727",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 24
+        }
+      },
+      {
+        "sequence": 25,
+        "elapsed_ns": 403296,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 25,
+          "wall_ns": "1793777007105805376",
+          "mono_ns": "100449557182926",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 25
+        }
+      },
+      {
+        "sequence": 26,
+        "elapsed_ns": 324671,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 26,
+          "wall_ns": "1793777007306756525",
+          "mono_ns": "100449758135028",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 26
+        }
+      },
+      {
+        "sequence": 27,
+        "elapsed_ns": 586087,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 27,
+          "wall_ns": "1793777007507703667",
+          "mono_ns": "100449959080729",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 27
+        }
+      },
+      {
+        "sequence": 28,
+        "elapsed_ns": 533831,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 28,
+          "wall_ns": "1793777007709124155",
+          "mono_ns": "100450160502717",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 28
+        }
+      },
+      {
+        "sequence": 29,
+        "elapsed_ns": 207613405,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 29,
+          "wall_ns": "1793777008117072579",
+          "mono_ns": "100450568450276",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 29
+        }
+      },
+      {
+        "sequence": 30,
+        "elapsed_ns": 208018529,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 30,
+          "wall_ns": "1793777008526171061",
+          "mono_ns": "100450977549689",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 30
+        }
+      },
+      {
+        "sequence": 31,
+        "elapsed_ns": 446897,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 31,
+          "wall_ns": "1793777008727281664",
+          "mono_ns": "100451178658920",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 31
+        }
+      },
+      {
+        "sequence": 32,
+        "elapsed_ns": 960921,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 32,
+          "wall_ns": "1793777008928834489",
+          "mono_ns": "100451380211644",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 32
+        }
+      },
+      {
+        "sequence": 33,
+        "elapsed_ns": 385583,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 33,
+          "wall_ns": "1793777009130163559",
+          "mono_ns": "100451581540647",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 33
+        }
+      },
+      {
+        "sequence": 34,
+        "elapsed_ns": 783495,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 34,
+          "wall_ns": "1793777009331588813",
+          "mono_ns": "100451782966211",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 34
+        }
+      },
+      {
+        "sequence": 35,
+        "elapsed_ns": 3410310,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 35,
+          "wall_ns": "1793777009535980794",
+          "mono_ns": "100451987357982",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 35
+        }
+      },
+      {
+        "sequence": 36,
+        "elapsed_ns": 629766,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 36,
+          "wall_ns": "1793777009737494303",
+          "mono_ns": "100452188871303",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 36
+        }
+      },
+      {
+        "sequence": 37,
+        "elapsed_ns": 491891,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 37,
+          "wall_ns": "1793777009938800547",
+          "mono_ns": "100452390177658",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 37
+        }
+      },
+      {
+        "sequence": 38,
+        "elapsed_ns": 341862,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 38,
+          "wall_ns": "1793777010139764801",
+          "mono_ns": "100452591141894",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 38
+        }
+      },
+      {
+        "sequence": 39,
+        "elapsed_ns": 654407,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 39,
+          "wall_ns": "1793777010340760500",
+          "mono_ns": "100452792137469",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 39
+        }
+      },
+      {
+        "sequence": 40,
+        "elapsed_ns": 496754,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 40,
+          "wall_ns": "1793777012042507906",
+          "mono_ns": "100454493885317",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 40
+        }
+      },
+      {
+        "sequence": 41,
+        "elapsed_ns": 775636,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 41,
+          "wall_ns": "1793777012243937319",
+          "mono_ns": "100454695314564",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 41
+        }
+      },
+      {
+        "sequence": 42,
+        "elapsed_ns": 863229,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 42,
+          "wall_ns": "1793777012445404526",
+          "mono_ns": "100454896781901",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 42
+        }
+      },
+      {
+        "sequence": 43,
+        "elapsed_ns": 1356503,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 43,
+          "wall_ns": "1793777012647095597",
+          "mono_ns": "100455098472823",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 43
+        }
+      },
+      {
+        "sequence": 44,
+        "elapsed_ns": 207882900,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 44,
+          "wall_ns": "1793777013055878422",
+          "mono_ns": "100455507256959",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 44
+        }
+      },
+      {
+        "sequence": 45,
+        "elapsed_ns": 384448,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 45,
+          "wall_ns": "1793777013256981240",
+          "mono_ns": "100455708358858",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 45
+        }
+      },
+      {
+        "sequence": 46,
+        "elapsed_ns": 716956,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 46,
+          "wall_ns": "1793777013458077569",
+          "mono_ns": "100455909457060",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 46
+        }
+      },
+      {
+        "sequence": 47,
+        "elapsed_ns": 274906,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 47,
+          "wall_ns": "1793777013659075364",
+          "mono_ns": "100456110453179",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 47
+        }
+      },
+      {
+        "sequence": 48,
+        "elapsed_ns": 322262,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 48,
+          "wall_ns": "1793777013859737234",
+          "mono_ns": "100456311114169",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 48
+        }
+      },
+      {
+        "sequence": 49,
+        "elapsed_ns": 421547,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 49,
+          "wall_ns": "1793777014060458649",
+          "mono_ns": "100456511835876",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 49
+        }
+      },
+      {
+        "sequence": 50,
+        "elapsed_ns": 408689,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 50,
+          "wall_ns": "1793777014261554630",
+          "mono_ns": "100456712933094",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 50
+        }
+      },
+      {
+        "sequence": 51,
+        "elapsed_ns": 540900,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 51,
+          "wall_ns": "1793777015963399724",
+          "mono_ns": "100458414776848",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 51
+        }
+      },
+      {
+        "sequence": 52,
+        "elapsed_ns": 541281,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 52,
+          "wall_ns": "1793777016164429451",
+          "mono_ns": "100458615807057",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 52
+        }
+      },
+      {
+        "sequence": 53,
+        "elapsed_ns": 402710,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 53,
+          "wall_ns": "1793777016365154930",
+          "mono_ns": "100458816532223",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 53
+        }
+      }
+    ]
+  },
+  {
+    "run": "live3",
+    "exit": 0,
+    "confounded": true,
+    "samples": 16,
+    "tcp_reads": 67,
+    "tcp_elapsed_ns": {
+      "min": 269094,
+      "median": 977284,
+      "p95": 209278405,
+      "max": 613181304
+    },
+    "timeouts": [],
+    "stale": [],
+    "d120": {
+      "passed": true,
+      "verdict": "AT10 PASS under D-120",
+      "reloads": 100,
+      "udp_losses": 0,
+      "errors": [],
+      "losses": []
+    },
+    "reads": [
+      {
+        "sequence": 1,
+        "elapsed_ns": 557206,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 1,
+          "wall_ns": "1793777043111601844",
+          "mono_ns": "100485562979303",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 1
+        }
+      },
+      {
+        "sequence": 2,
+        "elapsed_ns": 2573711,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 2,
+          "wall_ns": "1793777043314511162",
+          "mono_ns": "100485765888430",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 2
+        }
+      },
+      {
+        "sequence": 3,
+        "elapsed_ns": 895695,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 3,
+          "wall_ns": "1793777043516478833",
+          "mono_ns": "100485967855971",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 3
+        }
+      },
+      {
+        "sequence": 4,
+        "elapsed_ns": 1086119,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 4,
+          "wall_ns": "1793777043718523283",
+          "mono_ns": "100486169900509",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 4
+        }
+      },
+      {
+        "sequence": 5,
+        "elapsed_ns": 946869,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 5,
+          "wall_ns": "1793777043920549297",
+          "mono_ns": "100486371926532",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 5
+        }
+      },
+      {
+        "sequence": 6,
+        "elapsed_ns": 202972280,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 6,
+          "wall_ns": "1793777044324646272",
+          "mono_ns": "100486776024287",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 6
+        }
+      },
+      {
+        "sequence": 7,
+        "elapsed_ns": 875376,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 7,
+          "wall_ns": "1793777044526223719",
+          "mono_ns": "100486977600921",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 7
+        }
+      },
+      {
+        "sequence": 8,
+        "elapsed_ns": 206226842,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 8,
+          "wall_ns": "1793777044933394976",
+          "mono_ns": "100487384773014",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 8
+        }
+      },
+      {
+        "sequence": 9,
+        "elapsed_ns": 766481,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 9,
+          "wall_ns": "1793777045134438646",
+          "mono_ns": "100487585815962",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 9
+        }
+      },
+      {
+        "sequence": 10,
+        "elapsed_ns": 206352848,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 10,
+          "wall_ns": "1793777045541304898",
+          "mono_ns": "100487992683611",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 10
+        }
+      },
+      {
+        "sequence": 11,
+        "elapsed_ns": 1107837,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 11,
+          "wall_ns": "1793777045742977689",
+          "mono_ns": "100488194356186",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 11
+        }
+      },
+      {
+        "sequence": 12,
+        "elapsed_ns": 205295147,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 12,
+          "wall_ns": "1793777046149075533",
+          "mono_ns": "100488600453530",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 12
+        }
+      },
+      {
+        "sequence": 13,
+        "elapsed_ns": 638080,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 13,
+          "wall_ns": "1793777046350332708",
+          "mono_ns": "100488801709750",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 13
+        }
+      },
+      {
+        "sequence": 14,
+        "elapsed_ns": 4433419,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 14,
+          "wall_ns": "1793777046555685304",
+          "mono_ns": "100489007062841",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 14
+        }
+      },
+      {
+        "sequence": 15,
+        "elapsed_ns": 364385,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 15,
+          "wall_ns": "1793777046756674028",
+          "mono_ns": "100489208051040",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 15
+        }
+      },
+      {
+        "sequence": 16,
+        "elapsed_ns": 471542,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 16,
+          "wall_ns": "1793777046957438740",
+          "mono_ns": "100489408815900",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 16
+        }
+      },
+      {
+        "sequence": 17,
+        "elapsed_ns": 742392,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 17,
+          "wall_ns": "1793777047158862955",
+          "mono_ns": "100489610240249",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 17
+        }
+      },
+      {
+        "sequence": 18,
+        "elapsed_ns": 269094,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 18,
+          "wall_ns": "1793777047359580192",
+          "mono_ns": "100489810957241",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 18
+        }
+      },
+      {
+        "sequence": 19,
+        "elapsed_ns": 576137,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 19,
+          "wall_ns": "1793777047560474362",
+          "mono_ns": "100490011851644",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 19
+        }
+      },
+      {
+        "sequence": 20,
+        "elapsed_ns": 848665,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 20,
+          "wall_ns": "1793777047761865306",
+          "mono_ns": "100490213242915",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 20
+        }
+      },
+      {
+        "sequence": 21,
+        "elapsed_ns": 926576,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 21,
+          "wall_ns": "1793777047963296276",
+          "mono_ns": "100490414673861",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 21
+        }
+      },
+      {
+        "sequence": 22,
+        "elapsed_ns": 209579048,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 22,
+          "wall_ns": "1793777048373643438",
+          "mono_ns": "100490825022213",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 22
+        }
+      },
+      {
+        "sequence": 23,
+        "elapsed_ns": 953624,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 23,
+          "wall_ns": "1793777048575071656",
+          "mono_ns": "100491026448668",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 23
+        }
+      },
+      {
+        "sequence": 24,
+        "elapsed_ns": 977284,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 24,
+          "wall_ns": "1793777048776647776",
+          "mono_ns": "100491228025223",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 24
+        }
+      },
+      {
+        "sequence": 25,
+        "elapsed_ns": 326721,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 25,
+          "wall_ns": "1793777048977924694",
+          "mono_ns": "100491429301949",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 25
+        }
+      },
+      {
+        "sequence": 26,
+        "elapsed_ns": 485346,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 26,
+          "wall_ns": "1793777049178707863",
+          "mono_ns": "100491630084979",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 26
+        }
+      },
+      {
+        "sequence": 27,
+        "elapsed_ns": 660615,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 27,
+          "wall_ns": "1793777049379954679",
+          "mono_ns": "100491831331818",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 27
+        }
+      },
+      {
+        "sequence": 28,
+        "elapsed_ns": 208507549,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 28,
+          "wall_ns": "1793777049788906680",
+          "mono_ns": "100492240285548",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 28
+        }
+      },
+      {
+        "sequence": 29,
+        "elapsed_ns": 877749,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 29,
+          "wall_ns": "1793777049990138225",
+          "mono_ns": "100492441515377",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 29
+        }
+      },
+      {
+        "sequence": 30,
+        "elapsed_ns": 1257240,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 30,
+          "wall_ns": "1793777050191698749",
+          "mono_ns": "100492643075946",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 30
+        }
+      },
+      {
+        "sequence": 31,
+        "elapsed_ns": 1107339,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 31,
+          "wall_ns": "1793777050393943038",
+          "mono_ns": "100492845320157",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 31
+        }
+      },
+      {
+        "sequence": 32,
+        "elapsed_ns": 2099291,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 32,
+          "wall_ns": "1793777050597264919",
+          "mono_ns": "100493048642512",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 32
+        }
+      },
+      {
+        "sequence": 33,
+        "elapsed_ns": 646447,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 33,
+          "wall_ns": "1793777050798445938",
+          "mono_ns": "100493249823409",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 33
+        }
+      },
+      {
+        "sequence": 34,
+        "elapsed_ns": 846294,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 34,
+          "wall_ns": "1793777050999603453",
+          "mono_ns": "100493450980866",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 34
+        }
+      },
+      {
+        "sequence": 35,
+        "elapsed_ns": 940332,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 35,
+          "wall_ns": "1793777051201370388",
+          "mono_ns": "100493652747459",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 35
+        }
+      },
+      {
+        "sequence": 36,
+        "elapsed_ns": 995850,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 36,
+          "wall_ns": "1793777051403294309",
+          "mono_ns": "100493854672180",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 36
+        }
+      },
+      {
+        "sequence": 37,
+        "elapsed_ns": 475276,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 37,
+          "wall_ns": "1793777051604405370",
+          "mono_ns": "100494055782500",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 37
+        }
+      },
+      {
+        "sequence": 38,
+        "elapsed_ns": 413006,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 38,
+          "wall_ns": "1793777051805090324",
+          "mono_ns": "100494256467636",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 38
+        }
+      },
+      {
+        "sequence": 39,
+        "elapsed_ns": 207738310,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 39,
+          "wall_ns": "1793777052213302166",
+          "mono_ns": "100494664680914",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 39
+        }
+      },
+      {
+        "sequence": 40,
+        "elapsed_ns": 282858,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 40,
+          "wall_ns": "1793777052413958860",
+          "mono_ns": "100494865335834",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 40
+        }
+      },
+      {
+        "sequence": 41,
+        "elapsed_ns": 1615969,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 41,
+          "wall_ns": "1793777052615903857",
+          "mono_ns": "100495067282177",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 41
+        }
+      },
+      {
+        "sequence": 42,
+        "elapsed_ns": 1993720,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 42,
+          "wall_ns": "1793777052818817126",
+          "mono_ns": "100495270195164",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 42
+        }
+      },
+      {
+        "sequence": 43,
+        "elapsed_ns": 1325772,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 43,
+          "wall_ns": "1793777053021786950",
+          "mono_ns": "100495473164889",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 43
+        }
+      },
+      {
+        "sequence": 44,
+        "elapsed_ns": 1003046,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 44,
+          "wall_ns": "1793777053225210523",
+          "mono_ns": "100495676588478",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 44
+        }
+      },
+      {
+        "sequence": 45,
+        "elapsed_ns": 857633,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 45,
+          "wall_ns": "1793777053426843622",
+          "mono_ns": "100495878221429",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 45
+        }
+      },
+      {
+        "sequence": 46,
+        "elapsed_ns": 209278405,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 46,
+          "wall_ns": "1793777053839253622",
+          "mono_ns": "100496290632084",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 46
+        }
+      },
+      {
+        "sequence": 47,
+        "elapsed_ns": 613181304,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 47,
+          "wall_ns": "1793777054652906582",
+          "mono_ns": "100497104286142",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 47
+        }
+      },
+      {
+        "sequence": 48,
+        "elapsed_ns": 2205949,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 48,
+          "wall_ns": "1793777054859066875",
+          "mono_ns": "100497310444831",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 48
+        }
+      },
+      {
+        "sequence": 49,
+        "elapsed_ns": 1455029,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 49,
+          "wall_ns": "1793777055061413402",
+          "mono_ns": "100497512791126",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 49
+        }
+      },
+      {
+        "sequence": 50,
+        "elapsed_ns": 922502,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 50,
+          "wall_ns": "1793777055263953725",
+          "mono_ns": "100497715330991",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 50
+        }
+      },
+      {
+        "sequence": 51,
+        "elapsed_ns": 303292,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 51,
+          "wall_ns": "1793777055464942401",
+          "mono_ns": "100497916319345",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 51
+        }
+      },
+      {
+        "sequence": 52,
+        "elapsed_ns": 964869,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 52,
+          "wall_ns": "1793777055666297884",
+          "mono_ns": "100498117675563",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 52
+        }
+      },
+      {
+        "sequence": 53,
+        "elapsed_ns": 1803718,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 53,
+          "wall_ns": "1793777055870606875",
+          "mono_ns": "100498321985301",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 53
+        }
+      },
+      {
+        "sequence": 54,
+        "elapsed_ns": 1963396,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 54,
+          "wall_ns": "1793777056075478184",
+          "mono_ns": "100498526856789",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 54
+        }
+      },
+      {
+        "sequence": 55,
+        "elapsed_ns": 2346564,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 55,
+          "wall_ns": "1793777056278796320",
+          "mono_ns": "100498730174280",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 55
+        }
+      },
+      {
+        "sequence": 56,
+        "elapsed_ns": 806138,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 56,
+          "wall_ns": "1793777056481739581",
+          "mono_ns": "100498933117775",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 56
+        }
+      },
+      {
+        "sequence": 57,
+        "elapsed_ns": 1154159,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 57,
+          "wall_ns": "1793777056684096010",
+          "mono_ns": "100499135473607",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 57
+        }
+      },
+      {
+        "sequence": 58,
+        "elapsed_ns": 710946,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 58,
+          "wall_ns": "1793777056886046576",
+          "mono_ns": "100499337424521",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 58
+        }
+      },
+      {
+        "sequence": 59,
+        "elapsed_ns": 775995,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 59,
+          "wall_ns": "1793777057088217324",
+          "mono_ns": "100499539595031",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 59
+        }
+      },
+      {
+        "sequence": 60,
+        "elapsed_ns": 209398152,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 60,
+          "wall_ns": "1793777057500753355",
+          "mono_ns": "100499952132415",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 60
+        }
+      },
+      {
+        "sequence": 61,
+        "elapsed_ns": 4435769,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 61,
+          "wall_ns": "1793777057708884264",
+          "mono_ns": "100500160263394",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 61
+        }
+      },
+      {
+        "sequence": 62,
+        "elapsed_ns": 1041369,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 62,
+          "wall_ns": "1793777057910706344",
+          "mono_ns": "100500362084116",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 62
+        }
+      },
+      {
+        "sequence": 63,
+        "elapsed_ns": 204717591,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 63,
+          "wall_ns": "1793777058315959699",
+          "mono_ns": "100500767337684",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 63
+        }
+      },
+      {
+        "sequence": 64,
+        "elapsed_ns": 613806,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 64,
+          "wall_ns": "1793777058516986212",
+          "mono_ns": "100500968363990",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 64
+        }
+      },
+      {
+        "sequence": 65,
+        "elapsed_ns": 209056142,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 65,
+          "wall_ns": "1793777058926750458",
+          "mono_ns": "100501378129181",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 65
+        }
+      },
+      {
+        "sequence": 66,
+        "elapsed_ns": 205956833,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 66,
+          "wall_ns": "1793777059334029171",
+          "mono_ns": "100501785407105",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 66
+        }
+      },
+      {
+        "sequence": 67,
+        "elapsed_ns": 398574,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 67,
+          "wall_ns": "1793777059534920704",
+          "mono_ns": "100501986297877",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 67
+        }
+      }
+    ]
+  },
+  {
+    "run": "live4",
+    "exit": 0,
+    "confounded": true,
+    "samples": 16,
+    "tcp_reads": 66,
+    "tcp_elapsed_ns": {
+      "min": 253769,
+      "median": 679515.5,
+      "p95": 205682281,
+      "max": 210597217
+    },
+    "timeouts": [],
+    "stale": [],
+    "d120": {
+      "passed": true,
+      "verdict": "AT10 PASS under D-120",
+      "reloads": 100,
+      "udp_losses": 0,
+      "errors": [],
+      "losses": []
+    },
+    "reads": [
+      {
+        "sequence": 1,
+        "elapsed_ns": 400140,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 1,
+          "wall_ns": "1793777134955344140",
+          "mono_ns": "100577406721619",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 1
+        }
+      },
+      {
+        "sequence": 2,
+        "elapsed_ns": 356577,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 2,
+          "wall_ns": "1793777135156014044",
+          "mono_ns": "100577607391598",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 2
+        }
+      },
+      {
+        "sequence": 3,
+        "elapsed_ns": 553550,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 3,
+          "wall_ns": "1793777135356954939",
+          "mono_ns": "100577808332194",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 3
+        }
+      },
+      {
+        "sequence": 4,
+        "elapsed_ns": 308968,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 4,
+          "wall_ns": "1793777135558483022",
+          "mono_ns": "100578009860354",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 4
+        }
+      },
+      {
+        "sequence": 5,
+        "elapsed_ns": 557047,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 5,
+          "wall_ns": "1793777135759388806",
+          "mono_ns": "100578210765831",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 5
+        }
+      },
+      {
+        "sequence": 6,
+        "elapsed_ns": 452096,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 6,
+          "wall_ns": "1793777135960238595",
+          "mono_ns": "100578411615707",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 6
+        }
+      },
+      {
+        "sequence": 7,
+        "elapsed_ns": 1021640,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 7,
+          "wall_ns": "1793777136161620542",
+          "mono_ns": "100578612998089",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 7
+        }
+      },
+      {
+        "sequence": 8,
+        "elapsed_ns": 399576,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 8,
+          "wall_ns": "1793777136362415729",
+          "mono_ns": "100578813792822",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 8
+        }
+      },
+      {
+        "sequence": 9,
+        "elapsed_ns": 407428,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 9,
+          "wall_ns": "1793777136563174268",
+          "mono_ns": "100579014551287",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 9
+        }
+      },
+      {
+        "sequence": 10,
+        "elapsed_ns": 298733,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 10,
+          "wall_ns": "1793777136765628560",
+          "mono_ns": "100579217005714",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 10
+        }
+      },
+      {
+        "sequence": 11,
+        "elapsed_ns": 371090,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 11,
+          "wall_ns": "1793777136966399260",
+          "mono_ns": "100579417776611",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 11
+        }
+      },
+      {
+        "sequence": 12,
+        "elapsed_ns": 205682281,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 12,
+          "wall_ns": "1793777137372355197",
+          "mono_ns": "100579823733269",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 12
+        }
+      },
+      {
+        "sequence": 13,
+        "elapsed_ns": 445400,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 13,
+          "wall_ns": "1793777137573480367",
+          "mono_ns": "100580024857289",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 13
+        }
+      },
+      {
+        "sequence": 14,
+        "elapsed_ns": 481823,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 14,
+          "wall_ns": "1793777137774439926",
+          "mono_ns": "100580225817251",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 14
+        }
+      },
+      {
+        "sequence": 15,
+        "elapsed_ns": 905774,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 15,
+          "wall_ns": "1793777137975719691",
+          "mono_ns": "100580427098275",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 15
+        }
+      },
+      {
+        "sequence": 16,
+        "elapsed_ns": 1304147,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 16,
+          "wall_ns": "1793777138178078000",
+          "mono_ns": "100580629455981",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 16
+        }
+      },
+      {
+        "sequence": 17,
+        "elapsed_ns": 290673,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 17,
+          "wall_ns": "1793777138379266924",
+          "mono_ns": "100580830643920",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 17
+        }
+      },
+      {
+        "sequence": 18,
+        "elapsed_ns": 702804,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 18,
+          "wall_ns": "1793777138580260172",
+          "mono_ns": "100581031637382",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 18
+        }
+      },
+      {
+        "sequence": 19,
+        "elapsed_ns": 574287,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 19,
+          "wall_ns": "1793777138781217117",
+          "mono_ns": "100581232594470",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 19
+        }
+      },
+      {
+        "sequence": 20,
+        "elapsed_ns": 614182,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 20,
+          "wall_ns": "1793777138982440871",
+          "mono_ns": "100581433818047",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 20
+        }
+      },
+      {
+        "sequence": 21,
+        "elapsed_ns": 402473,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 21,
+          "wall_ns": "1793777139183675017",
+          "mono_ns": "100581635052349",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 21
+        }
+      },
+      {
+        "sequence": 22,
+        "elapsed_ns": 727644,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 22,
+          "wall_ns": "1793777139384856171",
+          "mono_ns": "100581836233397",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 22
+        }
+      },
+      {
+        "sequence": 23,
+        "elapsed_ns": 2090300,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 23,
+          "wall_ns": "1793777139587441669",
+          "mono_ns": "100582038818950",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 23
+        }
+      },
+      {
+        "sequence": 24,
+        "elapsed_ns": 490874,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 24,
+          "wall_ns": "1793777139788420072",
+          "mono_ns": "100582239797401",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 24
+        }
+      },
+      {
+        "sequence": 25,
+        "elapsed_ns": 207179761,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 25,
+          "wall_ns": "1793777140196125982",
+          "mono_ns": "100582647504016",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 25
+        }
+      },
+      {
+        "sequence": 26,
+        "elapsed_ns": 319982,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 26,
+          "wall_ns": "1793777140396877728",
+          "mono_ns": "100582848254663",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 26
+        }
+      },
+      {
+        "sequence": 27,
+        "elapsed_ns": 2051559,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 27,
+          "wall_ns": "1793777140600324364",
+          "mono_ns": "100583051701767",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 27
+        }
+      },
+      {
+        "sequence": 28,
+        "elapsed_ns": 3180316,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 28,
+          "wall_ns": "1793777140803852600",
+          "mono_ns": "100583255229839",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 28
+        }
+      },
+      {
+        "sequence": 29,
+        "elapsed_ns": 2700122,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 29,
+          "wall_ns": "1793777141007733571",
+          "mono_ns": "100583459110949",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 29
+        }
+      },
+      {
+        "sequence": 30,
+        "elapsed_ns": 440112,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 30,
+          "wall_ns": "1793777141208688493",
+          "mono_ns": "100583660065952",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 30
+        }
+      },
+      {
+        "sequence": 31,
+        "elapsed_ns": 202649385,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 31,
+          "wall_ns": "1793777141612105562",
+          "mono_ns": "100584063484207",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 31
+        }
+      },
+      {
+        "sequence": 32,
+        "elapsed_ns": 326728,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 32,
+          "wall_ns": "1793777141812819048",
+          "mono_ns": "100584264196047",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 32
+        }
+      },
+      {
+        "sequence": 33,
+        "elapsed_ns": 773162,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 33,
+          "wall_ns": "1793777142014722186",
+          "mono_ns": "100584466099317",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 33
+        }
+      },
+      {
+        "sequence": 34,
+        "elapsed_ns": 326456,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 34,
+          "wall_ns": "1793777142215496829",
+          "mono_ns": "100584666874407",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 34
+        }
+      },
+      {
+        "sequence": 35,
+        "elapsed_ns": 787701,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 35,
+          "wall_ns": "1793777142416860092",
+          "mono_ns": "100584868237246",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 35
+        }
+      },
+      {
+        "sequence": 36,
+        "elapsed_ns": 2893094,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 36,
+          "wall_ns": "1793777142620575368",
+          "mono_ns": "100585071952510",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 36
+        }
+      },
+      {
+        "sequence": 37,
+        "elapsed_ns": 1994935,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 37,
+          "wall_ns": "1793777142823208256",
+          "mono_ns": "100585274585538",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 37
+        }
+      },
+      {
+        "sequence": 38,
+        "elapsed_ns": 994851,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 38,
+          "wall_ns": "1793777143025692744",
+          "mono_ns": "100585477070014",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 38
+        }
+      },
+      {
+        "sequence": 39,
+        "elapsed_ns": 1761960,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 39,
+          "wall_ns": "1793777143228399815",
+          "mono_ns": "100585679777091",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 39
+        }
+      },
+      {
+        "sequence": 40,
+        "elapsed_ns": 264325,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 40,
+          "wall_ns": "1793777143429151145",
+          "mono_ns": "100585880528083",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 40
+        }
+      },
+      {
+        "sequence": 41,
+        "elapsed_ns": 489434,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 41,
+          "wall_ns": "1793777143630248444",
+          "mono_ns": "100586081625385",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 41
+        }
+      },
+      {
+        "sequence": 42,
+        "elapsed_ns": 204895503,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 42,
+          "wall_ns": "1793777144035890782",
+          "mono_ns": "100586487269420",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 42
+        }
+      },
+      {
+        "sequence": 43,
+        "elapsed_ns": 449506,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 43,
+          "wall_ns": "1793777144236818727",
+          "mono_ns": "100586688195784",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 43
+        }
+      },
+      {
+        "sequence": 44,
+        "elapsed_ns": 1140671,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 44,
+          "wall_ns": "1793777144438256958",
+          "mono_ns": "100586889634544",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 44
+        }
+      },
+      {
+        "sequence": 45,
+        "elapsed_ns": 333402,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 45,
+          "wall_ns": "1793777144638964623",
+          "mono_ns": "100587090341837",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 45
+        }
+      },
+      {
+        "sequence": 46,
+        "elapsed_ns": 544595,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 46,
+          "wall_ns": "1793777144840445870",
+          "mono_ns": "100587291823178",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 46
+        }
+      },
+      {
+        "sequence": 47,
+        "elapsed_ns": 804213,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 47,
+          "wall_ns": "1793777145042199555",
+          "mono_ns": "100587493576695",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 47
+        }
+      },
+      {
+        "sequence": 48,
+        "elapsed_ns": 210048726,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 48,
+          "wall_ns": "1793777145452990918",
+          "mono_ns": "100587904370068",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 48
+        }
+      },
+      {
+        "sequence": 49,
+        "elapsed_ns": 768931,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 49,
+          "wall_ns": "1793777145654403703",
+          "mono_ns": "100588105780991",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 49
+        }
+      },
+      {
+        "sequence": 50,
+        "elapsed_ns": 204815060,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 50,
+          "wall_ns": "1793777146059928813",
+          "mono_ns": "100588511307421",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 50
+        }
+      },
+      {
+        "sequence": 51,
+        "elapsed_ns": 210597217,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 51,
+          "wall_ns": "1793777146470890013",
+          "mono_ns": "100588922268298",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 51
+        }
+      },
+      {
+        "sequence": 52,
+        "elapsed_ns": 1172939,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 52,
+          "wall_ns": "1793777146672417245",
+          "mono_ns": "100589123794475",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 52
+        }
+      },
+      {
+        "sequence": 53,
+        "elapsed_ns": 885398,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 53,
+          "wall_ns": "1793777146873759031",
+          "mono_ns": "100589325136061",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 53
+        }
+      },
+      {
+        "sequence": 54,
+        "elapsed_ns": 203252293,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 54,
+          "wall_ns": "1793777147277718101",
+          "mono_ns": "100589729096317",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 54
+        }
+      },
+      {
+        "sequence": 55,
+        "elapsed_ns": 535249,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 55,
+          "wall_ns": "1793777147479570099",
+          "mono_ns": "100589930947121",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 55
+        }
+      },
+      {
+        "sequence": 56,
+        "elapsed_ns": 656227,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 56,
+          "wall_ns": "1793777147680641346",
+          "mono_ns": "100590132018602",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 56
+        }
+      },
+      {
+        "sequence": 57,
+        "elapsed_ns": 2137480,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 57,
+          "wall_ns": "1793777147883357087",
+          "mono_ns": "100590334734361",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 57
+        }
+      },
+      {
+        "sequence": 58,
+        "elapsed_ns": 253769,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 58,
+          "wall_ns": "1793777148083938233",
+          "mono_ns": "100590535315262",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 58
+        }
+      },
+      {
+        "sequence": 59,
+        "elapsed_ns": 254492,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 59,
+          "wall_ns": "1793777148284593312",
+          "mono_ns": "100590735970286",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 59
+        }
+      },
+      {
+        "sequence": 60,
+        "elapsed_ns": 205236673,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 60,
+          "wall_ns": "1793777148692271592",
+          "mono_ns": "100591143650584",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 60
+        }
+      },
+      {
+        "sequence": 61,
+        "elapsed_ns": 409005,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 61,
+          "wall_ns": "1793777148893105013",
+          "mono_ns": "100591344482141",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 61
+        }
+      },
+      {
+        "sequence": 62,
+        "elapsed_ns": 1025945,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 62,
+          "wall_ns": "1793777149094615905",
+          "mono_ns": "100591545993155",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 62
+        }
+      },
+      {
+        "sequence": 63,
+        "elapsed_ns": 633794,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 63,
+          "wall_ns": "1793777149295580149",
+          "mono_ns": "100591746957304",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 63
+        }
+      },
+      {
+        "sequence": 64,
+        "elapsed_ns": 389103,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 64,
+          "wall_ns": "1793777149496766658",
+          "mono_ns": "100591948143687",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 64
+        }
+      },
+      {
+        "sequence": 65,
+        "elapsed_ns": 1425268,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 65,
+          "wall_ns": "1793777149698658653",
+          "mono_ns": "100592150036183",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 65
+        }
+      },
+      {
+        "sequence": 66,
+        "elapsed_ns": 747882,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 66,
+          "wall_ns": "1793777149900019196",
+          "mono_ns": "100592351396455",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 66
+        }
+      }
+    ]
+  },
+  {
+    "run": "live5",
+    "exit": 0,
+    "confounded": true,
+    "samples": 16,
+    "tcp_reads": 67,
+    "tcp_elapsed_ns": {
+      "min": 255685,
+      "median": 576608,
+      "p95": 204722400,
+      "max": 209071266
+    },
+    "timeouts": [],
+    "stale": [],
+    "d120": {
+      "passed": true,
+      "verdict": "AT10 PASS under D-120",
+      "reloads": 100,
+      "udp_losses": 0,
+      "errors": [],
+      "losses": []
+    },
+    "reads": [
+      {
+        "sequence": 1,
+        "elapsed_ns": 456519,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 1,
+          "wall_ns": "1793777193338747892",
+          "mono_ns": "100635790125208",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 1
+        }
+      },
+      {
+        "sequence": 2,
+        "elapsed_ns": 1497729,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 2,
+          "wall_ns": "1793777193542271352",
+          "mono_ns": "100635993648958",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 2
+        }
+      },
+      {
+        "sequence": 3,
+        "elapsed_ns": 459640,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 3,
+          "wall_ns": "1793777193743138669",
+          "mono_ns": "100636194516064",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 3
+        }
+      },
+      {
+        "sequence": 4,
+        "elapsed_ns": 341194,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 4,
+          "wall_ns": "1793777193944424867",
+          "mono_ns": "100636395802066",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 4
+        }
+      },
+      {
+        "sequence": 5,
+        "elapsed_ns": 411689,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 5,
+          "wall_ns": "1793777194145358237",
+          "mono_ns": "100636596735324",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 5
+        }
+      },
+      {
+        "sequence": 6,
+        "elapsed_ns": 266700,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 6,
+          "wall_ns": "1793777194346078332",
+          "mono_ns": "100636797455456",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 6
+        }
+      },
+      {
+        "sequence": 7,
+        "elapsed_ns": 603502,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 7,
+          "wall_ns": "1793777194546983721",
+          "mono_ns": "100636998360927",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 7
+        }
+      },
+      {
+        "sequence": 8,
+        "elapsed_ns": 423959,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 8,
+          "wall_ns": "1793777194748150049",
+          "mono_ns": "100637199527518",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 8
+        }
+      },
+      {
+        "sequence": 9,
+        "elapsed_ns": 1444656,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 9,
+          "wall_ns": "1793777194950088487",
+          "mono_ns": "100637401465550",
+          "size": 3,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 9
+        }
+      },
+      {
+        "sequence": 10,
+        "elapsed_ns": 576608,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 10,
+          "wall_ns": "1793777195151107335",
+          "mono_ns": "100637602484534",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 10
+        }
+      },
+      {
+        "sequence": 11,
+        "elapsed_ns": 288690,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 11,
+          "wall_ns": "1793777195351837018",
+          "mono_ns": "100637803214333",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 11
+        }
+      },
+      {
+        "sequence": 12,
+        "elapsed_ns": 203848001,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 12,
+          "wall_ns": "1793777195756035451",
+          "mono_ns": "100638207413425",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 12
+        }
+      },
+      {
+        "sequence": 13,
+        "elapsed_ns": 570119,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 13,
+          "wall_ns": "1793777195956944127",
+          "mono_ns": "100638408321084",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 13
+        }
+      },
+      {
+        "sequence": 14,
+        "elapsed_ns": 369407,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 14,
+          "wall_ns": "1793777196157617005",
+          "mono_ns": "100638608994452",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 14
+        }
+      },
+      {
+        "sequence": 15,
+        "elapsed_ns": 3137322,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 15,
+          "wall_ns": "1793777196361192752",
+          "mono_ns": "100638812570224",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 15
+        }
+      },
+      {
+        "sequence": 16,
+        "elapsed_ns": 487546,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 16,
+          "wall_ns": "1793777196562965488",
+          "mono_ns": "100639014342542",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 16
+        }
+      },
+      {
+        "sequence": 17,
+        "elapsed_ns": 373213,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 17,
+          "wall_ns": "1793777196764057937",
+          "mono_ns": "100639215436352",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 17
+        }
+      },
+      {
+        "sequence": 18,
+        "elapsed_ns": 894748,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 18,
+          "wall_ns": "1793777196965377542",
+          "mono_ns": "100639416754900",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 18
+        }
+      },
+      {
+        "sequence": 19,
+        "elapsed_ns": 375507,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 19,
+          "wall_ns": "1793777197168974968",
+          "mono_ns": "100639620352266",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 19
+        }
+      },
+      {
+        "sequence": 20,
+        "elapsed_ns": 203754984,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 20,
+          "wall_ns": "1793777197573081826",
+          "mono_ns": "100640024460922",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 20
+        }
+      },
+      {
+        "sequence": 21,
+        "elapsed_ns": 791047,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 21,
+          "wall_ns": "1793777197774302450",
+          "mono_ns": "100640225679570",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 21
+        }
+      },
+      {
+        "sequence": 22,
+        "elapsed_ns": 343421,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 22,
+          "wall_ns": "1793777197975855489",
+          "mono_ns": "100640427232569",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 22
+        }
+      },
+      {
+        "sequence": 23,
+        "elapsed_ns": 412577,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 23,
+          "wall_ns": "1793777198176685182",
+          "mono_ns": "100640628062220",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 23
+        }
+      },
+      {
+        "sequence": 24,
+        "elapsed_ns": 203792317,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 24,
+          "wall_ns": "1793777198580835429",
+          "mono_ns": "100641032214129",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 24
+        }
+      },
+      {
+        "sequence": 25,
+        "elapsed_ns": 2880954,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 25,
+          "wall_ns": "1793777198784941174",
+          "mono_ns": "100641236318880",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 25
+        }
+      },
+      {
+        "sequence": 26,
+        "elapsed_ns": 545432,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 26,
+          "wall_ns": "1793777198986701470",
+          "mono_ns": "100641438078544",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 26
+        }
+      },
+      {
+        "sequence": 27,
+        "elapsed_ns": 509793,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 27,
+          "wall_ns": "1793777199188680040",
+          "mono_ns": "100641640057159",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 27
+        }
+      },
+      {
+        "sequence": 28,
+        "elapsed_ns": 354775,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 28,
+          "wall_ns": "1793777199389678057",
+          "mono_ns": "100641841055226",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 28
+        }
+      },
+      {
+        "sequence": 29,
+        "elapsed_ns": 255685,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 29,
+          "wall_ns": "1793777199590572575",
+          "mono_ns": "100642041949570",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 29
+        }
+      },
+      {
+        "sequence": 30,
+        "elapsed_ns": 205170028,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 30,
+          "wall_ns": "1793777199996037243",
+          "mono_ns": "100642447415777",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 30
+        }
+      },
+      {
+        "sequence": 31,
+        "elapsed_ns": 347901,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 31,
+          "wall_ns": "1793777200196744667",
+          "mono_ns": "100642648122123",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 31
+        }
+      },
+      {
+        "sequence": 32,
+        "elapsed_ns": 982630,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 32,
+          "wall_ns": "1793777200398155741",
+          "mono_ns": "100642849533104",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 32
+        }
+      },
+      {
+        "sequence": 33,
+        "elapsed_ns": 413046,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 33,
+          "wall_ns": "1793777200599207327",
+          "mono_ns": "100643050584857",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 33
+        }
+      },
+      {
+        "sequence": 34,
+        "elapsed_ns": 621279,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 34,
+          "wall_ns": "1793777200800173197",
+          "mono_ns": "100643251550249",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 34
+        }
+      },
+      {
+        "sequence": 35,
+        "elapsed_ns": 839351,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 35,
+          "wall_ns": "1793777201001648186",
+          "mono_ns": "100643453025965",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 35
+        }
+      },
+      {
+        "sequence": 36,
+        "elapsed_ns": 2328036,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 36,
+          "wall_ns": "1793777201205322757",
+          "mono_ns": "100643656700108",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 36
+        }
+      },
+      {
+        "sequence": 37,
+        "elapsed_ns": 510396,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 37,
+          "wall_ns": "1793777201406525996",
+          "mono_ns": "100643857903430",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 37
+        }
+      },
+      {
+        "sequence": 38,
+        "elapsed_ns": 1591352,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 38,
+          "wall_ns": "1793777201608694370",
+          "mono_ns": "100644060071960",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 38
+        }
+      },
+      {
+        "sequence": 39,
+        "elapsed_ns": 1267982,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 39,
+          "wall_ns": "1793777201810692412",
+          "mono_ns": "100644262069943",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 39
+        }
+      },
+      {
+        "sequence": 40,
+        "elapsed_ns": 591468,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 40,
+          "wall_ns": "1793777202012220228",
+          "mono_ns": "100644463597276",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 40
+        }
+      },
+      {
+        "sequence": 41,
+        "elapsed_ns": 747269,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 41,
+          "wall_ns": "1793777202213861609",
+          "mono_ns": "100644665238624",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 41
+        }
+      },
+      {
+        "sequence": 42,
+        "elapsed_ns": 550303,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 42,
+          "wall_ns": "1793777202415005863",
+          "mono_ns": "100644866382913",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 42
+        }
+      },
+      {
+        "sequence": 43,
+        "elapsed_ns": 617535,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 43,
+          "wall_ns": "1793777202616109206",
+          "mono_ns": "100645067486839",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 43
+        }
+      },
+      {
+        "sequence": 44,
+        "elapsed_ns": 333705,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 44,
+          "wall_ns": "1793777202816864240",
+          "mono_ns": "100645268242069",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 44
+        }
+      },
+      {
+        "sequence": 45,
+        "elapsed_ns": 204722400,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 45,
+          "wall_ns": "1793777203222149150",
+          "mono_ns": "100645673527617",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 45
+        }
+      },
+      {
+        "sequence": 46,
+        "elapsed_ns": 431250,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 46,
+          "wall_ns": "1793777203425634385",
+          "mono_ns": "100645877011631",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 46
+        }
+      },
+      {
+        "sequence": 47,
+        "elapsed_ns": 201744429,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 47,
+          "wall_ns": "1793777203828205515",
+          "mono_ns": "100646279584402",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 47
+        }
+      },
+      {
+        "sequence": 48,
+        "elapsed_ns": 319581,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 48,
+          "wall_ns": "1793777204029709243",
+          "mono_ns": "100646481086584",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 48
+        }
+      },
+      {
+        "sequence": 49,
+        "elapsed_ns": 3140714,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 49,
+          "wall_ns": "1793777204233297536",
+          "mono_ns": "100646684674743",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 49
+        }
+      },
+      {
+        "sequence": 50,
+        "elapsed_ns": 525761,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 50,
+          "wall_ns": "1793777204434187255",
+          "mono_ns": "100646885564224",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 50
+        }
+      },
+      {
+        "sequence": 51,
+        "elapsed_ns": 758976,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 51,
+          "wall_ns": "1793777204635676208",
+          "mono_ns": "100647087053659",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 51
+        }
+      },
+      {
+        "sequence": 52,
+        "elapsed_ns": 664541,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 52,
+          "wall_ns": "1793777204836704928",
+          "mono_ns": "100647288081893",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 52
+        }
+      },
+      {
+        "sequence": 53,
+        "elapsed_ns": 918040,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 53,
+          "wall_ns": "1793777205038022716",
+          "mono_ns": "100647489399954",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 53
+        }
+      },
+      {
+        "sequence": 54,
+        "elapsed_ns": 508670,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 54,
+          "wall_ns": "1793777205239185053",
+          "mono_ns": "100647690562231",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 54
+        }
+      },
+      {
+        "sequence": 55,
+        "elapsed_ns": 457250,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 55,
+          "wall_ns": "1793777205440150786",
+          "mono_ns": "100647891527723",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 55
+        }
+      },
+      {
+        "sequence": 56,
+        "elapsed_ns": 675984,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 56,
+          "wall_ns": "1793777205641181835",
+          "mono_ns": "100648092559921",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 56
+        }
+      },
+      {
+        "sequence": 57,
+        "elapsed_ns": 267559,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 57,
+          "wall_ns": "1793777205843323269",
+          "mono_ns": "100648294700230",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 57
+        }
+      },
+      {
+        "sequence": 58,
+        "elapsed_ns": 209071266,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 58,
+          "wall_ns": "1793777206252688239",
+          "mono_ns": "100648704066866",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 58
+        }
+      },
+      {
+        "sequence": 59,
+        "elapsed_ns": 3266166,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 59,
+          "wall_ns": "1793777206456502879",
+          "mono_ns": "100648907879854",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 59
+        }
+      },
+      {
+        "sequence": 60,
+        "elapsed_ns": 457891,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 60,
+          "wall_ns": "1793777206660372937",
+          "mono_ns": "100649111751508",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 60
+        }
+      },
+      {
+        "sequence": 61,
+        "elapsed_ns": 651615,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 61,
+          "wall_ns": "1793777206861332513",
+          "mono_ns": "100649312709716",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 61
+        }
+      },
+      {
+        "sequence": 62,
+        "elapsed_ns": 207154568,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 62,
+          "wall_ns": "1793777207269067475",
+          "mono_ns": "100649720445616",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 62
+        }
+      },
+      {
+        "sequence": 63,
+        "elapsed_ns": 335477,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 63,
+          "wall_ns": "1793777207470035823",
+          "mono_ns": "100649921412783",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 63
+        }
+      },
+      {
+        "sequence": 64,
+        "elapsed_ns": 619038,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 64,
+          "wall_ns": "1793777207671012088",
+          "mono_ns": "100650122389555",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 64
+        }
+      },
+      {
+        "sequence": 65,
+        "elapsed_ns": 261515,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 65,
+          "wall_ns": "1793777207873533807",
+          "mono_ns": "100650324910933",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 65
+        }
+      },
+      {
+        "sequence": 66,
+        "elapsed_ns": 1838225,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 66,
+          "wall_ns": "1793777208075708058",
+          "mono_ns": "100650527085507",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 66
+        }
+      },
+      {
+        "sequence": 67,
+        "elapsed_ns": 497993,
+        "read": {
+          "event": "tcp_read",
+          "sequence": 67,
+          "wall_ns": "1793777208276570651",
+          "mono_ns": "100650727948070",
+          "size": 4,
+          "response_matches": true,
+          "echo_status": "match",
+          "response_sequence": 67
+        }
+      }
+    ]
+  }
+]
