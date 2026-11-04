@@ -1,0 +1,265 @@
+{
+  "source_commit": "04d31ea5cd10cb90527e0b4efc10b42522dd9569",
+  "proofs": [
+    {
+      "path": "node/updater/review_r29_test.go",
+      "name": "TestR29_H1_UpdaterExitCodeDistinguishesLiveUpdateBusy"
+    },
+    {
+      "path": "node/updater/review_r29_test.go",
+      "name": "TestR29_L1_ContendedRecoverChecksUpdateLockBeforeOpeningJournal"
+    },
+    {
+      "path": "node/updater/review_r29_test.go",
+      "name": "TestR29_Held_ContendedRecoverDuringStepStartAndCheckDoesNotMutateTxnOrGate"
+    },
+    {
+      "path": "node/updater/review_r29_test.go",
+      "name": "TestR29_Held_CrashedSwitchedAndCheckingTxnsRecoveredUnderFreeLock"
+    },
+    {
+      "path": "node/updater/followup24_test.go",
+      "name": "TestD155_ExitCode"
+    },
+    {
+      "path": "node/updater/followup24_test.go",
+      "name": "TestD155_AllEntryPointsLockBeforeJournal"
+    },
+    {
+      "path": "node/updater/followup24_test.go",
+      "name": "TestD155_FirstBootAndNestedLock"
+    },
+    {
+      "path": "node/updater/cmd/fvpn-updater/followup24_test.go",
+      "name": "TestD155_RecoverCLIExitAndStderrUnderHeldLock"
+    },
+    {
+      "path": "node/updater/cmd/fvpn-updater/followup24_test.go",
+      "name": "TestD155_StatusRemainsReadOnlyUnderHeldLock"
+    },
+    {
+      "path": "node/agent/review_r27_test.go",
+      "name": "TestR27_H1_AuditBlockedMissingInterfaceAtBootLatchesFalseTCForeignFilter"
+    },
+    {
+      "path": "node/agent/review_r27_test.go",
+      "name": "TestR27_M1_ProvisionalTimerRaceAndClosedRecoveryDelayPopulatedLease"
+    },
+    {
+      "path": "node/agent/review_r27_test.go",
+      "name": "TestR27_L1_ForeignTCQuarantineStepRedundantBaselinesAndReQuarantine"
+    },
+    {
+      "path": "node/agent/review_r27_test.go",
+      "name": "TestR27_Held_SameGenerationRestartRenewsBeforeObserveAndSkipsProvisionalWhenPopulated"
+    },
+    {
+      "path": "node/agent/review_r27_test.go",
+      "name": "TestR27_Held_D106ContainmentRetainsFirstRejectionAcrossGenerationsUntilRestart"
+    },
+    {
+      "path": "node/enforce/review_r27_test.go",
+      "name": "TestR27_Held_LoadTCAndVerifyServingClassifyReadFailedAsTCForeignFilter"
+    },
+    {
+      "path": "node/agent/review_r28_test.go",
+      "name": "TestR28_ControlOutageDoesNotFailTunnelProbeBeforeLeaseExpiry"
+    },
+    {
+      "path": "node/agent/review_r28_test.go",
+      "name": "TestR28_WhatHeld_RefreshProbeAndNetbirdProberContextPropagation"
+    },
+    {
+      "path": "node/agent/review_r28_test.go",
+      "name": "TestR28_WhatHeld_FastControlRefusalPreservesServingUntilDeadline"
+    },
+    {
+      "path": "node/agent/review_r28_test.go",
+      "name": "TestR28_WhatHeld_PostDeadlineReasonOrderingInDecideAndBaseline"
+    },
+    {
+      "path": "node/agent/followup48_test.go",
+      "name": "TestF48_AT13_HungControlPreservesLocalChecksUntilDeadline"
+    },
+    {
+      "path": "node/agent/followup48_test.go",
+      "name": "TestF48_LocalWorkBudgetSeparatesStepAndBoot"
+    },
+    {
+      "path": "node/agent/followup48_test.go",
+      "name": "TestF48_ReadFailureNeedsIndependentAbsenceEvidence"
+    },
+    {
+      "path": "node/agent/followup48_test.go",
+      "name": "TestF48_SystemPlaneInterfaceInventory"
+    },
+    {
+      "path": "node/agent/followup48_test.go",
+      "name": "TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate"
+    },
+    {
+      "path": "node/agent/followup48_test.go",
+      "name": "TestF48_R23_BootHeartbeatUsesOneBudget"
+    },
+    {
+      "path": "node/agent/review_r29_test.go",
+      "name": "TestR29_H1_CandidateBootUnderHeldUpdateLockDefersRecoverAndServesAfterCommit"
+    },
+    {
+      "path": "node/agent/review_r29_test.go",
+      "name": "TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery"
+    },
+    {
+      "path": "node/agent/review_r29_test.go",
+      "name": "TestR29_Held_D053AndD064PassWhileRecoverBlockedUnderHeldUpdateLock"
+    },
+    {
+      "path": "node/agent/review_r29_test.go",
+      "name": "TestR29_Held_TerminalRecoveryRequiredExit2KeepsForwardingOffAfterLockRelease"
+    },
+    {
+      "path": "node/agent/followup49_recover_test.go",
+      "name": "TestD155_OldUpdaterDefersBeforeSpawn"
+    },
+    {
+      "path": "node/agent/followup49_recover_test.go",
+      "name": "TestD155_RecoverExitAndRetry"
+    },
+    {
+      "path": "node/agent/followup49_recover_test.go",
+      "name": "TestD155_StaleHolderIsTerminal"
+    },
+    {
+      "path": "node/agent/followup49_recover_test.go",
+      "name": "TestD155_MissingConfigTerminal"
+    },
+    {
+      "path": "node/agent/followup49_recover_test.go",
+      "name": "TestD155_RecoveryLocalBudgetSingleChildAndJoin"
+    },
+    {
+      "path": "node/agent/followup49_transaction_test.go",
+      "name": "TestF49_RecoveryChild"
+    },
+    {
+      "path": "node/agent/followup49_transaction_test.go",
+      "name": "TestD155_CrashedTransactionsKeepAgentRunning"
+    },
+    {
+      "path": "node/agent/followup49_restart_test.go",
+      "name": "TestD156_WatchdogBetweenStartupAndAdoption"
+    },
+    {
+      "path": "node/agent/followup49_restart_test.go",
+      "name": "TestD156_RepeatedStartupCannotRenewPendingReceipt"
+    },
+    {
+      "path": "node/watchdog/followup49_test.go",
+      "name": "TestD156_PendingAdoptionKeepsOriginalBounds"
+    },
+    {
+      "path": "tests/e2e/at/secops/lease_continuity_test.go",
+      "name": "TestAT29_LiveAgentContinuitySynthetic"
+    },
+    {
+      "path": "tests/e2e/at/secops/transport_evidence_test.go",
+      "name": "TestAT29_TransportActivityPredicates"
+    },
+    {
+      "path": "tests/e2e/at/secops/transport_evidence_test.go",
+      "name": "TestAT29_WithdrawalStopPoints"
+    },
+    {
+      "path": "tests/e2e/at/secops/grant_standing_test.go",
+      "name": "TestAT29_RestoreStandingOnEarlyReturn"
+    },
+    {
+      "path": "tests/e2e/at/secops/node_write_audit_test.go",
+      "name": "TestAPI01_NodeWritesUseSharedHelper"
+    },
+    {
+      "path": "tests/e2e/at/secops/node_write_audit_test.go",
+      "name": "TestAPI01_NodeWriteAuditRejectsBypasses"
+    },
+    {
+      "path": "tests/e2e/at/enrollment/followup10_node_write_test.go",
+      "name": "TestF10_NodeWriteSites"
+    },
+    {
+      "path": "tests/e2e/at/enrollment/followup10_node_write_test.go",
+      "name": "TestF10_RevokeOperationReadback"
+    },
+    {
+      "path": "tests/e2e/at/enrollment/node_write_audit_test.go",
+      "name": "TestF10_NodeWriteAudit"
+    },
+    {
+      "path": "tests/e2e/at/enrollment/node_write_audit_test.go",
+      "name": "TestF10_NodeWriteAuditRejectsBypasses"
+    },
+    {
+      "path": "tests/e2e/at/updates/node_write_test.go",
+      "name": "TestUPD02_NodeWriteRetiredPredicate"
+    },
+    {
+      "path": "tests/e2e/at/updates/node_write_test.go",
+      "name": "TestUPD02_InstallerRetireNodeWriteAndReceipts"
+    },
+    {
+      "path": "tests/e2e/at/updates/node_write_audit_test.go",
+      "name": "TestUPD02_NodeWriteAudit"
+    },
+    {
+      "path": "tests/e2e/at/updates/node_write_audit_test.go",
+      "name": "TestUPD02_NodeWriteAuditRejectsBypasses"
+    },
+    {
+      "path": "tests/e2e/at/usage/node_write_test.go",
+      "name": "TestNodeWrite_AdoptedCallShapesAndPredicates"
+    },
+    {
+      "path": "tests/e2e/at/usage/node_write_test.go",
+      "name": "TestNodeWrite_SharedHelperConflictPathsAndReceipts"
+    },
+    {
+      "path": "tests/e2e/at/usage/node_write_audit_test.go",
+      "name": "TestNodeWriteAudit"
+    },
+    {
+      "path": "tests/e2e/at/usage/node_write_audit_test.go",
+      "name": "TestNodeWriteAuditRejectsBypasses"
+    },
+    {
+      "path": "tests/e2e/at/isolation/member_expiry_test.go",
+      "name": "TestAT13_MemberExpiryRejectsFollowup20Replay"
+    },
+    {
+      "path": "tests/e2e/at/isolation/member_expiry_test.go",
+      "name": "TestAT13_MemberExpiryServingNode"
+    },
+    {
+      "path": "node/agent/followup38_test.go",
+      "name": "TestR21_M2_OneBootBudgetAllStages"
+    }
+  ],
+  "imports": [
+    {
+      "path": "tests/handover/testdata/history/follow-up-43/node_updater_review_r29_test.go.txt",
+      "source": "node/updater/review_r29_test.go",
+      "source_commit": "04d31ea5cd10cb90527e0b4efc10b42522dd9569",
+      "review_commit": "5b1ca726c2515967824f4294823aaf1f2ac5f8a7",
+      "import_commit": "03e24246cbc512b5a3df1693900f7df02fb9ec7a",
+      "sha256": "3d647ca26e1d6d8fc598eaddf302f2b9af53a5c816772cb28a2e55f392979dc2",
+      "bytes": 6379
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-43/node_agent_review_r29_test.go.txt",
+      "source": "node/agent/review_r29_test.go",
+      "source_commit": "04d31ea5cd10cb90527e0b4efc10b42522dd9569",
+      "review_commit": "5b1ca726c2515967824f4294823aaf1f2ac5f8a7",
+      "import_commit": "facfd36166ad00c032505425a4b39f4c26ce7f11",
+      "sha256": "291f00c169748943d6c4917e52c13f6cbf3f21413537508d588bd43a82f0b31b",
+      "bytes": 14076
+    }
+  ]
+}
