@@ -445,7 +445,9 @@ var ErrBoot = errors.New("agent: boot failed")
 
 func bootLocal(caller context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
 	control, stop := context.WithTimeout(caller, timeout)
-	ctx, cancel := newLocalBudget(context.WithValue(caller, controlBudgetKey{}, control), timeout)
+	parent := context.WithValue(caller, controlBudgetKey{}, control)
+	parent = context.WithValue(parent, bootCallerKey{}, control)
+	ctx, cancel := newLocalBudget(parent, timeout)
 	return ctx, func() { stop(); cancel() }
 }
 
@@ -489,7 +491,7 @@ func (e *Engine) bootWithBudget(caller context.Context, timeout time.Duration) e
 }
 
 func (e *Engine) boot(ctx context.Context) (bootErr error) {
-	caller := controlContext(ctx)
+	caller := localWorkContext(ctx)
 	previous, _ := watchdog.ReadHeartbeat(e.cfg.HeartbeatPath)
 	// Publish uncertainty before any stage can block. Adoption checks the
 	// captured prior receipt, never this new startup heartbeat (r22 M-3).
@@ -945,7 +947,7 @@ func (e *Engine) refreshProbe(ctx context.Context) {
 		published := e.desired != nil && e.desired.PublicationIntent == api.PublicationIntentPublished
 		targets, timeout, source, bad := egressTargets(e.desired, e.desiredOK, e.cfg.EgressProbeTarget)
 		e.probeSource = probeSourceDetail(source, bad)
-		e.lastProbe = p.Probe(controlContext(ctx), ProbeRequest{
+		e.lastProbe = p.Probe(localWorkContext(ctx), ProbeRequest{
 			Published: published,
 			Targets:   targets,
 			Timeout:   timeout,

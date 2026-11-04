@@ -46,3 +46,14 @@ func cleanupBudget(ctx context.Context) (context.Context, context.CancelFunc) {
 	}
 	return newLocalBudget(ctx, 5*time.Second)
 }
+
+// Boot's adoption work follows TERM, unlike Step's independent local checks.
+// Keep that lifetime separate from the budget for control-plane HTTP requests.
+type bootCallerKey struct{}
+
+func localWorkContext(ctx context.Context) context.Context {
+	if caller, ok := ctx.Value(bootCallerKey{}).(context.Context); ok {
+		return caller
+	}
+	return localContext(ctx)
+}
