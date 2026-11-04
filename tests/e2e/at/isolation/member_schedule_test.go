@@ -123,3 +123,17 @@ func TestAT13_MemberScheduleMissingWindowStillBlocks(t *testing.T) {
 		}
 	}
 }
+
+func TestAT13_MemberScheduleUTCReceipt(t *testing.T) {
+	// Database timestamps can carry the session location; receipts use UTC.
+	a := time.Date(2026, 11, 4, 1, 18, 26, 165788000, time.FixedZone("TEST ONLY", -5*60*60))
+	p, ok := PlanMemberExpiry(a, a.Add(time.Minute), a.Add(time.Second), true)
+	if !ok || !p.Issued.Equal(a) || p.Deadline.Format(time.RFC3339) != "2026-11-04T06:19:21Z" {
+		t.Fatalf("instant or schedule changed: %+v", p)
+	}
+	for _, stamp := range []time.Time{p.Issued, p.Expires, p.Observed, p.NextExpected, p.Deadline} {
+		if stamp.Location() != time.UTC {
+			t.Fatal("receipt is not UTC", stamp)
+		}
+	}
+}

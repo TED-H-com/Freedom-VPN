@@ -19,6 +19,7 @@ type MemberExpirySchedule struct {
 // It also contains the renewal after an extra A+10.5s renewal, including a
 // one-second step delay. No lease or existing grant is changed or extended.
 func PlanMemberExpiry(issued, expires, observed time.Time, accepted bool) (MemberExpirySchedule, bool) {
+	issued, expires, observed = issued.UTC(), expires.UTC(), observed.UTC()
 	p := MemberExpirySchedule{Name: "fresh-renewal anchor", Observed: observed, Issued: issued, Expires: expires}
 	if !accepted || issued.IsZero() || expires.Sub(issued) != 60*time.Second || observed.Before(issued) || observed.Sub(issued) > 5*time.Second {
 		return p, false
