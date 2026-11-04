@@ -1,14 +1,14 @@
 {
-  "run_id": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
+  "run_id": "bd73d7a4-03f1-4b17-97c2-9c25a39ac0db",
   "scope": "Retained log snapshots and container lifecycle events; absence of a signature is not proof of an unobserved watchdog pass. Duplicate log lines remain attributable to their snapshots.",
   "logs": [
     {
       "path": "agent-before-clone.log.txt",
-      "lines": 112
+      "lines": 104
     },
     {
       "path": "agent-before-populated-hold-stop.log.txt",
-      "lines": 125
+      "lines": 129
     },
     {
       "path": "agent-before-restart.log.txt",
@@ -16,19 +16,19 @@
     },
     {
       "path": "agent-final.log.txt",
-      "lines": 243
+      "lines": 249
     },
     {
       "path": "agent.log.txt",
-      "lines": 563
+      "lines": 565
     },
     {
       "path": "watchdog-before-clone.log.txt",
-      "lines": 3
+      "lines": 0
     },
     {
       "path": "watchdog-before-populated-hold-stop.log.txt",
-      "lines": 6
+      "lines": 3
     },
     {
       "path": "watchdog-before-restart.log.txt",
@@ -40,315 +40,189 @@
     },
     {
       "path": "watchdog.log.txt",
-      "lines": 9
+      "lines": 3
     }
   ],
   "matches": [
     {
       "path": "agent-before-clone.log.txt",
       "line": 1,
-      "text": "time=2026-11-04T14:20:47.026Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=125489477464640 generation=28"
+      "text": "time=2026-11-04T16:02:48.739Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131611191227055 generation=27"
     },
     {
       "path": "agent-before-clone.log.txt",
       "line": 2,
-      "text": "time=2026-11-04T14:20:47.065Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=125489516641709 succeeded=true"
+      "text": "time=2026-11-04T16:02:48.784Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131611235488784 succeeded=true"
     },
     {
       "path": "agent-before-clone.log.txt",
-      "line": 112,
-      "text": "time=2026-11-04T14:26:59.529Z level=INFO msg=\"serving rules retained for restart\" generation=37 policy_expires_mono_ns=125911766043084 next_binding_expiry_mono_ns=125911766043084"
+      "line": 104,
+      "text": "time=2026-11-04T16:08:54.467Z level=INFO msg=\"serving rules retained for restart\" generation=34 policy_expires_mono_ns=132027008883289 next_binding_expiry_mono_ns=132027008883289"
     },
     {
       "path": "agent-before-populated-hold-stop.log.txt",
       "line": 1,
-      "text": "time=2026-11-04T14:07:35.960Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=124698412265194 generation=0"
+      "text": "time=2026-11-04T15:49:46.762Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=130829213609636 generation=0"
     },
     {
       "path": "agent-before-populated-hold-stop.log.txt",
       "line": 2,
-      "text": "time=2026-11-04T14:07:35.983Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=124698434950560 succeeded=true"
+      "text": "time=2026-11-04T15:49:46.782Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=130829233536669 succeeded=true"
     },
     {
       "path": "agent-before-restart.log.txt",
       "line": 1,
-      "text": "time=2026-11-04T14:13:36.925Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=125059376568787 generation=16"
+      "text": "time=2026-11-04T15:55:41.483Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131183934624100 generation=16"
     },
     {
       "path": "agent-before-restart.log.txt",
       "line": 2,
-      "text": "time=2026-11-04T14:13:36.962Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=125059413590966 succeeded=true"
+      "text": "time=2026-11-04T15:55:41.504Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131183956066491 succeeded=true"
     },
     {
       "path": "agent-before-restart.log.txt",
       "line": 83,
-      "text": "time=2026-11-04T14:20:46.082Z level=INFO msg=\"serving rules retained for restart\" generation=28 policy_expires_mono_ns=125544964354136 next_binding_expiry_mono_ns=125544964354136"
+      "text": "time=2026-11-04T16:02:47.785Z level=INFO msg=\"serving rules retained for restart\" generation=27 policy_expires_mono_ns=131666520297736 next_binding_expiry_mono_ns=131666520297736"
     },
     {
       "path": "agent-final.log.txt",
       "line": 1,
-      "text": "time=2026-11-04T14:27:01.446Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=125863897738261 generation=37"
+      "text": "time=2026-11-04T16:08:56.668Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131979120293880 generation=34"
     },
     {
       "path": "agent-final.log.txt",
       "line": 2,
-      "text": "time=2026-11-04T14:27:01.484Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=125863935592902 succeeded=true"
+      "text": "time=2026-11-04T16:08:56.709Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131979160705016 succeeded=true"
     },
     {
       "path": "agent.log.txt",
       "line": 1,
-      "text": "time=2026-11-04T14:07:35.960Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=124698412265194 generation=0"
+      "text": "time=2026-11-04T15:49:46.762Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=130829213609636 generation=0"
     },
     {
       "path": "agent.log.txt",
       "line": 2,
-      "text": "time=2026-11-04T14:07:35.983Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=124698434950560 succeeded=true"
+      "text": "time=2026-11-04T15:49:46.782Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=130829233536669 succeeded=true"
     },
     {
       "path": "agent.log.txt",
-      "line": 126,
-      "text": "time=2026-11-04T14:13:36.925Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=125059376568787 generation=16"
+      "line": 130,
+      "text": "time=2026-11-04T15:55:41.483Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131183934624100 generation=16"
     },
     {
       "path": "agent.log.txt",
-      "line": 127,
-      "text": "time=2026-11-04T14:13:36.962Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=125059413590966 succeeded=true"
+      "line": 131,
+      "text": "time=2026-11-04T15:55:41.504Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131183956066491 succeeded=true"
     },
     {
       "path": "agent.log.txt",
-      "line": 208,
-      "text": "time=2026-11-04T14:20:46.082Z level=INFO msg=\"serving rules retained for restart\" generation=28 policy_expires_mono_ns=125544964354136 next_binding_expiry_mono_ns=125544964354136"
+      "line": 212,
+      "text": "time=2026-11-04T16:02:47.785Z level=INFO msg=\"serving rules retained for restart\" generation=27 policy_expires_mono_ns=131666520297736 next_binding_expiry_mono_ns=131666520297736"
     },
     {
       "path": "agent.log.txt",
-      "line": 209,
-      "text": "time=2026-11-04T14:20:47.026Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=125489477464640 generation=28"
+      "line": 213,
+      "text": "time=2026-11-04T16:02:48.739Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131611191227055 generation=27"
     },
     {
       "path": "agent.log.txt",
-      "line": 210,
-      "text": "time=2026-11-04T14:20:47.065Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=125489516641709 succeeded=true"
+      "line": 214,
+      "text": "time=2026-11-04T16:02:48.784Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131611235488784 succeeded=true"
     },
     {
       "path": "agent.log.txt",
-      "line": 320,
-      "text": "time=2026-11-04T14:26:59.529Z level=INFO msg=\"serving rules retained for restart\" generation=37 policy_expires_mono_ns=125911766043084 next_binding_expiry_mono_ns=125911766043084"
+      "line": 316,
+      "text": "time=2026-11-04T16:08:54.467Z level=INFO msg=\"serving rules retained for restart\" generation=34 policy_expires_mono_ns=132027008883289 next_binding_expiry_mono_ns=132027008883289"
     },
     {
       "path": "agent.log.txt",
-      "line": 321,
-      "text": "time=2026-11-04T14:27:01.446Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=125863897738261 generation=37"
+      "line": 317,
+      "text": "time=2026-11-04T16:08:56.668Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131979120293880 generation=34"
     },
     {
       "path": "agent.log.txt",
-      "line": 322,
-      "text": "time=2026-11-04T14:27:01.484Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=125863935592902 succeeded=true"
-    },
-    {
-      "path": "watchdog-before-clone.log.txt",
-      "line": 1,
-      "text": "{\"time\":\"2026-11-04T14:24:48.153064181Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"policy_expired\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125730604423718,\"heartbeat_mono_ns\":125726538448466,\"policy_expires_mono_ns\":125728711630414,\"generation\":34,\"serving\":true,\"baseline_ok\":true}"
-    },
-    {
-      "path": "watchdog-before-clone.log.txt",
-      "line": 2,
-      "text": "{\"time\":\"2026-11-04T14:24:48.1532589Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"policy_expired\",\"mono_ns\":125730604634181,\"heartbeat_mono_ns\":125726538448466,\"policy_expires_mono_ns\":125728711630414,\"generation\":34}"
-    },
-    {
-      "path": "watchdog-before-clone.log.txt",
-      "line": 3,
-      "text": "{\"time\":\"2026-11-04T14:24:48.200037095Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"policy_expired\",\"mono_ns\":125730651410544,\"succeeded\":true}"
+      "line": 318,
+      "text": "time=2026-11-04T16:08:56.709Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131979160705016 succeeded=true"
     },
     {
       "path": "watchdog-before-populated-hold-stop.log.txt",
       "line": 1,
-      "text": "{\"time\":\"2026-11-04T14:07:35.879901791Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":124698331257359,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.676579611Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":130829127935194,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
     },
     {
       "path": "watchdog-before-populated-hold-stop.log.txt",
       "line": 2,
-      "text": "{\"time\":\"2026-11-04T14:07:35.879970076Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":124698331345940,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.676670959Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829128046750,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
     },
     {
       "path": "watchdog-before-populated-hold-stop.log.txt",
       "line": 3,
-      "text": "{\"time\":\"2026-11-04T14:07:35.908753499Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":124698360126618,\"succeeded\":true}"
-    },
-    {
-      "path": "watchdog-before-populated-hold-stop.log.txt",
-      "line": 4,
-      "text": "{\"time\":\"2026-11-04T14:13:36.937802751Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"baseline_unverified\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125059389172211,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
-    },
-    {
-      "path": "watchdog-before-populated-hold-stop.log.txt",
-      "line": 5,
-      "text": "{\"time\":\"2026-11-04T14:13:36.937857372Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059389232188,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0}"
-    },
-    {
-      "path": "watchdog-before-populated-hold-stop.log.txt",
-      "line": 6,
-      "text": "{\"time\":\"2026-11-04T14:13:36.971576975Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059422950818,\"succeeded\":true}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.697288833Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829148660831,\"succeeded\":true}"
     },
     {
       "path": "watchdog.log.txt",
       "line": 1,
-      "text": "{\"time\":\"2026-11-04T14:07:35.879901791Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":124698331257359,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.676579611Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":130829127935194,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
     },
     {
       "path": "watchdog.log.txt",
       "line": 2,
-      "text": "{\"time\":\"2026-11-04T14:07:35.879970076Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":124698331345940,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.676670959Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829128046750,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
     },
     {
       "path": "watchdog.log.txt",
       "line": 3,
-      "text": "{\"time\":\"2026-11-04T14:07:35.908753499Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":124698360126618,\"succeeded\":true}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 4,
-      "text": "{\"time\":\"2026-11-04T14:13:36.937802751Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"baseline_unverified\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125059389172211,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 5,
-      "text": "{\"time\":\"2026-11-04T14:13:36.937857372Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059389232188,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 6,
-      "text": "{\"time\":\"2026-11-04T14:13:36.971576975Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059422950818,\"succeeded\":true}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 7,
-      "text": "{\"time\":\"2026-11-04T14:24:48.153064181Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"policy_expired\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125730604423718,\"heartbeat_mono_ns\":125726538448466,\"policy_expires_mono_ns\":125728711630414,\"generation\":34,\"serving\":true,\"baseline_ok\":true}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 8,
-      "text": "{\"time\":\"2026-11-04T14:24:48.1532589Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"policy_expired\",\"mono_ns\":125730604634181,\"heartbeat_mono_ns\":125726538448466,\"policy_expires_mono_ns\":125728711630414,\"generation\":34}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 9,
-      "text": "{\"time\":\"2026-11-04T14:24:48.200037095Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"policy_expired\",\"mono_ns\":125730651410544,\"succeeded\":true}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.697288833Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829148660831,\"succeeded\":true}"
     }
   ],
   "unique_lines": [
-    "time=2026-11-04T14:07:35.960Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=124698412265194 generation=0",
-    "time=2026-11-04T14:07:35.983Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=124698434950560 succeeded=true",
-    "time=2026-11-04T14:13:36.925Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=125059376568787 generation=16",
-    "time=2026-11-04T14:13:36.962Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=125059413590966 succeeded=true",
-    "time=2026-11-04T14:20:46.082Z level=INFO msg=\"serving rules retained for restart\" generation=28 policy_expires_mono_ns=125544964354136 next_binding_expiry_mono_ns=125544964354136",
-    "time=2026-11-04T14:20:47.026Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=125489477464640 generation=28",
-    "time=2026-11-04T14:20:47.065Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=125489516641709 succeeded=true",
-    "time=2026-11-04T14:26:59.529Z level=INFO msg=\"serving rules retained for restart\" generation=37 policy_expires_mono_ns=125911766043084 next_binding_expiry_mono_ns=125911766043084",
-    "time=2026-11-04T14:27:01.446Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=125863897738261 generation=37",
-    "time=2026-11-04T14:27:01.484Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=125863935592902 succeeded=true",
-    "{\"time\":\"2026-11-04T14:07:35.879901791Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":124698331257359,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}",
-    "{\"time\":\"2026-11-04T14:07:35.879970076Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":124698331345940,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}",
-    "{\"time\":\"2026-11-04T14:07:35.908753499Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":124698360126618,\"succeeded\":true}",
-    "{\"time\":\"2026-11-04T14:13:36.937802751Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"baseline_unverified\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125059389172211,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}",
-    "{\"time\":\"2026-11-04T14:13:36.937857372Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059389232188,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0}",
-    "{\"time\":\"2026-11-04T14:13:36.971576975Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059422950818,\"succeeded\":true}",
-    "{\"time\":\"2026-11-04T14:24:48.153064181Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"policy_expired\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125730604423718,\"heartbeat_mono_ns\":125726538448466,\"policy_expires_mono_ns\":125728711630414,\"generation\":34,\"serving\":true,\"baseline_ok\":true}",
-    "{\"time\":\"2026-11-04T14:24:48.1532589Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"policy_expired\",\"mono_ns\":125730604634181,\"heartbeat_mono_ns\":125726538448466,\"policy_expires_mono_ns\":125728711630414,\"generation\":34}",
-    "{\"time\":\"2026-11-04T14:24:48.200037095Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"policy_expired\",\"mono_ns\":125730651410544,\"succeeded\":true}"
+    "time=2026-11-04T15:49:46.762Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=130829213609636 generation=0",
+    "time=2026-11-04T15:49:46.782Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=130829233536669 succeeded=true",
+    "time=2026-11-04T15:55:41.483Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131183934624100 generation=16",
+    "time=2026-11-04T15:55:41.504Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131183956066491 succeeded=true",
+    "time=2026-11-04T16:02:47.785Z level=INFO msg=\"serving rules retained for restart\" generation=27 policy_expires_mono_ns=131666520297736 next_binding_expiry_mono_ns=131666520297736",
+    "time=2026-11-04T16:02:48.739Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131611191227055 generation=27",
+    "time=2026-11-04T16:02:48.784Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131611235488784 succeeded=true",
+    "time=2026-11-04T16:08:54.467Z level=INFO msg=\"serving rules retained for restart\" generation=34 policy_expires_mono_ns=132027008883289 next_binding_expiry_mono_ns=132027008883289",
+    "time=2026-11-04T16:08:56.668Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=begin mono_ns=131979120293880 generation=34",
+    "time=2026-11-04T16:08:56.709Z level=INFO msg=\"baseline write\" writer=agent cause=boot_unverified phase=end mono_ns=131979160705016 succeeded=true",
+    "{\"time\":\"2026-11-04T15:49:46.676579611Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":130829127935194,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}",
+    "{\"time\":\"2026-11-04T15:49:46.676670959Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829128046750,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}",
+    "{\"time\":\"2026-11-04T15:49:46.697288833Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829148660831,\"succeeded\":true}"
   ],
   "watchdog_records": [
     {
-      "path": "watchdog-before-clone.log.txt",
-      "line": 1,
-      "text": "{\"time\":\"2026-11-04T14:24:48.153064181Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"policy_expired\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125730604423718,\"heartbeat_mono_ns\":125726538448466,\"policy_expires_mono_ns\":125728711630414,\"generation\":34,\"serving\":true,\"baseline_ok\":true}"
-    },
-    {
-      "path": "watchdog-before-clone.log.txt",
-      "line": 2,
-      "text": "{\"time\":\"2026-11-04T14:24:48.1532589Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"policy_expired\",\"mono_ns\":125730604634181,\"heartbeat_mono_ns\":125726538448466,\"policy_expires_mono_ns\":125728711630414,\"generation\":34}"
-    },
-    {
-      "path": "watchdog-before-clone.log.txt",
-      "line": 3,
-      "text": "{\"time\":\"2026-11-04T14:24:48.200037095Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"policy_expired\",\"mono_ns\":125730651410544,\"succeeded\":true}"
-    },
-    {
       "path": "watchdog-before-populated-hold-stop.log.txt",
       "line": 1,
-      "text": "{\"time\":\"2026-11-04T14:07:35.879901791Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":124698331257359,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.676579611Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":130829127935194,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
     },
     {
       "path": "watchdog-before-populated-hold-stop.log.txt",
       "line": 2,
-      "text": "{\"time\":\"2026-11-04T14:07:35.879970076Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":124698331345940,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.676670959Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829128046750,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
     },
     {
       "path": "watchdog-before-populated-hold-stop.log.txt",
       "line": 3,
-      "text": "{\"time\":\"2026-11-04T14:07:35.908753499Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":124698360126618,\"succeeded\":true}"
-    },
-    {
-      "path": "watchdog-before-populated-hold-stop.log.txt",
-      "line": 4,
-      "text": "{\"time\":\"2026-11-04T14:13:36.937802751Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"baseline_unverified\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125059389172211,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
-    },
-    {
-      "path": "watchdog-before-populated-hold-stop.log.txt",
-      "line": 5,
-      "text": "{\"time\":\"2026-11-04T14:13:36.937857372Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059389232188,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0}"
-    },
-    {
-      "path": "watchdog-before-populated-hold-stop.log.txt",
-      "line": 6,
-      "text": "{\"time\":\"2026-11-04T14:13:36.971576975Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059422950818,\"succeeded\":true}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.697288833Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829148660831,\"succeeded\":true}"
     },
     {
       "path": "watchdog.log.txt",
       "line": 1,
-      "text": "{\"time\":\"2026-11-04T14:07:35.879901791Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":124698331257359,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.676579611Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"heartbeat_unreadable\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":130829127935194,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
     },
     {
       "path": "watchdog.log.txt",
       "line": 2,
-      "text": "{\"time\":\"2026-11-04T14:07:35.879970076Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":124698331345940,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.676670959Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829128046750,\"heartbeat_mono_ns\":0,\"policy_expires_mono_ns\":0,\"generation\":0}"
     },
     {
       "path": "watchdog.log.txt",
       "line": 3,
-      "text": "{\"time\":\"2026-11-04T14:07:35.908753499Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":124698360126618,\"succeeded\":true}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 4,
-      "text": "{\"time\":\"2026-11-04T14:13:36.937802751Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"baseline_unverified\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125059389172211,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0,\"serving\":false,\"baseline_ok\":false}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 5,
-      "text": "{\"time\":\"2026-11-04T14:13:36.937857372Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059389232188,\"heartbeat_mono_ns\":125059360488219,\"policy_expires_mono_ns\":0,\"generation\":0}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 6,
-      "text": "{\"time\":\"2026-11-04T14:13:36.971576975Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"baseline_unverified\",\"mono_ns\":125059422950818,\"succeeded\":true}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 7,
-      "text": "{\"time\":\"2026-11-04T14:24:48.153064181Z\",\"level\":\"INFO\",\"msg\":\"baseline decision\",\"writer\":\"watchdog\",\"cause\":\"policy_expired\",\"boot_id\":\"56e68667-9243-4933-83af-c70d575ff5fe\",\"mono_ns\":125730604423718,\"heartbeat_mono_ns\":125726538448466,\"policy_expires_mono_ns\":125728711630414,\"generation\":34,\"serving\":true,\"baseline_ok\":true}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 8,
-      "text": "{\"time\":\"2026-11-04T14:24:48.1532589Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"begin\",\"cause\":\"policy_expired\",\"mono_ns\":125730604634181,\"heartbeat_mono_ns\":125726538448466,\"policy_expires_mono_ns\":125728711630414,\"generation\":34}"
-    },
-    {
-      "path": "watchdog.log.txt",
-      "line": 9,
-      "text": "{\"time\":\"2026-11-04T14:24:48.200037095Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"policy_expired\",\"mono_ns\":125730651410544,\"succeeded\":true}"
+      "text": "{\"time\":\"2026-11-04T15:49:46.697288833Z\",\"level\":\"INFO\",\"msg\":\"baseline write\",\"writer\":\"watchdog\",\"phase\":\"end\",\"cause\":\"heartbeat_unreadable\",\"mono_ns\":130829148660831,\"succeeded\":true}"
     }
   ],
-  "baseline_unverified_unique": 3,
+  "baseline_unverified_unique": 0,
   "generation_mismatch_unique": 0,
   "restart_lifecycle_source": "restart-lifecycle.json",
   "container_lifecycle_source": "container-lifecycle-events.json"

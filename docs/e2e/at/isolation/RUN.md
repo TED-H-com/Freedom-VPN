@@ -134,3 +134,39 @@ Before a new assembled run, archive the living records under immutable history w
 Scheduled mode is locally usable: set `FVPN_AT_SCHEDULED=1` and `FVPN_AT_EVIDENCE_DIR=.agent/nightly-records` as the workflow does, using a fresh destination. D-163 maps only the populated-holds review's named pure_stale_generation coverage gap when its own same-run result has every other item passing and no failure or join problem. The review remains incomplete and keeps exit 1. `scheduled-job.md` lists the reason and owner, and asks to remove an entry when it becomes unnecessary. Any other gap/error stays red. D-144 acceptance mapping, expected-blocked.json, the workflow, every review exit, and D-120/D-161/D-140/D-142 predicates remain unchanged.
 
 Use `$FVPN_HOLD_SH` before each top-level Go test, Make or Docker command, with admission output captured separately. Record `vmstat 5 7` and the requested process inventory; wait for all other suites up to the authorized total limit. Do not add admission waits inside timed sections. Record any later overlap as D-133 confounded and obey the run-specific retry limit. The follow-up-24 single invocation has already been consumed. [Diagnosis, source commits, full results and validation](followup24-2026-11-04.md).
+
+
+## Follow-up 25 — predeclared F24-01 handling (2026-11-04)
+
+The [dated plan and diagnosis](followup25-2026-11-04.md) apply to one assembled
+scheduled-mode run after the archive and planner/reviewer tests are committed.
+Run `make -f mk/at-isolation.mk at-isolation` with `FVPN_AT_SCHEDULED=1` and a
+fresh private `FVPN_AT_EVIDENCE_DIR`. Before launch, record baseline/source,
+`vmstat 5 7` and the requested process search; wait for `$FVPN_HOLD_SH` to print
+`free` and for other assembled/lab/e2e runs to finish, at most 120 minutes.
+No reservation. Keep admission output outside parser streams. Monitor overlap;
+any observed foreign run marks the window confounded under D-133. No acceptance
+retry; only an own-harness stop before the first acceptance check permits one rerun.
+
+The D−1 s checkpoint still uses the same calibration copy and both unchanged
+original cadences. Pure `boundaryplan.Plan` preserves the maximum-transit formula,
+median correction, grid and exclusions. No sample is discounted. Every plan has
+an added-schedule array; only a nonempty array can be plan-qualified. An empty
+result records its reason, spacing, cadence gaps and every candidate's excluding
+original sends. This is an explicit unqualified result, not successful coverage.
+The reviewer still applies D-142 to every adjacent captured pair from the earlier
+of last positive/first drop through sweep end. It preserves the independent
+packet verdict and writes a failing review for malformed or unqualified plans.
+An exit 1 remains a scheduled error; F24-01 is not covered by D-163.
+The follow-up 24 member-expiry schedule and predicate remain unchanged.
+
+
+### Follow-up 25 execution receipt
+
+The one authorized invocation is consumed: `bd73d7a4-03f1-4b17-97c2-9c25a39ac0db`, **15:47:50Z–16:11:27Z**,
+**1416.556s**, exit **0**, scheduled **pass**. No retry. The recorded plan above
+was used unchanged. The host preflight had no additional wait after the earlier
+751.046s offline-gate reservation wait; 48 overlap samples found no foreign run.
+[Complete receipt and every observed row](followup25-2026-11-04.md),
+[original preflight](history/follow-up-25-run/preflight.json),
+[original vmstat](history/follow-up-25-run/vmstat.txt).

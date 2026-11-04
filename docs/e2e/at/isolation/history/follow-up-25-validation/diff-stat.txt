@@ -1,0 +1,516 @@
+ docs/e2e/at/isolation/AT10.json                    |   670 +-
+ docs/e2e/at/isolation/AT11.json                    |   234 +-
+ docs/e2e/at/isolation/AT12.json                    |   708 +-
+ docs/e2e/at/isolation/AT13.json                    |   534 +-
+ docs/e2e/at/isolation/AT13.md                      |    22 +
+ docs/e2e/at/isolation/RUN.md                       |    36 +
+ docs/e2e/at/isolation/agent-before-clone.log.txt   |   216 +-
+ .../agent-before-populated-hold-stop.log.txt       |   254 +-
+ docs/e2e/at/isolation/agent-before-restart.log.txt |   166 +-
+ docs/e2e/at/isolation/agent-final.log.txt          |   492 +-
+ docs/e2e/at/isolation/agent.log.txt                |  1128 +-
+ docs/e2e/at/isolation/assembled.log.txt.gz         |   Bin 12740 -> 12969 bytes
+ .../at/isolation/bootstrap-renewal-evidence.json   |     2 +-
+ .../at/isolation/boundary-calibration-packets.json |   830 +-
+ docs/e2e/at/isolation/boundary-review.json         |  3835 +++
+ docs/e2e/at/isolation/boundary-schedule.json       |  1329 +-
+ .../e2e/at/isolation/candidate-rejection-join.json |  1374 +-
+ .../at/isolation/container-lifecycle-events.json   |    66 +-
+ docs/e2e/at/isolation/continuity-analysis.json     |  4414 ++-
+ .../isolation/control-observation-readiness.json   |  1128 +-
+ docs/e2e/at/isolation/convergence-timeline.json    |  9827 +++---
+ docs/e2e/at/isolation/d161-review.json             |   752 +-
+ docs/e2e/at/isolation/deadline-verdict.json        |  4554 +--
+ .../at/isolation/expiry-failure-correlation.json   |  4962 +--
+ .../at/isolation/expiry-timing-analysis.json.gz    |   Bin 89324 -> 148378 bytes
+ .../at/isolation/finite-member-renewal-wait.json   |    32 +-
+ docs/e2e/at/isolation/finite-member-schedule.json  |   190 +-
+ docs/e2e/at/isolation/fleet-before-enrollment.json |     4 +-
+ .../isolation/follow-up-25-evidence-inventory.json |   225 +
+ .../e2e/at/isolation/follow-up-25-run-receipt.json |    17 +
+ docs/e2e/at/isolation/followup25-2026-11-04.md     |   212 +
+ .../at/isolation/foreign-redirect-analysis.json    |   677 +-
+ docs/e2e/at/isolation/foreign-redirect.json        |  2012 +-
+ .../at/isolation/generation-hold-control-cut.json  |    84 +-
+ .../at/isolation/generation-holds-central.json.gz  |   Bin 191903 -> 185582 bytes
+ .../at/isolation/history/follow-up-24/AT10.json    |  1573 +
+ docs/e2e/at/isolation/history/follow-up-24/AT10.md |  2441 ++
+ .../at/isolation/history/follow-up-24/AT11.json    |   527 +
+ docs/e2e/at/isolation/history/follow-up-24/AT11.md |   128 +
+ .../at/isolation/history/follow-up-24/AT12.json    |  1764 ++
+ docs/e2e/at/isolation/history/follow-up-24/AT12.md |   139 +
+ .../at/isolation/history/follow-up-24/AT13.json    |  1304 +
+ docs/e2e/at/isolation/history/follow-up-24/AT13.md |   144 +
+ .../at/isolation/history/follow-up-24/README.md    |    23 +
+ docs/e2e/at/isolation/history/follow-up-24/RUN.md  |   136 +
+ .../history/follow-up-24/admission-checks.jsonl    |    41 +
+ .../follow-up-24/agent-before-clone.log.txt        |   112 +
+ .../agent-before-populated-hold-stop.log.txt       |   125 +
+ .../follow-up-24/agent-before-restart.log.txt      |    83 +
+ .../follow-up-24/agent-core32-regression.json      |   780 +
+ .../history/follow-up-24/agent-final.log.txt       |   243 +
+ .../isolation/history/follow-up-24/agent.log.txt   |   563 +
+ .../at/isolation/history/follow-up-24/archive.json |  1106 +
+ .../history/follow-up-24/assembled.log.txt.gz      |   Bin 0 -> 12740 bytes
+ .../follow-up-24/bootstrap-renewal-evidence.json   |     1 +
+ .../follow-up-24/boundary-calibration-packets.json |  2281 ++
+ .../follow-up-24/boundary-review-failure.json      |   160 +
+ .../history/follow-up-24/boundary-schedule.json    |   848 +
+ .../follow-up-24/candidate-rejection-join.json     |  4981 +++
+ .../history/follow-up-24/cleanup-inventory.json    |     6 +
+ .../follow-up-24/command-admission-summary.json    |     6 +
+ .../follow-up-24/command-lifecycle-summary.json    |   951 +
+ .../follow-up-24/consumer-review-corrections.json  |    19 +
+ .../follow-up-24/container-lifecycle-events.json   |   234 +
+ .../follow-up-24/container-stop-summary.json       |   102 +
+ .../history/follow-up-24/continuity-analysis.json  |  1312 +
+ .../control-observation-readiness.json             |  1364 +
+ .../history/follow-up-24/convergence-timeline.json | 24031 +++++++++++++++
+ .../history/follow-up-24/d093-reconciliation.md    |    30 +
+ .../d147-related-frag-needed-2026-11-03.md         |    72 +
+ .../history/follow-up-24/d161-review.json          |  1108 +
+ .../history/follow-up-24/deadline-verdict.json     |  5265 ++++
+ .../follow-up-24/expiry-early-baseline.json        |   267 +
+ .../follow-up-24/expiry-failure-correlation.json   |  5186 ++++
+ .../follow-up-24/expiry-failure-wire-extract.json  |   535 +
+ .../follow-up-24/expiry-timing-analysis.json.gz    |   Bin 0 -> 89324 bytes
+ .../follow-up-24/finite-member-renewal-wait.json   |    37 +
+ .../follow-up-24/finite-member-schedule.json       |   326 +
+ .../history/follow-up-24/first-attempt.md          |    91 +
+ .../follow-up-24/fleet-before-enrollment.json      |     6 +
+ .../follow-up-24/follow-up-14-findings.json        |   111 +
+ .../follow-up-24/follow-up-15-findings.json        |    24 +
+ .../follow-up-24/follow-up-16-findings.json        |   140 +
+ .../follow-up-24/follow-up-17-findings.json        |   118 +
+ .../follow-up-24/follow-up-18-findings.json        |   105 +
+ .../follow-up-19-evidence-inventory.json           |   158 +
+ .../follow-up-24/follow-up-19-findings.json        |   123 +
+ .../follow-up-24/follow-up-19-reader-audit.json    |    53 +
+ .../follow-up-24/follow-up-19-run-receipt.json     |    35 +
+ .../follow-up-20-evidence-inventory.json           |   132 +
+ .../follow-up-24/follow-up-20-findings.json        |    78 +
+ .../follow-up-24/follow-up-20-run-receipt.json     |    12 +
+ .../follow-up-21-evidence-inventory.json           |   179 +
+ .../follow-up-24/follow-up-21-findings.json        |    40 +
+ .../follow-up-24/follow-up-21-run-receipt.json     |    13 +
+ .../follow-up-22-evidence-inventory.json           |   190 +
+ .../follow-up-24/follow-up-22-findings.json        |    36 +
+ .../follow-up-24/follow-up-22-run-receipt.json     |    14 +
+ .../follow-up-23-evidence-inventory.json           |   209 +
+ .../follow-up-24/follow-up-23-findings.json        |    24 +
+ .../follow-up-24/follow-up-23-run-receipt.json     |    15 +
+ .../follow-up-24-evidence-inventory.json           |   224 +
+ .../follow-up-24/follow-up-24-findings.json        |    40 +
+ .../follow-up-24/follow-up-24-run-receipt.json     |    16 +
+ .../history/follow-up-24/followup20-2026-11-03.md  |   121 +
+ .../history/follow-up-24/followup21-2026-11-03.md  |   131 +
+ .../history/follow-up-24/followup22-2026-11-04.md  |   163 +
+ .../history/follow-up-24/followup23-2026-11-04.md  |   202 +
+ .../history/follow-up-24/followup24-2026-11-04.md  |   203 +
+ .../follow-up-24/foreign-redirect-analysis.json    |  1489 +
+ .../history/follow-up-24/foreign-redirect.json     |  4120 +++
+ .../follow-up-24/generation-hold-control-cut.json  |   191 +
+ .../follow-up-24/generation-holds-central.json.gz  |   Bin 0 -> 191903 bytes
+ .../follow-up-24/generation-holds-review.json      |  9661 ++++++
+ .../follow-up-24/host-admission-review.json        |    12 +
+ .../history/follow-up-24/host-preflight.json       |    10 +
+ .../history/follow-up-24/identity-freeze.json.gz   |   Bin 0 -> 55922 bytes
+ .../follow-up-24/initial-general-hold-review.json  | 11931 +++++++
+ .../follow-up-24/iso-f6-01-observation-gap.json    |     7 +
+ .../history/follow-up-24/lab-AT10-matrix.txt       |    10 +
+ .../history/follow-up-24/lab-AT10-ruleset.nft      |   194 +
+ .../history/follow-up-24/lab-AT10-tc.json          |     1 +
+ .../isolation/history/follow-up-24/lab-AT10.json   |    60 +
+ .../at/isolation/history/follow-up-24/lab-AT10.md  |    39 +
+ .../history/follow-up-24/lab-AT11-coverage.txt     |    26 +
+ .../isolation/history/follow-up-24/lab-AT11.json   |    45 +
+ .../at/isolation/history/follow-up-24/lab-AT11.md  |    35 +
+ .../history/follow-up-24/lab-AT12-captures.txt.gz  |   Bin 0 -> 293 bytes
+ .../history/follow-up-24/lab-AT12-matrix.txt       |    15 +
+ .../isolation/history/follow-up-24/lab-AT12.json   |    49 +
+ .../at/isolation/history/follow-up-24/lab-AT12.md  |    36 +
+ .../history/follow-up-24/lab-AT13-d147-detail.json |  9821 ++++++
+ .../history/follow-up-24/lab-AT13-d147-error.txt   |     0
+ .../history/follow-up-24/lab-AT13-d147-ruleset.nft |   195 +
+ .../history/follow-up-24/lab-AT13-d147.json        |   185 +
+ .../history/follow-up-24/lab-AT13-d147.md          |    44 +
+ .../history/follow-up-24/lab-AT13-ruleset.nft      |   182 +
+ .../history/follow-up-24/lab-AT13-timeline.txt     |     9 +
+ .../isolation/history/follow-up-24/lab-AT13.json   |    49 +
+ .../at/isolation/history/follow-up-24/lab-AT13.md  |    36 +
+ .../history/follow-up-24/lease-history.json        |  3996 +++
+ .../follow-up-24/mechanism-d104-failure.txt        |    11 +
+ .../member-expiry-prerequisite-review.json         |    48 +
+ .../follow-up-24/member-expiry-replay.log.txt      |    17 +
+ .../history/follow-up-24/member-expiry-review.json |   439 +
+ .../history/follow-up-24/member-grants-audit.json  |    16 +
+ .../history/follow-up-24/member-grants-timing.json |   242 +
+ .../follow-up-24/member-grants-transition.json     |  2392 ++
+ .../follow-up-24/member-grants-wire.json.gz        |   Bin 0 -> 84798 bytes
+ .../follow-up-24/member-renewal-current.json       |   105 +
+ .../follow-up-24/member-schedule-offline.log.txt   |    58 +
+ .../history/follow-up-24/native-d147-scope.json    |    19 +
+ .../follow-up-24/nft-event-receipts.json.gz        |   Bin 0 -> 85566 bytes
+ .../follow-up-24/nightly-diagnosis-2026-11-03.md   |   255 +
+ .../history/follow-up-24/nightly-diagnosis.md      |    61 +
+ .../isolation/history/follow-up-24/node-events.txt |    14 +
+ .../history/follow-up-24/node-write-audit.json     |   475 +
+ .../history/follow-up-24/observed-rows.json.gz     |   Bin 0 -> 137690 bytes
+ .../isolation/history/follow-up-24/operator-run.md |    17 +
+ .../isolation/history/follow-up-24/overlap.jsonl   |    48 +
+ .../follow-up-24/policy-missing-analysis.json      |  9008 ++++++
+ .../follow-up-24/populated-holds-review.json       |   397 +
+ .../history/follow-up-24/populated-holds.json.gz   |   Bin 0 -> 251178 bytes
+ .../history/follow-up-24/populated-holds.md        |    97 +
+ .../follow-up-24/pre-apply-reservation-review.json | 24552 +++++++++++++++
+ .../isolation/history/follow-up-24/preflight.json  |    19 +
+ .../history/follow-up-24/prelaunch-admission.jsonl |     2 +
+ .../follow-up-24/prelaunch-wait-samples.jsonl      |    18 +
+ .../follow-up-24/producer-clock-after-restart.json |    13 +
+ .../history/follow-up-24/producer-clock.json       |     1 +
+ .../follow-up-24/producer-operations.jsonl.gz      |   Bin 0 -> 990739 bytes
+ .../follow-up-24/producer-timing-analysis.json.gz  |   Bin 0 -> 287442 bytes
+ .../follow-up-24/producer-timing-unavailable.json  |    25 +
+ .../provisional-receiver-analysis.json             |   891 +
+ .../publication-operation-history.json             |  9018 ++++++
+ .../history/follow-up-24/receiver-capture.json.gz  |   Bin 0 -> 222965 bytes
+ .../history/follow-up-24/receiver-closure.json     |    92 +
+ .../follow-up-24/recording-limitations.json        |    22 +
+ .../history/follow-up-24/recording-proof.json      |    42 +
+ .../follow-up-24/recovery-applied-state.json       |   139 +
+ .../history/follow-up-24/recovery-verdict.json     |  2269 ++
+ .../history/follow-up-24/redirect-node-capture.txt |  2755 ++
+ .../follow-up-24/reload-revoke-failure-review.json |    70 +
+ .../history/follow-up-24/reload-stream/SUMMARY.txt |     1 +
+ .../at10-analysis.json                             | 22100 +++++++++++++
+ .../at10-apply.jsonl.gz                            |   Bin 0 -> 739135 bytes
+ .../at10-node-headers.err                          |     5 +
+ .../at10-node-headers.txt.gz                       |   Bin 0 -> 11176 bytes
+ .../at10-node.err                                  |     3 +
+ .../at10-node.projection.json                      |    10 +
+ .../at10-node.txt                                  |   528 +
+ .../at10-origin-headers.err                        |     5 +
+ .../at10-origin-headers.txt.gz                     |   Bin 0 -> 7301 bytes
+ .../at10-origin.err                                |     3 +
+ .../at10-origin.projection.json                    |    10 +
+ .../at10-origin.txt                                |   264 +
+ .../at10-responder-headers.err                     |     5 +
+ .../at10-responder-headers.txt.gz                  |   Bin 0 -> 7095 bytes
+ .../at10-responder.err                             |     3 +
+ .../at10-responder.projection.json                 |    10 +
+ .../at10-responder.txt                             |   264 +
+ .../conntrack-after-revoke.txt                     |     0
+ .../conntrack-before-revoke.txt                    |     2 +
+ .../d120-verdict.txt                               |    79 +
+ .../TestAT10_AT13_ReloadRevokeBaseline/reload.txt  |    12 +
+ .../stream-a1.log.jsonl                            |   261 +
+ .../stream-a1.log.trace-done                       |     1 +
+ .../stream-a1.log.trace-finish.json                |    36 +
+ .../stream-a1.txt                                  |    71 +
+ .../TestD104_AT13_DeadlineContinuity/trace.json    |   872 +
+ .../follow-up-24}/renewal-node-capture.txt         |     0
+ .../history/follow-up-24/renewal-packets.json      | 30726 +++++++++++++++++++
+ .../history/follow-up-24/renewal-probes.json       | 30714 ++++++++++++++++++
+ .../at/isolation/history/follow-up-24/requests.md  |    67 +
+ .../follow-up-24/restart-docker-events.json        |    17 +
+ .../history/follow-up-24/restart-lifecycle.json    |    89 +
+ .../follow-up-24/restart-signature-review.json     |   355 +
+ .../history/follow-up-24/restart-timeline.json     |   589 +
+ .../history/follow-up-24/revocation-request.json   |    26 +
+ .../history/follow-up-24/row-comparison.json       |   215 +
+ .../at/isolation/history/follow-up-24/runtime.json |    10 +
+ .../history/follow-up-24/scheduled-job.json        |   364 +
+ .../history/follow-up-24/scheduled-job.md          |    43 +
+ .../history/follow-up-24/second-attempt.md         |    60 +
+ .../follow-up-24/serving-readback-metadata.json    |     9 +
+ .../follow-up-24/setup-node-http-receipts.json     |     6 +
+ .../history/follow-up-24/stop-receipt-review.json  |   324 +
+ .../follow-up-24/suite-admission-times.jsonl       |     4 +
+ .../history/follow-up-24/suite-admission.jsonl     |     4 +
+ .../follow-up-24/suite-overlap-monitor.jsonl       |    48 +
+ .../at/isolation/history/follow-up-24/summary.md   |   254 +
+ .../history/follow-up-24/support/publish.json      |   254 +
+ .../history/follow-up-24/support/publish.md        |    72 +
+ .../follow-up-24/support/serving-catalogue.json    |    34 +
+ .../follow-up-24/support/serving-catalogue.md      |    17 +
+ .../history/follow-up-24/tc-evidence-index.json.gz |   Bin 0 -> 51584 bytes
+ .../follow-up-24/timing-admission-review.json      |    25 +
+ .../history/follow-up-24/validation-results.json   |   148 +
+ .../at/isolation/history/follow-up-24/vmstat.txt   |     9 +
+ .../follow-up-24/watchdog-before-clone.log.txt     |     3 +
+ .../watchdog-before-populated-hold-stop.log.txt    |     6 +
+ .../follow-up-24/watchdog-before-restart.log.txt   |     0
+ .../history/follow-up-24/watchdog-final.log.txt    |     0
+ .../history/follow-up-24/watchdog.log.txt          |     9 +
+ .../follow-up-24/whole-node-bracketed-reads.json   |   299 +
+ .../follow-up-24/whole-node-continuous-reads.json  |   976 +
+ .../follow-up-24}/whole-node-node-capture.txt      |     0
+ .../history/follow-up-24/whole-node-packets.json   |  4018 +++
+ .../history/follow-up-24/whole-node-probes.json    |  4465 +++
+ .../history/follow-up-25-diagnosis/archive.json    |    15 +
+ .../history/follow-up-25-diagnosis/diagnosis.json  |   297 +
+ .../reload-stream-interval.json                    |    36 +
+ .../328ab9e0-new-plan-review.json                  |  3787 +++
+ .../history/follow-up-25-replay/328ab9e0-plan.json |  1104 +
+ .../history/follow-up-25-replay/archive.json       |    67 +
+ .../history/follow-up-25-replay/comparisons.json   |    47 +
+ .../df9dbad7-new-plan-review.json                  |  3296 ++
+ .../history/follow-up-25-replay/df9dbad7-plan.json |  1000 +
+ .../follow-up-25-replay/focused-result.json        |    14 +
+ .../history/follow-up-25-replay/focused.log.txt.gz |   Bin 0 -> 924 bytes
+ .../follow-up-23-run-review.json                   |  3787 +++
+ .../follow-up-24-run-review.json                   |  3294 ++
+ .../follow-up-25-runner-replay-review.json         |  4075 +++
+ .../runner-1104-new-plan-review.json               |  4075 +++
+ .../follow-up-25-replay/runner-1104-plan.json      |  1194 +
+ .../isolation/history/follow-up-25-run/AT10.json   |  1573 +
+ .../at/isolation/history/follow-up-25-run/AT10.md  |  2347 ++
+ .../isolation/history/follow-up-25-run/AT11.json   |   527 +
+ .../at/isolation/history/follow-up-25-run/AT11.md  |    52 +
+ .../isolation/history/follow-up-25-run/AT12.json   |  1760 ++
+ .../at/isolation/history/follow-up-25-run/AT12.md  |    64 +
+ .../isolation/history/follow-up-25-run/AT13.json   |  1304 +
+ .../at/isolation/history/follow-up-25-run/AT13.md  |    56 +
+ .../follow-up-25-run/agent-before-clone.log.txt    |   104 +
+ .../agent-before-populated-hold-stop.log.txt       |   129 +
+ .../follow-up-25-run/agent-before-restart.log.txt  |    83 +
+ .../history/follow-up-25-run/agent-final.log.txt   |   249 +
+ .../history/follow-up-25-run/agent.log.txt         |   565 +
+ .../history/follow-up-25-run/archive.json          |   758 +
+ .../history/follow-up-25-run/assembled.log.txt.gz  |   Bin 0 -> 12969 bytes
+ .../bootstrap-renewal-evidence.json                |     1 +
+ .../boundary-calibration-packets.json              |  2281 ++
+ .../history/follow-up-25-run/boundary-review.json  |  3835 +++
+ .../follow-up-25-run/boundary-schedule.json        |  1119 +
+ .../follow-up-25-run/candidate-rejection-join.json |  4981 +++
+ .../follow-up-25-run/cleanup-inventory.json        |     6 +
+ .../container-lifecycle-events.json                |   234 +
+ .../follow-up-25-run/continuity-analysis.json      |  4732 +++
+ .../control-observation-readiness.json             |  1906 ++
+ .../follow-up-25-run/convergence-timeline.json     | 23740 ++++++++++++++
+ .../history/follow-up-25-run/d161-review.json      |   978 +
+ .../history/follow-up-25-run/deadline-verdict.json |  6149 ++++
+ .../expiry-failure-correlation.json                |  5186 ++++
+ .../expiry-timing-analysis.json.gz                 |   Bin 0 -> 148378 bytes
+ .../finite-member-renewal-wait.json                |    37 +
+ .../follow-up-25-run/finite-member-schedule.json   |   290 +
+ .../follow-up-25-run/fleet-before-enrollment.json  |     6 +
+ .../follow-up-25-run/follow-up-25-run-receipt.json |    17 +
+ .../foreign-redirect-analysis.json                 |  1426 +
+ .../history/follow-up-25-run/foreign-redirect.json |  4318 +++
+ .../generation-hold-control-cut.json               |   191 +
+ .../generation-holds-central.json.gz               |   Bin 0 -> 185582 bytes
+ .../follow-up-25-run/identity-freeze.json.gz       |   Bin 0 -> 60452 bytes
+ .../history/follow-up-25-run/lab-AT10-matrix.txt   |    10 +
+ .../history/follow-up-25-run/lab-AT10-ruleset.nft  |   194 +
+ .../history/follow-up-25-run/lab-AT10-tc.json      |     1 +
+ .../history/follow-up-25-run/lab-AT10.json         |    60 +
+ .../isolation/history/follow-up-25-run/lab-AT10.md |    39 +
+ .../history/follow-up-25-run/lab-AT11-coverage.txt |    26 +
+ .../history/follow-up-25-run/lab-AT11.json         |    45 +
+ .../isolation/history/follow-up-25-run/lab-AT11.md |    35 +
+ .../follow-up-25-run/lab-AT12-captures.txt.gz      |   Bin 0 -> 294 bytes
+ .../history/follow-up-25-run/lab-AT12-matrix.txt   |    15 +
+ .../history/follow-up-25-run/lab-AT12.json         |    49 +
+ .../isolation/history/follow-up-25-run/lab-AT12.md |    36 +
+ .../follow-up-25-run/lab-AT13-d147-detail.json     |  9749 ++++++
+ .../follow-up-25-run/lab-AT13-d147-ruleset.nft     |   195 +
+ .../history/follow-up-25-run/lab-AT13-d147.json    |   185 +
+ .../history/follow-up-25-run/lab-AT13-d147.md      |    44 +
+ .../history/follow-up-25-run/lab-AT13-ruleset.nft  |   182 +
+ .../history/follow-up-25-run/lab-AT13-timeline.txt |     9 +
+ .../history/follow-up-25-run/lab-AT13.json         |    49 +
+ .../isolation/history/follow-up-25-run/lab-AT13.md |    36 +
+ .../history/follow-up-25-run/lease-history.json    |  3884 +++
+ .../follow-up-25-run/member-expiry-review.json     |   403 +
+ .../follow-up-25-run/member-grants-audit.json      |    16 +
+ .../follow-up-25-run/member-grants-timing.json     |   242 +
+ .../follow-up-25-run/member-grants-transition.json |  2681 ++
+ .../follow-up-25-run/member-grants-wire.json.gz    |   Bin 0 -> 83581 bytes
+ .../follow-up-25-run/member-renewal-current.json   |    75 +
+ .../follow-up-25-run/nft-event-receipts.json.gz    |   Bin 0 -> 83518 bytes
+ .../history/follow-up-25-run/node-events.txt       |    21 +
+ .../history/follow-up-25-run/node-write-audit.json |   475 +
+ .../history/follow-up-25-run/observed-rows.json.gz |   Bin 0 -> 137689 bytes
+ .../history/follow-up-25-run/overlap.jsonl         |    48 +
+ .../follow-up-25-run/populated-holds-review.json   |   396 +
+ .../follow-up-25-run/populated-holds.json.gz       |   Bin 0 -> 245090 bytes
+ .../history/follow-up-25-run/preflight.json        |    19 +
+ .../producer-clock-after-restart.json              |    13 +
+ .../history/follow-up-25-run/producer-clock.json   |     1 +
+ .../follow-up-25-run/producer-operations.jsonl.gz  |   Bin 0 -> 992252 bytes
+ .../producer-timing-analysis.json.gz               |   Bin 0 -> 350390 bytes
+ .../provisional-receiver-analysis.json             |  1094 +
+ .../publication-operation-history.json             |  9473 ++++++
+ .../follow-up-25-run/receiver-capture.json.gz      |   Bin 0 -> 218119 bytes
+ .../history/follow-up-25-run/receiver-closure.json |    92 +
+ .../history/follow-up-25-run/recording-proof.json  |    42 +
+ .../follow-up-25-run/recovery-applied-state.json   |   139 +
+ .../history/follow-up-25-run/recovery-verdict.json |  2276 ++
+ .../follow-up-25-run/redirect-node-capture.txt     |  2755 ++
+ .../follow-up-25-run/reload-stream/SUMMARY.txt     |     1 +
+ .../at10-analysis.json                             | 19782 ++++++++++++
+ .../at10-apply.jsonl.gz                            |   Bin 0 -> 737412 bytes
+ .../at10-node-headers.err                          |     5 +
+ .../at10-node-headers.txt.gz                       |   Bin 0 -> 10046 bytes
+ .../at10-node.err                                  |     3 +
+ .../at10-node.projection.json                      |    10 +
+ .../at10-node.txt                                  |   466 +
+ .../at10-origin-headers.err                        |     5 +
+ .../at10-origin-headers.txt.gz                     |   Bin 0 -> 6619 bytes
+ .../at10-origin.err                                |     3 +
+ .../at10-origin.projection.json                    |    10 +
+ .../at10-origin.txt                                |   234 +
+ .../at10-responder-headers.err                     |     5 +
+ .../at10-responder-headers.txt.gz                  |   Bin 0 -> 6418 bytes
+ .../at10-responder.err                             |     3 +
+ .../at10-responder.projection.json                 |    10 +
+ .../at10-responder.txt                             |   232 +
+ .../conntrack-after-revoke.txt                     |     0
+ .../conntrack-before-revoke.txt                    |     2 +
+ .../d120-verdict.txt                               |    70 +
+ .../TestAT10_AT13_ReloadRevokeBaseline/reload.txt  |    12 +
+ .../stream-a1.log.jsonl                            |   233 +
+ .../stream-a1.log.trace-done                       |     1 +
+ .../stream-a1.log.trace-finish.json                |    36 +
+ .../stream-a1.txt                                  |    64 +
+ .../TestD104_AT13_DeadlineContinuity/trace.json    |   872 +
+ .../follow-up-25-run/renewal-node-capture.txt.gz   |   Bin 0 -> 45715 bytes
+ .../history/follow-up-25-run/renewal-packets.json  | 30693 ++++++++++++++++++
+ .../history/follow-up-25-run/renewal-probes.json   | 30714 ++++++++++++++++++
+ .../follow-up-25-run/restart-lifecycle.json        |    89 +
+ .../follow-up-25-run/restart-signature-review.json |   229 +
+ .../history/follow-up-25-run/restart-timeline.json |   441 +
+ .../follow-up-25-run/revocation-request.json       |    26 +
+ .../history/follow-up-25-run/row-comparison.json   |   215 +
+ .../history/follow-up-25-run/scheduled-job.json    |   360 +
+ .../history/follow-up-25-run/scheduled-job.md      |    37 +
+ .../serving-readback-metadata.json                 |     9 +
+ .../history/follow-up-25-run/suite-admission.jsonl |     4 +
+ .../history/follow-up-25-run/support/publish.json  |   254 +
+ .../history/follow-up-25-run/support/publish.md    |    72 +
+ .../support/serving-catalogue.json                 |    34 +
+ .../follow-up-25-run/support/serving-catalogue.md  |    17 +
+ .../follow-up-25-run/tc-evidence-index.json.gz     |   Bin 0 -> 51300 bytes
+ .../isolation/history/follow-up-25-run/vmstat.txt  |     9 +
+ .../follow-up-25-run/watchdog-before-clone.log.txt |     0
+ .../watchdog-before-populated-hold-stop.log.txt    |     3 +
+ .../watchdog-before-restart.log.txt                |     0
+ .../follow-up-25-run/watchdog-final.log.txt        |     0
+ .../history/follow-up-25-run/watchdog.log.txt      |     3 +
+ .../whole-node-bracketed-reads.json                |   243 +
+ .../whole-node-continuous-reads.json               |   976 +
+ .../whole-node-node-capture.txt.gz                 |   Bin 0 -> 6457 bytes
+ .../follow-up-25-run/whole-node-packets.json       |  4425 +++
+ .../follow-up-25-run/whole-node-probes.json        |  5213 ++++
+ .../history/follow-up-25-runner-replay/AT13.json   |  1220 +
+ .../follow-up-25-runner-replay/archive.json        |    35 +
+ .../boundary-calibration-packets.json              |  2281 ++
+ .../boundary-review.json                           |  4075 +++
+ .../boundary-schedule.json                         |   898 +
+ .../deadline-verdict.json                          |  6539 ++++
+ .../whole-node-probes.json                         |  5543 ++++
+ docs/e2e/at/isolation/identity-freeze.json.gz      |   Bin 55922 -> 60452 bytes
+ docs/e2e/at/isolation/lab-AT10-ruleset.nft         |    12 +-
+ docs/e2e/at/isolation/lab-AT10.json                |    18 +-
+ docs/e2e/at/isolation/lab-AT10.md                  |    16 +-
+ docs/e2e/at/isolation/lab-AT11.json                |    10 +-
+ docs/e2e/at/isolation/lab-AT11.md                  |     8 +-
+ docs/e2e/at/isolation/lab-AT12-captures.txt.gz     |   Bin 293 -> 294 bytes
+ docs/e2e/at/isolation/lab-AT12.json                |    10 +-
+ docs/e2e/at/isolation/lab-AT12.md                  |     8 +-
+ docs/e2e/at/isolation/lab-AT13-d147-detail.json    |  1080 +-
+ docs/e2e/at/isolation/lab-AT13-d147-ruleset.nft    |    12 +-
+ docs/e2e/at/isolation/lab-AT13-d147.json           |    50 +-
+ docs/e2e/at/isolation/lab-AT13-d147.md             |    24 +-
+ docs/e2e/at/isolation/lab-AT13-ruleset.nft         |    12 +-
+ docs/e2e/at/isolation/lab-AT13-timeline.txt        |     2 +-
+ docs/e2e/at/isolation/lab-AT13.json                |    10 +-
+ docs/e2e/at/isolation/lab-AT13.md                  |     8 +-
+ docs/e2e/at/isolation/lease-history.json           |  4074 ++-
+ docs/e2e/at/isolation/member-expiry-review.json    |   292 +-
+ docs/e2e/at/isolation/member-grants-audit.json     |    10 +-
+ docs/e2e/at/isolation/member-grants-timing.json    |   152 +-
+ .../e2e/at/isolation/member-grants-transition.json |  1725 +-
+ docs/e2e/at/isolation/member-grants-wire.json.gz   |   Bin 84798 -> 83581 bytes
+ docs/e2e/at/isolation/member-renewal-current.json  |   116 +-
+ docs/e2e/at/isolation/nft-event-receipts.json.gz   |   Bin 85566 -> 83518 bytes
+ docs/e2e/at/isolation/node-events.txt              |    27 +-
+ docs/e2e/at/isolation/node-write-audit.json        |   224 +-
+ docs/e2e/at/isolation/observed-rows.json.gz        |   Bin 137690 -> 137689 bytes
+ docs/e2e/at/isolation/overlap.jsonl                |    96 +-
+ docs/e2e/at/isolation/populated-holds-review.json  |   315 +-
+ docs/e2e/at/isolation/populated-holds.json.gz      |   Bin 251178 -> 245090 bytes
+ docs/e2e/at/isolation/preflight.json               |    12 +-
+ .../at/isolation/producer-clock-after-restart.json |    12 +-
+ docs/e2e/at/isolation/producer-clock.json          |     2 +-
+ docs/e2e/at/isolation/producer-operations.jsonl.gz |   Bin 990739 -> 992252 bytes
+ .../at/isolation/producer-timing-analysis.json.gz  |   Bin 287442 -> 350390 bytes
+ .../isolation/provisional-receiver-analysis.json   |   475 +-
+ .../isolation/publication-operation-history.json   |  6349 ++--
+ docs/e2e/at/isolation/receiver-capture.json.gz     |   Bin 222965 -> 218119 bytes
+ docs/e2e/at/isolation/receiver-closure.json        |    88 +-
+ docs/e2e/at/isolation/recording-proof.json         |    26 +-
+ docs/e2e/at/isolation/recovery-applied-state.json  |    90 +-
+ docs/e2e/at/isolation/recovery-verdict.json        |  1367 +-
+ docs/e2e/at/isolation/redirect-node-capture.txt    |  5496 ++--
+ docs/e2e/at/isolation/reload-stream/SUMMARY.txt    |     2 +-
+ .../at10-analysis.json                             | 19126 +++++-------
+ .../at10-apply.jsonl.gz                            |   Bin 739135 -> 737412 bytes
+ .../at10-node-headers.err                          |     4 +-
+ .../at10-node-headers.txt.gz                       |   Bin 11176 -> 10046 bytes
+ .../at10-node.err                                  |     2 +-
+ .../at10-node.projection.json                      |    12 +-
+ .../at10-node.txt                                  |   994 +-
+ .../at10-origin-headers.err                        |     4 +-
+ .../at10-origin-headers.txt.gz                     |   Bin 7301 -> 6619 bytes
+ .../at10-origin.err                                |     2 +-
+ .../at10-origin.projection.json                    |    12 +-
+ .../at10-origin.txt                                |   498 +-
+ .../at10-responder-headers.err                     |     4 +-
+ .../at10-responder-headers.txt.gz                  |   Bin 7095 -> 6418 bytes
+ .../at10-responder.err                             |     2 +-
+ .../at10-responder.projection.json                 |    12 +-
+ .../at10-responder.txt                             |   496 +-
+ .../conntrack-before-revoke.txt                    |     4 +-
+ .../d120-verdict.txt                               |   145 +-
+ .../TestAT10_AT13_ReloadRevokeBaseline/reload.txt  |     2 +-
+ .../stream-a1.log.jsonl                            |   494 +-
+ .../stream-a1.log.trace-done                       |     2 +-
+ .../stream-a1.log.trace-finish.json                |    32 +-
+ .../stream-a1.txt                                  |   135 +-
+ .../TestD104_AT13_DeadlineContinuity/trace.json    |   394 +-
+ docs/e2e/at/isolation/renewal-node-capture.txt.gz  |   Bin 0 -> 45715 bytes
+ docs/e2e/at/isolation/renewal-packets.json         | 11255 ++++---
+ docs/e2e/at/isolation/renewal-probes.json          | 19586 ++++++------
+ docs/e2e/at/isolation/requests.md                  |    19 +
+ docs/e2e/at/isolation/restart-lifecycle.json       |    74 +-
+ .../e2e/at/isolation/restart-signature-review.json |   252 +-
+ docs/e2e/at/isolation/restart-timeline.json        |   414 +-
+ docs/e2e/at/isolation/revocation-request.json      |    26 +-
+ docs/e2e/at/isolation/row-comparison.json          |     4 +-
+ docs/e2e/at/isolation/scheduled-job.json           |    56 +-
+ docs/e2e/at/isolation/scheduled-job.md             |    50 +-
+ .../at/isolation/serving-readback-metadata.json    |    10 +-
+ docs/e2e/at/isolation/suite-admission.jsonl        |     8 +-
+ docs/e2e/at/isolation/summary.md                   |    20 +
+ docs/e2e/at/isolation/support/publish.json         |    16 +-
+ docs/e2e/at/isolation/support/publish.md           |    14 +-
+ .../at/isolation/support/serving-catalogue.json    |    12 +-
+ docs/e2e/at/isolation/support/serving-catalogue.md |    10 +-
+ docs/e2e/at/isolation/tc-evidence-index.json.gz    |   Bin 51584 -> 51300 bytes
+ docs/e2e/at/isolation/vmstat.txt                   |    14 +-
+ .../e2e/at/isolation/watchdog-before-clone.log.txt |     3 -
+ .../watchdog-before-populated-hold-stop.log.txt    |     9 +-
+ docs/e2e/at/isolation/watchdog.log.txt             |    12 +-
+ .../at/isolation/whole-node-bracketed-reads.json   |   266 +-
+ .../at/isolation/whole-node-continuous-reads.json  |  1164 +-
+ .../at/isolation/whole-node-node-capture.txt.gz    |   Bin 0 -> 6457 bytes
+ docs/e2e/at/isolation/whole-node-packets.json      |  1871 +-
+ docs/e2e/at/isolation/whole-node-probes.json       |  3690 ++-
+ tests/e2e/at/isolation/boundary_evidence_test.py   |   158 +
+ tests/e2e/at/isolation/boundaryplan/plan.go        |   110 +
+ tests/e2e/at/isolation/boundaryplan/plan_test.go   |   170 +
+ tests/e2e/at/isolation/observer_main.go            |    65 +-
+ tests/e2e/at/isolation/review_boundary.py          |    97 +-
+ 515 files changed, 574025 insertions(+), 58193 deletions(-)

@@ -1,0 +1,1312 @@
+{
+  "run_id": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
+  "scope": "Assembled real central/native NetBird; 80ms dual-phase diagnostic; no D-120 tolerance.",
+  "historical": {
+    "run_id": "7779d83c-2f78-4699-ac88-8fcc59e8cf87",
+    "probes": 1396,
+    "losses": 17,
+    "limitation": "No exact producer timestamps in that run; never retrospectively classified.",
+    "evidence": "history/follow-up-8/continuity-analysis.json"
+  },
+  "probes": 1396,
+  "delivered": 1395,
+  "loss_count": 1,
+  "losses": [
+    {
+      "packet": {
+        "packet_id": 1282,
+        "result": "timeout",
+        "sent_ns": "125668783609953",
+        "read_completion_ns": "125668864714556",
+        "ingress_ns": "125668784403673",
+        "egress_ns": "0"
+      },
+      "apply_window_overlap": [
+        {
+          "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "sequence": "1080"
+        }
+      ],
+      "install_window_overlap": [
+        {
+          "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "sequence": "1080"
+        }
+      ],
+      "release_window_overlap": [
+        {
+          "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "sequence": "1080"
+        }
+      ],
+      "ingress_in_install": [
+        {
+          "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "sequence": "1080"
+        }
+      ],
+      "ingress_in_release": [],
+      "ingress_in_outer_guard": [
+        {
+          "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "sequence": "1080"
+        }
+      ],
+      "ingress_in_inner_guard": [],
+      "verifier_window_overlap": [
+        {
+          "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "sequence": "1080",
+          "index": 0
+        },
+        {
+          "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "sequence": "1081",
+          "index": 0
+        }
+      ],
+      "nearest_apply": {
+        "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "sequence": "1080",
+        "complete_guard": true,
+        "host_context": {
+          "status": "available",
+          "reason": null,
+          "samples": {
+            "before_apply": {
+              "start_ns": "125668737860816",
+              "end_ns": "125668737999252",
+              "ok": true,
+              "cpu_total_ticks": "300653484",
+              "cpu_idle_ticks": "279976676",
+              "cpu_iowait_ticks": "2632672",
+              "procs_running": "1",
+              "procs_blocked": "0"
+            },
+            "after_apply": {
+              "start_ns": "125668836016027",
+              "end_ns": "125668836071890",
+              "ok": true,
+              "cpu_total_ticks": "300653720",
+              "cpu_idle_ticks": "279976893",
+              "cpu_iowait_ticks": "2632672",
+              "procs_running": "2",
+              "procs_blocked": "0"
+            }
+          },
+          "idle_percent": 91.94915254237289,
+          "contention": "not_established",
+          "contention_rule": "TEST ONLY diagnostic: positive aggregate tick delta, zero idle and iowait tick deltas, and more than one runnable process in both samples; kernel aggregate, not cgroup entitlement or causal proof",
+          "command_status": {
+            "failed_command": null,
+            "exit_code": null,
+            "signal": null
+          },
+          "tick_deltas": {
+            "cpu_total_ticks": "236",
+            "cpu_idle_ticks": "217",
+            "cpu_iowait_ticks": "0"
+          }
+        },
+        "command_lifecycle": {
+          "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "sequence": "1080",
+          "status": "available",
+          "records": [
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 0
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 1
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 2
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 3
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 4
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 5
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 6
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 7
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 8
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 9
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 10
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 11
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 12
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 13
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 14
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 15
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 16
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 17
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 18
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 19
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 20
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 21
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 22
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 23
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 24
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 25
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 26
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 27
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 28
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 29
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 30
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 31
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 32
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 33
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 34
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 35
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 36
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 37
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 38
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 39
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 40
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 41
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 42
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 43
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 44
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 45
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 46
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 47
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 48
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 49
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 50
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 51
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 52
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 53
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 54
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "1080",
+              "index": 55
+            }
+          ],
+          "phases": [
+            {
+              "phase": "prepare",
+              "command_indices": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ],
+              "description": "nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable"
+            },
+            {
+              "phase": "shape",
+              "command_indices": [
+                27
+              ],
+              "description": "tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable"
+            },
+            {
+              "phase": "install",
+              "command_indices": [
+                28
+              ],
+              "description": "nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable"
+            },
+            {
+              "phase": "release",
+              "command_indices": [
+                29
+              ],
+              "description": "nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable"
+            },
+            {
+              "phase": "verify",
+              "command_indices": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ],
+              "description": "nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; ip: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; ip: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable"
+            }
+          ],
+          "reason": null,
+          "source": "producer-operations.jsonl (or its lossless .gz)"
+        },
+        "failure_stage": null,
+        "verification_status": "passed",
+        "install_phase_description": "nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable",
+        "render_to_installed_ns": "16954008",
+        "install_bound_met": true,
+        "install_overrun": false,
+        "diagnostic_label": "no recorded install-overrun/contention conjunction",
+        "cause_status": "not_applicable",
+        "lease": {
+          "lease_id": "9e0c7c6f-db4d-44e3-9de5-6f707ef74b78",
+          "generation": "34",
+          "issued_at": "2026-11-04T14:23:46.263046199Z",
+          "expires_at": "2026-11-04T14:24:46.263046199Z",
+          "request_mono_ns": "125668711630414",
+          "node_deadline_ns": "125728711630414",
+          "members": 2
+        },
+        "operation": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "apply",
+          "candidate_generation": "34",
+          "start_ns": "125668738285472",
+          "end_ns": "125668836014346",
+          "succeeded": true,
+          "verified": true,
+          "deadline": {
+            "granularity_ns": "1000000",
+            "install_bound_ns": "100000000",
+            "apply_start_ns": "125668738285472",
+            "render_start_ns": "125668767536731",
+            "install_start_ns": "125668767623705",
+            "installed_by_ns": "125668784490739",
+            "install_ok": true,
+            "release_start_ns": "125668784494413",
+            "release_end_ns": "125668807584888",
+            "guard_released": true
+          },
+          "verifications": [
+            {
+              "start_ns": "125668807587809",
+              "end_ns": "125668836005414",
+              "nft_read": {
+                "start_ns": "125668807587909",
+                "end_ns": "125668810450954",
+                "ok": true
+              },
+              "tc_read": {
+                "start_ns": "125668816768283",
+                "end_ns": "125668834408773",
+                "ok": true
+              },
+              "precision_read": {
+                "start_ns": "125668815193231",
+                "end_ns": "125668816761432",
+                "elements": 2,
+                "read_ok": true,
+                "verified": true
+              },
+              "tc_sha256": "90f7622824ad0cb2b6f4db8c79aa9f321f925c7736317801016f26e5cc23169c",
+              "verified": true
+            }
+          ]
+        }
+      },
+      "last_completed_apply": {
+        "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "sequence": "847",
+        "complete_guard": true,
+        "host_context": {
+          "status": "available",
+          "reason": null,
+          "samples": {
+            "before_apply": {
+              "start_ns": "125635715618246",
+              "end_ns": "125635715676110",
+              "ok": true,
+              "cpu_total_ticks": "300574481",
+              "cpu_idle_ticks": "279899864",
+              "cpu_iowait_ticks": "2632398",
+              "procs_running": "1",
+              "procs_blocked": "0"
+            },
+            "after_apply": {
+              "start_ns": "125635816793992",
+              "end_ns": "125635816850495",
+              "ok": true,
+              "cpu_total_ticks": "300574720",
+              "cpu_idle_ticks": "279900096",
+              "cpu_iowait_ticks": "2632398",
+              "procs_running": "2",
+              "procs_blocked": "0"
+            }
+          },
+          "idle_percent": 97.07112970711297,
+          "contention": "not_established",
+          "contention_rule": "TEST ONLY diagnostic: positive aggregate tick delta, zero idle and iowait tick deltas, and more than one runnable process in both samples; kernel aggregate, not cgroup entitlement or causal proof",
+          "command_status": {
+            "failed_command": null,
+            "exit_code": null,
+            "signal": null
+          },
+          "tick_deltas": {
+            "cpu_total_ticks": "239",
+            "cpu_idle_ticks": "232",
+            "cpu_iowait_ticks": "0"
+          }
+        },
+        "command_lifecycle": {
+          "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "sequence": "847",
+          "status": "available",
+          "records": [
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 0
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 1
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 2
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 3
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 4
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 5
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 6
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 7
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 8
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 9
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 10
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 11
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 12
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 13
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 14
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 15
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 16
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 17
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 18
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 19
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 20
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 21
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 22
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 23
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 24
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 25
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 26
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 27
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 28
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 29
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 30
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 31
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 32
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 33
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 34
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 35
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 36
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 37
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 38
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 39
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 40
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 41
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 42
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 43
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 44
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 45
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 46
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 47
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 48
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 49
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 50
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 51
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 52
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 53
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 54
+            },
+            {
+              "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "sequence": "847",
+              "index": 55
+            }
+          ],
+          "phases": [
+            {
+              "phase": "prepare",
+              "command_indices": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
+              ],
+              "description": "nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable"
+            },
+            {
+              "phase": "shape",
+              "command_indices": [
+                27
+              ],
+              "description": "tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable"
+            },
+            {
+              "phase": "install",
+              "command_indices": [
+                28
+              ],
+              "description": "nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable"
+            },
+            {
+              "phase": "release",
+              "command_indices": [
+                29
+              ],
+              "description": "nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable"
+            },
+            {
+              "phase": "verify",
+              "command_indices": [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55
+              ],
+              "description": "nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; ip: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; ip: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable"
+            }
+          ],
+          "reason": null,
+          "source": "producer-operations.jsonl (or its lossless .gz)"
+        },
+        "failure_stage": null,
+        "verification_status": "passed",
+        "install_phase_description": "nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable",
+        "render_to_installed_ns": "20147962",
+        "install_bound_met": true,
+        "install_overrun": false,
+        "diagnostic_label": "no recorded install-overrun/contention conjunction",
+        "cause_status": "not_applicable",
+        "lease": {
+          "lease_id": "0079affc-7091-4ce7-a5a5-d6160eb89eb0",
+          "generation": "34",
+          "issued_at": "2026-11-04T14:23:13.242812529Z",
+          "expires_at": "2026-11-04T14:24:13.242812529Z",
+          "request_mono_ns": "125635691812858",
+          "node_deadline_ns": "125695691812858",
+          "members": 2
+        },
+        "operation": {
+          "version": 1,
+          "clock": "CLOCK_MONOTONIC",
+          "operation": "apply",
+          "candidate_generation": "34",
+          "start_ns": "125635715805384",
+          "end_ns": "125635816792547",
+          "succeeded": true,
+          "verified": true,
+          "deadline": {
+            "granularity_ns": "1000000",
+            "install_bound_ns": "100000000",
+            "apply_start_ns": "125635715805384",
+            "render_start_ns": "125635745357728",
+            "install_start_ns": "125635745447345",
+            "installed_by_ns": "125635765505690",
+            "install_ok": true,
+            "release_start_ns": "125635765508143",
+            "release_end_ns": "125635787402727",
+            "guard_released": true
+          },
+          "verifications": [
+            {
+              "start_ns": "125635787403756",
+              "end_ns": "125635816784781",
+              "nft_read": {
+                "start_ns": "125635787403898",
+                "end_ns": "125635789927194",
+                "ok": true
+              },
+              "tc_read": {
+                "start_ns": "125635796638767",
+                "end_ns": "125635815156003",
+                "ok": true
+              },
+              "precision_read": {
+                "start_ns": "125635794994181",
+                "end_ns": "125635796627620",
+                "elements": 2,
+                "read_ok": true,
+                "verified": true
+              },
+              "tc_sha256": "90f7622824ad0cb2b6f4db8c79aa9f321f925c7736317801016f26e5cc23169c",
+              "verified": true
+            }
+          ]
+        }
+      },
+      "last_completed_verifier": {
+        "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "sequence": "1077",
+        "index": 0,
+        "timing": {
+          "start_ns": "125668666407088",
+          "end_ns": "125668696035865",
+          "nft_read": {
+            "start_ns": "125668666407255",
+            "end_ns": "125668669123859",
+            "ok": true
+          },
+          "tc_read": {
+            "start_ns": "125668676911521",
+            "end_ns": "125668694459638",
+            "ok": true
+          },
+          "precision_read": {
+            "start_ns": "125668674669971",
+            "end_ns": "125668676905719",
+            "elements": 2,
+            "read_ok": true,
+            "verified": true
+          },
+          "tc_sha256": "90f7622824ad0cb2b6f4db8c79aa9f321f925c7736317801016f26e5cc23169c",
+          "verified": true
+        }
+      },
+      "baseline_window_overlap": [],
+      "last_completed_baseline": {
+        "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "sequence": "619",
+        "source": "baseline",
+        "anchor": {
+          "mono_before_ns": "125603796399947",
+          "wall": "2026-11-04T14:22:41.345023467Z",
+          "mono_after_ns": "125603796400273"
+        },
+        "lease": {
+          "lease_id": "9d47aafa-ac6b-48f9-b9d1-b84feda43fc8",
+          "generation": "33",
+          "issued_at": "2026-11-04T14:22:36.232184923Z",
+          "expires_at": "2026-11-04T14:23:36.232184923Z",
+          "request_mono_ns": "125598678555164",
+          "node_deadline_ns": "125658678555164",
+          "members": 2
+        },
+        "baseline": {
+          "cause": "policy_missing",
+          "start_ns": "125603761937133",
+          "end_ns": "125603796368675",
+          "succeeded": true
+        }
+      },
+      "last_written_heartbeat": {
+        "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "sequence": "1078",
+        "source": "heartbeat",
+        "anchor": {
+          "mono_before_ns": "125668705534338",
+          "wall": "2026-11-04T14:23:46.25415799Z",
+          "mono_after_ns": "125668705534830"
+        },
+        "lease": {
+          "lease_id": "0079affc-7091-4ce7-a5a5-d6160eb89eb0",
+          "generation": "34",
+          "issued_at": "2026-11-04T14:23:13.242812529Z",
+          "expires_at": "2026-11-04T14:24:13.242812529Z",
+          "request_mono_ns": "125635691812858",
+          "node_deadline_ns": "125695691812858",
+          "members": 2
+        },
+        "heartbeat": {
+          "mono_ns": "125668696077416",
+          "policy_expires_mono_ns": "125695691812858",
+          "generation": "34",
+          "baseline_ok": true,
+          "serving": true,
+          "reason": "serving",
+          "written": true
+        }
+      },
+      "classification": "guard-correlated; loss retained"
+    }
+  ],
+  "actual_renewals": [
+    {
+      "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "846",
+      "source": "renewal",
+      "anchor": {
+        "mono_before_ns": "125635698816616",
+        "wall": "2026-11-04T14:23:13.247439957Z",
+        "mono_after_ns": "125635698816734"
+      },
+      "lease": {
+        "lease_id": "0079affc-7091-4ce7-a5a5-d6160eb89eb0",
+        "generation": "34",
+        "issued_at": "2026-11-04T14:23:13.242812529Z",
+        "expires_at": "2026-11-04T14:24:13.242812529Z",
+        "request_mono_ns": "125635691812858",
+        "node_deadline_ns": "125695691812858",
+        "members": 2
+      },
+      "renewal": {
+        "request_id": "01a1a6f1-4958-76ac-800a-4acf894154f7",
+        "start_ns": "125635691812858",
+        "end_ns": "125635698816290",
+        "request_wall": "2026-11-04T14:23:13.240436206Z",
+        "new_lease": true
+      }
+    },
+    {
+      "run_id": "7d60ffb1-d1e9-4aa7-800e-aa6c97b28bde",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1079",
+      "source": "renewal",
+      "anchor": {
+        "mono_before_ns": "125668720055673",
+        "wall": "2026-11-04T14:23:46.26867905Z",
+        "mono_after_ns": "125668720055842"
+      },
+      "lease": {
+        "lease_id": "9e0c7c6f-db4d-44e3-9de5-6f707ef74b78",
+        "generation": "34",
+        "issued_at": "2026-11-04T14:23:46.263046199Z",
+        "expires_at": "2026-11-04T14:24:46.263046199Z",
+        "request_mono_ns": "125668711630414",
+        "node_deadline_ns": "125728711630414",
+        "members": 2
+      },
+      "renewal": {
+        "request_id": "01a1a6f1-ca54-73e5-83cf-011d8cd1b154",
+        "start_ns": "125668711630414",
+        "end_ns": "125668720055070",
+        "request_wall": "2026-11-04T14:23:46.260253791Z",
+        "new_lease": true
+      }
+    }
+  ],
+  "applies": 2,
+  "complete_guards": 2,
+  "loss_windows_overlapping_install": 1,
+  "ingress_in_outer_guard": 1,
+  "unresolved_ingress": 0,
+  "producer_timing": "producer-timing-analysis.json",
+  "timing_limit": "Outer bracket is install-start through release-end; inner is installed-by through release-start. Capture reads and command overlaps do not locate the kernel commit/drop instant. All loss counts remain unchanged."
+}

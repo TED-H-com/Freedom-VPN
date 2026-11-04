@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """D-140 schedule qualification; the unchanged Go evaluator owns the verdict."""
 import json
+import re
 from evidence_io import read_json
 from pathlib import Path
 from review_unexecuted import unexecuted_expiry
@@ -43,23 +44,107 @@ def qualify_scope(rows, interleavings):
     return start, last, first
 
 
+# Validate before consuming fields. Historical complete plans remain readable;
+# new diagnostic fields form one extension, required together when present.
+DECIMAL = re.compile(r"-?(0|[1-9][0-9]*)\Z")
+
+
+def decimal(value):
+    return isinstance(value, str) and len(value) <= 20 and DECIMAL.fullmatch(value) is not None
+
+
+SAMPLE = dict(packet_id=lambda v: type(v) is int and v > 0,
+              **{k: decimal for k in ('send_mono_ns', 'ingress_mono_ns', 'egress_mono_ns', 'latency_ns', 'transit_ns')})
+
+
+def fields(value, schema, path, errors):
+    if not isinstance(value, dict):
+        errors.append('malformed plan: '+path+' must be an object')
+        return False
+    valid = True
+    for name, check in schema.items():
+        if name not in value or not check(value[name]):
+            errors.append('malformed plan: '+path+'.'+name+' missing or wrong type')
+            valid = False
+    return valid
+
+
+def validate_plan(plan):
+    errors = []
+    if not isinstance(plan, dict):
+        return {}, [], [], ['malformed plan: boundary schedule must be an object']
+    schema = dict(qualified=lambda v: type(v) is bool,
+                  samples=lambda v: isinstance(v, list),
+                  planned_at=lambda v: isinstance(v, dict))
+    schema.update({k: decimal for k in (
+        'deadline_mono_ns', 'latency_min_ns', 'latency_median_ns', 'latency_max_ns',
+        'latency_spread_ns', 'max_transit_ns', 'spacing_ns', 'predicted_first_ingress_ns',
+        'predicted_last_ingress_ns', 'grid_anchor_offset_ns', 'original_boundary_predicted_ingress_offset_ns')})
+    schema.update({k: lambda v: isinstance(v, str) for k in ('scope', 'decision_tradeoff', 'spacing_reason')})
+    fields(plan, schema, 'plan', errors)
+    fields(plan.get('planned_at'), dict(mono_ns=decimal, wall=lambda v: isinstance(v, str)), 'planned_at', errors)
+    added = plan.get('added_scheduled_mono_ns')
+    if 'added_scheduled_mono_ns' not in plan:
+        errors.append('malformed plan: added_scheduled_mono_ns missing')
+    elif added is None:
+        errors.append('malformed plan: added_scheduled_mono_ns is null (F24-01 empty Go slice)')
+    elif not isinstance(added, list):
+        errors.append('malformed plan: added_scheduled_mono_ns must be a list')
+    elif not added:
+        errors.append('malformed plan: added_scheduled_mono_ns is empty')
+    elif not all(decimal(v) for v in added):
+        errors.append('malformed plan: added_scheduled_mono_ns entries must be decimal strings')
+    samples = []
+    if isinstance(plan.get('samples'), list):
+        for i, sample in enumerate(plan['samples']):
+            if fields(sample, SAMPLE, 'samples['+str(i)+']', errors):
+                samples.append(sample)
+    extension = dict(unqualified_reason=lambda v: isinstance(v, str),
+                     discounted_samples=lambda v: isinstance(v, list),
+                     spacing_unrounded_ns=decimal,
+                     cadence_gaps_ns=lambda v: isinstance(v, list) and all(decimal(x) for x in v),
+                     cadence_gap_rule=lambda v: isinstance(v, str),
+                     candidates=lambda v: isinstance(v, list))
+    if set(plan) & extension.keys():
+        fields(plan, extension, 'plan', errors)
+        if isinstance(plan.get('discounted_samples'), list):
+            for i, sample in enumerate(plan['discounted_samples']):
+                fields(sample, dict(SAMPLE, reason=lambda v: isinstance(v, str) and bool(v)), 'discounted_samples['+str(i)+']', errors)
+        if isinstance(plan.get('candidates'), list):
+            for i, candidate in enumerate(plan['candidates']):
+                path = 'candidates['+str(i)+']'
+                if fields(candidate, dict(scheduled_mono_ns=decimal, excluded_by_original_sends=lambda v: isinstance(v, list)), path, errors):
+                    for j, send in enumerate(candidate['excluded_by_original_sends']):
+                        fields(send, dict(scheduled_mono_ns=decimal, phase=lambda v: isinstance(v, str)), path+'.excluded_by_original_sends['+str(j)+']', errors)
+    if plan.get('qualified') is False:
+        # Keep the pre-existing check and wording; the explicit reason explains
+        # calibrated-but-empty plans without treating calibration as enough.
+        errors.append('same-run latency calibration unavailable')
+        reason = plan.get('unqualified_reason')
+        errors.append('unqualified plan: '+(reason if isinstance(reason, str) and reason else 'qualified is false'))
+    return plan, samples, added if isinstance(added, list) and all(decimal(v) for v in added) else [], errors
+
+
 def review(root):
     read=lambda name:read_json(root/name)
     current=read('AT13.json')
     blocked = unexecuted_expiry(root, 'boundary-review.json', current)
     if blocked:
         return blocked
-    verdict=read('deadline-verdict.json');plan=read('boundary-schedule.json')
-    rows,interleavings=timeline(verdict);errors=[]
-    if not plan['qualified']:errors.append('same-run latency calibration unavailable')
+    verdict=read('deadline-verdict.json')
+    try:
+        plan,samples,added,errors=validate_plan(read('boundary-schedule.json'))
+    except (OSError, ValueError):
+        plan,samples,added,errors={},[],[],['malformed plan: boundary-schedule.json missing or invalid JSON']
+    rows,interleavings=timeline(verdict)
     by_id={r['packet_id']:r for r in rows}
-    samples=plan.get('samples') or []
     for s in samples:
         current=by_id.get(s['packet_id'],{})
         if any(current.get(k)!=s[k] for k in ('send_mono_ns','ingress_mono_ns','egress_mono_ns','latency_ns','transit_ns')):
             errors.append('calibration differs from final capture: '+str(s['packet_id']))
         if current.get('phase') not in ('phased','arbitrary_37ms'):errors.append('calibration not on original cadence')
-        if int(s['egress_mono_ns'])>=int(plan['planned_at']['mono_ns']):errors.append('calibration was not measured before planning')
+        planned=plan.get('planned_at')
+        if isinstance(planned,dict) and decimal(planned.get('mono_ns')) and int(s['egress_mono_ns'])>=int(planned['mono_ns']):errors.append('calibration was not measured before planning')
     start, last, first = qualify_scope(rows, interleavings)
     if any(p['d142_judged'] for p in interleavings):
         errors.append('positive transit interleaves next ingress within D-142 scope')
@@ -70,7 +155,7 @@ def review(root):
         expected=[d+offset+n*100000000 for n in range(-80,21)]
         if actual!=expected:errors.append('original cadence changed: '+phase)
     dense=[r for r in rows if r['phase']=='dense_boundary']
-    if sorted(r['scheduled_mono_ns'] for r in dense)!=sorted(plan.get('added_scheduled_mono_ns',[])) or not dense:
+    if sorted(r['scheduled_mono_ns'] for r in dense)!=sorted(added) or not dense:
         errors.append('planned dense probes missing or extra')
     transit=[int(r['transit_ns']) for r in rows if r['transit_ns'] is not None]
     latency=[int(s['latency_ns']) for s in samples]

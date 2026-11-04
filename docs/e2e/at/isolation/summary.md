@@ -252,3 +252,23 @@ No other-run wait; admission checks **0.175 s**, **48 clear overlap samples**, r
 Archived run `328ab9e0` byte-identically before root replacement: [203-file archive](history/follow-up-23/archive.json). The 11-04 runner failure remains historically failed; [diagnosis and one assembled run](followup24-2026-11-04.md) distinguish early grant-only renewals from the later binding-bearing renewal. New run `df9dbad7-049d-4eaa-ab98-5490906cc3e9` has scheduled verdict **fail**. The new member schedule and D-163 coverage mapping change no product or acceptance predicate. AT11/AT13 operator matrices and F17-01 remain carried. [Runtime pins](history/follow-up-24-run/archive.json).
 
 **New F24-01 is the reason this local scheduled run stays red:** an empty added-probe schedule causes the unchanged boundary reviewer to raise TypeError. D-142 qualification remains unestablished despite the passing whole-node packet predicate. The owned fix is deferred to an orchestrator-assigned follow-up under the task’s finding-only rule. [Original failed phase](history/follow-up-24-run/scheduled-job.json); [diagnosis](history/follow-up-24-run/boundary-review-failure.json).
+
+
+## Follow-up 25 — 2026-11-04
+
+Single scheduled-mode run `bd73d7a4-03f1-4b17-97c2-9c25a39ac0db` on clean source `4c495c3b1516022e1de8db2f864432a8a8d171c5`,
+current-main baseline `034c82cf991de73db0f3a2f02ebe7270ef04d8c4`: **27 pass / 2 operator-blocked /
+0 fail acceptance rows; scheduled job pass, exit 0**. All 29 statuses match
+`df9dbad7`; the boundary review now completes and qualifies under D-142. The
+current calibration produces 5.5ms spacing and 34 added probes without discounting
+any sample. D-120 passes under its own D-161 analyzer. Fifteen node writes used
+15 attempts with zero conflicts. Four restart windows retain no watchdog decision;
+silence does not establish a retaining pass. No observed foreign overlap and zero
+owned Docker inventory at teardown.
+
+[213-file D-098 archive](history/follow-up-24/archive.json),
+[diagnosis, every row and limits of F24-01 closure](followup25-2026-11-04.md),
+[runtime pins](history/follow-up-25-run/archive.json),
+[scheduled summary](history/follow-up-25-run/scheduled-job.md).
+Historical failures stay failed. AT11 platform and AT13 full fault matrices remain
+operator rows; F17-01 stays open under D-163. F24-01 was not added to D-163.
