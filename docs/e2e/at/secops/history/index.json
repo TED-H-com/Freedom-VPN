@@ -5096,5 +5096,31 @@
       }
     ],
     "reason": "D-098 before Follow-up 18 AT29 transport run; root bytes retained exactly"
+  },
+  "follow_up_18_pre_subject": {
+    "source_revision": "b3c5d680b6d26dbd3d1fec475232bbc8a87f7b2d",
+    "reason": "Wrapper recursion before stack setup or any sub-case; one authorized rerun",
+    "snapshot_files": [
+      {
+        "file": "followup18-preflight.json",
+        "sha256": "c83f4d158886f0b25b3c8220aa37f2a304309631f866baba26dbf47740c0e743"
+      },
+      {
+        "file": "followup18-overlap.json",
+        "sha256": "507f82c69375067fdcf1777dda1b8e0f17d518e9a9e9e0dfe1c676a0516e2682"
+      },
+      {
+        "file": "timing.jsonl",
+        "sha256": "07cc524ae9802b5fba3806d7dd34fdc2f0a7820bd4f0121fdc06aa6b69c8e060"
+      },
+      {
+        "file": "pre-subject-stop.json",
+        "sha256": "ce6d950032a88d5018b1bb88336ea539abfe7a96ee794b796c91c84f52566c68"
+      },
+      {
+        "file": "pre-subject-inventory.json",
+        "sha256": "6aff53cdbea8af1dcbe9aae21daf472c590bf0c61479ec3d803d15330e74b077"
+      }
+    ]
   }
 }
