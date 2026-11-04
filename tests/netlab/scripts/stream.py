@@ -3,9 +3,27 @@
 
 import json
 import os
+import re
 import socket
 import sys
 import time
+
+
+def tcp_echo_fields(data, sequence):
+    """Derived TEST ONLY identities, never response bytes; no verdict change.
+
+    recv is not a frame reader. Partial/coalesced/unknown responses stay
+    mismatched rather than being assigned an invented token identity.
+    """
+    matches = data == f"t{sequence}\n".encode()
+    token = re.fullmatch(rb"t([1-9][0-9]*)\n", data)
+    received = int(token[1]) if token and len(token[1]) <= 20 else None
+    if received is not None and received > sequence:
+        received = None
+    return dict(size=len(data), response_matches=matches,
+                echo_status="match" if matches else "eof" if not data else
+                "stale" if received is not None else "mismatch",
+                response_sequence=received)
 
 
 class TraceEnd:
@@ -92,7 +110,7 @@ def main() -> None:
         try:
             tcp.sendall(token)
             data = tcp.recv(128)
-            event("tcp_read", size=len(data))
+            event("tcp_read", **tcp_echo_fields(data, n))
             if not data:
                 log("fail tcp-eof")
                 time.sleep(0.2)
