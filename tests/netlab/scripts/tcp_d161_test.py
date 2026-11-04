@@ -6,7 +6,7 @@ intervals are shortened to a three-byte TEST ONLY request. Times/ids are synthet
 from copy import deepcopy
 import unittest
 
-from reload_analysis import classify_d120
+from reload_analysis import classify_d120, acceptance_evidence
 import reload_analysis_test as udp_fixture
 from tcp_d161 import checked_tcp, tcp_facts, ROUTES
 
@@ -37,11 +37,17 @@ class D161Test(unittest.TestCase):
             packet('request', 1_014_000_000, 3, 2565188532, 3)
             packet('echo', 1_015_000_000, 4, 672356394, 3, hops=2)
             packet('echo', 2_700_000_000, 5, 672356394, 3)
+        packet('request', 2_715_010_000, 6, 2565188535, 3)
+        packet('echo', 2_716_000_000, 7, 672356397, 3)
         events = [dict(event='tcp_send', sequence=1, wall_ns='1013000000'),
                   dict(event='tcp_read', sequence=1, wall_ns='2514000000', outcome='TimeoutError'),
                   # A later read confirms the delayed echo, on the same stream.
-                  dict(event='tcp_read', sequence=2, wall_ns='2702000000', size=3,
+                  dict(event='tcp_send', sequence=2, wall_ns='2715000000'),
+                  dict(event='tcp_read', sequence=2, wall_ns='2715300000', size=3,
                        response_sequence=1, echo_status='stale'),
+                  dict(event='udp_send', sequence=2, wall_ns='2715400000'),
+                  dict(event='udp_read', sequence=2, wall_ns='2715500000',
+                       outcome='ok', response_matches=True),
                   dict(event='trace_end', sequence=2, wall_ns='2900000000')]
         return blocks, events, packet
 
@@ -81,6 +87,25 @@ class D161Test(unittest.TestCase):
                              (2_701_150_000 - 1_015_000_000) if direction == 'request' else
                              (2_700_150_000 - 1_014_000_000))
 
+    def test_timeout_passes_full_sidecar_and_text_acceptance(self):
+        blocks, events, _ = self.fixture()
+        fixture = udp_fixture.D120Test()
+        windows = []
+        for generation in range(1000, 1101):
+            w = fixture.window()
+            w['generation'] = str(generation)
+            if generation != 1001:
+                for key in ('install_start', 'install_end', 'release_start', 'release_end'):
+                    w[key]['wall_ns'] = str(int(w[key]['wall_ns']) + generation * 10**9)
+            windows.append(w)
+        datagram = fixture.datagram(2, False)
+        datagram['stages']['origin_egress'] = {'wall_ns': 2_715_400_000}
+        result = dict(events=events, windows=windows, datagrams=[datagram],
+                      summary={'incomplete_udp_reads': 0}, tcp=self.facts(blocks, events))
+        verdict = acceptance_evidence(result, '0 up\n1 fail TimeoutError\n2 ok\n')
+        self.assertTrue(verdict['passed'], verdict)
+        self.assertEqual(verdict['total_losses'], 1)
+
     def test_every_lost_transmission_must_qualify(self):
         for at, reason in [(1_200_000_000, 'outside'), (1_015_000_000, 'unobserved')]:
             blocks, events, packet = self.fixture()
@@ -107,7 +132,7 @@ class D161Test(unittest.TestCase):
             blocks[role] = [b for b in blocks[role] if 'id 4,' not in b and 'id 5,' not in b]
         self.assert_fails(self.facts(blocks, events), 'not delivered')
         blocks, events, _ = self.fixture()
-        events[2]['response_sequence'] = 2
+        events[3]['response_sequence'] = 2
         self.assert_fails(self.facts(blocks, events), 'not delivered')
 
     def test_old_distinct_socket_does_not_relabel_measured_connection(self):
