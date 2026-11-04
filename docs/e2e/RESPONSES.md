@@ -1563,6 +1563,8 @@ Offline cookie/CSRF stubs cover retry, already-intended, three-write exhaustion,
 other-code 412 and redirect refusal. Live proof belongs to each consumer's next
 authorized assembled run; no stack or Docker command ran in this follow-up.
 
+2026-11-04 adoption on base `33f0ef8e`: `Stack.WriteNode` has merged for members ([#445](https://github.com/TED-H-com/Freedom-VPN/pull/445)), security-ops ([#448](https://github.com/TED-H-com/Freedom-VPN/pull/448)), enrollment ([#450](https://github.com/TED-H-com/Freedom-VPN/pull/450)), updates ([#451](https://github.com/TED-H-com/Freedom-VPN/pull/451)) and usage ([#453](https://github.com/TED-H-com/Freedom-VPN/pull/453)); isolation ([#442](https://github.com/TED-H-com/Freedom-VPN/pull/442)) uses the same shared `writeNode` directly in its overlay. These are merged adoptions, not new live-proof claims.
+
 ## 2026-11-03 — members 19: finite-grant early-return recovery (follow-up 33)
 
 `ReplaceFiniteGrant` keeps its signature, successful fields and expired-input
@@ -1635,3 +1637,49 @@ unchanged node-write tests, new cookie/CSRF export and recovery stubs, the
 isolation overlay and all AT packages under `-tags e2e`. Linux arm64 compilation
 also passed (no hardware run). See the [gate ledger](runs/2026-11-03/followup33/checks.md).
 Live adoption and assembled proof remain with the consumer owners.
+
+## 2026-11-04 — r29 L-2 and wire-nodes 35 (follow-up 34)
+
+One full acceptance invocation on base `33f0ef8e`, measured code `ab0899e6`,
+including updater 24 (#446), agent-core 48 (#447) and 49 (#454): run
+`af4c130b-5029-401b-bd0f-e8afaad3d37f`, **31 pass / 2 blocked / 0 fail**, make
+exit 2. No rerun. The [analysis and all scenario records](runs/2026-11-04/followup34/analysis.md)
+retain D-133 overlap and the three setup-sub-make admission omissions.
+
+**r29 L-2:** `lease-expiry` passed. Its admission poll found counters in
+243.761994 ms; control stopped, the earlier desired-policy deadline D was
+reached, established replies and bytes stayed quiet with active senders, and
+control restarted. Its live quarantine entry is removed; `member-ipv6` remains
+byte-identical. Before removal, the nightly evaluator lists lease-expiry under
+Unblocked. Both [before](runs/2026-11-04/followup34/nightly-gate-before.md) and
+[after](runs/2026-11-04/followup34/nightly-gate-after.md) verdicts are **fail**
+because update-good is an unexpected blocked row. No workflow was dispatched.
+Historical E2E gate tests use a new byte-identical frozen list; their existing
+assertions, handover's frozen fixtures and follow-up 29 records are preserved.
+
+**F30-01 remains open for candidate proof.** update-good exited **3 (ExitBusy)**,
+with no candidate executable or health challenge; update-bad passed with
+**1 / HASH_MISMATCH**. PID 876 stayed throughout the observed update/control
+window. There was no candidate boot deferral or clearance to timestamp. A
+passing lease row after a skipped candidate update cannot establish the
+requested #446 + #454 recovery proof. The observed exit status follows #446's
+mapping; the cause of this invocation's contention is not attributed to a merge.
+
+**Wire-nodes 35:** publisherTrace32's comment now describes D-154: TEST ONLY
+If-Match `"0"` is parsed and compared, yielding ordinary 412
+RESOURCE_VERSION_CONFLICT with details.current_resource_version on these
+nonzero-version rows. The predicate and its tests are unchanged, accepting both
+shapes because retained forced run `95fb7eab` predates #443 and has empty details.
+
+**Security-ops 15 / AT29:** the repeated guest-clock request is already answered
+by the [2026-10-31 response](#security-ops--2026-10-31) and
+[operator-run procedure](at29-guest-clock.md). It remains an operator-run row;
+this follow-up adds no guest provision, host clock change or simulated pass.
+
+### Requests to orchestrator
+
+2026-11-04 — updater / agent-core: investigate update-good's exit 3 before
+candidate start and arrange a separately authorized candidate acceptance proof.
+Handover/status: keep F30-01 open until that path is observed; lease-expiry's
+quarantine removal alone is insufficient in this run. Preserve the confounded
+window and admission omissions in review. No out-of-scope path was edited.

@@ -35,3 +35,12 @@ The three carried platform/fault-matrix/pure-stale-generation requests remain. F
 2. Carried: AT11 native platform matrix, AT13 full continuous fault matrix, F17-01 pure `stale_generation`. No renewed implementation claim.
 
 F48-01's paired restart signature is not observed in the retained agent/watchdog logs; this does not close agent-core 49/D-156. No new outside-owned code request. All three blocked acceptance rows remain blocked, earlier archives and historical failures remain unchanged, inventory is zero, and D-144/workflow remain unchanged.
+
+## Follow-up 22 — 2026-11-04 EST (additive)
+
+**F21-01 answered:** the new schedule reached the unchanged member-expiry window in run `7b0db5f2-eab5-4534-824a-b54781eed3fd`. Five denied probes, unchanged bytes, six serving-node reads and the node-valid-through-last-probe bound all pass. This is r28 M-1's first live coverage. Whole-node expiry also passes D-140 and qualifies under D-142 on agent-core 49. [Dated evidence](followup22-2026-11-04.md).
+
+1. **F22-01 — w1-netlab; coordinate w2-agent-core if product attribution is established:** investigate the included reload/revoke D-120 TCP sequence-101 `TimeoutError`. Original gate **fail**, 101 verified Apply snapshots, 103 datagrams, zero UDP losses, one TCP timeout, no install over 100 ms. Root cause unproven; no overlap sampled; no host-causality claim. The fixture and product are outside this lane's owned paths and were not changed. No retry. [Original analysis](history/follow-up-22-run/reload-stream/TestAT10_AT13_ReloadRevokeBaseline/at10-analysis.json), [failure review](history/follow-up-22-run/reload-revoke-failure-review.json), [command log](history/follow-up-22-run/assembled.log.txt.gz).
+2. Carried: native platform matrix, full continuous fault matrix, F17-01 pure `stale_generation`.
+
+Acceptance rows are **27 pass / 2 blocked / 0 fail**; the separate lab failure remains failed. One node-write 412 was resolved on attempt 2 with a fresh ETag and unchanged key/body; all 16 attempts are retained. F48-01's paired restart signature was not observed, not declared globally fixed. D-144/workflow and earlier archives are unchanged. Owned inventory is zero.

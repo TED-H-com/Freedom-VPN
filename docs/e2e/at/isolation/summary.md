@@ -226,3 +226,14 @@ Run `7599576e-339c-49c9-8bf5-0f710818cbda` on clean source `fe2c68ec`, baseline 
 **Follow-up 20 request 2 answered:** 32 operation snapshots carry this run's ID and AT10 retains successful setup's publication trace. **15 node-write commands / 15 first-attempt 202s / zero conflicts.** Lab and six-assertion recovery pass. The native platform/full fault matrices and pure `stale_generation` remain carried. F48-01's paired signature is not observed in retained logs, not declared fixed.
 
 Admission **0.054 s**, no other-run wait; 54 samples show no overlap; inventory zero. [165-file original root archive](history/follow-up-20/archive.json), [124-file run archive](history/follow-up-21-run/archive.json), [dated requests](requests.md). Earlier sections remain historical; their original root-link context is frozen under follow-up 20.
+
+
+## Follow-up 22 — 2026-11-04 EST (additive current result)
+
+Run `7b0db5f2-eab5-4534-824a-b54781eed3fd` on clean source `0b95e69a`, baseline `33f0ef8e` (agent-core 49 #454): **27 pass / 2 blocked / 0 fail acceptance rows**, **1578.608 s**, command exit **2**, lab included, no rerun. **The separate D-120 reload/revoke lab failed** on TCP sequence 101 `TimeoutError`; every historical failure stays failed. [Every row and receipts](followup22-2026-11-04.md#assembled-result).
+
+**F21-01 answered:** the fresh-renewal anchor opens the unchanged member window; all five probes time out, bytes **2631→2631**, all six local reads show serving 1 and a non-baseline member chain, and the retained node lease remains valid through completion. This is r28 M-1's first live pass. Whole-node expiry on agent-core 49 passes D-140 and qualifies under D-142: **165 positives / 90 drops**, closure **(D−98.836702 ms,D−96.710276 ms]**, zero interleavings.
+
+**15 node-write commands / 16 attempts / one 412**, resolved by fresh ETag 917→918 and same-key/body retry to 202; all attempts retained. Restart/watchdog records show no F48-01 paired signature. Four source restart-command windows and the initial heartbeat-unreadable watchdog decision are documented; absence of a decision is not proof of a forced D-156 interleaving.
+
+Wait **1414.753 s**, 53 clear overlap samples, zero owned Docker inventory. [173-file root archive](history/follow-up-21/archive.json), [125-file run archive](history/follow-up-22-run/archive.json). **New F22-01** routes the unchanged lab failure to its owner. Native platform/full fault matrices and pure stale_generation remain carried. [Requests](requests.md). Earlier root-link contexts are frozen under follow-up 21.

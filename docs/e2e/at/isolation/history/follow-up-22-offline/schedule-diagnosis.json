@@ -1,0 +1,78 @@
+{
+  "source": "history/follow-up-21-run/finite-member-renewal-wait.json",
+  "run_id": "7599576e-339c-49c9-8bf5-0f710818cbda",
+  "original_deadline": "2026-11-04T03:10:15Z",
+  "original_qualified": false,
+  "ordinary_threshold_seconds": [
+    27,
+    33
+  ],
+  "jitter_seconds": [
+    -3,
+    3
+  ],
+  "samples": [
+    {
+      "issued_at": "2026-11-04T03:07:25.118484+00:00",
+      "expires_at": "2026-11-04T03:08:25.118484+00:00",
+      "first_observed": "2026-11-04T03:07:37.35451896Z",
+      "generation": "30",
+      "accepted_serving": true,
+      "gap_seconds": null
+    },
+    {
+      "issued_at": "2026-11-04T03:07:53.010351+00:00",
+      "expires_at": "2026-11-04T03:08:53.010351+00:00",
+      "first_observed": "2026-11-04T03:07:53.43883438Z",
+      "generation": "30",
+      "accepted_serving": true,
+      "gap_seconds": 27.891867
+    },
+    {
+      "issued_at": "2026-11-04T03:08:03.470797+00:00",
+      "expires_at": "2026-11-04T03:09:03.470797+00:00",
+      "first_observed": "2026-11-04T03:08:04.495229103Z",
+      "generation": "31",
+      "accepted_serving": true,
+      "gap_seconds": 10.460446
+    },
+    {
+      "issued_at": "2026-11-04T03:08:36.030226+00:00",
+      "expires_at": "2026-11-04T03:09:36.030226+00:00",
+      "first_observed": "2026-11-04T03:08:36.658901937Z",
+      "generation": "31",
+      "accepted_serving": true,
+      "gap_seconds": 32.559429
+    },
+    {
+      "issued_at": "2026-11-04T03:09:06.055004+00:00",
+      "expires_at": "2026-11-04T03:10:06.055004+00:00",
+      "first_observed": "2026-11-04T03:09:06.823497455Z",
+      "generation": "31",
+      "accepted_serving": true,
+      "gap_seconds": 30.024778
+    },
+    {
+      "issued_at": "2026-11-04T03:09:38.057987+00:00",
+      "expires_at": "2026-11-04T03:10:38.057987+00:00",
+      "first_observed": "2026-11-04T03:09:39.001638963Z",
+      "generation": "31",
+      "accepted_serving": true,
+      "gap_seconds": 32.002983
+    }
+  ],
+  "next_issue_source": "history/follow-up-21-run/lease-history.json",
+  "next_ordinary_issue": "2026-11-04T03:10:10.080547613Z",
+  "lower_edge_shortfall_seconds": 1.942013,
+  "upper_edge_lateness_seconds": 0.080547613,
+  "interpretation": "Observed ordinary gaps fit the product schedule. The generation-change early renewal is consistent with sync.go. Original blocked verdict unchanged.",
+  "new_schedule": "fresh-renewal anchor",
+  "counterfactual": {
+    "anchor": "2026-11-04T03:07:53.010351Z",
+    "deadline": "2026-11-04T03:08:48Z",
+    "qualifying_issue": "2026-11-04T03:08:36.030226Z",
+    "observed": "2026-11-04T03:08:36.658901937Z",
+    "timing_window_open": true,
+    "signed_grant_replayed": false
+  }
+}
