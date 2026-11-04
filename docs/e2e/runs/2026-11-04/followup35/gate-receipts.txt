@@ -1,0 +1,277 @@
+[
+  {
+    "name": "01-e2e-lint",
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-lint"
+    ],
+    "start": "2026-11-04T09:23:20.522114+00:00",
+    "end": "2026-11-04T09:23:25.417887+00:00",
+    "seconds": 4.896,
+    "exit": 0,
+    "receipt": "01-e2e-lint.meta.json"
+  },
+  {
+    "name": "02-isolation-lint",
+    "command": [
+      "make",
+      "-f",
+      "mk/at-isolation.mk",
+      "at-isolation-lint"
+    ],
+    "start": "2026-11-04T09:23:34.047557+00:00",
+    "end": "2026-11-04T09:23:38.605108+00:00",
+    "seconds": 4.558,
+    "exit": 0,
+    "receipt": "02-isolation-lint.meta.json"
+  },
+  {
+    "name": "03-e2e-vet",
+    "command": [
+      "go",
+      "vet",
+      "-tags",
+      "e2e",
+      "./tests/e2e/..."
+    ],
+    "start": "2026-11-04T09:23:53.094964+00:00",
+    "end": "2026-11-04T09:26:53.586763+00:00",
+    "seconds": 180.492,
+    "exit": 0,
+    "receipt": "03-e2e-vet.meta.json"
+  },
+  {
+    "name": "04-e2e-unit",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/e2e/..."
+    ],
+    "start": "2026-11-04T09:24:32.484421+00:00",
+    "end": "2026-11-04T09:25:01.090703+00:00",
+    "seconds": 28.606,
+    "exit": 241,
+    "receipt": "04-e2e-unit-not-admitted.meta.json",
+    "classification": "waiter stopped before Go execution; not a test result"
+  },
+  {
+    "name": "04-e2e-unit",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/e2e/..."
+    ],
+    "start": "2026-11-04T09:27:18.398619+00:00",
+    "end": "2026-11-04T09:27:47.561762+00:00",
+    "seconds": 29.163,
+    "exit": 0,
+    "receipt": "04-e2e-unit.meta.json"
+  },
+  {
+    "name": "05-acceptance",
+    "command": [
+      "FVPN_E2E_RUN_LABEL=followup35",
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-test"
+    ],
+    "start": "2026-11-04T09:39:25.935949+00:00",
+    "end": "2026-11-04T10:03:20.352841+00:00",
+    "seconds": 1434.417,
+    "exit": 2,
+    "receipt": "05-acceptance.meta.json"
+  },
+  {
+    "name": "06-e2e-down",
+    "command": [
+      "make",
+      "-f",
+      "mk/e2e.mk",
+      "e2e-down"
+    ],
+    "start": "2026-11-04T10:04:01.130524+00:00",
+    "end": "2026-11-04T10:04:48.728238+00:00",
+    "seconds": 47.598,
+    "exit": 0,
+    "receipt": "06-e2e-down.meta.json"
+  },
+  {
+    "name": "06-owned-inventory",
+    "command": [
+      "python3",
+      "-B",
+      ".agent/tmp/followup35/inventory.py"
+    ],
+    "start": "2026-11-04T10:05:45.844454+00:00",
+    "end": "2026-11-04T10:05:46.255689+00:00",
+    "seconds": 0.411,
+    "exit": 0,
+    "receipt": "06-owned-inventory.meta.json"
+  },
+  {
+    "name": "07-handover",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/handover/..."
+    ],
+    "start": "2026-11-04T10:05:57.886377+00:00",
+    "end": "2026-11-04T10:06:02.638535+00:00",
+    "seconds": 4.752,
+    "exit": 0,
+    "receipt": "07-handover.meta.json"
+  },
+  {
+    "name": "08-go-lint",
+    "command": [
+      "make",
+      "go-lint",
+      "go-with-disk-tmp="
+    ],
+    "start": "2026-11-04T10:07:05.631315+00:00",
+    "end": "2026-11-04T10:07:11.952406+00:00",
+    "seconds": 6.321,
+    "exit": 0,
+    "receipt": "08-go-lint.meta.json"
+  },
+  {
+    "name": "09-gofmt",
+    "command": [
+      "bash",
+      "-c",
+      "test -z \"$(gofmt -l $(git ls-files '*.go'))\""
+    ],
+    "start": "2026-11-04T10:08:01.722224+00:00",
+    "end": "2026-11-04T10:08:01.947917+00:00",
+    "seconds": 0.226,
+    "exit": 0,
+    "receipt": "09-gofmt.meta.json"
+  },
+  {
+    "name": "10-diff-check",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "start": "2026-11-04T10:08:18.579366+00:00",
+    "end": "2026-11-04T10:08:18.670823+00:00",
+    "seconds": 0.091,
+    "exit": 0,
+    "receipt": "10-diff-check.meta.json"
+  },
+  {
+    "name": "11-evidence-hygiene",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/e2e",
+      "-run",
+      "^TestCommittedFixtureEvidence_ValidAndHygieneClean$"
+    ],
+    "start": "2026-11-04T10:08:32.826541+00:00",
+    "end": "2026-11-04T10:08:42.157359+00:00",
+    "seconds": 9.331,
+    "exit": 1,
+    "receipt": "11-evidence-hygiene.meta.json"
+  },
+  {
+    "name": "12-evidence-hygiene-fixed",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/e2e",
+      "-run",
+      "^TestCommittedFixtureEvidence_ValidAndHygieneClean$"
+    ],
+    "start": "2026-11-04T10:08:59.609126+00:00",
+    "end": "2026-11-04T10:09:09.022288+00:00",
+    "seconds": 9.413,
+    "exit": 0,
+    "receipt": "12-evidence-hygiene-fixed.meta.json"
+  },
+  {
+    "name": "13-nightly-gate",
+    "command": [
+      "go",
+      "run",
+      "./tests/e2e/cmd/fvpn-e2e-nightly-gate",
+      "-summary",
+      "docs/e2e/runs/2026-11-04/followup35/acceptance-summary.md",
+      "-test-exit-code",
+      "2",
+      "-test-log",
+      "docs/e2e/runs/2026-11-04/followup35/05-acceptance.txt"
+    ],
+    "start": "2026-11-04T10:10:16.577615+00:00",
+    "end": "2026-11-04T10:10:16.833898+00:00",
+    "seconds": 0.256,
+    "exit": 0,
+    "receipt": "13-nightly-gate.meta.json"
+  },
+  {
+    "name": "14-staged-whitespace-before",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "start": "2026-11-04T10:10:57.582684+00:00",
+    "end": "2026-11-04T10:10:57.672905+00:00",
+    "seconds": 0.09,
+    "exit": 2,
+    "receipt": "14-staged-whitespace-before.meta.json"
+  },
+  {
+    "name": "15-staged-whitespace-after",
+    "command": [
+      "git",
+      "diff",
+      "--cached",
+      "--check"
+    ],
+    "start": "2026-11-04T10:10:57.783439+00:00",
+    "end": "2026-11-04T10:10:57.877776+00:00",
+    "seconds": 0.094,
+    "exit": 0,
+    "receipt": "15-staged-whitespace-after.meta.json"
+  },
+  {
+    "name": "16-final-evidence-hygiene",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "./tests/e2e",
+      "-run",
+      "^TestCommittedFixtureEvidence_ValidAndHygieneClean$"
+    ],
+    "start": "2026-11-04T10:13:45.802190+00:00",
+    "end": "2026-11-04T10:13:54.988366+00:00",
+    "seconds": 9.186,
+    "exit": 0,
+    "receipt": "16-final-evidence-hygiene.meta.json"
+  },
+  {
+    "name": "17-final-diff-check",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "start": "2026-11-04T10:14:59.963177+00:00",
+    "end": "2026-11-04T10:15:00.055085+00:00",
+    "seconds": 0.092,
+    "exit": 0,
+    "receipt": "17-final-diff-check.meta.json"
+  }
+]

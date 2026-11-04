@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -16,6 +17,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labstack"
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 )
 
 // Read the serving namespace before opening the original bulk connection. Only
@@ -72,6 +74,8 @@ func (l *live) d146Rules(device uuid.UUID) map[string]any {
 	if err == nil {
 		out["serving"] = true
 		out["accepted_observation"] = json.RawMessage(observation)
+	} else if errors.Is(err, pgx.ErrNoRows) {
+		out["serving_read_diagnostic"] = l.d146ServingDiagnostic(fmt.Sprint(state.Generation))
 	}
 	return out
 }
@@ -116,4 +120,26 @@ func (l *live) d146Qualification(r *record, capture *nativeCaptureSession, data 
 		Expected: "new handshake after MTU/rules; both MSS advertisements above 1160 arrive as 1160; both byte predicates; every reverse datagram fits 1280 and arrives; no PTB at any point",
 		Actual:   string(value), Command: "read-only serving rules and original captures; header/hash joins; no retry", At: time.Now().UTC().Format(time.RFC3339)})
 	return result.Qualified
+}
+
+// Re-read the same node and latest current-incarnation row without filtering
+// away failed conditions. Also retain the latest node row for stale-incarnation
+// diagnosis. One statement snapshot; read_at is sampled once. No retry/wait.
+func (l *live) d146ServingDiagnostic(kernel string) map[string]any {
+	var raw []byte
+	err := l.pool.QueryRow(l.ctx, `WITH reading AS MATERIALIZED (SELECT clock_timestamp() AS at)
+ SELECT jsonb_build_object('read_at',reading.at,'node_found',n.id IS NOT NULL,
+ 'current_incarnation',n.current_incarnation_id,'desired_generation',n.desired_config_generation::text,'applied_generation',n.applied_config_generation::text,
+ 'latest_current_incarnation_observation',c.value,'latest_node_observation',a.value)
+ FROM reading LEFT JOIN nodes n ON n.id=$1
+ LEFT JOIN LATERAL (SELECT jsonb_build_object('report_id',o.report_id,'incarnation',o.incarnation_id,'generation',o.applied_generation::text,'received_at',o.received_at,'member_forwarding_enabled',o.report_payload->'member_forwarding_enabled','forwarding_block_reasons',o.report_payload->'forwarding_block_reasons') AS value FROM node_observations o WHERE o.node_id=n.id AND o.incarnation_id=n.current_incarnation_id ORDER BY o.received_at DESC LIMIT 1) c ON true
+ LEFT JOIN LATERAL (SELECT jsonb_build_object('report_id',o.report_id,'incarnation',o.incarnation_id,'generation',o.applied_generation::text,'received_at',o.received_at,'member_forwarding_enabled',o.report_payload->'member_forwarding_enabled','forwarding_block_reasons',o.report_payload->'forwarding_block_reasons') AS value FROM node_observations o WHERE o.node_id=n.id ORDER BY o.received_at DESC LIMIT 1) a ON true`, l.node).Scan(&raw)
+	out := map[string]any{"later_read": true, "available": false}
+	var rows servingDiagnosticRows
+	if err != nil || json.Unmarshal(raw, &rows) != nil {
+		return out
+	}
+	out["available"] = true
+	out["classification"] = classifyServingRead(rows, kernel)
+	return out
 }

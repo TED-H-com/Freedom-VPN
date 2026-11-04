@@ -1,0 +1,2162 @@
+{
+  "policy": "D-160",
+  "scope": "Admission precedes each case clock. Conservative no-wait case envelope covers all nested checks and overlapping persistent probes; nested scopes are journaled too. Existing producer/request/deadline/sample timestamps give each original measurement its precise bounds.",
+  "sections": [
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:21:40.015381185Z",
+      "ended_at": "2026-11-04T08:21:40.016069851Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:21:41.241447953Z",
+      "ended_at": "2026-11-04T08:21:41.242122319Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:21:42.475273983Z",
+      "ended_at": "2026-11-04T08:21:42.475823377Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:21:43.697465837Z",
+      "ended_at": "2026-11-04T08:21:43.698173955Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:21:45.411181738Z",
+      "ended_at": "2026-11-04T08:21:45.411908172Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:21:46.736291974Z",
+      "ended_at": "2026-11-04T08:21:48.741650296Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "case-AT05",
+      "started_at": "2026-11-04T08:21:33.24055665Z",
+      "ended_at": "2026-11-04T08:21:50.647667284Z",
+      "file": "timed_admission_test.go",
+      "line": 27
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:21:52.37813265Z",
+      "ended_at": "2026-11-04T08:21:58.384574977Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:21:59.62950138Z",
+      "ended_at": "2026-11-04T08:22:08.648037193Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:22:10.581326774Z",
+      "ended_at": "2026-11-04T08:22:11.771342322Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:22:11.845460766Z",
+      "ended_at": "2026-11-04T08:22:17.258708475Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:22:17.454780986Z",
+      "ended_at": "2026-11-04T08:22:23.463517446Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:22:24.680356146Z",
+      "ended_at": "2026-11-04T08:22:28.778682352Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:22:28.781778505Z",
+      "ended_at": "2026-11-04T08:22:28.952172511Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:22:31.935169499Z",
+      "ended_at": "2026-11-04T08:22:32.870340465Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:22:28.781764265Z",
+      "ended_at": "2026-11-04T08:22:47.149089731Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "case-AT01",
+      "started_at": "2026-11-04T08:21:50.997415739Z",
+      "ended_at": "2026-11-04T08:22:47.214256813Z",
+      "file": "timed_admission_test.go",
+      "line": 27
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:22:48.245764431Z",
+      "ended_at": "2026-11-04T08:22:48.245908361Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:22:49.249765038Z",
+      "ended_at": "2026-11-04T08:22:51.537258178Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:22:51.603927019Z",
+      "ended_at": "2026-11-04T08:22:57.017217786Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:22:57.216333813Z",
+      "ended_at": "2026-11-04T08:23:09.226936551Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:23:10.814536836Z",
+      "ended_at": "2026-11-04T08:23:11.999755649Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:23:12.073020103Z",
+      "ended_at": "2026-11-04T08:23:17.487460187Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:23:17.685198585Z",
+      "ended_at": "2026-11-04T08:23:24.694426419Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:23:26.595903385Z",
+      "ended_at": "2026-11-04T08:23:28.693524417Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:23:28.696421572Z",
+      "ended_at": "2026-11-04T08:23:28.858183929Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:23:29.456805492Z",
+      "ended_at": "2026-11-04T08:23:30.26417894Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:23:28.696407776Z",
+      "ended_at": "2026-11-04T08:23:42.314731263Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:23:44.320516109Z",
+      "ended_at": "2026-11-04T08:23:54.335347154Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:24:01.907123082Z",
+      "ended_at": "2026-11-04T08:24:15.61148827Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:24:16.851410053Z",
+      "ended_at": "2026-11-04T08:24:17.462004658Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:24:18.066799997Z",
+      "ended_at": "2026-11-04T08:24:19.163550915Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:24:19.168794903Z",
+      "ended_at": "2026-11-04T08:24:19.345926337Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:24:20.051294473Z",
+      "ended_at": "2026-11-04T08:24:20.870440898Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:24:19.168774824Z",
+      "ended_at": "2026-11-04T08:24:33.007043739Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:24:36.370927384Z",
+      "ended_at": "2026-11-04T08:24:37.566959887Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:24:37.6431225Z",
+      "ended_at": "2026-11-04T08:24:43.056984845Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:24:44.199968914Z",
+      "ended_at": "2026-11-04T08:24:46.482610637Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:24:46.55762584Z",
+      "ended_at": "2026-11-04T08:24:51.978704734Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:24:52.284683927Z",
+      "ended_at": "2026-11-04T08:24:54.38032754Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:24:54.639228468Z",
+      "ended_at": "2026-11-04T08:24:54.813343129Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:24:55.660987656Z",
+      "ended_at": "2026-11-04T08:24:56.478853095Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:24:54.6391925Z",
+      "ended_at": "2026-11-04T08:25:08.767239159Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:25:08.767286962Z",
+      "ended_at": "2026-11-04T08:25:08.768242999Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:25:08.768304426Z",
+      "ended_at": "2026-11-04T08:25:23.976436771Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:25:24.888115584Z",
+      "ended_at": "2026-11-04T08:25:25.695759468Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:25:08.768293452Z",
+      "ended_at": "2026-11-04T08:25:38.006987598Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:25:38.007030044Z",
+      "ended_at": "2026-11-04T08:25:51.694410094Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:25:51.694475125Z",
+      "ended_at": "2026-11-04T08:25:58.880450519Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:25:59.81974202Z",
+      "ended_at": "2026-11-04T08:26:00.633891752Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:25:51.694463906Z",
+      "ended_at": "2026-11-04T08:26:12.941958193Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:26:17.910275079Z",
+      "ended_at": "2026-11-04T08:26:17.910607878Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:26:17.910638633Z",
+      "ended_at": "2026-11-04T08:26:19.159524513Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:26:19.243366773Z",
+      "ended_at": "2026-11-04T08:26:24.350055828Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:26:24.608246787Z",
+      "ended_at": "2026-11-04T08:26:38.26415941Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:27:15.215129259Z",
+      "ended_at": "2026-11-04T08:27:29.417236682Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:27:30.332192687Z",
+      "ended_at": "2026-11-04T08:27:31.135951983Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:27:15.215084597Z",
+      "ended_at": "2026-11-04T08:27:43.365288473Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:27:43.365347612Z",
+      "ended_at": "2026-11-04T08:27:58.563890915Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:27:59.439971049Z",
+      "ended_at": "2026-11-04T08:28:00.278887422Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:27:43.365337427Z",
+      "ended_at": "2026-11-04T08:28:12.533482648Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:28:12.695630871Z",
+      "ended_at": "2026-11-04T08:28:12.696198806Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:28:31.827128734Z",
+      "ended_at": "2026-11-04T08:28:33.930172518Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:28:39.70691537Z",
+      "ended_at": "2026-11-04T08:28:39.708375176Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:28:39.713622393Z",
+      "ended_at": "2026-11-04T08:28:39.808929661Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:28:40.840090568Z",
+      "ended_at": "2026-11-04T08:28:41.024756675Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:28:42.742366096Z",
+      "ended_at": "2026-11-04T08:28:43.55901777Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:28:40.840017529Z",
+      "ended_at": "2026-11-04T08:28:56.61914908Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:29:09.890556219Z",
+      "ended_at": "2026-11-04T08:29:09.892801127Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:29:09.892816293Z",
+      "ended_at": "2026-11-04T08:29:09.893312954Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:29:09.893333059Z",
+      "ended_at": "2026-11-04T08:29:10.070782181Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:29:11.662536106Z",
+      "ended_at": "2026-11-04T08:29:12.470714514Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:29:09.89332683Z",
+      "ended_at": "2026-11-04T08:29:25.512700179Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:29:35.417365971Z",
+      "ended_at": "2026-11-04T08:29:36.022620114Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:29:36.635740171Z",
+      "ended_at": "2026-11-04T08:29:39.739297991Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:29:40.71376433Z",
+      "ended_at": "2026-11-04T08:29:40.893428606Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:29:42.818640973Z",
+      "ended_at": "2026-11-04T08:29:43.640894074Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:29:40.713720781Z",
+      "ended_at": "2026-11-04T08:29:56.831191098Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:29:59.894844936Z",
+      "ended_at": "2026-11-04T08:29:59.994012508Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:30:01.040252937Z",
+      "ended_at": "2026-11-04T08:30:01.218787858Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:30:03.029284658Z",
+      "ended_at": "2026-11-04T08:30:03.833971917Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:30:01.040208382Z",
+      "ended_at": "2026-11-04T08:30:17.040220038Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:30:18.540713324Z",
+      "ended_at": "2026-11-04T08:31:23.607660419Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:31:24.867119063Z",
+      "ended_at": "2026-11-04T08:31:24.867540687Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:31:24.86756502Z",
+      "ended_at": "2026-11-04T08:31:27.082756332Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:31:27.082858094Z",
+      "ended_at": "2026-11-04T08:31:27.185001728Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:31:28.257433878Z",
+      "ended_at": "2026-11-04T08:31:28.43836646Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:31:30.255441705Z",
+      "ended_at": "2026-11-04T08:31:31.069886371Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:31:28.257388029Z",
+      "ended_at": "2026-11-04T08:31:44.284771863Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "finite-expiry",
+      "started_at": "2026-11-04T08:29:56.832724786Z",
+      "ended_at": "2026-11-04T08:31:44.284815049Z",
+      "file": "finite_grant_test.go",
+      "line": 98
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:32:04.513923856Z",
+      "ended_at": "2026-11-04T08:32:08.517965681Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:32:09.748088848Z",
+      "ended_at": "2026-11-04T08:32:19.758003989Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:32:20.439852152Z",
+      "ended_at": "2026-11-04T08:32:20.440200958Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:32:21.677782191Z",
+      "ended_at": "2026-11-04T08:32:24.681352567Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:33:29.682317828Z",
+      "ended_at": "2026-11-04T08:33:29.68407894Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:33:31.042716772Z",
+      "ended_at": "2026-11-04T08:33:34.049482691Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:33:34.057394016Z",
+      "ended_at": "2026-11-04T08:33:43.068946372Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:33:43.23271064Z",
+      "ended_at": "2026-11-04T08:33:48.238673652Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:33:48.548572892Z",
+      "ended_at": "2026-11-04T08:33:48.54894751Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "populated-hold",
+      "started_at": "2026-11-04T08:33:29.682244644Z",
+      "ended_at": "2026-11-04T08:33:48.808719367Z",
+      "file": "populated_hold_test.go",
+      "line": 94
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:33:49.496609925Z",
+      "ended_at": "2026-11-04T08:33:49.496938722Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:33:50.735366686Z",
+      "ended_at": "2026-11-04T08:33:53.738568758Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:34:58.770438152Z",
+      "ended_at": "2026-11-04T08:34:58.773349547Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:34:59.942711137Z",
+      "ended_at": "2026-11-04T08:35:03.951228311Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:35:03.960746196Z",
+      "ended_at": "2026-11-04T08:35:13.970484797Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:35:15.891938011Z",
+      "ended_at": "2026-11-04T08:35:18.896794324Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:35:19.058647961Z",
+      "ended_at": "2026-11-04T08:35:24.064063058Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:35:24.378481943Z",
+      "ended_at": "2026-11-04T08:35:24.378815495Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "populated-hold",
+      "started_at": "2026-11-04T08:34:58.770345908Z",
+      "ended_at": "2026-11-04T08:35:24.644474148Z",
+      "file": "populated_hold_test.go",
+      "line": 94
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:35:27.242803937Z",
+      "ended_at": "2026-11-04T08:35:27.243362251Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:35:28.467482062Z",
+      "ended_at": "2026-11-04T08:35:34.477748857Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:36:39.480715433Z",
+      "ended_at": "2026-11-04T08:36:39.482870384Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:36:40.647418295Z",
+      "ended_at": "2026-11-04T08:36:43.652525053Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:36:43.662329606Z",
+      "ended_at": "2026-11-04T08:36:53.680336706Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:36:55.578507568Z",
+      "ended_at": "2026-11-04T08:36:56.579579195Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:36:56.74357953Z",
+      "ended_at": "2026-11-04T08:36:56.743910736Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "populated-hold",
+      "started_at": "2026-11-04T08:36:39.480472261Z",
+      "ended_at": "2026-11-04T08:36:57.40081869Z",
+      "file": "populated_hold_test.go",
+      "line": 94
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:36:59.992260865Z",
+      "ended_at": "2026-11-04T08:36:59.9925491Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:37:01.220673649Z",
+      "ended_at": "2026-11-04T08:37:09.233060828Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:38:14.235129402Z",
+      "ended_at": "2026-11-04T08:38:14.238192101Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:38:15.459097306Z",
+      "ended_at": "2026-11-04T08:38:18.462304563Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:38:18.471862848Z",
+      "ended_at": "2026-11-04T08:38:28.480611563Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:38:46.924526579Z",
+      "ended_at": "2026-11-04T08:38:48.927227575Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "populated-hold",
+      "started_at": "2026-11-04T08:38:14.235051468Z",
+      "ended_at": "2026-11-04T08:38:50.214407458Z",
+      "file": "populated_hold_test.go",
+      "line": 94
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:38:50.214958954Z",
+      "ended_at": "2026-11-04T08:38:50.215270013Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:38:51.451819946Z",
+      "ended_at": "2026-11-04T08:38:54.457513767Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "case-AT02",
+      "started_at": "2026-11-04T08:22:47.563839021Z",
+      "ended_at": "2026-11-04T08:38:59.801840099Z",
+      "file": "timed_admission_test.go",
+      "line": 27
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:39:08.301063484Z",
+      "ended_at": "2026-11-04T08:39:09.302657022Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:39:09.302743866Z",
+      "ended_at": "2026-11-04T08:39:09.303681029Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:39:27.352554978Z",
+      "ended_at": "2026-11-04T08:39:27.352958471Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:39:33.726972973Z",
+      "ended_at": "2026-11-04T08:39:34.729773354Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:39:36.74081929Z",
+      "ended_at": "2026-11-04T08:39:37.742225876Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:39:39.754933265Z",
+      "ended_at": "2026-11-04T08:39:40.756032668Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:39:40.756096783Z",
+      "ended_at": "2026-11-04T08:39:40.756755358Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:39:47.179009935Z",
+      "ended_at": "2026-11-04T08:39:48.180382396Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:39:50.191129451Z",
+      "ended_at": "2026-11-04T08:39:51.192733134Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:39:53.204530801Z",
+      "ended_at": "2026-11-04T08:39:54.207303088Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:39:54.207368502Z",
+      "ended_at": "2026-11-04T08:39:54.208213003Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:00.578267695Z",
+      "ended_at": "2026-11-04T08:40:01.580135288Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:03.584391243Z",
+      "ended_at": "2026-11-04T08:40:04.585338521Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:06.596326986Z",
+      "ended_at": "2026-11-04T08:40:07.597105526Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:07.597199253Z",
+      "ended_at": "2026-11-04T08:40:07.597504128Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:13.986840929Z",
+      "ended_at": "2026-11-04T08:40:14.989335214Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:17.002220538Z",
+      "ended_at": "2026-11-04T08:40:18.005073451Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:20.016803253Z",
+      "ended_at": "2026-11-04T08:40:21.019170856Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:21.019220138Z",
+      "ended_at": "2026-11-04T08:40:21.019586859Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:27.389886344Z",
+      "ended_at": "2026-11-04T08:40:28.393321497Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:30.405277471Z",
+      "ended_at": "2026-11-04T08:40:31.407905352Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:33.420904121Z",
+      "ended_at": "2026-11-04T08:40:34.422723076Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:34.422777779Z",
+      "ended_at": "2026-11-04T08:40:34.423443957Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:40.79821321Z",
+      "ended_at": "2026-11-04T08:40:41.799985614Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:43.805048409Z",
+      "ended_at": "2026-11-04T08:40:44.807420303Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:46.81769615Z",
+      "ended_at": "2026-11-04T08:40:47.818897266Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:47.818954641Z",
+      "ended_at": "2026-11-04T08:40:47.81943098Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:48.79502185Z",
+      "ended_at": "2026-11-04T08:40:49.99725586Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:50.073512328Z",
+      "ended_at": "2026-11-04T08:40:55.487712956Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:40:55.689668368Z",
+      "ended_at": "2026-11-04T08:41:08.702056844Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:41:08.702263079Z",
+      "ended_at": "2026-11-04T08:41:11.904279497Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:41:11.906916664Z",
+      "ended_at": "2026-11-04T08:41:12.106403806Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:41:12.94007953Z",
+      "ended_at": "2026-11-04T08:41:13.747853612Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:41:11.906898278Z",
+      "ended_at": "2026-11-04T08:41:25.752992156Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:41:26.422601825Z",
+      "ended_at": "2026-11-04T08:41:46.564895994Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:41:46.568631104Z",
+      "ended_at": "2026-11-04T08:41:46.755923398Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:41:47.597264028Z",
+      "ended_at": "2026-11-04T08:41:48.410445872Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:41:46.568615687Z",
+      "ended_at": "2026-11-04T08:42:00.503111727Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:42:02.481075091Z",
+      "ended_at": "2026-11-04T08:42:09.492121561Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:42:10.105063742Z",
+      "ended_at": "2026-11-04T08:42:23.993759814Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:42:25.228411641Z",
+      "ended_at": "2026-11-04T08:42:25.832354279Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:42:26.444856128Z",
+      "ended_at": "2026-11-04T08:42:26.559577948Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:42:26.566595752Z",
+      "ended_at": "2026-11-04T08:42:26.771737661Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:42:27.810484819Z",
+      "ended_at": "2026-11-04T08:42:28.630024286Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:42:26.566578964Z",
+      "ended_at": "2026-11-04T08:42:40.832609445Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "case-AT03",
+      "started_at": "2026-11-04T08:39:00.166294229Z",
+      "ended_at": "2026-11-04T08:42:42.980621209Z",
+      "file": "timed_admission_test.go",
+      "line": 27
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:42:47.243179903Z",
+      "ended_at": "2026-11-04T08:42:48.245347252Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:42:48.245412968Z",
+      "ended_at": "2026-11-04T08:42:48.245926169Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:42:49.269878382Z",
+      "ended_at": "2026-11-04T08:42:50.463707159Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:42:50.540551484Z",
+      "ended_at": "2026-11-04T08:42:55.954085277Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:42:56.150507352Z",
+      "ended_at": "2026-11-04T08:43:09.169665271Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:43:09.169799766Z",
+      "ended_at": "2026-11-04T08:43:09.282023051Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:43:09.284006542Z",
+      "ended_at": "2026-11-04T08:43:09.475547928Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:43:10.315600941Z",
+      "ended_at": "2026-11-04T08:43:11.134708784Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:43:09.283991463Z",
+      "ended_at": "2026-11-04T08:43:23.210125917Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:43:25.026316098Z",
+      "ended_at": "2026-11-04T08:43:25.131925352Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:43:25.135225618Z",
+      "ended_at": "2026-11-04T08:43:25.319568043Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:43:26.172812549Z",
+      "ended_at": "2026-11-04T08:43:26.985669219Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:43:25.135212998Z",
+      "ended_at": "2026-11-04T08:43:39.039794007Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:43:44.093167631Z",
+      "ended_at": "2026-11-04T08:43:45.096300091Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:43:45.096347159Z",
+      "ended_at": "2026-11-04T08:43:45.097070589Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:43:47.706295985Z",
+      "ended_at": "2026-11-04T08:43:48.707469437Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:44:48.805674999Z",
+      "ended_at": "2026-11-04T08:45:02.495170165Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:45:02.495198034Z",
+      "ended_at": "2026-11-04T08:45:16.185409208Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:45:21.572721535Z",
+      "ended_at": "2026-11-04T08:45:22.574200781Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:45:22.574287624Z",
+      "ended_at": "2026-11-04T08:45:22.574977236Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:45:23.676557722Z",
+      "ended_at": "2026-11-04T08:45:24.87815297Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:45:24.945514883Z",
+      "ended_at": "2026-11-04T08:45:30.360888139Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:45:30.549860035Z",
+      "ended_at": "2026-11-04T08:45:38.558637317Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:45:38.558692476Z",
+      "ended_at": "2026-11-04T08:45:41.679897358Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:45:41.75090008Z",
+      "ended_at": "2026-11-04T08:45:41.94137573Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:45:42.859460039Z",
+      "ended_at": "2026-11-04T08:45:43.673957209Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:45:41.750878684Z",
+      "ended_at": "2026-11-04T08:45:55.85650206Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:45:56.860705681Z",
+      "ended_at": "2026-11-04T08:45:58.065344949Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:45:58.141029447Z",
+      "ended_at": "2026-11-04T08:46:03.553069965Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:46:03.740240548Z",
+      "ended_at": "2026-11-04T08:46:08.744433241Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:46:08.744485799Z",
+      "ended_at": "2026-11-04T08:46:09.85103448Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:46:09.919081724Z",
+      "ended_at": "2026-11-04T08:46:10.109429394Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:46:11.021217163Z",
+      "ended_at": "2026-11-04T08:46:11.839607147Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:46:09.919058224Z",
+      "ended_at": "2026-11-04T08:46:23.897371418Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:47:00.696000108Z",
+      "ended_at": "2026-11-04T08:47:53.763413358Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:48:54.449506582Z",
+      "ended_at": "2026-11-04T08:49:08.275474872Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:49:08.275522783Z",
+      "ended_at": "2026-11-04T08:49:22.065677757Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:49:29.473752717Z",
+      "ended_at": "2026-11-04T08:49:30.475116685Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:49:30.475199114Z",
+      "ended_at": "2026-11-04T08:49:30.47579974Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:49:36.439153118Z",
+      "ended_at": "2026-11-04T08:49:37.441632519Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:49:37.441680387Z",
+      "ended_at": "2026-11-04T08:49:37.442267852Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:49:38.613980782Z",
+      "ended_at": "2026-11-04T08:49:40.915388253Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:49:40.984295764Z",
+      "ended_at": "2026-11-04T08:49:46.396708532Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:49:46.593562765Z",
+      "ended_at": "2026-11-04T08:49:54.603737905Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:49:54.603813885Z",
+      "ended_at": "2026-11-04T08:49:57.730436826Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:49:57.92080058Z",
+      "ended_at": "2026-11-04T08:49:58.129589707Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:49:59.167608225Z",
+      "ended_at": "2026-11-04T08:49:59.975208832Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:49:57.920764799Z",
+      "ended_at": "2026-11-04T08:50:12.158293484Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:50:13.165065032Z",
+      "ended_at": "2026-11-04T08:50:15.455367531Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:50:15.529093698Z",
+      "ended_at": "2026-11-04T08:50:20.943632665Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:50:21.135960803Z",
+      "ended_at": "2026-11-04T08:50:24.139792387Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:50:24.139849736Z",
+      "ended_at": "2026-11-04T08:50:28.255293592Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:50:28.427730375Z",
+      "ended_at": "2026-11-04T08:50:28.620915544Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:50:29.668981384Z",
+      "ended_at": "2026-11-04T08:50:30.486679105Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:50:28.427698126Z",
+      "ended_at": "2026-11-04T08:50:42.709862813Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:50:50.940764527Z",
+      "ended_at": "2026-11-04T08:50:51.942766834Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:51:55.179040046Z",
+      "ended_at": "2026-11-04T08:52:09.069112912Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:52:09.069149838Z",
+      "ended_at": "2026-11-04T08:52:22.935030706Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:52:23.554858521Z",
+      "ended_at": "2026-11-04T08:52:27.562195644Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "case-AT04",
+      "started_at": "2026-11-04T08:42:43.343460055Z",
+      "ended_at": "2026-11-04T08:52:27.834964605Z",
+      "file": "timed_admission_test.go",
+      "line": 27
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:52:28.901833868Z",
+      "ended_at": "2026-11-04T08:52:28.902249173Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:52:30.134674578Z",
+      "ended_at": "2026-11-04T08:52:33.136951461Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:52:33.741509311Z",
+      "ended_at": "2026-11-04T08:52:33.870789701Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:52:33.872395805Z",
+      "ended_at": "2026-11-04T08:52:33.872484917Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:52:33.872514964Z",
+      "ended_at": "2026-11-04T08:52:34.0717255Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:52:36.845306015Z",
+      "ended_at": "2026-11-04T08:52:37.780576845Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:52:33.872508457Z",
+      "ended_at": "2026-11-04T08:52:51.688060787Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:52:51.688087408Z",
+      "ended_at": "2026-11-04T08:53:05.356226815Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:53:05.978472468Z",
+      "ended_at": "2026-11-04T08:53:07.981086186Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:53:07.981473794Z",
+      "ended_at": "2026-11-04T08:53:08.112858763Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:53:08.168666371Z",
+      "ended_at": "2026-11-04T08:53:08.380305211Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:53:09.276327668Z",
+      "ended_at": "2026-11-04T08:53:10.093176597Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:53:08.16859888Z",
+      "ended_at": "2026-11-04T08:53:22.196512585Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:53:22.196547355Z",
+      "ended_at": "2026-11-04T08:53:35.825521518Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:53:36.445777636Z",
+      "ended_at": "2026-11-04T08:53:37.447019043Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:53:37.447265109Z",
+      "ended_at": "2026-11-04T08:53:51.118954856Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:53:53.629288999Z",
+      "ended_at": "2026-11-04T08:53:53.712886437Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T08:53:53.878768059Z",
+      "ended_at": "2026-11-04T08:54:07.520590179Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:54:07.520623109Z",
+      "ended_at": "2026-11-04T08:54:07.521062637Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:54:08.74628367Z",
+      "ended_at": "2026-11-04T08:54:13.753583501Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "case-AT08",
+      "started_at": "2026-11-04T08:52:28.215754243Z",
+      "ended_at": "2026-11-04T08:54:13.818533001Z",
+      "file": "timed_admission_test.go",
+      "line": 27
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:54:21.031315827Z",
+      "ended_at": "2026-11-04T08:54:21.031932357Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:54:21.032255362Z",
+      "ended_at": "2026-11-04T08:54:23.339822359Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:54:24.134226163Z",
+      "ended_at": "2026-11-04T08:54:24.742044261Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:54:29.534903264Z",
+      "ended_at": "2026-11-04T08:54:30.147727238Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:54:34.939041569Z",
+      "ended_at": "2026-11-04T08:54:35.550520019Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:54:40.398947716Z",
+      "ended_at": "2026-11-04T08:54:40.399570739Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:54:44.748596053Z",
+      "ended_at": "2026-11-04T08:54:45.437203002Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:55:10.216215599Z",
+      "ended_at": "2026-11-04T08:55:10.300783017Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "case-AT20",
+      "started_at": "2026-11-04T08:54:14.190986933Z",
+      "ended_at": "2026-11-04T08:55:53.087512713Z",
+      "file": "timed_admission_test.go",
+      "line": 27
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:56:12.610871166Z",
+      "ended_at": "2026-11-04T08:56:12.71483504Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:56:14.006486797Z",
+      "ended_at": "2026-11-04T08:56:19.445963702Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:56:19.611488586Z",
+      "ended_at": "2026-11-04T08:56:23.430973627Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "case-AT21",
+      "started_at": "2026-11-04T08:55:53.463023617Z",
+      "ended_at": "2026-11-04T08:56:28.225898871Z",
+      "file": "timed_admission_test.go",
+      "line": 27
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:56:35.256184387Z",
+      "ended_at": "2026-11-04T08:56:36.25813396Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:56:38.099037048Z",
+      "ended_at": "2026-11-04T08:56:45.144462496Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:56:49.937529747Z",
+      "ended_at": "2026-11-04T08:56:50.022721038Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:56:51.251579258Z",
+      "ended_at": "2026-11-04T08:56:52.252435566Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T08:56:52.859897053Z",
+      "ended_at": "2026-11-04T09:02:33.264012211Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:02:33.264754457Z",
+      "ended_at": "2026-11-04T09:02:33.878937232Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "case-AT22",
+      "started_at": "2026-11-04T08:56:28.612052478Z",
+      "ended_at": "2026-11-04T09:02:39.750430248Z",
+      "file": "timed_admission_test.go",
+      "line": 27
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:02:41.508984473Z",
+      "ended_at": "2026-11-04T09:02:41.509325034Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:02:42.745026503Z",
+      "ended_at": "2026-11-04T09:02:44.747610038Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:02:44.748094395Z",
+      "ended_at": "2026-11-04T09:02:44.748193105Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:02:45.982575918Z",
+      "ended_at": "2026-11-04T09:02:46.983534745Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:02:46.983976807Z",
+      "ended_at": "2026-11-04T09:02:47.107272584Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:02:48.323091305Z",
+      "ended_at": "2026-11-04T09:02:48.323430617Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:02:48.323458333Z",
+      "ended_at": "2026-11-04T09:02:48.445955459Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:02:48.44815905Z",
+      "ended_at": "2026-11-04T09:02:48.657407389Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:02:49.435556296Z",
+      "ended_at": "2026-11-04T09:02:50.243850622Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T09:02:48.448144225Z",
+      "ended_at": "2026-11-04T09:03:02.334167104Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:03:02.334192714Z",
+      "ended_at": "2026-11-04T09:03:21.802193721Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:03:22.578772094Z",
+      "ended_at": "2026-11-04T09:03:23.396891318Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T09:03:02.334186517Z",
+      "ended_at": "2026-11-04T09:03:35.421750662Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:03:47.885881361Z",
+      "ended_at": "2026-11-04T09:03:54.591325765Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:03:54.591405975Z",
+      "ended_at": "2026-11-04T09:03:54.708505877Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:03:54.713506355Z",
+      "ended_at": "2026-11-04T09:03:54.910946653Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:03:55.673561398Z",
+      "ended_at": "2026-11-04T09:03:56.48915843Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T09:03:54.713490483Z",
+      "ended_at": "2026-11-04T09:04:08.55615085Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:05:20.209999208Z",
+      "ended_at": "2026-11-04T09:05:20.82346991Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:05:25.610966768Z",
+      "ended_at": "2026-11-04T09:05:25.831688878Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:05:26.601089979Z",
+      "ended_at": "2026-11-04T09:05:27.423006065Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-member-transfer",
+      "started_at": "2026-11-04T09:05:25.610920201Z",
+      "ended_at": "2026-11-04T09:05:39.484668588Z",
+      "file": "forwarding_test.go",
+      "line": 180
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:05:39.484696755Z",
+      "ended_at": "2026-11-04T09:05:39.485138032Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:05:42.397109383Z",
+      "ended_at": "2026-11-04T09:05:45.025681999Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:05:55.244766226Z",
+      "ended_at": "2026-11-04T09:05:57.880718533Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:06:08.331049895Z",
+      "ended_at": "2026-11-04T09:06:10.963765178Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:06:21.220879197Z",
+      "ended_at": "2026-11-04T09:06:23.866771694Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:06:34.408967058Z",
+      "ended_at": "2026-11-04T09:06:37.055294708Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:06:52.760151846Z",
+      "ended_at": "2026-11-04T09:06:55.402906376Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:07:41.866816945Z",
+      "ended_at": "2026-11-04T09:07:44.470729315Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "bounded-poll",
+      "started_at": "2026-11-04T09:07:54.521703296Z",
+      "ended_at": "2026-11-04T09:07:57.122919968Z",
+      "file": "live_test.go",
+      "line": 450
+    },
+    {
+      "label": "native-MTU-matrix",
+      "started_at": "2026-11-04T09:05:39.484688399Z",
+      "ended_at": "2026-11-04T09:08:04.176575711Z",
+      "file": "native_matrix_test.go",
+      "line": 25
+    },
+    {
+      "label": "selected-exit-restart",
+      "started_at": "2026-11-04T09:02:40.819916541Z",
+      "ended_at": "2026-11-04T09:08:04.176632394Z",
+      "file": "second_exit_test.go",
+      "line": 55
+    },
+    {
+      "label": "case-AT09",
+      "started_at": "2026-11-04T09:02:40.13914245Z",
+      "ended_at": "2026-11-04T09:08:04.508199269Z",
+      "file": "timed_admission_test.go",
+      "line": 27
+    }
+  ]
+}

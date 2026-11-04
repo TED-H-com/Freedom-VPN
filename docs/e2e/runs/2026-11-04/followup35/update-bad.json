@@ -1,0 +1,95 @@
+{
+  "id": "update-bad",
+  "title": "Tampered artifact fails closed",
+  "spec": [
+    "§13.4",
+    "§19 AT25",
+    "§19 AT27"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "batch",
+      "detail": "202"
+    },
+    {
+      "name": "fleet_generation",
+      "detail": "3"
+    },
+    {
+      "name": "target_count",
+      "detail": "3"
+    },
+    {
+      "name": "desired_contains_release",
+      "detail": "true"
+    },
+    {
+      "name": "running_candidate_executable",
+      "detail": "false"
+    },
+    {
+      "name": "exit_code",
+      "detail": "1"
+    },
+    {
+      "name": "locally_succeeded",
+      "detail": "false"
+    },
+    {
+      "name": "rolled_back",
+      "detail": "false"
+    },
+    {
+      "name": "HASH_MISMATCH",
+      "detail": "true"
+    },
+    {
+      "name": "recovery_required",
+      "detail": "false"
+    },
+    {
+      "name": "ISOLATION_BASELINE_MISSING",
+      "detail": "false"
+    },
+    {
+      "name": "artifact url address",
+      "detail": "false"
+    },
+    {
+      "name": "health_json",
+      "detail": "-"
+    },
+    {
+      "name": "health_attestation",
+      "detail": "-"
+    },
+    {
+      "name": "error_code",
+      "detail": "-"
+    },
+    {
+      "name": "result_last_error",
+      "detail": "-"
+    },
+    {
+      "name": "journal_excerpt",
+      "detail": "fvpn-updater: updater: HASH_MISMATCH: artifact"
+    },
+    {
+      "name": "note",
+      "detail": "tampered bytes were rejected"
+    },
+    {
+      "name": "updater_invocations",
+      "detail": "[{\"invocation_id\":\"invocation.uoern8lE\",\"started_at\":\"2026-11-04T09:52:28.264063978Z\",\"ended_at\":\"2026-11-04T09:52:37.470593496Z\",\"pid\":178784,\"exit_code\":0,\"output\":\"\"},{\"invocation_id\":\"invocation.yIuYeknH\",\"started_at\":\"2026-11-04T09:52:43.478106458Z\",\"ended_at\":\"2026-11-04T09:52:46.494609725Z\",\"pid\":186533,\"exit_code\":1,\"output\":\"fvpn-updater: updater: HASH_MISMATCH: artifact\\n\"}]"
+    },
+    {
+      "name": "timed_section",
+      "detail": "update-bad"
+    }
+  ],
+  "at": "2026-11-04T09:52:47Z",
+  "run_id": "8a436a87-5efe-4c18-a7ec-72be170cb69b",
+  "source_commit": "9fbff94c84b0d29c2d78f420e76726f7c9a706ad"
+}

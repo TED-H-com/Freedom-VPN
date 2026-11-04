@@ -5,6 +5,7 @@ package e2e
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -29,6 +30,12 @@ while [ ! -e `+marker+` ]; do
     awk -v inode="$inode" '$2 == "FLOCK" && $6 ~ (":" inode "$") {printf "%s ", $5}' /proc/locks
   fi
   printf '\n'
+  if [ -n "$inode" ]; then
+    for holder in $(awk -v inode="$inode" '$2 == "FLOCK" && $6 ~ (":" inode "$") {print $5}' /proc/locks); do
+      printf 'lock_holder_comm %s ' "$holder"; cat "/proc/$holder/comm" 2>/dev/null || true
+    done
+  fi
+  printf 'agent_executable '; readlink "/proc/$(cat /var/lib/vpn-node/e2e/agent.pid 2>/dev/null)/exe" 2>/dev/null || true
   printf 'forwarding_blocked '; if [ -e /var/lib/vpn-node/update-journal/forwarding.blocked ]; then echo 1; else echo 0; fi
   cat /run/vpn-node/heartbeat 2>/dev/null || true
   printf 'sample_end\n'
@@ -69,4 +76,28 @@ done`)
 	}
 	r.t.Cleanup(finish)
 	return finish
+}
+
+// Snapshot all retained invocations, so update-bad also contains update-good's
+// complete output. This is observation only and does not alter either predicate.
+func (r *runner) retainUpdaterInvocations(rec *Record) {
+	raw, err := r.lab.docker(r.lab.node, "sh", "-c", "test -d /var/lib/vpn-node/e2e/updater-invocations || exit 0; tar -C /var/lib/vpn-node/e2e -cf - updater-invocations")
+	if err != nil {
+		r.t.Errorf("read updater invocations: %v", err)
+		return
+	}
+	rows, err := ReadUpdaterInvocations(bytes.NewReader(raw))
+	if err != nil {
+		r.t.Errorf("parse updater invocations: %v", err)
+		return
+	}
+	for i := range rows {
+		rows[i].Output = Redact(rows[i].Output)
+	}
+	data, err := json.Marshal(rows)
+	if err != nil {
+		r.t.Error(err)
+		return
+	}
+	rec.Observations = append(rec.Observations, Observation{Name: "updater_invocations", Detail: string(data)})
 }

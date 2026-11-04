@@ -43,6 +43,7 @@ type forwardingObservation struct {
 	RouteBefore         json.RawMessage            `json:"route_before"`
 	RouteAfter          json.RawMessage            `json:"route_after"`
 	PeerStatus          json.RawMessage            `json:"peer_status"`
+	PeerStatusAfter     json.RawMessage            `json:"peer_status_after"`
 	Before              counterObservation         `json:"node_before"`
 	After               counterObservation         `json:"node_after"`
 	Packets             map[string]json.RawMessage `json:"packet_observations"`
@@ -176,6 +177,7 @@ func (l *live) traceForwarding(r *record, service string, device uuid.UUID) bool
 }
 
 func (l *live) traceForwardingExpected(r *record, service string, device uuid.UUID, authorized bool) bool {
+	defer l.timedSection("bounded-member-transfer")()
 	if authorized && (device == uuid.Nil || !l.forwardingGate(r, device)) {
 		r.block("Positive forwarding not launched: populated-grant serving readiness unavailable")
 		return false
@@ -198,8 +200,12 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 		o.ProbeSHA256 = hex.EncodeToString(hash[:])
 	}
 	var capture *nativeCaptureSession
-	if r.ID == "AT01" {
-		capture = l.startNativeCapture(r, service, "initial-selection")
+	if r.ID == "AT01" || (r.ID == "AT08" && len(r.Forwarding) == 0) {
+		label := "initial-selection"
+		if r.ID == "AT08" {
+			label = "at08-initial-selection"
+		}
+		capture = l.startNativeCapture(r, service, label)
 		defer capture.stop()
 	}
 	capture.sample("before-selection")
@@ -235,17 +241,7 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 	l.regrantCapture.sample("after-selection-" + fmt.Sprint(l.probeSequence+1))
 	time.Sleep(2 * time.Second)
 	o.RouteAfter = l.routeObservation(service)
-	status, _ := l.inside(service, "netbird", "status", "--json")
-	var native map[string]json.RawMessage
-	_ = json.Unmarshal(status, &native)
-	// Never persist the full NetBird status (public keys, endpoint identities).
-	selected := map[string]json.RawMessage{}
-	for _, key := range []string{"daemonVersion", "daemonStatus", "usesKernelInterface", "networks"} {
-		if v := native[key]; len(v) > 0 {
-			selected[key] = v
-		}
-	}
-	o.PeerStatus, _ = json.Marshal(selected)
+
 	o.Before = l.counters(device)
 	l.probeSequence++
 	if l.probeSequence > 9999 {
@@ -268,6 +264,7 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 	time.Sleep(time.Second)
 	probeID := uuid.NewString()
 	armed := l.request(nil, "PUT", "https://releases.example.invalid/e2e/traffic", map[string]string{"id": probeID}, map[string]string{"X-E2E-Secret": l.secret("origin.secret")})
+	o.PeerStatus = l.transferPeerViews(service)
 	capture.sample("before-transfer")
 	l.regrantCapture.sample("before-transfer-" + port)
 	raw, err := l.inside(service, "/tmp/at-members-probe", "transfer", probeID, port)
@@ -283,6 +280,7 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 		}
 	}
 	o.Transfer = raw
+	o.PeerStatusAfter = l.transferPeerViews(service)
 	wg.Wait()
 	o.After = l.counters(device)
 	if device != uuid.Nil && o.FirstCountedByteAt == "" && o.After.DeviceUpload > o.Before.DeviceUpload && o.After.DeviceDownload > o.Before.DeviceDownload {
@@ -332,6 +330,23 @@ func (l *live) traceForwardingExpected(r *record, service string, device uuid.UU
 	l.write(r)
 	return o.Counted
 }
+
+// Both native status reads use the existing container command hook. Matching
+// addresses exist only in memory; neither raw status nor command errors escape.
+func (l *live) transferPeerViews(member string) json.RawMessage {
+	start := time.Now().UTC()
+	memberRaw, _ := l.inside(member, "netbird", "status", "--json")
+	memberAt := time.Now().UTC()
+	nodeRaw, _ := l.inside(l.nodeContainer(), "netbird", "status", "--json")
+	nodeAt := time.Now().UTC()
+	out, _ := json.Marshal(map[string]any{
+		"started_at": start, "ended_at": nodeAt, "member_read_at": memberAt, "node_read_at": nodeAt,
+		"member_view_of_selected_node": nativePeerView(memberRaw, nativeAddress(nodeRaw), "0.0.0.0/0", memberAt),
+		"node_view_of_member":          nativePeerView(nodeRaw, nativeAddress(memberRaw), "0.0.0.0/0", nodeAt),
+	})
+	return out
+}
+
 func (l *live) routeObservation(service string) json.RawMessage {
 	raw, err := l.inside(service, "ip", "-j", "route", "get", "192.0.4.10")
 	if err != nil {
@@ -406,12 +421,24 @@ func (l *live) routedPMTU1280(r *record, id uuid.UUID) {
 			capture.sample("before-bulk")
 			before, be := l.hook.DeviceByteCounters(l.ctx, id)
 			chosen, ce := l.hook.ObserveSelectedNativeExit(l.ctx)
+			peerBefore := l.transferPeerViews("member")
 			got, ge := l.fixture("member", "-mode", "bulk", "-addr", l.originIP()+":9446", "-device", id.String())
+			peerAfter := l.transferPeerViews("member")
 			after, ae := l.hook.DeviceByteCounters(l.ctx, id)
 			end, ee := l.hook.ObserveSelectedNativeExit(l.ctx)
 			capture.sample("after-bulk")
 			evidence := capture.stop()
-			r.jsonCheck("D-137 routed "+family+" 1280 transfer", "64064 TCP bytes, both device counters increase, selected family preserved; captured PTB/PMTU or DF=0 fragmentation analyzed separately", map[string]any{"decision": "under provisional D-137", "scope": "sender-learnable routed hop", "mechanism_required": map[string]string{"ipv6": "PTB received and learned PMTU 1280", "ipv4": "DF=0 transit fragmentation"}[family], "native_capture": evidence, "selected_exit_before": chosen, "selected_exit_after": end, "before_counters": before, "after_counters": after, "transfer": got}, "NativeRouter1280.Select/StartCapture; original reconnect and one bounded bulk", down == nil && up == nil && ready && be == nil && ce == nil && ge == nil && ae == nil && ee == nil && chosen.Family == family && end.Family == family && chosen.Connected && end.Connected && got.Available && got.Bytes == 64064 && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download)
+			r.jsonCheck("D-137 routed "+family+" 1280 transfer", "64064 TCP bytes, both device counters increase, selected family preserved; captured PTB/PMTU or DF=0 fragmentation analyzed separately", map[string]any{"decision": "under provisional D-137", "scope": "sender-learnable routed hop", "mechanism_required": map[string]string{"ipv6": "PTB received and learned PMTU 1280", "ipv4": "DF=0 transit fragmentation"}[family], "native_capture": evidence, "selected_exit_before": chosen, "selected_exit_after": end, "before_counters": before, "after_counters": after, "transfer": got, "peer_status": peerBefore, "peer_status_after": peerAfter}, "NativeRouter1280.Select/StartCapture; original reconnect and one bounded bulk", down == nil && up == nil && ready && be == nil && ce == nil && ge == nil && ae == nil && ee == nil && chosen.Family == family && end.Family == family && chosen.Connected && end.Connected && got.Available && got.Bytes == 64064 && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download)
 		}()
 	}
+}
+
+func nativeAddress(raw []byte) string {
+	var s struct {
+		IP string `json:"netbirdIp"`
+	}
+	if json.Unmarshal(raw, &s) != nil {
+		return ""
+	}
+	return s.IP
 }

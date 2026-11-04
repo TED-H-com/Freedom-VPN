@@ -63,6 +63,7 @@ var ownedDocs = []string{
 	"docs/handover/follow-up-41.md",
 	"docs/handover/follow-up-42.md",
 	"docs/handover/follow-up-43.md",
+	"docs/handover/follow-up-44.md",
 	"docs/ops/README.md",
 	"docs/reviews/README.md",
 	"docs/reviews/r3-d055-review.md",
@@ -14322,7 +14323,7 @@ func TestHandover_Followup43Claims(t *testing.T) {
 			}
 			return
 		}
-		requireHandoverClaimTokens(t, root, path, tokens...)
+		requireHandoverClaimTokens(t, root, followup44InputPath(path), tokens...)
 	}
 	// Complete narratives and inventories are bound as well as individual claims.
 	checkHash("docs/handover/follow-up-43.md", "7c42f489a42796ae29e46f4b808d888a7a11261e532edba223856b6f6ebe3eb2")
@@ -14727,7 +14728,7 @@ func TestHandover_Followup43Claims(t *testing.T) {
 	t.Run("60_decisions_all_57_earlier_rows_unchanged", func(t *testing.T) {
 		re := regexp.MustCompile(`(?m)^\| D-\d{3} \|.*$`)
 		old := re.FindAllString(readOwnedDoc(t, root, followup43PriorPath(register)), -1)
-		now := re.FindAllString(readOwnedDoc(t, root, register), -1)
+		now := re.FindAllString(readOwnedDoc(t, root, followup44PriorPath(register)), -1)
 		var added map[string]string
 		readJSON(fixture+"followup43-decisions.json", &added)
 		if len(old) != 57 || len(now) != 60 || len(added) != 3 || !strings.HasPrefix(old[56], "| D-154 |") || !slices.Equal(old, now[:57]) {
@@ -14742,7 +14743,7 @@ func TestHandover_Followup43Claims(t *testing.T) {
 	})
 	t.Run("124_findings_11_updates_11_additions_102_unchanged", func(t *testing.T) {
 		old := findings(readOwnedDoc(t, root, followup43PriorPath(register)), "## Findings register at the follow-up 42 cutoff")
-		now := findings(readOwnedDoc(t, root, register), "## Findings register at the follow-up 43 cutoff")
+		now := findings(readOwnedDoc(t, root, followup44PriorPath(register)), "## Findings register at the follow-up 43 cutoff")
 		var m struct{ Updated, Added map[string]string }
 		readJSON(fixture+"followup43-findings.json", &m)
 		if len(old) != 113 || len(now) != 124 || len(m.Updated) != 11 || len(m.Added) != 11 {
@@ -14794,7 +14795,7 @@ func TestHandover_Followup43Claims(t *testing.T) {
 	})
 	t.Run("seven_entrypoints_operator_anchors_and_unrelated_guidance_exact", func(t *testing.T) {
 		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
-			lines := strings.Split(readOwnedDoc(t, root, path), "\n")
+			lines := strings.Split(readOwnedDoc(t, root, followup44PriorPath(path)), "\n")
 			old := strings.Split(readOwnedDoc(t, root, followup43PriorPath(path)), "\n")
 			if len(lines) < 4 || !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-43.md") || !strings.Contains(lines[2], "#446–#456") || !strings.Contains(lines[3], "follow-up-42.md") {
 				t.Fatalf("entrypoint: %s", path)
@@ -14817,7 +14818,7 @@ func TestHandover_Followup43Claims(t *testing.T) {
 				t.Fatalf("unrelated guidance changed: %s", path)
 			}
 		}
-		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		op := readOwnedDoc(t, root, followup44PriorPath("docs/handover/operator-guide.md"))
 		for _, anchor := range []string{"f30-01", "r28-h-1", "d156-release-rule", "at02-closed-recovery"} {
 			if strings.Count(op, "<a id=\""+anchor+"\"></a>") != 1 {
 				t.Fatalf("operator anchor: %s", anchor)
@@ -14828,5 +14829,449 @@ func TestHandover_Followup43Claims(t *testing.T) {
 	})
 	t.Run("running_status_only_and_dated_handoffs", func(t *testing.T) {
 		require(doc, "Running at briefing, status only", "devstack **34**", "isolation **22**", "secops **17**", "agent-core **50**", "No delivered\nor merged PR", "after the cutoff", "### Requests to orchestrator", "2026-11-04 EST", "No outside-owned pin needs changing", "no item is stopped", "D-098 / D-109 / D-132", "No claim reads a living members", "no faster polling", "nothing merged")
+	})
+}
+
+func followup44PriorPath(path string) string {
+	return "tests/handover/testdata/history/follow-up-44/prior-" + strings.ReplaceAll(path, "/", "_") + ".txt"
+}
+
+func followup44InputPath(path string) string {
+	switch path {
+	case "docs/handover/README.md", "docs/reviews/README.md", "docs/handover/operator-guide.md", "docs/ops/README.md":
+		return followup44PriorPath(path)
+	default:
+		return path
+	}
+}
+
+// Reverse only follow-up 44's input redirects; assertions remain byte-identical.
+func restoreFollowup44Assertions(source string) string {
+	return strings.NewReplacer(
+		"requireHandoverClaimTokens(t, root, followup44InputPath(path), tokens...)", "requireHandoverClaimTokens(t, root, path, tokens...)",
+		"readOwnedDoc(t, root, followup44PriorPath(register))", "readOwnedDoc(t, root, register)",
+		"lines := strings.Split(readOwnedDoc(t, root, followup44PriorPath(path)), \"\\n\")", "lines := strings.Split(readOwnedDoc(t, root, path), \"\\n\")",
+		"op := readOwnedDoc(t, root, followup44PriorPath(\"docs/handover/operator-guide.md\"))", "op := readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
+	).Replace(source)
+}
+
+// TestHandover_Followup44Claims pins the #457–#463 cut under D-098/D-109/D-132.
+func TestHandover_Followup44Claims(t *testing.T) {
+	root := repoRoot(t)
+	const fixture = "tests/handover/testdata/"
+	const frozen = fixture + "history/follow-up-44/"
+	const cut = "5c21e670596f5b0b7029f6a02648305a24f0f22a"
+	const doc = "docs/handover/follow-up-44.md"
+	const register = "docs/handover/README.md"
+	hash := func(s string) string { sum := sha256.Sum256([]byte(s)); return hex.EncodeToString(sum[:]) }
+	checkHash := func(path, want string) {
+		t.Helper()
+		if hash(readOwnedDoc(t, root, path)) != want {
+			t.Fatalf("immutable input changed: %s", path)
+		}
+	}
+	readJSON := func(path string, dst any) {
+		t.Helper()
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, path)), dst); err != nil {
+			t.Fatalf("decode %s: %v", path, err)
+		}
+	}
+	require := func(path string, tokens ...string) {
+		t.Helper()
+		text := readOwnedDoc(t, root, path)
+		if strings.HasSuffix(path, "-excerpt.json") {
+			readJSON(path, &text)
+		}
+		for _, token := range tokens {
+			if !strings.Contains(text, token) {
+				t.Fatalf("%s missing %q", path, token)
+			}
+		}
+	}
+	// Full narratives and manifests are pinned in addition to the claim-level checks.
+	checkHash("docs/handover/follow-up-44.md", "4884e85ff8dc245a0d4c51f5b9bf47683bbf15d02ead3ce0128f2238da4e6345")
+	checkHash("tests/handover/testdata/followup44-claims.json", "1d22be43458d8631381aa402194a05dc68649bd51a012596b571e814d979d6de")
+	checkHash("tests/handover/testdata/followup44-decisions.json", "d0e3f9517ef8d5e9b4e63e4dd057ec5871601c92d4fb4e166778bc3945d10c83")
+	checkHash("tests/handover/testdata/followup44-evidence.json", "6158823a0a367f2df56c797851cd97b4972819ee2c06996f3839a715c5c3f702")
+	checkHash("tests/handover/testdata/followup44-findings.json", "fca029b22367ea4d0a9a2f29dba82c01757bd048acf5d9a7722d60a40165ba55")
+	checkHash("tests/handover/testdata/followup44-main.json", "cf35433a92f9feb879122a13674ac0e0ba7bc46f060aeda0acc52ee8ebff70e4")
+	checkHash("tests/handover/testdata/followup44-snapshots.json", "3d962489dcef32a2c3265c09a73adc0b4cbb62c0525c2beac1793c68fe304b5a")
+	checkHash("tests/handover/testdata/history/follow-up-44/prior-claims.json", "8a06b9995daf43828d307195af721ebf426341e05c4372e3b973c8a8e2c2b609")
+	checkHash("tests/handover/testdata/history/follow-up-44/product-source-audit.json", "edb9526d2fe6fc8f44555447c4fb760bd27dcc604cf8b640248bec7e63291e24")
+	type snapshot struct {
+		Path, Source, SHA256 string
+		Commit               string `json:"source_commit"`
+		Bytes                int
+	}
+	findings := func(s, heading string) map[string]string {
+		parts := strings.Split(s, heading)
+		if len(parts) != 2 {
+			t.Fatalf("unique heading missing: %s", heading)
+		}
+		out := map[string]string{}
+		for _, line := range strings.Split(strings.Split(parts[1], "\nEvery historical failure")[0], "\n") {
+			if strings.HasPrefix(line, "| ") && !strings.HasPrefix(line, "| Finding |") {
+				id := strings.TrimSpace(strings.Split(line, "|")[1])
+				if _, ok := out[id]; ok {
+					t.Fatalf("duplicate finding: %s", id)
+				}
+				out[id] = line
+			}
+		}
+		return out
+	}
+	t.Run("seven_final_roadmap_rows_and_PRs_exact_cut", func(t *testing.T) {
+		var m struct {
+			Commit   string `json:"source_commit"`
+			Previous string `json:"previous_cut"`
+			Merged   []int  `json:"merged_prs"`
+			History  []string
+			Rows     []struct {
+				PR                int
+				Lane, Row, SHA256 string
+			}
+			PRs []struct {
+				Number, Bytes int
+				Path, SHA256  string
+				Decoded       string `json:"decoded_sha256"`
+				Merge         string `json:"merge_commit"`
+			}
+		}
+		readJSON(fixture+"followup44-main.json", &m)
+		if m.Commit != cut || m.Previous != "04d31ea5cd10cb90527e0b4efc10b42522dd9569" || !slices.Equal(m.Merged, []int{457, 458, 459, 460, 461, 462, 463}) || len(m.Rows) != 7 || len(m.PRs) != 7 || len(m.History) != 14 {
+			t.Fatal("cut inventory")
+		}
+		for i, r := range m.Rows {
+			if r.PR != 457+i || hash(r.Row) != r.SHA256 || !strings.HasPrefix(r.Row, "| "+r.Lane+" |") || !strings.HasSuffix(r.Row, fmt.Sprintf("| done (#%d) |", r.PR)) {
+				t.Fatal("final row identity")
+			}
+			require("docs/ROADMAP.md", r.Row)
+			p := m.PRs[i]
+			checkHash(p.Path, p.SHA256)
+			var body string
+			readJSON(p.Path, &body)
+			if p.Number != r.PR || len(body) != p.Bytes || hash(body) != p.Decoded || !strings.HasPrefix(m.History[2*i], p.Merge+" ") || !strings.Contains(m.History[2*i+1], fmt.Sprintf("merged (#%d)", r.PR)) {
+				t.Fatal("PR provenance")
+			}
+		}
+		require(doc, cut, "seven merges and seven final roadmap rows", "No unbriefed PR", "#457, #458, #459,\n#460, #461, #462 and #463")
+	})
+	t.Run("25_frozen_inputs_30_main_test_names_16_code_readings", func(t *testing.T) {
+		var snaps []snapshot
+		readJSON(fixture+"followup44-snapshots.json", &snaps)
+		if len(snaps) != 25 {
+			t.Fatal("snapshot inventory")
+		}
+		old, producer := 0, 0
+		for _, s := range snaps {
+			if !strings.HasPrefix(s.Path, frozen) || len(readOwnedDoc(t, root, s.Path)) != s.Bytes {
+				t.Fatal("snapshot boundary")
+			}
+			checkHash(s.Path, s.SHA256)
+			if strings.Contains(s.Path, "/prior-") {
+				old++
+				if s.Commit != "b98c2d76133d1fd0adbec49da04babcb7f1df549" { // PRIOR_COMMIT
+					t.Fatal("prior source")
+				}
+			} else {
+				producer++
+				if s.Commit != cut {
+					t.Fatal("producer source")
+				}
+			}
+		}
+		if old != 9 || producer != 16 {
+			t.Fatal("snapshot source counts")
+		}
+		var e struct {
+			Commit string `json:"source_commit"`
+			Proofs []struct{ Path, Name string }
+		}
+		readJSON(fixture+"followup44-evidence.json", &e)
+		if e.Commit != cut || len(e.Proofs) != 30 {
+			t.Fatal("proof inventory")
+		}
+		for _, p := range e.Proofs {
+			if !regexp.MustCompile(`(?m)^func ` + regexp.QuoteMeta(p.Name) + `\(t \*testing.T\)`).MatchString(readOwnedDoc(t, root, p.Path)) {
+				t.Fatalf("missing main test: %s %s", p.Path, p.Name)
+			}
+		}
+		var audit []struct {
+			Source, Text, SHA256 string
+			Commit               string `json:"source_commit"`
+		}
+		readJSON(frozen+"product-source-audit.json", &audit)
+		if len(audit) != 16 {
+			t.Fatal("source reading inventory")
+		}
+		code := map[string]string{}
+		for _, a := range audit {
+			if a.Commit != cut || hash(a.Text) != a.SHA256 {
+				t.Fatal("source identity")
+			}
+			code[a.Source] = a.Text
+		}
+		for path, tokens := range map[string][]string{
+			"node/updater/lock_wait.go": {"updateLockWaitBudget = 10 * time.Second", "lockRetryInterval = 20 * time.Millisecond", "promptLockAttempts = 5", "staleAttempts = 1", "staleAttempts == promptLockAttempts", "if staleAttempts == 0", "update lock wait", "if waited"},
+			"node/updater/engine.go":    {"withLockFor(ctx, \"run\"", "if e.lockHeld", "if command == \"\"", "promptLockAttempts, lockRetryInterval"},
+			"node/updater/seed.go":      {"withLockFor(ctx, \"seed\""}, "node/updater/pending.go": {"withLockFor(ctx, \"apply\""}, "node/updater/result.go": {"withLockFor(ctx, \"flush\""}, "node/updater/retain.go": {"e.withLock(ctx"},
+			"node/agent/recovery_renewal.go": {"r.accepted = true", "accepted.ReportId == rep.ReportId", "r.reportID != uuid.Nil", "earlyRecoveryRenewal"},
+		} {
+			for _, token := range tokens {
+				if !strings.Contains(code[path], token) {
+					t.Fatalf("verified code reading %s missing %q", path, token)
+				}
+			}
+		}
+	})
+	t.Run("37_earlier_claims_unchanged_and_457_counts", func(t *testing.T) {
+		var a struct {
+			Claims   map[string]string
+			Subtests int `json:"followup43_subtests"`
+		}
+		readJSON(frozen+"prior-claims.json", &a)
+		if len(a.Claims) != 37 || a.Subtests != 16 {
+			t.Fatal("prior claims inventory")
+		}
+		checked := 0
+		for _, m := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(readOwnedDoc(t, root, "tests/handover/handover_test.go"), -1) {
+			if want, ok := a.Claims[m[1]]; ok {
+				if hash(restoreFollowup44Assertions(m[0])) != want {
+					t.Fatalf("earlier assertions changed: %s", m[1])
+				}
+				checked++
+			}
+		}
+		if checked != 37 {
+			t.Fatal("missing earlier claims")
+		}
+		var snaps []any
+		readJSON(fixture+"followup43-snapshots.json", &snaps)
+		var e struct{ Proofs, Imports []any }
+		readJSON(fixture+"followup43-evidence.json", &e)
+		var m struct{ Rows, PRs []any }
+		readJSON(fixture+"followup43-main.json", &m)
+		var code []any
+		readJSON(fixture+"history/follow-up-43/product-source-audit.json", &code)
+		var prev struct{ Claims map[string]string }
+		readJSON(fixture+"history/follow-up-43/prior-claims.json", &prev)
+		old := readOwnedDoc(t, root, followup44PriorPath(register))
+		if len(snaps) != 35 || len(e.Proofs) != 60 || len(e.Imports) != 2 || len(m.Rows) != 11 || len(m.PRs) != 11 || len(code) != 16 || len(prev.Claims) != 36 || len(findings(old, "## Findings register at the follow-up 43 cutoff")) != 124 {
+			t.Fatal("#457 actual counts")
+		}
+	})
+	t.Run("64_decisions_all_60_prior_rows_exact", func(t *testing.T) {
+		re := regexp.MustCompile(`(?m)^\| D-\d{3} \|.*$`)
+		old := re.FindAllString(readOwnedDoc(t, root, followup44PriorPath(register)), -1)
+		now := re.FindAllString(readOwnedDoc(t, root, register), -1)
+		var m struct{ Rows []string }
+		readJSON(fixture+"followup44-decisions.json", &m)
+		if len(old) != 60 || len(now) != 64 || len(m.Rows) != 4 || !strings.HasPrefix(old[59], "| D-157 |") || !slices.Equal(old, now[:60]) || !slices.Equal(m.Rows, now[60:]) {
+			t.Fatal("decision drift")
+		}
+		for i, row := range m.Rows {
+			if !strings.HasPrefix(row, fmt.Sprintf("| D-%d |", 158+i)) || !strings.Contains(row, "provisional; the owner may overturn") {
+				t.Fatal("decision authority")
+			}
+		}
+		require(register, "01:4x EST", "revised 02:2x EST", "01:5x EST", "02:2x EST", "03:0x EST", "first stale answer", "timed section", "inside, or on the boundary of, exactly one verified outer guard bracket", "within both 100 ms bounds", "in order on the same connection", "never reset or closed", "≤ 5 losses per 100 reloads", "longest TCP stall and guard-attributed TCP drops", "test-acceptance definition, not a product guarantee", "nothing is merged")
+	})
+	t.Run("126_findings_10_updates_2_additions_114_unchanged", func(t *testing.T) {
+		old := findings(readOwnedDoc(t, root, followup44PriorPath(register)), "## Findings register at the follow-up 43 cutoff")
+		now := findings(readOwnedDoc(t, root, register), "## Findings register at the follow-up 44 cutoff")
+		var m struct{ Updated, Added map[string]string }
+		readJSON(fixture+"followup44-findings.json", &m)
+		if len(old) != 124 || len(now) != 126 || len(m.Updated) != 10 || len(m.Added) != 2 {
+			t.Fatal("finding inventory")
+		}
+		unchanged := 0
+		for id, row := range old {
+			want, ok := m.Updated[id]
+			if !ok {
+				want = row
+				unchanged++
+			}
+			if now[id] != want {
+				t.Fatalf("finding drift: %s", id)
+			}
+		}
+		for id, row := range m.Added {
+			if _, ok := old[id]; ok || now[id] != row {
+				t.Fatalf("new finding: %s", id)
+			}
+		}
+		if unchanged != 114 {
+			t.Fatal("unrelated findings changed")
+		}
+		for _, id := range []string{"Members F21-AT08", "Members F21-D146"} {
+			if now[id] != strings.Replace(old[id], "| OPEN — devstack |", "| OPEN — members |", 1) {
+				t.Fatal("owner-only move")
+			}
+		}
+		for _, id := range []string{"Devstack F30-01", "Members AT02 deny-all after closed recovery", "Isolation F22-01", "SECOPS-F17-01"} {
+			if !strings.Contains(now[id], "| OPEN —") {
+				t.Fatalf("pending finding promoted: %s", id)
+			}
+		}
+		require(register, "Every historical failure stays failed", "AT29 current acceptance | FAILED", "114 byte-identical")
+	})
+	t.Run("run_verdicts_from_frozen_JSON_not_living_roots", func(t *testing.T) {
+		const iso = frozen + "docs_e2e_at_isolation_history_follow-up-22-run_"
+		z, err := gzip.NewReader(strings.NewReader(readOwnedDoc(t, root, iso+"observed-rows.json.gz")))
+		if err != nil {
+			t.Fatal(err)
+		}
+		b, err := io.ReadAll(z)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err = z.Close(); err != nil {
+			t.Fatal(err)
+		}
+		var r struct {
+			Run  string `json:"run_id"`
+			Rows []struct{ Name, Status string }
+		}
+		if err = json.Unmarshal(b, &r); err != nil {
+			t.Fatal(err)
+		}
+		counts := map[string]int{}
+		for _, row := range r.Rows {
+			counts[row.Status]++
+		}
+		if !strings.HasPrefix(r.Run, "7b0db5f2") || counts["pass"] != 27 || counts["blocked"] != 2 || counts["fail"] != 0 || len(r.Rows) != 29 {
+			t.Fatal("isolation verdict")
+		}
+		var writes struct {
+			Commands  int `json:"recorded_logical_commands"`
+			Attempts  int `json:"recorded_attempts"`
+			Conflicts int `json:"conflict_commands"`
+		}
+		readJSON(iso+"node-write-audit.json", &writes)
+		if writes.Commands != 15 || writes.Attempts != 16 || writes.Conflicts != 1 {
+			t.Fatal("writes")
+		}
+		var member struct {
+			Qualified bool
+			Status    string
+			Probes    []any `json:"post_deadline_probes"`
+			Reads     int   `json:"serving_read_count"`
+		}
+		readJSON(iso+"member-expiry-review.json", &member)
+		if !member.Qualified || member.Status != "pass" || len(member.Probes) != 5 || member.Reads != 6 {
+			t.Fatal("member expiry proof")
+		}
+		var boundary struct {
+			Status    string
+			Qualified bool `json:"schedule_qualified"`
+			Passed    bool `json:"unchanged_evaluator_passed"`
+		}
+		readJSON(iso+"boundary-review.json", &boundary)
+		if boundary.Status != "pass" || !boundary.Qualified || !boundary.Passed {
+			t.Fatal("D140/D142")
+		}
+		var at struct {
+			Status     string
+			Run        string `json:"run_id"`
+			Confounded bool
+		}
+		readJSON(frozen+"docs_e2e_at_secops_history_follow-up-17_AT29.json", &at)
+		if at.Status != "failed" || !at.Confounded || !strings.HasPrefix(at.Run, "b2de46c8") {
+			t.Fatal("AT29 failed confounded")
+		}
+		var f struct {
+			ID, Status string
+			Product    bool `json:"product_deadline_violation_proved"`
+		}
+		readJSON(frozen+"docs_e2e_at_secops_history_follow-up-17_followup17-lease-expiry-finding.json", &f)
+		if f.ID != "SECOPS-F17-01" || f.Status != "open" || f.Product {
+			t.Fatal("harness finding")
+		}
+		var runs []struct {
+			Run        string
+			Exit       int
+			Confounded bool
+			Timeouts   []any
+			TCP        struct {
+				P95 float64 `json:"p95"`
+			} `json:"tcp_elapsed_ns"`
+		}
+		readJSON(frozen+"docs_poc_G2-followup35-evidence_commands_live-summary.json", &runs)
+		if len(runs) != 5 {
+			t.Fatal("attempt count")
+		}
+		for i, r := range runs {
+			want := 0
+			if i == 0 {
+				want = 1
+			}
+			if r.Exit != want || r.Confounded != (i >= 2) || len(r.Timeouts) != 0 || r.TCP.P95 < 204.5e6 || r.TCP.P95 >= 209.5e6 {
+				t.Fatalf("attempt %d changed", i+1)
+			}
+		}
+	})
+	var groups []struct {
+		Name    string
+		Records []struct {
+			Path   string
+			Tokens []string
+		}
+	}
+	readJSON(fixture+"followup44-claims.json", &groups)
+	if len(groups) != 7 {
+		t.Fatal("claim group count")
+	}
+	for _, group := range groups {
+		t.Run(group.Name, func(t *testing.T) {
+			for _, record := range group.Records {
+				require(record.Path, record.Tokens...)
+			}
+		})
+	}
+	t.Run("seven_entrypoints_exact_operator_sentences_preserved_guidance", func(t *testing.T) {
+		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
+			lines := strings.Split(readOwnedDoc(t, root, path), "\n")
+			old := strings.Split(readOwnedDoc(t, root, followup44PriorPath(path)), "\n")
+			if len(lines) < 4 || !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-44.md") || !strings.Contains(lines[2], "#457–#463") || !strings.Contains(lines[3], "follow-up-43.md") {
+				t.Fatalf("entrypoint: %s", path)
+			}
+			if path == "docs/ops/README.md" {
+				continue
+			}
+			body, before := strings.Join(lines[4:], "\n"), strings.Join(old[4:], "\n")
+			if path == "docs/handover/operator-guide.md" {
+				strip := func(s string) string {
+					a, b := strings.Index(s, "<a id=\"f30-01\"></a>"), strings.Index(s, "When `fvpn-updater` executes a signed `UpdateIntent`:")
+					if a < 0 || b < a {
+						t.Fatal("operator boundary")
+					}
+					return s[:a] + s[b:]
+				}
+				body, before = strip(body), strip(before)
+			}
+			if body != before {
+				t.Fatalf("unrelated guidance changed: %s", path)
+			}
+		}
+		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		for _, anchor := range []string{"f30-01", "r28-h-1", "d156-release-rule", "at02-closed-recovery", "tcp-reload-guard"} {
+			if strings.Count(op, "<a id=\""+anchor+"\"></a>") != 1 {
+				t.Fatalf("anchor %s", anchor)
+			}
+		}
+		const waitSentence = "Under D-158, `fvpn-updater run`, `seed`, `apply` and standalone `flush` wait for live `update.lock` contention with a 10-second budget and 20 ms polling before exit 3; `recover` and standalone `Retain` keep their prompt five-attempt window, and stale-holder details retain exit 1 after five attempts counted from the first stale answer."
+		const tcpSentence = "A TCP segment crossing one reload's member guard can be dropped and wait for retransmission (about 200 ms in the measured lab); a retry can hit a later reload's guard, so the guard's sub-100 ms duration is not a TCP read-latency bound."
+		old := readOwnedDoc(t, root, followup44PriorPath("docs/handover/operator-guide.md"))
+		start := strings.Index(old, "**Updater exit statuses")
+		exitParagraph := strings.Split(old[start:], "\n\n")[0]
+		if !strings.Contains(op, exitParagraph+"\n\n"+waitSentence) || !strings.Contains(op, tcpSentence) {
+			t.Fatal("exact operator sentences or placement")
+		}
+		require("docs/handover/operator-guide.md", "0.43–0.86 s", "80 ms", "D-158's budget", "F30-01 remains open", "#461 under D-157", "No live run has measured", "no date")
+		require("docs/reviews/README.md", "follow-up-44-dispositions", "r29 L-2 | ANSWERED", "r28 M-1 / Isolation F21-01 | ANSWERED")
+		require("docs/ops/README.md", "Follow-up 44 acceptance snapshot", "10 updated / 2 added / 114 unchanged", "AT29 failed")
+	})
+	t.Run("running_status_only_and_dated_requests", func(t *testing.T) {
+		require(doc, "Running at briefing, status only", "secops **18**", "members **22**", "netlab **36**", "devstack **35**", "5715939e", "No delivered or merged PR", "after the cutoff", "### Requests to orchestrator", "2026-11-04 EST", "No new outside-owned pin needs changing", "no item is\nstopped", "No date is promised")
 	})
 }

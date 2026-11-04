@@ -48,46 +48,57 @@ func TestE2E_Acceptance(t *testing.T) {
 	}
 	run.sourceCommit = strings.TrimSpace(string(commit))
 	defer run.finish()
+	logPath := os.Getenv("FVPN_E2E_ADMISSION_LOG")
+	if logPath == "" {
+		logPath = filepath.Join(dir, "admission-timing.jsonl")
+	}
+	run.timing = &TimedSections{Root: lab.root, Log: logPath}
+	if err := run.timing.Admit(ctx, "acceptance-before-first-scenario"); err != nil {
+		t.Fatal(err)
+	}
 
-	run.health(ctx)
-	run.metrics(ctx)
-	run.gatewayPrincipals(ctx)
-	admin := run.login(ctx, "e2e-admin", "admin")
+	run.measured(ctx, "stack-health", func() { run.health(ctx) })
+	run.measured(ctx, "control-metrics", func() { run.metrics(ctx) })
+	run.measured(ctx, "gateway-principals", func() { run.gatewayPrincipals(ctx) })
+	var admin *session
+	run.measured(ctx, "admin-login", func() { admin = run.login(ctx, "e2e-admin", "admin") })
 	if admin == nil {
 		return
 	}
-	run.backup(ctx, admin)
-	run.threatFeed(ctx, admin)
-	run.catalogue(ctx, admin)
-	run.billing(ctx, admin)
-	good, bad := run.releases(ctx, admin)
-	nodeID := run.enroll(ctx, admin)
+	run.measured(ctx, "backup", func() { run.backup(ctx, admin) })
+	run.measured(ctx, "threat-feed-central", func() { run.threatFeed(ctx, admin) })
+	run.measured(ctx, "serving-catalogue", func() { run.catalogue(ctx, admin) })
+	run.measured(ctx, "billing-and-portal-return", func() { run.billing(ctx, admin) })
+	var good, bad uuid.UUID
+	run.measured(ctx, "release-register", func() { good, bad = run.releases(ctx, admin) })
+	var nodeID uuid.UUID
+	run.measured(ctx, "enroll-bootstrap", func() { nodeID = run.enroll(ctx, admin) })
 	if nodeID != uuid.Nil {
-		run.agentSupervisor(ctx)
+		run.measured(ctx, "agent-supervisor", func() { run.agentSupervisor(ctx) })
 	}
-	run.desired(ctx)
+	run.measured(ctx, "desired-state", func() { run.desired(ctx) })
 	if nodeID != uuid.Nil {
-		run.threatFeedNode(ctx, admin)
-		run.restartNode(ctx)
+		run.measured(ctx, "threat-feed-node", func() { run.threatFeedNode(ctx, admin) })
+		run.measured(ctx, "node-restart", func() { run.restartNode(ctx) })
 	}
-	run.publish(ctx, admin, nodeID)
+	run.measured(ctx, "publish", func() { run.publish(ctx, admin, nodeID) })
 	if nodeID != uuid.Nil {
-		run.member(ctx, admin)
-		run.establishedTransports(ctx)
-		run.forcedRelay(ctx)
-		run.exitDNS(ctx)
-		run.memberIPv6(ctx)
-		run.workerRestart(ctx)
-		run.deviceRevoke(ctx)
-		run.scaleHook(ctx, admin)
-		run.gatewayPrivacy(ctx)
-		run.threatFeedTamper(ctx, admin)
+		run.measured(ctx, "member-traffic-forwarding-usage", func() { run.member(ctx, admin) })
+		run.measured(ctx, "established-transports", func() { run.establishedTransports(ctx) })
+		run.measured(ctx, "forced-relay", func() { run.forcedRelay(ctx) })
+		run.measured(ctx, "exit-dns", func() { run.exitDNS(ctx) })
+		run.measured(ctx, "member-ipv6", func() { run.memberIPv6(ctx) })
+		run.measured(ctx, "worker-restart", func() { run.workerRestart(ctx) })
+		run.measured(ctx, "device-revoke", func() { run.deviceRevoke(ctx) })
+		run.measured(ctx, "scale-hook", func() { run.scaleHook(ctx, admin) })
+		run.measured(ctx, "gateway-privacy", func() { run.gatewayPrivacy(ctx) })
+		run.measured(ctx, "threat-feed-tamper", func() { run.threatFeedTamper(ctx, admin) })
 		finishRecoveryObservation := run.observeUpdateRecovery(ctx)
 		run.updater(ctx, good, bad)
-		run.controlStop(ctx)
+		run.measured(ctx, "lease-expiry", func() { run.controlStop(ctx) })
 		finishRecoveryObservation()
-		run.revoke(ctx, nodeID)
-		run.secondExit(ctx)
+		run.measured(ctx, "revoke", func() { run.revoke(ctx, nodeID) })
+		run.measured(ctx, "second-exit", func() { run.secondExit(ctx) })
 	} else {
 		run.forwarding(run.lab.forwardChain())
 	}
@@ -121,9 +132,16 @@ type runner struct {
 	// SummaryFile in r.dir when the runner finishes.
 	rows    []SummaryRow
 	summary bool
+	timing  *TimedSections
 }
 
 func (r *runner) record(rec Record) {
+	if rec.ID == "update-good" || rec.ID == "update-bad" {
+		r.retainUpdaterInvocations(&rec)
+	}
+	if r.timing != nil && r.timing.active != "" {
+		rec.Observations = append(rec.Observations, Observation{Name: "timed_section", Detail: r.timing.active})
+	}
 	rec.RunID, rec.SourceCommit = r.runID, r.sourceCommit
 	if r.counts == nil {
 		r.counts = map[Status]int{}
@@ -535,6 +553,7 @@ func (r *runner) updater(ctx context.Context, good, bad uuid.UUID) {
 }
 
 func (r *runner) oneUpdate(ctx context.Context, id, title string, spec []string, releaseID uuid.UUID, wantHash bool) {
+	defer r.timedSection(ctx, id)()
 	rec := Record{ID: id, Title: title, Spec: spec, Status: StatusBlocked}
 	admin := r.mustAdmin(ctx)
 	if admin == nil {
