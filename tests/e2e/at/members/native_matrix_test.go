@@ -22,6 +22,7 @@ func (l *live) fixture(service string, args ...string) (out labstack.FixtureProb
 	return out, err
 }
 func (l *live) nativeMatrix(r *record) {
+	defer l.timedSection("native-MTU-matrix")()
 	id := l.awaitDevice(l.nativePeer)
 	if id == uuid.Nil {
 		r.block("AT09 native matrix requires an admitted device")
@@ -65,14 +66,16 @@ func (l *live) nativeMatrix(r *record) {
 		}
 		capture.sample("before-bulk")
 		bulkStartedAt := time.Now().UTC()
+		peerBefore := l.transferPeerViews("member")
 		got, ge := l.fixture("member", "-mode", "bulk", "-addr", l.originIP()+":9446", "-device", id.String())
+		peerAfter := l.transferPeerViews("member")
 		bulkEndedAt := time.Now().UTC()
 		capture.sample("after-bulk")
 		capEvidence := capture.stop()
 		after, ae := l.hook.DeviceByteCounters(l.ctx, id)
 		afterPath, ape := l.hook.ObserveNativeUnderlay(l.ctx)
 		chosenAfter, caErr := l.selectedNativePath()
-		r.jsonCheck(label+" transfer", "IPv4 overlay: 64064 TCP bytes and upload/download counters increase; selected underlay family recorded; D-123 IPv6Block, no IPv6 end-to-end MTU/PMTU claim", map[string]any{"decision": "under provisional D-137", "native_capture": capEvidence, "scope": map[bool]string{true: "receive-only 1280 without PTB; D-146 TCP qualification requires the separate clamp evidence", false: "1500 baseline"}[row.mtu == 1280], "overlay_family": "ipv4", "ipv6_mode": "block", "ipv6_no_leak_evidence": "docs/poc/G2-f802-mtu1280-2026-10-31.md (independent netlab measurement; ctv6 drops in both directions, no member class dequeue)", "selection": selection, "before_path": beforePath, "after_path": afterPath, "selected_exit_before": chosenBefore, "selected_exit_after": chosenAfter, "before_counters": before, "after_counters": after, "transfer": got}, "native down/up; ObserveNativeUnderlay; fixture bulk; DeviceByteCounters", familyOK(chosenBefore) && familyOK(chosenAfter) && cbErr == nil && caErr == nil && chosenBefore.Connected && chosenAfter.Connected && down == nil && up == nil && ready && pe == nil && be == nil && ge == nil && ae == nil && ape == nil && got.Available && got.Bytes == 64064 && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download)
+		r.jsonCheck(label+" transfer", "IPv4 overlay: 64064 TCP bytes and upload/download counters increase; selected underlay family recorded; D-123 IPv6Block, no IPv6 end-to-end MTU/PMTU claim", map[string]any{"decision": "under provisional D-137", "native_capture": capEvidence, "scope": map[bool]string{true: "receive-only 1280 without PTB; D-146 TCP qualification requires the separate clamp evidence", false: "1500 baseline"}[row.mtu == 1280], "overlay_family": "ipv4", "ipv6_mode": "block", "ipv6_no_leak_evidence": "docs/poc/G2-f802-mtu1280-2026-10-31.md (independent netlab measurement; ctv6 drops in both directions, no member class dequeue)", "selection": selection, "before_path": beforePath, "after_path": afterPath, "selected_exit_before": chosenBefore, "selected_exit_after": chosenAfter, "before_counters": before, "after_counters": after, "transfer": got, "peer_status": peerBefore, "peer_status_after": peerAfter}, "native down/up; ObserveNativeUnderlay; fixture bulk; DeviceByteCounters", familyOK(chosenBefore) && familyOK(chosenAfter) && cbErr == nil && caErr == nil && chosenBefore.Connected && chosenAfter.Connected && down == nil && up == nil && ready && pe == nil && be == nil && ge == nil && ae == nil && ape == nil && got.Available && got.Bytes == 64064 && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download)
 		if row.mtu == 1280 {
 			// The original byte/counter/family predicate above is unchanged.
 			// Only its former unconditional D-137 downgrade is conditional now.
@@ -180,7 +183,9 @@ func (l *live) knownPMTU1280(r *record, id uuid.UUID) {
 	}()
 	capture.sample("before-bulk")
 	before, be := l.hook.DeviceByteCounters(l.ctx, id)
+	peerBefore := l.transferPeerViews("member")
 	got, ge := l.fixture("member", "-mode", "bulk", "-addr", l.originIP()+":9446", "-device", id.String())
+	peerAfter := l.transferPeerViews("member")
 	after, ae := l.hook.DeviceByteCounters(l.ctx, id)
 	capture.sample("after-bulk")
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
@@ -189,5 +194,5 @@ func (l *live) knownPMTU1280(r *record, id uuid.UUID) {
 	cleaned = err == nil
 	capture.sample("after-route-removal")
 	evidence := capture.stop()
-	r.jsonCheck("D-137 supported known-PMTU 1280 transfer", "64064 TCP bytes with both counters increasing; selected route metric 1280 and exact removal; no reactive PTB claim", map[string]any{"decision": "under provisional D-137", "scope": "sender-learnable path, known PMTU", "transfer": got, "before_counters": before, "after_counters": after, "native_capture": evidence, "route_removed": err == nil, "route_metric_readbacks_match": knownPMTURouteReadback(evidence)}, "ConstrainSelectedNativePeer1280; original bounded bulk; route and endpoint readbacks; exact cleanup", knownPMTURouteReadback(evidence) && be == nil && ge == nil && ae == nil && err == nil && got.Available && got.Bytes == 64064 && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download)
+	r.jsonCheck("D-137 supported known-PMTU 1280 transfer", "64064 TCP bytes with both counters increasing; selected route metric 1280 and exact removal; no reactive PTB claim", map[string]any{"decision": "under provisional D-137", "scope": "sender-learnable path, known PMTU", "transfer": got, "peer_status": peerBefore, "peer_status_after": peerAfter, "before_counters": before, "after_counters": after, "native_capture": evidence, "route_removed": err == nil, "route_metric_readbacks_match": knownPMTURouteReadback(evidence)}, "ConstrainSelectedNativePeer1280; original bounded bulk; route and endpoint readbacks; exact cleanup", knownPMTURouteReadback(evidence) && be == nil && ge == nil && ae == nil && err == nil && got.Available && got.Bytes == 64064 && before.Present && after.Present && after.Upload > before.Upload && after.Download > before.Download)
 }

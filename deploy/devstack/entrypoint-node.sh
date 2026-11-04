@@ -167,11 +167,8 @@ fvpn-watchdog run -config /etc/vpn-node/agent-run.json >/var/lib/vpn-node/e2e/wa
 (
     while true; do
         if [ -f /var/lib/vpn-node/e2e/updater.json ]; then
-            set +e
-            fvpn-updater run -config /var/lib/vpn-node/e2e/updater.json >/var/lib/vpn-node/e2e/updater.out 2>&1
-            code=$?
-            set -e
-            printf '{"exit_code":%s}\n' "$code" > /var/lib/vpn-node/e2e/updater-result.json
+            updater-invocation.sh /var/lib/vpn-node/e2e \
+                fvpn-updater run -config /var/lib/vpn-node/e2e/updater.json
             mv /var/lib/vpn-node/e2e/updater.json /var/lib/vpn-node/e2e/updater.json.done
         fi
         sleep 2

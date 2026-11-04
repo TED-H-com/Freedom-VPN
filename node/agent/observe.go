@@ -35,7 +35,8 @@ func (e *Engine) observe(ctx context.Context) error {
 	}
 	// Retain the first deciding body through backoff. Repeated copies of the
 	// same pending state add no evidence; transitions always get their own ID.
-	if state == e.lastObservationState {
+	// A closed recovery must bind its own report even at an unchanged state.
+	if state == e.lastObservationState && !(e.closedRecoveryRenewal.armed && e.closedRecoveryRenewal.reportID == uuid.Nil) {
 		items, err := e.store.Pending(ctx)
 		if err != nil {
 			return err

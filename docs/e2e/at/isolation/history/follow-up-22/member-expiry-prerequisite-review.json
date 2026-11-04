@@ -1,0 +1,48 @@
+{
+  "run_id": "7599576e-339c-49c9-8bf5-0f710818cbda",
+  "status": "blocked",
+  "scope": "Derived prerequisite diagnosis only; original blocked verdict unchanged.",
+  "source": "finite-member-renewal-wait.json",
+  "check_source": "AT13.json",
+  "member_deadline": "2026-11-04T03:10:15Z",
+  "required_node_expiry_strictly_after": "2026-11-04T03:10:40Z",
+  "wait_cutoff": "2026-11-04T03:10:10Z",
+  "sample_count": 152,
+  "qualified": false,
+  "samples_meeting_node_bound": 0,
+  "maximum_node_extension_seconds": 23.057987,
+  "last_sample": {
+    "at": "2026-11-04T03:10:09.168046367Z",
+    "lease": {
+      "members": [
+        {
+          "lease_end": "2026-11-04T03:10:38.057987503Z",
+          "member_id": "01a1a479-8012-70d9-86c1-d63a85c56549",
+          "entitlement_revision": "2",
+          "effective_service_end": "2026-11-04T03:53:26.285403Z"
+        },
+        {
+          "lease_end": "2026-11-04T03:10:38.057987503Z",
+          "member_id": "01a1a479-fed8-7720-97cf-b1b503825e19",
+          "entitlement_revision": "1",
+          "effective_service_end": "2026-11-04T03:53:40.833249Z"
+        },
+        {
+          "lease_end": "2026-11-04T03:10:15Z",
+          "member_id": "01a1a486-6d1d-71de-9d25-419f471b0f1a",
+          "entitlement_revision": "1",
+          "effective_service_end": "2026-11-04T03:10:15Z"
+        }
+      ],
+      "lease_id": "234d26dc-c581-4de4-99da-3779df7ac236",
+      "issued_at": "2026-11-04T03:09:38.057987+00:00",
+      "expires_at": "2026-11-04T03:10:38.057987+00:00",
+      "generation": "31",
+      "accepted_serving": true
+    }
+  },
+  "positive_control_counted": true,
+  "post_deadline_probes": 0,
+  "serving_reads_present": false,
+  "control_stop_present": false
+}

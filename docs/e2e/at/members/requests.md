@@ -1,9 +1,23 @@
+# Follow-up 22 — 2026-11-04
+
+### Requests to orchestrator
+
+- **2026-11-04 — baseline drift disposition:** the single permitted retry used assigned baseline `55f2765d` with agent-core 49/50; preflight `main` was already `0d944880` (netlab follow-up 35 #462). [Exact commits and affected code paths](F22-baseline-drift.json). This does not meet the literal latest-main requirement. No further live retry is authorized; retain this run and decide whether a separately assigned later-main measurement is needed.
+- **2026-11-04 — F22-D146 freshness disposition, original predicates retained:** IPv6 receive-only 1280 indexes 49/51 remain blocked. The new later read identifies only observation age **22.393183 s ≥ 15 s**, with generation/incarnation matching and forwarding true/no reasons. [Original row and later-read classification](F22-native-MTU.json). The instrumentation is complete in this lane's own code. Any change to freshness policy, producer reporting or sampling procedure needs an explicit owner assignment; none is made here. F21's failed conjunct remains unknowable from its retained records.
+
+**Completed assignments:** F21-AT08 now has sanitized selected-peer views before/after every bounded transfer, both node/member sides through existing hooks, and a native first-transfer capture. The new AT08 transfer passes without changing its origin/counter predicate; its old failure's cause remains unproven. F21-D146 now records the later-read failed condition without changing qualification. The G2 alias is supplied, resolving the three frozen run-2 links. These are not outstanding shared-hook requests.
+
+**Carried, not re-asked:** F4-03, F4-04, F4-05/F4-07, F4-06 and F4-10 remain owner-resource groups. F11-01 remains **OPEN/upstream-dependent (D-148)**: this run's AT01 first transfer is uncounted; no cause or merged-change attribution is established. No F48-01 signature appears in retained logs, and no independent closure is claimed. The historical groups below retain their wording and outcomes; earlier requests describe their historical status.
+
+
+---
+
 # Follow-up 21 — 2026-11-03
 
 ### Requests to orchestrator
 
-- **F21-AT08 — devstack/native investigation:** retain the blocked initial publication transfer at 03:54:29Z: route selected, five member-interface packets, no node/origin packet, zero origin requests and unchanged device upload/download counters. [Original forwarding](F21-AT08-forwarding.json). Later success does not repair it. Cause and merged-change attribution remain unproven; no common cause with F11-01/F14-01 is assigned. Shared native fixtures and product paths are read-only here.
-- **F21-D146 — review the missing serving-read qualification:** IPv6 receive-only 1280 indexes 49/51 remain blocked. All bytes, MSS rewrites, reverse datagrams and no-PTB checks pass, but the original rule read records `serving_read_ok=false`. Preserve this result; any follow-up diagnostics or predicate decision require an orchestrator assignment. [Original qualification](F21-native-MTU.json). No predicate or product change is made.
+- **F21-AT08 — devstack/native investigation:** retain the blocked initial publication transfer at 03:54:29Z: route selected, five member-interface packets, no node/origin packet, zero origin requests and unchanged device upload/download counters. [Original forwarding](history/follow-up-21/F21-AT08-forwarding.json). Later success does not repair it. Cause and merged-change attribution remain unproven; no common cause with F11-01/F14-01 is assigned. Shared native fixtures and product paths are read-only here.
+- **F21-D146 — review the missing serving-read qualification:** IPv6 receive-only 1280 indexes 49/51 remain blocked. All bytes, MSS rewrites, reverse datagrams and no-PTB checks pass, but the original rule read records `serving_read_ok=false`. Preserve this result; any follow-up diagnostics or predicate decision require an orchestrator assignment. [Original qualification](history/follow-up-21/F21-native-MTU.json). No predicate or product change is made.
 - **Archive navigation outside ownership:** add `docs/e2e/at/poc/G2-followup34-2026-11-03.md` as an alias/reference to `docs/poc/G2-followup34-2026-11-03.md`. Three byte-pinned archived documents use `../../../poc/G2-followup34-2026-11-03.md`, which resolves there after relocation. [Working direct link and scope](history/follow-up-18-run2/INDEX.md). This outside-owned item is left to the orchestrator; no pinned byte is changed.
 
 F4-03, F4-04, F4-05/F4-07, F4-06 and F4-10 stay owner-resource rows, not new requests. **F11-01 remains OPEN and upstream-dependent (D-148), with no product change.** The carried groups below keep their wording and historical outcomes. F48-01 remains assigned to agent-core 49; no matching `baseline_unverified`/`GENERATION_MISMATCH` signature is demonstrated by this run's retained restart logs, and no closure is claimed.

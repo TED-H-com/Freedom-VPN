@@ -1,0 +1,25 @@
+{
+  "run_id": "328ab9e0-7ff4-495a-81c1-410ae8a7d876",
+  "sections": [
+    {
+      "name": "D-120 retained Apply/capture campaign",
+      "start": "2026-11-04T10:29:27.533542268Z",
+      "end": "2026-11-04T10:29:42.192758590Z",
+      "admission_calls_overlapping": [],
+      "suite_answers_inside": [],
+      "clear": true
+    },
+    {
+      "name": "Assembled driver, enclosing both AT13 expiry sections",
+      "start": "2026-11-04T10:31:11Z",
+      "end": "2026-11-04T10:52:26Z",
+      "admission_calls_overlapping": [],
+      "suite_answers_inside": [],
+      "clear": true
+    }
+  ],
+  "all_clear": true,
+  "scope": "Runtime cross-check of the static D-160 audit. The campaign interval starts at the retained initial Apply clock and ends at trace_end; source audit also covers the initial time read immediately before Apply. The entire assembled driver interval encloses anchor/deadline acquisition through both final AT13 samples. Suite timestamps are receipt times of flushed output. Original admission outputs are captured separately from command streams; the supplied Go shim is unchanged.",
+  "admission_check_count": 41,
+  "suite_answer_count": 4
+}

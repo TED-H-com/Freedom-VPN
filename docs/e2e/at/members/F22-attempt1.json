@@ -1,0 +1,2192 @@
+{
+  "attempt": 1,
+  "run_id": null,
+  "acceptance_checks_started": false,
+  "source_commit": "a52bad1d5f303de3fab98d81e8ab37e1127e027a",
+  "failure": "Owned admission.py parsed pgrep argv as shell syntax and raised ValueError: No closing quotation before the go test command.",
+  "disposition": "One rerun permitted only for this own-harness pre-check failure; no case result was retried.",
+  "gate": {
+    "name": "04-assembled",
+    "command": [
+      "python3",
+      "-B",
+      ".agent/tmp/f22/live.py"
+    ],
+    "started_at": "2026-11-04T07:52:29.002138+00:00",
+    "ended_at": "2026-11-04T08:14:57.830369+00:00",
+    "elapsed_seconds": 1348.828,
+    "exit": 2
+  },
+  "host_preflight": {
+    "at": "2026-11-04T08:02:29.744250+00:00",
+    "baseline_commit": "55f2765dac6e1c6871045ee6182d6cc23ccf8a33",
+    "harness_commit": "a52bad1d5f303de3fab98d81e8ab37e1127e027a",
+    "main_ref_at_preflight": "55f2765dac6e1c6871045ee6182d6cc23ccf8a33",
+    "gocache": "<home>/.cache/go-build",
+    "vmstat": "procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------\n r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu\n 0  0 3080120 40955588 2536960 133107508   11   40 19222 32638 25494   22  4  2 93  1  0  0\n 0  0 3080120 40636564 2536968 133107512    0    0     0   132 2616 3637  0  0 99  0  0  0\n 0  0 3080120 40662032 2536976 133107880    0    0     2    76 2747 4203  0  0 99  0  0  0\n 0  0 3080120 40704160 2536984 133107928    0    0     0  1536 2404 3671  0  0 100  0  0  0\n 0  0 3080120 40722808 2536996 133107964    0    0     1    48 3218 4599  0  1 99  0  0  0\n 1  0 3080120 40260016 2537004 133107996    0    0     0    71 17977 92763  4  1 95  0  0  0\n 1  0 3080120 40271252 2537012 133108244    0    0    18    99 72674 454133  4  2 94  0  0  0\n",
+    "process_command": "ps -eo pid,etimes,args | grep -E '[g]ates\\.sh|[m]k/at-|[n]ode-test-netlab|[n]etlab-test|[e]2e-test'",
+    "foreign_processes": [],
+    "raw_process_output": "Private; public foreign inventory contains pid, comm and ticks only"
+  },
+  "suite_wait": {
+    "polls": [
+      {
+        "at": "2026-11-04T07:52:29.083377+00:00",
+        "stage": "preflight",
+        "elapsed_seconds": 0.065,
+        "hold_free": true,
+        "foreign_processes": [
+          {
+            "pid": 2683218,
+            "comm": "python3",
+            "ticks": 1
+          },
+          {
+            "pid": 2683222,
+            "comm": "make",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T07:53:29.150748+00:00",
+        "stage": "preflight",
+        "elapsed_seconds": 60.132,
+        "hold_free": false,
+        "foreign_processes": [
+          {
+            "pid": 2683218,
+            "comm": "python3",
+            "ticks": 1
+          },
+          {
+            "pid": 2683222,
+            "comm": "make",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T07:54:29.217295+00:00",
+        "stage": "preflight",
+        "elapsed_seconds": 120.199,
+        "hold_free": false,
+        "foreign_processes": [
+          {
+            "pid": 2683218,
+            "comm": "python3",
+            "ticks": 1
+          },
+          {
+            "pid": 2683222,
+            "comm": "make",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T07:55:29.284894+00:00",
+        "stage": "preflight",
+        "elapsed_seconds": 180.267,
+        "hold_free": false,
+        "foreign_processes": [
+          {
+            "pid": 2683218,
+            "comm": "python3",
+            "ticks": 1
+          },
+          {
+            "pid": 2683222,
+            "comm": "make",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T07:56:29.351012+00:00",
+        "stage": "preflight",
+        "elapsed_seconds": 240.333,
+        "hold_free": false,
+        "foreign_processes": [
+          {
+            "pid": 2683218,
+            "comm": "python3",
+            "ticks": 1
+          },
+          {
+            "pid": 2683222,
+            "comm": "make",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T07:57:29.418630+00:00",
+        "stage": "preflight",
+        "elapsed_seconds": 300.4,
+        "hold_free": false,
+        "foreign_processes": [
+          {
+            "pid": 2683218,
+            "comm": "python3",
+            "ticks": 1
+          },
+          {
+            "pid": 2683222,
+            "comm": "make",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T07:58:29.482813+00:00",
+        "stage": "preflight",
+        "elapsed_seconds": 360.465,
+        "hold_free": false,
+        "foreign_processes": [
+          {
+            "pid": 2683218,
+            "comm": "python3",
+            "ticks": 1
+          },
+          {
+            "pid": 2683222,
+            "comm": "make",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T07:59:29.549156+00:00",
+        "stage": "preflight",
+        "elapsed_seconds": 420.531,
+        "hold_free": false,
+        "foreign_processes": [
+          {
+            "pid": 2683218,
+            "comm": "python3",
+            "ticks": 1
+          },
+          {
+            "pid": 2683222,
+            "comm": "make",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T08:00:29.615013+00:00",
+        "stage": "preflight",
+        "elapsed_seconds": 480.597,
+        "hold_free": false,
+        "foreign_processes": [
+          {
+            "pid": 2683218,
+            "comm": "python3",
+            "ticks": 1
+          },
+          {
+            "pid": 2683222,
+            "comm": "make",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T08:01:29.683928+00:00",
+        "stage": "preflight",
+        "elapsed_seconds": 540.666,
+        "hold_free": false,
+        "foreign_processes": [
+          {
+            "pid": 2683218,
+            "comm": "python3",
+            "ticks": 1
+          },
+          {
+            "pid": 2683222,
+            "comm": "make",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T08:02:29.744125+00:00",
+        "stage": "preflight",
+        "elapsed_seconds": 600.726,
+        "hold_free": true,
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:02:59.897749+00:00",
+        "stage": "after-vmstat",
+        "elapsed_seconds": 0.054,
+        "hold_free": true,
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:10:34.208913+00:00",
+        "stage": "after-startup",
+        "elapsed_seconds": 0.066,
+        "hold_free": true,
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T08:11:34.278139+00:00",
+        "stage": "after-startup",
+        "elapsed_seconds": 60.136,
+        "hold_free": true,
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 103
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T08:12:34.347861+00:00",
+        "stage": "after-startup",
+        "elapsed_seconds": 120.205,
+        "hold_free": true,
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 132
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T08:13:34.413184+00:00",
+        "stage": "after-startup",
+        "elapsed_seconds": 180.271,
+        "hold_free": true,
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 1
+          },
+          {
+            "pid": 3053892,
+            "comm": "make",
+            "ticks": 0
+          }
+        ],
+        "slept_seconds": 60
+      },
+      {
+        "at": "2026-11-04T08:14:34.484549+00:00",
+        "stage": "after-startup",
+        "elapsed_seconds": 240.342,
+        "hold_free": true,
+        "foreign_processes": []
+      }
+    ],
+    "wait_seconds": 840
+  },
+  "admission": [
+    {
+      "at": "2026-11-04T07:47:44.426269+00:00",
+      "command": "make",
+      "pid": 2689422,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T07:47:44.514572+00:00",
+      "command": "go",
+      "pid": 2689479,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T07:47:45.091081+00:00",
+      "command": "go",
+      "pid": 2689604,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T07:47:56.473479+00:00",
+      "command": "make",
+      "pid": 2693406,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T07:47:56.568479+00:00",
+      "command": "go",
+      "pid": 2693576,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T07:47:56.880076+00:00",
+      "command": "go",
+      "pid": 2693812,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T07:47:57.215922+00:00",
+      "command": "go",
+      "pid": 2694087,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T07:49:42.366580+00:00",
+      "command": "make",
+      "pid": 2724616,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T07:49:42.457635+00:00",
+      "command": "go",
+      "pid": 2724690,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.039
+    },
+    {
+      "at": "2026-11-04T07:49:42.737038+00:00",
+      "command": "go",
+      "pid": 2724855,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T07:50:12.205277+00:00",
+      "command": "make",
+      "pid": 2733346,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T07:50:12.288833+00:00",
+      "command": "go",
+      "pid": 2733462,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T07:50:12.520313+00:00",
+      "command": "go",
+      "pid": 2733586,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T07:50:12.738756+00:00",
+      "command": "go",
+      "pid": 2733689,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T07:50:13.489222+00:00",
+      "command": "go",
+      "pid": 2734086,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T07:50:31.752203+00:00",
+      "command": "go",
+      "pid": 2739242,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.039
+    },
+    {
+      "at": "2026-11-04T07:51:02.836890+00:00",
+      "command": "go",
+      "pid": 2752128,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.039
+    },
+    {
+      "at": "2026-11-04T08:02:59.816243+00:00",
+      "command": "go",
+      "pid": 3009357,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:02:59.948155+00:00",
+      "command": "make",
+      "pid": 3009374,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.033
+    },
+    {
+      "at": "2026-11-04T08:03:00.021511+00:00",
+      "command": "docker",
+      "pid": 3009384,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.035
+    },
+    {
+      "at": "2026-11-04T08:03:00.086730+00:00",
+      "command": "docker",
+      "pid": 3009400,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.035
+    },
+    {
+      "at": "2026-11-04T08:03:00.741728+00:00",
+      "command": "go",
+      "pid": 3009547,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T08:03:01.301282+00:00",
+      "command": "docker",
+      "pid": 3009679,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T08:03:02.001359+00:00",
+      "command": "docker",
+      "pid": 3009758,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:03:02.076833+00:00",
+      "command": "docker",
+      "pid": 3009775,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T08:03:02.168514+00:00",
+      "command": "docker",
+      "pid": 3009792,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T08:03:02.245945+00:00",
+      "command": "docker",
+      "pid": 3009808,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T08:03:02.334548+00:00",
+      "command": "docker",
+      "pid": 3009824,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T08:03:02.421413+00:00",
+      "command": "docker",
+      "pid": 3009841,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.04
+    },
+    {
+      "at": "2026-11-04T08:03:02.499938+00:00",
+      "command": "docker",
+      "pid": 3009859,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T08:03:02.576864+00:00",
+      "command": "docker",
+      "pid": 3009877,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T08:03:02.652599+00:00",
+      "command": "go",
+      "pid": 3009892,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T08:03:03.354743+00:00",
+      "command": "go",
+      "pid": 3010022,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T08:03:03.997629+00:00",
+      "command": "go",
+      "pid": 3010144,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T08:03:04.539259+00:00",
+      "command": "go",
+      "pid": 3010270,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:03:04.859400+00:00",
+      "command": "go",
+      "pid": 3010372,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:03:05.346639+00:00",
+      "command": "go",
+      "pid": 3010499,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:03:05.719141+00:00",
+      "command": "go",
+      "pid": 3010615,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:03:06.232406+00:00",
+      "command": "go",
+      "pid": 3010732,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:03:06.793640+00:00",
+      "command": "go",
+      "pid": 3010860,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:03:07.155595+00:00",
+      "command": "go",
+      "pid": 3010974,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:03:07.514633+00:00",
+      "command": "docker",
+      "pid": 3011090,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:03:08.263145+00:00",
+      "command": "docker",
+      "pid": 3011179,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:03:09.080386+00:00",
+      "command": "docker",
+      "pid": 3011267,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.035
+    },
+    {
+      "at": "2026-11-04T08:03:09.798115+00:00",
+      "command": "docker",
+      "pid": 3011365,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:03:10.988975+00:00",
+      "command": "docker",
+      "pid": 3011455,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.035
+    },
+    {
+      "at": "2026-11-04T08:03:12.020088+00:00",
+      "command": "docker",
+      "pid": 3011554,
+      "exit": 1,
+      "answer": "held",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:04:12.058570+00:00",
+      "command": "docker",
+      "pid": 3011554,
+      "exit": 1,
+      "answer": "held",
+      "wait_seconds": 60.075
+    },
+    {
+      "at": "2026-11-04T08:05:12.097443+00:00",
+      "command": "docker",
+      "pid": 3011554,
+      "exit": 1,
+      "answer": "held",
+      "wait_seconds": 120.113
+    },
+    {
+      "at": "2026-11-04T08:06:12.135745+00:00",
+      "command": "docker",
+      "pid": 3011554,
+      "exit": 1,
+      "answer": "held",
+      "wait_seconds": 180.152
+    },
+    {
+      "at": "2026-11-04T08:07:12.173258+00:00",
+      "command": "docker",
+      "pid": 3011554,
+      "exit": 1,
+      "answer": "held",
+      "wait_seconds": 240.189
+    },
+    {
+      "at": "2026-11-04T08:08:12.210499+00:00",
+      "command": "docker",
+      "pid": 3011554,
+      "exit": 1,
+      "answer": "held",
+      "wait_seconds": 300.226
+    },
+    {
+      "at": "2026-11-04T08:09:12.248946+00:00",
+      "command": "docker",
+      "pid": 3011554,
+      "exit": 1,
+      "answer": "held",
+      "wait_seconds": 360.265
+    },
+    {
+      "at": "2026-11-04T08:10:12.288046+00:00",
+      "command": "docker",
+      "pid": 3011554,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 420.304
+    },
+    {
+      "at": "2026-11-04T08:10:19.790190+00:00",
+      "command": "docker",
+      "pid": 3033466,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T08:10:25.972474+00:00",
+      "command": "docker",
+      "pid": 3034679,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.039
+    },
+    {
+      "at": "2026-11-04T08:10:26.096147+00:00",
+      "command": "docker",
+      "pid": 3034742,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.039
+    },
+    {
+      "at": "2026-11-04T08:10:26.429199+00:00",
+      "command": "docker",
+      "pid": 3034802,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.039
+    },
+    {
+      "at": "2026-11-04T08:10:32.876807+00:00",
+      "command": "docker",
+      "pid": 3035205,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.041
+    },
+    {
+      "at": "2026-11-04T08:14:34.539718+00:00",
+      "command": "make",
+      "pid": 3066352,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T08:14:34.688933+00:00",
+      "command": "docker",
+      "pid": 3066360,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.039
+    },
+    {
+      "at": "2026-11-04T08:14:34.759701+00:00",
+      "command": "docker",
+      "pid": 3066394,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.039
+    },
+    {
+      "at": "2026-11-04T08:14:34.830101+00:00",
+      "command": "docker",
+      "pid": 3066412,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.039
+    },
+    {
+      "at": "2026-11-04T08:14:34.898357+00:00",
+      "command": "docker",
+      "pid": 3066428,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.039
+    },
+    {
+      "at": "2026-11-04T08:14:34.967741+00:00",
+      "command": "docker",
+      "pid": 3066445,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.039
+    },
+    {
+      "at": "2026-11-04T08:14:35.035522+00:00",
+      "command": "docker",
+      "pid": 3066480,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.039
+    },
+    {
+      "at": "2026-11-04T08:14:35.102338+00:00",
+      "command": "docker",
+      "pid": 3066497,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T08:14:35.169107+00:00",
+      "command": "docker",
+      "pid": 3066513,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T08:14:35.237019+00:00",
+      "command": "make",
+      "pid": 3066549,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.039
+    },
+    {
+      "at": "2026-11-04T08:14:35.303688+00:00",
+      "command": "docker",
+      "pid": 3066560,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T08:14:56.385745+00:00",
+      "command": "docker",
+      "pid": 3068008,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T08:14:56.491273+00:00",
+      "command": "docker",
+      "pid": 3068068,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:14:56.561522+00:00",
+      "command": "docker",
+      "pid": 3068099,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:14:56.652083+00:00",
+      "command": "docker",
+      "pid": 3068185,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.035
+    },
+    {
+      "at": "2026-11-04T08:14:56.841739+00:00",
+      "command": "docker",
+      "pid": 3068340,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.037
+    },
+    {
+      "at": "2026-11-04T08:14:57.124115+00:00",
+      "command": "docker",
+      "pid": 3068359,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.038
+    },
+    {
+      "at": "2026-11-04T08:14:57.220884+00:00",
+      "command": "docker",
+      "pid": 3068381,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:14:57.288166+00:00",
+      "command": "docker",
+      "pid": 3068437,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:14:57.353112+00:00",
+      "command": "docker",
+      "pid": 3068357,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:14:57.527296+00:00",
+      "command": "docker",
+      "pid": 3068663,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:14:57.615298+00:00",
+      "command": "docker",
+      "pid": 3068681,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:14:57.680268+00:00",
+      "command": "docker",
+      "pid": 3068699,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    },
+    {
+      "at": "2026-11-04T08:14:57.745335+00:00",
+      "command": "docker",
+      "pid": 3068717,
+      "exit": 0,
+      "answer": "free",
+      "wait_seconds": 0.036
+    }
+  ],
+  "process_monitor": {
+    "interval_seconds": 5,
+    "samples": [
+      {
+        "at": "2026-11-04T08:02:59.898101+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:03:04.918516+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:03:09.942020+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:03:14.966353+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:03:19.989776+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3011576,
+            "comm": "make",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:03:25.014363+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3011576,
+            "comm": "make",
+            "ticks": 0
+          },
+          {
+            "pid": 3012463,
+            "comm": "python3",
+            "ticks": 1
+          },
+          {
+            "pid": 3012465,
+            "comm": "go",
+            "ticks": 26
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:03:30.039573+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3013642,
+            "comm": "make",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:03:35.064498+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3013642,
+            "comm": "make",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:03:40.089177+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3013642,
+            "comm": "make",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:03:45.113535+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3013642,
+            "comm": "make",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:03:50.138402+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:03:55.162649+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:04:00.187043+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:04:05.211986+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:04:10.235775+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:04:15.259323+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:04:20.282991+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:04:25.307125+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:04:30.331070+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:04:35.355269+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:04:40.379562+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:04:45.404673+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:04:50.428803+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:04:55.453912+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:05:00.478777+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:05:05.502379+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:05:10.527890+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:05:15.552976+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:05:20.579657+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:05:25.604509+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:05:30.628941+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:05:35.654823+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:05:40.679609+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:05:45.702975+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:05:50.728075+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:05:55.752877+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:06:00.777571+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:06:05.802160+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:06:10.827220+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:06:15.852766+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:06:20.877683+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:06:25.902595+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:06:30.927432+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:06:35.952636+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:06:40.977638+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:06:46.002769+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:06:51.025256+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:06:56.050929+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:07:01.076255+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:07:06.100589+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:07:11.125463+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:07:16.150243+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:07:21.174946+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:07:26.201070+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:07:31.226830+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:07:36.252158+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:07:41.277500+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:07:46.302210+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:07:51.325830+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:07:56.350954+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:08:01.375348+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:08:06.399755+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:08:11.424871+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:08:16.449338+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:08:21.473927+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:08:26.498699+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:08:31.524178+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:08:36.548675+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:08:41.573078+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:08:46.598532+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:08:51.624011+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:08:56.650776+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:09:01.677938+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:09:06.703252+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:09:11.729650+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:09:16.754928+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:09:21.875818+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:09:26.899797+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:09:31.923736+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:09:36.954594+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3030694,
+            "comm": "python3",
+            "ticks": 1
+          },
+          {
+            "pid": 3030695,
+            "comm": "make",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:09:41.982520+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:09:47.007360+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:09:52.035607+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:09:57.062699+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:10:02.088695+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:10:07.115135+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:10:12.140886+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:10:17.166620+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:10:22.191557+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:10:27.220323+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:10:32.249050+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:10:37.275855+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 62
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:10:42.306055+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 64
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:10:47.335201+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 64
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:10:52.364215+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 65
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:10:57.393734+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 70
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:11:02.423004+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 71
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:11:07.452529+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 76
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:11:12.483381+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 89
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:11:17.512589+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 103
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:11:22.542110+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 103
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:11:27.571652+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 103
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:11:32.601217+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 103
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:11:37.629981+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 103
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:11:42.659314+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 107
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:11:47.688871+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 113
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:11:52.718574+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 122
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:11:57.748162+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 122
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:12:02.777401+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 122
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:12:07.807230+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 122
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:12:12.836855+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 122
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:12:17.866213+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 122
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:12:22.890223+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 125
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:12:27.919393+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 132
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:12:32.948767+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 132
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:12:37.975830+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 132
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:12:43.004852+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 138
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:12:48.034198+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 138
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:12:53.063948+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 140
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:12:58.093536+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 140
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:13:03.123800+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 148
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:13:08.154009+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 157
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:13:13.184194+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 158
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:13:18.211456+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          },
+          {
+            "pid": 3036436,
+            "comm": "go",
+            "ticks": 158
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:13:23.240596+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:13:28.268926+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:13:33.294698+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 1
+          },
+          {
+            "pid": 3053429,
+            "comm": "make",
+            "ticks": 0
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:13:38.320464+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:13:43.347749+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:13:48.375613+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:13:53.403166+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:13:58.432208+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 1
+          },
+          {
+            "pid": 3061501,
+            "comm": "go",
+            "ticks": 23
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:14:03.462657+00:00",
+        "foreign_processes": [
+          {
+            "pid": 3024432,
+            "comm": "bash",
+            "ticks": 1
+          }
+        ]
+      },
+      {
+        "at": "2026-11-04T08:14:08.489998+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:14:13.518413+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:14:18.545895+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:14:23.573707+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:14:28.602436+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:14:33.630981+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:14:38.662334+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:14:43.688215+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:14:48.716810+00:00",
+        "foreign_processes": []
+      },
+      {
+        "at": "2026-11-04T08:14:53.744580+00:00",
+        "foreign_processes": []
+      }
+    ],
+    "confounded": true,
+    "limitation": "Sampling cannot exclude activity entirely between samples; any observed external overlap is D-133 confounded, no retry."
+  },
+  "cleanup": {
+    "at": "2026-11-04T08:14:57.826383+00:00",
+    "exports": [
+      {
+        "role": "node",
+        "file": "enforcement-timing.jsonl",
+        "exit": 1
+      },
+      {
+        "role": "node",
+        "file": "agent.log",
+        "exit": 1
+      },
+      {
+        "role": "node",
+        "file": "watchdog.log",
+        "exit": 1
+      },
+      {
+        "role": "node2",
+        "file": "enforcement-timing.jsonl",
+        "exit": 1
+      },
+      {
+        "role": "node2",
+        "file": "agent.log",
+        "exit": 1
+      },
+      {
+        "role": "node2",
+        "file": "watchdog.log",
+        "exit": 1
+      }
+    ],
+    "teardown_exit": 0,
+    "inventory": {
+      "containers": {
+        "exit": 0,
+        "owned": []
+      },
+      "networks": {
+        "exit": 0,
+        "owned": []
+      },
+      "volumes": {
+        "exit": 0,
+        "owned": []
+      },
+      "images": {
+        "exit": 0,
+        "owned": []
+      }
+    }
+  },
+  "acceptance_command_start": {
+    "at": "2026-11-04T08:14:34.484709+00:00"
+  },
+  "acceptance_command_end": {
+    "at": "2026-11-04T08:14:34.632955+00:00",
+    "exit": 2
+  },
+  "original_error": "Traceback (most recent call last):\n  File \"<worktree>/tests/e2e/at/members/admission.py\", line 71, in <module>\n    sys.exit(check())\n             ~~~~~^^\n  File \"<worktree>/tests/e2e/at/members/admission.py\", line 59, in check\n    matches, roots = inventory()\n                     ~~~~~~~~~^^\n  File \"<worktree>/tests/e2e/at/members/admission.py\", line 44, in inventory\n    args = shlex.split(command)\n  File \"/usr/lib/python3.14/shlex.py\", line 312, in split\n    return list(lex)\n  File \"/usr/lib/python3.14/shlex.py\", line 299, in __next__\n    token = self.get_token()\n  File \"/usr/lib/python3.14/shlex.py\", line 107, in get_token\n    raw = self.read_token()\n  File \"/usr/lib/python3.14/shlex.py\", line 189, in read_token\n    raise ValueError(\"No closing quotation\")\nValueError: No closing quotation\nmake: *** [mk/at-members.mk:13: at-members] Error 1\n"
+}

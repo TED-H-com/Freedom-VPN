@@ -1,0 +1,16 @@
+{
+  "source": "followup34/admission-summary.txt and retained local per-command ledger",
+  "acceptance_start": "2026-11-04T05:37:34.607929+00:00",
+  "acceptance_end": "2026-11-04T06:01:08.734172+00:00",
+  "checks_during_acceptance": 2029,
+  "non_free_answers_during_acceptance": 0,
+  "wait_windows": [
+    {
+      "first_denial": "2026-11-04T06:01:57.594346+00:00",
+      "first_free": "2026-11-04T06:27:58.872950+00:00",
+      "seconds": 1561.279
+    }
+  ],
+  "conclusion": "No recorded admission wait inside any timed scenario: every recorded check during the entire acceptance interval returned free. Three setup sub-make checks were omitted as already disclosed. The only wait began after acceptance ended.",
+  "public_summary_sha256": "09468252276b6590ba0f86699d136869a8354761e03b52c6a8340cead3920099"
+}

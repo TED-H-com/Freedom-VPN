@@ -121,6 +121,10 @@ func (e *Engine) syncLease(ctx context.Context) error {
 	}
 	e.leaseRefreshPending = false
 	e.leaseAttempted = true
+	e.leaseAttemptGen = 0
+	if gen, err := req.AppliedConfigGeneration.Get(); err == nil {
+		e.leaseAttemptGen = uint64(gen)
+	}
 	e.leaseAttemptAt = mono
 	// The local measurement records the actual request and resulting accepted
 	// lease together, after this synchronous transaction completes.
@@ -252,6 +256,13 @@ func (e *Engine) leaseBehindApplied() bool {
 func (e *Engine) renewAppliedLease(ctx context.Context) error {
 	if e.identityFrozen || e.applyError != nil || e.dependencyMissing || !e.leaseBehindApplied() {
 		return nil
+	}
+	// A verified closed recovery can make a new ACK available after this
+	// Step already requested the old (or null) ACK. Permit that generation
+	// catch-up once; syncLease records the new ACK and still honors Retry-After.
+	// This does not consume D-157's later report-bound early opportunity.
+	if e.closedRecoveryHeld && e.closedRecoveryRenewal.armed && e.leaseAttemptGen != e.appliedGen {
+		e.leaseAttempted = false
 	}
 	if err := e.syncLease(ctx); err != nil && ctx.Err() != nil {
 		return err

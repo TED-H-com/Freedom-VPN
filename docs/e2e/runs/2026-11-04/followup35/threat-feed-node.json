@@ -1,0 +1,55 @@
+{
+  "id": "threat-feed-node",
+  "title": "Issued resolver document is applied and blocks a synthetic name",
+  "spec": [
+    "§12.5",
+    "§19 AT22",
+    "D-061"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "credential_owner_mode",
+      "detail": "0:600"
+    },
+    {
+      "name": "agent_run_dns",
+      "detail": "{\n    \"resolver_credentials_file\": \"/etc/vpn-node/resolver-credentials.json\",\n    \"resolvers\": [\n      {\n        \"admin_url\": \"http://127.0.0.1:8080\",\n        \"dns_addr\": \"127.0.0.1:53\",\n        \"id\": \"lab\"\n      }\n    ]\n  }"
+    },
+    {
+      "name": "desired_resolver_reference",
+      "detail": "{\"content_sha256\":\"90e2df078b8cdcf9b95586ecf3caddd815d23b9c3e97079e6f4a46b5dc418148\",\"document_id\":\"01a1a5ee-b42d-7752-8cf8-a3e76390b418\",\"generation\":\"2\",\"profile_revision_id\":\"01a1a5ee-aa0c-7599-919b-c3c2eaee8026\",\"size_bytes\":1174}"
+    },
+    {
+      "name": "dns_policy_evidence",
+      "detail": "{\"applied_at\":\"2026-11-04T09:41:37.648991615Z\",\"content_sha256\":\"90e2df078b8cdcf9b95586ecf3caddd815d23b9c3e97079e6f4a46b5dc418148\",\"document_id\":\"01a1a5ee-b42d-7752-8cf8-a3e76390b418\",\"error_code\":null,\"feeds\":[{\"content_sha256\":\"c7561f2cb987ed5790e8f2a17d180f98b50284430460a17bb6f6b0355472a174\",\"feed_code\":\"e2e-feed\",\"rule_count\":10}],\"generation\":\"2\",\"outcome\":\"applied\"}"
+    },
+    {
+      "name": "admin_node",
+      "detail": "200"
+    },
+    {
+      "name": "provisioning_state",
+      "detail": "ready"
+    },
+    {
+      "name": "resolver_document_response",
+      "detail": "HTTP/1.1 200 OK"
+    },
+    {
+      "name": "mtls_body_matches_signed_digest_and_size",
+      "detail": "true"
+    },
+    {
+      "name": "resolver_readback",
+      "detail": "{\"admin_http\":200,\"query_log_enabled\":false,\"query_log_file_enabled\":false,\"rule_count\":16,\"rules_sha256\":\"063ab3b25eeabfc9f9f7d4ac571f4063202686575ecc166f606d83c21c845b22\",\"statistics_enabled\":false,\"synthetic_answer_count\":0,\"synthetic_blocked\":true}"
+    },
+    {
+      "name": "timed_section",
+      "detail": "threat-feed-node"
+    }
+  ],
+  "at": "2026-11-04T09:41:39Z",
+  "run_id": "8a436a87-5efe-4c18-a7ec-72be170cb69b",
+  "source_commit": "9fbff94c84b0d29c2d78f420e76726f7c9a706ad"
+}

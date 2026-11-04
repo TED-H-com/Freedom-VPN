@@ -1,0 +1,125 @@
+{
+  "source_commit": "5c21e670596f5b0b7029f6a02648305a24f0f22a",
+  "proofs": [
+    {
+      "path": "node/agent/followup48_test.go",
+      "name": "TestF48_ClosedRecoveryWaitKeepsDenyAllAndRenewalRate"
+    },
+    {
+      "path": "node/agent/followup50_test.go",
+      "name": "TestD157_AT02_ClosedRecoveryRenewsAfterAcceptedReadyReport"
+    },
+    {
+      "path": "node/agent/followup50_test.go",
+      "name": "TestD157_EmptyEarlyAnswerKeepsD067AndSecondRecoveryGetsOne"
+    },
+    {
+      "path": "node/agent/followup50_test.go",
+      "name": "TestD157_RecoveryWaitsForObservationAcceptance"
+    },
+    {
+      "path": "node/agent/followup50_test.go",
+      "name": "TestD157_EarlyRenewalHonorsRetryAfterAndDoesNotRearmOnFailure"
+    },
+    {
+      "path": "node/agent/followup50_test.go",
+      "name": "TestD157_OldOrUnsafeReportCannotArmRecoveryRenewal"
+    },
+    {
+      "path": "node/updater/cmd/fvpn-updater/followup25_test.go",
+      "name": "TestD158_CLIWaitRecordAndExactErrorLine"
+    },
+    {
+      "path": "node/updater/followup25_test.go",
+      "name": "TestD158_HolderProcess"
+    },
+    {
+      "path": "node/updater/followup25_test.go",
+      "name": "TestD158_CommandsProceedAfter600msHolder"
+    },
+    {
+      "path": "node/updater/followup25_test.go",
+      "name": "TestD158_StaleDetailsKeepPromptWindow"
+    },
+    {
+      "path": "node/updater/followup25_test.go",
+      "name": "TestD158_StaleWindowStartsAtFirstStaleAnswer"
+    },
+    {
+      "path": "node/updater/followup25_test.go",
+      "name": "TestD158_RecoverAndRetainKeepPromptWindow"
+    },
+    {
+      "path": "node/updater/followup25_test.go",
+      "name": "TestD158_CancellationAndUnreadableMetadata"
+    },
+    {
+      "path": "node/updater/followup25_test.go",
+      "name": "TestD158_NestedCallsDoNotWaitOrLog"
+    },
+    {
+      "path": "tests/e2e/at/isolation/member_schedule_test.go",
+      "name": "TestAT13_MemberScheduleFollowup21RenewalReplay"
+    },
+    {
+      "path": "tests/e2e/at/isolation/member_schedule_test.go",
+      "name": "TestAT13_MemberScheduleJitterAndEarlyRenewal"
+    },
+    {
+      "path": "tests/e2e/at/isolation/member_schedule_test.go",
+      "name": "TestAT13_MemberScheduleMissingWindowStillBlocks"
+    },
+    {
+      "path": "tests/e2e/at/isolation/member_schedule_test.go",
+      "name": "TestAT13_MemberScheduleUTCReceipt"
+    },
+    {
+      "path": "tests/e2e/at/secops/lease_setup_test.go",
+      "name": "TestAT29_PostCapLeaseSetup17"
+    },
+    {
+      "path": "tests/e2e/nightly_gate_test.go",
+      "name": "TestD144_CommittedExpectedBlockedListAndFollowup29FullSummary"
+    },
+    {
+      "path": "tests/e2e/nightly_gate_test.go",
+      "name": "TestD144_ListedBlockedRowKeepsJobGreenAndPreservesBlockedStatus"
+    },
+    {
+      "path": "tests/e2e/nightly_gate_test.go",
+      "name": "TestD144_ListedRowThatPassesIsReportedUnblockedAndSucceeds"
+    },
+    {
+      "path": "tests/e2e/nightly_gate_test.go",
+      "name": "TestD144_UnlistedBlockedRowFails"
+    },
+    {
+      "path": "tests/e2e/nightly_gate_test.go",
+      "name": "TestD144_FailRowFails"
+    },
+    {
+      "path": "tests/e2e/nightly_gate_test.go",
+      "name": "TestD144_ErrorRowAndRunnerErrorFail"
+    },
+    {
+      "path": "tests/e2e/nightly_gate_test.go",
+      "name": "TestD144_MissingOrUnreadableSummaryFails"
+    },
+    {
+      "path": "tests/e2e/nightly_gate_test.go",
+      "name": "TestD144_MissingUnreadableOrMalformedExpectedBlockedListFails"
+    },
+    {
+      "path": "tests/e2e/nightly_gate_test.go",
+      "name": "TestD144_CurrentExpectedBlockedListAfterFollowup34"
+    },
+    {
+      "path": "tests/netlab/scenario_at10_test.go",
+      "name": "TestAT10_AT13_ReloadRevokeBaseline"
+    },
+    {
+      "path": "tests/netlab/scenario_at29_test.go",
+      "name": "TestAT29_LeaseTimeout"
+    }
+  ]
+}

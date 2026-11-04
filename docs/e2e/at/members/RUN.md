@@ -1,14 +1,64 @@
+Final verification: [gate results, link proof and archive audit](F22-verification.md). All required non-live gates pass; live exit 2 retains blocked cases.
+
+# Follow-up 22 run ledger — 2026-11-04
+
+Baseline `55f2765dac6e1c6871045ee6182d6cc23ccf8a33`; measured harness `8a6dcf34248f035a3a460fcdee3e1e19e80c9137`; main at preflight `0d9448800b9e50392b1365a54fed89d4fdb333ba`. PR bodies #454 and #461 were read. #461 implements D-157's one opportunity after central accepts the clean report tied to a verified closed recovery; it is not diagnosis-only. No product or shared-hook change is made by this lane.
+
+**3 PASS / 7 BLOCKED / 0 FAIL; 702 passed / 8 blocked / 0 failed subchecks**. [Run analysis](followup22-2026-11-04.md), [all original subchecks](F22-subchecks.md). One pre-check harness failure followed by the one authorized rerun; no case retry. The current run's ten case JSON records retain original status/actual/expected fields.
+
+`go env GOCACHE` returned `<home>/.cache/go-build`. No cache override. Disk scratch under `.agent/tmp`; Python `-B`, foreground commands, no reservation or new shell cleanup trap. Prefix `FVPN_E2E_PREFIX=w4-members`, port base `24000`; setup uses two resolvers and kernel observation. Both attempts use admitted `make -f mk/e2e.mk e2e-up`, `make -f mk/at-members.mk at-members`, exports, then `e2e-down`. Shared Postgres and foreign objects are untouched.
+
+Preflight at `2026-11-04T08:19:50.370960+00:00`: `vmstat 5 7`, `go env GOCACHE`, and `ps -eo pid,etimes,args | grep -E '[g]ates\.sh|[m]k/at-|[n]ode-test-netlab|[n]etlab-test|[e]2e-test'`. Exact process arguments remain private; published foreign processes contain only pid, comm and ticks. [Host receipt](F22-host-preflight.json), [attempt-1 host receipt and failure](F22-attempt1.json).
+
+```text
+procs -----------memory---------- ---swap-- -----io---- -system-- -------cpu-------
+ r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st gu
+ 0  0 3076952 36525932 2573020 137527888   10   39 19058 32467 25507   22  4  2 93  1  0  0
+ 0  0 3076952 36560924 2573028 137527876    0    0     0   101 2689 3801  0  0 100  0  0  0
+ 0  0 3076952 36569500 2573036 137522916    0    0     0  2126 3426 5429  0  0 99  0  0  0
+ 0  0 3076952 36567020 2573044 137522320    0    0     0   906 3040 4187  0  0 99  0  0  0
+ 0  0 3076952 36567612 2573052 137522604    0    0     0   690 2389 3540  0  0 99  0  0  0
+ 0  0 3076952 36567624 2573060 137523700    0    0   354   127 2500 3585  0  0 99  0  0  0
+ 0  0 3076952 36567624 2573068 137523700    0    0     0    52 2380 3440  0  0 99  0  0  0
+```
+
+## Attempts, admission and overlap
+
+| Attempt | Foreground wrapper interval (UTC) | Outcome |
+|---|---|---|
+| 1, source `a52bad1d` | 07:52:29.002138–08:14:57.830369 | Exit 2 before `go test` or the first acceptance check: owned `admission.py` raised `ValueError: No closing quotation`. No acceptance UUID/result. Cleanup exit 0 and empty inventory. |
+| 2, source `8a6dcf34` | 08:19:50.295004–09:08:52.970545 | Run `3eb3960d-c411-4648-8d77-bba40b436ae3`; honest make exit 2 for blocked cases. Acceptance command 08:20:54.441869–09:08:08.816545; live test 2,800.89 s. Cleanup exit 0 and empty owned inventory. |
+
+The first attempt waited **840 s** in 60-second suite-admission sleeps and **420.304 s** in the nested tool's admission loop: **1,260.304 s (21 min 0.304 s)** accounted admission wait, below the total 120-minute limit. The two suite poll windows, including check overhead, were 600.726 s and 240.342 s. The retry needed no admission sleeps. Both startup and post-startup gates checked for foreign runs; no reservation was taken. The first attempt's foreign-activity windows are retained and confounded under D-133; no acceptance measurement occurred in that attempt.
+
+The only observed retry overlap is **09:08:22.475474Z–09:08:52.654917Z**, during teardown after acceptance ended. Marked **D-133 confounded**, with zero intersecting measured case envelopes. Five-second process sampling is a bounded observation, not proof that shorter foreign work never occurred. No retry was made for this overlap or for any case result.
+
+The retry baseline is `55f2765d`, including #454 and #461, but its preflight main ref is `0d944880`: netlab follow-up 35 #462 merged while this session was active. [Baseline drift and disposition](F22-baseline-drift.json). No result is attributed to or presented as a measurement of that newer main.
+
+## Reproduction and record handling
+
+The normal entry point remains `make -f mk/at-members.mk at-members`. The private foreground runner supplied disk `TMPDIR`/`GOTMPDIR`, admitted wrappers for each make/go/Docker invocation, and `FVPN_AT_MEMBERS_SECTION_HOOK`/`FVPN_AT_MEMBERS_SECTIONS` for the D-160 case envelopes and nested scope journal. It exported original agent/watchdog logs between cases and at teardown, then stopped and removed only `fvpn-w4-members-*` inventory. No shared helper changed.
+
+Offline postprocessing uses `python3 -B tests/e2e/at/members/followup22_records.py`, guarded by the exact measured source and run UUID. It copies existing outcomes and receipt attempts; it does not execute acceptance or recalculate a live predicate. Oversize original case and recovery evidence remains lossless gzip with compressed and uncompressed SHA-256 sidecars. Plain `AT02.md` is a document index for its original gzip record. Native pcap bytes stay private; public capture exports contain headers, counts and hashes only.
+
+
+[Admission checks and answers](F22-admission.json), [timed-section boundaries](F22-timed-sections.json), [five-second process monitor](F22-process-monitor.json), [cleanup](F22-cleanup.json), [gate receipts](F22-gates.json). Every tool admission stream is separate from tool-consumed output, including Docker JSON. D-160 uses admitted no-wait case envelopes covering nested timers and concurrent persistent probes; nested scopes and the original producer/request/sample timestamps remain retained. Observed overlap is D-133 confounded and never retried.
+
+---
+
+Historical ledger below retains its original outcomes.
+
 # Follow-up 21 run ledger — 2026-11-03
 
 Run `5715939e-3943-48f1-8bd5-c869bf7c91c2`; baseline **`9e70951872105139213ed39c808704fdab315112`**, source/archive commit **`dbfccc6fc7d076ec73f4f8575eb27efe39337a23`**. Main at preflight was the baseline. Agent-core 48 (#447) and members 20 (#445) are included. Source/predicates were not changed during execution. D-098 first commit `dbfccc6f` preserves all **81** starting root files byte-identically: [archive](history/follow-up-18-run2/INDEX.md), [SHA-256 pins](history/follow-up-18-run2/SHA256SUMS). Earlier archives are untouched; no handover claim reader required a D-132 edit.
 
-**One assembled run; no rerun. 2 PASS / 8 BLOCKED / 0 FAIL; 705 / 8 / 0 subchecks.** Live make exit **2** is retained. Wrapper `2026-11-04T02:50:12.408311+00:00`–`2026-11-04T04:12:46.722862+00:00`, **4954.315 s**, including waiting, startup and teardown. The acceptance make starts at **03:23:19.935 UTC**, last case check **04:09:58 UTC**; `TestATMembers_Live` elapsed **2772.85 s**. [Every result](F21-results.json), [every subcheck](F21-subchecks.md).
+**One assembled run; no rerun. 2 PASS / 8 BLOCKED / 0 FAIL; 705 / 8 / 0 subchecks.** Live make exit **2** is retained. Wrapper `2026-11-04T02:50:12.408311+00:00`–`2026-11-04T04:12:46.722862+00:00`, **4954.315 s**, including waiting, startup and teardown. The acceptance make starts at **03:23:19.935 UTC**, last case check **04:09:58 UTC**; `TestATMembers_Live` elapsed **2772.85 s**. [Every result](history/follow-up-21/F21-results.json), [every subcheck](history/follow-up-21/F21-subchecks.md).
 
 Initial hold **1621.105 s**, post-startup wait **300.410 s**, total pre-acceptance waiting **1921.515 s (32 min 1.515 s)**, below 120 minutes. No reservation. `bash "$FVPN_HOLD_SH"` output is captured on its own stream before every make/Go/Docker invocation, including nested calls; held checks wait 60 seconds. A conservative check also held `go env GOCACHE`. MAKE is pinned to the local admission wrapper for recursive calls. No admission exit 125 was treated as a test result.
 
-Other gates appeared during startup and during teardown. Those windows remain **D-133 confounded**, with no retry. [Exact first/last samples and pid/comm/ticks](F21-process-monitor.json), [window index and waits](F21-admission.json). No foreign-suite sample falls within acceptance checks; five-second sampling cannot exclude shorter activity or establish full CPU/A-B qualification. Cleanup's additional admission hold is in the receipts. No foreign process was paused, signalled or reconfigured.
+Other gates appeared during startup and during teardown. Those windows remain **D-133 confounded**, with no retry. [Exact first/last samples and pid/comm/ticks](history/follow-up-21/F21-process-monitor.json), [window index and waits](history/follow-up-21/F21-admission.json). No foreign-suite sample falls within acceptance checks; five-second sampling cannot exclude shorter activity or establish full CPU/A-B qualification. Cleanup's additional admission hold is in the receipts. No foreign process was paused, signalled or reconfigured.
 
-`go env GOCACHE`: **`<home>/.cache/go-build`**, home-relative; no cache override. Disk scratch under `.agent/tmp`; Python `-B`; no new shell cleanup trap. Prefix `fvpn-w4-members-`, port base `24000`. [Teardown and independent four-kind inventory](F21-cleanup.json): **exit 0, zero owned containers/networks/volumes/images**. Shared Postgres was untouched.
+`go env GOCACHE`: **`<home>/.cache/go-build`**, home-relative; no cache override. Disk scratch under `.agent/tmp`; Python `-B`; no new shell cleanup trap. Prefix `fvpn-w4-members-`, port base `24000`. [Teardown and independent four-kind inventory](history/follow-up-21/F21-cleanup.json): **exit 0, zero owned containers/networks/volumes/images**. Shared Postgres was untouched.
 
 Setup used `FVPN_E2E_PREFIX=w4-members`, `FVPN_E2E_PORT_BASE=24000`, `FVPN_E2E_TWO_RESOLVERS=true`, `FVPN_E2E_KERNEL_OBSERVE=1` and `E2E_RESET=1`. The admitted foreground sequence was `make -f mk/e2e.mk e2e-up`, the single `make -f mk/at-members.mk at-members`, producer/log export, then `make -f mk/e2e.mk e2e-down` and independent owned inventory.
 
@@ -46,7 +96,7 @@ Both snapshots also ran the requested process command:
 ps -eo pid,etimes,args | grep -E '[g]ates\.sh|[m]k/at-|[n]ode-test-netlab|[n]etlab-test'
 ```
 
-Raw arguments remain private; public foreign processes are only pid, comm and ticks. [Preflight](F21-host-preflight.json), [refreshed snapshot](F21-host-refreshed.json).
+Raw arguments remain private; public foreign processes are only pid, comm and ticks. [Preflight](history/follow-up-21/F21-host-preflight.json), [refreshed snapshot](history/follow-up-21/F21-host-refreshed.json).
 
 Actual live result tail (Go marks blocked cases non-green):
 
@@ -65,9 +115,9 @@ Actual live result tail (Go marks blocked cases non-green):
 FAIL	github.com/TED-H-com/Freedom-VPN/tests/e2e/at/members	2801.534s
 ```
 
-Gates run in order: area lint; assembled run; offline members; uncached handover; root lint; root vet; gofmt; diff check; committed-evidence hygiene. Root lint uses `make go-lint go-with-disk-tmp=` with the wrapper's disk TMPDIR/GOTMPDIR, retaining the exact checks without the root shell cleanup trap. All nine gate receipts are complete. [Case analysis and limitations](followup21-2026-11-03.md), [requests](requests.md).
+Gates run in order: area lint; assembled run; offline members; uncached handover; root lint; root vet; gofmt; diff check; committed-evidence hygiene. Root lint uses `make go-lint go-with-disk-tmp=` with the wrapper's disk TMPDIR/GOTMPDIR, retaining the exact checks without the root shell cleanup trap. All nine gate receipts are complete. [Case analysis and limitations](history/follow-up-21/followup21-2026-11-03.md), [requests](history/follow-up-21/requests.md).
 
-Completed gates (original output tails and log pins in [F21-gates.json](F21-gates.json)):
+Completed gates (original output tails and log pins in [F21-gates.json](history/follow-up-21/F21-gates.json)):
 
 | Gate | Exit | Elapsed seconds |
 |---|---:|---:|
