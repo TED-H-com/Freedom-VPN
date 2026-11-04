@@ -49,6 +49,7 @@ func TestAT02_FiniteExpiryRestoresOnEveryEarlyReturnAndOnceOnNormalPath(t *testi
 			initialPending    int
 		}{
 			{"prior_grant_still_live", 3, 0},
+			{"shared_helper_restored_originals_same_plan_fallback_retained", 3, 0},
 			{"revoked_without_replacement", 0, 3},
 			{"finite_grant_installed_projection_timed_out", 3, 0},
 		} {

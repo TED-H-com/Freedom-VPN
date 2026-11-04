@@ -103,6 +103,11 @@ func runFiniteExpiry(r checkRecorder, s finiteExpirySteps) {
 	s.traceForwarding()
 }
 
+// Follow-up 20: retain the fallback even if devstack 33 restored the originals.
+// The 2026-11-03 adoption note explicitly permits this same-plan POST; it can
+// extend validity to our one-hour end and creates another grant/audit. Keeping
+// it also covers expiry during later readiness checks. Device/operation checks
+// below and the limit restoration's fence checks remain mandatory.
 func restoreFiniteGrantOnEarlyReturn(r checkRecorder, s finiteExpirySteps) {
 	restore := s.grantRestore()
 	r.check("finite expiry early-return restoration HTTP", "202", string(restore.body), "POST /admin/members/{id}/grants on early return", restore.status == 202)
