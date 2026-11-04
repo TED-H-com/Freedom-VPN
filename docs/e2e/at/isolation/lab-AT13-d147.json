@@ -1,20 +1,20 @@
 {
-  "run_id": "7599576e-339c-49c9-8bf5-0f710818cbda",
-  "started_at": "2026-11-04T02:51:22Z",
+  "run_id": "7b0db5f2-eab5-4534-824a-b54781eed3fd",
+  "started_at": "2026-11-04T06:01:57Z",
   "source_dirty": false,
   "checks": [
     {
       "name": "D-147 resolver_v4_only (203.0.113.53)",
       "status": "pass",
-      "at": "2026-11-04T02:51:47Z",
-      "actual": "src=203.0.113.53 sets=resolver_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=42p/7497B [tcp=1737B + frag_needed=10p/5760B] (tc 1:2f 42p/8085B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ectbadns=1p/84B (u=0)",
+      "at": "2026-11-04T06:02:22Z",
+      "actual": "src=203.0.113.53 sets=resolver_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=41p/7445B [tcp=1685B + frag_needed=10p/5760B] (tc 1:2f 41p/8019B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ectbadns=1p/84B (u=0)",
       "positive_control": {
         "device_id": "019a0000-0000-7000-8000-0000000000a1",
         "container": "fv-a1",
-        "at": "2026-11-04T02:51:47Z",
+        "at": "2026-11-04T06:02:22Z",
         "counted": true,
         "admission_bytes_before": "0",
-        "admission_bytes_after": "87504",
+        "admission_bytes_after": "87452",
         "observations": [
           {
             "name": "sets",
@@ -38,15 +38,15 @@
     {
       "name": "D-147 denied_v4_only (192.168.34.2)",
       "status": "pass",
-      "at": "2026-11-04T02:51:47Z",
-      "actual": "src=192.168.34.2 sets=denied_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=40p/7393B [tcp=1633B + frag_needed=10p/5760B] (tc 1:2f 40p/7953B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ectdeny=1p/84B (u=0)",
+      "at": "2026-11-04T06:02:22Z",
+      "actual": "src=192.168.34.2 sets=denied_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=42p/7497B [tcp=1737B + frag_needed=10p/5760B] (tc 1:2f 42p/8085B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ectdeny=1p/84B (u=0)",
       "positive_control": {
         "device_id": "019a0000-0000-7000-8000-0000000000a1",
         "container": "fv-a1",
-        "at": "2026-11-04T02:51:47Z",
+        "at": "2026-11-04T06:02:22Z",
         "counted": true,
         "admission_bytes_before": "0",
-        "admission_bytes_after": "87400",
+        "admission_bytes_after": "87504",
         "observations": [
           {
             "name": "sets",
@@ -70,15 +70,15 @@
     {
       "name": "D-147 host_v4_only (203.0.113.33)",
       "status": "pass",
-      "at": "2026-11-04T02:51:47Z",
-      "actual": "src=203.0.113.33 sets=host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=62p/8537B [tcp=2777B + frag_needed=10p/5760B] (tc 1:2f 62p/9405B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ecthost=1p/84B (u=0)",
+      "at": "2026-11-04T06:02:22Z",
+      "actual": "src=203.0.113.33 sets=host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=52p/8017B [tcp=2257B + frag_needed=10p/5760B] (tc 1:2f 52p/8745B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ecthost=1p/84B (u=0)",
       "positive_control": {
         "device_id": "019a0000-0000-7000-8000-0000000000a1",
         "container": "fv-a1",
-        "at": "2026-11-04T02:51:47Z",
+        "at": "2026-11-04T06:02:22Z",
         "counted": true,
         "admission_bytes_before": "0",
-        "admission_bytes_after": "88544",
+        "admission_bytes_after": "88024",
         "observations": [
           {
             "name": "sets",
@@ -102,15 +102,15 @@
     {
       "name": "D-147 denied_v4_and_host_v4_overlap (192.168.34.1)",
       "status": "pass",
-      "at": "2026-11-04T02:51:47Z",
-      "actual": "src=192.168.34.1 sets=denied_v4+host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=39p/7341B [tcp=1581B + frag_needed=10p/5760B] (tc 1:2f 39p/7887B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ectdeny=1p/84B (u=0)",
+      "at": "2026-11-04T06:02:22Z",
+      "actual": "src=192.168.34.1 sets=denied_v4+host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=46p/7705B [tcp=1945B + frag_needed=10p/5760B] (tc 1:2f 46p/8349B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ectdeny=1p/84B (u=0)",
       "positive_control": {
         "device_id": "019a0000-0000-7000-8000-0000000000a1",
         "container": "fv-a1",
-        "at": "2026-11-04T02:51:47Z",
+        "at": "2026-11-04T06:02:22Z",
         "counted": true,
         "admission_bytes_before": "0",
-        "admission_bytes_after": "87348",
+        "admission_bytes_after": "87712",
         "observations": [
           {
             "name": "sets",
@@ -143,10 +143,10 @@
     "D-147"
   ],
   "status": "pass",
-  "at": "2026-11-04T02:51:47Z",
-  "build": "fe2c68ecbf1ef1481d744c998be95710d28be954",
+  "at": "2026-11-04T06:02:22Z",
+  "build": "0b95e69ae89c68e0fcfbf1fbbfe6774b2e1948db",
   "image_digests": [
-    "fvpn-w4-isolation-lab:lab sha256:df384dcae1b09e3eb7af86ee262965e02ccd35cc19be6f0d555814df2763d72f"
+    "fvpn-w4-isolation-lab:lab sha256:03f00199eb3aaba16613fa095a499da0f76a0767492c25a481afbe0bdbfc9db7"
   ],
   "policy_revision": "generation 4200",
   "node_incarnation": "mechanism-lab",
@@ -163,19 +163,19 @@
     },
     {
       "name": "d147_resolver_v4_only",
-      "detail": "src=203.0.113.53 sets=resolver_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=42p/7497B [tcp=1737B + frag_needed=10p/5760B] (tc 1:2f 42p/8085B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ectbadns=1p/84B (u=0)"
+      "detail": "src=203.0.113.53 sets=resolver_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=41p/7445B [tcp=1685B + frag_needed=10p/5760B] (tc 1:2f 41p/8019B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ectbadns=1p/84B (u=0)"
     },
     {
       "name": "d147_denied_v4_only",
-      "detail": "src=192.168.34.2 sets=denied_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=40p/7393B [tcp=1633B + frag_needed=10p/5760B] (tc 1:2f 40p/7953B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ectdeny=1p/84B (u=0)"
+      "detail": "src=192.168.34.2 sets=denied_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=42p/7497B [tcp=1737B + frag_needed=10p/5760B] (tc 1:2f 42p/8085B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ectdeny=1p/84B (u=0)"
     },
     {
       "name": "d147_host_v4_only",
-      "detail": "src=203.0.113.33 sets=host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=62p/8537B [tcp=2777B + frag_needed=10p/5760B] (tc 1:2f 62p/9405B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ecthost=1p/84B (u=0)"
+      "detail": "src=203.0.113.33 sets=host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=52p/8017B [tcp=2257B + frag_needed=10p/5760B] (tc 1:2f 52p/8745B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ecthost=1p/84B (u=0)"
     },
     {
       "name": "d147_denied_v4_and_host_v4_overlap",
-      "detail": "src=192.168.34.1 sets=denied_v4+host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=39p/7341B [tcp=1581B + frag_needed=10p/5760B] (tc 1:2f 39p/7887B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ectdeny=1p/84B (u=0)"
+      "detail": "src=192.168.34.1 sets=denied_v4+host_v4 pmtu=1000 upload_bytes=64064 u_019a00000000700080000000000000a1=84p/80007B (tc 1:2f 84p/81183B drops=0) d_019a00000000700080000000000000a1=46p/7705B [tcp=1945B + frag_needed=10p/5760B] (tc 1:2f 46p/8349B drops=0); negatives: time_exceeded-\u003ectdenyd=1p/112B (d=0), unsolicited_frag_needed-\u003ectinv=1p/60B (d=0), member_upload-\u003ectdeny=1p/84B (u=0)"
     },
     {
       "name": "scope",
