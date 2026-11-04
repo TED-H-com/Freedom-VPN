@@ -1,0 +1,98 @@
+{
+  "baseline_commit": "27ff63928222c9642e4f5e180cf225108327a1e5",
+  "suite_wait": {
+    "wait_seconds": 0.027,
+    "waited_for_isolation": false,
+    "polls": [
+      {
+        "elapsed_seconds": 0.027,
+        "other_suites": 0,
+        "isolation_active": false
+      }
+    ]
+  },
+  "gate_initial_host_waits": [
+    {
+      "gate": "01-run2-area-lint",
+      "seconds": 0.035
+    },
+    {
+      "gate": "01b-run2-reader-tests",
+      "seconds": 0.035
+    },
+    {
+      "gate": "01c-run2-area-lint",
+      "seconds": 0.035
+    },
+    {
+      "gate": "01d-run2-reader-tests",
+      "seconds": 0.034
+    },
+    {
+      "gate": "02-assembled",
+      "seconds": 0.036
+    },
+    {
+      "gate": "03-offline-members",
+      "seconds": 0.036
+    },
+    {
+      "gate": "04-handover",
+      "seconds": 0.035
+    },
+    {
+      "gate": "05-root-lint",
+      "seconds": 0.037
+    },
+    {
+      "gate": "06-vet",
+      "seconds": 0.037
+    },
+    {
+      "gate": "07-gofmt",
+      "seconds": 0.037
+    },
+    {
+      "gate": "08-diff",
+      "seconds": 0.036
+    },
+    {
+      "gate": "09-helper-builds",
+      "seconds": 0.036
+    },
+    {
+      "gate": "10-hygiene",
+      "seconds": 0.037
+    },
+    {
+      "gate": "11-final-handover",
+      "seconds": 0.035
+    },
+    {
+      "gate": "12-final-hygiene",
+      "seconds": 0.036
+    }
+  ],
+  "nested_admission_checks": 6618,
+  "held_checks": [],
+  "optional_diagnostic": {
+    "performed": false,
+    "scope": "No separate diagnostic command attempted during run 2"
+  },
+  "optional_diagnostic_hold_note": "Run 1 historical diagnostic is retained only in its archive; this receipt describes run 2.",
+  "preflight_pgrep": {
+    "stdout": "",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "process_samples": 573,
+  "sample_interval_seconds": 5,
+  "external_suite_samples": [],
+  "contention": "No external-suite overlap observed; five-second sampling cannot exclude processes entirely between samples.",
+  "cleanup": {
+    "at": "2026-11-03T21:55:08.412083+00:00",
+    "containers": [],
+    "networks": [],
+    "volumes": [],
+    "images": []
+  }
+}

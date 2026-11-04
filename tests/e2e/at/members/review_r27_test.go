@@ -271,7 +271,7 @@ func TestR27_M3_AT02_SiblingRecoveryBracketAndQuarantinePredicates(t *testing.T)
 //     "applied=66 lease=65" and candidate_generation="21") preceded
 //     capture.started_at (21:49:52.571423298Z) by 67.846s.
 func TestR27_Held_AT09_RestartRecoveryConjunctsAndTimelineTrace(t *testing.T) {
-	raw, err := os.ReadFile("../../../../docs/e2e/at/members/F18-AT09-restart.json")
+	raw, err := os.ReadFile("../../../../docs/e2e/at/members/history/follow-up-18-run2/F18-AT09-restart.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -402,7 +402,7 @@ func TestR27_Held_AT09_RestartRecoveryConjunctsAndTimelineTrace(t *testing.T) {
 //     account for 100% of losses_outside_baseline_or_completed_guard == 233;
 //   - 6 during awaiting_member_grants bracket 50 (base_seq=589 -> Apply 593): 1 in guard + 5 outside guard.
 func TestR27_Held_AT02_CapturedRecoveryPacketAndBracketAccounting(t *testing.T) {
-	f, err := os.Open("../../../../docs/e2e/at/members/F18-AT02-recovery.json.gz")
+	f, err := os.Open("../../../../docs/e2e/at/members/history/follow-up-18-run2/F18-AT02-recovery.json.gz")
 	if err != nil {
 		t.Fatal(err)
 	}
