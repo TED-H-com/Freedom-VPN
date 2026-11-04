@@ -1,7 +1,7 @@
 # Production Deployment Runbook (`docs/handover/deploy.md`)
 
-**Current cut — [follow-up 41](follow-up-41.md) (2026-11-03 EST):** #435–#438 at c359d4a9: agent-core 45 has no comparison; members 19 restores early returns (offline only); devstack 32 handles exact-code 412s, with forced real-API proof 8/8. Isolation’s assembled run is pending in 20; agent-core 46 and read-only r27 are status only. 55 decisions, 105 findings; no operator/member behavior change.
-**Previous cut — [follow-up 40](follow-up-40.md):** #430–#434 at 3f7dbc25; D-146/D-147 on main, D-151/D-152 provisional; 14 subtests, 76 immutable records, 11 run snapshots, 84 Go declarations; 55 decisions and 102 findings.
+**Current cut — [follow-up 42](follow-up-42.md) (2026-11-03 EST):** #439–#445 at 5a942aa1; D-153 closes D-150 with no comparison, D-154 compares zero normally; r27/r28 archived, 57 decisions and 113 findings. Isolation c52bea6c records 26 pass / 2 blocked / 1 fail; historical verdicts stay unchanged. See [r28 H-1 known behaviour](operator-guide.md#r28-h-1). Secops 15, agent-core 48 and r29 are status only.
+**Previous cut — [follow-up 41](follow-up-41.md):** #435–#438 at c359d4a9; 14 subtests, 101 immutable records, 36 Go declarations; 55 decisions and 105 findings.
 
 Installer 7 reporting inputs are required: a validated HTTPS control origin
 (`--control-url`) and its readable server CA bundle (`--server-ca`). Generated

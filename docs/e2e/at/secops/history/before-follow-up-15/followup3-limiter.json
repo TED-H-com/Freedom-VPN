@@ -1,0 +1,1379 @@
+{
+  "schema_version": 1,
+  "run_started_at": "2026-10-30T04:38:31Z",
+  "run_finished_at": "2026-10-30T04:46:30Z",
+  "source_revision": "f7281ec96ead10747e9908bc6a7894a6efd5a46c",
+  "probe_source_sha256": "8fdf89ebe1a909319231a8bec1188af9508152f5f42c58ad154e1f34c9af0297",
+  "build_digests": [
+    {
+      "arch": "amd64",
+      "kind": "acceptance_test_binary",
+      "sha256": "071a68c5fcb70768c1a0c970beab9e530e88b92f9669bde207d9cbccfef9f2d0",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags",
+        "e2e,integration",
+        "-o",
+        "<disk-scratch>/secops-amd64.test",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-30T04:45:42Z",
+      "finished_at": "2026-10-30T04:45:42Z",
+      "elapsed_seconds": 0.565,
+      "exit_code": 0,
+      "scan": {
+        "stream": "build-amd64",
+        "bytes": 0,
+        "findings": []
+      }
+    },
+    {
+      "arch": "arm64",
+      "kind": "acceptance_test_binary",
+      "sha256": "d9f073ce4e9ed6ac68012761ab3fddc895896285a27a54e0660a9d0ecc4b3e12",
+      "command": [
+        "go",
+        "test",
+        "-c",
+        "-tags",
+        "e2e,integration",
+        "-o",
+        "<disk-scratch>/secops-arm64.test",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-30T04:45:42Z",
+      "finished_at": "2026-10-30T04:45:44Z",
+      "elapsed_seconds": 1.62,
+      "exit_code": 0,
+      "scan": {
+        "stream": "build-arm64",
+        "bytes": 0,
+        "findings": []
+      }
+    },
+    {
+      "name": "fvpn-agent",
+      "arch": "amd64",
+      "sha256": "5bd453f1c9e5be6d94e19b56c1f27ba878b34dfd74a6cfb739f0cc4be7c48f44",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-control",
+      "arch": "amd64",
+      "sha256": "4ea8067b385767a7cad2ced5f26faa21627da8b4dd210a0a3eda89dffb26fde1",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-idp",
+      "arch": "amd64",
+      "sha256": "4b6eca3bd63a40d51c78e012a79ae3c04691017dcbe713f5290ddb1b13dd95b2",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-nbbootstrap",
+      "arch": "amd64",
+      "sha256": "dfa0747fbac68a5054bdbd5f268aaab4a68cf5ebb25adee5759fd43539fc27f0",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-origin",
+      "arch": "amd64",
+      "sha256": "e5ac49ea216a8167835cc24157515122ee4bebe6724868dc4027309c04a87522",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-payment",
+      "arch": "amd64",
+      "sha256": "14716d6cbbd806e247962e5c24c0fd64fcbab3cda16b5d38f8a491894db196ec",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-e2e-prepare",
+      "arch": "amd64",
+      "sha256": "ee625a194f83fd641c23a539b3910df05499c8496e8431c899b3805aa5ba2b76",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-updater",
+      "arch": "amd64",
+      "sha256": "988f938ef2334f9895ac5dda322797f2b2b241049cbfbcd566a1998789f8b758",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-watchdog",
+      "arch": "amd64",
+      "sha256": "ffc2a002f06adf971a30f38ce9e8e37d350bd6bd028db36a8dc439fd2c614ca5",
+      "kind": "lab_build_binary"
+    },
+    {
+      "name": "fvpn-worker",
+      "arch": "amd64",
+      "sha256": "4867726f5f78e7e8d05e31489923ee02b4cc48dbc9c0df4e55d7a61edd6f82cd",
+      "kind": "lab_build_binary"
+    }
+  ],
+  "image_digests": [
+    {
+      "image_id": "sha256:1e3e3bdd61bb1520a5956f6b3118d2ac7a0518966b27e98200542832d29a9141",
+      "service": "postgres"
+    },
+    {
+      "image_id": "sha256:69ab609b5282f649a4ac4d0f32196d9acb35b8772261ae14fd27ab3da270eed0",
+      "service": "idp"
+    },
+    {
+      "image_id": "sha256:34d35993406ee96d4dddb933c14204c662f882493455dc8300fc8d2895f3a252",
+      "service": "payment"
+    },
+    {
+      "image_id": "sha256:c61f18225a7fbbbcc552181fec0e39db8c6f9c2d74dc620d614efb97644cf2f2",
+      "service": "origin"
+    },
+    {
+      "image_id": "sha256:7b5b53b2dc8bc25639f791cf72d47cf86911894ff3f8a97cb79bab9be958109c",
+      "service": "netbird"
+    },
+    {
+      "image_id": "sha256:55d1fb0944aafb8534b253e486c6cf57d3e0c785c4f6a7b3e9f02c5a080fb2ce",
+      "service": "gateway"
+    },
+    {
+      "image_id": "sha256:40384aa1f5ea6bfdc77997d243aec73da05f27aed0c5e9d65bfa98933c519d97",
+      "service": "coredns"
+    },
+    {
+      "image_id": "sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02",
+      "service": "adguard"
+    },
+    {
+      "image_id": "sha256:5ef4863ece845b7ba8876290bc5da138733c8a4e81e980655d051f782dfba5d3",
+      "service": "control"
+    },
+    {
+      "image_id": "sha256:e766673c925a6fe66fd9e8c266373129633f355b902e7545850ea6b73db22144",
+      "service": "worker"
+    },
+    {
+      "image_id": "sha256:45023501f66c63353a38e0d1c9d8e24f59a3cf303204c43d487f6dd529529f87",
+      "service": "node"
+    },
+    {
+      "image_id": "sha256:45023501f66c63353a38e0d1c9d8e24f59a3cf303204c43d487f6dd529529f87",
+      "service": "member"
+    }
+  ],
+  "policy_revision": "1",
+  "node_incarnation": "ab275831-2763-44e0-82df-e9ad9c3d5af3",
+  "stack": {
+    "status": "running-stack-observed",
+    "reason": "Live probes executed on the assigned prefix; case-specific preconditions and measurements follow.",
+    "inventory_before": {
+      "containers": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "networks": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "volumes": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "images": {
+        "exit_code": 0,
+        "count": 0
+      }
+    },
+    "up": {
+      "command": [
+        "make",
+        "-f",
+        "mk/e2e.mk",
+        "e2e-up"
+      ],
+      "started_at": "2026-10-30T04:38:31Z",
+      "finished_at": "2026-10-30T04:39:01Z",
+      "elapsed_seconds": 29.995,
+      "exit_code": 0,
+      "scan": {
+        "stream": "e2e-up",
+        "bytes": 18653,
+        "findings": []
+      }
+    },
+    "live_probe": {
+      "command": [
+        "go",
+        "test",
+        "-json",
+        "-tags",
+        "e2e,integration",
+        "-p",
+        "1",
+        "-parallel",
+        "2",
+        "-count=1",
+        "-timeout",
+        "15m",
+        "-run",
+        "^TestAT28_AT31_LiveStack$",
+        "./tests/e2e/at/secops"
+      ],
+      "started_at": "2026-10-30T04:39:01Z",
+      "finished_at": "2026-10-30T04:45:20Z",
+      "elapsed_seconds": 379.09,
+      "exit_code": 0,
+      "scan": {
+        "stream": "live-probe",
+        "bytes": 2601,
+        "findings": []
+      },
+      "status": "passed",
+      "required_tests": [
+        "TestAT28_AT31_LiveStack"
+      ],
+      "missing": [],
+      "skipped": [],
+      "tests": [
+        {
+          "name": "TestAT28_AT31_LiveStack",
+          "result": "pass",
+          "elapsed_seconds": 378.68
+        }
+      ],
+      "package_results": {
+        "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/secops": "pass"
+      }
+    },
+    "isolated_restore": {
+      "status": "historical record preserved",
+      "compatibility": "pitr-compatibility.json",
+      "new_restore_executed": false
+    },
+    "down": {
+      "command": [
+        "make",
+        "-f",
+        "mk/e2e.mk",
+        "e2e-down"
+      ],
+      "started_at": "2026-10-30T04:45:20Z",
+      "finished_at": "2026-10-30T04:45:42Z",
+      "elapsed_seconds": 21.523,
+      "exit_code": 0,
+      "scan": {
+        "stream": "e2e-down",
+        "bytes": 2853,
+        "findings": []
+      }
+    },
+    "inventory_after": {
+      "containers": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "networks": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "volumes": {
+        "exit_code": 0,
+        "count": 0
+      },
+      "images": {
+        "exit_code": 0,
+        "count": 0
+      }
+    }
+  },
+  "id": "SECOPS-06",
+  "spec": [
+    "\u00a719.1",
+    "\u00a719 AT28",
+    "\u00a719 AT31"
+  ],
+  "status": "passed",
+  "expected": "20/20 distinct logins; subject completion 11 rejects; address request 41 rejects with Retry-After 1",
+  "actual": {
+    "login_settings": {
+      "login_rate": {
+        "per_second": 1,
+        "burst": 40
+      },
+      "login_subject_per_minute": 10,
+      "max_concurrent": 128,
+      "mutated": false,
+      "source": "prepared central.json plus named container environment overrides"
+    },
+    "concurrent_sign_in": {
+      "attempts": 20,
+      "authenticated": 20,
+      "barrier_started": true,
+      "issuer": "embedded Dex, separate cookie jars; no shared assume slot",
+      "last_login_http_status": {
+        "500": 20
+      },
+      "login_wall_ms": [
+        452.776,
+        394.401,
+        433.833,
+        407.772,
+        361.306,
+        391.515,
+        431.043,
+        447.903,
+        432.634,
+        445.916,
+        327.19,
+        392.901,
+        433.991,
+        460.128,
+        411.806,
+        453.858,
+        388.562,
+        461.147,
+        444.473,
+        385.534
+      ],
+      "metrics_after": {
+        "address": 0,
+        "subject": 0
+      },
+      "metrics_before": {
+        "address": 0,
+        "subject": 0
+      },
+      "requests_by_identity": [
+        [
+          {
+            "utc": "2026-10-30T04:43:25.754017711Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb4-704b-8fb4-a1629d7973e3"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.195105877Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-ae11-74e6-a75c-de5fe427f510"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.197781098Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae74-7596-ad10-1914b85829d5"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.746427398Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb0-74e3-832c-036c5edc56e8"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.1366944Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-ad9b-7022-8d23-23fb13418878"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.13936651Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae3a-7560-935b-60473ad0c06d"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.754020066Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb3-7c36-af6e-d5567081ae2d"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.176113348Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-adf5-7f42-8a59-51db9a581081"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.179650544Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae62-7379-a810-0287dfb408d6"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.750160061Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb3-7684-87f3-b569666c8167"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.150056418Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-add9-7159-8da0-e0a56f76a133"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.153049369Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae47-725b-8885-e3bd5d9c1a8d"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.753358015Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb3-72df-9649-a8eb6dca8419"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.103738517Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-ad97-7bf5-8397-59489063f34b"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.107709763Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae19-77b5-97e0-b894c973c320"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.752246176Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb5-7831-912d-b55951bb5816"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.134006129Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-add2-76ea-8dab-2182ae265328"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.137631142Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae37-732a-9942-c03063b694d8"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.754024742Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb5-70e4-895f-41a297b0a11d"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.173339732Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-adfa-72d7-926f-50ac2283b1d2"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.176716491Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae5f-707c-a242-b42d3aaefc94"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.754751676Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb8-723b-8d57-14d4a3fcee3e"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.190512244Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-ae00-7781-a00a-e27e01c5372f"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.19662221Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae70-7ab0-bfed-6741db2b60b0"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.750525922Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb4-765e-91e4-d9e1ae7bcb17"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.175137178Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-ae35-7844-bd3d-0700ce540012"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.1787013Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae61-73a7-857b-13ed3a3a185e"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.755648759Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb6-7d7b-a9e0-59da32343df5"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.188525005Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-adcc-7731-82b2-964258878b35"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.192304638Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae6e-765c-bbcb-9743a9ef3cfb"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.749243121Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb2-7bd8-bda3-8d7ec738aaea"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.069038099Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-ad53-7d3a-9c13-e3defedf94d3"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.072307069Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-adf6-788a-b74e-d7541e0b6680"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.752003417Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb5-713a-af0e-a69ab1bd009d"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.135393681Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-ad9d-7cb8-a555-20fe9bc52536"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.137657893Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae38-7498-a029-816e82ab27c1"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.753335069Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb6-7818-9d39-5e8a740da956"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.17626581Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-ae16-7b03-9975-0732f3971eff"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.180178094Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae62-7984-b855-4f0c44f3b022"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.755558448Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb8-76ec-adb0-0be2da9f3c40"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.202725335Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-ae43-7083-ac5c-3aba9e6d761d"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.204948877Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae7b-7bed-853e-d28a9189f63d"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.755609329Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb9-73ea-9352-af0aaf7ab401"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.154443412Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-add6-76d7-afc4-29b15d3a5bc4"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.158129269Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae4c-7141-afc8-0d31de0a5945"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.755915378Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb9-7872-ab0d-b7178fc68a63"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.196507216Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-ae2a-7506-9224-be7ffc78878f"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.19927517Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae75-748a-8ad5-9c9bbbbfe61f"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.756323028Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acba-74b9-81ac-b996f6f5748f"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.131208548Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-adb3-760d-9418-5c9b22665c1a"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.135416558Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae35-74a2-9254-4da4faafce23"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.757121848Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acbb-7120-8569-178211799c38"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.203879975Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-ae4d-7ecc-9f36-ffaaa222a4cc"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.207198269Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae7d-7e0d-9e70-bb3db1607b76"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.756352496Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acba-7a42-b555-3ce8a110618b"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.187202322Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-adf4-7391-a568-c426d6dfa996"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.191685912Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae6c-737a-a4bf-5cce06a84e5d"
+          }
+        ],
+        [
+          {
+            "utc": "2026-10-30T04:43:25.748964596Z",
+            "method": "GET",
+            "path": "/auth/login",
+            "status": 302,
+            "request_id": "01a18b1e-acb2-78ac-a211-62eae19e9086"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.127817899Z",
+            "method": "GET",
+            "path": "/auth/callback",
+            "status": 303,
+            "request_id": "01a18b1e-adca-7dea-98f7-2c7f1f19d34d"
+          },
+          {
+            "utc": "2026-10-30T04:43:26.132575051Z",
+            "method": "GET",
+            "path": "/auth/session",
+            "status": 200,
+            "request_id": "01a18b1e-ae31-7861-b18a-ed55ca780fe2"
+          }
+        ]
+      ],
+      "session_http_status": {
+        "200": 20
+      },
+      "supersedes": "followup1-login.json; D-060 / PR #106",
+      "wrong_member": 0,
+      "zero_status": "login walker did not complete; not a measured session HTTP response"
+    },
+    "login_subject_limit": {
+      "actual_first_rejected_completion": 11,
+      "elapsed_seconds": 2.592739661,
+      "expected_first_rejected_completion": 11,
+      "first_rejection": {
+        "utc": "2026-10-30T04:44:37.770691414Z",
+        "method": "GET",
+        "path": "/auth/callback",
+        "status": 429,
+        "code": "RATE_LIMITED",
+        "request_id": "01a18b1f-c5fe-722b-9909-c38f82ed5a39",
+        "retry_after": "4"
+      },
+      "metrics_after": {
+        "address": 0,
+        "subject": 1
+      },
+      "metrics_before": {
+        "address": 0,
+        "subject": 0
+      },
+      "other_identity_authenticated": true,
+      "other_identity_requests": [
+        {
+          "utc": "2026-10-30T04:44:37.814522332Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b1f-c635-7158-af24-9954013fd161"
+        },
+        {
+          "utc": "2026-10-30T04:44:37.925564619Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b1f-c695-7864-9285-a5c4136c6902"
+        },
+        {
+          "utc": "2026-10-30T04:44:37.929603416Z",
+          "method": "GET",
+          "path": "/auth/session",
+          "status": 200,
+          "request_id": "01a18b1f-c6a8-7002-b930-9a94ce0a3c6f"
+        }
+      ],
+      "passed": true,
+      "requests": [
+        {
+          "utc": "2026-10-30T04:44:35.339288847Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b1f-bc8a-71a2-842d-2c397dece925"
+        },
+        {
+          "utc": "2026-10-30T04:44:35.44557461Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b1f-bce6-7bdf-8984-53f680c461bb"
+        },
+        {
+          "utc": "2026-10-30T04:44:35.448403144Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b1f-bcf7-7254-b1ae-ffc4dcda59ca"
+        },
+        {
+          "utc": "2026-10-30T04:44:35.536058119Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b1f-bd44-74ca-a152-087f8463f9fb"
+        },
+        {
+          "utc": "2026-10-30T04:44:35.538937072Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b1f-bd51-7cd6-99ce-0584dcc49677"
+        },
+        {
+          "utc": "2026-10-30T04:44:35.694778023Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b1f-bdd7-7cc5-8a7e-75455eefa3d5"
+        },
+        {
+          "utc": "2026-10-30T04:44:35.698818319Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b1f-bdf0-7efc-8f59-92c169b02fa3"
+        },
+        {
+          "utc": "2026-10-30T04:44:35.82681795Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b1f-be5e-7d6a-a198-661fd8454e90"
+        },
+        {
+          "utc": "2026-10-30T04:44:35.829491002Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b1f-be74-7a0b-b236-60e2f291d1f1"
+        },
+        {
+          "utc": "2026-10-30T04:44:35.917423279Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b1f-bebe-755b-a62c-47cc14aee89b"
+        },
+        {
+          "utc": "2026-10-30T04:44:35.938563462Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b1f-bed0-7dd7-8234-4d2ffdd03d77"
+        },
+        {
+          "utc": "2026-10-30T04:44:36.638213339Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b1f-c151-70e4-8a96-6d5915146735"
+        },
+        {
+          "utc": "2026-10-30T04:44:36.654607699Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b1f-c1a0-7da7-bf0d-29b909c4f419"
+        },
+        {
+          "utc": "2026-10-30T04:44:37.310108475Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b1f-c429-70a3-a1a4-9a7c99a8d53e"
+        },
+        {
+          "utc": "2026-10-30T04:44:37.314541608Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b1f-c440-7b23-b2e0-7761e6047f77"
+        },
+        {
+          "utc": "2026-10-30T04:44:37.427381038Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b1f-c4a3-721e-a781-1a20599464f8"
+        },
+        {
+          "utc": "2026-10-30T04:44:37.43158534Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b1f-c4b5-7c78-a8c7-3a0cf40c2b1c"
+        },
+        {
+          "utc": "2026-10-30T04:44:37.536173764Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b1f-c512-7967-9ee9-45866182c48e"
+        },
+        {
+          "utc": "2026-10-30T04:44:37.539692465Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b1f-c522-715c-8acd-a654b9635405"
+        },
+        {
+          "utc": "2026-10-30T04:44:37.661853076Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 303,
+          "request_id": "01a18b1f-c58d-7060-889c-853a2a3896b4"
+        },
+        {
+          "utc": "2026-10-30T04:44:37.667333304Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b1f-c5a1-7262-b815-697881cc1120"
+        },
+        {
+          "utc": "2026-10-30T04:44:37.770691414Z",
+          "method": "GET",
+          "path": "/auth/callback",
+          "status": 429,
+          "code": "RATE_LIMITED",
+          "request_id": "01a18b1f-c5fe-722b-9909-c38f82ed5a39",
+          "retry_after": "4"
+        }
+      ]
+    },
+    "login_41st_request": {
+      "actual_first_rejected_request": 41,
+      "actual_status": 429,
+      "elapsed_seconds_before_rejection": 0.075926144,
+      "expected_first_rejected_request": 41,
+      "expected_status": 429,
+      "first_rejection": {
+        "utc": "2026-10-30T04:45:19.066039009Z",
+        "method": "GET",
+        "path": "/auth/login",
+        "status": 429,
+        "code": "RATE_LIMITED",
+        "request_id": "01a18b20-6759-7b24-a203-e6e6dc49945b",
+        "retry_after": "1"
+      },
+      "forwarding_header_does_not_bypass": true,
+      "metrics_after": {
+        "address": 1,
+        "subject": 1
+      },
+      "metrics_before": {
+        "address": 0,
+        "subject": 1
+      },
+      "passed": true,
+      "remeasured": true,
+      "requests": [
+        {
+          "utc": "2026-10-30T04:45:18.993265324Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-670f-7f21-a2c3-7dbec3c71fac"
+        },
+        {
+          "utc": "2026-10-30T04:45:18.995686587Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6712-78c7-9ecd-e3f3aea5e386"
+        },
+        {
+          "utc": "2026-10-30T04:45:18.997652808Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6714-7952-8fd9-5c27bbb6ee1b"
+        },
+        {
+          "utc": "2026-10-30T04:45:18.999589128Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6716-7842-a361-0abaa425eb0d"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.001421124Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6718-799a-b796-00d5b6aac095"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.003102915Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-671a-7460-a86b-1e947927ee24"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.004908566Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-671b-7eb6-a450-98c0bfae2e18"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.006797219Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-671d-7d6e-bd61-b6b719ed2121"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.008526199Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-671f-7a18-a8b6-ae07faee7431"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.010060579Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6721-7545-a23a-3f41bd99c93a"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.011595483Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6722-7d49-b0dc-4a2507d877b9"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.01313438Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6724-766d-8dfa-00fb7f3ded07"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.014822751Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6726-7015-bbe5-f86577f21dfc"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.016563805Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6727-7bc5-8745-d616cbb6af02"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.018254179Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6729-7625-87a4-9e51615b45c6"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.019929081Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-672b-71f8-822b-dea494e368de"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.0216348Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-672c-7bbd-8a70-02c0bfdc9c51"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.023364249Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-672e-7773-88d7-c816f6e9bd2d"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.025249349Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6730-739d-af85-3a43db2c4397"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.027129236Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6732-7237-89c4-6677ff7295ab"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.028905965Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6734-70b0-b110-da48f51d5f58"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.030601476Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6735-7b44-abc7-c0bb41a85c0b"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.032307226Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6737-7787-816b-06c33fc32a7d"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.034000037Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6739-71f7-a23f-f95e95e83c07"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.035570234Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-673a-7ab6-ab1a-36a62b1dd6d3"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.037222957Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-673c-7350-ab9c-2d5d2426d06a"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.038875721Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-673d-7d49-a3f1-7db3cb5eb592"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.040484096Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-673f-7a93-94d5-04c451e97144"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.04231855Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6741-75ed-a1d0-eb0c2015e63c"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.044155434Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6743-72b8-b011-b28c6c008790"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.045886165Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6744-7c79-ab97-1a2272c8454c"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.048122854Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6746-7e33-a175-c7c037d751bb"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.05040271Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6749-7168-ae3c-bd603d56f161"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.052518245Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-674b-73c2-8793-74ca812e920b"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.054420393Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-674d-751d-bf15-0b0db3c8a5bf"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.056463288Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-674f-738e-a9cf-372de6d824ef"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.058464629Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6751-75cf-a4aa-2bad06a90cb5"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.060445818Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6753-7464-a46b-a0767dd2e988"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.062625369Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6755-7704-b296-46463490b6f7"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.064712794Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6757-78bb-97e3-7a4ada1cd9f0"
+        },
+        {
+          "utc": "2026-10-30T04:45:19.066039009Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 429,
+          "code": "RATE_LIMITED",
+          "request_id": "01a18b20-6759-7b24-a203-e6e6dc49945b",
+          "retry_after": "1"
+        },
+        {
+          "utc": "2026-10-30T04:45:20.125013578Z",
+          "method": "GET",
+          "path": "/auth/login",
+          "status": 302,
+          "request_id": "01a18b20-6b72-70f3-83eb-652d89c9e6c5"
+        }
+      ],
+      "retry_after": "1",
+      "retry_after_wait_succeeded": true,
+      "session_class_status_while_login_full": 200
+    }
+  },
+  "supersedes": "followup1-login.json; defaults changed by D-060 / PR #106",
+  "commands": [
+    [
+      "go",
+      "test",
+      "-json",
+      "-tags",
+      "e2e,integration",
+      "-p",
+      "1",
+      "-parallel",
+      "2",
+      "-count=1",
+      "-timeout",
+      "15m",
+      "-run",
+      "^TestAT28_AT31_LiveStack$",
+      "./tests/e2e/at/secops"
+    ]
+  ],
+  "history_status": "Historical login measurement remains resolved. Any inference about heartbeat/lease/usage/anonymous classification is superseded by control follow-up 15 / PR #145.",
+  "superseded_for": [
+    "heartbeat class",
+    "lease class",
+    "usage class and 8 MiB path",
+    "anonymous enrollment/webhook class"
+  ]
+}

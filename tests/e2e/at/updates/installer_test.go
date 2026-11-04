@@ -33,12 +33,13 @@ type installerCommand struct {
 }
 
 type handoffRun struct {
-	s      *updatesFollowup
-	stack  *e2e.Stack
-	rec    at.Record
-	checks map[string]bool
-	etags  map[string]string
-	nodeID string
+	s       *updatesFollowup
+	stack   *e2e.Stack
+	rec     at.Record
+	checks  map[string]bool
+	etags   map[string]string
+	nodeID  string
+	onFatal func(string)
 }
 
 func (h *handoffRun) note(name string, v any) {
@@ -404,14 +405,32 @@ func testInstallerEvidence(t *testing.T) {
 	}
 }
 
+// retiredNode is the exact read-back predicate for installer fixture retirement
+// (DELETE /api/v1/admin/nodes/{node_id}): the node resource's lifecycle_state
+// must equal "retired".
+func retiredNode(body []byte) bool {
+	return e2e.NodeFieldsMatch(map[string]string{"lifecycle_state": "retired"})(body)
+}
+
 // Keep this early installer node outside the regular all-nodes batch snapshots.
 // Retirement is through the API with ETag and read-back, never a database edit.
 func (h *handoffRun) retire(node string) {
 	view := h.central("before_fixture_retirement", node)
-	resp, err := h.s.admin.call(h.s.ctx, "DELETE", h.s.r.lab.public+"/api/v1/admin/nodes/"+node, nil, map[string]string{"Idempotency-Key": uuid.NewString(), "If-Match": `"` + view.text("resource_version") + `"`})
-	h.note("fixture_retirement_http", httpDetail(resp, err))
+	etag := h.etags["before_fixture_retirement"]
+	if etag == "" && view != nil && view.text("resource_version") != "" {
+		etag = `"` + view.text("resource_version") + `"`
+	}
+	path := "/api/v1/admin/nodes/" + node
+	write := h.stack.WriteNode(h.s.ctx, e2e.BrowserSession{Client: h.s.admin.http, CSRF: h.s.admin.csrf}, "DELETE", path, path, nil, etag, retiredNode, 202)
+	h.note("fixture_retirement_http", httpDetail(reply{Status: write.Reply.Status, Header: write.Reply.Header, Body: write.Reply.Body, Code: write.Reply.Code}, write.Err))
+	h.note("fixture_retirement_node_write", write.Receipt)
 	retired := h.central("fixture_retired", node)
-	if err != nil || resp.Status != 202 || retired.text("lifecycle_state") != "retired" {
-		h.s.r.t.Fatal("installer fixture retirement not confirmed; refusing polluted fleet snapshots")
+	if !write.Accepted(202) || retired.text("lifecycle_state") != "retired" {
+		const msg = "installer fixture retirement not confirmed; refusing polluted fleet snapshots"
+		if h.onFatal != nil {
+			h.onFatal(msg)
+			return
+		}
+		h.s.r.t.Fatal(msg)
 	}
 }

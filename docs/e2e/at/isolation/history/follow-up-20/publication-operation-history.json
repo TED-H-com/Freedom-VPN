@@ -1,0 +1,811 @@
+{
+  "run_id": "70beb28e-4766-4004-932b-510fd01f986a",
+  "scope": "Read-only snapshots of actual operation steps and report references in the same owned assembled stack; no API or database mutation.",
+  "snapshots": [
+    {
+      "read_started": "2026-11-03T22:10:49.083974Z",
+      "read_completed": "2026-11-03T22:10:49.135723Z",
+      "operations": []
+    },
+    {
+      "read_started": "2026-11-03T22:10:55.413183Z",
+      "read_completed": "2026-11-03T22:10:55.471814Z",
+      "operations": [
+        {
+          "id": "01a1a377-1b62-7733-bfa5-e0d7eaf27d6b",
+          "kind": "node.enroll",
+          "steps": {
+            "node_policy": {
+              "status": "pending",
+              "required": true
+            },
+            "netbird_setup": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:54.826054851Z",
+              "observed_ref": "netbird_setup"
+            },
+            "peer_readback": {
+              "status": "pending",
+              "required": true
+            }
+          },
+          "status": "running",
+          "created_at": "2026-11-03T22:10:54.429255+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": null,
+          "observed_refs": {
+            "netbird_setup": {
+              "reference": "bootstrap:01a1a377-1b53-7800-b7ab-a19815d6ec77",
+              "observed_at": "2026-11-03T22:10:54.826054851Z"
+            }
+          },
+          "desired_generation": null
+        }
+      ]
+    },
+    {
+      "read_started": "2026-11-03T22:10:57.530100Z",
+      "read_completed": "2026-11-03T22:10:57.588732Z",
+      "operations": [
+        {
+          "id": "01a1a377-1b62-7733-bfa5-e0d7eaf27d6b",
+          "kind": "node.enroll",
+          "steps": {
+            "node_policy": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:56.802131211Z",
+              "observed_ref": "node_policy"
+            },
+            "netbird_setup": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:54.826054851Z",
+              "observed_ref": "netbird_setup"
+            },
+            "peer_readback": {
+              "status": "pending",
+              "required": true
+            }
+          },
+          "status": "running",
+          "created_at": "2026-11-03T22:10:54.429255+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": null,
+          "observed_refs": {
+            "node_policy": {
+              "reference": "observation:01a1a377-2435-7e84-82d9-e9e96ecea6e1",
+              "observed_at": "2026-11-03T22:10:56.802131211Z"
+            },
+            "netbird_setup": {
+              "reference": "bootstrap:01a1a377-1b53-7800-b7ab-a19815d6ec77",
+              "observed_at": "2026-11-03T22:10:54.826054851Z"
+            }
+          },
+          "desired_generation": null
+        },
+        {
+          "id": "cfc779a5-6f49-4e79-8a1a-4597402393da",
+          "kind": "node.publish",
+          "steps": {
+            "agent_policy": {
+              "order": 1,
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-11-03T22:10:56.893735983Z"
+            },
+            "data_path_probe": {
+              "order": 3,
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-11-03T22:10:56.893735983Z"
+            },
+            "netbird_route_readback": {
+              "order": 2,
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-11-03T22:10:56.893735983Z"
+            }
+          },
+          "status": "pending",
+          "created_at": "2026-11-03T22:10:56.893735+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": null,
+          "observed_refs": {},
+          "desired_generation": "2"
+        }
+      ]
+    },
+    {
+      "read_started": "2026-11-03T22:10:58.589061Z",
+      "read_completed": "2026-11-03T22:10:58.644588Z",
+      "operations": [
+        {
+          "id": "01a1a377-1b62-7733-bfa5-e0d7eaf27d6b",
+          "kind": "node.enroll",
+          "steps": {
+            "node_policy": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:56.802131211Z",
+              "observed_ref": "node_policy"
+            },
+            "netbird_setup": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:54.826054851Z",
+              "observed_ref": "netbird_setup"
+            },
+            "peer_readback": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:57.854079124Z",
+              "observed_ref": "peer_readback"
+            }
+          },
+          "status": "succeeded",
+          "created_at": "2026-11-03T22:10:54.429255+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": "2026-11-03T22:10:57.854197+00:00",
+          "observed_refs": {
+            "node_policy": {
+              "reference": "observation:01a1a377-2435-7e84-82d9-e9e96ecea6e1",
+              "observed_at": "2026-11-03T22:10:56.802131211Z"
+            },
+            "netbird_setup": {
+              "reference": "bootstrap:01a1a377-1b53-7800-b7ab-a19815d6ec77",
+              "observed_at": "2026-11-03T22:10:54.826054851Z"
+            },
+            "peer_readback": {
+              "reference": "audit_event:01a1a377-28bd-76cc-b540-d590c9fbb7b2",
+              "observed_at": "2026-11-03T22:10:57.854079124Z"
+            }
+          },
+          "desired_generation": null
+        },
+        {
+          "id": "cfc779a5-6f49-4e79-8a1a-4597402393da",
+          "kind": "node.publish",
+          "steps": {
+            "agent_policy": {
+              "order": 1,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-03T22:10:57.803768107Z",
+              "observed_at": "2026-11-03T22:10:57.803768107Z",
+              "observed_ref": "agent_policy"
+            },
+            "data_path_probe": {
+              "order": 3,
+              "reason": "check_failed",
+              "status": "pending",
+              "required": true,
+              "error_code": "NODE_NOT_SERVICEABLE",
+              "updated_at": "2026-11-03T22:10:57.809213381Z",
+              "error_message": "member_forwarding_unconfirmed"
+            },
+            "netbird_route_readback": {
+              "order": 2,
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-11-03T22:10:56.893735983Z"
+            }
+          },
+          "status": "running",
+          "created_at": "2026-11-03T22:10:56.893735+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": null,
+          "observed_refs": {
+            "agent_policy": "node:01a1a377-186a-797c-a0c1-c995dca174aa:gen:3:safety:passed"
+          },
+          "desired_generation": "2"
+        }
+      ]
+    },
+    {
+      "read_started": "2026-11-03T22:10:59.644949Z",
+      "read_completed": "2026-11-03T22:10:59.702639Z",
+      "operations": [
+        {
+          "id": "01a1a377-1b62-7733-bfa5-e0d7eaf27d6b",
+          "kind": "node.enroll",
+          "steps": {
+            "node_policy": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:56.802131211Z",
+              "observed_ref": "node_policy"
+            },
+            "netbird_setup": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:54.826054851Z",
+              "observed_ref": "netbird_setup"
+            },
+            "peer_readback": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:57.854079124Z",
+              "observed_ref": "peer_readback"
+            }
+          },
+          "status": "succeeded",
+          "created_at": "2026-11-03T22:10:54.429255+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": "2026-11-03T22:10:57.854197+00:00",
+          "observed_refs": {
+            "node_policy": {
+              "reference": "observation:01a1a377-2435-7e84-82d9-e9e96ecea6e1",
+              "observed_at": "2026-11-03T22:10:56.802131211Z"
+            },
+            "netbird_setup": {
+              "reference": "bootstrap:01a1a377-1b53-7800-b7ab-a19815d6ec77",
+              "observed_at": "2026-11-03T22:10:54.826054851Z"
+            },
+            "peer_readback": {
+              "reference": "audit_event:01a1a377-28bd-76cc-b540-d590c9fbb7b2",
+              "observed_at": "2026-11-03T22:10:57.854079124Z"
+            }
+          },
+          "desired_generation": null
+        },
+        {
+          "id": "cfc779a5-6f49-4e79-8a1a-4597402393da",
+          "kind": "node.publish",
+          "steps": {
+            "agent_policy": {
+              "order": 1,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-03T22:10:58.831569195Z",
+              "observed_at": "2026-11-03T22:10:58.831569195Z",
+              "observed_ref": "agent_policy"
+            },
+            "data_path_probe": {
+              "order": 3,
+              "reason": "forwarding_disabled",
+              "status": "pending",
+              "required": true,
+              "error_code": "NODE_NOT_SERVICEABLE",
+              "updated_at": "2026-11-03T22:10:58.836615091Z",
+              "error_message": "member_forwarding_unconfirmed"
+            },
+            "netbird_route_readback": {
+              "order": 2,
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-11-03T22:10:56.893735983Z"
+            }
+          },
+          "status": "running",
+          "created_at": "2026-11-03T22:10:56.893735+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": null,
+          "observed_refs": {
+            "agent_policy": "node:01a1a377-186a-797c-a0c1-c995dca174aa:gen:3:safety:passed"
+          },
+          "desired_generation": "2"
+        }
+      ]
+    },
+    {
+      "read_started": "2026-11-03T22:11:01.753831Z",
+      "read_completed": "2026-11-03T22:11:01.811301Z",
+      "operations": [
+        {
+          "id": "01a1a377-1b62-7733-bfa5-e0d7eaf27d6b",
+          "kind": "node.enroll",
+          "steps": {
+            "node_policy": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:56.802131211Z",
+              "observed_ref": "node_policy"
+            },
+            "netbird_setup": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:54.826054851Z",
+              "observed_ref": "netbird_setup"
+            },
+            "peer_readback": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:57.854079124Z",
+              "observed_ref": "peer_readback"
+            }
+          },
+          "status": "succeeded",
+          "created_at": "2026-11-03T22:10:54.429255+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": "2026-11-03T22:10:57.854197+00:00",
+          "observed_refs": {
+            "node_policy": {
+              "reference": "observation:01a1a377-2435-7e84-82d9-e9e96ecea6e1",
+              "observed_at": "2026-11-03T22:10:56.802131211Z"
+            },
+            "netbird_setup": {
+              "reference": "bootstrap:01a1a377-1b53-7800-b7ab-a19815d6ec77",
+              "observed_at": "2026-11-03T22:10:54.826054851Z"
+            },
+            "peer_readback": {
+              "reference": "audit_event:01a1a377-28bd-76cc-b540-d590c9fbb7b2",
+              "observed_at": "2026-11-03T22:10:57.854079124Z"
+            }
+          },
+          "desired_generation": null
+        },
+        {
+          "id": "cfc779a5-6f49-4e79-8a1a-4597402393da",
+          "kind": "node.publish",
+          "steps": {
+            "agent_policy": {
+              "order": 1,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-03T22:11:00.842602378Z",
+              "observed_at": "2026-11-03T22:11:00.842602378Z",
+              "observed_ref": "agent_policy"
+            },
+            "data_path_probe": {
+              "order": 3,
+              "reason": "forwarding_disabled",
+              "status": "pending",
+              "required": true,
+              "error_code": "NODE_NOT_SERVICEABLE",
+              "updated_at": "2026-11-03T22:11:00.846479352Z",
+              "error_message": "member_forwarding_unconfirmed"
+            },
+            "netbird_route_readback": {
+              "order": 2,
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-11-03T22:10:56.893735983Z"
+            }
+          },
+          "status": "running",
+          "created_at": "2026-11-03T22:10:56.893735+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": null,
+          "observed_refs": {
+            "agent_policy": "node:01a1a377-186a-797c-a0c1-c995dca174aa:gen:3:safety:passed"
+          },
+          "desired_generation": "2"
+        }
+      ]
+    },
+    {
+      "read_started": "2026-11-03T22:11:04.929180Z",
+      "read_completed": "2026-11-03T22:11:04.989176Z",
+      "operations": [
+        {
+          "id": "01a1a377-1b62-7733-bfa5-e0d7eaf27d6b",
+          "kind": "node.enroll",
+          "steps": {
+            "node_policy": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:56.802131211Z",
+              "observed_ref": "node_policy"
+            },
+            "netbird_setup": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:54.826054851Z",
+              "observed_ref": "netbird_setup"
+            },
+            "peer_readback": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:57.854079124Z",
+              "observed_ref": "peer_readback"
+            }
+          },
+          "status": "succeeded",
+          "created_at": "2026-11-03T22:10:54.429255+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": "2026-11-03T22:10:57.854197+00:00",
+          "observed_refs": {
+            "node_policy": {
+              "reference": "observation:01a1a377-2435-7e84-82d9-e9e96ecea6e1",
+              "observed_at": "2026-11-03T22:10:56.802131211Z"
+            },
+            "netbird_setup": {
+              "reference": "bootstrap:01a1a377-1b53-7800-b7ab-a19815d6ec77",
+              "observed_at": "2026-11-03T22:10:54.826054851Z"
+            },
+            "peer_readback": {
+              "reference": "audit_event:01a1a377-28bd-76cc-b540-d590c9fbb7b2",
+              "observed_at": "2026-11-03T22:10:57.854079124Z"
+            }
+          },
+          "desired_generation": null
+        },
+        {
+          "id": "cfc779a5-6f49-4e79-8a1a-4597402393da",
+          "kind": "node.publish",
+          "steps": {
+            "agent_policy": {
+              "order": 1,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-03T22:11:04.866370912Z",
+              "observed_at": "2026-11-03T22:11:04.866370912Z",
+              "observed_ref": "agent_policy"
+            },
+            "data_path_probe": {
+              "order": 3,
+              "reason": "forwarding_disabled",
+              "status": "pending",
+              "required": true,
+              "error_code": "NODE_NOT_SERVICEABLE",
+              "updated_at": "2026-11-03T22:11:04.869553755Z",
+              "error_message": "member_forwarding_unconfirmed"
+            },
+            "netbird_route_readback": {
+              "order": 2,
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-11-03T22:10:56.893735983Z"
+            }
+          },
+          "status": "running",
+          "created_at": "2026-11-03T22:10:56.893735+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": null,
+          "observed_refs": {
+            "agent_policy": "node:01a1a377-186a-797c-a0c1-c995dca174aa:gen:3:safety:passed"
+          },
+          "desired_generation": "2"
+        }
+      ]
+    },
+    {
+      "read_started": "2026-11-03T22:11:10.211791Z",
+      "read_completed": "2026-11-03T22:11:10.262977Z",
+      "operations": [
+        {
+          "id": "01a1a377-1b62-7733-bfa5-e0d7eaf27d6b",
+          "kind": "node.enroll",
+          "steps": {
+            "node_policy": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:56.802131211Z",
+              "observed_ref": "node_policy"
+            },
+            "netbird_setup": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:54.826054851Z",
+              "observed_ref": "netbird_setup"
+            },
+            "peer_readback": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:57.854079124Z",
+              "observed_ref": "peer_readback"
+            }
+          },
+          "status": "succeeded",
+          "created_at": "2026-11-03T22:10:54.429255+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": "2026-11-03T22:10:57.854197+00:00",
+          "observed_refs": {
+            "node_policy": {
+              "reference": "observation:01a1a377-2435-7e84-82d9-e9e96ecea6e1",
+              "observed_at": "2026-11-03T22:10:56.802131211Z"
+            },
+            "netbird_setup": {
+              "reference": "bootstrap:01a1a377-1b53-7800-b7ab-a19815d6ec77",
+              "observed_at": "2026-11-03T22:10:54.826054851Z"
+            },
+            "peer_readback": {
+              "reference": "audit_event:01a1a377-28bd-76cc-b540-d590c9fbb7b2",
+              "observed_at": "2026-11-03T22:10:57.854079124Z"
+            }
+          },
+          "desired_generation": null
+        },
+        {
+          "id": "cfc779a5-6f49-4e79-8a1a-4597402393da",
+          "kind": "node.publish",
+          "steps": {
+            "agent_policy": {
+              "order": 1,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-03T22:11:09.891507215Z",
+              "observed_at": "2026-11-03T22:11:09.891507215Z",
+              "observed_ref": "agent_policy"
+            },
+            "data_path_probe": {
+              "order": 3,
+              "reason": "forwarding_disabled",
+              "status": "pending",
+              "required": true,
+              "error_code": "NODE_NOT_SERVICEABLE",
+              "updated_at": "2026-11-03T22:11:09.895725255Z",
+              "error_message": "member_forwarding_unconfirmed"
+            },
+            "netbird_route_readback": {
+              "order": 2,
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-11-03T22:10:56.893735983Z"
+            }
+          },
+          "status": "running",
+          "created_at": "2026-11-03T22:10:56.893735+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": null,
+          "observed_refs": {
+            "agent_policy": "node:01a1a377-186a-797c-a0c1-c995dca174aa:gen:3:safety:passed"
+          },
+          "desired_generation": "2"
+        }
+      ]
+    },
+    {
+      "read_started": "2026-11-03T22:11:20.787173Z",
+      "read_completed": "2026-11-03T22:11:20.844728Z",
+      "operations": [
+        {
+          "id": "01a1a377-1b62-7733-bfa5-e0d7eaf27d6b",
+          "kind": "node.enroll",
+          "steps": {
+            "node_policy": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:56.802131211Z",
+              "observed_ref": "node_policy"
+            },
+            "netbird_setup": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:54.826054851Z",
+              "observed_ref": "netbird_setup"
+            },
+            "peer_readback": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:57.854079124Z",
+              "observed_ref": "peer_readback"
+            }
+          },
+          "status": "succeeded",
+          "created_at": "2026-11-03T22:10:54.429255+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": "2026-11-03T22:10:57.854197+00:00",
+          "observed_refs": {
+            "node_policy": {
+              "reference": "observation:01a1a377-2435-7e84-82d9-e9e96ecea6e1",
+              "observed_at": "2026-11-03T22:10:56.802131211Z"
+            },
+            "netbird_setup": {
+              "reference": "bootstrap:01a1a377-1b53-7800-b7ab-a19815d6ec77",
+              "observed_at": "2026-11-03T22:10:54.826054851Z"
+            },
+            "peer_readback": {
+              "reference": "audit_event:01a1a377-28bd-76cc-b540-d590c9fbb7b2",
+              "observed_at": "2026-11-03T22:10:57.854079124Z"
+            }
+          },
+          "desired_generation": null
+        },
+        {
+          "id": "cfc779a5-6f49-4e79-8a1a-4597402393da",
+          "kind": "node.publish",
+          "steps": {
+            "agent_policy": {
+              "order": 1,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-03T22:11:19.946322954Z",
+              "observed_at": "2026-11-03T22:11:19.946322954Z",
+              "observed_ref": "agent_policy"
+            },
+            "data_path_probe": {
+              "order": 3,
+              "reason": "forwarding_disabled",
+              "status": "pending",
+              "required": true,
+              "error_code": "NODE_NOT_SERVICEABLE",
+              "updated_at": "2026-11-03T22:11:19.952267442Z",
+              "error_message": "member_forwarding_unconfirmed"
+            },
+            "netbird_route_readback": {
+              "order": 2,
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-11-03T22:10:56.893735983Z"
+            }
+          },
+          "status": "running",
+          "created_at": "2026-11-03T22:10:56.893735+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": null,
+          "observed_refs": {
+            "agent_policy": "node:01a1a377-186a-797c-a0c1-c995dca174aa:gen:3:safety:passed"
+          },
+          "desired_generation": "2"
+        }
+      ]
+    },
+    {
+      "read_started": "2026-11-03T22:11:52.514133Z",
+      "read_completed": "2026-11-03T22:11:52.573871Z",
+      "operations": [
+        {
+          "id": "01a1a377-1b62-7733-bfa5-e0d7eaf27d6b",
+          "kind": "node.enroll",
+          "steps": {
+            "node_policy": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:56.802131211Z",
+              "observed_ref": "node_policy"
+            },
+            "netbird_setup": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:54.826054851Z",
+              "observed_ref": "netbird_setup"
+            },
+            "peer_readback": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:57.854079124Z",
+              "observed_ref": "peer_readback"
+            }
+          },
+          "status": "succeeded",
+          "created_at": "2026-11-03T22:10:54.429255+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": "2026-11-03T22:10:57.854197+00:00",
+          "observed_refs": {
+            "node_policy": {
+              "reference": "observation:01a1a377-2435-7e84-82d9-e9e96ecea6e1",
+              "observed_at": "2026-11-03T22:10:56.802131211Z"
+            },
+            "netbird_setup": {
+              "reference": "bootstrap:01a1a377-1b53-7800-b7ab-a19815d6ec77",
+              "observed_at": "2026-11-03T22:10:54.826054851Z"
+            },
+            "peer_readback": {
+              "reference": "audit_event:01a1a377-28bd-76cc-b540-d590c9fbb7b2",
+              "observed_at": "2026-11-03T22:10:57.854079124Z"
+            }
+          },
+          "desired_generation": null
+        },
+        {
+          "id": "cfc779a5-6f49-4e79-8a1a-4597402393da",
+          "kind": "node.publish",
+          "steps": {
+            "agent_policy": {
+              "order": 1,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-03T22:11:52.065553799Z",
+              "observed_at": "2026-11-03T22:11:52.065553799Z",
+              "observed_ref": "agent_policy"
+            },
+            "data_path_probe": {
+              "order": 3,
+              "reason": "forwarding_disabled",
+              "status": "pending",
+              "required": true,
+              "error_code": "NODE_NOT_SERVICEABLE",
+              "updated_at": "2026-11-03T22:11:52.069752922Z",
+              "error_message": "member_forwarding_unconfirmed"
+            },
+            "netbird_route_readback": {
+              "order": 2,
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-11-03T22:10:56.893735983Z"
+            }
+          },
+          "status": "running",
+          "created_at": "2026-11-03T22:10:56.893735+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": null,
+          "observed_refs": {
+            "agent_policy": "node:01a1a377-186a-797c-a0c1-c995dca174aa:gen:3:safety:passed"
+          },
+          "desired_generation": "2"
+        }
+      ]
+    },
+    {
+      "read_started": "2026-11-03T22:12:25.533313Z",
+      "read_completed": "2026-11-03T22:12:25.621707Z",
+      "operations": [
+        {
+          "id": "01a1a377-1b62-7733-bfa5-e0d7eaf27d6b",
+          "kind": "node.enroll",
+          "steps": {
+            "node_policy": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:56.802131211Z",
+              "observed_ref": "node_policy"
+            },
+            "netbird_setup": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:54.826054851Z",
+              "observed_ref": "netbird_setup"
+            },
+            "peer_readback": {
+              "status": "succeeded",
+              "required": true,
+              "observed_at": "2026-11-03T22:10:57.854079124Z",
+              "observed_ref": "peer_readback"
+            }
+          },
+          "status": "succeeded",
+          "created_at": "2026-11-03T22:10:54.429255+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": "2026-11-03T22:10:57.854197+00:00",
+          "observed_refs": {
+            "node_policy": {
+              "reference": "observation:01a1a377-2435-7e84-82d9-e9e96ecea6e1",
+              "observed_at": "2026-11-03T22:10:56.802131211Z"
+            },
+            "netbird_setup": {
+              "reference": "bootstrap:01a1a377-1b53-7800-b7ab-a19815d6ec77",
+              "observed_at": "2026-11-03T22:10:54.826054851Z"
+            },
+            "peer_readback": {
+              "reference": "audit_event:01a1a377-28bd-76cc-b540-d590c9fbb7b2",
+              "observed_at": "2026-11-03T22:10:57.854079124Z"
+            }
+          },
+          "desired_generation": null
+        },
+        {
+          "id": "cfc779a5-6f49-4e79-8a1a-4597402393da",
+          "kind": "node.publish",
+          "steps": {
+            "agent_policy": {
+              "order": 1,
+              "status": "succeeded",
+              "required": true,
+              "updated_at": "2026-11-03T22:12:25.306069103Z",
+              "observed_at": "2026-11-03T22:12:25.306069103Z",
+              "observed_ref": "agent_policy"
+            },
+            "data_path_probe": {
+              "order": 3,
+              "reason": "forwarding_disabled",
+              "status": "pending",
+              "required": true,
+              "error_code": "NODE_NOT_SERVICEABLE",
+              "updated_at": "2026-11-03T22:12:25.309856232Z",
+              "error_message": "member_forwarding_unconfirmed"
+            },
+            "netbird_route_readback": {
+              "order": 2,
+              "status": "pending",
+              "required": true,
+              "updated_at": "2026-11-03T22:10:56.893735983Z"
+            }
+          },
+          "status": "running",
+          "created_at": "2026-11-03T22:10:56.893735+00:00",
+          "resource_id": "01a1a377-186a-797c-a0c1-c995dca174aa",
+          "completed_at": null,
+          "observed_refs": {
+            "agent_policy": "node:01a1a377-186a-797c-a0c1-c995dca174aa:gen:3:safety:passed"
+          },
+          "desired_generation": "2"
+        }
+      ]
+    }
+  ],
+  "last_successful_read": "2026-11-03T22:13:29.113768Z",
+  "end": "owned database unavailable; last successful snapshot retained"
+}

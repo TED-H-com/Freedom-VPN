@@ -71,13 +71,16 @@ func TestF32_AT13_QuarantineRetriesShareAllowance(t *testing.T) {
 	ctx, cancel := newLocalBudget(t.Context(), 10*time.Second)
 	defer cancel()
 	r.eng.quarantine(ctx)
-	r.eng.quarantine(ctx) // a final audit can re-contain while time remains
-	if len(p.deadlines) != 2 || !p.deadlines[0].Equal(p.deadlines[1]) {
-		t.Fatal("quarantine retry refreshed its deadline")
+	budget := ctx.Value(localBudgetKey{}).(*localBudget)
+	allowance := budget.quarantine
+	r.eng.quarantine(ctx) // final audit cannot repeat this pass's containment
+	outer, _ := ctx.Deadline()
+	if len(p.deadlines) != 1 || budget.quarantine != allowance || p.deadlines[0].After(outer) {
+		t.Fatal("quarantine repeated or refreshed its allowance")
 	}
 	ctx.Value(localBudgetKey{}).(*localBudget).cancelQuarantine()
 	r.eng.quarantine(ctx)
-	if len(p.deadlines) != 2 {
+	if len(p.deadlines) != 1 {
 		t.Fatal("spent allowance allowed another quarantine")
 	}
 }

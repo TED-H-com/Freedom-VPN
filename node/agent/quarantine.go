@@ -108,6 +108,12 @@ func (e *Engine) recordApplyQuarantine(res enforce.ApplyResult, err error) {
 
 func (e *Engine) quarantine(ctx context.Context) {
 	if budget, ok := ctx.Value(localBudgetKey{}).(*localBudget); ok {
+		if budget.quarantineAttempted {
+			return
+		}
+		budget.quarantineAttempted = true
+	}
+	if budget, ok := ctx.Value(localBudgetKey{}).(*localBudget); ok {
 		if budget.quarantine == nil {
 			budget.quarantine, budget.cancelQuarantine = context.WithTimeout(localContext(ctx), 5*time.Second)
 		}
@@ -154,6 +160,7 @@ func (e *Engine) quarantine(ctx context.Context) {
 		e.containment.Error = "quarantine_incomplete"
 	}
 	e.baselineOK = q.Baseline.Verified
+	noteQuarantineBaseline(ctx, e.baselineOK)
 	e.lastObs = time.Time{}
 }
 
@@ -204,5 +211,19 @@ func (e *Engine) attachContainment(rep *api.ObservationReport, at time.Time) {
 	}
 	if e.containment.Error != "" {
 		add("quarantine", e.containment.Error)
+	}
+}
+
+func noteQuarantineBaseline(ctx context.Context, verified bool) {
+	if budget, ok := ctx.Value(localBudgetKey{}).(*localBudget); ok {
+		budget.quarantineAttempted = true
+		budget.quarantineBaseline = verified
+	}
+}
+
+// Any new rules mutation invalidates reuse of this pass's quarantine baseline.
+func invalidateQuarantineBaseline(ctx context.Context) {
+	if budget, ok := ctx.Value(localBudgetKey{}).(*localBudget); ok {
+		budget.quarantineBaseline = false
 	}
 }

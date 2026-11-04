@@ -55,7 +55,7 @@ def main():
                 ['go', 'vet', '-tags', 'e2e', './tests/e2e/at/updates/...'],
                 ['go', 'run', 'honnef.co/go/tools/cmd/staticcheck@v0.8.2', './tests/e2e/at/updates/...'],
                 ['go', 'run', 'honnef.co/go/tools/cmd/staticcheck@v0.8.2', '-tags', 'e2e', './tests/e2e/at/updates/...'],
-                ['go', 'test', '-tags', 'e2e', './tests/e2e/at/updates', '-run', '^(TestUpdatesFollowupEvidence|TestD098_Followup9ArchivePins|TestD132_Followup10ArchivePins|TestD132_Followup11ArchivePins|TestD098_Followup12FirstAttemptArchivePins|TestD098_Followup12ArchivePins|TestD098_Followup13ArchivePins)$'],
+                ['go', 'test', '-tags', 'e2e', './tests/e2e/at/updates', '-run', '^(TestUpdatesFollowupEvidence|TestD098_Followup9ArchivePins|TestD132_Followup10ArchivePins|TestD132_Followup11ArchivePins|TestD098_Followup12FirstAttemptArchivePins|TestD098_Followup12ArchivePins|TestD098_Followup13ArchivePins|TestUPD02_NodeWriteAudit|TestUPD02_NodeWriteAuditRejectsBypasses|TestUPD02_NodeWriteRetiredPredicate|TestUPD02_InstallerRetireNodeWriteAndReceipts)$'],
             ]:
                 code = run(args, env)
                 if code:

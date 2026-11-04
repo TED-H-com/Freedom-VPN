@@ -104,10 +104,10 @@ func (e *Engine) Close() error {
 // first (§13.5). Nil means the local transaction finished or there was no
 // work. It does not mean the center has accepted the result.
 func (e *Engine) Run(ctx context.Context) error {
-	if err := e.open(ctx); err != nil {
-		return err
-	}
 	return e.withLock(ctx, func() error {
+		if err := e.open(ctx); err != nil {
+			return err
+		}
 		blocked := false
 		if err := e.Recover(ctx); err != nil {
 			if !errors.Is(err, ErrMembersBlocked) {
@@ -137,9 +137,10 @@ func (e *Engine) Run(ctx context.Context) error {
 	})
 }
 
-// withLock acquires the node update lock before any journaled update work
-// other than opening the database. A caller that already holds it, such as
-// Flush during seal, runs fn directly (D-034d).
+// withLock acquires the node update lock before opening or migrating the
+// journal (D-155). AcquireWithBootID creates the lock's parent directory.
+// A caller that already holds the lock, such as Flush during seal, runs fn
+// directly (D-034d).
 func (e *Engine) withLock(ctx context.Context, fn func() error) error {
 	if e.lockHeld {
 		e.noteBootFallback()
@@ -192,10 +193,12 @@ func (e *Engine) noteBootFallback() {
 // Recover finishes an applying or checking transaction before member
 // services start (§13.5). ErrMembersBlocked means forwarding stays off.
 func (e *Engine) Recover(ctx context.Context) error {
-	if err := e.open(ctx); err != nil {
-		return err
-	}
-	return e.withLock(ctx, func() error { return e.recoverLocked(ctx) })
+	return e.withLock(ctx, func() error {
+		if err := e.open(ctx); err != nil {
+			return err
+		}
+		return e.recoverLocked(ctx)
+	})
 }
 
 func (e *Engine) recoverLocked(ctx context.Context) error {

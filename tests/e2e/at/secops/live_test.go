@@ -38,6 +38,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	e2e "github.com/TED-H-com/Freedom-VPN/tests/e2e"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/idplogin"
+	"github.com/TED-H-com/Freedom-VPN/tests/e2e/internal/labstack"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 )
@@ -200,6 +201,13 @@ func (p *liveProbe) client() *http.Client {
 	return &http.Client{Transport: p.tr, Jar: jar, Timeout: 15 * time.Second}
 }
 func (p *liveProbe) call(s *liveSession, method, path string, body any, h map[string]string) liveReply {
+	if nodeMutation15(method, path) {
+		p.t.Fatal("node writes require Stack.WriteNode")
+	}
+	return p.callRaw(s, method, path, body, h)
+}
+
+func (p *liveProbe) callRaw(s *liveSession, method, path string, body any, h map[string]string) liveReply {
 	var b []byte
 	var err error
 	if raw, ok := body.([]byte); ok {
@@ -308,14 +316,14 @@ func (p *liveProbe) roles(admin, member *liveSession) {
 				continue
 			}
 			target := "/api/v1" + parameter.ReplaceAllString(path, "00000000-0000-0000-0000-000000000001")
-			r := p.call(anonymous, method, target, json.RawMessage(`{}`), nil)
+			r := p.callRaw(anonymous, method, target, json.RawMessage(`{}`), nil)
 			p.check("anonymous "+method+" "+path, r, 401, "")
 			if strings.HasPrefix(path, "/admin/") {
-				r = p.call(member, method, target, json.RawMessage(`{}`), nil)
+				r = p.callRaw(member, method, target, json.RawMessage(`{}`), nil)
 				p.check("member to admin "+method+" "+path, r, 401, "UNAUTHENTICATED")
 			}
 			if strings.HasPrefix(path, "/member/") {
-				r = p.call(admin, method, target, json.RawMessage(`{}`), nil)
+				r = p.callRaw(admin, method, target, json.RawMessage(`{}`), nil)
 				p.check("admin to member "+method+" "+path, r, 401, "UNAUTHENTICATED")
 			}
 			time.Sleep(550 * time.Millisecond)
@@ -668,13 +676,16 @@ func (p *liveProbe) ledger(admin, node *liveSession, b api.EnrollResponse, membe
 func (p *liveProbe) revoke(admin, node *liveSession, b api.EnrollResponse) {
 	// Revoke only B after retaining its batch; isolated restore predates revocation.
 	r := p.call(admin, "GET", "/api/v1/admin/nodes/"+b.NodeId.String(), nil, nil)
-	revoked := p.call(admin, "POST", "/api/v1/admin/nodes/"+b.NodeId.String()+"/revoke", map[string]string{"reason": "TEST ONLY secops revoked certificate"}, map[string]string{"If-Match": r.header.Get("ETag")})
-	p.check("node revoke accepted", revoked, 202, "")
+	path := "/api/v1/admin/nodes/" + b.NodeId.String()
+	p.writeNode("node revoke accepted", admin, "POST", path+"/revoke", path, map[string]string{"reason": "TEST ONLY secops revoked certificate"}, r.header.Get("ETag"), labstack.NodeRevoked)
 	p.check("revoked certificate refuses desired state", p.call(node, "GET", liveAgent+"/api/v1/agent/desired-state", nil, nil), 403, "IDENTITY_REVOKED")
 }
 func (p *liveProbe) finish() {
 	if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "12" {
 		p.metadata["follow_up"] = 12
+	}
+	if os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP") == "15" {
+		p.metadata["follow_up"] = 15
 	}
 	for key := range p.metadata {
 		if strings.HasPrefix(key, "private_") {
@@ -829,7 +840,7 @@ func (p *liveProbe) finish() {
 	}
 	if phase := os.Getenv("FVPN_SECOPS_FOLLOWUP11"); phase == "restore" || phase == "transports" {
 		name = "followup11-" + phase + "-live.json"
-		if followup := os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP"); followup == "12" || followup == "13" {
+		if followup := os.Getenv("FVPN_SECOPS_EVIDENCE_FOLLOWUP"); followup == "12" || followup == "13" || followup == "15" {
 			name = "followup" + followup + "-" + phase + "-live.json"
 		}
 	}
