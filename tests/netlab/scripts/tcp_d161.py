@@ -79,6 +79,23 @@ def tcp_facts(events, captures, capture_errors=()):
         errors.append('missing TCP sidecar boundary/timestamps')
         return result
     end = int(ends[0]['wall_ns'])
+    # The suite can leave earlier sockets retransmitting into this capture.
+    # Select the measured connection by its complete opening before first send;
+    # every later SYN at this origin is a connection-continuity failure. Distinct
+    # old sockets without an opening in this capture are counted, not conflated.
+    opening = [r for r in captures.get('origin', []) if r['direction'] == 'Out'
+               and 'S' in r['flags'] and r['wall_ns'] <= end]
+    initial = [r for r in opening if r['wall_ns'] < int(sends[0]['wall_ns'])]
+    initial_ports = {r['source_port'] for r in initial}
+    if len(initial_ports) != 1:
+        connection.append('missing handshake or second connection')
+        return result
+    port = next(iter(initial_ports))
+    if any(r['source_port'] != port or r['wall_ns'] >= int(sends[0]['wall_ns']) for r in opening):
+        connection.append('second connection/handshake after stream start')
+    result['connection'] = dict(client='100.64.1.1', client_port=port,
+                                server='203.0.113.10', server_port=9001)
+    result['ignored_other_connection_packets'] = {role: 0 for role in captures}
     paths = {p: (direction, index) for direction, route in ROUTES.items()
              for index, p in enumerate(route)}
     groups, ports, syns = defaultdict(lambda: defaultdict(list)), set(), defaultdict(set)
@@ -95,6 +112,9 @@ def tcp_facts(events, captures, capture_errors=()):
             client = (row['source'], row['source_port']) if request else (row['destination'], row['destination_port'])
             server = (row['destination'], row['destination_port']) if request else (row['source'], row['source_port'])
             expected_client = '100.64.1.1' if path in (ROUTES['request'][:2] + ROUTES['echo'][2:]) else '192.0.2.37'
+            if client[1] != port:
+                result['ignored_other_connection_packets'][role] += 1
+                continue
             ports.add(client[1])
             if client[0] != expected_client or server != ('203.0.113.10', 9001):
                 connection.append('second or unexpected connection endpoint')

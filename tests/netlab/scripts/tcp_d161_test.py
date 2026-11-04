@@ -110,6 +110,19 @@ class D161Test(unittest.TestCase):
         events[2]['response_sequence'] = 2
         self.assert_fails(self.facts(blocks, events), 'not delivered')
 
+    def test_old_distinct_socket_does_not_relabel_measured_connection(self):
+        # Full-lab f35 gate2 contains retransmissions and RST/FIN from sockets
+        # opened before capture. Their distinct ports are not the stream.
+        blocks, events, packet = self.fixture()
+        packet('request', 1_400_000_000, 12, 123456, 3, port=51346)
+        packet('echo', 1_401_000_000, 13, 654321, flags='F.', port=51346)
+        packet('request', 1_402_000_000, 14, 123459, flags='R', port=51346)
+        facts = self.facts(blocks, events)
+        self.assertTrue(self.verdict(facts)['passed'])
+        self.assertEqual(facts['connection']['client_port'], 39090)
+        self.assertEqual(facts['ignored_other_connection_packets'],
+                         {'origin': 3, 'node': 6, 'responder': 3})
+
     def test_reset_fin_second_connection_fail_even_without_timeout(self):
         for flags, port, reason in [('R.', 39090, 'reset'), ('F.', 39090, 'FIN'),
                                      ('S', 39091, 'second connection'), ('S', 39090, 'second connection')]:
