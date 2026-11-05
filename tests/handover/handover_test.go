@@ -34,6 +34,7 @@ import (
 // w4-handover. The follow-up 13 brief includes the restore drill and indexes.
 var ownedDocs = []string{
 	"README.md",
+	"docs/DELIVERY.md",
 	"docs/handover/README.md",
 	"docs/handover/00-index.md",
 	"docs/handover/11-database-and-retention.md",
@@ -18090,12 +18091,12 @@ func TestHandover_Followup49Claims(t *testing.T) {
 		}
 	}
 	// Pin the complete narrative and manifests, including every source quotation.
-	checkHash("docs/handover/follow-up-49.md", "b7062c7929a3a9dbaa1160425142e82735fbf9766ed92f2f2e2a3755e726576b")
-	checkHash("tests/handover/testdata/followup49-claims.json", "ee81d6b26480a79ebbf37087029e83a07d1be6bdc29cbb6fe61ecf684ad3e497")
+	checkHash("docs/handover/follow-up-49.md", "4fcc817ab9ce8e75cd02a08a452c4408696e504e7b4d01117b28c64953245c15")
+	checkHash("tests/handover/testdata/followup49-claims.json", "d23879f66135e588b38a646823fffc6f50c58410610a5a5165e75fc645b4f5c7")
 	checkHash("tests/handover/testdata/followup49-decisions.json", "ce1df0008b118ce36b663fad7e86acd3c66337b6e729e14532aa441d42fa9193")
 	checkHash("tests/handover/testdata/followup49-evidence.json", "023bbdf7f8f777d272d17824fe4a57ef5ad419b28f1d5c7871c61221728a37ec")
-	checkHash("tests/handover/testdata/followup49-findings.json", "8592fba84c3ba792aeff29e935cdea3994c6f22e5017634c6f4581dc50d3a318")
-	checkHash("tests/handover/testdata/followup49-main.json", "4f70d0453c9671d5a0a0780e1ffb52728df707e22615d64d7c285b0ddf74de96")
+	checkHash("tests/handover/testdata/followup49-findings.json", "4360d651980d2e72f7452a1e159445b63a1654fab45893173aab81fd866c043d")
+	checkHash("tests/handover/testdata/followup49-main.json", "7efe4ad1bab91728296b6e0c26fc3ddbbd70871d6a4917fe8e68f81c4bb0742e")
 	checkHash("tests/handover/testdata/followup49-snapshots.json", "3fdcbefa23ff792b3e39df1697ec3adfbe2d6e256641ba6b53d998c69e7a8825")
 	checkHash("tests/handover/testdata/followup49-values.json", "1dd31f3ce022758ce5ea1fc4a27ff0b877b3ecf14e991be9cdd07e35b9765c0c")
 	checkHash("tests/handover/testdata/history/follow-up-49/prior-claims.json", "9c1603b84084b18d44e1ecfb3c1ce197a1567e7eaaaddaab9bb4ed7410a96e6c")
@@ -18104,6 +18105,20 @@ func TestHandover_Followup49Claims(t *testing.T) {
 	checkHash("tests/handover/testdata/history/follow-up-49/owner-confirmation-provenance.json", "3d0e1377d31bec5f551af051b4160c270cfe3b897fea3ec908eb377cf3c9d117")
 	checkHash("tests/handover/testdata/history/follow-up-49/netbird-8473-comment-provenance.json", "40be686d1a3a40e23cec8a036e5284a3dfb44fdcc8406d9844ce887790ad4919")
 	checkHash("tests/handover/testdata/history/follow-up-49/after-cutoff-provenance.json", "d4407c24f50ec4fcd3985bad7b16416ef09b095848c214b96da778af33375cb9")
+	// Preserve the original new49 entrypoint while allowing a concise live README.
+	checkHash(fixture+"consolidation/README-followup49.md.txt", "a9299bf911425da1a727a6e416a2b30eb28ae526988c9a53489ddff1573fd7a6")
+	var readmeHistory struct {
+		Source, Snapshot, SHA256 string
+		Commit                   string `json:"source_commit"`
+		Bytes                    int
+	}
+	readJSON(fixture+"consolidation/README-provenance.json", &readmeHistory)
+	if readmeHistory.Source != "README.md" || readmeHistory.Commit != "a42b80098e2094161b22829ff6bb18925ae37dc1" || readmeHistory.Snapshot != fixture+"consolidation/README-followup49.md.txt" || readmeHistory.Bytes != 17067 || readmeHistory.SHA256 != "a9299bf911425da1a727a6e416a2b30eb28ae526988c9a53489ddff1573fd7a6" {
+		t.Fatal("pre-polish README provenance")
+	}
+	if len(readOwnedDoc(t, root, readmeHistory.Snapshot)) != readmeHistory.Bytes {
+		t.Fatal("pre-polish README size")
+	}
 	type artifact struct {
 		Path, SHA256 string
 		Bytes        int
@@ -18675,7 +18690,12 @@ func TestHandover_Followup49Claims(t *testing.T) {
 			return s[:a] + s[a+b:]
 		}
 		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
-			lines, old := strings.Split(readOwnedDoc(t, root, path), "\n"), strings.Split(readOwnedDoc(t, root, followup49PriorPath(path)), "\n")
+			// The pre-polish entrypoint is historical; ownedDocs validates the live README.
+			entrypointPath := path
+			if path == "README.md" {
+				entrypointPath = fixture + "consolidation/README-followup49.md.txt"
+			}
+			lines, old := strings.Split(readOwnedDoc(t, root, entrypointPath), "\n"), strings.Split(readOwnedDoc(t, root, followup49PriorPath(path)), "\n")
 			if !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-49.md") || !strings.Contains(lines[2], "#482–#485") || lines[3] != strings.Replace(old[2], "**Current cut", "**Previous cut", 1) {
 				t.Fatalf("entrypoint %s", path)
 			}

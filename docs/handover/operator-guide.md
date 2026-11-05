@@ -1,6 +1,6 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut — [follow-up 49](follow-up-49.md) (2026-11-05 EST):** #482–#485 at aaffdc7f (#485 outside the expected three-lane list, included in full); 67 decisions (14 confirmed by Ted on 2026-11-04 17:1x EST, 1 new provisional D-164, 52 unchanged), 138 findings (6 updated, 0 added, 132 unchanged). Six Node CI failures fixed in #484 and reviewed by r33 (f0bed96a, 0 findings, 10/10 parent / 33/33 subtest replay); clone runtime control_url repaired offline in #482 (live isolation validation and copied-release SNAT open); D-164 ServingReadEvidence contract compatibility in #485 (API 1.11.0); NetBird #8473 comment 19411545 posted (2026-11-05T04:30:00Z, F22-AT01/F11-01 still open under D-148).
+**Current cut:** [follow-up 49](follow-up-49.md), #482–#485 at `aaffdc7f`; source-backed changes, verification boundaries and carried gaps.
 **Previous cut — [follow-up 48](follow-up-48.md) (2026-11-04 EST):** #478–#481 at b921c75f; 66 decisions, 138 findings. F24-01 closed and isolation's local scheduled-mode run bd73d7a4 passes (GitHub's 11-04 scheduled job 41836274140 stays failed, next run pending); assist.py retry and D-162 reach audited; F22-D146 answered under D-162 with 18 stored/enqueued/accepted records across 9 windows; r32 archived (0 findings).
 
 <a id="observation-records"></a>
