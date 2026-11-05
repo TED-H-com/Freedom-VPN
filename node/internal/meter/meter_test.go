@@ -454,6 +454,46 @@ func TestClockRollback(t *testing.T) {
 	}
 }
 
+func TestCheckpointForRestartAtSameMicrosecond(t *testing.T) {
+	ctx := context.Background()
+	// Exact whole-microsecond wall clock (Nanosecond()%1000 == 0).
+	startAt := time.Date(2026, 11, 4, 19, 39, 55, 21658000, time.UTC)
+	clk := &clock{t: startAt}
+	src := &fakeSrc{}
+	src.set(observe("boot", reading{dev: devA, mem: memA, rev: 1, upB: 2048, upP: 1}))
+	m, s := start(t, src, clk, usagestore.Options{})
+	defer m.Close()
+
+	// Counter reset opens a new epoch E2 with LastSample == clk.Now() (exact microsecond).
+	clk.Set(startAt.Add(2 * time.Second))
+	src.set(observe("boot", reading{dev: devA, mem: memA, rev: 1, upB: 2048, upP: 0}))
+	if err := m.Sample(ctx); err != nil {
+		t.Fatal(err)
+	}
+	headBefore, err := s.Head(ctx)
+	if err != nil || headBefore.OpenEpoch == uuid.Nil {
+		t.Fatalf("head before checkpoint: %+v %v", headBefore, err)
+	}
+
+	// Same-boot restart checkpoint at the same microsecond with unchanged readings
+	// must succeed and keep E2 open, just as FinalSample succeeds with CloseEpoch=true.
+	if err := m.CheckpointForRestart(ctx); err != nil {
+		t.Fatalf("CheckpointForRestart failed at exact microsecond boundary: %v", err)
+	}
+	headAfter, err := s.Head(ctx)
+	if err != nil || headAfter.OpenEpoch != headBefore.OpenEpoch {
+		t.Fatalf("CheckpointForRestart did not preserve open epoch: before=%s after=%+v err=%v",
+			headBefore.OpenEpoch, headAfter, err)
+	}
+
+	// Changed counters at the same microsecond must still hold (§10.9) so new
+	// bytes wait for a forward clock rather than being abandoned.
+	src.set(observe("boot", reading{dev: devA, mem: memA, rev: 1, upB: 4096, upP: 2}))
+	if err := m.CheckpointForRestart(ctx); !errors.Is(err, ErrHold) {
+		t.Fatalf("CheckpointForRestart with changed counters at same microsecond: got %v, want ErrHold", err)
+	}
+}
+
 func TestFinalSampleAndBarrier(t *testing.T) {
 	ctx := context.Background()
 	clk := &clock{t: time.Date(2026, 10, 28, 14, 0, 0, 0, time.UTC)}
