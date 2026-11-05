@@ -1,0 +1,45 @@
+name: Project pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/site/**"
+      - ".github/workflows/pages.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v6
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Stage public site assets
+        run: |
+          mkdir -p "$RUNNER_TEMP/freedom-vpn-pages/en"
+          cp docs/site/index.html docs/site/styles.css docs/site/favicon.svg "$RUNNER_TEMP/freedom-vpn-pages/"
+          cp docs/site/en/index.html "$RUNNER_TEMP/freedom-vpn-pages/en/"
+      - name: Upload site artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: ${{ runner.temp }}/freedom-vpn-pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
