@@ -17,6 +17,7 @@ import (
 )
 
 var registry = map[string]func() any{
+	"ServingReadEvidence": func() any { return new(ServingReadEvidence) },
 	"TCReadbackEvidence":  func() any { return new(TCReadbackEvidence) },
 	"AuditEvent":          func() any { return new(AuditEvent) },
 	"ResolverDocument":    func() any { return new(ResolverDocument) },
@@ -185,4 +186,40 @@ func TestPolicyRevisionCreateDiscriminator(t *testing.T) {
 	if fu.Payload.Tiers[0].ThresholdBytes != 0 || fu.Payload.Mode != FairUsePayloadModeShadow {
 		t.Fatalf("payload %+v", fu.Payload)
 	}
+}
+
+func TestServingReadEvidencePresenceAndRoundTrip(t *testing.T) {
+	var obsAbsent ObservationReport
+	if err := json.Unmarshal(mustReadExample(t, "ObservationReport.json"), &obsAbsent); err != nil {
+		t.Fatal(err)
+	}
+	if obsAbsent.ServingRead.IsSpecified() {
+		t.Fatal("omitted serving_read must remain unspecified")
+	}
+
+	var obsNull ObservationReport
+	if err := json.Unmarshal(mustReadExample(t, "ObservationReport.serving-read-null.json"), &obsNull); err != nil {
+		t.Fatal(err)
+	}
+	if !obsNull.ServingRead.IsSpecified() || !obsNull.ServingRead.IsNull() {
+		t.Fatal("explicit null serving_read must remain specified and null")
+	}
+
+	var obsLive ObservationReport
+	if err := json.Unmarshal(mustReadExample(t, "ObservationReport.serving-read-live-rejected.json"), &obsLive); err != nil {
+		t.Fatal(err)
+	}
+	sr, err := obsLive.ServingRead.Get()
+	if err != nil || sr.Verified || sr.Source != ServingReadEvidenceSourceLive || sr.CandidateGeneration != decstr.MustParse("18446744073709551615") {
+		t.Fatalf("serving_read = %+v, err = %v", sr, err)
+	}
+}
+
+func mustReadExample(t *testing.T, name string) []byte {
+	t.Helper()
+	b, err := os.ReadFile(filepath.Join(examplesDir, name))
+	if err != nil {
+		t.Fatal(err)
+	}
+	return b
 }

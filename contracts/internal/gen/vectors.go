@@ -408,6 +408,7 @@ func vectorsAndExamples() (map[string][]byte, error) {
 	out["vectors/decimal-strings.json"] = decimalStringVectors()
 
 	revision14Files(out)
+	revision15Files(out, reasons)
 	out["examples/invalid/reasons.generated.json"] = pretty(reasons)
 	return out, nil
 }

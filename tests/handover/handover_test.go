@@ -1274,7 +1274,7 @@ func TestHandover_Followup9Claims(t *testing.T) {
 
 	// 1. Verify revision 11 schema elements still present after revision 14 advanced info.version to 1.10.0:
 	// ErrorCode.AWAITING_MEMBER_GRANTS (D-071) and NodeDetail.identity_conflict / NodeIdentityConflict (D-072).
-	rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))
+	rawSpec, err := os.ReadFile(filepath.Join(root, "tests/handover/testdata/history/contracts-revision-15/openapi-revision-14.yaml"))
 	if err != nil {
 		t.Fatalf("read contracts/openapi.yaml: %v", err)
 	}
@@ -1332,7 +1332,7 @@ func TestHandover_Followup9Claims(t *testing.T) {
 	// 3. Verify operator-guide.md pins for follow-up 9: revision 11 (#213), reading the provisional window
 	// (D-067/D-071/#206/#216), cloned-identity runbook (D-072/#211/#213), revoke nodes step outcomes (D-070/#206),
 	// worker contention (#205/#208), control follow-up 20 (#215), and acceptance cross-references (#204/#207/#210/#212/#214).
-	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	operatorGuide := readOwnedDoc(t, root, "tests/handover/testdata/history/follow-up-15/operator-guide.md")
 	for _, token := range []string{
 		"OpenAPI `1.10.0`, revision 14",
 		"#204", "#205", "#206", "#207", "#208", "#210", "#211", "#212", "#213", "#214", "#215", "#216",
@@ -7215,6 +7215,9 @@ func readBeforeFollowup29Note(t *testing.T, root, path string) string {
 	t.Helper()
 	if path == "docs/handover/operator-guide.md" {
 		path = "tests/handover/testdata/history/follow-up-34/operator-guide33.md.txt"
+	}
+	if path == "docs/handover/member-guide.md" {
+		path = contractsRevision15PriorPath(path)
 	}
 	content := readOwnedDoc(t, root, path)
 	for _, note := range []string{followup29Configuration, followup30Configuration, followup31Configuration, followup31Update, followup32Restart, followup33Restart} {
@@ -13787,7 +13790,7 @@ func restoreFollowup42Assertions(source string) string {
 		`strings.Split(readOwnedDoc(t, root, fixture+"history/follow-up-42/entrypoint-"+strings.ReplaceAll(path, "/", "_")+".txt"), "\n")`, `strings.Split(readOwnedDoc(t, root, path), "\n")`,
 		`strings.Split(readOwnedDoc(t, root, fixture+"history/follow-up-42/operator-guide41.md.txt"), "\n")`, `strings.Split(readOwnedDoc(t, root, "docs/handover/operator-guide.md"), "\n")`,
 		`require(fixture+"history/follow-up-42/entrypoint-docs_ops_README.md.txt",`, `require("docs/ops/README.md",`,
-	).Replace(source)
+	).Replace(restoreFollowup9ContractsRevision15Inputs(source))
 }
 
 // TestHandover_Followup42Claims pins the #439–#445 cut under D-098/D-109/D-132.
@@ -14290,7 +14293,7 @@ func restoreFollowup43Assertions(source string) string {
 		"lines := strings.Split(readOwnedDoc(t, root, followup43PriorPath(path)), \"\\n\")", "lines := strings.Split(readOwnedDoc(t, root, path), \"\\n\")",
 		"require(frozen+\"../follow-up-43/prior-docs_handover_operator-guide.md.txt\",", "require(\"docs/handover/operator-guide.md\",",
 		"require(frozen+\"../follow-up-43/prior-docs_ops_README.md.txt\",", "require(\"docs/ops/README.md\",",
-	).Replace(source)
+	).Replace(restoreFollowup9ContractsRevision15Inputs(source))
 }
 
 func TestHandover_Followup43Claims(t *testing.T) {
@@ -14856,7 +14859,7 @@ func restoreFollowup44Assertions(source string) string {
 		"readOwnedDoc(t, root, followup44PriorPath(register))", "readOwnedDoc(t, root, register)",
 		"lines := strings.Split(readOwnedDoc(t, root, followup44PriorPath(path)), \"\\n\")", "lines := strings.Split(readOwnedDoc(t, root, path), \"\\n\")",
 		"op := readOwnedDoc(t, root, followup44PriorPath(\"docs/handover/operator-guide.md\"))", "op := readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
-	).Replace(source)
+	).Replace(restoreFollowup9ContractsRevision15Inputs(source))
 }
 
 // TestHandover_Followup44Claims pins the #457–#463 cut under D-098/D-109/D-132.
@@ -15300,7 +15303,7 @@ func restoreFollowup45Assertions(source string) string {
 		"readOwnedDoc(t, root, followup45PriorPath(register))", "readOwnedDoc(t, root, register)",
 		"lines := strings.Split(readOwnedDoc(t, root, followup45PriorPath(path)), \"\\n\")", "lines := strings.Split(readOwnedDoc(t, root, path), \"\\n\")",
 		"op := readOwnedDoc(t, root, followup45PriorPath(\"docs/handover/operator-guide.md\"))", "op := readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
-	).Replace(source)
+	).Replace(restoreFollowup9ContractsRevision15Inputs(source))
 }
 
 // TestHandover_Followup45Claims pins the #464–#468 cut under D-098/D-109/D-132.
@@ -15833,7 +15836,7 @@ func restoreFollowup46Assertions(source string) string {
 		"readOwnedDoc(t, root, followup46PriorPath(register))", "readOwnedDoc(t, root, register)",
 		"lines, old := strings.Split(readOwnedDoc(t, root, followup46PriorPath(path)),", "lines, old := strings.Split(readOwnedDoc(t, root, path),",
 		"op := readOwnedDoc(t, root, followup46PriorPath(\"docs/handover/operator-guide.md\"))", "op := readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
-	).Replace(source)
+	).Replace(restoreFollowup9ContractsRevision15Inputs(source))
 }
 
 // TestHandover_Followup46Claims pins #469–#473 under D-098/D-109/D-132.
@@ -16360,7 +16363,7 @@ func restoreFollowup47Assertions(source string) string {
 		"readOwnedDoc(t, root, followup47PriorPath(register))", "readOwnedDoc(t, root, register)",
 		"lines, old := strings.Split(readOwnedDoc(t, root, followup47PriorPath(path)),", "lines, old := strings.Split(readOwnedDoc(t, root, path),",
 		"op := readOwnedDoc(t, root, followup47PriorPath(\"docs/handover/operator-guide.md\"))", "op := readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
-	).Replace(source)
+	).Replace(restoreFollowup9ContractsRevision15Inputs(source))
 }
 
 // TestHandover_Followup47Claims pins #474–#477 under D-098/D-109/D-132.
@@ -17066,7 +17069,55 @@ func restoreFollowup48Assertions(source string) string {
 		"after := readOwnedDoc(t, root, followup48PriorPath(\"docs/reviews/README.md\"))", "after := readOwnedDoc(t, root, \"docs/reviews/README.md\")",
 		"lines, old := strings.Split(readOwnedDoc(t, root, followup48PriorPath(path)),", "lines, old := strings.Split(readOwnedDoc(t, root, path),",
 		"op := readOwnedDoc(t, root, followup48PriorPath(\"docs/handover/operator-guide.md\"))", "op := readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
-	).Replace(source)
+	).Replace(restoreFollowup9ContractsRevision15Inputs(source))
+}
+
+func contractsRevision15PriorPath(path string) string {
+	return "tests/handover/testdata/history/contracts-revision-15/prior-" + strings.ReplaceAll(path, "/", "_") + ".txt"
+}
+
+func contractsRevision15InputPath(path string) string {
+	switch path {
+	case "docs/handover/README.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/ops/README.md":
+		return contractsRevision15PriorPath(path)
+	default:
+		return path
+	}
+}
+
+// Reverse only the two input-expression redirects in TestHandover_Followup9Claims.
+func restoreFollowup9ContractsRevision15Inputs(source string) string {
+	const header = "func " + "TestHandover_Followup9Claims(t *testing.T) {"
+	start := strings.Index(source, header)
+	if start < 0 {
+		return source
+	}
+	endRel := strings.Index(source[start:], "\n}")
+	if endRel < 0 {
+		return source
+	}
+	end := start + endRel + 2
+	f9 := strings.NewReplacer(
+		`rawSpec, err := os.ReadFile(filepath.Join(root, "tests/handover/testdata/history/contracts-revision-15/openapi-revision-14.yaml"))`, `rawSpec, err := os.ReadFile(filepath.Join(root, "contracts", "openapi.yaml"))`,
+		`operatorGuide := readOwnedDoc(t, root, "tests/handover/testdata/history/follow-up-15/operator-guide.md")`, `operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")`,
+	).Replace(source[start:end])
+	return source[:start] + f9 + source[end:]
+}
+
+// Reverse only the contracts revision 15 input-expression redirects in Followup9Claims and Followup48Claims.
+func restoreContractsRevision15Assertions(source string) string {
+	if strings.HasPrefix(source, "func "+"TestHandover_Followup9Claims(") {
+		return restoreFollowup9ContractsRevision15Inputs(source)
+	}
+	if strings.HasPrefix(source, "func "+"TestHandover_Followup48Claims(") {
+		return strings.NewReplacer(
+			"s := readOwnedDoc(t, root, contractsRevision15InputPath(path))", "s := readOwnedDoc(t, root, path)",
+			"before, after := readOwnedDoc(t, root, followup48PriorPath(\"docs/handover/README.md\")), readOwnedDoc(t, root, contractsRevision15InputPath(\"docs/handover/README.md\"))", "before, after := readOwnedDoc(t, root, followup48PriorPath(\"docs/handover/README.md\")), readOwnedDoc(t, root, \"docs/handover/README.md\")",
+			"lines, old := strings.Split(readOwnedDoc(t, root, contractsRevision15InputPath(path)),", "lines, old := strings.Split(readOwnedDoc(t, root, path),",
+			"op := readOwnedDoc(t, root, contractsRevision15InputPath(\"docs/handover/operator-guide.md\"))", "op := readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
+		).Replace(source)
+	}
+	return source
 }
 
 // TestHandover_Followup48Claims pins #478–#481 under D-098/D-109/D-132.
@@ -17098,7 +17149,7 @@ func TestHandover_Followup48Claims(t *testing.T) {
 	}
 	require := func(path string, tokens ...string) {
 		t.Helper()
-		s := readOwnedDoc(t, root, path)
+		s := readOwnedDoc(t, root, contractsRevision15InputPath(path))
 		if strings.HasSuffix(path, "-excerpt.json") {
 			readJSON(path, &s)
 		}
@@ -17267,7 +17318,7 @@ func TestHandover_Followup48Claims(t *testing.T) {
 		}
 	})
 	t.Run("66_decisions_138_findings_and_unrelated_rows_exact", func(t *testing.T) {
-		before, after := readOwnedDoc(t, root, followup48PriorPath("docs/handover/README.md")), readOwnedDoc(t, root, "docs/handover/README.md")
+		before, after := readOwnedDoc(t, root, followup48PriorPath("docs/handover/README.md")), readOwnedDoc(t, root, contractsRevision15InputPath("docs/handover/README.md"))
 		re := regexp.MustCompile(`(?m)^\| D-\d{3} \|.*$`)
 		old, now := re.FindAllString(before, -1), re.FindAllString(after, -1)
 		var d, f struct{ Updated, Added map[string]string }
@@ -17751,7 +17802,7 @@ func TestHandover_Followup48Claims(t *testing.T) {
 			return s[:a] + s[a+b:]
 		}
 		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
-			lines, old := strings.Split(readOwnedDoc(t, root, path), "\n"), strings.Split(readOwnedDoc(t, root, followup48PriorPath(path)), "\n")
+			lines, old := strings.Split(readOwnedDoc(t, root, contractsRevision15InputPath(path)), "\n"), strings.Split(readOwnedDoc(t, root, followup48PriorPath(path)), "\n")
 			if !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-48.md") || !strings.Contains(lines[2], "#478–#481") || lines[3] != strings.Replace(old[2], "**Current cut", "**Previous cut", 1) {
 				t.Fatalf("entrypoint %s", path)
 			}
@@ -17768,7 +17819,7 @@ func TestHandover_Followup48Claims(t *testing.T) {
 				t.Fatalf("unrelated guidance changed %s", path)
 			}
 		}
-		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		op := readOwnedDoc(t, root, contractsRevision15InputPath("docs/handover/operator-guide.md"))
 		f24 := readOwnedDoc(t, root, frozen+"docs_e2e_at_members_followup24-2026-11-04.md.txt")
 		for _, q := range []string{
 			"All nine native windows retain 18 stored observations, 18 enqueues and 18 submission attempts; every stored report has its enqueue and accepted attempt, and no in-window enqueue is absent from storage",
@@ -17788,4 +17839,191 @@ func TestHandover_Followup48Claims(t *testing.T) {
 			}
 		}
 	})
+}
+
+func TestHandover_ContractsRevision15MigrationIntegrity(t *testing.T) {
+	root := repoRoot(t)
+	const archiveDir = "tests/handover/testdata/history/contracts-revision-15"
+	hashBytes := func(b []byte) string {
+		sum := sha256.Sum256(b)
+		return hex.EncodeToString(sum[:])
+	}
+	hashStr := func(s string) string {
+		return hashBytes([]byte(s))
+	}
+
+	var prov struct {
+		Migration    string `json:"migration"`
+		BaseHead     string `json:"base_head"`
+		Handover48PR struct {
+			Number      int    `json:"number"`
+			State       string `json:"state"`
+			MergedAt    string `json:"merged_at"`
+			MergeCommit string `json:"merge_commit"`
+			CutCommit   string `json:"cut_commit"`
+		} `json:"handover_48_pr"`
+		PreMigrationHandoverTest struct {
+			SourceCommit string `json:"source_commit"`
+			Path         string `json:"path"`
+			SHA256       string `json:"sha256"`
+			Bytes        int    `json:"bytes"`
+		} `json:"pre_migration_handover_test"`
+		ArchivedInputs []struct {
+			SourceCommit string `json:"source_commit"`
+			SourcePath   string `json:"source_path"`
+			ArchivePath  string `json:"archive_path"`
+			SHA256       string `json:"sha256"`
+			Bytes        int    `json:"bytes"`
+		} `json:"archived_inputs"`
+		PreMigrationClaimFunctions map[string]string `json:"pre_migration_claim_functions"`
+	}
+	provRaw, err := os.ReadFile(filepath.Join(root, archiveDir, "provenance.json"))
+	if err != nil {
+		t.Fatalf("read provenance.json: %v", err)
+	}
+	if len(provRaw) != 7138 || hashBytes(provRaw) != "e562b930b75c1eb43937e5811ce4d70dddffd46036484d9a9d811f3fb58f4d3d" {
+		t.Fatalf("provenance.json size/hash = (%d, %s), want (7138, e562b930b75c1eb43937e5811ce4d70dddffd46036484d9a9d811f3fb58f4d3d)", len(provRaw), hashBytes(provRaw))
+	}
+	if err := json.Unmarshal(provRaw, &prov); err != nil {
+		t.Fatalf("decode provenance.json: %v", err)
+	}
+	if prov.Migration != "contracts-revision-15" ||
+		prov.BaseHead != "980e313ab8d1b261cb1f44e4a86b54b7e55fefde" ||
+		prov.Handover48PR.Number != 483 ||
+		prov.Handover48PR.State != "MERGED" ||
+		prov.Handover48PR.MergedAt != "2026-11-05T06:23:33Z" ||
+		prov.Handover48PR.MergeCommit != "ff0ce0658b9a86523bd6bc2ddf1fceda47a5453f" ||
+		prov.Handover48PR.CutCommit != "b921c75f180beb6c0051d585a86d6651b2c8d71a" ||
+		prov.PreMigrationHandoverTest.Path != "tests/handover/handover_test.go" ||
+		prov.PreMigrationHandoverTest.SourceCommit != "980e313ab8d1b261cb1f44e4a86b54b7e55fefde" ||
+		prov.PreMigrationHandoverTest.SHA256 != "aad7b71f2fd45966efdddad6cb537244947ed65f8cd4b9ab14c390c3eb0daa97" ||
+		prov.PreMigrationHandoverTest.Bytes != 997765 ||
+		len(prov.ArchivedInputs) != 6 ||
+		len(prov.PreMigrationClaimFunctions) != 42 {
+		t.Fatalf("unexpected provenance metadata: %+v", prov)
+	}
+
+	// 1. Every file under tests/handover/testdata/history/contracts-revision-15/ (plus the reused
+	// follow-up-15 operator-guide.md archive) exists, is non-empty, and matches its SHA-256 and byte count in provenance.json.
+	entries, err := os.ReadDir(filepath.Join(root, archiveDir))
+	if err != nil {
+		t.Fatalf("readdir %s: %v", archiveDir, err)
+	}
+	if len(entries) != 6 {
+		t.Fatalf("%s entry count = %d, want 6", archiveDir, len(entries))
+	}
+	byArchivePath := map[string]struct {
+		SourcePath   string
+		SourceCommit string
+		SHA256       string
+		Bytes        int
+	}{}
+	for _, in := range prov.ArchivedInputs {
+		if !strings.HasPrefix(in.ArchivePath, archiveDir+"/") && in.ArchivePath != "tests/handover/testdata/history/follow-up-15/operator-guide.md" {
+			t.Fatalf("unexpected archived input path: %s", in.ArchivePath)
+		}
+		raw, err := os.ReadFile(filepath.Join(root, in.ArchivePath))
+		if err != nil {
+			t.Fatalf("read %s: %v", in.ArchivePath, err)
+		}
+		if len(raw) == 0 || len(raw) != in.Bytes || hashBytes(raw) != in.SHA256 {
+			t.Fatalf("archived input %s size/hash mismatch: got (%d, %s), want (%d, %s)", in.ArchivePath, len(raw), hashBytes(raw), in.Bytes, in.SHA256)
+		}
+		byArchivePath[in.ArchivePath] = struct {
+			SourcePath   string
+			SourceCommit string
+			SHA256       string
+			Bytes        int
+		}{in.SourcePath, in.SourceCommit, in.SHA256, in.Bytes}
+	}
+	for _, e := range entries {
+		if e.IsDir() {
+			t.Fatalf("unexpected directory in %s: %s", archiveDir, e.Name())
+		}
+		rel := archiveDir + "/" + e.Name()
+		if e.Name() == "provenance.json" {
+			continue
+		}
+		if _, ok := byArchivePath[rel]; !ok {
+			t.Fatalf("untracked file in %s: %s", archiveDir, e.Name())
+		}
+	}
+	if f15, ok := byArchivePath["tests/handover/testdata/history/follow-up-15/operator-guide.md"]; !ok ||
+		f15.SourceCommit != "982c209e3f1fb6603138e0bc2a6ee4a5191b4e89" ||
+		f15.SourcePath != "docs/handover/operator-guide.md" ||
+		f15.Bytes != 203771 ||
+		f15.SHA256 != "061b72db8c6d235d914de357553a15242fca6664f474f0ffdbd537140b122604" {
+		t.Fatalf("unexpected follow-up-15 operator-guide provenance: %+v", f15)
+	}
+	if rev14, ok := byArchivePath[archiveDir+"/openapi-revision-14.yaml"]; !ok ||
+		rev14.SourceCommit != "e782eb7805360774648ecfc3adffe41bd3c3a702" ||
+		rev14.SourcePath != "contracts/openapi.yaml" ||
+		rev14.Bytes != 341300 ||
+		rev14.SHA256 != "0894285c536a334fda5869c7b531afc48deb8cd5e975d68896bdacc98cb785c2" {
+		t.Fatalf("unexpected openapi-revision-14.yaml provenance: %+v", rev14)
+	}
+
+	// 2. Each of the 4 current handover/ops files differs from its frozen prior-*.txt snapshot
+	// only in the expected revision-14 -> revision-15 (1.10.0 -> 1.11.0, D-112/D-117/D-164) contract-sync lines.
+	revertToPrior := map[string]*strings.Replacer{
+		"docs/handover/README.md": strings.NewReplacer(
+			"current OpenAPI `1.11.0` revision 15 contract status (`50` operations",
+			"current OpenAPI `1.10.0` revision 14 contract status (`50` operations",
+			"Current contract is revision 15: OpenAPI `1.11.0`, `50` operations (#289).",
+			"Current contract is revision 14: OpenAPI `1.10.0`, `50` operations (#289).",
+			"Revision 15 updates the contract wording for D-117 (all entitlement grants are\nfinite) and D-112 (Central configured `sampling_interval_bound_seconds`, default\n10 s) and adds optional nullable `serving_read` (`ServingReadEvidence`) on\n`ObservationReport` and `NodeDetail` (D-164).",
+			"The revision 14 prose about open-ended grants and historical sampling intervals\nis superseded by D-117 and D-112; the contract-owner wording update is pending.",
+		),
+		"docs/handover/operator-guide.md": strings.NewReplacer(
+			"`contracts/openapi.yaml` (OpenAPI `1.11.0`, revision 15) defines **50 HTTP operations** across `/api/v1`.",
+			"`contracts/openapi.yaml` (OpenAPI `1.10.0`, revision 14) defines **50 HTTP operations** across `/api/v1`.",
+		),
+		"docs/handover/member-guide.md": strings.NewReplacer(
+			"OpenAPI `1.11.0` contract (contract revision 15).",
+			"OpenAPI `1.10.0` contract.",
+		),
+		"docs/ops/README.md": strings.NewReplacer(
+			"current OpenAPI `1.11.0` revision 15 contract status (`50` operations",
+			"current OpenAPI `1.10.0` revision 14 contract status (`50` operations",
+		),
+	}
+	for docPath, repl := range revertToPrior {
+		cur := readOwnedDoc(t, root, docPath)
+		prior := readOwnedDoc(t, root, contractsRevision15PriorPath(docPath))
+		if cur == prior {
+			t.Fatalf("%s did not advance from its frozen prior snapshot", docPath)
+		}
+		if got := repl.Replace(cur); got != prior {
+			t.Fatalf("%s differs from %s outside the expected contract-revision-15 sync lines", docPath, contractsRevision15PriorPath(docPath))
+		}
+	}
+
+	// 3. Every TestHandover_Followup\d+Claims function in tests/handover/handover_test.go,
+	// after reversing only the documented input-path redirects in Followup9Claims and Followup48Claims
+	// (and with zero transformation on all 40 other functions), hashes to its exact pre-migration SHA-256
+	// recorded in provenance.json.
+	source := readOwnedDoc(t, root, "tests/handover/handover_test.go")
+	matches := regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(source, -1)
+	if len(matches) != 42 {
+		t.Fatalf("found %d TestHandover_Followup*Claims functions, want 42", len(matches))
+	}
+	for _, m := range matches {
+		name, body := m[1], m[0]
+		want, ok := prov.PreMigrationClaimFunctions[name]
+		if !ok {
+			t.Fatalf("unexpected claims function %s not in provenance.json", name)
+		}
+		if name != "TestHandover_Followup9Claims" && name != "TestHandover_Followup48Claims" {
+			if got := hashStr(body); got != want {
+				t.Fatalf("untouched claims function %s drifted: got %s, want %s", name, got, want)
+			}
+		} else {
+			if hashStr(body) == want {
+				t.Fatalf("migrated claims function %s did not redirect inputs", name)
+			}
+			if got := hashStr(restoreContractsRevision15Assertions(body)); got != want {
+				t.Fatalf("claims function %s drifted after reversing revision-15 input redirects: got %s, want %s", name, got, want)
+			}
+		}
+	}
 }

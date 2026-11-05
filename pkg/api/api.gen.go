@@ -1937,6 +1937,24 @@ func (e ServingLeaseSchemaVersion) Valid() bool {
 	}
 }
 
+// Defines values for ServingReadEvidenceSource.
+const (
+	ServingReadEvidenceSourceApply ServingReadEvidenceSource = "apply"
+	ServingReadEvidenceSourceLive  ServingReadEvidenceSource = "live"
+)
+
+// Valid indicates whether the value is a known member of the ServingReadEvidenceSource enum.
+func (e ServingReadEvidenceSource) Valid() bool {
+	switch e {
+	case ServingReadEvidenceSourceApply:
+		return true
+	case ServingReadEvidenceSourceLive:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for SignatureAlgorithm.
 const (
 	SignatureAlgorithmEd25519 SignatureAlgorithm = "ed25519"
@@ -4019,8 +4037,23 @@ type NodeDetail struct {
 	RetiredAt       nullable.Nullable[time.Time] `json:"retired_at"`
 
 	// SafetyStatus Whether isolation and a valid policy meet the baseline (§5).
-	SafetyStatus SafetyStatus                         `json:"safety_status"`
-	Update       nullable.Nullable[NodeUpdateSummary] `json:"update"`
+	SafetyStatus SafetyStatus `json:"safety_status"`
+
+	// ServingRead Retained actual complete VerifyServing read outcome from the immutable
+	// observation selected for this node's current incarnation (D-164). Same
+	// shape as ObservationReport.serving_read. Absent means the server does
+	// not project it yet (pre-revision-15); null means the selected
+	// current-incarnation observation has no available `serving_read` (not
+	// that no earlier read was ever reported in that incarnation; servers do
+	// not search back for a last non-null read). Never infer a verified read
+	// from applied_config_generation, safety_status,
+	// member_forwarding_observed or checks[]. Projection must not alter the
+	// original report, and this field shares the existing
+	// selected-observation and strong-ETag (`resource_version`) semantics of
+	// the other observation-derived fields without redefining selection or
+	// versioning.
+	ServingRead nullable.Nullable[ServingReadEvidence] `json:"serving_read,omitzero"`
+	Update      nullable.Nullable[NodeUpdateSummary]   `json:"update"`
 
 	// UsageOutbox Last reported usage outbox status for the node's current incarnation
 	// (SECOPS-19). `null` until a report with a usage block has been accepted
@@ -4409,6 +4442,9 @@ type ObservationReport struct {
 
 	// SafetyStatus Whether isolation and a valid policy meet the baseline (§5).
 	SafetyStatus SafetyStatus `json:"safety_status"`
+
+	// ServingRead D-164 retained actual complete VerifyServing read outcome. Absent or null means no retained serving-verifier read was reported in this observation; never infer a verified read from applied_config_generation, safety_status, member_forwarding_enabled, checks[] or tc_evidence. Candidate generation is the generation under verification, not an applied-generation ACK, and read_at is the actual read time (may be older than observed_at and is not required to be <= observed_at), never refreshed on later heartbeats without a new read.
+	ServingRead nullable.Nullable[ServingReadEvidence] `json:"serving_read,omitzero"`
 
 	// TcEvidence D-106 retained actual read. Absent or null means no retained read, never an empty successful scan. Existing errors[stage=tc_evidence] rows remain unchanged.
 	TcEvidence nullable.Nullable[TCReadbackEvidence] `json:"tc_evidence,omitzero"`
@@ -5033,6 +5069,47 @@ type ServingLeaseEnvelope struct {
 	Signed ServingLease `json:"signed"`
 }
 
+// ServingReadEvidence D-164 retained actual complete VerifyServing read outcome (`node/agent/serving_evidence.go`,
+// `node/agent/meterreset.go`, `node/enforce/evidence.go`). Distinct from
+// `applied_config_generation` (an ACK), `safety_status`, `member_forwarding_enabled`,
+// `checks[]`, `errors[]` and `tc_evidence` (retained bounded TC rows/hash).
+// `candidate_generation` is the generation under verification, never an
+// applied-generation ACK. `read_at` is the actual verifier read time; never
+// refresh an old snapshot's timestamp on later heartbeats or substitute
+// rollback/hold evidence for a rejected read; retained read time or candidate
+// generation may be older than `observed_at` or `applied_config_generation`,
+// and `read_at` is not required to be <= `observed_at`. `verified` is the
+// complete VerifyServing outcome (`false` is a meaningful rejected read, not
+// omission). `diagnostic` carries the existing bounded/redacted diagnostic
+// text (`read_at=… source=… candidate=… verified=… ` plus `Evidence.ReportDetail()`,
+// clipped by `clipMsg` to the first 500 bytes) as opaque text (`maxLength: 500`)
+// for both `verified=true` and `verified=false` without promising valid JSON
+// after clipping, adding a truncation marker, reconstructing text from other
+// fields, or treating the TC `truncated` flag as string clipping.
+type ServingReadEvidence struct {
+	// CandidateGeneration Exact uint64 decimal string of the candidate generation under verification, at most 18446744073709551615; never an applied-generation ACK.
+	CandidateGeneration decstr.U64 `json:"candidate_generation"`
+
+	// Diagnostic Existing bounded/redacted diagnostic string (`read_at=… source=… candidate=… verified=… `
+	// plus `Evidence.ReportDetail()`, clipped to the first 500 bytes by `clipMsg`) as opaque
+	// text (`maxLength: 500`, following existing NodeCheck/SEC02 privacy constraints: never
+	// secrets, tokens, keys, subjects, member addresses, DNS queries, destination lists, URLs
+	// or raw stderr). Present for both `verified=true` and `verified=false`.
+	Diagnostic string `json:"diagnostic"`
+
+	// ReadAt Actual complete VerifyServing read time; never refreshed on later heartbeats without a new read.
+	ReadAt time.Time `json:"read_at"`
+
+	// Source Verifier call site that produced the read (`apply` or `live`).
+	Source ServingReadEvidenceSource `json:"source"`
+
+	// Verified Actual complete VerifyServing outcome for that read (`false` is a meaningful rejected read, not omission).
+	Verified bool `json:"verified"`
+}
+
+// ServingReadEvidenceSource Verifier call site that produced the read (`apply` or `live`).
+type ServingReadEvidenceSource string
+
 // Signature One Ed25519 signature over the RFC 8785 canonical JSON of the envelope's
 // `signed` object (§13.3, §16.2, `pkg/envelope`). Verifiers reject unknown
 // algorithms, ignore unknown key_ids, and require at least one valid
@@ -5629,7 +5706,7 @@ type UsageBatchRequest struct {
 	// NodeIncarnationId Must equal the presenting current certificate incarnation, including during hand-off.
 	NodeIncarnationId openapi_types.UUID `json:"node_incarnation_id"`
 
-	// OriginIncarnationId Eligible retired stream (D-105). Omit for the presenting current stream; null is invalid. Never part of an event hash.
+	// OriginIncarnationId Eligible retired stream (D-105, D-112). Omit for the presenting current stream; null is invalid. Handed-off events must have interval_end <= retirement time plus Central configured sampling_interval_bound_seconds (default 10 seconds; Central stores no per-stream historical sampling interval). Never part of an event hash.
 	OriginIncarnationId *openapi_types.UUID       `json:"origin_incarnation_id,omitempty"`
 	ReplayUnavailable   *[]ReplayUnavailableRange `json:"replay_unavailable,omitempty"`
 }
