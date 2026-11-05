@@ -1,24 +1,29 @@
 package agent
 
 import (
+	"context"
+	"errors"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 )
 
-// TestF53_F1701_StaleLeaseHoldReportQosDetail proves the exact 5-step mechanism
+// TestF53_F1701_StaleLeaseHoldReportQosDetail proves the report mechanism
 // behind Isolation F17-01 without changing product behavior:
 //  1. Decide() itself sets qos.Detail = "Rate policy could not be applied." and
 //     source_binding.Detail = "No member binding was admitted." (with
 //     internet_only Status = "passed" and Detail = nil) on a stale-lease step.
 //  2. Because the node previously served a populated generation in the same
 //     Engine process, e.servingRead is non-nil (retaining the prior generation's
-//     verified live read) and is not cleared when the node withdraws to baseline.
+//     verified live read in this fixture) and is not cleared on withdrawal.
+//     Apply retains a read only with a nonzero timing timestamp; live verify
+//     retains failed as well as successful reads. This is not an iff theorem.
 //  3. Engine.report() -> attachServingRead() unconditionally overwrites the
 //     failed qos check's Detail with "read_at=... source=live candidate=<G> verified=true ...".
-//  4. Only when e.servingRead is nil (an Engine process that has never run Apply
-//     or verifyServingModel) does Engine.report() preserve Decide()'s
+//  4. In this fixture, removing e.servingRead lets Engine.report() preserve
+//     Decide()'s
 //     "Rate policy could not be applied." detail on qos.
 func TestF53_F1701_StaleLeaseHoldReportQosDetail(t *testing.T) {
 	r := newRig(t)
@@ -78,7 +83,7 @@ func TestF53_F1701_StaleLeaseHoldReportQosDetail(t *testing.T) {
 		t.Fatalf("Report source_binding detail: got %q, want %q", detailValue(bindReport), "No member binding was admitted.")
 	}
 
-	// Step 3: Only when e.servingRead is nil does Engine.report() preserve Decide()'s
+	// Step 3: With e.servingRead nil, Engine.report() preserves Decide()'s
 	// "Rate policy could not be applied." detail on qos.
 	savedRead := r.eng.servingRead
 	r.eng.servingRead = nil
@@ -89,5 +94,26 @@ func TestF53_F1701_StaleLeaseHoldReportQosDetail(t *testing.T) {
 	qosNoRead, ok := checkBy(repNoRead.Checks, api.NodeCheckNameQos)
 	if !ok || detailValue(qosNoRead) != "Rate policy could not be applied." {
 		t.Fatalf("Report qos detail with nil servingRead: got %q, want %q", detailValue(qosNoRead), "Rate policy could not be applied.")
+	}
+}
+
+// Keep the real ten-second local deadline: a TERM caller is canceled separately.
+// The source stays blocked until Boot returns, and must have entered while its
+// context was live. This distinguishes deadline expiry from manual cancellation.
+type f53DeadlineRead struct {
+	ctx        context.Context
+	errOnEntry error
+}
+
+func f53RequireExpiredLedgerRead(t *testing.T, entered <-chan f53DeadlineRead) {
+	t.Helper()
+	select {
+	case read := <-entered:
+		deadline, ok := read.ctx.Deadline()
+		if read.errOnEntry != nil || !ok || time.Now().Before(deadline) || !errors.Is(read.ctx.Err(), context.DeadlineExceeded) {
+			t.Fatalf("ledger stage must start live then expire: entry=%v deadline=%v err=%v", read.errOnEntry, ok, read.ctx.Err())
+		}
+	default:
+		t.Fatal("Boot deadline expired before entering the ledger stage")
 	}
 }

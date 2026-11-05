@@ -12,14 +12,13 @@ type localBudget struct {
 	quarantineAttempted bool
 	quarantineBaseline  bool
 	ctx                 context.Context
-	cancel              context.CancelFunc
 	quarantine          context.Context
 	cancelQuarantine    context.CancelFunc
 }
 
 func newLocalBudget(parent context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(parent), timeout)
-	budget := &localBudget{cancel: cancel}
+	budget := &localBudget{}
 	ctx = context.WithValue(ctx, localBudgetKey{}, budget)
 	budget.ctx = ctx
 	return ctx, func() {

@@ -1,0 +1,753 @@
+[
+  {
+    "name": "agent-loaded50",
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-count=50",
+      "-timeout=35m",
+      "-run",
+      "^(TestD155_CrashedTransactionsKeepAgentRunning|TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery|TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat|TestR21_M2_TermAfterBaselineKeepsNormalStopOnLedgerTimeout|TestR21_M2_OneBootBudgetAllStages|TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption|TestR23_H1b_IdleZeroCounterSurvivesSwitchAndRestart|TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample|TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException|TestF53_F1701_StaleLeaseHoldReportQosDetail)$",
+      "./node/agent/"
+    ],
+    "head": "29cd267162fa614c444122865b62f405e2f58802",
+    "load_workers": 24,
+    "scratch_fstype": "ext4",
+    "admission": "free",
+    "overlap_pids": [],
+    "exit_status": 0,
+    "workers_joined": 24,
+    "elapsed_seconds": 1658.717,
+    "sanitized_log": "agent-loaded50.log.gz",
+    "sanitized_log_sha256": "3d3d4db3586e2ff47b062a4579287544f19140be8092f01a9e0cf12ef9c86e30",
+    "working_tree_diff_sha256": "b08edf1161b975e6ca44c39dee1ab26869888a31852b1cb33d9428e10ca96719",
+    "working_tree_patch": "overlay-b08edf1161b975e6ca44c39dee1ab26869888a31852b1cb33d9428e10ca96719.patch",
+    "source_manifest": "source-ec18b376f43e12288ea0f0638aa7d3f93708d5950089ef67998eece752704a19.sha256",
+    "counts": {
+      "parents": {
+        "pass": 500,
+        "skip": 0,
+        "fail": 0
+      },
+      "subtests": {
+        "pass": 1100,
+        "skip": 0,
+        "fail": 0
+      },
+      "packages": {
+        "pass": 1,
+        "skip": 0,
+        "fail": 0
+      }
+    },
+    "test_counts": {
+      "TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample/delivered_ACK": {
+        "pass": 50
+      },
+      "TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample/cancelled_ACK": {
+        "pass": 50
+      },
+      "TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample": {
+        "pass": 50
+      },
+      "TestR21_M2_OneBootBudgetAllStages/runtime": {
+        "pass": 50
+      },
+      "TestR21_M2_OneBootBudgetAllStages/recover": {
+        "pass": 50
+      },
+      "TestR21_M2_OneBootBudgetAllStages/generation": {
+        "pass": 50
+      },
+      "TestR21_M2_OneBootBudgetAllStages/baseline": {
+        "pass": 50
+      },
+      "TestR21_M2_OneBootBudgetAllStages/adoption_cleanup": {
+        "pass": 50
+      },
+      "TestR21_M2_OneBootBudgetAllStages/adoption_verify": {
+        "pass": 50
+      },
+      "TestR21_M2_OneBootBudgetAllStages/adoption_probe": {
+        "pass": 50
+      },
+      "TestR21_M2_OneBootBudgetAllStages/adoption_lock": {
+        "pass": 50
+      },
+      "TestR21_M2_OneBootBudgetAllStages/meter_open": {
+        "pass": 50
+      },
+      "TestR21_M2_OneBootBudgetAllStages/settlement": {
+        "pass": 50
+      },
+      "TestR21_M2_OneBootBudgetAllStages/uncooperative": {
+        "pass": 50
+      },
+      "TestR21_M2_OneBootBudgetAllStages": {
+        "pass": 50
+      },
+      "TestR21_M2_TermAfterBaselineKeepsNormalStopOnLedgerTimeout": {
+        "pass": 50
+      },
+      "TestR23_H1b_IdleZeroCounterSurvivesSwitchAndRestart": {
+        "pass": 50
+      },
+      "TestD155_CrashedTransactionsKeepAgentRunning/blocked": {
+        "pass": 50
+      },
+      "TestD155_CrashedTransactionsKeepAgentRunning/switched": {
+        "pass": 50
+      },
+      "TestD155_CrashedTransactionsKeepAgentRunning/checking": {
+        "pass": 50
+      },
+      "TestD155_CrashedTransactionsKeepAgentRunning": {
+        "pass": 50
+      },
+      "TestF53_F1701_StaleLeaseHoldReportQosDetail": {
+        "pass": 50
+      },
+      "TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat/term_after_baseline_with_ledger_timeout_leaves_stale_serving_true_heartbeat": {
+        "pass": 50
+      },
+      "TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat/local_deadline_timeout_and_datapath_error_leave_serving_true_heartbeat": {
+        "pass": 50
+      },
+      "TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat/boot_probe_clear_failure_leaves_baseline_ok_heartbeat_and_burns_issuance": {
+        "pass": 50
+      },
+      "TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat": {
+        "pass": 50
+      },
+      "TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException/held_finalsample_blocks_step_sync_and_apply_until_settled": {
+        "pass": 50
+      },
+      "TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException/adoption_lock_does_not_trigger_probe_exception_install": {
+        "pass": 50
+      },
+      "TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException": {
+        "pass": 50
+      },
+      "TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption/exact_microsecond_clock": {
+        "pass": 50
+      },
+      "TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption": {
+        "pass": 50
+      },
+      "TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery": {
+        "pass": 50
+      }
+    }
+  },
+  {
+    "name": "meter-before-fix",
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-overlay=.agent/f53-fix1/meter-before-overlay.json",
+      "-count=1",
+      "-run",
+      "TestMTR03_(RestartCheckpoint|FinalSampleUnchangedRollback)|TestCheckpointForRestartAtSameMicrosecond",
+      "./node/internal/meter/"
+    ],
+    "head": "29cd267162fa614c444122865b62f405e2f58802",
+    "load_workers": 0,
+    "scratch_fstype": "ext4",
+    "admission": "free",
+    "overlap_pids": [],
+    "exit_status": 1,
+    "workers_joined": 0,
+    "elapsed_seconds": 0.565,
+    "sanitized_log": "meter-before-fix.log.gz",
+    "sanitized_log_sha256": "d317bc72881356111887d908627074066d2cccbb5e46e5ddf1435f63dc027c49",
+    "working_tree_diff_sha256": "b08edf1161b975e6ca44c39dee1ab26869888a31852b1cb33d9428e10ca96719",
+    "working_tree_patch": "overlay-b08edf1161b975e6ca44c39dee1ab26869888a31852b1cb33d9428e10ca96719.patch",
+    "source_manifest": "source-ec18b376f43e12288ea0f0638aa7d3f93708d5950089ef67998eece752704a19.sha256",
+    "counts": {
+      "parents": {
+        "pass": 2,
+        "skip": 0,
+        "fail": 3
+      },
+      "subtests": {
+        "pass": 5,
+        "skip": 0,
+        "fail": 5
+      },
+      "packages": {
+        "pass": 0,
+        "skip": 0,
+        "fail": 1
+      }
+    },
+    "test_counts": {
+      "TestMTR03_RestartCheckpointClockBoundaries/0s": {
+        "fail": 1
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries/1\u00b5s": {
+        "fail": 1
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries/5s": {
+        "fail": 1
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries/10s": {
+        "fail": 1
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries": {
+        "fail": 1
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow/sample": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow/restart": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow/final": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence/boot": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence/counter": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence/binding": {
+        "fail": 1
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence": {
+        "fail": 1
+      },
+      "TestMTR03_FinalSampleUnchangedRollback": {
+        "pass": 1
+      },
+      "TestCheckpointForRestartAtSameMicrosecond": {
+        "fail": 1
+      }
+    },
+    "go_overlay": {
+      "base_sources": "b921c75f",
+      "replaced_files": [
+        "node/internal/meter/delta.go",
+        "node/internal/meter/meter.go"
+      ]
+    }
+  },
+  {
+    "name": "meter-boundary-corrected",
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-count=1",
+      "-run",
+      "TestMTR03_(RestartCheckpoint|FinalSampleUnchangedRollback)|TestCheckpointForRestartAtSameMicrosecond",
+      "./node/internal/meter/"
+    ],
+    "head": "29cd267162fa614c444122865b62f405e2f58802",
+    "load_workers": 0,
+    "scratch_fstype": "ext4",
+    "admission": "free",
+    "overlap_pids": [],
+    "exit_status": 0,
+    "workers_joined": 0,
+    "elapsed_seconds": 0.565,
+    "sanitized_log": "meter-boundary-corrected.log.gz",
+    "sanitized_log_sha256": "79df837d97bb1ad3c8d3dada5124c59b4b577336816338918fdef66f30eb5260",
+    "working_tree_diff_sha256": "b08edf1161b975e6ca44c39dee1ab26869888a31852b1cb33d9428e10ca96719",
+    "working_tree_patch": "overlay-b08edf1161b975e6ca44c39dee1ab26869888a31852b1cb33d9428e10ca96719.patch",
+    "source_manifest": "source-ec18b376f43e12288ea0f0638aa7d3f93708d5950089ef67998eece752704a19.sha256",
+    "counts": {
+      "parents": {
+        "pass": 5,
+        "skip": 0,
+        "fail": 0
+      },
+      "subtests": {
+        "pass": 10,
+        "skip": 0,
+        "fail": 0
+      },
+      "packages": {
+        "pass": 1,
+        "skip": 0,
+        "fail": 0
+      }
+    },
+    "test_counts": {
+      "TestMTR03_RestartCheckpointClockBoundaries/0s": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries/1\u00b5s": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries/5s": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries/10s": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow/sample": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow/restart": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow/final": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence/boot": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence/counter": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence/binding": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence": {
+        "pass": 1
+      },
+      "TestMTR03_FinalSampleUnchangedRollback": {
+        "pass": 1
+      },
+      "TestCheckpointForRestartAtSameMicrosecond": {
+        "pass": 1
+      }
+    }
+  },
+  {
+    "name": "meter-boundary-smoke",
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-count=1",
+      "-run",
+      "TestMTR03_RestartCheckpoint|TestCheckpointForRestartAtSameMicrosecond",
+      "./node/internal/meter/"
+    ],
+    "head": "29cd267162fa614c444122865b62f405e2f58802",
+    "load_workers": 0,
+    "scratch_fstype": "ext4",
+    "admission": "free",
+    "overlap_pids": [],
+    "exit_status": 1,
+    "workers_joined": 0,
+    "elapsed_seconds": 0.565,
+    "sanitized_log": "meter-boundary-smoke.log.gz",
+    "sanitized_log_sha256": "18935d2c42d9b79d37b1bf3234207f740d00029fd952d9ae7a4d1b1efb826bb5",
+    "working_tree_diff_sha256": "7481df665774c4f3c18139560c6b1abc9c886c6a6f0ce443310b0fb1450af938",
+    "working_tree_patch": "overlay-7481df665774c4f3c18139560c6b1abc9c886c6a6f0ce443310b0fb1450af938.patch",
+    "counts": {
+      "parents": {
+        "pass": 2,
+        "skip": 0,
+        "fail": 2
+      },
+      "subtests": {
+        "pass": 5,
+        "skip": 0,
+        "fail": 5
+      },
+      "packages": {
+        "pass": 0,
+        "skip": 0,
+        "fail": 1
+      }
+    },
+    "test_counts": {
+      "TestMTR03_RestartCheckpointClockBoundaries/0s": {
+        "fail": 1
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries/1\u00b5s": {
+        "fail": 1
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries/5s": {
+        "fail": 1
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries/10s": {
+        "fail": 1
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries": {
+        "fail": 1
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow/sample": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow/restart": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow/final": {
+        "fail": 1
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow": {
+        "fail": 1
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence/boot": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence/counter": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence/binding": {
+        "pass": 1
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence": {
+        "pass": 1
+      },
+      "TestCheckpointForRestartAtSameMicrosecond": {
+        "pass": 1
+      }
+    },
+    "additional_fixture": {
+      "path": "node/internal/meter/followup53_test.go",
+      "sha256": "c405fc52cc63ebc346db1c19b764ad997fecfd8bcfcf9b9cb58b7735d3503edb",
+      "note": "Untracked during this first smoke; expected current counters after closing an epoch, incorrectly. Corrected assertion to require empty current counters and checked the closed cursor."
+    }
+  },
+  {
+    "name": "meter-loaded50",
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-count=50",
+      "-timeout=20m",
+      "-run",
+      "^(TestCheckpointForRestartAtSameMicrosecond|TestMTR03_(RestartCheckpoint.*|FinalSampleUnchangedRollback))$",
+      "./node/internal/meter/"
+    ],
+    "head": "29cd267162fa614c444122865b62f405e2f58802",
+    "load_workers": 24,
+    "scratch_fstype": "ext4",
+    "admission": "free",
+    "overlap_pids": [],
+    "exit_status": 0,
+    "workers_joined": 24,
+    "elapsed_seconds": 19.867,
+    "sanitized_log": "meter-loaded50.log.gz",
+    "sanitized_log_sha256": "ff4481b931aabb7dd476d610e210f68e8ce5ebb7514d4dcea928bea010fbfce0",
+    "working_tree_diff_sha256": "80cf9a679e95774299d297cf14efa72f8d5b906fbfb8d16ee946cfe666d74c79",
+    "working_tree_patch": "overlay-80cf9a679e95774299d297cf14efa72f8d5b906fbfb8d16ee946cfe666d74c79.patch",
+    "source_manifest": "source-281d53d3fcbf8a265dbf669c73f21fd31c205d2782e1b3c473ea994bf4d80c3a.sha256",
+    "counts": {
+      "parents": {
+        "pass": 250,
+        "skip": 0,
+        "fail": 0
+      },
+      "subtests": {
+        "pass": 500,
+        "skip": 0,
+        "fail": 0
+      },
+      "packages": {
+        "pass": 1,
+        "skip": 0,
+        "fail": 0
+      }
+    },
+    "test_counts": {
+      "TestMTR03_RestartCheckpointClockBoundaries/0s": {
+        "pass": 50
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries/1\u00b5s": {
+        "pass": 50
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries/5s": {
+        "pass": 50
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries/10s": {
+        "pass": 50
+      },
+      "TestMTR03_RestartCheckpointClockBoundaries": {
+        "pass": 50
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow/sample": {
+        "pass": 50
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow/restart": {
+        "pass": 50
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow/final": {
+        "pass": 50
+      },
+      "TestMTR03_RestartCheckpointOutsideClockWindow": {
+        "pass": 50
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence/boot": {
+        "pass": 50
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence/counter": {
+        "pass": 50
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence/binding": {
+        "pass": 50
+      },
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence": {
+        "pass": 50
+      },
+      "TestMTR03_FinalSampleUnchangedRollback": {
+        "pass": 50
+      },
+      "TestCheckpointForRestartAtSameMicrosecond": {
+        "pass": 50
+      }
+    }
+  },
+  {
+    "name": "proofs-smoke",
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-count=1",
+      "-timeout=3m",
+      "-run",
+      "^(TestR29_M1_|TestR22_M3_|TestR21_M2_TermAfterBaseline|TestR22_Held_Q2_Q3_)",
+      "./node/agent/"
+    ],
+    "head": "29cd267162fa614c444122865b62f405e2f58802",
+    "load_workers": 0,
+    "scratch_fstype": "ext4",
+    "admission": "free",
+    "overlap_pids": [],
+    "exit_status": 0,
+    "workers_joined": 0,
+    "elapsed_seconds": 23.636,
+    "sanitized_log": "proofs-smoke.log.gz",
+    "sanitized_log_sha256": "de57861eef3b686591589aadc7b76e4ea2657dff400fd9f615b3b935906f9680",
+    "working_tree_diff_sha256": "7481df665774c4f3c18139560c6b1abc9c886c6a6f0ce443310b0fb1450af938",
+    "working_tree_patch": "overlay-7481df665774c4f3c18139560c6b1abc9c886c6a6f0ce443310b0fb1450af938.patch",
+    "counts": {
+      "parents": {
+        "pass": 6,
+        "skip": 0,
+        "fail": 0
+      },
+      "subtests": {
+        "pass": 5,
+        "skip": 0,
+        "fail": 0
+      },
+      "packages": {
+        "pass": 1,
+        "skip": 0,
+        "fail": 0
+      }
+    },
+    "test_counts": {
+      "TestR21_M2_TermAfterBaselineKeepsNormalStopOnLedgerTimeout": {
+        "pass": 1
+      },
+      "TestR22_M3_DatapathValidationGuard": {
+        "pass": 1
+      },
+      "TestR22_M3_ProbeClearRetriesWithoutBurningNonceOrExtendingLifetime": {
+        "pass": 1
+      },
+      "TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat/term_after_baseline_with_ledger_timeout_leaves_stale_serving_true_heartbeat": {
+        "pass": 1
+      },
+      "TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat/local_deadline_timeout_and_datapath_error_leave_serving_true_heartbeat": {
+        "pass": 1
+      },
+      "TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat/boot_probe_clear_failure_leaves_baseline_ok_heartbeat_and_burns_issuance": {
+        "pass": 1
+      },
+      "TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat": {
+        "pass": 1
+      },
+      "TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException/held_finalsample_blocks_step_sync_and_apply_until_settled": {
+        "pass": 1
+      },
+      "TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException/adoption_lock_does_not_trigger_probe_exception_install": {
+        "pass": 1
+      },
+      "TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException": {
+        "pass": 1
+      },
+      "TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery": {
+        "pass": 1
+      }
+    }
+  },
+  {
+    "name": "r23-before-fix",
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-overlay=.agent/f53-fix1/meter-before-overlay.json",
+      "-count=1",
+      "-run",
+      "^TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption$/exact_microsecond_clock",
+      "./node/agent/"
+    ],
+    "head": "29cd267162fa614c444122865b62f405e2f58802",
+    "load_workers": 0,
+    "scratch_fstype": "ext4",
+    "admission": "free",
+    "overlap_pids": [],
+    "exit_status": 1,
+    "workers_joined": 0,
+    "elapsed_seconds": 1.719,
+    "sanitized_log": "r23-before-fix.log.gz",
+    "sanitized_log_sha256": "9d3136bdd943782510ebb1d57b722530dbfbb29a1e77c263fdc0f4a4052675b5",
+    "working_tree_diff_sha256": "b08edf1161b975e6ca44c39dee1ab26869888a31852b1cb33d9428e10ca96719",
+    "working_tree_patch": "overlay-b08edf1161b975e6ca44c39dee1ab26869888a31852b1cb33d9428e10ca96719.patch",
+    "source_manifest": "source-ec18b376f43e12288ea0f0638aa7d3f93708d5950089ef67998eece752704a19.sha256",
+    "counts": {
+      "parents": {
+        "pass": 0,
+        "skip": 0,
+        "fail": 1
+      },
+      "subtests": {
+        "pass": 0,
+        "skip": 0,
+        "fail": 1
+      },
+      "packages": {
+        "pass": 0,
+        "skip": 0,
+        "fail": 1
+      }
+    },
+    "test_counts": {
+      "TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption/exact_microsecond_clock": {
+        "fail": 1
+      },
+      "TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption": {
+        "fail": 1
+      }
+    },
+    "go_overlay": {
+      "base_sources": "b921c75f",
+      "replaced_files": [
+        "node/internal/meter/delta.go",
+        "node/internal/meter/meter.go"
+      ]
+    }
+  },
+  {
+    "name": "r29-bounded-mutation",
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-overlay=.agent/f53-fix1/r29-sync-overlay.json",
+      "-count=1",
+      "-timeout=1m",
+      "-run",
+      "^TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery$",
+      "./node/agent/"
+    ],
+    "head": "29cd267162fa614c444122865b62f405e2f58802",
+    "load_workers": 0,
+    "scratch_fstype": "ext4",
+    "admission": "free",
+    "overlap_pids": [],
+    "exit_status": 1,
+    "workers_joined": 0,
+    "elapsed_seconds": 11.602,
+    "sanitized_log": "r29-bounded-mutation.log.gz",
+    "sanitized_log_sha256": "41dbd01115956eafc5ca3b7ff61593f86d9f3a2d578d52d64f94cd51474499ab",
+    "working_tree_diff_sha256": "b08edf1161b975e6ca44c39dee1ab26869888a31852b1cb33d9428e10ca96719",
+    "working_tree_patch": "overlay-b08edf1161b975e6ca44c39dee1ab26869888a31852b1cb33d9428e10ca96719.patch",
+    "source_manifest": "source-ec18b376f43e12288ea0f0638aa7d3f93708d5950089ef67998eece752704a19.sha256",
+    "counts": {
+      "parents": {
+        "pass": 0,
+        "skip": 0,
+        "fail": 1
+      },
+      "subtests": {
+        "pass": 0,
+        "skip": 0,
+        "fail": 0
+      },
+      "packages": {
+        "pass": 0,
+        "skip": 0,
+        "fail": 1
+      }
+    },
+    "test_counts": {
+      "TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery": {
+        "fail": 1
+      }
+    },
+    "go_overlay": {
+      "source": "466f1510:node/agent/updaterecover.go",
+      "change": "insert synchronous select on job.done or ctx.Done immediately before the fast-wait timer",
+      "replacement_sha256": "6fb95c96f6791f9f9fabe52e1cf4ebba4407e59035577587a6b78fb7ebce6fc4"
+    }
+  },
+  {
+    "name": "r29-selfdeadlock-mutation",
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-overlay=.agent/f53-fix1/r29-sync-overlay.json",
+      "-count=1",
+      "-timeout=1m",
+      "-run",
+      "^TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery$",
+      "./node/agent/"
+    ],
+    "head": "29cd267162fa614c444122865b62f405e2f58802",
+    "load_workers": 0,
+    "scratch_fstype": "ext4",
+    "admission": "free",
+    "overlap_pids": [],
+    "exit_status": 1,
+    "workers_joined": 0,
+    "elapsed_seconds": 55.826,
+    "sanitized_log": "r29-selfdeadlock-mutation.log.gz",
+    "sanitized_log_sha256": "3aae4ccd7e2af235dd4e15a65144cbda4ae6097fe88fcd52a6f69c66e33807ca",
+    "working_tree_diff_sha256": "b08edf1161b975e6ca44c39dee1ab26869888a31852b1cb33d9428e10ca96719",
+    "working_tree_patch": "overlay-b08edf1161b975e6ca44c39dee1ab26869888a31852b1cb33d9428e10ca96719.patch",
+    "source_manifest": "source-ec18b376f43e12288ea0f0638aa7d3f93708d5950089ef67998eece752704a19.sha256",
+    "counts": {
+      "parents": {
+        "pass": 0,
+        "skip": 0,
+        "fail": 1
+      },
+      "subtests": {
+        "pass": 0,
+        "skip": 0,
+        "fail": 0
+      },
+      "packages": {
+        "pass": 0,
+        "skip": 0,
+        "fail": 1
+      }
+    },
+    "test_counts": {
+      "TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery": {
+        "fail": 1
+      }
+    },
+    "go_overlay": {
+      "source": "466f1510:node/agent/updaterecover.go",
+      "change": "insert synchronous <-job.done immediately before the fast-wait timer",
+      "replacement_hash": "not recorded",
+      "teardown": "Original assertion emitted; uninterruptible mutation held recoverMu and blocked Close. Own child group explicitly killed; not a clean negative-control run."
+    }
+  }
+]
