@@ -1,0 +1,144 @@
+# Follow-up 24 — 2026-11-04
+
+Run `dee8492f-4a7e-4f3c-9063-3ab27f66dcec`, measured source `55588821291e335ef72fbd7fe1f5ff052dea92bf`, baseline `df61fd68add1678729ef32ae1ef93719124035e3`: **3 / 7 / 0 cases (PASS / BLOCKED / FAIL); 708 / 6 / 0 subchecks**. One live assembled acceptance, after the sole permitted pre-check retry; no case retry. Original predicates, the strict 15 s freshness bound, report/lease joins and traffic checks are unchanged.
+
+| Case | Status | Passed / blocked / failed subchecks |
+|---|---|---|
+| AT05 | blocked | 31 / 0 / 0 |
+| AT01 | blocked | 23 / 0 / 0 |
+| AT02 | pass | 193 / 0 / 0 |
+| AT03 | pass | 98 / 0 / 0 |
+| AT04 | blocked | 113 / 0 / 0 |
+| AT08 | pass | 36 / 0 / 0 |
+| AT20 | blocked | 89 / 0 / 0 |
+| AT21 | blocked | 13 / 0 / 0 |
+| AT22 | blocked | 40 / 0 / 0 |
+| AT09 | blocked | 72 / 6 / 0 |
+
+## D-098 preservation
+
+Run `6a25221b` is frozen in the [follow-up 23 archive](history/follow-up-23/INDEX.md): 145 regular root records, byte-identical gzip/sidecars and SHA-256 pins. It remains 3/7/0 cases and 706/8/0 subchecks. `3eb3960d` and every earlier outcome, dated note and archive remain unchanged. The root response-register symlink is navigation, not a members run payload.
+
+## Owner inputs and extraction proof
+
+The PR bodies of [devstack 36 #476](https://github.com/TED-H-com/Freedom-VPN/pull/476) and [agent-core 52 #477](https://github.com/TED-H-com/Freedom-VPN/pull/477) were read. The [devstack acceptance analysis](../../runs/2026-11-04/followup36/analysis.md) does not perform the members 15 s read; this run supplies that owner measurement. Field names and enums come from the [node logging contract](../../../node/README.md) and [agent-core 52 note](../../../node/followup52-2026-11-04.md), including process-scoped attempt numbers and report-ID correlation across restarts.
+
+The [offline realistic log fixture tests](../../../../tests/e2e/at/members/observation_records_test.py), invoked by `TestD146_F24ObservationReceiptsAcceptedRetryAndOverwrite`, cover accepted attempts, a rejected/retried attempt, overwritten logs/process restart, missing matches and malformed records. Native extraction uses the existing agent-log export and keeps both snapshots when replacement is detected. The serving SQL only adds read time/age metadata; FROM/JOIN/WHERE and final predicates are unchanged. [Predicate/source audit](F24-predicate-audit.json).
+
+## F22-D146 under D-162
+
+The [prepared config](F24-observation-config.json) retains the exact run artifact pins and the regular node’s explicit 5 s observation setting. D-162 is TEST ONLY; the product default stays 30 s. Reports may also be due on state changes. All accepted rows and states are retained; no interval is discarded or normalized.
+
+[Every row, enqueue, attempt and report-ID join](F24-observation-windows.json). Attempt numbers count per report per process; boot IDs are stable hash labels. `received_at` is Central storage, while the accepted completion is the agent’s response receipt. Log timestamps have millisecond precision; observed/start timestamps retain finer precision. Missing records are coverage gaps, not invented rejection or zero delay.
+
+| Index | Native row | Stored reports | Min / median / max interval (s) | Enqueues / attempts | Missing joins / enqueued absent in window |
+|---:|---|---:|---|---|---|
+| 35 | native ipv4 MTU 1500 | 2 | 5.401499 / 5.401499 / 5.401499 | 2 / 2 | 0 / 0 |
+| 38 | native ipv6 MTU 1500 | 1 | unavailable / unavailable / unavailable | 1 / 1 | 0 / 0 |
+| 41 | native dual MTU 1500 | 3 | 5.007637 / 7.506433 / 10.005229 | 3 / 3 | 0 / 0 |
+| 44 | native dual MTU 1280 | 2 | 5.003038 / 5.003038 / 5.003038 | 2 / 2 | 0 / 0 |
+| 49 | native ipv6 MTU 1280 | 2 | 9.995379 / 9.995379 / 9.995379 | 2 / 2 | 0 / 0 |
+| 54 | D-137 supported known-PMTU 1280 | 1 | unavailable / unavailable / unavailable | 1 / 1 | 0 / 0 |
+| 57 | native ipv4 MTU 1280 | 3 | 5.004174 / 5.0058195 / 5.007465 | 3 / 3 | 0 / 0 |
+| 73 | D-137 routed ipv6 1280 | 2 | 9.765986 / 9.765986 / 9.765986 | 2 / 2 | 0 / 0 |
+| 76 | D-137 routed ipv4 1280 | 2 | 5.452382 / 5.452382 / 5.452382 | 2 / 2 | 0 / 0 |
+
+A row with fewer than two stored observations has no successive interval statistic. The original series remains visible. The unchanged D-146 serving query runs on the three 1280 clamp rows below; the other six windows do not execute that query, so there is no corresponding age value to invent.
+
+| Clamp index | Row | Serving read | Observation age (s) | Transfer / upload / qualification |
+|---:|---|---|---|---|
+| 46 | native dual MTU 1280 | True | 0.739651 | pass / pass / pass |
+| 51 | native ipv6 MTU 1280 | True | 6.849400 | pass / pass / pass |
+| 59 | native ipv4 MTU 1280 | True | 1.441758 | pass / pass / pass |
+
+**F22-D146 is answered for the tested D-162 cadence:** dual/IPv4 1280 indexes **44 and 46 both PASS**. All three unchanged serving predicates pass: dual age **0.739651 s**, IPv6 **6.849400 s**, IPv4 **1.441758 s**, each below 15 s with generation 74, current incarnation, forwarding enabled and no reasons. No serving read fails on age, so there is no late enqueue/attempt/acceptance stage to attribute in this run. [Serving reports and their exact enqueue/attempt joins](F24-serving-read-records.json) retain `interval_elapsed` for all three. All nine native windows retain 18 stored observations, 18 enqueues and 18 submission attempts; every stored report has its enqueue and accepted attempt, and no in-window enqueue is absent from storage. There are no malformed receipts or overwritten native-row exports. This closes the cadence finding for this measurement; it does not alter the strict bound, prove an unconditional scheduling SLA, or change the 30 s product default.
+
+Every row retains the agent-facing control route and TCP boundary views. This does not measure the proxy’s upstream connection or prove the absence of every transport event between samples. Overwrite detection and surviving suffix duration are in each row’s log evidence.
+
+## F22-AT01 and AT08 initial selected-route transfers
+
+[Paired paths and original packet/hash joins](F24-initial-transfers.json) retain both endpoints’ route/source/neighbour/WireGuard views, original underlay packets, origin receipts and counters.
+
+| Case / forwarding index | Counted | Origin requests | First unconfirmed boundary |
+|---|---|---:|---|
+| AT01 / 0 | True | 1 | none: original origin receipt and both device counter increments |
+| AT01 / 1 | True | 1 | none: original origin receipt and both device counter increments |
+| AT08 / 0 | True | 1 | none: original origin receipt and both device counter increments |
+
+The AT01 initial transfer raises upload **0 → 2,357** and download **0 → 2,464** bytes; its wake transfer raises upload **2,357 → 4,714** and download **2,464 → 4,875**. AT08 initial upload is **251,717 → 254,086**, download **25,243 → 27,707**. Each has one origin receipt, so none of these three transfers has a missing-traffic boundary to assign. Their success is also present in run `6a25221b`; no new merged-change cause is inferred.
+
+F11-01 stays **OPEN and upstream-dependent (D-148)**. Run `3eb3960d`’s node packet 158/member packet 161 same-hash loopback-source response remains with that owner; this run neither changes the old result nor proves the missing kernel drop/source-selection mechanism.
+
+## AT02 closed recovery
+
+[Original closed Apply, renewal, populated lease and serving Apply](F24-AT02-closed-recovery-trace.json); [deny-all/loss accounting](F24-AT02-recovery.json). Every report candidate retains its documented enqueue reason and all observed attempt receipts; this recovery needed one accepted attempt.
+
+| Producer / closed Apply | Renewal / serving Apply | Populated lease | Deny-all after closed Apply (ms) / losses | Apply plus wait (ms) / losses | Report candidates |
+|---|---|---|---|---|---|
+| 9879ce69-34b6-4fa6-9165-cb4619bc9fde / 540 | 545 / 546 | 4b88acc1-5ff1-4618-9f40-6f1a4f06064c (generation 14, members 1) | 187.30883 / 7 | 304.961112 / 13 | 1 |
+
+The one closed recovery is producer `9879ce69-34b6-4fa6-9165-cb4619bc9fde`: closed Apply **540**, renewal request **545**, populated generation-14 lease `4b88acc1-5ff1-4618-9f40-6f1a4f06064c`, serving Apply **546**. The renewal starts **66.406460 ms** after closed Apply ends; exactly one request and zero baseline writes lie before serving. Closed report `01a1a782-6b90-74a8-bcd6-c9a06650a2ec` is enqueued at **17:01:44.722Z**, observed at **17:01:44.720284884Z**, with **`closed_recovery_binding`**. Its attempt 1 finishes accepted at **17:01:44.730Z** (duration 6 ms; enqueue to completion **8 ms**). The enqueue and submission are lines **207 and 208** of `AT02-interim-170257/node-agent.log`; the exact documented fields and byte pins are retained in the trace. The deny-all interval after closed Apply is **187.308830 ms / seven losses**; Apply plus wait is **304.961112 ms / 13 losses**. These are measured intervals, not an outage ceiling. A later usage restart overwrites the agent log; `AT02-interim-170257/node-agent.log` preserves this enqueue and attempt. The final AT02 node export retains a **423.919857555 s** suffix of the **915.480883769 s** case envelope; the prefix without lines in that final export is **491.561026214 s**, with earlier segments preserved by interim exports. [All snapshot coverage and pins](F24-log-coverage.json). The prior run also had seven deny-all losses and 13 Apply-plus-wait losses; this combined measurement cannot assign the timing/generation differences to one of the merged changes. Report correlation uses the unique `closed_recovery_binding` observation between the producer-anchored closed-Apply end and serving-Apply end, then joins the accepted attempt by report ID. It does not assume an undocumented internal recovery identifier.
+
+## AT09 restart and D-067
+
+- Index 25: **blocked** — D-067 revision 11 provisional lease observation.
+- Index 26: **pass** — same-generation D-067 restart recovery and lease sequence.
+- Index 27: **pass** — restart without installed foreign filter reports no TC_FOREIGN_FILTER.
+
+Index 25 remains **BLOCKED/unexercised**: zero grant-less leases, zero provisional observations, and a populated lease from the first renewal. Index 26 passes at unchanged generation **63**, with serving after **5.986591953 s** and the first counted byte after **13.462104236 s**. Index 27 passes with no `TC_FOREIGN_FILTER`. All **12** post-restart reports are retained, versus four in `6a25221b`; the populated-but-nonserving observation remains visible with a failed `tunnel_probe` and `safety_check_failed`, followed by serving observations. The prepared cadence and receipt series support more frequent reporting; this combined run does not isolate other restart timing/count influences.
+
+[Every explicit transition and watchdog decision](F24-agent-transitions.json) retains five transition checks. AT02 usage resume's retained watchdog file contains only its earlier startup `heartbeat_unreadable` decision and successful write (AT01/node, lines 1–3), which precede that resume. AT08's disabled-node restart leaves an empty watchdog file, also empty in the final export. AT09's recreated namespace records `baseline_unreadable` at **17:36:17.759427439Z**, then a successful write (AT09/node2/watchdog.log, lines **1–3**). Its embedded agent log records `boot_unverified` and `safety_check_failed` writes before recovery. The second node's original enrollment also has `heartbeat_unreadable` and a successful write (AT02/node2/watchdog.log, lines 1–3). Neither **`baseline_unverified`** nor **`GENERATION_MISMATCH`** appears in retained diagnostic lines; no F48-01 signature is demonstrated. This is limited to retained coverage and makes no independent F48 closure claim.
+
+[All retained watchdog decisions and original line numbers](F24-restart-log-review.json), [all observation log exports](F24-agent-observation-records.json). Multiple restarts inside one case can overwrite earlier on-container logs; absence in retained logs is not proof about missing coverage.
+
+## Conditional node writes
+
+[Every receipt and attempt](F24-node-writes.json): **30** distinct writes, **0** HTTP 412 attempts across **0** receipts. The original bounded-retry receipts retain all attempts. No forced conflict or extra write was added.
+
+All 30 writes have one attempt, each HTTP 202. There are **zero 412s and zero conflict-driven re-reads** to report; that retry branch is unexercised in this run. The shared bounded retry and every original request/ETag/response record remain unchanged.
+
+## Changes from run 6a25221b and attribution
+
+This is the first members run with D-162, agent-core 51 (#470), updater 26 (#471) and agent-core 52 (#477) together. The prepared 5 s setting and interval-elapsed enqueue/receipt series directly support the cadence account. The combined run cannot separately attribute other timing, report-count or transfer changes to those merges. Agent-core 52’s new log records provide evidence; their presence alone does not explain a changed forwarding result.
+
+| Case | Prior status/counts | Current status/counts |
+|---|---|---|
+| AT05 | blocked / 31 / 0 / 0 | blocked / 31 / 0 / 0 |
+| AT01 | blocked / 23 / 0 / 0 | blocked / 23 / 0 / 0 |
+| AT02 | pass / 193 / 0 / 0 | pass / 193 / 0 / 0 |
+| AT03 | pass / 98 / 0 / 0 | pass / 98 / 0 / 0 |
+| AT04 | blocked / 113 / 0 / 0 | blocked / 113 / 0 / 0 |
+| AT08 | pass / 36 / 0 / 0 | pass / 36 / 0 / 0 |
+| AT20 | blocked / 89 / 0 / 0 | blocked / 89 / 0 / 0 |
+| AT21 | blocked / 13 / 0 / 0 | blocked / 13 / 0 / 0 |
+| AT22 | blocked / 40 / 0 / 0 | blocked / 40 / 0 / 0 |
+| AT09 | blocked / 70 / 8 / 0 | blocked / 72 / 6 / 0 |
+
+Changed subcheck statuses (same original check indexes):
+
+- AT09 index 44 native dual MTU 1280 transfer: blocked → pass.
+- AT09 index 46 native dual MTU 1280 D-146 clamp evidence: blocked → pass.
+
+[Comparison including every changed runtime label](F24-comparison.json) preserves generated report/device IDs and selected sibling labels. Label differences are not added checks or changed outcomes; the source predicate audit and original indexes are retained.
+
+## Admission, host and verification
+
+Baseline `df61fd68add1678729ef32ae1ef93719124035e3`, measured source `55588821291e335ef72fbd7fe1f5ff052dea92bf`, preflight main `df61fd68add1678729ef32ae1ef93719124035e3`. `go env GOCACHE`: `<home>/.cache/go-build`. [Full host preflight](F24-host-preflight.json), [every admission answer and overlap](F24-admission.json), [timed sections](F24-timed-sections.json), [cleanup inventory](F24-cleanup.json).
+
+Recorded suite admission sleep: **660 s** across both attempts (including 660 s before the own pre-check stop); case and wrapper waits are listed separately in the admission record. D-160 admission precedes the case clock and covers every nested timed section. Tool-consumed streams contain no admission output.
+
+Both [attempt records](F24-attempts.json) are retained. Attempt 1 waited 660 s, then its own admission wrapper missed main advancing during that wait; its own process tree was stopped before `TestATMembers_Live` and before the first acceptance check. It has no acceptance run UUID or result. After cleanup, the lane rebased its already-committed archive/instrumentation onto current main, repeated the prechecks, and used the single permitted retry. The sole live acceptance ran **16:54:29.765248–17:41:04.975195Z**, exit **2**. No case was retried.
+
+The current run had zero suite/case admission sleeps. Teardown's Docker admission wait was **660.495 s**; adding the first attempt's 660 s gives **1,320.495 s (22 min 0.495 s)** before/following the acceptance, excluding any separately recorded post-run gate wait. Both cleanup receipts show zero owned containers, networks, volumes and images. The completed foreground wrapper ended **17:52:49.586858Z**.
+
+**D-133:** all four observed foreign-process windows are retained as confounded: **17:41:24.395505Z** (one sample), **17:43:09.978900Z** (one), **17:44:05.289677–17:51:52.986873Z** (94), and **17:52:08.070188Z** (one). None intersects an acceptance case. The first is **19.420310 s** after acceptance ended; five-second samples cannot exclude shorter activity. Nothing was retried for overlap.
+
+D-160 journals **311** timed sections, each with a start and end. There are **48 held replies inside active sections**, all naming this lane's own assembled `make` pid **3306533**, as seen by independent read-only snapshot callers. Each reply and its classification is preserved; these are not observed foreign runs. They caused no sleeps inside a timed section. All other in-section admission answers were free. Tool admission output stayed separate from tool-consumed streams. No reservation, host-network operation or new shell cleanup trap was used.
+
+[All ten cases and every subcheck](F24-subchecks.md), [verification receipts](F24-verification.md). No historical result is repaired by the new run.
+
+### Requests to orchestrator
+
+**2026-11-04:** no new product or shared-harness request. Follow-up 23 request 1 is answered by devstack 36 **#476 / D-162**, and this owner run passes the unchanged freshness predicates. Request 2 is answered by agent-core 52 **#477** and the extracted enqueue/attempt records. F22-AT01's historical packet 158/161 evidence remains with the existing **D-148** owner; F11-01 stays **OPEN/upstream-dependent**. The carried owner-resource gaps and D-067's unexercised provisional path remain unchanged. No outside-owned fix or handover-test change is proposed.
+
+F4-03, F4-04, F4-05 / F4-07, F4-06 and F4-10 remain the existing owner-resource groups; none is re-asked. No product, shared fixture/export or handover file was edited.

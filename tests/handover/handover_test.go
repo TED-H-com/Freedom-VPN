@@ -67,6 +67,7 @@ var ownedDocs = []string{
 	"docs/handover/follow-up-45.md",
 	"docs/handover/follow-up-46.md",
 	"docs/handover/follow-up-47.md",
+	"docs/handover/follow-up-48.md",
 	"docs/ops/README.md",
 	"docs/reviews/README.md",
 	"docs/reviews/r3-d055-review.md",
@@ -750,9 +751,9 @@ func TestHandover_ReviewsArchive(t *testing.T) {
 	for _, name := range gotFiles {
 		rel := filepath.Join("docs", "reviews", name)
 		content := readOwnedDoc(t, root, rel)
-		if name == "r16-rev13-d089-d099-review.md" || name == "r17-rev14-d104-d117-review.md" || name == "r18-generation-change-review.md" || name == "r19-intersection-design-review.md" || name == "r20-adoption-signal-review.md" || name == "r21-adoption-fixes-review.md" || name == "r22-attribution-fixes-review.md" || name == "r23-intent-fixes-review.md" || name == "r24-hitless-guard-review.md" || name == "r25-retain-review.md" || name == "r26-expiry-fixes-review.md" || name == "r27-members-failures-review.md" || name == "r28-expiry-probe-review.md" || name == "r29-update-recover-review.md" || name == "r30-update-fixes-review.md" || name == "r31-recovery-lock-fixes-review.md" {
+		if name == "r16-rev13-d089-d099-review.md" || name == "r17-rev14-d104-d117-review.md" || name == "r18-generation-change-review.md" || name == "r19-intersection-design-review.md" || name == "r20-adoption-signal-review.md" || name == "r21-adoption-fixes-review.md" || name == "r22-attribution-fixes-review.md" || name == "r23-intent-fixes-review.md" || name == "r24-hitless-guard-review.md" || name == "r25-retain-review.md" || name == "r26-expiry-fixes-review.md" || name == "r27-members-failures-review.md" || name == "r28-expiry-probe-review.md" || name == "r29-update-recover-review.md" || name == "r30-update-fixes-review.md" || name == "r31-recovery-lock-fixes-review.md" || name == "r32-dedup-records-review.md" {
 			// D-098 forbids reformatting the raw report to our older table schema.
-			// Followup15Claims / Followup18Claims / Followup25Claims / Followup27Claims / Followup30Claims / Followup31Claims / Followup33Claims / Followup35Claims / Followup36Claims / Followup38Claims / Followup39Claims / Followup42Claims / Followup43Claims / Followup45Claims / Followup47Claims verify SHA-256 and review metadata.
+			// Followup15Claims / Followup18Claims / Followup25Claims / Followup27Claims / Followup30Claims / Followup31Claims / Followup33Claims / Followup35Claims / Followup36Claims / Followup38Claims / Followup39Claims / Followup42Claims / Followup43Claims / Followup45Claims / Followup47Claims / Followup48Claims verify SHA-256 and review metadata.
 			continue
 		}
 
@@ -16389,7 +16390,7 @@ func TestHandover_Followup47Claims(t *testing.T) {
 	}
 	require := func(path string, tokens ...string) {
 		t.Helper()
-		s := readOwnedDoc(t, root, path)
+		s := readOwnedDoc(t, root, followup48InputPath(path))
 		if strings.HasSuffix(path, "-excerpt.json") {
 			readJSON(path, &s)
 		}
@@ -16568,7 +16569,7 @@ func TestHandover_Followup47Claims(t *testing.T) {
 		}
 	})
 	t.Run("66_decisions_136_findings_and_unrelated_rows_exact", func(t *testing.T) {
-		before, after := readOwnedDoc(t, root, followup47PriorPath("docs/handover/README.md")), readOwnedDoc(t, root, "docs/handover/README.md")
+		before, after := readOwnedDoc(t, root, followup47PriorPath("docs/handover/README.md")), readOwnedDoc(t, root, followup48PriorPath("docs/handover/README.md"))
 		re := regexp.MustCompile(`(?m)^\| D-\d{3} \|.*$`)
 		old, now := re.FindAllString(before, -1), re.FindAllString(after, -1)
 		var d, f struct{ Updated, Added map[string]string }
@@ -16949,7 +16950,7 @@ func TestHandover_Followup47Claims(t *testing.T) {
 			t.Fatal("only documented proof differences allowed")
 		}
 		before := readOwnedDoc(t, root, followup47PriorPath("docs/reviews/README.md"))
-		after := readOwnedDoc(t, root, "docs/reviews/README.md")
+		after := readOwnedDoc(t, root, followup48PriorPath("docs/reviews/README.md"))
 		start := "## r30 dispositions at the follow-up 45 cutoff"
 		if strings.TrimRight(strings.Split(after, start)[1][:strings.Index(strings.Split(after, start)[1], "## r31 dispositions")], "\n") != strings.TrimRight(strings.Split(before, start)[1], "\n") {
 			t.Fatal("both r30 dispositions must stay exact")
@@ -16987,7 +16988,7 @@ func TestHandover_Followup47Claims(t *testing.T) {
 			return s[:a] + s[a+b:]
 		}
 		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
-			lines, old := strings.Split(readOwnedDoc(t, root, path), "\n"), strings.Split(readOwnedDoc(t, root, followup47PriorPath(path)), "\n")
+			lines, old := strings.Split(readOwnedDoc(t, root, followup48PriorPath(path)), "\n"), strings.Split(readOwnedDoc(t, root, followup47PriorPath(path)), "\n")
 			if !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-47.md") || !strings.Contains(lines[2], "#474–#477") || lines[3] != strings.Replace(old[2], "**Current cut", "**Previous cut", 1) {
 				t.Fatalf("entrypoint %s", path)
 			}
@@ -17004,7 +17005,7 @@ func TestHandover_Followup47Claims(t *testing.T) {
 				t.Fatalf("unrelated guidance changed %s", path)
 			}
 		}
-		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		op := readOwnedDoc(t, root, followup48PriorPath("docs/handover/operator-guide.md"))
 		source := readOwnedDoc(t, root, frozen+"docs_node_README.md.txt")
 		for _, name := range []string{"observation enqueued", "observation submission"} {
 			row := strings.Split(strings.Split(source, "| `"+name+"` | ")[1], " |\n")[0]
@@ -17035,6 +17036,751 @@ func TestHandover_Followup47Claims(t *testing.T) {
 		margin := regexp.MustCompile(`(?m)^  - (\*\*The orchestrator's note: the low end has little margin\.\*\*.*)$`).FindStringSubmatch(pr)
 		if len(margin) != 2 || !strings.Contains(readOwnedDoc(t, root, "docs/handover/follow-up-47.md"), "> "+margin[1]) {
 			t.Fatal("exact low-end margin note")
+		}
+		for _, anchor := range []string{"f30-01", "d156-release-rule", "r28-h-1", "at02-closed-recovery", "tcp-reload-guard", "observation-records"} {
+			if strings.Count(op, "<a id=\""+anchor+"\"></a>") != 1 {
+				t.Fatal("operator anchor")
+			}
+		}
+	})
+}
+
+func followup48PriorPath(path string) string {
+	return "tests/handover/testdata/history/follow-up-48/prior-" + strings.ReplaceAll(path, "/", "_") + ".txt"
+}
+
+func followup48InputPath(path string) string {
+	switch path {
+	case "README.md", "docs/handover/README.md", "docs/reviews/README.md", "docs/handover/operator-guide.md", "docs/ops/README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md":
+		return followup48PriorPath(path)
+	default:
+		return path
+	}
+}
+
+// Reverse only five input-expression redirects in follow-up 47.
+func restoreFollowup48Assertions(source string) string {
+	return strings.NewReplacer(
+		"s := readOwnedDoc(t, root, followup48InputPath(path))", "s := readOwnedDoc(t, root, path)",
+		"before, after := readOwnedDoc(t, root, followup47PriorPath(\"docs/handover/README.md\")), readOwnedDoc(t, root, followup48PriorPath(\"docs/handover/README.md\"))", "before, after := readOwnedDoc(t, root, followup47PriorPath(\"docs/handover/README.md\")), readOwnedDoc(t, root, \"docs/handover/README.md\")",
+		"after := readOwnedDoc(t, root, followup48PriorPath(\"docs/reviews/README.md\"))", "after := readOwnedDoc(t, root, \"docs/reviews/README.md\")",
+		"lines, old := strings.Split(readOwnedDoc(t, root, followup48PriorPath(path)),", "lines, old := strings.Split(readOwnedDoc(t, root, path),",
+		"op := readOwnedDoc(t, root, followup48PriorPath(\"docs/handover/operator-guide.md\"))", "op := readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
+	).Replace(source)
+}
+
+// TestHandover_Followup48Claims pins #478–#481 under D-098/D-109/D-132.
+func TestHandover_Followup48Claims(t *testing.T) {
+	root := repoRoot(t)
+	const fixture = "tests/handover/testdata/"
+	const frozen = fixture + "history/follow-up-48/"
+	const cut = "b921c75f180beb6c0051d585a86d6651b2c8d71a"
+	const prior = "8a50c36c84628cce8b7c56e02d9123165d03ce84"
+	const iso25 = "docs/e2e/at/isolation/history/follow-up-25-run/"
+	const isoDiag = "docs/e2e/at/isolation/history/follow-up-25-diagnosis/"
+	const isoReplay = "docs/e2e/at/isolation/history/follow-up-25-replay/"
+	const iso26 = "docs/e2e/at/isolation/history/follow-up-26-validation/"
+	hash := func(s string) string { sum := sha256.Sum256([]byte(s)); return hex.EncodeToString(sum[:]) }
+	checkHash := func(path, want string) {
+		t.Helper()
+		if hash(readOwnedDoc(t, root, path)) != want {
+			t.Fatalf("immutable input changed: %s", path)
+		}
+	}
+	readJSON := func(path string, dst any) {
+		t.Helper()
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, path)), dst); err != nil {
+			t.Fatalf("decode %s: %v", path, err)
+		}
+	}
+	normalize := func(s string) string {
+		return strings.Join(strings.Fields(strings.NewReplacer("`", "", "**", "").Replace(s)), " ")
+	}
+	require := func(path string, tokens ...string) {
+		t.Helper()
+		s := readOwnedDoc(t, root, path)
+		if strings.HasSuffix(path, "-excerpt.json") {
+			readJSON(path, &s)
+		}
+		for _, token := range tokens {
+			if !strings.Contains(normalize(s), normalize(token)) {
+				t.Fatalf("%s missing %q", path, token)
+			}
+		}
+	}
+	// Pin the complete narrative and manifests, including every source quotation.
+	checkHash("docs/handover/follow-up-48.md", "1b5c64eb4a743c48f266c57e013e093ed57b67f3a0d26d2aa16359cceadac608")
+	checkHash("tests/handover/testdata/followup48-claims.json", "815e0ffd5b4f7092724759237c3bd26f5110eb5dbe1ae755ba103c87f6d07847")
+	checkHash("tests/handover/testdata/followup48-decisions.json", "316844ecf5a80f1d24cebe34c6886c6d2d21e6f56619c91d6f4cc7e1230a1f96")
+	checkHash("tests/handover/testdata/followup48-evidence.json", "b247a0e9b5517d38587aa50e8d185259ae411e646734fb3d92566871ee1aefa1")
+	checkHash("tests/handover/testdata/followup48-findings.json", "ac295bfa6628a98bfcae14b7dda4107e54add1b1b83736dc37ec7b6147d926ac")
+	checkHash("tests/handover/testdata/followup48-main.json", "251cbb7d172089b90769bcb5610804341f6fb5f1f68b9e9f3d9d4290048ba83b")
+	checkHash("tests/handover/testdata/followup48-snapshots.json", "8ab50f9e477074c73d509e69fdf8570e370cbaff8e645f8f1061e492b50281e9")
+	checkHash("tests/handover/testdata/followup48-values.json", "d597b9c13b7ba382ef5d305b88d45af68fdad865367d78769e47e5cf6cd2b93c")
+	checkHash("tests/handover/testdata/history/follow-up-48/prior-claims.json", "26db4f69634da4f427268c29971665d139b2501608dbe0969d6554969ff9c8bd")
+	checkHash("tests/handover/testdata/history/follow-up-48/product-source-audit.json", "c8bcbfc695fa97be206dddc344de6984f0a833c5e31d06f29dbc05b9e6aecad0")
+	checkHash("tests/handover/testdata/history/follow-up-48/review-provenance.json", "84ef2b0fefd6ed8d4a62ed50f38cf51f70a12fe9684429faba5f9c2e00bd578a")
+	checkHash("tests/handover/testdata/history/follow-up-48/node-workflow-failures.json", "d1b35865356f926f2cd3fac3315c4b3a7fd7f84d8c0b54ba755b997f896e59ff")
+	type artifact struct {
+		Path, SHA256 string
+		Bytes        int
+	}
+	type snapshot struct {
+		Path, Source, SHA256 string
+		Commit               string `json:"source_commit"`
+		Bytes                int
+		PresentOnMain        bool `json:"present_on_main"`
+	}
+	var evidence struct {
+		Commit    string `json:"source_commit"`
+		Proofs    []struct{ Path, Name string }
+		Artifacts []artifact
+	}
+	readJSON(fixture+"followup48-evidence.json", &evidence)
+	t.Run("four_final_roadmap_rows_and_PR_provenance", func(t *testing.T) {
+		var m struct {
+			Commit   string `json:"source_commit"`
+			Previous string `json:"previous_cut"`
+			Merged   []int  `json:"merged_prs"`
+			History  []string
+			Rows     []struct {
+				PR                int
+				Lane, Row, SHA256 string
+			}
+			PRs []struct {
+				Number, Bytes int
+				Path, SHA256  string
+				Decoded       string `json:"decoded_sha256"`
+				Merge         string `json:"merge_commit"`
+			}
+		}
+		readJSON(fixture+"followup48-main.json", &m)
+		if m.Commit != cut || m.Previous != "1c39a0e73825dbcf911dfd2bec6e75aed64c979b" || !slices.Equal(m.Merged, []int{478, 479, 480, 481}) || len(m.History) != 8 || len(m.Rows) != 4 || len(m.PRs) != 4 {
+			t.Fatal("cut inventory")
+		}
+		for i, r := range m.Rows {
+			if r.PR != 478+i || hash(r.Row) != r.SHA256 || !strings.HasPrefix(r.Row, "| "+r.Lane+" |") || !strings.HasSuffix(r.Row, fmt.Sprintf("| done (#%d) |", r.PR)) {
+				t.Fatal("final roadmap row")
+			}
+			require("docs/ROADMAP.md", r.Row)
+			p := m.PRs[i]
+			checkHash(p.Path, p.SHA256)
+			var body string
+			readJSON(p.Path, &body)
+			if p.Number != r.PR || len(body) != p.Bytes || hash(body) != p.Decoded || !strings.HasPrefix(m.History[2*i], p.Merge+" ") || !strings.Contains(m.History[2*i+1], fmt.Sprintf("merged (#%d)", r.PR)) {
+				t.Fatal("PR provenance")
+			}
+		}
+	})
+	t.Run("frozen_inputs_main_proof_names_and_archived_artifacts", func(t *testing.T) {
+		var snaps []snapshot
+		readJSON(fixture+"followup48-snapshots.json", &snaps)
+		if len(snaps) != 23 || evidence.Commit != cut || len(evidence.Proofs) != 22 || len(evidence.Artifacts) != 62 {
+			t.Fatal("source inventory")
+		}
+		old := 0
+		for _, s := range snaps {
+			if !strings.HasPrefix(s.Path, frozen) || len(readOwnedDoc(t, root, s.Path)) != s.Bytes {
+				t.Fatal("snapshot boundary")
+			}
+			checkHash(s.Path, s.SHA256)
+			if strings.Contains(s.Path, "/prior-") {
+				old++
+				if s.Commit != prior {
+					t.Fatal("prior provenance")
+				}
+			} else if s.Commit != cut {
+				t.Fatal("producer provenance")
+			}
+		}
+		if old != 9 {
+			t.Fatal("nine prior documents")
+		}
+		for _, p := range evidence.Proofs {
+			if !regexp.MustCompile(`(?m)^func ` + regexp.QuoteMeta(p.Name) + `\(t \*testing.T\)`).MatchString(readOwnedDoc(t, root, p.Path)) {
+				t.Fatalf("main proof missing: %s", p.Name)
+			}
+		}
+		for _, a := range evidence.Artifacts {
+			if !strings.Contains(a.Path, "/history/follow-up-") {
+				t.Fatal("living evidence")
+			}
+			checkHash(a.Path, a.SHA256)
+			if len(readOwnedDoc(t, root, a.Path)) != a.Bytes {
+				t.Fatal("artifact size")
+			}
+		}
+	})
+	rows := func(s, heading string) map[string]string {
+		t.Helper()
+		if strings.Count(s, heading) != 1 {
+			t.Fatalf("unique heading: %s", heading)
+		}
+		s = strings.Split(strings.Split(s, heading)[1], "\nEvery historical failure")[0]
+		m := map[string]string{}
+		for _, row := range strings.Split(s, "\n") {
+			if !strings.HasPrefix(row, "| ") || strings.HasPrefix(row, "| Finding |") {
+				continue
+			}
+			id := strings.TrimSpace(strings.Split(row, "|")[1])
+			if _, ok := m[id]; ok {
+				t.Fatalf("duplicate row %s", id)
+			}
+			m[id] = row
+		}
+		return m
+	}
+	t.Run("41_earlier_claims_unchanged_and_479_actual_counts", func(t *testing.T) {
+		var p struct{ Claims map[string]string }
+		readJSON(frozen+"prior-claims.json", &p)
+		if len(p.Claims) != 41 {
+			t.Fatal("prior functions")
+		}
+		checked := 0
+		source := readOwnedDoc(t, root, "tests/handover/handover_test.go")
+		for _, m := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(source, -1) {
+			if want, ok := p.Claims[m[1]]; ok {
+				if hash(restoreFollowup48Assertions(m[0])) != want {
+					t.Fatalf("earlier assertion changed: %s", m[1])
+				}
+				checked++
+			}
+		}
+		if checked != 41 {
+			t.Fatal("earlier claims missing")
+		}
+		var snaps, code, groups, values []any
+		var e struct{ Proofs, Artifacts []any }
+		var m struct{ Rows, PRs []any }
+		var prev struct{ Claims map[string]string }
+		readJSON(fixture+"followup47-snapshots.json", &snaps)
+		readJSON(fixture+"followup47-evidence.json", &e)
+		readJSON(fixture+"followup47-main.json", &m)
+		readJSON(fixture+"history/follow-up-47/product-source-audit.json", &code)
+		readJSON(fixture+"history/follow-up-47/prior-claims.json", &prev)
+		readJSON(fixture+"followup47-claims.json", &groups)
+		readJSON(fixture+"followup47-values.json", &values)
+		oldFunc := regexp.MustCompile(`(?s)func TestHandover_Followup47Claims\(.*?\n}`).FindString(source)
+		old := readOwnedDoc(t, root, followup48PriorPath("docs/handover/README.md"))
+		if len(regexp.MustCompile(`(?m)^\tt\.Run\("`).FindAllString(oldFunc, -1))+len(groups) != 17 || len(snaps) != 13 || len(e.Proofs) != 20 || len(e.Artifacts) != 92 || len(m.Rows) != 4 || len(m.PRs) != 4 || len(code) != 20 || len(prev.Claims) != 40 || len(values) != 38 || len(rows(old, "## Findings register at the follow-up 47 cutoff")) != 136 || len(regexp.MustCompile(`(?m)^\| D-\d{3} \|`).FindAllString(old, -1)) != 66 {
+			t.Fatal("#479 actual counts")
+		}
+	})
+	t.Run("66_decisions_138_findings_and_unrelated_rows_exact", func(t *testing.T) {
+		before, after := readOwnedDoc(t, root, followup48PriorPath("docs/handover/README.md")), readOwnedDoc(t, root, "docs/handover/README.md")
+		re := regexp.MustCompile(`(?m)^\| D-\d{3} \|.*$`)
+		old, now := re.FindAllString(before, -1), re.FindAllString(after, -1)
+		var d, f struct{ Updated, Added map[string]string }
+		readJSON(fixture+"followup48-decisions.json", &d)
+		readJSON(fixture+"followup48-findings.json", &f)
+		if len(old) != 66 || len(now) != 66 || len(d.Updated) != 2 || len(d.Added) != 0 || d.Updated["D-162"] == "" || d.Updated["D-163"] == "" || !strings.HasPrefix(old[64], "| D-162 |") || !strings.HasPrefix(old[65], "| D-163 |") {
+			t.Fatal("decision inventory")
+		}
+		for i, row := range old {
+			id := strings.TrimSpace(strings.Split(row, "|")[1])
+			want := row
+			if x, ok := d.Updated[id]; ok {
+				want = x
+			}
+			if now[i] != want {
+				t.Fatalf("decision drift %s", id)
+			}
+		}
+		a, b := rows(before, "## Findings register at the follow-up 47 cutoff"), rows(after, "## Findings register at the follow-up 48 cutoff")
+		if len(a) != 136 || len(b) != 138 || len(f.Updated) != 6 || len(f.Added) != 2 {
+			t.Fatal("finding inventory")
+		}
+		unchanged := 0
+		for id, row := range a {
+			want, ok := f.Updated[id]
+			if !ok {
+				want = row
+				unchanged++
+			}
+			if b[id] != want {
+				t.Fatalf("finding drift %s", id)
+			}
+		}
+		for id, row := range f.Added {
+			if _, ok := a[id]; ok || b[id] != row {
+				t.Fatalf("new finding %s", id)
+			}
+		}
+		if unchanged != 130 || b["Isolation F18-01"] != a["Isolation F18-01"] {
+			t.Fatal("unrelated findings changed")
+		}
+	})
+	t.Run("isolation_25_archive_diagnosis_replay_and_scheduled_pass", func(t *testing.T) {
+		const archive = "docs/e2e/at/isolation/history/follow-up-24/"
+		var a struct {
+			Run   string `json:"run_id"`
+			Files []artifact
+		}
+		readJSON(archive+"archive.json", &a)
+		if !strings.HasPrefix(a.Run, "df9dbad7") || len(a.Files) != 213 {
+			t.Fatal("isolation 24 archive inventory")
+		}
+		var diag struct {
+			Packet56 struct {
+				Sample struct {
+					Packet  int    `json:"packet_id"`
+					Transit string `json:"transit_ns"`
+				} `json:"sample"`
+				Forward string `json:"tcpdump_forward_transit_ns"`
+				Span    string `json:"tcpdump_four_observation_span_ns"`
+			} `json:"packet56"`
+			Arithmetic struct {
+				Spread  string `json:"latency_spread_ns"`
+				Max     string `json:"maximum_transit_ns"`
+				Spacing string `json:"spacing_ns"`
+				Next    struct {
+					Packet  int    `json:"packet_id"`
+					Transit string `json:"transit_ns"`
+				} `json:"next_largest"`
+			} `json:"arithmetic"`
+		}
+		readJSON(isoDiag+"diagnosis.json", &diag)
+		if diag.Packet56.Sample.Packet != 56 || diag.Packet56.Sample.Transit != "15175703" || diag.Packet56.Forward != "22974" || diag.Packet56.Span != "61175" || diag.Arithmetic.Spread != "2673957" || diag.Arithmetic.Max != "15175703" || diag.Arithmetic.Spacing != "33200000" || diag.Arithmetic.Next.Packet != 6 || diag.Arithmetic.Next.Transit != "167079" {
+			t.Fatal("F24-01 diagnosis")
+		}
+		var replan struct {
+			Qualified  bool     `json:"qualified"`
+			Spacing    string   `json:"spacing_ns"`
+			Added      []string `json:"added_scheduled_mono_ns"`
+			Candidates []any    `json:"candidates"`
+		}
+		readJSON(isoReplay+"df9dbad7-plan.json", &replan)
+		if replan.Qualified || replan.Spacing != "33200000" || replan.Added == nil || len(replan.Added) != 0 || len(replan.Candidates) != 14 {
+			t.Fatal("df9dbad7 replan")
+		}
+		var rev struct {
+			Status    string `json:"status"`
+			Qualified bool   `json:"schedule_qualified"`
+			Unchanged bool   `json:"unchanged_evaluator_passed"`
+			CalCount  int    `json:"calibration_count"`
+			Spacing   string `json:"spacing_ns"`
+			Dense     int    `json:"dense_probes"`
+			AllProbes int    `json:"all_probes"`
+		}
+		readJSON(isoReplay+"df9dbad7-new-plan-review.json", &rev)
+		if rev.Status != "fail" || rev.Qualified || !rev.Unchanged || rev.CalCount != 103 || rev.Spacing != "33200000" || rev.Dense != 0 || rev.AllProbes != 202 {
+			t.Fatal("df9dbad7 new plan review")
+		}
+		var job struct {
+			Status  string   `json:"status"`
+			Errors  []string `json:"errors"`
+			Reviews []struct {
+				Mapping string `json:"mapping"`
+				Items   []struct {
+					Item string `json:"item"`
+				} `json:"items"`
+			} `json:"reviews"`
+		}
+		readJSON(iso25+"scheduled-job.json", &job)
+		if job.Status != "pass" || len(job.Errors) != 0 || len(job.Reviews) != 1 || job.Reviews[0].Mapping != "expected not exercised" || len(job.Reviews[0].Items) != 1 || job.Reviews[0].Items[0].Item != "pure_stale_generation" {
+			t.Fatal("bd73d7a4 scheduled pass")
+		}
+		var bsched struct {
+			Qualified bool     `json:"qualified"`
+			Spacing   string   `json:"spacing_ns"`
+			Samples   []any    `json:"samples"`
+			Discounts []any    `json:"discounted_samples"`
+			Added     []string `json:"added_scheduled_mono_ns"`
+		}
+		readJSON(iso25+"boundary-schedule.json", &bsched)
+		if !bsched.Qualified || bsched.Spacing != "5500000" || len(bsched.Samples) != 103 || len(bsched.Discounts) != 0 || len(bsched.Added) != 34 {
+			t.Fatal("bd73d7a4 boundary schedule")
+		}
+		var bverdict struct {
+			Passed    bool `json:"passed"`
+			Positives int  `json:"positives"`
+			Drops     int  `json:"drops"`
+		}
+		readJSON(iso25+"deadline-verdict.json", &bverdict)
+		if !bverdict.Passed || bverdict.Positives != 164 || bverdict.Drops != 72 {
+			t.Fatal("bd73d7a4 deadline verdict")
+		}
+		var brev struct {
+			Status        string `json:"status"`
+			Qualified     bool   `json:"schedule_qualified"`
+			Unchanged     bool   `json:"unchanged_evaluator_passed"`
+			CalCount      int    `json:"calibration_count"`
+			Spacing       string `json:"spacing_ns"`
+			Dense         int    `json:"dense_probes"`
+			AllProbes     int    `json:"all_probes"`
+			Interleavings []any  `json:"interleavings"`
+		}
+		readJSON(iso25+"boundary-review.json", &brev)
+		if brev.Status != "pass" || !brev.Qualified || !brev.Unchanged || brev.CalCount != 103 || brev.Spacing != "5500000" || brev.Dense != 34 || brev.AllProbes != 236 || len(brev.Interleavings) != 0 {
+			t.Fatal("bd73d7a4 D142 qualification")
+		}
+		var d161 struct {
+			Complete bool `json:"complete_checked_combined_captures"`
+			D120     struct {
+				Passed  bool  `json:"passed"`
+				Reads   int   `json:"tcp_reads"`
+				UDP     int   `json:"udp_losses"`
+				Losses  []any `json:"tcp_guard_losses"`
+				Longest struct {
+					NS json.Number `json:"stall_ns"`
+				} `json:"longest_tcp_stall"`
+			} `json:"d120"`
+		}
+		readJSON(iso25+"d161-review.json", &d161)
+		if !d161.Complete || !d161.D120.Passed || d161.D120.Reads != 58 || d161.D120.UDP != 1 || len(d161.D120.Losses) != 7 || d161.D120.Longest.NS.String() != "210638000" {
+			t.Fatal("bd73d7a4 D161 review")
+		}
+		var writes struct {
+			Commands []struct {
+				Trace struct {
+					Attempts []struct{ Status int }
+				}
+			}
+		}
+		readJSON(iso25+"node-write-audit.json", &writes)
+		if len(writes.Commands) != 15 {
+			t.Fatal("isolation 25 node writes")
+		}
+		for _, c := range writes.Commands {
+			if len(c.Trace.Attempts) != 1 || c.Trace.Attempts[0].Status != 202 {
+				t.Fatal("isolation 25 first-attempt 202")
+			}
+		}
+	})
+	t.Run("isolation_26_assist_retry_and_members_24_dee8492f", func(t *testing.T) {
+		var sc struct {
+			Gofmt     int      `json:"whole_module_gofmt_exit"`
+			DiffCheck int      `json:"git_diff_check_exit"`
+			DiffHyg   int      `json:"final_diff_hygiene_exit"`
+			EvHyg     int      `json:"final_evidence_json_and_hygiene_exit"`
+			StandHyg  int      `json:"standalone_hygiene_exit"`
+			Hashes    string   `json:"gate_log_hashes"`
+			Unchanged []string `json:"unchanged"`
+		}
+		readJSON(iso26+"static-checks.json", &sc)
+		if sc.Gofmt != 0 || sc.DiffCheck != 0 || sc.DiffHyg != 0 || sc.EvHyg != 0 || sc.StandHyg != 0 || sc.Hashes != "verified" || len(sc.Unchanged) != 7 {
+			t.Fatal("isolation 26 static checks")
+		}
+		sums := strings.Split(strings.TrimSpace(readOwnedDoc(t, root, "docs/e2e/at/members/history/follow-up-23/SHA256SUMS")), "\n")
+		if len(sums) != 145 {
+			t.Fatal("members 23 archive count")
+		}
+		var mres struct {
+			Run       string         `json:"run_id"`
+			Counts    map[string]int `json:"case_counts"`
+			Subchecks map[string]int `json:"subcheck_counts"`
+		}
+		readJSON(frozen+"docs_e2e_at_members_F24-results.json", &mres)
+		if mres.Run != "dee8492f-4a7e-4f3c-9063-3ab27f66dcec" || mres.Counts["pass"] != 3 || mres.Counts["blocked"] != 7 || mres.Counts["fail"] != 0 || mres.Subchecks["pass"] != 708 || mres.Subchecks["blocked"] != 6 || mres.Subchecks["fail"] != 0 {
+			t.Fatal("members 24 verdicts")
+		}
+		var mcmp struct {
+			Changed []struct {
+				Case  string `json:"case"`
+				Index int    `json:"index"`
+				Prior string `json:"prior"`
+				Now   string `json:"current"`
+			} `json:"status_changes"`
+		}
+		readJSON(frozen+"docs_e2e_at_members_F24-comparison.json", &mcmp)
+		if len(mcmp.Changed) != 2 || mcmp.Changed[0].Case != "AT09" || mcmp.Changed[0].Index != 44 || mcmp.Changed[0].Prior != "blocked" || mcmp.Changed[0].Now != "pass" || mcmp.Changed[1].Case != "AT09" || mcmp.Changed[1].Index != 46 || mcmp.Changed[1].Prior != "blocked" || mcmp.Changed[1].Now != "pass" {
+			t.Fatal("members 24 subcheck delta")
+		}
+		var mwin struct {
+			Rows []struct {
+				Stored []any `json:"stored_observations"`
+				Log    struct {
+					Enqueues    []any `json:"enqueues"`
+					Attempts    []any `json:"submission_attempts"`
+					Missing     []any `json:"stored_observations_missing_records"`
+					NotStored   []any `json:"enqueued_not_stored_in_window"`
+					Malformed   []any `json:"malformed_receipts"`
+					Overwritten bool  `json:"overwrite_or_replacement_detected"`
+				} `json:"agent_log"`
+			} `json:"rows"`
+		}
+		readJSON(frozen+"docs_e2e_at_members_F24-observation-windows.json", &mwin)
+		if len(mwin.Rows) != 9 {
+			t.Fatal("members 24 observation windows count")
+		}
+		storedTot, enqTot, attTot := 0, 0, 0
+		for _, r := range mwin.Rows {
+			storedTot += len(r.Stored)
+			enqTot += len(r.Log.Enqueues)
+			attTot += len(r.Log.Attempts)
+			if len(r.Log.Missing) != 0 || len(r.Log.NotStored) != 0 || len(r.Log.Malformed) != 0 || r.Log.Overwritten {
+				t.Fatal("members 24 observation window defect")
+			}
+		}
+		if storedTot != 18 || enqTot != 18 || attTot != 18 {
+			t.Fatal("members 24 observation window totals")
+		}
+		var sreads struct {
+			Reads []struct {
+				Index    int    `json:"index"`
+				OK       bool   `json:"serving_read_ok"`
+				Age      string `json:"age_seconds"`
+				Enqueues []struct {
+					Reason string `json:"due_reason"`
+				} `json:"enqueues"`
+				Accepted []struct {
+					Outcome string `json:"outcome"`
+					Status  int    `json:"http_status"`
+					Scope   string `json:"attempt_scope"`
+				} `json:"accepted_attempts"`
+			} `json:"reads"`
+		}
+		readJSON(frozen+"docs_e2e_at_members_F24-serving-read-records.json", &sreads)
+		if len(sreads.Reads) != 3 || sreads.Reads[0].Index != 46 || sreads.Reads[0].Age != "0.739651" || sreads.Reads[1].Index != 51 || sreads.Reads[1].Age != "6.849400" || sreads.Reads[2].Index != 59 || sreads.Reads[2].Age != "1.441758" {
+			t.Fatal("members 24 serving reads")
+		}
+		for _, r := range sreads.Reads {
+			if !r.OK || len(r.Enqueues) != 1 || r.Enqueues[0].Reason != "interval_elapsed" || len(r.Accepted) != 1 || r.Accepted[0].Outcome != "accepted" || r.Accepted[0].Status != 202 || r.Accepted[0].Scope != "process" {
+				t.Fatal("serving read attempt join")
+			}
+		}
+		var at02 struct {
+			Recoveries []struct {
+				Delay  string `json:"next_request_after_closed_apply_ns"`
+				Closed struct {
+					Producer string `json:"producer_run_id"`
+					Sequence string `json:"sequence"`
+					Deny     string `json:"deny_all_after_apply_ns"`
+					Losses   int    `json:"losses_after_deny_all_apply"`
+				} `json:"closed_recovery"`
+				Serving struct {
+					Sequence string `json:"sequence"`
+					Lease    struct {
+						ID         string `json:"lease_id"`
+						Generation string `json:"generation"`
+						Members    int    `json:"members"`
+					} `json:"lease"`
+				} `json:"serving_apply"`
+			} `json:"recoveries"`
+		}
+		readJSON(frozen+"docs_e2e_at_members_F24-AT02-closed-recovery-trace.json", &at02)
+		if len(at02.Recoveries) != 1 || at02.Recoveries[0].Closed.Producer != "9879ce69-34b6-4fa6-9165-cb4619bc9fde" || at02.Recoveries[0].Closed.Sequence != "540" || at02.Recoveries[0].Delay != "66406460" || at02.Recoveries[0].Closed.Deny != "187308830" || at02.Recoveries[0].Closed.Losses != 7 || at02.Recoveries[0].Serving.Sequence != "546" || at02.Recoveries[0].Serving.Lease.ID != "4b88acc1-5ff1-4618-9f40-6f1a4f06064c" || at02.Recoveries[0].Serving.Lease.Generation != "14" || at02.Recoveries[0].Serving.Lease.Members != 1 {
+			t.Fatal("members 24 AT02 closed recovery")
+		}
+		var mwrites struct {
+			Distinct         int   `json:"distinct_receipts"`
+			Conflicting      int   `json:"conflicting_receipts"`
+			ConflictAttempts int   `json:"conflict_attempts"`
+			Receipts         []any `json:"receipts"`
+		}
+		readJSON(frozen+"docs_e2e_at_members_F24-node-writes.json", &mwrites)
+		if mwrites.Distinct != 30 || mwrites.Conflicting != 0 || mwrites.ConflictAttempts != 0 || len(mwrites.Receipts) != 30 {
+			t.Fatal("members 24 node writes")
+		}
+	})
+	t.Run("122_exact_evidence_values_without_float_conversion", func(t *testing.T) {
+		var values []struct {
+			Path, Pointer string
+			Expected      json.RawMessage
+		}
+		readJSON(fixture+"followup48-values.json", &values)
+		if len(values) != 122 {
+			t.Fatal("value inventory")
+		}
+		decode := func(s string) any {
+			t.Helper()
+			dec := json.NewDecoder(strings.NewReader(s))
+			dec.UseNumber()
+			var x any
+			if err := dec.Decode(&x); err != nil {
+				t.Fatal(err)
+			}
+			return x
+		}
+		for _, v := range values {
+			if !strings.Contains(v.Path, "/history/follow-up-") {
+				t.Fatal("living evidence")
+			}
+			node := decode(readOwnedDoc(t, root, v.Path))
+			for _, key := range strings.Split(v.Pointer, "/")[1:] {
+				switch x := node.(type) {
+				case map[string]any:
+					var ok bool
+					node, ok = x[key]
+					if !ok {
+						t.Fatal("missing pointer", v.Pointer)
+					}
+				case []any:
+					n, err := strconv.Atoi(key)
+					if err != nil || n < 0 || n >= len(x) {
+						t.Fatal("array pointer")
+					}
+					node = x[n]
+				default:
+					t.Fatal("scalar pointer")
+				}
+			}
+			got, err := json.Marshal(node)
+			if err != nil {
+				t.Fatal(err)
+			}
+			want, err := json.Marshal(decode(string(v.Expected)))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(got, want) {
+				t.Fatalf("value drift %s %s", v.Path, v.Pointer)
+			}
+		}
+	})
+	t.Run("22_frozen_source_readings_and_predicate_boundaries", func(t *testing.T) {
+		var audit []struct {
+			Source, Text, SHA256 string
+			Commit               string `json:"source_commit"`
+		}
+		readJSON(frozen+"product-source-audit.json", &audit)
+		if len(audit) != 22 {
+			t.Fatal("source inventory")
+		}
+		code := map[string]string{}
+		for _, a := range audit {
+			// Current product sources can change after the cut; only the pinned frozen bytes are historical inputs.
+			if a.Commit != cut || hash(a.Text) != a.SHA256 {
+				t.Fatalf("source hash/commit %s", a.Source)
+			}
+			code[a.Source] = a.Text
+		}
+		for p, tokens := range map[string][]string{
+			"tests/e2e/at/isolation/boundaryplan/plan.go":       {"added := []string{}", "\"qualified\": len(added) > 0", "\"discounted_samples\": []Sample{}"},
+			"tests/e2e/at/isolation/observer_main.go":           {"boundaryplan.Plan(", "configureObservation()"},
+			"tests/e2e/at/isolation/review_boundary.py":         {"def validate_plan(", "'malformed plan: added_scheduled_mono_ns is empty'"},
+			"tests/e2e/at/isolation/assist.go.txt":              {"admin.writeNode(ctx, \"PATCH\", path, path, capacity, get.Header.Get(\"ETag\"), nodeFieldsMatch(capacity), []int{202}", "\"api_ok\": write.accepted(202)", "\"node_write\": write.Receipt"},
+			"tests/e2e/at/isolation/assist_offline_test.go.txt": {"func TestAPI01_IsolationAssist(t *testing.T)", "conflict_then_accepted", "non_conflict", "wrong_412_code", "already_intended"},
+			"tests/e2e/at/isolation/driver_writes_test.go":      {"func TestAPI01_AssistNodeWriteUsesSharedHelper(t *testing.T)", "assist.go.txt"},
+			"tests/e2e/second_exit.go":                          {":/etc/vpn-node/."},
+			"tests/e2e/cmd/fvpn-e2e-nodeconfig/proxy.go":        {"127.0.0.1:9444"},
+			"tests/e2e/at/members/observation_records.py":       {"observation enqueued", "observation submission", "closed_recovery_binding"},
+			"tests/e2e/at/members/observation_records_test.go":  {"func TestD146_F24ObservationReceiptsAcceptedRetryAndOverwrite(t *testing.T)"},
+			"tests/e2e/at/members/d146_live_test.go":            {"interval '15 seconds'", "observation_age_seconds"},
+		} {
+			for _, token := range tokens {
+				if !strings.Contains(code[p], token) {
+					t.Fatalf("source %s missing %q", p, token)
+				}
+			}
+		}
+	})
+	t.Run("r32_raw_archive_unmerged_proof_unchanged_r31_and_node_workflow_failures", func(t *testing.T) {
+		var r struct {
+			Branch, Head, Base, Committer, Reviewer, Archive, SHA256 string
+			Bytes, Lines                                             int
+			Proofs                                                   []snapshot
+		}
+		readJSON(frozen+"review-provenance.json", &r)
+		if r.Branch != "r32-dedup-records-review" || r.Head != "21e59029934a34f7125805e116a2ffaaf61b60cb" || r.Base != "1c39a0e73825dbcf911dfd2bec6e75aed64c979b" || r.Committer != "Ted H" || r.Reviewer != "agy/gemini-4-argon-high" || r.Lines != 201 || r.Bytes != 31981 || r.SHA256 != "5b7ec63eecbe64e278e16bf24ef3a8e9ea3e625d6bde701d6d0c0e5735e1960f" || len(r.Proofs) != 1 {
+			t.Fatal("review provenance")
+		}
+		checkHash(r.Archive, r.SHA256)
+		raw := readOwnedDoc(t, root, r.Archive)
+		if len(raw) != r.Bytes || strings.Count(raw, "\n") != 201 {
+			t.Fatal("review inventory")
+		}
+		p := r.Proofs[0]
+		if p.Source != "node/agent/review_r32_test.go" || p.Commit != r.Head || p.PresentOnMain || p.Bytes != 20346 || p.SHA256 != "8625fecccc518a49c10551bbd63d26be2807dc60b558816855182cb5d7ad999a" {
+			t.Fatal("r32 proof provenance")
+		}
+		checkHash(p.Path, p.SHA256)
+		proofText := readOwnedDoc(t, root, p.Path)
+		for _, fn := range []string{
+			"TestR32_Held_Q1_Q2_DedupExceptionAndRebuildCost",
+			"TestR32_Held_Q3_Q4_SubmitObservationBranchesAndDiagnosticMap",
+			"TestR32_Held_Q5_Q6_ObservationRecordFieldsAndErrorClasses",
+			"TestR32_Held_Q7_RecoveryInteractionLateBindAndSingleEarlyRenewal",
+		} {
+			if !strings.Contains(proofText, "func "+fn+"(t *testing.T)") {
+				t.Fatalf("missing r32 proof %s", fn)
+			}
+		}
+		if _, err := os.Stat(filepath.Join(root, p.Source)); !os.IsNotExist(err) {
+			t.Fatal("r32 proof must remain on review branch only")
+		}
+		before := readOwnedDoc(t, root, followup48PriorPath("docs/reviews/README.md"))
+		after := readOwnedDoc(t, root, "docs/reviews/README.md")
+		start := "## r31 dispositions at the follow-up 47 cutoff"
+		if strings.TrimRight(strings.Split(after, start)[1][:strings.Index(strings.Split(after, start)[1], "## r32 dispositions")], "\n") != strings.TrimRight(strings.Split(before, start)[1], "\n") {
+			t.Fatal("r31 dispositions must stay exact")
+		}
+		var runs []struct {
+			RunID            int64  `json:"run_id"`
+			Branch           string `json:"branch"`
+			HeadSHA          string `json:"head_sha"`
+			Test             string `json:"test"`
+			Line             int    `json:"line"`
+			Failure          string `json:"failure"`
+			FailureTruncated bool   `json:"failure_truncated"`
+		}
+		readJSON(frozen+"node-workflow-failures.json", &runs)
+		if len(runs) != 6 || runs[0].RunID != 41782791081 || runs[0].Line != 764 || runs[1].RunID != 41787173794 || runs[1].Line != 295 || runs[2].RunID != 41794009264 || runs[2].Line != 265 || runs[3].RunID != 41808885873 || runs[3].Line != 277 || !runs[3].FailureTruncated || runs[4].RunID != 41871089749 || runs[4].Line != 240 || runs[5].RunID != 41885624816 || runs[5].Line != 1000 {
+			t.Fatal("node workflow failures")
+		}
+	})
+	var groups []struct {
+		Name    string
+		Records []struct {
+			Path   string
+			Tokens []string
+		}
+	}
+	readJSON(fixture+"followup48-claims.json", &groups)
+	if len(groups) != 6 {
+		t.Fatal("claim groups")
+	}
+	for _, g := range groups {
+		t.Run(g.Name, func(t *testing.T) {
+			for _, r := range g.Records {
+				require(r.Path, r.Tokens...)
+			}
+		})
+	}
+	t.Run("entrypoints_exact_quotes_and_protected_operator_guidance", func(t *testing.T) {
+		strip := func(s, start, end string) string {
+			t.Helper()
+			a := strings.Index(s, start)
+			if a < 0 {
+				t.Fatal("missing start", start)
+			}
+			b := strings.Index(s[a:], end)
+			if b < 0 {
+				t.Fatal("missing end", end)
+			}
+			return s[:a] + s[a+b:]
+		}
+		for _, path := range []string{"README.md", "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md"} {
+			lines, old := strings.Split(readOwnedDoc(t, root, path), "\n"), strings.Split(readOwnedDoc(t, root, followup48PriorPath(path)), "\n")
+			if !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-48.md") || !strings.Contains(lines[2], "#478–#481") || lines[3] != strings.Replace(old[2], "**Current cut", "**Previous cut", 1) {
+				t.Fatalf("entrypoint %s", path)
+			}
+			body, before := strings.Join(lines[4:], "\n"), strings.Join(old[4:], "\n")
+			if path == "docs/handover/operator-guide.md" {
+				body = strip(body, " In [members 24 (#481)]", "\n\n## Restart measurements")
+				body = strings.Replace(body, "**Known behaviour at #481 — AT02 deny-all after a closed recovery.**", "**Known behaviour at #473 — AT02 deny-all after a closed recovery.**", 1)
+				body = strip(body, " Members 24 **#481** run **dee8492f** records", "\n\n<a id=\"tcp-reload-guard\"></a>")
+			}
+			if path == "docs/ops/README.md" {
+				body = strip(body, "## Follow-up 48 acceptance snapshot", "## Follow-up 47 acceptance snapshot")
+			}
+			if body != before {
+				t.Fatalf("unrelated guidance changed %s", path)
+			}
+		}
+		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		f24 := readOwnedDoc(t, root, frozen+"docs_e2e_at_members_followup24-2026-11-04.md.txt")
+		for _, q := range []string{
+			"All nine native windows retain 18 stored observations, 18 enqueues and 18 submission attempts; every stored report has its enqueue and accepted attempt, and no in-window enqueue is absent from storage",
+			"Closed report `01a1a782-6b90-74a8-bcd6-c9a06650a2ec` is enqueued at **17:01:44.722Z**, observed at **17:01:44.720284884Z**, with **`closed_recovery_binding`**",
+			"Its attempt 1 finishes accepted at **17:01:44.730Z** (duration 6 ms; enqueue to completion **8 ms**)",
+			"producer `9879ce69-34b6-4fa6-9165-cb4619bc9fde`: closed Apply **540**, renewal request **545**, populated generation-14 lease `4b88acc1-5ff1-4618-9f40-6f1a4f06064c`, serving Apply **546**",
+			"The renewal starts **66.406460 ms** after closed Apply ends; exactly one request and zero baseline writes lie before serving",
+			"The deny-all interval after closed Apply is **187.308830 ms / seven losses**; Apply plus wait is **304.961112 ms / 13 losses**",
+		} {
+			if !strings.Contains(op, "“"+q+"”") || !strings.Contains(f24, q) {
+				t.Fatalf("exact frozen quotation missing: %s", q)
+			}
 		}
 		for _, anchor := range []string{"f30-01", "d156-release-rule", "r28-h-1", "at02-closed-recovery", "tcp-reload-guard", "observation-records"} {
 			if strings.Count(op, "<a id=\""+anchor+"\"></a>") != 1 {

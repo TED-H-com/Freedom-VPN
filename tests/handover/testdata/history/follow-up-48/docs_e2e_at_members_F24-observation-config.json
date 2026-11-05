@@ -1,0 +1,29 @@
+{
+  "run_id": "dee8492f-4a7e-4f3c-9063-3ab27f66dcec",
+  "source_commit": "55588821291e335ef72fbd7fe1f5ff052dea92bf",
+  "configs": [
+    {
+      "artifact": "prepared node/etc/agent-run.json",
+      "original_bytes": "1194",
+      "original_sha256": "f2f6ff49c1038e738be55374279d2684eafb48167defe4f30445f0395ff69145",
+      "fields": {
+        "heartbeat_seconds": 5,
+        "poll_seconds": 5,
+        "observation_seconds": 5
+      },
+      "observation_seconds_present": true
+    },
+    {
+      "artifact": "prepared node/etc/agent-enroll.json",
+      "original_bytes": "900",
+      "original_sha256": "322446414c934220b2e5b213e20d47e483e4a7676488df17e97411d0b4d86266",
+      "fields": {
+        "heartbeat_seconds": 5,
+        "poll_seconds": 5,
+        "observation_seconds": 5
+      },
+      "observation_seconds_present": true
+    }
+  ],
+  "interpretation": "Prepared regular-node artifacts retained after teardown, not an in-process config dump. D-162 is TEST ONLY; product default stays 30 s."
+}
