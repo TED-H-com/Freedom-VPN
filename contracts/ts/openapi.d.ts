@@ -316,8 +316,10 @@ export interface paths {
         put?: never;
         /**
          * Withdraw a member grant
-         * @description Explicit manual withdrawal of a finite or open-ended member grant
-         *     (§9.2, §9.4, §15.2, AT29). The grant must belong to member_id; an unknown
+         * @description Explicit manual withdrawal of a finite member grant (§9.2, §9.4, §15.1,
+         *     §15.2, AT29, D-117): all entitlement grants are finite (`valid_until` is
+         *     required, non-null and finite), and
+         *     open-ended grant creation remains forbidden. The grant must belong to member_id; an unknown
          *     member or grant, or a grant belonging to another member, is 404
          *     RESOURCE_NOT_FOUND. An already revoked or expired grant is 409
          *     STATE_CONFLICT for a new command. Same-key, same-payload retries return
@@ -328,8 +330,7 @@ export interface paths {
          *     the audit records the reason and grant/member IDs. The devices it
          *     authorized move to pending through D-050 / D-081 within one heartbeat.
          *     Completion requires the existing policy and authorization read-back;
-         *     202 is only acceptance. Finite-grant expiry remains a separate case.
-         *     This command does not permit creation of open-ended grants.
+         *     202 is only acceptance. Natural grant expiry remains a separate case.
          */
         post: operations["revokeMemberGrant"];
         delete?: never;
@@ -905,7 +906,9 @@ export interface paths {
          *     no ledger change. Event/batch identity mismatches remain 403
          *     INCARNATION_MISMATCH. Both failures MUST be audited.
          *     Every handed-off event's interval_end MUST be <= the retirement time
-         *     plus one configured sampling interval in force for the retired stream.
+         *     plus the central configured sampling_interval_bound_seconds allowance
+         *     (default 10 seconds; D-112);
+         *     Central stores no per-stream historical sampling interval.
          *     Later events are rejected per event with VALIDATION_FAILED and audited;
          *     they never advance ACK. Valid events retain the same dedup key and hash
          *     rules above, including duplicate on replay and conflict on changed digest.
@@ -1582,6 +1585,22 @@ export interface components {
              *     `GET /admin/nodes/{node_id}` returns `ETag` `"<resource_version>"`.
              */
             usage_outbox?: components["schemas"]["NodeUsageOutbox"] | null;
+            /**
+             * @description Retained actual complete VerifyServing read outcome from the immutable
+             *     observation selected for this node's current incarnation (D-164). Same
+             *     shape as ObservationReport.serving_read. Absent means the server does
+             *     not project it yet (pre-revision-15); null means the selected
+             *     current-incarnation observation has no available `serving_read` (not
+             *     that no earlier read was ever reported in that incarnation; servers do
+             *     not search back for a last non-null read). Never infer a verified read
+             *     from applied_config_generation, safety_status,
+             *     member_forwarding_observed or checks[]. Projection must not alter the
+             *     original report, and this field shares the existing
+             *     selected-observation and strong-ETag (`resource_version`) semantics of
+             *     the other observation-derived fields without redefining selection or
+             *     versioning.
+             */
+            serving_read?: components["schemas"]["ServingReadEvidence"] | null;
         };
         /**
          * @description One named node check. In the D-071 provisional state (the node lease for this
@@ -3482,6 +3501,49 @@ export interface components {
             rejected: components["schemas"]["TCRejectedAttachment"] | null;
         };
         /**
+         * @description D-164 retained actual complete VerifyServing read outcome (`node/agent/serving_evidence.go`,
+         *     `node/agent/meterreset.go`, `node/enforce/evidence.go`). Distinct from
+         *     `applied_config_generation` (an ACK), `safety_status`, `member_forwarding_enabled`,
+         *     `checks[]`, `errors[]` and `tc_evidence` (retained bounded TC rows/hash).
+         *     `candidate_generation` is the generation under verification, never an
+         *     applied-generation ACK. `read_at` is the actual verifier read time; never
+         *     refresh an old snapshot's timestamp on later heartbeats or substitute
+         *     rollback/hold evidence for a rejected read; retained read time or candidate
+         *     generation may be older than `observed_at` or `applied_config_generation`,
+         *     and `read_at` is not required to be <= `observed_at`. `verified` is the
+         *     complete VerifyServing outcome (`false` is a meaningful rejected read, not
+         *     omission). `diagnostic` carries the existing bounded/redacted diagnostic
+         *     text (`read_at=… source=… candidate=… verified=… ` plus `Evidence.ReportDetail()`,
+         *     clipped by `clipMsg` to the first 500 bytes) as opaque text (`maxLength: 500`)
+         *     for both `verified=true` and `verified=false` without promising valid JSON
+         *     after clipping, adding a truncation marker, reconstructing text from other
+         *     fields, or treating the TC `truncated` flag as string clipping.
+         */
+        ServingReadEvidence: {
+            /**
+             * Format: date-time
+             * @description Actual complete VerifyServing read time; never refreshed on later heartbeats without a new read.
+             */
+            read_at: string;
+            /**
+             * @description Verifier call site that produced the read (`apply` or `live`).
+             * @enum {string}
+             */
+            source: "apply" | "live";
+            /** @description Exact uint64 decimal string of the candidate generation under verification, at most 18446744073709551615; never an applied-generation ACK. */
+            candidate_generation: string;
+            /** @description Actual complete VerifyServing outcome for that read (`false` is a meaningful rejected read, not omission). */
+            verified: boolean;
+            /**
+             * @description Existing bounded/redacted diagnostic string (`read_at=… source=… candidate=… verified=… `
+             *     plus `Evidence.ReportDetail()`, clipped to the first 500 bytes by `clipMsg`) as opaque
+             *     text (`maxLength: 500`, following existing NodeCheck/SEC02 privacy constraints: never
+             *     secrets, tokens, keys, subjects, member addresses, DNS queries, destination lists, URLs
+             *     or raw stderr). Present for both `verified=true` and `verified=false`.
+             */
+            diagnostic: string;
+        };
+        /**
          * @description Heartbeat and observations (§14.4, §15.3 node_observations). Node times are observed_at;
          *     the center stores its own received_at.
          *     D-071. When the node lease for this generation is inside its anchored deadline and
@@ -3504,6 +3566,8 @@ export interface components {
         ObservationReport: {
             /** @description D-106 retained actual read. Absent or null means no retained read, never an empty successful scan. Existing errors[stage=tc_evidence] rows remain unchanged. */
             tc_evidence?: components["schemas"]["TCReadbackEvidence"] | null;
+            /** @description D-164 retained actual complete VerifyServing read outcome. Absent or null means no retained serving-verifier read was reported in this observation; never infer a verified read from applied_config_generation, safety_status, member_forwarding_enabled, checks[] or tc_evidence. Candidate generation is the generation under verification, not an applied-generation ACK, and read_at is the actual read time (may be older than observed_at and is not required to be <= observed_at), never refreshed on later heartbeats without a new read. */
+            serving_read?: components["schemas"]["ServingReadEvidence"] | null;
             /**
              * Format: uuid
              * @description Idempotency key of the report.
@@ -3732,7 +3796,7 @@ export interface components {
             node_incarnation_id: string;
             /**
              * Format: uuid
-             * @description Eligible retired stream (D-105). Omit for the presenting current stream; null is invalid. Never part of an event hash.
+             * @description Eligible retired stream (D-105, D-112). Omit for the presenting current stream; null is invalid. Handed-off events must have interval_end <= retirement time plus Central configured sampling_interval_bound_seconds (default 10 seconds; Central stores no per-stream historical sampling interval). Never part of an event hash.
              */
             origin_incarnation_id?: string;
             /**

@@ -120,7 +120,17 @@ func testVerifiedReenrollmentHandsOffFinalSample(t *testing.T, cancelACK bool) {
 		t.Fatal("retirement escaped the node lock")
 	}
 	lock.Release()
+	unavailBefore := r.srv.UsageReport().Unavailable
 	next.ensureUsage(t.Context())
+	waitCtx, waitCancel := context.WithTimeout(t.Context(), 5*time.Second)
+	for r.srv.UsageReport().Unavailable == unavailBefore {
+		if waitCtx.Err() != nil {
+			waitCancel()
+			t.Fatal("initial retired upload did not reach unavailable server", waitCtx.Err())
+		}
+		time.Sleep(time.Millisecond)
+	}
+	waitCancel()
 	stopUsageLoops(t, r)
 	if next.usage == nil || next.usagePersist {
 		t.Fatal("production adoption hook failed")
@@ -147,12 +157,12 @@ func testVerifiedReenrollmentHandsOffFinalSample(t *testing.T, cancelACK bool) {
 	if err := next.meter.Sample(t.Context()); err != nil {
 		t.Fatal(err)
 	}
-	r.srv.SetUsageUnavailable(0)
-	// The stopped loop may already have tried a 503. A new uploader on restart
+	// The stopped loop has already tried a 503. A new uploader on restart
 	// consumes its durable pending body; no synthetic ACK or certificate swap.
 	if err := next.Close(); err != nil {
 		t.Fatal(err)
 	}
+	r.srv.SetUsageUnavailable(0)
 	next, err = Start(Options{Config: cfg, Clock: r.clock, Plane: r.plane, MeterSource: src, Prober: passProbe{}})
 	if err != nil {
 		t.Fatal(err)

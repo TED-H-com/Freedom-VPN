@@ -222,23 +222,21 @@ func TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery(t *t
 	}
 	chDest := filepath.Join(cfg.JournalDir, healthattest.ChallengeFile)
 	attDest := filepath.Join(cfg.JournalDir, healthattest.AttestationFile)
+	bootReturned := filepath.Join(dir, "boot-returned")
 	script := fmt.Sprintf(`#!/bin/sh
 set -eu
 exec 9>>%q
 flock -n 9
 cp %q %q
 chmod 0600 %q
-i=0
-while [ "$i" -lt 40 ]; do
-	if [ -f %q ]; then
+while :; do
+	if [ -f %q ] && [ -f %q ]; then
 		rm -f %q
 		exit 0
 	fi
 	sleep 0.05
-	i=$((i + 1))
 done
-exit 1
-`, cfg.LockPath, chSource, chDest, chDest, attDest, blockedPath)
+`, cfg.LockPath, chSource, chDest, chDest, attDest, bootReturned, blockedPath)
 	if err := os.WriteFile(scriptPath, []byte(script), 0o755); err != nil {
 		t.Fatal(err)
 	}
@@ -258,13 +256,17 @@ exit 1
 	}
 	defer cand.Close()
 
-	// Use a 600ms Boot budget (standing in for bootLocalBudget=10s vs HealthAttestWait=30s):
-	// if recoverOnce blocks synchronously inside Boot before answerHealthOnBoot/Step can run,
-	// Boot times out with ErrBoot and kills the recovery process before health-attest.json is written.
-	if err := cand.bootWithBudget(context.Background(), 600*time.Millisecond); err != nil {
+	// The child cannot complete until Boot returns AND supplies its attestation.
+	// A synchronous recoverOnce therefore exhausts Boot's actual local budget;
+	// there is no helper timeout that could accidentally break the dependency.
+	// Close cancels and joins the child on every return path, including failure.
+	if err := cand.Boot(context.Background()); err != nil {
 		t.Fatalf("Boot self-deadlocked waiting for synchronous recoverOnce to receive health-attest.json from this same agent: %v", err)
 	}
-	for i := 0; i < 20 && (cand.recoverBlocked || cand.latchBlocked); i++ {
+	if err := os.WriteFile(bootReturned, nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	for i := 0; i < 200 && (cand.recoverBlocked || cand.latchBlocked); i++ {
 		if err := cand.Step(context.Background()); err != nil {
 			t.Fatal(err)
 		}

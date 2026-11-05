@@ -1,0 +1,13 @@
+--- a/node/agent/updaterecover.go
++++ b/node/agent/updaterecover.go
+@@ -85,6 +85,10 @@
+ 		job.err = cmd.Run()
+ 		job.interrupted = childCtx.Err() != nil
+ 	}()
++	select { // TEST ONLY bounded mutation: synchronous recovery dependency
++	case <-job.done:
++	case <-ctx.Done():
++	}
+ 	timer := time.NewTimer(recoverFastWait)
+ 	defer timer.Stop()
+ 	select {

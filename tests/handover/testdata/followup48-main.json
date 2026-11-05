@@ -1,0 +1,80 @@
+{
+  "source_commit": "b921c75f180beb6c0051d585a86d6651b2c8d71a",
+  "previous_cut": "1c39a0e73825dbcf911dfd2bec6e75aed64c979b",
+  "merged_prs": [
+    478,
+    479,
+    480,
+    481
+  ],
+  "history": [
+    "014b59ab15288dc6bc053932104e26a8f3327e9e isolation: follow-up 25 — F24-01: an empty boundary schedule is explicitly unqualified, and a malformed plan fails its review instead of crashing; run bd73d7a4: 27 pass, 2 blocked, 0 fail, job PASS, D-142 qualified (w4-at-isolation follow-up 25) (#478)",
+    "df61fd68add1678729ef32ae1ef93719124035e3 roadmap: w4-at-isolation follow-up 25 merged (#478)",
+    "8a50c36c84628cce8b7c56e02d9123165d03ce84 handover: follow-up 47 — cut #474–#477 (4 PRs): r31 archived and M-1 fixed, D-163 added and D-162 implemented, 66 decisions; register at 136 rows, 9 updated and 3 added; devstack 36's first live D-158 wait in the guide (w4-handover follow-up 47) (#479)",
+    "8f4374d3a6932d845317c994d6cd3de634cde37c roadmap: follow-up 47 merged (#479)",
+    "1d67b3ec4f4cc34a801daa84fb04084a8f44386c isolation: follow-up 26 — the operator assist's capacity write uses the shared bounded node-write retry, proven by five offline fake-server cases; D-162's reach audited: the main runtime stays 1 s and no check changes (w4-at-isolation follow-up 26) (#480)",
+    "36b4c632edeed91a7c0a55e936a031340b01e0fd roadmap: w4-at-isolation follow-up 26 merged (#480)",
+    "884565c8dd973c2d9b16082556a7a3d5c77387ea at-members: follow-up 24 — 3 pass / 7 blocked / 0 fail (708/6/0); F22-D146 answered under D-162: dual 1280 indexes 44 and 46 pass under the unchanged 15 s bound; observation records joined in all nine native windows (w4-at-members follow-up 24) (#481)",
+    "b921c75f180beb6c0051d585a86d6651b2c8d71a roadmap: w4-at-members follow-up 24 merged (#481)"
+  ],
+  "rows": [
+    {
+      "pr": 478,
+      "lane": "w4-at-isolation follow-up 25",
+      "row": "| w4-at-isolation follow-up 25 | D-098 first: run `df9dbad7`'s 213 root, support and reload-stream files archived byte-identically under `history/follow-up-24/`. F24-01 diagnosed (D-141): packet 56's 15.176 ms capture-read transit, against 0.167 ms for the next sample, set a 33.2 ms spacing that excluded all 14 added candidates from the 37 ms and 63 ms cadence gaps; tcpdump shows the packet crossing the node in 23 µs, so the delay was in the capture reader, cause unestablished, and the sample is kept. The observer now calls one pure planner, `boundaryplan.Plan`, with the formula, cadences and D-142 unchanged: the added schedule is always an array, qualified only when non-empty, and an unqualified plan names its reason and every excluded candidate. The reviewer validates the plan first and, on an unqualified or malformed plan, writes a failed review and exits 1, which the scheduled summary reports as an error (not a D-163 entry). Offline replays: `df9dbad7` gives an explicit empty plan and a failed review; `328ab9e0` and the 11-04 runner keep their added schedules byte for byte. One assembled run, `bd73d7a4`, in scheduled mode on `034c82cf` plus this lane: 27 pass, 2 blocked (the two operator matrices), 0 fail, exit 0, scheduled job PASS; all 29 statuses as in `df9dbad7`; no rerun, no observed overlap. The whole-node expiry passes (164 positives, 72 drops) and qualifies under D-142 with zero overlaps, on a 5.5 ms spacing and 34 added probes. AT13's member expiry passes under the unchanged plan, its binding-bearing renewal at A + 22.1 s. The D-120 lab passes under D-161 (58 TCP reads, 0 timeouts, seven guard-attributed losses, one UDP loss within the allowance). 15 node writes in 15 attempts, zero conflicts. F24-01 closes for the planning record and the reviewer only; `df9dbad7` stays failed. 7 commits, 529 owned files. Codex gpt-6-astra. | done (#478) |",
+      "sha256": "e8e102e58064ab7d326170def974a32e353f17d22268bcd89bfb1425544ebdbb"
+    },
+    {
+      "pr": 479,
+      "lane": "w4-handover follow-up 47",
+      "row": "| w4-handover follow-up 47 | Cut #474 to #477 at `1c39a0e7` (handover 46, isolation 24, devstack 36 and agent-core 52; no unbriefed PR). `TestHandover_Followup47Claims` (17 subtests) pins the four final roadmap rows and PR excerpts, 13 frozen document snapshots (nine #474 documents and four producer documents), 20 Go test declarations on main, 20 frozen source readings, 92 archived artifacts and 38 exact JSON values; the 40 earlier claims functions stay exact, with four of follow-up 46's input reads moved onto frozen #474 bytes. Review r31 archived byte-for-byte (302 lines); its one medium finding fixed by agent-core 52. Decisions at 66: D-163 added (provisional: in the scheduled job only, a review's nonzero exit maps to expected not exercised only when its own run names a listed item, and only that item), and D-162 marked implemented by #476; the other 64 rows are unchanged. Findings register at 136 rows: 9 updated, 3 added (F24-01, r31 M-1 and the 11-04 scheduled job), 124 byte-identical. The scheduled job's two harness causes fixed by #475, the historical job still failed; F24-01 keeps the local run `df9dbad7` red at the cutoff; F22-D146 stays open, with no re-score under D-162; F17-01 still not exercised. Operator guide: the old D-158 sentence replaced, devstack 36's first live wait (446 ms, acquired) quoted from its dated run analysis, and #477's observation records documented from frozen sources; seven entrypoints point at the cut. Isolation 25 recorded as merged after the cutoff (#478), its results excluded; members 24 and review r32 as running. Codex gpt-6-astra. | done (#479) |",
+      "sha256": "184cdf1f4585357c014448712f36bb31873c12e78880e8fdc8381c90a08b3c47"
+    },
+    {
+      "pr": 480,
+      "lane": "w4-at-isolation follow-up 26",
+      "row": "| w4-at-isolation follow-up 26 | Offline only. The operator assist's capacity PATCH (formerly assist.py:22, now `assist.go.txt`) uses the shared `writeNode` helper with `nodeFieldsMatch`, starting from the initial GET's ETag, and its evidence retains the helper's receipt with every attempt and reread. `api_ok` now means the helper accepted the command (before, any reply without a transport error, a 412 or 500 included), and is never an observed-state result; capacity values, action text, restore and `assisted: true` unchanged. Five fake-server cases pass in the lane's test target: direct 202; an exact conflict, a reread, then 202 (two attempts, one key, one body); HTTP 500 and a 412 with another code (one attempt each, `api_ok` false); and already intended. An AST check confirms one node write and no bypass. D-162 audited for every routed line and every written or inherited config: the main agent's runtime stays 1 s before and after, the boot-release auxiliary and the clone runtime inherit 1 s, and only the enrollment files carry 5 s; no coherent-window, sample or incident check changed. The assist never ran live; no Docker, lab or run. Request to devstack: review the shared clone receiver wiring (static concern). AT11 and AT13 operator matrices and F17-01 carried. Codex gpt-6-astra. | done (#480) |",
+      "sha256": "2b958c76de32dc56c048387540231572e84d6cf3651ab7efc674ac228d08d21f"
+    },
+    {
+      "pr": 481,
+      "lane": "w4-at-members follow-up 24",
+      "row": "| w4-at-members follow-up 24 | D-098 archive of run `6a25221b` first: its 145 root records byte-identical, with SHA-256 pins; earlier archives and dated notes untouched. The native-window extraction now joins agent-core 52's `observation enqueued` and `observation submission` records to the stored observations by report ID, through an allowlisted parser with offline tests (accepted, retried and overwritten logs). One assembled run, `dee8492f` on `df61fd68` (source `55588821`), after the one allowed pre-check retry (its own admission wrapper missed main advancing; stopped before the first acceptance check): 3 pass, 7 blocked, 0 fail; 708 passed, 6 blocked, 0 failed subchecks. F22-D146 answered for the cadence under D-162: dual 1280 indexes 44 and 46 pass under the unchanged 15 s bound; the prepared configs carry observation_seconds 5; the nine native windows hold 18 stored observations with 18 enqueues and 18 accepted attempts, all joined, none overwritten; serving-read ages 0.740, 6.849 and 1.442 s. AT01 and AT08 initial transfers counted with paired paths; F11-01 stays open under D-148. AT02: closed Apply 540, renewal 545, populated generation-14 lease, serving Apply 546; deny-all 187.3 ms with seven losses; its report enqueued for closed_recovery_binding and accepted on attempt 1. AT09: index 25 blocked, 26 and 27 pass; the D-067 provisional predicate stays unexercised. 30 node writes, all first-attempt 202, zero 412s. No F48-01 signature retained. Four foreign windows, all during teardown, marked confounded under D-133. Codex gpt-6-astra. | done (#481) |",
+      "sha256": "d037d2747425f289a12bae77609ea452e4be81ea5d5b3e8fab00bd47bc1b5563"
+    }
+  ],
+  "prs": [
+    {
+      "number": 478,
+      "path": "tests/handover/testdata/history/follow-up-48/pr-478-excerpt.json",
+      "sha256": "d6c4b21751cc19cfaa3595baa1b1c3a79f12bd68df8801fe86d31a83fa796769",
+      "decoded_sha256": "ac105cdd9e4c6145f12ebf2d04c82fb1cf0dd10b235b63f27e35721ccb20075c",
+      "bytes": 7178,
+      "merge_commit": "014b59ab15288dc6bc053932104e26a8f3327e9e"
+    },
+    {
+      "number": 479,
+      "path": "tests/handover/testdata/history/follow-up-48/pr-479-excerpt.json",
+      "sha256": "78274622e68bf93e8fcad37f2b5db4f70c5340c9d67e145a116c5bdc051dc7b9",
+      "decoded_sha256": "354363a892d9e78e07f1b3686a66208cd0c916fe43ac516538ea011ac5574d40",
+      "bytes": 5290,
+      "merge_commit": "8a50c36c84628cce8b7c56e02d9123165d03ce84"
+    },
+    {
+      "number": 480,
+      "path": "tests/handover/testdata/history/follow-up-48/pr-480-excerpt.json",
+      "sha256": "319d823a8e0e6ae819173378f99659f8ae3af7e8fdef7ea2ea0039a2354d5769",
+      "decoded_sha256": "46bf5fd490a9158fa8249a6380bdd70097091b33bb7b2181b30e681bc08acb30",
+      "bytes": 4262,
+      "merge_commit": "1d67b3ec4f4cc34a801daa84fb04084a8f44386c"
+    },
+    {
+      "number": 481,
+      "path": "tests/handover/testdata/history/follow-up-48/pr-481-excerpt.json",
+      "sha256": "e3434c89722d35cc26f490aa93fdfa370b1d52e76c6833b020f0a4f948c6e634",
+      "decoded_sha256": "d1a2831ffab597a3bbb8131cef9c25dbac132ac2af3342dfdf704b138e3c1f5a",
+      "bytes": 5570,
+      "merge_commit": "884565c8dd973c2d9b16082556a7a3d5c77387ea"
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "_comment": "TEST ONLY - NOT A SECRET. D-105 semantic scenarios; accepted and replay requests are byte-identical.",
+  "_comment": "TEST ONLY - NOT A SECRET. D-105 / D-112 semantic scenarios; accepted and replay requests are byte-identical. context.sampling_interval_seconds=30 is this vector scenario's Central sampling_interval_bound_seconds override (production default is 10 seconds; Central stores no per-stream historical sampling interval).",
   "cases": [
     {
       "audited": false,
@@ -188,6 +188,7 @@
     "previous_highest_contiguous_seq": "1233",
     "retired_at": "2026-10-28T14:00:00Z",
     "retired_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+    "sampling_interval_bound_default_seconds": 10,
     "sampling_interval_seconds": 30
   }
 }

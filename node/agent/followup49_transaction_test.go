@@ -236,7 +236,7 @@ func TestD155_CrashedTransactionsKeepAgentRunning(t *testing.T) {
 			}
 			defer cand.Close()
 			r.eng = cand
-			if err := cand.bootWithBudget(context.Background(), 600*time.Millisecond); err != nil {
+			if err := cand.Boot(context.Background()); err != nil {
 				t.Fatal(err)
 			}
 			if cand.serving || !cand.recoverBlocked || cand.recovered {

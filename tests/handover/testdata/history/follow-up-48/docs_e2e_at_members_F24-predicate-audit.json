@@ -1,0 +1,55 @@
+{
+  "baseline": "df61fd68add1678729ef32ae1ef93719124035e3",
+  "harness": "55588821291e335ef72fbd7fe1f5ff052dea92bf",
+  "checks": [],
+  "qualification": {
+    "file": "tests/e2e/at/members/d146_evidence.py",
+    "sha256": "b29811dcb8bf497abf8be8cc9e1e4817f913960388ebfaf2cc37ad8b1c75512b",
+    "unchanged": true
+  },
+  "scope": "Every pre-existing check/jsonCheck final predicate argument in changed files is unchanged (whitespace normalized); D-146/D-151 qualifier bytes unchanged. New capture diagnostics and scheduling journals add evidence, not a replacement result.",
+  "unchanged_consumers_and_qualifiers": [
+    {
+      "path": "tests/e2e/at/members/live_test.go",
+      "sha256": "0598e994cfd0b3af4a0c367ae03635c52950984a7ff1e37b4b82989773b0cd44",
+      "byte_identical": true
+    },
+    {
+      "path": "tests/e2e/at/members/forwarding_test.go",
+      "sha256": "7e971fcd0121440b74cf075516d4ead82b32358e567ac490e73511dc4a50f4eb",
+      "byte_identical": true
+    },
+    {
+      "path": "tests/e2e/at/members/native_matrix_test.go",
+      "sha256": "553efac1870c11c16922ce8fdadd787f1ad221d44fe3b33c8457b02415ffae75",
+      "byte_identical": true
+    },
+    {
+      "path": "tests/e2e/at/members/populated_hold_test.go",
+      "sha256": "0175a66edf6c3189550e102305de7716916f6d9563068f035a42e58ef30e2464",
+      "byte_identical": true
+    },
+    {
+      "path": "tests/e2e/at/members/second_exit_test.go",
+      "sha256": "8a8760fe2e939dd401646a2ef2e2b49ce438501c46969be5dfde7c340513fc4e",
+      "byte_identical": true
+    },
+    {
+      "path": "tests/e2e/at/members/identity_nodes_test.go",
+      "sha256": "218d14bf28342c40ca5c8f6c1131be41577b1491d58af3a22e9b79edcfc9d4e4",
+      "byte_identical": true
+    },
+    {
+      "path": "tests/e2e/at/members/serving_diagnostic.go",
+      "sha256": "7c8b502421fd44125ff91c7e865e64b7739422040c299ca75fe5f569953b091c",
+      "byte_identical": true
+    },
+    {
+      "path": "tests/e2e/at/members/d146_evidence.py",
+      "sha256": "b29811dcb8bf497abf8be8cc9e1e4817f913960388ebfaf2cc37ad8b1c75512b",
+      "byte_identical": true
+    }
+  ],
+  "serving_sql_from_join_where_unchanged": true,
+  "note": "Only the D-146 SELECT output gains read time/age; original FROM/JOIN/WHERE including 15 s age predicate is exact. Other modified helpers collect diagnostic metadata only."
+}
