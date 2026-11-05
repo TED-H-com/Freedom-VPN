@@ -155,22 +155,26 @@ func (s *Stack) startExitSlot(ctx context.Context, slot, lastOctet string, clone
 
 const localNodeControlURL = "https://127.0.0.1:9444"
 
-// prepareExitSlotConfigs updates datapath.snat for the target slot and points
-// runtime/cloned agent configs at the container's own resolver-proxy listener
-// (127.0.0.1:9444), keeping every other copied field byte-identical.
+// prepareExitSlotConfigs retains the etc configs' slot SNAT setup and points
+// runtime configs at the container's own resolver proxy. Enrollment keeps its
+// portal URL; copied release configs keep their SNAT. JSON is reserialized with
+// non-target values unchanged. Identity and durable-state files are not written.
 func prepareExitSlotConfigs(base, snat string, clone bool) error {
 	for _, file := range []string{"agent-enroll.json", "agent-run.json"} {
-		setControlURL := clone || file == "agent-run.json"
+		setControlURL := file == "agent-run.json"
 		if err := rewriteExitConfigFile(filepath.Join(base, "etc", file), snat, setControlURL); err != nil {
 			return err
 		}
+	}
+	if !clone {
+		return nil
 	}
 	releaseConfigs, err := filepath.Glob(filepath.Join(base, "var", "e2e", "agent-*.json"))
 	if err != nil {
 		return err
 	}
 	for _, path := range releaseConfigs {
-		if err := rewriteExitConfigFile(path, snat, true); err != nil {
+		if err := rewriteExitConfigFile(path, "", true); err != nil {
 			return err
 		}
 	}
@@ -202,16 +206,20 @@ func rewriteExitConfig(raw []byte, snat string, setControlURL bool) ([]byte, err
 	if err := json.Unmarshal(dpRaw, &dp); err != nil || dp == nil {
 		return nil, fmt.Errorf("datapath missing")
 	}
-	snatJSON, err := json.Marshal(snat)
-	if err != nil {
-		return nil, err
+	// Empty snat preserves the copied release datapath in full. Only the etc
+	// configs receive the pre-existing slot SNAT adjustment.
+	if snat != "" {
+		snatJSON, err := json.Marshal(snat)
+		if err != nil {
+			return nil, err
+		}
+		dp["snat"] = snatJSON
+		dpOut, err := json.Marshal(dp)
+		if err != nil {
+			return nil, err
+		}
+		cfg["datapath"] = dpOut
 	}
-	dp["snat"] = snatJSON
-	dpOut, err := json.Marshal(dp)
-	if err != nil {
-		return nil, err
-	}
-	cfg["datapath"] = dpOut
 	if setControlURL {
 		urlJSON, err := json.Marshal(localNodeControlURL)
 		if err != nil {

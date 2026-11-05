@@ -8,17 +8,12 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"reflect"
 	"testing"
 	"time"
 )
 
 func TestD141_ClonePreparedConfigsDialContainerResolverProxy(t *testing.T) {
-	base := t.TempDir()
-	for _, dir := range []string{"etc", "var/e2e", "var/identity", "var/state"} {
-		if err := os.MkdirAll(filepath.Join(base, dir), 0700); err != nil {
-			t.Fatal(err)
-		}
-	}
 	sourceEnroll, err := json.MarshalIndent(map[string]any{
 		"agent_release":             "0.1.0",
 		"boot_id_file":              "/etc/vpn-node/boot-id",
@@ -80,138 +75,141 @@ func TestD141_ClonePreparedConfigsDialContainerResolverProxy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	enrollPath := filepath.Join(base, "etc", "agent-enroll.json")
-	runPath := filepath.Join(base, "etc", "agent-run.json")
-	releasePath := filepath.Join(base, "var", "e2e", "agent-00000000-0000-7000-8000-000000000001.json")
-	for path, body := range map[string][]byte{
-		enrollPath:  sourceEnroll,
-		runPath:     sourceRun,
-		releasePath: sourceRun,
-	} {
-		if err := os.WriteFile(path, body, 0600); err != nil {
-			t.Fatal(err)
-		}
-	}
+
+	const enrollPath = "etc/agent-enroll.json"
+	const runPath = "etc/agent-run.json"
+	const releasePath = "var/e2e/agent-00000000-0000-7000-8000-000000000001.json"
 	durableFiles := map[string][]byte{
-		filepath.Join(base, "etc", "machine-id"):            []byte("0123456789abcdef0123456789abcdef\n"),
-		filepath.Join(base, "var", "identity", "node.json"): []byte("{\"node_id\":\"00000000-0000-7000-8000-000000000002\"}\n"),
-		filepath.Join(base, "var", "identity", "cert.pem"):  []byte("TEST ONLY - NOT A SECRET cert\n"),
-		filepath.Join(base, "var", "identity", "key.pem"):   []byte("TEST ONLY - NOT A SECRET key\n"),
-		filepath.Join(base, "var", "state", "agent.db"):     []byte("TEST ONLY durable sqlite state bytes"),
-		filepath.Join(base, "var", "e2e", "agent-selected"): []byte("/usr/local\n"),
+		"etc/machine-id":         []byte("0123456789abcdef0123456789abcdef\n"),
+		"var/identity/node.json": []byte("{\"node_id\":\"00000000-0000-7000-8000-000000000002\"}\n"),
+		"var/identity/cert.pem":  []byte("TEST ONLY - NOT A SECRET cert\n"),
+		"var/identity/key.pem":   []byte("TEST ONLY - NOT A SECRET key\n"),
+		"var/state/agent.db":     []byte("TEST ONLY durable sqlite state bytes"),
+		"var/e2e/agent-selected": []byte("/usr/local\n"),
 	}
-	for path, body := range durableFiles {
-		if err := os.WriteFile(path, body, 0600); err != nil {
-			t.Fatal(err)
+	writeFiles := func(t *testing.T, base string, files map[string][]byte) {
+		t.Helper()
+		for path, data := range files {
+			path = filepath.Join(base, path)
+			if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(path, data, 0600); err != nil {
+				t.Fatal(err)
+			}
 		}
 	}
-
-	if err := prepareExitSlotConfigs(base, "198.51.100.23", true); err != nil {
-		t.Fatal(err)
+	readFile := func(t *testing.T, base, path string) []byte {
+		t.Helper()
+		raw, err := os.ReadFile(filepath.Join(base, path))
+		if err != nil {
+			t.Fatal(err)
+		}
+		return raw
 	}
-
-	for _, tc := range []struct {
-		name        string
-		path        string
-		sourceBytes []byte
-		sourceURL   string
+	decode := func(t *testing.T, raw []byte) map[string]any {
+		t.Helper()
+		var fields map[string]any
+		d := json.NewDecoder(bytes.NewReader(raw))
+		d.UseNumber()
+		if err := d.Decode(&fields); err != nil {
+			t.Fatal(err)
+		}
+		return fields
+	}
+	checkDurable := func(t *testing.T, base string) {
+		t.Helper()
+		for path, want := range durableFiles {
+			if got := readFile(t, base, path); !bytes.Equal(got, want) {
+				t.Fatalf("durable file %s changed", path)
+			}
+		}
+	}
+	for _, mode := range []struct {
+		name  string
+		clone bool
+		snat  string
 	}{
-		{name: "agent-enroll.json", path: enrollPath, sourceBytes: sourceEnroll, sourceURL: "https://portal.example.invalid:8443"},
-		{name: "agent-run.json", path: runPath, sourceBytes: sourceRun, sourceURL: "https://127.0.0.1:9445"},
-		{name: "agent-release.json", path: releasePath, sourceBytes: sourceRun, sourceURL: "https://127.0.0.1:9445"},
+		{name: "clone", clone: true, snat: "198.51.100.23"},
+		{name: "fresh", clone: false, snat: "198.51.100.22"},
 	} {
-		gotBytes, err := os.ReadFile(tc.path)
-		if err != nil {
-			t.Fatal(err)
-		}
-		var before, after map[string]json.RawMessage
-		if json.Unmarshal(tc.sourceBytes, &before) != nil || json.Unmarshal(gotBytes, &after) != nil {
-			t.Fatalf("%s: invalid JSON", tc.name)
-		}
-		if string(after["control_url"]) != `"https://127.0.0.1:9444"` {
-			t.Fatalf("%s: control_url = %s, want %q", tc.name, after["control_url"], localNodeControlURL)
-		}
-		var dpBefore, dpAfter map[string]json.RawMessage
-		if json.Unmarshal(before["datapath"], &dpBefore) != nil || json.Unmarshal(after["datapath"], &dpAfter) != nil {
-			t.Fatalf("%s: invalid datapath", tc.name)
-		}
-		if string(dpAfter["snat"]) != `"198.51.100.23"` {
-			t.Fatalf("%s: datapath.snat = %s, want 198.51.100.23", tc.name, dpAfter["snat"])
-		}
-		delete(dpBefore, "snat")
-		delete(dpAfter, "snat")
-		if len(dpBefore) != len(dpAfter) {
-			t.Fatalf("%s: datapath key count changed", tc.name)
-		}
-		for k, v := range dpBefore {
-			if !bytes.Equal(v, dpAfter[k]) {
-				t.Fatalf("%s: datapath[%s] changed: got %s, want %s", tc.name, k, dpAfter[k], v)
-			}
-		}
-		delete(before, "control_url")
-		delete(after, "control_url")
-		delete(before, "datapath")
-		delete(after, "datapath")
-		if len(before) != len(after) {
-			t.Fatalf("%s: top-level key count changed", tc.name)
-		}
-		for k, v := range before {
-			if !bytes.Equal(v, after[k]) {
-				t.Fatalf("%s: field %s changed: got %s, want %s", tc.name, k, after[k], v)
-			}
-		}
-		restored := bytes.ReplaceAll(gotBytes, []byte(`"control_url": "https://127.0.0.1:9444"`), []byte(`"control_url": "`+tc.sourceURL+`"`))
-		restored = bytes.ReplaceAll(restored, []byte(`"snat": "198.51.100.23"`), []byte(`"snat": "198.51.100.20"`))
-		if !bytes.Equal(restored, tc.sourceBytes) {
-			t.Fatalf("%s: bytes outside control_url and datapath.snat changed", tc.name)
-		}
-	}
-
-	for path, want := range durableFiles {
-		got, err := os.ReadFile(path)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !bytes.Equal(got, want) {
-			t.Fatalf("durable file %s changed", path)
+		for _, format := range []string{"formatted", "compact"} {
+			t.Run(mode.name+"/"+format, func(t *testing.T) {
+				base := t.TempDir()
+				files := map[string][]byte{enrollPath: sourceEnroll, runPath: sourceRun}
+				if mode.clone {
+					release := sourceRun
+					if format == "compact" {
+						// candidateConfig writes release configs with json.Marshal.
+						var err error
+						release, err = json.Marshal(decode(t, sourceRun))
+						if err != nil {
+							t.Fatal(err)
+						}
+						if bytes.Contains(release, []byte("\n")) {
+							t.Fatal("release fixture is not compact")
+						}
+					}
+					files[releasePath] = release
+				} else if format == "compact" {
+					for path, raw := range files {
+						var compact bytes.Buffer
+						if err := json.Compact(&compact, raw); err != nil {
+							t.Fatal(err)
+						}
+						files[path] = compact.Bytes()
+					}
+				}
+				writeFiles(t, base, files)
+				writeFiles(t, base, durableFiles)
+				if err := prepareExitSlotConfigs(base, mode.snat, mode.clone); err != nil {
+					t.Fatal(err)
+				}
+				for path, before := range files {
+					want := decode(t, before)
+					if path == enrollPath || path == runPath {
+						want["datapath"].(map[string]any)["snat"] = mode.snat
+					}
+					if path == runPath || path == releasePath {
+						want["control_url"] = "https://127.0.0.1:9444"
+					}
+					// Compare complete decoded objects, including every key and
+					// nested DNS value. Serialization need not preserve whitespace.
+					got := decode(t, readFile(t, base, path))
+					if !reflect.DeepEqual(got, want) {
+						t.Errorf("%s: values changed outside the authorized field matrix\ngot: %#v\nwant: %#v", path, got, want)
+					}
+				}
+				checkDurable(t, base)
+			})
 		}
 	}
-
-	// Clean second-exit mode (clone == false) keeps agent-enroll.json's enrollment URL
-	// while still pointing agent-run.json at the container's local resolver-proxy.
-	if err := os.WriteFile(enrollPath, sourceEnroll, 0600); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(runPath, sourceRun, 0600); err != nil {
-		t.Fatal(err)
-	}
-	if err := prepareExitSlotConfigs(base, "198.51.100.22", false); err != nil {
-		t.Fatal(err)
-	}
-	cleanEnroll, err := os.ReadFile(enrollPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	cleanRun, err := os.ReadFile(runPath)
-	if err != nil {
-		t.Fatal(err)
-	}
-	var enrollFields, runFields map[string]json.RawMessage
-	if json.Unmarshal(cleanEnroll, &enrollFields) != nil || json.Unmarshal(cleanRun, &runFields) != nil {
-		t.Fatal("invalid clean exit JSON")
-	}
-	if string(enrollFields["control_url"]) != `"https://portal.example.invalid:8443"` {
-		t.Fatalf("clean agent-enroll.json control_url = %s", enrollFields["control_url"])
-	}
-	if string(runFields["control_url"]) != `"https://127.0.0.1:9444"` {
-		t.Fatalf("clean agent-run.json control_url = %s", runFields["control_url"])
-	}
-
-	if _, err := rewriteExitConfig([]byte(`{"control_url":"https://127.0.0.1:9445"}`), "198.51.100.23", true); err == nil {
-		t.Fatal("accepted config without datapath")
-	}
-	if _, err := rewriteExitConfig([]byte(`{"datapath":`), "198.51.100.23", true); err == nil {
-		t.Fatal("accepted malformed config")
+	// Exercise the same file preparation path without invoking startExitSlot or
+	// Docker. A rejected file must not be overwritten; durable bytes stay intact.
+	for _, invalid := range []struct{ name, raw string }{
+		{"malformed", `{"datapath":`},
+		{"null-config", `null`},
+		{"array-config", `[]`},
+		{"missing-datapath", `{"control_url":"https://127.0.0.1:9445"}`},
+		{"null-datapath", `{"datapath":null}`},
+		{"array-datapath", `{"datapath":[]}`},
+	} {
+		for _, path := range []string{enrollPath, runPath, releasePath} {
+			t.Run("refuse/"+invalid.name+"/"+path, func(t *testing.T) {
+				base := t.TempDir()
+				files := map[string][]byte{enrollPath: sourceEnroll, runPath: sourceRun, releasePath: sourceRun}
+				files[path] = []byte(invalid.raw)
+				writeFiles(t, base, files)
+				writeFiles(t, base, durableFiles)
+				if err := prepareExitSlotConfigs(base, "198.51.100.23", true); err == nil {
+					t.Fatal("accepted invalid config")
+				}
+				if got := readFile(t, base, path); !bytes.Equal(got, files[path]) {
+					t.Fatal("rejected config was overwritten")
+				}
+				checkDurable(t, base)
+			})
+		}
 	}
 }
 
