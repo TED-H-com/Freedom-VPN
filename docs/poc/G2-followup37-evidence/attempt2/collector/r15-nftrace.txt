@@ -1,5 +1,0 @@
-trace id 80d32c07 inet fvr15trace trace_probe packet: iif "fv-fh" ether saddr 4a:2a:19:1d:df:36 ether daddr 9a:aa:e1:4a:c2:3f ip saddr 100.64.9.9 ip daddr 203.0.113.10 ip dscp 0x00 ip ecn 0x0 ip ttl 64 ip id 0 ip protocol 17 ip length 29 udp sport 40000 udp dport 39996 udp length 9 @th,64,8 0x78 
-trace id 80d32c07 inet fvr15trace trace_probe rule iifname "fv-fh" ip saddr 100.64.9.9 ip daddr 203.0.113.10 udp sport 40000 udp dport 39996 meta nftrace set 1 (verdict continue)
-trace id 80d32c07 inet fvr15trace trace_probe policy accept 
-trace id 80d32c07 inet fvpn forward packet: iif "fv-fh" oif "fv-ih" ether saddr 4a:2a:19:1d:df:36 ether daddr 9a:aa:e1:4a:c2:3f ip saddr 100.64.9.9 ip daddr 203.0.113.10 ip dscp 0x00 ip ecn 0x0 ip ttl 63 ip id 0 ip protocol 17 ip length 29 udp sport 40000 udp dport 39996 udp length 9 @th,64,8 0x78 
-trace id 80d32c07 inet fvpn forward rule iifname "fv-fh" oifname "fv-ih" ip saddr != @allowed_v4 counter name "ctunku" drop (verdict drop)
