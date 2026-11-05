@@ -1,0 +1,22 @@
+run 41782791081; gh log-failed exit=0
+2026-11-04T06:06:11.1773746Z --- FAIL: TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat (0.44s)
+2026-11-04T06:06:11.1775197Z     --- FAIL: TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat/term_after_baseline_with_ledger_timeout_leaves_stale_serving_true_heartbeat (0.16s)
+2026-11-04T06:06:11.1776441Z         review_r22_test.go:764: expected context.Canceled on TERM after baseline, got agent: boot failed: local deadline: context deadline exceeded
+run 41787173794; gh log-failed exit=0
+2026-11-04T06:45:06.7108136Z --- FAIL: TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample (0.42s)
+2026-11-04T06:45:06.7109495Z     --- FAIL: TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample/delivered_ACK (0.21s)
+2026-11-04T06:45:06.7112967Z         followup25_usage_test.go:295: retired posts=2, accepted batches=1, accepted events=1
+run 41794009264; gh log-failed exit=0
+2026-11-04T07:45:20.0479481Z --- FAIL: TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery (0.82s)
+2026-11-04T07:45:20.0481800Z     review_r29_test.go:265: Boot self-deadlocked waiting for synchronous recoverOnce to receive health-attest.json from this same agent: agent: boot failed: local deadline: context deadline exceeded
+run 41808885873; gh log-failed exit=0
+2026-11-04T09:42:20.4336504Z --- FAIL: TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption (0.07s)
+2026-11-04T09:42:20.4339309Z     review_r23_test.go:277: R23-H-1b: same-boot adoption was refused after switchEpoch left usage_apply_intent on E1; next.serving=false, memberA=2048, memberB=0 (want 4096), gaps=1 ([{EventSeq:2 Gap:0x39cabf33e960 IntervalEnd:2026-11-04 09:42:20.425512 +0000 UTC IntervalStart:2026-11-04 09:42:18.425512 +0000 UTC MeterEpochId:01a1a5f0-1291-7697-a3fa-473b8145505b MeteringVersion:forward_admission_v1 NodeId:01a1a5f0-1270-757d-802a-e4a93c8d0d5e NodeIncarnationId:01a1a5f0-126d-71cf-b280-c45b511a3e92 PayloadSha256:b8f17b9ed8af726d243388737493b833113b818bbf262c7988b8b74274631d55 Quality:gap Records:[] SchemaVersion:1}])
+run 41871089749; gh log-failed exit=0
+2026-11-04T16:52:11.3314486Z --- FAIL: TestD155_CrashedTransactionsKeepAgentRunning (2.00s)
+2026-11-04T16:52:11.3314954Z     --- FAIL: TestD155_CrashedTransactionsKeepAgentRunning/blocked (0.85s)
+2026-11-04T16:52:11.3316062Z         followup49_transaction_test.go:240: agent: boot failed: local deadline: context deadline exceeded
+run 41885624816; gh log-failed exit=0
+2026-11-04T18:24:56.1099532Z --- FAIL: TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException (0.47s)
+2026-11-04T18:24:56.1100401Z     --- FAIL: TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException/held_finalsample_blocks_step_sync_and_apply_until_settled (0.27s)
+2026-11-04T18:24:56.1103134Z         review_r22_test.go:1000: expected retainedPending=true serving=false on ErrHold during Boot, got retainedPending=false serving=false
