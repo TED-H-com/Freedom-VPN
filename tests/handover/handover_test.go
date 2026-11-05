@@ -7215,6 +7215,9 @@ const followup29Configuration = "**2026-11-01 — Known local configuration beha
 
 func readBeforeFollowup29Note(t *testing.T, root, path string) string {
 	t.Helper()
+	if path == "README.md" {
+		path = "tests/handover/testdata/consolidation/README-followup49.md.txt"
+	}
 	if path == "docs/handover/operator-guide.md" {
 		path = "tests/handover/testdata/history/follow-up-34/operator-guide33.md.txt"
 	}
