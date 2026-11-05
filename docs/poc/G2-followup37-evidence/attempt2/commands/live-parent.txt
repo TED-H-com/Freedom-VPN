@@ -1,0 +1,16 @@
+=== RUN   TestReviewR15_TcMirredAndPolicyRoutingBypass
+=== RUN   TestReviewR15_TcMirredAndPolicyRoutingBypass/tc_clsact_mirred
+    review_r15_q8_bypass_test.go:62: tc mirred: ctunku=0 uplink="20:34:31.480669 IP 100.64.9.9.40000 > 203.0.113.10.39997: UDP, length 1\n\n"
+    review_r15_q8_bypass_test.go:66: D090 before quarantine: verify_exit=3 reason=TC_FOREIGN_FILTER uplink_packets=1 ctunku_delta=0
+    review_r15_q8_bypass_test.go:74: D090 quarantine: {"quarantined":true,"recorded":true,"links":[{"interface":"fv-fh","before":{"admin_up":true,"operstate":"UP"},"after":{"admin_up":false,"operstate":"DOWN"}}],"baseline":{"installed":true,"verified":true}}
+    review_r15_q8_bypass_test.go:94: D090 contained: verify_exit=3 reason=TC_FOREIGN_FILTER quarantined=true uplink_packets=0 ctunku_before=0 ctunku_after=0 control=control-ok
+    review_r15_q8_bypass_test.go:119: D090 clean Apply: member_admin_up=true uplink_admin_up=true verify_exit=0 quarantined=false
+SUMMARY AT00 handshakes=5 forward=1 baseline=1
+SUMMARY D090 post-Apply injection verify=3 TC_FOREIGN_FILTER; pre-quarantine uplink=1 ctunku_delta=0; quarantined uplink=0 ctunku_delta=0 control=pass; repeated quarantine=pass; clean Apply links=up verify=0; topology routes reconciled=2 ipv6_address=1 member=pass AT00=pass
+=== RUN   TestReviewR15_TcMirredAndPolicyRoutingBypass/ip_rule
+    review_r15_q8_bypass_test.go:177: ip rule: attributed_ctunku_drop=1 aggregate_ctunku=1 uplink=0
+--- PASS: TestReviewR15_TcMirredAndPolicyRoutingBypass (5.87s)
+    --- PASS: TestReviewR15_TcMirredAndPolicyRoutingBypass/tc_clsact_mirred (3.61s)
+    --- PASS: TestReviewR15_TcMirredAndPolicyRoutingBypass/ip_rule (1.82s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/netlab	5.872s

@@ -1,0 +1,602 @@
+[
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/after-cutoff-provenance.json",
+    "pointer": "/cut_commit",
+    "expected": "aaffdc7fe176c5e3edc521c8ca491bff28bd4a6f"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/after-cutoff-provenance.json",
+    "pointer": "/cut_committed_at",
+    "expected": "2026-11-05T10:04:33Z"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/after-cutoff-provenance.json",
+    "pointer": "/previous_cut_commit",
+    "expected": "b921c75f180beb6c0051d585a86d6651b2c8d71a"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/after-cutoff-provenance.json",
+    "pointer": "/unexpected_lane_included/pr",
+    "expected": 485
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/after-cutoff-provenance.json",
+    "pointer": "/unexpected_lane_included/lane",
+    "expected": "w3-contracts-r13 follow-up 15"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/after-cutoff-provenance.json",
+    "pointer": "/unexpected_lane_included/merge_commit",
+    "expected": "82dda8a867989e512e36a80dfba5aac1e4fdc28f"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/owner-confirmation-provenance.json",
+    "pointer": "/confirmed_by",
+    "expected": "Ted"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/owner-confirmation-provenance.json",
+    "pointer": "/relayed_by",
+    "expected": "orchestrator"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/owner-confirmation-provenance.json",
+    "pointer": "/confirmed_at_approx",
+    "expected": "2026-11-04 17:1x EST"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/owner-confirmation-provenance.json",
+    "pointer": "/decisions/0",
+    "expected": "D-150"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/owner-confirmation-provenance.json",
+    "pointer": "/decisions/1",
+    "expected": "D-151"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/owner-confirmation-provenance.json",
+    "pointer": "/decisions/2",
+    "expected": "D-152"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/owner-confirmation-provenance.json",
+    "pointer": "/decisions/3",
+    "expected": "D-153"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/owner-confirmation-provenance.json",
+    "pointer": "/decisions/4",
+    "expected": "D-154"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/netbird-8473-comment-provenance.json",
+    "pointer": "/discussion_url",
+    "expected": "https://github.com/netbirdio/netbird/discussions/8473"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/netbird-8473-comment-provenance.json",
+    "pointer": "/comment_url",
+    "expected": "https://github.com/netbirdio/netbird/discussions/8473#discussioncomment-19411545"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/netbird-8473-comment-provenance.json",
+    "pointer": "/created_at",
+    "expected": "2026-11-05T04:30:00Z"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/netbird-8473-comment-provenance.json",
+    "pointer": "/created_at_est",
+    "expected": "2026-11-04 23:30 EST"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/netbird-8473-comment-provenance.json",
+    "pointer": "/checked_at",
+    "expected": "2026-11-05T10:11:17Z"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/netbird-8473-comment-provenance.json",
+    "pointer": "/discussion_comments_total_count",
+    "expected": 1
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/netbird-8473-comment-provenance.json",
+    "pointer": "/comment_replies_total_count",
+    "expected": 0
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/netbird-8473-comment-provenance.json",
+    "pointer": "/body",
+    "expected": "Adding an independent sample of the same symptom from our 2026-11-04 AT01 run (`3eb3960d-c411-4648-8d77-bba40b436ae3`), examined retrospectively in follow-up 23.\n\nThe retained captures show a WireGuard type-2 response with an IPv6 loopback (`::1`) source:\n\n- Node packet **158** leaves **eth2** at **08:22:37.385050Z**.\n- Member packet **161** arrives on **eth1** at **08:22:37.385059Z**, with the same IP-packet SHA-256.\n- Both decoded packets have **92 bytes of WireGuard payload**, **UDP length 100**, **IP length 140**, and UDP ports **51820 → 51820**. Public records use an anonymized source label identified as IPv6 loopback.\n- Over the enclosing counter-read interval, the member's **`Ip6InHdrErrors` increases from 0 to 1**, while its WireGuard receive accounting remains zero.\n\nThis corrects our earlier inference from the zero WireGuard counter: the response did reach the member's underlay ingress. The evidence locates the remaining gap **after member underlay ingress and before WireGuard receive accounting**. We have no packet-specific kernel drop trace for this sample; the counter increment does not prove which packet caused it, and these records do not prove the source-selection mechanism.\n\nThe retrospective extraction was checked against the original capture byte counts and SHA-256 receipts. The original uncounted outcome is unchanged. Successful initial transfers in a later run do not establish that this issue is fixed.\n\nEvidence, pinned to commit `52b93845b5cfeac1dd63e04c700857fcd098a7f6`:\n\n- [Decoded packet headers, original capture receipts, counter readbacks, and limits](https://github.com/TED-H-com/Freedom-VPN/blob/52b93845b5cfeac1dd63e04c700857fcd098a7f6/docs/e2e/at/members/F23-retrospective-F22-AT01.json)\n- [Follow-up 23 analysis](https://github.com/TED-H-com/Freedom-VPN/blob/52b93845b5cfeac1dd63e04c700857fcd098a7f6/docs/e2e/at/members/followup23-2026-11-04.md#f22-at01-check-the-old-inference-then-read-this-run)\n- [Recorded blocker and limits](https://github.com/TED-H-com/Freedom-VPN/blob/52b93845b5cfeac1dd63e04c700857fcd098a7f6/docs/e2e/at/members/BLOCKERS.md)\n"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/netbird-8473-comment-provenance.json",
+    "pointer": "/body_bytes",
+    "expected": 2110
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/netbird-8473-comment-provenance.json",
+    "pointer": "/body_sha256",
+    "expected": "b58bb6c84b42e529914ec75a3eb1e1f71439341bc67f95683b192e1d2ace0543"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/netbird-8473-comment-provenance.json",
+    "pointer": "/source_commit",
+    "expected": "52b93845b5cfeac1dd63e04c700857fcd098a7f6"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/netbird-8473-comment-provenance.json",
+    "pointer": "/sample/run_id",
+    "expected": "3eb3960d-c411-4648-8d77-bba40b436ae3"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/commit_52b93845_docs_e2e_at_members_F23-retrospective-F22-AT01.json",
+    "pointer": "/run_id",
+    "expected": "3eb3960d-c411-4648-8d77-bba40b436ae3"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/commit_52b93845_docs_e2e_at_members_F23-retrospective-F22-AT01.json",
+    "pointer": "/source_commit",
+    "expected": "8a6dcf34248f035a3a460fcdee3e1e19e80c9137"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/commit_52b93845_docs_e2e_at_members_F23-retrospective-F22-AT01.json",
+    "pointer": "/original_outcome",
+    "expected": "blocked"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/commit_52b93845_docs_e2e_at_members_F23-retrospective-F22-AT01.json",
+    "pointer": "/original_counted",
+    "expected": false
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/commit_52b93845_docs_e2e_at_members_F23-retrospective-F22-AT01.json",
+    "pointer": "/retrospective_decoder_source",
+    "expected": "8bde2b6acc0b116515148eeb0ff4448c65453a92"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/commit_52b93845_docs_e2e_at_members_F23-retrospective-F22-AT01.json",
+    "pointer": "/original_capture_id",
+    "expected": "786f5cd1-ed32-42b7-9638-99127303061c"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/commit_52b93845_docs_e2e_at_members_F23-retrospective-F22-AT01.json",
+    "pointer": "/original_capture_receipts/member/bytes",
+    "expected": "43478"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/commit_52b93845_docs_e2e_at_members_F23-retrospective-F22-AT01.json",
+    "pointer": "/original_capture_receipts/member/sha256",
+    "expected": "80bcb4eb186631878618a6a880d5bc16ccd470c5465436ea4530bf1894115303"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/commit_52b93845_docs_e2e_at_members_F23-retrospective-F22-AT01.json",
+    "pointer": "/original_capture_receipts/node/bytes",
+    "expected": "43596"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/commit_52b93845_docs_e2e_at_members_F23-retrospective-F22-AT01.json",
+    "pointer": "/original_capture_receipts/node/sha256",
+    "expected": "70b5a94c639568e0507db04549317bb5dd519187cbc30329d927ad9a84db0615"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/review-provenance.json",
+    "pointer": "/branch",
+    "expected": "r33-meter-restart-review"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/review-provenance.json",
+    "pointer": "/head",
+    "expected": "f0bed96a1a622490f133e3cdb160a1e738f41712"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/review-provenance.json",
+    "pointer": "/parent",
+    "expected": "7bac86538bd9f0108a3bb441205b9ba979eae134"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/review-provenance.json",
+    "pointer": "/base",
+    "expected": "29cd267162fa614c444122865b62f405e2f58802"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/review-provenance.json",
+    "pointer": "/reviewed_change",
+    "expected": "b094ffac72f2f4f247a3e2b592a6659a84f1d51a"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/review-provenance.json",
+    "pointer": "/pre_change_parent",
+    "expected": "9e52ea20675daae89710bc4630906e1c70b2e650"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/review-provenance.json",
+    "pointer": "/committed_at",
+    "expected": "2026-11-05T06:59:22Z"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/review-provenance.json",
+    "pointer": "/committer",
+    "expected": "Ted H"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/review-provenance.json",
+    "pointer": "/reviewer",
+    "expected": "agy/gemini-4-argon-high"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/review-provenance.json",
+    "pointer": "/source",
+    "expected": ".agent/REVIEW.md"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_admission-wait.json",
+    "pointer": "/started_at",
+    "expected": "2026-11-05T05:26:36.198859Z"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_admission-wait.json",
+    "pointer": "/admitted_at",
+    "expected": "2026-11-05T05:42:37.626894Z"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_admission-wait.json",
+    "pointer": "/waited_seconds",
+    "expected": 961.428
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_admission-deferrals.json",
+    "pointer": "/0/recorded_at",
+    "expected": "2026-11-05T05:23:12.707514Z"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_admission-deferrals.json",
+    "pointer": "/0/command",
+    "expected": "agent-loaded3"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_admission-deferrals.json",
+    "pointer": "/0/status",
+    "expected": 125
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_admission-deferrals.json",
+    "pointer": "/0/started",
+    "expected": false
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gate-admission-wait.json",
+    "pointer": "/started_at",
+    "expected": "2026-11-05T06:25:21.869304Z"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gate-admission-wait.json",
+    "pointer": "/admitted_at",
+    "expected": "2026-11-05T06:25:21.923857Z"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gate-admission-wait.json",
+    "pointer": "/waited_seconds",
+    "expected": 0.055
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gate-admission-wait.json",
+    "pointer": "/remaining_gates/0",
+    "expected": "gate-node-build"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gates-summary-attempt1.json",
+    "pointer": "/0/name",
+    "expected": "gate-node-lint"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gates-summary-attempt1.json",
+    "pointer": "/0/exit_status",
+    "expected": 0
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gates-summary-attempt1.json",
+    "pointer": "/1/name",
+    "expected": "gate-node-test"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gates-summary.json",
+    "pointer": "/0/name",
+    "expected": "gate-node-lint"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gates-summary.json",
+    "pointer": "/0/exit_status",
+    "expected": 0
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gates-summary.json",
+    "pointer": "/1/name",
+    "expected": "gate-node-test"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gates-summary.json",
+    "pointer": "/1/exit_status",
+    "expected": 0
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gates-summary.json",
+    "pointer": "/2/name",
+    "expected": "gate-node-integration"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gates-summary.json",
+    "pointer": "/2/exit_status",
+    "expected": 0
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_sixth-original-load.json",
+    "pointer": "/command/0",
+    "expected": "go"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_sixth-original-load.json",
+    "pointer": "/command/1",
+    "expected": "test"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_sixth-original-load.json",
+    "pointer": "/command/2",
+    "expected": "-json"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_sixth-original-load.json",
+    "pointer": "/command/3",
+    "expected": "-count=50"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_sixth-delayed-load.json",
+    "pointer": "/command/0",
+    "expected": "go"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_sixth-delayed-load.json",
+    "pointer": "/command/1",
+    "expected": "test"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_sixth-delayed-load.json",
+    "pointer": "/command/2",
+    "expected": "-json"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_sixth-delayed-load.json",
+    "pointer": "/command/3",
+    "expected": "-overlay=.agent/f53-fix1/sixth-delay-overlay.json"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_ci-metadata.json",
+    "pointer": "/0/command/0",
+    "expected": "env"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_ci-metadata.json",
+    "pointer": "/0/command/1",
+    "expected": "-u"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_ci-metadata.json",
+    "pointer": "/0/command/2",
+    "expected": "LD_LIBRARY_PATH"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_ci-metadata.json",
+    "pointer": "/0/command/3",
+    "expected": "gh"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_ci-metadata.json",
+    "pointer": "/0/command/4",
+    "expected": "run"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_ci-metadata.json",
+    "pointer": "/0/command/5",
+    "expected": "view"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_ci-source-audit.json",
+    "pointer": "/0/run",
+    "expected": 41782791081
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_ci-source-audit.json",
+    "pointer": "/0/commit",
+    "expected": "0cf5a5d5e1fca551a207859eb2cb74c004e9d8f7"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_ci-source-audit.json",
+    "pointer": "/0/path",
+    "expected": "node/agent/review_r22_test.go"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_ci-source-audit.json",
+    "pointer": "/0/line",
+    "expected": 764
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_snapshot-audit.json",
+    "pointer": "/0/attempt",
+    "expected": "agent-loaded3"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_snapshot-audit.json",
+    "pointer": "/0/head",
+    "expected": "d1ad15333856e03c854b3f99cd02968967aa9335"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_snapshot-audit.json",
+    "pointer": "/0/manifest",
+    "expected": "source-281d53d3fcbf8a265dbf669c73f21fd31c205d2782e1b3c473ea994bf4d80c3a.sha256"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_snapshot-audit.json",
+    "pointer": "/0/verified_files",
+    "expected": 442
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_source-citations.json",
+    "pointer": "/0/citation",
+    "expected": "node/agent/engine.go:449,466–501"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_source-citations.json",
+    "pointer": "/0/commit",
+    "expected": "466f15107e78427fbf725ebfe7aaf560a506a3fe"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_source-citations.json",
+    "pointer": "/0/path",
+    "expected": "node/agent/engine.go"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_source-citations.json",
+    "pointer": "/0/source_sha256",
+    "expected": "03986a178e1cd119b509d0ada5a6427bfcd596eb3a70f94a54132bb816b32c62"
+  },
+  {
+    "path": "tests/handover/testdata/history/contracts-revision-15/provenance.json",
+    "pointer": "/migration",
+    "expected": "contracts-revision-15"
+  },
+  {
+    "path": "tests/handover/testdata/history/contracts-revision-15/provenance.json",
+    "pointer": "/base_head",
+    "expected": "980e313ab8d1b261cb1f44e4a86b54b7e55fefde"
+  },
+  {
+    "path": "tests/handover/testdata/history/contracts-revision-15/provenance.json",
+    "pointer": "/handover_48_pr/number",
+    "expected": 483
+  },
+  {
+    "path": "tests/handover/testdata/history/contracts-revision-15/provenance.json",
+    "pointer": "/handover_48_pr/state",
+    "expected": "MERGED"
+  },
+  {
+    "path": "tests/handover/testdata/history/contracts-revision-15/provenance.json",
+    "pointer": "/handover_48_pr/merged_at",
+    "expected": "2026-11-05T06:23:33Z"
+  },
+  {
+    "path": "tests/handover/testdata/history/contracts-revision-15/provenance.json",
+    "pointer": "/handover_48_pr/merge_commit",
+    "expected": "ff0ce0658b9a86523bd6bc2ddf1fceda47a5453f"
+  },
+  {
+    "path": "tests/handover/testdata/history/contracts-revision-15/provenance.json",
+    "pointer": "/handover_48_pr/cut_commit",
+    "expected": "b921c75f180beb6c0051d585a86d6651b2c8d71a"
+  },
+  {
+    "path": "tests/handover/testdata/history/contracts-revision-15/provenance.json",
+    "pointer": "/pre_migration_handover_test/source_commit",
+    "expected": "980e313ab8d1b261cb1f44e4a86b54b7e55fefde"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_vectors_serving-read-evidence.json",
+    "pointer": "/_comment",
+    "expected": "TEST ONLY - NOT A SECRET. D-164 retained actual complete VerifyServing read outcome (ServingReadEvidence) and nullable presence on ObservationReport and NodeDetail."
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_vectors_serving-read-evidence.json",
+    "pointer": "/cases/0/evidence/candidate_generation",
+    "expected": "9007199254740993"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_vectors_serving-read-evidence.json",
+    "pointer": "/cases/0/evidence/diagnostic",
+    "expected": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_vectors_serving-read-evidence.json",
+    "pointer": "/cases/0/evidence/read_at",
+    "expected": "2026-10-28T15:00:29Z"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_vectors_serving-read-evidence.json",
+    "pointer": "/cases/0/evidence/source",
+    "expected": "apply"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_vectors_serving-read-evidence.json",
+    "pointer": "/cases/0/evidence/verified",
+    "expected": true
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_ServingReadEvidence.apply-verified.json",
+    "pointer": "/candidate_generation",
+    "expected": "9007199254740993"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_ServingReadEvidence.apply-rejected.json",
+    "pointer": "/candidate_generation",
+    "expected": "18446744073709551615"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_ServingReadEvidence.live-verified.json",
+    "pointer": "/candidate_generation",
+    "expected": "18446744073709551615"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_ServingReadEvidence.live-rejected-tc.json",
+    "pointer": "/candidate_generation",
+    "expected": "9007199254740993"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_ObservationReport.serving-read-null.json",
+    "pointer": "/agent_version",
+    "expected": "1.1.0"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_ObservationReport.serving-read-apply-verified.json",
+    "pointer": "/agent_version",
+    "expected": "1.1.0"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_ObservationReport.serving-read-live-rejected.json",
+    "pointer": "/agent_version",
+    "expected": "1.1.0"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_NodeDetail.serving-read-null.json",
+    "pointer": "/capacity/down_bps",
+    "expected": 1000000000
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_NodeDetail.serving-read-apply-verified.json",
+    "pointer": "/capacity/down_bps",
+    "expected": 1000000000
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_NodeDetail.serving-read-live-rejected.json",
+    "pointer": "/capacity/down_bps",
+    "expected": 1000000000
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_invalid_reasons.generated.json",
+    "pointer": "/DesiredStateEnvelope.duplicate-revocations.json/kind",
+    "expected": "schema"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_invalid_reasons.generated.json",
+    "pointer": "/DesiredStateEnvelope.duplicate-revocations.json/pointer",
+    "expected": "/signed/revoked_release_ids"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_invalid_reasons.generated.json",
+    "pointer": "/DesiredStateEnvelope.duplicate-revocations.json/keyword",
+    "expected": "uniqueItems"
+  },
+  {
+    "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_invalid_reasons.generated.json",
+    "pointer": "/DesiredStateEnvelope.duplicate-revocations.json/note",
+    "expected": "Revocations must be a unique UUID array when present."
+  }
+]

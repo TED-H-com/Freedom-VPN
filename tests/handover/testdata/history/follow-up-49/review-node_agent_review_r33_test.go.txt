@@ -1,0 +1,327 @@
+package agent
+
+// Independent adversarial review r33 unit proofs for Engine callers of
+// Meter.CheckpointForRestart (preserveServingOnStop in restart.go:190 and
+// settleExpiredBindings in deadlines.go:90) at commit
+// 29cd267162fa614c444122865b62f405e2f58802.
+// TEST ONLY manual clocks, in-memory data planes, and temp SQLite.
+
+import (
+	"testing"
+	"time"
+
+	"github.com/google/uuid"
+
+	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/meter"
+)
+
+func alignMicrosecond(r *rig) {
+	if rem := r.clock.Wall().Nanosecond() % 1000; rem != 0 {
+		r.clock.Advance(time.Duration(1000-rem) * time.Nanosecond)
+	}
+}
+
+// TestR33_AgentPreserveServingOnStopAtSameTimestampAndRollback proves that
+// Engine.Close() -> preserveServingOnStop -> Meter.CheckpointForRestart:
+//   - preserves the open usage epoch and retains kernel serving rules for
+//     same-boot adoption when counter readings are unchanged at now == LastSample
+//     (0s) and bounded rollback within timeanchor's 2s skew window (1s, 2s), and
+//   - refuses preservation (returning false and running handoff baseline
+//     withdrawal) when counter readings changed at now <= LastSample.
+func TestR33_AgentPreserveServingOnStopAtSameTimestampAndRollback(t *testing.T) {
+	for _, rollback := range []time.Duration{0, time.Second, 2 * time.Second} {
+		t.Run("unchanged_counters_"+rollback.String(), func(t *testing.T) {
+			r := newRig(t)
+			alignMicrosecond(r)
+			alignControlClock(r)
+			r.srv.SetUsageUnavailable(1000)
+
+			serveBoundGeneration(t, r)
+			r.manualUsage(t)
+			b := r.eng.appliedModel.Bindings[0]
+			upName := meter.CounterName(b.DeviceID, meter.DirUpload)
+
+			src1 := &r20DynamicSource{
+				boot:     r.eng.bootID.String(),
+				bindings: r.eng.meterBindings,
+				counters: map[string]enforce.CounterValue{
+					upName: {Packets: 4, Bytes: 4096},
+				},
+			}
+			r.eng.meter.Close()
+			var err error
+			r.eng.meter, err = meter.New(meter.Config{
+				NodeID:        r.eng.nodeID,
+				IncarnationID: r.eng.incID,
+				Store:         r.eng.usage,
+				Source:        src1,
+				Interval:      10 * time.Second,
+				Now:           r.clock.Wall,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// Advance 10s and sample 4096 B so head.LastSample == t0+10s.
+			r.clock.Advance(10 * time.Second)
+			if err := r.eng.meter.Sample(t.Context()); err != nil {
+				t.Fatalf("Sample before Close: %v", err)
+			}
+			hBefore, err := r.eng.usage.Head(t.Context())
+			if err != nil {
+				t.Fatal(err)
+			}
+			epochBefore := hBefore.OpenEpoch
+			lastSampleBefore := hBefore.LastSample
+			baselinesBefore := r.plane.baselines
+
+			// Step wall clock back by rollback (0s, 1s, or 2s) with unchanged counters.
+			if rollback > 0 {
+				r.clock.JumpWall(-rollback)
+			}
+			if err := r.eng.Close(); err != nil {
+				t.Fatalf("Close at rollback=%s: %v", rollback, err)
+			}
+			if r.plane.baselines != baselinesBefore {
+				t.Fatalf("Close at rollback=%s with unchanged counters withdrew to baseline (%d -> %d)",
+					rollback, baselinesBefore, r.plane.baselines)
+			}
+
+			// Restore wall clock and boot successor Engine on the same boot.
+			if rollback > 0 {
+				r.clock.JumpWall(rollback)
+			}
+			r.clock.Advance(2 * time.Second)
+			src2 := &r20DynamicSource{
+				boot: src1.boot,
+				counters: map[string]enforce.CounterValue{
+					upName: {Packets: 4, Bytes: 4096},
+				},
+			}
+			next := r20Successor(t, r, r.eng.cfg, src2, r.plane)
+			if err := next.Boot(t.Context()); err != nil {
+				t.Fatalf("successor Boot: %v", err)
+			}
+			if !next.serving || r.plane.baselines != baselinesBefore {
+				t.Fatalf("successor did not adopt retained serving after Close at rollback=%s: serving=%v baselines=%d->%d",
+					rollback, next.serving, baselinesBefore, r.plane.baselines)
+			}
+			hAdopted, err := next.usage.Head(t.Context())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if hAdopted.OpenEpoch != epochBefore || !hAdopted.LastSample.Equal(lastSampleBefore) {
+				t.Fatalf("adopted head mismatch: OpenEpoch=%s (want %s) LastSample=%s (want %s)",
+					hAdopted.OpenEpoch, epochBefore, hAdopted.LastSample, lastSampleBefore)
+			}
+
+			// Advance traffic by +2048 B on successor and verify exact-once attribution.
+			r.eng = next
+			r.manualUsage(t)
+			src2.setBindings(next.meterBindings)
+			next.meter.Close()
+			next.meter, err = meter.New(meter.Config{
+				NodeID:        next.nodeID,
+				IncarnationID: next.incID,
+				Store:         next.usage,
+				Source:        src2,
+				Interval:      10 * time.Second,
+				Now:           r.clock.Wall,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			r.clock.Advance(10 * time.Second)
+			src2.setCounter(upName, enforce.CounterValue{Packets: 6, Bytes: 4096 + 2048})
+			if err := next.meter.Sample(t.Context()); err != nil {
+				t.Fatal(err)
+			}
+			led := r21ReadLedger(t, next.cfg, next.nodeID, next.incID)
+			if got := led.byMemberRev[r21MemberRev{member: b.MemberID, rev: b.BindingRevision}]; got != 4096+2048 || len(led.gaps) != 0 {
+				t.Fatalf("post-adoption ledger: got=%d (want %d) gaps=%+v", got, 4096+2048, led.gaps)
+			}
+		})
+	}
+
+	t.Run("changed_counters_at_rollback_refuses_preservation_and_withdraws", func(t *testing.T) {
+		r := newRig(t)
+		alignMicrosecond(r)
+		alignControlClock(r)
+		r.srv.SetUsageUnavailable(1000)
+
+		serveBoundGeneration(t, r)
+		r.manualUsage(t)
+		b := r.eng.appliedModel.Bindings[0]
+		upName := meter.CounterName(b.DeviceID, meter.DirUpload)
+
+		src1 := &r20DynamicSource{
+			boot:     r.eng.bootID.String(),
+			bindings: r.eng.meterBindings,
+			counters: map[string]enforce.CounterValue{
+				upName: {Packets: 4, Bytes: 4096},
+			},
+		}
+		r.eng.meter.Close()
+		var err error
+		r.eng.meter, err = meter.New(meter.Config{
+			NodeID:        r.eng.nodeID,
+			IncarnationID: r.eng.incID,
+			Store:         r.eng.usage,
+			Source:        src1,
+			Interval:      10 * time.Second,
+			Now:           r.clock.Wall,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		r.clock.Advance(10 * time.Second)
+		if err := r.eng.meter.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		baselinesBefore := r.plane.baselines
+
+		// Advance counter bytes while stepping wall clock back 1s (within timeanchor
+		// 2s skew bound): CheckpointForRestart returns ErrHold, so preserveServingOnStop
+		// returns false and shutdownUsage runs handoff (installing baseline).
+		src1.setCounter(upName, enforce.CounterValue{Packets: 5, Bytes: 5120})
+		r.clock.JumpWall(-time.Second)
+		if err := r.eng.Close(); err != nil {
+			t.Fatal(err)
+		}
+		if r.plane.baselines <= baselinesBefore {
+			t.Fatalf("expected Close with changed counters at rollback to run baseline handoff, baselines remained %d", r.plane.baselines)
+		}
+	})
+}
+
+// TestR33_AgentSettleExpiredBindingsAtSameTimestampAndRollback proves that
+// Decide(r.eng.input()) -> r.eng.enforce -> settleExpiredBindings -> Meter.CheckpointForRestart:
+//   - settles an expired sibling binding in place without closing the open
+//     usage epoch or withdrawing the surviving sibling to baseline when counter
+//     readings are unchanged at now == LastSample (0s) or a 1s rollback, and
+//   - rejects in-place settlement (withdrawing to baseline and setting
+//     retainedPending) when counter readings changed at now <= LastSample.
+func TestR33_AgentSettleExpiredBindingsAtSameTimestampAndRollback(t *testing.T) {
+	for _, rollback := range []time.Duration{0, time.Second} {
+		t.Run("unchanged_counters_"+rollback.String(), func(t *testing.T) {
+			r := f42Siblings(t, false)
+			alignMicrosecond(r)
+			r.srv.SetUsageUnavailable(1000)
+			bindings := r.eng.meterBindings()
+			src := &r20DynamicSource{
+				boot:     r.eng.bootID.String(),
+				bindings: r.eng.meterBindings,
+				counters: map[string]enforce.CounterValue{},
+			}
+			for _, b := range bindings {
+				src.setCounter(meter.CounterName(b.DeviceID, meter.DirUpload), enforce.CounterValue{Packets: 2, Bytes: 2048})
+			}
+			r.eng.meter.Close()
+			var err error
+			r.eng.meter, err = meter.New(meter.Config{
+				NodeID:        r.eng.nodeID,
+				IncarnationID: r.eng.incID,
+				Store:         r.eng.usage,
+				Source:        src,
+				Interval:      10 * time.Second,
+				Now:           r.clock.Wall,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			// Advance monotonic + wall clock to the first sibling's expiry deadline
+			// and take a sample so head.LastSample == deadline wall time.
+			r.clock.Advance(r.eng.policyExpires - r.clock.Mono())
+			alignMicrosecond(r)
+			if err := r.eng.meter.Sample(t.Context()); err != nil {
+				t.Fatal(err)
+			}
+			hBefore, err := r.eng.usage.Head(t.Context())
+			if err != nil {
+				t.Fatal(err)
+			}
+			baselinesBefore := r.plane.baselines
+			appliesBefore := r.plane.applies
+
+			// Step wall clock back by rollback (0s or 1s) while keeping monotonic
+			// time at policyExpires and counter readings unchanged.
+			if rollback > 0 {
+				r.clock.JumpWall(-rollback)
+			}
+			d := Decide(r.eng.input())
+			if !d.Serve || !r.eng.onlyExpiredBindingsRemoved(d.Model) {
+				t.Fatalf("expected expired-only sibling removal: Serve=%v Reasons=%v", d.Serve, d.Reasons)
+			}
+			if err := r.eng.enforce(t.Context(), d); err != nil {
+				t.Fatalf("enforce expired sibling at rollback=%s: %v", rollback, err)
+			}
+			hAfter, err := r.eng.usage.Head(t.Context())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !r.eng.serving || len(r.plane.last.Bindings) != 1 || r.plane.baselines != baselinesBefore || r.plane.applies != appliesBefore+1 {
+				t.Fatalf("survivor transition failed at rollback=%s: serving=%v bindings=%d baselines=%d->%d applies=%d->%d",
+					rollback, r.eng.serving, len(r.plane.last.Bindings), baselinesBefore, r.plane.baselines, appliesBefore, r.plane.applies)
+			}
+			if hAfter.OpenEpoch == uuid.Nil || hAfter.OpenEpoch != hBefore.OpenEpoch || !hAfter.LastSample.Equal(hBefore.LastSample) {
+				t.Fatalf("expired settlement altered open epoch or LastSample: got %+v, want %+v", hAfter, hBefore)
+			}
+		})
+	}
+
+	t.Run("changed_counters_at_rollback_withdraws_and_keeps_retained_pending", func(t *testing.T) {
+		r := f42Siblings(t, false)
+		alignMicrosecond(r)
+		r.srv.SetUsageUnavailable(1000)
+		bindings := r.eng.meterBindings()
+		src := &r20DynamicSource{
+			boot:     r.eng.bootID.String(),
+			bindings: r.eng.meterBindings,
+			counters: map[string]enforce.CounterValue{},
+		}
+		for _, b := range bindings {
+			src.setCounter(meter.CounterName(b.DeviceID, meter.DirUpload), enforce.CounterValue{Packets: 2, Bytes: 2048})
+		}
+		r.eng.meter.Close()
+		var err error
+		r.eng.meter, err = meter.New(meter.Config{
+			NodeID:        r.eng.nodeID,
+			IncarnationID: r.eng.incID,
+			Store:         r.eng.usage,
+			Source:        src,
+			Interval:      10 * time.Second,
+			Now:           r.clock.Wall,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// Sample at the first sibling's expiry deadline, then advance counters
+		// while stepping wall clock back 1s so CheckpointForRestart returns ErrHold.
+		r.clock.Advance(r.eng.policyExpires - r.clock.Mono())
+		alignMicrosecond(r)
+		if err := r.eng.meter.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		for _, b := range bindings {
+			src.setCounter(meter.CounterName(b.DeviceID, meter.DirUpload), enforce.CounterValue{Packets: 3, Bytes: 3072})
+		}
+		r.clock.JumpWall(-time.Second)
+		appliesBefore := r.plane.applies
+		baselinesBefore := r.plane.baselines
+
+		d := Decide(r.eng.input())
+		if !d.Serve || !r.eng.onlyExpiredBindingsRemoved(d.Model) {
+			t.Fatalf("expected expired-only sibling removal: Serve=%v Reasons=%v", d.Serve, d.Reasons)
+		}
+		if err := r.eng.enforce(t.Context(), d); err != nil {
+			t.Fatal(err)
+		}
+		if r.eng.serving || r.plane.applies != appliesBefore || r.plane.baselines <= baselinesBefore || !r.eng.retainedPending {
+			t.Fatalf("expected failed settlement to withdraw and keep retainedPending: serving=%v applies=%d->%d baselines=%d->%d retainedPending=%v",
+				r.eng.serving, appliesBefore, r.plane.applies, baselinesBefore, r.plane.baselines, r.eng.retainedPending)
+		}
+	})
+}

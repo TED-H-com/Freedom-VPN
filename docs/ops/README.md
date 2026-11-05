@@ -1,7 +1,25 @@
 # Operations Runbooks Index (`docs/ops/`)
 
-**Current cut — [follow-up 48](../handover/follow-up-48.md) (2026-11-04 EST):** #478–#481 at b921c75f; 66 decisions, 138 findings. F24-01 closed and isolation's local scheduled-mode run bd73d7a4 passes (GitHub's 11-04 scheduled job 41836274140 stays failed, next run pending); assist.py retry and D-162 reach audited; F22-D146 answered under D-162 with 18 stored/enqueued/accepted records across 9 windows; r32 archived (0 findings).
-**Previous cut — [follow-up 47](../handover/follow-up-47.md) (2026-11-04 EST):** #474–#477 at 1c39a0e7; 66 decisions, 136 findings. D-163 fixes the scheduled mapping; F24-01 keeps isolation's local scheduled run red. D-162 is TEST ONLY and implemented; F22-D146 stays open. D-158 records its first live wait, 446 ms acquired. r31 archived, M-1 fixed; observation records documented.
+**Current cut:** [follow-up 49](../handover/follow-up-49.md), #482–#485 at `aaffdc7f`; source-backed changes, verification boundaries and carried gaps.
+**Previous cut — [follow-up 48](../handover/follow-up-48.md) (2026-11-04 EST):** #478–#481 at b921c75f; 66 decisions, 138 findings. F24-01 closed and isolation's local scheduled-mode run bd73d7a4 passes (GitHub's 11-04 scheduled job 41836274140 stays failed, next run pending); assist.py retry and D-162 reach audited; F22-D146 answered under D-162 with 18 stored/enqueued/accepted records across 9 windows; r32 archived (0 findings).
+
+## Follow-up 49 acceptance snapshot (2026-11-05 EST)
+
+Cut **#482–#485 / aaffdc7f**. [Source-backed summary](../handover/follow-up-49.md)
+links the immutable evidence and carried gaps. Earlier snapshots retain their
+original outcomes.
+
+| Delivery | Evidence boundary at this cut |
+|---|---|
+| Devstack 37 #482 | Clone runtime URL corrected offline to the container resolver proxy on 9444. Enrollment URL and copied-release SNAT preserved. Live transport, latch validation and stop logs remain outside the cut. Historical AT10–AT13 outcomes are unchanged. |
+| Handover 48 #483 | Previous cut #478–#481 at b921c75f retained with its snapshots and assertions. Actual integrated PR head is df8a4261; the native delivery and scratch verification trees are separate provenance. |
+| Agent-core 53 #484 / r33 | Six recorded Node CI failures repaired through test Boot budgets, unchanged restart checkpoints, D118 ordering and held-sample fixture timing. Production local-budget behavior is unchanged. Corrected focused repetitions, full-agent repetitions and the final lab are recorded in the source note; failed attempts remain visible. r33 has zero accepted findings and final-tree replay of 10 parent tests / 33 subtests. |
+| Contracts r15 #485 | API 1.11.0 adds optional nullable serving-read evidence while preserving old reports and absent/null/value states. D-164 contract compatibility only; Central projection, consumers and producer rollout remain pending. F17-01/D-163 stays open. F31 remains an unadopted structural proposal. |
+| Decisions and upstream sample | D-150–D-163 authority confirmed without technical changes; D-164 remains provisional. [NetBird comment 19411545](https://github.com/netbirdio/netbird/discussions/8473#discussioncomment-19411545) was posted at 2026-11-05T04:30:00Z. The response reached member ingress without WireGuard receive accounting; packet-specific kernel-drop proof is absent. F11-01/F22-AT01 remain open under D-148. |
+
+The register retains 67 decisions and 138 findings, with six finding descriptions
+updated and no new findings. Operator/member procedures and historical verdicts
+are preserved. Future phases are carried work, with no new delivery date promised.
 
 ## Follow-up 48 acceptance snapshot (2026-11-04 EST)
 

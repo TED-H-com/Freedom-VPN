@@ -1,0 +1,102 @@
+[
+  {
+    "Name": "devstack-37-clone-receiver-boundary",
+    "Required": [
+      "#482",
+      "https://127.0.0.1:9444",
+      "30 files, not 30 runs",
+      "frozen: false",
+      "F19 copied",
+      "No historical AT10–AT13 outcome is re-scored"
+    ],
+    "Forbidden": [
+      "source_requests_total",
+      "clone_requests_total",
+      "live clone receiver validated in #482"
+    ]
+  },
+  {
+    "Name": "handover-48-preserved-provenance",
+    "Required": [
+      "#483",
+      "df8a4261e574ee21066255b3c7009f4115c4dfa0",
+      "b921c75f180beb6c0051d585a86d6651b2c8d71a",
+      "assertions and source snapshots remain intact"
+    ],
+    "Forbidden": [
+      "e221cf24479c9cd99eb87cbf14c454cd19fb5c1b",
+      "outside-owned pin modified"
+    ]
+  },
+  {
+    "Name": "agent-core-53-and-design-boundaries",
+    "Required": [
+      "#484",
+      "production `local_budget.go` is net-unchanged",
+      "file marker",
+      "precise historical CI interleaving is inferred",
+      "manual meter",
+      "unadopted structural verification proposal",
+      "Independent failures retain precedence"
+    ],
+    "Forbidden": [
+      "-cpu=1,2,4",
+      "go test -race",
+      "200 iterations",
+      "F31-01 implemented on main"
+    ]
+  },
+  {
+    "Name": "contracts-15-compatible-only",
+    "Required": [
+      "#485",
+      "1.11.0",
+      "D-164",
+      "ObservationReport.serving_read",
+      "NodeDetail.serving_read",
+      "absent/null/value",
+      "D-112",
+      "D-117",
+      "F17-01 and D-163 remain open"
+    ],
+    "Forbidden": [
+      "ServingReadEvidence.error_code",
+      "pure_stale_generation exercised on main"
+    ]
+  },
+  {
+    "Name": "r33-and-cutoff",
+    "Required": [
+      "r33",
+      "zero accepted findings",
+      "10 parent tests and 33 subtests",
+      "41836274140",
+      "2026-11-04T13:14:20Z",
+      "d69f5652-aed6-4fdd-9e7c-edface751237",
+      "completed_failed_awaiting_evidence_delivery"
+    ],
+    "Forbidden": [
+      "r33 open finding",
+      "post-cut isolation run d69f5652 passed"
+    ]
+  },
+  {
+    "Name": "owner-confirmation-and-upstream-sample",
+    "Required": [
+      "D-150–D-163",
+      "authority-only substitutions",
+      "19411545",
+      "2026-11-05T04:30:00Z",
+      "52b93845b5cfeac1dd63e04c700857fcd098a7f6",
+      "3eb3960d-c411-4648-8d77-bba40b436ae3",
+      "packet 158",
+      "packet 161",
+      "Members F11-01 and Members F22-AT01 remain OPEN under D-148"
+    ],
+    "Forbidden": [
+      "4376734614",
+      "Members F11-01 closed",
+      "Members F22-AT01 closed"
+    ]
+  }
+]

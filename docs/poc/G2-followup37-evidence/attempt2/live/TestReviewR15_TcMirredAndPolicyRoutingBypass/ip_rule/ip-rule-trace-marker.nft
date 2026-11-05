@@ -1,0 +1,6 @@
+table inet fvr15trace {
+ chain trace_probe {
+  type filter hook prerouting priority -301; policy accept;
+  iifname "fv-fh" ip saddr 100.64.9.9 ip daddr 203.0.113.10 udp sport 40000 udp dport 39996 meta nftrace set 1
+ }
+}

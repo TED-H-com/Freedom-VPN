@@ -1,0 +1,75 @@
+{
+  "branch": "r33-meter-restart-review",
+  "head": "f0bed96a1a622490f133e3cdb160a1e738f41712",
+  "parent": "7bac86538bd9f0108a3bb441205b9ba979eae134",
+  "base": "29cd267162fa614c444122865b62f405e2f58802",
+  "reviewed_change": "b094ffac72f2f4f247a3e2b592a6659a84f1d51a",
+  "pre_change_parent": "9e52ea20675daae89710bc4630906e1c70b2e650",
+  "committed_at": "2026-11-05T06:59:22Z",
+  "committer": "Ted H",
+  "reviewer": "agy/gemini-4-argon-high",
+  "source": ".agent/REVIEW.md",
+  "archive": "docs/reviews/r33-meter-restart-review.md",
+  "archive_blob": "b7621e069ab8547671888bda72e473c21efb938e",
+  "sha256": "8bce5d989decb41fa7588307fc89521fc3972a5d59e80cf841ef6e7c7f433731",
+  "bytes": 51920,
+  "lines": 352,
+  "accepted_findings": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "total": 0
+  },
+  "final_tree_replay": {
+    "integrated_commit": "9a26725fd054e9e2ec287a0203fcf99d3d219ed8",
+    "delta_go_blob": "112260bd296d31cfd382d4faf03bf1efe50d7729",
+    "delta_go_sha256": "5743c7c6feb6dfed0c7b4f39aa489077d1966de66cd06b57fe0e051784779226",
+    "delta_go_bytes": 15049,
+    "delta_go_lines": 513,
+    "meter_go_blob": "ac6ff0b548b5c0bdd6a3c5e44ad4b04d34dec3f9",
+    "meter_go_sha256": "e5adf83a314abb4171d83a5f7e92203a440c6c621ba403fb3e242e60aa0fd219",
+    "meter_go_bytes": 13606,
+    "meter_go_lines": 545,
+    "packages": 3,
+    "parent_tests": 10,
+    "subtests": 33,
+    "failed": 0,
+    "skipped": 0
+  },
+  "proofs": [
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/review-node_agent_review_r33_test.go.txt",
+      "source": "node/agent/review_r33_test.go",
+      "source_commit": "f0bed96a1a622490f133e3cdb160a1e738f41712",
+      "sha256": "d00f20943e6fc21d3e2ca0169b7a25b8e25f45b57f01484c78e8a0ce6f481b67",
+      "bytes": 11920,
+      "lines": 327,
+      "parent_tests": 2,
+      "subtests": 7,
+      "present_on_main": false
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/review-node_internal_meter_review_r33_test.go.txt",
+      "source": "node/internal/meter/review_r33_test.go",
+      "source_commit": "f0bed96a1a622490f133e3cdb160a1e738f41712",
+      "sha256": "3560983d44aa03faa5b8d37d1c549d2dc1acd74e4fdd87e326f2b71c658d8260",
+      "bytes": 53157,
+      "lines": 1345,
+      "parent_tests": 7,
+      "subtests": 26,
+      "present_on_main": false
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/review-node_internal_usagestore_review_r33_test.go.txt",
+      "source": "node/internal/usagestore/review_r33_test.go",
+      "source_commit": "f0bed96a1a622490f133e3cdb160a1e738f41712",
+      "sha256": "6b4ac2806ad521ed99a3e53d4a172ebcc82faf6e17b482030642fa45fc879d07",
+      "bytes": 6562,
+      "lines": 206,
+      "parent_tests": 1,
+      "subtests": 0,
+      "present_on_main": false
+    }
+  ]
+}
