@@ -116,14 +116,17 @@ var redactPatterns = []*regexp.Regexp{
 	mustCompile("gh", "p_", `[A-Za-z0-9]+`),
 	mustCompile("gh", "o_", `[A-Za-z0-9]+`),
 	regexp.MustCompile(`(?s)-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----`),
+	regexp.MustCompile(`(?i)\b(token|setup_key|password|secret|authorization|seed_b64|api_key)=[^[:space:]"']+`),
 	regexp.MustCompile(`(?i)"(token|setup_key|password|secret|authorization|seed_b64|api_key)"[[:space:]]*:[[:space:]]*"[^"]*"`),
 }
 
 // Redact removes secret-shaped substrings from evidence text.
 func Redact(s string) string {
 	jsonSecret := redactPatterns[len(redactPatterns)-1]
+	kvSecret := redactPatterns[len(redactPatterns)-2]
 	s = jsonSecret.ReplaceAllString(s, `"$1": "[redacted]"`)
-	for _, p := range redactPatterns[:len(redactPatterns)-1] {
+	s = kvSecret.ReplaceAllString(s, `$1=[redacted]`)
+	for _, p := range redactPatterns[:len(redactPatterns)-2] {
 		s = p.ReplaceAllString(s, "[redacted]")
 	}
 	return s

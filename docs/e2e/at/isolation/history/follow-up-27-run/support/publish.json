@@ -1,0 +1,254 @@
+{
+  "id": "publish",
+  "title": "Publish the enrolled exit",
+  "spec": [
+    "§5.2",
+    "§14.2"
+  ],
+  "status": "pass",
+  "observations": [
+    {
+      "name": "agent_baseline_observed",
+      "detail": "true"
+    },
+    {
+      "name": "stored_rows",
+      "detail": "{\"node\": {\"peer_id\": null, \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\", \"desired_config_generation\": \"1\"}, \"observation\": {\"checks\": [{\"name\": \"dns_policy\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-05T10:13:48.5252679Z\"}, {\"name\": \"internet_only\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-05T10:13:48.5252679Z\"}, {\"name\": \"lease\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-11-05T10:13:48.5252679Z\"}, {\"name\": \"meter_path\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-05T10:13:48.5252679Z\"}, {\"name\": \"policy_signature\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-05T10:13:48.5252679Z\"}, {\"name\": \"qos\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-11-05T10:13:48.5252679Z\"}, {\"name\": \"release_supported\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-05T10:13:48.5252679Z\"}, {\"name\": \"source_binding\", \"status\": \"not_run\", \"error_code\": null, \"observed_at\": \"2026-11-05T10:13:48.5252679Z\"}, {\"name\": \"storage\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-05T10:13:48.5252679Z\"}, {\"name\": \"tunnel_probe\", \"detail\": \"Egress probe used no extra target.\", \"status\": \"passed\", \"error_code\": null, \"observed_at\": \"2026-11-05T10:13:48.5252679Z\"}], \"peer_id\": null, \"data_health\": \"healthy\", \"safety_status\": \"passed\", \"provisioning_state\": \"ready\", \"applied_config_generation\": \"1\"}, \"exit_group_count\": 0, \"peer_observe_events\": 3}"
+    },
+    {
+      "name": "control_status",
+      "detail": "online"
+    },
+    {
+      "name": "safety_status",
+      "detail": "passed"
+    },
+    {
+      "name": "data_health",
+      "detail": "healthy"
+    },
+    {
+      "name": "provisioning_state",
+      "detail": "ready"
+    },
+    {
+      "name": "lifecycle_state",
+      "detail": "registered"
+    },
+    {
+      "name": "publication_intent",
+      "detail": "unpublished"
+    },
+    {
+      "name": "publication_observed",
+      "detail": "absent"
+    },
+    {
+      "name": "config_desired",
+      "detail": "1"
+    },
+    {
+      "name": "config_applied",
+      "detail": "1"
+    },
+    {
+      "name": "check_dns_policy",
+      "detail": "passed"
+    },
+    {
+      "name": "check_internet_only",
+      "detail": "passed"
+    },
+    {
+      "name": "check_lease",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_meter_path",
+      "detail": "passed"
+    },
+    {
+      "name": "check_policy_signature",
+      "detail": "passed"
+    },
+    {
+      "name": "check_qos",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_release_supported",
+      "detail": "passed"
+    },
+    {
+      "name": "check_source_binding",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_storage",
+      "detail": "passed"
+    },
+    {
+      "name": "check_tunnel_probe",
+      "detail": "passed"
+    },
+    {
+      "name": "node_write",
+      "detail": "{\"started_at\":\"2026-11-05T10:13:48.791288099Z\",\"finished_at\":\"2026-11-05T10:13:48.797563161Z\",\"max_attempts\":3,\"limit_seconds\":10,\"status\":\"pass\",\"outcome\":\"accepted\",\"attempts\":[{\"method\":\"PATCH\",\"path\":\"/api/v1/admin/nodes/01a1ab33-4234-7bd4-a7ad-685f191a3e45\",\"if_match\":\"\\\"7\\\"\",\"idempotency_key\":\"28398ba1-0b51-4d26-b452-fb277169bb93\",\"body_sha256\":\"4939d40789ac64dedacaf0576b0f088ab48bf3b256d2263b70a3aa36ef39b67d\",\"started_at\":\"2026-11-05T10:13:48.791296871Z\",\"finished_at\":\"2026-11-05T10:13:48.797546078Z\",\"status\":202,\"error_code\":\"\",\"transport_error\":false}]}"
+    },
+    {
+      "name": "capacity_patch",
+      "detail": "202"
+    },
+    {
+      "name": "capacity_input",
+      "detail": "TEST ONLY 200 Mbps parent / 100 Mbps member caps through PATCH; required by the agent QoS model"
+    },
+    {
+      "name": "request",
+      "detail": "{\"publication_intent\":\"published\",\"group_ids\":[\"01a1ab33-4202-7287-b0f9-89c6b151a9c1\"],\"reason\":\"e2e acceptance publish\"}; If-Match=\"8\""
+    },
+    {
+      "name": "node_write",
+      "detail": "{\"started_at\":\"2026-11-05T10:13:48.801071207Z\",\"finished_at\":\"2026-11-05T10:13:48.806715177Z\",\"max_attempts\":3,\"limit_seconds\":10,\"status\":\"pass\",\"outcome\":\"accepted\",\"attempts\":[{\"method\":\"PUT\",\"path\":\"/api/v1/admin/nodes/01a1ab33-4234-7bd4-a7ad-685f191a3e45/publication\",\"if_match\":\"\\\"8\\\"\",\"idempotency_key\":\"31475f74-35f2-4656-8d87-c2496ef5517c\",\"body_sha256\":\"d9d627281765ca3d05ba1a9c472c953dbc2acd1e9a2c5772d8957e282e8186af\",\"started_at\":\"2026-11-05T10:13:48.801077102Z\",\"finished_at\":\"2026-11-05T10:13:48.806709702Z\",\"status\":202,\"error_code\":\"\",\"transport_error\":false}]}"
+    },
+    {
+      "name": "put",
+      "detail": "202"
+    },
+    {
+      "name": "operation_id",
+      "detail": "166fd9c9-5919-4020-85e8-079ff441910a"
+    },
+    {
+      "name": "operation_status",
+      "detail": "succeeded"
+    },
+    {
+      "name": "operation_kind",
+      "detail": "node.publish"
+    },
+    {
+      "name": "step_agent_policy",
+      "detail": "succeeded"
+    },
+    {
+      "name": "step_data_path_probe",
+      "detail": "succeeded"
+    },
+    {
+      "name": "step_netbird_route_readback",
+      "detail": "succeeded"
+    },
+    {
+      "name": "node_after",
+      "detail": "200"
+    },
+    {
+      "name": "control_status",
+      "detail": "online"
+    },
+    {
+      "name": "safety_status",
+      "detail": "passed"
+    },
+    {
+      "name": "data_health",
+      "detail": "healthy"
+    },
+    {
+      "name": "provisioning_state",
+      "detail": "ready"
+    },
+    {
+      "name": "lifecycle_state",
+      "detail": "registered"
+    },
+    {
+      "name": "publication_intent",
+      "detail": "published"
+    },
+    {
+      "name": "publication_observed",
+      "detail": "active"
+    },
+    {
+      "name": "config_desired",
+      "detail": "3"
+    },
+    {
+      "name": "config_applied",
+      "detail": "3"
+    },
+    {
+      "name": "check_dns_policy",
+      "detail": "passed"
+    },
+    {
+      "name": "check_internet_only",
+      "detail": "passed"
+    },
+    {
+      "name": "check_lease",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_meter_path",
+      "detail": "passed"
+    },
+    {
+      "name": "check_policy_signature",
+      "detail": "passed"
+    },
+    {
+      "name": "check_qos",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_release_supported",
+      "detail": "passed"
+    },
+    {
+      "name": "check_source_binding",
+      "detail": "not_run"
+    },
+    {
+      "name": "check_storage",
+      "detail": "passed"
+    },
+    {
+      "name": "check_tunnel_probe",
+      "detail": "passed"
+    },
+    {
+      "name": "desired_publication_intent",
+      "detail": "published"
+    },
+    {
+      "name": "desired_generation",
+      "detail": "3"
+    },
+    {
+      "name": "member_rate_policies",
+      "detail": "0"
+    },
+    {
+      "name": "device_bindings",
+      "detail": "0"
+    },
+    {
+      "name": "forward_generation",
+      "detail": "3"
+    },
+    {
+      "name": "member_accept_rules",
+      "detail": "0"
+    },
+    {
+      "name": "note",
+      "detail": "node.publish succeeded and publication_observed is active"
+    }
+  ],
+  "at": "2026-11-05T10:13:50Z",
+  "run_id": "d69f5652-aed6-4fdd-9e7c-edface751237",
+  "source_commit": "37b3c25f60194e0d2261cf9aca30dfe8fc5d93be"
+}

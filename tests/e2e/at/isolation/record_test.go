@@ -14,12 +14,12 @@ import (
 func TestRedact_StripsSecrets(t *testing.T) {
 	home := "/" + "home/" + "someone/key"
 	live := "sk_" + "live_" + "abc"
-	in := "path=" + home + " postgres://fvpn:s3cret@db/fvpn Bearer tok \"setup_key\":\"abc\" " + live
+	in := "path=" + home + " postgres://fvpn:s3cret@db/fvpn Bearer tok \"setup_key\":\"abc\" token=kvsecret " + live
 	out := Redact(in)
-	if strings.Contains(out, "someone") || strings.Contains(out, "s3cret") || strings.Contains(out, "abc") {
+	if strings.Contains(out, "someone") || strings.Contains(out, "s3cret") || strings.Contains(out, "abc") || strings.Contains(out, "kvsecret") {
 		t.Fatalf("redact left a secret: %s", out)
 	}
-	if !strings.Contains(out, "[redacted]") {
+	if !strings.Contains(out, "[redacted]") || !strings.Contains(out, "token=[redacted]") {
 		t.Fatalf("redact produced %s", out)
 	}
 }

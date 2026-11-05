@@ -2,7 +2,6 @@
 import json
 import os
 from pathlib import Path
-import subprocess
 import time
 
 
@@ -53,8 +52,6 @@ def processes():
 def wait(evidence=None, exclusive=True):
     started=time.monotonic(); snapshots=[]
     while True:
-        raw=subprocess.run(['bash','-c',r"ps -eo pid,etimes,args | grep -E '[g]ates\.sh|[m]k/at-'"],capture_output=True,text=True).stdout
-        print('shared-host suite inventory:\n'+raw,flush=True)
         roots=processes()
         elapsed=time.monotonic()-started
         sensitive={p:k for p,k in roots.items() if k in ('agent-core netlab','netlab 27','members assembled')}
