@@ -286,49 +286,19 @@ never run live
      `nodeWriteBypasses` over `assist.go.txt` (`writes == 1`, `len(bypasses) ==
      0`).
 
-**`D-162` config and consumer reach audit
-(`docs_e2e_at_isolation_followup26-2026-11-04.md.txt` lines `63–122`):**
-- `D-162` (`#476`) sets `"observation_seconds": 5` in
-  `tests/e2e/cmd/fvpn-e2e-prepare/main.go:397` (`TEST ONLY`, product default
-  `30` in `node/agent/config.go:145`), writing both the enrollment config
-  `/etc/vpn-node/agent-enroll.json` (`tests/e2e/cmd/fvpn-e2e-prepare/main.go:401,407`,
-  used during prepare-time `fvpn-agent -mode enroll` at `:425`) and the prepared
-  runtime config `/etc/vpn-node/agent-run.json`
-  (`tests/e2e/cmd/fvpn-e2e-prepare/main.go:403,410`, with `"control_url":
-  "https://127.0.0.1:9444"` at `:404`).
-- In the isolation node image (`tests/e2e/at/isolation/observer_main.go:57`),
-  `configureObservation()` (`tests/e2e/at/isolation/observer_main.go:114-136`)
-  runs before `fvpn-e2e-nodeconfig`, reads `/etc/vpn-node/agent-run.json`
-  (`:119`), overrides `cfg["heartbeat_seconds"], cfg["poll_seconds"],
-  cfg["observation_seconds"] = 1, 1, 1` (`:120`), and sets `cfg["control_url"] =
-  "https://127.0.0.1:9445"` (`:125`) for the observer proxy listener at
-  `tests/e2e/at/isolation/observer_main.go:95`:
-  1. Source enrollment config (`/etc/vpn-node/agent-enroll.json`,
-     `tests/e2e/cmd/fvpn-e2e-prepare/main.go:401,407`): carries `D-162`'s
-     `observation_seconds: 5` (prepare-time enrollment only);
-  2. Main source runtime config (`/etc/vpn-node/agent-run.json`): prepared at
-     `5` by `tests/e2e/cmd/fvpn-e2e-prepare/main.go:397,403,410` and overridden
-     before the acceptance run by `configureObservation()`
-     (`tests/e2e/at/isolation/observer_main.go:114-136`, `:120`) to
-     **`heartbeat_seconds: 1`, `poll_seconds: 1`, `observation_seconds: 1`**
-     (`1 s` before and after `D-162`), preserved across the boot-release
-     `release_id` rewrite (`tests/e2e/serving.go:118`,
-     `tests/e2e/harness.go:392`,
-     `tests/e2e/cmd/fvpn-e2e-nodeconfig/main.go:108-127`);
-  3. Auxiliary release config (`var/e2e/agent-<boot-release-id>.json` under
-     `node`, `tests/e2e/serving.go:62,111`, `tests/e2e/harness.go:551,565`):
-     `writeNodeReleaseConfig` copies `/etc/vpn-node/agent-run.json` after
-     `configureObservation()` and sets `release_id`, inheriting **`1 s`**;
-  4. Cloned second-exit container (`<lab prefix>-node-clone`,
-     `tests/e2e/second_exit.go:24,106`): `tests/e2e/second_exit.go:59` copies
-     `/etc/vpn-node/.` from the source container after `configureObservation()`,
-     `:65` removes copied `updater-recover.json`
-     (`tests/e2e/cmd/fvpn-e2e-nodeconfig/main.go:108,114,123`), `:72` rewrites
-     only `datapath.snat` on `/etc/vpn-node/agent-run.json`, and `:121,139`
-     copies `var/e2e/agent-<boot-release-id>.json` under `node-clone` from the
-     clone's `/etc/vpn-node/agent-run.json`, so enrollment stays `5 s` and
-     runtime stays **`1 s`**.
-- **Check changes: none.**
+**`D-162` config and consumer reach audit:** prepare writes
+`observation_seconds: 5` to both prepared configs. Isolation's observer
+(`configureObservation()`) overrides only the runtime config to heartbeat,
+poll and observation **1/1/1 s** before acceptance. The main runtime therefore
+remains **1 s before and after D-162**, enrollment remains **5 s**, and the
+auxiliary and clone runtime configs inherit **1 s**. The clone copies the
+source's existing durable auxiliary config; config inheritance alone does not
+prove a working observation route.
+
+**Check changes: none.** The frozen
+[D-162 source audit](../../tests/handover/testdata/history/follow-up-48/docs_e2e_at_isolation_followup26-2026-11-04.md.txt#d-162-reach-source-audit)
+records every config (lines **81–97**) and routed consumer (lines **99–114**).
+
 - **Isolation 26 clone receiver wiring (9445 vs 9444) routed to `w3-devstack-e2e`
   (static concern):** `tests/e2e/second_exit.go:59,72` copies the source
   container's `/etc/vpn-node/agent-run.json` after `configureObservation()` set
@@ -408,7 +378,7 @@ admission wait):
   evidence`), both moving from **`blocked` to `pass`**. Overall `AT09` stays
   **`blocked`** (`72 pass / 6 blocked / 0 fail` in
   `docs_e2e_at_members_F24-results.json`, vs `70 / 8 / 0` in `6a25221b` at
-  `docs_e2e_at_members_followup24-2026-11-04.md.txt` line `19`).
+  `docs_e2e_at_members_followup24-2026-11-04.md.txt` line `115`).
 - **`F22-D146` answered under `D-162`
   (`docs_e2e_at_members_F24-observation-config.json`,
   `docs_e2e_at_members_F24-observation-windows.json` and
@@ -499,12 +469,10 @@ branch **r32-dedup-records-review**, head
 **1c39a0e73825dbcf911dfd2bec6e75aed64c979b**. This post-merge review of
 **agent-core 52 (#477, merge commit `341d099a3bff0afcb82cc624aaab2f81cc1a516a`,
 followed by roadmap row commit `1c39a0e73825dbcf911dfd2bec6e75aed64c979b`)** is
-by **agy/gemini-4-argon-high**, committed by **Ted H** (note: the raw archive's
-header at `docs/reviews/r32-dedup-records-review.md:5-6` and `:67` contains a
-wrong full hash for `341d099a` and a non-existent `db921f45…` commit — the
-actual `r31` branch head was `0e33b9fe3ef62244aab7a35eb1119ef6a7036621` and the
-`TestR31_M1_UnbindableClosedRecoveryFloodsPendingObservationOutbox` change on
-`main` was at `node/agent/review_r31_test.go:81`). Findings: **0 Critical, 0
+by **agy/gemini-4-argon-high**, committed by **Ted H**. The archive's errata
+are recorded in the
+[r32 dispositions](../reviews/README.md#r32-dispositions-at-the-follow-up-48-cutoff-2026-11-04-est).
+Findings: **0 Critical, 0
 High, 0 Medium, 0 Low**, **0 owner questions**, **0 routed actions**. It is now
 a **D-098 input**.
 

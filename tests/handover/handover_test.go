@@ -17109,8 +17109,8 @@ func TestHandover_Followup48Claims(t *testing.T) {
 		}
 	}
 	// Pin the complete narrative and manifests, including every source quotation.
-	checkHash("docs/handover/follow-up-48.md", "cc1096b2eca1743b567142574bddc99d0e7f82ff867edb6a0216dd48175c1f56")
-	checkHash("tests/handover/testdata/followup48-claims.json", "9e156c795b0e527c7ec4b1fe25eaf1c2f5a9caf6a064bb5798495a519fa51345")
+	checkHash("docs/handover/follow-up-48.md", "1b5c64eb4a743c48f266c57e013e093ed57b67f3a0d26d2aa16359cceadac608")
+	checkHash("tests/handover/testdata/followup48-claims.json", "815e0ffd5b4f7092724759237c3bd26f5110eb5dbe1ae755ba103c87f6d07847")
 	checkHash("tests/handover/testdata/followup48-decisions.json", "316844ecf5a80f1d24cebe34c6886c6d2d21e6f56619c91d6f4cc7e1230a1f96")
 	checkHash("tests/handover/testdata/followup48-evidence.json", "b247a0e9b5517d38587aa50e8d185259ae411e646734fb3d92566871ee1aefa1")
 	checkHash("tests/handover/testdata/followup48-findings.json", "ac295bfa6628a98bfcae14b7dda4107e54add1b1b83736dc37ec7b6147d926ac")
