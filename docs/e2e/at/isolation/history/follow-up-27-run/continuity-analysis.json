@@ -1,0 +1,207 @@
+{
+  "run_id": "d69f5652-aed6-4fdd-9e7c-edface751237",
+  "scope": "Repeated-renewal availability, separate from final expiry; D-120 is not applied to this 80ms dual-phase diagnostic stream.",
+  "probes": 1396,
+  "echo_ok": 1393,
+  "losses": [
+    {
+      "probe": {
+        "deadline_mono_ns": "198033208728360",
+        "packet_id": 3,
+        "phase": "phased",
+        "read_completion": {
+          "mono_ns": "197963488242933",
+          "wall": "2026-11-05T10:28:41.036870777Z"
+        },
+        "result": "timeout",
+        "scheduled_mono_ns": "197963407728360",
+        "send": {
+          "mono_ns": "197963408048334",
+          "wall": "2026-11-05T10:28:40.956672245Z"
+        },
+        "source_port": 42003,
+        "trace_clock": {
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "clock": "CLOCK_MONOTONIC",
+          "offsets": "monotonic           0         0\nboottime            0         0\n",
+          "time_namespace": "time:[4026535278]"
+        }
+      },
+      "ingress": {
+        "mono_ns": "197963408701685",
+        "wall": "2026-11-05T10:28:40.957325392Z"
+      },
+      "egress": null,
+      "nearest_guard_receipts": null
+    },
+    {
+      "probe": {
+        "deadline_mono_ns": "198033208728360",
+        "packet_id": 4,
+        "phase": "arbitrary_37ms",
+        "read_completion": {
+          "mono_ns": "197963526769318",
+          "wall": "2026-11-05T10:28:41.0753947Z"
+        },
+        "result": "timeout",
+        "scheduled_mono_ns": "197963444728360",
+        "send": {
+          "mono_ns": "197963445877159",
+          "wall": "2026-11-05T10:28:40.994501144Z"
+        },
+        "source_port": 42004,
+        "trace_clock": {
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "clock": "CLOCK_MONOTONIC",
+          "offsets": "monotonic           0         0\nboottime            0         0\n",
+          "time_namespace": "time:[4026535278]"
+        }
+      },
+      "ingress": {
+        "mono_ns": "197963447018047",
+        "wall": "2026-11-05T10:28:40.995641794Z"
+      },
+      "egress": null,
+      "nearest_guard_receipts": null
+    },
+    {
+      "probe": {
+        "deadline_mono_ns": "198033208728360",
+        "packet_id": 5,
+        "phase": "phased",
+        "read_completion": {
+          "mono_ns": "197963589293698",
+          "wall": "2026-11-05T10:28:41.137918939Z"
+        },
+        "result": "timeout",
+        "scheduled_mono_ns": "197963507728360",
+        "send": {
+          "mono_ns": "197963508423330",
+          "wall": "2026-11-05T10:28:41.057047568Z"
+        },
+        "source_port": 42005,
+        "trace_clock": {
+          "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+          "clock": "CLOCK_MONOTONIC",
+          "offsets": "monotonic           0         0\nboottime            0         0\n",
+          "time_namespace": "time:[4026535278]"
+        }
+      },
+      "ingress": {
+        "mono_ns": "197963509709815",
+        "wall": "2026-11-05T10:28:41.058333518Z"
+      },
+      "egress": null,
+      "nearest_guard_receipts": null
+    }
+  ],
+  "unobserved_ingress": [],
+  "without_egress": [
+    3,
+    4,
+    5
+  ],
+  "capture_completion": [
+    {
+      "clock": {
+        "mono_ns": "198037151562288",
+        "wall": "2026-11-05T10:29:54.700185774Z"
+      },
+      "drops": 0,
+      "event": "complete",
+      "packets": 13641,
+      "statistics_available": true
+    }
+  ],
+  "renewals": [
+    {
+      "received_at": "2026-11-05T10:28:41.013790226Z",
+      "response_at": "2026-11-05T10:28:41.019772456Z",
+      "lease": {
+        "authorization_generation": "2",
+        "config_generation": "34",
+        "expires_at": "2026-11-05T10:29:41.016852211Z",
+        "issued_at": "2026-11-05T10:28:41.016852211Z",
+        "lease_id": "74c9fb86-9e4b-42a9-80a0-df74871df8c9",
+        "max_offline_seconds": 60,
+        "members": [
+          {
+            "effective_service_end": "2026-11-05T11:14:07.816296Z",
+            "entitlement_revision": "2",
+            "lease_end": "2026-11-05T10:29:41.016852211Z",
+            "member_id": "01a1ab33-5f2a-777e-8f0f-b9c19dc796a3"
+          },
+          {
+            "effective_service_end": "2026-11-05T11:14:23.670151Z",
+            "entitlement_revision": "1",
+            "lease_end": "2026-11-05T10:29:41.016852211Z",
+            "member_id": "01a1ab33-d722-7d2b-afcb-095eaf01138f"
+          }
+        ],
+        "node_id": "01a1ab33-4234-7bd4-a7ad-685f191a3e45",
+        "node_incarnation_id": "01a1ab33-43ca-76d8-a90a-ea7d1fc96abc",
+        "schema_version": 1
+      }
+    },
+    {
+      "received_at": "2026-11-05T10:29:09.901350284Z",
+      "response_at": "2026-11-05T10:29:09.905336834Z",
+      "lease": {
+        "authorization_generation": "2",
+        "config_generation": "34",
+        "expires_at": "2026-11-05T10:30:09.902793169Z",
+        "issued_at": "2026-11-05T10:29:09.902793169Z",
+        "lease_id": "d89cd554-3ea3-4685-a003-cb0ec080ad56",
+        "max_offline_seconds": 60,
+        "members": [
+          {
+            "effective_service_end": "2026-11-05T11:14:07.816296Z",
+            "entitlement_revision": "2",
+            "lease_end": "2026-11-05T10:30:09.902793169Z",
+            "member_id": "01a1ab33-5f2a-777e-8f0f-b9c19dc796a3"
+          },
+          {
+            "effective_service_end": "2026-11-05T11:14:23.670151Z",
+            "entitlement_revision": "1",
+            "lease_end": "2026-11-05T10:30:09.902793169Z",
+            "member_id": "01a1ab33-d722-7d2b-afcb-095eaf01138f"
+          }
+        ],
+        "node_id": "01a1ab33-4234-7bd4-a7ad-685f191a3e45",
+        "node_incarnation_id": "01a1ab33-43ca-76d8-a90a-ea7d1fc96abc",
+        "schema_version": 1
+      }
+    },
+    {
+      "received_at": "2026-11-05T10:29:39.919172891Z",
+      "response_at": "2026-11-05T10:29:39.925068328Z",
+      "lease": {
+        "authorization_generation": "2",
+        "config_generation": "34",
+        "expires_at": "2026-11-05T10:30:39.921834424Z",
+        "issued_at": "2026-11-05T10:29:39.921834424Z",
+        "lease_id": "4a45a251-aab8-45c3-abc9-5abdd7623c61",
+        "max_offline_seconds": 60,
+        "members": [
+          {
+            "effective_service_end": "2026-11-05T11:14:07.816296Z",
+            "entitlement_revision": "2",
+            "lease_end": "2026-11-05T10:30:39.921834424Z",
+            "member_id": "01a1ab33-5f2a-777e-8f0f-b9c19dc796a3"
+          },
+          {
+            "effective_service_end": "2026-11-05T11:14:23.670151Z",
+            "entitlement_revision": "1",
+            "lease_end": "2026-11-05T10:30:39.921834424Z",
+            "member_id": "01a1ab33-d722-7d2b-afcb-095eaf01138f"
+          }
+        ],
+        "node_id": "01a1ab33-4234-7bd4-a7ad-685f191a3e45",
+        "node_incarnation_id": "01a1ab33-43ca-76d8-a90a-ea7d1fc96abc",
+        "schema_version": 1
+      }
+    }
+  ],
+  "guard_receipt_intervals": [],
+  "timing_limit": "Passive netlink receipts include Docker delivery; not executor brackets, kernel commit instants or final-render/install samples. Initial recorder interval missing."
+}

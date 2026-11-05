@@ -1,0 +1,69 @@
+{
+  "run_id": "d69f5652-aed6-4fdd-9e7c-edface751237",
+  "build": "37b3c25f60194e0d2261cf9aca30dfe8fc5d93be",
+  "source_dirty": false,
+  "started_at": "2026-11-05T10:11:41.368626Z",
+  "command": "FVPN_AT_SCHEDULED=1 make -f mk/at-isolation.mk at-isolation",
+  "operation_observer_exit_code": 0,
+  "completed_at": "2026-11-05T10:33:51.962107Z",
+  "files": [
+    {
+      "logical_name": "AT13.json",
+      "status": "available",
+      "path": "AT13.json",
+      "bytes": 568488,
+      "sha256": "8294b3d4b720e536adce0ed21fe1ff12b34256fcdd868d90432be38528c5658d"
+    },
+    {
+      "logical_name": "clone-runtime.json",
+      "status": "available",
+      "path": "clone-runtime.json",
+      "bytes": 335299,
+      "sha256": "69f73b0dd50770d845d0d7632586d809e0c4f882b236be1a69005094d95a7be5"
+    },
+    {
+      "logical_name": "identity-freeze.json",
+      "status": "available",
+      "path": "identity-freeze.json",
+      "bytes": 42483,
+      "sha256": "7559a105f6acbb5dafc9de1b47aff8b6aba8295c862aa141d5b64a5b664277b5"
+    },
+    {
+      "logical_name": "receiver-closure.json",
+      "status": "available",
+      "path": "receiver-closure.json",
+      "bytes": 5803,
+      "sha256": "53e718083ba54cf4234adbc84794883233ea1f83658c643bd6ffe50a4ad0c416"
+    },
+    {
+      "logical_name": "container-lifecycle-events.json",
+      "status": "available",
+      "path": "container-lifecycle-events.json",
+      "bytes": 5367,
+      "sha256": "11196af45901c7cd41c24e2692d03301761e8698852a3d80c48b887dda62eace"
+    },
+    {
+      "logical_name": "restart-lifecycle.json",
+      "status": "available",
+      "path": "restart-lifecycle.json",
+      "bytes": 3006,
+      "sha256": "84464c777129c36a82abbbfac219d0d36c6541cd40c0bee95c91b7eeb3518e6c"
+    },
+    {
+      "logical_name": "populated-holds.json",
+      "status": "available",
+      "path": "populated-holds.json.gz",
+      "bytes": 255656,
+      "sha256": "fcbf1dbf441a94ed9c8fd0cd4321784afa5fa44a48eff5eed729521cdd7ab72b"
+    },
+    {
+      "logical_name": "receiver-capture.json",
+      "status": "available",
+      "path": "receiver-capture.json.gz",
+      "bytes": 205825,
+      "sha256": "9f81328e6ce4c592e8da226a0e63c895e479af9f2e2f68ff234316c33c550ab1"
+    }
+  ],
+  "phase": "after lifecycle finalization",
+  "provenance": "assembled runner; original inputs, no historical replacement"
+}

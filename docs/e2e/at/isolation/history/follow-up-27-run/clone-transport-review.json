@@ -1,0 +1,2012 @@
+{
+  "run_id": "d69f5652-aed6-4fdd-9e7c-edface751237",
+  "build": "37b3c25f60194e0d2261cf9aca30dfe8fc5d93be",
+  "source_dirty": false,
+  "status": "not established",
+  "criteria": {
+    "clone_created": {
+      "status": "established",
+      "evidence": [
+        {
+          "phase": "after-clone-creation",
+          "id": "226c3cded7d73b907529740b7c6bfba290a5725b699f07081c95200d49914ddd",
+          "started_at": "2026-11-05T10:32:59.398564296Z",
+          "running": true,
+          "read_start": "2026-11-05T10:32:59.726704124Z",
+          "read_end": "2026-11-05T10:32:59.856743615Z"
+        },
+        {
+          "phase": "after-clone-observation",
+          "id": "226c3cded7d73b907529740b7c6bfba290a5725b699f07081c95200d49914ddd",
+          "started_at": "2026-11-05T10:32:59.398564296Z",
+          "running": true,
+          "read_start": "2026-11-05T10:33:04.347637559Z",
+          "read_end": "2026-11-05T10:33:04.498879799Z"
+        },
+        {
+          "phase": "before-terminal-stop",
+          "id": "226c3cded7d73b907529740b7c6bfba290a5725b699f07081c95200d49914ddd",
+          "started_at": "2026-11-05T10:32:59.398564296Z",
+          "running": true,
+          "read_start": "2026-11-05T10:33:04.709283288Z",
+          "read_end": "2026-11-05T10:33:04.859169986Z"
+        },
+        {
+          "phase": "after-terminal-stop",
+          "id": "226c3cded7d73b907529740b7c6bfba290a5725b699f07081c95200d49914ddd",
+          "started_at": "2026-11-05T10:32:59.398564296Z",
+          "running": true,
+          "read_start": "2026-11-05T10:33:06.062096915Z",
+          "read_end": "2026-11-05T10:33:06.193303624Z"
+        }
+      ],
+      "missing": []
+    },
+    "identity_fingerprints_match": {
+      "status": "established",
+      "evidence": [
+        {
+          "row": 0,
+          "read_start": "2026-11-05T10:32:59.963503948Z",
+          "read_end": "2026-11-05T10:32:59.99044401Z",
+          "Source": {
+            "machine_id_sha256": "0ec2a622617d5fe6dad06f7d9e73a144a0deecafeb1d9d09a5ab50c9870c1817",
+            "agent_spki_sha256": "912504ec3ad7a93baf176b63eb344b6614605fd7e7641e9bff11c8cd6cc6ce80",
+            "netbird_public_key_sha256": "23d44c9ca478b952bf98555c092e18ee2207d9cda1e653d6cda7e723fcb18aa2"
+          },
+          "Clone": {
+            "machine_id_sha256": "0ec2a622617d5fe6dad06f7d9e73a144a0deecafeb1d9d09a5ab50c9870c1817",
+            "agent_spki_sha256": "912504ec3ad7a93baf176b63eb344b6614605fd7e7641e9bff11c8cd6cc6ce80",
+            "netbird_public_key_sha256": "23d44c9ca478b952bf98555c092e18ee2207d9cda1e653d6cda7e723fcb18aa2"
+          }
+        },
+        {
+          "row": 1,
+          "read_start": "2026-11-05T10:33:01.121046608Z",
+          "read_end": "2026-11-05T10:33:01.146357811Z",
+          "Source": {
+            "machine_id_sha256": "0ec2a622617d5fe6dad06f7d9e73a144a0deecafeb1d9d09a5ab50c9870c1817",
+            "agent_spki_sha256": "912504ec3ad7a93baf176b63eb344b6614605fd7e7641e9bff11c8cd6cc6ce80",
+            "netbird_public_key_sha256": "23d44c9ca478b952bf98555c092e18ee2207d9cda1e653d6cda7e723fcb18aa2"
+          },
+          "Clone": {
+            "machine_id_sha256": "0ec2a622617d5fe6dad06f7d9e73a144a0deecafeb1d9d09a5ab50c9870c1817",
+            "agent_spki_sha256": "912504ec3ad7a93baf176b63eb344b6614605fd7e7641e9bff11c8cd6cc6ce80",
+            "netbird_public_key_sha256": "23d44c9ca478b952bf98555c092e18ee2207d9cda1e653d6cda7e723fcb18aa2"
+          }
+        }
+      ],
+      "missing": []
+    },
+    "final_agent_stop": {
+      "status": "established",
+      "evidence": [
+        {
+          "label": "direct_agent",
+          "container": "fvpn-w4-isolation-node",
+          "source": "receiver-closure.json",
+          "identity": {
+            "launch_id": "82848aab-2980-45f3-a548-f2bddc52000a",
+            "pid": 911,
+            "start_ticks": "19822228"
+          },
+          "parent_wait_receipt": {
+            "id": "82848aab-2980-45f3-a548-f2bddc52000a",
+            "pid": 911,
+            "start_ticks": "19822228",
+            "started_at": "2026-11-05T10:32:59.833688125Z",
+            "wait_observed_at": "2026-11-05T10:33:04.993069284Z",
+            "wait_status": 0,
+            "exit_code": 0,
+            "signal": null,
+            "core_dump": false
+          },
+          "parent_identity_matched": true,
+          "attempted_escalation": null,
+          "signal_start": {
+            "mono_ns": "198227437214650",
+            "wall": "2026-11-05T10:33:04.98583876Z"
+          },
+          "signal_return": {
+            "mono_ns": "198227437219146",
+            "wall": "2026-11-05T10:33:04.985842604Z"
+          },
+          "exit_sample": {
+            "mono_ns": "198227444370628",
+            "wall": "2026-11-05T10:33:04.992994761Z"
+          },
+          "signal_to_exit_upper_ns": "7155643",
+          "within_15s": true,
+          "agent_budget_seconds": 15,
+          "stored_lease_survived": true,
+          "closure_start": "2026-11-05T10:33:04.965673629Z",
+          "closure_end": "2026-11-05T10:33:05.225319383Z",
+          "command_ok": true,
+          "parse_ok": true,
+          "exit_observed": true,
+          "signal_ok": true,
+          "step_cancel": "not observable here",
+          "agent_exit_code": 0,
+          "agent_signal": null,
+          "cooperative_exit": true,
+          "same_run_parent_window": true,
+          "final_stop_matched": true
+        },
+        {
+          "label": "direct_agent",
+          "container": "fvpn-w4-isolation-node-clone",
+          "source": "receiver-closure.json",
+          "identity": {
+            "launch_id": "e95c04f0-c9e3-4d61-9649-c1894582650e",
+            "pid": 1155,
+            "start_ticks": "19822232"
+          },
+          "parent_wait_receipt": {
+            "id": "e95c04f0-c9e3-4d61-9649-c1894582650e",
+            "pid": 1155,
+            "start_ticks": "19822232",
+            "started_at": "2026-11-05T10:32:59.870961812Z",
+            "wait_observed_at": "2026-11-05T10:33:05.38066097Z",
+            "wait_status": 0,
+            "exit_code": 0,
+            "signal": null,
+            "core_dump": false
+          },
+          "parent_identity_matched": true,
+          "attempted_escalation": null,
+          "signal_start": {
+            "mono_ns": "198227825053898",
+            "wall": "2026-11-05T10:33:05.373678385Z"
+          },
+          "signal_return": {
+            "mono_ns": "198227825059178",
+            "wall": "2026-11-05T10:33:05.373682652Z"
+          },
+          "exit_sample": {
+            "mono_ns": "198227831913833",
+            "wall": "2026-11-05T10:33:05.380538532Z"
+          },
+          "signal_to_exit_upper_ns": "6859340",
+          "within_15s": true,
+          "agent_budget_seconds": 15,
+          "stored_lease_survived": true,
+          "closure_start": "2026-11-05T10:33:05.352974697Z",
+          "closure_end": "2026-11-05T10:33:05.608709428Z",
+          "command_ok": true,
+          "parse_ok": true,
+          "exit_observed": true,
+          "signal_ok": true,
+          "step_cancel": "not observable here",
+          "agent_exit_code": 0,
+          "agent_signal": null,
+          "cooperative_exit": true,
+          "same_run_parent_window": true,
+          "final_stop_matched": true
+        }
+      ],
+      "missing": []
+    },
+    "executing_release_config": {
+      "status": "established",
+      "evidence": [
+        {
+          "snapshot": 1,
+          "phase": "after-clone-observation",
+          "process": {
+            "command": "run -config",
+            "command_binary": "/usr/local/bin/fvpn-agent",
+            "config_path": "/etc/vpn-node/agent-run.json",
+            "executable": "/usr/local/bin/fvpn-agent",
+            "pid": 1155,
+            "role": "fvpn-agent",
+            "start_ticks": "19822232",
+            "status": "available",
+            "stdout_inode": 51651695
+          },
+          "executable_sha256": "6a62c913b51c5633020bb72d3022001c0f42517efd7b33053fdd0fdf23acc4f2",
+          "config": {
+            "bytes": 1196,
+            "datapath": {
+              "member_ingress": "fvmb0",
+              "snat": "192.0.6.23",
+              "uplink": "fvup0"
+            },
+            "fields": {
+              "control_url": "https://127.0.0.1:9444",
+              "heartbeat_seconds": 1,
+              "observation_seconds": 1,
+              "poll_seconds": 1
+            },
+            "inode": 51651654,
+            "modified_at": "2026-11-05T10:32:59.183006346Z",
+            "path": "/etc/vpn-node/agent-run.json",
+            "read_end": "2026-11-05T10:33:04.42565431Z",
+            "read_start": "2026-11-05T10:33:04.425544332Z",
+            "scope": "current file only; loaded bytes at launch not attested",
+            "sha256": "0945968923ae7506cfbb031943e2407fc2122e65f148ac441188fc2597b5a696",
+            "stable_during_snapshot": true,
+            "status": "available"
+          },
+          "read_start": "2026-11-05T10:33:04.42540586Z",
+          "read_end": "2026-11-05T10:33:04.495377882Z"
+        },
+        {
+          "snapshot": 2,
+          "phase": "before-terminal-stop",
+          "process": {
+            "command": "run -config",
+            "command_binary": "/usr/local/bin/fvpn-agent",
+            "config_path": "/etc/vpn-node/agent-run.json",
+            "executable": "/usr/local/bin/fvpn-agent",
+            "pid": 1155,
+            "role": "fvpn-agent",
+            "start_ticks": "19822232",
+            "status": "available",
+            "stdout_inode": 51651695
+          },
+          "executable_sha256": "6a62c913b51c5633020bb72d3022001c0f42517efd7b33053fdd0fdf23acc4f2",
+          "config": {
+            "bytes": 1196,
+            "datapath": {
+              "member_ingress": "fvmb0",
+              "snat": "192.0.6.23",
+              "uplink": "fvup0"
+            },
+            "fields": {
+              "control_url": "https://127.0.0.1:9444",
+              "heartbeat_seconds": 1,
+              "observation_seconds": 1,
+              "poll_seconds": 1
+            },
+            "inode": 51651654,
+            "modified_at": "2026-11-05T10:32:59.183006346Z",
+            "path": "/etc/vpn-node/agent-run.json",
+            "read_end": "2026-11-05T10:33:04.786818076Z",
+            "read_start": "2026-11-05T10:33:04.78670068Z",
+            "scope": "current file only; loaded bytes at launch not attested",
+            "sha256": "0945968923ae7506cfbb031943e2407fc2122e65f148ac441188fc2597b5a696",
+            "stable_during_snapshot": true,
+            "status": "available"
+          },
+          "read_start": "2026-11-05T10:33:04.786563381Z",
+          "read_end": "2026-11-05T10:33:04.856156385Z"
+        }
+      ],
+      "missing": []
+    },
+    "corrected_transport": {
+      "status": "established",
+      "evidence": [
+        {
+          "snapshot": 1,
+          "phase": "after-clone-observation",
+          "accepted_submissions": [
+            {
+              "time": "2026-11-05T10:33:00.051Z",
+              "level": "INFO",
+              "msg": "observation submission",
+              "report_ids": "[01a1ab44-df66-7762-b44c-d27f7ea71e2a]",
+              "attempt_numbers": "[1]",
+              "attempt_scope": "process",
+              "process_id": "1155",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "started_at": "2026-11-05T10:33:00.011443144Z",
+              "duration_ms": "5",
+              "outcome": "accepted",
+              "accepted_report_ids": "[01a1ab44-df66-7762-b44c-d27f7ea71e2a]",
+              "http_status": "202",
+              "error_code": "",
+              "transport_error_class": "",
+              "next_retry_at": "<nil>",
+              "retry_after_ms": "0",
+              "line": 13
+            },
+            {
+              "time": "2026-11-05T10:33:00.075Z",
+              "level": "INFO",
+              "msg": "observation submission",
+              "report_ids": "[01a1ab44-df9f-75b3-b0f8-cf63c3c2062e]",
+              "attempt_numbers": "[1]",
+              "attempt_scope": "process",
+              "process_id": "1155",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "started_at": "2026-11-05T10:33:00.067187205Z",
+              "duration_ms": "7",
+              "outcome": "accepted",
+              "accepted_report_ids": "[01a1ab44-df9f-75b3-b0f8-cf63c3c2062e]",
+              "http_status": "202",
+              "error_code": "",
+              "transport_error_class": "",
+              "next_retry_at": "<nil>",
+              "retry_after_ms": "0",
+              "line": 15
+            },
+            {
+              "time": "2026-11-05T10:33:01.111Z",
+              "level": "INFO",
+              "msg": "observation submission",
+              "report_ids": "[01a1ab44-e3ae-785c-9be9-13420b994839]",
+              "attempt_numbers": "[1]",
+              "attempt_scope": "process",
+              "process_id": "1155",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "started_at": "2026-11-05T10:33:01.105963801Z",
+              "duration_ms": "4",
+              "outcome": "accepted",
+              "accepted_report_ids": "[01a1ab44-e3ae-785c-9be9-13420b994839]",
+              "http_status": "202",
+              "error_code": "",
+              "transport_error_class": "",
+              "next_retry_at": "<nil>",
+              "retry_after_ms": "0",
+              "line": 19
+            },
+            {
+              "time": "2026-11-05T10:33:02.191Z",
+              "level": "INFO",
+              "msg": "observation submission",
+              "report_ids": "[01a1ab44-e7e4-7b18-b1f2-a87ae0598160]",
+              "attempt_numbers": "[1]",
+              "attempt_scope": "process",
+              "process_id": "1155",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "started_at": "2026-11-05T10:33:02.185358316Z",
+              "duration_ms": "4",
+              "outcome": "accepted",
+              "accepted_report_ids": "[01a1ab44-e7e4-7b18-b1f2-a87ae0598160]",
+              "http_status": "202",
+              "error_code": "",
+              "transport_error_class": "",
+              "next_retry_at": "<nil>",
+              "retry_after_ms": "0",
+              "line": 23
+            },
+            {
+              "time": "2026-11-05T10:33:04.185Z",
+              "level": "INFO",
+              "msg": "observation submission",
+              "report_ids": "[01a1ab44-efae-7444-93fa-551284ecffb1]",
+              "attempt_numbers": "[1]",
+              "attempt_scope": "process",
+              "process_id": "1155",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "started_at": "2026-11-05T10:33:04.178109329Z",
+              "duration_ms": "5",
+              "outcome": "accepted",
+              "accepted_report_ids": "[01a1ab44-efae-7444-93fa-551284ecffb1]",
+              "http_status": "202",
+              "error_code": "",
+              "transport_error_class": "",
+              "next_retry_at": "<nil>",
+              "retry_after_ms": "0",
+              "line": 29
+            }
+          ],
+          "socket_read": {
+            "exit_code": 0,
+            "read_start": "2026-11-05T10:33:04.463521009Z",
+            "read_end": "2026-11-05T10:33:04.48721621Z",
+            "status": "available",
+            "text": "ESTAB 0      0         127.0.0.1:58070    127.0.0.1:9444  users:((\"fvpn-agent\",pid=1155,fd=13))    \nESTAB 0      0         127.0.0.1:58088    127.0.0.1:9444  users:((\"fvpn-agent\",pid=1155,fd=14))    \nESTAB 0      0         127.0.0.1:58102    127.0.0.1:9444  users:((\"fvpn-agent\",pid=1155,fd=15))    \nESTAB 0      0      172.29.33.23:44852 172.29.33.30:9443  users:((\"fvpn-e2e-nodeco\",pid=926,fd=8)) \nESTAB 0      0      172.29.33.23:44854 172.29.33.30:9443  users:((\"fvpn-e2e-nodeco\",pid=926,fd=10))\nESTAB 0      0         127.0.0.1:9444     127.0.0.1:58088 users:((\"fvpn-e2e-nodeco\",pid=926,fd=9)) \nESTAB 0      0         127.0.0.1:9444     127.0.0.1:58070 users:((\"fvpn-e2e-nodeco\",pid=926,fd=7)) \nESTAB 0      0         127.0.0.1:9444     127.0.0.1:58102 users:((\"fvpn-e2e-nodeco\",pid=926,fd=11))\n",
+            "bytes": 800,
+            "size": 0,
+            "inode": 0
+          },
+          "proxy_listener": {
+            "exit_code": 0,
+            "read_start": "2026-11-05T10:33:04.439397639Z",
+            "read_end": "2026-11-05T10:33:04.463515254Z",
+            "status": "available",
+            "text": "LISTEN 0      4096   127.0.0.1:9444 0.0.0.0:* users:((\"fvpn-e2e-nodeco\",pid=926,fd=4))\n",
+            "bytes": 87,
+            "size": 0,
+            "inode": 0
+          },
+          "proxy_processes": [
+            {
+              "command": "resolver-proxy",
+              "command_binary": "fvpn-e2e-nodeconfig",
+              "config_path": "",
+              "executable": "/usr/local/bin/fvpn-e2e-nodeconfig",
+              "pid": 926,
+              "role": "resolver-proxy",
+              "start_ticks": "19822226",
+              "status": "available",
+              "stdout_inode": 51651717
+            }
+          ],
+          "control_host": {
+            "addresses": [
+              "172.29.33.30"
+            ],
+            "name": "agent.example.invalid",
+            "read_end": "2026-11-05T10:33:04.487316149Z",
+            "read_start": "2026-11-05T10:33:04.487259642Z",
+            "status": "available"
+          },
+          "process": {
+            "command": "run -config",
+            "command_binary": "/usr/local/bin/fvpn-agent",
+            "config_path": "/etc/vpn-node/agent-run.json",
+            "executable": "/usr/local/bin/fvpn-agent",
+            "pid": 1155,
+            "role": "fvpn-agent",
+            "start_ticks": "19822232",
+            "status": "available",
+            "stdout_inode": 51651695
+          },
+          "launch_id": "e95c04f0-c9e3-4d61-9649-c1894582650e",
+          "config": {
+            "bytes": 1196,
+            "datapath": {
+              "member_ingress": "fvmb0",
+              "snat": "192.0.6.23",
+              "uplink": "fvup0"
+            },
+            "fields": {
+              "control_url": "https://127.0.0.1:9444",
+              "heartbeat_seconds": 1,
+              "observation_seconds": 1,
+              "poll_seconds": 1
+            },
+            "inode": 51651654,
+            "modified_at": "2026-11-05T10:32:59.183006346Z",
+            "path": "/etc/vpn-node/agent-run.json",
+            "read_end": "2026-11-05T10:33:04.42565431Z",
+            "read_start": "2026-11-05T10:33:04.425544332Z",
+            "scope": "current file only; loaded bytes at launch not attested",
+            "sha256": "0945968923ae7506cfbb031943e2407fc2122e65f148ac441188fc2597b5a696",
+            "stable_during_snapshot": true,
+            "status": "available"
+          }
+        },
+        {
+          "snapshot": 2,
+          "phase": "before-terminal-stop",
+          "accepted_submissions": [
+            {
+              "time": "2026-11-05T10:33:00.051Z",
+              "level": "INFO",
+              "msg": "observation submission",
+              "report_ids": "[01a1ab44-df66-7762-b44c-d27f7ea71e2a]",
+              "attempt_numbers": "[1]",
+              "attempt_scope": "process",
+              "process_id": "1155",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "started_at": "2026-11-05T10:33:00.011443144Z",
+              "duration_ms": "5",
+              "outcome": "accepted",
+              "accepted_report_ids": "[01a1ab44-df66-7762-b44c-d27f7ea71e2a]",
+              "http_status": "202",
+              "error_code": "",
+              "transport_error_class": "",
+              "next_retry_at": "<nil>",
+              "retry_after_ms": "0",
+              "line": 13
+            },
+            {
+              "time": "2026-11-05T10:33:00.075Z",
+              "level": "INFO",
+              "msg": "observation submission",
+              "report_ids": "[01a1ab44-df9f-75b3-b0f8-cf63c3c2062e]",
+              "attempt_numbers": "[1]",
+              "attempt_scope": "process",
+              "process_id": "1155",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "started_at": "2026-11-05T10:33:00.067187205Z",
+              "duration_ms": "7",
+              "outcome": "accepted",
+              "accepted_report_ids": "[01a1ab44-df9f-75b3-b0f8-cf63c3c2062e]",
+              "http_status": "202",
+              "error_code": "",
+              "transport_error_class": "",
+              "next_retry_at": "<nil>",
+              "retry_after_ms": "0",
+              "line": 15
+            },
+            {
+              "time": "2026-11-05T10:33:01.111Z",
+              "level": "INFO",
+              "msg": "observation submission",
+              "report_ids": "[01a1ab44-e3ae-785c-9be9-13420b994839]",
+              "attempt_numbers": "[1]",
+              "attempt_scope": "process",
+              "process_id": "1155",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "started_at": "2026-11-05T10:33:01.105963801Z",
+              "duration_ms": "4",
+              "outcome": "accepted",
+              "accepted_report_ids": "[01a1ab44-e3ae-785c-9be9-13420b994839]",
+              "http_status": "202",
+              "error_code": "",
+              "transport_error_class": "",
+              "next_retry_at": "<nil>",
+              "retry_after_ms": "0",
+              "line": 19
+            },
+            {
+              "time": "2026-11-05T10:33:02.191Z",
+              "level": "INFO",
+              "msg": "observation submission",
+              "report_ids": "[01a1ab44-e7e4-7b18-b1f2-a87ae0598160]",
+              "attempt_numbers": "[1]",
+              "attempt_scope": "process",
+              "process_id": "1155",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "started_at": "2026-11-05T10:33:02.185358316Z",
+              "duration_ms": "4",
+              "outcome": "accepted",
+              "accepted_report_ids": "[01a1ab44-e7e4-7b18-b1f2-a87ae0598160]",
+              "http_status": "202",
+              "error_code": "",
+              "transport_error_class": "",
+              "next_retry_at": "<nil>",
+              "retry_after_ms": "0",
+              "line": 23
+            },
+            {
+              "time": "2026-11-05T10:33:04.185Z",
+              "level": "INFO",
+              "msg": "observation submission",
+              "report_ids": "[01a1ab44-efae-7444-93fa-551284ecffb1]",
+              "attempt_numbers": "[1]",
+              "attempt_scope": "process",
+              "process_id": "1155",
+              "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+              "started_at": "2026-11-05T10:33:04.178109329Z",
+              "duration_ms": "5",
+              "outcome": "accepted",
+              "accepted_report_ids": "[01a1ab44-efae-7444-93fa-551284ecffb1]",
+              "http_status": "202",
+              "error_code": "",
+              "transport_error_class": "",
+              "next_retry_at": "<nil>",
+              "retry_after_ms": "0",
+              "line": 29
+            }
+          ],
+          "socket_read": {
+            "exit_code": 0,
+            "read_start": "2026-11-05T10:33:04.82438216Z",
+            "read_end": "2026-11-05T10:33:04.847973942Z",
+            "status": "available",
+            "text": "ESTAB 0      0         127.0.0.1:58070    127.0.0.1:9444  users:((\"fvpn-agent\",pid=1155,fd=13))    \nESTAB 0      0         127.0.0.1:58088    127.0.0.1:9444  users:((\"fvpn-agent\",pid=1155,fd=14))    \nESTAB 0      0         127.0.0.1:58102    127.0.0.1:9444  users:((\"fvpn-agent\",pid=1155,fd=15))    \nESTAB 0      0      172.29.33.23:44852 172.29.33.30:9443  users:((\"fvpn-e2e-nodeco\",pid=926,fd=8)) \nESTAB 0      0      172.29.33.23:44854 172.29.33.30:9443  users:((\"fvpn-e2e-nodeco\",pid=926,fd=10))\nESTAB 0      0         127.0.0.1:9444     127.0.0.1:58088 users:((\"fvpn-e2e-nodeco\",pid=926,fd=9)) \nESTAB 0      0         127.0.0.1:9444     127.0.0.1:58070 users:((\"fvpn-e2e-nodeco\",pid=926,fd=7)) \nESTAB 0      0         127.0.0.1:9444     127.0.0.1:58102 users:((\"fvpn-e2e-nodeco\",pid=926,fd=11))\n",
+            "bytes": 800,
+            "size": 0,
+            "inode": 0
+          },
+          "proxy_listener": {
+            "exit_code": 0,
+            "read_start": "2026-11-05T10:33:04.800609218Z",
+            "read_end": "2026-11-05T10:33:04.824374728Z",
+            "status": "available",
+            "text": "LISTEN 0      4096   127.0.0.1:9444 0.0.0.0:* users:((\"fvpn-e2e-nodeco\",pid=926,fd=4))\n",
+            "bytes": 87,
+            "size": 0,
+            "inode": 0
+          },
+          "proxy_processes": [
+            {
+              "command": "resolver-proxy",
+              "command_binary": "fvpn-e2e-nodeconfig",
+              "config_path": "",
+              "executable": "/usr/local/bin/fvpn-e2e-nodeconfig",
+              "pid": 926,
+              "role": "resolver-proxy",
+              "start_ticks": "19822226",
+              "status": "available",
+              "stdout_inode": 51651717
+            }
+          ],
+          "control_host": {
+            "addresses": [
+              "172.29.33.30"
+            ],
+            "name": "agent.example.invalid",
+            "read_end": "2026-11-05T10:33:04.848083308Z",
+            "read_start": "2026-11-05T10:33:04.848019612Z",
+            "status": "available"
+          },
+          "process": {
+            "command": "run -config",
+            "command_binary": "/usr/local/bin/fvpn-agent",
+            "config_path": "/etc/vpn-node/agent-run.json",
+            "executable": "/usr/local/bin/fvpn-agent",
+            "pid": 1155,
+            "role": "fvpn-agent",
+            "start_ticks": "19822232",
+            "status": "available",
+            "stdout_inode": 51651695
+          },
+          "launch_id": "e95c04f0-c9e3-4d61-9649-c1894582650e",
+          "config": {
+            "bytes": 1196,
+            "datapath": {
+              "member_ingress": "fvmb0",
+              "snat": "192.0.6.23",
+              "uplink": "fvup0"
+            },
+            "fields": {
+              "control_url": "https://127.0.0.1:9444",
+              "heartbeat_seconds": 1,
+              "observation_seconds": 1,
+              "poll_seconds": 1
+            },
+            "inode": 51651654,
+            "modified_at": "2026-11-05T10:32:59.183006346Z",
+            "path": "/etc/vpn-node/agent-run.json",
+            "read_end": "2026-11-05T10:33:04.786818076Z",
+            "read_start": "2026-11-05T10:33:04.78670068Z",
+            "scope": "current file only; loaded bytes at launch not attested",
+            "sha256": "0945968923ae7506cfbb031943e2407fc2122e65f148ac441188fc2597b5a696",
+            "stable_during_snapshot": true,
+            "status": "available"
+          }
+        }
+      ],
+      "missing": []
+    },
+    "central_conflict_frozen": {
+      "status": "established",
+      "evidence": [
+        {
+          "row": 1,
+          "observation": {
+            "Source": {
+              "machine_id_sha256": "0ec2a622617d5fe6dad06f7d9e73a144a0deecafeb1d9d09a5ab50c9870c1817",
+              "agent_spki_sha256": "912504ec3ad7a93baf176b63eb344b6614605fd7e7641e9bff11c8cd6cc6ce80",
+              "netbird_public_key_sha256": "23d44c9ca478b952bf98555c092e18ee2207d9cda1e653d6cda7e723fcb18aa2"
+            },
+            "Clone": {
+              "machine_id_sha256": "0ec2a622617d5fe6dad06f7d9e73a144a0deecafeb1d9d09a5ab50c9870c1817",
+              "agent_spki_sha256": "912504ec3ad7a93baf176b63eb344b6614605fd7e7641e9bff11c8cd6cc6ce80",
+              "netbird_public_key_sha256": "23d44c9ca478b952bf98555c092e18ee2207d9cda1e653d6cda7e723fcb18aa2"
+            },
+            "same_identity": true,
+            "endpoint_rows": 1,
+            "conflicts": 1,
+            "mapping_frozen": true,
+            "SourceStage": "enrolled",
+            "CloneStage": "enrolled"
+          },
+          "read_start": "2026-11-05T10:33:01.121046608Z",
+          "read_end": "2026-11-05T10:33:01.146357811Z"
+        }
+      ],
+      "missing": []
+    },
+    "source_freeze_response_and_report": {
+      "status": "established",
+      "evidence": [
+        {
+          "transaction": 1802,
+          "received_at": "2026-11-05T10:33:00.028649987Z",
+          "response_at": "2026-11-05T10:33:00.04101549Z",
+          "response": {
+            "accepted": true,
+            "identity_frozen": true,
+            "received_at": "2026-11-05T10:33:00.031787Z",
+            "report_id": "01a1ab44-df78-754a-8136-8eff648bbbea"
+          },
+          "report": {
+            "report_id": "01a1ab44-df78-754a-8136-8eff648bbbea",
+            "observed_at": "2026-11-05T10:33:00.024320618Z",
+            "member_forwarding_enabled": false,
+            "applied_config_generation": "37",
+            "errors": [
+              {
+                "code": "AWAITING_MEMBER_GRANTS",
+                "message": "Serving lease has no member grants yet.",
+                "observed_at": "2026-11-05T10:33:00.009468284Z",
+                "stage": "lease"
+              },
+              {
+                "code": "HEALTH_CHECK_FAILED",
+                "message": "tunnel_probe",
+                "observed_at": "2026-11-05T10:33:00.009468284Z",
+                "stage": "probe"
+              }
+            ]
+          },
+          "consumer": "fvpn-w4-isolation-node",
+          "provenance": "source-only 9445 receiver; never attributed to clone"
+        },
+        {
+          "transaction": 1804,
+          "received_at": "2026-11-05T10:33:00.151751198Z",
+          "response_at": "2026-11-05T10:33:00.158545195Z",
+          "response": {
+            "accepted": true,
+            "identity_frozen": true,
+            "received_at": "2026-11-05T10:33:00.154485Z",
+            "report_id": "01a1ab44-dff3-72e7-923f-8c3b902f54bd"
+          },
+          "report": {
+            "report_id": "01a1ab44-dff3-72e7-923f-8c3b902f54bd",
+            "observed_at": "2026-11-05T10:33:00.147172027Z",
+            "member_forwarding_enabled": false,
+            "applied_config_generation": null,
+            "errors": [
+              {
+                "code": "AWAITING_MEMBER_GRANTS",
+                "message": "Serving lease has no member grants yet.",
+                "observed_at": "2026-11-05T10:33:00.083251254Z",
+                "stage": "lease"
+              },
+              {
+                "code": "HEALTH_CHECK_FAILED",
+                "message": "tunnel_probe",
+                "observed_at": "2026-11-05T10:33:00.083251254Z",
+                "stage": "probe"
+              },
+              {
+                "code": "HEALTH_CHECK_FAILED",
+                "message": "identity_frozen",
+                "observed_at": "2026-11-05T10:33:00.083251254Z",
+                "stage": "identity"
+              }
+            ]
+          },
+          "consumer": "fvpn-w4-isolation-node",
+          "provenance": "source-only 9445 receiver; never attributed to clone"
+        },
+        {
+          "transaction": 1807,
+          "received_at": "2026-11-05T10:33:01.133115759Z",
+          "response_at": "2026-11-05T10:33:01.138542679Z",
+          "response": {
+            "accepted": true,
+            "identity_frozen": true,
+            "received_at": "2026-11-05T10:33:01.135764Z",
+            "report_id": "01a1ab44-e3c8-7a13-84bb-e7e594f1c33c"
+          },
+          "report": {
+            "report_id": "01a1ab44-e3c8-7a13-84bb-e7e594f1c33c",
+            "observed_at": "2026-11-05T10:33:01.128648241Z",
+            "member_forwarding_enabled": false,
+            "applied_config_generation": null,
+            "errors": [
+              {
+                "code": "AWAITING_MEMBER_GRANTS",
+                "message": "Serving lease has no member grants yet.",
+                "observed_at": "2026-11-05T10:33:01.103033852Z",
+                "stage": "lease"
+              },
+              {
+                "code": "HEALTH_CHECK_FAILED",
+                "message": "identity_frozen",
+                "observed_at": "2026-11-05T10:33:01.103033852Z",
+                "stage": "identity"
+              }
+            ]
+          },
+          "consumer": "fvpn-w4-isolation-node",
+          "provenance": "source-only 9445 receiver; never attributed to clone"
+        },
+        {
+          "transaction": 1812,
+          "received_at": "2026-11-05T10:33:04.14759507Z",
+          "response_at": "2026-11-05T10:33:04.153429811Z",
+          "response": {
+            "accepted": true,
+            "identity_frozen": true,
+            "received_at": "2026-11-05T10:33:04.150699Z",
+            "report_id": "01a1ab44-e7fb-7ba4-8d3a-48786d225e0c"
+          },
+          "report": {
+            "report_id": "01a1ab44-e7fb-7ba4-8d3a-48786d225e0c",
+            "observed_at": "2026-11-05T10:33:02.203749307Z",
+            "member_forwarding_enabled": false,
+            "applied_config_generation": null,
+            "errors": [
+              {
+                "code": "AWAITING_MEMBER_GRANTS",
+                "message": "Serving lease has no member grants yet.",
+                "observed_at": "2026-11-05T10:33:02.181095684Z",
+                "stage": "lease"
+              },
+              {
+                "code": "HEALTH_CHECK_FAILED",
+                "message": "tunnel_probe",
+                "observed_at": "2026-11-05T10:33:02.181095684Z",
+                "stage": "probe"
+              },
+              {
+                "code": "HEALTH_CHECK_FAILED",
+                "message": "identity_frozen",
+                "observed_at": "2026-11-05T10:33:02.181095684Z",
+                "stage": "identity"
+              }
+            ]
+          },
+          "consumer": "fvpn-w4-isolation-node",
+          "provenance": "source-only 9445 receiver; never attributed to clone"
+        }
+      ],
+      "missing": []
+    },
+    "consumer_latch_held": {
+      "status": "not established",
+      "evidence": [],
+      "missing": [
+        "fresh source identity_frozen heartbeat, serving 0, zero policy expiry, verified baseline, then unchanged three-second held sample"
+      ]
+    },
+    "clone_stop_log_retention": {
+      "status": "established",
+      "evidence": [
+        {
+          "phase": "after-clone-creation",
+          "errors": [],
+          "logs": {
+            "agent": {
+              "read_start": "2026-11-05T10:32:59.802399786Z",
+              "read_end": "2026-11-05T10:32:59.80240556Z",
+              "status": "available",
+              "bytes": 0,
+              "size": 0,
+              "inode": 51651695,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "modified_at": "2026-11-05T10:32:57Z"
+            },
+            "resolver-proxy": {
+              "read_start": "2026-11-05T10:32:59.802413453Z",
+              "read_end": "2026-11-05T10:32:59.802502534Z",
+              "status": "available",
+              "bytes": 952,
+              "size": 952,
+              "inode": 51651717,
+              "sha256": "d9bfb8d2297bca3b505a0aa969e3ea1f9db9340247b6f1340f308bccc5e32bff",
+              "modified_at": "2026-11-05T10:30:52Z"
+            },
+            "watchdog": {
+              "read_start": "2026-11-05T10:32:59.802406594Z",
+              "read_end": "2026-11-05T10:32:59.802412845Z",
+              "status": "available",
+              "bytes": 0,
+              "size": 0,
+              "inode": 51651719,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "modified_at": "2026-11-05T10:32:57Z"
+            }
+          }
+        },
+        {
+          "phase": "after-clone-observation",
+          "errors": [],
+          "logs": {
+            "agent": {
+              "read_start": "2026-11-05T10:33:04.43393784Z",
+              "read_end": "2026-11-05T10:33:04.434406334Z",
+              "status": "available",
+              "bytes": 5792,
+              "size": 5792,
+              "inode": 51651695,
+              "sha256": "3a667a504cba2fa0a3a9a1b24dfffed91ac3a6f31d4a69dde7c3821c28c21d48",
+              "modified_at": "2026-11-05T10:33:04.184112531Z"
+            },
+            "resolver-proxy": {
+              "read_start": "2026-11-05T10:33:04.434547816Z",
+              "read_end": "2026-11-05T10:33:04.43455339Z",
+              "status": "available",
+              "bytes": 0,
+              "size": 0,
+              "inode": 51651717,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "modified_at": "2026-11-05T10:32:59.811019681Z"
+            },
+            "watchdog": {
+              "read_start": "2026-11-05T10:33:04.434463463Z",
+              "read_end": "2026-11-05T10:33:04.434537408Z",
+              "status": "available",
+              "bytes": 734,
+              "size": 734,
+              "inode": 51651719,
+              "sha256": "b0d595fb46e396712364098185918e98baf0e978a893cc90e538f4264a530819",
+              "modified_at": "2026-11-05T10:32:59.831020105Z"
+            }
+          }
+        },
+        {
+          "phase": "before-terminal-stop",
+          "errors": [],
+          "logs": {
+            "agent": {
+              "read_start": "2026-11-05T10:33:04.795105735Z",
+              "read_end": "2026-11-05T10:33:04.795578771Z",
+              "status": "available",
+              "bytes": 5792,
+              "size": 5792,
+              "inode": 51651695,
+              "sha256": "3a667a504cba2fa0a3a9a1b24dfffed91ac3a6f31d4a69dde7c3821c28c21d48",
+              "modified_at": "2026-11-05T10:33:04.184112531Z"
+            },
+            "resolver-proxy": {
+              "read_start": "2026-11-05T10:33:04.795655548Z",
+              "read_end": "2026-11-05T10:33:04.795660129Z",
+              "status": "available",
+              "bytes": 0,
+              "size": 0,
+              "inode": 51651717,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "modified_at": "2026-11-05T10:32:59.811019681Z"
+            },
+            "watchdog": {
+              "read_start": "2026-11-05T10:33:04.795580281Z",
+              "read_end": "2026-11-05T10:33:04.795654736Z",
+              "status": "available",
+              "bytes": 734,
+              "size": 734,
+              "inode": 51651719,
+              "sha256": "b0d595fb46e396712364098185918e98baf0e978a893cc90e538f4264a530819",
+              "modified_at": "2026-11-05T10:32:59.831020105Z"
+            }
+          }
+        },
+        {
+          "phase": "after-terminal-stop",
+          "errors": [],
+          "logs": {
+            "agent": {
+              "read_start": "2026-11-05T10:33:06.139780073Z",
+              "read_end": "2026-11-05T10:33:06.140326489Z",
+              "status": "available",
+              "bytes": 6715,
+              "size": 6715,
+              "inode": 51651695,
+              "sha256": "602419bb50bbfc72ccfb9a6ec1f66242bb6663a02e4eeb95976530008aa138ae",
+              "modified_at": "2026-11-05T10:33:05.257135313Z"
+            },
+            "resolver-proxy": {
+              "read_start": "2026-11-05T10:33:06.140399648Z",
+              "read_end": "2026-11-05T10:33:06.140403723Z",
+              "status": "available",
+              "bytes": 0,
+              "size": 0,
+              "inode": 51651717,
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "modified_at": "2026-11-05T10:32:59.811019681Z"
+            },
+            "watchdog": {
+              "read_start": "2026-11-05T10:33:06.140327929Z",
+              "read_end": "2026-11-05T10:33:06.140398819Z",
+              "status": "available",
+              "bytes": 734,
+              "size": 734,
+              "inode": 51651719,
+              "sha256": "b0d595fb46e396712364098185918e98baf0e978a893cc90e538f4264a530819",
+              "modified_at": "2026-11-05T10:32:59.831020105Z"
+            }
+          }
+        }
+      ],
+      "missing": []
+    }
+  },
+  "errors": [],
+  "snat": [
+    {
+      "phase": "after-clone-creation",
+      "configs": {
+        "/etc/vpn-node/agent-run.json": {
+          "bytes": 1196,
+          "datapath": {
+            "member_ingress": "fvmb0",
+            "snat": "192.0.6.23",
+            "uplink": "fvup0"
+          },
+          "fields": {
+            "control_url": "https://127.0.0.1:9444",
+            "heartbeat_seconds": 1,
+            "observation_seconds": 1,
+            "poll_seconds": 1
+          },
+          "inode": 51651654,
+          "modified_at": "2026-11-05T10:32:59.183006346Z",
+          "path": "/etc/vpn-node/agent-run.json",
+          "read_end": "2026-11-05T10:32:59.802241283Z",
+          "read_start": "2026-11-05T10:32:59.802133484Z",
+          "scope": "current file only; loaded bytes at launch not attested",
+          "sha256": "0945968923ae7506cfbb031943e2407fc2122e65f148ac441188fc2597b5a696",
+          "stable_during_snapshot": true,
+          "status": "available"
+        }
+      },
+      "addresses": [
+        {
+          "ifindex": 1,
+          "ifname": "lo",
+          "flags": [
+            "LOOPBACK",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 65536,
+          "qdisc": "noqueue",
+          "operstate": "UNKNOWN",
+          "group": "default",
+          "txqlen": 1000,
+          "link_type": "loopback",
+          "address": "00:00:00:00:00:00",
+          "broadcast": "00:00:00:00:00:00",
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "127.0.0.1",
+              "prefixlen": 8,
+              "scope": "host",
+              "label": "lo",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            },
+            {
+              "family": "inet6",
+              "local": "::1",
+              "prefixlen": 128,
+              "scope": "host",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 2,
+          "link_index": 2776,
+          "ifname": "eth0",
+          "flags": [
+            "BROADCAST",
+            "MULTICAST",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1500,
+          "qdisc": "noqueue",
+          "operstate": "UP",
+          "group": "default",
+          "link_type": "ether",
+          "address": "0e:29:5c:35:dc:e2",
+          "broadcast": "ff:ff:ff:ff:ff:ff",
+          "link_netnsid": 0,
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "172.28.33.132",
+              "prefixlen": 24,
+              "broadcast": "172.28.33.255",
+              "scope": "global",
+              "label": "eth0",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 3,
+          "link_index": 2777,
+          "ifname": "fvup0",
+          "flags": [
+            "BROADCAST",
+            "MULTICAST",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1500,
+          "qdisc": "noqueue",
+          "operstate": "UP",
+          "group": "default",
+          "link_type": "ether",
+          "address": "86:66:0c:4d:d7:e6",
+          "broadcast": "ff:ff:ff:ff:ff:ff",
+          "link_netnsid": 0,
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "192.0.6.23",
+              "prefixlen": 24,
+              "broadcast": "192.0.6.255",
+              "scope": "global",
+              "label": "fvup0",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 4,
+          "link_index": 2780,
+          "ifname": "eth2",
+          "flags": [
+            "BROADCAST",
+            "MULTICAST",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1500,
+          "qdisc": "noqueue",
+          "operstate": "UP",
+          "group": "default",
+          "link_type": "ether",
+          "address": "fa:22:e5:12:5c:7f",
+          "broadcast": "ff:ff:ff:ff:ff:ff",
+          "link_netnsid": 0,
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "172.29.33.23",
+              "prefixlen": 24,
+              "broadcast": "172.29.33.255",
+              "scope": "global",
+              "label": "eth2",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        }
+      ],
+      "addresses_status": "available",
+      "watchdog_processes": [],
+      "scope": "assigned addresses and current candidate SNAT values only; no member-forwarding validation or causal attribution"
+    },
+    {
+      "phase": "after-clone-observation",
+      "configs": {
+        "/etc/vpn-node/agent-run.json": {
+          "bytes": 1196,
+          "datapath": {
+            "member_ingress": "fvmb0",
+            "snat": "192.0.6.23",
+            "uplink": "fvup0"
+          },
+          "fields": {
+            "control_url": "https://127.0.0.1:9444",
+            "heartbeat_seconds": 1,
+            "observation_seconds": 1,
+            "poll_seconds": 1
+          },
+          "inode": 51651654,
+          "modified_at": "2026-11-05T10:32:59.183006346Z",
+          "path": "/etc/vpn-node/agent-run.json",
+          "read_end": "2026-11-05T10:33:04.42565431Z",
+          "read_start": "2026-11-05T10:33:04.425544332Z",
+          "scope": "current file only; loaded bytes at launch not attested",
+          "sha256": "0945968923ae7506cfbb031943e2407fc2122e65f148ac441188fc2597b5a696",
+          "stable_during_snapshot": true,
+          "status": "available"
+        }
+      },
+      "addresses": [
+        {
+          "ifindex": 1,
+          "ifname": "lo",
+          "flags": [
+            "LOOPBACK",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 65536,
+          "qdisc": "noqueue",
+          "operstate": "UNKNOWN",
+          "group": "default",
+          "txqlen": 1000,
+          "link_type": "loopback",
+          "address": "00:00:00:00:00:00",
+          "broadcast": "00:00:00:00:00:00",
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "127.0.0.1",
+              "prefixlen": 8,
+              "scope": "host",
+              "label": "lo",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            },
+            {
+              "family": "inet6",
+              "local": "::1",
+              "prefixlen": 128,
+              "scope": "host",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 2,
+          "link_index": 2776,
+          "ifname": "eth0",
+          "flags": [
+            "BROADCAST",
+            "MULTICAST",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1500,
+          "qdisc": "noqueue",
+          "operstate": "UP",
+          "group": "default",
+          "link_type": "ether",
+          "address": "0e:29:5c:35:dc:e2",
+          "broadcast": "ff:ff:ff:ff:ff:ff",
+          "link_netnsid": 0,
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "172.28.33.132",
+              "prefixlen": 24,
+              "broadcast": "172.28.33.255",
+              "scope": "global",
+              "label": "eth0",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 3,
+          "link_index": 2777,
+          "ifname": "fvup0",
+          "flags": [
+            "BROADCAST",
+            "MULTICAST",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1500,
+          "qdisc": "noqueue",
+          "operstate": "UP",
+          "group": "default",
+          "link_type": "ether",
+          "address": "86:66:0c:4d:d7:e6",
+          "broadcast": "ff:ff:ff:ff:ff:ff",
+          "link_netnsid": 0,
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "192.0.6.23",
+              "prefixlen": 24,
+              "broadcast": "192.0.6.255",
+              "scope": "global",
+              "label": "fvup0",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 4,
+          "link_index": 2780,
+          "ifname": "eth2",
+          "flags": [
+            "BROADCAST",
+            "MULTICAST",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1500,
+          "qdisc": "noqueue",
+          "operstate": "UP",
+          "group": "default",
+          "link_type": "ether",
+          "address": "fa:22:e5:12:5c:7f",
+          "broadcast": "ff:ff:ff:ff:ff:ff",
+          "link_netnsid": 0,
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "172.29.33.23",
+              "prefixlen": 24,
+              "broadcast": "172.29.33.255",
+              "scope": "global",
+              "label": "eth2",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 5,
+          "ifname": "fvmb0",
+          "flags": [
+            "POINTOPOINT",
+            "NOARP",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1280,
+          "qdisc": "noqueue",
+          "operstate": "UNKNOWN",
+          "group": "default",
+          "txqlen": 1000,
+          "link_type": "none",
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "100.121.182.19",
+              "prefixlen": 16,
+              "broadcast": "100.121.255.255",
+              "scope": "global",
+              "label": "fvmb0",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        }
+      ],
+      "addresses_status": "available",
+      "watchdog_processes": [
+        {
+          "command": "run -config",
+          "command_binary": "fvpn-watchdog",
+          "config_path": "/etc/vpn-node/agent-run.json",
+          "executable": "/usr/local/bin/fvpn-watchdog",
+          "pid": 927,
+          "role": "fvpn-watchdog",
+          "start_ticks": "19822226",
+          "status": "available",
+          "stdout_inode": 51651719
+        }
+      ],
+      "scope": "assigned addresses and current candidate SNAT values only; no member-forwarding validation or causal attribution"
+    },
+    {
+      "phase": "before-terminal-stop",
+      "configs": {
+        "/etc/vpn-node/agent-run.json": {
+          "bytes": 1196,
+          "datapath": {
+            "member_ingress": "fvmb0",
+            "snat": "192.0.6.23",
+            "uplink": "fvup0"
+          },
+          "fields": {
+            "control_url": "https://127.0.0.1:9444",
+            "heartbeat_seconds": 1,
+            "observation_seconds": 1,
+            "poll_seconds": 1
+          },
+          "inode": 51651654,
+          "modified_at": "2026-11-05T10:32:59.183006346Z",
+          "path": "/etc/vpn-node/agent-run.json",
+          "read_end": "2026-11-05T10:33:04.786818076Z",
+          "read_start": "2026-11-05T10:33:04.78670068Z",
+          "scope": "current file only; loaded bytes at launch not attested",
+          "sha256": "0945968923ae7506cfbb031943e2407fc2122e65f148ac441188fc2597b5a696",
+          "stable_during_snapshot": true,
+          "status": "available"
+        }
+      },
+      "addresses": [
+        {
+          "ifindex": 1,
+          "ifname": "lo",
+          "flags": [
+            "LOOPBACK",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 65536,
+          "qdisc": "noqueue",
+          "operstate": "UNKNOWN",
+          "group": "default",
+          "txqlen": 1000,
+          "link_type": "loopback",
+          "address": "00:00:00:00:00:00",
+          "broadcast": "00:00:00:00:00:00",
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "127.0.0.1",
+              "prefixlen": 8,
+              "scope": "host",
+              "label": "lo",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            },
+            {
+              "family": "inet6",
+              "local": "::1",
+              "prefixlen": 128,
+              "scope": "host",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 2,
+          "link_index": 2776,
+          "ifname": "eth0",
+          "flags": [
+            "BROADCAST",
+            "MULTICAST",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1500,
+          "qdisc": "noqueue",
+          "operstate": "UP",
+          "group": "default",
+          "link_type": "ether",
+          "address": "0e:29:5c:35:dc:e2",
+          "broadcast": "ff:ff:ff:ff:ff:ff",
+          "link_netnsid": 0,
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "172.28.33.132",
+              "prefixlen": 24,
+              "broadcast": "172.28.33.255",
+              "scope": "global",
+              "label": "eth0",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 3,
+          "link_index": 2777,
+          "ifname": "fvup0",
+          "flags": [
+            "BROADCAST",
+            "MULTICAST",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1500,
+          "qdisc": "noqueue",
+          "operstate": "UP",
+          "group": "default",
+          "link_type": "ether",
+          "address": "86:66:0c:4d:d7:e6",
+          "broadcast": "ff:ff:ff:ff:ff:ff",
+          "link_netnsid": 0,
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "192.0.6.23",
+              "prefixlen": 24,
+              "broadcast": "192.0.6.255",
+              "scope": "global",
+              "label": "fvup0",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 4,
+          "link_index": 2780,
+          "ifname": "eth2",
+          "flags": [
+            "BROADCAST",
+            "MULTICAST",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1500,
+          "qdisc": "noqueue",
+          "operstate": "UP",
+          "group": "default",
+          "link_type": "ether",
+          "address": "fa:22:e5:12:5c:7f",
+          "broadcast": "ff:ff:ff:ff:ff:ff",
+          "link_netnsid": 0,
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "172.29.33.23",
+              "prefixlen": 24,
+              "broadcast": "172.29.33.255",
+              "scope": "global",
+              "label": "eth2",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 5,
+          "ifname": "fvmb0",
+          "flags": [
+            "POINTOPOINT",
+            "NOARP",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1280,
+          "qdisc": "noqueue",
+          "operstate": "UNKNOWN",
+          "group": "default",
+          "txqlen": 1000,
+          "link_type": "none",
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "100.121.182.19",
+              "prefixlen": 16,
+              "broadcast": "100.121.255.255",
+              "scope": "global",
+              "label": "fvmb0",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        }
+      ],
+      "addresses_status": "available",
+      "watchdog_processes": [
+        {
+          "command": "run -config",
+          "command_binary": "fvpn-watchdog",
+          "config_path": "/etc/vpn-node/agent-run.json",
+          "executable": "/usr/local/bin/fvpn-watchdog",
+          "pid": 927,
+          "role": "fvpn-watchdog",
+          "start_ticks": "19822226",
+          "status": "available",
+          "stdout_inode": 51651719
+        }
+      ],
+      "scope": "assigned addresses and current candidate SNAT values only; no member-forwarding validation or causal attribution"
+    },
+    {
+      "phase": "after-terminal-stop",
+      "configs": {
+        "/etc/vpn-node/agent-run.json": {
+          "bytes": 1196,
+          "datapath": {
+            "member_ingress": "fvmb0",
+            "snat": "192.0.6.23",
+            "uplink": "fvup0"
+          },
+          "fields": {
+            "control_url": "https://127.0.0.1:9444",
+            "heartbeat_seconds": 1,
+            "observation_seconds": 1,
+            "poll_seconds": 1
+          },
+          "inode": 51651654,
+          "modified_at": "2026-11-05T10:32:59.183006346Z",
+          "path": "/etc/vpn-node/agent-run.json",
+          "read_end": "2026-11-05T10:33:06.139399144Z",
+          "read_start": "2026-11-05T10:33:06.139291611Z",
+          "scope": "current file only; loaded bytes at launch not attested",
+          "sha256": "0945968923ae7506cfbb031943e2407fc2122e65f148ac441188fc2597b5a696",
+          "stable_during_snapshot": true,
+          "status": "available"
+        }
+      },
+      "addresses": [
+        {
+          "ifindex": 1,
+          "ifname": "lo",
+          "flags": [
+            "LOOPBACK",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 65536,
+          "qdisc": "noqueue",
+          "operstate": "UNKNOWN",
+          "group": "default",
+          "txqlen": 1000,
+          "link_type": "loopback",
+          "address": "00:00:00:00:00:00",
+          "broadcast": "00:00:00:00:00:00",
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "127.0.0.1",
+              "prefixlen": 8,
+              "scope": "host",
+              "label": "lo",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            },
+            {
+              "family": "inet6",
+              "local": "::1",
+              "prefixlen": 128,
+              "scope": "host",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 2,
+          "link_index": 2776,
+          "ifname": "eth0",
+          "flags": [
+            "BROADCAST",
+            "MULTICAST",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1500,
+          "qdisc": "noqueue",
+          "operstate": "UP",
+          "group": "default",
+          "link_type": "ether",
+          "address": "0e:29:5c:35:dc:e2",
+          "broadcast": "ff:ff:ff:ff:ff:ff",
+          "link_netnsid": 0,
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "172.28.33.132",
+              "prefixlen": 24,
+              "broadcast": "172.28.33.255",
+              "scope": "global",
+              "label": "eth0",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 3,
+          "link_index": 2777,
+          "ifname": "fvup0",
+          "flags": [
+            "BROADCAST",
+            "MULTICAST",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1500,
+          "qdisc": "noqueue",
+          "operstate": "UP",
+          "group": "default",
+          "link_type": "ether",
+          "address": "86:66:0c:4d:d7:e6",
+          "broadcast": "ff:ff:ff:ff:ff:ff",
+          "link_netnsid": 0,
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "192.0.6.23",
+              "prefixlen": 24,
+              "broadcast": "192.0.6.255",
+              "scope": "global",
+              "label": "fvup0",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 4,
+          "link_index": 2780,
+          "ifname": "eth2",
+          "flags": [
+            "BROADCAST",
+            "MULTICAST",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1500,
+          "qdisc": "noqueue",
+          "operstate": "UP",
+          "group": "default",
+          "link_type": "ether",
+          "address": "fa:22:e5:12:5c:7f",
+          "broadcast": "ff:ff:ff:ff:ff:ff",
+          "link_netnsid": 0,
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "172.29.33.23",
+              "prefixlen": 24,
+              "broadcast": "172.29.33.255",
+              "scope": "global",
+              "label": "eth2",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 5,
+          "ifname": "fvmb0",
+          "flags": [
+            "POINTOPOINT",
+            "NOARP",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1280,
+          "qdisc": "noqueue",
+          "operstate": "UNKNOWN",
+          "group": "default",
+          "txqlen": 1000,
+          "link_type": "none",
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "100.121.182.19",
+              "prefixlen": 16,
+              "broadcast": "100.121.255.255",
+              "scope": "global",
+              "label": "fvmb0",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        }
+      ],
+      "addresses_status": "available",
+      "watchdog_processes": [
+        {
+          "command": "run -config",
+          "command_binary": "fvpn-watchdog",
+          "config_path": "/etc/vpn-node/agent-run.json",
+          "executable": "/usr/local/bin/fvpn-watchdog",
+          "pid": 927,
+          "role": "fvpn-watchdog",
+          "start_ticks": "19822226",
+          "status": "available",
+          "stdout_inode": 51651719
+        }
+      ],
+      "scope": "assigned addresses and current candidate SNAT values only; no member-forwarding validation or causal attribution"
+    }
+  ],
+  "source_runtime": [
+    {
+      "build": "37b3c25f60194e0d2261cf9aca30dfe8fc5d93be",
+      "container": "fvpn-w4-isolation-node",
+      "container_identity": {
+        "id": "e3a3f5720cef8c595033983ad1b31c6b5ae91f95fb8a3b7ad4f80c9022ffd4ba",
+        "started_at": "2026-11-05T10:26:52.412321846Z",
+        "running": true
+      },
+      "phase": "before-clone-creation",
+      "read_end": "2026-11-05T10:32:57.67586119Z",
+      "read_start": "2026-11-05T10:32:57.532804013Z",
+      "role": "source",
+      "run_id": "d69f5652-aed6-4fdd-9e7c-edface751237",
+      "source_dirty": false,
+      "status": "available",
+      "process": {
+        "command": "run -config",
+        "command_binary": "/usr/local/bin/fvpn-agent",
+        "config_path": "/etc/vpn-node/agent-run.json",
+        "executable": "/usr/local/bin/fvpn-agent",
+        "pid": 942,
+        "role": "fvpn-agent",
+        "start_ticks": "19785524",
+        "status": "available",
+        "stdout_inode": 51651656
+      },
+      "process_coherent": true,
+      "configs": {
+        "/etc/vpn-node/agent-run.json": {
+          "bytes": 1196,
+          "datapath": {
+            "member_ingress": "fvmb0",
+            "snat": "192.0.6.20",
+            "uplink": "fvup0"
+          },
+          "fields": {
+            "control_url": "https://127.0.0.1:9445",
+            "heartbeat_seconds": 1,
+            "observation_seconds": 1,
+            "poll_seconds": 1
+          },
+          "inode": 51651484,
+          "modified_at": "2026-11-05T10:13:43.507474667Z",
+          "path": "/etc/vpn-node/agent-run.json",
+          "read_end": "2026-11-05T10:32:57.589074607Z",
+          "read_start": "2026-11-05T10:32:57.588957494Z",
+          "scope": "current file only; loaded bytes at launch not attested",
+          "sha256": "5d4377930082cfa83e4bdecbb87ae8ac8ec7686709a3762acdcf118c133dd401",
+          "stable_during_snapshot": true,
+          "status": "available"
+        }
+      }
+    },
+    {
+      "build": "37b3c25f60194e0d2261cf9aca30dfe8fc5d93be",
+      "container": "fvpn-w4-isolation-node",
+      "container_identity": {
+        "id": "e3a3f5720cef8c595033983ad1b31c6b5ae91f95fb8a3b7ad4f80c9022ffd4ba",
+        "started_at": "2026-11-05T10:32:59.47705881Z",
+        "running": true
+      },
+      "phase": "after-clone-creation",
+      "read_end": "2026-11-05T10:32:59.726700358Z",
+      "read_start": "2026-11-05T10:32:59.621346473Z",
+      "role": "source",
+      "run_id": "d69f5652-aed6-4fdd-9e7c-edface751237",
+      "source_dirty": false,
+      "status": "available",
+      "process": {
+        "pid": 0,
+        "status": "unavailable"
+      },
+      "process_coherent": false,
+      "configs": {
+        "/etc/vpn-node/agent-run.json": {
+          "bytes": 1196,
+          "datapath": {
+            "member_ingress": "fvmb0",
+            "snat": "192.0.6.20",
+            "uplink": "fvup0"
+          },
+          "fields": {
+            "control_url": "https://127.0.0.1:9445",
+            "heartbeat_seconds": 1,
+            "observation_seconds": 1,
+            "poll_seconds": 1
+          },
+          "inode": 51651484,
+          "modified_at": "2026-11-05T10:13:43.507474667Z",
+          "path": "/etc/vpn-node/agent-run.json",
+          "read_end": "2026-11-05T10:32:59.675048827Z",
+          "read_start": "2026-11-05T10:32:59.674940754Z",
+          "scope": "current file only; loaded bytes at launch not attested",
+          "sha256": "5d4377930082cfa83e4bdecbb87ae8ac8ec7686709a3762acdcf118c133dd401",
+          "stable_during_snapshot": true,
+          "status": "available"
+        }
+      }
+    },
+    {
+      "build": "37b3c25f60194e0d2261cf9aca30dfe8fc5d93be",
+      "container": "fvpn-w4-isolation-node",
+      "container_identity": {
+        "id": "e3a3f5720cef8c595033983ad1b31c6b5ae91f95fb8a3b7ad4f80c9022ffd4ba",
+        "started_at": "2026-11-05T10:32:59.47705881Z",
+        "running": true
+      },
+      "phase": "after-clone-observation",
+      "read_end": "2026-11-05T10:33:04.347631226Z",
+      "read_start": "2026-11-05T10:33:04.226588841Z",
+      "role": "source",
+      "run_id": "d69f5652-aed6-4fdd-9e7c-edface751237",
+      "source_dirty": false,
+      "status": "available",
+      "process": {
+        "command": "run -config",
+        "command_binary": "/usr/local/bin/fvpn-agent",
+        "config_path": "/etc/vpn-node/agent-run.json",
+        "executable": "/usr/local/bin/fvpn-agent",
+        "pid": 911,
+        "role": "fvpn-agent",
+        "start_ticks": "19822228",
+        "status": "available",
+        "stdout_inode": 51651662
+      },
+      "process_coherent": true,
+      "configs": {
+        "/etc/vpn-node/agent-run.json": {
+          "bytes": 1196,
+          "datapath": {
+            "member_ingress": "fvmb0",
+            "snat": "192.0.6.20",
+            "uplink": "fvup0"
+          },
+          "fields": {
+            "control_url": "https://127.0.0.1:9445",
+            "heartbeat_seconds": 1,
+            "observation_seconds": 1,
+            "poll_seconds": 1
+          },
+          "inode": 51651484,
+          "modified_at": "2026-11-05T10:13:43.507474667Z",
+          "path": "/etc/vpn-node/agent-run.json",
+          "read_end": "2026-11-05T10:33:04.281133475Z",
+          "read_start": "2026-11-05T10:33:04.281023498Z",
+          "scope": "current file only; loaded bytes at launch not attested",
+          "sha256": "5d4377930082cfa83e4bdecbb87ae8ac8ec7686709a3762acdcf118c133dd401",
+          "stable_during_snapshot": true,
+          "status": "available"
+        }
+      }
+    },
+    {
+      "build": "37b3c25f60194e0d2261cf9aca30dfe8fc5d93be",
+      "container": "fvpn-w4-isolation-node",
+      "container_identity": {
+        "id": "e3a3f5720cef8c595033983ad1b31c6b5ae91f95fb8a3b7ad4f80c9022ffd4ba",
+        "started_at": "2026-11-05T10:32:59.47705881Z",
+        "running": true
+      },
+      "phase": "before-terminal-stop",
+      "read_end": "2026-11-05T10:33:04.70928035Z",
+      "read_start": "2026-11-05T10:33:04.582064105Z",
+      "role": "source",
+      "run_id": "d69f5652-aed6-4fdd-9e7c-edface751237",
+      "source_dirty": false,
+      "status": "available",
+      "process": {
+        "command": "run -config",
+        "command_binary": "/usr/local/bin/fvpn-agent",
+        "config_path": "/etc/vpn-node/agent-run.json",
+        "executable": "/usr/local/bin/fvpn-agent",
+        "pid": 911,
+        "role": "fvpn-agent",
+        "start_ticks": "19822228",
+        "status": "available",
+        "stdout_inode": 51651662
+      },
+      "process_coherent": true,
+      "configs": {
+        "/etc/vpn-node/agent-run.json": {
+          "bytes": 1196,
+          "datapath": {
+            "member_ingress": "fvmb0",
+            "snat": "192.0.6.20",
+            "uplink": "fvup0"
+          },
+          "fields": {
+            "control_url": "https://127.0.0.1:9445",
+            "heartbeat_seconds": 1,
+            "observation_seconds": 1,
+            "poll_seconds": 1
+          },
+          "inode": 51651484,
+          "modified_at": "2026-11-05T10:13:43.507474667Z",
+          "path": "/etc/vpn-node/agent-run.json",
+          "read_end": "2026-11-05T10:33:04.63638057Z",
+          "read_start": "2026-11-05T10:33:04.636270185Z",
+          "scope": "current file only; loaded bytes at launch not attested",
+          "sha256": "5d4377930082cfa83e4bdecbb87ae8ac8ec7686709a3762acdcf118c133dd401",
+          "stable_during_snapshot": true,
+          "status": "available"
+        }
+      }
+    },
+    {
+      "build": "37b3c25f60194e0d2261cf9aca30dfe8fc5d93be",
+      "container": "fvpn-w4-isolation-node",
+      "container_identity": {
+        "id": "e3a3f5720cef8c595033983ad1b31c6b5ae91f95fb8a3b7ad4f80c9022ffd4ba",
+        "started_at": "2026-11-05T10:32:59.47705881Z",
+        "running": true
+      },
+      "phase": "after-terminal-stop",
+      "read_end": "2026-11-05T10:33:06.062094366Z",
+      "read_start": "2026-11-05T10:33:05.950352098Z",
+      "role": "source",
+      "run_id": "d69f5652-aed6-4fdd-9e7c-edface751237",
+      "source_dirty": false,
+      "status": "available",
+      "process": {
+        "pid": 0,
+        "status": "unavailable"
+      },
+      "process_coherent": false,
+      "configs": {
+        "/etc/vpn-node/agent-run.json": {
+          "bytes": 1196,
+          "datapath": {
+            "member_ingress": "fvmb0",
+            "snat": "192.0.6.20",
+            "uplink": "fvup0"
+          },
+          "fields": {
+            "control_url": "https://127.0.0.1:9445",
+            "heartbeat_seconds": 1,
+            "observation_seconds": 1,
+            "poll_seconds": 1
+          },
+          "inode": 51651484,
+          "modified_at": "2026-11-05T10:13:43.507474667Z",
+          "path": "/etc/vpn-node/agent-run.json",
+          "read_end": "2026-11-05T10:33:06.005322575Z",
+          "read_start": "2026-11-05T10:33:06.005211821Z",
+          "scope": "current file only; loaded bytes at launch not attested",
+          "sha256": "5d4377930082cfa83e4bdecbb87ae8ac8ec7686709a3762acdcf118c133dd401",
+          "stable_during_snapshot": true,
+          "status": "available"
+        }
+      }
+    }
+  ],
+  "input_manifest": "auxiliary-inputs.json",
+  "scope": "Auxiliary only. Socket/read/receipt bounds, not kernel exit times. Accepted clone reports plus owned sockets establish bounded live transport; no claim of packet-by-packet HTTP tracing, indefinite latch persistence, clone datapath correctness, watchdog stop, or AT re-score."
+}

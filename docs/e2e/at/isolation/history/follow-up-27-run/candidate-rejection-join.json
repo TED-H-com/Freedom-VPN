@@ -1,0 +1,4981 @@
+{
+  "run_id": "d69f5652-aed6-4fdd-9e7c-edface751237",
+  "evidence_kind": "pre-install only; no substitution for installed-verifier assertions",
+  "accepted_candidates": [
+    {
+      "transaction_index": 1676,
+      "report_id": "01a1ab43-b59c-786b-8765-d6d9e9fbc3c5",
+      "report_observed_at": "2026-11-05T10:31:43.772533556Z",
+      "accepted_at": "2026-11-05T10:31:43.783637055Z",
+      "applied_ack": "35",
+      "candidate_generation": "36",
+      "error_index": 13,
+      "error": {
+        "code": "TC_FOREIGN_FILTER",
+        "message": "candidate_generation=36 verified=false",
+        "observed_at": "2026-11-05T10:31:43.772413873Z",
+        "stage": "apply_candidate"
+      },
+      "desired_transaction_indices": [
+        1674
+      ],
+      "attempt": {
+        "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "sequence": "1536"
+      },
+      "original_command_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36
+      ],
+      "command_lifecycle": {
+        "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+        "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+        "sequence": "1536",
+        "status": "available",
+        "records": [
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 0,
+            "record": {
+              "kind": "nft",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469907",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470097",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146171648385",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146171901944",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146171901944",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146173500205",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "1790000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146171432085",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146171648188",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69060212\nuser_usec 26865999\nsystem_usec 42194213\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193305\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190473"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146173502169",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146173612052",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69062519\nuser_usec 26866097\nsystem_usec 42196422\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 1,
+            "record": {
+              "kind": "ip",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469791",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470151",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146173883684",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146174292549",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146174292549",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146174842193",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "823000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146173822685",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146173883415",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69062542\nuser_usec 26866106\nsystem_usec 42196436\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146174842680",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146174919886",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69063933\nuser_usec 26866247\nsystem_usec 42197686\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 2,
+            "record": {
+              "kind": "ip",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469838",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470123",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146174998992",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146175277026",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146175277026",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146175762287",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "621000",
+              "system_cpu_ns": "0",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146174934309",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146174998760",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69063951\nuser_usec 26866254\nsystem_usec 42197697\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146175763033",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146175847683",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69064881\nuser_usec 26866254\nsystem_usec 42198627\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 3,
+            "record": {
+              "kind": "ip",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469815",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470133",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146175901976",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146176240908",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146176240908",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146176719743",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "662000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146175859203",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146175901765",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69064901\nuser_usec 26866254\nsystem_usec 42198646\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146176720406",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146176793418",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69065845\nuser_usec 26866254\nsystem_usec 42199590\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 4,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469826",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470127",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146176854027",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146177022900",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146177022900",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146177687887",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "778000",
+              "switches_available": true,
+              "voluntary_switches": "0",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146176809628",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146176853755",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69065863\nuser_usec 26866254\nsystem_usec 42199609\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146177688601",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146177771574",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69066971\nuser_usec 26866857\nsystem_usec 42200114\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 5,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469823",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470124",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146177870855",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146178041501",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146178041501",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146178742777",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "742000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146177815641",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146177870614",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69066996\nuser_usec 26866867\nsystem_usec 42200128\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146178743262",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146178828476",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69068196\nuser_usec 26866934\nsystem_usec 42201262\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 6,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469861",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470115",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146178907251",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146179003667",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146179003667",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146179682890",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "641000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146178843375",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146178907028",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69068232\nuser_usec 26866948\nsystem_usec 42201284\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146179683409",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146179763089",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69069263\nuser_usec 26867979\nsystem_usec 42201284\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 7,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469847",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470112",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146179852940",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146180008363",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146180008363",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146180615139",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "713000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146179796178",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146179852675",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69069293\nuser_usec 26868009\nsystem_usec 42201284\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146180615838",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146180705400",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69070332\nuser_usec 26868009\nsystem_usec 42202323\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 8,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469818",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470137",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146180850346",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146181230306",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146181230306",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146181702721",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "720000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146180790626",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146180850089",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69070348\nuser_usec 26868009\nsystem_usec 42202338\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146181703207",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146181777551",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69071457\nuser_usec 26868009\nsystem_usec 42203448\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 9,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469847",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470123",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146181964300",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146182218913",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146182218913",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146182687428",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "673000",
+              "system_cpu_ns": "0",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146181796907",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146181963512",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69071480\nuser_usec 26868009\nsystem_usec 42203471\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146182687814",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146182767423",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69074526\nuser_usec 26871055\nsystem_usec 42203471\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 10,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469859",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470121",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146182840489",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146182982779",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146182982779",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146183578800",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "664000",
+              "system_cpu_ns": "0",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146182780788",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146182840215",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69074539\nuser_usec 26871068\nsystem_usec 42203471\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146183579513",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146183668634",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69075478\nuser_usec 26872006\nsystem_usec 42203471\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 11,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469849",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470125",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146183746719",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146183886941",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146183886941",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146184547980",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "632000",
+              "system_cpu_ns": "0",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146183691816",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146183746426",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69075487\nuser_usec 26872016\nsystem_usec 42203471\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146184548468",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146184624891",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69076448\nuser_usec 26872977\nsystem_usec 42203471\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 12,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469871",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470116",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146184689928",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146184842658",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146184842658",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146185546818",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "708000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146184633379",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146184689705",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69076482\nuser_usec 26873011\nsystem_usec 42203471\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146185547342",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146185625736",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69077472\nuser_usec 26874000\nsystem_usec 42203471\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 13,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469858",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470109",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146185692989",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146185834883",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146185834883",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146186543852",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "646000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146185641087",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146185692759",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69077481\nuser_usec 26874010\nsystem_usec 42203471\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146186544371",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146186622330",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69078428\nuser_usec 26874956\nsystem_usec 42203471\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 14,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469849",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470109",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146186690718",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146186838199",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146186838199",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146187512962",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "658000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146186631608",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146186690490",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69078462\nuser_usec 26874991\nsystem_usec 42203471\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146187513456",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146187591385",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69079434\nuser_usec 26875642\nsystem_usec 42203791\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 15,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469865",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470105",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146187656865",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146187754619",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146187754619",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146188276716",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "574000",
+              "system_cpu_ns": "0",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146187599612",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146187656638",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69079447\nuser_usec 26875647\nsystem_usec 42203799\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146188277038",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146188340284",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69080288\nuser_usec 26876489\nsystem_usec 42203799\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 16,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469882",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470111",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146188398815",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146188540580",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146188540580",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146189081897",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "647000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146188347280",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146188398577",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69080303\nuser_usec 26876503\nsystem_usec 42203799\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146189082106",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146189139493",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69081182\nuser_usec 26876550\nsystem_usec 42204631\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 17,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469898",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470090",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146189196111",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146189316301",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146189316301",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146189785734",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "554000",
+              "system_cpu_ns": "0",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146189144602",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146189195913",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69081198\nuser_usec 26876556\nsystem_usec 42204641\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146189785939",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146189842570",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69081976\nuser_usec 26876859\nsystem_usec 42205116\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 18,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469888",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470091",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146189901450",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146190037560",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146190037560",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146190519023",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "586000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146189848267",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146189901253",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69081992\nuser_usec 26876865\nsystem_usec 42205126\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146190519245",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146190574014",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69082794\nuser_usec 26876865\nsystem_usec 42205928\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 19,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469890",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470092",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146190635026",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146190759585",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146190759585",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146191311582",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "639000",
+              "switches_available": true,
+              "voluntary_switches": "0",
+              "involuntary_switches": "1",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146190583046",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146190634810",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69082809\nuser_usec 26876865\nsystem_usec 42205944\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146191311831",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146191367586",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69083666\nuser_usec 26876865\nsystem_usec 42206800\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 20,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469901",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470091",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146191433652",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146191617096",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146191617096",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146192322276",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "665000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146191381940",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146191433347",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69083681\nuser_usec 26876865\nsystem_usec 42206816\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146192322767",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146192396752",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69084584\nuser_usec 26876865\nsystem_usec 42207718\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 21,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469872",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470127",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146192467956",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146192619351",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146192619351",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146193266988",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "646000",
+              "system_cpu_ns": "0",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146192405104",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146192467712",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69084603\nuser_usec 26876865\nsystem_usec 42207737\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146193267471",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146193339600",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69085511\nuser_usec 26877663\nsystem_usec 42207848\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 22,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469865",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470108",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146193410789",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146193501612",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146193501612",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146193997950",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "547000",
+              "system_cpu_ns": "0",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146193347938",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146193410567",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69085526\nuser_usec 26877669\nsystem_usec 42207857\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146193998167",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146194059408",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69086335\nuser_usec 26878212\nsystem_usec 42208123\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 23,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469890",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470103",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146194115724",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146194301185",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146194301185",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146194937465",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "678000",
+              "system_cpu_ns": "0",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146194065192",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146194115456",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69086351\nuser_usec 26878218\nsystem_usec 42208133\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146194938176",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146195020335",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69087367\nuser_usec 26878218\nsystem_usec 42209148\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 24,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469891",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470098",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146195090018",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146195312783",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146195312783",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146195771583",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "636000",
+              "system_cpu_ns": "0",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146195040879",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146195089774",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69087380\nuser_usec 26878218\nsystem_usec 42209161\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146195771919",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146195844148",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69088222\nuser_usec 26878546\nsystem_usec 42209676\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 25,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469904",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470091",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146195900282",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146196005625",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146196005625",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146196677230",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "641000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146195854199",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146195900083",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69088233\nuser_usec 26878550\nsystem_usec 42209683\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146196677902",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146196755770",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69089126\nuser_usec 26878550\nsystem_usec 42210575\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 26,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469889",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470104",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146196809158",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146196966500",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146196966500",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146197619207",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "669000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146196765716",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146196808941",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69089143\nuser_usec 26878550\nsystem_usec 42210592\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146197619912",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146197696613",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69090076\nuser_usec 26878550\nsystem_usec 42211525\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 27,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469895",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470104",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146197748801",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146197862642",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146197862642",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146198473014",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "567000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146197706484",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146197748592",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69090105\nuser_usec 26878550\nsystem_usec 42211554\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146198473714",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146198555013",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69090924\nuser_usec 26878550\nsystem_usec 42212374\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 28,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469889",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470096",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146198614330",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146198729697",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146198729697",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146199289647",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "536000",
+              "system_cpu_ns": "0",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146198569081",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146198614131",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69090936\nuser_usec 26878550\nsystem_usec 42212385\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146199290351",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146199368994",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69091718\nuser_usec 26878935\nsystem_usec 42212783\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 29,
+            "record": {
+              "kind": "tc",
+              "phase": "prepare",
+              "context_deadline": {
+                "before": {
+                  "ns": "198156133469890",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198156133470104",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146199422379",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146199546539",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146199546539",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146199997800",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "537000",
+              "system_cpu_ns": "0",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146199379043",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146199422139",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69091733\nuser_usec 26878940\nsystem_usec 42212792\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146199997949",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146200044743",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69092519\nuser_usec 26879727\nsystem_usec 42212792\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 30,
+            "record": {
+              "kind": "nft",
+              "phase": "quarantine",
+              "context_deadline": {
+                "before": {
+                  "ns": "198151200133810",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198151200133930",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146200186885",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146200326350",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146200326350",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146201565971",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "1227000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146200141877",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146200186719",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69092533\nuser_usec 26879740\nsystem_usec 42212792\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193394\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146201566471",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146201635088",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69094153\nuser_usec 26880738\nsystem_usec 42213415\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193395\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 31,
+            "record": {
+              "kind": "ip",
+              "phase": "quarantine",
+              "context_deadline": {
+                "before": {
+                  "ns": "198151200133681",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198151200133975",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146201688550",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146201821746",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146201821746",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146202394714",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "552000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146201645181",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146201688335",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69094168\nuser_usec 26880744\nsystem_usec 42213424\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193395\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146202395288",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146202459471",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69094964\nuser_usec 26880744\nsystem_usec 42214220\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193395\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 32,
+            "record": {
+              "kind": "ip",
+              "phase": "quarantine",
+              "context_deadline": {
+                "before": {
+                  "ns": "198151200133708",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198151200133951",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146202515081",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146202654292",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146202654292",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146203244168",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "522000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146202475518",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146202514867",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69094973\nuser_usec 26880744\nsystem_usec 42214229\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193395\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146203244672",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146203309369",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69095727\nuser_usec 26880744\nsystem_usec 42214983\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193395\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 33,
+            "record": {
+              "kind": "ip",
+              "phase": "quarantine",
+              "context_deadline": {
+                "before": {
+                  "ns": "198151200133691",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198151200133975",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146203432280",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146203574526",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146203574526",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146203969579",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "499000",
+              "system_cpu_ns": "0",
+              "switches_available": true,
+              "voluntary_switches": "0",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146203318785",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146203431667",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69095932\nuser_usec 26880744\nsystem_usec 42215188\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193395\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146203969990",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146204066549",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69098109\nuser_usec 26881077\nsystem_usec 42217031\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193395\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 34,
+            "record": {
+              "kind": "nft",
+              "phase": "quarantine",
+              "context_deadline": {
+                "before": {
+                  "ns": "198151200133644",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198151200133976",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146204140206",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146204353489",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146204353489",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146205672325",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "1401000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146204084427",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146204139963",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69098122\nuser_usec 26881083\nsystem_usec 42217039\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193395\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190562"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146205672779",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146205747047",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69099801\nuser_usec 26881336\nsystem_usec 42218465\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193396\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190564"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 35,
+            "record": {
+              "kind": "nft",
+              "phase": "quarantine",
+              "context_deadline": {
+                "before": {
+                  "ns": "198151200133678",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198151200133978",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146206019743",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146206292312",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146206292312",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146221362566",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "1609000",
+              "switches_available": true,
+              "voluntary_switches": "2",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146205958522",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146206019499",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69100157\nuser_usec 26881336\nsystem_usec 42218821\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193396\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190564"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146221364168",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146221461955",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69102828\nuser_usec 26881714\nsystem_usec 42221114\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193397\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190565"
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          {
+            "run_id": "ff06a319-6d62-4586-be29-80ba5c8333d3",
+            "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+            "sequence": "1536",
+            "index": 36,
+            "record": {
+              "kind": "nft",
+              "phase": "quarantine",
+              "context_deadline": {
+                "before": {
+                  "ns": "198151200133665",
+                  "available": true
+                },
+                "after": {
+                  "ns": "198151200134005",
+                  "available": true
+                }
+              },
+              "start_attempt": {
+                "ns": "198146221525804",
+                "available": true
+              },
+              "start_return": {
+                "ns": "198146221670531",
+                "available": true
+              },
+              "child_started_by": {
+                "ns": "198146221670531",
+                "available": true
+              },
+              "child_start_exact": {
+                "ns": "0",
+                "available": false
+              },
+              "cancel_observed": {
+                "ns": "0",
+                "available": false
+              },
+              "wait_return": {
+                "ns": "198146222902270",
+                "available": true
+              },
+              "context_before": "none",
+              "context_after": "none",
+              "context_at_cancel": "unavailable",
+              "started": true,
+              "ok": true,
+              "exit_available": true,
+              "exit_code": 0,
+              "signal_available": true,
+              "signal": 0,
+              "cpu_available": true,
+              "user_cpu_ns": "0",
+              "system_cpu_ns": "1323000",
+              "switches_available": true,
+              "voluntary_switches": "1",
+              "involuntary_switches": "0",
+              "before": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146221470594",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146221525572",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69102859\nuser_usec 26881726\nsystem_usec 42221132\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193397\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190565"
+                    }
+                  }
+                ]
+              },
+              "after": {
+                "bracket": {
+                  "before": {
+                    "ns": "198146222902982",
+                    "available": true
+                  },
+                  "after": {
+                    "ns": "198146223026994",
+                    "available": true
+                  }
+                },
+                "cgroup_v2_available": true,
+                "visible_ancestors_complete": true,
+                "host_ancestors_available": false,
+                "cgroups": [
+                  {
+                    "depth": 0,
+                    "cpu_max": {
+                      "available": true,
+                      "value": "max 100000"
+                    },
+                    "cpu_weight": {
+                      "available": true,
+                      "value": "100"
+                    },
+                    "cpu_stat": {
+                      "available": true,
+                      "value": "usage_usec 69104666\nuser_usec 26881726\nsystem_usec 42222940\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 0\nnr_throttled 0\nthrottled_usec 0\nnr_bursts 0\nburst_usec 0"
+                    },
+                    "cpu_pressure": {
+                      "available": true,
+                      "value": "some avg10=0.00 avg60=0.00 avg300=0.00 total=193398\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=190566"
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "phases": [
+          {
+            "phase": "prepare",
+            "command_indices": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7,
+              8,
+              9,
+              10,
+              11,
+              12,
+              13,
+              14,
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              21,
+              22,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29
+            ],
+            "description": "nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; ip: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; ip: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; ip: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; tc: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable"
+          },
+          {
+            "phase": "quarantine",
+            "command_indices": [
+              30,
+              31,
+              32,
+              33,
+              34,
+              35,
+              36
+            ],
+            "description": "nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; ip: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; ip: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; ip: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable; nft: started=True, ok=True, exit=0, signal=0, context=none\u2192none, cancel=unavailable"
+          }
+        ],
+        "reason": null
+      },
+      "evidence_kind": "pre-install rejection; installed verifier unavailable",
+      "attempt_anchor": {
+        "mono_before_ns": "198146223451115",
+        "wall": "2026-11-05T10:31:43.772074621Z",
+        "mono_after_ns": "198146223451482"
+      }
+    }
+  ]
+}

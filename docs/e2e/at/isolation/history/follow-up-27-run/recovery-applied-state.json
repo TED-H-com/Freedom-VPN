@@ -1,0 +1,139 @@
+{
+  "applied_generation": "37",
+  "lease": {
+    "lease_id": "dc3eb8c3-6d8f-4c89-b7c4-92f81fa611f1",
+    "issued_at": "2026-11-05T10:31:44.963610032Z",
+    "expires_at": "2026-11-05T10:32:44.963610032Z",
+    "generation": "37",
+    "max_offline_seconds": 60,
+    "member_count": 2,
+    "source": "",
+    "mono_sent_ns": "198147412100883",
+    "deadline_mono_ns": "198207412100883",
+    "anchor": {
+      "mono_ns": "198147412100883",
+      "server_unix_ns": "1793874704963610032",
+      "wall_unix_ns": "1793874704960724232",
+      "trusted": 1
+    }
+  },
+  "member_path": {
+    "generation": "37",
+    "interface": "fvmb0",
+    "addresses": [
+      "cb2d372a32ab41a92aa892efc85d4e3ea9bbc6b832f02a3c446b8b8180ace11e"
+    ],
+    "routes": [
+      "3a1c16d0c19a972d6cea4e68aa0f8f0aac78b8f999bdde11312b19e8119b3e8c",
+      "4d7afed42b1e3b39b24eb6531439cc7abb497a426f196157a2c1d43a9be0f8fb",
+      "08268f9b2fa7e33f3c0b31e05550d7f1cc078b632526f6d58da9aded8800ccca",
+      "4c531061c743132243c3420573a46d3eb3a1ff0dbc5b0c2bef91c952fcdc2ff9"
+    ]
+  },
+  "read_at": "2026-11-05T10:31:54.879237578Z",
+  "retained_applied": {
+    "model": {
+      "generation": 37,
+      "ipv6_mode": "block",
+      "now": "2026-11-05T10:31:44.991292107Z",
+      "now_mono_ns": "198147439782958",
+      "datapath": {
+        "member_ingress": "fvmb0",
+        "uplink": "fvup0",
+        "snat": "192.0.6.20"
+      },
+      "bindings": [
+        {
+          "member_id": "01a1ab33-5f2a-777e-8f0f-b9c19dc796a3",
+          "device_id": "01a1ab33-9448-7a1e-bc4b-a6294affaf14",
+          "peer_id": "dbm5dpv8k4c000f7e1cg",
+          "allowed_v4": [
+            "100.121.28.183/32"
+          ],
+          "binding_revision": 1,
+          "valid_from": "2026-11-05T10:14:06.664663Z",
+          "valid_until": "2026-11-05T11:14:07.816296Z"
+        },
+        {
+          "member_id": "01a1ab33-d722-7d2b-afcb-095eaf01138f",
+          "device_id": "01a1ab34-0a75-78af-8e41-48c23ab2be44",
+          "peer_id": "dbm5e1f8k4c000f7e85g",
+          "allowed_v4": [
+            "100.121.127.85/32"
+          ],
+          "binding_revision": 1,
+          "valid_from": "2026-11-05T10:14:36.917569Z",
+          "valid_until": "2026-11-05T11:14:23.670151Z"
+        }
+      ],
+      "leases": [
+        {
+          "member_id": "01a1ab33-5f2a-777e-8f0f-b9c19dc796a3",
+          "effective_service_end": "2026-11-05T10:32:44.963610032Z",
+          "node_lease_end": "2026-11-05T10:32:44.963610032Z",
+          "signed_server_time": "2026-11-05T10:31:44.963610032Z",
+          "max_offline_seconds": 60,
+          "deadline_mono_ns": "198207412100883"
+        },
+        {
+          "member_id": "01a1ab33-d722-7d2b-afcb-095eaf01138f",
+          "effective_service_end": "2026-11-05T10:32:44.963610032Z",
+          "node_lease_end": "2026-11-05T10:32:44.963610032Z",
+          "signed_server_time": "2026-11-05T10:31:44.963610032Z",
+          "max_offline_seconds": 60,
+          "deadline_mono_ns": "198207412100883"
+        }
+      ],
+      "resolvers": [
+        "192.0.6.53"
+      ],
+      "qos": {
+        "up": {
+          "rate_bps": 200000000,
+          "ceil_bps": 200000000
+        },
+        "down": {
+          "rate_bps": 207000000,
+          "ceil_bps": 207000000
+        },
+        "host_up": {
+          "rate_bps": 1000000,
+          "ceil_bps": 200000000
+        },
+        "host_down": {
+          "rate_bps": 1000000,
+          "ceil_bps": 207000000
+        },
+        "members": [
+          {
+            "member_id": "01a1ab33-5f2a-777e-8f0f-b9c19dc796a3",
+            "up": {
+              "rate_bps": 99500000,
+              "ceil_bps": 100000000
+            },
+            "down": {
+              "rate_bps": 100000000,
+              "ceil_bps": 100000000
+            }
+          },
+          {
+            "member_id": "01a1ab33-d722-7d2b-afcb-095eaf01138f",
+            "up": {
+              "rate_bps": 99500000,
+              "ceil_bps": 100000000
+            },
+            "down": {
+              "rate_bps": 100000000,
+              "ceil_bps": 100000000
+            }
+          }
+        ]
+      }
+    },
+    "assignments": {
+      "01a1ab33-5f2a-777e-8f0f-b9c19dc796a3": 52131,
+      "01a1ab33-d722-7d2b-afcb-095eaf01138f": 20746
+    }
+  },
+  "source": "read-only node SQLite snapshot; production persistence after verified Apply"
+}
