@@ -1,0 +1,120 @@
+{
+  "baseline": "034c82cf991de73db0f3a2f02ebe7270ef04d8c4",
+  "measured_source": "4c495c3b1516022e1de8db2f864432a8a8d171c5",
+  "checks": [
+    {
+      "command": [
+        "make",
+        "-f",
+        "mk/at-isolation.mk",
+        "at-isolation-lint",
+        "at-isolation-test",
+        "at-isolation-build"
+      ],
+      "exit_code": 0,
+      "admission_wait_seconds": 0.038,
+      "elapsed_seconds": 26.288,
+      "name": "lane",
+      "log": "history/follow-up-25-validation/lane.log.txt",
+      "output_tail": "+ go vet ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go vet -tags netlab ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags netlab ./tests/netlab/at/...\n+ go vet tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go\n+ go test -count=1 ./tests/e2e/at/isolation/... ./tests/netlab/at/...\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t19.694s\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation/boundaryplan\t0.014s\n?   \tgithub.com/TED-H-com/Freedom-VPN/tests/netlab/at\t[no test files]\n+ python3 tests/e2e/at/isolation/driver.py build\n+ sh -ec for arch in amd64 arm64; do GOOS=linux GOARCH=$arch go build -o \"$GOTMPDIR/probe-$arch\" tests/e2e/at/isolation/probe_main.go tests/e2e/at/isolation/observer_main.go; done"
+    },
+    {
+      "command": [
+        "make",
+        "-f",
+        "mk/e2e.mk",
+        "e2e-lint"
+      ],
+      "exit_code": 0,
+      "admission_wait_seconds": 0.038,
+      "elapsed_seconds": 4.286,
+      "name": "e2e-lint",
+      "log": "history/follow-up-25-validation/e2e-lint.log.txt",
+      "output_tail": "cd $WORKTREE && go vet ./tests/e2e/...\ncd $WORKTREE && go vet -tags e2e ./tests/e2e/...\ncd $WORKTREE && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 ./tests/e2e/...\ncd $WORKTREE && go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -tags e2e ./tests/e2e/..."
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "./tests/handover/..."
+      ],
+      "exit_code": 0,
+      "admission_wait_seconds": 901.225,
+      "elapsed_seconds": 905.864,
+      "name": "handover",
+      "log": "history/follow-up-25-validation/handover.log.txt",
+      "output_tail": "ok  \tgithub.com/TED-H-com/Freedom-VPN/tests/handover\t4.318s"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        "tests/e2e/at/isolation/run.py",
+        "make",
+        "go-lint",
+        "go-with-disk-tmp="
+      ],
+      "exit_code": 0,
+      "admission_wait_seconds": 0.038,
+      "elapsed_seconds": 2.266,
+      "name": "root-go-lint",
+      "log": "history/follow-up-25-validation/root-go-lint.log.txt",
+      "output_tail": "+ make go-lint go-with-disk-tmp="
+    },
+    {
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-v",
+        "-run",
+        "^TestCommittedEvidenceFiles_ValidAndHygieneClean$",
+        "./tests/e2e/at/isolation"
+      ],
+      "exit_code": 0,
+      "admission_wait_seconds": 0.037,
+      "elapsed_seconds": 14.836,
+      "name": "hygiene",
+      "log": "history/follow-up-25-validation/hygiene.log.txt",
+      "output_tail": "=== RUN   TestCommittedEvidenceFiles_ValidAndHygieneClean\n--- PASS: TestCommittedEvidenceFiles_ValidAndHygieneClean (14.67s)\nPASS\nok  \tgithub.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation\t14.671s"
+    },
+    {
+      "command": [
+        "python3",
+        "-B",
+        ".agent/f25/inventory.py"
+      ],
+      "exit_code": 0,
+      "admission_wait_seconds": 0.037,
+      "elapsed_seconds": 0.192,
+      "name": "inventory",
+      "log": "history/follow-up-25-validation/inventory.log.txt",
+      "output_tail": "{\"containers\": [], \"images\": [], \"networks\": [], \"volumes\": []}"
+    }
+  ],
+  "assembled": {
+    "run_id": "bd73d7a4-03f1-4b17-97c2-9c25a39ac0db",
+    "exit_code": 0,
+    "scheduled_status": "pass",
+    "pass_rows": 27,
+    "blocked_rows": 2,
+    "fail_rows": 0,
+    "errors": [],
+    "receipt": "history/follow-up-25-run/follow-up-25-run-receipt.json"
+  },
+  "formatting": "Whole-module gofmt empty; final working/staged and baseline diff checks clean. Initial replay console whitespace retained losslessly as gzip in 4c495c3b.",
+  "scope_verification": {
+    "sha256_pins": 384,
+    "gzip_original_pins": 37,
+    "d098_byte_identical": 213,
+    "owned_paths_only": true,
+    "earlier_archives_untouched": true,
+    "predicate_driver_member_schedule_unchanged": true,
+    "d142_functions_byte_identical": true,
+    "handover_changed_lines": [],
+    "workflow_expected_lists_run_and_summary_unchanged": true,
+    "additive_narratives": true
+  },
+  "scope": "Actual gate output, separate admission states and fresh final owned inventory; no live retry. Worktree paths redacted from public console logs."
+}

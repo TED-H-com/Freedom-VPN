@@ -1,0 +1,780 @@
+{
+  "run_id": "9f1bc0ff-d01f-4a3f-ad41-6c6a086e6e04",
+  "hold": {
+    "unique_hold_reports": 13,
+    "all_hold_reports_qualified": true,
+    "accepted_hold_reports": 13,
+    "holds": [
+      {
+        "report_id": "01a1a1be-ea7c-722e-88bb-8c57c70c8fb8",
+        "observed_at": "2026-11-03T14:10:06.076127284Z",
+        "attempt_indices": [
+          343
+        ],
+        "statuses": [
+          202
+        ],
+        "accepted": true,
+        "applied_generation": "11",
+        "signed_lease_generation": "10",
+        "forwarding": false,
+        "reasons": [
+          "policy_missing"
+        ],
+        "lease_errors": [
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease is not for the desired generation.",
+            "observed_at": "2026-11-03T14:10:06.039738426Z",
+            "stage": "lease"
+          },
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease generation hold: applied=11 lease=10 steps=1 elapsed_ms=5 alarm=false.",
+            "observed_at": "2026-11-03T14:10:06.076127284Z",
+            "stage": "lease"
+          }
+        ],
+        "qualifies": true,
+        "streak_summaries": [
+          {
+            "applied": "11",
+            "lease": "10",
+            "steps": "1",
+            "elapsed_ms": "5",
+            "alarm": false,
+            "threshold_reached": false,
+            "summary_consistent": true
+          }
+        ]
+      },
+      {
+        "report_id": "01a1a1be-f1e7-700e-bebc-2348abcf44ac",
+        "observed_at": "2026-11-03T14:10:07.974982791Z",
+        "attempt_indices": [
+          348
+        ],
+        "statuses": [
+          202
+        ],
+        "accepted": true,
+        "applied_generation": "11",
+        "signed_lease_generation": "10",
+        "forwarding": false,
+        "reasons": [
+          "policy_missing"
+        ],
+        "lease_errors": [
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease is not for the desired generation.",
+            "observed_at": "2026-11-03T14:10:07.948054339Z",
+            "stage": "lease"
+          },
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease generation hold: applied=11 lease=10 steps=3 elapsed_ms=1903 alarm=true.",
+            "observed_at": "2026-11-03T14:10:07.974982791Z",
+            "stage": "lease"
+          }
+        ],
+        "qualifies": true,
+        "streak_summaries": [
+          {
+            "applied": "11",
+            "lease": "10",
+            "steps": "3",
+            "elapsed_ms": "1903",
+            "alarm": true,
+            "threshold_reached": true,
+            "summary_consistent": true
+          }
+        ]
+      },
+      {
+        "report_id": "01a1a1be-f9c0-764e-9e87-d820573026d4",
+        "observed_at": "2026-11-03T14:10:09.984258584Z",
+        "attempt_indices": [
+          353
+        ],
+        "statuses": [
+          202
+        ],
+        "accepted": true,
+        "applied_generation": "11",
+        "signed_lease_generation": "10",
+        "forwarding": false,
+        "reasons": [
+          "policy_missing"
+        ],
+        "lease_errors": [
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease is not for the desired generation.",
+            "observed_at": "2026-11-03T14:10:09.955861907Z",
+            "stage": "lease"
+          },
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease generation hold: applied=11 lease=10 steps=5 elapsed_ms=3913 alarm=true.",
+            "observed_at": "2026-11-03T14:10:09.984258584Z",
+            "stage": "lease"
+          }
+        ],
+        "qualifies": true,
+        "streak_summaries": [
+          {
+            "applied": "11",
+            "lease": "10",
+            "steps": "5",
+            "elapsed_ms": "3913",
+            "alarm": true,
+            "threshold_reached": true,
+            "summary_consistent": true
+          }
+        ]
+      },
+      {
+        "report_id": "01a1a1bf-018d-707c-ad1c-607607166ab4",
+        "observed_at": "2026-11-03T14:10:11.981021663Z",
+        "attempt_indices": [
+          358
+        ],
+        "statuses": [
+          202
+        ],
+        "accepted": true,
+        "applied_generation": "11",
+        "signed_lease_generation": "10",
+        "forwarding": false,
+        "reasons": [
+          "safety_check_failed",
+          "policy_missing"
+        ],
+        "lease_errors": [
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease is not for the desired generation.",
+            "observed_at": "2026-11-03T14:10:11.983590903Z",
+            "stage": "lease"
+          },
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease generation hold: applied=11 lease=10 steps=7 elapsed_ms=5910 alarm=true.",
+            "observed_at": "2026-11-03T14:10:11.981021663Z",
+            "stage": "lease"
+          }
+        ],
+        "qualifies": true,
+        "streak_summaries": [
+          {
+            "applied": "11",
+            "lease": "10",
+            "steps": "7",
+            "elapsed_ms": "5910",
+            "alarm": true,
+            "threshold_reached": true,
+            "summary_consistent": true
+          }
+        ]
+      },
+      {
+        "report_id": "01a1a1bf-0562-7d84-aaf7-e909f1ed0eab",
+        "observed_at": "2026-11-03T14:10:12.96285626Z",
+        "attempt_indices": [
+          361
+        ],
+        "statuses": [
+          202
+        ],
+        "accepted": true,
+        "applied_generation": "11",
+        "signed_lease_generation": "10",
+        "forwarding": false,
+        "reasons": [
+          "policy_missing"
+        ],
+        "lease_errors": [
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease is not for the desired generation.",
+            "observed_at": "2026-11-03T14:10:12.965416264Z",
+            "stage": "lease"
+          },
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease generation hold: applied=11 lease=10 steps=1 elapsed_ms=0 alarm=false.",
+            "observed_at": "2026-11-03T14:10:12.96285626Z",
+            "stage": "lease"
+          }
+        ],
+        "qualifies": true,
+        "streak_summaries": [
+          {
+            "applied": "11",
+            "lease": "10",
+            "steps": "1",
+            "elapsed_ms": "0",
+            "alarm": false,
+            "threshold_reached": false,
+            "summary_consistent": true
+          }
+        ]
+      },
+      {
+        "report_id": "01a1a1bf-92a3-7e51-b710-af3ac15faab5",
+        "observed_at": "2026-11-03T14:10:49.123924634Z",
+        "attempt_indices": [
+          425
+        ],
+        "statuses": [
+          202
+        ],
+        "accepted": true,
+        "applied_generation": "12",
+        "signed_lease_generation": "11",
+        "forwarding": false,
+        "reasons": [
+          "policy_missing"
+        ],
+        "lease_errors": [
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease is not for the desired generation.",
+            "observed_at": "2026-11-03T14:10:49.091847166Z",
+            "stage": "lease"
+          },
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease generation hold: applied=12 lease=11 steps=1 elapsed_ms=7 alarm=false.",
+            "observed_at": "2026-11-03T14:10:49.123924634Z",
+            "stage": "lease"
+          }
+        ],
+        "qualifies": true,
+        "streak_summaries": [
+          {
+            "applied": "12",
+            "lease": "11",
+            "steps": "1",
+            "elapsed_ms": "7",
+            "alarm": false,
+            "threshold_reached": false,
+            "summary_consistent": true
+          }
+        ]
+      },
+      {
+        "report_id": "01a1a1bf-9a11-74a2-826d-fb6e8fac383b",
+        "observed_at": "2026-11-03T14:10:51.025284343Z",
+        "attempt_indices": [
+          430
+        ],
+        "statuses": [
+          202
+        ],
+        "accepted": true,
+        "applied_generation": "12",
+        "signed_lease_generation": "11",
+        "forwarding": false,
+        "reasons": [
+          "policy_missing"
+        ],
+        "lease_errors": [
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease is not for the desired generation.",
+            "observed_at": "2026-11-03T14:10:50.996331035Z",
+            "stage": "lease"
+          },
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease generation hold: applied=12 lease=11 steps=3 elapsed_ms=1909 alarm=true.",
+            "observed_at": "2026-11-03T14:10:51.025284343Z",
+            "stage": "lease"
+          }
+        ],
+        "qualifies": true,
+        "streak_summaries": [
+          {
+            "applied": "12",
+            "lease": "11",
+            "steps": "3",
+            "elapsed_ms": "1909",
+            "alarm": true,
+            "threshold_reached": true,
+            "summary_consistent": true
+          }
+        ]
+      },
+      {
+        "report_id": "01a1a1bf-a1dc-78e4-9a57-61ae91c10f5b",
+        "observed_at": "2026-11-03T14:10:53.020468656Z",
+        "attempt_indices": [
+          435
+        ],
+        "statuses": [
+          202
+        ],
+        "accepted": true,
+        "applied_generation": "12",
+        "signed_lease_generation": "11",
+        "forwarding": false,
+        "reasons": [
+          "policy_missing"
+        ],
+        "lease_errors": [
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease is not for the desired generation.",
+            "observed_at": "2026-11-03T14:10:52.991523767Z",
+            "stage": "lease"
+          },
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease generation hold: applied=12 lease=11 steps=5 elapsed_ms=3904 alarm=true.",
+            "observed_at": "2026-11-03T14:10:53.020468656Z",
+            "stage": "lease"
+          }
+        ],
+        "qualifies": true,
+        "streak_summaries": [
+          {
+            "applied": "12",
+            "lease": "11",
+            "steps": "5",
+            "elapsed_ms": "3904",
+            "alarm": true,
+            "threshold_reached": true,
+            "summary_consistent": true
+          }
+        ]
+      },
+      {
+        "report_id": "01a1a1bf-a5c8-7871-a4fa-1942a534be1a",
+        "observed_at": "2026-11-03T14:10:54.024378112Z",
+        "attempt_indices": [
+          438
+        ],
+        "statuses": [
+          202
+        ],
+        "accepted": true,
+        "applied_generation": "12",
+        "signed_lease_generation": "11",
+        "forwarding": false,
+        "reasons": [
+          "policy_missing"
+        ],
+        "lease_errors": [
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease is not for the desired generation.",
+            "observed_at": "2026-11-03T14:10:53.994191883Z",
+            "stage": "lease"
+          },
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease generation hold: applied=12 lease=11 steps=6 elapsed_ms=4908 alarm=true.",
+            "observed_at": "2026-11-03T14:10:54.024378112Z",
+            "stage": "lease"
+          }
+        ],
+        "qualifies": true,
+        "streak_summaries": [
+          {
+            "applied": "12",
+            "lease": "11",
+            "steps": "6",
+            "elapsed_ms": "4908",
+            "alarm": true,
+            "threshold_reached": true,
+            "summary_consistent": true
+          }
+        ]
+      },
+      {
+        "report_id": "01a1a1c0-2efd-7256-a47b-a3948eacd4fb",
+        "observed_at": "2026-11-03T14:11:29.149142868Z",
+        "attempt_indices": [
+          499
+        ],
+        "statuses": [
+          202
+        ],
+        "accepted": true,
+        "applied_generation": "13",
+        "signed_lease_generation": "12",
+        "forwarding": false,
+        "reasons": [
+          "policy_missing"
+        ],
+        "lease_errors": [
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease is not for the desired generation.",
+            "observed_at": "2026-11-03T14:11:29.114754344Z",
+            "stage": "lease"
+          },
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease generation hold: applied=13 lease=12 steps=1 elapsed_ms=6 alarm=false.",
+            "observed_at": "2026-11-03T14:11:29.149142868Z",
+            "stage": "lease"
+          }
+        ],
+        "qualifies": true,
+        "streak_summaries": [
+          {
+            "applied": "13",
+            "lease": "12",
+            "steps": "1",
+            "elapsed_ms": "6",
+            "alarm": false,
+            "threshold_reached": false,
+            "summary_consistent": true
+          }
+        ]
+      },
+      {
+        "report_id": "01a1a1c0-ace1-74f1-84fe-86787cd3b7ce",
+        "observed_at": "2026-11-03T14:12:01.377284047Z",
+        "attempt_indices": [
+          502
+        ],
+        "statuses": [
+          202
+        ],
+        "accepted": true,
+        "applied_generation": "13",
+        "signed_lease_generation": "12",
+        "forwarding": false,
+        "reasons": [
+          "policy_missing"
+        ],
+        "lease_errors": [
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease is not for the desired generation.",
+            "observed_at": "2026-11-03T14:12:01.31452394Z",
+            "stage": "lease"
+          },
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease generation hold: applied=13 lease=12 steps=1 elapsed_ms=0 alarm=false.",
+            "observed_at": "2026-11-03T14:12:01.377284047Z",
+            "stage": "lease"
+          }
+        ],
+        "qualifies": true,
+        "streak_summaries": [
+          {
+            "applied": "13",
+            "lease": "12",
+            "steps": "1",
+            "elapsed_ms": "0",
+            "alarm": false,
+            "threshold_reached": false,
+            "summary_consistent": true
+          }
+        ]
+      },
+      {
+        "report_id": "01a1a1c0-b487-7e44-b080-c791e3aa4764",
+        "observed_at": "2026-11-03T14:12:03.335911525Z",
+        "attempt_indices": [
+          507
+        ],
+        "statuses": [
+          202
+        ],
+        "accepted": true,
+        "applied_generation": "13",
+        "signed_lease_generation": "12",
+        "forwarding": false,
+        "reasons": [
+          "policy_missing"
+        ],
+        "lease_errors": [
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease is not for the desired generation.",
+            "observed_at": "2026-11-03T14:12:03.311120639Z",
+            "stage": "lease"
+          },
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease generation hold: applied=13 lease=12 steps=3 elapsed_ms=1958 alarm=true.",
+            "observed_at": "2026-11-03T14:12:03.335911525Z",
+            "stage": "lease"
+          }
+        ],
+        "qualifies": true,
+        "streak_summaries": [
+          {
+            "applied": "13",
+            "lease": "12",
+            "steps": "3",
+            "elapsed_ms": "1958",
+            "alarm": true,
+            "threshold_reached": true,
+            "summary_consistent": true
+          }
+        ]
+      },
+      {
+        "report_id": "01a1a1c5-ee22-775c-b91d-5d99a30b55a9",
+        "observed_at": "2026-11-03T14:17:45.762468099Z",
+        "attempt_indices": [
+          1087
+        ],
+        "statuses": [
+          202
+        ],
+        "accepted": true,
+        "applied_generation": "23",
+        "signed_lease_generation": "22",
+        "forwarding": false,
+        "reasons": [
+          "policy_missing"
+        ],
+        "lease_errors": [
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease is not for the desired generation.",
+            "observed_at": "2026-11-03T14:17:45.738918242Z",
+            "stage": "lease"
+          },
+          {
+            "code": "STALE_GENERATION",
+            "message": "Serving lease generation hold: applied=23 lease=22 steps=1 elapsed_ms=0 alarm=false.",
+            "observed_at": "2026-11-03T14:17:45.762468099Z",
+            "stage": "lease"
+          }
+        ],
+        "qualifies": true,
+        "streak_summaries": [
+          {
+            "applied": "23",
+            "lease": "22",
+            "steps": "1",
+            "elapsed_ms": "0",
+            "alarm": false,
+            "threshold_reached": false,
+            "summary_consistent": true
+          }
+        ]
+      }
+    ],
+    "alarms": [
+      {
+        "report_id": "01a1a1be-f1e7-700e-bebc-2348abcf44ac",
+        "observed_at": "2026-11-03T14:10:07.974982791Z",
+        "accepted": true,
+        "summary": {
+          "applied": "11",
+          "lease": "10",
+          "steps": "3",
+          "elapsed_ms": "1903",
+          "alarm": true,
+          "threshold_reached": true,
+          "summary_consistent": true
+        }
+      },
+      {
+        "report_id": "01a1a1be-f9c0-764e-9e87-d820573026d4",
+        "observed_at": "2026-11-03T14:10:09.984258584Z",
+        "accepted": true,
+        "summary": {
+          "applied": "11",
+          "lease": "10",
+          "steps": "5",
+          "elapsed_ms": "3913",
+          "alarm": true,
+          "threshold_reached": true,
+          "summary_consistent": true
+        }
+      },
+      {
+        "report_id": "01a1a1bf-018d-707c-ad1c-607607166ab4",
+        "observed_at": "2026-11-03T14:10:11.981021663Z",
+        "accepted": true,
+        "summary": {
+          "applied": "11",
+          "lease": "10",
+          "steps": "7",
+          "elapsed_ms": "5910",
+          "alarm": true,
+          "threshold_reached": true,
+          "summary_consistent": true
+        }
+      },
+      {
+        "report_id": "01a1a1bf-9a11-74a2-826d-fb6e8fac383b",
+        "observed_at": "2026-11-03T14:10:51.025284343Z",
+        "accepted": true,
+        "summary": {
+          "applied": "12",
+          "lease": "11",
+          "steps": "3",
+          "elapsed_ms": "1909",
+          "alarm": true,
+          "threshold_reached": true,
+          "summary_consistent": true
+        }
+      },
+      {
+        "report_id": "01a1a1bf-a1dc-78e4-9a57-61ae91c10f5b",
+        "observed_at": "2026-11-03T14:10:53.020468656Z",
+        "accepted": true,
+        "summary": {
+          "applied": "12",
+          "lease": "11",
+          "steps": "5",
+          "elapsed_ms": "3904",
+          "alarm": true,
+          "threshold_reached": true,
+          "summary_consistent": true
+        }
+      },
+      {
+        "report_id": "01a1a1bf-a5c8-7871-a4fa-1942a534be1a",
+        "observed_at": "2026-11-03T14:10:54.024378112Z",
+        "accepted": true,
+        "summary": {
+          "applied": "12",
+          "lease": "11",
+          "steps": "6",
+          "elapsed_ms": "4908",
+          "alarm": true,
+          "threshold_reached": true,
+          "summary_consistent": true
+        }
+      },
+      {
+        "report_id": "01a1a1c0-b487-7e44-b080-c791e3aa4764",
+        "observed_at": "2026-11-03T14:12:03.335911525Z",
+        "accepted": true,
+        "summary": {
+          "applied": "13",
+          "lease": "12",
+          "steps": "3",
+          "elapsed_ms": "1958",
+          "alarm": true,
+          "threshold_reached": true,
+          "summary_consistent": true
+        }
+      }
+    ],
+    "alarm_observed": true,
+    "all_summary_thresholds_consistent": true,
+    "other_policy_missing_reports": [],
+    "interpretation": "Every observed hold must carry policy_missing and STALE_GENERATION at stage=lease with forwarding false. Signed lease generations resolve the ACK comparison; baseline alone is not a hold classification. Alarm is observed only when the original summary says true; 3 Steps or 30 seconds is diagnostic, never a forwarding grace. Missing Step events prevent independently reconstructing every unreported increment."
+  },
+  "terminal_process_stops": [
+    {
+      "container": "fvpn-w4-isolation-node",
+      "sample": {
+        "agent_budget_seconds": 15,
+        "cooperative_exit": true,
+        "exit_observed": true,
+        "exit_sample": {
+          "mono_ns": "39580813195723",
+          "wall": "2026-11-03T14:28:58.361843316Z"
+        },
+        "last_alive_since_signal_ns": "30193219",
+        "launch_id": "40d03760-a185-4de9-b65c-25d20d0d555d",
+        "outcome_source": "parent wait receipt; escalation sidecar is intent only; pidfd timestamps bound observation, not exact kernel exit",
+        "parent_identity_matched": true,
+        "parent_wait_available": true,
+        "parent_wait_receipt": {
+          "id": "40d03760-a185-4de9-b65c-25d20d0d555d",
+          "pid": 915,
+          "start_ticks": "3947709",
+          "started_at": "2026-11-03T14:27:14.638917497Z",
+          "wait_observed_at": "2026-11-03T14:28:58.36187303Z",
+          "wait_status": 0,
+          "exit_code": 0,
+          "signal": null,
+          "core_dump": false
+        },
+        "pid": 915,
+        "scope": "TEST ONLY terminal stop; pidfd SIGTERM send and exit readiness brackets; supervisor pause and escalation retained",
+        "signal_ok": true,
+        "signal_return": {
+          "mono_ns": "39580773691741",
+          "wall": "2026-11-03T14:28:58.322315247Z"
+        },
+        "signal_start": {
+          "mono_ns": "39580773687233",
+          "wall": "2026-11-03T14:28:58.322311266Z"
+        },
+        "signal_to_exit_upper_ns": "39507101",
+        "start_ticks": "3947709",
+        "step_cancel": "not observable here",
+        "supervisor_stop_ok": true,
+        "supervisor_stop_output": "0",
+        "within_15s": true
+      },
+      "stored_lease_survived": true,
+      "lease_id_before": "d8f214fb-dbd1-4c8a-ac10-f88b842c1cc0",
+      "lease_id_after": "d8f214fb-dbd1-4c8a-ac10-f88b842c1cc0",
+      "receiver_completions_during_signal_to_exit": [],
+      "no_control_io_after_cancel": "not observable here: Step cancellation timestamp and agent-side POST completion are not exported; proxy completion alone cannot prove it"
+    },
+    {
+      "container": "fvpn-w4-isolation-node-clone",
+      "sample": {
+        "agent_budget_seconds": 15,
+        "cooperative_exit": true,
+        "exit_observed": true,
+        "exit_sample": {
+          "mono_ns": "39581177466683",
+          "wall": "2026-11-03T14:28:58.726090804Z"
+        },
+        "last_alive_since_signal_ns": "0",
+        "launch_id": "8f7c5fd6-dad8-4359-a976-dc6354e88dfb",
+        "outcome_source": "parent wait receipt; escalation sidecar is intent only; pidfd timestamps bound observation, not exact kernel exit",
+        "parent_identity_matched": true,
+        "parent_wait_available": true,
+        "parent_wait_receipt": {
+          "id": "8f7c5fd6-dad8-4359-a976-dc6354e88dfb",
+          "pid": 1138,
+          "start_ticks": "3947713",
+          "started_at": "2026-11-03T14:27:14.682402287Z",
+          "wait_observed_at": "2026-11-03T14:28:58.726140702Z",
+          "wait_status": 0,
+          "exit_code": 0,
+          "signal": null,
+          "core_dump": false
+        },
+        "pid": 1138,
+        "scope": "TEST ONLY terminal stop; pidfd SIGTERM send and exit readiness brackets; supervisor pause and escalation retained",
+        "signal_ok": true,
+        "signal_return": {
+          "mono_ns": "39581171644871",
+          "wall": "2026-11-03T14:28:58.720268336Z"
+        },
+        "signal_start": {
+          "mono_ns": "39581171640087",
+          "wall": "2026-11-03T14:28:58.720264412Z"
+        },
+        "signal_to_exit_upper_ns": "5826460",
+        "start_ticks": "3947713",
+        "step_cancel": "not observable here",
+        "supervisor_stop_ok": true,
+        "supervisor_stop_output": "0",
+        "within_15s": true
+      },
+      "stored_lease_survived": true,
+      "lease_id_before": "faa53a10-0b99-4430-bd4d-8ba4e30800c5",
+      "lease_id_after": "faa53a10-0b99-4430-bd4d-8ba4e30800c5",
+      "receiver_completions_during_signal_to_exit": [],
+      "no_control_io_after_cancel": "not observable here: Step cancellation timestamp and agent-side POST completion are not exported; proxy completion alone cannot prove it"
+    }
+  ],
+  "cooperative_bound_ns": "15000000000",
+  "stored_lease_scope": "Survival does not establish adoption or current serving eligibility.",
+  "container_lifecycle": "container-lifecycle-events.json; distinct from directly signalled agent process exits",
+  "baseline_brackets": "policy-missing-analysis.json: baseline to next successful Apply, every loss counted, later recovery required"
+}

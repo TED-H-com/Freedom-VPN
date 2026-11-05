@@ -1,0 +1,92 @@
+[
+  {
+    "after": {
+      "lease_id": "8c6194ca-2446-44e8-a3d6-6bca121093c3",
+      "issued_at": "2026-11-04T16:10:33.833172026Z",
+      "expires_at": "2026-11-04T16:11:33.833172026Z",
+      "generation": "34",
+      "max_offline_seconds": 60,
+      "member_count": 2,
+      "source": "",
+      "mono_sent_ns": "132076281233958",
+      "deadline_mono_ns": "132136281233958",
+      "anchor": {
+        "mono_ns": "132076281233958",
+        "server_unix_ns": "1793808633833172026",
+        "wall_unix_ns": "1793808633829857306",
+        "trusted": 1
+      }
+    },
+    "after_available": true,
+    "before": {
+      "lease_id": "8c6194ca-2446-44e8-a3d6-6bca121093c3",
+      "issued_at": "2026-11-04T16:10:33.833172026Z",
+      "expires_at": "2026-11-04T16:11:33.833172026Z",
+      "generation": "34",
+      "max_offline_seconds": 60,
+      "member_count": 2,
+      "source": "",
+      "mono_sent_ns": "132076281233958",
+      "deadline_mono_ns": "132136281233958",
+      "anchor": {
+        "mono_ns": "132076281233958",
+        "server_unix_ns": "1793808633833172026",
+        "wall_unix_ns": "1793808633829857306",
+        "trusted": 1
+      }
+    },
+    "before_available": true,
+    "container": "fvpn-w4-isolation-node",
+    "duration_ns": "259914610",
+    "end": "2026-11-04T16:10:40.703702902Z",
+    "ok": true,
+    "output": "{\"agent_budget_seconds\":15,\"cooperative_exit\":true,\"exit_observed\":true,\"exit_sample\":{\"mono_ns\":\"132082926320361\",\"wall\":\"2026-11-04T16:10:40.474944083Z\"},\"last_alive_since_signal_ns\":\"0\",\"launch_id\":\"ecb25397-103f-4adb-9556-3441006987dd\",\"outcome_source\":\"parent wait receipt; escalation sidecar is intent only; pidfd timestamps bound observation, not exact kernel exit\",\"parent_identity_matched\":true,\"parent_wait_available\":true,\"parent_wait_receipt\":{\"id\":\"ecb25397-103f-4adb-9556-3441006987dd\",\"pid\":902,\"start_ticks\":\"13197907\",\"started_at\":\"2026-11-04T16:08:56.624833496Z\",\"wait_observed_at\":\"2026-11-04T16:10:40.475026152Z\",\"wait_status\":0,\"exit_code\":0,\"signal\":null,\"core_dump\":false},\"pid\":902,\"scope\":\"TEST ONLY terminal stop; pidfd SIGTERM send and exit readiness brackets; supervisor pause and escalation retained\",\"signal_ok\":true,\"signal_return\":{\"mono_ns\":\"132082916393102\",\"wall\":\"2026-11-04T16:10:40.46501659Z\"},\"signal_start\":{\"mono_ns\":\"132082916388278\",\"wall\":\"2026-11-04T16:10:40.465012715Z\"},\"signal_to_exit_upper_ns\":\"9932011\",\"start_ticks\":\"13197907\",\"step_cancel\":\"not observable here\",\"supervisor_stop_ok\":true,\"supervisor_stop_output\":\"0\",\"within_15s\":true}\n",
+    "start": "2026-11-04T16:10:40.443788303Z",
+    "stored_lease_survived_stop": true
+  },
+  {
+    "after": {
+      "lease_id": "7c3b4434-b55e-4a73-a84f-28f009a9ffe3",
+      "issued_at": "2026-11-04T16:08:44.559994902Z",
+      "expires_at": "2026-11-04T16:09:44.559994902Z",
+      "generation": "34",
+      "max_offline_seconds": 60,
+      "member_count": 2,
+      "source": "",
+      "mono_sent_ns": "131967008883289",
+      "deadline_mono_ns": "132027008883289",
+      "anchor": {
+        "mono_ns": "131967008883289",
+        "server_unix_ns": "1793808524559994902",
+        "wall_unix_ns": "1793808524557506679",
+        "trusted": 1
+      }
+    },
+    "after_available": true,
+    "before": {
+      "lease_id": "7c3b4434-b55e-4a73-a84f-28f009a9ffe3",
+      "issued_at": "2026-11-04T16:08:44.559994902Z",
+      "expires_at": "2026-11-04T16:09:44.559994902Z",
+      "generation": "34",
+      "max_offline_seconds": 60,
+      "member_count": 2,
+      "source": "",
+      "mono_sent_ns": "131967008883289",
+      "deadline_mono_ns": "132027008883289",
+      "anchor": {
+        "mono_ns": "131967008883289",
+        "server_unix_ns": "1793808524559994902",
+        "wall_unix_ns": "1793808524557506679",
+        "trusted": 1
+      }
+    },
+    "before_available": true,
+    "container": "fvpn-w4-isolation-node-clone",
+    "duration_ns": "285281066",
+    "end": "2026-11-04T16:10:41.092844657Z",
+    "ok": true,
+    "output": "{\"agent_budget_seconds\":15,\"cooperative_exit\":true,\"exit_observed\":true,\"exit_sample\":{\"mono_ns\":\"132083314537701\",\"wall\":\"2026-11-04T16:10:40.863172923Z\"},\"last_alive_since_signal_ns\":\"30153263\",\"launch_id\":\"4cd727e6-f123-4ba6-bfaa-0c82f045c5e1\",\"outcome_source\":\"parent wait receipt; escalation sidecar is intent only; pidfd timestamps bound observation, not exact kernel exit\",\"parent_identity_matched\":true,\"parent_wait_available\":true,\"parent_wait_receipt\":{\"id\":\"4cd727e6-f123-4ba6-bfaa-0c82f045c5e1\",\"pid\":1141,\"start_ticks\":\"13197911\",\"started_at\":\"2026-11-04T16:08:56.663660771Z\",\"wait_observed_at\":\"2026-11-04T16:10:40.863250495Z\",\"wait_status\":0,\"exit_code\":0,\"signal\":null,\"core_dump\":false},\"pid\":1141,\"scope\":\"TEST ONLY terminal stop; pidfd SIGTERM send and exit readiness brackets; supervisor pause and escalation retained\",\"signal_ok\":true,\"signal_return\":{\"mono_ns\":\"132083281072367\",\"wall\":\"2026-11-04T16:10:40.829695827Z\"},\"signal_start\":{\"mono_ns\":\"132083281066925\",\"wall\":\"2026-11-04T16:10:40.829691134Z\"},\"signal_to_exit_upper_ns\":\"33469866\",\"start_ticks\":\"13197911\",\"step_cancel\":\"not observable here\",\"supervisor_stop_ok\":true,\"supervisor_stop_output\":\"0\",\"within_15s\":true}\n",
+    "start": "2026-11-04T16:10:40.807563599Z",
+    "stored_lease_survived_stop": true
+  }
+]

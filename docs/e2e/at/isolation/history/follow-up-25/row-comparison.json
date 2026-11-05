@@ -1,0 +1,215 @@
+{
+  "run_id": "bd73d7a4-03f1-4b17-97c2-9c25a39ac0db",
+  "prior_run": "df9dbad7-049d-4eaa-ab98-5490906cc3e9",
+  "rows": [
+    {
+      "record": "AT10",
+      "name": "provisional lease reports AWAITING_MEMBER_GRANTS",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT10",
+      "name": "RFC1918-10",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT10",
+      "name": "RFC1918-172",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT10",
+      "name": "RFC1918-192",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT10",
+      "name": "metadata",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT10",
+      "name": "public-prefix-internal",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT10",
+      "name": "deprecated-6to4",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT10",
+      "name": "node interface and serving generation change",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT10",
+      "name": "foreign ingress redirect containment and D-096 recovery",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT11",
+      "name": "metadata",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT11",
+      "name": "deprecated-6to4",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT11",
+      "name": "IPv6 platform matrix",
+      "prior": "blocked",
+      "current": "blocked",
+      "changed": false
+    },
+    {
+      "record": "AT12",
+      "name": "same-member A1-to-A2",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT12",
+      "name": "same-member A2-to-A1",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT12",
+      "name": "cross-member A1-to-B1",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT12",
+      "name": "cross-member B1-to-A1",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT12",
+      "name": "node-management-22",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT12",
+      "name": "node-management-9443",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT12",
+      "name": "node-management-3000",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT12",
+      "name": "designated DNS exception",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT12",
+      "name": "unknown/spoofed member source",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT12",
+      "name": "publish A only withdraws B",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT13",
+      "name": "disable published exit",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT13",
+      "name": "revoke established TCP and UDP",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT13",
+      "name": "post-revoke kernel ingress attribution",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT13",
+      "name": "node restart with durable identity",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT13",
+      "name": "continuous crash/NetBird/reboot/updater transitions",
+      "prior": "blocked",
+      "current": "blocked",
+      "changed": false
+    },
+    {
+      "record": "AT13",
+      "name": "lease member expiry under control loss",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    },
+    {
+      "record": "AT13",
+      "name": "short whole-node lease expiry",
+      "prior": "pass",
+      "current": "pass",
+      "changed": false
+    }
+  ],
+  "lab": {
+    "prior": "pass",
+    "current": "AT10 PASS under D-120",
+    "evidence_change": "Both runs use netlab 36 D-161 analysis with complete combined captures; this run has its own observed transmission/timeout counts",
+    "causal_limit": "The fresh run has its own TCP timeout count. No change is inferred from timing/count differences alone."
+  }
+}

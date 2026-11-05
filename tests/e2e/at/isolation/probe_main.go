@@ -4,7 +4,9 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
+	iso "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation"
 	"io"
 	"net"
 	"os"
@@ -32,6 +34,10 @@ func main() {
 		observeProxy()
 	case "configure-observation":
 		configureObservation()
+	case "runtime-evidence":
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		_ = json.NewEncoder(os.Stdout).Encode(iso.CollectRuntimeEvidence(ctx))
 	case "agent-stop-sample":
 		agentStopSample()
 	case "observation-pending":

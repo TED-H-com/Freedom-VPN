@@ -16,14 +16,24 @@ def start(directory):
     return subprocess.Popen(args,stdout=stream),stream,path
 
 
-def finish(observer,root):
+def finish(observer,root,invocation=None):
     process,stream,path=observer
-    process.terminate();process.wait(timeout=5);stream.close()
+    process.terminate()
+    errors=[]
+    try:
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        process.kill();process.wait(timeout=5)
+        errors.append('lifecycle observer required forced cleanup')
+    stream.close()
     rows=[]
     for line in path.read_text().splitlines():
-        value=json.loads(line);attrs=value['Actor']['Attributes']
-        rows.append(dict(action=value['Action'],time_ns=str(value['timeNano']),
-            attributes={k:attrs[k] for k in ['name','signal','exitCode'] if k in attrs}))
-    run_id=json.loads((root/'AT10.json').read_text())['run_id']
-    result=dict(run_id=run_id,scope='Owned Docker lifecycle observer started before the assembled driver, stopped after stack teardown. Container PID1 events are separate from pidfd agent-stop samples.',events=rows)
+        try:
+            value=json.loads(line);attrs=value['Actor']['Attributes']
+            rows.append(dict(action=value['Action'],time_ns=str(value['timeNano']),
+                attributes={k:attrs[k] for k in ['name','signal','exitCode'] if k in attrs}))
+        except (ValueError, KeyError, TypeError):
+            errors.append('incomplete or unparsed lifecycle event')
+    run_id=invocation['run_id'] if invocation else json.loads((root/'AT10.json').read_text())['run_id']
+    result=dict(run_id=run_id,scope='Owned Docker lifecycle observer started before the assembled driver, stopped after stack teardown. Container PID1 events are separate from pidfd agent-stop samples.',events=rows, errors=errors, observer_exit_code=process.returncode)
     (root/'container-lifecycle-events.json').write_text(json.dumps(result,indent=2)+'\n')
