@@ -149,19 +149,32 @@ func TestReviewR15_TcMirredAndPolicyRoutingBypass(t *testing.T) {
 			t.Fatalf("policy routing evidence missing: %s, err=%v", stdout, err)
 		}
 		flushConntrack(t)
+		// ctunku is shared with other traffic. Attribute this tuple's drop
+		// through nft trace; retain counter deltas as separate diagnostics.
+		stopTrace := startR15Trace(t)
+		rulesBefore := mustExec(t, "nft", "-s", "list", "table", "inet", "fvpn")
 		var obs IngressObservation
 		uplink := captureDuring(t, "root", "fv-ih", "udp port 39996", func() {
 			obs = injectPort(t, "fv-fh", "100.64.9.9", "203.0.113.10", "39996")
 		})
-		ctunku := counterDelta(obs, "ctunku").Packets
-		uplinkN := 0
-		if strings.TrimSpace(uplink) != "" {
-			uplinkN = 1
+		trace, traceErr := stopTrace()
+		captureErr := readScratch(t, "/scratch/cap-ingress.txt.err")
+		save(t, "ip-rule-nftrace.txt", trace)
+		save(t, "ip-rule-nftrace.err", traceErr)
+		save(t, "ip-rule-uplink.txt", uplink)
+		save(t, "ip-rule-uplink.err", captureErr)
+		raw, err := json.MarshalIndent(obs, "", "  ")
+		if err != nil {
+			t.Fatal(err)
 		}
-		t.Logf("ip rule: ctunku=%d uplink=%q", ctunku, uplink)
-		if uplinkN != 0 || ctunku != 1 {
-			t.Fatalf("policy routing escaped admission: capture %q ctunku=%d", uplink, ctunku)
+		save(t, "ip-rule-counters.json", string(raw)+"\n")
+		if rulesAfter := mustExec(t, "nft", "-s", "list", "table", "inet", "fvpn"); rulesAfter != rulesBefore {
+			t.Fatal("fvpn rules changed during packet trace")
 		}
+		if err := validateR15PolicyDrop(obs, trace, traceErr, uplink, captureErr); err != nil {
+			t.Fatalf("policy routing admission evidence: %v", err)
+		}
+		t.Logf("ip rule: attributed_ctunku_drop=1 aggregate_ctunku=%d uplink=0", counterDelta(obs, "ctunku").Packets)
 	})
 }
 
@@ -227,4 +240,75 @@ func reconcileLabMemberPath(t *testing.T) {
 	mustExec(t, "ip", "route", "replace", "100.64.0.0/10", "via", "192.0.2.34", "dev", "fv-fh")
 	mustExec(t, "ip", "-6", "addr", "replace", "fd00:db8:ff::33/64", "dev", "fv-fh", "nodad")
 	mustExec(t, "ip", "-6", "route", "replace", "fd00:db8:a1::/64", "via", "fd00:db8:ff::34", "dev", "fv-fh")
+}
+
+// startR15Trace is local to the ip_rule proof. It only sets a diagnostic packet
+// bit in a separate table; the production fvpn rules and verdicts stay unchanged.
+func startR15Trace(t *testing.T) func() (string, string) {
+	t.Helper()
+	const base = "/scratch/r15-nftrace"
+	const marker = `table inet fvr15trace {
+ chain mark {
+  type filter hook prerouting priority -301; policy accept;
+  iifname "fv-fh" ip saddr 100.64.9.9 ip daddr 203.0.113.10 udp sport 40000 udp dport 39996 meta nftrace set 1
+ }
+}
+`
+	t.Cleanup(func() {
+		killPidFile(base + ".pid")
+		_, _, _ = dockerExec("nft", "delete", "table", "inet", "fvr15trace")
+	})
+	if out, stderr, err := dockerExecStdin([]string{"nft", "-f", "-"}, []byte(marker)); err != nil {
+		t.Fatalf("trace marker: %v %s%s", err, out, stderr)
+	}
+	save(t, "ip-rule-trace-marker.nft", marker)
+	mustExec(t, "rm", "-f", base+".txt", base+".err", base+".pid")
+	if err := dockerDetach("sh", "-c", "echo $$ > "+base+".pid; exec stdbuf -oL nft -nn monitor trace > "+base+".txt 2> "+base+".err"); err != nil {
+		t.Fatal(err)
+	}
+	// NETLINK_NETFILTER (12), group NFNLGRP_NFTRACE (9 => bit 0x100).
+	// Prove the monitor's own socket subscribed before injecting, and retain
+	// its drop count. A fixed startup delay would not establish readiness.
+	const socketRead = `import json, os, pathlib, sys, time
+base = pathlib.Path("/scratch/r15-nftrace")
+deadline = time.monotonic() + float(sys.argv[1])
+while True:
+ try:
+  pid = int(pathlib.Path(str(base)+".pid").read_text())
+  proc = pathlib.Path("/proc") / str(pid)
+  if not os.readlink(proc / "exe").endswith("/nft"): raise FileNotFoundError("monitor is still starting")
+  inodes = {os.readlink(f)[8:-1] for f in (proc / "fd").iterdir() if os.readlink(f).startswith("socket:[")}
+  rows = [line.split() for line in pathlib.Path("/proc/net/netlink").read_text().splitlines()[1:]]
+  rows = [r for r in rows if len(r) >= 10 and r[1] == "12" and r[9] in inodes and int(r[3],16) & 0x100]
+  if len(rows) == 1:
+   row = rows[0]
+   assert int(row[8]) == 0, "trace netlink drops"
+   print(json.dumps({"pid":pid,"inode":row[9],"groups":row[3],"drops":int(row[8])})); break
+ except (FileNotFoundError, ProcessLookupError):
+  pass
+ if time.monotonic() >= deadline:
+  raise RuntimeError("owned nft trace subscription unavailable")
+ time.sleep(0.02)
+`
+	before := mustExec(t, "python3", "-B", "-c", socketRead, "2")
+	save(t, "ip-rule-trace-ready.json", before)
+	return func() (string, string) {
+		after := mustExec(t, "python3", "-B", "-c", socketRead, "0")
+		save(t, "ip-rule-trace-finish.json", after)
+		if after != before {
+			t.Fatalf("trace socket changed: before=%s after=%s", before, after)
+		}
+		mustExec(t, "python3", "-B", "-c", `import os, pathlib, signal, time
+pid = int(pathlib.Path("/scratch/r15-nftrace.pid").read_text())
+os.kill(pid, signal.SIGTERM)
+deadline = time.monotonic() + 2
+while pathlib.Path("/proc",str(pid),"stat").exists():
+ try:
+  if pathlib.Path("/proc",str(pid),"stat").read_text().split(") ",1)[1].split()[0] == "Z": break
+ except FileNotFoundError: break
+ if time.monotonic() >= deadline: raise RuntimeError("nft trace did not stop")
+ time.sleep(0.02)
+`)
+		return readScratch(t, base+".txt"), readScratch(t, base+".err")
+	}
 }

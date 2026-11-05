@@ -1,0 +1,28 @@
+=== RUN   TestR15PolicyDropAttribution
+=== RUN   TestR15PolicyDropAttribution/missing_injection
+=== RUN   TestR15PolicyDropAttribution/unrelated_growth_without_drop
+=== RUN   TestR15PolicyDropAttribution/wrong_tuple
+=== RUN   TestR15PolicyDropAttribution/wrong_trace_identity
+=== RUN   TestR15PolicyDropAttribution/wrong_counter
+=== RUN   TestR15PolicyDropAttribution/duplicate_injection
+=== RUN   TestR15PolicyDropAttribution/duplicate_drop
+=== RUN   TestR15PolicyDropAttribution/forwarding
+=== RUN   TestR15PolicyDropAttribution/malformed_trace
+=== RUN   TestR15PolicyDropAttribution/monitor_error
+=== RUN   TestR15PolicyDropAttribution/capture_incomplete
+=== RUN   TestR15PolicyDropAttribution/capture_dropped_packets
+--- PASS: TestR15PolicyDropAttribution (0.00s)
+    --- PASS: TestR15PolicyDropAttribution/missing_injection (0.00s)
+    --- PASS: TestR15PolicyDropAttribution/unrelated_growth_without_drop (0.00s)
+    --- PASS: TestR15PolicyDropAttribution/wrong_tuple (0.00s)
+    --- PASS: TestR15PolicyDropAttribution/wrong_trace_identity (0.00s)
+    --- PASS: TestR15PolicyDropAttribution/wrong_counter (0.00s)
+    --- PASS: TestR15PolicyDropAttribution/duplicate_injection (0.00s)
+    --- PASS: TestR15PolicyDropAttribution/duplicate_drop (0.00s)
+    --- PASS: TestR15PolicyDropAttribution/forwarding (0.00s)
+    --- PASS: TestR15PolicyDropAttribution/malformed_trace (0.00s)
+    --- PASS: TestR15PolicyDropAttribution/monitor_error (0.00s)
+    --- PASS: TestR15PolicyDropAttribution/capture_incomplete (0.00s)
+    --- PASS: TestR15PolicyDropAttribution/capture_dropped_packets (0.00s)
+PASS
+ok  	github.com/TED-H-com/Freedom-VPN/tests/netlab	0.003s
