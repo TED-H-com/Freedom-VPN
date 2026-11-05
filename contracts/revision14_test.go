@@ -14,14 +14,14 @@ import (
 
 func TestAT29_ManualGrantWithdrawalContract(t *testing.T) {
 	doc := loadDoc(t)
-	if doc.Info.Version != "1.10.0" || len(operations(t)) != 50 {
-		t.Fatal("revision 14 must be API 1.10.0 with 50 operations")
+	if doc.Info.Version != "1.11.0" || len(operations(t)) != 50 {
+		t.Fatal("revision 15 must be API 1.11.0 with 50 operations")
 	}
 	op := doc.Paths.Value("/admin/members/{member_id}/grants/{grant_id}/revoke").Post
 	if op.OperationID != "revokeMemberGrant" || !slices.Equal(securityNames(op), []string{"adminSession+csrfToken"}) || !hasParam(op, "header", "Idempotency-Key", true) {
 		t.Fatal("withdrawal must be an authenticated idempotent admin command")
 	}
-	for _, phrase := range []string{"member.grant_revoke", "audit", "one heartbeat", "D-050 / D-081", "open-ended", "expiry remains a separate case", "RESOURCE_NOT_FOUND", "STATE_CONFLICT"} {
+	for _, phrase := range []string{"member.grant_revoke", "audit", "one heartbeat", "D-050 / D-081", "all entitlement grants are finite", "open-ended grant creation remains forbidden", "expiry remains a separate case", "RESOURCE_NOT_FOUND", "STATE_CONFLICT"} {
 		if !strings.Contains(op.Description, phrase) {
 			t.Fatalf("missing withdrawal semantics %q", phrase)
 		}
@@ -43,6 +43,9 @@ func TestAT29_ManualGrantWithdrawalContract(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, c := range vector.Cases {
+		if c.Name == "open-ended" {
+			t.Fatal("obsolete open-ended case must be removed per D-117")
+		}
 		if c.Name == "expired" || c.Name == "already-revoked" {
 			if c.Status != 409 || c.Code != "STATE_CONFLICT" {
 				t.Fatal("expired/revoked must conflict")

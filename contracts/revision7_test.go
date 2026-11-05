@@ -12,9 +12,9 @@ import (
 
 func TestUPD05_Revision7VersionAndUpdateTargetEvidence(t *testing.T) {
 	doc := loadDoc(t)
-	// Revision 14 advances info.version to 1.10.0. This test still pins revision 7's decisions.
-	if doc.Info.Version != "1.10.0" {
-		t.Fatal("API version must be 1.10.0")
+	// Revision 15 advances info.version to 1.11.0. This test still pins revision 7's decisions.
+	if doc.Info.Version != "1.11.0" {
+		t.Fatal("API version must be 1.11.0")
 	}
 	schema := doc.Components.Schemas["UpdateTarget"].Value
 	for _, name := range []string{"previous_release_id", "health", "candidate_health"} {

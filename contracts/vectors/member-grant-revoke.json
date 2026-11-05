@@ -1,14 +1,10 @@
 {
-  "_comment": "TEST ONLY - NOT A SECRET. AT29 manual withdrawal is separate from expiry. Same-key replay returns the same operation.",
+  "_comment": "TEST ONLY - NOT A SECRET. AT29 / D-117 manual withdrawal of a finite grant is separate from expiry (all entitlement grants are finite). Same-key replay returns the same operation.",
   "audit_action": "member.grant_revoke",
   "cases": [
     {
       "http_status": 202,
       "name": "finite"
-    },
-    {
-      "http_status": 202,
-      "name": "open-ended"
     },
     {
       "http_status": 202,

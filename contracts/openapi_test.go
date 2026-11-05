@@ -586,10 +586,10 @@ func TestAPI01_OptionalNullableFields(t *testing.T) {
 			if p.Value != nil && p.Value.Nullable && !req[name] {
 				if (v.path == "UpdateTarget#" && (name == "policy_generation" || name == "policy_refs" || name == "previous_release_id" || name == "health" || name == "candidate_health")) ||
 					(v.path == "DnsServiceConfig#" && name == "resolver_document") ||
-					(v.path == "ObservationReport#" && (name == "dns_policy_evidence" || name == "tc_evidence")) ||
+					(v.path == "ObservationReport#" && (name == "dns_policy_evidence" || name == "tc_evidence" || name == "serving_read")) ||
 					(v.path == "DesiredState#" && name == "egress_probe") ||
 					(v.path == "PolicyDefinition#" && name == "threat_feed_status") ||
-					(v.path == "NodeDetail#/allOf/1" && (name == "dns_policy_evidence" || name == "identity_conflict" || name == "usage_outbox")) ||
+					(v.path == "NodeDetail#/allOf/1" && (name == "dns_policy_evidence" || name == "identity_conflict" || name == "usage_outbox" || name == "serving_read")) ||
 					(v.path == "UpdateResult#" && name == "candidate_health") {
 					continue
 				}

@@ -9,7 +9,7 @@ The product contract is [`docs/spec/PROJECT_SPEC.zh-TW.md`](../spec/PROJECT_SPEC
 
 | Artifact | Path | Kind |
 |---|---|---|
-| OpenAPI 3.0.3 document, 50 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057, D-065, ENR-02/ENR-03, D-067, D-071, D-072, D-076, D-077, SECOPS-19) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
+| OpenAPI 3.0.3 document, 50 endpoints (§14.2 to §14.4 plus D-015, D-056, D-057, D-065, ENR-02/ENR-03, D-067, D-071, D-072, D-076, D-077, SECOPS-19, D-105, D-106, D-112, D-117, D-164) | [`contracts/openapi.yaml`](../../contracts/openapi.yaml) | hand-written, **source of truth** |
 | JSON Schema 2020-12 for API signed or hashed documents | [`contracts/schemas/`](../../contracts/schemas) | generated from `openapi.yaml` |
 | Go types (types only, oapi-codegen v2.8.1) | [`pkg/api/api.gen.go`](../../pkg/api/api.gen.go) | generated |
 | TypeScript types (openapi-typescript 7.13.0) | [`contracts/ts/openapi.d.ts`](../../contracts/ts/openapi.d.ts) | generated |
@@ -134,9 +134,10 @@ These rules are enforced by tests in `contracts/` (test names in brackets).
 - **Nullability and presence.** `nullable: true` is allowed on required
   members and the optional nullable members named by
   `TestAPI01_OptionalNullableFields` (D-048, D-056, D-058, revision 6's
-  `NodeDetail.dns_policy_evidence` and `UpdateResult.candidate_health`, and
+  `NodeDetail.dns_policy_evidence` and `UpdateResult.candidate_health`,
   revision 7's `UpdateTarget.previous_release_id`, `health` and
-  `candidate_health`). Go uses `presence.Nullable[T]` from `pkg/api/presence` (imported as
+  `candidate_health`, revision 14's `ObservationReport.tc_evidence`, and
+  revision 15's `ObservationReport.serving_read` and `NodeDetail.serving_read`). Go uses `presence.Nullable[T]` from `pkg/api/presence` (imported as
   `nullable`); its zero value is unspecified and **fails marshaling**. Use
   `NewNullNullable[T]()` for explicit null and `NewNullableWithValue(value)`
   for a value, or `SetNull`/`Set`. Inspect `IsSpecified`, `IsNull` and `Get`.
@@ -254,6 +255,71 @@ identity and logout CSRF context come from the selected cookie. The selector
 does not grant a role. The task's proposed `/api/v1/auth/*` aliases do not exist
 on main; adding them would violate the fixed endpoint count. No aliases are
 introduced by this revision.
+
+## Revision 15
+
+API version **1.11.0**. The endpoint count remains **50**.
+
+| Revision | API version | Operations | Change |
+|---|---|---|---|
+| 14 | 1.10.0 | 50 | Manual grant withdrawal, D-105 retired-stream hand-off, D-106 TC read-back |
+| 15 | 1.11.0 | 50 | D-164 `ServingReadEvidence` on `ObservationReport`/`NodeDetail`, D-112 hand-off bound wording, D-117 finite-grant revoke correction |
+
+- **D-164 retained `VerifyServing` read outcome (`ServingReadEvidence`):** shared
+  OpenAPI component `ServingReadEvidence` (`additionalProperties: false`,
+  `required: [read_at, source, candidate_generation, verified, diagnostic]`)
+  referenced by optional nullable `ObservationReport.serving_read` and optional
+  nullable `NodeDetail.serving_read` (`x-omitempty: false`, `x-omitzero: true`,
+  `presence.Nullable[ServingReadEvidence]`). It has those five members only (no
+  `error_code`). `read_at` is the actual complete `VerifyServing` read time (UTC
+  RFC 3339 `Z`), never refreshed on later heartbeats without a new read; it may
+  be older than `observed_at` and is not required to be `<= observed_at`.
+  `source` is `apply` or `live`. `candidate_generation` is a `decstr.U64`
+  decimal string naming the candidate generation under verification, never an
+  applied-generation ACK. `verified` is the complete `VerifyServing` outcome
+  (`false` is a meaningful rejected read, not omission). `diagnostic`
+  (`maxLength: 500`) carries the existing bounded/redacted string
+  (`read_at=… source=… candidate=… verified=… ` plus `Evidence.ReportDetail()`,
+  clipped to the first 500 bytes by `clipMsg`) as opaque text for both
+  `verified=true` and `verified=false`, without promising valid JSON after
+  clipping, adding a truncation marker, reconstructing text from other fields,
+  or treating the TC `truncated` flag as string clipping. Absent or `null` on
+  `ObservationReport.serving_read` means no retained serving-verifier read was
+  reported in that observation; on `NodeDetail.serving_read`, absent means the
+  server does not project the field yet (pre-revision-15) and `null` means the
+  selected current-incarnation observation has no available `serving_read` (not
+  that no earlier read was ever reported in that incarnation; servers do not
+  search back for a last non-null read). `NodeDetail.serving_read` shares the
+  existing selected-observation and strong-ETag (`resource_version`) semantics
+  of the other observation-derived fields without redefining selection or
+  versioning. Consumers must never infer a verified read from
+  `applied_config_generation`, `safety_status`, `member_forwarding_enabled`,
+  `checks[]` or `tc_evidence`. Existing `ObservationReport` fixtures omit
+  `serving_read` and keep their canonical digests unchanged.
+- **D-112 retired-stream hand-off sampling-interval bound wording:** live
+  `submitUsageBatch` and `UsageBatchRequest.origin_incarnation_id` descriptions
+  now state that a handed-off event's `interval_end` is bounded by the retired
+  stream's `retired_at` plus the Central configured bound
+  `sampling_interval_bound_seconds` (`UsageBatchConfig.SamplingIntervalBound`,
+  default **10 seconds**; Central stores no per-stream historical sampling
+  interval). `contracts/vectors/usage-retired-handoff.json` keeps
+  `sampling_interval_seconds: 30` and all request/response bytes intact while
+  adding `sampling_interval_bound_default_seconds: 10` and clarifying in
+  `_comment` that `30` is that vector scenario's Central bound override.
+- **D-117 finite-grant `revokeMemberGrant` correction:** all entitlement grants
+  in the domain and database are finite (`valid_until` is required, `NOT NULL`
+  and `isfinite`). The live `revokeMemberGrant` description and
+  `contracts/revision14_test.go` now describe finite grant withdrawal only (while
+  noting open-ended grant creation remains forbidden), and the obsolete
+  `open-ended` case has been removed from `contracts/vectors/member-grant-revoke.json`.
+  The historical [Revision 14](#revision-14) narrative below is preserved for
+  provenance.
+
+| Field or correction | Implementing lane |
+|---|---|
+| `ObservationReport.serving_read`, `NodeDetail.serving_read` (`ServingReadEvidence`) | agent-core emits; wire-nodes stores/projects; portal displays |
+| `submitUsageBatch` / `origin_incarnation_id` D-112 wording | usage-central (`UsageBatchConfig.SamplingIntervalBound`, default 10s) |
+| `revokeMemberGrant` D-117 finite-grant correction | wire-members / billing (`entitlement_grants.valid_until` finite) |
 
 ## Revision 14
 

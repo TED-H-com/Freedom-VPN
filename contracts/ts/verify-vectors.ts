@@ -61,6 +61,10 @@ const DEC = /^(0|[1-9][0-9]*)$/;
 export function isDecimalString(v: unknown): v is string {
   return typeof v === "string" && v.length <= 20 && DEC.test(v) && BigInt(v) <= 18446744073709551615n;
 }
+export function parseDecU64(v: unknown): bigint {
+  if (!isDecimalString(v)) throw new Error(`invalid uint64 decimal string: ${String(v)}`);
+  return BigInt(v);
+}
 
 function ed25519Verify(pubB64: string, message: string, sigB64: string): boolean {
   const x = Buffer.from(pubB64, "base64").toString("base64url");
@@ -165,6 +169,30 @@ for (const c of load("tc-readback-evidence.json").cases) {
   check(e.attachments.length <= 16 && e.attachments.every((r: any) => r.objects.length <= 4), `D-106 ${c.name} bounded rows`);
   check(e.rejected === null || e.rejected.objects.length <= 1, `D-106 ${c.name} deciding row bound`);
 }
+
+// ---- revision 15: D-164 ServingReadEvidence, D-112 hand-off bound note, D-117 finite grant revoke
+check(handoff.context.sampling_interval_seconds === 30 && handoff.context.sampling_interval_bound_default_seconds === 10, "D-112 hand-off bound scenario vs default");
+const grantRevoke = load("member-grant-revoke.json");
+check(!grantRevoke.cases.some((c: any) => c.name === "open-ended"), "D-117 no open-ended grant revoke case");
+check(grantRevoke.cases.some((c: any) => c.name === "finite" && c.http_status === 202), "D-117 finite grant revoke case");
+
+const servingReadVectors = load("serving-read-evidence.json");
+for (const c of servingReadVectors.cases) {
+  const e = c.evidence;
+  check(Object.keys(e).sort().join(",") === "candidate_generation,diagnostic,read_at,source,verified", `D-164 ${c.name} exact 5 keys`);
+  check(e.source === "apply" || e.source === "live", `D-164 ${c.name} source`);
+  check(typeof e.verified === "boolean", `D-164 ${c.name} verified boolean`);
+  check(typeof e.diagnostic === "string" && e.diagnostic.length > 0 && e.diagnostic.length <= 500 && e.diagnostic.startsWith(`read_at=${e.read_at} source=${e.source} candidate=${e.candidate_generation} verified=${e.verified} `), `D-164 ${c.name} producer-faithful bounded diagnostic`);
+  const gen = parseDecU64(e.candidate_generation);
+  check(gen >= 0n && gen <= 18446744073709551615n, `D-164 ${c.name} candidate_generation`);
+}
+let overflowRejected = false;
+try {
+  parseDecU64("18446744073709551616");
+} catch {
+  overflowRejected = true;
+}
+check(overflowRejected, "D-164 parseDecU64 rejects 18446744073709551616");
 
 if (failures > 0) {
   console.error(`${failures} of ${checks} vector checks failed`);

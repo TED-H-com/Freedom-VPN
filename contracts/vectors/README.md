@@ -98,3 +98,23 @@ signature. The original desired-state vectors remain byte-for-byte unchanged.
   netlab follow-up 14. Candidate generation is a string even at uint64 maximum.
 
 Go and TypeScript verify hashes and round trips. Runtime acceptance is separate.
+
+## Revision 15
+
+- `serving-read-evidence.json`: D-164 retained `VerifyServing` read outcomes
+  (`ServingReadEvidence`, five required members `read_at`, `source`,
+  `candidate_generation`, `verified`, `diagnostic`, `additionalProperties: false`)
+  covering `source=apply` and `source=live`, verified and rejected reads with
+  producer-faithful bounded `diagnostic` strings (`read_at=… source=… candidate=… verified=… `
+  plus `Evidence.ReportDetail()`) and `candidate_generation` above 2^53
+  (`"9007199254740993"`) and at uint64 maximum (`"18446744073709551615"`).
+- `usage-retired-handoff.json` (D-112 metadata clarification): keeps
+  `sampling_interval_seconds: 30` and all request/response bytes intact while
+  adding `sampling_interval_bound_default_seconds: 10` and clarifying in
+  `_comment` that `30` is this vector scenario's Central configured
+  `sampling_interval_bound_seconds` override (default 10 seconds; Central stores
+  no per-stream historical sampling interval).
+- `member-grant-revoke.json` (D-117 correction): removes the obsolete
+  `open-ended` case because all entitlement grants are finite (`valid_until` is
+  `NOT NULL` and `isfinite`), retaining `finite`, `same-key-replay`,
+  `unknown-or-other-member`, `already-revoked` and `expired`.

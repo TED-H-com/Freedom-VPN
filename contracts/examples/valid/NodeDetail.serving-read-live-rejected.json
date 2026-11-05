@@ -1,0 +1,84 @@
+{
+  "capacity": {
+    "down_bps": 1000000000,
+    "member_down_bps_cap": 200000000,
+    "member_up_bps_cap": 100000000,
+    "up_bps": 1000000000
+  },
+  "checks": [
+    {
+      "error_code": null,
+      "name": "internet_only",
+      "observed_at": "2026-10-28T14:06:30Z",
+      "status": "passed"
+    },
+    {
+      "error_code": null,
+      "name": "meter_path",
+      "observed_at": "2026-10-28T14:06:30Z",
+      "status": "passed"
+    }
+  ],
+  "config_generation": {
+    "applied": "127",
+    "desired": "128"
+  },
+  "control_status": "online",
+  "created_at": "2026-10-01T09:00:00Z",
+  "current_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+  "data_health": "healthy",
+  "drift": [
+    {
+      "desired": "128",
+      "field": "config_generation",
+      "observed": "127"
+    }
+  ],
+  "exit_id": "caba5aec-4b2b-432c-9512-211a7b3e96db",
+  "last_seen_at": "2026-10-28T14:06:30Z",
+  "lifecycle_state": "registered",
+  "member_forwarding_observed": false,
+  "member_group_ids": [
+    "63575bae-2d23-45c0-ae11-ba6bb9ace34a"
+  ],
+  "name": "Tokyo 1",
+  "netbird_peer_id": "peer-test-node-01",
+  "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+  "notes": "Pre-installed box; source noted for reference only.",
+  "observed_exit_ipv4": "203.0.113.10",
+  "observed_exit_ipv6": null,
+  "platform": {
+    "arch": "arm64",
+    "os": "ubuntu",
+    "os_version": "24.04"
+  },
+  "provisioning_state": "ready",
+  "publication_intent": "disabled",
+  "publication_observed": "withdrawn",
+  "recent_errors": [],
+  "region": "jp-tokyo",
+  "releases": {
+    "current_release_id": "cdb25ffa-5395-400c-ad3e-b32899f14bb8",
+    "desired_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+    "last_good_release_id": "cdb25ffa-5395-400c-ad3e-b32899f14bb8"
+  },
+  "resource_version": "42",
+  "retired_at": null,
+  "safety_status": "passed",
+  "serving_read": {
+    "candidate_generation": "18446744073709551615",
+    "diagnostic": "read_at=2026-10-28T14:06:10Z source=live candidate=18446744073709551615 verified=false {\"generation\":\"18446744073709551615\",\"phase\":\"verify\",\"reads\":2,\"objects\":5,\"truncated\":false,\"sha256\":\"6d78e62925fc23e6d6864f986fa220987447329d5b109c7b71aa0958a2d57c91\",\"rejected\":{\"interface\":\"fv0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"0x1\",\"parent\":\"ffff:fff1\",\"actions\":[\"gact\"]}]}}",
+    "read_at": "2026-10-28T14:06:10Z",
+    "source": "live",
+    "verified": false
+  },
+  "update": {
+    "batch_id": "85ef720a-31a0-4250-90d2-4b92c58695bc",
+    "generation": "7",
+    "job_id": "73986232-fd84-4add-b639-9f2cc23476a0",
+    "last_error_code": null,
+    "last_observed_at": "2026-10-28T14:06:30Z",
+    "last_result_at": "2026-10-28T14:06:00Z",
+    "state": "downloading"
+  }
+}

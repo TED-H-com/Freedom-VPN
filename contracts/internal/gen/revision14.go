@@ -29,8 +29,8 @@ func revision14Files(out map[string][]byte) {
 		out["examples/valid/UsageBatchResult.handoff-"+name+".json"] = pretty(response)
 	}
 	out["vectors/usage-retired-handoff.json"] = pretty(map[string]any{
-		"_comment": TestOnlyLabel + ". D-105 semantic scenarios; accepted and replay requests are byte-identical.",
-		"context":  map[string]any{"node_id": idNode, "retired_incarnation_id": idIncarnation, "retired_at": "2026-10-28T14:00:00Z", "sampling_interval_seconds": 30, "presenting_incarnation_id": current, "presenting_enrolled_at": "2026-10-28T14:00:01Z", "presenting_is_current": true, "previous_highest_contiguous_seq": "1233"},
+		"_comment": TestOnlyLabel + ". D-105 / D-112 semantic scenarios; accepted and replay requests are byte-identical. context.sampling_interval_seconds=30 is this vector scenario's Central sampling_interval_bound_seconds override (production default is 10 seconds; Central stores no per-stream historical sampling interval).",
+		"context":  map[string]any{"node_id": idNode, "retired_incarnation_id": idIncarnation, "retired_at": "2026-10-28T14:00:00Z", "sampling_interval_seconds": 30, "sampling_interval_bound_default_seconds": 10, "presenting_incarnation_id": current, "presenting_enrolled_at": "2026-10-28T14:00:01Z", "presenting_is_current": true, "previous_highest_contiguous_seq": "1233"},
 		"cases":    cases,
 	})
 
@@ -62,10 +62,10 @@ func revision14Files(out map[string][]byte) {
 	operation := map[string]any{"operation_id": "8089f821-cd9b-4c3f-a526-20ee33e68ad5", "kind": "member.grant_revoke", "status": "pending", "resource": map[string]any{"type": "entitlement_grant", "id": "01000000-0000-4000-8000-000000000029"}, "resource_version": "1", "desired_generation": nil, "observed_generation": nil, "steps": []any{}, "error": nil, "request_id": "a12d4141-4f3e-487b-b638-e1488be3d4ee", "created_at": TestNow, "updated_at": TestNow, "completed_at": nil}
 	out["examples/valid/Operation.grant-withdrawal.json"] = pretty(operation)
 	out["vectors/member-grant-revoke.json"] = pretty(map[string]any{
-		"_comment":     TestOnlyLabel + ". AT29 manual withdrawal is separate from expiry. Same-key replay returns the same operation.",
+		"_comment":     TestOnlyLabel + ". AT29 / D-117 manual withdrawal of a finite grant is separate from expiry (all entitlement grants are finite). Same-key replay returns the same operation.",
 		"operation_id": "revokeMemberGrant", "method": "POST", "path": "/api/v1/admin/members/" + idMemberA + "/grants/01000000-0000-4000-8000-000000000029/revoke",
 		"headers": map[string]any{"Idempotency-Key": "01000000-0000-4000-8000-000000000030"},
 		"request": map[string]any{"reason": "TEST ONLY manual withdrawal."}, "response": operation, "http_status": 202, "audit_action": "member.grant_revoke",
-		"cases": []any{map[string]any{"name": "finite", "http_status": 202}, map[string]any{"name": "open-ended", "http_status": 202}, map[string]any{"name": "same-key-replay", "http_status": 202, "same_operation": true}, map[string]any{"name": "unknown-or-other-member", "http_status": 404, "error_code": "RESOURCE_NOT_FOUND"}, map[string]any{"name": "already-revoked", "http_status": 409, "error_code": "STATE_CONFLICT"}, map[string]any{"name": "expired", "http_status": 409, "error_code": "STATE_CONFLICT"}},
+		"cases": []any{map[string]any{"name": "finite", "http_status": 202}, map[string]any{"name": "same-key-replay", "http_status": 202, "same_operation": true}, map[string]any{"name": "unknown-or-other-member", "http_status": 404, "error_code": "RESOURCE_NOT_FOUND"}, map[string]any{"name": "already-revoked", "http_status": 409, "error_code": "STATE_CONFLICT"}, map[string]any{"name": "expired", "http_status": 409, "error_code": "STATE_CONFLICT"}},
 	})
 }
