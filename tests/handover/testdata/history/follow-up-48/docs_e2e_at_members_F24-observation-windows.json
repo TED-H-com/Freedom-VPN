@@ -1,0 +1,3921 @@
+{
+  "run_id": "dee8492f-4a7e-4f3c-9063-3ab27f66dcec",
+  "source_commit": "55588821291e335ef72fbd7fe1f5ff052dea92bf",
+  "rows": [
+    {
+      "index": 35,
+      "check": "native ipv4 MTU 1500 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "Log times bound retained lines, not silent periods. Overwrite loses unsnapshotted lines. A killed request may lack completion; a row ending before completion may lack its receipt. Not stored means absent from this window, not globally rejected. Log time has millisecond precision; observed_at/started_at retain nanoseconds. boot_id is a stable SHA-256 label; process_id and attempt_scope are retained. accepted completion is the client receipt, received_at is Central storage, neither proves applied verification.",
+        "end_bytes": "72030",
+        "end_export_ok": true,
+        "end_sha256": "6cbdff03eead7f38267ed12d82dc75b6f81383917c3f86c1282edab3c2991187",
+        "enqueued_not_stored_in_window": [],
+        "enqueues": [
+          {
+            "due_reason": "interval_elapsed",
+            "line": 272,
+            "line_sha256": "93bd17a0d6c34d8993eb0f07865142aab382ca3227fba8fe99bbf89295c5b07a",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:38:15.91007791Z",
+            "report_id": "01a1a7a3-dae6-736d-be39-7af7c4c39546",
+            "source": "end_export",
+            "time": "2026-11-04T17:38:15.911Z"
+          },
+          {
+            "due_reason": "interval_elapsed",
+            "line": 274,
+            "line_sha256": "3c3261eb76dc154d1223a13e9f933ba01f5713ac3b917bdf27f1da56249e4bb0",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:38:21.311340663Z",
+            "report_id": "01a1a7a3-efff-7882-8f0f-3ab1c7e26aee",
+            "source": "end_export",
+            "time": "2026-11-04T17:38:21.313Z"
+          }
+        ],
+        "extraction_ok": true,
+        "first_retained_log_time": "2026-11-04T17:26:35.384Z",
+        "format_document": "docs/node/README.md: observation enqueued / observation submission",
+        "last_retained_log_time": "2026-11-04T17:38:21.321Z",
+        "malformed_receipts": [],
+        "missing_prefix_seconds": "0",
+        "overwrite_or_replacement_detected": false,
+        "reason": "Documented agent-core 52 receipts extracted; missing records and retained coverage are listed explicitly.",
+        "row_duration_seconds": "15.911392",
+        "start_bytes": "70767",
+        "start_content_retained_as_prefix": true,
+        "start_export_last_log_time": "2026-11-04T17:38:05.913Z",
+        "start_export_ok": true,
+        "start_sha256": "3983bafe553077291b9e385d24ced62b4918bcefff6936395f7991f1ef5557e4",
+        "stored_observation_joins": [
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a3-dae6-736d-be39-7af7c4c39546"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 273,
+                "line_sha256": "58772977c7017aa2ac1f0046c2f7d43944020fb84cb7862be24c6d707d885c4f",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a3-dae6-736d-be39-7af7c4c39546"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:38:15.912874596Z",
+                "time": "2026-11-04T17:38:15.919Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.002886404",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a3-dae6-736d-be39-7af7c4c39546"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 273,
+                "line_sha256": "58772977c7017aa2ac1f0046c2f7d43944020fb84cb7862be24c6d707d885c4f",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a3-dae6-736d-be39-7af7c4c39546"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:38:15.912874596Z",
+                "time": "2026-11-04T17:38:15.919Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 272,
+              "line_sha256": "93bd17a0d6c34d8993eb0f07865142aab382ca3227fba8fe99bbf89295c5b07a",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:38:15.91007791Z",
+              "report_id": "01a1a7a3-dae6-736d-be39-7af7c4c39546",
+              "source": "end_export",
+              "time": "2026-11-04T17:38:15.911Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.008",
+            "enqueue_to_attempt_seconds": "0.001874596",
+            "enqueue_to_stored_seconds": "0.004761",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "74",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:38:15.91007791Z",
+              "received_at": "2026-11-04T17:38:15.915761Z",
+              "report_id": "01a1a7a3-dae6-736d-be39-7af7c4c39546"
+            },
+            "observed_to_stored_seconds": "0.00568309"
+          },
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a3-efff-7882-8f0f-3ab1c7e26aee"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 275,
+                "line_sha256": "194589ce39195cebfedb33da36e57593b3333214580002e65a707fa4c7961832",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a3-efff-7882-8f0f-3ab1c7e26aee"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:38:21.314291379Z",
+                "time": "2026-11-04T17:38:21.321Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.002968621",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a3-efff-7882-8f0f-3ab1c7e26aee"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 275,
+                "line_sha256": "194589ce39195cebfedb33da36e57593b3333214580002e65a707fa4c7961832",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a3-efff-7882-8f0f-3ab1c7e26aee"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:38:21.314291379Z",
+                "time": "2026-11-04T17:38:21.321Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 274,
+              "line_sha256": "3c3261eb76dc154d1223a13e9f933ba01f5713ac3b917bdf27f1da56249e4bb0",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:38:21.311340663Z",
+              "report_id": "01a1a7a3-efff-7882-8f0f-3ab1c7e26aee",
+              "source": "end_export",
+              "time": "2026-11-04T17:38:21.313Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.008",
+            "enqueue_to_attempt_seconds": "0.001291379",
+            "enqueue_to_stored_seconds": "0.00426",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "74",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:38:21.311340663Z",
+              "received_at": "2026-11-04T17:38:21.31726Z",
+              "report_id": "01a1a7a3-efff-7882-8f0f-3ab1c7e26aee"
+            },
+            "observed_to_stored_seconds": "0.005919337"
+          }
+        ],
+        "stored_observations_missing_records": [],
+        "submission_attempts": [
+          {
+            "accepted_report_ids": [
+              "01a1a7a3-dae6-736d-be39-7af7c4c39546"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 5,
+            "error_code": "",
+            "http_status": 202,
+            "line": 273,
+            "line_sha256": "58772977c7017aa2ac1f0046c2f7d43944020fb84cb7862be24c6d707d885c4f",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a3-dae6-736d-be39-7af7c4c39546"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:38:15.912874596Z",
+            "time": "2026-11-04T17:38:15.919Z",
+            "transport_error_class": ""
+          },
+          {
+            "accepted_report_ids": [
+              "01a1a7a3-efff-7882-8f0f-3ab1c7e26aee"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 5,
+            "error_code": "",
+            "http_status": 202,
+            "line": 275,
+            "line_sha256": "194589ce39195cebfedb33da36e57593b3333214580002e65a707fa4c7961832",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a3-efff-7882-8f0f-3ab1c7e26aee"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:38:21.314291379Z",
+            "time": "2026-11-04T17:38:21.321Z",
+            "transport_error_class": ""
+          }
+        ],
+        "submission_events_available": true,
+        "surviving_end_export_window_seconds": "15.911391218",
+        "timestamped_lines_in_window": 4,
+        "window_end": "2026-11-04T17:38:24.646881061Z",
+        "window_start": "2026-11-04T17:38:08.735489843Z"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T17:38:24.557086779Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:38:24.450935028Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:38:24.368451665Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:38:24.204001536Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "5.08/7.08",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T17:38:09.086665419Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:38:08.983494679Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:38:08.901256925Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:38:08.73549016Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "2.728/2.248",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T17:38:24.646881061Z",
+      "fixture": "receive-only-1500",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "receive-only-1500",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "native ipv4 MTU 1500",
+      "started_at": "2026-11-04T17:38:08.735489843Z",
+      "stored_observations": [
+        {
+          "received_at": "2026-11-04T17:38:15.915761Z",
+          "report_id": "01a1a7a3-dae6-736d-be39-7af7c4c39546",
+          "observed_at": "2026-11-04T17:38:15.91007791Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "74",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        },
+        {
+          "received_at": "2026-11-04T17:38:21.31726Z",
+          "report_id": "01a1a7a3-efff-7882-8f0f-3ab1c7e26aee",
+          "observed_at": "2026-11-04T17:38:21.311340663Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "74",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        }
+      ],
+      "stored_observations_read_ok": true,
+      "series_statistics": {
+        "count": 2,
+        "interval_count": 1,
+        "intervals_seconds": [
+          "5.401499"
+        ],
+        "minimum_seconds": "5.401499",
+        "median_seconds": "5.401499",
+        "maximum_seconds": "5.401499"
+      }
+    },
+    {
+      "index": 38,
+      "check": "native ipv6 MTU 1500 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "Log times bound retained lines, not silent periods. Overwrite loses unsnapshotted lines. A killed request may lack completion; a row ending before completion may lack its receipt. Not stored means absent from this window, not globally rejected. Log time has millisecond precision; observed_at/started_at retain nanoseconds. boot_id is a stable SHA-256 label; process_id and attempt_scope are retained. accepted completion is the client receipt, received_at is Central storage, neither proves applied verification.",
+        "end_bytes": "72760",
+        "end_export_ok": true,
+        "end_sha256": "1c9b840fcefdc561a38fdf32827dca114dc51245233132b1706cd6bbbc97284c",
+        "enqueued_not_stored_in_window": [],
+        "enqueues": [
+          {
+            "due_reason": "interval_elapsed",
+            "line": 276,
+            "line_sha256": "7987ae9dda14107c7bfac319f1b0c9a871f5b4b1b0c1006fb0552614b6d8e535",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:38:30.922145615Z",
+            "report_id": "01a1a7a4-158a-758b-bdf3-ec74adc05dd3",
+            "source": "end_export",
+            "time": "2026-11-04T17:38:30.924Z"
+          }
+        ],
+        "extraction_ok": true,
+        "first_retained_log_time": "2026-11-04T17:26:35.384Z",
+        "format_document": "docs/node/README.md: observation enqueued / observation submission",
+        "last_retained_log_time": "2026-11-04T17:38:35.652Z",
+        "malformed_receipts": [],
+        "missing_prefix_seconds": "0",
+        "overwrite_or_replacement_detected": false,
+        "reason": "Documented agent-core 52 receipts extracted; missing records and retained coverage are listed explicitly.",
+        "row_duration_seconds": "15.936224",
+        "start_bytes": "72030",
+        "start_content_retained_as_prefix": true,
+        "start_export_last_log_time": "2026-11-04T17:38:21.321Z",
+        "start_export_ok": true,
+        "start_sha256": "6cbdff03eead7f38267ed12d82dc75b6f81383917c3f86c1282edab3c2991187",
+        "stored_observation_joins": [
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-158a-758b-bdf3-ec74adc05dd3"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 277,
+                "line_sha256": "9def487695a574ed38aeadf9aa299ab3f0325c0c624fb2eec504c297521d575f",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-158a-758b-bdf3-ec74adc05dd3"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:38:30.925117776Z",
+                "time": "2026-11-04T17:38:30.932Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.002660224",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-158a-758b-bdf3-ec74adc05dd3"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 277,
+                "line_sha256": "9def487695a574ed38aeadf9aa299ab3f0325c0c624fb2eec504c297521d575f",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-158a-758b-bdf3-ec74adc05dd3"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:38:30.925117776Z",
+                "time": "2026-11-04T17:38:30.932Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 276,
+              "line_sha256": "7987ae9dda14107c7bfac319f1b0c9a871f5b4b1b0c1006fb0552614b6d8e535",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:38:30.922145615Z",
+              "report_id": "01a1a7a4-158a-758b-bdf3-ec74adc05dd3",
+              "source": "end_export",
+              "time": "2026-11-04T17:38:30.924Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.008",
+            "enqueue_to_attempt_seconds": "0.001117776",
+            "enqueue_to_stored_seconds": "0.003778",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "74",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:38:30.922145615Z",
+              "received_at": "2026-11-04T17:38:30.927778Z",
+              "report_id": "01a1a7a4-158a-758b-bdf3-ec74adc05dd3"
+            },
+            "observed_to_stored_seconds": "0.005632385"
+          }
+        ],
+        "stored_observations_missing_records": [],
+        "submission_attempts": [
+          {
+            "accepted_report_ids": [
+              "01a1a7a4-158a-758b-bdf3-ec74adc05dd3"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 5,
+            "error_code": "",
+            "http_status": 202,
+            "line": 277,
+            "line_sha256": "9def487695a574ed38aeadf9aa299ab3f0325c0c624fb2eec504c297521d575f",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a4-158a-758b-bdf3-ec74adc05dd3"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:38:30.925117776Z",
+            "time": "2026-11-04T17:38:30.932Z",
+            "transport_error_class": ""
+          }
+        ],
+        "submission_events_available": true,
+        "surviving_end_export_window_seconds": "15.936223637",
+        "timestamped_lines_in_window": 3,
+        "window_end": "2026-11-04T17:38:40.624524294Z",
+        "window_start": "2026-11-04T17:38:24.688300657Z"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T17:38:40.533050642Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:38:40.426095338Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:38:40.338727189Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:38:40.170276141Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "41774",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.035/0.025",
+            "mss": "49664",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "4.241/3.353",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T17:38:25.045056215Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:38:24.936276016Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:38:24.853429693Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:38:24.688302935Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "5.08/7.08",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T17:38:40.624524294Z",
+      "fixture": "receive-only-1500",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "receive-only-1500",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "native ipv6 MTU 1500",
+      "started_at": "2026-11-04T17:38:24.688300657Z",
+      "stored_observations": [
+        {
+          "received_at": "2026-11-04T17:38:30.927778Z",
+          "report_id": "01a1a7a4-158a-758b-bdf3-ec74adc05dd3",
+          "observed_at": "2026-11-04T17:38:30.922145615Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "74",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        }
+      ],
+      "stored_observations_read_ok": true,
+      "series_statistics": {
+        "count": 1,
+        "interval_count": 0,
+        "intervals_seconds": [],
+        "minimum_seconds": null,
+        "median_seconds": null,
+        "maximum_seconds": null
+      }
+    },
+    {
+      "index": 41,
+      "check": "native dual MTU 1500 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "Log times bound retained lines, not silent periods. Overwrite loses unsnapshotted lines. A killed request may lack completion; a row ending before completion may lack its receipt. Not stored means absent from this window, not globally rejected. Log time has millisecond precision; observed_at/started_at retain nanoseconds. boot_id is a stable SHA-256 label; process_id and attempt_scope are retained. accepted completion is the client receipt, received_at is Central storage, neither proves applied verification.",
+        "end_bytes": "74655",
+        "end_export_ok": true,
+        "end_sha256": "7e817da2c257e432e9f21a91f3a6a7fa2dcf41902bfceb19034aac7638f596a9",
+        "enqueued_not_stored_in_window": [],
+        "enqueues": [
+          {
+            "due_reason": "interval_elapsed",
+            "line": 279,
+            "line_sha256": "818512a924bef87277de5ec7f2451fa90f840de6ee4831454de94cec5bcd7ae6",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:38:40.917272736Z",
+            "report_id": "01a1a7a4-3c95-778d-a0c5-ce69ee3cb2a0",
+            "source": "end_export",
+            "time": "2026-11-04T17:38:40.919Z"
+          },
+          {
+            "due_reason": "interval_elapsed",
+            "line": 281,
+            "line_sha256": "1150f1e931e93eeadf01d65b80eb70930639a3886c6cec1a25199360e5b289e9",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:38:45.925547287Z",
+            "report_id": "01a1a7a4-5025-7af3-b14b-720569213667",
+            "source": "end_export",
+            "time": "2026-11-04T17:38:45.927Z"
+          },
+          {
+            "due_reason": "interval_elapsed",
+            "line": 283,
+            "line_sha256": "a7da6be48df654a31e2b4dc97afaff1992001bb2e0170e4eec6230375a6251e1",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:38:55.930698779Z",
+            "report_id": "01a1a7a4-773a-7d5b-b63d-e1a4f0ce7c4f",
+            "source": "end_export",
+            "time": "2026-11-04T17:38:55.932Z"
+          }
+        ],
+        "extraction_ok": true,
+        "first_retained_log_time": "2026-11-04T17:26:35.384Z",
+        "format_document": "docs/node/README.md: observation enqueued / observation submission",
+        "last_retained_log_time": "2026-11-04T17:38:55.940Z",
+        "malformed_receipts": [],
+        "missing_prefix_seconds": "0",
+        "overwrite_or_replacement_detected": false,
+        "reason": "Documented agent-core 52 receipts extracted; missing records and retained coverage are listed explicitly.",
+        "row_duration_seconds": "15.912011",
+        "start_bytes": "73391",
+        "start_content_retained_as_prefix": true,
+        "start_export_last_log_time": "2026-11-04T17:38:40.928Z",
+        "start_export_ok": true,
+        "start_sha256": "d217896cda2dfaea4144c9884bdbb846164a977da6647c04cc88f334dab751f5",
+        "stored_observation_joins": [
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-3c95-778d-a0c5-ce69ee3cb2a0"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 6,
+                "error_code": "",
+                "http_status": 202,
+                "line": 280,
+                "line_sha256": "38427939f474dfd2143cbdfd432815e545e6a569ad7db49797ff5f6e799fde35",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-3c95-778d-a0c5-ce69ee3cb2a0"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:38:40.92100981Z",
+                "time": "2026-11-04T17:38:40.928Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.00308919",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-3c95-778d-a0c5-ce69ee3cb2a0"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 6,
+                "error_code": "",
+                "http_status": 202,
+                "line": 280,
+                "line_sha256": "38427939f474dfd2143cbdfd432815e545e6a569ad7db49797ff5f6e799fde35",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-3c95-778d-a0c5-ce69ee3cb2a0"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:38:40.92100981Z",
+                "time": "2026-11-04T17:38:40.928Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 279,
+              "line_sha256": "818512a924bef87277de5ec7f2451fa90f840de6ee4831454de94cec5bcd7ae6",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:38:40.917272736Z",
+              "report_id": "01a1a7a4-3c95-778d-a0c5-ce69ee3cb2a0",
+              "source": "end_export",
+              "time": "2026-11-04T17:38:40.919Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.009",
+            "enqueue_to_attempt_seconds": "0.00200981",
+            "enqueue_to_stored_seconds": "0.005099",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "74",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:38:40.917272736Z",
+              "received_at": "2026-11-04T17:38:40.924099Z",
+              "report_id": "01a1a7a4-3c95-778d-a0c5-ce69ee3cb2a0"
+            },
+            "observed_to_stored_seconds": "0.006826264"
+          },
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-5025-7af3-b14b-720569213667"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 6,
+                "error_code": "",
+                "http_status": 202,
+                "line": 282,
+                "line_sha256": "70167996fd30cd1952962007adcdb98afb89386b0f325ac5907304672d91368c",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-5025-7af3-b14b-720569213667"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:38:45.927950554Z",
+                "time": "2026-11-04T17:38:45.935Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.003785446",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-5025-7af3-b14b-720569213667"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 6,
+                "error_code": "",
+                "http_status": 202,
+                "line": 282,
+                "line_sha256": "70167996fd30cd1952962007adcdb98afb89386b0f325ac5907304672d91368c",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-5025-7af3-b14b-720569213667"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:38:45.927950554Z",
+                "time": "2026-11-04T17:38:45.935Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 281,
+              "line_sha256": "1150f1e931e93eeadf01d65b80eb70930639a3886c6cec1a25199360e5b289e9",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:38:45.925547287Z",
+              "report_id": "01a1a7a4-5025-7af3-b14b-720569213667",
+              "source": "end_export",
+              "time": "2026-11-04T17:38:45.927Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.008",
+            "enqueue_to_attempt_seconds": "0.000950554",
+            "enqueue_to_stored_seconds": "0.004736",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "74",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:38:45.925547287Z",
+              "received_at": "2026-11-04T17:38:45.931736Z",
+              "report_id": "01a1a7a4-5025-7af3-b14b-720569213667"
+            },
+            "observed_to_stored_seconds": "0.006188713"
+          },
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-773a-7d5b-b63d-e1a4f0ce7c4f"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 284,
+                "line_sha256": "c8d7733d6bcdc28481a982e41d5a1798a50a8f8299d0a79d0b38e112a0e82d9c",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-773a-7d5b-b63d-e1a4f0ce7c4f"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:38:55.934331684Z",
+                "time": "2026-11-04T17:38:55.940Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.002633316",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-773a-7d5b-b63d-e1a4f0ce7c4f"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 284,
+                "line_sha256": "c8d7733d6bcdc28481a982e41d5a1798a50a8f8299d0a79d0b38e112a0e82d9c",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-773a-7d5b-b63d-e1a4f0ce7c4f"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:38:55.934331684Z",
+                "time": "2026-11-04T17:38:55.940Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 283,
+              "line_sha256": "a7da6be48df654a31e2b4dc97afaff1992001bb2e0170e4eec6230375a6251e1",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:38:55.930698779Z",
+              "report_id": "01a1a7a4-773a-7d5b-b63d-e1a4f0ce7c4f",
+              "source": "end_export",
+              "time": "2026-11-04T17:38:55.932Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.008",
+            "enqueue_to_attempt_seconds": "0.002331684",
+            "enqueue_to_stored_seconds": "0.004965",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "74",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:38:55.930698779Z",
+              "received_at": "2026-11-04T17:38:55.936965Z",
+              "report_id": "01a1a7a4-773a-7d5b-b63d-e1a4f0ce7c4f"
+            },
+            "observed_to_stored_seconds": "0.006266221"
+          }
+        ],
+        "stored_observations_missing_records": [],
+        "submission_attempts": [
+          {
+            "accepted_report_ids": [
+              "01a1a7a4-3c95-778d-a0c5-ce69ee3cb2a0"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 6,
+            "error_code": "",
+            "http_status": 202,
+            "line": 280,
+            "line_sha256": "38427939f474dfd2143cbdfd432815e545e6a569ad7db49797ff5f6e799fde35",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a4-3c95-778d-a0c5-ce69ee3cb2a0"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:38:40.92100981Z",
+            "time": "2026-11-04T17:38:40.928Z",
+            "transport_error_class": ""
+          },
+          {
+            "accepted_report_ids": [
+              "01a1a7a4-5025-7af3-b14b-720569213667"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 6,
+            "error_code": "",
+            "http_status": 202,
+            "line": 282,
+            "line_sha256": "70167996fd30cd1952962007adcdb98afb89386b0f325ac5907304672d91368c",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a4-5025-7af3-b14b-720569213667"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:38:45.927950554Z",
+            "time": "2026-11-04T17:38:45.935Z",
+            "transport_error_class": ""
+          },
+          {
+            "accepted_report_ids": [
+              "01a1a7a4-773a-7d5b-b63d-e1a4f0ce7c4f"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 5,
+            "error_code": "",
+            "http_status": 202,
+            "line": 284,
+            "line_sha256": "c8d7733d6bcdc28481a982e41d5a1798a50a8f8299d0a79d0b38e112a0e82d9c",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a4-773a-7d5b-b63d-e1a4f0ce7c4f"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:38:55.934331684Z",
+            "time": "2026-11-04T17:38:55.940Z",
+            "transport_error_class": ""
+          }
+        ],
+        "submission_events_available": true,
+        "surviving_end_export_window_seconds": "15.912010512",
+        "timestamped_lines_in_window": 6,
+        "window_end": "2026-11-04T17:38:56.575370143Z",
+        "window_start": "2026-11-04T17:38:40.663359631Z"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T17:38:56.482909775Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:38:56.373592338Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:38:56.290386556Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:38:56.12237949Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "41774",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.035/0.025",
+            "mss": "49664",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "3.358/1.97",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T17:38:41.018404947Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:38:40.910054966Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:38:40.827565102Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:38:40.663360213Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "41774",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.035/0.025",
+            "mss": "49664",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "3.799/2.746",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T17:38:56.575370143Z",
+      "fixture": "receive-only-1500",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "receive-only-1500",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "native dual MTU 1500",
+      "started_at": "2026-11-04T17:38:40.663359631Z",
+      "stored_observations": [
+        {
+          "received_at": "2026-11-04T17:38:40.924099Z",
+          "report_id": "01a1a7a4-3c95-778d-a0c5-ce69ee3cb2a0",
+          "observed_at": "2026-11-04T17:38:40.917272736Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "74",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        },
+        {
+          "received_at": "2026-11-04T17:38:45.931736Z",
+          "report_id": "01a1a7a4-5025-7af3-b14b-720569213667",
+          "observed_at": "2026-11-04T17:38:45.925547287Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "74",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        },
+        {
+          "received_at": "2026-11-04T17:38:55.936965Z",
+          "report_id": "01a1a7a4-773a-7d5b-b63d-e1a4f0ce7c4f",
+          "observed_at": "2026-11-04T17:38:55.930698779Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "74",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        }
+      ],
+      "stored_observations_read_ok": true,
+      "series_statistics": {
+        "count": 3,
+        "interval_count": 2,
+        "intervals_seconds": [
+          "5.007637",
+          "10.005229"
+        ],
+        "minimum_seconds": "5.007637",
+        "median_seconds": "7.506433",
+        "maximum_seconds": "10.005229"
+      }
+    },
+    {
+      "index": 44,
+      "check": "native dual MTU 1280 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "Log times bound retained lines, not silent periods. Overwrite loses unsnapshotted lines. A killed request may lack completion; a row ending before completion may lack its receipt. Not stored means absent from this window, not globally rejected. Log time has millisecond precision; observed_at/started_at retain nanoseconds. boot_id is a stable SHA-256 label; process_id and attempt_scope are retained. accepted completion is the client receipt, received_at is Central storage, neither proves applied verification.",
+        "end_bytes": "75919",
+        "end_export_ok": true,
+        "end_sha256": "7669c1f54a4bcccc58a7d170c3c12a0634e0cc4af0154822084585d20413d4b3",
+        "enqueued_not_stored_in_window": [],
+        "enqueues": [
+          {
+            "due_reason": "interval_elapsed",
+            "line": 285,
+            "line_sha256": "b16e40e495362d7ad264b0f4106975ecf2d318f8c7a4b5e3a426f2fefd5ce95f",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:39:00.934025134Z",
+            "report_id": "01a1a7a4-8ac6-7388-9552-dce872a7e964",
+            "source": "end_export",
+            "time": "2026-11-04T17:39:00.936Z"
+          },
+          {
+            "due_reason": "interval_elapsed",
+            "line": 287,
+            "line_sha256": "73a74f92fd86731fed9556c622885c9e0be1dc1b95c8d14f6db43328c0ef6748",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:39:05.935900591Z",
+            "report_id": "01a1a7a4-9e50-71b3-9208-14a317374722",
+            "source": "end_export",
+            "time": "2026-11-04T17:39:05.937Z"
+          }
+        ],
+        "extraction_ok": true,
+        "first_retained_log_time": "2026-11-04T17:26:35.384Z",
+        "format_document": "docs/node/README.md: observation enqueued / observation submission",
+        "last_retained_log_time": "2026-11-04T17:39:05.947Z",
+        "malformed_receipts": [],
+        "missing_prefix_seconds": "0",
+        "overwrite_or_replacement_detected": false,
+        "reason": "Documented agent-core 52 receipts extracted; missing records and retained coverage are listed explicitly.",
+        "row_duration_seconds": "16.079818",
+        "start_bytes": "74655",
+        "start_content_retained_as_prefix": true,
+        "start_export_last_log_time": "2026-11-04T17:38:55.940Z",
+        "start_export_ok": true,
+        "start_sha256": "7e817da2c257e432e9f21a91f3a6a7fa2dcf41902bfceb19034aac7638f596a9",
+        "stored_observation_joins": [
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-8ac6-7388-9552-dce872a7e964"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 8,
+                "error_code": "",
+                "http_status": 202,
+                "line": 286,
+                "line_sha256": "d2a2fcfa86723de8393060a4455254f115368604175f33f90ec8b842dc2fdc2c",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-8ac6-7388-9552-dce872a7e964"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:00.937239212Z",
+                "time": "2026-11-04T17:39:00.946Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.002921788",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-8ac6-7388-9552-dce872a7e964"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 8,
+                "error_code": "",
+                "http_status": 202,
+                "line": 286,
+                "line_sha256": "d2a2fcfa86723de8393060a4455254f115368604175f33f90ec8b842dc2fdc2c",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-8ac6-7388-9552-dce872a7e964"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:00.937239212Z",
+                "time": "2026-11-04T17:39:00.946Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 285,
+              "line_sha256": "b16e40e495362d7ad264b0f4106975ecf2d318f8c7a4b5e3a426f2fefd5ce95f",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:39:00.934025134Z",
+              "report_id": "01a1a7a4-8ac6-7388-9552-dce872a7e964",
+              "source": "end_export",
+              "time": "2026-11-04T17:39:00.936Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.01",
+            "enqueue_to_attempt_seconds": "0.001239212",
+            "enqueue_to_stored_seconds": "0.004161",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "74",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:39:00.934025134Z",
+              "received_at": "2026-11-04T17:39:00.940161Z",
+              "report_id": "01a1a7a4-8ac6-7388-9552-dce872a7e964"
+            },
+            "observed_to_stored_seconds": "0.006135866"
+          },
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-9e50-71b3-9208-14a317374722"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 7,
+                "error_code": "",
+                "http_status": 202,
+                "line": 288,
+                "line_sha256": "d924671cd66ef92e984256a805252706fddc0a81c2fafb13e695aa1546ec7180",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-9e50-71b3-9208-14a317374722"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:05.939179181Z",
+                "time": "2026-11-04T17:39:05.947Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.004019819",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-9e50-71b3-9208-14a317374722"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 7,
+                "error_code": "",
+                "http_status": 202,
+                "line": 288,
+                "line_sha256": "d924671cd66ef92e984256a805252706fddc0a81c2fafb13e695aa1546ec7180",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-9e50-71b3-9208-14a317374722"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:05.939179181Z",
+                "time": "2026-11-04T17:39:05.947Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 287,
+              "line_sha256": "73a74f92fd86731fed9556c622885c9e0be1dc1b95c8d14f6db43328c0ef6748",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:39:05.935900591Z",
+              "report_id": "01a1a7a4-9e50-71b3-9208-14a317374722",
+              "source": "end_export",
+              "time": "2026-11-04T17:39:05.937Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.01",
+            "enqueue_to_attempt_seconds": "0.002179181",
+            "enqueue_to_stored_seconds": "0.006199",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "74",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:39:05.935900591Z",
+              "received_at": "2026-11-04T17:39:05.943199Z",
+              "report_id": "01a1a7a4-9e50-71b3-9208-14a317374722"
+            },
+            "observed_to_stored_seconds": "0.007298409"
+          }
+        ],
+        "stored_observations_missing_records": [],
+        "submission_attempts": [
+          {
+            "accepted_report_ids": [
+              "01a1a7a4-8ac6-7388-9552-dce872a7e964"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 8,
+            "error_code": "",
+            "http_status": 202,
+            "line": 286,
+            "line_sha256": "d2a2fcfa86723de8393060a4455254f115368604175f33f90ec8b842dc2fdc2c",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a4-8ac6-7388-9552-dce872a7e964"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:39:00.937239212Z",
+            "time": "2026-11-04T17:39:00.946Z",
+            "transport_error_class": ""
+          },
+          {
+            "accepted_report_ids": [
+              "01a1a7a4-9e50-71b3-9208-14a317374722"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 7,
+            "error_code": "",
+            "http_status": 202,
+            "line": 288,
+            "line_sha256": "d924671cd66ef92e984256a805252706fddc0a81c2fafb13e695aa1546ec7180",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a4-9e50-71b3-9208-14a317374722"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:39:05.939179181Z",
+            "time": "2026-11-04T17:39:05.947Z",
+            "transport_error_class": ""
+          }
+        ],
+        "submission_events_available": true,
+        "surviving_end_export_window_seconds": "16.079818259",
+        "timestamped_lines_in_window": 4,
+        "window_end": "2026-11-04T17:39:12.698090765Z",
+        "window_start": "2026-11-04T17:38:56.618272506Z"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T17:39:12.613912433Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:39:12.507811262Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:39:12.417058422Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:39:12.249762079Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "3.295/2.057",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T17:38:56.974423026Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:38:56.868333793Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:38:56.784923036Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:38:56.618273062Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "41774",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.035/0.025",
+            "mss": "49664",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "3.358/1.97",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T17:39:12.698090765Z",
+      "fixture": "receive-only-1280",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "receive-only-1280",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "native dual MTU 1280",
+      "started_at": "2026-11-04T17:38:56.618272506Z",
+      "stored_observations": [
+        {
+          "received_at": "2026-11-04T17:39:00.940161Z",
+          "report_id": "01a1a7a4-8ac6-7388-9552-dce872a7e964",
+          "observed_at": "2026-11-04T17:39:00.934025134Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "74",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        },
+        {
+          "received_at": "2026-11-04T17:39:05.943199Z",
+          "report_id": "01a1a7a4-9e50-71b3-9208-14a317374722",
+          "observed_at": "2026-11-04T17:39:05.935900591Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "74",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        }
+      ],
+      "stored_observations_read_ok": true,
+      "series_statistics": {
+        "count": 2,
+        "interval_count": 1,
+        "intervals_seconds": [
+          "5.003038"
+        ],
+        "minimum_seconds": "5.003038",
+        "median_seconds": "5.003038",
+        "maximum_seconds": "5.003038"
+      }
+    },
+    {
+      "index": 49,
+      "check": "native ipv6 MTU 1280 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "Log times bound retained lines, not silent periods. Overwrite loses unsnapshotted lines. A killed request may lack completion; a row ending before completion may lack its receipt. Not stored means absent from this window, not globally rejected. Log time has millisecond precision; observed_at/started_at retain nanoseconds. boot_id is a stable SHA-256 label; process_id and attempt_scope are retained. accepted completion is the client receipt, received_at is Central storage, neither proves applied verification.",
+        "end_bytes": "77183",
+        "end_export_ok": true,
+        "end_sha256": "608d353464786fa6ddaa7d1837b11e683de3480b6440e30bd65d9fd423fda080",
+        "enqueued_not_stored_in_window": [],
+        "enqueues": [
+          {
+            "due_reason": "interval_elapsed",
+            "line": 289,
+            "line_sha256": "e51e0d3da091e700ed06d183e66793c215c57b90acb24b741065bb7e24d016dd",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:39:15.947788636Z",
+            "report_id": "01a1a7a4-c56c-7004-9663-6d72540f6e22",
+            "source": "end_export",
+            "time": "2026-11-04T17:39:15.949Z"
+          },
+          {
+            "due_reason": "interval_elapsed",
+            "line": 291,
+            "line_sha256": "dc12b8d50630fdec856bb7715d9ac2116d0bf97cfcb395240f839265ae31ea90",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:39:25.943160988Z",
+            "report_id": "01a1a7a4-ec77-75cc-a491-2fb28ae72d15",
+            "source": "end_export",
+            "time": "2026-11-04T17:39:25.945Z"
+          }
+        ],
+        "extraction_ok": true,
+        "first_retained_log_time": "2026-11-04T17:26:35.384Z",
+        "format_document": "docs/node/README.md: observation enqueued / observation submission",
+        "last_retained_log_time": "2026-11-04T17:39:25.953Z",
+        "malformed_receipts": [],
+        "missing_prefix_seconds": "0",
+        "overwrite_or_replacement_detected": false,
+        "reason": "Documented agent-core 52 receipts extracted; missing records and retained coverage are listed explicitly.",
+        "row_duration_seconds": "16.087145",
+        "start_bytes": "75919",
+        "start_content_retained_as_prefix": true,
+        "start_export_last_log_time": "2026-11-04T17:39:05.947Z",
+        "start_export_ok": true,
+        "start_sha256": "7669c1f54a4bcccc58a7d170c3c12a0634e0cc4af0154822084585d20413d4b3",
+        "stored_observation_joins": [
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-c56c-7004-9663-6d72540f6e22"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 290,
+                "line_sha256": "f82b859b5477ba866bf885c0acc9bcd6baed367a2d7c5135673edfadbb31a619",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-c56c-7004-9663-6d72540f6e22"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:15.950921214Z",
+                "time": "2026-11-04T17:39:15.957Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.002658786",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-c56c-7004-9663-6d72540f6e22"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 290,
+                "line_sha256": "f82b859b5477ba866bf885c0acc9bcd6baed367a2d7c5135673edfadbb31a619",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-c56c-7004-9663-6d72540f6e22"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:15.950921214Z",
+                "time": "2026-11-04T17:39:15.957Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 289,
+              "line_sha256": "e51e0d3da091e700ed06d183e66793c215c57b90acb24b741065bb7e24d016dd",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:39:15.947788636Z",
+              "report_id": "01a1a7a4-c56c-7004-9663-6d72540f6e22",
+              "source": "end_export",
+              "time": "2026-11-04T17:39:15.949Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.008",
+            "enqueue_to_attempt_seconds": "0.001921214",
+            "enqueue_to_stored_seconds": "0.00458",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "74",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:39:15.947788636Z",
+              "received_at": "2026-11-04T17:39:15.95358Z",
+              "report_id": "01a1a7a4-c56c-7004-9663-6d72540f6e22"
+            },
+            "observed_to_stored_seconds": "0.005791364"
+          },
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-ec77-75cc-a491-2fb28ae72d15"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 292,
+                "line_sha256": "ebc3301ad0218302c4e9fb251976150c44bd14e05932725bdd37ce73ed1af6b7",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-ec77-75cc-a491-2fb28ae72d15"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:25.946403016Z",
+                "time": "2026-11-04T17:39:25.953Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.002555984",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a4-ec77-75cc-a491-2fb28ae72d15"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 292,
+                "line_sha256": "ebc3301ad0218302c4e9fb251976150c44bd14e05932725bdd37ce73ed1af6b7",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a4-ec77-75cc-a491-2fb28ae72d15"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:25.946403016Z",
+                "time": "2026-11-04T17:39:25.953Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 291,
+              "line_sha256": "dc12b8d50630fdec856bb7715d9ac2116d0bf97cfcb395240f839265ae31ea90",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:39:25.943160988Z",
+              "report_id": "01a1a7a4-ec77-75cc-a491-2fb28ae72d15",
+              "source": "end_export",
+              "time": "2026-11-04T17:39:25.945Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.008",
+            "enqueue_to_attempt_seconds": "0.001403016",
+            "enqueue_to_stored_seconds": "0.003959",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "74",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:39:25.943160988Z",
+              "received_at": "2026-11-04T17:39:25.948959Z",
+              "report_id": "01a1a7a4-ec77-75cc-a491-2fb28ae72d15"
+            },
+            "observed_to_stored_seconds": "0.005798012"
+          }
+        ],
+        "stored_observations_missing_records": [],
+        "submission_attempts": [
+          {
+            "accepted_report_ids": [
+              "01a1a7a4-c56c-7004-9663-6d72540f6e22"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 5,
+            "error_code": "",
+            "http_status": 202,
+            "line": 290,
+            "line_sha256": "f82b859b5477ba866bf885c0acc9bcd6baed367a2d7c5135673edfadbb31a619",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a4-c56c-7004-9663-6d72540f6e22"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:39:15.950921214Z",
+            "time": "2026-11-04T17:39:15.957Z",
+            "transport_error_class": ""
+          },
+          {
+            "accepted_report_ids": [
+              "01a1a7a4-ec77-75cc-a491-2fb28ae72d15"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 5,
+            "error_code": "",
+            "http_status": 202,
+            "line": 292,
+            "line_sha256": "ebc3301ad0218302c4e9fb251976150c44bd14e05932725bdd37ce73ed1af6b7",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a4-ec77-75cc-a491-2fb28ae72d15"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:39:25.946403016Z",
+            "time": "2026-11-04T17:39:25.953Z",
+            "transport_error_class": ""
+          }
+        ],
+        "submission_events_available": true,
+        "surviving_end_export_window_seconds": "16.087144898",
+        "timestamped_lines_in_window": 4,
+        "window_end": "2026-11-04T17:39:28.826219354Z",
+        "window_start": "2026-11-04T17:39:12.739074456Z"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T17:39:28.742214334Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:39:28.634547942Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:39:28.552244998Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:39:28.381700691Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "3.044/1.885",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T17:39:13.100219751Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:39:12.992824351Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:39:12.907237429Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:39:12.739075057Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "3.295/2.057",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T17:39:28.826219354Z",
+      "fixture": "receive-only-1280",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "receive-only-1280",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "native ipv6 MTU 1280",
+      "started_at": "2026-11-04T17:39:12.739074456Z",
+      "stored_observations": [
+        {
+          "received_at": "2026-11-04T17:39:15.95358Z",
+          "report_id": "01a1a7a4-c56c-7004-9663-6d72540f6e22",
+          "observed_at": "2026-11-04T17:39:15.947788636Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "74",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        },
+        {
+          "received_at": "2026-11-04T17:39:25.948959Z",
+          "report_id": "01a1a7a4-ec77-75cc-a491-2fb28ae72d15",
+          "observed_at": "2026-11-04T17:39:25.943160988Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "74",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        }
+      ],
+      "stored_observations_read_ok": true,
+      "series_statistics": {
+        "count": 2,
+        "interval_count": 1,
+        "intervals_seconds": [
+          "9.995379"
+        ],
+        "minimum_seconds": "9.995379",
+        "median_seconds": "9.995379",
+        "maximum_seconds": "9.995379"
+      }
+    },
+    {
+      "index": 54,
+      "check": "D-137 supported known-PMTU 1280 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "Log times bound retained lines, not silent periods. Overwrite loses unsnapshotted lines. A killed request may lack completion; a row ending before completion may lack its receipt. Not stored means absent from this window, not globally rejected. Log time has millisecond precision; observed_at/started_at retain nanoseconds. boot_id is a stable SHA-256 label; process_id and attempt_scope are retained. accepted completion is the client receipt, received_at is Central storage, neither proves applied verification.",
+        "end_bytes": "77913",
+        "end_export_ok": true,
+        "end_sha256": "5c4c81c87e4cb8230ee2cb264433d8de76cdc7b83599cc5c45f95758e981e016",
+        "enqueued_not_stored_in_window": [],
+        "enqueues": [
+          {
+            "due_reason": "interval_elapsed",
+            "line": 293,
+            "line_sha256": "506367800f8253fdfe43266b3f896f5e6d1b0c4b0863a01ab1a3a7caa8079bcc",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:39:30.950240602Z",
+            "report_id": "01a1a7a5-0006-7628-9d45-cbf4cae0432d",
+            "source": "end_export",
+            "time": "2026-11-04T17:39:30.951Z"
+          }
+        ],
+        "extraction_ok": true,
+        "first_retained_log_time": "2026-11-04T17:26:35.384Z",
+        "format_document": "docs/node/README.md: observation enqueued / observation submission",
+        "last_retained_log_time": "2026-11-04T17:39:35.723Z",
+        "malformed_receipts": [],
+        "missing_prefix_seconds": "0",
+        "overwrite_or_replacement_detected": false,
+        "reason": "Documented agent-core 52 receipts extracted; missing records and retained coverage are listed explicitly.",
+        "row_duration_seconds": "8.441372",
+        "start_bytes": "77183",
+        "start_content_retained_as_prefix": true,
+        "start_export_last_log_time": "2026-11-04T17:39:25.953Z",
+        "start_export_ok": true,
+        "start_sha256": "608d353464786fa6ddaa7d1837b11e683de3480b6440e30bd65d9fd423fda080",
+        "stored_observation_joins": [
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a5-0006-7628-9d45-cbf4cae0432d"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 294,
+                "line_sha256": "30f39035d8c8dd71df3ac1a356faf5b34f1a1df6ce9bca3909c03fd1e37e6cc3",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a5-0006-7628-9d45-cbf4cae0432d"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:30.953188406Z",
+                "time": "2026-11-04T17:39:30.959Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.002547594",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a5-0006-7628-9d45-cbf4cae0432d"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 294,
+                "line_sha256": "30f39035d8c8dd71df3ac1a356faf5b34f1a1df6ce9bca3909c03fd1e37e6cc3",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a5-0006-7628-9d45-cbf4cae0432d"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:30.953188406Z",
+                "time": "2026-11-04T17:39:30.959Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 293,
+              "line_sha256": "506367800f8253fdfe43266b3f896f5e6d1b0c4b0863a01ab1a3a7caa8079bcc",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:39:30.950240602Z",
+              "report_id": "01a1a7a5-0006-7628-9d45-cbf4cae0432d",
+              "source": "end_export",
+              "time": "2026-11-04T17:39:30.951Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.008",
+            "enqueue_to_attempt_seconds": "0.002188406",
+            "enqueue_to_stored_seconds": "0.004736",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "74",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:39:30.950240602Z",
+              "received_at": "2026-11-04T17:39:30.955736Z",
+              "report_id": "01a1a7a5-0006-7628-9d45-cbf4cae0432d"
+            },
+            "observed_to_stored_seconds": "0.005495398"
+          }
+        ],
+        "stored_observations_missing_records": [],
+        "submission_attempts": [
+          {
+            "accepted_report_ids": [
+              "01a1a7a5-0006-7628-9d45-cbf4cae0432d"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 5,
+            "error_code": "",
+            "http_status": 202,
+            "line": 294,
+            "line_sha256": "30f39035d8c8dd71df3ac1a356faf5b34f1a1df6ce9bca3909c03fd1e37e6cc3",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a5-0006-7628-9d45-cbf4cae0432d"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:39:30.953188406Z",
+            "time": "2026-11-04T17:39:30.959Z",
+            "transport_error_class": ""
+          }
+        ],
+        "submission_events_available": true,
+        "surviving_end_export_window_seconds": "8.441372242",
+        "timestamped_lines_in_window": 3,
+        "window_end": "2026-11-04T17:39:37.309762872Z",
+        "window_start": "2026-11-04T17:39:28.86839063Z"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T17:39:37.226044705Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:39:37.118845776Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:39:37.032963582Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:39:36.865622468Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "38960",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.04/0.041",
+            "mss": "50688",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "3.154/1.98",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T17:39:29.227541829Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:39:29.118830888Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:39:29.034990366Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:39:28.868391336Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "3.044/1.885",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T17:39:37.309762872Z",
+      "fixture": "known-pmtu1280",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "known-pmtu1280",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "D-137 supported known-PMTU 1280",
+      "started_at": "2026-11-04T17:39:28.86839063Z",
+      "stored_observations": [
+        {
+          "received_at": "2026-11-04T17:39:30.955736Z",
+          "report_id": "01a1a7a5-0006-7628-9d45-cbf4cae0432d",
+          "observed_at": "2026-11-04T17:39:30.950240602Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "74",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        }
+      ],
+      "stored_observations_read_ok": true,
+      "series_statistics": {
+        "count": 1,
+        "interval_count": 0,
+        "intervals_seconds": [],
+        "minimum_seconds": null,
+        "median_seconds": null,
+        "maximum_seconds": null
+      }
+    },
+    {
+      "index": 57,
+      "check": "native ipv4 MTU 1280 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "Log times bound retained lines, not silent periods. Overwrite loses unsnapshotted lines. A killed request may lack completion; a row ending before completion may lack its receipt. Not stored means absent from this window, not globally rejected. Log time has millisecond precision; observed_at/started_at retain nanoseconds. boot_id is a stable SHA-256 label; process_id and attempt_scope are retained. accepted completion is the client receipt, received_at is Central storage, neither proves applied verification.",
+        "end_bytes": "79807",
+        "end_export_ok": true,
+        "end_sha256": "79ed3c86ce78b84eeae8da569f73074ec6837a8f478b5c4371ac2e599d4c4a67",
+        "enqueued_not_stored_in_window": [],
+        "enqueues": [
+          {
+            "due_reason": "interval_elapsed",
+            "line": 296,
+            "line_sha256": "bf8d1fddb393b1ce3cc971b54909ff81a58a88e011033324d8135866f218d138",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:39:40.946123114Z",
+            "report_id": "01a1a7a5-2712-7438-809b-098616035a8e",
+            "source": "end_export",
+            "time": "2026-11-04T17:39:40.947Z"
+          },
+          {
+            "due_reason": "interval_elapsed",
+            "line": 298,
+            "line_sha256": "587d96a6d818ac6d8543ed6f9c02e659b8dffc38eed8599446bc6c3dc3426998",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:39:45.954861061Z",
+            "report_id": "01a1a7a5-3aa2-7f41-afce-32e62cea41cf",
+            "source": "end_export",
+            "time": "2026-11-04T17:39:45.956Z"
+          },
+          {
+            "due_reason": "interval_elapsed",
+            "line": 300,
+            "line_sha256": "0e1f2a35ccacce9c0cddc96823903e19b7d4f0c4bcb98717cfc65f3339c15b32",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:39:50.958908837Z",
+            "report_id": "01a1a7a5-4e2f-71f4-b428-a537be982604",
+            "source": "end_export",
+            "time": "2026-11-04T17:39:50.960Z"
+          }
+        ],
+        "extraction_ok": true,
+        "first_retained_log_time": "2026-11-04T17:26:35.384Z",
+        "format_document": "docs/node/README.md: observation enqueued / observation submission",
+        "last_retained_log_time": "2026-11-04T17:39:50.969Z",
+        "malformed_receipts": [],
+        "missing_prefix_seconds": "0",
+        "overwrite_or_replacement_detected": false,
+        "reason": "Documented agent-core 52 receipts extracted; missing records and retained coverage are listed explicitly.",
+        "row_duration_seconds": "16.022048",
+        "start_bytes": "77913",
+        "start_content_retained_as_prefix": true,
+        "start_export_last_log_time": "2026-11-04T17:39:35.723Z",
+        "start_export_ok": true,
+        "start_sha256": "5c4c81c87e4cb8230ee2cb264433d8de76cdc7b83599cc5c45f95758e981e016",
+        "stored_observation_joins": [
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a5-2712-7438-809b-098616035a8e"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 6,
+                "error_code": "",
+                "http_status": 202,
+                "line": 297,
+                "line_sha256": "31539770dcba39fc7d4f7127c0134520e6ca26fcd07733ed5f2640cb9f800608",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a5-2712-7438-809b-098616035a8e"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:40.949060881Z",
+                "time": "2026-11-04T17:39:40.957Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.004140119",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a5-2712-7438-809b-098616035a8e"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 6,
+                "error_code": "",
+                "http_status": 202,
+                "line": 297,
+                "line_sha256": "31539770dcba39fc7d4f7127c0134520e6ca26fcd07733ed5f2640cb9f800608",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a5-2712-7438-809b-098616035a8e"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:40.949060881Z",
+                "time": "2026-11-04T17:39:40.957Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 296,
+              "line_sha256": "bf8d1fddb393b1ce3cc971b54909ff81a58a88e011033324d8135866f218d138",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:39:40.946123114Z",
+              "report_id": "01a1a7a5-2712-7438-809b-098616035a8e",
+              "source": "end_export",
+              "time": "2026-11-04T17:39:40.947Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.01",
+            "enqueue_to_attempt_seconds": "0.002060881",
+            "enqueue_to_stored_seconds": "0.006201",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "74",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:39:40.946123114Z",
+              "received_at": "2026-11-04T17:39:40.953201Z",
+              "report_id": "01a1a7a5-2712-7438-809b-098616035a8e"
+            },
+            "observed_to_stored_seconds": "0.007077886"
+          },
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a5-3aa2-7f41-afce-32e62cea41cf"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 299,
+                "line_sha256": "bce30699bdf02d7cd3941a248f297b899b69866c2084286a0e1d64f803b1bf5d",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a5-3aa2-7f41-afce-32e62cea41cf"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:45.9571993Z",
+                "time": "2026-11-04T17:39:45.964Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.0034667",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a5-3aa2-7f41-afce-32e62cea41cf"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 299,
+                "line_sha256": "bce30699bdf02d7cd3941a248f297b899b69866c2084286a0e1d64f803b1bf5d",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a5-3aa2-7f41-afce-32e62cea41cf"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:45.9571993Z",
+                "time": "2026-11-04T17:39:45.964Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 298,
+              "line_sha256": "587d96a6d818ac6d8543ed6f9c02e659b8dffc38eed8599446bc6c3dc3426998",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:39:45.954861061Z",
+              "report_id": "01a1a7a5-3aa2-7f41-afce-32e62cea41cf",
+              "source": "end_export",
+              "time": "2026-11-04T17:39:45.956Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.008",
+            "enqueue_to_attempt_seconds": "0.0011993",
+            "enqueue_to_stored_seconds": "0.004666",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "74",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:39:45.954861061Z",
+              "received_at": "2026-11-04T17:39:45.960666Z",
+              "report_id": "01a1a7a5-3aa2-7f41-afce-32e62cea41cf"
+            },
+            "observed_to_stored_seconds": "0.005804939"
+          },
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a5-4e2f-71f4-b428-a537be982604"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 301,
+                "line_sha256": "e3457f0768ca617d6162b29ddd8aefdf6f7b2bfd18e97abe0b147ee3a1e1072d",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a5-4e2f-71f4-b428-a537be982604"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:50.962165791Z",
+                "time": "2026-11-04T17:39:50.969Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.002674209",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a5-4e2f-71f4-b428-a537be982604"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 301,
+                "line_sha256": "e3457f0768ca617d6162b29ddd8aefdf6f7b2bfd18e97abe0b147ee3a1e1072d",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a5-4e2f-71f4-b428-a537be982604"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:39:50.962165791Z",
+                "time": "2026-11-04T17:39:50.969Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 300,
+              "line_sha256": "0e1f2a35ccacce9c0cddc96823903e19b7d4f0c4bcb98717cfc65f3339c15b32",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:39:50.958908837Z",
+              "report_id": "01a1a7a5-4e2f-71f4-b428-a537be982604",
+              "source": "end_export",
+              "time": "2026-11-04T17:39:50.960Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.009",
+            "enqueue_to_attempt_seconds": "0.002165791",
+            "enqueue_to_stored_seconds": "0.00484",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "74",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:39:50.958908837Z",
+              "received_at": "2026-11-04T17:39:50.96484Z",
+              "report_id": "01a1a7a5-4e2f-71f4-b428-a537be982604"
+            },
+            "observed_to_stored_seconds": "0.005931163"
+          }
+        ],
+        "stored_observations_missing_records": [],
+        "submission_attempts": [
+          {
+            "accepted_report_ids": [
+              "01a1a7a5-2712-7438-809b-098616035a8e"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 6,
+            "error_code": "",
+            "http_status": 202,
+            "line": 297,
+            "line_sha256": "31539770dcba39fc7d4f7127c0134520e6ca26fcd07733ed5f2640cb9f800608",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a5-2712-7438-809b-098616035a8e"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:39:40.949060881Z",
+            "time": "2026-11-04T17:39:40.957Z",
+            "transport_error_class": ""
+          },
+          {
+            "accepted_report_ids": [
+              "01a1a7a5-3aa2-7f41-afce-32e62cea41cf"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 5,
+            "error_code": "",
+            "http_status": 202,
+            "line": 299,
+            "line_sha256": "bce30699bdf02d7cd3941a248f297b899b69866c2084286a0e1d64f803b1bf5d",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a5-3aa2-7f41-afce-32e62cea41cf"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:39:45.9571993Z",
+            "time": "2026-11-04T17:39:45.964Z",
+            "transport_error_class": ""
+          },
+          {
+            "accepted_report_ids": [
+              "01a1a7a5-4e2f-71f4-b428-a537be982604"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 5,
+            "error_code": "",
+            "http_status": 202,
+            "line": 301,
+            "line_sha256": "e3457f0768ca617d6162b29ddd8aefdf6f7b2bfd18e97abe0b147ee3a1e1072d",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a5-4e2f-71f4-b428-a537be982604"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:39:50.962165791Z",
+            "time": "2026-11-04T17:39:50.969Z",
+            "transport_error_class": ""
+          }
+        ],
+        "submission_events_available": true,
+        "surviving_end_export_window_seconds": "16.022047753",
+        "timestamped_lines_in_window": 6,
+        "window_end": "2026-11-04T17:39:53.374378231Z",
+        "window_start": "2026-11-04T17:39:37.352330478Z"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T17:39:53.28900705Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:39:53.183416037Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:39:53.099734131Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:39:52.933125266Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "38960",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.04/0.041",
+            "mss": "50688",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "2.585/1.771",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T17:39:37.710458352Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:39:37.603349374Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:39:37.520472768Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:39:37.352331235Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "38960",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.04/0.041",
+            "mss": "50688",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "3.154/1.98",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T17:39:53.374378231Z",
+      "fixture": "receive-only-1280",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "receive-only-1280",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "native ipv4 MTU 1280",
+      "started_at": "2026-11-04T17:39:37.352330478Z",
+      "stored_observations": [
+        {
+          "received_at": "2026-11-04T17:39:40.953201Z",
+          "report_id": "01a1a7a5-2712-7438-809b-098616035a8e",
+          "observed_at": "2026-11-04T17:39:40.946123114Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "74",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        },
+        {
+          "received_at": "2026-11-04T17:39:45.960666Z",
+          "report_id": "01a1a7a5-3aa2-7f41-afce-32e62cea41cf",
+          "observed_at": "2026-11-04T17:39:45.954861061Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "74",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        },
+        {
+          "received_at": "2026-11-04T17:39:50.96484Z",
+          "report_id": "01a1a7a5-4e2f-71f4-b428-a537be982604",
+          "observed_at": "2026-11-04T17:39:50.958908837Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "74",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        }
+      ],
+      "stored_observations_read_ok": true,
+      "series_statistics": {
+        "count": 3,
+        "interval_count": 2,
+        "intervals_seconds": [
+          "5.007465",
+          "5.004174"
+        ],
+        "minimum_seconds": "5.004174",
+        "median_seconds": "5.0058195",
+        "maximum_seconds": "5.007465"
+      }
+    },
+    {
+      "index": 73,
+      "check": "D-137 routed ipv6 1280 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "Log times bound retained lines, not silent periods. Overwrite loses unsnapshotted lines. A killed request may lack completion; a row ending before completion may lack its receipt. Not stored means absent from this window, not globally rejected. Log time has millisecond precision; observed_at/started_at retain nanoseconds. boot_id is a stable SHA-256 label; process_id and attempt_scope are retained. accepted completion is the client receipt, received_at is Central storage, neither proves applied verification.",
+        "end_bytes": "86171",
+        "end_export_ok": true,
+        "end_sha256": "857a0b3f6c21500748db251325a13787504ac741db6016a61aa5e23558015ae0",
+        "enqueued_not_stored_in_window": [],
+        "enqueues": [
+          {
+            "due_reason": "state_changed",
+            "line": 322,
+            "line_sha256": "0a98abb3172669597a6c5bab6f0d5b5f9fdc69597dbb87be062fe68e3faee87d",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:40:31.207444764Z",
+            "report_id": "01a1a7a5-eb67-76fe-b943-6c11704aaf2d",
+            "source": "end_export",
+            "time": "2026-11-04T17:40:31.209Z"
+          },
+          {
+            "due_reason": "interval_elapsed",
+            "line": 325,
+            "line_sha256": "84793bb9fe019e95090e350e4f61f98815ef7f16706c9717aa03f3f5e4c33264",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:40:40.974601639Z",
+            "report_id": "01a1a7a6-118e-7b60-9762-8904fc5b7498",
+            "source": "end_export",
+            "time": "2026-11-04T17:40:40.976Z"
+          }
+        ],
+        "extraction_ok": true,
+        "first_retained_log_time": "2026-11-04T17:26:35.384Z",
+        "format_document": "docs/node/README.md: observation enqueued / observation submission",
+        "last_retained_log_time": "2026-11-04T17:40:40.983Z",
+        "malformed_receipts": [],
+        "missing_prefix_seconds": "0",
+        "overwrite_or_replacement_detected": false,
+        "reason": "Documented agent-core 52 receipts extracted; missing records and retained coverage are listed explicitly.",
+        "row_duration_seconds": "15.994461",
+        "start_bytes": "83599",
+        "start_content_retained_as_prefix": true,
+        "start_export_last_log_time": "2026-11-04T17:40:25.981Z",
+        "start_export_ok": true,
+        "start_sha256": "557a2536965e2a44e396912e2a7a29c4a1d0e989576fbaaf5fe61aa16f11573f",
+        "stored_observation_joins": [
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a5-eb67-76fe-b943-6c11704aaf2d"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 323,
+                "line_sha256": "f8f254f6b97b532a13c20891395b79725af32ea5f346dbb4aeb3f3ff9e695eb8",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a5-eb67-76fe-b943-6c11704aaf2d"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:40:31.210495858Z",
+                "time": "2026-11-04T17:40:31.217Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.002783142",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a5-eb67-76fe-b943-6c11704aaf2d"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 5,
+                "error_code": "",
+                "http_status": 202,
+                "line": 323,
+                "line_sha256": "f8f254f6b97b532a13c20891395b79725af32ea5f346dbb4aeb3f3ff9e695eb8",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a5-eb67-76fe-b943-6c11704aaf2d"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:40:31.210495858Z",
+                "time": "2026-11-04T17:40:31.217Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "state_changed",
+              "line": 322,
+              "line_sha256": "0a98abb3172669597a6c5bab6f0d5b5f9fdc69597dbb87be062fe68e3faee87d",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:40:31.207444764Z",
+              "report_id": "01a1a7a5-eb67-76fe-b943-6c11704aaf2d",
+              "source": "end_export",
+              "time": "2026-11-04T17:40:31.209Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.008",
+            "enqueue_to_attempt_seconds": "0.001495858",
+            "enqueue_to_stored_seconds": "0.004279",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "75",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:40:31.207444764Z",
+              "received_at": "2026-11-04T17:40:31.213279Z",
+              "report_id": "01a1a7a5-eb67-76fe-b943-6c11704aaf2d"
+            },
+            "observed_to_stored_seconds": "0.005834236"
+          },
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a6-118e-7b60-9762-8904fc5b7498"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 4,
+                "error_code": "",
+                "http_status": 202,
+                "line": 326,
+                "line_sha256": "475f0c9730f6beeeca5f6fe1f6728365e770dbfa3a94b6a995ee4ed6cc75c586",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a6-118e-7b60-9762-8904fc5b7498"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:40:40.977231822Z",
+                "time": "2026-11-04T17:40:40.983Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.002033178",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a6-118e-7b60-9762-8904fc5b7498"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 4,
+                "error_code": "",
+                "http_status": 202,
+                "line": 326,
+                "line_sha256": "475f0c9730f6beeeca5f6fe1f6728365e770dbfa3a94b6a995ee4ed6cc75c586",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a6-118e-7b60-9762-8904fc5b7498"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:40:40.977231822Z",
+                "time": "2026-11-04T17:40:40.983Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 325,
+              "line_sha256": "84793bb9fe019e95090e350e4f61f98815ef7f16706c9717aa03f3f5e4c33264",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:40:40.974601639Z",
+              "report_id": "01a1a7a6-118e-7b60-9762-8904fc5b7498",
+              "source": "end_export",
+              "time": "2026-11-04T17:40:40.976Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.007",
+            "enqueue_to_attempt_seconds": "0.001231822",
+            "enqueue_to_stored_seconds": "0.003265",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "75",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:40:40.974601639Z",
+              "received_at": "2026-11-04T17:40:40.979265Z",
+              "report_id": "01a1a7a6-118e-7b60-9762-8904fc5b7498"
+            },
+            "observed_to_stored_seconds": "0.004663361"
+          }
+        ],
+        "stored_observations_missing_records": [],
+        "submission_attempts": [
+          {
+            "accepted_report_ids": [
+              "01a1a7a5-eb67-76fe-b943-6c11704aaf2d"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 5,
+            "error_code": "",
+            "http_status": 202,
+            "line": 323,
+            "line_sha256": "f8f254f6b97b532a13c20891395b79725af32ea5f346dbb4aeb3f3ff9e695eb8",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a5-eb67-76fe-b943-6c11704aaf2d"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:40:31.210495858Z",
+            "time": "2026-11-04T17:40:31.217Z",
+            "transport_error_class": ""
+          },
+          {
+            "accepted_report_ids": [
+              "01a1a7a6-118e-7b60-9762-8904fc5b7498"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 4,
+            "error_code": "",
+            "http_status": 202,
+            "line": 326,
+            "line_sha256": "475f0c9730f6beeeca5f6fe1f6728365e770dbfa3a94b6a995ee4ed6cc75c586",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a6-118e-7b60-9762-8904fc5b7498"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:40:40.977231822Z",
+            "time": "2026-11-04T17:40:40.983Z",
+            "transport_error_class": ""
+          }
+        ],
+        "submission_events_available": true,
+        "surviving_end_export_window_seconds": "15.99446166",
+        "timestamped_lines_in_window": 13,
+        "window_end": "2026-11-04T17:40:44.947793884Z",
+        "window_start": "2026-11-04T17:40:28.953332224Z"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T17:40:44.857047431Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:40:44.751203708Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:40:44.669539294Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:40:44.505996345Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "2.77/2.443",
+            "mss": "52736",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "48344",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.04/0.055",
+            "mss": "39424",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "48356",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.031/0.018",
+            "mss": "49664",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T17:40:29.311396829Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:40:29.205104747Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:40:29.121013129Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:40:28.953333493Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "2.487/2.334",
+            "mss": "52736",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T17:40:44.947793884Z",
+      "fixture": "routed-1280",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "routed-1280",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "D-137 routed ipv6 1280",
+      "started_at": "2026-11-04T17:40:28.953332224Z",
+      "stored_observations": [
+        {
+          "received_at": "2026-11-04T17:40:31.213279Z",
+          "report_id": "01a1a7a5-eb67-76fe-b943-6c11704aaf2d",
+          "observed_at": "2026-11-04T17:40:31.207444764Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "75",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        },
+        {
+          "received_at": "2026-11-04T17:40:40.979265Z",
+          "report_id": "01a1a7a6-118e-7b60-9762-8904fc5b7498",
+          "observed_at": "2026-11-04T17:40:40.974601639Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "75",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        }
+      ],
+      "stored_observations_read_ok": true,
+      "series_statistics": {
+        "count": 2,
+        "interval_count": 1,
+        "intervals_seconds": [
+          "9.765986"
+        ],
+        "minimum_seconds": "9.765986",
+        "median_seconds": "9.765986",
+        "maximum_seconds": "9.765986"
+      }
+    },
+    {
+      "index": 76,
+      "check": "D-137 routed ipv4 1280 transfer",
+      "status": "pass",
+      "agent_log": {
+        "coverage_limit": "Log times bound retained lines, not silent periods. Overwrite loses unsnapshotted lines. A killed request may lack completion; a row ending before completion may lack its receipt. Not stored means absent from this window, not globally rejected. Log time has millisecond precision; observed_at/started_at retain nanoseconds. boot_id is a stable SHA-256 label; process_id and attempt_scope are retained. accepted completion is the client receipt, received_at is Central storage, neither proves applied verification.",
+        "end_bytes": "87435",
+        "end_export_ok": true,
+        "end_sha256": "be93a3db64b12748bd07bbe27213028576ac516599d2ad3fd7ed566300667cb5",
+        "enqueued_not_stored_in_window": [],
+        "enqueues": [
+          {
+            "due_reason": "interval_elapsed",
+            "line": 327,
+            "line_sha256": "a122ae4b91209e903443885066e1489acd512b8a5eae8026a8c408312d7fac0e",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:40:45.980727134Z",
+            "report_id": "01a1a7a6-251c-7d5c-a324-3c081d0130e2",
+            "source": "end_export",
+            "time": "2026-11-04T17:40:45.982Z"
+          },
+          {
+            "due_reason": "interval_elapsed",
+            "line": 329,
+            "line_sha256": "6c06044263f1a55aab6eecc5f9e3b29bc9a613eb7935f7439ede8b2031735c9c",
+            "msg": "observation enqueued",
+            "observed_at": "2026-11-04T17:40:51.432679277Z",
+            "report_id": "01a1a7a6-3a68-7da2-9e5c-ea43bddba845",
+            "source": "end_export",
+            "time": "2026-11-04T17:40:51.434Z"
+          }
+        ],
+        "extraction_ok": true,
+        "first_retained_log_time": "2026-11-04T17:26:35.384Z",
+        "format_document": "docs/node/README.md: observation enqueued / observation submission",
+        "last_retained_log_time": "2026-11-04T17:40:51.443Z",
+        "malformed_receipts": [],
+        "missing_prefix_seconds": "0",
+        "overwrite_or_replacement_detected": false,
+        "reason": "Documented agent-core 52 receipts extracted; missing records and retained coverage are listed explicitly.",
+        "row_duration_seconds": "14.751828",
+        "start_bytes": "86171",
+        "start_content_retained_as_prefix": true,
+        "start_export_last_log_time": "2026-11-04T17:40:40.983Z",
+        "start_export_ok": true,
+        "start_sha256": "857a0b3f6c21500748db251325a13787504ac741db6016a61aa5e23558015ae0",
+        "stored_observation_joins": [
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a6-251c-7d5c-a324-3c081d0130e2"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 6,
+                "error_code": "",
+                "http_status": 202,
+                "line": 328,
+                "line_sha256": "21547b5b6dc8bb101d533a222f6741c5b1978ac204e851bff8905acd91e1d62e",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a6-251c-7d5c-a324-3c081d0130e2"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:40:45.983540006Z",
+                "time": "2026-11-04T17:40:45.991Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.003950994",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a6-251c-7d5c-a324-3c081d0130e2"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 6,
+                "error_code": "",
+                "http_status": 202,
+                "line": 328,
+                "line_sha256": "21547b5b6dc8bb101d533a222f6741c5b1978ac204e851bff8905acd91e1d62e",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a6-251c-7d5c-a324-3c081d0130e2"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:40:45.983540006Z",
+                "time": "2026-11-04T17:40:45.991Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 327,
+              "line_sha256": "a122ae4b91209e903443885066e1489acd512b8a5eae8026a8c408312d7fac0e",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:40:45.980727134Z",
+              "report_id": "01a1a7a6-251c-7d5c-a324-3c081d0130e2",
+              "source": "end_export",
+              "time": "2026-11-04T17:40:45.982Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.009",
+            "enqueue_to_attempt_seconds": "0.001540006",
+            "enqueue_to_stored_seconds": "0.005491",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "75",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:40:45.980727134Z",
+              "received_at": "2026-11-04T17:40:45.987491Z",
+              "report_id": "01a1a7a6-251c-7d5c-a324-3c081d0130e2"
+            },
+            "observed_to_stored_seconds": "0.006763866"
+          },
+          {
+            "accepted_attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a6-3a68-7da2-9e5c-ea43bddba845"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 6,
+                "error_code": "",
+                "http_status": 202,
+                "line": 330,
+                "line_sha256": "896f1753a8acda232e8254538c1f0abf6d3b3c34a96feca7b9a10b119d4c75bb",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a6-3a68-7da2-9e5c-ea43bddba845"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:40:51.435651785Z",
+                "time": "2026-11-04T17:40:51.443Z",
+                "transport_error_class": ""
+              }
+            ],
+            "attempt_to_stored_seconds": "0.004221215",
+            "attempts": [
+              {
+                "accepted_report_ids": [
+                  "01a1a7a6-3a68-7da2-9e5c-ea43bddba845"
+                ],
+                "attempt_numbers": [
+                  1
+                ],
+                "attempt_scope": "process",
+                "boot_id": "boot-e2c1d9ed15a51615",
+                "duration_ms": 6,
+                "error_code": "",
+                "http_status": 202,
+                "line": 330,
+                "line_sha256": "896f1753a8acda232e8254538c1f0abf6d3b3c34a96feca7b9a10b119d4c75bb",
+                "msg": "observation submission",
+                "next_retry_at": null,
+                "outcome": "accepted",
+                "process_id": 871,
+                "report_ids": [
+                  "01a1a7a6-3a68-7da2-9e5c-ea43bddba845"
+                ],
+                "retry_after_ms": 0,
+                "source": "end_export",
+                "started_at": "2026-11-04T17:40:51.435651785Z",
+                "time": "2026-11-04T17:40:51.443Z",
+                "transport_error_class": ""
+              }
+            ],
+            "enqueue": {
+              "due_reason": "interval_elapsed",
+              "line": 329,
+              "line_sha256": "6c06044263f1a55aab6eecc5f9e3b29bc9a613eb7935f7439ede8b2031735c9c",
+              "msg": "observation enqueued",
+              "observed_at": "2026-11-04T17:40:51.432679277Z",
+              "report_id": "01a1a7a6-3a68-7da2-9e5c-ea43bddba845",
+              "source": "end_export",
+              "time": "2026-11-04T17:40:51.434Z"
+            },
+            "enqueue_to_accepted_completion_seconds": "0.009",
+            "enqueue_to_attempt_seconds": "0.001651785",
+            "enqueue_to_stored_seconds": "0.005873",
+            "observation": {
+              "forwarding_block_reasons": [],
+              "generation": "75",
+              "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325",
+              "member_forwarding_enabled": true,
+              "observed_at": "2026-11-04T17:40:51.432679277Z",
+              "received_at": "2026-11-04T17:40:51.439873Z",
+              "report_id": "01a1a7a6-3a68-7da2-9e5c-ea43bddba845"
+            },
+            "observed_to_stored_seconds": "0.007193723"
+          }
+        ],
+        "stored_observations_missing_records": [],
+        "submission_attempts": [
+          {
+            "accepted_report_ids": [
+              "01a1a7a6-251c-7d5c-a324-3c081d0130e2"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 6,
+            "error_code": "",
+            "http_status": 202,
+            "line": 328,
+            "line_sha256": "21547b5b6dc8bb101d533a222f6741c5b1978ac204e851bff8905acd91e1d62e",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a6-251c-7d5c-a324-3c081d0130e2"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:40:45.983540006Z",
+            "time": "2026-11-04T17:40:45.991Z",
+            "transport_error_class": ""
+          },
+          {
+            "accepted_report_ids": [
+              "01a1a7a6-3a68-7da2-9e5c-ea43bddba845"
+            ],
+            "attempt_numbers": [
+              1
+            ],
+            "attempt_scope": "process",
+            "boot_id": "boot-e2c1d9ed15a51615",
+            "duration_ms": 6,
+            "error_code": "",
+            "http_status": 202,
+            "line": 330,
+            "line_sha256": "896f1753a8acda232e8254538c1f0abf6d3b3c34a96feca7b9a10b119d4c75bb",
+            "msg": "observation submission",
+            "next_retry_at": null,
+            "outcome": "accepted",
+            "process_id": 871,
+            "report_ids": [
+              "01a1a7a6-3a68-7da2-9e5c-ea43bddba845"
+            ],
+            "retry_after_ms": 0,
+            "source": "end_export",
+            "started_at": "2026-11-04T17:40:51.435651785Z",
+            "time": "2026-11-04T17:40:51.443Z",
+            "transport_error_class": ""
+          }
+        ],
+        "submission_events_available": true,
+        "surviving_end_export_window_seconds": "14.75182801",
+        "timestamped_lines_in_window": 4,
+        "window_end": "2026-11-04T17:40:59.742521474Z",
+        "window_start": "2026-11-04T17:40:44.990693464Z"
+      },
+      "control_path_end": {
+        "available": true,
+        "ended_at": "2026-11-04T17:40:59.660246277Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:40:59.553916195Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:40:59.470150117Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:40:59.306036728Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "2.789/2.205",
+            "mss": "52736",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "48344",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.04/0.055",
+            "mss": "39424",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "48356",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.031/0.018",
+            "mss": "49664",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "control_path_start": {
+        "available": true,
+        "ended_at": "2026-11-04T17:40:45.345585699Z",
+        "route": {
+          "command_ok": true,
+          "destination_label": "addr-12ca17b49af22894",
+          "ended_at": "2026-11-04T17:40:45.238622089Z",
+          "family": "ipv4",
+          "neighbours": [],
+          "routes": [
+            {
+              "family": "ipv4",
+              "interface": "lo",
+              "destination_label": "addr-12ca17b49af22894",
+              "source_label": "addr-12ca17b49af22894",
+              "gateway_label": ""
+            }
+          ],
+          "started_at": "2026-11-04T17:40:45.155500901Z"
+        },
+        "ss_command_ok": true,
+        "started_at": "2026-11-04T17:40:44.990693931Z",
+        "tcp_connections": [
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "44260",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "2.77/2.443",
+            "mss": "52736",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "48344",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.04/0.055",
+            "mss": "39424",
+            "pmtu": "65535"
+          },
+          {
+            "family": "ipv4",
+            "state": "ESTAB",
+            "local": {
+              "address": "addr-12ca17b49af22894",
+              "port": "48356",
+              "family": "ipv4"
+            },
+            "remote": {
+              "address": "addr-12ca17b49af22894",
+              "port": "9444",
+              "family": "ipv4"
+            },
+            "retransmissions": "",
+            "rtt_ms": "0.031/0.018",
+            "mss": "49664",
+            "pmtu": "65535"
+          }
+        ]
+      },
+      "ended_at": "2026-11-04T17:40:59.742521474Z",
+      "fixture": "routed-1280",
+      "fixture_path_assessment": {
+        "applies_to_control_route": false,
+        "basis": "native input MTU/PTB changes the member namespace; known-PMTU constrains only the selected node-to-member host route; routed fixture changes the member/router link. Control route/source and TCP metrics are read independently at both boundaries.",
+        "boundary_paths_available": true,
+        "fixture": "routed-1280",
+        "limit": "endpoint route evidence does not prove absence of indirect shared-host effects"
+      },
+      "node_role": "node",
+      "row": "D-137 routed ipv4 1280",
+      "started_at": "2026-11-04T17:40:44.990693464Z",
+      "stored_observations": [
+        {
+          "received_at": "2026-11-04T17:40:45.987491Z",
+          "report_id": "01a1a7a6-251c-7d5c-a324-3c081d0130e2",
+          "observed_at": "2026-11-04T17:40:45.980727134Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "75",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        },
+        {
+          "received_at": "2026-11-04T17:40:51.439873Z",
+          "report_id": "01a1a7a6-3a68-7da2-9e5c-ea43bddba845",
+          "observed_at": "2026-11-04T17:40:51.432679277Z",
+          "member_forwarding_enabled": true,
+          "forwarding_block_reasons": [],
+          "generation": "75",
+          "incarnation": "01a1a77c-c3b8-7182-9c60-06db30bd1325"
+        }
+      ],
+      "stored_observations_read_ok": true,
+      "series_statistics": {
+        "count": 2,
+        "interval_count": 1,
+        "intervals_seconds": [
+          "5.452382"
+        ],
+        "minimum_seconds": "5.452382",
+        "median_seconds": "5.452382",
+        "maximum_seconds": "5.452382"
+      }
+    }
+  ],
+  "failed_serving_reads": [],
+  "scope": "All control-stored node observations in each recorded half-open row window; received_at, report ID, generation, incarnation and serving state retained. Agent-core 52 receipts joined by report ID with process-scoped attempts and overwrite coverage; no freshness or D-151 policy change."
+}
