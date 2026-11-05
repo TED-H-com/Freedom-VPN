@@ -13,10 +13,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
+	"fmt"
 	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/netip"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -47,6 +49,12 @@ func (b *synchronizedBuffer) Write(p []byte) (int, error) {
 	return b.b.Write(p)
 }
 func (b *synchronizedBuffer) String() string { b.mu.Lock(); defer b.mu.Unlock(); return b.b.String() }
+
+// Closing done publishes err to every observer, including readiness and cleanup.
+type binaryExit struct {
+	done chan struct{}
+	err  error
+}
 
 func TestAPI01_BinariesActivateConfiguredMembersThroughComposition(t *testing.T) {
 	pool, dsn := dbtest.NewUnmigratedWithDSN(t)
@@ -90,8 +98,7 @@ func TestAPI01_BinariesActivateConfiguredMembersThroughComposition(t *testing.T)
 	c.DNSConfigFile = write("dns.json", []byte(`{"upstreams":["192.0.2.53:53"]}`))
 	c.PoliciesConfigFile = policiestest.New(t).Path
 	c.UsageConfigFile = usagetest.New(t).Path
-	c.PublicAddress = availableAddress(t)
-	c.MetricsAddress = availableAddress(t)
+	// Let control bind its own ephemeral ports; discover public from its log.
 	c.ShutdownSeconds = 3
 	c.WorkerConcurrency = 1
 	c.OIDCClientID = "TEST-ONLY-portal"
@@ -128,7 +135,7 @@ func TestAPI01_BinariesActivateConfiguredMembersThroughComposition(t *testing.T)
 	if e != nil {
 		t.Fatal(e)
 	}
-	start := func(name, metricsAddress string) (*exec.Cmd, *synchronizedBuffer, chan error) {
+	start := func(name, metricsAddress string) (*exec.Cmd, *synchronizedBuffer, *binaryExit) {
 		t.Helper()
 		binary := filepath.Join(dir, name)
 		build := exec.CommandContext(t.Context(), "go", "build", "-o", binary, "./apps/"+strings.TrimPrefix(name, "fvpn-")+"/cmd/"+name)
@@ -144,26 +151,25 @@ func TestAPI01_BinariesActivateConfiguredMembersThroughComposition(t *testing.T)
 		if e := cmd.Start(); e != nil {
 			t.Fatal(e)
 		}
-		done := make(chan error, 1)
-		go func() { done <- cmd.Wait() }()
+		exit := &binaryExit{done: make(chan struct{})}
+		go func() { exit.err = cmd.Wait(); close(exit.done) }()
 		t.Cleanup(func() {
 			_ = cmd.Process.Signal(syscall.SIGTERM)
 			select {
-			case e := <-done:
-				if e != nil {
-					t.Errorf("binary %s exited: %v", name, e)
+			case <-exit.done:
+				if exit.err != nil {
+					t.Errorf("binary %s exited: %v; startup: %s", name, exit.err, binaryStartupSummary(logs.String()))
 				}
 			case <-time.After(10 * time.Second):
 				_ = cmd.Process.Kill()
-				<-done
+				<-exit.done
 				t.Error("binary shutdown timeout")
 			}
 		})
-		return cmd, logs, done
+		return cmd, logs, exit
 	}
-	_, controlLogs, _ := start("fvpn-control", c.MetricsAddress)
-	base := "https://" + c.PublicAddress
-	waitReady(t, client, base+"/readyz")
+	_, controlLogs, controlExit := start("fvpn-control", c.MetricsAddress)
+	base := waitReady(t, client, "", controlLogs, controlExit)
 	f := &fixture{t: t, pool: pool, idp: idp}
 	// The fixture's signed OIDC login uses the actual TLS listener and binary.
 	f.auth = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -234,8 +240,8 @@ func TestAPI01_BinariesActivateConfiguredMembersThroughComposition(t *testing.T)
 	f.exec(`UPDATE outbox_events SET available_at=clock_timestamp()+interval '1 day' WHERE event_type='billing.inbox_received'`)
 	// Choose the worker's metrics port after control has bound its own listener.
 	workerMetricsAddress := availableAddress(t)
-	_, workerLogs, _ := start("fvpn-worker", workerMetricsAddress)
-	waitReady(t, &http.Client{Timeout: time.Second}, "http://"+workerMetricsAddress+"/readyz")
+	_, workerLogs, workerExit := start("fvpn-worker", workerMetricsAddress)
+	waitReady(t, &http.Client{Timeout: time.Second}, "http://"+workerMetricsAddress, workerLogs, workerExit)
 	deadline := time.Now().Add(10 * time.Second)
 	for f.count(`SELECT count(*) FROM outbox_events WHERE event_type IN ('billing.reconcile','members.reconcile','devices.discover') AND delivered_at IS NOT NULL`) < 3 {
 		if time.Now().After(deadline) {
@@ -301,23 +307,128 @@ func availableAddress(t *testing.T) string {
 	}
 	return address
 }
-func waitReady(t *testing.T, client *http.Client, url string) {
+func waitReady(t *testing.T, client *http.Client, base string, logs *synchronizedBuffer, exit *binaryExit) string {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
 	defer cancel()
+	base, err := awaitBinaryReady(ctx, client, base, logs, exit)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return base
+}
+
+func awaitBinaryReady(ctx context.Context, client *http.Client, base string, logs *synchronizedBuffer, exit *binaryExit) (string, error) {
+	tick := time.NewTicker(20 * time.Millisecond)
+	defer tick.Stop()
+	last := "no bound public listener"
+	failure := func(reason string) (string, error) {
+		return "", fmt.Errorf("binary listener not ready: %s; last=%s; startup: %s", reason, last, binaryStartupSummary(logs.String()))
+	}
 	for {
-		req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
-		res, e := client.Do(req)
-		if e == nil {
-			res.Body.Close()
-			if res.StatusCode == 200 {
-				return
+		select {
+		case <-exit.done:
+			return failure(fmt.Sprintf("process exited (%v)", exit.err))
+		case <-ctx.Done():
+			return failure(ctx.Err().Error())
+		default:
+		}
+		if base == "" {
+			if address := controlPublicAddress(logs.String()); address != "" {
+				base = "https://" + address
+			}
+		}
+		if base != "" {
+			req, err := http.NewRequestWithContext(ctx, "GET", base+"/readyz", nil)
+			if err != nil {
+				return failure("invalid readiness URL")
+			}
+			res, err := client.Do(req)
+			if err != nil && ctx.Err() != nil {
+				return failure(ctx.Err().Error())
+			}
+			last = "request failed"
+			if err == nil {
+				res.Body.Close()
+				last = fmt.Sprintf("HTTP %d", res.StatusCode)
+				if res.StatusCode == http.StatusOK {
+					select {
+					case <-exit.done:
+						return failure(fmt.Sprintf("process exited (%v)", exit.err))
+					default:
+						return base, nil
+					}
+				}
+			} else if e, ok := err.(net.Error); ok && e.Timeout() {
+				last = "request timeout"
 			}
 		}
 		select {
+		case <-exit.done:
+			return failure(fmt.Sprintf("process exited (%v)", exit.err))
 		case <-ctx.Done():
-			t.Fatal("binary listener not ready", ctx.Err())
-		case <-time.After(20 * time.Millisecond):
+			return failure(ctx.Err().Error())
+		case <-tick.C:
 		}
 	}
+}
+
+type binaryStartupRecord struct {
+	Message   string `json:"msg"`
+	Listener  string `json:"listener"`
+	Address   string `json:"address"`
+	Setting   string `json:"setting"`
+	ErrorCode string `json:"error_code"`
+}
+
+func validBoundAddress(address string) bool {
+	a, err := netip.ParseAddrPort(address)
+	return err == nil && a.Addr().IsLoopback() && a.Addr().Zone() == "" && a.Port() != 0
+}
+
+func controlPublicAddress(logs string) string {
+	for line := range strings.SplitSeq(logs, "\n") {
+		var record binaryStartupRecord
+		if json.Unmarshal([]byte(line), &record) == nil && record.Message == "control listener started" && record.Listener == "public" && validBoundAddress(record.Address) {
+			return record.Address
+		}
+	}
+	return ""
+}
+
+// Only fixed startup events and validated local addresses are printable. Never
+// dump effective configuration, arbitrary log fields, request errors or secrets.
+func binaryStartupSummary(logs string) string {
+	var events []string
+	for line := range strings.SplitSeq(logs, "\n") {
+		var r binaryStartupRecord
+		if json.Unmarshal([]byte(line), &r) != nil {
+			continue
+		}
+		event := r.Message
+		switch r.Message {
+		case "effective configuration", "control domain built", "worker domain built":
+		case "control listener started":
+			if (r.Listener != "public" && r.Listener != "agent" && r.Listener != "metrics") || !validBoundAddress(r.Address) {
+				continue
+			}
+			event += " " + r.Listener + "=" + r.Address
+		case "invalid startup setting":
+			switch r.Setting {
+			case "members_config_file", "nodes_config_file", "policies_config_file", "usage_config_file", "dns_config_file":
+				event += " " + r.Setting
+			}
+		case "control stopped", "worker stopped":
+			if r.ErrorCode == "STARTUP_OR_RUNTIME_FAILURE" {
+				event += " " + r.ErrorCode
+			}
+		default:
+			continue
+		}
+		events = append(events, event)
+		if len(events) > 8 {
+			events = events[1:]
+		}
+	}
+	return strings.Join(events, "; ")
 }
