@@ -17639,7 +17639,8 @@ func TestHandover_Followup48Claims(t *testing.T) {
 		}
 		code := map[string]string{}
 		for _, a := range audit {
-			if a.Commit != cut || hash(a.Text) != a.SHA256 || readOwnedDoc(t, root, a.Source) != a.Text {
+			// Current product sources can change after the cut; only the pinned frozen bytes are historical inputs.
+			if a.Commit != cut || hash(a.Text) != a.SHA256 {
 				t.Fatalf("source hash/commit %s", a.Source)
 			}
 			code[a.Source] = a.Text
