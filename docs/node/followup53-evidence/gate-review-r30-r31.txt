@@ -1,0 +1,27 @@
+--- PASS: TestR30_H1_CanceledBootContextSkipsRecoverAndAdmitsServing (0.16s)
+--- PASS: TestR30_H1_PerCallBootContextWedgesStepRecovery (0.18s)
+--- PASS: TestR30_M2_PreEnforceLeaseAttemptBlocksPostRecoveryRenewal (0.19s)
+--- PASS: TestR30_M3_PendingOutboxDedupSkipsNewClosedRecoveryReport (0.18s)
+--- PASS: TestR30_D155_D156_D157_HeldInvariants (0.18s)
+    --- PASS: TestR30_D155_D156_D157_HeldInvariants/D156_second_startup_over_boot_adopting_downgrades_to_unverified (0.01s)
+    --- PASS: TestR30_D155_D156_D157_HeldInvariants/D157_baseline_disarms_early_recovery_renewal (0.17s)
+--- PASS: TestR31_M1_UnbindableClosedRecoveryFloodsPendingObservationOutbox (0.54s)
+    --- PASS: TestR31_M1_UnbindableClosedRecoveryFloodsPendingObservationOutbox/isolation_error_in_report_fills_outbox_and_tears_down_recovery (0.19s)
+    --- PASS: TestR31_M1_UnbindableClosedRecoveryFloodsPendingObservationOutbox/failed_meter_path_fills_outbox (0.17s)
+    --- PASS: TestR31_M1_UnbindableClosedRecoveryFloodsPendingObservationOutbox/no_awaiting_member_grants_lease_behind_applied_fills_outbox (0.18s)
+--- PASS: TestR31_Held_H1_RecoverLifetimesAndFailClosedGate (0.14s)
+    --- PASS: TestR31_Held_H1_RecoverLifetimesAndFailClosedGate/input_recover_blocked_follows_config_and_completion (0.01s)
+    --- PASS: TestR31_Held_H1_RecoverLifetimesAndFailClosedGate/run_stop_sets_recover_blocked_without_spawning_child (0.13s)
+--- PASS: TestR31_Held_M2_M3_InteractionSingleEarlyRenewalAfterAcceptedReport (0.20s)
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent	1.769s
+ok  	github.com/TED-H-com/Freedom-VPN/node/agent/cmd/fvpn-agent	0.005s [no tests to run]
+--- PASS: TestR30_H2_StaleThenLiveLockMetadataAbortsEarlyWithExitBusy (0.29s)
+--- PASS: TestR30_M1_NonBusyFirstLockErrorEmitsSpuriousWaitLog (0.00s)
+--- PASS: TestR30_D155_UpdaterRecoverStaysPromptNoWaitLog (0.18s)
+--- PASS: TestR31_Held_D158_AnswerSequencesAndRecordInvariants (0.11s)
+    --- PASS: TestR31_Held_D158_AnswerSequencesAndRecordInvariants/alternating_stale_and_live_exits_3_at_10020ms (0.05s)
+    --- PASS: TestR31_Held_D158_AnswerSequencesAndRecordInvariants/four_stale_then_live_repeated_exits_3_at_10080ms (0.05s)
+    --- PASS: TestR31_Held_D158_AnswerSequencesAndRecordInvariants/live_until_deadline_then_stale_exits_1_at_10080ms (0.01s)
+    --- PASS: TestR31_Held_D158_AnswerSequencesAndRecordInvariants/busy_first_attempt_then_non_busy_error_emits_one_record (0.00s)
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater	0.591s
+ok  	github.com/TED-H-com/Freedom-VPN/node/updater/cmd/fvpn-updater	0.005s [no tests to run]
