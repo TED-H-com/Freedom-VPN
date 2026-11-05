@@ -1,0 +1,1345 @@
+package meter
+
+// Independent adversarial review r33 unit proofs for agent-core follow-up 53
+// (commit b094ffac72f2f4f247a3e2b592a6659a84f1d51a at review base
+// 29cd267162fa614c444122865b62f405e2f58802).
+// TEST ONLY deterministic clocks, in-memory counter sources, and temp SQLite.
+
+import (
+	"bytes"
+	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"path/filepath"
+	"reflect"
+	"testing"
+	"time"
+
+	"github.com/google/uuid"
+
+	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/usagestore"
+	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+)
+
+// TestR33_Q1_ClockDomainAndFidelity proves the exact clock-domain behavior of
+// Sample, CheckpointForRestart, and FinalSample across:
+//   - now == head.LastSample (unchanged readings)
+//   - 0 < head.LastSample.Sub(now) < interval (unchanged readings)
+//   - exact boundary head.LastSample.Sub(now) == interval (unchanged readings)
+//   - just past boundary: interval + 1ns and interval + 1µs (planClockGap)
+//   - forward time now.After(head.LastSample) (unchanged readings)
+//   - sub-microsecond timestamps within the same microsecond as head.LastSample
+//   - head.LastSample.IsZero() with an open epoch
+func TestR33_Q1_ClockDomainAndFidelity(t *testing.T) {
+	t0 := time.Date(2026, 11, 4, 12, 0, 0, 0, time.UTC)
+
+	seedOpenMeter := func(t *testing.T) (*Meter, *usagestore.Store, *fakeSrc, *clock, usagestore.Head) {
+		t.Helper()
+		clk := &clock{t: t0}
+		// Start with zero counters at t0 so initial baseline opens without an
+		// uncheckpointed-bytes startup gap.
+		src := &fakeSrc{obs: observe("boot-q1", reading{
+			dev: devA, mem: memA, rev: 1,
+		})}
+		m, s := start(t, src, clk, usagestore.Options{})
+		clk.Set(t0.Add(10 * time.Second))
+		src.set(observe("boot-q1", reading{
+			dev: devA, mem: memA, rev: 1, upB: 5096, upP: 5, dnB: 9192, dnP: 9,
+		}))
+		if err := m.Sample(t.Context()); err != nil {
+			t.Fatalf("forward Sample: %v", err)
+		}
+		h, err := s.Head(t.Context())
+		if err != nil {
+			t.Fatalf("Head: %v", err)
+		}
+		if h.OpenEpoch == uuid.Nil || !h.LastSample.Equal(t0.Add(10*time.Second)) || h.NextSeq != 2 {
+			t.Fatalf("unexpected seeded head: %+v", h)
+		}
+		return m, s, src, clk, h
+	}
+
+	// 1. Unchanged readings at now == LastSample, 0 < rollback < interval (5s),
+	// and exact boundary rollback == interval (10s).
+	for _, tc := range []struct {
+		name     string
+		rollback time.Duration
+	}{
+		{name: "equal_timestamp", rollback: 0},
+		{name: "bounded_rollback_5s", rollback: 5 * time.Second},
+		{name: "exact_interval_boundary_10s", rollback: 10 * time.Second},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			// (a) Ordinary Sample returns ErrHold and performs no store commit.
+			mS, sS, _, clkS, hBefore := seedOpenMeter(t)
+			clkS.Set(hBefore.LastSample.Add(-tc.rollback))
+			if err := mS.Sample(t.Context()); !errors.Is(err, ErrHold) {
+				t.Fatalf("Sample at rollback=%s: got %v, want ErrHold", tc.rollback, err)
+			}
+			hAfterS, err := sS.Head(t.Context())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !reflect.DeepEqual(hAfterS, hBefore) {
+				t.Fatalf("Sample ErrHold mutated head: got %+v, want %+v", hAfterS, hBefore)
+			}
+
+			// (b) CheckpointForRestart returns nil, keeps OpenEpoch open, preserves
+			// LastSample (never moves it backward), and emits no event.
+			mR, sR, _, clkR, hBeforeR := seedOpenMeter(t)
+			clkR.Set(hBeforeR.LastSample.Add(-tc.rollback))
+			if err := mR.CheckpointForRestart(t.Context()); err != nil {
+				t.Fatalf("CheckpointForRestart at rollback=%s: got %v, want nil", tc.rollback, err)
+			}
+			hAfterR, err := sR.Head(t.Context())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if hAfterR.OpenEpoch != hBeforeR.OpenEpoch {
+				t.Fatalf("CheckpointForRestart changed OpenEpoch: got %s, want %s", hAfterR.OpenEpoch, hBeforeR.OpenEpoch)
+			}
+			if !hAfterR.LastSample.Equal(hBeforeR.LastSample) {
+				t.Fatalf("CheckpointForRestart changed LastSample: got %s, want %s", hAfterR.LastSample, hBeforeR.LastSample)
+			}
+			if hAfterR.NextSeq != hBeforeR.NextSeq {
+				t.Fatalf("CheckpointForRestart emitted unexpected event: NextSeq=%d, want %d", hAfterR.NextSeq, hBeforeR.NextSeq)
+			}
+			if !reflect.DeepEqual(hAfterR.Counters, hBeforeR.Counters) {
+				t.Fatalf("CheckpointForRestart mutated Counters: got %+v, want %+v", hAfterR.Counters, hBeforeR.Counters)
+			}
+
+			// (c) FinalSample returns nil, closes the epoch with "final_sample",
+			// preserves LastSample, and emits no event.
+			mF, sF, _, clkF, hBeforeF := seedOpenMeter(t)
+			clkF.Set(hBeforeF.LastSample.Add(-tc.rollback))
+			if err := mF.FinalSample(t.Context()); err != nil {
+				t.Fatalf("FinalSample at rollback=%s: got %v, want nil", tc.rollback, err)
+			}
+			hAfterF, err := sF.Head(t.Context())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if hAfterF.OpenEpoch != uuid.Nil || hAfterF.LastCloseReason != "final_sample" {
+				t.Fatalf("FinalSample did not close epoch: OpenEpoch=%s LastCloseReason=%q", hAfterF.OpenEpoch, hAfterF.LastCloseReason)
+			}
+			if !hAfterF.LastSample.Equal(hBeforeF.LastSample) {
+				t.Fatalf("FinalSample changed LastSample: got %s, want %s", hAfterF.LastSample, hBeforeF.LastSample)
+			}
+			if hAfterF.NextSeq != hBeforeF.NextSeq {
+				t.Fatalf("FinalSample emitted unexpected event: NextSeq=%d, want %d", hAfterF.NextSeq, hBeforeF.NextSeq)
+			}
+		})
+	}
+
+	// 2. Just past the 10s interval boundary (10s+1ns and 10s+1µs): all three
+	// methods must take planClockGap (emitting a clock_anomaly gap of 1µs width
+	// anchored at [head.LastSample, head.LastSample+1µs)).
+	for _, tc := range []struct {
+		name     string
+		rollback time.Duration
+	}{
+		{name: "over_interval_by_1ns", rollback: 10*time.Second + time.Nanosecond},
+		{name: "over_interval_by_1us", rollback: 10*time.Second + time.Microsecond},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			for _, mode := range []string{"sample", "restart", "final"} {
+				t.Run(mode, func(t *testing.T) {
+					m, s, _, clk, hBefore := seedOpenMeter(t)
+					now := hBefore.LastSample.Add(-tc.rollback)
+					clk.Set(now)
+					var err error
+					switch mode {
+					case "sample":
+						err = m.Sample(t.Context())
+					case "restart":
+						err = m.CheckpointForRestart(t.Context())
+					case "final":
+						err = m.FinalSample(t.Context())
+					}
+					if err != nil {
+						t.Fatalf("%s at rollback=%s: %v", mode, tc.rollback, err)
+					}
+					hAfter, err := s.Head(t.Context())
+					if err != nil {
+						t.Fatal(err)
+					}
+					if hAfter.NextSeq != hBefore.NextSeq+1 {
+						t.Fatalf("%s did not emit clock_anomaly event: NextSeq=%d, want %d", mode, hAfter.NextSeq, hBefore.NextSeq+1)
+					}
+					ev := decodeStoredEvent(t, s, hBefore.NextSeq)
+					if ev.Quality != api.UsageQualityGap || ev.Gap == nil || ev.Gap.Reason != api.UsageGapReasonClockAnomaly {
+						t.Fatalf("%s event: quality=%s gap=%+v, want clock_anomaly gap", mode, ev.Quality, ev.Gap)
+					}
+					wantStart := hBefore.LastSample
+					wantEnd := wantStart.Add(time.Microsecond)
+					if !ev.IntervalStart.Equal(wantStart) || !ev.IntervalEnd.Equal(wantEnd) {
+						t.Fatalf("%s clock_anomaly interval=[%s, %s), want [%s, %s)",
+							mode, ev.IntervalStart, ev.IntervalEnd, wantStart, wantEnd)
+					}
+					if mode == "final" {
+						if hAfter.OpenEpoch != uuid.Nil || hAfter.LastCloseReason != "final_sample" {
+							t.Fatalf("FinalSample after clock_anomaly left OpenEpoch=%s LastCloseReason=%q", hAfter.OpenEpoch, hAfter.LastCloseReason)
+						}
+					} else {
+						if hAfter.OpenEpoch != hBefore.OpenEpoch || !hAfter.LastSample.Equal(wantEnd) {
+							t.Fatalf("%s after clock_anomaly: OpenEpoch=%s (want %s) LastSample=%s (want %s)",
+								mode, hAfter.OpenEpoch, hBefore.OpenEpoch, hAfter.LastSample, wantEnd)
+						}
+					}
+				})
+			}
+		})
+	}
+
+	// 3. Forward time now.After(head.LastSample) with unchanged readings:
+	// Sample and CheckpointForRestart behave identically (advance LastSample,
+	// keep OpenEpoch, emit no event).
+	t.Run("forward_time_unchanged_readings", func(t *testing.T) {
+		mS, sS, _, clkS, hBeforeS := seedOpenMeter(t)
+		mR, sR, _, clkR, hBeforeR := seedOpenMeter(t)
+		nextT := hBeforeS.LastSample.Add(10 * time.Second)
+		clkS.Set(nextT)
+		clkR.Set(nextT)
+		if err := mS.Sample(t.Context()); err != nil {
+			t.Fatalf("Sample forward: %v", err)
+		}
+		if err := mR.CheckpointForRestart(t.Context()); err != nil {
+			t.Fatalf("CheckpointForRestart forward: %v", err)
+		}
+		hS, _ := sS.Head(t.Context())
+		hR, _ := sR.Head(t.Context())
+		if !hS.LastSample.Equal(nextT) || !hR.LastSample.Equal(nextT) || hS.NextSeq != hBeforeS.NextSeq || hR.NextSeq != hBeforeR.NextSeq || hS.OpenEpoch != hBeforeS.OpenEpoch || hR.OpenEpoch != hBeforeR.OpenEpoch {
+			t.Fatalf("forward unchanged mismatch: Sample=%+v Restart=%+v", hS, hR)
+		}
+	})
+
+	// 4. Sub-microsecond input within the same microsecond as LastSample:
+	// Because LastSample is stored at microsecond precision (T1 = t0+10s), a call
+	// at T1+331ns has now.After(LastSample) == true, so eventInterval advances
+	// SampledAt to T1+1µs. A subsequent call at T1+800ns then sees
+	// !now.After(LastSample) (LastSample == T1+1µs), where Sample returns ErrHold
+	// and CheckpointForRestart returns nil preserving LastSample == T1+1µs.
+	t.Run("sub_microsecond_same_microsecond_as_last_sample", func(t *testing.T) {
+		m, s, _, clk, hBefore := seedOpenMeter(t)
+		subNow := hBefore.LastSample.Add(331 * time.Nanosecond)
+		clk.Set(subNow)
+		if err := m.Sample(t.Context()); err != nil {
+			t.Fatalf("first sub-microsecond Sample: %v", err)
+		}
+		hMid, err := s.Head(t.Context())
+		if err != nil {
+			t.Fatal(err)
+		}
+		wantAdvanced := hBefore.LastSample.Add(time.Microsecond)
+		if !hMid.LastSample.Equal(wantAdvanced) {
+			t.Fatalf("sub-microsecond forward Sample set LastSample=%s, want %s", hMid.LastSample, wantAdvanced)
+		}
+		// Now at T1+800ns (< T1+1µs), now.After(LastSample) is false.
+		clk.Set(hBefore.LastSample.Add(800 * time.Nanosecond))
+		if err := m.Sample(t.Context()); !errors.Is(err, ErrHold) {
+			t.Fatalf("second sub-microsecond Sample: got %v, want ErrHold", err)
+		}
+		if err := m.CheckpointForRestart(t.Context()); err != nil {
+			t.Fatalf("second sub-microsecond CheckpointForRestart: got %v, want nil", err)
+		}
+		hFinal, err := s.Head(t.Context())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !hFinal.LastSample.Equal(wantAdvanced) || hFinal.OpenEpoch != hBefore.OpenEpoch {
+			t.Fatalf("sub-microsecond CheckpointForRestart head: %+v", hFinal)
+		}
+	})
+
+	// 5. Open epoch with head.LastSample.IsZero(): !head.LastSample.IsZero() is
+	// false at delta.go:264, so Sample and CheckpointForRestart behave identically
+	// after clearing meta.last_sample via direct SQLite setup.
+	t.Run("open_epoch_with_zero_last_sample", func(t *testing.T) {
+		clearLastSample := func(t *testing.T, st *usagestore.Store) {
+			t.Helper()
+			rawDB, err := sql.Open("sqlite", st.Path())
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer rawDB.Close()
+			if _, err := rawDB.Exec(`UPDATE meta SET last_sample = NULL WHERE id = 1`); err != nil {
+				t.Fatal(err)
+			}
+		}
+		mS, sS, _, _, _ := seedOpenMeter(t)
+		mR, sR, _, _, _ := seedOpenMeter(t)
+		clearLastSample(t, sS)
+		clearLastSample(t, sR)
+		if err := mS.Sample(t.Context()); err != nil {
+			t.Fatalf("Sample with zero LastSample: %v", err)
+		}
+		if err := mR.CheckpointForRestart(t.Context()); err != nil {
+			t.Fatalf("CheckpointForRestart with zero LastSample: %v", err)
+		}
+		hS, _ := sS.Head(t.Context())
+		hR, _ := sR.Head(t.Context())
+		if hS.OpenEpoch == uuid.Nil || hR.OpenEpoch == uuid.Nil || !hS.LastSample.Equal(hR.LastSample) || hS.NextSeq != hR.NextSeq || !reflect.DeepEqual(hS.Counters, hR.Counters) {
+			t.Fatalf("zero LastSample heads differ: sample=%+v restart=%+v", hS, hR)
+		}
+	})
+}
+
+// TestR33_Q2_DurableCheckpointAndExactOnce proves that an accepted unchanged
+// CheckpointForRestart at now <= LastSample commits a real SQLite transaction
+// (invoking StepCheckpoint, StepBeforeCommit, StepAfterCommit and skipping
+// StepInsert), preserves all durable Head fields, ACK watermark, sealed outbox
+// and archived events, ReadSnapshot, and OutboxStatus across close/reopen, is
+// idempotent across repeated calls, and counts the next forward delta once.
+func TestR33_Q2_DurableCheckpointAndExactOnce(t *testing.T) {
+	t0 := time.Date(2026, 11, 4, 13, 0, 0, 0, time.UTC)
+	clk := &clock{t: t0}
+
+	const largeBase uint64 = (1 << 53) + 1 // 9007199254740993
+	src := &fakeSrc{obs: observe("boot-q2",
+		reading{dev: devA, mem: memA, rev: 1},
+		reading{dev: devB, mem: memB, rev: 2},
+	)}
+
+	var steps []string
+	recordHooks := false
+	dbPath := filepath.Join(t.TempDir(), "usage.db")
+	opt := usagestore.Options{
+		Now: clk.Now,
+		Hook: func(step string) error {
+			if recordHooks {
+				steps = append(steps, step)
+			}
+			return nil
+		},
+	}
+	s, err := usagestore.Open(dbPath, nodeID, incID, opt)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = s.Close() }()
+
+	// New opens the initial zero baseline epoch at t0.
+	m, err := New(Config{
+		NodeID: nodeID, IncarnationID: incID, Store: s, Source: src,
+		Interval: 10 * time.Second, Now: clk.Now,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer m.Close()
+
+	// Sample 1 at t0+10s: large >2^53 delta on devA upload, normal delta on devB.
+	clk.Set(t0.Add(10 * time.Second))
+	src.set(observe("boot-q2",
+		reading{dev: devA, mem: memA, rev: 1, upB: largeBase, upP: 10, dnB: 2000, dnP: 2},
+		reading{dev: devB, mem: memB, rev: 2, upB: 3000, upP: 3, dnB: 4096, dnP: 8},
+	))
+	if err := m.Sample(t.Context()); err != nil {
+		t.Fatalf("sample 1: %v", err)
+	}
+
+	// ACK seq 1 so the store has both archived ACKed history and an active outbox.
+	if err := s.ApplyACK(t.Context(), usagestore.BatchACK{
+		Highest: 1,
+		Results: []usagestore.EventResult{{Seq: 1, Status: usagestore.StatusAccepted}},
+	}); err != nil {
+		t.Fatalf("ApplyACK(1): %v", err)
+	}
+
+	// Sample 2 at t0+20s: creates unacked seq 2 in outbox.
+	clk.Set(t0.Add(20 * time.Second))
+	src.set(observe("boot-q2",
+		reading{dev: devA, mem: memA, rev: 1, upB: largeBase + 1000, upP: 12, dnB: 2500, dnP: 3},
+		reading{dev: devB, mem: memB, rev: 2, upB: 3000, upP: 3, dnB: 4096 + 2048, dnP: 10},
+	))
+	if err := m.Sample(t.Context()); err != nil {
+		t.Fatalf("sample 2: %v", err)
+	}
+
+	headBefore, err := s.Head(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+	ev1Before, err := s.Event(t.Context(), 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ev2Before, err := s.Event(t.Context(), 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	snapBefore, err := usagestore.ReadSnapshot(t.Context(), dbPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	statusBefore, err := s.OutboxStatus(t.Context())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Call 1: CheckpointForRestart at now == LastSample (t0+20s).
+	steps = nil
+	recordHooks = true
+	if err := m.CheckpointForRestart(t.Context()); err != nil {
+		t.Fatalf("CheckpointForRestart at equal timestamp: %v", err)
+	}
+	recordHooks = false
+	wantSteps := []string{
+		StepRead,
+		StepPlan,
+		usagestore.StepCheckpoint,
+		usagestore.StepBeforeCommit,
+		usagestore.StepAfterCommit,
+	}
+	if !reflect.DeepEqual(steps, wantSteps) {
+		t.Fatalf("CheckpointForRestart steps=%v, want %v (must commit SQLite without StepInsert)", steps, wantSteps)
+	}
+
+	// Call 2: Repeated CheckpointForRestart at a 5s rollback (t0+15s) to prove idempotence.
+	clk.Set(t0.Add(15 * time.Second))
+	steps = nil
+	recordHooks = true
+	if err := m.CheckpointForRestart(t.Context()); err != nil {
+		t.Fatalf("CheckpointForRestart at 5s rollback: %v", err)
+	}
+	recordHooks = false
+	if !reflect.DeepEqual(steps, wantSteps) {
+		t.Fatalf("second CheckpointForRestart steps=%v, want %v", steps, wantSteps)
+	}
+
+	// Resume sampling after the restart barrier so subsequent Sample calls can proceed.
+	m.ResumeSampling()
+
+	// Verify durable state before close/reopen.
+	checkDurableState := func(t *testing.T, st *usagestore.Store) {
+		t.Helper()
+		h, err := st.Head(t.Context())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(h, headBefore) {
+			t.Fatalf("Head changed across unchanged CheckpointForRestart:\ngot:  %+v\nwant: %+v", h, headBefore)
+		}
+		ev1, err := st.Event(t.Context(), 1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ev2, err := st.Event(t.Context(), 2)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !bytes.Equal(ev1.Payload, ev1Before.Payload) || ev1.Hash != ev1Before.Hash || ev1.State != "archived" {
+			t.Fatalf("archived event 1 mutated: got hash=%s state=%s, want hash=%s state=archived", ev1.Hash, ev1.State, ev1Before.Hash)
+		}
+		if !bytes.Equal(ev2.Payload, ev2Before.Payload) || ev2.Hash != ev2Before.Hash || ev2.State != "outbox" {
+			t.Fatalf("outbox event 2 mutated: got hash=%s state=%s, want hash=%s state=outbox", ev2.Hash, ev2.State, ev2Before.Hash)
+		}
+		snap, err := usagestore.ReadSnapshot(t.Context(), dbPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !reflect.DeepEqual(snap, snapBefore) {
+			t.Fatalf("ReadSnapshot mutated:\ngot:  %+v\nwant: %+v", snap, snapBefore)
+		}
+		status, err := st.OutboxStatus(t.Context())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if status.UnackedEventCount != statusBefore.UnackedEventCount || status.UnackedPayloadBytes != statusBefore.UnackedPayloadBytes || status.CentralAckedThrough != statusBefore.CentralAckedThrough {
+			t.Fatalf("OutboxStatus mutated: got %+v, want %+v", status, statusBefore)
+		}
+	}
+	checkDurableState(t, s)
+
+	// Close Meter and Store, reopen Store from disk, and verify persistence.
+	m.Close()
+	if err := s.Close(); err != nil {
+		t.Fatal(err)
+	}
+	s2, err := usagestore.Open(dbPath, nodeID, incID, usagestore.Options{Now: clk.Now})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = s2.Close() }()
+	checkDurableState(t, s2)
+
+	// Start successor Meter on reopened Store (at t0+20s) and run a forward Sample at t0+30s.
+	clk.Set(t0.Add(20 * time.Second))
+	m2, err := New(Config{
+		NodeID: nodeID, IncarnationID: incID, Store: s2, Source: src,
+		Interval: 10 * time.Second, Now: clk.Now,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer m2.Close()
+
+	clk.Set(t0.Add(30 * time.Second))
+	src.set(observe("boot-q2",
+		reading{dev: devA, mem: memA, rev: 1, upB: largeBase + 1000 + 500, upP: 13, dnB: 2500, dnP: 3},
+		reading{dev: devB, mem: memB, rev: 2, upB: 3000, upP: 3, dnB: 4096 + 2048, dnP: 10},
+	))
+	if err := m2.Sample(t.Context()); err != nil {
+		t.Fatalf("successor forward Sample: %v", err)
+	}
+	ev3 := decodeStoredEvent(t, s2, 3)
+	if ev3.Quality != api.UsageQualityComplete || ev3.MeterEpochId != headBefore.OpenEpoch {
+		t.Fatalf("seq 3 quality=%s epoch=%s, want complete in %s", ev3.Quality, ev3.MeterEpochId, headBefore.OpenEpoch)
+	}
+	if !ev3.IntervalStart.Equal(t0.Add(20*time.Second)) || !ev3.IntervalEnd.Equal(t0.Add(30*time.Second)) {
+		t.Fatalf("seq 3 interval=[%s, %s), want [%s, %s)",
+			ev3.IntervalStart, ev3.IntervalEnd, t0.Add(20*time.Second), t0.Add(30*time.Second))
+	}
+	if len(ev3.Records) != 1 || ev3.Records[0].MemberId != memA || ev3.Records[0].DeviceId != devA || ev3.Records[0].BindingRevision.String() != "1" || uint64(ev3.Records[0].UploadBytes) != 500 || uint64(ev3.Records[0].DownloadBytes) != 0 {
+		t.Fatalf("seq 3 records=%+v, want single exact-once +500 up record for devA", ev3.Records)
+	}
+}
+
+// TestR33_Q3_ChangedReadingsAndAttribution proves how CheckpointForRestart at
+// now <= LastSample behaves when counter readings or bindings change:
+//   - Changed Bytes (including > 2^53) -> ErrHold, next forward sample counts delta once.
+//   - Changed Packets alone -> ErrHold.
+//   - Counter added (zero or non-zero) -> ErrHold.
+//   - Counter removed -> DetectResets runs planSwitch (counter_discontinuity) before the rollback branch.
+//   - Unchanged counter numbers with changed bindings, conflicting duplicate bindings, or an
+//     initially unbound baseline -> CheckpointForRestart succeeds and retains head.Counters
+//     attribution; next forward positive delta either attributes cleanly (when bindings match
+//     or prior head had uuid.Nil) or emits a mapping-conflict gap.
+func TestR33_Q3_ChangedReadingsAndAttribution(t *testing.T) {
+	t0 := time.Date(2026, 11, 4, 14, 0, 0, 0, time.UTC)
+
+	t.Run("bytes_changed_above_2pow53_returns_errhold_and_preserves_delta", func(t *testing.T) {
+		clk := &clock{t: t0}
+		const base uint64 = (1 << 53) + 10 // 9007199254741002
+		src := &fakeSrc{obs: observe("boot-q3", reading{
+			dev: devA, mem: memA, rev: 1,
+		})}
+		m, s := start(t, src, clk, usagestore.Options{})
+		clk.Set(t0.Add(10 * time.Second))
+		src.set(observe("boot-q3", reading{
+			dev: devA, mem: memA, rev: 1, upB: base, upP: 10, dnB: 0, dnP: 0,
+		}))
+		if err := m.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+
+		// Advance upload bytes by +1 at now == t0+10s and at now == t0+5s.
+		src.set(observe("boot-q3", reading{
+			dev: devA, mem: memA, rev: 1, upB: base + 1, upP: 10, dnB: 0, dnP: 0,
+		}))
+		if err := m.CheckpointForRestart(t.Context()); !errors.Is(err, ErrHold) {
+			t.Fatalf("CheckpointForRestart with +1 byte at equal time: got %v, want ErrHold", err)
+		}
+		clk.Set(t0.Add(5 * time.Second))
+		if err := m.CheckpointForRestart(t.Context()); !errors.Is(err, ErrHold) {
+			t.Fatalf("CheckpointForRestart with +1 byte at 5s rollback: got %v, want ErrHold", err)
+		}
+		m.ResumeSampling()
+		clk.Set(t0.Add(20 * time.Second))
+		if err := m.Sample(t.Context()); err != nil {
+			t.Fatalf("forward Sample after ErrHold: %v", err)
+		}
+		ev := decodeStoredEvent(t, s, 2)
+		if ev.Quality != api.UsageQualityComplete || len(ev.Records) != 1 || uint64(ev.Records[0].UploadBytes) != 1 {
+			t.Fatalf("forward Sample event after ErrHold: %+v", ev)
+		}
+	})
+
+	t.Run("packets_changed_bytes_unchanged_returns_errhold", func(t *testing.T) {
+		clk := &clock{t: t0}
+		src := &fakeSrc{obs: observe("boot-q3", reading{
+			dev: devA, mem: memA, rev: 1,
+		})}
+		m, s := start(t, src, clk, usagestore.Options{})
+		clk.Set(t0.Add(10 * time.Second))
+		src.set(observe("boot-q3", reading{
+			dev: devA, mem: memA, rev: 1, upB: 4096, upP: 4, dnB: 0, dnP: 0,
+		}))
+		if err := m.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		// Packets increase from 4 to 5 while Bytes remains 4096.
+		src.set(observe("boot-q3", reading{
+			dev: devA, mem: memA, rev: 1, upB: 4096, upP: 5, dnB: 0, dnP: 0,
+		}))
+		if err := m.CheckpointForRestart(t.Context()); !errors.Is(err, ErrHold) {
+			t.Fatalf("CheckpointForRestart with +1 packet: got %v, want ErrHold", err)
+		}
+		h, _ := s.Head(t.Context())
+		if h.Counters[1].Packets != 4 {
+			t.Fatalf("ErrHold modified stored packets: %+v", h.Counters)
+		}
+	})
+
+	t.Run("counter_added_zero_or_nonzero_returns_errhold", func(t *testing.T) {
+		for _, newBytes := range []uint64{0, 1024} {
+			clk := &clock{t: t0}
+			src := &fakeSrc{obs: observe("boot-q3", reading{
+				dev: devA, mem: memA, rev: 1,
+			})}
+			m, _ := start(t, src, clk, usagestore.Options{})
+			src.set(observe("boot-q3",
+				reading{dev: devA, mem: memA, rev: 1},
+				reading{dev: devB, mem: memB, rev: 2, upB: newBytes, upP: 1, dnB: 0, dnP: 0},
+			))
+			clk.Set(t0.Add(-2 * time.Second))
+			if err := m.CheckpointForRestart(t.Context()); !errors.Is(err, ErrHold) {
+				t.Fatalf("CheckpointForRestart with added counter (bytes=%d): got %v, want ErrHold", newBytes, err)
+			}
+		}
+	})
+
+	t.Run("counter_removed_or_renamed_triggers_reset_switch", func(t *testing.T) {
+		clk := &clock{t: t0}
+		src := &fakeSrc{obs: observe("boot-q3",
+			reading{dev: devA, mem: memA, rev: 1},
+			reading{dev: devB, mem: memB, rev: 2},
+		)}
+		m, s := start(t, src, clk, usagestore.Options{})
+		h0, _ := s.Head(t.Context())
+
+		// Remove devB while rolling clock back 3s: DetectResets fires before the
+		// now <= LastSample check and switches epochs with counter_discontinuity.
+		clk.Set(t0.Add(-3 * time.Second))
+		src.set(observe("boot-q3",
+			reading{dev: devA, mem: memA, rev: 1},
+		))
+		if err := m.CheckpointForRestart(t.Context()); err != nil {
+			t.Fatalf("CheckpointForRestart on removed counter: %v", err)
+		}
+		h1, _ := s.Head(t.Context())
+		if h1.OpenEpoch == h0.OpenEpoch || h1.OpenReason != string(api.UsageGapReasonCounterDiscontinuity) || h1.NextSeq != 2 {
+			t.Fatalf("removed counter did not switch epoch: %+v", h1)
+		}
+		ev := decodeStoredEvent(t, s, 1)
+		if ev.Quality != api.UsageQualityGap || ev.Gap == nil || ev.Gap.Reason != api.UsageGapReasonCounterDiscontinuity {
+			t.Fatalf("removed counter event: %+v", ev)
+		}
+	})
+
+	t.Run("unchanged_counters_with_changed_missing_or_conflicting_bindings", func(t *testing.T) {
+		// Subcase 1: Bindings change from (memA, rev 1) to (memB, rev 2) while
+		// counter numbers stay unchanged at now <= LastSample.
+		// CheckpointForRestart succeeds and keeps head.Counters's (memA, rev 1);
+		// a subsequent forward positive delta under (memB, rev 2) emits a
+		// mapping_conflict gap because the epoch's stored baseline had (memA, rev 1).
+		clk := &clock{t: t0}
+		src := &fakeSrc{obs: observe("boot-q3", reading{
+			dev: devA, mem: memA, rev: 1,
+		})}
+		m, s := start(t, src, clk, usagestore.Options{})
+		clk.Set(t0.Add(-2 * time.Second))
+		src.set(observe("boot-q3", reading{
+			dev: devA, mem: memB, rev: 2,
+		}))
+		if err := m.CheckpointForRestart(t.Context()); err != nil {
+			t.Fatalf("CheckpointForRestart with changed binding and equal counters: %v", err)
+		}
+		hAfter, _ := s.Head(t.Context())
+		for _, c := range hAfter.Counters {
+			if c.MemberID != memA || c.BindingRevision != 1 {
+				t.Fatalf("expected head.Counters to preserve (memA, rev 1), got %+v", c)
+			}
+		}
+		m.ResumeSampling()
+		clk.Set(t0.Add(10 * time.Second))
+		src.set(observe("boot-q3", reading{
+			dev: devA, mem: memB, rev: 2, upB: 1000, upP: 5, dnB: 0, dnP: 0,
+		}))
+		if err := m.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		ev := decodeStoredEvent(t, s, 1)
+		if ev.Quality != api.UsageQualityGap || ev.Gap == nil || ev.Gap.Reason != api.UsageGapReasonUnknown {
+			t.Fatalf("expected mapping conflict gap on mid-epoch binding change, got %+v", ev)
+		}
+
+		// Subcase 2: Conflicting duplicate bindings in obs.Bindings at
+		// now <= LastSample with equal counters do not clobber stored (memA, rev 1).
+		clk2 := &clock{t: t0}
+		src2 := &fakeSrc{obs: observe("boot-q3", reading{
+			dev: devA, mem: memA, rev: 1,
+		})}
+		m2, s2 := start(t, src2, clk2, usagestore.Options{})
+		// Conflicting duplicate bindings for devA at now == t0 - 1s with equal counters.
+		clk2.Set(t0.Add(-time.Second))
+		obsConflict := observe("boot-q3", reading{
+			dev: devA, mem: memA, rev: 1,
+		})
+		obsConflict.Bindings = append(obsConflict.Bindings, enforce.Binding{
+			MemberID: memB, DeviceID: devA, BindingRevision: 2,
+		})
+		src2.set(obsConflict)
+		if err := m2.CheckpointForRestart(t.Context()); err != nil {
+			t.Fatalf("CheckpointForRestart with conflicting bindings and equal counters: %v", err)
+		}
+		m2.ResumeSampling()
+		// When the next forward sample has the clean (memA, rev 1) binding and +1024 B,
+		// it attributes cleanly because head.Counters preserved (memA, rev 1).
+		clk2.Set(t0.Add(10 * time.Second))
+		src2.set(observe("boot-q3", reading{
+			dev: devA, mem: memA, rev: 1, upB: 1024, upP: 5, dnB: 0, dnP: 0,
+		}))
+		if err := m2.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		ev2 := decodeStoredEvent(t, s2, 1)
+		if ev2.Quality != api.UsageQualityComplete || len(ev2.Records) != 1 || ev2.Records[0].MemberId != memA || uint64(ev2.Records[0].UploadBytes) != 1024 {
+			t.Fatalf("expected clean attribution after preserved head.Counters, got %+v", ev2)
+		}
+
+		// Subcase 3: Initial baseline opened with nil bindings (uuid.Nil, 0) as in
+		// PrepareSampling; CheckpointForRestart runs at now == t0 with populated
+		// bindings and equal zero counters, followed by a forward positive delta.
+		clk3 := &clock{t: t0}
+		obsUnbound := observe("boot-q3", reading{
+			dev: devA, mem: uuid.Nil, rev: 0, upB: 0, upP: 0, dnB: 0, dnP: 0,
+		})
+		obsUnbound.Bindings = nil
+		src3 := &fakeSrc{obs: obsUnbound}
+		m3, s3 := start(t, src3, clk3, usagestore.Options{})
+		src3.set(observe("boot-q3", reading{
+			dev: devA, mem: memA, rev: 1, upB: 0, upP: 0, dnB: 0, dnP: 0,
+		}))
+		if err := m3.CheckpointForRestart(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		m3.ResumeSampling()
+		clk3.Set(t0.Add(10 * time.Second))
+		src3.set(observe("boot-q3", reading{
+			dev: devA, mem: memA, rev: 1, upB: 2048, upP: 2, dnB: 0, dnP: 0,
+		}))
+		if err := m3.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		ev3 := decodeStoredEvent(t, s3, 1)
+		if ev3.Quality != api.UsageQualityComplete || len(ev3.Records) != 1 || ev3.Records[0].MemberId != memA || uint64(ev3.Records[0].UploadBytes) != 2048 {
+			t.Fatalf("expected clean attribution after unbound baseline + CheckpointForRestart, got %+v", ev3)
+		}
+	})
+}
+
+// TestR33_Q4_PrecedenceAndClosedEpochs proves that closed-epoch handling
+// (head.OpenEpoch == uuid.Nil), boot-ID changes (power_loss), and counter resets
+// (counter_discontinuity) take precedence over the now <= head.LastSample
+// unchanged-checkpoint branch.
+func TestR33_Q4_PrecedenceAndClosedEpochs(t *testing.T) {
+	t0 := time.Date(2026, 11, 4, 15, 0, 0, 0, time.UTC)
+
+	t.Run("no_open_epoch_precedes_rollback_branch", func(t *testing.T) {
+		clk := &clock{t: t0}
+		src := &fakeSrc{obs: observe("boot-q4", reading{
+			dev: devA, mem: memA, rev: 1,
+		})}
+		m, s := start(t, src, clk, usagestore.Options{})
+
+		// Close the initial baseline epoch with FinalSample at t0.
+		if err := m.FinalSample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		m.ResumeSampling()
+
+		// Now OpenEpoch == uuid.Nil and LastSample == t0. Roll clock back 5s:
+		// FinalSample returns ErrNoEpoch, while CheckpointForRestart runs
+		// planBaseline and opens a new epoch with OpenReason == "after_final_sample"
+		// and SampledAt == t0 (preserving LastSample without moving it backward).
+		clk.Set(t0.Add(-5 * time.Second))
+		if err := m.FinalSample(t.Context()); !errors.Is(err, ErrNoEpoch) {
+			t.Fatalf("FinalSample on closed epoch at rollback: got %v, want ErrNoEpoch", err)
+		}
+		if err := m.CheckpointForRestart(t.Context()); err != nil {
+			t.Fatalf("CheckpointForRestart on closed epoch at rollback: %v", err)
+		}
+		h, _ := s.Head(t.Context())
+		if h.OpenEpoch == uuid.Nil || h.OpenReason != "after_final_sample" || !h.LastSample.Equal(t0) {
+			t.Fatalf("CheckpointForRestart on closed epoch did not open after_final_sample baseline: %+v", h)
+		}
+	})
+
+	t.Run("boot_id_change_with_equal_counters_at_rollback_switches_epoch", func(t *testing.T) {
+		clk := &clock{t: t0}
+		src := &fakeSrc{obs: observe("boot-1", reading{
+			dev: devA, mem: memA, rev: 1,
+		})}
+		m, s := start(t, src, clk, usagestore.Options{})
+		clk.Set(t0.Add(10 * time.Second))
+		src.set(observe("boot-1", reading{
+			dev: devA, mem: memA, rev: 1, upB: 4096, upP: 4, dnB: 8192, dnP: 8,
+		}))
+		if err := m.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		h0, _ := s.Head(t.Context())
+
+		// BootID changes to "boot-2" while counter values are identical and clock
+		// is rolled back by 4s. Must NOT take the unchanged-checkpoint shortcut.
+		clk.Set(t0.Add(6 * time.Second))
+		src.set(observe("boot-2", reading{
+			dev: devA, mem: memA, rev: 1, upB: 4096, upP: 4, dnB: 8192, dnP: 8,
+		}))
+		if err := m.CheckpointForRestart(t.Context()); err != nil {
+			t.Fatalf("CheckpointForRestart across BootID change: %v", err)
+		}
+		h1, _ := s.Head(t.Context())
+		if h1.OpenEpoch == uuid.Nil || h1.OpenEpoch == h0.OpenEpoch || h1.BootID != "boot-2" || h1.OpenReason != string(api.UsageGapReasonPowerLoss) || h1.NextSeq != 3 {
+			t.Fatalf("BootID change did not switch epoch: %+v", h1)
+		}
+		ev := decodeStoredEvent(t, s, 2)
+		if ev.Quality != api.UsageQualityGap || ev.Gap == nil || ev.Gap.Reason != api.UsageGapReasonPowerLoss || len(ev.Records) != 0 {
+			t.Fatalf("BootID change event: %+v, want power_loss gap with 0 records", ev)
+		}
+	})
+
+	t.Run("counter_reset_at_rollback_preserves_other_device_delta_and_final_sample_closes", func(t *testing.T) {
+		for _, isFinal := range []bool{false, true} {
+			clk := &clock{t: t0}
+			src := &fakeSrc{obs: observe("boot-q4",
+				reading{dev: devA, mem: memA, rev: 1},
+				reading{dev: devB, mem: memB, rev: 2},
+			)}
+			m, s := start(t, src, clk, usagestore.Options{})
+			clk.Set(t0.Add(10 * time.Second))
+			src.set(observe("boot-q4",
+				reading{dev: devA, mem: memA, rev: 1, upB: 4096, upP: 4, dnB: 0, dnP: 0},
+				reading{dev: devB, mem: memB, rev: 2, upB: 2048, upP: 2, dnB: 0, dnP: 0},
+			))
+			if err := m.Sample(t.Context()); err != nil {
+				t.Fatal(err)
+			}
+			h0, _ := s.Head(t.Context())
+
+			// At 3s rollback (t0+7s), devA resets (4096 -> 512) while devB advances (2048 -> 3072).
+			clk.Set(t0.Add(7 * time.Second))
+			src.set(observe("boot-q4",
+				reading{dev: devA, mem: memA, rev: 1, upB: 512, upP: 1, dnB: 0, dnP: 0},
+				reading{dev: devB, mem: memB, rev: 2, upB: 3072, upP: 3, dnB: 0, dnP: 0},
+			))
+			var err error
+			if isFinal {
+				err = m.FinalSample(t.Context())
+			} else {
+				err = m.CheckpointForRestart(t.Context())
+			}
+			if err != nil {
+				t.Fatalf("isFinal=%v on reset at rollback: %v", isFinal, err)
+			}
+			h1, _ := s.Head(t.Context())
+			if h1.NextSeq != 3 {
+				t.Fatalf("isFinal=%v NextSeq=%d, want 3", isFinal, h1.NextSeq)
+			}
+			ev := decodeStoredEvent(t, s, 2)
+			if ev.Quality != api.UsageQualityGap || ev.Gap == nil || ev.Gap.Reason != api.UsageGapReasonCounterDiscontinuity {
+				t.Fatalf("isFinal=%v event: %+v, want counter_discontinuity gap", isFinal, ev)
+			}
+			// Non-reset device devB's +1024 delta must be preserved in the gap event.
+			if len(ev.Records) != 1 || ev.Records[0].DeviceId != devB || uint64(ev.Records[0].UploadBytes) != 1024 {
+				t.Fatalf("isFinal=%v gap records=%+v, want preserved +1024 for devB", isFinal, ev.Records)
+			}
+			if isFinal {
+				if h1.OpenEpoch != uuid.Nil || h1.LastCloseReason != "final_sample" {
+					t.Fatalf("FinalSample after reset switch left OpenEpoch=%s LastCloseReason=%q", h1.OpenEpoch, h1.LastCloseReason)
+				}
+			} else {
+				if h1.OpenEpoch == uuid.Nil || h1.OpenEpoch == h0.OpenEpoch || h1.OpenReason != string(api.UsageGapReasonCounterDiscontinuity) {
+					t.Fatalf("CheckpointForRestart after reset switch: %+v", h1)
+				}
+			}
+		}
+	})
+}
+
+// TestR33_Q5_ErrorsHealthAndBarriers proves that source-read failures, store
+// failures, step-hook errors, and context cancellation fail closed during
+// CheckpointForRestart, that ErrHold does NOT clear sourceFailed or
+// persistFailed or advance lastMono, and that a successful CheckpointForRestart
+// clears recovered failures and refreshes health.
+func TestR33_Q5_ErrorsHealthAndBarriers(t *testing.T) {
+	t0 := time.Date(2026, 11, 4, 16, 0, 0, 0, time.UTC)
+	clk := &clock{t: t0}
+	src := &fakeSrc{obs: observe("boot-q5", reading{
+		dev: devA, mem: memA, rev: 1,
+	})}
+
+	var hookErr error
+	var failStep string
+	dbPath := filepath.Join(t.TempDir(), "usage.db")
+	s, err := usagestore.Open(dbPath, nodeID, incID, usagestore.Options{
+		Now: clk.Now,
+		Hook: func(step string) error {
+			if hookErr != nil && step == failStep {
+				return hookErr
+			}
+			return nil
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = s.Close() })
+	m, err := New(Config{
+		NodeID:        nodeID,
+		IncarnationID: incID,
+		Store:         s,
+		Source:        src,
+		Interval:      10 * time.Second,
+		Now:           clk.Now,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(m.Close)
+	if st, err := m.Health(t.Context()); err != nil || !st.ForwardingAllowed {
+		t.Fatalf("initial health: %+v err=%v", st, err)
+	}
+	m.mu.Lock()
+	mono0 := m.lastMono
+	m.mu.Unlock()
+
+	// 1. Source Read error during CheckpointForRestart latches ReasonMeterPath.
+	clk.Set(t0.Add(time.Second))
+	src.mu.Lock()
+	src.err = errors.New("nft read failed")
+	src.mu.Unlock()
+	if err := m.CheckpointForRestart(t.Context()); err == nil {
+		t.Fatal("expected error from failing Source.Read")
+	}
+	if st, err := m.Health(t.Context()); err != nil || st.ForwardingAllowed || st.Reason != ReasonMeterPath {
+		t.Fatalf("health after Source.Read error: %+v err=%v, want ReasonMeterPath", st, err)
+	}
+
+	// 2. Restore Source.Read, but with changed readings at now == t0 so
+	// CheckpointForRestart returns ErrHold. ErrHold returns before persist(),
+	// clearSource(), and markSampled(), so ReasonMeterPath must remain latched
+	// and lastMono must not advance!
+	clk.Set(t0)
+	src.set(observe("boot-q5", reading{
+		dev: devA, mem: memA, rev: 1, upB: 1000, upP: 1, dnB: 0, dnP: 0,
+	}))
+	if err := m.CheckpointForRestart(t.Context()); !errors.Is(err, ErrHold) {
+		t.Fatalf("expected ErrHold, got %v", err)
+	}
+	if st, err := m.Health(t.Context()); err != nil || st.ForwardingAllowed || st.Reason != ReasonMeterPath {
+		t.Fatalf("ErrHold cleared ReasonMeterPath: %+v err=%v", st, err)
+	}
+	m.mu.Lock()
+	monoAfterHold := m.lastMono
+	m.mu.Unlock()
+	if !monoAfterHold.Equal(mono0) {
+		t.Fatalf("ErrHold advanced lastMono: got %s, want %s", monoAfterHold, mono0)
+	}
+
+	// 3. Restore unchanged readings at now == t0: CheckpointForRestart succeeds
+	// and clears ReasonMeterPath.
+	src.set(observe("boot-q5", reading{
+		dev: devA, mem: memA, rev: 1,
+	}))
+	if err := m.CheckpointForRestart(t.Context()); err != nil {
+		t.Fatalf("CheckpointForRestart recovery: %v", err)
+	}
+	if st, err := m.Health(t.Context()); err != nil || !st.ForwardingAllowed {
+		t.Fatalf("health after successful CheckpointForRestart: %+v err=%v", st, err)
+	}
+
+	// 4. Fault hooks (StepRead, StepPlan, StepCheckpoint, StepBeforeCommit) roll
+	// back without mutating Head on an unchanged CheckpointForRestart.
+	for _, step := range []string{
+		StepRead,
+		StepPlan,
+		usagestore.StepCheckpoint,
+		usagestore.StepBeforeCommit,
+	} {
+		hBefore, _ := s.Head(t.Context())
+		failStep = step
+		hookErr = errors.New("injected pre-commit fault")
+		if err := m.CheckpointForRestart(t.Context()); err == nil {
+			t.Fatalf("expected error at step %s", step)
+		}
+		hookErr = nil
+		hAfter, _ := s.Head(t.Context())
+		if !reflect.DeepEqual(hAfter, hBefore) {
+			t.Fatalf("%s fault mutated head: %+v vs %+v", step, hAfter, hBefore)
+		}
+	}
+
+	// 5. Real SQLite persistence failure during unchanged CheckpointForRestart
+	// latches ReasonPersistFail, ErrHold does NOT clear ReasonPersistFail, and
+	// a subsequent successful CheckpointForRestart clears ReasonPersistFail.
+	rawDB, err := sql.Open("sqlite", "file:"+dbPath+"?_pragma=busy_timeout(5000)")
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = rawDB.Close() })
+	if _, err := rawDB.ExecContext(t.Context(),
+		`CREATE TRIGGER r33_fail_counters BEFORE INSERT ON counters BEGIN SELECT RAISE(ABORT, 'simulated sqlite write failure'); END;`); err != nil {
+		t.Fatal(err)
+	}
+	if err := m.CheckpointForRestart(t.Context()); err == nil {
+		t.Fatal("expected SQLite trigger failure during CheckpointForRestart")
+	}
+	if st, err := m.Health(t.Context()); err != nil || st.ForwardingAllowed || st.Reason != usagestore.ReasonPersistFail || !st.PersistFailed {
+		t.Fatalf("health after SQLite failure: %+v err=%v, want ReasonPersistFail", st, err)
+	}
+
+	// Trigger ErrHold while persistFailed is latched: must stay ReasonPersistFail.
+	src.set(observe("boot-q5", reading{
+		dev: devA, mem: memA, rev: 1, upB: 1000, upP: 1, dnB: 0, dnP: 0,
+	}))
+	if err := m.CheckpointForRestart(t.Context()); !errors.Is(err, ErrHold) {
+		t.Fatalf("expected ErrHold after SQLite failure, got %v", err)
+	}
+	if st, err := m.Health(t.Context()); err != nil || st.ForwardingAllowed || st.Reason != usagestore.ReasonPersistFail || !st.PersistFailed {
+		t.Fatalf("ErrHold cleared ReasonPersistFail: %+v err=%v", st, err)
+	}
+
+	// Drop the trigger and restore unchanged readings: successful
+	// CheckpointForRestart commits to SQLite and clears ReasonPersistFail.
+	if _, err := rawDB.ExecContext(t.Context(), `DROP TRIGGER r33_fail_counters;`); err != nil {
+		t.Fatal(err)
+	}
+	src.set(observe("boot-q5", reading{
+		dev: devA, mem: memA, rev: 1,
+	}))
+	if err := m.CheckpointForRestart(t.Context()); err != nil {
+		t.Fatalf("recovery CheckpointForRestart after dropping trigger: %v", err)
+	}
+	if st, err := m.Health(t.Context()); err != nil || !st.ForwardingAllowed || st.PersistFailed {
+		t.Fatalf("health did not recover after dropping trigger: %+v err=%v", st, err)
+	}
+
+	// 6. Cancelled context returns context.Canceled without corrupting Head.
+	hBeforeCancel, _ := s.Head(t.Context())
+	cctx, cancel := context.WithCancel(t.Context())
+	cancel()
+	if err := m.CheckpointForRestart(cctx); !errors.Is(err, context.Canceled) {
+		t.Fatalf("CheckpointForRestart with cancelled ctx: got %v, want context.Canceled", err)
+	}
+	hAfterCancel, _ := s.Head(t.Context())
+	if !reflect.DeepEqual(hAfterCancel, hBeforeCancel) {
+		t.Fatalf("cancelled CheckpointForRestart mutated head: %+v vs %+v", hAfterCancel, hBeforeCancel)
+	}
+}
+
+// TestR33_Q6_ConcurrentCallersAndBarrierSemantics proves the deterministic
+// concurrency and barrier invariants of CheckpointForRestart and FinalSample:
+//   - When an in-flight Sample is blocked in Source.Read, CheckpointForRestart
+//     (or FinalSample) waits in Barrier; once the Sample commits at timestamp T,
+//     CheckpointForRestart runs at the same timestamp T == head.LastSample and
+//     succeeds when readings are unchanged at that read (recording the +2000 B
+//     delta from the in-flight Sample exactly once).
+//   - While CheckpointForRestart is in flight, concurrent Sample calls return
+//     ErrBusy without stealing m.inFinal or corrupting the checkpoint.
+//   - After CheckpointForRestart returns, m.inFinal is false
+//     and m.paused remains true (Sample returns ErrPaused) until ResumeSampling.
+//   - After Close, all methods return ErrClosed.
+func TestR33_Q6_ConcurrentCallersAndBarrierSemantics(t *testing.T) {
+	t0 := time.Date(2026, 11, 4, 17, 0, 0, 0, time.UTC)
+
+	t.Run("checkpoint_waits_for_in_flight_sample_then_succeeds_at_same_timestamp", func(t *testing.T) {
+		for _, isFinal := range []bool{false, true} {
+			clk := &clock{t: t0}
+			src := &fakeSrc{obs: observe("boot-q6", reading{
+				dev: devA, mem: memA, rev: 1,
+			})}
+			m, s := start(t, src, clk, usagestore.Options{})
+
+			// Prepare an in-flight Sample at t0+10s that blocks inside src.Read.
+			clk.Set(t0.Add(10 * time.Second))
+			hit := make(chan struct{}, 1)
+			block := make(chan struct{})
+			src.mu.Lock()
+			src.obs = observe("boot-q6", reading{
+				dev: devA, mem: memA, rev: 1, upB: 2000, upP: 3, dnB: 0, dnP: 0,
+			})
+			src.hit = hit
+			src.block = block
+			src.mu.Unlock()
+
+			sampleDone := make(chan error, 1)
+			go func() {
+				sampleDone <- m.Sample(t.Context())
+			}()
+			<-hit // in-flight Sample is now inside src.Read holding m.sampling = true
+
+			// While the first Sample is in flight and before Barrier sets m.paused,
+			// another Sample call returns ErrBusy.
+			if err := m.Sample(t.Context()); !errors.Is(err, ErrBusy) {
+				t.Fatalf("concurrent Sample while sampling in flight: got %v, want ErrBusy", err)
+			}
+
+			// Start CheckpointForRestart / FinalSample concurrently: it must set
+			// m.paused = true and wait in Barrier for the in-flight Sample.
+			barrierDone := make(chan error, 1)
+			go func() {
+				if isFinal {
+					barrierDone <- m.FinalSample(t.Context())
+				} else {
+					barrierDone <- m.CheckpointForRestart(t.Context())
+				}
+			}()
+
+			// Wait until m.paused is observed true (deterministic condition under m.mu).
+			waitPaused(t, m)
+
+			// Once Barrier sets m.paused = true (while waiting in Barrier before
+			// setting m.inFinal = true), a concurrent Sample call returns ErrPaused.
+			if err := m.Sample(t.Context()); !errors.Is(err, ErrPaused) {
+				t.Fatalf("concurrent Sample while Barrier waiting: got %v, want ErrPaused", err)
+			}
+
+			// Clear src.block before releasing so the waiting CheckpointForRestart /
+			// FinalSample does not block on src.Read after the first Sample finishes.
+			src.mu.Lock()
+			src.block = nil
+			src.hit = nil
+			src.mu.Unlock()
+			close(block)
+
+			if err := <-sampleDone; err != nil {
+				t.Fatalf("in-flight Sample: %v", err)
+			}
+			if err := <-barrierDone; err != nil {
+				t.Fatalf("isFinal=%v after in-flight Sample at same timestamp: got %v, want nil", isFinal, err)
+			}
+
+			// Verify m.inFinal is cleared and m.paused remains true.
+			m.mu.Lock()
+			inFinalAfter := m.inFinal
+			pausedAfter := m.paused
+			m.mu.Unlock()
+			if inFinalAfter || !pausedAfter {
+				t.Fatalf("post-barrier flags: inFinal=%v paused=%v, want false/true", inFinalAfter, pausedAfter)
+			}
+			if err := m.Sample(t.Context()); !errors.Is(err, ErrPaused) {
+				t.Fatalf("Sample while paused: got %v, want ErrPaused", err)
+			}
+
+			// Verify the in-flight Sample's +2000 delta was recorded exactly once.
+			h, _ := s.Head(t.Context())
+			if h.NextSeq != 2 || !h.LastSample.Equal(t0.Add(10*time.Second)) {
+				t.Fatalf("isFinal=%v head after barrier: %+v", isFinal, h)
+			}
+			ev := decodeStoredEvent(t, s, 1)
+			if ev.Quality != api.UsageQualityComplete || len(ev.Records) != 1 || uint64(ev.Records[0].UploadBytes) != 2000 {
+				t.Fatalf("isFinal=%v event 1: %+v", isFinal, ev)
+			}
+
+			// After ResumeSampling, ordinary Sample works again.
+			if !isFinal {
+				m.ResumeSampling()
+				clk.Set(t0.Add(20 * time.Second))
+				if err := m.Sample(t.Context()); err != nil {
+					t.Fatalf("Sample after ResumeSampling: %v", err)
+				}
+			}
+		}
+	})
+
+	t.Run("sample_called_while_checkpoint_in_flight_returns_errbusy_and_does_not_steal_restart", func(t *testing.T) {
+		clk := &clock{t: t0}
+		src := &fakeSrc{obs: observe("boot-q6", reading{
+			dev: devA, mem: memA, rev: 1,
+		})}
+		m, s := start(t, src, clk, usagestore.Options{})
+		h0, _ := s.Head(t.Context())
+
+		// Block CheckpointForRestart inside src.Read at equal timestamp t0.
+		hit := make(chan struct{}, 1)
+		block := make(chan struct{})
+		src.mu.Lock()
+		src.hit = hit
+		src.block = block
+		src.mu.Unlock()
+
+		ckptDone := make(chan error, 1)
+		go func() {
+			ckptDone <- m.CheckpointForRestart(t.Context())
+		}()
+		<-hit // CheckpointForRestart is now inside src.Read with m.sampling=true, m.inFinal=true
+
+		// A concurrent Sample call must return ErrBusy and leave m.inFinal intact.
+		if err := m.Sample(t.Context()); !errors.Is(err, ErrBusy) {
+			t.Fatalf("Sample during in-flight CheckpointForRestart: got %v, want ErrBusy", err)
+		}
+		close(block)
+		if err := <-ckptDone; err != nil {
+			t.Fatalf("CheckpointForRestart completion: %v", err)
+		}
+		h1, _ := s.Head(t.Context())
+		if !reflect.DeepEqual(h1, h0) {
+			t.Fatalf("head changed unexpectedly: %+v vs %+v", h1, h0)
+		}
+
+		// Close makes all methods return ErrClosed.
+		m.Close()
+		if err := m.Sample(t.Context()); !errors.Is(err, ErrClosed) {
+			t.Fatalf("Sample after Close: %v", err)
+		}
+		if err := m.CheckpointForRestart(t.Context()); !errors.Is(err, ErrClosed) {
+			t.Fatalf("CheckpointForRestart after Close: %v", err)
+		}
+		if err := m.FinalSample(t.Context()); !errors.Is(err, ErrClosed) {
+			t.Fatalf("FinalSample after Close: %v", err)
+		}
+	})
+}
+
+// TestR33_Q7_PeriodsAndMonthBoundary proves that an unchanged
+// CheckpointForRestart at or rolled back across a UTC month boundary
+// (2026-11-01T00:00:00Z -> 2026-10-31T23:59:55Z / 23:59:50Z) preserves
+// head.LastSample at 2026-11-01T00:00:00Z, so the next forward sample in
+// November has PeriodId == "2026-11" and Quality == complete (neither
+// boundary_estimated nor "2026-10"), while missed boundaries and >interval
+// rollbacks obey §10.2 and §10.9.
+func TestR33_Q7_PeriodsAndMonthBoundary(t *testing.T) {
+	octEnd := time.Date(2026, 10, 31, 23, 59, 50, 0, time.UTC)
+	novStart := time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC)
+
+	t.Run("unchanged_checkpoint_at_or_rolled_back_into_prior_month_preserves_november_start", func(t *testing.T) {
+		clk := &clock{t: octEnd}
+		src := &fakeSrc{obs: observe("boot-q7", reading{
+			dev: devA, mem: memA, rev: 1,
+		})}
+		m, s := start(t, src, clk, usagestore.Options{})
+
+		// Sample right at the exact UTC month boundary 2026-11-01T00:00:00Z.
+		// Because head.LastSample was 2026-10-31T23:59:50Z and IntervalEnd is
+		// stamped on 2026-11-01T00:00:00Z, usagestore.PeriodID(head.LastSample)
+		// assigns [23:59:50Z, 00:00:00Z) to "2026-10" with Quality == complete.
+		clk.Set(novStart)
+		src.set(observe("boot-q7", reading{
+			dev: devA, mem: memA, rev: 1, upB: 1000, upP: 2, dnB: 0, dnP: 0,
+		}))
+		if err := m.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		evOct := decodeStoredEvent(t, s, 1)
+		if evOct.Quality != api.UsageQualityComplete || len(evOct.Records) != 1 || evOct.Records[0].PeriodId != "2026-10" {
+			t.Fatalf("boundary sample 1: Quality=%s Records=%+v, want complete in 2026-10", evOct.Quality, evOct.Records)
+		}
+
+		// Run CheckpointForRestart with unchanged readings at:
+		//   1) exact boundary 2026-11-01T00:00:00Z
+		//   2) 5s rollback into October (2026-10-31T23:59:55Z)
+		//   3) exact 10s interval rollback into October (2026-10-31T23:59:50Z)
+		for _, now := range []time.Time{
+			novStart,
+			novStart.Add(-5 * time.Second),
+			novStart.Add(-10 * time.Second),
+		} {
+			clk.Set(now)
+			if err := m.CheckpointForRestart(t.Context()); err != nil {
+				t.Fatalf("CheckpointForRestart at %s: %v", now, err)
+			}
+			h, err := s.Head(t.Context())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !h.LastSample.Equal(novStart) || h.NextSeq != 2 {
+				t.Fatalf("CheckpointForRestart at %s moved LastSample=%s or NextSeq=%d, want %s and 2",
+					now, h.LastSample, h.NextSeq, novStart)
+			}
+		}
+
+		// Resume sampling and advance into November (2026-11-01T00:00:10Z) with +3000 bytes.
+		m.ResumeSampling()
+		clk.Set(novStart.Add(10 * time.Second))
+		src.set(observe("boot-q7", reading{
+			dev: devA, mem: memA, rev: 1, upB: 4000, upP: 5, dnB: 0, dnP: 0,
+		}))
+		if err := m.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		evNov := decodeStoredEvent(t, s, 2)
+		if evNov.Quality != api.UsageQualityComplete || len(evNov.Records) != 1 || evNov.Records[0].PeriodId != "2026-11" {
+			t.Fatalf("November sample 2: Quality=%s Records=%+v, want complete in 2026-11", evNov.Quality, evNov.Records)
+		}
+		if !evNov.IntervalStart.Equal(novStart) || !evNov.IntervalEnd.Equal(novStart.Add(10*time.Second)) {
+			t.Fatalf("November sample 2 interval=[%s, %s), want [%s, %s)",
+				evNov.IntervalStart, evNov.IntervalEnd, novStart, novStart.Add(10*time.Second))
+		}
+		if uint64(evNov.Records[0].UploadBytes) != 3000 {
+			t.Fatalf("November sample 2 records=%+v, want +3000 bytes", evNov.Records)
+		}
+	})
+
+	t.Run("missed_boundary_marks_boundary_estimated_and_gap_takes_precedence", func(t *testing.T) {
+		clk := &clock{t: octEnd.Add(5 * time.Second)} // 2026-10-31T23:59:55Z
+		src := &fakeSrc{obs: observe("boot-q7", reading{
+			dev: devA, mem: memA, rev: 1,
+		})}
+		m, s := start(t, src, clk, usagestore.Options{})
+
+		// Forward sample spanning [23:59:55Z, 00:00:15Z) across the month boundary
+		// where now.Sub(boundary) > interval (missed boundary sample) must be
+		// marked boundary_estimated with PeriodId == "2026-10" (usagestore.PeriodID
+		// attributes to head.LastSample's UTC month while flagging boundary_estimated
+		// for central projection).
+		clk.Set(novStart.Add(15 * time.Second))
+		src.set(observe("boot-q7", reading{
+			dev: devA, mem: memA, rev: 1, upB: 1500, upP: 2, dnB: 0, dnP: 0,
+		}))
+		if err := m.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		evEst := decodeStoredEvent(t, s, 1)
+		if evEst.Quality != api.UsageQualityBoundaryEstimated || len(evEst.Records) != 1 || evEst.Records[0].PeriodId != "2026-10" {
+			t.Fatalf("missed-boundary sample: Quality=%s Records=%+v, want boundary_estimated in 2026-10", evEst.Quality, evEst.Records)
+		}
+
+		// A gap spanning a month boundary (e.g. counter reset from 2026-11-30T23:59:55Z
+		// to 2026-12-01T00:00:15Z with positive delta on devB) keeps Quality == gap
+		// (gap takes precedence over boundary_estimated per §10.2).
+		decBoundary := time.Date(2026, 12, 1, 0, 0, 0, 0, time.UTC)
+		clk.Set(decBoundary.Add(-5 * time.Second))
+		src.set(observe("boot-q7",
+			reading{dev: devA, mem: memA, rev: 1, upB: 1500, upP: 2, dnB: 0, dnP: 0},
+			reading{dev: devB, mem: memB, rev: 2, upB: 1000, upP: 1, dnB: 0, dnP: 0},
+		))
+		if err := m.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		clk.Set(decBoundary.Add(15 * time.Second))
+		src.set(observe("boot-q7",
+			reading{dev: devA, mem: memA, rev: 1, upB: 100, upP: 1, dnB: 0, dnP: 0},
+			reading{dev: devB, mem: memB, rev: 2, upB: 1500, upP: 2, dnB: 0, dnP: 0},
+		))
+		if err := m.Sample(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		evGap := decodeStoredEvent(t, s, 3)
+		if evGap.Quality != api.UsageQualityGap || evGap.Gap == nil || evGap.Gap.Reason != api.UsageGapReasonCounterDiscontinuity || len(evGap.Records) != 1 || evGap.Records[0].PeriodId != "2026-11" {
+			t.Fatalf("cross-boundary reset event: Quality=%s Gap=%+v Records=%+v, want gap/counter_discontinuity in 2026-11",
+				evGap.Quality, evGap.Gap, evGap.Records)
+		}
+	})
+}
+
+func decodeStoredEvent(t *testing.T, s *usagestore.Store, seq uint64) api.UsageEvent {
+	t.Helper()
+	se, err := s.Event(t.Context(), seq)
+	if err != nil {
+		t.Fatalf("Event(%d): %v", seq, err)
+	}
+	var ev api.UsageEvent
+	if err := json.Unmarshal(se.Payload, &ev); err != nil {
+		t.Fatalf("Unmarshal Event(%d): %v", seq, err)
+	}
+	return ev
+}
+
+func waitPaused(t *testing.T, m *Meter) {
+	t.Helper()
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		m.mu.Lock()
+		paused := m.paused
+		m.mu.Unlock()
+		if paused {
+			return
+		}
+		time.Sleep(time.Millisecond)
+	}
+	t.Fatal("timed out waiting for m.paused == true")
+}

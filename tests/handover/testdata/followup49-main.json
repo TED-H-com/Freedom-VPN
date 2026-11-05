@@ -1,0 +1,92 @@
+{
+  "source_commit": "aaffdc7fe176c5e3edc521c8ca491bff28bd4a6f",
+  "previous_cut": "b921c75f180beb6c0051d585a86d6651b2c8d71a",
+  "merged_prs": [
+    482,
+    483,
+    484,
+    485
+  ],
+  "history": [
+    "73f2f714c0d37c0ceca4b6720dd9afb9b7c61ba7 e2e: follow-up 37 — repair clone runtime control URL, preserve enrollment and copied-release SNAT, audit 30 evidence files; offline D-141 proof (w3-devstack-e2e follow-up 37) (#482)",
+    "729f914254211509c838f2efe73d3e8936bcf7e0 roadmap: w3-devstack-e2e follow-up 37 merged (#482)",
+    "ff0ce0658b9a86523bd6bc2ddf1fceda47a5453f handover: follow-up 48 — cut #478–#481, r32 archive, F24-01 and F22-D146 results, six Node failures routed; 138 findings and 122 value pins (w4-handover follow-up 48) (#483)",
+    "980e313ab8d1b261cb1f44e4a86b54b7e55fefde roadmap: w4-handover follow-up 48 merged (#483)",
+    "633f0250fc3acc02a0d0c9ffdaf35292358764f4 agent: preserve unchanged restart checkpoints and repair six CI failure proofs (follow-up 53) (#484)",
+    "6520a31255df40a0ad6f2b5b22b6d93d73b0157a roadmap: w2-agent-core follow-up 53 merged (#484)",
+    "82dda8a867989e512e36a80dfba5aac1e4fdc28f contracts r15: add D-164 serving-read evidence, correct D-112/D-117 wording, preserve historical claims (#485)",
+    "aaffdc7fe176c5e3edc521c8ca491bff28bd4a6f roadmap: w3-contracts-r13 follow-up 15 merged (#485)"
+  ],
+  "rows": [
+    {
+      "pr": 482,
+      "lane": "w3-devstack-e2e follow-up 37",
+      "row": "| w3-devstack-e2e follow-up 37 | D-141 shared fixture correction, offline only: etc/agent-run.json points at the container resolver proxy on 9444; etc/agent-enroll.json keeps its portal control URL; copied agent release configs change only control_url and retain copied SNAT as an explicit gap. Existing etc SNAT rewrites remain. JSON non-target values and durable-state bytes are preserved, with compact/formatted clone and fresh-mode regression coverage under the e2e tag. Historical analysis inventories 30 evidence files rather than 30 runs; total rows and clone-observation rows are separate, F19 retains a copied F18 capture, and distinct stop reviews cover F16–F18. The 9445/9444 static mismatch is supported, but old dial errors and the selected clone release are absent from the identified records. No Docker, live pass or historical re-score. Isolation receives live transport/consumer-latch validation and before/after-stop log-retention work. AT29 operator-run and member-ipv6 gaps remain. Original three commits preserved, followed by three Codex gpt-6-astra correction commits. | done (#482) |",
+      "sha256": "3db50cea6c3951ec6dd57a130b21c187d5ff7810c43d00225dcdeb78151c64cd"
+    },
+    {
+      "pr": 483,
+      "lane": "w4-handover follow-up 48",
+      "row": "| w4-handover follow-up 48 | Cut #478–#481 at b921c75f (four PRs, none unbriefed): isolation 25 and 26, handover 47, members 24. Followup48Claims has 16 subtests, four roadmap rows and PR excerpts, 23 immutable snapshots, 22 main test declarations, 22 frozen source readings, 62 artifacts and 122 exact JSON values; 41 prior claims preserved. Review r32 archived byte-for-byte, zero findings, with its raw identifier errors disclosed separately. Decisions remain 66: D-162 and D-163 gain the measured results; owner confirmation of D-150–D-163 belongs to follow-up 49. Findings 138: six updated, two added, 130 unchanged. F24-01 planning/reviewer fix and local scheduled-mode pass, F22-D146 serving-read qualification, and AT02/observation evidence recorded without changing historical verdicts. Six Node workflow failures route to agent-core 53; clone receiver wiring routes to devstack. Scope inventory changes 241 SHA-256 scalars across 11 paths: 238 owned-path updates plus three stale pins for the unchanged secops history index. Seven entrypoints updated. Original delivery and corrections preserved; final corrections by Codex gpt-6-astra. | done (#483) |",
+      "sha256": "840bcd4b267ff3b81777b358611d2f3ceb7b4db2b7e0752dba63b8bc86cc4fa3"
+    },
+    {
+      "pr": 484,
+      "lane": "w2-agent-core follow-up 53",
+      "row": "| w2-agent-core follow-up 53 | Diagnoses six recorded Node CI failures with immutable source/log evidence: local Boot deadlines, D118 initial-503 ordering, unchanged restart checkpoints, and held-sample scheduling. Preserves the original deadline, Boot-return, fail-closed and ledger assertions while correcting test setup; no production local-budget change remains. The meter accepts unchanged restart checkpoints at equality or rollback within one sample interval, preserving the open epoch and ledger; reset/boot handling precedes this branch, ordinary sampling still holds, and final sampling closes. Failed development, mutation and historical gate attempts remain recorded. Corrected focused count50 and full-agent count3 pass under 24 joined workers; normal gates and one final agent lab pass (13 scenarios plus one installer-marker skip). Corrected independent r33 meter review found no product defect; exact final-tree replay passes 10 parent tests and 33 subtests, and full integrated gates pass. F17 diagnostics and F31 structural verification are design-only here; no implementation, packet-origin assurance or new live acceptance claim. Corrections by Codex gpt-6-astra; final gate/evidence continuation by agy gemini-4-argon-high under D143. | done (#484) |",
+      "sha256": "55510e4c9ef7a1034fe88475e5ffac84688450d9bd29a9f7f8fe12552a710852"
+    },
+    {
+      "pr": 485,
+      "lane": "w3-contracts-r13 follow-up 15",
+      "row": "| w3-contracts-r13 follow-up 15 | Revision 15 (API 1.11.0, 50 operations): D-164 optional nullable ServingReadEvidence on ObservationReport and NodeDetail (read_at, apply/live source, decimal-string candidate generation, verified, bounded diagnostic); preserve absent/null/value, original old-report canonical hashes and retained rejected/old diagnostic meaning. D-112 hand-off bound default 10 s with the existing 30 s fixture override; D-117 finite-grant revoke cases corrected without changing endpoint behavior. Generated contracts/control artifacts, examples and 201 TS vector checks. Six immutable inputs and scoped read redirects preserve all 42 historical handover claim bodies; seven current files refresh 120 secops digest scalars only. Contract compatibility phase only: Central projection, diagnostic consumers and producer rollout follow in that order; F17-01/D-163 remains open. | done (#485) |",
+      "sha256": "bab29abc454578e634d2b3713e73ffd762d0d3548ec5aeed9599711879c174fd"
+    }
+  ],
+  "prs": [
+    {
+      "number": 482,
+      "path": "tests/handover/testdata/history/follow-up-49/pr-482-excerpt.json",
+      "sha256": "736b97771346389cadb585817249355e369e3484b5f13821d36fd934df290dc7",
+      "decoded_sha256": "d322868355ff8ee600a1c18db0868ad9c9c2b7884a5a183c307703af87b95c2d",
+      "bytes": 16490,
+      "merge_commit": "73f2f714c0d37c0ceca4b6720dd9afb9b7c61ba7",
+      "roadmap_commit": "729f914254211509c838f2efe73d3e8936bcf7e0",
+      "pre_merge_head": "44227926027cf0baf7cc06a4de374e09d75b20cc",
+      "merged_at": "2026-11-05T05:42:03Z"
+    },
+    {
+      "number": 483,
+      "path": "tests/handover/testdata/history/follow-up-49/pr-483-excerpt.json",
+      "sha256": "acb6ef1d5451401722cc68878111c20fe45fe6fb9c100a7dd1653d49407fa48a",
+      "decoded_sha256": "681ce8fcbbb1066ff924032738e4a4f4e51556a434b7424b0b5a65bdd66204b4",
+      "bytes": 36709,
+      "merge_commit": "ff0ce0658b9a86523bd6bc2ddf1fceda47a5453f",
+      "roadmap_commit": "980e313ab8d1b261cb1f44e4a86b54b7e55fefde",
+      "pre_merge_head": "e221cf24479c9cd99eb87cbf14c454cd19fb5c1b",
+      "merged_at": "2026-11-05T06:23:33Z"
+    },
+    {
+      "number": 484,
+      "path": "tests/handover/testdata/history/follow-up-49/pr-484-excerpt.json",
+      "sha256": "2ebc760aebc564b7c02040aa2f8f2d9bfcde4470cd4bcd0e35ce4daf7c6d8fa8",
+      "decoded_sha256": "a5534ebb5831fb97d74ca5880d2f059e5b7a459bf0bdef85fd9f1d6f3c5acbdf",
+      "bytes": 20853,
+      "merge_commit": "633f0250fc3acc02a0d0c9ffdaf35292358764f4",
+      "roadmap_commit": "6520a31255df40a0ad6f2b5b22b6d93d73b0157a",
+      "pre_merge_head": "9a26725fd054e9e2ec287a0203fcf99d3d219ed8",
+      "merged_at": "2026-11-05T07:12:44Z"
+    },
+    {
+      "number": 485,
+      "path": "tests/handover/testdata/history/follow-up-49/pr-485-excerpt.json",
+      "sha256": "c57c658ff21fdfb65d4e0bf41879807f6480c212467bb62cfc9ec32b740af840",
+      "decoded_sha256": "13d4c870fd088fbd770c20c8b1508f550c7d52bb1f34b4e82377282bc951550e",
+      "bytes": 35996,
+      "merge_commit": "82dda8a867989e512e36a80dfba5aac1e4fdc28f",
+      "roadmap_commit": "aaffdc7fe176c5e3edc521c8ca491bff28bd4a6f",
+      "pre_merge_head": "06fc1197b7f7007943d3f01b997a107f6e13ced1",
+      "merged_at": "2026-11-05T10:04:30Z"
+    }
+  ]
+}

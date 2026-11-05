@@ -1,0 +1,56 @@
+[
+  {
+    "run": 41782791081,
+    "commit": "0cf5a5d5e1fca551a207859eb2cb74c004e9d8f7",
+    "path": "node/agent/review_r22_test.go",
+    "line": 764,
+    "source_line": "t.Fatalf(\"expected context.Canceled on TERM after baseline, got %v\", err)",
+    "source_sha256": "d7e13228c4a7091b75dc6a87d892ca7aa88bae93c5c557a9e2a594934da8a23a",
+    "log_message": "expected context.Canceled on TERM after baseline, got agent: boot failed: local deadline: context deadline exceeded"
+  },
+  {
+    "run": 41787173794,
+    "commit": "eea0abd69e3ec245c20d3e19110392d561192d23",
+    "path": "node/agent/followup25_usage_test.go",
+    "line": 295,
+    "source_line": "t.Fatalf(\"retired posts=%d, accepted batches=%d, accepted events=%d\", retiredPosts, acceptedBatches, acceptedEvents)",
+    "source_sha256": "dc81aaf5b75c95c8b9cd41ade24bb99c982726303b9b8e84da2cd428d02f8ab9",
+    "log_message": "retired posts=2, accepted batches=1, accepted events=1"
+  },
+  {
+    "run": 41794009264,
+    "commit": "84e71988b21dd2f1e33f348b452f0a89705df27a",
+    "path": "node/agent/review_r29_test.go",
+    "line": 265,
+    "source_line": "t.Fatalf(\"Boot self-deadlocked waiting for synchronous recoverOnce to receive health-attest.json from this same agent: %v\", err)",
+    "source_sha256": "291f00c169748943d6c4917e52c13f6cbf3f21413537508d588bd43a82f0b31b",
+    "log_message": "Boot self-deadlocked waiting for synchronous recoverOnce to receive health-attest.json from this same agent: agent: boot failed: local deadline: context deadline exceeded"
+  },
+  {
+    "run": 41808885873,
+    "commit": "48ee50ecb38c171d8d13a0278c32e875157ca741",
+    "path": "node/agent/review_r23_test.go",
+    "line": 277,
+    "source_line": "t.Fatalf(\"R23-H-1b: same-boot adoption was refused after switchEpoch left usage_apply_intent on E1; \"+",
+    "source_sha256": "3fdcb9e63cb526f451226395353bc27a55b2c69f37ccef396034d3649fbd1e0e",
+    "log_message": "R23-H-1b: same-boot adoption was refused after switchEpoch left usage_apply_intent on E1; next.serving=false, memberA=2048, memberB=0 (want 4096), gaps=1 ([{EventSeq:2 Gap:0x39cabf33e960 IntervalEnd:2026-11-04 09:42:20.425512 +0000 UTC IntervalStart:2026-11-04 09:42:18.425512 +0000 UTC MeterEpochId:01a1a5f0-1291-7697-a3fa-473b8145505b MeteringVersion:forward_admission_v1 NodeId:01a1a5f0-1270-757d-802a-e4a93c8d0d5e NodeIncarnationId:01a1a5f0-126d-71cf-b280-c45b511a3e92 PayloadSha256:b8f17b9ed8af726d243388737493b833113b818bbf262c7988b8b74274631d55 Quality:gap Records:[] SchemaVersion:1}])"
+  },
+  {
+    "run": 41871089749,
+    "commit": "014b59ab15288dc6bc053932104e26a8f3327e9e",
+    "path": "node/agent/followup49_transaction_test.go",
+    "line": 240,
+    "source_line": "t.Fatal(err)",
+    "source_sha256": "46915f8a1dfdd0f4315570560f1524c9e9d17fb2e760371eca10906c38a69b19",
+    "log_message": "agent: boot failed: local deadline: context deadline exceeded"
+  },
+  {
+    "run": 41885624816,
+    "commit": "21e59029934a34f7125805e116a2ffaaf61b60cb",
+    "path": "node/agent/review_r22_test.go",
+    "line": 1000,
+    "source_line": "t.Fatalf(\"expected retainedPending=true serving=false on ErrHold during Boot, got retainedPending=%v serving=%v\",",
+    "source_sha256": "d7e13228c4a7091b75dc6a87d892ca7aa88bae93c5c557a9e2a594934da8a23a",
+    "log_message": "expected retainedPending=true serving=false on ErrHold during Boot, got retainedPending=false serving=false"
+  }
+]

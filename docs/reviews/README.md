@@ -38,6 +38,7 @@
 | `r30-update-fixes-review` | [r30-update-fixes-review.md](r30-update-fixes-review.md) | 2026-11-04 | `agy/gemini-4-argon-high` | Post-merge D-155–D-158 review (#446, #454, #461, #463); head da2560a9, base 9b9546c9; committed by Ted H | 0 Critical, 2 High, 3 Medium, 0 Low; [cut dispositions](#r30-dispositions-at-the-follow-up-46-cutoff-2026-11-04-est) | Agent/watchdog proofs adopted by #470; updater proofs by #471; all five findings fixed, r31 running at cutoff |
 | `r31-recovery-lock-fixes-review` | [r31-recovery-lock-fixes-review.md](r31-recovery-lock-fixes-review.md) | 2026-11-04 | `agy/gemini-4-argon-high` | Post-merge agent-core 51 #470 / updater 26 #471; head 0e33b9fe, base fd0f2494; committed by Ted H | 0 Critical, 0 High, 1 Medium, 0 Low; [cut dispositions](#r31-dispositions-at-the-follow-up-47-cutoff-2026-11-04-est) | Both proofs adopted by #477; M-1 fixed; updater needs nothing; no owner question |
 | `r32-dedup-records-review` | [r32-dedup-records-review.md](r32-dedup-records-review.md) | 2026-11-04 | `agy/gemini-4-argon-high` | Post-merge agent-core 52 #477 (`r31` M-1 & observation records); head 21e59029, base 1c39a0e7; committed by Ted H | 0 Critical, 0 High, 0 Medium, 0 Low; [cut dispositions](#r32-dispositions-at-the-follow-up-48-cutoff-2026-11-04-est) | None on `main` (0 findings); 4 `TestR32_Held_*` proofs on review branch `21e59029` ([frozen copy](../../tests/handover/testdata/history/follow-up-48/review-node_agent_review_r32_test.go.txt)); no owner question |
+| `r33-meter-restart-review` | [r33-meter-restart-review.md](r33-meter-restart-review.md) | 2026-11-05 | `agy/gemini-4-argon-high` | Pre-merge review of `w2-agent-core` follow-up 53 meter restart-checkpoint fix (`b094ffac` vs `9e52ea20`); head `f0bed96a`, parent `7bac8653`, base `29cd2671`; committed by Ted H | 0 Critical, 0 High, 0 Medium, 0 Low; [cut dispositions](#r33-dispositions-at-the-follow-up-49-cutoff-2026-11-05-est) | None on `main` (0 findings); 10 parent tests / 33 subtests across 3 proof files on review branch `f0bed96a` ([agent](../../tests/handover/testdata/history/follow-up-49/review-node_agent_review_r33_test.go.txt), [meter](../../tests/handover/testdata/history/follow-up-49/review-node_internal_meter_review_r33_test.go.txt), [usagestore](../../tests/handover/testdata/history/follow-up-49/review-node_internal_usagestore_review_r33_test.go.txt)), replayed 10/10 on integrated `9a26725f`; no owner question |
 
 ## What Held Across the Reviews
 
@@ -1070,3 +1071,43 @@ missing joins, plus closed recovery report
 `01a1a782-6b90-74a8-bcd6-c9a06650a2ec` (`due_reason: "closed_recovery_binding"`)
 accepted on attempt 1 in **8 ms**. The r31 dispositions section above stays
 byte-identical. See the [follow-up 48 cut](../handover/follow-up-48.md).
+
+
+## r33 dispositions at the follow-up 49 cutoff (2026-11-05 EST)
+
+The [raw r33 archive](r33-meter-restart-review.md) is byte-for-byte from
+`r33-meter-restart-review`, head **f0bed96a1a622490f133e3cdb160a1e738f41712**
+(committed `2026-11-05T06:59:22Z`, parent `7bac86538bd9f0108a3bb441205b9ba979eae134`,
+base `29cd267162fa614c444122865b62f405e2f58802`, git blob
+`b7621e069ab8547671888bda72e473c21efb938e`): **352 lines**, **51,920 bytes**,
+SHA-256 `8bce5d989decb41fa7588307fc89521fc3972a5d59e80cf841ef6e7c7f433731`.
+This is a **pre-merge adversarial review of `w2-agent-core` follow-up 53's meter
+restart-checkpoint change (`b094ffac72f2f4f247a3e2b592a6659a84f1d51a` against its
+pre-change parent `9e52ea20675daae89710bc4630906e1c70b2e650`)**, by
+**agy/gemini-4-argon-high**, committed by **Ted H** as the branch records. After
+the reviewer's first commit (`7bac86538bd9f0108a3bb441205b9ba979eae134`) reported
+zero findings, `f0bed96a` (`review: correct r33 report citations and attempt
+ledger`) corrected report citations, the nine-step proof-development attempt
+ledger (Steps `212`, `230`, `341`, `370`, `378`, `424`, `440`, `444` and `448`),
+and test comments while retaining **0 findings (`0` Critical, `0` High, `0`
+Medium, `0` Low)**. Production meter code is byte-identical across `b094ffac`,
+review base `29cd2671`, native delivery `2936cfec`, integrated `9a26725f`, and
+merge `633f0250` (`#484`): `node/internal/meter/delta.go` blob
+`112260bd296d31cfd382d4faf03bf1efe50d7729` (`15,049` B, `513` lines, SHA-256
+`5743c7c6feb6dfed0c7b4f39aa489077d1966de66cd06b57fe0e051784779226`) and
+`node/internal/meter/meter.go` blob `ac6ff0b548b5c0bdd6a3c5e44ad4b04d34dec3f9`
+(`13,606` B, `545` lines, SHA-256
+`e5adf83a314abb4171d83a5f7e92203a440c6c621ba403fb3e242e60aa0fd219`). It is now
+a **D-098 input**.
+Findings: **0 Critical, 0 High, 0 Medium, 0 Low**.
+
+| Item | Disposition at #484 | Boundary |
+|---|---|---|
+| `node/internal/meter/delta.go` & `meter.go` (`planSampleWithBarrier` `restart` unchanged-counter checkpoint) | HELD in r33 (`implemented`, 0 defects) | `planSample` (`node/internal/meter/delta.go:243-245`) delegates to `planSampleWithBarrier(head, obs, now, interval, final, restart)` (`delta.go:247-341`), where `m.sample` (`node/internal/meter/meter.go:216,245`) passes `restart := m.inFinal && !final`. After `head.OpenEpoch == uuid.Nil` (`delta.go:249-255`) and `bootChanged(head.BootID, obs.BootID) || len(resets) > 0` (`delta.go:256-263`), when `!head.LastSample.IsZero() && !now.After(head.LastSample)` and `head.LastSample.Sub(now) <= interval` (`delta.go:264-284`), the unchanged-counter check is widened from `if final && sameReadings(head.Counters, cur)` to `if (final || restart) && sameReadings(head.Counters, cur)` (`delta.go:270`), committing `usagestore.Commit{Epoch: head.OpenEpoch, Counters: head.Counters, BootID: obs.BootID, SampledAt: head.LastSample}` (`CloseEpoch: true` only when `final`) with zero `Events` and zero `Gap` (`r33-meter-restart-review.md:57-67`). |
+| Report & attempt-ledger correction (`7bac8653` → `f0bed96a`) | HELD in r33 (citation & attempt-ledger correction only; 0 findings in both commits) | `f0bed96a` (`r33-meter-restart-review.md:295-336`) records all nine proof-development and comparison commands: six test-authoring failures during proof development (Steps `212`, `230`, `341`, `370`, `378`, `424`), Step `440` passing `10/10` parent tests on `29cd267162fa614c444122865b62f405e2f58802`, Step `444` pre-change comparison on `9e52ea20675daae89710bc4630906e1c70b2e650` (`2` pass / `8` fail), and Step `448` full package unit suites and `go vet`. |
+| What held (Questions 1–7) | HELD in r33 | Question 1 (Clock domain and timestamp fidelity: `time.Time.Equal` vs `Round(0)`, `SampledAt = head.LastSample` preserving `interval_order` and `r21` M-1), Question 2 (Counter decrease, reset, wraparound and silent nftables reload: `bootChanged` and `enforce.DetectResets` precede the `!now.After(head.LastSample)` branch, and any `cur != head.Counters` falls through to `ReasonRollback`), Question 3 (Repeated `CheckpointForRestart` calls and clock rollback pinning: `head.LastSample` stays pinned to `T_0` and `T_0.Sub(now) <= interval` bounds total rollback), Question 4 (Ledger, SQLite durability and upload invariants: `TestR33_StoreUnchangedCheckpointPreservesLedgerAndDurability`), Question 5 (Cross-package interaction with `node/agent`: `PreserveServingOnStop`, `SettleExpiredBindings`, `CheckpointForRestart`, `SameCountingInterval`), Question 6 (Period and month boundaries: `splitRecordsByMonth` and `AT17`), and Question 7 (Scope and test audit across all 9 changed files in `29cd2671`). |
+| Proof files (`review_r33_test.go` in `node/agent`, `node/internal/meter`, `node/internal/usagestore`) | Review branch only (`present_on_main: false`); replayed on integrated `9a26725f` | Because r33 found 0 defects and routed 0 owner actions, the three proof files remain on `f0bed96a1a622490f133e3cdb160a1e738f41712` and are not on `main`: `review_r33_test.go` in `node/internal/usagestore` (`6,562` B, `206` lines, SHA-256 `6b4ac2806ad521ed99a3e53d4a172ebcc82faf6e17b482030642fa45fc879d07`, [frozen copy](../../tests/handover/testdata/history/follow-up-49/review-node_internal_usagestore_review_r33_test.go.txt), 1 parent test / 0 subtests: `TestR33_StoreUnchangedCheckpointPreservesLedgerAndDurability`), `review_r33_test.go` in `node/internal/meter` (`53,157` B, `1,345` lines, SHA-256 `3560983d44aa03faa5b8d37d1c549d2dc1acd74e4fdd87e326f2b71c658d8260`, [frozen copy](../../tests/handover/testdata/history/follow-up-49/review-node_internal_meter_review_r33_test.go.txt), 7 parent tests / 26 subtests: `TestR33_Q1_ClockDomainAndFidelity` through `TestR33_Q7_PeriodsAndMonthBoundary`), and `review_r33_test.go` in `node/agent` (`11,920` B, `327` lines, SHA-256 `d00f20943e6fc21d3e2ca0169b7a25b8e25f45b57f01484c78e8a0ce6f481b67`, [frozen copy](../../tests/handover/testdata/history/follow-up-49/review-node_agent_review_r33_test.go.txt), 2 parent tests / 7 subtests: `TestR33_AgentPreserveServingOnStopAtSameTimestampAndRollback` and `TestR33_AgentSettleExpiredBindingsAtSameTimestampAndRollback`). Replayed on integrated `w2-agent-core` head `9a26725fd054e9e2ec287a0203fcf99d3d219ed8` (`docs/node/followup53-2026-11-04.md` §3): `10` parent tests and `33` subtests across `3` packages passed (`0` failed, `0` skipped). |
+| Question to the owner | None | The review asks none (`0` findings, `0` owner questions). |
+
+The r32 dispositions section above stays byte-identical. See the
+[follow-up 49 cut](../handover/follow-up-49.md).

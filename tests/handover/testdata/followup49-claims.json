@@ -1,0 +1,199 @@
+[
+  {
+    "Name": "devstack-37-clone-receiver-wiring-and-historical-freeze-audit",
+    "Required": [
+      "#482",
+      "73f2f714c0d37c0ceca4b6720dd9afb9b7c61ba7",
+      "729f914254211509c838f2efe73d3e8936bcf7e0",
+      "44227926027cf0baf7cc06a4de374e09d75b20cc",
+      "53440268f993b0e69696ff9e818ddf15f8e5b3ef033b376e03e52e3e7f09fee4",
+      "b921c75f180beb6c0051d585a86d6651b2c8d71a",
+      "tests/e2e/second_exit.go",
+      "tests/e2e/second_exit_test.go",
+      "prepareExitSlotConfigs",
+      "rewriteExitConfigFile",
+      "rewriteExitConfig",
+      "localNodeControlURL",
+      "https://127.0.0.1:9444",
+      "https://127.0.0.1:9445",
+      "https://portal.example.invalid:8443",
+      "TestD141_ClonePreparedConfigsDialContainerResolverProxy",
+      "etc/agent-enroll.json",
+      "etc/agent-run.json",
+      "var/e2e/agent-*.json",
+      "var/e2e/agent-00000000-0000-7000-8000-000000000001.json",
+      "var/e2e/agent-selected",
+      "198.51.100.20",
+      "198.51.100.22",
+      "198.51.100.23",
+      "1075e8ca2190ae38899fd36dc3a46b4eac641736",
+      "d429b8d5251e6834f959a129d3a200007f6b1a43",
+      "30",
+      "90"
+    ],
+    "Forbidden": [
+      "historical AT10 outcome upgraded",
+      "live clone receiver validated in #482",
+      "copied release datapath.snat rewritten"
+    ]
+  },
+  {
+    "Name": "handover-48-previous-cut-inventory-and-scope-refresh",
+    "Required": [
+      "#483",
+      "ff0ce0658b9a86523bd6bc2ddf1fceda47a5453f",
+      "980e313ab8d1b261cb1f44e4a86b54b7e55fefde",
+      "6cea09778ad13b8481005ef098a7b69a9de9eab1",
+      "e221cf24479c9cd99eb87cbf14c454cd19fb5c1b",
+      "f6b4849b7dc548f64ddf01daa29f07dac7d5071a",
+      "TestHandover_Followup48Claims",
+      "restoreFollowup48Assertions",
+      "docs/reviews/r32-dedup-records-review.md",
+      "5b7ec63eecbe64e278e16bf24ef3a8e9ea3e625d6bde701d6d0c0e5735e1960f",
+      "8625fecccc518a49c10551bbd63d26be2807dc60b558816855182cb5d7ad999a",
+      "tests/handover/testdata/history/follow-up-48/node-workflow-failures.json",
+      "docs/e2e/at/secops/scope-review.json",
+      "docs/e2e/at/secops/history/index.json",
+      "241",
+      "238",
+      "52 owned files",
+      "+102,278 / -341",
+      "codex/gpt-6-astra"
+    ],
+    "Forbidden": [
+      "live acceptance run by handover",
+      "outside-owned pin modified in follow-up 49"
+    ]
+  },
+  {
+    "Name": "agent-core-53-six-node-ci-failures-and-f1701-f3101-designs",
+    "Required": [
+      "#484",
+      "633f0250fc3acc02a0d0c9ffdaf35292358764f4",
+      "6520a31255df40a0ad6f2b5b22b6d93d73b0157a",
+      "2936cfec94c1b804bef1c47e1cff2d20d286b535",
+      "9a26725fd054e9e2ec287a0203fcf99d3d219ed8",
+      "41782791081",
+      "41787173794",
+      "41794009264",
+      "41808885873",
+      "41871089749",
+      "41885624816",
+      "node/internal/meter/delta.go",
+      "node/internal/meter/meter.go",
+      "planSampleWithBarrier",
+      "if (final || restart) && sameReadings(head.Counters, cur)",
+      "TestCheckpointForRestartAtSameMicrosecond",
+      "TestMTR03_RestartCheckpointClockBoundaries",
+      "TestMTR03_RestartCheckpointOutsideClockWindow",
+      "TestMTR03_RestartCheckpointResetAndIdentityPrecedence",
+      "TestMTR03_FinalSampleUnchangedRollback",
+      "TestF53_F1701_StaleLeaseHoldReportQosDetail",
+      "TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample",
+      "TestR22_Held_Q2_Q3",
+      "F17-01",
+      "F31-01",
+      "attachServingRead",
+      "ReasonSourceBinding",
+      "SOURCE_BINDING_INVALID"
+    ],
+    "Forbidden": [
+      "historical node CI failure erased",
+      "F31-01 implemented on main",
+      "local_budget.go modified on main"
+    ]
+  },
+  {
+    "Name": "contracts-15-openapi-1-11-0-serving-read-evidence-and-d164",
+    "Required": [
+      "#485",
+      "82dda8a867989e512e36a80dfba5aac1e4fdc28f",
+      "aaffdc7fe176c5e3edc521c8ca491bff28bd4a6f",
+      "2d5205bf3f7e9962a1775009ce12e6f61fe62dfe",
+      "60e0a4012c0ed942c3402cb1992fcc06a6592787",
+      "06fc1197b7f7007943d3f01b997a107f6e13ced1",
+      "1.11.0",
+      "D-164",
+      "D-112",
+      "D-117",
+      "ServingReadEvidence",
+      "ObservationReport.serving_read",
+      "NodeDetail.serving_read",
+      "candidate_generation",
+      "contracts/vectors/serving-read-evidence.json",
+      "contracts/vectors/usage-retired-handoff.json",
+      "contracts/vectors/member-grant-revoke.json",
+      "TestAPI01_Revision15ServingReadEvidenceAndCorrections",
+      "TestISO01_D164ServingReadEvidenceVectorsAndPresence",
+      "TestMTR03_D112HandoffSamplingIntervalBoundWording",
+      "TestAT29_D117FiniteGrantWithdrawalCorrection",
+      "TestServingReadEvidencePresenceAndRoundTrip",
+      "TestHandover_ContractsRevision15MigrationIntegrity",
+      "cfd6c47df57976c29f6e73dd48548efeefea9408ecbddf25ad684aeda2276e0e"
+    ],
+    "Forbidden": [
+      "ServingReadEvidence.error_code",
+      "pure_stale_generation exercised on main",
+      "D-163 retired in follow-up 49"
+    ]
+  },
+  {
+    "Name": "r33-meter-restart-review-and-ci-post-cut-inventory",
+    "Required": [
+      "r33",
+      "f0bed96a1a622490f133e3cdb160a1e738f41712",
+      "7bac86538bd9f0108a3bb441205b9ba979eae134",
+      "29cd267162fa614c444122865b62f405e2f58802",
+      "b094ffac72f2f4f247a3e2b592a6659a84f1d51a",
+      "9e52ea20675daae89710bc4630906e1c70b2e650",
+      "8bce5d989decb41fa7588307fc89521fc3972a5d59e80cf841ef6e7c7f433731",
+      "6b4ac2806ad521ed99a3e53d4a172ebcc82faf6e17b482030642fa45fc879d07",
+      "3560983d44aa03faa5b8d37d1c549d2dc1acd74e4fdd87e326f2b71c658d8260",
+      "d00f20943e6fc21d3e2ca0169b7a25b8e25f45b57f01484c78e8a0ce6f481b67",
+      "TestR33_StoreUnchangedCheckpointPreservesLedgerAndDurability",
+      "TestR33_Q1_ClockDomainAndFidelity",
+      "TestR33_Q7_PeriodsAndMonthBoundary",
+      "TestR33_AgentPreserveServingOnStopAtSameTimestampAndRollback",
+      "TestR33_AgentSettleExpiredBindingsAtSameTimestampAndRollback",
+      "41836274140",
+      "d69f5652-aed6-4fdd-9e7c-edface751237",
+      "completed_failed_awaiting_evidence_delivery"
+    ],
+    "Forbidden": [
+      "r33 open finding",
+      "post-cut isolation run d69f5652 passed"
+    ]
+  },
+  {
+    "Name": "owner-confirmations-d150-d163-and-discussion-8473-sample",
+    "Required": [
+      "D-150",
+      "D-163",
+      "2026-11-04 17:1x EST",
+      "owner-confirmation-provenance.json",
+      "57c8a759ff0fdd8173e3beac4b5c2ec55e50e293",
+      "d1ad15333856e03c854b3f99cd02968967aa9335",
+      "8473",
+      "19411545",
+      "https://github.com/netbirdio/netbird/discussions/8473#discussioncomment-19411545",
+      "52b93845b5cfeac1dd63e04c700857fcd098a7f6",
+      "2026-11-05T04:30:00Z",
+      "2026-11-05T10:11:17Z",
+      "3eb3960d-c411-4648-8d77-bba40b436ae3",
+      "8c35343b6d681435b86c5ab3fb03283d215a1ac3f665ce4727cb854a4a244d69",
+      "08:22:37.385050Z",
+      "08:22:37.385059Z",
+      "addr-eff8e7ca506627fe",
+      "addr-ab8283067e853f4e",
+      "Ip6InHdrErrors",
+      "D-148",
+      "Members F11-01",
+      "Members F22-AT01"
+    ],
+    "Forbidden": [
+      "Members F11-01 closed",
+      "Members F22-AT01 closed",
+      "upstream reply received on 8473"
+    ]
+  }
+]

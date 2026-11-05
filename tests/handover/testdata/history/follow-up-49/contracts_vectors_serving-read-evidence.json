@@ -1,0 +1,836 @@
+{
+  "_comment": "TEST ONLY - NOT A SECRET. D-164 retained actual complete VerifyServing read outcome (ServingReadEvidence) and nullable presence on ObservationReport and NodeDetail.",
+  "cases": [
+    {
+      "evidence": {
+        "candidate_generation": "9007199254740993",
+        "diagnostic": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+        "read_at": "2026-10-28T15:00:29Z",
+        "source": "apply",
+        "verified": true
+      },
+      "name": "apply-verified"
+    },
+    {
+      "evidence": {
+        "candidate_generation": "18446744073709551615",
+        "diagnostic": "read_at=2026-10-28T15:00:30Z source=live candidate=18446744073709551615 verified=true {\"generation\":\"18446744073709551615\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+        "read_at": "2026-10-28T15:00:30Z",
+        "source": "live",
+        "verified": true
+      },
+      "name": "live-verified"
+    },
+    {
+      "evidence": {
+        "candidate_generation": "18446744073709551615",
+        "diagnostic": "read_at=2026-10-28T15:00:10Z source=apply candidate=18446744073709551615 verified=false {\"generation\":\"18446744073709551615\",\"phase\":\"verify\",\"reads\":2,\"objects\":5,\"truncated\":false,\"sha256\":\"6d78e62925fc23e6d6864f986fa220987447329d5b109c7b71aa0958a2d57c91\",\"rejected\":{\"interface\":\"fv0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"0x1\",\"parent\":\"ffff:fff1\",\"actions\":[\"gact\"]}]}}",
+        "read_at": "2026-10-28T15:00:10Z",
+        "source": "apply",
+        "verified": false
+      },
+      "name": "apply-rejected"
+    },
+    {
+      "evidence": {
+        "candidate_generation": "9007199254740993",
+        "diagnostic": "read_at=2026-10-28T15:00:15Z source=live candidate=9007199254740993 verified=false {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":17,\"objects\":68,\"truncated\":true,\"sha256\":\"f2606d3330f3202863fd0a38fa3be177220bc78596c0032b00ff4936a4a3f1e5\",\"rejected\":{\"interface\":\"fv0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"u32\",\"handle\":\"800::800\",\"parent\":\"ffff:fff1\",\"actions\":[\"mirred\"]}]}}",
+        "read_at": "2026-10-28T15:00:15Z",
+        "source": "live",
+        "verified": false
+      },
+      "name": "live-rejected-tc"
+    }
+  ],
+  "invalid_cases": [
+    {
+      "evidence": {
+        "candidate_generation": "9007199254740993",
+        "diagnostic": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+        "source": "apply",
+        "verified": true
+      },
+      "keyword": "required",
+      "kind": "schema",
+      "name": "missing-read-at",
+      "pointer": ""
+    },
+    {
+      "evidence": {
+        "candidate_generation": "9007199254740993",
+        "diagnostic": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+        "read_at": "2026-10-28T15:00:29Z",
+        "verified": true
+      },
+      "keyword": "required",
+      "kind": "schema",
+      "name": "missing-source",
+      "pointer": ""
+    },
+    {
+      "evidence": {
+        "diagnostic": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+        "read_at": "2026-10-28T15:00:29Z",
+        "source": "apply",
+        "verified": true
+      },
+      "keyword": "required",
+      "kind": "schema",
+      "name": "missing-candidate-generation",
+      "pointer": ""
+    },
+    {
+      "evidence": {
+        "candidate_generation": "9007199254740993",
+        "diagnostic": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+        "read_at": "2026-10-28T15:00:29Z",
+        "source": "apply"
+      },
+      "keyword": "required",
+      "kind": "schema",
+      "name": "missing-verified",
+      "pointer": ""
+    },
+    {
+      "evidence": {
+        "candidate_generation": "9007199254740993",
+        "read_at": "2026-10-28T15:00:29Z",
+        "source": "apply",
+        "verified": true
+      },
+      "keyword": "required",
+      "kind": "schema",
+      "name": "missing-diagnostic",
+      "pointer": ""
+    },
+    {
+      "evidence": {
+        "candidate_generation": "9007199254740993",
+        "diagnostic": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+        "read_at": "2026-10-28T15:00:29Z",
+        "source": "rollback",
+        "verified": true
+      },
+      "keyword": "enum",
+      "kind": "schema",
+      "name": "unknown-source",
+      "pointer": "/source"
+    },
+    {
+      "evidence": {
+        "candidate_generation": "9007199254740993",
+        "diagnostic": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+        "error_code": "GENERATION_MISMATCH",
+        "read_at": "2026-10-28T15:00:29Z",
+        "source": "apply",
+        "verified": true
+      },
+      "keyword": "additionalProperties",
+      "kind": "schema",
+      "name": "unexpected-error-code",
+      "pointer": ""
+    },
+    {
+      "evidence": {
+        "candidate_generation": "9007199254740993",
+        "diagnostic": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+        "read_at": "2026-10-28T15:00:29+00:00",
+        "source": "apply",
+        "verified": true
+      },
+      "keyword": "pattern",
+      "kind": "schema",
+      "name": "non-utc-read-at",
+      "pointer": "/read_at"
+    },
+    {
+      "evidence": {
+        "candidate_generation": 128,
+        "diagnostic": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+        "read_at": "2026-10-28T15:00:29Z",
+        "source": "apply",
+        "verified": true
+      },
+      "keyword": "type",
+      "kind": "schema",
+      "name": "numeric-candidate-generation",
+      "pointer": "/candidate_generation"
+    },
+    {
+      "evidence": {
+        "candidate_generation": "01",
+        "diagnostic": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+        "read_at": "2026-10-28T15:00:29Z",
+        "source": "apply",
+        "verified": true
+      },
+      "keyword": "pattern",
+      "kind": "schema",
+      "name": "leading-zero-candidate-generation",
+      "pointer": "/candidate_generation"
+    },
+    {
+      "evidence": {
+        "candidate_generation": "100000000000000000000",
+        "diagnostic": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+        "read_at": "2026-10-28T15:00:29Z",
+        "source": "apply",
+        "verified": true
+      },
+      "keyword": "maxLength",
+      "kind": "schema",
+      "name": "too-long-candidate-generation",
+      "pointer": "/candidate_generation"
+    },
+    {
+      "evidence": {
+        "candidate_generation": "9007199254740993",
+        "diagnostic": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "read_at": "2026-10-28T15:00:29Z",
+        "source": "apply",
+        "verified": true
+      },
+      "keyword": "maxLength",
+      "kind": "schema",
+      "name": "diagnostic-too-long",
+      "pointer": "/diagnostic"
+    },
+    {
+      "evidence": {
+        "candidate_generation": "9007199254740993",
+        "diagnostic": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+        "raw_stderr": "forbidden",
+        "read_at": "2026-10-28T15:00:29Z",
+        "source": "apply",
+        "verified": true
+      },
+      "keyword": "additionalProperties",
+      "kind": "schema",
+      "name": "unknown-property",
+      "pointer": ""
+    },
+    {
+      "evidence": {
+        "candidate_generation": "18446744073709551616",
+        "diagnostic": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+        "read_at": "2026-10-28T15:00:29Z",
+        "source": "apply",
+        "verified": true
+      },
+      "keyword": "decstr.U64",
+      "kind": "uint64_overflow",
+      "name": "overflow-candidate-generation",
+      "pointer": "/candidate_generation"
+    }
+  ],
+  "node_details": [
+    {
+      "name": "absent",
+      "node": {
+        "capacity": {
+          "down_bps": 1000000000,
+          "member_down_bps_cap": 200000000,
+          "member_up_bps_cap": 100000000,
+          "up_bps": 1000000000
+        },
+        "checks": [
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-10-28T14:06:30Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "observed_at": "2026-10-28T14:06:30Z",
+            "status": "passed"
+          }
+        ],
+        "config_generation": {
+          "applied": "127",
+          "desired": "128"
+        },
+        "control_status": "online",
+        "created_at": "2026-10-01T09:00:00Z",
+        "current_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+        "data_health": "healthy",
+        "drift": [
+          {
+            "desired": "128",
+            "field": "config_generation",
+            "observed": "127"
+          }
+        ],
+        "exit_id": "caba5aec-4b2b-432c-9512-211a7b3e96db",
+        "last_seen_at": "2026-10-28T14:06:30Z",
+        "lifecycle_state": "registered",
+        "member_forwarding_observed": false,
+        "member_group_ids": [
+          "63575bae-2d23-45c0-ae11-ba6bb9ace34a"
+        ],
+        "name": "Tokyo 1",
+        "netbird_peer_id": "peer-test-node-01",
+        "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+        "notes": "Pre-installed box; source noted for reference only.",
+        "observed_exit_ipv4": "203.0.113.10",
+        "observed_exit_ipv6": null,
+        "platform": {
+          "arch": "arm64",
+          "os": "ubuntu",
+          "os_version": "24.04"
+        },
+        "provisioning_state": "ready",
+        "publication_intent": "disabled",
+        "publication_observed": "withdrawn",
+        "recent_errors": [],
+        "region": "jp-tokyo",
+        "releases": {
+          "current_release_id": "cdb25ffa-5395-400c-ad3e-b32899f14bb8",
+          "desired_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+          "last_good_release_id": "cdb25ffa-5395-400c-ad3e-b32899f14bb8"
+        },
+        "resource_version": "42",
+        "retired_at": null,
+        "safety_status": "passed",
+        "update": {
+          "batch_id": "85ef720a-31a0-4250-90d2-4b92c58695bc",
+          "generation": "7",
+          "job_id": "73986232-fd84-4add-b639-9f2cc23476a0",
+          "last_error_code": null,
+          "last_observed_at": "2026-10-28T14:06:30Z",
+          "last_result_at": "2026-10-28T14:06:00Z",
+          "state": "downloading"
+        }
+      },
+      "state": "absent"
+    },
+    {
+      "name": "null",
+      "node": {
+        "capacity": {
+          "down_bps": 1000000000,
+          "member_down_bps_cap": 200000000,
+          "member_up_bps_cap": 100000000,
+          "up_bps": 1000000000
+        },
+        "checks": [
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-10-28T14:06:30Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "observed_at": "2026-10-28T14:06:30Z",
+            "status": "passed"
+          }
+        ],
+        "config_generation": {
+          "applied": "127",
+          "desired": "128"
+        },
+        "control_status": "online",
+        "created_at": "2026-10-01T09:00:00Z",
+        "current_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+        "data_health": "healthy",
+        "drift": [
+          {
+            "desired": "128",
+            "field": "config_generation",
+            "observed": "127"
+          }
+        ],
+        "exit_id": "caba5aec-4b2b-432c-9512-211a7b3e96db",
+        "last_seen_at": "2026-10-28T14:06:30Z",
+        "lifecycle_state": "registered",
+        "member_forwarding_observed": false,
+        "member_group_ids": [
+          "63575bae-2d23-45c0-ae11-ba6bb9ace34a"
+        ],
+        "name": "Tokyo 1",
+        "netbird_peer_id": "peer-test-node-01",
+        "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+        "notes": "Pre-installed box; source noted for reference only.",
+        "observed_exit_ipv4": "203.0.113.10",
+        "observed_exit_ipv6": null,
+        "platform": {
+          "arch": "arm64",
+          "os": "ubuntu",
+          "os_version": "24.04"
+        },
+        "provisioning_state": "ready",
+        "publication_intent": "disabled",
+        "publication_observed": "withdrawn",
+        "recent_errors": [],
+        "region": "jp-tokyo",
+        "releases": {
+          "current_release_id": "cdb25ffa-5395-400c-ad3e-b32899f14bb8",
+          "desired_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+          "last_good_release_id": "cdb25ffa-5395-400c-ad3e-b32899f14bb8"
+        },
+        "resource_version": "42",
+        "retired_at": null,
+        "safety_status": "passed",
+        "serving_read": null,
+        "update": {
+          "batch_id": "85ef720a-31a0-4250-90d2-4b92c58695bc",
+          "generation": "7",
+          "job_id": "73986232-fd84-4add-b639-9f2cc23476a0",
+          "last_error_code": null,
+          "last_observed_at": "2026-10-28T14:06:30Z",
+          "last_result_at": "2026-10-28T14:06:00Z",
+          "state": "downloading"
+        }
+      },
+      "state": "null"
+    },
+    {
+      "name": "apply-verified",
+      "node": {
+        "capacity": {
+          "down_bps": 1000000000,
+          "member_down_bps_cap": 200000000,
+          "member_up_bps_cap": 100000000,
+          "up_bps": 1000000000
+        },
+        "checks": [
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-10-28T14:06:30Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "observed_at": "2026-10-28T14:06:30Z",
+            "status": "passed"
+          }
+        ],
+        "config_generation": {
+          "applied": "127",
+          "desired": "128"
+        },
+        "control_status": "online",
+        "created_at": "2026-10-01T09:00:00Z",
+        "current_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+        "data_health": "healthy",
+        "drift": [
+          {
+            "desired": "128",
+            "field": "config_generation",
+            "observed": "127"
+          }
+        ],
+        "exit_id": "caba5aec-4b2b-432c-9512-211a7b3e96db",
+        "last_seen_at": "2026-10-28T14:06:30Z",
+        "lifecycle_state": "registered",
+        "member_forwarding_observed": false,
+        "member_group_ids": [
+          "63575bae-2d23-45c0-ae11-ba6bb9ace34a"
+        ],
+        "name": "Tokyo 1",
+        "netbird_peer_id": "peer-test-node-01",
+        "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+        "notes": "Pre-installed box; source noted for reference only.",
+        "observed_exit_ipv4": "203.0.113.10",
+        "observed_exit_ipv6": null,
+        "platform": {
+          "arch": "arm64",
+          "os": "ubuntu",
+          "os_version": "24.04"
+        },
+        "provisioning_state": "ready",
+        "publication_intent": "disabled",
+        "publication_observed": "withdrawn",
+        "recent_errors": [],
+        "region": "jp-tokyo",
+        "releases": {
+          "current_release_id": "cdb25ffa-5395-400c-ad3e-b32899f14bb8",
+          "desired_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+          "last_good_release_id": "cdb25ffa-5395-400c-ad3e-b32899f14bb8"
+        },
+        "resource_version": "42",
+        "retired_at": null,
+        "safety_status": "passed",
+        "serving_read": {
+          "candidate_generation": "9007199254740993",
+          "diagnostic": "read_at=2026-10-28T14:06:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+          "read_at": "2026-10-28T14:06:29Z",
+          "source": "apply",
+          "verified": true
+        },
+        "update": {
+          "batch_id": "85ef720a-31a0-4250-90d2-4b92c58695bc",
+          "generation": "7",
+          "job_id": "73986232-fd84-4add-b639-9f2cc23476a0",
+          "last_error_code": null,
+          "last_observed_at": "2026-10-28T14:06:30Z",
+          "last_result_at": "2026-10-28T14:06:00Z",
+          "state": "downloading"
+        }
+      },
+      "state": "present"
+    },
+    {
+      "name": "live-rejected-retained",
+      "node": {
+        "capacity": {
+          "down_bps": 1000000000,
+          "member_down_bps_cap": 200000000,
+          "member_up_bps_cap": 100000000,
+          "up_bps": 1000000000
+        },
+        "checks": [
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-10-28T14:06:30Z",
+            "status": "passed"
+          },
+          {
+            "error_code": null,
+            "name": "meter_path",
+            "observed_at": "2026-10-28T14:06:30Z",
+            "status": "passed"
+          }
+        ],
+        "config_generation": {
+          "applied": "127",
+          "desired": "128"
+        },
+        "control_status": "online",
+        "created_at": "2026-10-01T09:00:00Z",
+        "current_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+        "data_health": "healthy",
+        "drift": [
+          {
+            "desired": "128",
+            "field": "config_generation",
+            "observed": "127"
+          }
+        ],
+        "exit_id": "caba5aec-4b2b-432c-9512-211a7b3e96db",
+        "last_seen_at": "2026-10-28T14:06:30Z",
+        "lifecycle_state": "registered",
+        "member_forwarding_observed": false,
+        "member_group_ids": [
+          "63575bae-2d23-45c0-ae11-ba6bb9ace34a"
+        ],
+        "name": "Tokyo 1",
+        "netbird_peer_id": "peer-test-node-01",
+        "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+        "notes": "Pre-installed box; source noted for reference only.",
+        "observed_exit_ipv4": "203.0.113.10",
+        "observed_exit_ipv6": null,
+        "platform": {
+          "arch": "arm64",
+          "os": "ubuntu",
+          "os_version": "24.04"
+        },
+        "provisioning_state": "ready",
+        "publication_intent": "disabled",
+        "publication_observed": "withdrawn",
+        "recent_errors": [],
+        "region": "jp-tokyo",
+        "releases": {
+          "current_release_id": "cdb25ffa-5395-400c-ad3e-b32899f14bb8",
+          "desired_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+          "last_good_release_id": "cdb25ffa-5395-400c-ad3e-b32899f14bb8"
+        },
+        "resource_version": "42",
+        "retired_at": null,
+        "safety_status": "passed",
+        "serving_read": {
+          "candidate_generation": "18446744073709551615",
+          "diagnostic": "read_at=2026-10-28T14:06:10Z source=live candidate=18446744073709551615 verified=false {\"generation\":\"18446744073709551615\",\"phase\":\"verify\",\"reads\":2,\"objects\":5,\"truncated\":false,\"sha256\":\"6d78e62925fc23e6d6864f986fa220987447329d5b109c7b71aa0958a2d57c91\",\"rejected\":{\"interface\":\"fv0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"0x1\",\"parent\":\"ffff:fff1\",\"actions\":[\"gact\"]}]}}",
+          "read_at": "2026-10-28T14:06:10Z",
+          "source": "live",
+          "verified": false
+        },
+        "update": {
+          "batch_id": "85ef720a-31a0-4250-90d2-4b92c58695bc",
+          "generation": "7",
+          "job_id": "73986232-fd84-4add-b639-9f2cc23476a0",
+          "last_error_code": null,
+          "last_observed_at": "2026-10-28T14:06:30Z",
+          "last_result_at": "2026-10-28T14:06:00Z",
+          "state": "downloading"
+        }
+      },
+      "state": "present"
+    }
+  ],
+  "observation_reports": [
+    {
+      "name": "absent",
+      "report": {
+        "agent_version": "1.1.0",
+        "applied_binding_revision": "407",
+        "applied_config_generation": "128",
+        "applied_policy_refs": {
+          "authorization_generation": "52",
+          "dns_generation": "12",
+          "fup_generation": "9"
+        },
+        "boot_id": "dc4f6bc5-954b-46e8-825d-57fdf335bee5",
+        "checks": [
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-10-28T15:00:30Z",
+            "status": "passed"
+          }
+        ],
+        "current_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+        "data_health": "healthy",
+        "errors": [],
+        "forwarding_block_reasons": [
+          "not_published"
+        ],
+        "last_good_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+        "lease": {
+          "expires_at": "2026-10-29T15:00:00Z",
+          "lease_id": "c4506654-d908-46c6-95e5-e9fa6b30f9ed"
+        },
+        "member_forwarding_enabled": false,
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": "peer-test-node-01",
+          "version": "0.76.2"
+        },
+        "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+        "node_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+        "observed_at": "2026-10-28T15:00:30Z",
+        "provisioning_state": "ready",
+        "report_id": "9d93e97b-dc01-40c0-8de6-0ba0b2f6e14d",
+        "safety_status": "passed",
+        "update": {
+          "generation": null,
+          "job_id": null,
+          "stage": null,
+          "state": null
+        },
+        "usage": {
+          "acked_archive_bytes": "7340032",
+          "blocked_seq": null,
+          "central_acked_through": "12058",
+          "last_durable_event_seq": "12060",
+          "ledger_epoch": "7612b7d9-1e70-4390-b86b-7c3456e4df27",
+          "meter_epoch_id": "909f68b7-a5b4-44da-afd5-e1683e42c6fd",
+          "oldest_unacked_at": "2026-10-28T15:00:10Z",
+          "unacked_event_count": 2,
+          "unacked_payload_bytes": "1840"
+        }
+      },
+      "state": "absent"
+    },
+    {
+      "name": "null",
+      "report": {
+        "agent_version": "1.1.0",
+        "applied_binding_revision": "407",
+        "applied_config_generation": "128",
+        "applied_policy_refs": {
+          "authorization_generation": "52",
+          "dns_generation": "12",
+          "fup_generation": "9"
+        },
+        "boot_id": "dc4f6bc5-954b-46e8-825d-57fdf335bee5",
+        "checks": [
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-10-28T15:00:30Z",
+            "status": "passed"
+          }
+        ],
+        "current_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+        "data_health": "healthy",
+        "errors": [],
+        "forwarding_block_reasons": [
+          "not_published"
+        ],
+        "last_good_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+        "lease": {
+          "expires_at": "2026-10-29T15:00:00Z",
+          "lease_id": "c4506654-d908-46c6-95e5-e9fa6b30f9ed"
+        },
+        "member_forwarding_enabled": false,
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": "peer-test-node-01",
+          "version": "0.76.2"
+        },
+        "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+        "node_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+        "observed_at": "2026-10-28T15:00:30Z",
+        "provisioning_state": "ready",
+        "report_id": "9d93e97b-dc01-40c0-8de6-0ba0b2f6e14d",
+        "safety_status": "passed",
+        "serving_read": null,
+        "update": {
+          "generation": null,
+          "job_id": null,
+          "stage": null,
+          "state": null
+        },
+        "usage": {
+          "acked_archive_bytes": "7340032",
+          "blocked_seq": null,
+          "central_acked_through": "12058",
+          "last_durable_event_seq": "12060",
+          "ledger_epoch": "7612b7d9-1e70-4390-b86b-7c3456e4df27",
+          "meter_epoch_id": "909f68b7-a5b4-44da-afd5-e1683e42c6fd",
+          "oldest_unacked_at": "2026-10-28T15:00:10Z",
+          "unacked_event_count": 2,
+          "unacked_payload_bytes": "1840"
+        }
+      },
+      "state": "null"
+    },
+    {
+      "name": "apply-verified",
+      "report": {
+        "agent_version": "1.1.0",
+        "applied_binding_revision": "407",
+        "applied_config_generation": "128",
+        "applied_policy_refs": {
+          "authorization_generation": "52",
+          "dns_generation": "12",
+          "fup_generation": "9"
+        },
+        "boot_id": "dc4f6bc5-954b-46e8-825d-57fdf335bee5",
+        "checks": [
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-10-28T15:00:30Z",
+            "status": "passed"
+          }
+        ],
+        "current_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+        "data_health": "healthy",
+        "errors": [],
+        "forwarding_block_reasons": [
+          "not_published"
+        ],
+        "last_good_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+        "lease": {
+          "expires_at": "2026-10-29T15:00:00Z",
+          "lease_id": "c4506654-d908-46c6-95e5-e9fa6b30f9ed"
+        },
+        "member_forwarding_enabled": false,
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": "peer-test-node-01",
+          "version": "0.76.2"
+        },
+        "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+        "node_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+        "observed_at": "2026-10-28T15:00:30Z",
+        "provisioning_state": "ready",
+        "report_id": "9d93e97b-dc01-40c0-8de6-0ba0b2f6e14d",
+        "safety_status": "passed",
+        "serving_read": {
+          "candidate_generation": "9007199254740993",
+          "diagnostic": "read_at=2026-10-28T15:00:29Z source=apply candidate=9007199254740993 verified=true {\"generation\":\"9007199254740993\",\"phase\":\"verify\",\"reads\":2,\"objects\":4,\"truncated\":false,\"sha256\":\"dc031120dc666039402e235c0416643a9d76d09c41ef57f4b2cfef65378033a1\"}",
+          "read_at": "2026-10-28T15:00:29Z",
+          "source": "apply",
+          "verified": true
+        },
+        "update": {
+          "generation": null,
+          "job_id": null,
+          "stage": null,
+          "state": null
+        },
+        "usage": {
+          "acked_archive_bytes": "7340032",
+          "blocked_seq": null,
+          "central_acked_through": "12058",
+          "last_durable_event_seq": "12060",
+          "ledger_epoch": "7612b7d9-1e70-4390-b86b-7c3456e4df27",
+          "meter_epoch_id": "909f68b7-a5b4-44da-afd5-e1683e42c6fd",
+          "oldest_unacked_at": "2026-10-28T15:00:10Z",
+          "unacked_event_count": 2,
+          "unacked_payload_bytes": "1840"
+        }
+      },
+      "state": "present"
+    },
+    {
+      "name": "live-rejected-retained",
+      "report": {
+        "agent_version": "1.1.0",
+        "applied_binding_revision": "407",
+        "applied_config_generation": "128",
+        "applied_policy_refs": {
+          "authorization_generation": "52",
+          "dns_generation": "12",
+          "fup_generation": "9"
+        },
+        "boot_id": "dc4f6bc5-954b-46e8-825d-57fdf335bee5",
+        "checks": [
+          {
+            "error_code": null,
+            "name": "internet_only",
+            "observed_at": "2026-10-28T15:00:30Z",
+            "status": "passed"
+          }
+        ],
+        "current_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+        "data_health": "healthy",
+        "errors": [],
+        "forwarding_block_reasons": [
+          "not_published"
+        ],
+        "last_good_release_id": "6d2797d0-b9a5-4724-96af-9b3039d351b1",
+        "lease": {
+          "expires_at": "2026-10-29T15:00:00Z",
+          "lease_id": "c4506654-d908-46c6-95e5-e9fa6b30f9ed"
+        },
+        "member_forwarding_enabled": false,
+        "netbird": {
+          "backend": "kernel",
+          "peer_id": "peer-test-node-01",
+          "version": "0.76.2"
+        },
+        "node_id": "93bc18d9-26c2-4ec4-bf5b-0c70df89b0cb",
+        "node_incarnation_id": "d1c5d642-f6ac-4ca4-bcd6-5460d491a2e0",
+        "observed_at": "2026-10-28T15:00:30Z",
+        "provisioning_state": "ready",
+        "report_id": "9d93e97b-dc01-40c0-8de6-0ba0b2f6e14d",
+        "safety_status": "passed",
+        "serving_read": {
+          "candidate_generation": "18446744073709551615",
+          "diagnostic": "read_at=2026-10-28T15:00:10Z source=live candidate=18446744073709551615 verified=false {\"generation\":\"18446744073709551615\",\"phase\":\"verify\",\"reads\":2,\"objects\":5,\"truncated\":false,\"sha256\":\"6d78e62925fc23e6d6864f986fa220987447329d5b109c7b71aa0958a2d57c91\",\"rejected\":{\"interface\":\"fv0\",\"attachment\":\"ingress\",\"objects\":[{\"kind\":\"flower\",\"handle\":\"0x1\",\"parent\":\"ffff:fff1\",\"actions\":[\"gact\"]}]}}",
+          "read_at": "2026-10-28T15:00:10Z",
+          "source": "live",
+          "verified": false
+        },
+        "update": {
+          "generation": null,
+          "job_id": null,
+          "stage": null,
+          "state": null
+        },
+        "usage": {
+          "acked_archive_bytes": "7340032",
+          "blocked_seq": null,
+          "central_acked_through": "12058",
+          "last_durable_event_seq": "12060",
+          "ledger_epoch": "7612b7d9-1e70-4390-b86b-7c3456e4df27",
+          "meter_epoch_id": "909f68b7-a5b4-44da-afd5-e1683e42c6fd",
+          "oldest_unacked_at": "2026-10-28T15:00:10Z",
+          "unacked_event_count": 2,
+          "unacked_payload_bytes": "1840"
+        }
+      },
+      "state": "present"
+    }
+  ]
+}

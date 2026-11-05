@@ -1,0 +1,614 @@
+{
+  "source_commit": "aaffdc7fe176c5e3edc521c8ca491bff28bd4a6f",
+  "proofs": [
+    {
+      "path": "tests/e2e/second_exit_test.go",
+      "name": "TestD141_ClonePreparedConfigsDialContainerResolverProxy"
+    },
+    {
+      "path": "tests/e2e/evidence_test.go",
+      "name": "TestRedact_StripsSecrets"
+    },
+    {
+      "path": "tests/e2e/evidence_test.go",
+      "name": "TestWrite_RoundTrip"
+    },
+    {
+      "path": "tests/e2e/evidence_test.go",
+      "name": "TestSEC02_WriteRedactsIdentitySubjects"
+    },
+    {
+      "path": "tests/e2e/evidence_test.go",
+      "name": "TestCommittedFixtureEvidence_ValidAndHygieneClean"
+    },
+    {
+      "path": "node/internal/meter/meter_test.go",
+      "name": "TestDeltaResetAndContinuity"
+    },
+    {
+      "path": "node/internal/meter/meter_test.go",
+      "name": "TestMappingConflictAndWrap"
+    },
+    {
+      "path": "node/internal/meter/meter_test.go",
+      "name": "TestAT17_MonthBoundary"
+    },
+    {
+      "path": "node/internal/meter/meter_test.go",
+      "name": "TestClockRollback"
+    },
+    {
+      "path": "node/internal/meter/meter_test.go",
+      "name": "TestCheckpointForRestartAtSameMicrosecond"
+    },
+    {
+      "path": "node/internal/meter/meter_test.go",
+      "name": "TestFinalSampleAndBarrier"
+    },
+    {
+      "path": "node/internal/meter/meter_test.go",
+      "name": "TestAT16_MeterCrashSteps"
+    },
+    {
+      "path": "node/internal/meter/meter_test.go",
+      "name": "TestDeltaProperty"
+    },
+    {
+      "path": "node/internal/meter/meter_test.go",
+      "name": "TestMonotonicWaitIgnoresWallJump"
+    },
+    {
+      "path": "node/internal/meter/meter_test.go",
+      "name": "TestMTR03_RunSkipsBusySampleWithoutLosingCounters"
+    },
+    {
+      "path": "node/internal/meter/meter_test.go",
+      "name": "TestRunStopsOnCancel"
+    },
+    {
+      "path": "node/internal/meter/followup53_test.go",
+      "name": "TestMTR03_RestartCheckpointClockBoundaries"
+    },
+    {
+      "path": "node/internal/meter/followup53_test.go",
+      "name": "TestMTR03_RestartCheckpointOutsideClockWindow"
+    },
+    {
+      "path": "node/internal/meter/followup53_test.go",
+      "name": "TestMTR03_RestartCheckpointResetAndIdentityPrecedence"
+    },
+    {
+      "path": "node/internal/meter/followup53_test.go",
+      "name": "TestMTR03_FinalSampleUnchangedRollback"
+    },
+    {
+      "path": "node/agent/followup25_usage_test.go",
+      "name": "TestD118_ENR05_VerifiedReenrollmentHandsOffFinalSample"
+    },
+    {
+      "path": "node/agent/followup25_usage_test.go",
+      "name": "TestD118_UnchangedIncarnationDoesNotRetire"
+    },
+    {
+      "path": "node/agent/followup38_test.go",
+      "name": "TestR21_H1_MixedBindingsCrashWindows"
+    },
+    {
+      "path": "node/agent/followup38_test.go",
+      "name": "TestR21_M2_CanceledBootFailureHeartbeat"
+    },
+    {
+      "path": "node/agent/followup38_test.go",
+      "name": "TestR21_M2_OpenUsageLockFollowsCaller"
+    },
+    {
+      "path": "node/agent/followup38_test.go",
+      "name": "TestR21_M2_OneBootBudgetAllStages"
+    },
+    {
+      "path": "node/agent/followup38_test.go",
+      "name": "TestR21_M2_CloseWaitsForTimedOutBootWithinStopBudget"
+    },
+    {
+      "path": "node/agent/followup38_test.go",
+      "name": "TestR21_M1_FinalClockGapClosesEpoch"
+    },
+    {
+      "path": "node/agent/followup38_test.go",
+      "name": "TestR21_M2_UploadCancellationDuringAdoption"
+    },
+    {
+      "path": "node/agent/followup38_test.go",
+      "name": "TestR21_M2_TermAfterBaselineKeepsNormalStopOnLedgerTimeout"
+    },
+    {
+      "path": "node/agent/followup38_test.go",
+      "name": "TestR21_M2_TermCompletedBootDoesNotStartAnotherStepBudget"
+    },
+    {
+      "path": "node/agent/followup49_transaction_test.go",
+      "name": "TestF49_RecoveryChild"
+    },
+    {
+      "path": "node/agent/followup49_transaction_test.go",
+      "name": "TestD155_CrashedTransactionsKeepAgentRunning"
+    },
+    {
+      "path": "node/agent/followup53_test.go",
+      "name": "TestF53_F1701_StaleLeaseHoldReportQosDetail"
+    },
+    {
+      "path": "node/agent/review_r22_test.go",
+      "name": "TestR22_H1_UnsettledGenerationTransitionAndHandoffMisattributeUsage"
+    },
+    {
+      "path": "node/agent/review_r22_test.go",
+      "name": "TestR22_H2_CaptureRestartBindingsFalseGapsAcrossCrashWindows"
+    },
+    {
+      "path": "node/agent/review_r22_test.go",
+      "name": "TestR22_M1_TransientBootMeterOpenFailureWedgesRetainedPendingSettlement"
+    },
+    {
+      "path": "node/agent/review_r22_test.go",
+      "name": "TestR22_M2_AdoptionPreparationHasNoUsageEffectsBeforeLateAbort"
+    },
+    {
+      "path": "node/agent/review_r22_test.go",
+      "name": "TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat"
+    },
+    {
+      "path": "node/agent/review_r22_test.go",
+      "name": "TestR22_Held_Q1_FreshInstallColdBootAndUncleanRebootBaseline"
+    },
+    {
+      "path": "node/agent/review_r22_test.go",
+      "name": "TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException"
+    },
+    {
+      "path": "node/agent/review_r22_test.go",
+      "name": "TestR22_Held_Q4_Q5_Q6_Q7_FinalSampleCloseAndStopBudgetAndMemberPathEvidence"
+    },
+    {
+      "path": "node/agent/review_r23_test.go",
+      "name": "TestR23_H1a_EpochSwitchDuringServing_InvalidatesUsageIntentAndCreatesFalseConflictOnRestart"
+    },
+    {
+      "path": "node/agent/review_r23_test.go",
+      "name": "TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption"
+    },
+    {
+      "path": "node/agent/review_r23_test.go",
+      "name": "TestR23_H2_HandoffBarrierRaceLeavesFinalDoneFalse_NextServeFailsAdmission"
+    },
+    {
+      "path": "node/agent/review_r23_test.go",
+      "name": "TestR23_H3a_PreApplyHandoffSettleFailure_EmitsCorruptObservationAndDashHeartbeat"
+    },
+    {
+      "path": "node/agent/review_r23_test.go",
+      "name": "TestR23_H3b_PreApplyHandoffBaselineFailure_LeavesServingTrueWithFailedSafety"
+    },
+    {
+      "path": "node/agent/review_r23_test.go",
+      "name": "TestR23_M1_WithdrawSecondBaselineSuccess_LeavesOpenEpochUnsettledWithRetainedPendingFalse"
+    },
+    {
+      "path": "node/agent/review_r23_test.go",
+      "name": "TestR23_Held_AQ1_UsageIntentCrashWindowsAndCrossRebootIsolation"
+    },
+    {
+      "path": "node/agent/review_r23_test.go",
+      "name": "TestR23_Held_AQ2_BindingRebindSettlesOldBindingsBeforePrepareAndApply"
+    },
+    {
+      "path": "node/agent/review_r23_test.go",
+      "name": "TestR23_Held_AQ3_EnsureUsageHeadFailureWithdrawsAndBlocksServe"
+    },
+    {
+      "path": "node/agent/review_r23_test.go",
+      "name": "TestR23_Held_AQ4_EnsureUsageRepeatedFailuresLeakNothingAndRecover"
+    },
+    {
+      "path": "node/agent/review_r23_test.go",
+      "name": "TestR23_Held_AQ5_BootHeartbeatStopProbeExceptionAndDatapathValidation"
+    },
+    {
+      "path": "node/agent/review_r23_test.go",
+      "name": "TestR23_Held_AQ6_SameIdentityRenewalSkipsRedundantIntentWrite"
+    },
+    {
+      "path": "node/agent/review_r29_test.go",
+      "name": "TestR29_H1_CandidateBootUnderHeldUpdateLockDefersRecoverAndServesAfterCommit"
+    },
+    {
+      "path": "node/agent/review_r29_test.go",
+      "name": "TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery"
+    },
+    {
+      "path": "node/agent/review_r29_test.go",
+      "name": "TestR29_Held_D053AndD064PassWhileRecoverBlockedUnderHeldUpdateLock"
+    },
+    {
+      "path": "node/agent/review_r29_test.go",
+      "name": "TestR29_Held_TerminalRecoveryRequiredExit2KeepsForwardingOffAfterLockRelease"
+    },
+    {
+      "path": "contracts/revision15_test.go",
+      "name": "TestAPI01_Revision15ServingReadEvidenceAndCorrections"
+    },
+    {
+      "path": "contracts/revision15_test.go",
+      "name": "TestISO01_D164ServingReadEvidenceVectorsAndPresence"
+    },
+    {
+      "path": "contracts/revision15_test.go",
+      "name": "TestMTR03_D112HandoffSamplingIntervalBoundWording"
+    },
+    {
+      "path": "contracts/revision15_test.go",
+      "name": "TestAT29_D117FiniteGrantWithdrawalCorrection"
+    },
+    {
+      "path": "pkg/api/api_test.go",
+      "name": "TestGeneratedTypesRoundTripValidExamples"
+    },
+    {
+      "path": "pkg/api/api_test.go",
+      "name": "TestDecimalFieldsUseDecstr"
+    },
+    {
+      "path": "pkg/api/api_test.go",
+      "name": "TestPolicyRevisionCreateDiscriminator"
+    },
+    {
+      "path": "pkg/api/api_test.go",
+      "name": "TestServingReadEvidencePresenceAndRoundTrip"
+    },
+    {
+      "path": "tests/handover/handover_test.go",
+      "name": "TestHandover_Followup48Claims"
+    },
+    {
+      "path": "tests/handover/handover_test.go",
+      "name": "TestHandover_ContractsRevision15MigrationIntegrity"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "tests/handover/testdata/history/contracts-revision-15/openapi-revision-14.yaml",
+      "sha256": "0894285c536a334fda5869c7b531afc48deb8cd5e975d68896bdacc98cb785c2",
+      "bytes": 341300
+    },
+    {
+      "path": "tests/handover/testdata/history/contracts-revision-15/prior-docs_handover_README.md.txt",
+      "sha256": "5c28e1a53b457e409869991c7a92169c2b4be204535859a3cc82191d75c189dd",
+      "bytes": 123760
+    },
+    {
+      "path": "tests/handover/testdata/history/contracts-revision-15/prior-docs_handover_member-guide.md.txt",
+      "sha256": "3d8b51d115823977c5d49b9505cb8e8ceca16110b51cef192660f8933a45e671",
+      "bytes": 85759
+    },
+    {
+      "path": "tests/handover/testdata/history/contracts-revision-15/prior-docs_handover_operator-guide.md.txt",
+      "sha256": "34bf1bc4a1579da513f97e1aed6c23fb3681ca9a001cd67ae9e41461337d7009",
+      "bytes": 237129
+    },
+    {
+      "path": "tests/handover/testdata/history/contracts-revision-15/prior-docs_ops_README.md.txt",
+      "sha256": "095bdf1faeb43a49a212521a0c0b3821dcdcbe2dd5e4335b553fd99689378e14",
+      "bytes": 124417
+    },
+    {
+      "path": "tests/handover/testdata/history/contracts-revision-15/provenance.json",
+      "sha256": "e562b930b75c1eb43937e5811ce4d70dddffd46036484d9a9d811f3fb58f4d3d",
+      "bytes": 7138
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-48/node-workflow-failures.json",
+      "sha256": "d1b35865356f926f2cd3fac3315c4b3a7fd7f84d8c0b54ba755b997f896e59ff",
+      "bytes": 3332
+    },
+    {
+      "path": "docs/reviews/r33-meter-restart-review.md",
+      "sha256": "8bce5d989decb41fa7588307fc89521fc3972a5d59e80cf841ef6e7c7f433731",
+      "bytes": 51920
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/after-cutoff-provenance.json",
+      "sha256": "d4407c24f50ec4fcd3985bad7b16416ef09b095848c214b96da778af33375cb9",
+      "bytes": 1528
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/commit_52b93845_docs_e2e_at_members_BLOCKERS.md.txt",
+      "sha256": "22eb3a1fe32465d736e899c5c3f6d88d50134f3b88edbc23a7cec4a8390b051a",
+      "bytes": 39329
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/commit_52b93845_docs_e2e_at_members_F23-retrospective-F22-AT01.json",
+      "sha256": "2341ae38b0102bb9ac4611359babb145d82dc7bef8a9e80fd46f07460edb56ff",
+      "bytes": 3934
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/commit_52b93845_docs_e2e_at_members_followup23-2026-11-04.md.txt",
+      "sha256": "09234ad5b4886ef6bd606962d121f9edabad1684bfbf9e289e5a1187168dd0cb",
+      "bytes": 21136
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_invalid_reasons.generated.json",
+      "sha256": "836c36eb151876b5b30838316c3409f5e889c5b82ef4e621b48d5eae0790b9ef",
+      "bytes": 6184
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_NodeDetail.serving-read-apply-verified.json",
+      "sha256": "7b1d4e8c6cac677f2830d8e22f6feefcf097ab444e4f03016b3a0de910627ada",
+      "bytes": 2581
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_NodeDetail.serving-read-live-rejected.json",
+      "sha256": "c974ffd511f29340e53cec06b6d129a7dada74c6fa6ef99f02cfe8fc84501691",
+      "bytes": 2760
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_NodeDetail.serving-read-null.json",
+      "sha256": "c1721ecf5d241ff61adc37b79cf5c299b66e6a8f74346fece2f0b4fb7897ebe9",
+      "bytes": 2160
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_ObservationReport.serving-read-apply-verified.json",
+      "sha256": "8241cece0628183ed79d555ae35f7108a32b6aa1a1cf4b0b264669862b440d27",
+      "bytes": 2146
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_ObservationReport.serving-read-live-rejected.json",
+      "sha256": "94097b03651f1329b0f3d2170deee2ecda177332a37e9ab43c7e12d7cb681356",
+      "bytes": 2325
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_ObservationReport.serving-read-null.json",
+      "sha256": "debcf9fef04406677e0383df97499397eaa48cfbd2ffee1fa64517ead383723f",
+      "bytes": 1725
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_ServingReadEvidence.apply-rejected.json",
+      "sha256": "a7ba13649a685c5c9c207799a6f8dc1d00b2a5f32df7339c3e8f0d9f58d00d27",
+      "bytes": 595
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_ServingReadEvidence.apply-verified.json",
+      "sha256": "c2e209a6b2b3924195a7849c1de264f2936f351f84af8ac590eb3b2e9d5ebdd0",
+      "bytes": 414
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_ServingReadEvidence.live-rejected-tc.json",
+      "sha256": "85f7cf57e199a500ffccc50e996046b5f5ce5ddb0e644394a1804ca7446ee3bb",
+      "bytes": 586
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/contracts_examples_valid_ServingReadEvidence.live-verified.json",
+      "sha256": "d759838520e8faf43830721f77379eb72251e74b7c2e60f05a8691a7a317493d",
+      "bytes": 424
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/contracts_vectors_serving-read-evidence.json",
+      "sha256": "4a32bfa3adad92105f6aa178a1cbe8935d0b10f98c09feb6e4836349e84f39e6",
+      "bytes": 32603
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_ROADMAP.md.txt",
+      "sha256": "e50e035c1366702dd066f7a48ea8fd53577cb13d1643ea927f8a92ba4e1fafbd",
+      "bytes": 361691
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_contracts_README.md.txt",
+      "sha256": "cfd6c47df57976c29f6e73dd48548efeefea9408ecbddf25ad684aeda2276e0e",
+      "bytes": 82126
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_e2e_RESPONSES.md.txt",
+      "sha256": "d28c404063532f7e98f0cf0c9606c5d0e38a618e779e90eb959b679e5ca62c78",
+      "bytes": 126967
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_e2e_runs_2026-11-04_followup37_analysis.md.txt",
+      "sha256": "53440268f993b0e69696ff9e818ddf15f8e5b3ef033b376e03e52e3e7f09fee4",
+      "bytes": 28650
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-2026-11-04.md.txt",
+      "sha256": "952e09cb9af95c699c0900cd074caf2e82db040dd7595d8b3635d23578e6076f",
+      "bytes": 65527
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_admission-deferrals.json",
+      "sha256": "c8fbf2ec69dcb9b88d53c5a5cdd16c6893dac083b1cc6bf13457df448a83d9f1",
+      "bytes": 517
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_admission-wait.json",
+      "sha256": "31dba87d39ec9e8e9dc060681476a464b83237b2e5afa7d251f767cfbafdb332",
+      "bytes": 127
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_ci-failures.txt",
+      "sha256": "89ce166f6f3c4c886b1b2ef7c191cd1492ec0205d6ecde9b3122291ebf8dbb16",
+      "bytes": 2985
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_ci-metadata.json",
+      "sha256": "9cffb207f6b1d7cea52526e1e639100751c811e3e8811d4ca7e7e1a2754cc259",
+      "bytes": 2895
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_ci-source-audit.json",
+      "sha256": "eba9178fa1573d086181534bbe235b2caf3d95960004af444f56a4c9bc3ca7aa",
+      "bytes": 3398
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_commands.json",
+      "sha256": "ab0147a9adf570800f10e84c5b13bce6d54148d457e99509fa9c885d2785d19b",
+      "bytes": 647478
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gate-admission-wait.json",
+      "sha256": "f56a2ee6162f6b9463bcee5d7826a12e4c6a6e0cf56e554222da1b242d65ae76",
+      "bytes": 405
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gate-lab.txt",
+      "sha256": "f5d19b0095d539428b07e792e21ecd6ca7aea160d77e9573dd907f3fd10e6e40",
+      "bytes": 802
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gate-review-r30-r31.txt",
+      "sha256": "e4b2a113d6ee6c572c760cc5cb488a5167e931f9c990e00d3103cc88418c6068",
+      "bytes": 2569
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gates-summary-attempt1.json",
+      "sha256": "323bb1dfe5e9e68a65cad501481eb6df111e6f9ce55069350a4981ba27935090",
+      "bytes": 253
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_gates-summary.json",
+      "sha256": "5df1870f6e5eae69578df21bfb08c5464c907e6e25154c51e5d31d68d84946c8",
+      "bytes": 924
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_reproduce.md.txt",
+      "sha256": "e9bef559e68a847714fd1aa814fd1bbc5d1c52a0b7235da57e55db0b3eda0891",
+      "bytes": 3964
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_sixth-delayed-load.json",
+      "sha256": "0f00858052e489832f0b42a5f7c72ed8d506679490980aab1eb5585c595daad4",
+      "bytes": 1273
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_sixth-original-load.json",
+      "sha256": "243d86de8677b1870f8e77e9feb773b97345edb476ee66c1d4fe4ff2374eec1a",
+      "bytes": 1079
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_snapshot-audit.json",
+      "sha256": "d554e1466c5c7ad92fdbae381025feba2648224779dbe357f6a78c33f58d55df",
+      "bytes": 4933
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/docs_node_followup53-evidence_source-citations.json",
+      "sha256": "75081d694300210b62f3d2ef8f9232011eb49c612cb98a12f62c1fb7ced4ff7d",
+      "bytes": 39936
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/netbird-8473-comment-provenance.json",
+      "sha256": "40be686d1a3a40e23cec8a036e5284a3dfb44fdcc8406d9844ce887790ad4919",
+      "bytes": 5600
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/owner-confirmation-provenance.json",
+      "sha256": "3d0e1377d31bec5f551af051b4160c270cfe3b897fea3ec908eb377cf3c9d117",
+      "bytes": 765
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/pr-482-excerpt.json",
+      "sha256": "736b97771346389cadb585817249355e369e3484b5f13821d36fd934df290dc7",
+      "bytes": 16869
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/pr-483-excerpt.json",
+      "sha256": "acb6ef1d5451401722cc68878111c20fe45fe6fb9c100a7dd1653d49407fa48a",
+      "bytes": 37213
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/pr-484-excerpt.json",
+      "sha256": "2ebc760aebc564b7c02040aa2f8f2d9bfcde4470cd4bcd0e35ce4daf7c6d8fa8",
+      "bytes": 21001
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/pr-485-excerpt.json",
+      "sha256": "c57c658ff21fdfb65d4e0bf41879807f6480c212467bb62cfc9ec32b740af840",
+      "bytes": 36400
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/prior-README.md.txt",
+      "sha256": "d241368dd3661b5f251d119d8eb5a1b5d586640ee702e88f96d03122854a8c1e",
+      "bytes": 16737
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/prior-claims.json",
+      "sha256": "9c1603b84084b18d44e1ecfb3c1ce197a1567e7eaaaddaab9bb4ed7410a96e6c",
+      "bytes": 4613
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/prior-docs_handover_00-index.md.txt",
+      "sha256": "8d9bbdc1529784160825e1a61c9c63c47f6f432a9c7ccc4cfe88ff77e7e1f9e4",
+      "bytes": 1904
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/prior-docs_handover_README.md.txt",
+      "sha256": "903a4da7620037eb719587e570b09cabec745f8ca29e6a72c4a75177e1cb9199",
+      "bytes": 123881
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/prior-docs_handover_deploy.md.txt",
+      "sha256": "1b0d7ed7b7c89418838bd4ad7b4702f5d5ea6deb4691582bd4e279102b05a494",
+      "bytes": 72140
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/prior-docs_handover_member-guide.md.txt",
+      "sha256": "7fd17724e168383a459607c58a9fd8b505cec241dcfdffcde7bdf75392195a20",
+      "bytes": 85782
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/prior-docs_handover_operator-guide.md.txt",
+      "sha256": "d32b0abfafa83033b1a83ad908d251dba7935e7aa7b1b5667ed7265df4e37309",
+      "bytes": 237129
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/prior-docs_handover_restore-drill.md.txt",
+      "sha256": "cc504d7fe2b6c806d059ac0e9e453840e7ff11668cdb40c167bdf9f8d17ab254",
+      "bytes": 40821
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/prior-docs_ops_README.md.txt",
+      "sha256": "87622610ddca5b1600f79b3559718f48a3e87bfb3a63b584d373b1ff92b25229",
+      "bytes": 124417
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/prior-docs_reviews_README.md.txt",
+      "sha256": "13e0431a3700c01b9b28fe5845117c42f4165225c4642f0bb3751b5198daf178",
+      "bytes": 116776
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/prior-tests_handover_handover_test.go.txt",
+      "sha256": "8f7b54b7d4b4334ddb75212b97f0da089edd83fc97c8652c6dc304eabbf8bf1f",
+      "bytes": 1009690
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/product-source-audit.json",
+      "sha256": "6e6b13bd6f1ced120aa47ee24cd579c460c19ab50899268cbc8a76c3d522e700",
+      "bytes": 692388
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/review-node_agent_review_r33_test.go.txt",
+      "sha256": "d00f20943e6fc21d3e2ca0169b7a25b8e25f45b57f01484c78e8a0ce6f481b67",
+      "bytes": 11920
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/review-node_internal_meter_review_r33_test.go.txt",
+      "sha256": "3560983d44aa03faa5b8d37d1c549d2dc1acd74e4fdd87e326f2b71c658d8260",
+      "bytes": 53157
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/review-node_internal_usagestore_review_r33_test.go.txt",
+      "sha256": "6b4ac2806ad521ed99a3e53d4a172ebcc82faf6e17b482030642fa45fc879d07",
+      "bytes": 6562
+    },
+    {
+      "path": "tests/handover/testdata/history/follow-up-49/review-provenance.json",
+      "sha256": "f43be6b2ba05f06fde682d9e449d3916ea1b672e70527b3bac5ca7875ae829f0",
+      "bytes": 2811
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "command": [
+    "go",
+    "test",
+    "-json",
+    "-count=50",
+    "-timeout=10m",
+    "-run",
+    "^TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException$",
+    "./node/agent/"
+  ],
+  "head": "466f15107e78427fbf725ebfe7aaf560a506a3fe",
+  "overlay_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "load_workers": 24,
+  "scratch_fstype": "ext4",
+  "admission": "free",
+  "overlap_pids": [],
+  "exit_status": 0,
+  "workers_joined": 24,
+  "elapsed_seconds": 41.352,
+  "top_level_counts": {
+    "pass": 50,
+    "skip": 0,
+    "fail": 0
+  },
+  "test_counts": {
+    "TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException/held_finalsample_blocks_step_sync_and_apply_until_settled": {
+      "pass": 50
+    },
+    "TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException/adoption_lock_does_not_trigger_probe_exception_install": {
+      "pass": 50
+    },
+    "TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeException": {
+      "pass": 50
+    }
+  }
+}

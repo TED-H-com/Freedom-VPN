@@ -1,0 +1,166 @@
+{
+  "DesiredStateEnvelope.duplicate-revocations.json": {
+    "kind": "schema",
+    "pointer": "/signed/revoked_release_ids",
+    "keyword": "uniqueItems",
+    "note": "Revocations must be a unique UUID array when present."
+  },
+  "DesiredStateEnvelope.invalid-revocation-id.json": {
+    "kind": "schema",
+    "pointer": "/signed/revoked_release_ids/0",
+    "keyword": "format",
+    "note": "Revocations must be a unique UUID array when present."
+  },
+  "DesiredStateEnvelope.no-signatures.json": {
+    "kind": "schema",
+    "pointer": "/signatures",
+    "keyword": "minItems",
+    "note": "An unsigned envelope is a downgrade and is rejected (§16.2)."
+  },
+  "DesiredStateEnvelope.null-revocations.json": {
+    "kind": "schema",
+    "pointer": "/signed/revoked_release_ids",
+    "keyword": "type",
+    "note": "Revocations must be a unique UUID array when present."
+  },
+  "DesiredStateEnvelope.probe-target-tampered.json": {
+    "kind": "signature",
+    "code": "SIGNATURE_INVALID",
+    "note": "Changing a signed resolver reference or probe target must invalidate the envelope signature."
+  },
+  "DesiredStateEnvelope.resolver-digest-tampered.json": {
+    "kind": "signature",
+    "code": "SIGNATURE_INVALID",
+    "note": "Changing a signed resolver reference or probe target must invalidate the envelope signature."
+  },
+  "DesiredStateEnvelope.revocations-tampered.json": {
+    "kind": "signature",
+    "code": "SIGNATURE_INVALID",
+    "note": "Removing a signed revocation invalidates the signature."
+  },
+  "DesiredStateEnvelope.untrusted-key.json": {
+    "kind": "signature",
+    "code": "KEY_UNTRUSTED",
+    "note": "Valid Ed25519 signature by a key that is not in the trust store."
+  },
+  "ReleaseManifestEnvelope.tampered.json": {
+    "kind": "signature",
+    "code": "SIGNATURE_INVALID",
+    "note": "product_version changed after signing; the trusted key's signature no longer verifies."
+  },
+  "ServingLeaseEnvelope.wrong-purpose.json": {
+    "kind": "signature",
+    "code": "KEY_UNTRUSTED",
+    "note": "Signed by the trusted desired-state key, which is not allowed for the lease purpose."
+  },
+  "ServingReadEvidence.diagnostic-too-long.json": {
+    "kind": "schema",
+    "pointer": "/diagnostic",
+    "keyword": "maxLength",
+    "note": "ServingReadEvidence.diagnostic is bounded to 500 characters (D-164)."
+  },
+  "ServingReadEvidence.leading-zero-candidate-generation.json": {
+    "kind": "schema",
+    "pointer": "/candidate_generation",
+    "keyword": "pattern",
+    "note": "ServingReadEvidence.candidate_generation forbids leading zeros (§10.4)."
+  },
+  "ServingReadEvidence.missing-candidate-generation.json": {
+    "kind": "schema",
+    "keyword": "required",
+    "note": "ServingReadEvidence requires candidate_generation (D-164)."
+  },
+  "ServingReadEvidence.missing-diagnostic.json": {
+    "kind": "schema",
+    "keyword": "required",
+    "note": "ServingReadEvidence requires diagnostic (D-164)."
+  },
+  "ServingReadEvidence.missing-read-at.json": {
+    "kind": "schema",
+    "keyword": "required",
+    "note": "ServingReadEvidence requires read_at (D-164)."
+  },
+  "ServingReadEvidence.missing-source.json": {
+    "kind": "schema",
+    "keyword": "required",
+    "note": "ServingReadEvidence requires source (D-164)."
+  },
+  "ServingReadEvidence.missing-verified.json": {
+    "kind": "schema",
+    "keyword": "required",
+    "note": "ServingReadEvidence requires verified (D-164)."
+  },
+  "ServingReadEvidence.non-utc-read-at.json": {
+    "kind": "schema",
+    "pointer": "/read_at",
+    "keyword": "pattern",
+    "note": "ServingReadEvidence.read_at must be UTC RFC 3339 with Z."
+  },
+  "ServingReadEvidence.numeric-candidate-generation.json": {
+    "kind": "schema",
+    "pointer": "/candidate_generation",
+    "keyword": "type",
+    "note": "ServingReadEvidence.candidate_generation must be a decimal string, never a JSON number (§10.4)."
+  },
+  "ServingReadEvidence.too-long-candidate-generation.json": {
+    "kind": "schema",
+    "pointer": "/candidate_generation",
+    "keyword": "maxLength",
+    "note": "ServingReadEvidence.candidate_generation has at most 20 digits (§14.1)."
+  },
+  "ServingReadEvidence.unexpected-error-code.json": {
+    "kind": "schema",
+    "keyword": "additionalProperties",
+    "note": "ServingReadEvidence has no error_code member and sets additionalProperties: false (D-164)."
+  },
+  "ServingReadEvidence.unknown-property.json": {
+    "kind": "schema",
+    "keyword": "additionalProperties",
+    "note": "ServingReadEvidence sets additionalProperties: false (D-164)."
+  },
+  "ServingReadEvidence.unknown-source.json": {
+    "kind": "schema",
+    "pointer": "/source",
+    "keyword": "enum",
+    "note": "ServingReadEvidence.source allows only apply or live (D-164)."
+  },
+  "UpdateResult.bad-candidate-health.json": {
+    "kind": "schema",
+    "pointer": "/candidate_health/tunnel_probe",
+    "keyword": "enum",
+    "note": "candidate_health uses UpdateHealth; unknown check statuses are rejected (D-062)."
+  },
+  "UpdateResult.hash-mismatch.json": {
+    "kind": "payload_hash",
+    "field": "payload_hash",
+    "note": "state changed without recomputing payload_hash; the center answers ACK_CONFLICT for a known result_id."
+  },
+  "UpdateResult.numeric-policy-generation.json": {
+    "kind": "schema",
+    "pointer": "/policy_generation",
+    "keyword": "type",
+    "note": "Applied policy generation must never pass through a JSON number."
+  },
+  "UpdateResult.policy-generation-tampered.json": {
+    "kind": "payload_hash",
+    "field": "payload_hash",
+    "note": "Changing the applied policy generation changes the payload hash."
+  },
+  "UsageCheckpointEnvelope.bad-algorithm.json": {
+    "kind": "schema",
+    "pointer": "/signatures/0/algorithm",
+    "keyword": "enum",
+    "note": "Unknown signature algorithms are rejected."
+  },
+  "UsageEvent.hash-mismatch.json": {
+    "kind": "payload_hash",
+    "field": "payload_sha256",
+    "note": "upload_bytes changed without recomputing payload_sha256."
+  },
+  "UsageEvent.numeric-bytes.json": {
+    "kind": "schema",
+    "pointer": "/records/0/upload_bytes",
+    "keyword": "type",
+    "note": "Bytes must be a decimal string, never a JSON number (§10.4)."
+  }
+}
