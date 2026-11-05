@@ -1,0 +1,40 @@
+{
+  "run_id": "7599576e-339c-49c9-8bf5-0f710818cbda",
+  "baseline": "9e70951872105139213ed39c808704fdab315112",
+  "build": "fe2c68ecbf1ef1481d744c998be95710d28be954",
+  "counts": {
+    "pass": 26,
+    "blocked": 3
+  },
+  "retry": false,
+  "overlap_observed": false,
+  "findings": [
+    {
+      "id": "F20-01",
+      "status": "answered by agent-core 48; historical run remains failed",
+      "evidence": "history/follow-up-21-run/boundary-review.json"
+    },
+    {
+      "id": "F20-request-2",
+      "status": "answered by live proof",
+      "evidence": "history/follow-up-21-run/recording-proof.json"
+    },
+    {
+      "id": "F21-01",
+      "status": "blocked: prerequisite, not a product defect claim",
+      "owner": "orchestrator",
+      "scope": "new member-expiry serving window not reached",
+      "evidence": "history/follow-up-21-run/member-expiry-prerequisite-review.json"
+    },
+    {
+      "id": "F48-01",
+      "status": "paired signature not observed; no product closure",
+      "evidence": "history/follow-up-21-run/restart-signature-review.json"
+    },
+    {
+      "id": "F17-01",
+      "status": "carried: pure stale_generation not exercised",
+      "evidence": "history/follow-up-21-run/populated-holds-review.json"
+    }
+  ]
+}

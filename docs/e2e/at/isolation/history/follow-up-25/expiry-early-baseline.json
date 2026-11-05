@@ -1,0 +1,267 @@
+{
+  "run_id": "c52bea6c-cd91-4086-a779-656b01277dcc",
+  "source": "producer-operations.jsonl and agent.log.txt",
+  "producer_rows": [
+    {
+      "run_id": "6c28a03b-0e8a-41e6-af4d-9b431dc3100f",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1931",
+      "source": "live",
+      "anchor": {
+        "mono_before_ns": "75399844670696",
+        "wall": "2026-11-04T00:25:57.393294159Z",
+        "mono_after_ns": "75399844670981"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "33",
+        "start_ns": "75399815272060",
+        "end_ns": "75399844665587",
+        "succeeded": true,
+        "verified": true,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "75399815272060",
+            "end_ns": "75399844665587",
+            "nft_read": {
+              "start_ns": "75399815272282",
+              "end_ns": "75399818206626",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "75399826578612",
+              "end_ns": "75399843294866",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "75399823942543",
+              "end_ns": "75399826570352",
+              "elements": 2,
+              "read_ok": true,
+              "verified": true
+            },
+            "tc_sha256": "7bc082300f8eb94193a4a6b0dc4476035265d0688fabae74aeef44d1992e2677",
+            "verified": true
+          }
+        ]
+      },
+      "tc_sha256": "7bc082300f8eb94193a4a6b0dc4476035265d0688fabae74aeef44d1992e2677",
+      "lease": {
+        "lease_id": "72fd35da-5c75-432c-be6b-f4e21cb81939",
+        "generation": "33",
+        "issued_at": "2026-11-04T00:25:43.406500722Z",
+        "expires_at": "2026-11-04T00:26:43.406500722Z",
+        "request_mono_ns": "75385854784464",
+        "node_deadline_ns": "75445854784464",
+        "members": 2
+      }
+    },
+    {
+      "run_id": "6c28a03b-0e8a-41e6-af4d-9b431dc3100f",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1932",
+      "source": "heartbeat",
+      "anchor": {
+        "mono_before_ns": "75399847496849",
+        "wall": "2026-11-04T00:25:57.396120461Z",
+        "mono_after_ns": "75399847497364"
+      },
+      "lease": {
+        "lease_id": "72fd35da-5c75-432c-be6b-f4e21cb81939",
+        "generation": "33",
+        "issued_at": "2026-11-04T00:25:43.406500722Z",
+        "expires_at": "2026-11-04T00:26:43.406500722Z",
+        "request_mono_ns": "75385854784464",
+        "node_deadline_ns": "75445854784464",
+        "members": 2
+      },
+      "heartbeat": {
+        "mono_ns": "75399844724568",
+        "policy_expires_mono_ns": "75445854784464",
+        "generation": "33",
+        "baseline_ok": true,
+        "serving": true,
+        "reason": "serving",
+        "written": true
+      }
+    },
+    {
+      "run_id": "6c28a03b-0e8a-41e6-af4d-9b431dc3100f",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1933",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "75404862309402",
+        "wall": "2026-11-04T00:26:02.410932882Z",
+        "mono_after_ns": "75404862309714"
+      },
+      "lease": {
+        "lease_id": "72fd35da-5c75-432c-be6b-f4e21cb81939",
+        "generation": "33",
+        "issued_at": "2026-11-04T00:25:43.406500722Z",
+        "expires_at": "2026-11-04T00:26:43.406500722Z",
+        "request_mono_ns": "75385854784464",
+        "node_deadline_ns": "75445854784464",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "75404825343503",
+        "end_ns": "75404862285645",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6c28a03b-0e8a-41e6-af4d-9b431dc3100f",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1934",
+      "source": "baseline",
+      "anchor": {
+        "mono_before_ns": "75404892263859",
+        "wall": "2026-11-04T00:26:02.440887232Z",
+        "mono_after_ns": "75404892264004"
+      },
+      "lease": {
+        "lease_id": "72fd35da-5c75-432c-be6b-f4e21cb81939",
+        "generation": "33",
+        "issued_at": "2026-11-04T00:25:43.406500722Z",
+        "expires_at": "2026-11-04T00:26:43.406500722Z",
+        "request_mono_ns": "75385854784464",
+        "node_deadline_ns": "75445854784464",
+        "members": 2
+      },
+      "baseline": {
+        "cause": "safety_check_failed",
+        "start_ns": "75404866703774",
+        "end_ns": "75404892248744",
+        "succeeded": true
+      }
+    },
+    {
+      "run_id": "6c28a03b-0e8a-41e6-af4d-9b431dc3100f",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1935",
+      "source": "blocked_audit",
+      "anchor": {
+        "mono_before_ns": "75404903513266",
+        "wall": "2026-11-04T00:26:02.452136682Z",
+        "mono_after_ns": "75404903513507"
+      },
+      "timing": {
+        "version": 1,
+        "clock": "CLOCK_MONOTONIC",
+        "operation": "verify",
+        "candidate_generation": "33",
+        "start_ns": "75404894217295",
+        "end_ns": "75404903510424",
+        "succeeded": false,
+        "verified": false,
+        "deadline": {
+          "granularity_ns": "0",
+          "install_bound_ns": "0",
+          "apply_start_ns": "0",
+          "render_start_ns": "0",
+          "install_start_ns": "0",
+          "installed_by_ns": "0",
+          "install_ok": false,
+          "release_start_ns": "0",
+          "release_end_ns": "0",
+          "guard_released": false
+        },
+        "verifications": [
+          {
+            "start_ns": "75404894217295",
+            "end_ns": "75404903510424",
+            "nft_read": {
+              "start_ns": "75404894217487",
+              "end_ns": "75404895550071",
+              "ok": true
+            },
+            "tc_read": {
+              "start_ns": "75404895820931",
+              "end_ns": "75404902064680",
+              "ok": true
+            },
+            "precision_read": {
+              "start_ns": "0",
+              "end_ns": "0",
+              "elements": 0,
+              "read_ok": false,
+              "verified": false
+            },
+            "tc_sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+            "verified": false
+          }
+        ]
+      },
+      "tc_sha256": "1ece0c59a69ede7189b07cae26efda1411305903611f1a3f24a21da82fe2804e",
+      "lease": {
+        "lease_id": "72fd35da-5c75-432c-be6b-f4e21cb81939",
+        "generation": "33",
+        "issued_at": "2026-11-04T00:25:43.406500722Z",
+        "expires_at": "2026-11-04T00:26:43.406500722Z",
+        "request_mono_ns": "75385854784464",
+        "node_deadline_ns": "75445854784464",
+        "members": 2
+      }
+    },
+    {
+      "run_id": "6c28a03b-0e8a-41e6-af4d-9b431dc3100f",
+      "boot_id": "56e68667-9243-4933-83af-c70d575ff5fe",
+      "sequence": "1936",
+      "source": "heartbeat",
+      "anchor": {
+        "mono_before_ns": "75404905802980",
+        "wall": "2026-11-04T00:26:02.454426915Z",
+        "mono_after_ns": "75404905804013"
+      },
+      "lease": {
+        "lease_id": "72fd35da-5c75-432c-be6b-f4e21cb81939",
+        "generation": "33",
+        "issued_at": "2026-11-04T00:25:43.406500722Z",
+        "expires_at": "2026-11-04T00:26:43.406500722Z",
+        "request_mono_ns": "75385854784464",
+        "node_deadline_ns": "75445854784464",
+        "members": 2
+      },
+      "heartbeat": {
+        "mono_ns": "75404903545445",
+        "policy_expires_mono_ns": "0",
+        "generation": "33",
+        "baseline_ok": true,
+        "serving": false,
+        "reason": "safety_check_failed",
+        "written": true
+      }
+    }
+  ],
+  "agent_log_lines": [
+    "time=2026-11-04T00:26:02.367Z level=WARN msg=\"desired state\" err=\"control request ended\"",
+    "time=2026-11-04T00:26:02.373Z level=INFO msg=\"baseline write\" writer=agent cause=safety_check_failed phase=begin mono_ns=75404825343503 generation=33",
+    "time=2026-11-04T00:26:02.410Z level=INFO msg=\"baseline write\" writer=agent cause=safety_check_failed phase=end mono_ns=75404862285645 succeeded=true",
+    "time=2026-11-04T00:26:02.415Z level=INFO msg=\"meter epoch closed\" epoch_id=01a1a3f1-933b-7076-9858-35e20d49d618 reason=final_sample event_seq=48",
+    "time=2026-11-04T00:26:02.415Z level=INFO msg=\"baseline write\" writer=agent cause=safety_check_failed phase=begin mono_ns=75404866703774 generation=33",
+    "time=2026-11-04T00:26:02.440Z level=INFO msg=\"baseline write\" writer=agent cause=safety_check_failed phase=end mono_ns=75404892248744 succeeded=true"
+  ],
+  "baseline_start_offset_ns": "-41029440961",
+  "baseline_end_offset_ns": "-40992498819",
+  "failure": "tunnel_probe / HEALTH_CHECK_FAILED in original queued report; precise probe subcause unavailable",
+  "wire_evidence": "expiry-failure-wire-extract.json",
+  "owner": "w2-agent-core; coordinate w3-devstack-e2e",
+  "status": "fail",
+  "retry": false
+}
