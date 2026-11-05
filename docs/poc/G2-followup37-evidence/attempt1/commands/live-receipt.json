@@ -1,0 +1,78 @@
+{
+  "source_commit": "1a5f405031affcaafbc868ffea7b872cd9425f8f",
+  "source_dirty": false,
+  "invocations": 1,
+  "commands": [
+    {
+      "name": "live-setup",
+      "command": [
+        "make",
+        "-f",
+        "mk/netlab.mk",
+        "netlab-up",
+        "FVPN_LAB_PREFIX=fvpn-w1-netlab-f37"
+      ],
+      "started_at": "2026-11-05T20:32:26.396536+00:00",
+      "elapsed_seconds": 8.138,
+      "exit_code": 0
+    },
+    {
+      "name": "live-parent",
+      "command": [
+        "python3",
+        "-B",
+        "tests/netlab/scripts/disktmp.py",
+        "env",
+        "FVPN_NETLAB=1",
+        "FVPN_LAB_PREFIX=fvpn-w1-netlab-f37",
+        "FVPN_NETLAB_EVIDENCE_DIR=docs/poc/G2-followup37-evidence/live",
+        "go",
+        "test",
+        "-tags",
+        "netlab",
+        "-count=1",
+        "-timeout",
+        "5m",
+        "-p",
+        "1",
+        "-parallel",
+        "1",
+        "-v",
+        "-run",
+        "^TestReviewR15_TcMirredAndPolicyRoutingBypass$",
+        "./tests/netlab"
+      ],
+      "started_at": "2026-11-05T20:32:34.534924+00:00",
+      "elapsed_seconds": 4.523,
+      "exit_code": 1
+    },
+    {
+      "name": "live-cleanup",
+      "command": [
+        "make",
+        "-f",
+        "mk/netlab.mk",
+        "netlab-down",
+        "FVPN_LAB_PREFIX=fvpn-w1-netlab-f37"
+      ],
+      "started_at": "2026-11-05T20:32:39.145800+00:00",
+      "elapsed_seconds": 0.565,
+      "exit_code": 0
+    },
+    {
+      "name": "live-image-cleanup",
+      "command": [
+        "docker",
+        "image",
+        "rm",
+        "fvpn-w1-netlab-f37:lab"
+      ],
+      "started_at": "2026-11-05T20:32:39.710849+00:00",
+      "elapsed_seconds": 0.114,
+      "exit_code": 0
+    }
+  ],
+  "focused_exit_code": 1,
+  "cleanup_exit_code": 0,
+  "image_cleanup_exit_code": 0
+}

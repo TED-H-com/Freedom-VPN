@@ -248,7 +248,7 @@ func startR15Trace(t *testing.T) func() (string, string) {
 	t.Helper()
 	const base = "/scratch/r15-nftrace"
 	const marker = `table inet fvr15trace {
- chain mark {
+ chain trace_probe {
   type filter hook prerouting priority -301; policy accept;
   iifname "fv-fh" ip saddr 100.64.9.9 ip daddr 203.0.113.10 udp sport 40000 udp dport 39996 meta nftrace set 1
  }
