@@ -1810,3 +1810,66 @@ retain the strict bound and assess F22-D146 only in a separately authorized
 owner campaign. The analysis gives dated file/line hand-offs for members,
 enrollment, security-ops, usage, updates and isolation; no outside-path item
 was edited. Preserve the operator AT29 and listed member IPv6 dispositions.
+
+
+## 2026-11-04 — isolation 26 D-141 clone control-path diagnosis and shared fixture fix (follow-up 37)
+
+Fix round 1 answers isolation 26's request to review inherited clone receiver
+wiring in its [Requests to orchestrator](at/isolation/followup26-2026-11-04.md#requests-to-orchestrator).
+The [corrected diagnosis and consumer inventory](runs/2026-11-04/followup37/analysis.md)
+uses committed baseline `b921c75f` evidence and preserves every historical AT verdict.
+
+The static mismatch is supported: the source's observer configures 9445
+(baseline `tests/e2e/at/isolation/observer_main.go:125`), and `candidateConfig`
+inherits that runtime URL (baseline `tests/e2e/harness.go:551-566`). The clone
+copies config and durable data but not `/usr/local/bin`'s observer/wrapper;
+its original image serves 9444 (baseline `tests/e2e/second_exit.go:98`,
+`tests/e2e/second_exit.go:121-142`, `tests/e2e/cmd/fvpn-e2e-nodeconfig/proxy.go:140`).
+The copied runtime config therefore points to an unserved port under this code
+path. No actual clone `connection refused` observation has been identified.
+
+The committed inventory has **30 identity-freeze files**, including three stream
+copies, not 30 independent runs. F7 has 4 total / 3 clone-observation rows;
+F8–F15 including both F10 attempts have 3 / 2, with maximum endpoints 1,
+conflicts 1 and ever-frozen true. Later retained captures have 90 / 90, maximum
+endpoints 1, conflicts 0 and ever-frozen false. Every status is
+`requires receiver correlation`. Read-error rows carrying `clone_observation`
+count as such, not as successful reads. F19's capture is F18's identical blob;
+F19's own run stopped before clone creation. Stream, later `-run` and root copies
+are not independent experiments. The analysis records each external ID/build join.
+
+`freezeIdentity` writes an auxiliary consumer-latch record rather than scoring
+`x.records` (baseline `tests/e2e/at/isolation/driver.go.txt:2673-2678`,
+`tests/e2e/at/isolation/driver.go.txt:2700-2703`). Distinct post-port-change stop
+reviews are F16, F17 and F18 only; F19–F24 and root reuse F18. Recorded clone
+exit code 0 establishes a stop outcome, not control transport. Identified
+agent/watchdog log retention reads only the source; clone fingerprints/stages
+and stop receipts are separate retained data.
+
+Earlier devstack samples are separate: run `12d10041-9d33-4fbb-a4b0-9d2a21bce785`
+in `runs/2026-10-31/followup15/exports/export-clone.json` records endpoints 1,
+conflicts 0 and frozen false at `2026-10-31T04:28:50Z`; its separate
+`clone-conflict.json` records detail strings `conflict_count:"1"` and
+`mapping_frozen:"true"` at `2026-10-31T04:30:11Z`. Enrollment's AT07 sample is
+also from `2026-10-31`. Neither is a new live validation of this fix.
+
+The authorized correction keeps the existing etc-config SNAT updates, preserves
+the portal enrollment URL in both clone and fresh modes, and changes only
+`control_url` in copied release configs to `https://127.0.0.1:9444`. Runtime etc
+config also uses that local URL. JSON is reserialized with non-target values
+unchanged; identity and durable files remain byte-for-byte unchanged. Copied
+release SNAT is an explicit known gap. The correction is committed in `a650a4e3`.
+The single D141 test requires `-tags e2e` and passed in this session with compact
+and formatted config cases, complete JSON-value comparison, durable-byte checks
+and malformed-input refusal. Default no-tag tests do not execute it. No prior
+report output is treated as verification.
+
+### Requests to orchestrator
+
+2026-11-04 — After merge, request a separately authorized isolation run to validate
+the clone transport and consumer latch. Request clone agent/watchdog retention
+around the actual `archiveReceiver` / `agent-stop-sample` stop boundary (baseline
+`tests/e2e/at/isolation/driver.go.txt:2341-2357`). No live pass is claimed here.
+Carry the copied-release-SNAT gap, AT29 guest-clock rollback as
+[operator-run](at29-guest-clock.md), and `member-ipv6` as listed in
+`tests/e2e/nightly_expected_blocked.json`.
