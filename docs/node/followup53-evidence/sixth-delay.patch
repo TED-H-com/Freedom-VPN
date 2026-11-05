@@ -1,0 +1,14 @@
+--- a/node/agent/review_r22_test.go
++++ b/node/agent/review_r22_test.go
+@@ -992,7 +992,11 @@
+ 			t.Fatal(err)
+ 		}
+ 		mHold.Close()
++		head, err := st.Head(t.Context())
++		if err != nil { t.Fatal(err) }
+ 		_ = st.Close()
++		time.Sleep(250 * time.Millisecond) // TEST ONLY scheduling delay
++		t.Logf("diagnosis: wall past checkpoint before Boot=%t", time.Now().After(head.LastSample))
+ 
+ 		next := r20Successor(t, r, cfg, src, r.plane)
+ 		r.eng = next

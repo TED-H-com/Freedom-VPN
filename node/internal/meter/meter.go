@@ -213,6 +213,7 @@ func (m *Meter) sample(ctx context.Context, final bool) error {
 		return ErrBusy
 	}
 	m.sampling = true
+	restart := m.inFinal && !final
 	m.mu.Unlock()
 	defer func() {
 		m.mu.Lock()
@@ -241,7 +242,7 @@ func (m *Meter) sample(ctx context.Context, final bool) error {
 		m.clearSource()
 		return ErrNoEpoch
 	}
-	p, err := planSample(head, obs, m.nowUTC(), m.interval, final)
+	p, err := planSampleWithBarrier(head, obs, m.nowUTC(), m.interval, final, restart)
 	if err != nil {
 		return err
 	}

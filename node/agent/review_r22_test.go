@@ -16,6 +16,7 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/meter"
+	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
 	"github.com/TED-H-com/Freedom-VPN/node/internal/usagestore"
 	"github.com/TED-H-com/Freedom-VPN/node/watchdog"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
@@ -752,14 +753,17 @@ func TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat(t *tes
 		next := r20Successor(t, r, r20ChangedSets(r), src, r.plane)
 		release := make(chan struct{})
 		defer close(release)
+		entered := make(chan f53DeadlineRead, 1)
 		next.meterSource = r21ReadFunc(func(ctx context.Context) (meter.Observation, error) {
+			entered <- f53DeadlineRead{ctx: ctx, errOnEntry: ctx.Err()}
 			<-release
 			return src.Read(ctx)
 		})
 
 		caller, cancel := context.WithCancel(t.Context())
 		cancel()
-		err := next.bootWithBudget(caller, 80*time.Millisecond)
+		err := next.bootWithBudget(caller, bootLocalBudget)
+		f53RequireExpiredLedgerRead(t, entered)
 		if !errors.Is(err, context.Canceled) {
 			t.Fatalf("expected context.Canceled on TERM after baseline, got %v", err)
 		}
@@ -948,7 +952,7 @@ func TestR22_Held_Q1_FreshInstallColdBootAndUncleanRebootBaseline(t *testing.T) 
 }
 
 // What held (Attack Question 2 & 3):
-//  1. When meter.NewContext succeeds on Boot and FinalSample returns ErrHold,
+//  1. With an initialized real meter, when Boot FinalSample returns ErrHold,
 //     retainedPending stays true into Step, blocking syncDesired and enforce
 //     until the clock advances and settleRetainedUsage completes.
 //  2. During adoptStoredServing, e.planeLocked prevents updateLockHeld() from
@@ -960,13 +964,20 @@ func TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeExce
 		r, src, upName := r20ServedPendingDelta(t)
 		cfg := r20ChangedSets(r)
 
-		// Advance LastSample in usage.db by 120ms (< DefaultSampleInterval=10s)
-		// so FinalSample during Boot returns meter.ErrHold after meter.NewContext
-		// succeeds, while the counter advances from 4096 to 8192.
+		// Use a controlled meter clock on both sides of the checkpoint. Disk
+		// and Boot scheduling cannot consume the held interval. The real store
+		// and meter still account for the change from 4096 to 8192.
 		st, err := usagestore.Open(cfg.UsageDBPath(), r.eng.nodeID, r.eng.incID, usagestore.Options{})
 		if err != nil {
 			t.Fatal(err)
 		}
+		head, err := st.Head(t.Context())
+		if err != nil {
+			_ = st.Close()
+			t.Fatal(err)
+		}
+		checkpointAt := head.LastSample.Add(120 * time.Millisecond)
+		meterClock := timeanchor.NewManual(checkpointAt, 0)
 		src4096 := &r20DynamicSource{
 			boot:     r.eng.bootID.String(),
 			bindings: r.eng.meterBindings,
@@ -977,7 +988,7 @@ func TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeExce
 			IncarnationID: r.eng.incID,
 			Store:         st,
 			Source:        src4096,
-			Now:           func() time.Time { return time.Now().UTC().Add(120 * time.Millisecond) },
+			Now:           meterClock.Wall,
 		})
 		if err != nil {
 			_ = st.Close()
@@ -993,6 +1004,28 @@ func TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeExce
 
 		next := r20Successor(t, r, cfg, src, r.plane)
 		r.eng = next
+		// Initialize through the production ownership/constructor path before
+		// Boot, then replace only the meter's clock. ensureUsage is idempotent;
+		// Boot still performs baseline, retained settlement and its heartbeat.
+		if err := next.loadRuntime(t.Context()); err != nil {
+			t.Fatal(err)
+		}
+		next.captureRestartBindings(t.Context())
+		next.retainedPending = true
+		next.ensureUsage(t.Context())
+		if next.meter == nil || !next.usageOnce {
+			t.Fatal("precondition: usage initialization failed")
+		}
+		stopUsageLoops(t, r)
+		next.meter.Close()
+		meterClock.Advance(-time.Millisecond)
+		next.meter, err = meter.New(meter.Config{
+			NodeID: next.nodeID, IncarnationID: next.incID,
+			Store: next.usage, Source: src, Now: meterClock.Wall,
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
 		if err := next.Boot(t.Context()); err != nil {
 			t.Fatal(err)
 		}
@@ -1014,9 +1047,9 @@ func TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeExce
 				next.retainedPending, next.serving, next.desired.ConfigGeneration)
 		}
 
-		// Wait for real wall time to pass head.LastSample: next Step settles
+		// Advance only the meter clock past the checkpoint: next Step settles
 		// Generation 2 (rev 1 = 8192 B) and then syncs and applies Generation 3 (rev 2).
-		time.Sleep(140 * time.Millisecond)
+		meterClock.Advance(2 * time.Millisecond)
 		r.clock.Advance(time.Second)
 		alignControlClock(r)
 		stepOK(t, r)

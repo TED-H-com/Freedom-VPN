@@ -1,0 +1,521 @@
+diff --git a/node/agent/followup38_test.go b/node/agent/followup38_test.go
+index 507379a2..9c091241 100644
+--- a/node/agent/followup38_test.go
++++ b/node/agent/followup38_test.go
+@@ -448,10 +448,9 @@ func TestR21_M2_TermAfterBaselineKeepsNormalStopOnLedgerTimeout(t *testing.T) {
+ 	r, src, _ := r20ServedPendingDelta(t)
+ 	next := r20Successor(t, r, r20ChangedSets(r), src, r.plane)
+ 	release := make(chan struct{})
++	entered := make(chan f53DeadlineRead, 1)
+ 	next.meterSource = r21ReadFunc(func(ctx context.Context) (meter.Observation, error) {
+-		if b, ok := ctx.Value(localBudgetKey{}).(*localBudget); ok && b.cancel != nil {
+-			b.cancel()
+-		}
++		entered <- f53DeadlineRead{ctx: ctx, errOnEntry: ctx.Err()}
+ 		<-release
+ 		return src.Read(ctx)
+ 	})
+@@ -460,6 +459,7 @@ func TestR21_M2_TermAfterBaselineKeepsNormalStopOnLedgerTimeout(t *testing.T) {
+ 	err := next.bootWithBudget(caller, bootLocalBudget)
+ 	close(release)
+ 	<-next.bootDone
++	f53RequireExpiredLedgerRead(t, entered)
+ 	if !errors.Is(err, context.Canceled) || errors.Is(err, ErrBoot) || !next.baselineOK {
+ 		t.Fatalf("completed baseline lost normal TERM status: %v", err)
+ 	}
+diff --git a/node/agent/followup53_test.go b/node/agent/followup53_test.go
+index e71a11f6..cf13bbbe 100644
+--- a/node/agent/followup53_test.go
++++ b/node/agent/followup53_test.go
+@@ -1,8 +1,11 @@
+ package agent
+ 
+ import (
++	"context"
++	"errors"
+ 	"strings"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+ )
+@@ -14,11 +17,13 @@ import (
+ //     internet_only Status = "passed" and Detail = nil) on a stale-lease step.
+ //  2. Because the node previously served a populated generation in the same
+ //     Engine process, e.servingRead is non-nil (retaining the prior generation's
+-//     verified live read) and is not cleared when the node withdraws to baseline.
++//     verified live read in this fixture) and is not cleared on withdrawal.
++//     Apply retains a read only with a nonzero timing timestamp; live verify
++//     retains failed as well as successful reads. This is not an iff theorem.
+ //  3. Engine.report() -> attachServingRead() unconditionally overwrites the
+ //     failed qos check's Detail with "read_at=... source=live candidate=<G> verified=true ...".
+-//  4. Only when e.servingRead is nil (an Engine process that has never run Apply
+-//     or verifyServingModel) does Engine.report() preserve Decide()'s
++//  4. In this fixture, removing e.servingRead lets Engine.report() preserve
++//     Decide()'s
+ //     "Rate policy could not be applied." detail on qos.
+ func TestF53_F1701_StaleLeaseHoldReportQosDetail(t *testing.T) {
+ 	r := newRig(t)
+@@ -78,7 +83,7 @@ func TestF53_F1701_StaleLeaseHoldReportQosDetail(t *testing.T) {
+ 		t.Fatalf("Report source_binding detail: got %q, want %q", detailValue(bindReport), "No member binding was admitted.")
+ 	}
+ 
+-	// Step 3: Only when e.servingRead is nil does Engine.report() preserve Decide()'s
++	// Step 3: With e.servingRead nil, Engine.report() preserves Decide()'s
+ 	// "Rate policy could not be applied." detail on qos.
+ 	savedRead := r.eng.servingRead
+ 	r.eng.servingRead = nil
+@@ -91,3 +96,24 @@ func TestF53_F1701_StaleLeaseHoldReportQosDetail(t *testing.T) {
+ 		t.Fatalf("Report qos detail with nil servingRead: got %q, want %q", detailValue(qosNoRead), "Rate policy could not be applied.")
+ 	}
+ }
++
++// Keep the real ten-second local deadline: a TERM caller is canceled separately.
++// The source stays blocked until Boot returns, and must have entered while its
++// context was live. This distinguishes deadline expiry from manual cancellation.
++type f53DeadlineRead struct {
++	ctx        context.Context
++	errOnEntry error
++}
++
++func f53RequireExpiredLedgerRead(t *testing.T, entered <-chan f53DeadlineRead) {
++	t.Helper()
++	select {
++	case read := <-entered:
++		deadline, ok := read.ctx.Deadline()
++		if read.errOnEntry != nil || !ok || time.Now().Before(deadline) || !errors.Is(read.ctx.Err(), context.DeadlineExceeded) {
++			t.Fatalf("ledger stage must start live then expire: entry=%v deadline=%v err=%v", read.errOnEntry, ok, read.ctx.Err())
++		}
++	default:
++		t.Fatal("Boot deadline expired before entering the ledger stage")
++	}
++}
+diff --git a/node/agent/local_budget.go b/node/agent/local_budget.go
+index dd97e544..0cf7417b 100644
+--- a/node/agent/local_budget.go
++++ b/node/agent/local_budget.go
+@@ -12,14 +12,13 @@ type localBudget struct {
+ 	quarantineAttempted bool
+ 	quarantineBaseline  bool
+ 	ctx                 context.Context
+-	cancel              context.CancelFunc
+ 	quarantine          context.Context
+ 	cancelQuarantine    context.CancelFunc
+ }
+ 
+ func newLocalBudget(parent context.Context, timeout time.Duration) (context.Context, context.CancelFunc) {
+ 	ctx, cancel := context.WithTimeout(context.WithoutCancel(parent), timeout)
+-	budget := &localBudget{cancel: cancel}
++	budget := &localBudget{}
+ 	ctx = context.WithValue(ctx, localBudgetKey{}, budget)
+ 	budget.ctx = ctx
+ 	return ctx, func() {
+diff --git a/node/agent/review_r22_test.go b/node/agent/review_r22_test.go
+index 31410ad7..b7a2c555 100644
+--- a/node/agent/review_r22_test.go
++++ b/node/agent/review_r22_test.go
+@@ -16,6 +16,7 @@ import (
+ 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
+ 	"github.com/TED-H-com/Freedom-VPN/node/internal/healthattest"
+ 	"github.com/TED-H-com/Freedom-VPN/node/internal/meter"
++	"github.com/TED-H-com/Freedom-VPN/node/internal/timeanchor"
+ 	"github.com/TED-H-com/Freedom-VPN/node/internal/usagestore"
+ 	"github.com/TED-H-com/Freedom-VPN/node/watchdog"
+ 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+@@ -752,10 +753,9 @@ func TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat(t *tes
+ 		next := r20Successor(t, r, r20ChangedSets(r), src, r.plane)
+ 		release := make(chan struct{})
+ 		defer close(release)
++		entered := make(chan f53DeadlineRead, 1)
+ 		next.meterSource = r21ReadFunc(func(ctx context.Context) (meter.Observation, error) {
+-			if b, ok := ctx.Value(localBudgetKey{}).(*localBudget); ok && b.cancel != nil {
+-				b.cancel()
+-			}
++			entered <- f53DeadlineRead{ctx: ctx, errOnEntry: ctx.Err()}
+ 			<-release
+ 			return src.Read(ctx)
+ 		})
+@@ -763,6 +763,7 @@ func TestR22_M3_FailedOrTimedOutBootAndProbeClearLeaveUntruthfulHeartbeat(t *tes
+ 		caller, cancel := context.WithCancel(t.Context())
+ 		cancel()
+ 		err := next.bootWithBudget(caller, bootLocalBudget)
++		f53RequireExpiredLedgerRead(t, entered)
+ 		if !errors.Is(err, context.Canceled) {
+ 			t.Fatalf("expected context.Canceled on TERM after baseline, got %v", err)
+ 		}
+@@ -951,7 +952,7 @@ func TestR22_Held_Q1_FreshInstallColdBootAndUncleanRebootBaseline(t *testing.T)
+ }
+ 
+ // What held (Attack Question 2 & 3):
+-//  1. When meter.NewContext succeeds on Boot and FinalSample returns ErrHold,
++//  1. With an initialized real meter, when Boot FinalSample returns ErrHold,
+ //     retainedPending stays true into Step, blocking syncDesired and enforce
+ //     until the clock advances and settleRetainedUsage completes.
+ //  2. During adoptStoredServing, e.planeLocked prevents updateLockHeld() from
+@@ -963,13 +964,20 @@ func TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeExce
+ 		r, src, upName := r20ServedPendingDelta(t)
+ 		cfg := r20ChangedSets(r)
+ 
+-		// Advance LastSample in usage.db by 120ms (< DefaultSampleInterval=10s)
+-		// so FinalSample during Boot returns meter.ErrHold after meter.NewContext
+-		// succeeds, while the counter advances from 4096 to 8192.
++		// Use a controlled meter clock on both sides of the checkpoint. Disk
++		// and Boot scheduling cannot consume the held interval. The real store
++		// and meter still account for the change from 4096 to 8192.
+ 		st, err := usagestore.Open(cfg.UsageDBPath(), r.eng.nodeID, r.eng.incID, usagestore.Options{})
+ 		if err != nil {
+ 			t.Fatal(err)
+ 		}
++		head, err := st.Head(t.Context())
++		if err != nil {
++			_ = st.Close()
++			t.Fatal(err)
++		}
++		checkpointAt := head.LastSample.Add(120 * time.Millisecond)
++		meterClock := timeanchor.NewManual(checkpointAt, 0)
+ 		src4096 := &r20DynamicSource{
+ 			boot:     r.eng.bootID.String(),
+ 			bindings: r.eng.meterBindings,
+@@ -980,7 +988,7 @@ func TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeExce
+ 			IncarnationID: r.eng.incID,
+ 			Store:         st,
+ 			Source:        src4096,
+-			Now:           func() time.Time { return time.Now().UTC().Add(120 * time.Millisecond) },
++			Now:           meterClock.Wall,
+ 		})
+ 		if err != nil {
+ 			_ = st.Close()
+@@ -996,6 +1004,28 @@ func TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeExce
+ 
+ 		next := r20Successor(t, r, cfg, src, r.plane)
+ 		r.eng = next
++		// Initialize through the production ownership/constructor path before
++		// Boot, then replace only the meter's clock. ensureUsage is idempotent;
++		// Boot still performs baseline, retained settlement and its heartbeat.
++		if err := next.loadRuntime(t.Context()); err != nil {
++			t.Fatal(err)
++		}
++		next.captureRestartBindings(t.Context())
++		next.retainedPending = true
++		next.ensureUsage(t.Context())
++		if next.meter == nil || !next.usageOnce {
++			t.Fatal("precondition: usage initialization failed")
++		}
++		stopUsageLoops(t, r)
++		next.meter.Close()
++		meterClock.Advance(-time.Millisecond)
++		next.meter, err = meter.New(meter.Config{
++			NodeID: next.nodeID, IncarnationID: next.incID,
++			Store: next.usage, Source: src, Now: meterClock.Wall,
++		})
++		if err != nil {
++			t.Fatal(err)
++		}
+ 		if err := next.Boot(t.Context()); err != nil {
+ 			t.Fatal(err)
+ 		}
+@@ -1017,9 +1047,9 @@ func TestR22_Held_Q2_Q3_HeldFinalSampleWaitsInStepAndAdoptionSuppressesProbeExce
+ 				next.retainedPending, next.serving, next.desired.ConfigGeneration)
+ 		}
+ 
+-		// Wait for real wall time to pass head.LastSample: next Step settles
++		// Advance only the meter clock past the checkpoint: next Step settles
+ 		// Generation 2 (rev 1 = 8192 B) and then syncs and applies Generation 3 (rev 2).
+-		time.Sleep(140 * time.Millisecond)
++		meterClock.Advance(2 * time.Millisecond)
+ 		r.clock.Advance(time.Second)
+ 		alignControlClock(r)
+ 		stepOK(t, r)
+diff --git a/node/agent/review_r29_test.go b/node/agent/review_r29_test.go
+index ccdf28d1..6e59d122 100644
+--- a/node/agent/review_r29_test.go
++++ b/node/agent/review_r29_test.go
+@@ -222,23 +222,21 @@ func TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery(t *t
+ 	}
+ 	chDest := filepath.Join(cfg.JournalDir, healthattest.ChallengeFile)
+ 	attDest := filepath.Join(cfg.JournalDir, healthattest.AttestationFile)
++	bootReturned := filepath.Join(dir, "boot-returned")
+ 	script := fmt.Sprintf(`#!/bin/sh
+ set -eu
+ exec 9>>%q
+ flock -n 9
+ cp %q %q
+ chmod 0600 %q
+-i=0
+-while [ "$i" -lt 40 ]; do
+-	if [ -f %q ]; then
++while :; do
++	if [ -f %q ] && [ -f %q ]; then
+ 		rm -f %q
+ 		exit 0
+ 	fi
+ 	sleep 0.05
+-	i=$((i + 1))
+ done
+-exit 1
+-`, cfg.LockPath, chSource, chDest, chDest, attDest, blockedPath)
++`, cfg.LockPath, chSource, chDest, chDest, attDest, bootReturned, blockedPath)
+ 	if err := os.WriteFile(scriptPath, []byte(script), 0o755); err != nil {
+ 		t.Fatal(err)
+ 	}
+@@ -258,13 +256,16 @@ exit 1
+ 	}
+ 	defer cand.Close()
+ 
+-	// Boot uses bootLocalBudget (10s < the script's 15s wait and production's
+-	// HealthAttestWait=30s): if recoverOnce blocks synchronously inside Boot
+-	// before answerHealthOnBoot/Step can run, Boot times out with ErrBoot and
+-	// kills the recovery process before health-attest.json is written.
++	// The child cannot complete until Boot returns AND supplies its attestation.
++	// A synchronous recoverOnce therefore exhausts Boot's actual local budget;
++	// there is no helper timeout that could accidentally break the dependency.
++	// Close cancels and joins the child on every return path, including failure.
+ 	if err := cand.Boot(context.Background()); err != nil {
+ 		t.Fatalf("Boot self-deadlocked waiting for synchronous recoverOnce to receive health-attest.json from this same agent: %v", err)
+ 	}
++	if err := os.WriteFile(bootReturned, nil, 0o600); err != nil {
++		t.Fatal(err)
++	}
+ 	for i := 0; i < 200 && (cand.recoverBlocked || cand.latchBlocked); i++ {
+ 		if err := cand.Step(context.Background()); err != nil {
+ 			t.Fatal(err)
+diff --git a/node/internal/meter/followup53_test.go b/node/internal/meter/followup53_test.go
+new file mode 100644
+index 00000000..0d179e18
+--- /dev/null
++++ b/node/internal/meter/followup53_test.go
+@@ -0,0 +1,234 @@
++package meter
++
++import (
++	"context"
++	"errors"
++	"reflect"
++	"testing"
++	"time"
++
++	"github.com/TED-H-com/Freedom-VPN/node/internal/usagestore"
++	"github.com/TED-H-com/Freedom-VPN/pkg/api"
++	"github.com/google/uuid"
++)
++
++// TEST ONLY: start with an accounted, sealed interval and two counter identities.
++func f53Accounted(t *testing.T) (*Meter, *usagestore.Store, *fakeSrc, *clock, usagestore.Head, usagestore.StoredEvent) {
++	t.Helper()
++	clk := &clock{t: time.Date(2026, 11, 4, 0, 0, 0, 0, time.UTC)}
++	src := &fakeSrc{}
++	src.set(observe("boot", reading{dev: devA, mem: memA, rev: 1}, reading{dev: devB, mem: memB, rev: 2}))
++	m, s := start(t, src, clk, usagestore.Options{})
++	clk.Set(clk.Now().Add(10 * time.Second))
++	src.set(observe("boot", reading{dev: devA, mem: memA, rev: 1, upB: 100, upP: 1}, reading{dev: devB, mem: memB, rev: 2, upB: 200, upP: 2}))
++	if err := m.Sample(t.Context()); err != nil {
++		t.Fatal(err)
++	}
++	h, err := s.Head(t.Context())
++	if err != nil {
++		t.Fatal(err)
++	}
++	ev, err := s.Event(t.Context(), 1)
++	if err != nil {
++		t.Fatal(err)
++	}
++	accounted := loadEvent(t, s, 1)
++	if len(accounted.Records) != 2 || accounted.Quality != api.UsageQualityComplete {
++		t.Fatalf("precondition event: %+v", accounted)
++	}
++	var sum uint64
++	for _, r := range accounted.Records {
++		sum += uint64(r.UploadBytes)
++	}
++	if sum != 300 || h.NextSeq != 2 {
++		t.Fatalf("precondition bytes=%d next=%d", sum, h.NextSeq)
++	}
++	return m, s, src, clk, h, ev
++}
++
++func f53Unchanged(t *testing.T, s *usagestore.Store, h usagestore.Head, ev usagestore.StoredEvent) {
++	t.Helper()
++	got, err := s.Head(t.Context())
++	if err != nil {
++		t.Fatal(err)
++	}
++	if !reflect.DeepEqual(got, h) {
++		t.Fatalf("checkpoint changed ledger head: before=%+v after=%+v", h, got)
++	}
++	f53Sealed(t, s, ev)
++	if _, err := s.Event(t.Context(), h.NextSeq); err == nil {
++		t.Fatal("unchanged/held checkpoint minted an event")
++	}
++}
++
++func f53Sealed(t *testing.T, s *usagestore.Store, ev usagestore.StoredEvent) {
++	t.Helper()
++	got, err := s.Event(t.Context(), ev.Seq)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if !reflect.DeepEqual(got, ev) {
++		t.Fatalf("sealed event changed: before=%+v after=%+v", ev, got)
++	}
++}
++
++func TestMTR03_RestartCheckpointClockBoundaries(t *testing.T) {
++	for _, rollback := range []time.Duration{0, time.Microsecond, 5 * time.Second, DefaultSampleInterval} {
++		t.Run(rollback.String(), func(t *testing.T) {
++			m, s, src, clk, h, ev := f53Accounted(t)
++			clk.Set(h.LastSample.Add(-rollback))
++			if err := m.Sample(t.Context()); !errors.Is(err, ErrHold) {
++				t.Fatalf("ordinary Sample: %v, want ErrHold", err)
++			}
++			f53Unchanged(t, s, h, ev)
++			if err := m.CheckpointForRestart(t.Context()); err != nil {
++				t.Fatalf("unchanged restart within interval: %v", err)
++			}
++			f53Unchanged(t, s, h, ev)
++			src.set(observe("boot", reading{dev: devA, mem: memA, rev: 1, upB: 101, upP: 2}, reading{dev: devB, mem: memB, rev: 2, upB: 200, upP: 2}))
++			if err := m.CheckpointForRestart(t.Context()); !errors.Is(err, ErrHold) {
++				t.Fatalf("changed restart: %v, want ErrHold", err)
++			}
++			if err := m.FinalSample(t.Context()); !errors.Is(err, ErrHold) {
++				t.Fatalf("changed FinalSample: %v, want ErrHold", err)
++			}
++			f53Unchanged(t, s, h, ev)
++			// The held byte is attributed once when time advances, then an unchanged
++			// FinalSample at the same instant closes without another event.
++			clk.Set(h.LastSample.Add(time.Second))
++			if err := m.CheckpointForRestart(t.Context()); err != nil {
++				t.Fatal(err)
++			}
++			delta := loadEvent(t, s, h.NextSeq)
++			if delta.Quality != api.UsageQualityComplete || len(delta.Records) != 1 || delta.Records[0].MemberId != memA || uint64(delta.Records[0].BindingRevision) != 1 || uint64(delta.Records[0].UploadBytes) != 1 {
++				t.Fatalf("pending delta: %+v", delta)
++			}
++			before, err := s.Head(t.Context())
++			if err != nil {
++				t.Fatal(err)
++			}
++			if before.OpenEpoch != h.OpenEpoch || before.NextSeq != h.NextSeq+1 {
++				t.Fatalf("restart cursor: %+v", before)
++			}
++			if err := m.FinalSample(t.Context()); err != nil {
++				t.Fatal(err)
++			}
++			after, err := s.Head(t.Context())
++			if err != nil {
++				t.Fatal(err)
++			}
++			if after.OpenEpoch != uuid.Nil || after.LastCloseReason != "final_sample" || after.NextSeq != before.NextSeq || !after.LastSample.Equal(before.LastSample) || len(after.Counters) != 0 || after.AckedThrough != h.AckedThrough || after.LedgerEpoch != h.LedgerEpoch {
++				t.Fatalf("final cursor: before=%+v after=%+v", before, after)
++			}
++			f53Sealed(t, s, ev)
++		})
++	}
++}
++
++func TestMTR03_RestartCheckpointOutsideClockWindow(t *testing.T) {
++	for _, operation := range []string{"sample", "restart", "final"} {
++		t.Run(operation, func(t *testing.T) {
++			m, s, _, clk, h, ev := f53Accounted(t)
++			clk.Set(h.LastSample.Add(-DefaultSampleInterval - time.Nanosecond))
++			call := map[string]func(context.Context) error{"sample": m.Sample, "restart": m.CheckpointForRestart, "final": m.FinalSample}[operation]
++			if err := call(t.Context()); err != nil {
++				t.Fatal(err)
++			}
++			after, err := s.Head(t.Context())
++			if err != nil {
++				t.Fatal(err)
++			}
++			gap := loadEvent(t, s, h.NextSeq)
++			if gap.Quality != api.UsageQualityGap || gap.Gap == nil || gap.Gap.Reason != api.UsageGapReasonClockAnomaly || len(gap.Records) != 0 || gap.IntervalEnd.Sub(gap.IntervalStart) != time.Microsecond || !gap.IntervalStart.Equal(h.LastSample) {
++				t.Fatalf("outside-window gap: %+v", gap)
++			}
++			wantEpoch := h.OpenEpoch
++			if operation == "final" {
++				wantEpoch = uuid.Nil
++			}
++			if after.OpenEpoch != wantEpoch || after.NextSeq != h.NextSeq+1 || !after.LastSample.Equal(gap.IntervalEnd) || (operation != "final" && !reflect.DeepEqual(after.Counters, h.Counters)) || (operation == "final" && len(after.Counters) != 0) || after.AckedThrough != h.AckedThrough || after.LedgerEpoch != h.LedgerEpoch {
++				t.Fatalf("outside-window cursor: %+v", after)
++			}
++			if operation == "final" && after.LastCloseReason != "final_sample" {
++				t.Fatalf("final reason: %+v", after)
++			}
++			f53Sealed(t, s, ev)
++		})
++	}
++}
++
++func TestMTR03_RestartCheckpointResetAndIdentityPrecedence(t *testing.T) {
++	for _, kind := range []string{"boot", "counter", "binding"} {
++		t.Run(kind, func(t *testing.T) {
++			m, s, src, clk, h, ev := f53Accounted(t)
++			clk.Set(h.LastSample.Add(-time.Second))
++			switch kind {
++			case "boot":
++				src.set(observe("next-boot", reading{dev: devA, mem: memA, rev: 1, upB: 100, upP: 1}, reading{dev: devB, mem: memB, rev: 2, upB: 200, upP: 2}))
++			case "counter":
++				src.set(observe("boot", reading{dev: devA, mem: memA, rev: 1, upB: 1, upP: 0}, reading{dev: devB, mem: memB, rev: 2, upB: 220, upP: 3}))
++			case "binding":
++				src.set(observe("boot", reading{dev: devA, mem: memB, rev: 3, upB: 100, upP: 1}, reading{dev: devB, mem: memB, rev: 2, upB: 200, upP: 2}))
++			}
++			if err := m.CheckpointForRestart(t.Context()); err != nil {
++				t.Fatal(err)
++			}
++			if kind == "binding" {
++				// Equal numeric readings must not silently replace historical attribution.
++				f53Unchanged(t, s, h, ev)
++				clk.Set(h.LastSample.Add(time.Second))
++				src.set(observe("boot", reading{dev: devA, mem: memB, rev: 3, upB: 101, upP: 2}, reading{dev: devB, mem: memB, rev: 2, upB: 200, upP: 2}))
++				if err := m.CheckpointForRestart(t.Context()); err != nil {
++					t.Fatal(err)
++				}
++				gap := loadEvent(t, s, h.NextSeq)
++				if gap.Quality != api.UsageQualityGap || gap.Gap == nil || gap.Gap.Reason != api.UsageGapReasonUnknown || len(gap.Records) != 0 {
++					t.Fatalf("identity change claimed bytes: %+v", gap)
++				}
++			} else {
++				after, err := s.Head(t.Context())
++				if err != nil {
++					t.Fatal(err)
++				}
++				wantReason := api.UsageGapReasonCounterDiscontinuity
++				if kind == "boot" {
++					wantReason = api.UsageGapReasonPowerLoss
++				}
++				gap := loadEvent(t, s, h.NextSeq)
++				if after.OpenEpoch == h.OpenEpoch || after.OpenEpoch == uuid.Nil || after.NextSeq != h.NextSeq+1 || gap.Gap == nil || gap.Gap.Reason != wantReason || gap.MeterEpochId != h.OpenEpoch {
++					t.Fatalf("reset must precede hold: head=%+v gap=%+v", after, gap)
++				}
++				if kind == "boot" && (len(gap.Records) != 0 || after.BootID != "next-boot") {
++					t.Fatalf("boot discontinuity: %+v %+v", after, gap)
++				}
++				if kind == "counter" && (len(gap.Records) != 1 || gap.Records[0].DeviceId != devB || uint64(gap.Records[0].UploadBytes) != 20) {
++					t.Fatalf("reset lost neighboring delta: %+v", gap)
++				}
++				if !reflect.DeepEqual(after.Counters, usageCounters(src.obs)) {
++					t.Fatalf("reset checkpoint counters: %+v", after.Counters)
++				}
++			}
++			f53Sealed(t, s, ev)
++		})
++	}
++}
++
++func TestMTR03_FinalSampleUnchangedRollback(t *testing.T) {
++	m, s, _, clk, h, ev := f53Accounted(t)
++	clk.Set(h.LastSample.Add(-5 * time.Second))
++	if err := m.FinalSample(t.Context()); err != nil {
++		t.Fatal(err)
++	}
++	after, err := s.Head(t.Context())
++	if err != nil {
++		t.Fatal(err)
++	}
++	checkpoint, err := s.ClosedCheckpoint(t.Context())
++	if err != nil {
++		t.Fatal(err)
++	}
++	if after.OpenEpoch != uuid.Nil || after.LastCloseReason != "final_sample" || after.NextSeq != h.NextSeq || !after.LastSample.Equal(h.LastSample) || len(after.Counters) != 0 || checkpoint.ClosedMeterEpochID != h.OpenEpoch.String() || uint64(checkpoint.LastDurableEventSeq) != h.NextSeq-1 || uint64(checkpoint.CentralAckedThrough) != h.AckedThrough {
++		t.Fatalf("closed checkpoint: head=%+v checkpoint=%+v", after, checkpoint)
++	}
++	f53Sealed(t, s, ev)
++}

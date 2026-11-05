@@ -165,15 +165,23 @@ func TestR23_H1a_EpochSwitchDuringServing_InvalidatesUsageIntentAndCreatesFalseC
 // into an unknown_device gap.
 func TestR23_H1b_GuardMissingIdleCounter_EpochSwitchKeepsAdoption(t *testing.T) {
 	r23H1b(t, false)
+	t.Run("exact_microsecond_clock", func(t *testing.T) {
+		r23H1b(t, false, true)
+	})
 }
 
-func r23H1b(t *testing.T, idleZero bool) {
+func r23H1b(t *testing.T, idleZero bool, exactMicro ...bool) {
 	// Regression r23: H-1 (R23-H-1) — When the open usage epoch advances while
 	// serving a multi-device generation, usage_apply_intent remains on E1; on a
 	// same-boot restart after devB becomes active in E2, restartHeadBindings
 	// drops devB, adoptStoredServing refuses adoption, and settleRetainedUsage
 	// turns devB's E2 traffic into an unknown_device gap.
 	r := newRig(t)
+	if len(exactMicro) > 0 && exactMicro[0] {
+		if rem := r.clock.Wall().Nanosecond() % 1000; rem != 0 {
+			r.clock.Advance(time.Duration(1000-rem) * time.Nanosecond)
+		}
+	}
 	alignControlClock(r)
 	r.srv.StickyLease(false)
 	r.eng.prober = &verProbe{version: "0.76.2"}

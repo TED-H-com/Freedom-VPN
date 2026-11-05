@@ -448,12 +448,18 @@ func TestR21_M2_TermAfterBaselineKeepsNormalStopOnLedgerTimeout(t *testing.T) {
 	r, src, _ := r20ServedPendingDelta(t)
 	next := r20Successor(t, r, r20ChangedSets(r), src, r.plane)
 	release := make(chan struct{})
-	next.meterSource = r21ReadFunc(func(ctx context.Context) (meter.Observation, error) { <-release; return src.Read(ctx) })
+	entered := make(chan f53DeadlineRead, 1)
+	next.meterSource = r21ReadFunc(func(ctx context.Context) (meter.Observation, error) {
+		entered <- f53DeadlineRead{ctx: ctx, errOnEntry: ctx.Err()}
+		<-release
+		return src.Read(ctx)
+	})
 	caller, cancel := context.WithCancel(t.Context())
 	cancel()
-	err := next.bootWithBudget(caller, 100*time.Millisecond)
+	err := next.bootWithBudget(caller, bootLocalBudget)
 	close(release)
 	<-next.bootDone
+	f53RequireExpiredLedgerRead(t, entered)
 	if !errors.Is(err, context.Canceled) || errors.Is(err, ErrBoot) || !next.baselineOK {
 		t.Fatalf("completed baseline lost normal TERM status: %v", err)
 	}
