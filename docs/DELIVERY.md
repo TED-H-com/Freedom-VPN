@@ -1,5 +1,7 @@
 # Freedom VPN 交付導覽
 
+[English](DELIVERY.en.md) · **繁體中文** · [專案簡介](../README.zh-TW.md)
+
 Freedom VPN 以自架 NetBird 和官方 App 為基礎，提供會員、出口節點與日常維運管理。
 這次收尾保留已建立的會員、計量、限速與更新功能，集中完成整合、必要修正和文件整理。
 

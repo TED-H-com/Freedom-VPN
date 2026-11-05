@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Freedom VPN — A self-hosted member VPN platform</title>
+    <meta
+      name="description"
+      content="Manage members, usage, policies and Ubuntu exit nodes on self-hosted NetBird with its official apps. Freedom VPN is in development and validation, not ready for production."
+    />
+    <meta name="theme-color" content="#f8fafc" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Freedom VPN" />
+    <meta
+      property="og:title"
+      content="Freedom VPN — A self-hosted member VPN platform"
+    />
+    <meta
+      property="og:description"
+      content="Manage members, usage, policies and Ubuntu exit nodes on self-hosted NetBird with its official apps. Freedom VPN is in development and validation, not ready for production."
+    />
+    <meta
+      property="og:url"
+      content="https://ted-h-com.github.io/Freedom-VPN/en/"
+    />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="zh_TW" />
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:title"
+      content="Freedom VPN — A self-hosted member VPN platform"
+    />
+    <meta
+      name="twitter:description"
+      content="Manage members, usage, policies and Ubuntu exit nodes on self-hosted NetBird with its official apps. Freedom VPN is in development and validation, not ready for production."
+    />
+    <link rel="canonical" href="https://ted-h-com.github.io/Freedom-VPN/en/" />
+    <link
+      rel="alternate"
+      hreflang="zh-TW"
+      href="https://ted-h-com.github.io/Freedom-VPN/"
+    />
+    <link
+      rel="alternate"
+      hreflang="en"
+      href="https://ted-h-com.github.io/Freedom-VPN/en/"
+    />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href="https://ted-h-com.github.io/Freedom-VPN/"
+    />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body id="top">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="../" aria-label="Freedom VPN"
+          ><img src="../favicon.svg" width="32" height="32" alt="" />Freedom
+          VPN</a
+        >
+        <nav class="main-nav" aria-label="Main navigation">
+          <a href="#overview">Overview</a
+          ><a href="#capabilities">Capabilities</a
+          ><a href="#clients">Apps & platforms</a><a href="#docs">Docs</a>
+        </nav>
+        <nav class="language-nav" aria-label="Language">
+          <a href="../" lang="zh-TW" hreflang="zh-TW">繁中</a
+          ><a href="./" lang="en" hreflang="en" aria-current="page">EN</a>
+        </nav>
+      </div>
+    </header>
+    <main id="main">
+      <section
+        class="hero container"
+        id="overview"
+        aria-labelledby="hero-title"
+      >
+        <div class="hero-copy">
+          <p class="eyebrow">Open-source member VPN platform</p>
+          <h1 id="hero-title">Your nodes.<br /><span>One member VPN.</span></h1>
+          <p class="hero-intro">
+            Freedom VPN brings Ubuntu exit nodes across locations into one
+            membership, usage, policy and operations workflow, built on
+            self-hosted NetBird and its official apps.
+          </p>
+          <div class="actions">
+            <a
+              class="button primary"
+              href="https://github.com/TED-H-com/Freedom-VPN"
+              >View source on GitHub<span aria-hidden="true"> ↗</span></a
+            ><a
+              class="text-link"
+              href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/DELIVERY.en.md"
+              >Read the delivery guide<span aria-hidden="true"> ↗</span></a
+            >
+          </div>
+          <a class="readiness" href="#status"
+            ><span class="status-dot" aria-hidden="true"></span
+            ><span
+              ><strong>Development & validation</strong
+              ><span>Not ready for production</span></span
+            ><span aria-hidden="true">↘</span></a
+          >
+        </div>
+        <figure
+          class="architecture"
+          id="architecture"
+          aria-labelledby="architecture-title"
+        >
+          <div class="figure-heading">
+            <span class="eyebrow" id="architecture-title"
+              >Layered architecture</span
+            ><span class="figure-id" aria-hidden="true">F / 01</span>
+          </div>
+          <p class="figure-description">
+            Control and traffic have separate paths
+          </p>
+          <div class="control-plane">
+            <span class="diagram-label">Member & node control</span
+            ><strong>Freedom VPN</strong>
+            <p>Membership · Usage ledger · Policy · Updates</p>
+            <small
+              >Admin / Member Portal → Control API · Worker · PostgreSQL</small
+            >
+          </div>
+          <div class="control-connector">
+            <span>Configuration and observed state</span>
+          </div>
+          <div class="execution-layer">
+            <div>
+              <span class="diagram-label">Connection coordination</span
+              ><strong>NetBird CE</strong
+              ><small>Identity, peers & exit routes</small>
+            </div>
+            <div>
+              <span class="diagram-label">Node execution</span
+              ><strong>Agent + Updater</strong
+              ><small>Isolation, metering, shaping & updates</small>
+            </div>
+          </div>
+          <div class="traffic-layer">
+            <span class="diagram-label">Member Internet traffic</span>
+            <div class="traffic-flow">
+              <strong>Official app</strong><span aria-hidden="true">→</span
+              ><strong>Ubuntu exit</strong><span aria-hidden="true">→</span
+              ><strong>Internet</strong>
+            </div>
+            <small>WireGuard tunnel; self-hosted Relay when needed</small>
+          </div>
+          <figcaption>
+            Architecture schematic: the central API manages identity and
+            configuration. Ordinary member Internet traffic does not pass
+            through it.
+          </figcaption>
+        </figure>
+      </section>
+      <section class="usecases container" aria-labelledby="uses-title">
+        <h2 class="eyebrow" id="uses-title">
+          One platform, three everyday roles
+        </h2>
+        <div class="use-grid">
+          <div class="use">
+            <h3>Members</h3>
+            <p>
+              Sign in, manage devices and review eligibility and usage, then
+              manually select an authorized exit in the official app.
+            </p>
+          </div>
+          <div class="use">
+            <h3>Administrators</h3>
+            <p>
+              Manage members and exit nodes. Follow publication, access
+              withdrawal and the observed results of asynchronous operations.
+            </p>
+          </div>
+          <div class="use">
+            <h3>Operators</h3>
+            <p>
+              Deploy central services and nodes, apply signed updates, and
+              follow runbooks for backup and recovery.
+            </p>
+          </div>
+        </div>
+      </section>
+      <section
+        class="section container"
+        id="capabilities"
+        aria-labelledby="cap-title"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Existing implementation scope</p>
+            <h2 id="cap-title">
+              From joining the service<br />to maintaining every exit.
+            </h2>
+          </div>
+          <p>
+            NetBird supplies the overlay and existing clients. Freedom VPN adds
+            service management and enforcement through upstream APIs and the
+            CLI. Acceptance records define how far each capability is validated.
+          </p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature">
+            <span class="index" aria-hidden="true">01</span>
+            <div>
+              <h3>Membership & subscriptions</h3>
+              <p>
+                Member and administrator portals, subscription integration,
+                device authorization and revocation. Login and valid service
+                entitlement are separate checks.
+              </p>
+              <a
+                class="text-link"
+                href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/members/README.md"
+                >Membership docs<span aria-hidden="true"> ↗</span></a
+              >
+            </div>
+          </article>
+          <article class="feature">
+            <span class="index" aria-hidden="true">02</span>
+            <div>
+              <h3>Exit-node lifecycle</h3>
+              <p>
+                Enroll, name, publish, disable and revoke nodes. Enrollment
+                brings a node under management; publishing an exit is a separate
+                step.
+              </p>
+              <a
+                class="text-link"
+                href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/nodes/README.md"
+                >Node management<span aria-hidden="true"> ↗</span></a
+              >
+            </div>
+          </article>
+          <article class="feature">
+            <span class="index" aria-hidden="true">03</span>
+            <div>
+              <h3>Usage & fair use</h3>
+              <p>
+                Aggregate a member’s usage across devices and exits, retain
+                durable metering events, and apply shaping through versioned
+                fair-use policies.
+              </p>
+              <a
+                class="text-link"
+                href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/usage/README.md"
+                >Usage & ledger<span aria-hidden="true"> ↗</span></a
+              >
+            </div>
+          </article>
+          <article class="feature">
+            <span class="index" aria-hidden="true">04</span>
+            <div>
+              <h3>Internet-only isolation</h3>
+              <p>
+                Server-side enforcement restricts member forwarding and blocks
+                host, upstream private-network and unauthorized cross-member
+                access. Enforcement failure stops forwarding.
+              </p>
+              <a
+                class="text-link"
+                href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/e2e/at/isolation/summary.md"
+                >Isolation acceptance<span aria-hidden="true"> ↗</span></a
+              >
+            </div>
+          </article>
+          <article class="feature">
+            <span class="index" aria-hidden="true">05</span>
+            <div>
+              <h3>DNS & domain policies</h3>
+              <p>
+                Manage malicious-domain protection and custom block and allow
+                lists. DNS policy has limits; it is not full-URL filtering or
+                TLS interception.
+              </p>
+              <a
+                class="text-link"
+                href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/dns/DESIGN.md"
+                >DNS design<span aria-hidden="true"> ↗</span></a
+              >
+            </div>
+          </article>
+          <article class="feature">
+            <span class="index" aria-hidden="true">06</span>
+            <div>
+              <h3>Signed updates & recovery</h3>
+              <p>
+                Assign target releases, verify packages, check health and
+                recover from update failures. Requested state and observed
+                results stay distinct.
+              </p>
+              <a
+                class="text-link"
+                href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/handover/restore-drill.md"
+                >Restore drill<span aria-hidden="true"> ↗</span></a
+              >
+            </div>
+          </article>
+        </div>
+      </section>
+      <section
+        class="client-section"
+        id="clients"
+        aria-labelledby="client-title"
+      >
+        <div class="container client-grid">
+          <div>
+            <p class="eyebrow">The member connection path</p>
+            <h2 id="client-title">Use the official NetBird apps.</h2>
+            <p class="section-intro">
+              The member portal handles accounts and devices. Official apps
+              handle VPN connections and exit selection. This project does not
+              ship its own branded client.
+            </p>
+            <ol class="steps">
+              <li>
+                <h3>Check service entitlement</h3>
+                <p>
+                  Sign in to the member portal and review the plan, device
+                  allowance and available exits.
+                </p>
+              </li>
+              <li>
+                <h3>Connect to self-hosted management</h3>
+                <p>
+                  Follow the member guide to set the NetBird management URL and
+                  sign in with the same OIDC identity.
+                </p>
+              </li>
+              <li>
+                <h3>Select an authorized exit</h3>
+                <p>
+                  After device authorization, manually choose an exit in the
+                  official app. Review usage and fair-use status in the member
+                  portal.
+                </p>
+              </li>
+            </ol>
+            <a
+              class="text-link"
+              href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/handover/member-guide.md"
+              >Member guide<span aria-hidden="true"> ↗</span></a
+            >
+          </div>
+          <div class="platforms">
+            <h3>Platform validation boundaries</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Platform</th>
+                  <th scope="col">Current scope</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">Windows / macOS</th>
+                  <td>Official apps; real-device acceptance pending</td>
+                </tr>
+                <tr>
+                  <th scope="row">Android / iOS</th>
+                  <td>Official apps; real-device acceptance pending</td>
+                </tr>
+                <tr>
+                  <th scope="row">Ubuntu 24.04 LTS</th>
+                  <td>Exit-node baseline; amd64 / arm64</td>
+                </tr>
+              </tbody>
+            </table>
+            <p>
+              Linux lab results do not establish other platforms’ device
+              compatibility. Cross-compiling for arm64 does not replace physical
+              hardware testing.
+            </p>
+            <a
+              class="text-link"
+              href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/netbird/VERSIONS.md"
+              >Pinned versions & app candidates<span aria-hidden="true">
+                ↗</span
+              ></a
+            >
+          </div>
+        </div>
+      </section>
+      <section class="section container" id="docs" aria-labelledby="docs-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Explore and prepare a deployment</p>
+            <h2 id="docs-title">
+              Read the boundaries.<br />Then follow the full workflow.
+            </h2>
+          </div>
+          <p>
+            The development stack uses test identities, payment fixtures and
+            policy settings. Production identity, payment and network
+            configuration require separate setup and validation.
+          </p>
+        </div>
+        <ol class="doc-list">
+          <li>
+            <span class="index" aria-hidden="true">01</span>
+            <div>
+              <h3>Understand the delivery</h3>
+              <p>
+                Implementation, verification boundaries, known limits and later
+                work.
+              </p>
+            </div>
+            <a
+              class="text-link"
+              href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/DELIVERY.en.md"
+              >Delivery guide<span aria-hidden="true"> ↗</span></a
+            >
+          </li>
+          <li>
+            <span class="index" aria-hidden="true">02</span>
+            <div>
+              <h3>Run the isolated dev stack</h3>
+              <p>Follow the bring-up, verification and teardown procedures.</p>
+            </div>
+            <a
+              class="text-link"
+              href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/e2e/README.md#bring-up"
+              >Development workflow<span aria-hidden="true"> ↗</span></a
+            >
+          </li>
+          <li>
+            <span class="index" aria-hidden="true">03</span>
+            <div>
+              <h3>Prepare a deployment</h3>
+              <p>
+                Central services, nodes, configuration and deployment
+                prerequisites.
+              </p>
+            </div>
+            <a
+              class="text-link"
+              href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/handover/deploy.md"
+              >Deployment guide<span aria-hidden="true"> ↗</span></a
+            >
+          </li>
+          <li>
+            <span class="index" aria-hidden="true">04</span>
+            <div>
+              <h3>Operate and recover</h3>
+              <p>
+                Day-to-day management of members, nodes and operation results.
+              </p>
+            </div>
+            <a
+              class="text-link"
+              href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/handover/operator-guide.md"
+              >Operator guide<span aria-hidden="true"> ↗</span></a
+            >
+          </li>
+        </ol>
+        <div class="more-docs">
+          <span>Also see</span
+          ><a
+            class=""
+            href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/handover/calibration.md"
+            >Configuration calibration<span aria-hidden="true"> ↗</span></a
+          ><a
+            class=""
+            href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/handover/restore-drill.md"
+            >Backup & restore<span aria-hidden="true"> ↗</span></a
+          ><a
+            class=""
+            href="https://github.com/TED-H-com/Freedom-VPN/blob/main/README.md"
+            >English README<span aria-hidden="true"> ↗</span></a
+          >
+        </div>
+      </section>
+      <section
+        class="status-section"
+        id="status"
+        aria-labelledby="status-title"
+      >
+        <div class="container">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Readiness & verification</p>
+              <h2 id="status-title">
+                Implemented does not mean<br />production-validated.
+              </h2>
+            </div>
+            <p>
+              Freedom VPN is in development and validation. The delivery guide
+              and acceptance records are authoritative; this page does not
+              announce a production release or universal platform support.
+            </p>
+          </div>
+          <div class="limits">
+            <div>
+              <h3>Devices & networks</h3>
+              <p>
+                Windows, macOS, Android, iOS, physical arm64, candidate hardware
+                capacity and some isolation and failure scenarios still have
+                validation gaps.
+              </p>
+            </div>
+            <div>
+              <h3>Member-device protection</h3>
+              <p>
+                Server-side Internet-only isolation does not provide an OS kill
+                switch. A disconnected tunnel does not guarantee the device
+                stops using its original ISP.
+              </p>
+            </div>
+            <div>
+              <h3>Production configuration</h3>
+              <p>
+                Production IdP / MFA, payment providers, domains / TLS, DNS
+                lists and operating parameters still need separate configuration
+                and validation.
+              </p>
+            </div>
+          </div>
+          <div class="actions">
+            <a
+              class="button secondary"
+              href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/DELIVERY.en.md"
+              >Read the delivery guide<span aria-hidden="true"> ↗</span></a
+            ><a
+              class="text-link"
+              href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/e2e/README.md"
+              >Read acceptance records<span aria-hidden="true"> ↗</span></a
+            >
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="site-footer container">
+      <div class="footer-top">
+        <div>
+          <a class="brand" href="#top"
+            ><img src="../favicon.svg" alt="" width="28" height="28" />Freedom
+            VPN</a
+          >
+          <p>A member VPN platform built on self-hosted NetBird.</p>
+        </div>
+        <a class="text-link" href="#top"
+          >Back to top<span aria-hidden="true"> ↑</span></a
+        >
+      </div>
+      <div class="footer-bottom">
+        <nav aria-label="Project resources">
+          <a href="https://github.com/TED-H-com/Freedom-VPN">GitHub</a
+          ><a
+            class=""
+            href="https://github.com/TED-H-com/Freedom-VPN/blob/main/LICENSE"
+            >Apache-2.0 license<span aria-hidden="true"> ↗</span></a
+          ><a
+            class=""
+            href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/spec/PROJECT_SPEC.zh-TW.md"
+            >Product specification<span aria-hidden="true"> ↗</span></a
+          ><a
+            class=""
+            href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/contracts/README.md"
+            >Engineering & API docs<span aria-hidden="true"> ↗</span></a
+          >
+        </nav>
+        <p>
+          <a
+            class=""
+            href="https://github.com/TED-H-com/Freedom-VPN/blob/main/docs/netbird/VERSIONS.md"
+            >Third-party components retain their own licenses; see the version
+            matrix.<span aria-hidden="true"> ↗</span></a
+          >
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
