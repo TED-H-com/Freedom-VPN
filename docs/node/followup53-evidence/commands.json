@@ -138,7 +138,8 @@
       "TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery": {
         "pass": 50
       }
-    }
+    },
+    "counts_note": "Counts are recorded test actions; parent and subtest totals overlap by nesting and must not be added as distinct tests."
   },
   {
     "name": "meter-before-fix",
@@ -229,12 +230,17 @@
         "fail": 1
       }
     },
+    "counts_note": "Counts are recorded test actions; parent and subtest totals overlap by nesting and must not be added as distinct tests.",
     "go_overlay": {
       "base_sources": "b921c75f",
       "replaced_files": [
         "node/internal/meter/delta.go",
         "node/internal/meter/meter.go"
-      ]
+      ],
+      "replacement_sha256": {
+        "node/internal/meter/delta.go": "9270d04978a863b4af434b6e5baf8f9525938d95845e30f43d0d65ec3924ac4d",
+        "node/internal/meter/meter.go": "ea0360625d974827bf13a2229e0e2cb55799924bb8221bf2c5491394eb19534a"
+      }
     }
   },
   {
@@ -324,7 +330,8 @@
       "TestCheckpointForRestartAtSameMicrosecond": {
         "pass": 1
       }
-    }
+    },
+    "counts_note": "Counts are recorded test actions; parent and subtest totals overlap by nesting and must not be added as distinct tests."
   },
   {
     "name": "meter-boundary-smoke",
@@ -410,8 +417,10 @@
         "pass": 1
       }
     },
+    "counts_note": "Counts are recorded test actions; parent and subtest totals overlap by nesting and must not be added as distinct tests.",
     "additional_fixture": {
       "path": "node/internal/meter/followup53_test.go",
+      "preserved_source": "meter-boundary-smoke-source.go.txt",
       "sha256": "c405fc52cc63ebc346db1c19b764ad997fecfd8bcfcf9b9cb58b7735d3503edb",
       "note": "Untracked during this first smoke; expected current counters after closing an epoch, incorrectly. Corrected assertion to require empty current counters and checked the closed cursor."
     }
@@ -504,7 +513,8 @@
       "TestCheckpointForRestartAtSameMicrosecond": {
         "pass": 50
       }
-    }
+    },
+    "counts_note": "Counts are recorded test actions; parent and subtest totals overlap by nesting and must not be added as distinct tests."
   },
   {
     "name": "proofs-smoke",
@@ -581,7 +591,8 @@
       "TestR29_M1_RecoverOnceDoesNotSelfDeadlockOrKillOpenTransactionRecovery": {
         "pass": 1
       }
-    }
+    },
+    "counts_note": "Counts are recorded test actions; parent and subtest totals overlap by nesting and must not be added as distinct tests."
   },
   {
     "name": "r23-before-fix",
@@ -633,12 +644,17 @@
         "fail": 1
       }
     },
+    "counts_note": "Counts are recorded test actions; parent and subtest totals overlap by nesting and must not be added as distinct tests.",
     "go_overlay": {
       "base_sources": "b921c75f",
       "replaced_files": [
         "node/internal/meter/delta.go",
         "node/internal/meter/meter.go"
-      ]
+      ],
+      "replacement_sha256": {
+        "node/internal/meter/delta.go": "9270d04978a863b4af434b6e5baf8f9525938d95845e30f43d0d65ec3924ac4d",
+        "node/internal/meter/meter.go": "ea0360625d974827bf13a2229e0e2cb55799924bb8221bf2c5491394eb19534a"
+      }
     }
   },
   {
@@ -689,10 +705,12 @@
         "fail": 1
       }
     },
+    "counts_note": "Counts are recorded test actions; parent and subtest totals overlap by nesting and must not be added as distinct tests.",
     "go_overlay": {
       "source": "466f1510:node/agent/updaterecover.go",
       "change": "insert synchronous select on job.done or ctx.Done immediately before the fast-wait timer",
-      "replacement_sha256": "6fb95c96f6791f9f9fabe52e1cf4ebba4407e59035577587a6b78fb7ebce6fc4"
+      "replacement_sha256": "6fb95c96f6791f9f9fabe52e1cf4ebba4407e59035577587a6b78fb7ebce6fc4",
+      "patch": "r29-bounded-mutation.patch"
     }
   },
   {
@@ -743,6 +761,7 @@
         "fail": 1
       }
     },
+    "counts_note": "Counts are recorded test actions; parent and subtest totals overlap by nesting and must not be added as distinct tests.",
     "go_overlay": {
       "source": "466f1510:node/agent/updaterecover.go",
       "change": "insert synchronous <-job.done immediately before the fast-wait timer",

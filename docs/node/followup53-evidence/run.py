@@ -56,6 +56,21 @@ diff = subprocess.check_output(['git','diff','--binary','HEAD'],env=env)
 import hashlib
 (out/(name+'.patch')).write_bytes(diff)
 meta = dict(command=cmd, head=head, overlay_sha256=hashlib.sha256(diff).hexdigest(), load_workers=load, scratch_fstype=fs, admission='free', overlap_pids=conflicts)
+meta['supervisor_sha256']=hashlib.sha256(pathlib.Path(__file__).read_bytes()).hexdigest()
+if name.startswith('gate-'):
+    meta['temp_audit'] = dict(TMPDIR=env['TMPDIR'], GOTMPDIR=env['GOTMPDIR'], PYTHONDONTWRITEBYTECODE=env['PYTHONDONTWRITEBYTECODE'], FVPN_TEST_DB_SWEEP=env['FVPN_TEST_DB_SWEEP'])
+    helper_files=['mk/node.mk','mk/netlab.mk','mk/go.mk','internal/db/dbtest/dbtest.go','tests/netlab/agent/harness_test.go','tests/netlab/agent/scenario_ac_timing_test.go','tests/netlab/agent/scenario_f31_test.go']
+    meta['temp_audit']['helper_source_sha256']={f:hashlib.sha256(pathlib.Path(f).read_bytes()).hexdigest() for f in helper_files}
+    if 'mk/node.mk' in cmd:
+        assert 'NODE_TMPDIR='+env['TMPDIR'] in cmd
+    if 'node-test-netlab' in cmd:
+        for key in ('NETLAB_SCRATCH=', 'NETLAB_BIN='):
+            assert any(arg.startswith(key+env['TMPDIR']+'/') for arg in cmd)
+        assert 'netlab-disk-env=env' in cmd
+        assert any(arg.startswith('FVPN_AGENT_EVIDENCE_DIR='+env['TMPDIR']+'/') for arg in cmd)
+    if 'go-lint' in cmd:
+        assert 'go-with-disk-tmp=set -eu;' in cmd
+
 files=subprocess.check_output(['git','ls-files','--cached','--others','--exclude-standard','node','tests/netlab/agent','mk/node.mk','go.mod','go.sum'],env=env,text=True).splitlines()
 meta['source_sha256']={f:hashlib.sha256(pathlib.Path(f).read_bytes()).hexdigest() for f in sorted(set(files)) if pathlib.Path(f).is_file()}
 workers=[]
