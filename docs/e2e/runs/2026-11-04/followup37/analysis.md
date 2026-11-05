@@ -268,7 +268,7 @@ prove successful control transport. The output's `outcome_source` is:
 This key is produced by `tests/e2e/at/isolation/observer_main.go:519` and is in the
 closure output, not a top-level stop-review key.
 
-## 2. Authorized fixture correction
+## 2. Shared fixture correction and offline proof
 
 The correction is confined to the shared fixture. The existing image selection,
 presentation network, durable copy and runtime-trigger cleanup stay as before.
@@ -288,14 +288,41 @@ unchanged. Copied release SNAT remains a known gap: IPv4 validation in baseline
 `node/agent/config.go:250-252` does not establish that the address is appropriate
 for every use. No product change or release redesign is authorized here.
 
-Fixture/test correction and its new gate results are pending at this diagnosis
-commit. The existing test is one function,
-`TestD141_ClonePreparedConfigsDialContainerResolverProxy`, in the `e2e`-tagged
-`tests/e2e/second_exit_test.go`; default no-tag tests do not execute it. The offline
-extension must cover compact release JSON as written by `candidateConfig`,
-formatted JSON, the complete field matrix, full non-target value equality,
-durable byte preservation, malformed-input refusal and fresh enrollment URL
-preservation. No prior report output is accepted as this session's test result.
+The fixture correction is committed in `a650a4e3`. The following citations name
+that revision, not baseline: `tests/e2e/second_exit.go:162-181` implements the
+file matrix; `tests/e2e/second_exit.go:196-230` validates object input and
+reserializes JSON using `json.RawMessage`. The calls before container creation
+and after the durable clone copy remain at `tests/e2e/second_exit.go:73-75` and
+`tests/e2e/second_exit.go:124-126`. Identity/durable files are not written by this
+preparation helper. Original image selection and clone network code are unchanged.
+
+At `a650a4e3`, the one function
+`TestD141_ClonePreparedConfigsDialContainerResolverProxy`
+(`tests/e2e/second_exit_test.go:16`) covers:
+
+- Clone and fresh modes, with formatted and compact inputs. The clone compact
+  release case uses `json.Marshal`, matching `candidateConfig`'s serialization
+  (`tests/e2e/second_exit_test.go:128-165`).
+- The complete expected object after changing only the authorized fields,
+  including all keys, nested DNS and copied release SNAT. `UseNumber` avoids
+  a float conversion in the comparison; formatting equality is not claimed
+  (`tests/e2e/second_exit_test.go:110-119`,
+  `tests/e2e/second_exit_test.go:168-180`).
+- Byte equality for copied identity, machine-id, state and selection files
+  (`tests/e2e/second_exit_test.go:120-126`,
+  `tests/e2e/second_exit_test.go:183`).
+- Malformed/null/array JSON and missing/null/array datapath, at each of the
+  enrollment, run and release file positions. Preparation returns an error;
+  the rejected file and durable files retain their bytes. This does not claim
+  a transaction over previously processed config files
+  (`tests/e2e/second_exit_test.go:187-214`).
+
+The file remains tagged `e2e` (`tests/e2e/second_exit_test.go:1` at `a650a4e3`).
+The focused command `go test -tags e2e -count=1 -v -run '^TestD141' ./tests/e2e`
+passed in this correction session, and discovery output names the single function
+above and its subtests. Default no-tag tests do not execute it. This proves the
+on-disk preparation behavior offline, not successful live transport. No prior
+report output is used as a test result.
 
 ## 3. Carried items and requests
 

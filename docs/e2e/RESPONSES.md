@@ -1858,9 +1858,11 @@ the portal enrollment URL in both clone and fresh modes, and changes only
 `control_url` in copied release configs to `https://127.0.0.1:9444`. Runtime etc
 config also uses that local URL. JSON is reserialized with non-target values
 unchanged; identity and durable files remain byte-for-byte unchanged. Copied
-release SNAT is an explicit known gap. Fixture/test correction and fresh gate
-results are pending at this diagnosis commit; the existing single D141 test
-requires `-tags e2e`. No prior report output is treated as verification.
+release SNAT is an explicit known gap. The correction is committed in `a650a4e3`.
+The single D141 test requires `-tags e2e` and passed in this session with compact
+and formatted config cases, complete JSON-value comparison, durable-byte checks
+and malformed-input refusal. Default no-tag tests do not execute it. No prior
+report output is treated as verification.
 
 ### Requests to orchestrator
 
