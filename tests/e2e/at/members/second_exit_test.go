@@ -177,41 +177,6 @@ func (l *live) adminNodeSummary() map[string]any {
 	return summarizeNodeDetail(node)
 }
 
-func summarizeNodeDetail(node api.NodeDetail) map[string]any {
-	applied, _ := node.ConfigGeneration.Applied.Get()
-	forwarding, _ := node.MemberForwardingObserved.Get()
-	checkMap := func(target api.NodeCheckName) map[string]any {
-		for _, c := range node.Checks {
-			if c.Name == target {
-				code, _ := c.ErrorCode.Get()
-				detail := ""
-				if c.Detail != nil {
-					detail = *c.Detail
-				}
-				return map[string]any{"status": c.Status, "error_code": code, "detail": detail, "observed_at": c.ObservedAt}
-			}
-		}
-		return nil
-	}
-	var recentErrors []map[string]any
-	for _, e := range node.RecentErrors {
-		recentErrors = append(recentErrors, map[string]any{"stage": e.Stage, "code": e.Code, "message": e.Message, "observed_at": e.ObservedAt})
-	}
-	return map[string]any{
-		"desired_generation":         node.ConfigGeneration.Desired,
-		"applied_generation":         applied,
-		"provisioning_state":         node.ProvisioningState,
-		"publication_intent":         node.PublicationIntent,
-		"publication_observed":       node.PublicationObserved,
-		"safety_status":              node.SafetyStatus,
-		"member_forwarding_observed": forwarding,
-		"lease_check":                checkMap(api.NodeCheckNameLease),
-		"qos_check":                  checkMap(api.NodeCheckNameQos),
-		"source_binding_check":       checkMap(api.NodeCheckNameSourceBinding),
-		"recent_errors":              recentErrors,
-	}
-}
-
 func (l *live) recordRestartRecovery(r *record, desiredBefore, appliedBefore decstr.U64, resumedAt, readyAt, firstByteAt time.Time, provisionalAdmin map[string]any, counted bool) {
 	afterResp := l.api(l.admin, "GET", "/api/v1/admin/nodes/"+l.node.String(), nil, nil)
 	var afterNode api.NodeDetail
