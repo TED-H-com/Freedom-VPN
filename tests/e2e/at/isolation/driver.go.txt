@@ -2688,11 +2688,16 @@ func (x *isolationRun) freezeIdentity() {
 	evidence["run_id"], evidence["build"], evidence["source_dirty"] = x.records["AT13"].RunID, x.records["AT13"].Build, x.records["AT13"].SourceDirty
 	evidence["source_container"], evidence["clone_container"] = x.r.lab.node, x.r.lab.prefix+"-node-clone"
 	evidence["fixture_created"] = err == nil
-	x.retainRuntime("after-clone-creation")
+	sourceReady := x.retainRuntime("after-clone-creation")
 	defer func() { x.extra("identity-freeze.json", evidence); x.retainRuntime("after-clone-observation") }()
 	if err != nil {
 		evidence["status"] = "blocked"
 		evidence["detail"] = iso.Redact(err.Error())
+		return
+	}
+	if !sourceReady {
+		evidence["status"] = "blocked"
+		evidence["detail"] = "initial source process bracket unavailable; see clone-runtime readiness attempts"
 		return
 	}
 	var rows []map[string]any
@@ -3251,45 +3256,56 @@ func (x *isolationRun) populatedHold(n int, row map[string]any) bool {
 
 // Consumer-owned, bounded, best-effort reads. This invokes only the short-lived
 // runtime-evidence command on the clone: it never installs/starts its observer.
-func (x *isolationRun) retainRuntime(phase string) {
+func (x *isolationRun) retainRuntime(phase string) bool {
 	if x.r == nil {
-		return
+		return false
 	}
 	rec := x.records["AT13"]
+	sourceReady := true
 	for _, role := range []string{"source", "clone"} {
 		container := x.r.lab.node
 		if role == "clone" {
 			container = x.r.lab.prefix + "-node-clone"
 		}
-		row := map[string]any{"run_id": rec.RunID, "build": rec.Build, "source_dirty": rec.SourceDirty, "phase": phase, "role": role, "container": container, "read_start": time.Now().UTC(), "status": "unavailable"}
-		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-		raw, err := exec.CommandContext(ctx, "docker", "inspect", "--format", `{"id":{{json .Id}},"started_at":{{json .State.StartedAt}},"running":{{json .State.Running}}}`, container).Output()
-		if err == nil && json.Valid(raw) {
-			row["container_identity"] = json.RawMessage(raw)
-			if err = iso.CheckContainerScratch(ctx, container); err == nil {
-				if role == "clone" {
-					err = exec.CommandContext(ctx, "docker", "cp", x.binary, container+":/tmp/isolation-probe").Run()
-				}
-				if err == nil {
-					raw, err = exec.CommandContext(ctx, "docker", "exec", container, "/tmp/isolation-probe", "runtime-evidence").Output()
-					if err == nil && json.Valid(raw) {
-						row["snapshot"] = json.RawMessage(raw)
-						row["status"] = "available"
+		read := func(ctx context.Context) map[string]any {
+			row := map[string]any{"run_id": rec.RunID, "build": rec.Build, "source_dirty": rec.SourceDirty, "phase": phase, "role": role, "container": container, "read_start": time.Now().UTC(), "status": "unavailable"}
+			raw, err := exec.CommandContext(ctx, "docker", "inspect", "--format", `{"id":{{json .Id}},"started_at":{{json .State.StartedAt}},"running":{{json .State.Running}}}`, container).Output()
+			if err == nil && json.Valid(raw) {
+				row["container_identity"] = json.RawMessage(raw)
+				if err = iso.CheckContainerScratch(ctx, container); err == nil {
+					if role == "clone" {
+						err = exec.CommandContext(ctx, "docker", "cp", x.binary, container+":/tmp/isolation-probe").Run()
+					}
+					if err == nil {
+						raw, err = exec.CommandContext(ctx, "docker", "exec", container, "/tmp/isolation-probe", "runtime-evidence").Output()
+						if err == nil && json.Valid(raw) {
+							row["snapshot"] = json.RawMessage(raw)
+							row["status"] = "available"
+						} else {
+							row["error"] = "snapshot command failed or incomplete JSON"
+						}
 					} else {
-						row["error"] = "snapshot command failed or incomplete JSON"
+						row["error"] = "read-only helper copy failed"
 					}
 				} else {
-					row["error"] = "read-only helper copy failed"
+					row["error"] = "container scratch filesystem unavailable or memory-backed"
 				}
 			} else {
-				row["error"] = "container scratch filesystem unavailable or memory-backed"
+				row["error"] = "container not created or inspect unavailable"
 			}
-		} else {
-			row["error"] = "container not created or inspect unavailable"
+			row["read_end"] = time.Now().UTC()
+			return row
 		}
-		cancel()
-		row["read_end"] = time.Now().UTC()
+		var row map[string]any
+		if phase == "after-clone-creation" && role == "source" {
+			row, sourceReady = iso.WaitRuntimeProcess(x.ctx, read)
+		} else {
+			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+			row = read(ctx)
+			cancel()
+		}
 		x.runtimeEvidence = append(x.runtimeEvidence, row)
 	}
 	x.extra("clone-runtime.json", map[string]any{"run_id": rec.RunID, "build": rec.Build, "source_dirty": rec.SourceDirty, "snapshots": x.runtimeEvidence, "scope": "Auxiliary only; source rotation unchanged; independent immutable pre/post reads, no clone log rotation; current config digest is not a loaded-at-launch attestation"})
+	return sourceReady
 }
