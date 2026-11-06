@@ -4,6 +4,7 @@ package e2e
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"os/exec"
@@ -134,6 +135,38 @@ func dnsCounterSnapshot(names [4]string, read func() ([]byte, error)) (map[strin
 	for _, name := range names {
 		if _, ok := state.Counters[name]; !ok {
 			return state.Counters, "missing_counter"
+		}
+	}
+	// ParseState intentionally defaults absent/null counter numbers to zero.
+	// Measurement evidence requires both original JSON integer fields to exist.
+	var doc struct {
+		Nftables []struct {
+			Counter *struct {
+				Family  string          `json:"family"`
+				Table   string          `json:"table"`
+				Name    string          `json:"name"`
+				Bytes   json.RawMessage `json:"bytes"`
+				Packets json.RawMessage `json:"packets"`
+			} `json:"counter"`
+		} `json:"nftables"`
+	}
+	if err := json.Unmarshal(raw, &doc); err != nil {
+		return nil, "parse_error"
+	}
+	for _, object := range doc.Nftables {
+		counter := object.Counter
+		if counter == nil || counter.Family != "" && counter.Family != "inet" || counter.Table != "" && counter.Table != "fvpn" {
+			continue
+		}
+		for _, name := range names {
+			if counter.Name != name {
+				continue
+			}
+			for _, number := range []json.RawMessage{counter.Bytes, counter.Packets} {
+				if _, err := strconv.ParseUint(strings.TrimSpace(string(number)), 10, 64); err != nil {
+					return nil, "parse_error"
+				}
+			}
 		}
 	}
 	return state.Counters, "available"

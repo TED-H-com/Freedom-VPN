@@ -139,6 +139,76 @@ func TestAT20_DNSCounterReadFailures(t *testing.T) {
 	}
 }
 
+func TestAT20_DNSCounterRequiredNumbers(t *testing.T) {
+	device := uuid.New()
+	for _, at := range []int{1, 2} {
+		for _, prefix := range []string{"nu_", "nd_", "u_", "d_"} {
+			for _, field := range []string{"bytes", "packets"} {
+				for _, invalid := range []string{"absent", "null", `"100"`, `"TEST-SECRET-NUMBER"`, "true", "{}", "[]", "1.5", "-1", "18446744073709551616"} {
+					t.Run(fmt.Sprintf("%d/%s/%s/%s", at, prefix, field, invalid), func(t *testing.T) {
+						for _, queryFails := range []bool{false, true} {
+							reads, queries := 0, 0
+							read := func() ([]byte, error) {
+								reads++
+								entries := make([]any, 0, 4)
+								for name, value := range dnsTestCounters(device) {
+									if reads == 2 && (strings.HasPrefix(name, "nu_") || strings.HasPrefix(name, "nd_")) {
+										value.Bytes += 80
+										value.Packets++
+									}
+									counter := map[string]any{"family": "inet", "table": "fvpn", "name": name, "bytes": value.Bytes, "packets": value.Packets}
+									if reads == at && strings.HasPrefix(name, prefix) {
+										if invalid == "absent" {
+											delete(counter, field)
+										} else {
+											counter[field] = json.RawMessage(invalid)
+										}
+									}
+									entries = append(entries, map[string]any{"counter": counter})
+								}
+								raw, err := json.Marshal(map[string]any{"nftables": entries})
+								if err != nil {
+									t.Fatal(err)
+								}
+								return raw, nil
+							}
+							got, err := observeDNSQuery(newDNSPathObservation(false), device, read, func() ([]byte, error) {
+								queries++
+								if queryFails {
+									return []byte("fvpn-e2e-member-session: dns read class=timeout\n"), errors.New("TEST-SECRET-QUERY")
+								}
+								return []byte("rcode=0 answers=1\n"), nil
+							})
+							if err == nil || got.CounterDeltas != "unavailable" || reads != at || queries != at-1 || got.DNSUpload != 0 || got.DNSDownload != 0 || got.InternetUpload != 0 || got.InternetDownload != 0 {
+								t.Fatalf("invalid numeric evidence accepted: %+v, %v, reads=%d queries=%d", got, err, reads, queries)
+							}
+							if at == 1 && (got.BeforeCounters != "parse_error" || got.AfterCounters != "not_attempted" || got.QueryStatus != "not_attempted") || at == 2 && (got.BeforeCounters != "available" || got.AfterCounters != "parse_error") {
+								t.Fatalf("wrong numeric availability: %+v", got)
+							}
+							if at == 2 && queryFails && (got.QueryStatus != "failed" || got.QueryStage != "read" || got.QueryClass != "timeout" || err.Error() != "designated DNS query: read class=timeout") {
+								t.Fatalf("query failure replaced by counter error: %+v, %v", got, err)
+							}
+							assertDNSSafe(t, got, err)
+						}
+					})
+				}
+			}
+		}
+	}
+	for _, value := range []uint64{0, 1<<53 + 1, ^uint64(0)} {
+		counters := dnsTestCounters(device)
+		for name := range counters {
+			counters[name] = enforce.CounterValue{Bytes: value, Packets: value}
+		}
+		got, err := observeDNSQuery(newDNSPathObservation(false), device, func() ([]byte, error) {
+			return dnsTestSnapshot(t, counters), nil
+		}, func() ([]byte, error) { return []byte("rcode=0 answers=1\n"), nil })
+		if err != nil || got.CounterDeltas != "available" || got.DNSUpload != 0 || got.InternetDownload != 0 {
+			t.Fatalf("valid uint64 counter rejected: %+v, %v", got, err)
+		}
+	}
+}
+
 func TestAT20_DNSSuccessAndSafeOutput(t *testing.T) {
 	device := uuid.New()
 	for _, tcp := range []bool{false, true} {
