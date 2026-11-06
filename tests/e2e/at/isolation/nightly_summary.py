@@ -42,7 +42,9 @@ def review_mapping(root, phase, run_id):
     expected = (valid and phase.get('exit_code') == 1 and record.get('status') == 'incomplete' and
                 bool(missing) and missing <= allowed.keys())
     unneeded = valid and phase.get('exit_code') == 0 and record.get('status') == 'pass' and not missing
-    mapping = 'expected not exercised' if expected else 'no longer needed; remove from expected-not-exercised list' if unneeded else 'unexpected'
+    mapping = 'expected not exercised' if expected else 'unexpected'
+    if unneeded:
+        mapping = 'no longer needed; remove from expected-not-exercised list' if entries else 'pass'
     return dict(review='populated-holds', status=record.get('status'), mapping=mapping,
                 items=[dict(item=e['item'], status=coverage.get(e['item'], 'missing'),
                             reason=e['reason'], owner=e['owner'], established_by=e['established_by'])
@@ -81,7 +83,7 @@ def summarize(root, phases, run_id):
             # failure twice. It still makes the job red, even if all rows pass.
             if phase['name'] != DRIVER_PHASE or not acceptance_errors:
                 errors.append(detail)
-        elif mapping and mapping['mapping'] == 'unexpected':
+        elif phase['name'] == HOLD_REVIEW_PHASE and (mapping is None or mapping['mapping'] == 'unexpected'):
             errors.append(phase['name']+': inconsistent review result')
     result=dict(run_id=run_id,status='fail' if errors or phase_errors else 'pass',rows=rows,reviews=reviews,phases=phases,errors=errors,phase_errors=phase_errors,
                 scope='Scheduled job only. Acceptance statuses unchanged. Only explicitly listed same-run review coverage gaps map to expected not exercised. Unknown blocks, any failure, join problem or unexplained subprocess error stay red.')

@@ -1,3 +1,15 @@
+# Current isolation verification
+
+The [2026-11-06 D164 acceptance](d164-acceptance.md) passed on clean source
+`8286ef1176065d0dfc2abf9639c2262400492721`: 27 rows pass, 2 existing expected
+blocks, populated holds 9/9 and clone criteria 9/9. F17-01 is closed for this
+measured scope and the D-163 pure-stale exemption is retired.
+
+## Retained earlier procedures and results
+
+The dated records below preserve their original statuses and wording, including
+historical “newest attempt” labels. Their failures and limits remain unchanged.
+
 > [!IMPORTANT]
 > **Follow-up 27 live run status — NEWEST ATTEMPT, FAILED (`d69f5652-aed6-4fdd-9e7c-edface751237`):**
 > The single permitted Follow-up 27 assembled invocation (`run_id` `d69f5652-aed6-4fdd-9e7c-edface751237`, `2026-11-05T10:11:41.296179Z`–`2026-11-05T10:33:52.446700Z`, `1331.15` s, `source_commit: 37b3c25f60194e0d2261cf9aca30dfe8fc5d93be`, `baseline/launch_main: aaffdc7fe176c5e3edc521c8ca491bff28bd4a6f`, `source_dirty: false`, `invocations: 1`, `reruns: 0`, `lab_included: true`, `confounded: false`) **failed** (`make` exit `2`; [`scheduled-job.json`](history/follow-up-27-run/scheduled-job.json) status `fail` on `AT13` `short whole-node lease expiry` (`packet 145 missing send/ingress/read` after `result: "socket_error"`); auxiliary [`clone-transport-review.json`](history/follow-up-27-run/clone-transport-review.json) status `not established` with 8/9 criteria `established` and `consumer_latch_held` `not established`).
