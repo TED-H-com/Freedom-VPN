@@ -111,6 +111,36 @@ class CloneEvidence(unittest.TestCase):
         self.assertEqual(r['criteria']['consumer_latch_held']['status'],'not established')
         self.assertEqual(r['status'],'fail')
 
+    def test_initial_source_bracket_cannot_be_replaced_by_readiness_attempts(self):
+        m,d,s=fixture()
+        source=next(r for r in d['clone-runtime.json']['snapshots'] if r.get('role')=='source' and r['phase']=='after-clone-creation')
+        diagnostic=copy.deepcopy(source)
+        source['status']='unavailable'
+        source['snapshot']['process_coherent']=False
+        source['readiness']={'status':'context deadline exceeded','attempts':[diagnostic]}
+        r=evaluate(m,d,s)
+        self.assertEqual(r['criteria']['source_freeze_response_and_report']['status'],'established')
+        self.assertEqual(r['criteria']['consumer_latch_held']['status'],'not established')
+        self.assertEqual(r['status'],'not established')
+
+    def test_source_bracket_requires_unique_same_launch_and_read_bounds(self):
+        for case in ('missing','duplicate','pid','start-ticks','launch','late-before','early-after'):
+            with self.subTest(case=case):
+                m,d,s=fixture()
+                snapshots=d['clone-runtime.json']['snapshots']
+                before=next(r for r in snapshots if r.get('role')=='source' and r['phase']=='after-clone-creation')
+                after=next(r for r in snapshots if r.get('role')=='source' and r['phase']=='after-clone-observation')
+                if case=='missing':snapshots.remove(before)
+                elif case=='duplicate':snapshots.append(copy.deepcopy(before))
+                elif case=='pid':before['snapshot']['process_before']['pid']=43
+                elif case=='start-ticks':before['snapshot']['process_before']['start_ticks']='101'
+                elif case=='launch':before['snapshot']['agent_process_id']['text']='TEST ONLY other launch'
+                elif case=='late-before':before['snapshot']['read_end']=at(9)
+                elif case=='early-after':after['snapshot']['read_start']=at(12)
+                r=evaluate(m,d,s)
+                self.assertEqual(r['criteria']['consumer_latch_held']['status'],'not established')
+                self.assertEqual(r['status'],'not established')
+
     def test_heartbeat_and_log_parse_errors_are_explicit(self):
         with self.assertRaises(ValueError):heartbeat('identity_frozen')
         _,errors=log_rows(dict(status='available',text='broken line'))

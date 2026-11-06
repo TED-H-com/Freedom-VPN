@@ -19,6 +19,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const runtimeBase = "/var/lib/vpn-node/e2e/"
@@ -36,6 +38,91 @@ type RuntimeRead struct {
 	Inode    uint64 `json:"inode"`
 	SHA256   string `json:"sha256,omitempty"`
 	Modified string `json:"modified_at,omitempty"`
+}
+
+type runtimeReadiness struct {
+	Status        string           `json:"status"`
+	BudgetSeconds int              `json:"budget_seconds"`
+	StartedAt     string           `json:"started_at"`
+	CompletedAt   string           `json:"completed_at"`
+	Attempts      []map[string]any `json:"attempts"`
+}
+
+// WaitRuntimeProcess retains the exact ready read as the initial source bracket.
+// Earlier reads remain diagnostic inputs, outside the reviewer's phase candidates.
+// The sampler must honor ctx; the container commands use CommandContext.
+func WaitRuntimeProcess(parent context.Context, sample func(context.Context) map[string]any) (map[string]any, bool) {
+	ctx, cancel := context.WithTimeout(parent, 20*time.Second)
+	defer cancel()
+	receipt := runtimeReadiness{BudgetSeconds: 20, StartedAt: runtimeNow(), Attempts: []map[string]any{}}
+	var last map[string]any
+	ready := false
+	for {
+		last = sample(ctx)
+		// A sample returned after cancellation/deadline cannot establish readiness.
+		if ctx.Err() == nil && runtimeProcessReady(last) {
+			ready = true
+			break
+		}
+		receipt.Attempts = append(receipt.Attempts, last)
+		if ctx.Err() != nil {
+			break
+		}
+		timer := time.NewTimer(250 * time.Millisecond)
+		select {
+		case <-ctx.Done():
+		case <-timer.C:
+		}
+		timer.Stop()
+		if ctx.Err() != nil {
+			break
+		}
+	}
+	// Copy the envelope, never modify a retained attempt or refetch the snapshot.
+	row := make(map[string]any, len(last)+1)
+	for k, v := range last {
+		row[k] = v
+	}
+	receipt.Status = "ready"
+	if !ready {
+		row["status"] = "unavailable"
+		receipt.Status = ctx.Err().Error()
+	}
+	receipt.CompletedAt = runtimeNow()
+	row["readiness"] = receipt
+	return row, ready
+}
+
+func runtimeProcessReady(row map[string]any) bool {
+	if row["status"] != "available" {
+		return false
+	}
+	type process struct {
+		Status     string `json:"status"`
+		Role       string `json:"role"`
+		PID        int    `json:"pid"`
+		StartTicks string `json:"start_ticks"`
+	}
+	var snapshot struct {
+		Coherent bool        `json:"process_coherent"`
+		Before   process     `json:"process_before"`
+		After    process     `json:"process_after"`
+		Launch   RuntimeRead `json:"agent_process_id"`
+		PID      RuntimeRead `json:"agent_pid"`
+		Start    time.Time   `json:"read_start"`
+		End      time.Time   `json:"read_end"`
+	}
+	raw, err := json.Marshal(row["snapshot"])
+	if err != nil || json.Unmarshal(raw, &snapshot) != nil || !snapshot.Coherent || snapshot.Start.IsZero() || snapshot.End.Before(snapshot.Start) {
+		return false
+	}
+	proc := snapshot.Before
+	ticks, ticksErr := strconv.ParseUint(proc.StartTicks, 10, 64)
+	pid, pidErr := strconv.Atoi(strings.TrimSpace(snapshot.PID.Text))
+	launch, launchErr := uuid.Parse(strings.TrimSpace(snapshot.Launch.Text))
+	return proc.Status == "available" && proc.Role == "fvpn-agent" && proc.PID > 1 && proc == snapshot.After &&
+		ticksErr == nil && ticks > 0 && pidErr == nil && pid == proc.PID && snapshot.PID.Status == "available" &&
+		snapshot.Launch.Status == "available" && launchErr == nil && launch != uuid.Nil
 }
 
 func runtimeNow() string { return time.Now().UTC().Format(time.RFC3339Nano) }

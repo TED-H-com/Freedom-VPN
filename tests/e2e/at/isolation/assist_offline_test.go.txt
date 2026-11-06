@@ -3,17 +3,120 @@
 package e2e
 
 import (
+	"context"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"path/filepath"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	iso "github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation"
 )
+
+func TestENR02_CloneRuntimeReadiness(t *testing.T) {
+	dir := t.TempDir()
+	write := func(name, body string, mode os.FileMode) {
+		t.Helper()
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), mode); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// TEST ONLY: every docker invocation terminates in this local fixture.
+	// Unknown arguments fail; no real container or network operation is called.
+	write("docker", `#!/usr/bin/python3
+import json, os, sys
+from pathlib import Path
+root=Path(os.environ['FVPN_TEST_RUNTIME_READS'])
+args=sys.argv[1:]
+with (root/'calls.jsonl').open('a') as f:f.write(json.dumps(args)+'\n')
+if args[0]=='inspect':
+ print(json.dumps({'id':'TEST ONLY container','started_at':'2026-01-01T00:00:00Z','running':True}))
+elif args[0]=='cp':pass
+elif args[0]=='exec' and args[2:]==['stat','-f','-c','%T','/tmp']:print('ext2/ext3')
+elif args[0]=='exec' and args[2:]==['/tmp/isolation-probe','runtime-evidence']:
+ role='clone' if args[1].endswith('-clone') else 'source'
+ count=root/(role+'.count')
+ n=int(count.read_text()) if count.exists() else 0
+ count.write_text(str(n+1))
+ print((root/(role+str(min(n,1))+'.json')).read_text())
+else:raise SystemExit('unexpected fake docker command')
+`, 0o755)
+	snapshot := func(marker string, coherent bool) string {
+		return fmt.Sprintf(`{"marker":%q,"read_start":%q,"read_end":%q,"process_coherent":%t,"process_before":{"status":"available","role":"fvpn-agent","pid":42,"start_ticks":"100"},"process_after":{"status":"available","role":"fvpn-agent","pid":42,"start_ticks":"100"},"agent_pid":{"status":"available","text":"42\n"},"agent_process_id":{"status":"available","text":"00000000-0000-4000-8000-000000000001\n"}}`, marker, time.Now().UTC().Format(time.RFC3339Nano), time.Now().UTC().Format(time.RFC3339Nano), coherent)
+	}
+	first, ready := snapshot("TEST ONLY first incoherent read", false), snapshot("TEST ONLY exact ready read", true)
+	write("source0.json", first, 0o600)
+	write("source1.json", ready, 0o600)
+	write("clone0.json", snapshot("TEST ONLY clone read", true), 0o600)
+	write("clone1.json", snapshot("TEST ONLY later clone read", true), 0o600)
+	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
+	t.Setenv("FVPN_TEST_RUNTIME_READS", dir)
+	ctx, cancel := context.WithCancel(t.Context())
+	defer cancel()
+	x := &isolationRun{t: t, ctx: ctx, dir: dir, binary: "TEST ONLY probe",
+		r:       &runner{lab: &lab{prefix: "fvpn-w4-isolation", node: "fvpn-w4-isolation-node"}},
+		records: map[string]*iso.Record{"AT13": {RunID: "TEST ONLY run", Build: strings.Repeat("a", 40)}},
+	}
+	if !x.retainRuntime("after-clone-creation") || len(x.runtimeEvidence) != 2 {
+		t.Fatalf("ready source/clone phase not retained: %v", x.runtimeEvidence)
+	}
+	if string(x.runtimeEvidence[0]["snapshot"].(json.RawMessage)) != ready+"\n" {
+		t.Fatal("successful source read was replaced or refetched")
+	}
+	var saved struct {
+		Snapshots []struct {
+			Role, Phase, Status string
+			Readiness           struct {
+				Status   string
+				Attempts []struct {
+					Snapshot  json.RawMessage
+					ReadStart time.Time `json:"read_start"`
+					ReadEnd   time.Time `json:"read_end"`
+				}
+			}
+		}
+	}
+	raw, err := os.ReadFile(filepath.Join(dir, "clone-runtime.json"))
+	if err != nil || json.Unmarshal(raw, &saved) != nil || len(saved.Snapshots) != 2 {
+		t.Fatalf("phase artifact not written: %s %v", raw, err)
+	}
+	readiness := saved.Snapshots[0].Readiness
+	var original, retained any
+	_ = json.Unmarshal([]byte(first), &original)
+	if len(readiness.Attempts) != 1 || readiness.Status != "ready" {
+		t.Fatalf("first failed source read missing: %s", raw)
+	}
+	_ = json.Unmarshal(readiness.Attempts[0].Snapshot, &retained)
+	if !reflect.DeepEqual(original, retained) || readiness.Attempts[0].ReadStart.IsZero() || readiness.Attempts[0].ReadEnd.Before(readiness.Attempts[0].ReadStart) || saved.Snapshots[0].Role != "source" || saved.Snapshots[0].Phase != "after-clone-creation" {
+		t.Fatal("readiness attempt replaced the unique source candidate")
+	}
+	// These independent closure reads must still run after the main context ends.
+	cancel()
+	x.retainRuntime("after-clone-observation")
+	if len(x.runtimeEvidence) != 4 || x.runtimeEvidence[2]["status"] != "available" || x.runtimeEvidence[3]["status"] != "available" {
+		t.Fatal("cancellation suppressed independent post-observation evidence")
+	}
+	for role, want := range map[string]string{"source": "3", "clone": "2"} {
+		n, err := os.ReadFile(filepath.Join(dir, role+".count"))
+		if err != nil || string(n) != want {
+			t.Fatalf("unexpected %s sample count: %s %v", role, n, err)
+		}
+	}
+	failed := &isolationRun{t: t, ctx: ctx, dir: filepath.Join(dir, "canceled"),
+		binary: x.binary, r: x.r, records: x.records,
+	}
+	if failed.retainRuntime("after-clone-creation") || len(failed.runtimeEvidence) != 2 || failed.runtimeEvidence[0]["status"] != "unavailable" {
+		t.Fatal("canceled initial source read qualified as a bracket")
+	}
+}
 
 func TestAPI01_IsolationAssist(t *testing.T) {
 	for _, tc := range []struct {

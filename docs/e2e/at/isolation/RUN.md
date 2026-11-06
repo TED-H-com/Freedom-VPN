@@ -4,6 +4,14 @@
 >
 > **Root-record decision:** Canonical root `AT10`–`AT13` and `support`/`reload-stream` payloads in `docs/e2e/at/isolation/` remain byte-identical to pre-run `37b3c25f60194e0d2261cf9aca30dfe8fc5d93be` and retain the last passing full run (**Follow-up 25**, `f25`, `bd73d7a4-03f1-4b17-97c2-9c25a39ac0db`, backed by [`history/follow-up-25/archive.json`](history/follow-up-25/archive.json)). Every Follow-up 27 run artifact is sealed under [`history/follow-up-27-run/`](history/follow-up-27-run/archive.json); see [`## Follow-up 27 — 2026-11-05`](#follow-up-27--2026-11-05-newest-attempt-failed) below and [`followup27-2026-11-05.md`](followup27-2026-11-05.md).
 
+Current clone collection waits up to 20 seconds for a coherent source agent and
+available launch identity before retaining the initial process bracket and reading
+the freeze samples. The exact successful read becomes the sole source candidate;
+earlier reads remain nested readiness diagnostics in `clone-runtime.json`.
+Cancellation or timeout leaves the bracket unavailable and skips latch sampling.
+The three-second latch and same-launch reviewer predicates are unchanged. This
+collector correction does not revise any recorded run or establish live acceptance.
+
 # Isolation run procedure — Follow-up 19 (2026-11-03)
 
 One assembled invocation only, after the D-147 and unchanged lab rows. Baseline main `27ff6392`; measured source `458b7a89`. No rebase, reset, branch recreation, reservation, GitHub workflow, push or tag.
