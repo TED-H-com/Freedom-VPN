@@ -17,6 +17,17 @@ import (
 // acquiring the lock or changing a scenario predicate. The observer is joined
 // before return (and on test cleanup); its stop marker belongs to the harness.
 func (r *runner) observeUpdateRecovery(ctx context.Context) func() {
+	startedAt := time.Now().UTC()
+	writeContext := func(completedAt time.Time, started, joined bool, inputs map[string]recoveryInput) {
+		value := projectRecoveryContext(r.runID, r.sourceCommit, startedAt, completedAt, started, joined, inputs)
+		raw, err := json.MarshalIndent(value, "", "  ")
+		if err == nil {
+			err = os.WriteFile(filepath.Join(r.dir, "update-recovery-context.json"), append(raw, '\n'), 0o644)
+		}
+		if err != nil {
+			r.t.Errorf("write recovery context: %v", err)
+		}
+	}
 	const marker = "/var/lib/vpn-node/e2e/recovery-observer-stop"
 	stopPath := filepath.Join(r.lab.state, "node", "var", "e2e", "recovery-observer-stop")
 	_ = os.Remove(stopPath)
@@ -44,6 +55,7 @@ done`)
 	var output bytes.Buffer
 	cmd.Stdout, cmd.Stderr = &output, &output
 	if err := cmd.Start(); err != nil {
+		writeContext(time.Now().UTC(), false, false, nil)
 		r.t.Errorf("start recovery observer: %v", err)
 		return func() {}
 	}
@@ -54,9 +66,12 @@ done`)
 				r.t.Errorf("stop recovery observer: %v", err)
 				_ = cmd.Process.Kill()
 			}
-			if err := cmd.Wait(); err != nil {
-				r.t.Errorf("join recovery observer: %v", err)
+			joinErr := cmd.Wait()
+			completedAt := time.Now().UTC()
+			if joinErr != nil {
+				r.t.Errorf("join recovery observer: %v", joinErr)
 			}
+			inputs := map[string]recoveryInput{"heartbeats": {Data: output.Bytes(), Available: joinErr == nil}}
 			_ = os.Remove(stopPath)
 			if err := os.WriteFile(filepath.Join(r.dir, "update-recovery-heartbeats.txt"), []byte(Redact(output.String())), 0o644); err != nil {
 				r.t.Errorf("write recovery observations: %v", err)
@@ -65,6 +80,7 @@ done`)
 			defer cancel()
 			for _, name := range []string{"agent", "watchdog"} {
 				log, err := exec.CommandContext(readCtx, "docker", "exec", r.lab.node, "cat", "/var/lib/vpn-node/e2e/"+name+".log").CombinedOutput()
+				inputs[name] = recoveryInput{Data: log, Available: err == nil}
 				if err != nil {
 					r.t.Errorf("read %s log: %v", name, err)
 				}
@@ -72,6 +88,7 @@ done`)
 					r.t.Errorf("write %s log: %v", name, err)
 				}
 			}
+			writeContext(completedAt, true, joinErr == nil, inputs)
 		})
 	}
 	r.t.Cleanup(finish)

@@ -402,7 +402,9 @@ func loadTC(ctx context.Context, ex Executor, ifaces []string) (TCState, []TCRea
 	for _, ifc := range ifaces {
 		raw, err := ex.Output(ctx, "tc", "-j", "qdisc", "show", "dev", ifc)
 		if err != nil {
-			return failure(ifc, "qdisc", "read_failed")
+			contextErr := ctx.Err()
+			r := TCReadEvidence{Interface: ifc, Attachment: "qdisc", Error: "read_failed"}
+			return st, append(reads, r), tcReadError(contextErr, r, err)
 		}
 		objects, err := ParseTCObjects(raw)
 		if err != nil {
@@ -415,7 +417,9 @@ func loadTC(ctx context.Context, ex Executor, ifaces []string) (TCState, []TCRea
 		}
 		classRaw, err := ex.Output(ctx, "tc", "-j", "class", "show", "dev", ifc)
 		if err != nil {
-			return failure(ifc, "class", "read_failed")
+			contextErr := ctx.Err()
+			r := TCReadEvidence{Interface: ifc, Attachment: "class", Error: "read_failed"}
+			return st, append(reads, r), tcReadError(contextErr, r, err)
 		}
 		if len(strings.TrimSpace(string(classRaw))) > 0 {
 			view, err = ParseClassJSON(classRaw, view)

@@ -1,0 +1,158 @@
+{
+  "schema_version": 1,
+  "run_id": "5c1d7234-7eb3-41a9-8d4e-1536572c4917",
+  "source_commit": "8286ef1176065d0dfc2abf9639c2262400492721",
+  "source_dirty": false,
+  "invocations": 1,
+  "reruns": 0,
+  "lab_included": true,
+  "supervisor_started_at": "2026-11-06T20:02:50.830477Z",
+  "supervisor_completed_at": "2026-11-06T20:24:57.927245Z",
+  "duration_seconds": 1327.096768,
+  "exit_code": 0,
+  "scheduled": {
+    "status": "pass",
+    "acceptance_counts": {
+      "pass": 27,
+      "blocked": 2,
+      "fail": 0
+    },
+    "expected_blocks": [
+      {
+        "case": "AT11",
+        "row": "IPv6 platform matrix"
+      },
+      {
+        "case": "AT13",
+        "row": "continuous crash/NetBird/reboot/updater transitions"
+      }
+    ],
+    "phase_count": 12,
+    "all_phases_exit_zero": true
+  },
+  "populated_holds": {
+    "status": "pass",
+    "coverage": {
+      "populated_hold": "pass",
+      "independent_denial": "pass",
+      "alarm_single_escalation": "pass",
+      "unrelated_failure_precedence": "pass",
+      "active_stop_retention": "pass",
+      "matching_recovery": "pass",
+      "distinct_later_incident": "pass",
+      "pure_stale_generation": "pass",
+      "central_30s_fallback": "pass"
+    },
+    "join_problems": [],
+    "independently_checked_accepted_report_lease_joins": 18,
+    "attempt_statuses": [
+      "partial",
+      "partial",
+      "partial"
+    ],
+    "attempt_scope": "Each incident exercises a subset; the three incidents provide complete aggregate coverage."
+  },
+  "clone": {
+    "status": "pass",
+    "criteria": {
+      "clone_created": "established",
+      "identity_fingerprints_match": "established",
+      "final_agent_stop": "established",
+      "executing_release_config": "established",
+      "corrected_transport": "established",
+      "central_conflict_frozen": "established",
+      "source_freeze_response_and_report": "established",
+      "consumer_latch_held": "established",
+      "clone_stop_log_retention": "established"
+    },
+    "initial_source_readiness": {
+      "status": "ready",
+      "prior_attempts": 1,
+      "budget_seconds": 20,
+      "started_at": "2026-11-06T20:24:04.516224869Z",
+      "completed_at": "2026-11-06T20:24:05.006795268Z",
+      "selected_process_coherent": true
+    }
+  },
+  "stop_receipts": {
+    "count": 6,
+    "all_parent_receipts_matched": true,
+    "errors": []
+  },
+  "recovery": {
+    "status": "pass",
+    "assertions_passed": 6,
+    "assertions_total": 6
+  },
+  "boundary": {
+    "status": "pass"
+  },
+  "provenance": {
+    "evidence_retention": "Original run artifacts retained by the acceptance owner; this public record contains selected logical artifact integrity pins. No public artifact bundle is linked.",
+    "independent_audit": "Same-run identities, accepted report/own signed lease joins, parent receipts and original artifact hashes were independently checked.",
+    "overlap_samples": 45,
+    "foreign_overlap_samples": 0,
+    "confounded": false,
+    "preflight_context": "Three free admission samples across 30 seconds; the historical strict r<=3 context was false for one r=4 sample and remains recorded.",
+    "cleanup": {
+      "containers": [],
+      "images": [],
+      "networks": [],
+      "volumes": []
+    }
+  },
+  "closure": {
+    "F17-01": "closed for pure stale-generation populated-hold evidence",
+    "D-163": "retire the active pure_stale_generation not-exercised exemption; a recurrence must fail",
+    "historical_artifacts": "Unchanged, including the old exemption description embedded in the original scheduled output."
+  },
+  "limits": [
+    "Physical arm64, independent-clock guests and the complete real-platform/operator acceptance matrix are not established by this run.",
+    "Clone evidence is bounded transport and local latch evidence, not indefinite persistence, clone datapath correctness or watchdog-stop proof.",
+    "Stop receipt times are observation bounds; Step cancellation and exact kernel exit instants are not inferred.",
+    "Historical F27 failures and separate run 42217163557 remain unchanged.",
+    "Preflight historical all-current-rows r<=3 context was false because one sample had r=4; current admission passed. No equivalence to that historical quiet criterion is claimed."
+  ],
+  "artifact_integrity": {
+    "invocation.json": {
+      "sha256": "ba3c3654f944148aafc590f23604ff7819c9cf8c37ee8cc143ac11a23edef582",
+      "bytes": 258
+    },
+    "scheduled-job.json": {
+      "sha256": "ba8159fa41d16e2373935dccb7e65163efaf225cb2b048e5a902638491e82e59",
+      "bytes": 131827
+    },
+    "populated-holds-review.json": {
+      "sha256": "527079309cfdacb9c29da77ef3a9e88d74304af5c18f8917fd4551c1f76afeab",
+      "bytes": 15999
+    },
+    "clone-transport-review.json": {
+      "sha256": "71a906a93c59d61625fdd65a9fd1b831079e68618e64871ad5a0e21ffad3c00e",
+      "bytes": 122364
+    },
+    "stop-receipt-review.json": {
+      "sha256": "0a91094ac170325fe211d2e8df90d63585c38599d53787958d36942fe591663a",
+      "bytes": 11252
+    },
+    "recovery-verdict.json": {
+      "sha256": "3180c151f6c25d06c7e106eaf9d8eefe947fc466e4a8104c880abd9d657a2d16",
+      "bytes": 97276
+    },
+    "boundary-review.json": {
+      "sha256": "bc0ebd394cc965f06e4c5d2dc2e250c79ad04ad8c6dd2611912312f2edba666f",
+      "bytes": 153179
+    },
+    "auxiliary-inputs.json": {
+      "sha256": "71cf360ef6b3fd87ce34a4361336ee54e3214914921150da12383ebf55a35b57",
+      "bytes": 2343
+    },
+    "auxiliary-reviews.json": {
+      "sha256": "304c81cee7f36c4ad580dd817c0c7ea65e445a33f63f77aa6a743922567b9455",
+      "bytes": 713
+    },
+    "cleanup-inventory.json": {
+      "sha256": "9df16e0196bfcc7d3b0ffec5e026f3a1e3fee05443e42a14ec0ad2fdbff109a1",
+      "bytes": 74
+    }
+  }
+}
