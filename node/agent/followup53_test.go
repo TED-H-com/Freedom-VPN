@@ -3,28 +3,16 @@ package agent
 import (
 	"context"
 	"errors"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 )
 
-// TestF53_F1701_StaleLeaseHoldReportQosDetail proves the report mechanism
-// behind Isolation F17-01 without changing product behavior:
-//  1. Decide() itself sets qos.Detail = "Rate policy could not be applied." and
-//     source_binding.Detail = "No member binding was admitted." (with
-//     internet_only Status = "passed" and Detail = nil) on a stale-lease step.
-//  2. Because the node previously served a populated generation in the same
-//     Engine process, e.servingRead is non-nil (retaining the prior generation's
-//     verified live read in this fixture) and is not cleared on withdrawal.
-//     Apply retains a read only with a nonzero timing timestamp; live verify
-//     retains failed as well as successful reads. This is not an iff theorem.
-//  3. Engine.report() -> attachServingRead() unconditionally overwrites the
-//     failed qos check's Detail with "read_at=... source=live candidate=<G> verified=true ...".
-//  4. In this fixture, removing e.servingRead lets Engine.report() preserve
-//     Decide()'s
-//     "Rate policy could not be applied." detail on qos.
+// TestF53_F1701_StaleLeaseHoldReportQosDetail preserves the causal explanation
+// behind Isolation F17-01: Decide() sets qos.Detail = "Rate policy could not be applied."
+// on a stale lease while the prior generation's verified live read remains
+// diagnostic evidence. Reporting must preserve both without granting serving.
 func TestF53_F1701_StaleLeaseHoldReportQosDetail(t *testing.T) {
 	r := newRig(t)
 	keep, _ := servePair(t, r)
@@ -67,17 +55,21 @@ func TestF53_F1701_StaleLeaseHoldReportQosDetail(t *testing.T) {
 		t.Fatalf("Decide source_binding check: status=%s code=%s detail=%q", bindDecide.Status, codeOf(t, bindDecide), detailValue(bindDecide))
 	}
 
-	// Step 2: Engine.report() -> attachServingRead() overwrites qos.Detail with the
-	// retained servingRead diagnostic whenever e.servingRead != nil.
+	// Step 2: Preserve the causal QoS detail and separately retain the old read.
 	rep := mustReport(t, r, t.Context())
 	requireObservationSchema(t, rep)
 	qosReport, ok := checkBy(rep.Checks, api.NodeCheckNameQos)
 	if !ok || qosReport.Status != api.HealthCheckStatusFailed || codeOf(t, qosReport) != api.ErrorCodeVALIDATIONFAILED {
 		t.Fatalf("Report qos check: %+v", qosReport)
 	}
-	if !strings.HasPrefix(detailValue(qosReport), "read_at=") || !strings.Contains(detailValue(qosReport), "source=live") || !strings.Contains(detailValue(qosReport), "verified=true") {
-		t.Fatalf("Report qos detail: got %q, want retained read_at=... source=live ... verified=true ...", detailValue(qosReport))
+	if detailValue(qosReport) != "Rate policy could not be applied." {
+		t.Fatalf("Report lost causal QoS detail: %q", detailValue(qosReport))
 	}
+	read, err := rep.ServingRead.Get()
+	if err != nil || !read.Verified || read.Source != api.ServingReadEvidenceSourceLive || uint64(read.CandidateGeneration) != servedGen || !read.ReadAt.Equal(r.eng.servingRead.At) || rep.MemberForwardingEnabled {
+		t.Fatalf("retained read was lost or became permission: %+v %v", read, err)
+	}
+
 	bindReport, ok := checkBy(rep.Checks, api.NodeCheckNameSourceBinding)
 	if !ok || detailValue(bindReport) != "No member binding was admitted." {
 		t.Fatalf("Report source_binding detail: got %q, want %q", detailValue(bindReport), "No member binding was admitted.")
@@ -91,6 +83,9 @@ func TestF53_F1701_StaleLeaseHoldReportQosDetail(t *testing.T) {
 
 	repNoRead := mustReport(t, r, t.Context())
 	requireObservationSchema(t, repNoRead)
+	if !repNoRead.ServingRead.IsSpecified() || !repNoRead.ServingRead.IsNull() {
+		t.Fatal("no retained read must be explicit null")
+	}
 	qosNoRead, ok := checkBy(repNoRead.Checks, api.NodeCheckNameQos)
 	if !ok || detailValue(qosNoRead) != "Rate policy could not be applied." {
 		t.Fatalf("Report qos detail with nil servingRead: got %q, want %q", detailValue(qosNoRead), "Rate policy could not be applied.")

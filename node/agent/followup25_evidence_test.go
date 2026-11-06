@@ -147,7 +147,8 @@ func TestD106_ProducerRetainsAuthoritativeSnapshot(t *testing.T) {
 	}
 	rep = mustReport(t, r, t.Context())
 	got, _ = rep.TcEvidence.Get()
-	if !got.Verified || !got.ReadAt.Equal(want.ReadAt) || rep.MemberForwardingEnabled {
+	read, readErr := rep.ServingRead.Get()
+	if !got.Verified || !got.ReadAt.Equal(want.ReadAt) || rep.MemberForwardingEnabled || readErr != nil || read.Verified || read.Source != api.ServingReadEvidenceSourceLive || uint64(read.CandidateGeneration) != m.Generation {
 		t.Fatal("verifier/engine outcomes conflated")
 	}
 	x.foreignTC = true
