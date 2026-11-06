@@ -65,7 +65,9 @@ class Nightly(unittest.TestCase):
         import shutil
         from nightly_summary import DRIVER_PHASE, HOLD_REVIEW_PHASE
         source=Path(__file__).resolve().parents[4]/'docs/e2e/at/isolation/history/follow-up-24-nightly-41836274140'
-        original=json.loads((source/'scheduled-job.json').read_text())
+        original_path=source/'scheduled-job.json'
+        original_bytes=original_path.read_bytes()
+        original=json.loads(original_bytes)
         with tempfile.TemporaryDirectory() as tmp:
             root=Path(tmp)
             for name in ('AT10.json','AT11.json','AT12.json','AT13.json','populated-holds-review.json'):
@@ -74,7 +76,8 @@ class Nightly(unittest.TestCase):
             raw=review_path.read_bytes()
             result=summarize(root,original['phases'],original['run_id'])
             self.assertEqual(result['status'],'fail')
-            self.assertEqual(original['reviews'][0]['mapping'],'expected not exercised')
+            self.assertEqual(original['status'],'fail')
+            self.assertEqual(original_path.read_bytes(),original_bytes)
             self.assertEqual(result['errors'],['AT13 lease member expiry under control loss: blocked', HOLD_REVIEW_PHASE+': nonzero exit 1'])
             self.assertEqual(result['reviews'][0]['mapping'],'unexpected')
             self.assertEqual(review_path.read_bytes(),raw)
