@@ -1,12 +1,16 @@
 package e2e
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/node/agent"
 	"github.com/google/uuid"
 )
 
@@ -22,18 +26,40 @@ func recoveryLog(at time.Time, fields map[string]any) []byte {
 	return append(raw, '\n')
 }
 
+// Use the handlers selected by the real service entrypoints, with an explicit
+// record time so collection-window assertions do not depend on wall-clock races.
+func recoveryServiceLog(t *testing.T, service string, at time.Time, msg string, attrs ...slog.Attr) []byte {
+	t.Helper()
+	var buf bytes.Buffer
+	var handler slog.Handler
+	switch service {
+	case "agent":
+		handler = agent.RedactHandler{Next: slog.NewTextHandler(&buf, nil)}
+	case "watchdog":
+		handler = slog.NewJSONHandler(&buf, nil)
+	default:
+		t.Fatalf("unknown test service %q", service)
+	}
+	record := slog.NewRecord(at, slog.LevelInfo, msg, 0)
+	record.AddAttrs(attrs...)
+	if err := handler.Handle(context.Background(), record); err != nil {
+		t.Fatal(err)
+	}
+	return buf.Bytes()
+}
+
 func TestSEC02_RecoveryContextAllowlistAndHistoricalBinding(t *testing.T) {
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	end := start.Add(time.Minute)
 	run, boot := uuid.NewString(), uuid.NewString()
 	var agent []byte
 	for _, at := range []time.Time{start.Add(-time.Second), start, end.Add(time.Second)} {
-		agent = append(agent, recoveryLog(at, map[string]any{
-			"msg": "apply", "err": "TC_FOREIGN_FILTER", "tc_read_failure": "command_exit", "tc_read_context_state_at_return": "deadline", "tc_read_exit_code": 7,
-			"tc_read_interface": "fvup0", "tc_read_attachment": "7560:", "argv": "TEST_ONLY_PRIVATE_ARGV", "stderr": "TEST_ONLY_PRIVATE_STDERR", "token": "TEST_ONLY_PRIVATE_TOKEN",
-		})...)
+		agent = append(agent, recoveryServiceLog(t, "agent", at, "apply",
+			slog.String("err", "TC_FOREIGN_FILTER"), slog.String("tc_read_failure", "command_exit"), slog.String("tc_read_context_state_at_return", "deadline"), slog.Int("tc_read_exit_code", 7),
+			slog.String("tc_read_interface", "fvup0"), slog.String("tc_read_attachment", "7560:"), slog.String("argv", "TEST_ONLY_PRIVATE_ARGV"), slog.String("stderr", "TEST_ONLY_PRIVATE_STDERR"), slog.String("token", "TEST_ONLY_PRIVATE_TOKEN"),
+		)...)
 	}
-	watchdog := recoveryLog(start.Add(time.Second), map[string]any{"msg": "baseline decision", "writer": "watchdog", "cause": "heartbeat_stale", "boot_id": boot, "mono_ns": uint64(9007199254740993), "serving": false, "baseline_ok": true})
+	watchdog := recoveryServiceLog(t, "watchdog", start.Add(time.Second), "baseline decision", slog.String("writer", "watchdog"), slog.String("cause", "heartbeat_stale"), slog.String("boot_id", boot), slog.Uint64("mono_ns", 9007199254740993), slog.Bool("serving", false), slog.Bool("baseline_ok", true))
 	inputs := map[string]recoveryInput{
 		"heartbeats": {Data: []byte(recoveryHeartbeat(start, boot)), Available: true},
 		"agent":      {Data: agent, Available: true}, "watchdog": {Data: watchdog, Available: true},
@@ -69,11 +95,79 @@ func TestSEC02_RecoveryContextAllowlistAndHistoricalBinding(t *testing.T) {
 	}
 }
 
+func TestSEC02_RecoveryContextTextHandlerQuotedFields(t *testing.T) {
+	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	boot := uuid.NewString()
+	var input []byte
+	for _, msg := range []string{"apply", "baseline decision", "baseline write", "baseline canceled"} {
+		input = append(input, recoveryServiceLog(t, "agent", start, msg,
+			slog.String("writer", "agent"), slog.String("phase", "end"), slog.String("cause", "policy_expired"), slog.String("boot_id", boot),
+			slog.String("err", "serving verification timed out"), slog.Uint64("mono_ns", 9007199254740993), slog.Uint64("generation", ^uint64(0)),
+			slog.Bool("serving", false), slog.Bool("baseline_ok", true), slog.Bool("succeeded", true),
+			slog.String("TEST_ONLY_PRIVATE key=\"\\\n", "TEST_ONLY_PRIVATE value=\"\\\n\t\x00"),
+			slog.String("opaque", `TEST_ONLY_PRIVATE\path`), slog.String("token", "TEST_ONLY_PRIVATE_TOKEN"),
+		)...)
+	}
+	if !bytes.Contains(input, []byte(`msg="baseline decision"`)) || !bytes.Contains(input, []byte(`\x00`)) || bytes.Contains(input, []byte("TEST_ONLY_PRIVATE_TOKEN")) {
+		t.Fatal("fixture did not exercise production quoting and redaction")
+	}
+	original := bytes.Clone(input)
+	out := projectRecoveryContext(uuid.NewString(), recoveryTestCommit, start, start, true, true, map[string]recoveryInput{"agent": {Data: input, Available: true}})
+	s := out.Streams["agent"]
+	if s.Malformed != 0 || s.OutsideWindow != 0 || len(s.Records) != 4 || !bytes.Equal(input, original) {
+		t.Fatalf("text input lost or changed: %+v", s)
+	}
+	for i, msg := range []string{"apply", "baseline decision", "baseline write", "baseline canceled"} {
+		row := s.Records[i]
+		for key, want := range map[string]any{"event": msg, "writer": "agent", "phase": "end", "cause": "policy_expired", "boot_id": boot, "err": "serving verification timed out", "mono_ns": "9007199254740993", "generation": "18446744073709551615", "serving": false, "baseline_ok": true, "succeeded": true} {
+			if row[key] != want {
+				t.Fatalf("text field %s: got %v, want %v", key, row[key], want)
+			}
+		}
+	}
+	raw, err := json.Marshal(out)
+	if err != nil || bytes.Contains(raw, []byte("TEST_ONLY_PRIVATE")) || bytes.Contains(raw, []byte("opaque")) || bytes.Contains(raw, []byte("token")) {
+		t.Fatalf("unsafe text projection: %s %v", raw, err)
+	}
+}
+
+func TestSEC02_RecoveryContextRejectsMalformedText(t *testing.T) {
+	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	base := strings.TrimSuffix(string(recoveryServiceLog(t, "agent", start, "apply")), "\n")
+	for name, suffix := range map[string]string{
+		"duplicate":         " msg=apply",
+		"quoted duplicate":  ` "msg"=apply`,
+		"unknown duplicate": ` opaque=TEST_ONLY_PRIVATE "opaque"=TEST_ONLY_PRIVATE`,
+		"missing equals":    " TEST_ONLY_PRIVATE",
+		"empty bare value":  " opaque=",
+		"bare equals":       " opaque=TEST_ONLY_PRIVATE=extra",
+		"unterminated":      ` opaque="TEST_ONLY_PRIVATE`,
+		"invalid escape":    ` opaque="TEST_ONLY_PRIVATE\q"`,
+		"trailing junk":     ` opaque="TEST_ONLY_PRIVATE"junk`,
+		"raw tab":           " opaque=TEST_ONLY_PRIVATE\tvalue",
+	} {
+		t.Run(name, func(t *testing.T) {
+			out := projectRecoveryContext(uuid.NewString(), recoveryTestCommit, start, start, true, true, map[string]recoveryInput{"agent": {Data: []byte(base + suffix + "\n"), Available: true}})
+			s := out.Streams["agent"]
+			raw, err := json.Marshal(out)
+			if s.Malformed != 1 || len(s.Records) != 0 || err != nil || bytes.Contains(raw, []byte("TEST_ONLY_PRIVATE")) {
+				t.Fatalf("malformed input retained or leaked: %s %v", raw, err)
+			}
+		})
+	}
+	input := base + ` tc_read_exit_code=256 generation=18446744073709551616 serving="true" mono_ns=1.5` + "\n"
+	out := projectRecoveryContext(uuid.NewString(), recoveryTestCommit, start, start, true, true, map[string]recoveryInput{"agent": {Data: []byte(input), Available: true}})
+	s := out.Streams["agent"]
+	if s.Malformed != 0 || len(s.Records) != 1 || len(s.Records[0]) != 4 {
+		t.Fatalf("text format widened field types or bounds: %+v", s)
+	}
+}
+
 func TestSEC02_RecoveryContextBoundsNewestAndPartialInputs(t *testing.T) {
 	start := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
 	var agent []byte
 	for i := range recoveryRecordLimit + 20 {
-		agent = append(agent, recoveryLog(start.Add(time.Duration(i)*time.Second), map[string]any{"msg": "apply", "generation": i})...)
+		agent = append(agent, recoveryServiceLog(t, "agent", start.Add(time.Duration(i)*time.Second), "apply", slog.Int("generation", i))...)
 	}
 	out := projectRecoveryContext(uuid.NewString(), recoveryTestCommit, start, start.Add(time.Hour), true, false, map[string]recoveryInput{
 		"agent":      {Data: agent, Available: false},
@@ -87,7 +181,8 @@ func TestSEC02_RecoveryContextBoundsNewestAndPartialInputs(t *testing.T) {
 	if h.Incomplete != 3 || len(h.Records) != 1 || h.Records[0]["heartbeat_fields_available"] != false || out.Streams["watchdog"].Available {
 		t.Fatalf("partial input presented as complete: %+v", out.Streams)
 	}
-	large := strings.Repeat("x", recoveryInputLimit+30) + "\n" + strings.Repeat("y", recoveryLineLimit+1) + "\nmalformed\n" + string(recoveryLog(start, map[string]any{"msg": "apply", "tc_read_failure": "read_error"}))
+	oversized := recoveryServiceLog(t, "agent", start, "apply", slog.String("stderr", strings.Repeat("y", recoveryLineLimit+1)))
+	large := strings.Repeat("x", recoveryInputLimit+30) + "\n" + string(oversized) + "malformed\n" + string(recoveryServiceLog(t, "agent", start, "apply", slog.String("tc_read_failure", "read_error")))
 	out = projectRecoveryContext(uuid.NewString(), recoveryTestCommit, start, start, true, true, map[string]recoveryInput{"agent": {Data: []byte(large), Available: true}})
 	a = out.Streams["agent"]
 	if a.ScannedBytes > recoveryInputLimit || !a.Truncated || a.Malformed != 2 || a.Incomplete != 1 || len(a.Records) != 1 || a.Records[0]["tc_read_failure"] != "read_error" {

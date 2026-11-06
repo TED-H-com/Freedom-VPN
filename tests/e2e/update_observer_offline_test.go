@@ -3,9 +3,11 @@
 package e2e
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -56,13 +58,21 @@ func TestAT19_RecoveryObserverOfflineArtifact(t *testing.T) {
 				t.Fatalf("observer join/partial status: %s", raw)
 			}
 			a, w := result.Streams["agent"], result.Streams["watchdog"]
-			if !a.Available || len(a.Records) != 1 || a.Records[0]["tc_read_failure"] != "command_exit" || a.Records[0]["window_position"] != "before" || w.Available != (mode != "read_failure") || len(w.Records) != 1 || w.Records[0]["window_position"] != "after" {
+			if !a.Available || a.Malformed != 0 || len(a.Records) != 2 || a.Records[0]["tc_read_failure"] != "command_exit" || a.Records[0]["tc_read_context_state_at_return"] != "deadline" || a.Records[0]["window_position"] != "before" || a.Records[1]["event"] != "baseline write" || a.Records[1]["generation"] != "18446744073709551615" || a.Records[1]["succeeded"] != true || w.Available != (mode != "read_failure") || len(w.Records) != 1 || w.Records[0]["window_position"] != "after" {
 				t.Fatalf("actual log buffers not projected: %s", raw)
 			}
 			for _, name := range []string{"heartbeats", "agent", "watchdog"} {
 				if _, err := os.Stat(filepath.Join(root, "out", "update-recovery-"+name+".txt")); err != nil {
 					t.Fatalf("existing TXT missing: %v", err)
 				}
+			}
+			original, err := os.ReadFile(filepath.Join(root, "agent.log"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			retained, err := os.ReadFile(filepath.Join(root, "out", "update-recovery-agent.txt"))
+			if err != nil || !bytes.Equal(retained, []byte(Redact(string(original)))) {
+				t.Fatalf("existing TXT content changed: %v", err)
 			}
 			if _, err := os.Stat(filepath.Join(root, "state", "node", "var", "e2e", "recovery-observer-stop")); !os.IsNotExist(err) {
 				t.Fatalf("observer marker not removed: %v", err)
@@ -112,7 +122,7 @@ func TestAT19_RecoveryObserverChild(t *testing.T) {
 			}
 			_, _ = os.Stdout.Write(raw)
 		} else if filepath.Base(args[3]) == "watchdog.log" {
-			_, _ = os.Stdout.Write(recoveryLog(time.Now().UTC(), map[string]any{"msg": "baseline write", "writer": "watchdog", "phase": "end", "cause": "heartbeat_stale", "succeeded": true}))
+			_, _ = os.Stdout.Write(recoveryServiceLog(t, "watchdog", time.Now().UTC(), "baseline write", slog.String("writer", "watchdog"), slog.String("phase", "end"), slog.String("cause", "heartbeat_stale"), slog.Bool("succeeded", true)))
 			if mode == "read_failure" {
 				fmt.Fprintln(os.Stderr, "TEST_ONLY_PRIVATE_STDERR")
 				os.Exit(9)
@@ -146,7 +156,8 @@ func TestAT19_RecoveryObserverChild(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "run-id"), []byte(runID), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	log := recoveryLog(time.Now().Add(-time.Second), map[string]any{"msg": "apply", "err": "TC_FOREIGN_FILTER", "tc_read_failure": "command_exit", "tc_read_context_state_at_return": "deadline", "tc_read_interface": "fvup0", "tc_read_attachment": "7560:", "stderr": "TEST_ONLY_PRIVATE_STDERR"})
+	log := recoveryServiceLog(t, "agent", time.Now().Add(-time.Second), "apply", slog.String("err", "TC_FOREIGN_FILTER"), slog.String("tc_read_failure", "command_exit"), slog.String("tc_read_context_state_at_return", "deadline"), slog.String("tc_read_interface", "fvup0"), slog.String("tc_read_attachment", "7560:"), slog.String("stderr", "TEST_ONLY_PRIVATE_STDERR"))
+	log = append(log, recoveryServiceLog(t, "agent", time.Now().Add(-time.Second), "baseline write", slog.String("writer", "agent"), slog.String("phase", "end"), slog.String("cause", "policy_expired"), slog.Uint64("generation", ^uint64(0)), slog.Bool("succeeded", true))...)
 	if err := os.WriteFile(filepath.Join(root, "agent.log"), log, 0o600); err != nil {
 		t.Fatal(err)
 	}
