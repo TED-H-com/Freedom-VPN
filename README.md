@@ -4,35 +4,52 @@
 
 [Project website](https://ted-h-com.github.io/Freedom-VPN/en/) · [專案網站](https://ted-h-com.github.io/Freedom-VPN/) · [Delivery guide](docs/DELIVERY.en.md)
 
-**Membership, usage and exit-node management for a self-hosted VPN.**
+**Your nodes. Your VPN service.**
 
-Freedom VPN brings members and Ubuntu exit nodes across locations into one control
-plane. It is built for operators developing a member-based VPN service, with a web
-portal for administration and member self-service.
+Freedom VPN is an open-source platform for teams building a membership-based VPN
+on their own infrastructure. It brings subscriptions, devices, usage and Ubuntu
+exit nodes across locations into one place, using self-hosted NetBird and its
+official apps for VPN connections.
 
-NetBird provides the overlay network and official client apps. Freedom VPN adds
-membership and subscription integration, usage accounting, policy enforcement and
-node lifecycle management through upstream APIs and the CLI.
+- **Members** review subscriptions, manage devices and track usage in the portal,
+  then connect through the official NetBird app.
+- **Administrators** manage membership and decide which exits are available to
+  each member group.
+- **Operators** enroll and maintain nodes through shared deployment, update and
+  recovery workflows.
 
-**Status: development and validation. This is not a production-ready release.**
-The [delivery guide](docs/DELIVERY.en.md) separates implemented features, recorded
-verification and remaining deployment prerequisites. Windows, macOS, Android and
-iOS apps still require real-device validation; Linux lab results do not establish
-their compatibility.
+NetBird provides the overlay network and connection coordination. Freedom VPN adds
+the membership, accounting, policy and node management around it.
 
 ## What it does
 
-| Area | Existing implementation |
+| Area | Capabilities |
 |---|---|
-| Members and access | Member and administrator portals, subscription integration, device authorization and access withdrawal |
-| Exit nodes | Enrollment, readiness and publication, with manual exit selection through official NetBird apps |
-| Usage and policy | Cross-device and cross-exit usage accounting, fair-use shaping, server-side Internet-only isolation and DNS/domain policies |
-| Operations | Signed node updates, health checks, recovery and rollback, plus deployment and restore runbooks |
+| Membership and devices | Connect subscriptions to service access, manage device allowances, suspend members and revoke devices |
+| Exits across locations | Enroll Ubuntu nodes, assign member groups, check readiness and choose when to publish or disable exits |
+| Usage and fair use | View usage across a member's devices and exits, with configurable fair-use speed adjustments |
+| Exit isolation | Apply Internet-only forwarding rules at the node to separate member traffic from the host, private networks and other members |
+| DNS and domain policies | Manage domain block and allow lists and malicious-domain protection through the service's DNS resolvers |
+| Updates and recovery | Assign target releases, track signed updates and health checks, and recover from update failures with rollback and restore guides |
 
-The isolation boundary is the member's VPN path through an exit node. It does not
-provide an OS kill switch or control the member device's local Wi-Fi/LAN. DNS
-protection uses domain policies without TLS interception. Acceptance gaps and
-hardware measurements remain documented in the delivery guide.
+## Connect with the official app
+
+For a configured service, your operator supplies the member portal and NetBird
+management URLs. The portal manages your account; the app handles the VPN connection.
+
+1. **Sign in to the member portal.** Confirm active service access, your device
+   allowance and the exits available to you.
+2. **Set up NetBird.** Install the official app version listed in the
+   [member guide](docs/handover/member-guide.md), set its **Management URL** to your
+   operator's address, and sign in with the same identity used in the portal.
+3. **Check device authorization.** Return to the portal's device list and wait for
+   the device to show **authorized**. Authorization is automatic when identity,
+   membership and device allowance checks pass; contact the operator if it stays pending.
+4. **Choose an exit.** Manually select an available exit in NetBird to send traffic
+   through it. Use the portal to review usage and fair-use status.
+
+See the [member guide](docs/handover/member-guide.md) for platform-specific setup
+and DNS settings, and the [version matrix](docs/netbird/VERSIONS.md) for app versions.
 
 ## How it fits together
 
@@ -52,15 +69,14 @@ flowchart LR
 The control plane manages identity, configuration and accounting; ordinary member
 traffic travels through the selected exit. Each exit runs the node agent and
 updater, with nftables and traffic control for enforcement. The
-[version matrix](docs/netbird/VERSIONS.md) records pinned components and candidate
-client versions; the [product specification](docs/spec/PROJECT_SPEC.zh-TW.md)
-(Traditional Chinese) defines the full architecture and its boundaries.
+[product specification](docs/spec/PROJECT_SPEC.zh-TW.md) (Traditional Chinese)
+describes the full architecture.
 
 ## Start here
 
 | Task | Guide |
 |---|---|
-| Understand this delivery and its limits | [Delivery guide](docs/DELIVERY.en.md) · [交付導覽](docs/DELIVERY.md) |
+| Explore the service and its current scope | [Delivery guide](docs/DELIVERY.en.md) · [交付導覽](docs/DELIVERY.md) |
 | Run the isolated development stack | [Dev-stack bring-up and teardown](docs/e2e/README.md#bring-up) |
 | Prepare a deployment | [Deployment](docs/handover/deploy.md) and [configuration calibration](docs/handover/calibration.md) |
 | Operate members and nodes | [Operator guide](docs/handover/operator-guide.md) |
@@ -68,7 +84,22 @@ client versions; the [product specification](docs/spec/PROJECT_SPEC.zh-TW.md)
 | Back up and recover | [Restore drill](docs/handover/restore-drill.md) |
 | Develop against the API | [API contracts](docs/contracts/README.md) |
 
-### Development lab
+## Project status and support
+
+Freedom VPN is under development and validation; it is **not a production-ready
+release**. Windows, macOS, Android and iOS apps still need real-device validation.
+Linux lab results and arm64 cross-compilation do not establish platform or hardware
+support. Production identity/MFA, payment, domains/TLS, DNS lists and operating
+parameters also need configuration and verification. The
+[delivery guide](docs/DELIVERY.en.md) records the remaining work.
+
+Server-side isolation covers traffic passing through an exit; it does not provide
+an OS kill switch or control a member device's local Wi-Fi/LAN. If the VPN route is
+lost, the device may use its ordinary Internet connection. DNS protection applies
+domain policies without TLS interception. See the
+[member guide](docs/handover/member-guide.md) for connection and DNS limitations.
+
+## Development lab
 
 Review the [lab setup](docs/e2e/README.md) and [runtime prerequisites and assigned
 port slots](docs/e2e/RUN.md) before starting. From the repository root, the documented
@@ -82,15 +113,12 @@ make -f mk/e2e.mk e2e-down
 
 The Docker lab uses test identities, payment fixtures and policy settings, and
 includes privileged node containers. Run teardown even when validation fails.
-Production IdP/MFA, payment, domains/TLS, DNS lists and operating parameters need
-separate configuration and verification.
 
 ## Repository map
 
 The central API, worker and node services use Go; the portal uses TypeScript,
 React and Vite. Central state is in PostgreSQL; nodes keep durable local state
-in SQLite. The node target is Ubuntu 24.04 LTS on amd64 and arm64; cross-compilation
-does not replace hardware validation.
+in SQLite. The node target is Ubuntu 24.04 LTS on amd64 and arm64.
 
 | Location | Responsibility |
 |---|---|
@@ -107,16 +135,20 @@ does not replace hardware validation.
 Read the [product specification](docs/spec/PROJECT_SPEC.zh-TW.md),
 [engineering contract](AGENTS.md) and [API documentation](docs/contracts/README.md)
 before changing behavior. Keep code, contracts and documentation aligned, run the
-checks relevant to the change, and distinguish observed results from planned or
-unmeasured behavior. Optional diagnostic and architecture work remains later work;
-the delivery guide describes the preserved extension points.
+checks relevant to the change, and describe how the result was verified.
 
-## Evidence and history
+## Project history
+
+The [roadmap](docs/ROADMAP.md), [findings and decisions](docs/handover/README.md)
+and [acceptance records](docs/e2e/README.md) retain the engineering history.
+
+<details>
+<summary>Recorded engineering checkpoints</summary>
 
 **Current cut:** [follow-up 49](docs/handover/follow-up-49.md), #482–#485 at aaffdc7f.
 **Previous cut:** [follow-up 48](docs/handover/follow-up-48.md), #478–#481 at b921c75f.
-The [findings and decisions](docs/handover/README.md), [acceptance records](docs/e2e/README.md)
-and [roadmap](docs/ROADMAP.md) retain the detailed engineering history.
+
+</details>
 
 ## License
 
