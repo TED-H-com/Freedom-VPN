@@ -1066,6 +1066,7 @@ describe('Portal Screens & Acceptance Tests (§18, §19 AT02/AT03/AT28/AT32)', (
     await act(async () => {
       await queryClient.refetchQueries({ queryKey: ['admin', 'node', PRIMARY_NODE_ID] });
     });
+    await screen.findByTestId('node-serving-read-values');
     const section = screen.getByTestId('node-serving-read-section');
     expect(within(section).getByRole('heading', { name: copy.title })).toBeVisible();
     expect(section).toHaveTextContent(copy.note);
@@ -1096,7 +1097,9 @@ describe('Portal Screens & Acceptance Tests (§18, §19 AT02/AT03/AT28/AT32)', (
     await act(async () => {
       await queryClient.refetchQueries({ queryKey: ['admin', 'node', PRIMARY_NODE_ID] });
     });
-    expect(screen.getByTestId('node-serving-read-source')).toHaveTextContent(copy.live);
+    await waitFor(() => {
+      expect(screen.getByTestId('node-serving-read-source')).toHaveTextContent(copy.live);
+    });
     expect(screen.getByTestId('node-serving-read-result').textContent).toBe(
       copy.rejected,
     );
@@ -1109,7 +1112,9 @@ describe('Portal Screens & Acceptance Tests (§18, §19 AT02/AT03/AT28/AT32)', (
     await act(async () => {
       await queryClient.refetchQueries({ queryKey: ['admin', 'node', PRIMARY_NODE_ID] });
     });
-    expect(screen.getByTestId('node-serving-read-diagnostic')).toBeEmptyDOMElement();
+    await waitFor(() => {
+      expect(screen.getByTestId('node-serving-read-diagnostic')).toBeEmptyDOMElement();
+    });
 
     // The later selected report has no read: remove every prior retained value.
     setMockNodeServingRead(PRIMARY_NODE_ID, null);

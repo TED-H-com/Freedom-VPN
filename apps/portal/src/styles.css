@@ -125,6 +125,16 @@ a:hover {
   color: #ffffff;
 }
 
+/* Keep language and mock-persona controls inside narrow viewports. */
+.top-bar-controls > div {
+  flex-wrap: wrap;
+}
+
+.top-bar-controls select {
+  min-width: 0;
+  max-width: 100%;
+}
+
 .app-body {
   display: flex;
   flex: 1;
