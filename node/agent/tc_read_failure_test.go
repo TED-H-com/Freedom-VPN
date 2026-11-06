@@ -3,7 +3,6 @@ package agent
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"log/slog"
 	"os"
@@ -48,23 +47,24 @@ func TestSEC02_TCReadFailureLogKeepsErrorContract(t *testing.T) {
 			t.Fatalf("missing original diagnostic: %v", err)
 		}
 		var buf bytes.Buffer
-		e := &Engine{clock: timeanchor.NewManual(time.Now().UTC(), time.Hour), log: slog.New(RedactHandler{Next: slog.NewJSONHandler(&buf, nil)})}
+		e := &Engine{clock: timeanchor.NewManual(time.Now().UTC(), time.Hour), log: slog.New(RedactHandler{Next: slog.NewTextHandler(&buf, nil)})}
 		e.noteApply(errors.Join(err, context.DeadlineExceeded))
 		if e.applyError.Code != api.ErrorCodeTCFOREIGNFILTER || e.applyError.Message != "TC_FOREIGN_FILTER" || len(e.decision.Errors) != 1 {
 			t.Fatalf("changed API verdict: %+v", e.applyError)
 		}
-		var row map[string]any
-		if parseErr := json.Unmarshal(buf.Bytes(), &row); parseErr != nil {
-			t.Fatal(parseErr)
-		}
-		if row["msg"] != "apply" || row["err"] != "TC_FOREIGN_FILTER" || row["tc_read_failure"] != diagnostic.Classification || row["tc_read_context_state_at_return"] != "canceled" || row["tc_read_interface"] != "fvmb0" || row["tc_read_attachment"] != "qdisc" {
-			t.Fatalf("log mapping: %s", buf.Bytes())
+		// Match whole fields from the production handler, including the last
+		// field before its newline. These values are fixed, unquoted enums.
+		line := strings.TrimSuffix(buf.String(), "\n") + " "
+		for _, field := range []string{"msg=apply", "err=TC_FOREIGN_FILTER", "tc_read_failure=" + diagnostic.Classification, "tc_read_context_state_at_return=canceled", "tc_read_interface=fvmb0", "tc_read_attachment=qdisc"} {
+			if !strings.Contains(line, " "+field+" ") {
+				t.Fatalf("log field %s missing: %s", field, buf.Bytes())
+			}
 		}
 		if cause == exit {
-			if row["tc_read_exit_code"] != float64(7) {
+			if !strings.Contains(line, " tc_read_exit_code=7 ") {
 				t.Fatalf("missing observed exit code: %s", buf.Bytes())
 			}
-		} else if _, ok := row["tc_read_exit_code"]; ok {
+		} else if strings.Contains(line, " tc_read_exit_code=") {
 			t.Fatalf("invented exit: %s", buf.Bytes())
 		}
 		if strings.Contains(buf.String(), "private") {
@@ -72,7 +72,7 @@ func TestSEC02_TCReadFailureLogKeepsErrorContract(t *testing.T) {
 		}
 		buf.Reset()
 		e.noteApply(errors.New("TEST ONLY private generic error"))
-		if strings.Contains(buf.String(), "tc_read_") || strings.Contains(buf.String(), "private") || e.applyError.Message != "apply failed" {
+		if strings.Contains(buf.String(), "tc_read_") || strings.Contains(buf.String(), "private") || !strings.Contains(buf.String(), `err="apply failed"`) || e.applyError.Message != "apply failed" {
 			t.Fatalf("invented diagnostics: %s", buf.Bytes())
 		}
 	}

@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
 	"github.com/google/uuid"
@@ -156,8 +158,8 @@ func projectRecoveryContext(runID, source string, start, end time.Time, started,
 				}
 				continue
 			}
-			var fields map[string]json.RawMessage
-			if json.Unmarshal(line, &fields) != nil || fields == nil {
+			fields, ok := decodeRecoveryLog(line)
+			if !ok {
 				s.Malformed++
 				continue
 			}
@@ -172,6 +174,79 @@ func projectRecoveryContext(runID, source string, start, end time.Time, started,
 		out.Streams[name] = s
 	}
 	return out
+}
+
+// The agent uses slog.TextHandler; watchdog uses slog.JSONHandler. Normalize
+// their fields before applying the same allowlist. TextHandler uses Go quoting,
+// including escapes that JSON does not accept, and bare numeric/bool values do
+// not retain their original Go type. Never include raw input in parse errors.
+func decodeRecoveryLog(line []byte) (map[string]json.RawMessage, bool) {
+	if bytes.HasPrefix(bytes.TrimSpace(line), []byte{'{'}) {
+		var fields map[string]json.RawMessage
+		err := json.Unmarshal(line, &fields)
+		return fields, err == nil && fields != nil
+	}
+	fields := map[string]json.RawMessage{}
+	text := string(line)
+	for len(text) > 0 {
+		key, n, _, ok := recoveryTextToken(text, '=')
+		if !ok || n == len(text) || text[n] != '=' {
+			return nil, false
+		}
+		if _, duplicate := fields[key]; duplicate {
+			return nil, false
+		}
+		text = text[n+1:]
+		value, n, quoted, ok := recoveryTextToken(text, ' ')
+		if !ok || (n < len(text) && text[n] != ' ') {
+			return nil, false
+		}
+		raw, _ := json.Marshal(value)
+		if !quoted {
+			number, err := strconv.ParseUint(value, 10, 64)
+			if (err == nil && strconv.FormatUint(number, 10) == value) || value == "true" || value == "false" {
+				raw = []byte(value)
+			}
+		}
+		fields[key] = raw
+		text = text[n:]
+		if len(text) > 0 {
+			text = text[1:]
+			if len(text) == 0 {
+				return nil, false
+			}
+		}
+	}
+	return fields, len(fields) > 0
+}
+
+// Read one TextHandler key or value without splitting quoted whitespace or
+// treating a bare backslash (which TextHandler permits) as an escape.
+func recoveryTextToken(text string, separator byte) (value string, n int, quoted, ok bool) {
+	if len(text) == 0 {
+		return "", 0, false, false
+	}
+	if text[0] == '"' {
+		for i := 1; i < len(text); i++ {
+			switch text[i] {
+			case '\\':
+				i++
+			case '"':
+				value, err := strconv.Unquote(text[:i+1])
+				return value, i + 1, true, err == nil
+			}
+		}
+		return "", 0, true, false
+	}
+	for i, r := range text {
+		if r == rune(separator) {
+			return text[:i], i, false, i > 0
+		}
+		if r == '"' || r == '=' || r == utf8.RuneError || unicode.IsSpace(r) || !unicode.IsPrint(r) {
+			return "", 0, false, false
+		}
+	}
+	return text, len(text), false, true
 }
 
 func recoveryReason(value string) bool {
