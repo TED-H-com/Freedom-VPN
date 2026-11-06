@@ -602,6 +602,22 @@ export const en: Record<TranslationKey, string> = {
   'admin.nodeDetail.checks.col.detail': 'Diagnostic Detail (detail, ≤500 chars)',
   'admin.nodeDetail.checks.col.observedAt': 'Observed At (observed_at)',
   'admin.nodeDetail.checks.empty': 'No node checks reported yet',
+  'admin.nodeDetail.servingRead.title': 'Retained verification result',
+  'admin.nodeDetail.servingRead.note':
+    'This result describes a check at the recorded time. It does not indicate whether the node can forward traffic now.',
+  'admin.nodeDetail.servingRead.absent':
+    'This server does not provide retained verification results.',
+  'admin.nodeDetail.servingRead.null':
+    'No verification result is available in this node report.',
+  'admin.nodeDetail.servingRead.readAt': 'Read time',
+  'admin.nodeDetail.servingRead.source': 'Check stage',
+  'admin.nodeDetail.servingRead.apply': 'Configuration apply',
+  'admin.nodeDetail.servingRead.live': 'Runtime check',
+  'admin.nodeDetail.servingRead.generation': 'Generation checked',
+  'admin.nodeDetail.servingRead.result': 'Result at read time',
+  'admin.nodeDetail.servingRead.verified': 'Verified',
+  'admin.nodeDetail.servingRead.rejected': 'Rejected',
+  'admin.nodeDetail.servingRead.diagnostic': 'Diagnostic detail',
 
   'admin.dns.threatFeedStatus.title':
     'Threat Feed Refresh & Last-Good Status (§12.5, D-058)',

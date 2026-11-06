@@ -10,6 +10,7 @@ import type {
   GrantCreateRequest,
   MemberGroupCreate,
   MemberPatchRequest,
+  NodeDetail,
   NodeIdentityConflict,
   NodePatchRequest,
   NodeSummaryItem,
@@ -76,6 +77,19 @@ export function setMockNodeIdentityConflict(
     delete detail.identity_conflict;
   } else {
     detail.identity_conflict = identityConflict;
+  }
+}
+
+export function setMockNodeServingRead(
+  nodeId: string,
+  servingRead: NodeDetail['serving_read'],
+): void {
+  const detail = state.nodes[nodeId];
+  if (!detail) return;
+  if (servingRead === undefined) {
+    delete detail.serving_read;
+  } else {
+    detail.serving_read = servingRead;
   }
 }
 
