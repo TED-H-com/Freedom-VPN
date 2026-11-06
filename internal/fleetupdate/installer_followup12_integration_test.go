@@ -401,6 +401,7 @@ func TestD127_Migration192RoundTripPreservesEvidenceAndBounds(t *testing.T) {
 		t.Fatal("round-trip changed ACK", got)
 	}
 	installerAccept(t, l, i, next)
+	correction := installerReceiptSnapshot(t, l, i, 2)
 	// A duplicate key or a sequence outside 1..2 cannot extend the evidence stream.
 	for _, seq := range []int{1, 2, 0, 3} {
 		_, err = l.s.pool.Exec(l.ctx, `INSERT INTO installer_update_results(node_id,job_id,incarnation_id,release_id,state,payload,payload_hash,ack,received_at,outcome_sequence) SELECT node_id,job_id,incarnation_id,release_id,state,jsonb_set(payload,'{result_id}',to_jsonb($3::text)),payload_hash,ack,received_at,$1 FROM installer_update_results WHERE node_id=$2 AND outcome_sequence=1`, seq, i.NodeID, uuid.NewString())
@@ -420,11 +421,31 @@ func TestD127_Migration192RoundTripPreservesEvidenceAndBounds(t *testing.T) {
 	}
 	// A populated correction cannot be downgraded by discarding history. Goose
 	// rolls the failed unique-key restoration back, leaving both rows usable.
+	// Higher migrations have already committed their Down steps individually.
 	if _, err = provider.DownTo(l.ctx, 191); err == nil {
 		t.Fatal("destructive downgrade accepted")
 	}
-	if original != installerReceiptSnapshot(t, l, i, 1) {
+	var pe *pgconn.PgError
+	if !errors.As(err, &pe) || pe.Code != "23505" {
+		t.Fatal("downgrade failed for a reason other than retained correction uniqueness", err)
+	}
+	if version, err := provider.GetDBVersion(l.ctx); err != nil || version != 192 {
+		t.Fatal("failed 192 Down did not retain version 192", version, err)
+	}
+	if original != installerReceiptSnapshot(t, l, i, 1) || correction != installerReceiptSnapshot(t, l, i, 2) {
 		t.Fatal("failed downgrade changed history")
+	}
+	installerReceiptCounts(t, l, i, 2)
+	// Restore the current schema before exercising current services/NodeDetail.
+	// A failed DownTo is atomic per migration, not across the whole sequence.
+	if _, err = provider.Up(l.ctx); err != nil {
+		t.Fatal("restore current schema after refused downgrade", err)
+	}
+	if current, target, err := provider.GetVersions(l.ctx); err != nil || current != target {
+		t.Fatal("schema not restored to current migrations", current, target, err)
+	}
+	if original != installerReceiptSnapshot(t, l, i, 1) || correction != installerReceiptSnapshot(t, l, i, 2) {
+		t.Fatal("restoring current schema changed history")
 	}
 	installerReceiptCounts(t, l, i, 2)
 	installerVersions(t, l, i, l.new, l.new)

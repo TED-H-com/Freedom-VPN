@@ -7,7 +7,6 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
@@ -770,7 +769,7 @@ func TestAT32_CentralEnrollConfigureObserveLifecycle(t *testing.T) {
 	}
 	if afterObs.ControlStatus != api.ControlStatusOnline || afterObs.ProvisioningState != api.ProvisioningStateReady || afterObs.SafetyStatus != api.SafetyStatusPassed {
 		b, _ := json.MarshalIndent(afterObs, "", "  ")
-		t.Fatalf("unexpected node state after observation: %s", fmt.Sprintf("%s", b))
+		t.Fatalf("unexpected node state after observation: %s", b)
 	}
 	if (!afterObs.Releases.CurrentReleaseId.IsSpecified() || afterObs.Releases.CurrentReleaseId.IsNull()) || nullableValue(t, afterObs.Releases.CurrentReleaseId) != relID {
 		t.Errorf("CurrentReleaseId = %v, want %s", afterObs.Releases.CurrentReleaseId, relID)
