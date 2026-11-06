@@ -1,4 +1,4 @@
-# Central serving-read diagnostics — 2026-11-06
+# Serving-read diagnostics — 2026-11-06
 
 Central accepts the existing D-164 `serving_read` field on `ObservationReport`
 and returns the selected diagnostic on every `NodeDetail` path. The five fields
@@ -13,6 +13,31 @@ The existing [NetBird 0.82.0 adapter](../netbird/ADAPTER.md) continues to own
 upstream peer, route, group, policy, and nameserver operations. Its upstream
 observed-state reads do not identify which Freedom VPN observation updated
 `latest_checks`; this projection uses the existing Central transaction instead.
+
+## Producer and consumers
+
+New agent observations include `serving_read: null` when there is no retained
+complete serving read. Otherwise they carry the retained read's actual time,
+source, exact uint64 candidate, outer verifier result, and existing diagnostic
+text clipped to 500 bytes. A later report does not refresh that read's timestamp.
+An old verified read can remain visible while a stale lease blocks serving; a
+rejected read survives baseline audit. The TC snapshot is independent: an inner
+TC verifier's success does not override an outer serving-verifier failure.
+
+QoS checks preserve every original non-null detail, including an explicit empty
+string. A nil QoS detail alone receives the legacy formatted diagnostic for older
+readers. Other checks, causal errors, decisions, retry timing and observation
+coalescing retain their existing behavior. Newly attached evidence does not alter
+already queued observations: retries preserve their stored bytes and canonical
+JSON hashes, including legacy absence, explicit null and retained values.
+
+The Admin Portal presents the read as diagnostic evidence in Chinese and English,
+separate from health and serving status. Isolation exports all presence states
+in `serving_reads` alongside the unchanged TC-only `reads` array. Members exports
+preserve complete read changes and incarnation boundaries in compressed receipt
+history. Consumer recovery attribution uses the candidate and existing time
+window; it does not equate TC and serving-read timestamps or replace the required
+kernel, lease, packet and durable Apply proofs.
 
 ## Selection, presence, and reads
 
@@ -110,7 +135,20 @@ Real migration tests cover agreeing/ambiguous legacy evidence, malformed data,
 null source rejection, cross-node incarnation rejection, immutable row
 preservation, failed-Up rollback, and Up/Down version invalidation.
 
-This is the Central phase only. Consumer parsing/display, then producer
-activation, then a fresh owner-run acceptance campaign remain in that order.
-The local tests do not close F17, establish a new live AT result, or replace
-the orchestrator's complete product gates before merge.
+Central support and the Portal/exporter consumers were merged before producer
+activation, in that dependency order. Deploy the compatible Central and consumers
+before the updated agent, retaining the migration-before-writers procedure above.
+
+Producer regression coverage exercises both sources and outcomes, unchanged
+causal details, actual retained read time, byte clipping, full uint64, stale-lease
+and baseline retention, and a real SQLite outbox with failed/successful local TLS
+delivery. Stored bytes remain exact; transmitted canonical JSON and computed
+SHA-256 remain equal. The outbox does not contain a separate hash column.
+
+```sh
+CGO_ENABLED=0 GOTOOLCHAIN=local go test -count=1 ./node/agent/...
+```
+
+A fresh owner-run acceptance campaign remains necessary. These local proofs do
+not close F17 or D163, establish a new live AT result, or replace the orchestrator's
+complete product gates before merge.

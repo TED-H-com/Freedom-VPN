@@ -130,7 +130,15 @@ func TestD106_ProducerRetainsAuthoritativeSnapshot(t *testing.T) {
 		t.Fatal("missing Apply read", want)
 	}
 	r.eng.retainTCReadback(res.Evidence)
+	// TEST ONLY independent availability: a TC snapshot cannot fabricate a
+	// complete retained engine read, even when that TC snapshot is verified.
+	previousRead := r.eng.servingRead
+	r.eng.servingRead = nil
 	rep := mustReport(t, r, t.Context())
+	r.eng.servingRead = previousRead
+	if !rep.ServingRead.IsSpecified() || !rep.ServingRead.IsNull() {
+		t.Fatal("TC-only evidence fabricated a complete serving read")
+	}
 	got, err := rep.TcEvidence.Get()
 	if err != nil {
 		t.Fatal(err)
