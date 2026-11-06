@@ -8,8 +8,10 @@ import (
 	"context"
 	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"os/signal"
@@ -43,13 +45,17 @@ func main() {
 }
 
 func runDNS(addr, name string, tcp bool) int {
+	return runDNSOutput(addr, name, tcp, os.Stdout, os.Stderr)
+}
+
+func runDNSOutput(addr, name string, tcp bool, stdout, stderr io.Writer) int {
 	if addr == "" || name == "" || strings.ContainsAny(name, " \t\r\n") {
-		fmt.Fprintln(os.Stderr, "fvpn-e2e-member-session: dns address and name are required")
+		fmt.Fprintln(stderr, "fvpn-e2e-member-session: dns address and name are required")
 		return 2
 	}
 	query, id, err := dnsQuery(name)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "fvpn-e2e-member-session: dns name")
+		fmt.Fprintln(stderr, "fvpn-e2e-member-session: dns name")
 		return 2
 	}
 	network := "udp"
@@ -58,16 +64,20 @@ func runDNS(addr, name string, tcp bool) int {
 	}
 	conn, err := net.DialTimeout(network, addr, 3*time.Second)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "fvpn-e2e-member-session: dns dial")
+		dnsFailure(stderr, "dial", err)
 		return 1
 	}
 	defer conn.Close()
+	return exchangeDNS(conn, query, id, tcp, stdout, stderr)
+}
+
+func exchangeDNS(conn net.Conn, query []byte, id uint16, tcp bool, stdout, stderr io.Writer) int {
 	_ = conn.SetDeadline(time.Now().Add(3 * time.Second))
 	if tcp {
 		query = append([]byte{byte(len(query) >> 8), byte(len(query))}, query...)
 	}
-	if _, err = conn.Write(query); err != nil {
-		fmt.Fprintln(os.Stderr, "fvpn-e2e-member-session: dns write")
+	if _, err := conn.Write(query); err != nil {
+		dnsFailure(stderr, "write", err)
 		return 1
 	}
 	buf := make([]byte, 1500)
@@ -83,6 +93,7 @@ func runDNS(addr, name string, tcp bool) int {
 		for n < size+2 {
 			more, e := conn.Read(buf[n:])
 			if e != nil {
+				dnsFailure(stderr, "read", e)
 				return 1
 			}
 			n += more
@@ -91,15 +102,45 @@ func runDNS(addr, name string, tcp bool) int {
 		n -= 2
 	}
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "fvpn-e2e-member-session: dns read")
+		dnsFailure(stderr, "read", err)
 		return 1
 	}
 	rcode, answers := dnsAnswers(buf[:n], id)
 	if rcode < 0 {
 		return 1
 	}
-	fmt.Printf("rcode=%d answers=%d\n", rcode, len(answers))
+	fmt.Fprintf(stdout, "rcode=%d answers=%d\n", rcode, len(answers))
 	return 0
+}
+
+// Only fixed classifications cross the helper boundary; net.OpError may contain
+// the resolver address, and DNS names and raw errors must never be printed.
+func dnsFailure(w io.Writer, stage string, err error) {
+	fmt.Fprintf(w, "fvpn-e2e-member-session: dns %s class=%s\n", stage, dnsErrorClass(err))
+}
+
+func dnsErrorClass(err error) string {
+	switch {
+	case errors.Is(err, context.Canceled):
+		return "canceled"
+	case errors.Is(err, context.DeadlineExceeded), errors.Is(err, os.ErrDeadlineExceeded), errors.Is(err, syscall.ETIMEDOUT):
+		return "timeout"
+	case errors.Is(err, io.EOF), errors.Is(err, io.ErrUnexpectedEOF):
+		return "eof"
+	case errors.Is(err, net.ErrClosed):
+		return "closed"
+	case errors.Is(err, syscall.ECONNREFUSED):
+		return "refused"
+	case errors.Is(err, syscall.ECONNRESET):
+		return "reset"
+	case errors.Is(err, syscall.EHOSTUNREACH), errors.Is(err, syscall.ENETUNREACH):
+		return "unreachable"
+	}
+	var netErr net.Error
+	if errors.As(err, &netErr) && netErr.Timeout() {
+		return "timeout"
+	}
+	return "io_error"
 }
 
 func runSession(tcpAddr, udpAddr, device, keyFile, pidFile, statusFile string, interval time.Duration) int {
