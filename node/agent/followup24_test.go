@@ -100,6 +100,10 @@ func TestISO_F6_ObservationEvidenceRevision13(t *testing.T) {
 	rep := mustReport(t, r, t.Context())
 	requireObservationSchema(t, rep)
 	q, _ := checkBy(rep.Checks, api.NodeCheckNameQos)
+	read, readErr := rep.ServingRead.Get()
+	if readErr != nil || !read.Verified || read.Source != api.ServingReadEvidenceSourceLive || !read.ReadAt.Equal(at) || read.CandidateGeneration != 2 {
+		t.Fatal("structured clean read missing", read, readErr)
+	}
 	if q.Status != api.HealthCheckStatusPassed || q.Detail == nil || !strings.Contains(*q.Detail, at.Format(time.RFC3339Nano)) || !strings.Contains(*q.Detail, `"generation":"2"`) || len(*q.Detail) > 500 || len(rep.Errors) != 0 {
 		t.Fatalf("clean evidence: %+v errors=%v", q, rep.Errors)
 	}
@@ -112,7 +116,8 @@ func TestISO_F6_ObservationEvidenceRevision13(t *testing.T) {
 	rep = mustReport(t, r, t.Context())
 	requireObservationSchema(t, rep)
 	q, _ = checkBy(rep.Checks, api.NodeCheckNameQos)
-	if q.Status != api.HealthCheckStatusFailed || codeOf(t, q) != api.ErrorCodeTCFOREIGNFILTER || !strings.Contains(*q.Detail, "verified=false") {
+	read, readErr = rep.ServingRead.Get()
+	if q.Status != api.HealthCheckStatusFailed || codeOf(t, q) != api.ErrorCodeTCFOREIGNFILTER || readErr != nil || read.Verified || !read.ReadAt.Equal(at) || !strings.Contains(read.Diagnostic, "verified=false") {
 		t.Fatalf("rejection check: %+v", q)
 	}
 	// A rollback audit is not current serving verification and cannot erase
@@ -124,7 +129,8 @@ func TestISO_F6_ObservationEvidenceRevision13(t *testing.T) {
 	post := mustReport(t, r, t.Context())
 	requireObservationSchema(t, post)
 	q, _ = checkBy(post.Checks, api.NodeCheckNameQos)
-	if !strings.Contains(*q.Detail, at.Format(time.RFC3339Nano)) || q.Status != api.HealthCheckStatusFailed {
+	retained, readErr := post.ServingRead.Get()
+	if readErr != nil || retained != read || q.Status != api.HealthCheckStatusFailed {
 		t.Fatal("rollback replaced rejection")
 	}
 	for _, row := range post.Errors {
@@ -168,7 +174,8 @@ func TestISO_F6_ApplyRejectionTimestampPrecedesRollback(t *testing.T) {
 	rep := mustReport(t, r, t.Context())
 	requireObservationSchema(t, rep)
 	q, _ := checkBy(rep.Checks, api.NodeCheckNameQos)
-	if q.Status != api.HealthCheckStatusFailed || !strings.Contains(*q.Detail, "source=apply") || !strings.Contains(*q.Detail, timing.at.Format(time.RFC3339Nano)) {
+	read, readErr := rep.ServingRead.Get()
+	if q.Status != api.HealthCheckStatusFailed || readErr != nil || read.Source != api.ServingReadEvidenceSourceApply || read.Verified || !read.ReadAt.Equal(timing.at) || uint64(read.CandidateGeneration) != x.model.Generation {
 		t.Fatal("cached Apply mislabeled", q)
 	}
 	for _, row := range rep.Errors {

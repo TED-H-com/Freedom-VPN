@@ -8,6 +8,7 @@ import (
 
 	"github.com/TED-H-com/Freedom-VPN/node/enforce"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
 
 // servingRead is a retained read, not the observation time or a generation ACK.
@@ -34,6 +35,7 @@ func (e *Engine) retainTCReadback(ev enforce.ServingEvidence) {
 }
 
 func (e *Engine) attachServingRead(rep *api.ObservationReport) {
+	rep.ServingRead.SetNull()
 	rep.TcEvidence.SetNull()
 	if e.tcReadback != nil {
 		rep.TcEvidence.Set(*e.tcReadback)
@@ -42,17 +44,22 @@ func (e *Engine) attachServingRead(rep *api.ObservationReport) {
 	if r == nil {
 		return
 	}
+	detail := fmt.Sprintf("read_at=%s source=%s candidate=%d verified=%t %s", r.At.Format(time.RFC3339Nano), r.Source, r.Generation, r.Verified, r.Evidence.ReportDetail())
+	// ReportDetail already bounds and sanitizes kernel tokens. Generic detail
+	// redaction would mistake read timestamps for IPv6 addresses.
+	detail = clipMsg(detail)
+	rep.ServingRead.Set(api.ServingReadEvidence{
+		ReadAt: r.At, Source: api.ServingReadEvidenceSource(r.Source),
+		CandidateGeneration: decstr.U64(r.Generation), Verified: r.Verified, Diagnostic: detail,
+	})
 	for i := range rep.Checks {
 		c := &rep.Checks[i]
-		if c.Name != api.NodeCheckNameQos {
+		if c.Name != api.NodeCheckNameQos || c.Detail != nil {
 			continue
 		}
 		// Copying the checks in report prevents mutation of the actual decision.
-		// Status/error still come from Decide, including after withdrawal.
-		detail := fmt.Sprintf("read_at=%s source=%s candidate=%d verified=%t %s", r.At.Format(time.RFC3339Nano), r.Source, r.Generation, r.Verified, r.Evidence.ReportDetail())
-		// ReportDetail already bounds and sanitizes kernel tokens. Generic
-		// detail redaction would mistake read timestamps for IPv6 addresses.
-		detail = clipMsg(detail)
+		// Preserve every causal detail, including empty. Legacy readers receive
+		// the retained diagnostic only where Decide supplied no QoS detail.
 		c.Detail = &detail
 	}
 }
