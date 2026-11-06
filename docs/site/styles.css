@@ -14,7 +14,6 @@
   --info-bg: #eff6ff;
   --info-border: #93c5fd;
   --focus-ring: #2563eb;
-  --warning: #92400e;
   --font-body:
     system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
   --text-small: 0.875rem;
@@ -258,35 +257,7 @@ h1 span {
   font-weight: 600;
   gap: var(--space-2);
 }
-.readiness {
-  display: flex;
-  width: fit-content;
-  align-items: flex-start;
-  gap: var(--space-3);
-  margin-top: var(--space-10);
-  color: var(--text-muted);
-  text-decoration: none;
-  font-size: var(--text-small);
-}
-.readiness strong {
-  font-weight: 600;
-  color: var(--text-secondary);
-  display: block;
-}
-.readiness:hover strong {
-  color: var(--primary);
-}
-.readiness > span:last-child {
-  padding: var(--space-1) var(--space-2);
-}
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--warning);
-  flex-shrink: 0;
-  margin-top: var(--space-2);
-}
+
 .architecture {
   padding: var(--space-6);
   background: var(--bg-surface);
@@ -594,25 +565,19 @@ td {
   min-height: 44px;
   align-items: center;
 }
-.status-section {
+.start-section {
   padding-block: var(--space-20);
   background: var(--info-bg);
   border-block: 1px solid var(--info-border);
 }
-.limits {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-10);
-}
-.limits h3 {
-  font-size: var(--text-body);
-  margin-bottom: var(--space-3);
-}
-.limits p {
-  font-size: var(--text-small);
-}
-.status-section .actions {
+
+.start-section .actions {
   margin-top: var(--space-10);
+}
+.development-note {
+  margin-top: var(--space-6);
+  color: var(--text-muted);
+  font-size: var(--text-small);
 }
 .site-footer {
   padding-block: var(--space-12) var(--space-8);
@@ -702,9 +667,7 @@ td {
   .hero-intro {
     max-width: 58ch;
   }
-  .readiness {
-    margin-top: var(--space-6);
-  }
+
   .architecture {
     max-width: 640px;
     width: 100%;
@@ -714,7 +677,7 @@ td {
   }
   .section,
   .client-section,
-  .status-section {
+  .start-section {
     padding-block: var(--space-16);
   }
   .section-heading {
@@ -728,16 +691,6 @@ td {
   .client-grid {
     grid-template-columns: 1fr;
     gap: var(--space-12);
-  }
-  .limits {
-    grid-template-columns: 1fr;
-    gap: var(--space-6);
-  }
-  .limits p {
-    max-width: 75ch;
-  }
-  .limits h3 {
-    margin-bottom: var(--space-2);
   }
 }
 
@@ -817,7 +770,7 @@ td {
   }
   .section,
   .client-section,
-  .status-section {
+  .start-section {
     padding-block: var(--space-12);
   }
   .section-heading {
@@ -838,7 +791,6 @@ td {
   .more-docs > span {
     flex-basis: 100%;
   }
-  .limits p,
   .steps p {
     font-size: var(--text-body);
   }
