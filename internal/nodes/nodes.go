@@ -167,7 +167,9 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 			coalesce(ic.conflict_count, 0),
 			ic.last_conflict_at,
 			inc.usage_outbox,
-			inc.usage_outbox_observed_at
+			inc.usage_outbox_observed_at,
+			CASE WHEN n.serving_read_incarnation_id=n.current_incarnation_id
+			 THEN n.serving_read ELSE 'null'::jsonb END
 		FROM nodes n
 		LEFT JOIN exits e ON e.node_id = n.id
 		LEFT JOIN node_incarnations inc ON inc.id = n.current_incarnation_id
@@ -221,6 +223,7 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 		lastConflictAt           *time.Time
 		usageOutboxBytes         []byte
 		usageOutboxObservedAt    *time.Time
+		servingReadBytes         []byte
 	)
 
 	err := q.QueryRow(ctx, sqlQuery, nodeID).Scan(
@@ -262,6 +265,7 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 		&lastConflictAt,
 		&usageOutboxBytes,
 		&usageOutboxObservedAt,
+		&servingReadBytes,
 	)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -271,6 +275,10 @@ func getNodeWithQuerier(ctx context.Context, q Querier, nodeID uuid.UUID) (api.N
 	}
 
 	detail.Name.SetNull()
+	detail.ServingRead, err = decodeServingRead(servingReadBytes)
+	if err != nil {
+		return api.NodeDetail{}, "", err
+	}
 	detail.Region.SetNull()
 	detail.Notes.SetNull()
 	detail.Capacity.SetNull()

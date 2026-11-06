@@ -68,6 +68,9 @@ func (s *Service) SubmitObservation(
 	if err := validateDNSPolicyEvidence(report); err != nil {
 		return api.ObservationAccepted{}, err
 	}
+	if err := validateServingRead(report.ServingRead); err != nil {
+		return api.ObservationAccepted{}, err
+	}
 
 	canonBytes, reportPayloadJSON, usageOutboxJSON, hasUsage, err := marshalObservationReport(report)
 	if err != nil {
@@ -298,6 +301,8 @@ func (s *Service) SubmitObservation(
 					current_release_id = coalesce($9, current_release_id),
 					last_good_release_id = coalesce($10, last_good_release_id),
 					latest_checks = $11::jsonb,
+					serving_read_incarnation_id = $14,
+					serving_read = coalesce($15::jsonb->'serving_read', 'null'::jsonb),
 					recent_errors = CASE WHEN $13 THEN recent_errors ELSE $12::jsonb END,
 					resource_version = resource_version + 1
 				WHERE id = $1`
@@ -311,7 +316,7 @@ func (s *Service) SubmitObservation(
 				currentReleaseID,
 				lastGoodReleaseID,
 				checksArrayJSON,
-				errorsArrayJSON, mappingFrozen,
+				errorsArrayJSON, mappingFrozen, authIncarnationID, reportPayloadJSON,
 			); err != nil {
 				return err
 			}
