@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
@@ -29,6 +29,7 @@ import {
   setMockDeviceStatesForRevision12,
   setMockNodeIdentityConflict,
   setMockNodeLeaseState,
+  setMockNodeServingRead,
   setMockPersona,
   setMockRolledBackCandidateHealth,
   type MockPersona,
@@ -38,17 +39,17 @@ import { assertAccessible } from '../../test/setup';
 function renderAt(
   initialPath: string,
   persona: MockPersona = 'admin',
-): ReturnType<typeof render> {
-  cleanup();
-  setMockPersona(persona);
-  const queryClient = new QueryClient({
+  queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         retry: false,
         refetchOnWindowFocus: false,
       },
     },
-  });
+  }),
+): ReturnType<typeof render> {
+  cleanup();
+  setMockPersona(persona);
 
   return render(
     <QueryClientProvider client={queryClient}>
@@ -953,6 +954,177 @@ describe('Portal Screens & Acceptance Tests (§18, §19 AT02/AT03/AT28/AT32)', (
     expect(screen.getByTestId('node-check-detail-lease')).toHaveTextContent(
       '節點服務租約 (serving lease) 已過期，已停止接受會員流量。',
     );
+  });
+
+  it.each([
+    {
+      locale: 'zh-TW',
+      absent: '此伺服器尚未提供保留的驗證結果。',
+      empty: '這份節點回報沒有可用的驗證結果。',
+    },
+    {
+      locale: 'en',
+      absent: 'This server does not provide retained verification results.',
+      empty: 'No verification result is available in this node report.',
+    },
+  ])('TestD164_RetainedRead_AbsentAndNullRemainDistinct_$locale', async (copy) => {
+    localStorage.setItem('fvpn_portal_locale', copy.locale);
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
+    });
+    setMockNodeServingRead(PRIMARY_NODE_ID, undefined);
+    const { container } = renderAt(
+      `/admin/nodes/${PRIMARY_NODE_ID}`,
+      'admin',
+      queryClient,
+    );
+    expect(await screen.findByTestId('node-serving-read-absent')).toHaveTextContent(
+      copy.absent,
+    );
+    const summary = screen.getByTestId('node-detail-summary-badge').textContent;
+    expect(screen.queryByTestId('node-serving-read-null')).toBeNull();
+    expect(screen.queryByTestId('node-serving-read-values')).toBeNull();
+
+    setMockNodeServingRead(PRIMARY_NODE_ID, null);
+    await act(async () => {
+      await queryClient.refetchQueries({ queryKey: ['admin', 'node', PRIMARY_NODE_ID] });
+    });
+    expect(await screen.findByTestId('node-serving-read-null')).toHaveTextContent(
+      copy.empty,
+    );
+    expect(screen.queryByTestId('node-serving-read-absent')).toBeNull();
+    expect(screen.queryByTestId('node-serving-read-values')).toBeNull();
+    expect(screen.getByTestId('node-detail-summary-badge').textContent).toBe(summary);
+    await assertAccessible(container);
+  });
+
+  it.each([
+    {
+      locale: 'zh-TW',
+      title: '保留的驗證結果',
+      note: '此結果記錄該次檢查，不代表節點目前可轉送流量。',
+      apply: '套用設定時',
+      live: '執行期間檢查',
+      verified: '通過驗證',
+      rejected: '未通過驗證',
+      waiting: '等待會員授權；節點會自動續租（最長 60 秒）',
+    },
+    {
+      locale: 'en',
+      title: 'Retained verification result',
+      note: 'This result describes a check at the recorded time. It does not indicate whether the node can forward traffic now.',
+      apply: 'Configuration apply',
+      live: 'Runtime check',
+      verified: 'Verified',
+      rejected: 'Rejected',
+      waiting: 'Waiting for member grants; the node renews automatically (within 60 s)',
+    },
+  ])('TestD164_RetainedRead_PreservesValuesAndBlockedChecks_$locale', async (copy) => {
+    localStorage.setItem('fvpn_portal_locale', copy.locale);
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
+    });
+    setMockNodeLeaseState(PRIMARY_NODE_ID, 'awaiting_member_grants');
+    setMockNodeServingRead(PRIMARY_NODE_ID, undefined);
+    const { container } = renderAt(
+      `/admin/nodes/${PRIMARY_NODE_ID}`,
+      'admin',
+      queryClient,
+    );
+    await screen.findByTestId('node-serving-read-absent');
+    const summary = screen.getByTestId('node-detail-summary-badge').textContent;
+    const causalDetails = {
+      lease: 'Serving lease has no member grants yet.',
+      qos: 'Rate policy could not be applied.',
+      source_binding: 'No member binding was admitted.',
+    };
+    const assertBlockedChecksUnchanged = () => {
+      expect(screen.getByTestId('node-detail-summary-badge').textContent).toBe(summary);
+      expect(
+        screen.getByTestId('forwarding-block-reason-awaiting_member_grants'),
+      ).toHaveTextContent(copy.waiting);
+      for (const [check, detail] of Object.entries(causalDetails)) {
+        expect(screen.getByTestId(`node-check-detail-${check}`).textContent).toBe(
+          `${copy.waiting} — ${detail}`,
+        );
+        expect(screen.getByTestId(`node-check-error-code-${check}`)).toHaveTextContent(
+          'AWAITING_MEMBER_GRANTS',
+        );
+        expect(screen.getByTestId(`node-check-status-${check}`)).toHaveClass(
+          'badge-warning',
+        );
+      }
+    };
+    const retainedRead = {
+      read_at: '2026-10-01T12:34:56.123456Z',
+      source: 'apply' as const,
+      candidate_generation: '18446744073709551615',
+      verified: true,
+      diagnostic: '<retained>\n' + 'x'.repeat(489),
+    };
+    setMockNodeServingRead(PRIMARY_NODE_ID, retainedRead);
+    await act(async () => {
+      await queryClient.refetchQueries({ queryKey: ['admin', 'node', PRIMARY_NODE_ID] });
+    });
+    await screen.findByTestId('node-serving-read-values');
+    const section = screen.getByTestId('node-serving-read-section');
+    expect(within(section).getByRole('heading', { name: copy.title })).toBeVisible();
+    expect(section).toHaveTextContent(copy.note);
+    expect(screen.getByTestId('node-serving-read-time')).toHaveTextContent(
+      retainedRead.read_at,
+    );
+    expect(screen.getByTestId('node-serving-read-generation').textContent).toBe(
+      retainedRead.candidate_generation,
+    );
+    expect(screen.getByTestId('node-serving-read-source')).toHaveTextContent(copy.apply);
+    expect(screen.getByTestId('node-serving-read-result').textContent).toBe(
+      copy.verified,
+    );
+    expect(screen.getByTestId('node-serving-read-diagnostic').textContent).toBe(
+      retainedRead.diagnostic,
+    );
+    expect(screen.getByTestId('node-serving-read-diagnostic').children).toHaveLength(0);
+    expect(section.querySelector('.badge, [role="alert"]')).toBeNull();
+    assertBlockedChecksUnchanged();
+    await assertAccessible(container);
+
+    setMockNodeServingRead(PRIMARY_NODE_ID, {
+      ...retainedRead,
+      source: 'live',
+      verified: false,
+      diagnostic: '{"result":"rejected","detail":"clipped',
+    });
+    await act(async () => {
+      await queryClient.refetchQueries({ queryKey: ['admin', 'node', PRIMARY_NODE_ID] });
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId('node-serving-read-source')).toHaveTextContent(copy.live);
+    });
+    expect(screen.getByTestId('node-serving-read-result').textContent).toBe(
+      copy.rejected,
+    );
+    expect(screen.getByTestId('node-serving-read-diagnostic').textContent).toBe(
+      '{"result":"rejected","detail":"clipped',
+    );
+    assertBlockedChecksUnchanged();
+
+    setMockNodeServingRead(PRIMARY_NODE_ID, { ...retainedRead, diagnostic: '' });
+    await act(async () => {
+      await queryClient.refetchQueries({ queryKey: ['admin', 'node', PRIMARY_NODE_ID] });
+    });
+    await waitFor(() => {
+      expect(screen.getByTestId('node-serving-read-diagnostic')).toBeEmptyDOMElement();
+    });
+
+    // The later selected report has no read: remove every prior retained value.
+    setMockNodeServingRead(PRIMARY_NODE_ID, null);
+    await act(async () => {
+      await queryClient.refetchQueries({ queryKey: ['admin', 'node', PRIMARY_NODE_ID] });
+    });
+    expect(await screen.findByTestId('node-serving-read-null')).toBeVisible();
+    expect(screen.queryByTestId('node-serving-read-values')).toBeNull();
+    expect(within(section).queryByText(retainedRead.candidate_generation)).toBeNull();
+    assertBlockedChecksUnchanged();
   });
 
   it('TestD076_MemberDevices_AuthorizationUnconfirmedVsFreshPendingAndAuthorized', async () => {

@@ -51,6 +51,11 @@
     "vitest": "4.1.12",
     "vitest-axe": "0.1.0"
   },
+  "overrides": {
+    "@typescript-eslint/typescript-estree@8.25.0": {
+      "minimatch": "11.0.5"
+    }
+  },
   "msw": {
     "workerDirectory": [
       "public"

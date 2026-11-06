@@ -1086,6 +1086,65 @@ export function AdminNodeDetailPage(): React.ReactElement {
         </div>
       </section>
 
+      <section
+        className="card"
+        aria-labelledby="node-serving-read-title"
+        data-testid="node-serving-read-section"
+      >
+        <h2 id="node-serving-read-title">{t('admin.nodeDetail.servingRead.title')}</h2>
+        <p className="page-subtitle">{t('admin.nodeDetail.servingRead.note')}</p>
+        {node.serving_read === undefined ? (
+          <p data-testid="node-serving-read-absent">
+            {t('admin.nodeDetail.servingRead.absent')}
+          </p>
+        ) : node.serving_read === null ? (
+          <p data-testid="node-serving-read-null">
+            {t('admin.nodeDetail.servingRead.null')}
+          </p>
+        ) : (
+          <dl className="usage-outbox-values" data-testid="node-serving-read-values">
+            <div>
+              <dt>{t('admin.nodeDetail.servingRead.readAt')}</dt>
+              <dd data-testid="node-serving-read-time">
+                {formatLocaleWithUtc(node.serving_read.read_at, locale)}
+              </dd>
+            </div>
+            <div>
+              <dt>{t('admin.nodeDetail.servingRead.source')}</dt>
+              <dd data-testid="node-serving-read-source">
+                {t(`admin.nodeDetail.servingRead.${node.serving_read.source}`)}
+              </dd>
+            </div>
+            <div>
+              <dt>{t('admin.nodeDetail.servingRead.generation')}</dt>
+              <dd className="mono" data-testid="node-serving-read-generation">
+                {node.serving_read.candidate_generation}
+              </dd>
+            </div>
+            <div>
+              <dt>{t('admin.nodeDetail.servingRead.result')}</dt>
+              <dd data-testid="node-serving-read-result">
+                {t(
+                  node.serving_read.verified
+                    ? 'admin.nodeDetail.servingRead.verified'
+                    : 'admin.nodeDetail.servingRead.rejected',
+                )}
+              </dd>
+            </div>
+            <div style={{ gridColumn: '1 / -1' }}>
+              <dt>{t('admin.nodeDetail.servingRead.diagnostic')}</dt>
+              <dd
+                className="mono"
+                style={{ whiteSpace: 'pre-wrap' }}
+                data-testid="node-serving-read-diagnostic"
+              >
+                {node.serving_read.diagnostic}
+              </dd>
+            </div>
+          </dl>
+        )}
+      </section>
+
       {/* Typed DNS Policy Evidence reported by the node (D-056) */}
       <section className="card" data-testid="node-dns-policy-evidence-section">
         <h2>{t('admin.nodeDetail.dnsEvidence.title')}</h2>
