@@ -110,9 +110,9 @@ else:raise SystemExit('unexpected fake docker command')
 			t.Fatalf("unexpected %s sample count: %s %v", role, n, err)
 		}
 	}
-	failed := *x
-	failed.runtimeEvidence = nil
-	failed.dir = filepath.Join(dir, "canceled")
+	failed := &isolationRun{t: t, ctx: ctx, dir: filepath.Join(dir, "canceled"),
+		binary: x.binary, r: x.r, records: x.records,
+	}
 	if failed.retainRuntime("after-clone-creation") || len(failed.runtimeEvidence) != 2 || failed.runtimeEvidence[0]["status"] != "unavailable" {
 		t.Fatal("canceled initial source read qualified as a bracket")
 	}
