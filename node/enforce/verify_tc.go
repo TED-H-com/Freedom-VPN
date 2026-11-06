@@ -183,7 +183,10 @@ func readServingTC(ctx context.Context, ex Executor, m Model) (map[string][2][]b
 		r := TCReadEvidence{Interface: iface, Attachment: attachment}
 		raw, err := ex.Output(ctx, "tc", args...)
 		if err != nil {
+			contextErr := ctx.Err()
 			r.Error = "read_failed"
+			reads = append(reads, r)
+			return nil, nil, tcReadError(contextErr, r, err)
 		} else {
 			r.Objects, err = ParseTCObjects(raw)
 			if err != nil {
@@ -214,8 +217,9 @@ func readServingTC(ctx context.Context, ex Executor, m Model) (map[string][2][]b
 		}
 		c, err := ex.Output(ctx, "tc", "-j", "class", "show", "dev", iface)
 		if err != nil {
+			contextErr := ctx.Err()
 			r := TCReadEvidence{Interface: iface, Attachment: "class", Error: "read_failed"}
-			return qos, append(reads, r), tcCheck(r, nil)
+			return qos, append(reads, r), tcReadError(contextErr, r, err)
 		}
 		parents := map[string]bool{}
 		htb := false

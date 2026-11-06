@@ -48,9 +48,10 @@ const (
 
 // CheckError is a verification failure with a specific reason.
 type CheckError struct {
-	Reason Reason
-	Detail string
-	tc     *TCReadEvidence // deciding read, retained before cleanup
+	Reason    Reason
+	Detail    string
+	tc        *TCReadEvidence // deciding read, retained before cleanup
+	tcFailure *TCReadFailure  // local diagnostics only; never part of TC wire evidence
 }
 
 func (e *CheckError) Error() string {

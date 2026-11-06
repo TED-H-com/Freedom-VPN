@@ -1509,7 +1509,15 @@ func (e *Engine) noteApply(err error) {
 		Code: code, Message: clipMsg(msg), ObservedAt: e.clock.Wall().UTC(), Stage: "apply",
 	}
 	e.decision.Errors = append(e.decision.Errors, *e.applyError)
-	e.log.Warn("apply", "err", msg)
+	attrs := []any{"err", msg}
+	if diagnostic, ok := enforce.ReadTCFailure(err); ok {
+		attrs = append(attrs, "tc_read_failure", diagnostic.Classification, "tc_read_context_state_at_return", diagnostic.ContextState,
+			"tc_read_interface", diagnostic.Interface, "tc_read_attachment", diagnostic.Attachment)
+		if diagnostic.ExitCode != nil {
+			attrs = append(attrs, "tc_read_exit_code", *diagnostic.ExitCode)
+		}
+	}
+	e.log.Warn("apply", attrs...)
 }
 
 func (e *Engine) markRevoked(ctx context.Context) {
