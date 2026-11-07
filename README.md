@@ -139,14 +139,15 @@ checks relevant to the change, and describe how the result was verified.
 
 ## Project history
 
-The [roadmap](docs/ROADMAP.md), [findings and decisions](docs/handover/README.md)
+The [delivery guide](docs/DELIVERY.en.md) and [roadmap](docs/ROADMAP.md) describe
+current implementation and verification limits. [Findings and decisions](docs/handover/README.md)
 and [acceptance records](docs/e2e/README.md) retain the engineering history.
 
 <details>
 <summary>Recorded engineering checkpoints</summary>
 
-**Current cut:** [follow-up 49](docs/handover/follow-up-49.md), #482–#485 at aaffdc7f.
-**Previous cut:** [follow-up 48](docs/handover/follow-up-48.md), #478–#481 at b921c75f.
+**Latest archived checkpoint:** [follow-up 49](docs/handover/follow-up-49.md), #482–#485 at aaffdc7f.
+**Previous archived checkpoint:** [follow-up 48](docs/handover/follow-up-48.md), #478–#481 at b921c75f.
 
 </details>
 

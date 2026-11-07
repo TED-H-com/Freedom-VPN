@@ -29,19 +29,26 @@ Freedom VPN 以自架 NetBird 和官方 App 為基礎，提供會員、出口節
 
 ## 驗證範圍與已知限制
 
-[當期工程紀錄](handover/follow-up-49.md) 彙整已合併的修正、驗證來源與保留的問題。
+[合併紀錄](ROADMAP.md) 追蹤目前實作；[follow-up 49](handover/follow-up-49.md)
+保存 #482–#485 的歷史交付切點，後續成果以各項驗收紀錄為準。
 單元／整合測試、Linux 實驗環境、真實 App 裝置和正式部署各有不同的驗證範圍。
 本導覽不宣告正式發行，也不以文件整理替代尚未完成的驗收。
+
+節點保留的驗證結果 `serving_read` 已完成節點回報、中央儲存與投影、管理介面顯示及
+診斷匯出（[#492](https://github.com/TED-H-com/Freedom-VPN/pull/492)、
+[#493](https://github.com/TED-H-com/Freedom-VPN/pull/493)、
+[#494](https://github.com/TED-H-com/Freedom-VPN/pull/494)）。它保留原始讀取時間與結果，
+不能單獨視為目前可轉送流量的許可；原有安全檢查與租約判定仍適用。
 
 | 事項 | 目前界線與驗收入口 |
 |---|---|
 | 官方 App | [NetBird 版本表](netbird/VERSIONS.md) 列出固定元件及候選 App；Windows、macOS、iOS、Android 的真機驗收仍待執行。 |
-| 出口與會員隔離 | [隔離驗收](e2e/at/isolation/summary.md) 保留未完成場景及最新嘗試結果；歷史失敗維持原判定。 |
+| 出口與會員隔離 | [D164 驗收](e2e/at/isolation/d164-acceptance.md) 記錄 2026-11-06 的完整實驗環境與組合驗證：27 項通過、2 項待驗，並關閉 F17-01 缺口。IPv6 平台與完整故障轉換矩陣仍待驗；[歷史隔離紀錄](e2e/at/isolation/summary.md) 保留原有失敗判定。 |
 | 會員連線 | [會員驗收](e2e/at/members/README.md) 記錄上游連線與網路條件限制；伺服器端隔離不提供會員裝置的 OS kill switch。 |
 | 更新與硬體 | [更新驗收](e2e/at/updates/summary.md) 和 [安全維運驗收](e2e/at/secops/summary.md) 記錄實體 arm64、候選硬體容量與獨立時鐘 guest 等實測缺口；交叉編譯不能替代硬體實測。 |
 | 正式營運 | 正式 IdP／MFA、付款供應商、網域／TLS、DNS 清單與營運參數仍需設定及驗證；測試預設不代表正式政策。 |
 
-本輪另有兩份收尾紀錄：[隔離驗收修正](e2e/at/isolation/followup27-2026-11-05.md)
+較早的收尾紀錄中，[隔離驗收修正](e2e/at/isolation/followup27-2026-11-05.md)
 保留失敗結果與證據；[網路實驗環境修正](poc/G2-followup37-2026-11-05.md)
 提供封包歸屬與阻擋判定的局部本機驗證。後者不改寫原始排程失敗，兩者也不代表
 整套系統已完成最終整合驗證。
@@ -51,9 +58,8 @@ Freedom VPN 以自架 NetBird 和官方 App 為基礎，提供會員、出口節
 現有模組、API、資料與歷史證據持續保留。後續工作以具體需求或已證實的缺陷為依據，
 不因已有設計提案就自動追加實作。
 
-可選的 `serving_read` 契約已加入；中央儲存與顯示、診斷讀取及節點資料產生流程尚未
-全部啟用。這些介面保留為後續擴充入口，欄位存在不代表功能已上線。NetBird API
-客戶端重用、其他架構調整及進階診斷亦留待後續評估，必要的完成性修正另依實際問題處理。
+NetBird API 客戶端重用、其他架構調整及進階診斷留待後續評估，
+必要的完成性修正另依實際問題處理。
 
 [歷史交付與已知問題](handover/README.md) 保存完整脈絡，
 [開發路線與合併紀錄](ROADMAP.md) 保存逐項交付。各驗收入口標明的結果與限制為準。

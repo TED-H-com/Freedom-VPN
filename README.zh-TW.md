@@ -125,14 +125,15 @@ Ubuntu 24.04 LTS 的 amd64 與 arm64。
 
 ## 專案歷史
 
-[開發路線](docs/ROADMAP.md)、[問題與決策紀錄](docs/handover/README.md)及
-[驗收紀錄](docs/e2e/README.md)保留詳細工程歷史（英文）。
+[交付導覽](docs/DELIVERY.md)與[開發路線](docs/ROADMAP.md)說明目前實作及驗證界線。
+[問題與決策紀錄](docs/handover/README.md)及[驗收紀錄](docs/e2e/README.md)
+保留詳細工程歷史（英文）。
 
 <details>
 <summary>工程交付紀錄</summary>
 
-**目前交付切點：**[follow-up 49](docs/handover/follow-up-49.md)，#482–#485，版本 aaffdc7f。
-**前次交付切點：**[follow-up 48](docs/handover/follow-up-48.md)，#478–#481，版本 b921c75f。
+**最近封存的交付切點：**[follow-up 49](docs/handover/follow-up-49.md)，#482–#485，版本 aaffdc7f。
+**前次封存的交付切點：**[follow-up 48](docs/handover/follow-up-48.md)，#478–#481，版本 b921c75f。
 
 </details>
 
