@@ -39,21 +39,31 @@ mean every platform and failure scenario has passed acceptance.
 
 ## Verification scope and known limits
 
-The [current engineering record](handover/follow-up-49.md) collects merged fixes,
-verification sources and carried issues. Unit and integration tests, Linux lab
+The [merge record](ROADMAP.md) tracks current implementation;
+[follow-up 49](handover/follow-up-49.md) preserves the historical #482–#485
+delivery checkpoint. Later results have their own acceptance records.
+Unit and integration tests, Linux lab
 tests, actual app devices and production deployments each establish different
 evidence. This guide does not announce a production release or replace unfinished
 acceptance with documentation.
 
+Retained node verification results (`serving_read`) now flow from node reports
+through Central storage and projection to the admin interface and diagnostic
+exports ([#492](https://github.com/TED-H-com/Freedom-VPN/pull/492),
+[#493](https://github.com/TED-H-com/Freedom-VPN/pull/493),
+[#494](https://github.com/TED-H-com/Freedom-VPN/pull/494)). They preserve the original
+read time and result. A retained read alone does not authorize current forwarding;
+the existing safety checks and lease decisions still apply.
+
 | Area | Current boundary and acceptance reference |
 |---|---|
 | Official apps | The [NetBird version matrix](netbird/VERSIONS.md) lists pinned components and candidate apps. Windows, macOS, iOS and Android still need real-device acceptance. |
-| Exit and member isolation | [Isolation acceptance](e2e/at/isolation/summary.md) preserves incomplete scenarios and the latest attempt results. Historical failures retain their original verdicts. |
+| Exit and member isolation | [D164 acceptance](e2e/at/isolation/d164-acceptance.md) records the complete lab and assembled verification on 2026-11-06: 27 rows passed, 2 remain blocked, and F17-01 is closed. The IPv6 platform and full fault-transition matrices remain unverified; [historical isolation records](e2e/at/isolation/summary.md) retain earlier failure verdicts. |
 | Member connectivity | [Member acceptance](e2e/at/members/README.md) records upstream connection and network limitations. Server-side isolation does not provide an OS kill switch on member devices. |
 | Updates and hardware | [Update acceptance](e2e/at/updates/summary.md) and [security operations acceptance](e2e/at/secops/summary.md) record gaps including physical arm64, candidate-hardware capacity and a guest with an independent clock. Cross-compilation cannot replace hardware measurements. |
 | Production operations | Production IdP/MFA, payment provider, domains/TLS, DNS lists and operating parameters still need configuration and verification. Test defaults do not define production policy. |
 
-This consolidation also has two closing records:
+Earlier consolidation records remain available:
 [isolation acceptance corrections](e2e/at/isolation/followup27-2026-11-05.md)
 preserve failed results and evidence; [network lab corrections](poc/G2-followup37-2026-11-05.md)
 provide scoped local verification of packet attribution and blocking verdicts.
@@ -66,11 +76,8 @@ Existing modules, APIs, data and historical evidence remain available. Later wor
 should follow concrete requirements or demonstrated defects; the existence of a
 design proposal does not automatically add implementation scope.
 
-The optional `serving_read` contract has been added. Central storage and display,
-diagnostic reads and node data production are not all enabled. These interfaces
-remain available for later extension; a field's presence does not mean the feature
-is live. NetBird API client reuse, other architecture changes and advanced
-diagnostics also remain for later evaluation. Necessary completion fixes are
+NetBird API client reuse, other architecture changes and advanced
+diagnostics remain for later evaluation. Necessary completion fixes are
 handled according to actual issues.
 
 The [delivery history and known issues](handover/README.md) preserve the full
