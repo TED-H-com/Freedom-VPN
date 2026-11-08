@@ -171,7 +171,7 @@ func TestD085_ReadTimeoutAndCanceledStep(t *testing.T) {
 			r.eng.plane = p
 			ctx, cancel := context.WithCancel(t.Context())
 			defer cancel()
-			message := "serving verification timed out"
+			message := "apply timed out"
 			if canceled {
 				cancel()
 				// Process cancellation still permits an independent bounded

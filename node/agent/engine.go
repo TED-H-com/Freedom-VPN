@@ -1495,9 +1495,9 @@ func (e *Engine) noteApply(err error) {
 	code := api.ErrorCodeHEALTHCHECKFAILED
 	msg := "apply failed"
 	if errors.Is(err, context.DeadlineExceeded) {
-		msg = "serving verification timed out"
+		msg = "apply timed out"
 	} else if errors.Is(err, context.Canceled) {
-		msg = "serving verification canceled"
+		msg = "apply canceled"
 	}
 	if errors.As(err, &ce) {
 		msg = string(ce.Reason)
@@ -1510,6 +1510,13 @@ func (e *Engine) noteApply(err error) {
 	}
 	e.decision.Errors = append(e.decision.Errors, *e.applyError)
 	attrs := []any{"err", msg}
+	if diagnostic, ok := enforce.ReadApplyFailure(err); ok {
+		attrs = append(attrs, "apply_failure_stage", diagnostic.Stage, "apply_failure", diagnostic.Classification,
+			"apply_context_state_at_return", diagnostic.ContextState)
+		if diagnostic.ExitCode != nil {
+			attrs = append(attrs, "apply_exit_code", *diagnostic.ExitCode)
+		}
+	}
 	if diagnostic, ok := enforce.ReadTCFailure(err); ok {
 		attrs = append(attrs, "tc_read_failure", diagnostic.Classification, "tc_read_context_state_at_return", diagnostic.ContextState,
 			"tc_read_interface", diagnostic.Interface, "tc_read_attachment", diagnostic.Attachment)

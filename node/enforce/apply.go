@@ -84,24 +84,25 @@ func apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	}()
 	applyStart, err := now()
 	if err != nil {
-		return ApplyResult{}, err
+		return ApplyResult{}, applyFailure("clock", ctx.Err(), err)
 	}
 	timing = DeadlineEvidence{Granularity: DeadlineGranularity, InstallBound: DeadlineInstallBound, ApplyStart: applyStart}
 
 	if err := validateDatapath(m.Datapath); err != nil {
-		return ApplyResult{}, err
+		return ApplyResult{}, applyFailure("validate", ctx.Err(), err)
 	}
 	state, err := loadState(ctx, ex)
 	if err != nil {
-		return ApplyResult{}, err
+		return ApplyResult{}, applyFailure("load_nft", ctx.Err(), err)
 	}
 	quarantined := quarantinedLinks(state.Sets)
 	if len(quarantined) > 0 {
 		// A changed desired model cannot authorize raising a retired link.
 		if len(quarantined) != 1 || quarantined[0] != m.Datapath.MemberIngress {
-			return ApplyResult{}, checkf(ReasonIsolation, "quarantined member path differs from applied model")
+			return ApplyResult{}, applyFailure("validate", ctx.Err(), checkf(ReasonIsolation, "quarantined member path differs from applied model"))
 		}
 		if _, err := lowerMemberLink(ctx, ex, m.Datapath.MemberIngress); err != nil {
+			err = applyFailure("lower_member", ctx.Err(), err)
 			q, qerr := quarantineAfterFailure(ctx, ex, m)
 			return ApplyResult{Quarantine: &q}, errors.Join(err, qerr)
 		}
@@ -110,6 +111,7 @@ func apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	if err != nil {
 		evidence := ServingEvidence{TC: loadReads}
 		evidence.retainTC(m.Generation, "load", err)
+		err = applyFailure("load_tc", ctx.Err(), err)
 		q, qerr := quarantineAfterFailure(ctx, ex, m)
 		evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
 		return ApplyResult{Quarantine: &q, Evidence: evidence}, errors.Join(err, qerr)
@@ -127,7 +129,7 @@ func apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	}
 	plan, err := Render(m, state, tcState)
 	if err != nil {
-		return ApplyResult{}, err
+		return ApplyResult{}, applyFailure("render", ctx.Err(), err)
 	}
 	// Check before any class/qdisc mutation so a stale class deletion cannot
 	// delete a foreign attached filter. Existing classes may belong to the
@@ -149,6 +151,7 @@ func apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	if tcErr != nil {
 		evidence := ServingEvidence{TC: reads}
 		evidence.retainTC(m.Generation, "pre_apply", tcErr)
+		tcErr = applyFailure("pre_apply_tc", ctx.Err(), tcErr)
 		q, qerr := quarantineAfterFailure(ctx, ex, m)
 		evidence.Quarantined, evidence.QuarantinedLinks = q.Recorded, quarantinedLinksFor(m, q)
 		return ApplyResult{Plan: plan, Resets: resets, Evidence: evidence, Quarantine: &q}, errors.Join(tcErr, qerr)
@@ -156,6 +159,7 @@ func apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	// Shape first, then open forwarding. A failed nft install still rolls
 	// back to the baseline, which removes the qdisc (§8.2, §11.5).
 	if err := ex.TCBatch(commandPhase(ctx, "shape"), plan.TC); err != nil {
+		err = applyFailure("shape", ctx.Err(), err)
 		_ = installBaseline(ctx, ex, m.Datapath, state)
 		return ApplyResult{}, err
 	}
@@ -164,6 +168,7 @@ func apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	// monotonic time; no wall-clock resampling can extend their allowance.
 	timing.RenderStart, err = now()
 	if err != nil {
+		err = applyFailure("clock", ctx.Err(), err)
 		rollbackErr := installBaseline(ctx, ex, m.Datapath, state)
 		return ApplyResult{}, errors.Join(err, rollbackErr)
 	}
@@ -172,14 +177,16 @@ func apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 		anchor = m.NowMono
 	}
 	if timing.RenderStart < anchor {
+		err := applyFailure("render", ctx.Err(), checkf(ReasonIsolation, "monotonic render precedes model"))
 		rollbackErr := installBaseline(ctx, ex, m.Datapath, state)
-		return ApplyResult{Deadline: timing}, errors.Join(checkf(ReasonIsolation, "monotonic render precedes model"), rollbackErr)
+		return ApplyResult{Deadline: timing}, errors.Join(err, rollbackErr)
 	}
 	m.Now = m.Now.Add(timing.RenderStart - anchor)
 	m.NowMono = timing.RenderStart
 	m.timeoutReserve = DeadlineInstallBound
 	plan, err = Render(m, state, tcState)
 	if err != nil {
+		err = applyFailure("render", ctx.Err(), err)
 		_ = installBaseline(ctx, ex, m.Datapath, state)
 		return ApplyResult{Deadline: timing}, err
 	}
@@ -190,6 +197,8 @@ func apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	installCtx, cancelInstall := context.WithTimeout(commandPhase(ctx, "install"), DeadlineInstallBound)
 	timing.InstallStart = timingSample()
 	err = ex.NftBatch(installCtx, guarded)
+	// Snapshot before cancelInstall or rollback can change the observed context.
+	err = applyFailure("install", installCtx.Err(), err)
 	timing.InstalledBy, _ = now()
 	timing.InstallOK = err == nil
 	cancelInstall()
@@ -198,10 +207,10 @@ func apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	}
 	state.Chains[deadlineGuard] = true
 	if err != nil || timing.InstalledBy < timing.RenderStart || timing.InstalledBy-timing.RenderStart > DeadlineInstallBound {
-		_ = installBaseline(ctx, ex, m.Datapath, state)
 		if err == nil {
-			err = checkf(ReasonIsolation, "deadline installation budget exceeded")
+			err = applyFailure("install_bound", ctx.Err(), checkf(ReasonIsolation, "deadline installation budget exceeded"))
 		}
+		_ = installBaseline(ctx, ex, m.Datapath, state)
 		return ApplyResult{Plan: plan, Deadline: timing}, err
 	}
 	// Candidate commit removed all references to retired member classes. Delete
@@ -209,12 +218,14 @@ func apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	// A crash here leaves only unreferenced classes; the next Apply reclaims them.
 	if plan.TCRetire != "" {
 		if err := ex.TCBatch(commandPhase(ctx, "retire"), plan.TCRetire); err != nil {
+			err = applyFailure("retire", ctx.Err(), err)
 			rollbackErr := installBaseline(ctx, ex, m.Datapath, state)
 			return ApplyResult{Plan: plan}, errors.Join(err, rollbackErr)
 		}
 	}
 	timing.ReleaseStart = timingSample()
 	err = releaseDeadlineGuard(commandPhase(ctx, "release"), ex)
+	err = applyFailure("release", ctx.Err(), err)
 	timing.ReleaseEnd = timingSample()
 	if err != nil {
 		_ = installBaseline(ctx, ex, m.Datapath, state)
@@ -229,6 +240,7 @@ func apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	// VerifyServing reads live nft and tc state together. A foreign filter is
 	// the same serving-gate failure as a flowtable bypass.
 	evidence, err := verifyServing(commandPhase(ctx, "verify"), ex, m, plan.Assignments, len(quarantined) > 0)
+	err = applyFailure("verify", ctx.Err(), err)
 	measurement.Verifications = append(measurement.Verifications, evidence.timing.Verifications...)
 	if err != nil {
 		var check *CheckError
@@ -242,6 +254,7 @@ func apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	}
 	if len(quarantined) > 0 {
 		evidence, err = releaseQuarantine(commandPhase(ctx, "verify"), ex, m, plan.Assignments)
+		err = applyFailure("release_quarantine", ctx.Err(), err)
 		if evidence.timing != nil {
 			measurement.Verifications = append(measurement.Verifications, evidence.timing.Verifications...)
 		}
@@ -262,7 +275,7 @@ func apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	verified := ApplyResult{Deadline: timing, Plan: plan, Resets: resets, Verified: true, Evidence: evidence}
 	samples, err := Samples(m, evidence.Counters)
 	if err != nil {
-		return ApplyResult{Verified: true}, err
+		return ApplyResult{Verified: true}, applyFailure("sample", ctx.Err(), err)
 	}
 	verified.Counters = evidence.Counters
 	verified.Samples = samples
@@ -271,6 +284,7 @@ func apply(ctx context.Context, ex Executor, m Model, previous map[string]Counte
 	var failed []netip.Addr
 	for _, addr := range m.Revoke {
 		err := deleteConntrack(commandPhase(ctx, "revoke"), ex, addr)
+		err = applyFailure("revoke", ctx.Err(), err)
 		if err == nil {
 			continue
 		}

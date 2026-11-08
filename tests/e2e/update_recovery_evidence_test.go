@@ -223,3 +223,37 @@ func TestSEC02_RecoveryContextRejectsUnsafeFieldsAndMissingBinding(t *testing.T)
 		}
 	}
 }
+
+func TestSEC02_RecoveryApplyFailureProjection(t *testing.T) {
+	at := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	for _, service := range []string{"agent", "watchdog"} {
+		for _, valid := range []bool{true, false} {
+			t.Run(fmt.Sprintf("%s/%t", service, valid), func(t *testing.T) {
+				stage, class, state, msg, exit := "install", "command_exit", "deadline", "apply timed out", 7
+				if !valid {
+					stage = "TEST_ONLY_PRIVATE_STAGE"
+					class = "TEST_ONLY_PRIVATE_CLASS"
+					state = "TEST_ONLY_PRIVATE_STATE"
+					msg = "TEST_ONLY_PRIVATE_ERROR"
+					exit = 256
+				}
+				input := recoveryServiceLog(t, service, at, "apply", slog.String("err", msg), slog.String("apply_failure_stage", stage), slog.String("apply_failure", class), slog.String("apply_context_state_at_return", state), slog.Int("apply_exit_code", exit), slog.String("argv", "TEST_ONLY_PRIVATE_ARGV"))
+				out := projectRecoveryContext(uuid.NewString(), recoveryTestCommit, at, at, true, true, map[string]recoveryInput{"agent": {Data: input, Available: true}})
+				rows := out.Streams["agent"].Records
+				if len(rows) != 1 {
+					t.Fatalf("missing log: %+v", out)
+				}
+				for key, want := range map[string]any{"err": msg, "apply_failure_stage": stage, "apply_failure": class, "apply_context_state_at_return": state, "apply_exit_code": uint64(exit)} {
+					got, ok := rows[0][key]
+					if valid && (!ok || got != want) || !valid && ok {
+						t.Fatalf("bad projection %s: %+v", key, rows[0])
+					}
+				}
+				raw, err := json.Marshal(out)
+				if err != nil || strings.Contains(string(raw), "TEST_ONLY_PRIVATE") {
+					t.Fatalf("unsafe output: %s %v", raw, err)
+				}
+			})
+		}
+	}
+}

@@ -312,7 +312,7 @@ func projectRecoveryLog(fields map[string]json.RawMessage) map[string]any {
 	}
 	row := map[string]any{"time": text("time"), "event": msg}
 	projectHeartbeatField(row, "boot_id", text("boot_id"))
-	for _, key := range []string{"writer", "phase", "cause", "err", "tc_read_failure", "tc_read_context_state_at_return", "tc_read_interface", "tc_read_attachment"} {
+	for _, key := range []string{"writer", "phase", "cause", "err", "tc_read_failure", "tc_read_context_state_at_return", "tc_read_interface", "tc_read_attachment", "apply_failure_stage", "apply_failure", "apply_context_state_at_return"} {
 		s := text(key)
 		ok := false
 		switch key {
@@ -323,7 +323,16 @@ func projectRecoveryLog(fields map[string]json.RawMessage) map[string]any {
 		case "cause":
 			ok = recoveryReason(s)
 		case "err":
-			ok = api.ErrorCode(s).Valid() || s == "apply failed" || s == "serving verification timed out" || s == "serving verification canceled"
+			ok = api.ErrorCode(s).Valid() || s == "apply failed" || s == "apply timed out" || s == "apply canceled" || s == "serving verification timed out" || s == "serving verification canceled"
+		case "apply_failure_stage":
+			switch s {
+			case "clock", "validate", "load_nft", "lower_member", "load_tc", "render", "pre_apply_tc", "shape", "install", "install_bound", "retire", "release", "verify", "release_quarantine", "sample", "revoke":
+				ok = true
+			}
+		case "apply_failure":
+			ok = s == "deadline" || s == "canceled" || s == "command_exit" || s == "check" || s == "operation_error"
+		case "apply_context_state_at_return":
+			ok = s == "none" || s == "deadline" || s == "canceled"
 		case "tc_read_failure":
 			ok = s == "deadline" || s == "canceled" || s == "command_exit" || s == "read_error"
 		case "tc_read_context_state_at_return":
@@ -337,14 +346,14 @@ func projectRecoveryLog(fields map[string]json.RawMessage) map[string]any {
 			row[key] = s
 		}
 	}
-	for _, key := range []string{"mono_ns", "heartbeat_mono_ns", "policy_expires_mono_ns", "generation", "start_mono_ns", "end_mono_ns", "tc_read_exit_code"} {
+	for _, key := range []string{"mono_ns", "heartbeat_mono_ns", "policy_expires_mono_ns", "generation", "start_mono_ns", "end_mono_ns", "tc_read_exit_code", "apply_exit_code"} {
 		raw, ok := fields[key]
 		if !ok {
 			continue
 		}
 		n, err := strconv.ParseUint(string(raw), 10, 64)
 		if err == nil {
-			if key == "tc_read_exit_code" {
+			if key == "tc_read_exit_code" || key == "apply_exit_code" {
 				if n <= 255 {
 					row[key] = n
 				}
