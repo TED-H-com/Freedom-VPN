@@ -7215,6 +7215,12 @@ const followup29Configuration = "**2026-11-01 — Known local configuration beha
 
 func readBeforeFollowup29Note(t *testing.T, root, path string) string {
 	t.Helper()
+	// These historical body hashes use the existing frozen input, independently
+	// of current navigation. Their expected digests and live integrity stay intact.
+	switch path {
+	case "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/restore-drill.md":
+		path = followup49PriorPath(path)
+	}
 	if path == "README.md" {
 		path = "tests/handover/testdata/consolidation/README-followup49.md.txt"
 	}
@@ -18698,8 +18704,49 @@ func TestHandover_Followup49Claims(t *testing.T) {
 			if path == "README.md" {
 				entrypointPath = fixture + "consolidation/README-followup49.md.txt"
 			}
-			lines, old := strings.Split(readOwnedDoc(t, root, entrypointPath), "\n"), strings.Split(readOwnedDoc(t, root, followup49PriorPath(path)), "\n")
-			if !strings.Contains(lines[2], "Current cut") || !strings.Contains(lines[2], "follow-up-49.md") || !strings.Contains(lines[2], "#482–#485") || lines[3] != strings.Replace(old[2], "**Current cut", "**Previous cut", 1) {
+			doc := readOwnedDoc(t, root, entrypointPath)
+			cutLabel, priorLabel := "Current cut", "**Previous cut"
+			if path != "README.md" {
+				// Current navigation precedes the archived cut. Validate only this
+				// bounded addition, then retain the complete historical body comparison.
+				const navigation = `**目前交付：**[交付導覽](../DELIVERY.md)整理現有功能、操作入口與驗證範圍。下列 follow-up 快照保留各自當時的範圍與結果。
+
+**Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
+
+`
+				const archive = "**Archived cut:**"
+				if strings.Count(doc, archive) != 1 {
+					t.Fatalf("unique archived cut missing: %s", path)
+				}
+				a := strings.Index(doc, archive)
+				title, current, ok := strings.Cut(doc[:a], "\n\n")
+				if !ok || !strings.HasPrefix(current, navigation) {
+					t.Fatalf("current bilingual navigation: %s", path)
+				}
+				guidance := strings.TrimPrefix(current, navigation)
+				if path == "docs/handover/operator-guide.md" {
+					const heading = "## 保留的節點驗證結果 / Retained node verification\n\n"
+					if !strings.HasPrefix(guidance, heading) || strings.Count(guidance, heading) != 1 {
+						t.Fatal("retained verifier guidance heading")
+					}
+					for _, req := range []string{
+						"`NodeDetail.serving_read`", "`read_at`", "`source`", "`apply`", "`live`", "`candidate_generation`", "`verified=false`", "`null`", "`diagnostic`", "`verified=true`",
+						"沒有新的驗證讀取時，後續心跳不會替它更新時間", "不是套用完成的 ACK", "欄位缺省表示伺服器尚未提供這項投影", "目前 incarnation 所選回報沒有可用結果", "中央不會回找先前的非空值", "不假設它是完整 JSON", "不能據此判定節點目前可轉送",
+						"without a new verifier read", "not an applied-generation ACK", "An absent field means the server does not provide this projection", "selected current-incarnation observation has no available result", "no search back for an earlier non-null value", "not guaranteed complete JSON", "does not establish permission to forward now",
+						"../contracts/README.md#revision-15", "../e2e/at/isolation/d164-acceptance.md",
+					} {
+						if !strings.Contains(guidance, req) {
+							t.Fatalf("retained verifier guidance missing %q", req)
+						}
+					}
+				} else if guidance != "" {
+					t.Fatalf("unexpected current guidance: %s", path)
+				}
+				doc = title + "\n\n" + doc[a:]
+				cutLabel, priorLabel = "Archived cut", "**Earlier archived cut"
+			}
+			lines, old := strings.Split(doc, "\n"), strings.Split(readOwnedDoc(t, root, followup49PriorPath(path)), "\n")
+			if !strings.Contains(lines[2], cutLabel) || !strings.Contains(lines[2], "follow-up-49.md") || !strings.Contains(lines[2], "#482–#485") || lines[3] != strings.Replace(old[2], "**Current cut", priorLabel, 1) {
 				t.Fatalf("entrypoint %s", path)
 			}
 			body, before := strings.Join(lines[4:], "\n"), strings.Join(old[4:], "\n")
