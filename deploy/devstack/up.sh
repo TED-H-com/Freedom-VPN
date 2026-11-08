@@ -64,6 +64,10 @@ cp "$ROOT/deploy/devstack/coredns/Corefile" "$ROOT/deploy/devstack/coredns/examp
 # Render synthetic addresses for this slot, never another lab's service.
 sed -i "s/172[.]28[.]30[.]/$FVPN_E2E_LAB_PREFIX./g; s/192[.]0[.]3[.]/$FVPN_E2E_ORIGIN_PREFIX./g" "$STATE/render/coredns/example.invalid.zone"
 
+# These nonsecret fixtures must be readable by the nonroot CoreDNS image.
+chmod 755 "$STATE/render/coredns"
+chmod 644 "$STATE/render/coredns/Corefile" "$STATE/render/coredns/example.invalid.zone"
+
 tag() {
     digest=$1
     name=$2
