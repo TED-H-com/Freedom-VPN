@@ -10,7 +10,10 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sync"
+	"testing"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // observeUpdateRecovery records the parent lock and candidate heartbeat without
@@ -88,6 +91,10 @@ done`)
 					r.t.Errorf("write %s log: %v", name, err)
 				}
 			}
+			inputs["enforcement_timing"] = readUpdateTiming(readCtx, r.lab.node)
+			if !inputs["enforcement_timing"].Available {
+				r.t.Error("read bounded enforcement timing failed")
+			}
 			writeContext(completedAt, true, joinErr == nil, inputs)
 		})
 	}
@@ -117,4 +124,107 @@ func (r *runner) retainUpdaterInvocations(rec *Record) {
 		return
 	}
 	rec.Observations = append(rec.Observations, Observation{Name: "updater_invocations", Detail: string(data)})
+}
+
+func TestSEC02_RecoveryTimingConfigReachesBootAndCandidates(t *testing.T) {
+	root := t.TempDir()
+	etc := filepath.Join(root, "node", "etc")
+	base := filepath.Join(root, "node", "var", "e2e")
+	for _, dir := range []string{etc, base} {
+		if err := os.MkdirAll(dir, 0o700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	runPath := filepath.Join(etc, "agent-run.json")
+	initial := []byte(`{"test_mode":true,"agent_release":"test-initial","control_url":"https://example.invalid","opaque":"TEST_ONLY_PRIVATE"}`)
+	for _, name := range []string{"agent-run.json", "agent-enroll.json"} {
+		if err := os.WriteFile(filepath.Join(etc, name), initial, 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// Only the existing opt-in's exact read/check/write calls are accepted.
+	// No real Docker executable or running service participates in this test.
+	script := `#!/bin/sh
+set -eu
+if [ "$#" = 6 ] && [ "$1" = exec ] && [ "$2" = fvpn-timing-test-node ] && [ "$3" = test ] && [ "$4" = '!' ] && [ "$5" = -e ] && [ "$6" = /var/lib/vpn-node/identity/node.json ]; then
+  [ "${FVPN_TEST_TIMING_ENROLLED:-}" != 1 ]
+elif [ "$#" = 4 ] && [ "$1" = exec ] && [ "$2" = fvpn-timing-test-node ] && [ "$3" = cat ] && [ "$4" = /etc/vpn-node/agent-run.json ]; then
+  cat "$FVPN_TEST_TIMING_CONFIG"
+elif [ "$#" = 9 ] && [ "$1" = exec ] && [ "$2" = -i ] && [ "$3" = fvpn-timing-test-node ] && [ "$4" = sh ] && [ "$5" = -c ] && [ "$7" = sh ] && [ "$8" = /etc/vpn-node/agent-run.json ] && [ "$9" = 600 ]; then
+  cat > "$FVPN_TEST_TIMING_CONFIG"
+  chmod 600 "$FVPN_TEST_TIMING_CONFIG"
+else
+  exit 91
+fi
+`
+	if err := os.WriteFile(filepath.Join(root, "docker"), []byte(script), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", root+string(os.PathListSeparator)+os.Getenv("PATH"))
+	t.Setenv("FVPN_TEST_TIMING_CONFIG", runPath)
+	t.Setenv("FVPN_TEST_TIMING_ENROLLED", "")
+	l := &lab{node: "fvpn-timing-test-node", state: root}
+	s := &Stack{lab: l}
+	if err := s.EnableEnforcementTiming(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	check := func(path, release, version string) {
+		t.Helper()
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var cfg map[string]any
+		if err := json.Unmarshal(raw, &cfg); err != nil {
+			t.Fatal(err)
+		}
+		if cfg["test_timing_path"] != updateTimingPath || cfg["test_mode"] != true || cfg["opaque"] != "TEST_ONLY_PRIVATE" || cfg["control_url"] != "https://example.invalid" || cfg["agent_release"] != version {
+			t.Fatalf("timing or existing runtime configuration lost at %s", filepath.Base(path))
+		}
+		if release != "" && cfg["release_id"] != release {
+			t.Fatal("release binding changed")
+		}
+		info, err := os.Stat(path)
+		if err != nil || info.Mode().Perm() != 0o600 {
+			t.Fatalf("config mode: %v %v", info, err)
+		}
+	}
+	check(runPath, "", "test-initial")
+	// Serving preparation copies the enabled runtime config into every release,
+	// including boot. Exercise the actual helpers both before and after boot ID
+	// binding; update/restart selects these existing copies without rewriting.
+	boot, candidate := uuid.New(), uuid.New()
+	if err := l.candidateConfig(boot, "test-boot"); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.setBootRelease(boot); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.candidateConfig(candidate, "test-candidate"); err != nil {
+		t.Fatal(err)
+	}
+	check(runPath, boot.String(), "test-initial")
+	check(filepath.Join(base, "agent-"+boot.String()+".json"), boot.String(), "test-boot")
+	check(filepath.Join(base, "agent-"+candidate.String()+".json"), candidate.String(), "test-candidate")
+	for _, testMode := range []bool{true, false} {
+		if testMode {
+			t.Setenv("FVPN_TEST_TIMING_ENROLLED", "1")
+		} else {
+			t.Setenv("FVPN_TEST_TIMING_ENROLLED", "")
+			if err := os.WriteFile(runPath, []byte(`{"test_mode":false}`), 0o600); err != nil {
+				t.Fatal(err)
+			}
+		}
+		before, err := os.ReadFile(runPath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := s.EnableEnforcementTiming(context.Background()); err == nil {
+			t.Fatal("unsafe opt-in accepted")
+		}
+		after, err := os.ReadFile(runPath)
+		if err != nil || !bytes.Equal(before, after) {
+			t.Fatal("rejected opt-in changed runtime config")
+		}
+	}
 }
