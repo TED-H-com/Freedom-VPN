@@ -7215,6 +7215,12 @@ const followup29Configuration = "**2026-11-01 — Known local configuration beha
 
 func readBeforeFollowup29Note(t *testing.T, root, path string) string {
 	t.Helper()
+	// These historical body hashes use the existing frozen input, independently
+	// of current navigation. Their expected digests and live integrity stay intact.
+	switch path {
+	case "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/restore-drill.md":
+		path = followup49PriorPath(path)
+	}
 	if path == "README.md" {
 		path = "tests/handover/testdata/consolidation/README-followup49.md.txt"
 	}
