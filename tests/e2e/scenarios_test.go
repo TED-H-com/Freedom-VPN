@@ -57,6 +57,11 @@ func TestE2E_Acceptance(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// Enable before release preparation copies runtime configuration, not just enrollment.
+	if err := (&Stack{lab: lab}).EnableEnforcementTiming(ctx); err != nil {
+		t.Error("enable recovery timing failed")
+	}
+
 	run.measured(ctx, "stack-health", func() { run.health(ctx) })
 	run.measured(ctx, "control-metrics", func() { run.metrics(ctx) })
 	run.measured(ctx, "gateway-principals", func() { run.gatewayPrincipals(ctx) })

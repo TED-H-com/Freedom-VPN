@@ -36,19 +36,20 @@ type recoveryStream struct {
 }
 
 type recoveryContext struct {
-	RunID            string                    `json:"run_id"`
-	Source           string                    `json:"source_commit"`
-	BindingAvailable bool                      `json:"binding_available"`
-	StartedAt        time.Time                 `json:"observer_started_at"`
-	CompletedAt      time.Time                 `json:"observer_finished_at"`
-	WindowAvailable  bool                      `json:"window_available"`
-	Started          bool                      `json:"observer_started"`
-	Joined           bool                      `json:"observer_join_ok"`
-	InputLimit       int                       `json:"input_limit_bytes"`
-	LineLimit        int                       `json:"line_limit_bytes"`
-	RecordLimit      int                       `json:"record_limit_per_stream"`
-	Streams          map[string]recoveryStream `json:"streams"`
-	Scope            string                    `json:"scope"`
+	RunID             string                    `json:"run_id"`
+	Source            string                    `json:"source_commit"`
+	BindingAvailable  bool                      `json:"binding_available"`
+	StartedAt         time.Time                 `json:"observer_started_at"`
+	CompletedAt       time.Time                 `json:"observer_finished_at"`
+	WindowAvailable   bool                      `json:"window_available"`
+	Started           bool                      `json:"observer_started"`
+	Joined            bool                      `json:"observer_join_ok"`
+	InputLimit        int                       `json:"input_limit_bytes"`
+	LineLimit         int                       `json:"line_limit_bytes"`
+	RecordLimit       int                       `json:"record_limit_per_stream"`
+	Streams           map[string]recoveryStream `json:"streams"`
+	EnforcementTiming recoveryTimingStream      `json:"enforcement_timing"`
+	Scope             string                    `json:"scope"`
 }
 
 var recoveryCommit = regexp.MustCompile(`^[0-9a-f]{40}$`)
@@ -173,6 +174,7 @@ func projectRecoveryContext(runID, source string, start, end time.Time, started,
 		}
 		out.Streams[name] = s
 	}
+	out.EnforcementTiming = projectUpdateTiming(inputs["enforcement_timing"], start, end)
 	return out
 }
 
