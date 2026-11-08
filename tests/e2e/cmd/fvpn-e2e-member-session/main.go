@@ -170,31 +170,13 @@ func runSession(tcpAddr, udpAddr, device, keyFile, pidFile, statusFile string, i
 		fmt.Fprintln(os.Stderr, "fvpn-e2e-member-session: pid file")
 		return 1
 	}
-	tcp, err := net.DialTimeout("tcp", tcpAddr, 5*time.Second)
-	if err != nil {
-		writeStatus(statusFile, 0, 0, "tcp")
-		fmt.Fprintln(os.Stderr, "fvpn-e2e-member-session: tcp dial")
+	tcp, udp, reader, failure := startSession(tcpAddr, udpAddr, id, net.DialTimeout)
+	if failure != nil {
+		writeSessionStatus(statusFile, failure)
+		fmt.Fprintf(os.Stderr, "fvpn-e2e-member-session: %s class=%s\n", failure.Stage, failure.Class)
 		return 1
 	}
 	defer tcp.Close()
-	if _, err = tcp.Write([]byte("MEMBER " + id.String() + "\n")); err != nil {
-		writeStatus(statusFile, 0, 0, "tcp")
-		return 1
-	}
-	reader := bufio.NewReader(tcp)
-	_ = tcp.SetReadDeadline(time.Now().Add(5 * time.Second))
-	hello, err := reader.ReadString('\n')
-	if err != nil || strings.TrimSpace(hello) != "OK" {
-		writeStatus(statusFile, 0, 0, "tcp")
-		fmt.Fprintln(os.Stderr, "fvpn-e2e-member-session: tcp hello")
-		return 1
-	}
-	udp, err := net.DialTimeout("udp", udpAddr, 5*time.Second)
-	if err != nil {
-		writeStatus(statusFile, 0, 0, "udp")
-		fmt.Fprintln(os.Stderr, "fvpn-e2e-member-session: udp dial")
-		return 1
-	}
 	defer udp.Close()
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
@@ -265,9 +247,54 @@ func runSession(tcpAddr, udpAddr, device, keyFile, pidFile, statusFile string, i
 	}
 }
 
-func writeStatus(path string, tcpN, udpN int, problem string) {
-	writeSessionStatus(path, map[string]any{"tcp_echoes": tcpN, "udp_replies": udpN, "error": problem, "running": false})
+// startupFailure contains no address, identity, key, peer response or raw error.
+// The legacy error and reply counters remain available to existing readers.
+type startupFailure struct {
+	Error      string    `json:"error"`
+	Running    bool      `json:"running"`
+	TCPEchoes  int       `json:"tcp_echoes"`
+	UDPReplies int       `json:"udp_replies"`
+	Stage      string    `json:"startup_stage"`
+	Class      string    `json:"startup_class"`
+	Started    time.Time `json:"startup_started_at"`
+	Failed     time.Time `json:"startup_failed_at"`
 }
+
+// startSession makes exactly one dial per transport. It preserves the original
+// sockets and the existing dial/read deadlines; diagnosis never triggers a retry.
+func startSession(tcpAddr, udpAddr string, id uuid.UUID, dial func(string, string, time.Duration) (net.Conn, error)) (tcp, udp net.Conn, reader *bufio.Reader, failure *startupFailure) {
+	started := time.Now().UTC()
+	fail := func(protocol, stage, class string) (net.Conn, net.Conn, *bufio.Reader, *startupFailure) {
+		diagnostic := &startupFailure{Error: protocol, Stage: stage, Class: class, Started: started, Failed: time.Now().UTC()}
+		if tcp != nil {
+			_ = tcp.Close()
+		}
+		return nil, nil, nil, diagnostic
+	}
+	var err error
+	tcp, err = dial("tcp", tcpAddr, 5*time.Second)
+	if err != nil {
+		return fail("tcp", "tcp_dial", dnsErrorClass(err))
+	}
+	if _, err = tcp.Write([]byte("MEMBER " + id.String() + "\n")); err != nil {
+		return fail("tcp", "tcp_hello_write", dnsErrorClass(err))
+	}
+	reader = bufio.NewReader(tcp)
+	_ = tcp.SetReadDeadline(time.Now().Add(5 * time.Second))
+	hello, err := reader.ReadString('\n')
+	if err != nil {
+		return fail("tcp", "tcp_hello_read", dnsErrorClass(err))
+	}
+	if strings.TrimSpace(hello) != "OK" {
+		return fail("tcp", "tcp_hello_response", "protocol")
+	}
+	udp, err = dial("udp", udpAddr, 5*time.Second)
+	if err != nil {
+		return fail("udp", "udp_dial", dnsErrorClass(err))
+	}
+	return tcp, udp, reader, nil
+}
+
 func writeSessionStatus(path string, value any) {
 	body, err := json.Marshal(value)
 	if err != nil {

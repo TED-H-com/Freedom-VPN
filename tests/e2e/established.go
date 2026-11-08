@@ -127,7 +127,7 @@ func (s *Stack) StartEstablishedTransports(ctx context.Context, device uuid.UUID
 	if !alive {
 		status, _ := exec.CommandContext(ctx, "docker", "exec", s.lab.member, "cat", memberSessionStatus).CombinedOutput()
 		_ = s.StopEstablishedTransports(ctx)
-		return EstablishedTransports{}, fmt.Errorf("member session exited: %s", clipText(string(status), 200))
+		return EstablishedTransports{}, fmt.Errorf("member session exited: %s", memberStartupDiagnostic(status))
 	}
 	return out, nil
 }
@@ -242,4 +242,44 @@ func (s *Stack) MemberTransportStack(member, nodeSlot string) (*Stack, error) {
 	copyLab.member = name
 	copyLab.node = node
 	return &Stack{lab: &copyLab}, nil
+}
+
+// memberStartupDiagnostic projects only bounded, typed fields. Raw helper status
+// may contain untrusted data; clipping it could both leak text and lose diagnosis.
+func memberStartupDiagnostic(raw []byte) string {
+	if len(raw) > 4096 {
+		return "status unavailable"
+	}
+	var status struct {
+		Error      string  `json:"error"`
+		Running    *bool   `json:"running"`
+		TCPEchoes  *uint64 `json:"tcp_echoes"`
+		UDPReplies *uint64 `json:"udp_replies"`
+		Stage      string  `json:"startup_stage"`
+		Class      string  `json:"startup_class"`
+		Started    string  `json:"startup_started_at"`
+		Failed     string  `json:"startup_failed_at"`
+	}
+	if json.Unmarshal(raw, &status) != nil || status.Running == nil || status.TCPEchoes == nil || status.UDPReplies == nil {
+		return "status unavailable"
+	}
+	out := map[string]any{"running": status.Running, "tcp_echoes": status.TCPEchoes, "udp_replies": status.UDPReplies}
+	if status.Error == "tcp" || status.Error == "udp" {
+		out["error"] = status.Error
+	}
+	switch status.Stage {
+	case "tcp_dial", "tcp_hello_write", "tcp_hello_read", "tcp_hello_response", "udp_dial":
+		out["startup_stage"] = status.Stage
+	}
+	switch status.Class {
+	case "canceled", "timeout", "eof", "closed", "refused", "reset", "unreachable", "io_error", "protocol":
+		out["startup_class"] = status.Class
+	}
+	for key, value := range map[string]string{"startup_started_at": status.Started, "startup_failed_at": status.Failed} {
+		if at, err := time.Parse(time.RFC3339Nano, value); err == nil && !at.IsZero() {
+			out[key] = at.UTC().Format(time.RFC3339Nano)
+		}
+	}
+	clean, _ := json.Marshal(out)
+	return string(clean)
 }
