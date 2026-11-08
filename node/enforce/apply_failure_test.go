@@ -52,8 +52,14 @@ func TestSEC02_ApplyFailureBoundaryBeforeCleanup(t *testing.T) {
 			cause := &CmdError{Cmd: "TEST ONLY private argv", Out: "TEST ONLY private output", Err: context.DeadlineExceeded}
 			m := smallModel()
 			f := &applyFailureExec{fakeExec: servingExec(m), stage: stage, cause: cause, cancel: cancel}
-			// Deterministic monotonic readings avoid introducing a new timing test.
-			res, err := apply(ctx, f, m, nil, func() (time.Duration, error) { return time.Hour, nil })
+			// Freeze Apply's samples in the same clock domain as its verifier.
+			// An arbitrary one-hour anchor can be ahead of a freshly booted
+			// runner's real monotonic read and correctly fail verification.
+			anchor, err := MonotonicNow()
+			if err != nil {
+				t.Fatal(err)
+			}
+			res, err := apply(ctx, f, m, nil, func() (time.Duration, error) { return anchor, nil })
 			d, ok := ReadApplyFailure(err)
 			if stage == "" {
 				if err != nil || ok || !res.Verified {
@@ -70,6 +76,31 @@ func TestSEC02_ApplyFailureBoundaryBeforeCleanup(t *testing.T) {
 			raw, err := json.Marshal(d)
 			if err != nil || strings.Contains(string(raw), "private") {
 				t.Fatalf("unsafe diagnosis: %s %v", raw, err)
+			}
+		})
+	}
+}
+
+// The precision verifier already accepts an explicit read time. Reproduce the
+// former fixture's short-uptime failure without changing clocks or waiting.
+func TestSEC02_ApplyFailureFixtureShortUptime(t *testing.T) {
+	const listing = "table inet fvpn { set allowed_v4 { type ipv4_addr flags timeout } }"
+	for _, readStart := range []time.Duration{time.Second, 2 * time.Hour} {
+		t.Run(readStart.String(), func(t *testing.T) {
+			m := smallModel()
+			m.NowMono = time.Hour // Former unrelated Apply fixture clock.
+			_, err := verifyAllowedLifetimes([]byte(listing), m, readStart)
+			if readStart < m.NowMono {
+				var check *CheckError
+				if !errors.As(err, &check) || check.Reason != ReasonIsolation || check.Detail != "monotonic read precedes model" {
+					t.Fatalf("future anchor did not fail closed: %v", err)
+				}
+			} else if err != nil {
+				t.Fatalf("long-uptime control failed: %v", err)
+			}
+			m.NowMono = readStart // Sampled from the verifier's clock domain.
+			if _, err := verifyAllowedLifetimes([]byte(listing), m, readStart); err != nil {
+				t.Fatalf("same-domain anchor failed: %v", err)
 			}
 		})
 	}
