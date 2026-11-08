@@ -1,7 +1,19 @@
 # Operator Guide (`docs/handover/operator-guide.md`)
 
-**Current cut:** [follow-up 49](follow-up-49.md), #482–#485 at `aaffdc7f`; source-backed changes, verification boundaries and carried gaps.
-**Previous cut — [follow-up 48](follow-up-48.md) (2026-11-04 EST):** #478–#481 at b921c75f; 66 decisions, 138 findings. F24-01 closed and isolation's local scheduled-mode run bd73d7a4 passes (GitHub's 11-04 scheduled job 41836274140 stays failed, next run pending); assist.py retry and D-162 reach audited; F22-D146 answered under D-162 with 18 stored/enqueued/accepted records across 9 windows; r32 archived (0 findings).
+**目前交付：**[交付導覽](../DELIVERY.md)整理現有功能、操作入口與驗證範圍。下列 follow-up 快照保留各自當時的範圍與結果。
+
+**Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
+
+## 保留的節點驗證結果 / Retained node verification
+
+管理介面的「保留的驗證結果」對應 `NodeDetail.serving_read`。`read_at` 是實際驗證讀取時間，沒有新的驗證讀取時，後續心跳不會替它更新時間；`source` 為套用設定時的 `apply` 或執行期間的 `live`。`candidate_generation` 是受檢世代，不是套用完成的 ACK；`verified=false` 表示該次驗證未通過。欄位缺省表示伺服器尚未提供這項投影；`null` 表示目前 incarnation 所選回報沒有可用結果，中央不會回找先前的非空值。`diagnostic` 是有長度限制、可能遭截短的文字，應原樣閱讀，不假設它是完整 JSON。即使 `verified=true`，也不能據此判定節點目前可轉送；仍須依目前的租約、政策及安全檢查判定。
+
+The admin view's “Retained verification result” is `NodeDetail.serving_read`. `read_at` is the actual verifier read time; later heartbeats do not refresh it without a new verifier read. `source` is `apply` during configuration application or `live` during runtime checks. `candidate_generation` identifies the generation checked, not an applied-generation ACK; `verified=false` records a rejected read. An absent field means the server does not provide this projection; `null` means the selected current-incarnation observation has no available result, with no search back for an earlier non-null value. Treat `diagnostic` as bounded, possibly clipped text, not guaranteed complete JSON. Even `verified=true` does not establish permission to forward now; current lease, policy and safety checks still govern forwarding.
+
+欄位語意 / Field semantics: [API contract](../contracts/README.md#revision-15)。已記錄的隔離驗證與剩餘限制 / Recorded isolation evidence and remaining limits: [D164 acceptance](../e2e/at/isolation/d164-acceptance.md)。
+
+**Archived cut:** [follow-up 49](follow-up-49.md), #482–#485 at `aaffdc7f`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut — [follow-up 48](follow-up-48.md) (2026-11-04 EST):** #478–#481 at b921c75f; 66 decisions, 138 findings. F24-01 closed and isolation's local scheduled-mode run bd73d7a4 passes (GitHub's 11-04 scheduled job 41836274140 stays failed, next run pending); assist.py retry and D-162 reach audited; F22-D146 answered under D-162 with 18 stored/enqueued/accepted records across 9 windows; r32 archived (0 findings).
 
 <a id="observation-records"></a>
 

@@ -1,7 +1,11 @@
 # Freedom VPN 會員使用手冊 / Member Guide (`docs/handover/member-guide.md`)
 
-**Current cut:** [follow-up 49](follow-up-49.md), #482–#485 at `aaffdc7f`; source-backed changes, verification boundaries and carried gaps.
-**Previous cut — [follow-up 48](follow-up-48.md) (2026-11-04 EST):** #478–#481 at b921c75f; 66 decisions, 138 findings. F24-01 closed and isolation's local scheduled-mode run bd73d7a4 passes (GitHub's 11-04 scheduled job 41836274140 stays failed, next run pending); assist.py retry and D-162 reach audited; F22-D146 answered under D-162 with 18 stored/enqueued/accepted records across 9 windows; r32 archived (0 findings).
+**目前交付：**[交付導覽](../DELIVERY.md)整理現有功能、操作入口與驗證範圍。下列 follow-up 快照保留各自當時的範圍與結果。
+
+**Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
+
+**Archived cut:** [follow-up 49](follow-up-49.md), #482–#485 at `aaffdc7f`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut — [follow-up 48](follow-up-48.md) (2026-11-04 EST):** #478–#481 at b921c75f; 66 decisions, 138 findings. F24-01 closed and isolation's local scheduled-mode run bd73d7a4 passes (GitHub's 11-04 scheduled job 41836274140 stays failed, next run pending); assist.py retry and D-162 reach audited; F22-D146 answered under D-162 with 18 stored/enqueued/accepted records across 9 windows; r32 archived (0 findings).
 
 **2026-10-31 服務通知（#351 截止）：** DNS 的 TTL 是快取最長有效時間，
 不保證期間內每次查詢答案相同；較早送出的上游請求若較晚完成，可能覆蓋較新的
