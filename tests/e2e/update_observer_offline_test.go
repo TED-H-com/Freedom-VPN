@@ -22,7 +22,7 @@ import (
 // Failed collection runs in a child so the observer's real t.Errorf paths are
 // checked without suppressing them or changing production collection behavior.
 func TestAT19_RecoveryObserverOfflineArtifact(t *testing.T) {
-	for _, mode := range []string{"success", "start_failure", "join_failure", "read_failure"} {
+	for _, mode := range []string{"success", "start_failure", "join_failure", "read_failure", "timing_read_failure"} {
 		t.Run(mode, func(t *testing.T) {
 			root := t.TempDir()
 			ctx, cancel := context.WithTimeout(t.Context(), 15*time.Second)
@@ -49,7 +49,7 @@ func TestAT19_RecoveryObserverOfflineArtifact(t *testing.T) {
 				t.Fatalf("invalid or unsafe artifact: %s", raw)
 			}
 			if mode == "start_failure" {
-				if result.Started || result.Joined || result.Streams["agent"].Available || len(result.Streams["heartbeats"].Records) != 0 {
+				if result.Started || result.Joined || result.Streams["agent"].Available || len(result.Streams["heartbeats"].Records) != 0 || result.EnforcementTiming.Available || len(result.EnforcementTiming.Records) != 0 {
 					t.Fatalf("invented observation: %s", raw)
 				}
 				return
@@ -60,6 +60,39 @@ func TestAT19_RecoveryObserverOfflineArtifact(t *testing.T) {
 			a, w := result.Streams["agent"], result.Streams["watchdog"]
 			if !a.Available || a.Malformed != 0 || len(a.Records) != 2 || a.Records[0]["tc_read_failure"] != "command_exit" || a.Records[0]["tc_read_context_state_at_return"] != "deadline" || a.Records[0]["window_position"] != "before" || a.Records[1]["event"] != "baseline write" || a.Records[1]["generation"] != "18446744073709551615" || a.Records[1]["succeeded"] != true || w.Available != (mode != "read_failure") || len(w.Records) != 1 || w.Records[0]["window_position"] != "after" {
 				t.Fatalf("actual log buffers not projected: %s", raw)
+			}
+			timing := result.EnforcementTiming
+			if timing.Available != (mode != "timing_read_failure") || timing.Malformed != 0 || timing.Incomplete != 0 || timing.Truncated || len(timing.Records) != 1 {
+				t.Fatalf("timing read/projection status: %s", raw)
+			}
+			if mode == "timing_read_failure" && !bytes.Contains(output, []byte("read bounded enforcement timing failed")) {
+				t.Fatalf("timing read did not fail the child: %s", output)
+			}
+			originalTiming, err := os.ReadFile(filepath.Join(root, "timing.jsonl"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			var producer struct {
+				RunID  string `json:"run_id"`
+				BootID string `json:"boot_id"`
+			}
+			if err := json.Unmarshal(originalTiming, &producer); err != nil || !bytes.Contains(originalTiming, []byte("TEST_ONLY_PRIVATE_TIMING")) {
+				t.Fatalf("invalid timing producer fixture: %v", err)
+			}
+			row := timing.Records[0]
+			for key, want := range map[string]any{"run_id": producer.RunID, "boot_id": producer.BootID, "sequence": "18446744073709551615", "candidate_generation": "18446744073709551615", "start_ns": "9007199254740993", "clock": "CLOCK_MONOTONIC", "operation": "apply", "commands_available": true, "window_position": "before"} {
+				if row[key] != want {
+					t.Fatalf("timing field %s: got %v want %v", key, row[key], want)
+				}
+			}
+			commands, ok := row["commands"].([]any)
+			if !ok || len(commands) != 2 {
+				t.Fatalf("timing command observations missing: %+v", row)
+			}
+			shape, shapeOK := commands[0].(map[string]any)
+			install, installOK := commands[1].(map[string]any)
+			if !shapeOK || !installOK || shape["phase"] != "shape" || install["phase"] != "install" || install["ok"] != false || install["context_after"] != "deadline_exceeded" {
+				t.Fatalf("timing command observations changed: %+v", commands)
 			}
 			for _, name := range []string{"heartbeats", "agent", "watchdog"} {
 				if _, err := os.Stat(filepath.Join(root, "out", "update-recovery-"+name+".txt")); err != nil {
@@ -112,6 +145,21 @@ func TestAT19_RecoveryObserverChild(t *testing.T) {
 			}
 			os.Exit(81)
 		}
+		if args[2] == "tail" {
+			if len(args) != 6 || args[3] != "-c" || args[4] != "4194305" || args[5] != "/var/lib/vpn-node/e2e/enforcement-timing.jsonl" {
+				os.Exit(85)
+			}
+			raw, err := os.ReadFile(filepath.Join(root, "timing.jsonl"))
+			if err != nil {
+				os.Exit(86)
+			}
+			_, _ = os.Stdout.Write(raw)
+			if mode == "timing_read_failure" {
+				fmt.Fprintln(os.Stderr, "TEST_ONLY_PRIVATE_TIMING_STDERR")
+				os.Exit(10)
+			}
+			os.Exit(0)
+		}
 		if args[2] != "cat" {
 			os.Exit(82)
 		}
@@ -159,6 +207,12 @@ func TestAT19_RecoveryObserverChild(t *testing.T) {
 	log := recoveryServiceLog(t, "agent", time.Now().Add(-time.Second), "apply", slog.String("err", "TC_FOREIGN_FILTER"), slog.String("tc_read_failure", "command_exit"), slog.String("tc_read_context_state_at_return", "deadline"), slog.String("tc_read_interface", "fvup0"), slog.String("tc_read_attachment", "7560:"), slog.String("stderr", "TEST_ONLY_PRIVATE_STDERR"))
 	log = append(log, recoveryServiceLog(t, "agent", time.Now().Add(-time.Second), "baseline write", slog.String("writer", "agent"), slog.String("phase", "end"), slog.String("cause", "policy_expired"), slog.Uint64("generation", ^uint64(0)), slog.Bool("succeeded", true))...)
 	if err := os.WriteFile(filepath.Join(root, "agent.log"), log, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	measurement := updateTimingFixture()
+	measurement.Anchor.Wall = time.Now().Add(-time.Second).UTC()
+	measurement.TC = "TEST_ONLY_PRIVATE_TIMING"
+	if err := os.WriteFile(filepath.Join(root, "timing.jsonl"), timingJSONLine(t, measurement), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	r := &runner{t: t, lab: &lab{state: filepath.Join(root, "state"), node: "fvpn-offline-node"}, dir: filepath.Join(root, "out"), runID: runID, sourceCommit: recoveryTestCommit}
