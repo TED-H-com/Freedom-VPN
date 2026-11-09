@@ -87,7 +87,7 @@ By engineering contract (`D-026`, `D-039`, `D-045`), no production binary compil
 | `tests/e2e/cmd/fvpn-e2e-prepare/main.go` | `host_reserve_bps` in `agent.json` | `1000000` (1 Mbps) | Measured host control-plane reserve per node NIC capacity (e.g., `20000000` for 20 Mbps; mandatory `> 0`, exits `64` if omitted, `D-034`) |
 | `tests/e2e/cmd/fvpn-e2e-prepare/main.go` | `test_mode`, `test_exempt_v4` in `agent.json` | `true` | Omit or set `false` (`test_exempt_v4` is rejected by `fvpn-agent` when `test_mode` is `false`) |
 | `tests/e2e/cmd/fvpn-e2e-prepare/main.go` | `-grace-seconds N` (`FVPN_E2E_GRACE_SECONDS`, `#182`, `SECOPS-04`) in `members.json` | `0..31622400` (default `0`, writes `grace_reason = "TEST ONLY finite grace override"` when `> 0`) | Lab-only prepare option (requires `E2E_RESET=1` or restarting both `fvpn-control` and `fvpn-worker`); set explicit business-approved `grace_seconds` and `grace_reason` in `/etc/fvpn/members.json` (`calibration.md`) |
-| `node/updater/host.go` | `allow_loopback`, `allowed_artifact_origins` in `updater.json` | `true` / lab RFC1918 exemptions | Set `allow_loopback: false` and `allowed_artifact_origins: []` so the private/CGNAT/loopback artifact guard remains enforced (`D-046`) |
+| `node/updater/host.go` | `allow_loopback`, `allowed_artifact_origins` in `updater.json` | `true` / lab RFC1918 exemptions | Keep `allow_loopback: false` outside isolated `TEST ONLY` loopback tests. Preserve the installer-generated exact control origin in `allowed_artifact_origins`, including for private/CGNAT update-result delivery. Use `[]` only when no artifact, manifest or result origin requires a private/CGNAT exception; an origin entry never permits loopback or every private address (`D-046`). |
 | `internal/dnspolicy/cmd/bootstrap/main.go` | AdGuard admin password | `"testonly-<hex>"` | High-entropy random password per resolver, stored in `/etc/fvpn/secrets/adguard.password` (`0600`) and hashed with bcrypt in `AdGuardHome.yaml` |
 | `contracts/vectors/*.json` | Ed25519 seed vectors | `"TEST ONLY - NOT A SECRET"` | Freshly generated hardware/host keys via `signing.InitializeFileProvider` and `fvpn-release keygen` |
 
@@ -155,6 +155,15 @@ CREATE ROLE fvpn_backup   WITH LOGIN PASSWORD 'REPLACE_WITH_SCRAM_SECRET_6';
 GRANT ALL PRIVILEGES ON DATABASE fvpn TO fvpn_migrator;
 ALTER SCHEMA public OWNER TO fvpn_migrator;
 ```
+
+Provision separate runtime DSN files readable by the `fvpn` service user, each
+with mode `0600`: `/etc/fvpn/secrets/database-control.url` uses `fvpn_control`,
+and `/etc/fvpn/secrets/database-worker.url` uses `fvpn_worker`. The service
+units in §7.2 select these files with `FVPN_DATABASE_URL_FILE`; the shared
+`control.json` in §6.1 defaults to the control file. Keep the `fvpn_migrator`
+DSN as a separate operator credential, supplied only to the migration commands
+below. Never put it in either runtime DSN file or runtime service environment,
+and leave `migrate_on_start: false` for normal service startup.
 
 ### 3.3 Running Forward Migrations (`fvpn-migrate`)
 
@@ -336,7 +345,7 @@ Both `fvpn-control` and `fvpn-worker` read `/etc/fvpn/control.json` and validate
   "tls_certificate_file": "/etc/fvpn/secrets/tls.crt",
   "tls_key_file": "/etc/fvpn/secrets/tls.key",
   "agent_ca_file": "/etc/fvpn/secrets/agent-ca.pem",
-  "database_url_file": "/etc/fvpn/secrets/database.url",
+  "database_url_file": "/etc/fvpn/secrets/database-control.url",
   "oidc_issuer": "https://id.example.com",
   "oidc_client_id": "fvpn-portal-prod",
   "oidc_secret_file": "/etc/fvpn/secrets/oidc.secret",
@@ -519,7 +528,10 @@ npm run build
 
 ### 7.2 Starting `fvpn-control` and `fvpn-worker` under systemd
 
-Install systemd units for `fvpn-control.service` and `fvpn-worker.service` running as an unprivileged `fvpn` system user `[production only]`:
+Install systemd units for `fvpn-control.service` and `fvpn-worker.service` running as an unprivileged `fvpn` system user `[production only]`.
+`config.Load` reads JSON first, then applies `FVPN_<UPPERCASE_JSON_FIELD>`
+overrides (`internal/config/config.go`). Both units can therefore share
+`control.json` while explicitly selecting their own runtime DSN file:
 
 ```ini
 # /etc/systemd/system/fvpn-control.service
@@ -532,6 +544,7 @@ Wants=network-online.target
 Type=simple
 User=fvpn
 Group=fvpn
+Environment=FVPN_DATABASE_URL_FILE=/etc/fvpn/secrets/database-control.url
 ExecStart=/usr/local/bin/fvpn-control -config /etc/fvpn/control.json
 Restart=on-failure
 RestartSec=2s
@@ -557,6 +570,7 @@ Type=simple
 User=fvpn
 Group=fvpn
 Environment=FVPN_METRICS_ADDRESS=127.0.0.1:9092
+Environment=FVPN_DATABASE_URL_FILE=/etc/fvpn/secrets/database-worker.url
 ExecStart=/usr/local/bin/fvpn-worker -config /etc/fvpn/control.json
 Restart=on-failure
 RestartSec=2s
