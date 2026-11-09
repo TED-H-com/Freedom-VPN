@@ -18128,6 +18128,21 @@ func TestHandover_Followup49Claims(t *testing.T) {
 	if len(readOwnedDoc(t, root, readmeHistory.Snapshot)) != readmeHistory.Bytes {
 		t.Fatal("pre-polish README size")
 	}
+	// Freeze the deployment input for this historical body comparison; live
+	// document checks still read the current deployment guide.
+	checkHash(fixture+"consolidation/deploy-before-config-clarity.md.txt", "6855347c9f9de39202d875a0aa93aa25055aa76b1393593e5a12a10a5741b6a8")
+	var deployHistory struct {
+		Source, Snapshot, SHA256 string
+		Commit                   string `json:"source_commit"`
+		Bytes                    int
+	}
+	readJSON(fixture+"consolidation/deploy-before-config-clarity-provenance.json", &deployHistory)
+	if deployHistory.Source != "docs/handover/deploy.md" || deployHistory.Commit != "7aa446dc2643e2c0b9de7fa919bba17523c6bdde" || deployHistory.Snapshot != fixture+"consolidation/deploy-before-config-clarity.md.txt" || deployHistory.Bytes != 72293 || deployHistory.SHA256 != "6855347c9f9de39202d875a0aa93aa25055aa76b1393593e5a12a10a5741b6a8" {
+		t.Fatal("pre-clarification deployment provenance")
+	}
+	if len(readOwnedDoc(t, root, deployHistory.Snapshot)) != deployHistory.Bytes {
+		t.Fatal("pre-clarification deployment size")
+	}
 	type artifact struct {
 		Path, SHA256 string
 		Bytes        int
@@ -18750,6 +18765,21 @@ func TestHandover_Followup49Claims(t *testing.T) {
 				t.Fatalf("entrypoint %s", path)
 			}
 			body, before := strings.Join(lines[4:], "\n"), strings.Join(old[4:], "\n")
+			if path == "docs/handover/deploy.md" {
+				// Live navigation and cut labels were checked above. Apply the same
+				// header removal to the pinned input for this historical body only.
+				historical := readOwnedDoc(t, root, deployHistory.Snapshot)
+				a := strings.Index(historical, "**Archived cut:**")
+				if a < 0 {
+					t.Fatal("historical deployment archived cut")
+				}
+				title, _, ok := strings.Cut(historical[:a], "\n\n")
+				if !ok {
+					t.Fatal("historical deployment title")
+				}
+				historical = title + "\n\n" + historical[a:]
+				body = strings.Join(strings.Split(historical, "\n")[4:], "\n")
+			}
 			if path == "docs/ops/README.md" {
 				body = strip(body, "## Follow-up 49 acceptance snapshot", "## Follow-up 48 acceptance snapshot")
 			}
