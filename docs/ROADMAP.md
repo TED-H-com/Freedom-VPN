@@ -348,6 +348,7 @@ Milestones, gates and work packages come from the Project Plan v1.0. Durations a
 | w3-e2e-install-timing | Reuse existing test-only Apply timing for bounded recovery diagnostics, preserving deadline guards and acceptance verdicts. | done (#503) |
 | w3-e2e-observer-fixture | Align the offline recovery observer Docker fixture with bounded timing reads and test explicit read failures. | done (#504) |
 | w5-deploy-config-clarity | Align deployment examples with installer origin exceptions and separate control/worker database credentials. | done (#505) |
+| w5-release-keygen-validation | Validate requested release trust before writing keygen outputs; preserve files on invalid trust windows. | done (#506) |
 | w4-at-members: acceptance tests for members, devices, entitlements and billing against the lab | WP10 | harness merged (#64): 75 live subchecks pass; AT01–AT22 blocked on member admission (setup-key peer has no NetBird user), the serving node and operator runs |
 | w4-at-members follow-up 1 | Members harness re-run on main: native admission through the shared issuer (D-052), last-slot race, device isolation, usage receipts, billing permutations, D-054 feed readback; ten full ATs stay blocked on serving, forwarding and resolver-document delivery | done (#89) |
 | w4-at-members follow-up 2 | product-API inputs + shared serving baseline, real payment truth, D-056/D-061 typed delivery evidence; 202 subchecks pass, 10 ATs blocked on F2-01 lease renewal (agent f9) and F2-05 node restart token wait (devstack) | done (#133) |
