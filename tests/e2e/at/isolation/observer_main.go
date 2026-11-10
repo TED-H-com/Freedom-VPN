@@ -13,6 +13,7 @@ import (
 	"database/sql"
 	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/TED-H-com/Freedom-VPN/tests/e2e/at/isolation/boundaryplan"
 	"golang.org/x/sys/unix"
@@ -30,6 +31,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 )
 
@@ -294,21 +296,12 @@ func deadlineProbes() {
 			mu.Lock()
 			sent[id], _ = strconv.ParseInt(row["send"].(map[string]string)["mono_ns"], 10, 64)
 			mu.Unlock()
-			result := "socket_error"
-			if e == nil {
+			if c != nil {
 				defer c.Close()
-				_ = c.SetDeadline(time.Now().Add(80 * time.Millisecond))
-				_, e = c.Write([]byte("TEST ONLY"))
-				if e == nil {
-					b := make([]byte, 9)
-					n, err := c.Read(b)
-					result = "timeout"
-					if err == nil && n == 9 && string(b) == "TEST ONLY" {
-						result = "ok"
-					}
-				} else {
-					result = "send_error"
-				}
+			}
+			result, diagnostic := deadlineProbeExchange(c, e)
+			if diagnostic != nil {
+				row["probe_error"] = diagnostic
 			}
 			row["read_completion"] = clockSample()
 			row["result"] = result
@@ -319,6 +312,44 @@ func deadlineProbes() {
 	}
 	wg.Wait()
 }
+
+// probeConnection keeps the actual UDP exchange independently testable without
+// changing scheduling, payload, deadline, or acceptance evaluation.
+type probeConnection interface {
+	SetDeadline(time.Time) error
+	Write([]byte) (int, error)
+	Read([]byte) (int, error)
+}
+
+func deadlineProbeError(stage string, err error) map[string]any {
+	var errno syscall.Errno
+	var number any
+	if errors.As(err, &errno) && errno > 0 && errno <= 4095 {
+		number = int(errno)
+	}
+	var netError net.Error
+	timeout := errors.As(err, &netError) && netError.Timeout()
+	// Numeric errno exposes the underlying OS cause, not endpoint addresses or
+	// arbitrary error strings. Nil errno explicitly means unavailable.
+	return map[string]any{"stage": stage, "errno": number, "timeout": timeout}
+}
+
+func deadlineProbeExchange(c probeConnection, dialError error) (string, map[string]any) {
+	if dialError != nil {
+		return "socket_error", deadlineProbeError("dial", dialError)
+	}
+	_ = c.SetDeadline(time.Now().Add(80 * time.Millisecond))
+	if _, err := c.Write([]byte("TEST ONLY")); err != nil {
+		return "send_error", deadlineProbeError("write", err)
+	}
+	b := make([]byte, 9)
+	n, err := c.Read(b)
+	if err == nil && n == 9 && string(b) == "TEST ONLY" {
+		return "ok", nil
+	}
+	return "timeout", nil
+}
+
 func packetClock() {
 	seconds, e := strconv.Atoi(os.Args[2])
 	must(e)

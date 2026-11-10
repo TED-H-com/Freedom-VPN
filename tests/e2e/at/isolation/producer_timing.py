@@ -441,6 +441,32 @@ def validate_clock(actual, expected):
         raise ValueError('packet/producer boot or time offset mismatch')
 
 
+class MissingPacketIngress(ValueError):
+    """Validated probe records with incomplete wire evidence; never a denial."""
+    def __init__(self, packets):
+        super().__init__('incomplete packet evidence: missing ingress')
+        self.packets = packets
+        self.missing = [p['packet_id'] for p in packets if p['ingress_ns'] is None]
+
+
+def probe_error(row):
+    # Project only the producer's bounded diagnostic vocabulary. Never copy a
+    # raw socket error: its address or other arbitrary text may be sensitive.
+    value = row.get('probe_error')
+    if value is None:
+        return None  # Historical errno was not recorded; do not reconstruct it.
+    if not isinstance(value, dict) or value.get('stage') not in ('dial', 'write'):
+        raise ValueError('invalid probe error diagnostic')
+    if value['stage'] != {'socket_error': 'dial', 'send_error': 'write'}.get(row['result']):
+        raise ValueError('probe error stage/result mismatch')
+    errno = value.get('errno')
+    if errno is not None and (type(errno) is not int or not 1 <= errno <= 4095):
+        raise ValueError('invalid probe errno')
+    if type(value.get('timeout')) is not bool:
+        raise ValueError('invalid probe timeout diagnostic')
+    return dict(stage=value['stage'], errno=errno, timeout=value['timeout'])
+
+
 def packet_trace(probes, captures, clock):
     ready = [r for r in captures if r.get('event') == 'ready']
     done = [r for r in captures if r.get('event') == 'complete']
@@ -456,19 +482,29 @@ def packet_trace(probes, captures, clock):
     for p in probes:
         validate_clock(p['trace_clock'], clock)
         key = p['packet_id']
-        if key in seen or key not in incoming:
-            raise ValueError('duplicate probe or missing ingress')
+        if key in seen:
+            raise ValueError('duplicate probe')
         seen.add(key)
+        if p['result'] in ('socket_error', 'send_error') and (key in incoming or key in outgoing):
+            raise ValueError('local probe failure contradicts captured packet')
         a, b = ns(p['send'], 'mono_ns'), ns(p['read_completion'], 'mono_ns')
         interval(dict(start_ns=str(a), end_ns=str(b)))
         result.append(dict(packet_id=key, result=p['result'], sent_ns=str(a), read_completion_ns=str(b),
-                           ingress_ns=str(incoming[key]), egress_ns=str(outgoing.get(key, 0))))
+                           ingress_ns=str(incoming[key]) if key in incoming else None,
+                           egress_ns=str(outgoing.get(key, 0))))
+        diagnostic = probe_error(p)
+        if key not in incoming or diagnostic is not None:
+            result[-1]['probe_error'] = diagnostic
     if not result:
         raise ValueError('empty packet trace')
+    if any(p['ingress_ns'] is None for p in result):
+        raise MissingPacketIngress(result)
     return result
 
 
 def correlate(packet, validated):
+    if packet.get('ingress_ns') is None or ns(packet, 'ingress_ns') <= 0:
+        raise ValueError('cannot correlate absent ingress')
     start, end, ingress = [ns(packet, k) for k in ('sent_ns','read_completion_ns','ingress_ns')]
     def overlap(a,b):
         return a <= end and start <= b
@@ -528,10 +564,37 @@ def analyze(root):
         ready = [r for r in read(name) if r.get('event') == 'ready']
         if len(ready) != 1 or ready[0]['trace_clock']['time_namespace'] != after['time_namespace']:
             raise ValueError('node packet recorder differs from live agent namespace')
-    renewal = packet_trace(read('renewal-probes.json'), read('renewal-packets.json'), clock)
-    expiry_doc = read('whole-node-probes.json')
-    expiry = packet_trace(expiry_doc['probes'], read('whole-node-packets.json'), clock)
+    traces, incomplete = {}, {}
+    for label, probes, captures in (
+            ('renewal', read('renewal-probes.json'), read('renewal-packets.json')),
+            ('expiry', read('whole-node-probes.json')['probes'], read('whole-node-packets.json'))):
+        try:
+            traces[label] = packet_trace(probes, captures, clock)
+        except MissingPacketIngress as error:
+            # Continue only to validate the other trace, not to correlate a
+            # nonexistent ingress with an Apply, deadline, or kernel state.
+            traces[label] = error.packets
+            incomplete[label] = error
     verdict = read('deadline-verdict.json')
+    if incomplete:
+        evidence = {label: dict(packets=packets,
+                    missing_ingress_packet_ids=incomplete[label].missing if label in incomplete else [])
+                    for label, packets in traces.items()}
+        result = dict(run_id=read('AT10.json')['run_id'], validation='incomplete',
+                      error_kind='missing_packet_ingress', packet_evidence=evidence,
+                      packet_verdict={k:v for k,v in verdict.items() if k != 'packets'},
+                      correlation='unavailable: incomplete wire evidence',
+                      interpretation='Every probe is retained. A local socket/send failure is not a network drop. '
+                                     'No missing ingress is assigned to an Apply, guard, deadline region or kernel cause. '
+                                     'Original acceptance verdicts remain unchanged; historical absent errors stay unavailable.')
+        (root/'producer-timing-analysis.json').write_text(json.dumps(result, indent=2)+'\n')
+        failure = dict(result, status='fail')
+        # Replace inherited or preliminary summaries as well: they must not
+        # retain loss/guard attribution for a local send that never had ingress.
+        for name in ('expiry-failure-correlation.json', 'continuity-analysis.json', 'expiry-timing-analysis.json'):
+            (root/name).write_text(json.dumps(failure, indent=2)+'\n')
+        raise next(iter(incomplete.values()))
+    renewal, expiry = traces['renewal'], traces['expiry']
     deadline = ns(verdict, 'deadline_mono_ns')
     lo, hi = min(ns(p,'sent_ns') for p in renewal), max(ns(p,'read_completion_ns') for p in renewal)
     renewals = [r for r in rows if r.get('renewal',{}).get('new_lease') and lo <= ns(r['renewal'],'start_ns') <= hi]
@@ -615,4 +678,7 @@ if __name__ == '__main__':
     if sys.argv[1:] == ['--replay-first-attempt']:
         replay_first_attempt(Path('docs/e2e/at/isolation'))
     else:
-        analyze(Path(sys.argv[1] if len(sys.argv)>1 else 'docs/e2e/at/isolation'))
+        try:
+            analyze(Path(sys.argv[1] if len(sys.argv)>1 else 'docs/e2e/at/isolation'))
+        except MissingPacketIngress as error:
+            raise SystemExit(str(error)) from None

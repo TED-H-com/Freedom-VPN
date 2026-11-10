@@ -5,7 +5,7 @@ from evidence_io import read_json
 from pathlib import Path
 import runpy
 import sys
-from producer_timing import analyze, read_operations
+from producer_timing import MissingPacketIngress, analyze, read_operations
 
 root=Path(sys.argv[1] if len(sys.argv)>1 else 'docs/e2e/at/isolation')
 # Refuse before touching any inherited capture or producer stream.
@@ -15,7 +15,10 @@ if unexecuted_expiry(root, 'producer-timing-unavailable.json'):
 
 sys.argv=[sys.argv[0],str(root)]
 runpy.run_path(str(Path(__file__).with_name('summarize_followup8.py')),run_name='__main__')
-r=analyze(root)
+try:
+    r=analyze(root)
+except MissingPacketIngress as error:
+    raise SystemExit(str(error)) from None
 def write(name,value):
     (root/name).write_text(json.dumps(value,indent=2)+'\n')
 write('continuity-analysis.json',dict(run_id=r['run_id'],scope=r['scope'],historical=r['historical'],

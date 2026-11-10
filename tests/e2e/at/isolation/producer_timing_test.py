@@ -2,6 +2,10 @@
 import copy
 import json
 import gzip
+import hashlib
+import shutil
+import subprocess
+import sys
 import tempfile
 from pathlib import Path
 import unittest
@@ -538,6 +542,133 @@ class CorrelationTests(unittest.TestCase):
         self.assertEqual(len(p.packet_trace([probe],captures,clock)),1)
         captures[-1]['drops']=1
         with self.assertRaises(ValueError):p.packet_trace([probe],captures,clock)
+
+
+class MissingIngressDiagnostics(unittest.TestCase):
+    def packet_fixture(self):
+        clock = dict(boot_id='boot', time_namespace='time:1', offsets='monotonic 0 0\nboottime 0 0', clock='CLOCK_MONOTONIC')
+        captures = [dict(event='ready', trace_clock=clock),
+                    dict(interface='fvmb0', packet_id=1, capture_read=dict(mono_ns='101')),
+                    dict(event='complete', statistics_available=True, drops=0)]
+        probes = [dict(packet_id=1, trace_clock=clock, result='timeout', send=dict(mono_ns='100'),
+                       read_completion=dict(mono_ns='180'))]
+        return clock, captures, probes
+
+    def test_socket_and_send_missing_ingress_keep_every_probe(self):
+        for result, stage in [('socket_error', 'dial'), ('send_error', 'write')]:
+            with self.subTest(result=result):
+                clock, captures, probes = self.packet_fixture()
+                expected = dict(packet_id=1, result='timeout', sent_ns='100', read_completion_ns='180',
+                                ingress_ns='101', egress_ns='0')
+                self.assertEqual(p.packet_trace(probes, captures, clock), [expected])
+                failed = copy.deepcopy(probes[0]); failed.update(packet_id=2, result=result,
+                    probe_error=dict(stage=stage, errno=98, timeout=False, raw_error='TEST ONLY sensitive'))
+                probes.append(failed)
+                with self.assertRaises(p.MissingPacketIngress) as caught:
+                    p.packet_trace(probes, captures, clock)
+                self.assertEqual(caught.exception.missing, [2])
+                self.assertEqual(len(caught.exception.packets), 2)
+                missing = caught.exception.packets[1]
+                self.assertIsNone(missing['ingress_ns'])
+                self.assertEqual(missing['probe_error'], dict(stage=stage, errno=98, timeout=False))
+                self.assertNotIn('sensitive', json.dumps(caught.exception.packets))
+                with self.assertRaisesRegex(ValueError, 'cannot correlate absent ingress'):
+                    p.correlate(missing, p.validate_operations(fixture()))
+
+    def test_local_failure_with_captured_packet_is_rejected(self):
+        for result in ('socket_error', 'send_error'):
+            for side in ('fvmb0', 'fvup0'):
+                with self.subTest(result=result, side=side):
+                    clock, captures, probes = self.packet_fixture()
+                    probes[0]['result'] = result
+                    captures[1]['interface'] = side
+                    with self.assertRaisesRegex(ValueError, 'contradicts captured packet') as caught:
+                        p.packet_trace(probes, captures, clock)
+                    self.assertNotIsInstance(caught.exception, p.MissingPacketIngress)
+
+    def test_missing_ingress_does_not_hide_other_invalid_evidence(self):
+        for kind in ('duplicate', 'clock', 'interval', 'capture', 'diagnostic'):
+            with self.subTest(kind=kind):
+                clock, captures, probes = self.packet_fixture()
+                missing = copy.deepcopy(probes[0]); missing.update(packet_id=2, result='socket_error')
+                probes.insert(0, missing)  # Missing row precedes the invalid record.
+                if kind == 'duplicate': probes.append(copy.deepcopy(missing))
+                elif kind == 'clock': probes[-1]['trace_clock'] = dict(clock, boot_id='other')
+                elif kind == 'interval': probes[-1]['read_completion']['mono_ns'] = '99'
+                elif kind == 'capture': captures[-1]['drops'] = 1
+                else: probes[0]['probe_error'] = dict(stage='dial', errno=True, timeout=False)
+                with self.assertRaises(ValueError) as caught:
+                    p.packet_trace(probes, captures, clock)
+                self.assertNotIsInstance(caught.exception, p.MissingPacketIngress)
+
+    def test_renewal_failures_replace_all_preliminary_reports(self):
+        scripts = Path(__file__).resolve().parent
+        archive = scripts.parents[3]/'docs/e2e/at/isolation/history/follow-up-27-run'
+        for result, stage in [('socket_error', 'dial'), ('send_error', 'write')]:
+            with self.subTest(result=result), tempfile.TemporaryDirectory() as temp:
+                root = Path(temp)/'replay'
+                shutil.copytree(archive, root)
+                probes = p.read_json(root/'renewal-probes.json')
+                failed = probes[0]
+                failed.update(result=result, probe_error=dict(stage=stage, errno=98, timeout=False))
+                (root/'renewal-probes.json').write_text(json.dumps(probes))
+                captures = p.read_json(root/'renewal-packets.json')
+                captures = [r for r in captures if r.get('packet_id') != failed['packet_id']]
+                (root/'renewal-packets.json').write_text(json.dumps(captures))
+                run = subprocess.run([sys.executable, '-B', str(scripts/'review_followup10.py'), str(root)],
+                                     capture_output=True, text=True)
+                self.assertNotEqual(run.returncode, 0)
+                self.assertNotIn('Traceback', run.stderr)
+                for name in ('producer-timing-analysis.json', 'expiry-failure-correlation.json',
+                             'continuity-analysis.json', 'expiry-timing-analysis.json'):
+                    report = json.loads((root/name).read_text())
+                    self.assertEqual(report['validation'], 'incomplete')
+                    if name != 'producer-timing-analysis.json': self.assertEqual(report['status'], 'fail')
+                    trace = report['packet_evidence']['renewal']
+                    self.assertEqual(len(trace['packets']), len(probes))
+                    self.assertEqual(trace['missing_ingress_packet_ids'], [failed['packet_id']])
+                    self.assertEqual(trace['packets'][0]['probe_error'], failed['probe_error'])
+                    self.assertNotIn('nearest_guard', json.dumps(report))
+                    self.assertNotIn('nearest_apply', json.dumps(report))
+                    self.assertNotIn('loss_count', json.dumps(report))
+
+    def test_historical_socket_failure_keeps_failure_and_writes_reports(self):
+        scripts = Path(__file__).resolve().parent
+        archive = scripts.parents[3]/'docs/e2e/at/isolation/history/follow-up-27-run'
+        hashes = {str(f.relative_to(archive)): hashlib.sha256(f.read_bytes()).hexdigest()
+                  for f in archive.rglob('*') if f.is_file()}
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)/'replay'
+            shutil.copytree(archive, root)
+            result = subprocess.run([sys.executable, '-B', str(scripts/'review_followup10.py'), str(root)],
+                                    capture_output=True, text=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertTrue((root/'producer-timing-analysis.json').exists(), result.stderr)
+            self.assertTrue((root/'expiry-failure-correlation.json').exists(), result.stderr)
+            self.assertNotIn('Traceback', result.stderr)
+            analysis = json.loads((root/'producer-timing-analysis.json').read_text())
+            failure = json.loads((root/'expiry-failure-correlation.json').read_text())
+            self.assertEqual(analysis['validation'], 'incomplete')
+            self.assertEqual(failure['status'], 'fail')
+            trace = analysis['packet_evidence']['expiry']
+            self.assertEqual(len(trace['packets']), 273)
+            self.assertEqual(trace['missing_ingress_packet_ids'], [145])
+            missing = next(row for row in trace['packets'] if row['packet_id'] == 145)
+            self.assertEqual(missing['result'], 'socket_error')
+            self.assertIsNone(missing['ingress_ns'])
+            self.assertIsNone(missing['probe_error'])
+            self.assertNotIn('nearest_apply', missing)
+            self.assertNotIn('ingress_offset_ns', missing)
+            self.assertFalse(analysis['packet_verdict']['passed'])
+            self.assertIn('packet 145 missing send/ingress/read', analysis['packet_verdict']['errors'])
+            self.assertEqual(failure['packet_evidence'], analysis['packet_evidence'])
+            direct = subprocess.run([sys.executable, '-B', str(scripts/'producer_timing.py'), str(root)],
+                                    capture_output=True, text=True)
+            self.assertNotEqual(direct.returncode, 0)
+            self.assertNotIn('Traceback', direct.stderr)
+            self.assertEqual(json.loads((root/'producer-timing-analysis.json').read_text()), analysis)
+        self.assertEqual(hashes, {str(f.relative_to(archive)): hashlib.sha256(f.read_bytes()).hexdigest()
+                                 for f in archive.rglob('*') if f.is_file()})
 
 
 if __name__=='__main__':
