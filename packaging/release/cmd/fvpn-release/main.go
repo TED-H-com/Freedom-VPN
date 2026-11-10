@@ -217,9 +217,7 @@ func cmdKeygen(args []string, stdout, stderr io.Writer) error {
 	if err != nil {
 		return err
 	}
-	if err := key.Save(*out); err != nil {
-		return err
-	}
+	var trustRaw []byte
 	if *trustOut != "" {
 		if *nb == "" || *na == "" {
 			return fmt.Errorf("keygen -trust-out requires -not-before and -not-after")
@@ -236,11 +234,17 @@ func cmdKeygen(args []string, stdout, stderr io.Writer) error {
 		if err != nil {
 			return err
 		}
-		raw, err := json.MarshalIndent(ts, "", "  ")
+		trustRaw, err = json.MarshalIndent(ts, "", "  ")
 		if err != nil {
 			return err
 		}
-		if err := release.WriteFile(*trustOut, append(raw, '\n')); err != nil {
+	}
+	// Reject invalid public trust input before creating or replacing any output.
+	if err := key.Save(*out); err != nil {
+		return err
+	}
+	if *trustOut != "" {
+		if err := release.WriteFile(*trustOut, append(trustRaw, '\n')); err != nil {
 			return err
 		}
 	}
