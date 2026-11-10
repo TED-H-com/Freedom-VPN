@@ -30,7 +30,7 @@ section() {
 LIVE_TMP=""
 WRAP_BIN=""
 # Invoked through the EXIT trap; ShellCheck cannot follow this indirect call.
-# shellcheck disable=SC2317
+# shellcheck disable=SC2317,SC2329
 cleanup() {
 	local name
 	while read -r name; do
