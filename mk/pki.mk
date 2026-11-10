@@ -11,7 +11,11 @@ VERIFY_TARGETS += pki-verify
 
 .PHONY: pki-build pki-test pki-test-integration pki-lint pki-verify
 pki-build:
-	@$(pki-with-disk-tmp) for arch in amd64 arm64; do GOOS=linux GOARCH=$$arch go build $(pki-packages); done
+	@$(pki-with-disk-tmp) for arch in amd64 arm64; do \
+		GOOS=linux GOARCH=$$arch go build $(pki-packages); \
+		mkdir -p bin/linux_$$arch; \
+		GOOS=linux GOARCH=$$arch go build -trimpath -o bin/linux_$$arch/fvpn-vault-init ./internal/signing/cmd/fvpn-vault-init; \
+	done
 pki-test:
 	@$(pki-with-disk-tmp) go test $(pki-packages)
 pki-test-integration:

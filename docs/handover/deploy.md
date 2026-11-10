@@ -311,6 +311,8 @@ fvpn-release: private key stays on the build machine; do not copy it to nodes
 
 ### 5.3 Initializing the Central Vault and Pinning the Release Public Key
 
+For explicitly configured **FileProvider staging** environments, use the executable [local vault initialization guide](../pki/initialize.md). It requires a fresh destination, explicit key/CA windows and an independently verified release public root. This does not provide a production anti-rollback authority or validate deployment targets; the commented sequence below remains an operational outline, not a production provisioning command.
+
 Run a one-time initialization ceremony on the central host to populate `/var/lib/fvpn/vault`, generate `/etc/fvpn/secrets/agent-ca.pem`, pin the offline `release` public key via `PinReleaseRoot`, and export `/etc/vpn-node/trust.json` for nodes `[production only]`:
 
 ```go
