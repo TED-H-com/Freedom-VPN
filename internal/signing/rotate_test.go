@@ -30,7 +30,13 @@ type fileFact struct {
 
 func manifest(t *testing.T, dir string) map[string]fileFact {
 	t.Helper()
-	out := map[string]fileFact{}
+	info, err := os.Stat(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	out := map[string]fileFact{
+		".": {Size: info.Size(), Mode: info.Mode(), Modified: info.ModTime()},
+	}
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		t.Fatal(err)
@@ -492,8 +498,17 @@ func TestSEC01_ConditionalLockInUse(t *testing.T) {
 					t.Fatalf("wrong lock result: %v %+v", err, r)
 				}
 				after := manifest(t, p.dir)
-				delete(before, "lock")
-				delete(after, "lock")
+				if mutation == "replace while held" {
+					// Only this fixture replaces an entry after taking the manifest.
+					// Ignore that entry and the directory size/mtime it changes;
+					// retain the directory mode and every ledger/key file fact.
+					delete(before, "lock")
+					delete(after, "lock")
+					directory := after["."]
+					directory.Size = before["."].Size
+					directory.Modified = before["."].Modified
+					after["."] = directory
+				}
 				if !reflect.DeepEqual(before, after) {
 					t.Fatal("ledger or keys changed")
 				}
@@ -565,5 +580,88 @@ func TestSEC01_ConditionalPermissions(t *testing.T) {
 		if info.Mode().Perm() != 0600 {
 			t.Fatal("wrong private key permissions")
 		}
+	}
+}
+
+func TestSEC01_ProviderManifestDetectsDirectoryChange(t *testing.T) {
+	p := vault(t)
+	// A distinct prior timestamp avoids dependence on filesystem clock precision.
+	prior := time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
+	if err := os.Chtimes(p.dir, prior, prior); err != nil {
+		t.Fatal(err)
+	}
+	before := manifest(t, p.dir)
+	path := filepath.Join(p.dir, "test-only-transient")
+	if err := os.WriteFile(path, nil, 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Remove(path); err != nil {
+		t.Fatal(err)
+	}
+	after := manifest(t, p.dir)
+	if reflect.DeepEqual(before, after) || before["."].Modified.Equal(after["."].Modified) {
+		t.Fatal("manifest missed create/remove directory modification")
+	}
+	delete(before, ".")
+	delete(after, ".")
+	if !reflect.DeepEqual(before, after) {
+		t.Fatal("negative control changed a surviving file")
+	}
+}
+
+func TestSEC01_ProviderLedgerOwnerPermissions(t *testing.T) {
+	for _, operation := range []string{"conditional rotate", "conditional revoke", "legacy revoke"} {
+		t.Run(operation, func(t *testing.T) {
+			p, oldID := seeded(t, Lease)
+			ctx := context.Background()
+			wantSigner := oldID
+			if operation != "conditional rotate" {
+				var err error
+				wantSigner, err = p.Rotate(ctx, Lease, time.Hour, time.Minute)
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+			func() {
+				previous := syscall.Umask(0777)
+				defer syscall.Umask(previous)
+				switch operation {
+				case "conditional rotate":
+					r, err := p.RotateConditional(ctx, Lease, 1, oldID, time.Hour, time.Minute)
+					checkChange(t, r, err, ChangeApplied)
+					wantSigner = r.Key.ID
+				case "conditional revoke":
+					r, err := p.RevokeConditional(ctx, oldID, Lease, 2, false)
+					checkChange(t, r, err, ChangeApplied)
+				case "legacy revoke":
+					if err := p.Revoke(ctx, oldID); err != nil {
+						t.Fatal(err)
+					}
+				}
+			}()
+			info, err := os.Stat(filepath.Join(p.dir, "state.json"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if info.Mode().Perm() != 0600 {
+				t.Errorf("ledger mode = %04o; want 0600", info.Mode().Perm())
+			}
+			reopened, err := OpenFileProvider(p.dir)
+			if err != nil {
+				t.Fatal("cannot reopen saved vault", err)
+			}
+			s := snap(t, reopened)
+			wantRevision := decstr.U64(3)
+			if operation == "conditional rotate" {
+				wantRevision = 2
+			}
+			if s.Revision != wantRevision {
+				t.Fatal("wrong saved revision")
+			}
+			signed, err := reopened.SignEnvelope(ctx, Lease, map[string]bool{"test_only": true})
+			if err != nil || signed.Signatures[0].KeyID != wantSigner {
+				t.Fatal("expected signer unavailable after save", err)
+			}
+		})
 	}
 }

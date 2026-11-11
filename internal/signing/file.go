@@ -236,7 +236,7 @@ func (p *FileProvider) save(s ledger) error {
 
 // saveTracked distinguishes failures before replacement from errors at/after
 // rename. Even a rename error is uncertain: do not infer filesystem state from
-// an error return. Existing callers retain the same writes and error behavior.
+// an error return. Every caller writes an owner-readable, private ledger.
 func (p *FileProvider) saveTracked(s ledger, hooks conditionalHooks) (bool, error) {
 	if err := validateLedger(s); err != nil {
 		return false, err
@@ -250,7 +250,13 @@ func (p *FileProvider) saveTracked(s ledger, hooks conditionalHooks) (bool, erro
 		return false, err
 	}
 	defer os.Remove(f.Name())
-	if _, err = f.Write(b); err == nil {
+	// The replacement must remain readable by its owner even when the process
+	// umask removes owner bits. Failure here is strictly before replacement.
+	err = f.Chmod(0600)
+	if err == nil {
+		_, err = f.Write(b)
+	}
+	if err == nil {
 		err = f.Sync()
 	}
 	closeErr := f.Close()

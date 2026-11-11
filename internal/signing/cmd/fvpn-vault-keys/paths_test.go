@@ -57,7 +57,7 @@ func TestSEC01_CommandParentPaths(t *testing.T) {
 }
 func TestSEC01_CommandUnavailableVault(t *testing.T) {
 	for _, op := range []string{"rotate", "revoke"} {
-		for _, kind := range []string{"missing path", "final symlink", "final symlink slash", "final symlink dot", "missing lock", "missing state", "lock group", "lock other", "lock symlink inside", "lock symlink outside", "lock fifo", "lock directory", "directory mode", "state mode", "invalid ledger"} {
+		for _, kind := range []string{"missing path", "final symlink", "final symlink slash", "final symlink dot", "missing lock", "missing state", "lock group", "lock other", "lock symlink inside", "lock symlink outside", "lock directory", "directory mode", "state mode", "invalid ledger"} {
 			t.Run(op+"/"+kind, func(t *testing.T) {
 				f := setup(t, signing.Lease)
 				path := f.dir
@@ -104,9 +104,6 @@ func TestSEC01_CommandUnavailableVault(t *testing.T) {
 					target := filepath.Join(root, "outside")
 					must(os.WriteFile(target, []byte("TEST ONLY"), 0600))
 					must(os.Symlink(target, lock))
-				case "lock fifo":
-					removeLock()
-					must(syscall.Mkfifo(lock, 0600))
 				case "lock directory":
 					removeLock()
 					must(os.Mkdir(lock, 0700))
@@ -118,8 +115,8 @@ func TestSEC01_CommandUnavailableVault(t *testing.T) {
 					must(os.WriteFile(state, []byte(`{"revision":"invalid"}`), 0600))
 				}
 				before := manifest(t, root)
-				// This call is synchronous: O_PATH cannot wait for a FIFO writer. The
-				// child-process version below additionally enforces an external deadline.
+				// FIFO coverage lives only in TestSEC01_CommandProcessFIFO, where
+				// an external deadline bounds a regression in the open flags.
 				invoke(t, command{}, flagValue(f.args(op), "vault", path), exitUnavailable, "")
 				unchanged(t, root, before)
 			})
@@ -164,7 +161,7 @@ func TestSEC01_CommandHeldLock(t *testing.T) {
 		invoke(t, command{}, args, exitOK, outcome)
 	}
 }
-func TestSEC01_CommandLockInUse(t *testing.T) {
+func TestSEC01_CommandLockValidationHandling(t *testing.T) {
 	for _, op := range []string{"rotate", "revoke"} {
 		for _, kind := range []string{"group", "symlink", "typed replacement rejection", "acceptable replacement"} {
 			t.Run(op+"/"+kind, func(t *testing.T) {
@@ -192,6 +189,8 @@ func TestSEC01_CommandLockInUse(t *testing.T) {
 						t.Fatal(err)
 					}
 					before = manifest(t, dir)
+					// TestSEC01_ConditionalLockInUse runs the real replacement while
+					// holding the old lock. Here we test only typed-error propagation.
 					if kind == "typed replacement rejection" {
 						return &faultProvider{changeProvider: p, mutationError: &signing.LockValidationError{}}, nil
 					}

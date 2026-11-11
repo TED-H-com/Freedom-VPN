@@ -220,7 +220,7 @@ func TestSEC01_CommandRevocation(t *testing.T) {
 			}
 			at := *d.Change.Key.RevokedAt
 			before = manifest(t, f.dir)
-			repeat := invoke(t, command{}, args, exitAlreadyRevoked, "already_revoked")
+			repeat := invoke(t, command{}, args, 0, "already_revoked")
 			unchanged(t, f.dir, before)
 			if !repeat.Change.Key.RevokedAt.Equal(at) {
 				t.Fatal("changed revocation time")
@@ -391,5 +391,71 @@ func TestSEC01_CommandNoLeakageAndPermissions(t *testing.T) {
 				t.Fatal("path leaked")
 			}
 		}
+	}
+}
+
+func TestSEC01_CommandExitCodeTable(t *testing.T) {
+	got := map[string]int{
+		"applied": exitOK, "revoked": exitOK, "already_revoked": exitAlreadyRevoked,
+		"usage": exitUsage, "unavailable": exitUnavailable, "deadline": exitTimeout,
+		"refused": exitRefused, "not_applied": exitNotApplied, "durability": exitDurability,
+		"unknown": exitUnknown, "output": exitOutput,
+	}
+	want := map[string]int{
+		"applied": 0, "revoked": 0, "already_revoked": 0,
+		"usage": 2, "unavailable": 3, "deadline": 4,
+		"refused": 5, "not_applied": 6, "durability": 7,
+		"unknown": 8, "output": 9,
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("exit codes = %v; want %v", got, want)
+	}
+}
+
+func TestSEC01_CommandLedgerOwnerPermissions(t *testing.T) {
+	for _, operation := range []string{"rotate", "revoke"} {
+		t.Run(operation, func(t *testing.T) {
+			f := setup(t, signing.Lease)
+			args := f.args(operation)
+			wantSigner := f.id
+			outcome := "applied"
+			if operation == "revoke" {
+				var err error
+				wantSigner, err = f.p.Rotate(context.Background(), signing.Lease, time.Hour, time.Minute)
+				if err != nil {
+					t.Fatal(err)
+				}
+				args = flagValue(args[:len(args)-1], "expect-revision", "2")
+				outcome = "revoked"
+			}
+			var d document
+			func() {
+				previous := syscall.Umask(0777)
+				defer syscall.Umask(previous)
+				d = invoke(t, command{}, args, 0, outcome)
+			}()
+			if operation == "rotate" {
+				wantSigner = d.Change.Key.ID
+			}
+			info, err := os.Stat(filepath.Join(f.dir, "state.json"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if info.Mode().Perm() != 0600 {
+				t.Errorf("ledger mode = %04o; want 0600", info.Mode().Perm())
+			}
+			p, err := signing.OpenFileProvider(f.dir)
+			if err != nil {
+				t.Fatal("cannot reopen saved vault", err)
+			}
+			s := getSnapshot(t, p)
+			if s.Revision != d.Change.NewRevision {
+				t.Fatal("snapshot disagrees with command result")
+			}
+			signed, err := p.SignEnvelope(context.Background(), signing.Lease, map[string]bool{"test_only": true})
+			if err != nil || signed.Signatures[0].KeyID != wantSigner {
+				t.Fatal("expected signer unavailable after command", err)
+			}
+		})
 	}
 }

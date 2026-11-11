@@ -23,16 +23,17 @@ import (
 
 const defaultLockTimeout = 5 * time.Second
 const (
-	exitOK = iota
-	exitAlreadyRevoked
-	exitUsage
-	exitUnavailable
-	exitTimeout
-	exitRefused
-	exitNotApplied
-	exitDurability
-	exitUnknown
-	exitOutput
+	exitOK             = 0
+	exitAlreadyRevoked = 0 // Idempotent success; outcome distinguishes it.
+	// Exit 1 is deliberately unused. Keep all failure codes stable.
+	exitUsage       = 2
+	exitUnavailable = 3
+	exitTimeout     = 4
+	exitRefused     = 5
+	exitNotApplied  = 6
+	exitDurability  = 7
+	exitUnknown     = 8
+	exitOutput      = 9
 )
 const usage = "usage: fvpn-vault-keys rotate -vault EXISTING_VAULT -purpose PURPOSE -expect-revision N -expect-active-key KEY_ID|none -validity DURATION -overlap DURATION [-lock-timeout DURATION] | fvpn-vault-keys revoke -vault EXISTING_VAULT -key-id KEY_ID -expect-purpose PURPOSE -expect-revision N [-revoke-active] [-lock-timeout DURATION]"
 

@@ -23,6 +23,7 @@ type faultProvider struct {
 	result                                       *signing.ChangeResult
 	uncertain, readFail, different, waitDeadline bool
 	reads, calls                                 int
+	alterSnapshot                                func(*signing.FileSnapshot)
 }
 
 func (p *faultProvider) finish(ctx context.Context, r signing.ChangeResult, err error) (signing.ChangeResult, error) {
@@ -66,12 +67,18 @@ func (p *faultProvider) Snapshot(ctx context.Context) (signing.FileSnapshot, err
 	if p.different {
 		s.Revision++
 	}
+	if err == nil && p.alterSnapshot != nil {
+		p.alterSnapshot(&s)
+	}
 	return s, err
 }
 func withProvider(p changeProvider) command {
 	return command{open: func(context.Context, string) (changeProvider, error) { return p, nil }}
 }
-func TestSEC01_CommandPartialFailure(t *testing.T) {
+
+// TestSEC01_ConditionalPartialFailure injects the real save-boundary failures.
+// This test exercises the command's handling of their public result classes.
+func TestSEC01_CommandPartialFailureResultHandling(t *testing.T) {
 	for _, op := range []string{"rotate", "revoke"} {
 		for _, stage := range []string{"no file", "orphan", "after rename", "read failure", "different snapshot"} {
 			if op == "revoke" && stage == "orphan" {
@@ -147,7 +154,12 @@ func TestSEC01_CommandPartialFailure(t *testing.T) {
 		}
 	}
 }
-func TestSEC01_CommandDeadlineAfterChange(t *testing.T) {
+
+// TestSEC01_ConditionalDeadline holds the actual provider lock past its deadline
+// and injects the real post-rename failure. This command-boundary fixture delays
+// a completed call's return and substitutes its result to test reporting and the
+// fresh read-back deadline; it does not hold a lock or fail a filesystem save.
+func TestSEC01_CommandExpiredContextResultHandling(t *testing.T) {
 	for _, op := range []string{"rotate", "revoke"} {
 		for _, uncertain := range []bool{false, true} {
 			f := setup(t, signing.Lease)
@@ -218,5 +230,45 @@ func TestSEC01_CommandOutputFailure(t *testing.T) {
 		var stderr bytes.Buffer
 		code := writeResult(failingWriter{}, &stderr, document{Outcome: outcome}, 0)
 		assertOutput(t, code, "", stderr.String(), exitOutput, "", "fvpn-vault-keys: result output failed: "+outcome+"; run fvpn-vault inspect; do not repeat blindly\n")
+	}
+}
+
+func TestSEC01_CommandReadBackRequiresExactRecord(t *testing.T) {
+	for _, operation := range []string{"rotate", "revoke"} {
+		t.Run(operation, func(t *testing.T) {
+			f := setup(t, signing.Lease)
+			p := &faultProvider{changeProvider: f.p, uncertain: true}
+			p.alterSnapshot = func(s *signing.FileSnapshot) {
+				if s.Revision != 2 {
+					t.Fatal("fixture must retain expected next revision")
+				}
+				if operation == "rotate" {
+					// Keep an active key at the expected revision, but substitute its ID.
+					for i := range s.Keys {
+						if s.Keys[i].State == "active" {
+							s.Keys[i].ID = uuid.NewString()
+							return
+						}
+					}
+				} else {
+					// Same ID and revision, but a different recorded revocation time.
+					for i := range s.Keys {
+						if s.Keys[i].ID == f.id && s.Keys[i].RevokedAt != nil {
+							at := s.Keys[i].RevokedAt.Add(time.Second)
+							s.Keys[i].RevokedAt = &at
+							return
+						}
+					}
+				}
+				t.Fatal("fixture did not alter the target record")
+			}
+			d := invoke(t, withProvider(p), f.args(operation), 8, "unknown")
+			if d.ReadBack != "different" || d.Change != nil || p.calls != 1 || p.reads != 1 {
+				t.Fatalf("wrong read-back handling: document=%+v calls=%d reads=%d", d, p.calls, p.reads)
+			}
+			if getSnapshot(t, f.p).Revision != 2 {
+				t.Fatal("mutation retried")
+			}
+		})
 	}
 }

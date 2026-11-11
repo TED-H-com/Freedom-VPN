@@ -154,7 +154,7 @@ func TestSEC01_CommandProcessClosedPipe(t *testing.T) {
 		code = processCode(t, repeat.Run())
 		want, result := exitRefused, "precondition_refused"
 		if op == "revoke" {
-			want, result = exitAlreadyRevoked, "already_revoked"
+			want, result = 0, "already_revoked"
 		}
 		assertOutput(t, code, stdout.String(), stderr.String(), want, result, "")
 		unchanged(t, f.dir, before)
@@ -163,23 +163,28 @@ func TestSEC01_CommandProcessClosedPipe(t *testing.T) {
 func TestSEC01_CommandProcessFIFO(t *testing.T) {
 	binary := buildCommand(t)
 	for _, op := range []string{"rotate", "revoke"} {
-		f := setup(t, signing.Lease)
-		path := filepath.Join(f.dir, "lock")
-		if err := os.Remove(path); err != nil {
-			t.Fatal(err)
-		}
-		if err := syscall.Mkfifo(path, 0600); err != nil {
-			t.Fatal(err)
-		}
-		before := manifest(t, f.dir)
-		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-		defer cancel()
-		cmd := exec.CommandContext(ctx, binary, f.args(op)...)
-		var stdout, stderr bytes.Buffer
-		cmd.Stdout = &stdout
-		cmd.Stderr = &stderr
-		code := processCode(t, cmd.Run())
-		assertOutput(t, code, stdout.String(), stderr.String(), exitUnavailable, "", "fvpn-vault-keys: vault unavailable\n")
-		unchanged(t, f.dir, before)
+		t.Run(op, func(t *testing.T) {
+			f := setup(t, signing.Lease)
+			path := filepath.Join(f.dir, "lock")
+			if err := os.Remove(path); err != nil {
+				t.Fatal(err)
+			}
+			if err := syscall.Mkfifo(path, 0600); err != nil {
+				t.Fatal(err)
+			}
+			before := manifest(t, f.dir)
+			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+			defer cancel()
+			cmd := exec.CommandContext(ctx, binary, f.args(op)...)
+			var stdout, stderr bytes.Buffer
+			cmd.Stdout, cmd.Stderr = &stdout, &stderr
+			err := cmd.Run()
+			if ctx.Err() != nil {
+				t.Fatal("FIFO command exceeded 2s process deadline")
+			}
+			code := processCode(t, err)
+			assertOutput(t, code, stdout.String(), stderr.String(), exitUnavailable, "", "fvpn-vault-keys: vault unavailable\n")
+			unchanged(t, f.dir, before)
+		})
 	}
 }
