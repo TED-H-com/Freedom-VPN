@@ -512,7 +512,8 @@ func TestAT18_HTTPShadowVsEnforceMemberRatePolicyAndOverrides(t *testing.T) {
 	incID := uuid.New()
 
 	st := newHTTPStack(t, pool, adminID, memberID, nodeID, incID)
-	base := time.Date(2026, 10, 15, 12, 0, 0, 0, time.UTC)
+	base := time.Now().UTC().Truncate(time.Hour)
+	periodID := fup.CurrentUTCMonthPeriodID(base)
 
 	// Seed member, entitlement, member_device, device_binding, and registered node + incarnation.
 	if _, err := pool.Exec(ctx, `INSERT INTO members (id, status) VALUES ($1, 'active')`, memberID); err != nil {
@@ -552,6 +553,7 @@ func TestAT18_HTTPShadowVsEnforceMemberRatePolicyAndOverrides(t *testing.T) {
 	shadowPolicy := validFairUsePayload()
 	shadowPolicy.Mode = api.FairUsePayloadModeShadow
 	shadowPolicy.EffectiveAt = base.Add(-time.Hour)
+	shadowPolicy.Overrides[0].ValidUntil = base.Add(30 * 24 * time.Hour)
 	createReqBytes, _ := json.Marshal(map[string]any{
 		"code":           "at18-fup",
 		"type":           "fair_use",
@@ -593,7 +595,7 @@ func TestAT18_HTTPShadowVsEnforceMemberRatePolicyAndOverrides(t *testing.T) {
 				MemberId:        openapi_types.UUID(memberID),
 				DeviceId:        openapi_types.UUID(deviceID),
 				BindingRevision: decstr.U64(1),
-				PeriodId:        "2026-10",
+				PeriodId:        periodID,
 				UploadBytes:     decstr.U64(200_000_000_000),
 				DownloadBytes:   decstr.U64(400_000_000_000),
 			},
@@ -619,7 +621,7 @@ func TestAT18_HTTPShadowVsEnforceMemberRatePolicyAndOverrides(t *testing.T) {
 	// Verify in shadow mode:
 	// - GET /api/v1/member/usage shows FairUse.State == normal, TierIndex == 0
 	// - BuildNodeMemberRatePolicy returns normal plan rate (200 Mbps down / 100 Mbps up)
-	wMemShadow := st.doMember(t, http.MethodGet, "/api/v1/member/usage?period_id=2026-10")
+	wMemShadow := st.doMember(t, http.MethodGet, "/api/v1/member/usage?period_id="+periodID)
 	if wMemShadow.Code != http.StatusOK {
 		t.Fatalf("GET /member/usage shadow status=%d body=%s", wMemShadow.Code, wMemShadow.Body.String())
 	}
@@ -638,7 +640,7 @@ func TestAT18_HTTPShadowVsEnforceMemberRatePolicyAndOverrides(t *testing.T) {
 	fupEngine := polServices.FUPEngine
 	evalShadow, err := fupEngine.Compute(ctx, fup.ComputeInput{
 		MemberID: memberID,
-		PeriodID: "2026-10",
+		PeriodID: periodID,
 		Now:      base.Add(6 * time.Minute),
 	})
 	if err != nil {
@@ -678,7 +680,7 @@ func TestAT18_HTTPShadowVsEnforceMemberRatePolicyAndOverrides(t *testing.T) {
 
 	evalEnforce, err := fupEngine.Compute(ctx, fup.ComputeInput{
 		MemberID: memberID,
-		PeriodID: "2026-10",
+		PeriodID: periodID,
 		Now:      base.Add(10 * time.Minute),
 	})
 	if err != nil {
@@ -696,7 +698,7 @@ func TestAT18_HTTPShadowVsEnforceMemberRatePolicyAndOverrides(t *testing.T) {
 
 	// D-091: this fixture has a registered node but no published carrying exit.
 	// The member usage projection keeps the adjusted tier with Applying=false.
-	wMemEnforce := st.doMember(t, http.MethodGet, "/api/v1/member/usage?period_id=2026-10")
+	wMemEnforce := st.doMember(t, http.MethodGet, "/api/v1/member/usage?period_id="+periodID)
 	if wMemEnforce.Code != http.StatusOK {
 		t.Fatalf("GET /member/usage enforce status=%d body=%s", wMemEnforce.Code, wMemEnforce.Body.String())
 	}
