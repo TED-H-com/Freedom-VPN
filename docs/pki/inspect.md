@@ -33,14 +33,22 @@ fvpn-vault export-trust -vault EXISTING_VAULT -out NEW_FILE [-lock-timeout DURAT
 
 | Flag | Meaning |
 |---|---|
-| `-vault` | Required existing vault directory. No default or environment fallback. After path cleaning, only the final component must not be a symlink; ancestor symlinks are followed. |
+| `-vault` | Required existing vault directory. No default or environment fallback. A raw `..` path element is a usage error. After cleaning, only the final component must not be a symlink; ancestor symlinks are followed. |
 | `-check-keys` | Inspect only; default false. Exercise current active central keys. `-check-keys=false` explicitly selects metadata only. |
-| `-out` | Export only; required new file whose parent already exists. No overwrite or directory creation. |
+| `-out` | Export only; required new file whose parent already exists. A raw `..` path element is a usage error. No overwrite or directory creation. |
 | `-lock-timeout` | Positive Go duration, default `5s`; fractional values such as `250ms` are allowed. |
 
 Repeated flags, unknown flags or subcommands, missing values, stray positional
 arguments and nonpositive/invalid durations are usage failures. Parsing finishes
 before accessing any vault or output path.
+
+Both `-vault` and `-out` reject any `..` path element in the raw flag value,
+before cleaning or filesystem access. The check is on complete elements, so
+`..data` and `a..b` are valid names. This avoids lexical cleaning of `symlink/..`
+selecting a different vault or destination from the one the OS resolves. Leading,
+trailing and lone `..` elements are also rejected, including with trailing
+separators. `.` elements, repeated separators and trailing separators are still
+cleaned. A final vault symlink remains refused with a trailing `/` or `/.`.
 
 Components above the final vault directory are resolved as the operating system
 resolves them. The operator is responsible for the path above the vault, including
@@ -68,10 +76,22 @@ a changed inspection. A timeout is distinct from an unavailable vault.
 
 Before opening the provider, the command uses `Lstat` to require an existing
 regular `lock` file with no group or other permission bits. A lock symlink,
-FIFO, directory or other file type is refused without opening it. This is a
-point-in-time check; it does not prevent replacement after the check. Running
-services use the provider directly, which does not perform this lock-file type
-and permission check. The provider's locking and validation remain unchanged.
+FIFO, directory or other file type is refused without opening it. The command
+retains that file's identity and permission bits, then checks them again after
+the provider is open and the first snapshot is taken, and immediately before
+writing a result document or invoking export publication. The final check follows
+all probes and the last snapshot, where applicable. A missing, nonregular,
+replaced (`os.SameFile` differs) or permission-changed lock produces exit 5 with
+no document and no export file, including for metadata inspection and export.
+Failed provider reads also check for a changed lock before reporting their error.
+
+These checks detect a replacement that is in place at one of the three points.
+Someone who can write inside the vault directory can replace the lock and put
+it back between them, and can equally replace the ledger and key files. The
+command does not defend against the vault's owner or system administrator and
+does not bind the provider's own open to the validated file. Running services
+use the provider directly, which does not perform these lock-file checks. The
+provider's locking and validation remain unchanged.
 
 ## Metadata inspection
 
@@ -220,7 +240,7 @@ not authenticate a restored vault as the latest authority.
 | `2` | Usage failure; no vault or output access. |
 | `3` | Could not inspect: vault unavailable, or inspection could not be encoded. |
 | `4` | Provider/lock deadline exceeded; no result document. |
-| `5` | Vault changed during checked inspection; no result document. |
+| `5` | Lock identity/type/permissions changed during any invocation, or ledger metadata changed during checked inspection; no document or export file. |
 | `6` | Could not prepare/encode/export public trust. |
 | `7` | Stdout failed. After export, the verified published file remains. |
 
@@ -230,7 +250,7 @@ Stderr contains only fixed messages prefixed `fvpn-vault:`: the usage line,
 `cannot encode export receipt`, `public trust publication failed`, `output failed`,
 or `output failed; published file remains`. No raw OS/provider errors, operator
 paths, contents, key material or ciphertext are printed. Unavailable vaults
-include missing/wrong paths, missing lock/state, invalid lock types, forbidden
+initially include missing/wrong paths, missing lock/state, invalid lock types, forbidden
 permissions and invalid ledgers. No group or other permission bits are permitted
 on the vault directory, the lock or the state file. With `-check-keys`, the
 provider also checks the private key files' type and permissions as it reads

@@ -123,6 +123,9 @@ func invoke(t *testing.T, c command, dir string, args ...string) outcome {
 	if !reflect.DeepEqual(before, after) {
 		t.Fatal("command mutated vault manifest")
 	}
+	if code == exitOK || code == exitResultFail {
+		requireReportInventory(t, dir, out.Bytes())
+	}
 	return outcome{code, out.Bytes(), stderr.Bytes()}
 }
 func requireCode(t *testing.T, got outcome, code int) {
@@ -197,11 +200,18 @@ func TestSEC01_NormalInspectExportAndNoLeakage(t *testing.T) {
 	if len(captured.ciphertexts) != 1 || len(captured.signed) != 4 || captured.caCalls != 1 {
 		t.Fatal("six real purpose probes not exercised")
 	}
+	seenProbes := map[string]int{}
 	for _, e := range captured.signed {
 		var payload map[string]string
 		must(t, json.Unmarshal(e.Signed, &payload))
+		seenProbes[payload["purpose"]]++
 		if payload["kind"] != "fvpn-file-vault-inspect-probe-v1" || len(payload) != 3 {
 			t.Fatal("probe not domain separated")
+		}
+	}
+	for _, p := range []signing.Purpose{signing.DesiredState, signing.Lease, signing.Recovery, signing.LedgerEpoch} {
+		if seenProbes[string(p)] != 1 {
+			t.Fatal("signing purpose probe missing or duplicated")
 		}
 	}
 	output := filepath.Join(t.TempDir(), "trust.json")
@@ -287,6 +297,9 @@ func privateMaterial(t *testing.T, dir string) [][]byte {
 	var result [][]byte
 	files, err := filepath.Glob(filepath.Join(dir, "*.key"))
 	must(t, err)
+	if len(files) == 0 {
+		t.Fatal("no private material to scan")
+	}
 	for _, file := range files {
 		raw, err := os.ReadFile(file)
 		must(t, err)
@@ -308,6 +321,14 @@ func privateMaterial(t *testing.T, dir string) [][]byte {
 }
 func assertNoLeak(t *testing.T, outputs, secrets [][]byte) {
 	t.Helper()
+	if len(outputs) == 0 || len(secrets) == 0 {
+		t.Fatal("empty leakage scan")
+	}
+	for _, secret := range secrets {
+		if len(secret) == 0 {
+			t.Fatal("empty leakage sentinel")
+		}
+	}
 	for _, out := range outputs {
 		for _, secret := range secrets {
 			for _, encoded := range [][]byte{secret, []byte(hex.EncodeToString(secret)), []byte(base64.StdEncoding.EncodeToString(secret))} {
@@ -411,15 +432,20 @@ func TestSEC01_KeyStatesAndRevocationExport(t *testing.T) {
 					}
 				}
 				editLedger(t, f.dir, func(s *testLedger) {
+					changed := 0
 					for i := range s.Keys {
 						if s.Keys[i].Purpose != purpose {
 							continue
 						}
+						changed++
 						now := time.Now().UTC()
 						s.Keys[i].NotBefore, s.Keys[i].NotAfter = now.Add(-2*time.Hour), now.Add(-time.Hour)
 						if want == "not_yet_valid" {
 							s.Keys[i].NotBefore, s.Keys[i].NotAfter = now.Add(time.Hour), now.Add(2*time.Hour)
 						}
+					}
+					if changed != 1 {
+						t.Fatal("window fixture key missing or duplicated")
 					}
 				})
 			case "revoked":
@@ -434,6 +460,8 @@ func TestSEC01_KeyStatesAndRevocationExport(t *testing.T) {
 				purpose, want = signing.Release, "revoked"
 				must(t, f.p.Revoke(context.Background(), f.ids[purpose]))
 			}
+			snapshot, err := f.p.Snapshot(context.Background())
+			must(t, err)
 			for _, checked := range []bool{false, true} {
 				args := []string{"inspect", "-vault", f.dir}
 				if checked {
@@ -442,9 +470,18 @@ func TestSEC01_KeyStatesAndRevocationExport(t *testing.T) {
 				got := invoke(t, command{}, f.dir, args...)
 				requireCode(t, got, result)
 				r := inspectionFrom(t, got)
-				for _, s := range r.Purposes {
-					if s.Purpose == purpose && s.MetadataStatus != want {
-						t.Fatalf("metadata = %s want %s", s.MetadataStatus, want)
+				summary := requirePurpose(t, r, purpose)
+				if summary.MetadataStatus != want {
+					t.Fatalf("metadata = %s want %s", summary.MetadataStatus, want)
+				}
+				if state == "retired" {
+					key := requireOne(t, r.Keys, "retired overlap key", func(k keySummary) bool { return k.ID == oldID })
+					use := "not_checked"
+					if checked {
+						use = "not_applicable"
+					}
+					if key.State != "retired" || key.WindowStatus != "current" || key.KeyUseStatus != use {
+						t.Fatal("wrong overlap key status")
 					}
 				}
 				for _, k := range r.Keys {
@@ -453,9 +490,6 @@ func TestSEC01_KeyStatesAndRevocationExport(t *testing.T) {
 					}
 					if checked && (k.State != "active" || k.WindowStatus != "current" || k.Purpose == signing.Release) && k.KeyUseStatus != "not_applicable" {
 						t.Fatal("ineligible key exercised")
-					}
-					if state == "retired" && k.ID == oldID && (k.State != "retired" || k.WindowStatus != "current") {
-						t.Fatal("overlap key omitted")
 					}
 				}
 			}
@@ -474,10 +508,11 @@ func TestSEC01_KeyStatesAndRevocationExport(t *testing.T) {
 			}
 			var r exportReceipt
 			must(t, json.Unmarshal(got.out, &r))
-			for _, s := range r.Purposes {
-				if s.Purpose == purpose && s.CurrentNonRevokedKey != (state == "retired") {
-					t.Fatal("wrong export window summary")
-				}
+			if requireExportPurpose(t, r, purpose).CurrentNonRevokedKey != (state == "retired") {
+				t.Fatal("wrong export window summary")
+			}
+			if state == "retired" {
+				requireTrustedRecord(t, raw, requireRecord(t, snapshot.Keys, oldID))
 			}
 		})
 	}

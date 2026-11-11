@@ -163,12 +163,7 @@ func TestSEC01_WindowExactEndpoints(t *testing.T) {
 	f := newVault(t, true)
 	snapshot, err := f.p.Snapshot(context.Background())
 	must(t, err)
-	var target signing.KeyRecord
-	for _, k := range snapshot.Keys {
-		if k.ID == f.ids[signing.Lease] {
-			target = k
-		}
-	}
+	target := requireRecord(t, snapshot.Keys, f.ids[signing.Lease])
 	before := manifest(t, f.dir)
 	for _, tc := range []struct {
 		name             string
@@ -182,22 +177,13 @@ func TestSEC01_WindowExactEndpoints(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			r := inspect(context.Background(), f.p, snapshot, tc.instant, false)
-			found := false
-			for _, k := range r.Keys {
-				if k.ID == target.ID {
-					found = true
-					if k.WindowStatus != tc.window || k.KeyUseStatus != "not_checked" {
-						t.Fatalf("window %s, use %s", k.WindowStatus, k.KeyUseStatus)
-					}
-				}
+			requireInspectionInventory(t, r, snapshot.Keys)
+			key := requireOne(t, r.Keys, "window key", func(k keySummary) bool { return k.ID == target.ID })
+			if key.WindowStatus != tc.window || key.KeyUseStatus != "not_checked" {
+				t.Fatal("wrong endpoint key status")
 			}
-			if !found {
-				t.Fatal("key absent")
-			}
-			for _, p := range r.Purposes {
-				if p.Purpose == target.Purpose && p.MetadataStatus != tc.metadata {
-					t.Fatalf("metadata %s, want %s", p.MetadataStatus, tc.metadata)
-				}
+			if requirePurpose(t, r, target.Purpose).MetadataStatus != tc.metadata {
+				t.Fatal("wrong endpoint purpose status")
 			}
 		})
 	}
@@ -245,7 +231,11 @@ func requireUseFailure(t *testing.T, r inspection, purpose signing.Purpose) {
 	if r.Result != "fail" || !r.KeyUseChecked {
 		t.Fatal("inspection failure missing")
 	}
-	for _, p := range r.Purposes {
+	if len(r.Purposes) != len(purposes()) {
+		t.Fatal("purpose summaries missing")
+	}
+	for _, expectedPurpose := range purposes() {
+		p := requirePurpose(t, r, expectedPurpose)
 		want, result := "passed", "pass"
 		if p.Purpose == purpose {
 			want, result = "failed", "fail"
@@ -257,10 +247,9 @@ func requireUseFailure(t *testing.T, r inspection, purpose signing.Purpose) {
 			t.Fatalf("unexpected %s summary: %+v", p.Purpose, p)
 		}
 	}
-	for _, k := range r.Keys {
-		if k.Purpose == purpose && k.State == "active" && (k.WindowStatus != "current" || k.KeyUseStatus != "failed") {
-			t.Fatal("active key's metadata/use distinction lost")
-		}
+	k := requireOne(t, r.Keys, "failed active key", func(k keySummary) bool { return k.Purpose == purpose && k.State == "active" })
+	if k.WindowStatus != "current" || k.KeyUseStatus != "failed" {
+		t.Fatal("active key's metadata/use distinction lost")
 	}
 }
 func TestSEC01_ExpiresBetweenSnapshotAndProbe(t *testing.T) {
@@ -272,12 +261,7 @@ func TestSEC01_ExpiresBetweenSnapshotAndProbe(t *testing.T) {
 		must(t, err)
 		snapshot, err := f.p.Snapshot(context.Background())
 		must(t, err)
-		var expires time.Time
-		for _, k := range snapshot.Keys {
-			if k.ID == id {
-				expires = k.NotAfter
-			}
-		}
+		expires := requireRecord(t, snapshot.Keys, id).NotAfter
 		reached, expired := false, false
 		c := command{probeProvider: func(p signing.Provider) signing.Provider {
 			return probeOverrides{Provider: p, sign: func(ctx context.Context, purpose signing.Purpose, v any) (envelope.Envelope, error) {
@@ -447,12 +431,7 @@ func TestSEC01_ChangedByRevocationOrReleaseUpdate(t *testing.T) {
 				if change == "revocation" {
 					must(t, f.p.Revoke(context.Background(), f.ids[signing.Recovery]))
 				} else {
-					var record signing.KeyRecord
-					for _, k := range initial.Keys {
-						if k.ID == root.KeyID {
-							record = k
-						}
-					}
+					record := requireRecord(t, initial.Keys, root.KeyID)
 					record.NotAfter = record.NotAfter.Add(-time.Minute)
 					update := signing.ReleaseUpdate{Kind: "fvpn-release-trust-v1", Revision: initial.ReleaseRevision + 1, Keys: []signing.KeyRecord{record}}
 					signed, err := envelope.Sign(update, private, root.KeyID)
