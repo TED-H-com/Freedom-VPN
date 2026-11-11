@@ -27,6 +27,13 @@ type singleTrustFlag struct {
 	seen bool
 }
 
+func (v *singleTrustFlag) String() string {
+	if v.Value == nil {
+		return ""
+	}
+	return v.Value.String()
+}
+
 func (v *singleTrustFlag) Set(s string) error {
 	if v.seen {
 		return errors.New("flag may be given at most once")
@@ -65,7 +72,11 @@ func trustTime(value, name string) (time.Time, error) {
 func trustRevision(value, name string, positive bool) (decstr.U64, error) {
 	n, err := decstr.Parse(value)
 	if err != nil || (positive && n == 0) {
-		return 0, trustUsage(name + " requires a canonical decimal uint64" + map[bool]string{true: " greater than zero"}[positive])
+		message := name + " requires a canonical decimal uint64"
+		if positive {
+			message += " greater than zero"
+		}
+		return 0, trustUsage(message)
 	}
 	return n, nil
 }
