@@ -293,8 +293,11 @@ func addTokenFile(dst map[string]*issued, path string) error {
 }
 
 func nodeTrust() ([]byte, error) {
-	nb := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	na := time.Date(2028, 1, 1, 0, 0, 0, 0, time.UTC)
+	// The installer command checks this bundle using its real clock. Leave
+	// enough room for the complete lab run on either side of fixture creation.
+	now := time.Now().UTC()
+	nb := now.Add(-48 * time.Hour)
+	na := now.Add(48 * time.Hour)
 	key := func() ed25519.PublicKey {
 		pub, _, err := ed25519.GenerateKey(rand.Reader)
 		if err != nil {

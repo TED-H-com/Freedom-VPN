@@ -124,12 +124,15 @@ func TestUsageContiguousAndConflict(t *testing.T) {
 }
 
 func TestUsageCheckpointRoundTrip(t *testing.T) {
-	s := startUsage(t)
 	// Pin checkpoint time at a UTC month boundary; the usage interval stays
 	// wholly in the previous month, regardless of when the test runs.
 	now := time.Date(2026, 11, 1, 0, 0, 0, 0, time.UTC)
 	clock := func() time.Time { return now }
-	s.SetClock(clock)
+	s, err := StartWithClock(clock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = s.Close() })
 	node := uuid.Must(uuid.NewV7())
 	inc := uuid.Must(uuid.NewV7())
 	ctx := context.Background()
