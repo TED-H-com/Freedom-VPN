@@ -15,12 +15,12 @@ import (
 	"github.com/google/uuid"
 )
 
-// §13.4, §16.2: the installer fallback is parseable but cannot verify a
+// §13.4, §16.2: a release-only store is parseable but cannot verify a
 // central desired-state signature. The control export can verify that same
 // document; verification alone does not grant forwarding authorization.
 func TestUPD02_DesiredStateTrustFiles(t *testing.T) {
 	for _, exported := range []bool{false, true} {
-		name := "release_only_fallback"
+		name := "release_only_store"
 		if exported {
 			name = "central_export"
 		}

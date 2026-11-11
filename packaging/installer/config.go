@@ -11,10 +11,12 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/node/agent"
 	"github.com/TED-H-com/Freedom-VPN/node/updater"
 	"github.com/TED-H-com/Freedom-VPN/pkg/api"
+	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
 )
 
@@ -117,6 +119,25 @@ func (r *Result) Text() string {
 	}
 	b.WriteString("\n")
 	return b.String()
+}
+
+func validateDesiredTrust(req InstallRequest, now time.Time) error {
+	path, flag := req.DesiredTrustPath, "--desired-trust"
+	if path == "" {
+		path, flag = req.TrustBundle, "--trust-bundle"
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return errf(ExitUsage, "usage", "%s must be a readable node trust store", flag)
+	}
+	trust, err := envelope.ParseNodeTrustStoreJSON(raw)
+	if err != nil {
+		return errf(ExitUsage, "usage", "%s must be a node trust store", flag)
+	}
+	if !trust.HasUsableKey(envelope.PurposeDesiredState, now) {
+		return errf(ExitUsage, "usage", "%s must contain a non-revoked desired-state key valid at the installer clock (not_before <= now < not_after)", flag)
+	}
+	return nil
 }
 
 func validateInstall(req *InstallRequest) error {
