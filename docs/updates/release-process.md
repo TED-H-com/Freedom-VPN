@@ -68,13 +68,15 @@ file against a supplied public trust store. Both use the embedded
 `trust/release-update-envelope.schema.json`; `sign` and `verify` remain limited
 to release manifests. The release private seed stays on the build machine.
 
-Applying an update at the centre is a separate step. Follow the centre's apply
-operation and the [PKI rotation runbook](../pki/rotation.md); these commands do
-not contact the centre or update its vault. Carry the public update file and
-its `update_sha256` to the centre. After each successful apply, bring back the
-centre's freshly exported node trust store and its current release revision.
-Use that export as `-trust` for the next step. Do not build the next trust store
-from the proposed update or treat offline success as an apply receipt.
+Applying an update at the centre is a separate step. Run
+`fvpn-vault-keys apply-release-update` ([key commands](../pki/keys.md)) as
+described in the [PKI rotation runbook](../pki/rotation.md#release-verification-trust);
+these offline commands do not contact the centre or update its vault. Carry the
+public update file and its `update_sha256` to the centre. After each successful
+apply, bring back the centre's freshly exported node trust store and its current
+release revision. Use that export as `-trust` for the next step. Do not build
+the next trust store from the proposed update or treat offline success as an
+apply receipt.
 
 The following paths, dates, windows and revisions are **TEST ONLY** placeholders.
 The parent output directory must already exist. In production choose windows

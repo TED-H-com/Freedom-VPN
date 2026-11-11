@@ -109,28 +109,63 @@ commands. Their rollovers still require the separate Go API procedures below.
 ## Release verification trust
 
 Central services must never load a release signing private key. Provision the
-initial trusted public key through `PinReleaseRoot` using an independently
-verified installer/release trust root. This operation succeeds only once for a
-new vault. Key IDs for release trust may be opaque strings; generated central
-key IDs are UUIDs.
+initial trusted public key through [`fvpn-vault-init`](initialize.md) (or
+`PinReleaseRoot`) using an independently verified installer/release trust root.
+This operation succeeds only once for a new vault. Key IDs for release trust
+may be opaque strings; generated central key IDs are UUIDs.
 
-Subsequent `UpdateReleaseTrust` input is a `pkg/envelope` envelope signed by a
-currently trusted release key. Its signed `ReleaseUpdate` has:
+Subsequent release-root updates are `pkg/envelope` envelopes produced offline
+with `fvpn-release trust-update` ([release process](../updates/release-process.md))
+and signed by a currently trusted release key. Each signed `ReleaseUpdate` has:
 
 - `kind: "fvpn-release-trust-v1"`;
 - a strictly increasing decimal-string `revision`;
 - `keys`: public `KeyRecord` entries with `purpose: "release"`, validity,
   state and optional `revoked_at`.
 
-The old trust store verifies the envelope before any update. Existing public
-keys cannot be substituted, validity windows cannot expand, revoked keys
-cannot be reinstated, and omitted old keys remain recorded. Store updates are
-atomic. Use a two-step overlap: first authorize the new public key with the
-existing key and distribute it; then authorize old-key retirement/revocation
-with the new trusted key. A revoked/expired known signer invalidates the whole
-authorization envelope, even when another signature would otherwise pass.
-Emergency recovery from loss of every trusted root requires an independently
-authorized trust-root recovery process, not acceptance of an unsigned update.
+To apply a signed release trust update at the centre and perform a root
+handover:
+
+1. Run [`fvpn-vault inspect -vault EXISTING_VAULT`](inspect.md) to read the
+   current `ledger_revision` and `release_revision`, and run
+   `fvpn-vault export-trust -vault EXISTING_VAULT -out CURRENT_TRUST_FILE` to
+   obtain a fresh public trust export.
+2. Check the candidate update file offline against that fresh export and the
+   inspected `release_revision`:
+   `fvpn-release trust-verify -update UPDATE_FILE -trust CURRENT_TRUST_FILE -current-revision RELEASE_REVISION`.
+   Confirm the signer, target record(s), `update_sha256` and
+   `usable_root_after=true`.
+3. Apply the update at the centre under the inspected `ledger_revision`:
+   `fvpn-vault-keys apply-release-update -vault EXISTING_VAULT -update UPDATE_FILE -expect-revision LEDGER_REVISION`
+   (see [command reference and outcomes](keys.md)). Add `-allow-no-usable-root`
+   only for deliberate emergency removal of the last usable root. Check the exit
+   code and the JSON result document (`outcome`, `update_sha256`, `change.keys`
+   and `change.usable_root_key_ids`).
+4. Run `fvpn-vault export-trust -vault EXISTING_VAULT -out NEW_TRUST_FILE` and
+   deliver the new node trust store (`trust.json`) to nodes through an already
+   authenticated channel. Nodes consume the exported trust store, never the
+   update envelope.
+5. Confirm actual node adoption across the fleet before starting the second step
+   of a root handover. Only after nodes trust the newly added root should you
+   produce, verify, apply and distribute a second update (signed by the new
+   root) that retires or revokes the previous root.
+
+The vault's current release records verify the envelope before any change.
+Existing public keys cannot be substituted, validity windows cannot expand,
+revoked keys cannot be reinstated, retired keys cannot become active again, and
+omitted old keys remain recorded. A revoked or expired known signer invalidates
+the whole authorization envelope, even when another signature would otherwise
+pass.
+
+What `fvpn-vault-keys apply-release-update` does **not** do:
+
+- It binds the update to previous vault state only through `-expect-revision`
+  (the signed update envelope itself carries only its proposed new
+  `release_revision`, not a hash of prior trust state).
+- It does not export the trust bundle or deliver anything to nodes.
+- It provides no recovery path when every trusted release root is lost or
+  revoked; emergency recovery from loss of every root requires an independently
+  authorized trust-root recovery process, never acceptance of an unsigned update.
 
 ## CA and encryption keys
 
