@@ -38,6 +38,7 @@ func TestD089_CheckAfterJournaledSwitch(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer engine.Close()
+	engine.Now = env.Now
 	engine.Services = &reconcileServices{}
 	engine.Meter = reconcileMeter{}
 	engine.Health = reconcileHealth{}

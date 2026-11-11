@@ -30,6 +30,14 @@ type ReleaseFixture struct {
 // to contents. The other architecture is a second tiny archive so the
 // manifest satisfies §13.4.
 func BuildReleaseFixture(dir, unitDir, releaseID, sequence string, bins map[string][]byte) (ReleaseFixture, error) {
+	// CLI consumers have no clock injection; allow a full day on either side
+	// of this run's start for building and verifying the fixture.
+	return buildReleaseFixtureAt(dir, unitDir, releaseID, sequence, bins, time.Now().UTC())
+}
+
+// buildReleaseFixtureAt shares the installer's injected test clock. Archive
+// mtimes below remain fixed inputs to reproducible packaging, not validity.
+func buildReleaseFixtureAt(dir, unitDir, releaseID, sequence string, bins map[string][]byte, now time.Time) (ReleaseFixture, error) {
 	tree := filepath.Join(dir, "tree-"+sequence)
 	if err := os.MkdirAll(filepath.Join(tree, "lib", "systemd"), 0o755); err != nil {
 		return ReleaseFixture{}, err
@@ -87,7 +95,7 @@ func BuildReleaseFixture(dir, unitDir, releaseID, sequence string, bins map[stri
 		ReleaseID:       releaseID,
 		ProductVersion:  "1.2." + sequence,
 		ReleaseSequence: sequence,
-		CreatedAt:       "2026-10-28T14:00:00Z",
+		CreatedAt:       now.UTC().Format(time.RFC3339),
 		SourceCommit:    "1111111111111111111111111111111111111111",
 		BuildID:         "build-test-" + sequence,
 		Components: api.ManifestComponents{
@@ -115,7 +123,7 @@ func BuildReleaseFixture(dir, unitDir, releaseID, sequence string, bins map[stri
 				URL: "https://releases.example.invalid/r/arm64.tar.zst", InstalledSizeBytes: decstr.U64(armBytes).String()},
 		},
 	}
-	signed, _, err := release.BuildManifest(in, time.Date(2026, 10, 28, 14, 0, 0, 0, time.UTC))
+	signed, _, err := release.BuildManifest(in, now)
 	if err != nil {
 		return ReleaseFixture{}, err
 	}
@@ -127,8 +135,8 @@ func BuildReleaseFixture(dir, unitDir, releaseID, sequence string, bins map[stri
 	if err != nil {
 		return ReleaseFixture{}, err
 	}
-	nb := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	na := time.Date(2028, 1, 1, 0, 0, 0, 0, time.UTC)
+	nb := now.Add(-24 * time.Hour)
+	na := now.Add(24 * time.Hour)
 	ts, err := key.TrustStore(nb, na)
 	if err != nil {
 		return ReleaseFixture{}, err
