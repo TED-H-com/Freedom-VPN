@@ -28,7 +28,9 @@ recommendations.
 3. For desired-state, lease or recovery, run
    `fvpn-vault export-trust -vault EXISTING_VAULT -out NEW_FILE`
    ([inspection and export](inspect.md)), then deliver that public bundle
-   through an already authenticated trust channel. Never accept trust from
+   through an already authenticated trust channel; follow the
+   [node trust files and process actions](../node/install.md#node-trust-files).
+   Never accept trust from
    the same unauthenticated response as an unknown artifact. Ledger-epoch is
    central-only: its rotation does not change the node bundle.
 4. Confirm actual adoption and verification on the intended nodes. Writing or
@@ -43,6 +45,7 @@ recommendations.
    the active signer; the purpose then has no signer until a fresh rotation
    with inspected revision and `-expect-active-key none`. For compromise,
    distribute the updated revocation bundle urgently and confirm adoption
+   using the [node trust files and process actions](../node/install.md#node-trust-files)
    (ledger-epoch has no node bundle change). Revocation is terminal; preserve
    its original time. Reverify authorization: an old signature is not ongoing
    permission to serve or install a release. See [all outcomes](keys.md) before
@@ -142,9 +145,12 @@ handover:
    code and the JSON result document (`outcome`, `update_sha256`, `change.keys`
    and `change.usable_root_key_ids`).
 4. Run `fvpn-vault export-trust -vault EXISTING_VAULT -out NEW_TRUST_FILE` and
-   deliver the new node trust store (`trust.json`) to nodes through an already
-   authenticated channel. Nodes consume the exported trust store, never the
-   update envelope.
+   deliver the new node trust store to nodes through an already authenticated
+   channel, replacing `/etc/vpn-node/release-trust.json`, the updater's release
+   trust file, on each node (the agent's `trust.json` does not need to change
+   for a release trust update). Nodes consume the exported trust store, never
+   the update envelope. Follow the
+   [node trust files and process actions](../node/install.md#node-trust-files).
 5. Confirm actual node adoption across the fleet before starting the second step
    of a root handover. Only after nodes trust the newly added root should you
    produce, verify, apply and distribute a second update (signed by the new
