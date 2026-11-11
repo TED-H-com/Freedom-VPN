@@ -18831,7 +18831,7 @@ func TestHandover_Followup50Claims(t *testing.T) {
 		Path, SHA256 string
 		Bytes        int
 	}{
-		{"docs/handover/follow-up-50.md", "d9e42fcc1d614c90352b225552a747bbba63bb114ed8da24d90caeefe46b34c0", 17638},
+		{"docs/handover/follow-up-50.md", "2eace1b4f5ec00081ae0520d26cdb87be1df6e0449be6a5e4f210b7462e5f7a1", 17796},
 		{fixture + "followup50-main.json", "d81ba5f226a34d88c0b9df378880be461deb3175ff36e895b59603fdc2ecbc37", 14149},
 		{fixture + "followup50-snapshots.json", "e4eea7a90319381a23573867a50713df64db895c4b8ed1a53778ccb90abd8db8", 3738},
 		{fixture + "followup50-edits.json", "1a1bb207fd3b194869fef786f7e28e04b838cf013073bd33bbf6e30ba2d7fd15", 23289},

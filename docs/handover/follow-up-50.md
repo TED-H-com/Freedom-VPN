@@ -38,8 +38,10 @@ The [Chinese](../DELIVERY.md) and [English](../DELIVERY.en.md) delivery guides
 now describe scoped revisions to living guides and point here for this revision.
 The [pre-cut provenance](../../tests/handover/testdata/followup50-snapshots.json)
 pins exact copies from the cutoff. The claims test preserves older assertions
-against those copies and checks every other byte of the guide bodies, allowing
-only the cut lines and the four revised places (shadow mode in both languages).
+against those copies and compares all 12 files, allowing exactly 19 edits:
+one cut-line edit per file; five guide passages (three in the operator guide and
+shadow mode in both languages of the member guide); and the revision section in
+each of the two delivery guides. Every other byte must match the pre-cut copies.
 Historical registers and content-specific references retain their earlier cut.
 
 ## Delivery and operating entry points
