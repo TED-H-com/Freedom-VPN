@@ -19,16 +19,19 @@ import (
 )
 
 func main() {
+	configureTrustOutputSignals(os.Args[1:])
 	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
 }
 
 func run(args []string, stdout, stderr io.Writer) int {
 	if len(args) == 0 {
-		fmt.Fprintln(stderr, "usage: fvpn-release <build-manifest|sign|verify|package|keygen>")
+		fmt.Fprintln(stderr, "usage: fvpn-release <build-manifest|sign|verify|package|keygen|trust-update|trust-verify>")
 		return 2
 	}
 	var err error
 	switch args[0] {
+	case "trust-update", "trust-verify":
+		return runTrust(args[0], args[1:], stdout, stderr)
 	case "build-manifest":
 		err = cmdBuild(args[1:], stdout, stderr)
 	case "sign":
@@ -40,7 +43,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 	case "keygen":
 		err = cmdKeygen(args[1:], stdout, stderr)
 	case "-h", "--help", "help":
-		fmt.Fprintln(stderr, "usage: fvpn-release <build-manifest|sign|verify|package|keygen>")
+		fmt.Fprintln(stderr, "usage: fvpn-release <build-manifest|sign|verify|package|keygen|trust-update|trust-verify>")
 		return 0
 	default:
 		fmt.Fprintf(stderr, "fvpn-release: unknown command %q\n", args[0])
