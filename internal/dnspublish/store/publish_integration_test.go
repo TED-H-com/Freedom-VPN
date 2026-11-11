@@ -34,7 +34,8 @@ import (
 func Test12_5_PublishActivationIsDeterministic(t *testing.T) {
 	pool := dbtest.New(t)
 	ctx := context.Background()
-	fixedNow := time.Date(2026, 10, 29, 12, 0, 0, 0, time.UTC)
+	// Publisher and document lookup also check feed validity against real clocks.
+	fixedNow := time.Now().UTC().Truncate(time.Hour)
 	store := policies.NewStore(pool, policies.WithClock(func() time.Time { return fixedNow }))
 	actorID := uuid.New()
 

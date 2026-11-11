@@ -317,6 +317,9 @@ func TestPoliciesHTTP_AllSixPolicyTypesActivateIdempotencyWorkerAndAudit(t *test
 
 	// 4. fair_use
 	fupPayload := validFairUsePayload()
+	// Production HTTP wiring validates against the real clock.
+	fupPayload.EffectiveAt = time.Date(now.Year(), now.Month()+1, 1, 0, 0, 0, 0, time.UTC)
+	fupPayload.Overrides[0].ValidUntil = now.Add(30 * 24 * time.Hour)
 	wFUP := st.doAdmin(t, http.MethodPost, "/api/v1/admin/policies", createBody("http-fup", api.PolicyTypeFairUse, fupPayload, "HTTP create fair_use"), "", "")
 	if wFUP.Code != http.StatusCreated {
 		t.Fatalf("create fair_use status=%d body=%s", wFUP.Code, wFUP.Body.String())
