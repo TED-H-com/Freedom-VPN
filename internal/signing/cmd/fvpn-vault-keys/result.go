@@ -36,7 +36,7 @@ type changeDetails struct {
 	Key         *publicKey `json:"key"`
 	Previous    *publicKey `json:"previous_key"`
 	NodeTrust   string     `json:"node_trust"`
-	NoSigner    bool       `json:"purpose_has_no_signer"`
+	NoSigner    bool       `json:"purpose_has_no_signer,omitempty"`
 }
 type document struct {
 	Kind              string         `json:"kind"`

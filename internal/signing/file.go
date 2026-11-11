@@ -685,8 +685,9 @@ const (
 	ChangeUncertain
 )
 
-// ChangeResult contains public facts only. On ChangeUncertain, Key and Previous
-// describe the attempted replacement, not a confirmed ledger. CreatedKeyID is
+// ChangeResult contains public facts only. On ChangeNotApplied/ChangeUncertain,
+// Key and Previous, when present, describe an attempted replacement, not a
+// confirmed ledger. CreatedKeyID is
 // set only after exclusive key-file creation succeeds, including write failures.
 // Previous is the retired record after rotation, or the pre-revocation record.
 // A refused result discloses no vault contents.
