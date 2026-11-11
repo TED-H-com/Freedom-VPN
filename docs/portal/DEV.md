@@ -48,9 +48,11 @@ value fails the two tests before they perform any product actions or file writes
 No evidence destination is inferred from the current working directory.
 
 Playwright still writes its own `test-results` directory when evidence capture is
-unset, including failure artifacts when applicable. The make target removes that
-directory before a run; disabling evidence only disables the additional member
-screenshots and visible-text files.
+unset, including failure artifacts when applicable. The make target removes
+`test-results` and `playwright-report` after the run, whether it passes or fails,
+and preserves the suite exit status. A direct `npm run e2e` leaves those outputs
+in place (ignored by git). Additional member screenshots and visible-text files
+are written only when `PORTAL_E2E_EVIDENCE_DIR` is set to an absolute directory.
 
 The real-expiry test uses a five-second grant window to leave observation margin
 on slow runners, not to define a minimum product duration. It logs the positive

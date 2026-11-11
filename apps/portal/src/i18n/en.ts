@@ -439,6 +439,12 @@ export const en: Record<TranslationKey, string> = {
   'member.service.reason.grace':
     'Renewal is pending; the grace deadline is {graceUntil}. Your service entitlement runs until {end}.',
   'member.service.reason.past_due': 'Payment is overdue and service is unavailable.',
+  'member.service.reason.expiredWithoutDates':
+    'Your service entitlement is inactive; exit access is unavailable.',
+  'member.service.reason.cancel_at_period_endWithoutDates':
+    'Cancellation is scheduled for period end; your service entitlement is currently active.',
+  'member.service.reason.graceWithoutDates':
+    'Renewal is pending; service remains available during the grace period.',
   'member.service.reason.expired':
     'Your service period ended at {end}; exit access is no longer available.',
   'member.service.reason.suspended':
@@ -467,6 +473,8 @@ export const en: Record<TranslationKey, string> = {
   'member.service.effectiveEndLabel': 'Effective Service End (effective_service_end)',
   'member.service.paidThroughLabel': 'Billing Paid Through (paid_through)',
   'member.service.nextResetLabel': 'Next Fair-Use (FUP) Reset Time',
+  'member.service.fupThrottledWithoutDate':
+    'High usage this period: speed has been adjusted under the Fair Use Policy.',
   'member.service.fupThrottledBanner':
     'High usage this period: speed has been adjusted under the Fair Use Policy; next reset is {resetAt}',
 

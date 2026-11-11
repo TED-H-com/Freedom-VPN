@@ -130,9 +130,9 @@ export function MemberServicePage(): React.ReactElement {
           role="status"
           data-testid="member-fup-throttled-banner"
         >
-          {t('member.service.fupThrottledBanner', {
-            resetAt,
-          })}
+          {resetAt !== '-'
+            ? t('member.service.fupThrottledBanner', { resetAt })
+            : t('member.service.fupThrottledWithoutDate')}
         </div>
       )}
 

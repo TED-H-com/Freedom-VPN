@@ -14,7 +14,11 @@ import {
 import { SessionProvider } from '../../context/SessionContext';
 import { I18nProvider, type Locale } from '../../i18n';
 import { formatLocaleWithUtc } from '../../lib/datetime';
-import { buildMemberSelfForPersona, buildMemberUsageForPersona } from '../../mocks/data';
+import {
+  buildMemberSelfForPersona,
+  buildMemberUsageForPersona,
+  type MockPersona,
+} from '../../mocks/data';
 import { setMockPersona } from '../../mocks/handlers';
 import { server } from '../../mocks/server';
 import { assertAccessible } from '../../test/setup';
@@ -218,9 +222,9 @@ function renderMember(
   locale: Locale,
   path = '/member/service',
   selfReady?: Promise<void>,
+  usage = buildMemberUsageForPersona('member_active'),
 ) {
   setMockPersona('member_active');
-  const usage = buildMemberUsageForPersona('member_active');
   usage.fair_use.tier_name = null; // Exercise the localized fallback, not fixture copy.
   server.use(
     http.get('/api/v1/member/me', async () => {
@@ -243,6 +247,45 @@ function renderMember(
     </QueryClientProvider>,
   );
 }
+
+async function renderedReason(path: string, locale: Locale): Promise<HTMLElement> {
+  if (path === '/member/service') return screen.findByTestId('member-state-reason');
+  const label = await screen.findByText(
+    locale === 'zh-TW' ? '狀態說明與原因' : 'Status Reason & Details',
+    { selector: 'dt' },
+  );
+  const reason = label.nextElementSibling;
+  expect(reason?.tagName).toBe('DD');
+  return reason as HTMLElement;
+}
+
+const reasonsWithoutDates = {
+  expired: [
+    '目前無有效的服務資格，無法使用出口。',
+    'Your service entitlement is inactive; exit access is unavailable.',
+  ],
+  cancel_at_period_end: [
+    '已設定期末取消，目前服務資格仍有效。',
+    'Cancellation is scheduled for period end; your service entitlement is currently active.',
+  ],
+  grace: [
+    '續費待確認，目前仍可在寬限期內使用服務。',
+    'Renewal is pending; service remains available during the grace period.',
+  ],
+};
+
+const allPersonas = {
+  anonymous: true,
+  admin_no_mfa: true,
+  admin: true,
+  member_active: true,
+  member_throttled: true,
+  member_pending_payment: true,
+  member_cancel_at_period_end: true,
+  member_grace: true,
+  member_expired: true,
+  member_suspended: true,
+} satisfies Record<MockPersona, boolean>;
 
 function expectedReason(row: (typeof cases)[number], locale: Locale): string {
   return row.reasons[locale === 'zh-TW' ? 0 : 1]
@@ -291,6 +334,7 @@ for (const locale of locales) {
         expect(usable).not.toHaveTextContent((row.usable ? usableText : unusableText)[j]);
         const reason = screen.getByTestId('member-state-reason');
         expect(reason.textContent).toBe(expectedReason(row, locale));
+        expect(reason).not.toHaveTextContent(formatLocaleWithUtc(null, locale));
         expect(reason).not.toHaveTextContent(expectedReason(row, other));
         for (const [id, present] of [
           ['member-account-closed-banner', row.state === 'closed'],
@@ -430,6 +474,108 @@ for (const locale of locales) {
       await screen.findByTestId('member-entitlement-state-badge');
       assertStep('renew_subscription', locale);
       expect(screen.queryByTestId('member-next-unavailable')).not.toBeInTheDocument();
+    });
+
+    for (const path of ['/member/service', '/member/billing']) {
+      it(`FullRefundWithoutServiceEnd_${path}`, async () => {
+        // Same shape as Compute's full_refund row: payment facts survive, rights do not.
+        const me = buildMemberSelfForPersona('member_active');
+        me.entitlement.state = 'expired';
+        me.entitlement.valid_from = null;
+        me.entitlement.effective_service_end = null;
+        me.next_actions = ['renew_subscription'];
+        me.limits.exit_count = 0;
+        me.fair_use_reset_at = null;
+        expect(Date.parse(me.entitlement.paid_through!)).toBeGreaterThan(
+          Date.parse(me.entitlement.computed_at),
+        );
+        renderMember(me, locale, path);
+        const reason = await renderedReason(path, locale);
+        expect(reason.textContent).toBe(reasonsWithoutDates.expired[i]);
+        expect(reason).not.toHaveTextContent(reasonsWithoutDates.expired[j]!);
+        expect(reason).not.toHaveTextContent(formatLocaleWithUtc(null, locale));
+        expect(reason).not.toHaveTextContent(me.entitlement.paid_through!);
+        expect(reason).not.toHaveTextContent(
+          /退款|refund|服務期間已於|service period ended/i,
+        );
+        if (path === '/member/service') {
+          expect(screen.getByTestId('member-expired-notice').textContent).toBe(
+            reasonsWithoutDates.expired[i],
+          );
+          expect(screen.getByTestId('member-effective-end').textContent).toBe(
+            locale === 'zh-TW' ? '無' : 'None',
+          );
+          expect(screen.getByTestId('member-paid-through').textContent).toBe(
+            formatLocaleWithUtc(me.entitlement.paid_through, locale),
+          );
+        }
+      });
+
+      for (const state of ['expired', 'cancel_at_period_end', 'grace'] as const) {
+        it(`PresentDatesKeepDatedReason_${state}_${path}`, async () => {
+          const row = cases.find((row) => row.state === state)!;
+          renderMember(member(state, row.actions), locale, path);
+          const reason = await renderedReason(path, locale);
+          expect(reason.textContent).toBe(expectedReason(row, locale));
+          expect(reason).not.toHaveTextContent(formatLocaleWithUtc(null, locale));
+        });
+        for (const missing of state === 'grace' ? ['end', 'grace', 'both'] : ['end']) {
+          it(`MissingDatesUseStateReason_${state}_${missing}_${path}`, async () => {
+            const me = member(state, []);
+            if (missing !== 'grace') me.entitlement.effective_service_end = null;
+            if (missing !== 'end') me.entitlement.grace_until = null;
+            renderMember(me, locale, path);
+            const reason = await renderedReason(path, locale);
+            expect(reason.textContent).toBe(reasonsWithoutDates[state][i]);
+            expect(reason).not.toHaveTextContent(reasonsWithoutDates[state][j]!);
+            expect(reason).not.toHaveTextContent(formatLocaleWithUtc(null, locale));
+            for (const date of [me.entitlement.paid_through, end, graceEnd]) {
+              expect(reason).not.toHaveTextContent(date!);
+            }
+            expect(deriveMemberServiceReason(me, locale)).toBe(
+              reasonsWithoutDates[state][i],
+            );
+          });
+        }
+      }
+
+      for (const row of cases) {
+        it(`NoReasonPlaceholder_State_${row.name}_${path}`, async () => {
+          const me = member(row.state, row.actions);
+          me.entitlement.effective_service_end = null;
+          me.entitlement.grace_until = null;
+          renderMember(me, locale, path);
+          const reason = await renderedReason(path, locale);
+          expect(reason.textContent).not.toBe('');
+          expect(reason).not.toHaveTextContent(formatLocaleWithUtc(null, locale));
+        });
+      }
+      for (const persona of Object.keys(allPersonas) as MockPersona[]) {
+        it(`NoReasonPlaceholder_Persona_${persona}_${path}`, async () => {
+          // Render every builder's MemberSelf response through the member routes.
+          renderMember(buildMemberSelfForPersona(persona), locale, path);
+          const reason = await renderedReason(path, locale);
+          expect(reason.textContent).not.toBe('');
+          expect(reason).not.toHaveTextContent(formatLocaleWithUtc(null, locale));
+        });
+      }
+    }
+
+    it('FairUseNoticeWithoutResetDateDoesNotInventOne', async () => {
+      const me = buildMemberSelfForPersona('member_throttled');
+      me.fair_use_reset_at = null;
+      const usage = buildMemberUsageForPersona('member_throttled');
+      usage.fair_use.resets_at = null;
+      const { container } = renderMember(me, locale, '/member/service', undefined, usage);
+      const banner = await screen.findByTestId('member-fup-throttled-banner');
+      const texts = [
+        '本期大量使用，速度已依公平使用政策調整。',
+        'High usage this period: speed has been adjusted under the Fair Use Policy.',
+      ];
+      expect(banner.textContent).toBe(texts[i]);
+      expect(banner).not.toHaveTextContent(texts[j]!);
+      expect(banner).not.toHaveTextContent(/下次重置|next reset|—| -/);
+      await assertAccessible(container);
     });
 
     it('NoDeviceLimitShowsCountAndConsistentAbsentDates', async () => {

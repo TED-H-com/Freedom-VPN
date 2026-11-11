@@ -399,6 +399,10 @@ export const zhTW = {
   'member.service.reason.grace':
     '續費待確認，寬限期限為 {graceUntil}；有效服務期限至 {end}。',
   'member.service.reason.past_due': '付款已逾期，目前無法使用服務。',
+  'member.service.reason.expiredWithoutDates': '目前無有效的服務資格，無法使用出口。',
+  'member.service.reason.cancel_at_period_endWithoutDates':
+    '已設定期末取消，目前服務資格仍有效。',
+  'member.service.reason.graceWithoutDates': '續費待確認，目前仍可在寬限期內使用服務。',
   'member.service.reason.expired': '服務期間已於 {end} 結束，無法再使用出口。',
   'member.service.reason.suspended': '管理員已暫停您的服務；付款或續費不會解除停權。',
   'member.service.reason.closed': '您的帳號已關閉，無法使用服務。',
@@ -420,6 +424,7 @@ export const zhTW = {
   'member.service.effectiveEndLabel': '有效服務到期日 (effective_service_end)',
   'member.service.paidThroughLabel': '已付費期間截止 (paid_through)',
   'member.service.nextResetLabel': '下一次公平使用 (FUP) 重置時間',
+  'member.service.fupThrottledWithoutDate': '本期大量使用，速度已依公平使用政策調整。',
   'member.service.fupThrottledBanner':
     '本期大量使用，速度已依公平使用政策調整；下次重置為…… {resetAt}',
 

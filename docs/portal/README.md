@@ -123,8 +123,12 @@ administrator grant expire. They compare the rendered screen to the member API,
 switch languages through the UI, and optionally save screenshots and visible text
 when `PORTAL_E2E_EVIDENCE_DIR` is an absolute directory (see [DEV.md](DEV.md)).
 Unset/empty disables evidence capture without skipping assertions; CI leaves it
-unset. Playwright still writes its own `test-results` directory (the make target
-removes it before a run), including failure artifacts when applicable.
+unset. Playwright still writes its own output, including failure artifacts when
+applicable. The make target removes `test-results` and `playwright-report` after
+the run, whether it passes or fails, preserving the suite exit status. A direct
+`npm run e2e` leaves those outputs in place (ignored by git); additional member
+evidence files are written only when `PORTAL_E2E_EVIDENCE_DIR` is set to an
+absolute directory.
 The finite grant lasts five seconds to allow slow-runner observation margin, not
 to impose a product minimum. A fixture scoped to the two tests restores the default
 member session after success, failure or timeout using its own request context and

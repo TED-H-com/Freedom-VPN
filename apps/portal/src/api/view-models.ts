@@ -507,6 +507,10 @@ export function extractMinimumServingVersionLabel(
 interface MemberServiceStateView {
   label: TranslationKey;
   reason: TranslationKey;
+  datedReason?: {
+    key: TranslationKey;
+    fields: Array<'effective_service_end' | 'grace_until'>;
+  };
   usable: boolean;
   fallbackAction: NextAction;
 }
@@ -528,13 +532,21 @@ const memberServiceStates: Record<EntitlementState, MemberServiceStateView> = {
   },
   cancel_at_period_end: {
     label: 'member.service.state.cancel_at_period_end',
-    reason: 'member.service.reason.cancel_at_period_end',
+    reason: 'member.service.reason.cancel_at_period_endWithoutDates',
+    datedReason: {
+      key: 'member.service.reason.cancel_at_period_end',
+      fields: ['effective_service_end'],
+    },
     usable: true,
     fallbackAction: 'install_app',
   },
   grace: {
     label: 'member.service.state.grace',
-    reason: 'member.service.reason.grace',
+    reason: 'member.service.reason.graceWithoutDates',
+    datedReason: {
+      key: 'member.service.reason.grace',
+      fields: ['effective_service_end', 'grace_until'],
+    },
     usable: true,
     fallbackAction: 'install_app',
   },
@@ -546,7 +558,11 @@ const memberServiceStates: Record<EntitlementState, MemberServiceStateView> = {
   },
   expired: {
     label: 'member.service.state.expired',
-    reason: 'member.service.reason.expired',
+    reason: 'member.service.reason.expiredWithoutDates',
+    datedReason: {
+      key: 'member.service.reason.expired',
+      fields: ['effective_service_end'],
+    },
     usable: false,
     fallbackAction: 'renew_subscription',
   },
@@ -589,7 +605,15 @@ export function deriveMemberServiceReason(
   locale: 'zh-TW' | 'en',
 ): string {
   const dict = locale === 'zh-TW' ? zhTW : en;
-  return dict[deriveMemberServiceState(self).reason]
+  const view = deriveMemberServiceState(self);
+  // §9.2: billing facts can survive a full refund with no effective service end.
+  // Every date named by a sentence must be supplied; never borrow another field.
+  const reason = view.datedReason?.fields.every((field) =>
+    Boolean(self.entitlement[field]),
+  )
+    ? view.datedReason.key
+    : view.reason;
+  return dict[reason]
     .replaceAll(
       '{end}',
       formatLocaleWithUtc(self.entitlement.effective_service_end, locale),
