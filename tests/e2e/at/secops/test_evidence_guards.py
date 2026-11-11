@@ -29,7 +29,7 @@ class CommittedEvidenceTests(unittest.TestCase):
     def test_scope_review_pins(self):
         # Handover tests cover selected sections; retain the guards' recursive
         # check for every current {path, sha256} pair, including secops records.
-        # Historical-only digests have a different key and are not current pins.
+        # This checks current pins, not the outcomes of the recorded lane runs.
         scope = json.loads((PUBLIC / "scope-review.json").read_text(encoding="utf-8"))
         count = 0
 
