@@ -52,7 +52,7 @@ func testTrustDocumentationOutput(t *testing.T) {
 	// Public snapshots are explicit test inputs, not apply receipts. This
 	// documentation contract test must not consult the provider's wall clock.
 	// Real-provider add/retire/revoke remains independently covered by
-	// TestUPD02_TrustOperationsAndHandover (2000-2100 signer windows).
+	// TestUPD02_TrustOperationsAndHandover (windows around the run's clock).
 	current := []envelope.TrustedKey{root}
 	for i, step := range []string{"add", "retire", "revoke"} {
 		bundle, err := envelope.NewNodeTrustStore(current...)

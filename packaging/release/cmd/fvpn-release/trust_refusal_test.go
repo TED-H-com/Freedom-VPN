@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/packaging/release"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
@@ -44,20 +45,20 @@ func TestUPD02_TrustProducerRefusals(t *testing.T) {
 		}},
 		{"revoked_signer", 1, func(f *trustFixture, flags map[string]string) []byte {
 			k := f.record("A")
-			at := trustDate(trustAt)
+			at := trustDate(f.at)
 			k.State, k.RevokedAt = "revoked", &at
 			f.setRecords(k)
 			return f.signed(f.update(f.record("B")), "A")
 		}},
 		{"not_yet_valid_signer", 1, func(f *trustFixture, flags map[string]string) []byte {
 			k := f.record("A")
-			k.NotBefore = trustDate(trustNarrowEnd)
+			k.NotBefore = trustDate(f.narrowEnd)
 			f.setRecords(k)
 			return f.signed(f.update(f.record("B")), "A")
 		}},
 		{"expired_signer", 1, func(f *trustFixture, flags map[string]string) []byte {
 			k := f.record("A")
-			k.NotAfter = trustDate("2001-01-01T00:00:00Z")
+			k.NotAfter = trustDate(f.start).Add(24 * time.Hour)
 			f.setRecords(k)
 			return f.signed(f.update(f.record("B")), "A")
 		}},
@@ -105,12 +106,12 @@ func TestUPD02_TrustProducerRefusals(t *testing.T) {
 			return nil
 		}},
 		{"add_ended", 1, func(f *trustFixture, flags map[string]string) []byte {
-			changeAdd(f, func(d map[string]any) { addKey(d)["not_after"] = trustAt })
+			changeAdd(f, func(d map[string]any) { addKey(d)["not_after"] = f.at })
 			return nil
 		}},
 		{"retire_unknown", 1, func(f *trustFixture, flags map[string]string) []byte {
 			delete(flags, "add")
-			flags["retire"], flags["not-after"] = "unknown", trustEnd
+			flags["retire"], flags["not-after"] = "unknown", f.end
 			return nil
 		}},
 		{"revoke_unknown", 1, func(f *trustFixture, flags map[string]string) []byte {
@@ -120,7 +121,7 @@ func TestUPD02_TrustProducerRefusals(t *testing.T) {
 		}},
 		{"revoke_revoked", 1, func(f *trustFixture, flags map[string]string) []byte {
 			k := f.record("B")
-			at := trustDate(trustAt)
+			at := trustDate(f.at)
 			k.State, k.RevokedAt = "revoked", &at
 			f.setRecords(k)
 			delete(flags, "add")
@@ -129,11 +130,11 @@ func TestUPD02_TrustProducerRefusals(t *testing.T) {
 		}},
 		{"retire_revoked", 1, func(f *trustFixture, flags map[string]string) []byte {
 			k := f.record("B")
-			at := trustDate(trustAt)
+			at := trustDate(f.at)
 			k.State, k.RevokedAt = "revoked", &at
 			f.setRecords(k)
 			delete(flags, "add")
-			flags["retire"], flags["not-after"] = "B", trustEnd
+			flags["retire"], flags["not-after"] = "B", f.end
 			k.State, k.RevokedAt = "retired", nil
 			return f.signed(f.update(k), "A")
 		}},
@@ -151,9 +152,9 @@ func TestUPD02_TrustProducerRefusals(t *testing.T) {
 		}},
 		{"retire_end_equal_start", 1, func(f *trustFixture, flags map[string]string) []byte {
 			delete(flags, "add")
-			flags["retire"], flags["not-after"] = "A", trustStart
+			flags["retire"], flags["not-after"] = "A", f.start
 			k := f.record("A")
-			k.State, k.NotAfter = "retired", trustDate(trustStart)
+			k.State, k.NotAfter = "retired", trustDate(f.start)
 			return f.signed(f.update(k), "A")
 		}},
 		{"retire_end_before_start", 1, func(f *trustFixture, flags map[string]string) []byte {
@@ -168,7 +169,7 @@ func TestUPD02_TrustProducerRefusals(t *testing.T) {
 			return f.signed(f.update(), "A")
 		}},
 		{"two_operations", 2, func(f *trustFixture, flags map[string]string) []byte { flags["revoke"] = "A"; return nil }},
-		{"unrelated_not_after", 2, func(f *trustFixture, flags map[string]string) []byte { flags["not-after"] = trustEnd; return nil }},
+		{"unrelated_not_after", 2, func(f *trustFixture, flags map[string]string) []byte { flags["not-after"] = f.end; return nil }},
 		{"unknown_flag", 2, func(f *trustFixture, flags map[string]string) []byte { flags["unknown"] = "true"; return nil }},
 		{"invalid_at", 2, func(f *trustFixture, flags map[string]string) []byte { flags["at"] = "bad"; return nil }},
 		{"empty_at", 2, func(f *trustFixture, flags map[string]string) []byte { flags["at"] = ""; return nil }},
@@ -265,7 +266,7 @@ func TestUPD02_TrustUsageRefusals(t *testing.T) {
 		{"trust-verify"},
 		f.verifyArgs("stray"),
 		f.verifyArgs("-unknown", "x"),
-		f.verifyArgs("-at", trustAt),
+		f.verifyArgs("-at", f.at),
 		f.verifyArgs("-current-revision=0", "--current-revision=0"),
 		f.verifyArgs("-current-revision=01"),
 		f.verifyArgs("-current-revision="),
@@ -290,7 +291,7 @@ func TestUPD02_TrustUsableRootGuard(t *testing.T) {
 			delete(flags, "add")
 			flags[operation] = "A"
 			if operation == "retire" {
-				flags["not-after"] = trustAt
+				flags["not-after"] = f.at
 			}
 			f.refuse(trustArgs("trust-update", flags), 1)
 			flags["allow-no-usable-root"] = "true"
@@ -305,7 +306,7 @@ func TestUPD02_TrustUsableRootGuard(t *testing.T) {
 	// A future key can be added; it is not a usable replacement yet.
 	f := newTrustFixture(t)
 	k := f.record("B")
-	k.NotBefore = trustDate(trustNarrowEnd)
+	k.NotBefore = trustDate(f.narrowEnd)
 	f.setRecords(k)
 	flags := f.produceFlags()
 	delete(flags, "add")
@@ -319,7 +320,7 @@ func TestUPD02_TrustRemainingRepeatedFlags(t *testing.T) {
 		flags := f.produceFlags()
 		names := []string{"retire", "revoke", "not-after", "allow-no-usable-root"}
 		if command == "trust-verify" {
-			flags = map[string]string{"update": f.path("update.json"), "trust": f.path("current.trust"), "at": trustAt, "current-revision": "0"}
+			flags = map[string]string{"update": f.path("update.json"), "trust": f.path("current.trust"), "at": f.at, "current-revision": "0"}
 			names = []string{"update", "trust", "at", "current-revision"}
 		}
 		for _, name := range names {
