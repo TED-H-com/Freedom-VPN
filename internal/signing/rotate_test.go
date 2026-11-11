@@ -499,11 +499,13 @@ func TestSEC01_ConditionalLockInUse(t *testing.T) {
 				}
 				after := manifest(t, p.dir)
 				if mutation == "replace while held" {
-					// Only this fixture replaces an entry after taking the manifest.
-					// Ignore that entry and the directory size/mtime it changes;
-					// retain the directory mode and every ledger/key file fact.
-					delete(before, "lock")
-					delete(after, "lock")
+					// Normalize only the lock mtime and directory size/mtime changed
+					// by this fixture. Keep the lock's presence, type, mode, size
+					// and content, and every ledger/key file fact in the comparison.
+					if lock, ok := after["lock"]; ok {
+						lock.Modified = before["lock"].Modified
+						after["lock"] = lock
+					}
 					directory := after["."]
 					directory.Size = before["."].Size
 					directory.Modified = before["."].Modified
