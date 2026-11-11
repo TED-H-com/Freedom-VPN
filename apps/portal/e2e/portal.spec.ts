@@ -1480,6 +1480,23 @@ async function assertInactiveScreen(
   state: 'suspended' | 'expired',
   evidenceDir: string | undefined,
 ) {
+  // Compare mutable fields to the response actually rendered. In particular,
+  // expiry recomputation can clear the device limit after the polling read.
+  const memberResponse = page.waitForResponse(
+    (response) =>
+      new URL(response.url()).pathname === '/api/v1/member/me' &&
+      response.request().method() === 'GET',
+  );
+  await page.goto('/member/service');
+  const response = await memberResponse;
+  expect(response.ok()).toBeTruthy();
+  const displayedMe = (await response.json()) as MemberSelf;
+  expect(displayedMe.member_id).toBe(me.member_id);
+  expect(displayedMe.entitlement.state).toBe(state);
+  expect(displayedMe.entitlement.effective_service_end).toBe(
+    me.entitlement.effective_service_end,
+  );
+  expect(displayedMe.next_actions).toEqual(me.next_actions);
   for (const locale of ['zh-TW', 'en'] as const) {
     await page.getByTestId('locale-switcher').selectOption(locale);
     const zh = locale === 'zh-TW';
@@ -1501,13 +1518,13 @@ async function assertInactiveScreen(
       );
     }
     await expect(page.getByTestId('member-device-quota')).toHaveText(
-      me.limits.device_limit === null
+      displayedMe.limits.device_limit === null
         ? zh
-          ? `已授權裝置：${me.limits.authorized_device_count} 台`
-          : `Authorized devices: ${me.limits.authorized_device_count}`
+          ? `已授權裝置：${displayedMe.limits.authorized_device_count} 台`
+          : `Authorized devices: ${displayedMe.limits.authorized_device_count}`
         : zh
-          ? `已授權裝置名額使用量：${me.limits.authorized_device_count} / ${me.limits.device_limit} 台`
-          : `Authorized Device Quota: ${me.limits.authorized_device_count} / ${me.limits.device_limit} devices`,
+          ? `已授權裝置名額使用量：${displayedMe.limits.authorized_device_count} / ${displayedMe.limits.device_limit} 台`
+          : `Authorized Device Quota: ${displayedMe.limits.authorized_device_count} / ${displayedMe.limits.device_limit} devices`,
     );
     if (me.entitlement.effective_service_end === null) {
       await expect(page.getByTestId('member-effective-end')).toHaveText(
@@ -1599,7 +1616,6 @@ test('TestAT04_F404_SuspendedMemberScreenMatchesServer_Bilingual', async ({
     expect(me.member_id).toBe(member_id);
     expect(me.next_actions).toEqual(['contact_support']);
     expect(me.entitlement.admin_suspended).toBe(true);
-    await page.goto('/member/service');
     await assertInactiveScreen(page, me, 'suspended', evidenceDir);
   } finally {
     const restored = await request.post(`${BASE_URL}/__e2e/restore-default-member`);
@@ -1645,7 +1661,6 @@ test('TestAT04_F404_ExpiredMemberScreenMatchesServer_Bilingual', async ({
     console.log(
       `[AT04 F4-04] expiry observed ${Date.now() - new Date(valid_until).getTime()} ms after real grant deadline`,
     );
-    await page.goto('/member/service');
     await assertInactiveScreen(page, me, 'expired', evidenceDir);
   } finally {
     const restored = await request.post(`${BASE_URL}/__e2e/restore-default-member`);
