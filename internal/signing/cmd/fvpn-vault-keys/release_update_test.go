@@ -30,12 +30,19 @@ import (
 
 // TEST ONLY - NOT A SECRET. Keys in this file are generated per test or taken
 // from the public golden vector in contracts/vectors/.
-var (
-	releaseTestStart     = time.Date(2000, 1, 1, 0, 0, 0, 0, time.UTC)
-	releaseTestEnd       = time.Date(2100, 1, 1, 0, 0, 0, 0, time.UTC)
-	releaseTestNarrowEnd = time.Date(2090, 1, 1, 0, 0, 0, 0, time.UTC)
-	releaseTestAt        = time.Date(2026, 11, 1, 12, 0, 0, 0, time.UTC)
-)
+// These CLI processes and file providers use real time without an injection
+// point. Keep valid, expired and future roots relative to each fixture's start.
+type releaseTestClock struct {
+	start, end, narrowEnd, at time.Time
+}
+
+func newReleaseTestClock() releaseTestClock {
+	at := time.Now().UTC().Truncate(time.Second)
+	return releaseTestClock{
+		start: at.Add(-48 * time.Hour), end: at.Add(48 * time.Hour),
+		narrowEnd: at.Add(24 * time.Hour), at: at,
+	}
+}
 
 type releaseKey struct {
 	id         string
@@ -45,6 +52,7 @@ type releaseKey struct {
 }
 
 type releaseFixture struct {
+	releaseTestClock
 	t       *testing.T
 	root    string
 	dir     string
@@ -123,6 +131,7 @@ func signReleaseEnvelope(t *testing.T, signer releaseKey, payload any) []byte {
 
 func setupRelease(t *testing.T) *releaseFixture {
 	t.Helper()
+	f := &releaseFixture{releaseTestClock: newReleaseTestClock()}
 	root := t.TempDir()
 	dir := filepath.Join(root, "vault")
 	p, err := signing.InitializeFileProvider(dir)
@@ -132,7 +141,7 @@ func setupRelease(t *testing.T) *releaseFixture {
 	a := genReleaseKey(t)
 	b := genReleaseKey(t)
 	c := genReleaseKey(t)
-	if err := p.PinReleaseRoot(context.Background(), a.trusted(releaseTestStart, releaseTestEnd)); err != nil {
+	if err := p.PinReleaseRoot(context.Background(), a.trusted(f.start, f.end)); err != nil {
 		t.Fatal(err)
 	}
 	ts, err := p.TrustBundle(context.Background())
@@ -150,8 +159,8 @@ func setupRelease(t *testing.T) *releaseFixture {
 	raw, res, err := release.BuildTrustUpdate(a.signingKey, trust, release.TrustUpdateOptions{
 		Revision:  1,
 		Operation: "add",
-		AddTrust:  b.oneKeyTrustJSON(t, releaseTestStart, releaseTestEnd),
-		At:        releaseTestAt,
+		AddTrust:  b.oneKeyTrustJSON(t, f.start, f.end),
+		At:        f.at,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -161,15 +170,16 @@ func setupRelease(t *testing.T) *releaseFixture {
 		t.Fatal(err)
 	}
 	return &releaseFixture{
-		t:      t,
-		root:   root,
-		dir:    dir,
-		p:      p,
-		a:      a,
-		b:      b,
-		c:      c,
-		update: updatePath,
-		sha256: res.UpdateSHA256,
+		releaseTestClock: f.releaseTestClock,
+		t:                t,
+		root:             root,
+		dir:              dir,
+		p:                p,
+		a:                a,
+		b:                b,
+		c:                c,
+		update:           updatePath,
+		sha256:           res.UpdateSHA256,
 	}
 }
 
@@ -293,6 +303,7 @@ func TestUPD02_CommandReleaseTrustHandover(t *testing.T) {
 	vaultBinary := buildVaultCommand(t)
 
 	t.Run("golden vector", func(t *testing.T) {
+		f := newReleaseTestClock()
 		var vector struct {
 			SeedHex        string                     `json:"seed_hex"`
 			KeyID          string                     `json:"key_id"`
@@ -325,8 +336,8 @@ func TestUPD02_CommandReleaseTrustHandover(t *testing.T) {
 			KeyID:     vector.KeyID,
 			PublicKey: key.Public(),
 			Purposes:  []envelope.Purpose{envelope.PurposeRelease},
-			NotBefore: releaseTestStart,
-			NotAfter:  releaseTestEnd,
+			NotBefore: f.start,
+			NotAfter:  f.end,
 		}); err != nil {
 			t.Fatal(err)
 		}
@@ -368,7 +379,7 @@ func TestUPD02_CommandReleaseTrustHandover(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if _, err := release.VerifyTrustUpdate(step1Bytes, rt0, releaseTestAt, &rev0); err != nil {
+		if _, err := release.VerifyTrustUpdate(step1Bytes, rt0, f.at, &rev0); err != nil {
 			t.Fatalf("step 1 offline verify: %v", err)
 		}
 
@@ -395,19 +406,19 @@ func TestUPD02_CommandReleaseTrustHandover(t *testing.T) {
 			Revision:    2,
 			Operation:   "retire",
 			TargetKeyID: f.a.id,
-			NotAfter:    releaseTestNarrowEnd,
-			At:          releaseTestAt,
+			NotAfter:    f.narrowEnd,
+			At:          f.at,
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
 		rev1 := decstr.U64(1)
-		if _, err := release.VerifyTrustUpdate(step2Raw, rt1, releaseTestAt, &rev1); err != nil {
+		if _, err := release.VerifyTrustUpdate(step2Raw, rt1, f.at, &rev1); err != nil {
 			t.Fatalf("step 2 offline verify: %v", err)
 		}
 		step2Path, _ := f.writeUpdate("step2.json", step2Raw)
 		d2 := invokeRelease(t, command{}, []string{"apply-release-update", "-vault", f.dir, "-update", step2Path, "-expect-revision", "2"}, exitOK, "applied")
-		if d2.UpdateSHA256 != step2Res.UpdateSHA256 || d2.Change == nil || d2.Change.OldRevision != 2 || d2.Change.NewRevision != 3 || d2.Change.OldReleaseRevision != 1 || d2.Change.NewReleaseRevision != 2 || len(d2.Change.Keys) != 1 || d2.Change.Keys[0].Previous == nil || d2.Change.Keys[0].Previous.State != "active" || d2.Change.Keys[0].Key.ID != f.a.id || d2.Change.Keys[0].Key.State != "retired" || !d2.Change.Keys[0].Key.NotAfter.Equal(releaseTestNarrowEnd) || !reflect.DeepEqual(d2.Change.UsableRootKeyIDs, wantRoots) || d2.Change.NodeTrust != "nodes_require_new_bundle" {
+		if d2.UpdateSHA256 != step2Res.UpdateSHA256 || d2.Change == nil || d2.Change.OldRevision != 2 || d2.Change.NewRevision != 3 || d2.Change.OldReleaseRevision != 1 || d2.Change.NewReleaseRevision != 2 || len(d2.Change.Keys) != 1 || d2.Change.Keys[0].Previous == nil || d2.Change.Keys[0].Previous.State != "active" || d2.Change.Keys[0].Key.ID != f.a.id || d2.Change.Keys[0].Key.State != "retired" || !d2.Change.Keys[0].Key.NotAfter.Equal(f.narrowEnd) || !reflect.DeepEqual(d2.Change.UsableRootKeyIDs, wantRoots) || d2.Change.NodeTrust != "nodes_require_new_bundle" {
 			t.Fatalf("step 2 document = %+v", d2)
 		}
 		insp = runVaultInspect(t, vaultBinary, f.dir)
@@ -415,7 +426,7 @@ func TestUPD02_CommandReleaseTrustHandover(t *testing.T) {
 			t.Fatalf("step 2 inspect = %+v", insp)
 		}
 		ts2, rt2 := runVaultExportTrust(t, vaultBinary, f.dir, filepath.Join(f.root, "step2.trust"))
-		if kA, ok := ts2.Lookup(f.a.id); !ok || kA.Revoked || !kA.NotAfter.Equal(releaseTestNarrowEnd) {
+		if kA, ok := ts2.Lookup(f.a.id); !ok || kA.Revoked || !kA.NotAfter.Equal(f.narrowEnd) {
 			t.Fatalf("step 2 bundle A = %+v", kA)
 		}
 
@@ -424,18 +435,18 @@ func TestUPD02_CommandReleaseTrustHandover(t *testing.T) {
 			Revision:    3,
 			Operation:   "revoke",
 			TargetKeyID: f.a.id,
-			At:          releaseTestAt,
+			At:          f.at,
 		})
 		if err != nil {
 			t.Fatal(err)
 		}
 		rev2 := decstr.U64(2)
-		if _, err := release.VerifyTrustUpdate(step3Raw, rt2, releaseTestAt, &rev2); err != nil {
+		if _, err := release.VerifyTrustUpdate(step3Raw, rt2, f.at, &rev2); err != nil {
 			t.Fatalf("step 3 offline verify: %v", err)
 		}
 		step3Path, _ := f.writeUpdate("step3.json", step3Raw)
 		d3 := invokeRelease(t, command{}, []string{"apply-release-update", "-vault", f.dir, "-update", step3Path, "-expect-revision", "3"}, exitOK, "applied")
-		if d3.UpdateSHA256 != step3Res.UpdateSHA256 || d3.Change == nil || d3.Change.OldRevision != 3 || d3.Change.NewRevision != 4 || d3.Change.OldReleaseRevision != 2 || d3.Change.NewReleaseRevision != 3 || len(d3.Change.Keys) != 1 || d3.Change.Keys[0].Previous == nil || d3.Change.Keys[0].Previous.State != "retired" || d3.Change.Keys[0].Key.ID != f.a.id || d3.Change.Keys[0].Key.State != "revoked" || d3.Change.Keys[0].Key.RevokedAt == nil || !d3.Change.Keys[0].Key.RevokedAt.Equal(releaseTestAt) || !reflect.DeepEqual(d3.Change.UsableRootKeyIDs, []string{f.b.id}) || d3.Change.NodeTrust != "nodes_require_new_bundle" {
+		if d3.UpdateSHA256 != step3Res.UpdateSHA256 || d3.Change == nil || d3.Change.OldRevision != 3 || d3.Change.NewRevision != 4 || d3.Change.OldReleaseRevision != 2 || d3.Change.NewReleaseRevision != 3 || len(d3.Change.Keys) != 1 || d3.Change.Keys[0].Previous == nil || d3.Change.Keys[0].Previous.State != "retired" || d3.Change.Keys[0].Key.ID != f.a.id || d3.Change.Keys[0].Key.State != "revoked" || d3.Change.Keys[0].Key.RevokedAt == nil || !d3.Change.Keys[0].Key.RevokedAt.Equal(f.at) || !reflect.DeepEqual(d3.Change.UsableRootKeyIDs, []string{f.b.id}) || d3.Change.NodeTrust != "nodes_require_new_bundle" {
 			t.Fatalf("step 3 document = %+v", d3)
 		}
 		insp = runVaultInspect(t, vaultBinary, f.dir)
@@ -449,10 +460,10 @@ func TestUPD02_CommandReleaseTrustHandover(t *testing.T) {
 		if kB, ok := ts3.Lookup(f.b.id); !ok || kB.Revoked {
 			t.Fatalf("step 3 bundle B = %+v", kB)
 		}
-		if _, _, err := envelope.Verify(signReleaseEnvelope(t, f.a, map[string]string{"test": "revoked"}), ts3, envelope.PurposeRelease, releaseTestAt); err == nil {
+		if _, _, err := envelope.Verify(signReleaseEnvelope(t, f.a, map[string]string{"test": "revoked"}), ts3, envelope.PurposeRelease, f.at); err == nil {
 			t.Fatal("revoked root A verified against exported bundle")
 		}
-		if _, _, err := envelope.Verify(signReleaseEnvelope(t, f.b, map[string]string{"test": "active"}), ts3, envelope.PurposeRelease, releaseTestAt); err != nil {
+		if _, _, err := envelope.Verify(signReleaseEnvelope(t, f.b, map[string]string{"test": "active"}), ts3, envelope.PurposeRelease, f.at); err != nil {
 			t.Fatalf("active root B failed verification: %v", err)
 		}
 	})
@@ -525,7 +536,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 		wrongKindRaw := signReleaseEnvelope(t, f.a, map[string]any{
 			"kind":     "fvpn-release-trust-v0",
 			"revision": "1",
-			"keys":     []signing.KeyRecord{f.b.record("active", releaseTestStart, releaseTestEnd, nil)},
+			"keys":     []signing.KeyRecord{f.b.record("active", f.start, f.end, nil)},
 		})
 		wrongKindPath, wrongKindSum := f.writeUpdate("wrong-kind-signed.json", wrongKindRaw)
 		d := invokeRelease(t, neverOpen, []string{"apply-release-update", "-vault", filepath.Join(f.root, "nonexistent-vault"), "-update", wrongKindPath, "-expect-revision", "1"}, exitRejected, "rejected")
@@ -570,15 +581,15 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 		// Retire B at release_revision 2 (ledger_revision 3), and add C and an expired root E and a revoked root R.
 		expired := genReleaseKey(t)
 		revoked := genReleaseKey(t)
-		revAt := releaseTestAt
+		revAt := f.at
 		setupEnv := signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
 			Kind:     release.ReleaseTrustUpdateKind,
 			Revision: 2,
 			Keys: []signing.KeyRecord{
-				f.b.record("retired", releaseTestStart, releaseTestNarrowEnd, nil),
-				f.c.record("active", releaseTestStart, releaseTestEnd, nil),
-				expired.record("active", releaseTestStart, releaseTestStart.Add(time.Hour), nil),
-				revoked.record("revoked", releaseTestStart, releaseTestEnd, &revAt),
+				f.b.record("retired", f.start, f.narrowEnd, nil),
+				f.c.record("active", f.start, f.end, nil),
+				expired.record("active", f.start, f.start.Add(time.Hour), nil),
+				revoked.record("revoked", f.start, f.end, &revAt),
 			},
 		})
 		setupPath, _ := f.writeUpdate("setup-rev2.json", setupEnv)
@@ -592,7 +603,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 		leaseSigned, err := f.p.SignEnvelope(context.Background(), signing.Lease, signing.ReleaseUpdate{
 			Kind:     release.ReleaseTrustUpdateKind,
 			Revision: 3,
-			Keys:     []signing.KeyRecord{genReleaseKey(t).record("active", releaseTestStart, releaseTestEnd, nil)},
+			Keys:     []signing.KeyRecord{genReleaseKey(t).record("active", f.start, f.end, nil)},
 		})
 		if err != nil || leaseSigned.Signatures[0].KeyID != leaseID {
 			t.Fatal(err)
@@ -607,7 +618,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 		validRaw := signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
 			Kind:     release.ReleaseTrustUpdateKind,
 			Revision: 3,
-			Keys:     []signing.KeyRecord{genReleaseKey(t).record("active", releaseTestStart, releaseTestEnd, nil)},
+			Keys:     []signing.KeyRecord{genReleaseKey(t).record("active", f.start, f.end, nil)},
 		})
 		if err := json.Unmarshal(validRaw, &badSigEnv); err != nil {
 			t.Fatal(err)
@@ -635,7 +646,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 				raw: signReleaseEnvelope(t, other, signing.ReleaseUpdate{
 					Kind:     release.ReleaseTrustUpdateKind,
 					Revision: 3,
-					Keys:     []signing.KeyRecord{other.record("active", releaseTestStart, releaseTestEnd, nil)},
+					Keys:     []signing.KeyRecord{other.record("active", f.start, f.end, nil)},
 				}),
 				reason: "signature",
 			},
@@ -644,7 +655,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 				raw: signReleaseEnvelope(t, expired, signing.ReleaseUpdate{
 					Kind:     release.ReleaseTrustUpdateKind,
 					Revision: 3,
-					Keys:     []signing.KeyRecord{other.record("active", releaseTestStart, releaseTestEnd, nil)},
+					Keys:     []signing.KeyRecord{other.record("active", f.start, f.end, nil)},
 				}),
 				reason: "signature",
 			},
@@ -653,7 +664,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 				raw: signReleaseEnvelope(t, revoked, signing.ReleaseUpdate{
 					Kind:     release.ReleaseTrustUpdateKind,
 					Revision: 3,
-					Keys:     []signing.KeyRecord{other.record("active", releaseTestStart, releaseTestEnd, nil)},
+					Keys:     []signing.KeyRecord{other.record("active", f.start, f.end, nil)},
 				}),
 				reason: "signature",
 			},
@@ -672,7 +683,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 				raw: signReleaseEnvelope(t, f.a, map[string]any{
 					"kind":     release.ReleaseTrustUpdateKind,
 					"revision": "18446744073709551616",
-					"keys":     []signing.KeyRecord{other.record("active", releaseTestStart, releaseTestEnd, nil)},
+					"keys":     []signing.KeyRecord{other.record("active", f.start, f.end, nil)},
 				}),
 				reason: "payload",
 			},
@@ -681,7 +692,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 				raw: signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
 					Kind:     release.ReleaseTrustUpdateKind,
 					Revision: 2,
-					Keys:     []signing.KeyRecord{other.record("active", releaseTestStart, releaseTestEnd, nil)},
+					Keys:     []signing.KeyRecord{other.record("active", f.start, f.end, nil)},
 				}),
 				reason: "revision",
 			},
@@ -690,7 +701,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 				raw: signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
 					Kind:     release.ReleaseTrustUpdateKind,
 					Revision: 1,
-					Keys:     []signing.KeyRecord{other.record("active", releaseTestStart, releaseTestEnd, nil)},
+					Keys:     []signing.KeyRecord{other.record("active", f.start, f.end, nil)},
 				}),
 				reason: "revision",
 			},
@@ -704,8 +715,8 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 						Purpose:   signing.Release,
 						Public:    append([]byte(nil), other.pub...),
 						State:     "active",
-						NotBefore: releaseTestStart,
-						NotAfter:  releaseTestEnd,
+						NotBefore: f.start,
+						NotAfter:  f.end,
 					}},
 				}),
 				reason: "record",
@@ -715,7 +726,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 				raw: signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
 					Kind:     release.ReleaseTrustUpdateKind,
 					Revision: 3,
-					Keys:     []signing.KeyRecord{f.c.record("active", releaseTestStart.Add(-time.Hour), releaseTestEnd, nil)},
+					Keys:     []signing.KeyRecord{f.c.record("active", f.start.Add(-time.Hour), f.end, nil)},
 				}),
 				reason: "record",
 			},
@@ -724,7 +735,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 				raw: signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
 					Kind:     release.ReleaseTrustUpdateKind,
 					Revision: 3,
-					Keys:     []signing.KeyRecord{f.b.record("retired", releaseTestStart, releaseTestEnd, nil)},
+					Keys:     []signing.KeyRecord{f.b.record("retired", f.start, f.end, nil)},
 				}),
 				reason: "record",
 			},
@@ -733,7 +744,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 				raw: signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
 					Kind:     release.ReleaseTrustUpdateKind,
 					Revision: 3,
-					Keys:     []signing.KeyRecord{revoked.record("active", releaseTestStart, releaseTestEnd, nil)},
+					Keys:     []signing.KeyRecord{revoked.record("active", f.start, f.end, nil)},
 				}),
 				reason: "record",
 			},
@@ -742,7 +753,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 				raw: signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
 					Kind:     release.ReleaseTrustUpdateKind,
 					Revision: 3,
-					Keys:     []signing.KeyRecord{revoked.record("retired", releaseTestStart, releaseTestEnd, nil)},
+					Keys:     []signing.KeyRecord{revoked.record("retired", f.start, f.end, nil)},
 				}),
 				reason: "record",
 			},
@@ -751,7 +762,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 				raw: signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
 					Kind:     release.ReleaseTrustUpdateKind,
 					Revision: 3,
-					Keys:     []signing.KeyRecord{revoked.record("revoked", releaseTestStart, releaseTestEnd, &laterRevAt)},
+					Keys:     []signing.KeyRecord{revoked.record("revoked", f.start, f.end, &laterRevAt)},
 				}),
 				reason: "record",
 			},
@@ -760,7 +771,7 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 				raw: signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
 					Kind:     release.ReleaseTrustUpdateKind,
 					Revision: 3,
-					Keys:     []signing.KeyRecord{f.b.record("active", releaseTestStart, releaseTestNarrowEnd, nil)},
+					Keys:     []signing.KeyRecord{f.b.record("active", f.start, f.narrowEnd, nil)},
 				}),
 				reason: "record",
 			},
@@ -782,11 +793,11 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 
 func TestUPD02_CommandReleaseTrustUsableRootGuard(t *testing.T) {
 	f := setupRelease(t)
-	revAt := releaseTestAt
+	revAt := f.at
 	revokeLastRaw := signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
 		Kind:     release.ReleaseTrustUpdateKind,
 		Revision: 1,
-		Keys:     []signing.KeyRecord{f.a.record("revoked", releaseTestStart, releaseTestEnd, &revAt)},
+		Keys:     []signing.KeyRecord{f.a.record("revoked", f.start, f.end, &revAt)},
 	})
 	path, sum := f.writeUpdate("revoke-last.json", revokeLastRaw)
 	before := manifest(t, f.dir)
@@ -819,8 +830,8 @@ func TestUPD02_CommandReleaseTrustMultipleRecords(t *testing.T) {
 			Kind:     release.ReleaseTrustUpdateKind,
 			Revision: 1,
 			Keys: []signing.KeyRecord{
-				f.a.record("retired", releaseTestStart, releaseTestNarrowEnd, nil),
-				f.b.record("active", releaseTestStart, releaseTestEnd, nil),
+				f.a.record("retired", f.start, f.narrowEnd, nil),
+				f.b.record("active", f.start, f.end, nil),
 			},
 		})
 		path, sum := f.writeUpdate("multi.json", multiRaw)
@@ -838,8 +849,8 @@ func TestUPD02_CommandReleaseTrustMultipleRecords(t *testing.T) {
 
 	t.Run("unchanged_records_omitted_and_only_stored_records", func(t *testing.T) {
 		f := setupRelease(t)
-		keepA := f.a.record("active", releaseTestStart, releaseTestEnd, nil)
-		addB := f.b.record("active", releaseTestStart, releaseTestEnd, nil)
+		keepA := f.a.record("active", f.start, f.end, nil)
+		addB := f.b.record("active", f.start, f.end, nil)
 
 		// 1. Two-record update: A restated as stored, B added.
 		u1Raw := signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
@@ -863,7 +874,7 @@ func TestUPD02_CommandReleaseTrustMultipleRecords(t *testing.T) {
 		}
 
 		// 2. Two-record update: B restated as stored, A changed (retired).
-		retireA := f.a.record("retired", releaseTestStart, releaseTestNarrowEnd, nil)
+		retireA := f.a.record("retired", f.start, f.narrowEnd, nil)
 		u2Raw := signReleaseEnvelope(t, f.b, signing.ReleaseUpdate{
 			Kind:     release.ReleaseTrustUpdateKind,
 			Revision: 2,
@@ -905,9 +916,9 @@ func TestUPD02_CommandReleaseTrustMultipleRecords(t *testing.T) {
 
 	t.Run("after_rename_read_back_confirms_changed_and_empty_keys", func(t *testing.T) {
 		f := setupRelease(t)
-		keepA := f.a.record("active", releaseTestStart, releaseTestEnd, nil)
-		addB := f.b.record("active", releaseTestStart, releaseTestEnd, nil)
-		retireA := f.a.record("retired", releaseTestStart, releaseTestNarrowEnd, nil)
+		keepA := f.a.record("active", f.start, f.end, nil)
+		addB := f.b.record("active", f.start, f.end, nil)
+		retireA := f.a.record("retired", f.start, f.narrowEnd, nil)
 
 		u1Raw := signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
 			Kind:     release.ReleaseTrustUpdateKind,
@@ -957,7 +968,7 @@ func TestUPD02_CommandReleaseTrustProcessConcurrency(t *testing.T) {
 	secondRaw := signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
 		Kind:     release.ReleaseTrustUpdateKind,
 		Revision: 2,
-		Keys:     []signing.KeyRecord{f.c.record("active", releaseTestStart, releaseTestEnd, nil)},
+		Keys:     []signing.KeyRecord{f.c.record("active", f.start, f.end, nil)},
 	})
 	secondPath, _ := f.writeUpdate("update-c.json", secondRaw)
 	updates := []string{f.update, secondPath}
@@ -1194,9 +1205,9 @@ func TestUPD02_CommandReleaseTrustAlteredReadBack(t *testing.T) {
 			for _, readCase := range []string{"state_update_leaves", "restated_record_differs", "extra_release_record", "missing_release_record"} {
 				t.Run(readCase, func(t *testing.T) {
 					f := setupRelease(t)
-					keepA := f.a.record("active", releaseTestStart, releaseTestEnd, nil)
-					addB := f.b.record("active", releaseTestStart, releaseTestEnd, nil)
-					extraC := f.c.record("active", releaseTestStart, releaseTestEnd, nil)
+					keepA := f.a.record("active", f.start, f.end, nil)
+					addB := f.b.record("active", f.start, f.end, nil)
+					extraC := f.c.record("active", f.start, f.end, nil)
 
 					expectRev := "1"
 					wantOldRev, wantNewRev := decstr.U64(1), decstr.U64(2)
@@ -1223,7 +1234,7 @@ func TestUPD02_CommandReleaseTrustAlteredReadBack(t *testing.T) {
 						p.alterSnapshot = func(s *signing.FileSnapshot) {
 							for i := range s.Keys {
 								if s.Keys[i].ID == f.a.id {
-									s.Keys[i].NotAfter = releaseTestNarrowEnd
+									s.Keys[i].NotAfter = f.narrowEnd
 									return
 								}
 							}
@@ -1282,9 +1293,9 @@ func TestUPD02_CommandReleaseTrustDifferentUpdateInBetween(t *testing.T) {
 		t.Run(updateKind, func(t *testing.T) {
 			f := setupRelease(t)
 			ctx := context.Background()
-			keepA := f.a.record("active", releaseTestStart, releaseTestEnd, nil)
-			retireA := f.a.record("retired", releaseTestStart, releaseTestNarrowEnd, nil)
-			addB := f.b.record("active", releaseTestStart, releaseTestEnd, nil)
+			keepA := f.a.record("active", f.start, f.end, nil)
+			retireA := f.a.record("retired", f.start, f.narrowEnd, nil)
+			addB := f.b.record("active", f.start, f.end, nil)
 
 			copyDir := filepath.Join(f.root, "vault-copy")
 			if err := os.Mkdir(copyDir, 0700); err != nil {
