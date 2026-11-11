@@ -14,6 +14,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 	"github.com/google/uuid"
 )
 
@@ -432,6 +433,12 @@ func TestJournalRestoresAndLeavesSibling(t *testing.T) {
 	}
 }
 
+// Share the injected clock with request fixtures so their key windows cannot
+// expire with wall time. The release fixture also uses this historical window.
+func installerTestNow() time.Time {
+	return time.Date(2026, 10, 30, 12, 0, 0, 0, time.UTC)
+}
+
 func baseEnv(t *testing.T, root string) *Env {
 	t.Helper()
 	l := DefaultLayout().WithRoot(root)
@@ -453,7 +460,7 @@ func baseEnv(t *testing.T, root string) *Env {
 		Layout:        l,
 		Arch:          "amd64",
 		Kernel:        "Linux 6.8.0-test",
-		Now:           func() time.Time { return time.Date(2026, 10, 30, 12, 0, 0, 0, time.UTC) },
+		Now:           installerTestNow,
 		Services:      NewMemServices(),
 		AssumeSystemd: true,
 		LookPath: func(name string) (string, error) {
@@ -577,10 +584,14 @@ func mustReq(t *testing.T, dir string, fx ReleaseFixture) InstallRequest {
 	if err := os.WriteFile(ca, testServerCA(t), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	bundle := filepath.Join(dir, "bundle-"+fx.Sequence+".json")
+	if err := os.WriteFile(bundle, installerTrustBytes(t, envelope.PurposeDesiredState, installerTestNow()), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	return InstallRequest{
 		ManifestPath: fx.Manifest, ArtifactPath: fx.Artifact, TrustPath: fx.Trust,
 		TokenFile: token, ControlURL: "https://control.example.invalid",
-		ServerCA: ca, TrustBundle: fx.Trust, HostReserveBPS: 1_000_000,
+		ServerCA: ca, TrustBundle: bundle, HostReserveBPS: 1_000_000,
 		SNAT: "192.0.2.1", NetbirdManagementURL: "https://netbird.example.invalid",
 	}
 }

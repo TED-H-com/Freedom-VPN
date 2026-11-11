@@ -89,7 +89,7 @@ func cmdInstall(args []string, stdout, stderr io.Writer) int {
 	manifest := fs.String("manifest", "", "signed release manifest")
 	artifact := fs.String("artifact", "", "release archive for this architecture")
 	trust := fs.String("trust", "", "release trust root")
-	desired := fs.String("desired-trust", "", "desired-state trust root (defaults to the release trust)")
+	desired := fs.String("desired-trust", "", "desired-state trust root (defaults to --trust-bundle)")
 	token := fs.String("token-file", "", "enrollment token file, mode 0600")
 	control := fs.String("control-url", "", "https control URL")
 	loopback := fs.Bool("allow-loopback", false, "TEST ONLY: allow an HTTPS loopback control and updater delivery")

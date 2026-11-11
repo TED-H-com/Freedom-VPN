@@ -23,9 +23,16 @@ install.sh \
 
 Here `node-trust.json` is the central `fvpn-vault export-trust` output, delivered
 through an already authenticated channel. Use an export containing the central
-desired-state public key as well as the lease and recovery keys. Supply it to both
-`--trust-bundle` and `--desired-trust`; the release verification root passed to
-`--trust` need not contain those central keys. See [Node trust files](#node-trust-files).
+desired-state public key as well as the lease and recovery keys. Supply it to
+`--trust-bundle`; omitting `--desired-trust` copies that bundle byte for byte.
+The example supplies it explicitly to both flags. On every `install`, including
+an `already_current` rerun, the selected desired trust must be readable, parse as
+a node trust store, and contain a non-revoked `desired-state` key whose window
+includes the installer clock (`not_before <= now < not_after`). Failure exits
+64 before host identification, any host command or host change, and names
+`--desired-trust` or, when omitted, `--trust-bundle`. The release verification
+root passed to `--trust` need not contain those central keys.
+See [Node trust files](#node-trust-files).
 
 The script allows `https` URLs, and `http` only to `127.0.0.1` or `localhost` for a lab. It refuses a path segment of `latest`, a query string, a fragment, and a redirect (`curl` is not given `--location`). It downloads the named manifest envelope and the archive, extracts `fvpn-node-install`, compares that file to the pinned SHA-256, runs `fvpn-node-install verify-archive`, and execs the binary with the operator's arguments. Signature checks stay in `packaging/release`. The script does not invent install flags: repeat the `--out` paths on the `install` command.
 
@@ -59,7 +66,15 @@ Order:
 
 `host_reserve_bps` is required and has no default (待實測, §8). `--snat` is a non-loopback IPv4 address. Member and uplink names must match `^fv[a-z0-9_-]{1,13}$` and must differ. Defaults are `fvmb0` and `fvup0`.
 
-`--desired-trust` is the node trust store for desired state. When it is omitted, the installer copies the release trust to `/etc/vpn-node/desired-trust.json`. That file loads as a node trust store. It verifies a desired state only when the desired state was signed by a key in that store.
+`--desired-trust` is the node trust store for desired state. When it is omitted,
+the installer copies `--trust-bundle` byte for byte to
+`/etc/vpn-node/desired-trust.json`. Every `install` checks the selected input
+before identifying the host or running any host command: it must be readable,
+parse as a node trust store, and contain a non-revoked `desired-state` key valid
+at the installer clock in `[not_before, not_after)`. A refusal exits 64 before
+any host change and names the selected flag, including on reruns. Verification
+remains restricted by key purpose; lease and recovery keys in the bundle cannot
+authorize desired state.
 
 The empty netns `fvpn` is a name reservation. `node/enforce` programs table `inet fvpn` in the host network namespace, so the data-plane interfaces stay there.
 
@@ -75,7 +90,7 @@ loading a release-only store does not authorize a desired-state signature.
 |---|---|---|---|---|
 | `/etc/vpn-node/trust.json` | `--trust-bundle` | `fvpn-agent`, once when its engine starts (`trust_bundle`). The usage store receives the same in-memory trust. | `desired-state` for desired state/policy, `lease` for serving leases, `recovery` for usage checkpoints. | The agent rejects invalid desired state or leases; previously accepted authorization can remain in force until its validity checks fail. Without valid authorization, member forwarding stays off. An invalid recovery checkpoint is rejected without adopting it. |
 | `/etc/vpn-node/release-trust.json` | `--trust` | `fvpn-updater`, when each invocation builds its engine (`release_trust`). | `release` for release manifests, including seed and rollback verification. | The release fails verification (`KeyUntrusted` or `SignatureInvalid` for key/signature failures) and cannot be accepted as a verified candidate or rollback target. |
-| `/etc/vpn-node/desired-trust.json` | `--desired-trust`; if omitted, a byte-for-byte copy of `--trust` | `fvpn-updater`, when each invocation builds its engine (`desired_trust`); the loaded store verifies each desired-state read. | `desired-state`, including the central key signing the desired-state envelope. | `WorkFromEnvelope` returns permanent `KeyUntrusted` or `SignatureInvalid`; `GuardSource` calls `Gate.Block` to block member forwarding. A verified state with no update job (`ErrNoWork`) does not trigger this block. |
+| `/etc/vpn-node/desired-trust.json` | `--desired-trust`; if omitted, a byte-for-byte copy of `--trust-bundle`. Every `install` checks readability, node trust store parsing and a non-revoked `desired-state` key valid at its clock in `[not_before, not_after)`; failure exits 64 before any host command or change. | `fvpn-updater`, when each invocation builds its engine (`desired_trust`); the loaded store verifies each desired-state read. | `desired-state`, including the central key signing the desired-state envelope. | `WorkFromEnvelope` returns permanent `KeyUntrusted` or `SignatureInvalid`; `GuardSource` calls `Gate.Block` to block member forwarding. A verified state with no update job (`ErrNoWork`) does not trigger this block. |
 
 Replacing a file is not proof that its reader adopted it. The agent does not
 reload trust on SIGHUP: that signal reloads resolver credentials only. Restart
@@ -109,6 +124,16 @@ verification on the node before continuing the [central rotation runbook](../pki
 A successful signature check alone does not authorize forwarding or clear all
 updater blocks. An installer `upgrade` does not refresh these trust files, and
 an `already_current` install rerun is not a trust rollout mechanism.
+
+Nodes installed by an earlier installer without `--desired-trust` still have a
+copy of `--trust` in `desired-trust.json`. An `upgrade` or `already_current`
+install rerun does not rewrite their trust files, even when the new input check
+passes. To repair such
+a node, authenticate a fresh central `fvpn-vault export-trust` export containing
+the desired-state key, atomically replace `desired-trust.json` with it, and
+start a fresh updater invocation after any active invocation finishes, as for
+desired-state rotation above. If the agent's `trust.json` also needs the new
+export, replace it and restart the agent too.
 
 ### Authenticated updater reporting (F10-02, §13.6, §13.10.3)
 

@@ -46,6 +46,18 @@ func (k TrustedKey) usable(p Purpose, now time.Time) error {
 	return untrusted(k.KeyID, fmt.Sprintf("key is not allowed for purpose %q", p))
 }
 
+// HasUsableKey reports whether a key is allowed for p, is not revoked, and
+// includes now in its validity window [NotBefore, NotAfter). It uses the
+// same key eligibility rule as envelope verification.
+func (ts *TrustStore) HasUsableKey(p Purpose, now time.Time) bool {
+	for _, k := range ts.keys {
+		if k.usable(p, now) == nil {
+			return true
+		}
+	}
+	return false
+}
+
 // TrustStore maps key_id to a trusted public key. It is immutable after
 // construction and safe for concurrent use.
 type TrustStore struct {

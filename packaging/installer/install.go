@@ -22,6 +22,9 @@ func Install(ctx context.Context, env *Env, req InstallRequest) (*Result, error)
 	if err := validateInstall(&req); err != nil {
 		return nil, err
 	}
+	if err := validateDesiredTrust(req, env.now()); err != nil {
+		return nil, err
+	}
 	p, err := Identify(env)
 	if err != nil {
 		return nil, err
@@ -309,11 +312,10 @@ func writePublic(j *Journal, l Layout, req InstallRequest) error {
 	}
 	desired := req.DesiredTrustPath
 	if desired == "" {
-		// The updater refuses to open without a desired-state trust file.
-		// Until the operator supplies that root, the release trust is copied
-		// so recover can load a store. A desired state signed by another key
-		// stays rejected.
-		desired = req.TrustPath
+		// Share the agent's desired-state trust with the updater. Purpose
+		// checks prevent the bundle's lease and recovery keys from authorizing
+		// desired state; a release-only root cannot authorize it either.
+		desired = req.TrustBundle
 	}
 	return copyInto(j, desired, l.desiredTrust())
 }
