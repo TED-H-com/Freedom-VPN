@@ -66,9 +66,49 @@ func InitializeFileProvider(dir string) (*FileProvider, error) {
 	return p, nil
 }
 func OpenFileProvider(dir string) (*FileProvider, error) {
+	return OpenFileProviderContext(context.Background(), dir)
+}
+
+// OpenFileProviderContext opens existing state without creating or repairing it.
+// The context bounds lock contention, including the initial validation read.
+func OpenFileProviderContext(ctx context.Context, dir string) (*FileProvider, error) {
 	p := &FileProvider{dir: dir, now: time.Now}
-	err := p.with(context.Background(), func(*ledger) error { return nil })
+	err := p.with(ctx, func(*ledger) error { return nil })
 	return p, err
+}
+
+// FileSnapshot is public metadata from one locked ledger read. It contains no
+// private material or denied identity identifiers (§16.2, §17.2).
+type FileSnapshot struct {
+	Revision            decstr.U64
+	ReleaseRevision     decstr.U64
+	Keys                []KeyRecord
+	DeniedIdentityCount int
+	NodeTrust           *envelope.TrustStore
+}
+
+// Snapshot returns independent copies and the existing node bundle from the
+// same revision. It never opens private key files or changes the vault.
+func (p *FileProvider) Snapshot(ctx context.Context) (out FileSnapshot, err error) {
+	err = p.with(ctx, func(s *ledger) error {
+		trust, e := bundle(s, false)
+		if e != nil {
+			return e
+		}
+		out = FileSnapshot{Revision: s.Revision, ReleaseRevision: s.ReleaseRevision,
+			DeniedIdentityCount: len(s.DeniedIdentities), NodeTrust: trust,
+			Keys: make([]KeyRecord, len(s.Keys))}
+		for i, k := range s.Keys {
+			k.Public = bytes.Clone(k.Public)
+			if k.RevokedAt != nil {
+				revoked := *k.RevokedAt
+				k.RevokedAt = &revoked
+			}
+			out.Keys[i] = k
+		}
+		return nil
+	})
+	return
 }
 
 // with uses a cross-process lock: cached provider handles never cache key state.
