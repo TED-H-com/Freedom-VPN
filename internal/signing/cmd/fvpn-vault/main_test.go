@@ -118,13 +118,19 @@ func invoke(t *testing.T, c command, dir string, args ...string) outcome {
 	t.Helper()
 	before := manifest(t, dir)
 	var out, stderr bytes.Buffer
+	started := time.Now().UTC()
 	code := c.run(args, &out, &stderr)
+	ended := time.Now().UTC()
 	after := manifest(t, dir)
 	if !reflect.DeepEqual(before, after) {
 		t.Fatal("command mutated vault manifest")
 	}
 	if code == exitOK || code == exitResultFail {
-		requireReportInventory(t, dir, out.Bytes())
+		o, ok := parse(args)
+		if !ok {
+			t.Fatal("successful command had invalid arguments")
+		}
+		requireReportInventory(t, dir, out.Bytes(), reportInvocation{options: o, started: started, ended: ended})
 	}
 	return outcome{code, out.Bytes(), stderr.Bytes()}
 }

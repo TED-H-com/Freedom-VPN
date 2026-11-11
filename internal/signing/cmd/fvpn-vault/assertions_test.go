@@ -42,69 +42,31 @@ func requireRecord(t *testing.T, records []signing.KeyRecord, id string) signing
 }
 func requireInspectionInventory(t *testing.T, r inspection, records []signing.KeyRecord) {
 	t.Helper()
-	if len(r.Keys) != len(records) || len(r.Purposes) != len(purposes()) {
-		t.Fatal("inspection inventory differs from ledger")
-	}
-	for _, purpose := range purposes() {
-		requirePurpose(t, r, purpose)
-	}
-	for _, record := range records {
-		k := requireOne(t, r.Keys, "inspection key", func(k keySummary) bool { return k.ID == record.ID })
-		fingerprint := ""
-		if len(record.Public) != 0 {
-			fingerprint = digest(record.Public)
-		}
-		if k.Purpose != record.Purpose || k.State != record.State || k.PublicSHA256 != fingerprint || !k.NotBefore.Equal(record.NotBefore) || !k.NotAfter.Equal(record.NotAfter) {
-			t.Fatal("inspection public key record differs")
-		}
-	}
+	must(t, inspectionFieldsError(r, records))
 }
 func requireExportInventory(t *testing.T, r exportReceipt, records []signing.KeyRecord) {
 	t.Helper()
-	nodePurposes := []signing.Purpose{signing.DesiredState, signing.Lease, signing.Recovery, signing.Release}
-	if len(r.Purposes) != len(nodePurposes) {
-		t.Fatal("export purpose inventory incomplete")
-	}
-	for _, purpose := range nodePurposes {
-		requireExportPurpose(t, r, purpose)
-	}
-	count := 0
-	for _, record := range records {
-		purpose := envelope.Purpose(record.Purpose)
-		if !purpose.Valid() || record.Purpose == signing.LedgerEpoch {
-			continue
-		}
-		count++
-		k := requireOne(t, r.Keys, "exported key", func(k exportedKey) bool { return k.ID == record.ID })
-		if k.Purpose != record.Purpose || k.PublicSHA256 != digest(record.Public) || !k.NotBefore.Equal(record.NotBefore) || !k.NotAfter.Equal(record.NotAfter) || k.Revoked != (record.State == "revoked") {
-			t.Fatal("exported public key record differs")
-		}
-	}
-	if len(r.Keys) != count {
-		t.Fatal("export key inventory differs from ledger")
-	}
+	must(t, exportFieldsError(r, records))
 }
-func requireReportInventory(t *testing.T, dir string, raw []byte) {
+func requireReportInventory(t *testing.T, dir string, raw []byte, invocation ...reportInvocation) {
 	t.Helper()
 	state, err := os.ReadFile(filepath.Join(dir, "state.json"))
 	must(t, err)
 	var ledger testLedger
 	must(t, json.Unmarshal(state, &ledger))
-	var header struct {
-		Kind string `json:"kind"`
+	var expected *reportInvocation
+	if len(invocation) != 0 {
+		expected = &invocation[0]
 	}
-	must(t, json.Unmarshal(raw, &header))
-	switch header.Kind {
-	case "fvpn-file-vault-inspect-v1":
-		var r inspection
-		must(t, json.Unmarshal(raw, &r))
-		requireInspectionInventory(t, r, ledger.Keys)
-	case "fvpn-file-vault-export-trust-v1":
-		var r exportReceipt
-		must(t, json.Unmarshal(raw, &r))
-		requireExportInventory(t, r, ledger.Keys)
-	default:
-		t.Fatal("unexpected result kind")
+	must(t, reportFieldsError(raw, ledger, expected))
+	if expected != nil && expected.options.subcommand == "export-trust" {
+		published, err := os.ReadFile(expected.options.out)
+		must(t, err)
+		want, err := fixtureTrustBytes(ledger.Keys)
+		must(t, err)
+		if !bytes.Equal(published, want) {
+			t.Fatal("published bytes differ from fixture trust")
+		}
 	}
 }
 func requireTrustedRecord(t *testing.T, raw []byte, record signing.KeyRecord) {

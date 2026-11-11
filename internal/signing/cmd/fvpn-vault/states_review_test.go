@@ -114,7 +114,7 @@ func TestSEC01_ExportReceiptWindowEndpoints(t *testing.T) {
 			{"at_end", record.NotAfter, false},
 		} {
 			t.Run(string(purpose)+"/"+tc.name, func(t *testing.T) {
-				raw, r, err := prepareExport(snapshot, tc.at, "trust.json")
+				raw, r, err := prepareExport(snapshot, tc.at.UTC(), "trust.json")
 				must(t, err)
 				requireExportInventory(t, r, snapshot.Keys)
 				requireTrustedRecord(t, raw, record)

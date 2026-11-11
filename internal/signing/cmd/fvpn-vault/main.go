@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
+	"golang.org/x/sys/unix"
 )
 
 const defaultLockTimeout = 5 * time.Second
@@ -103,11 +104,38 @@ func validLock(info os.FileInfo) bool {
 	return info.Mode().IsRegular() && info.Mode().Perm()&0077 == 0
 }
 
-// This observes the pathname at a point in time, without binding the provider's
-// separate opens to this inode or defending against a writable vault owner.
-func sameLock(path string, original os.FileInfo) bool {
+type lockReference struct {
+	file *os.File
+	mode os.FileMode
+}
+
+// O_PATH pins the inode without opening its contents, taking a lock or
+// blocking on a special file. O_NOFOLLOW holds a final symlink itself, which
+// the descriptor-based regular-file validation rejects. No pathname/fstat race
+// can make the file we validate differ from the one we keep alive (§16.2).
+func holdLock(path string) (*lockReference, error) {
+	fd, err := unix.Open(path, unix.O_PATH|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
+	if err != nil {
+		return nil, err
+	}
+	f := os.NewFile(uintptr(fd), path)
+	info, err := f.Stat()
+	if err != nil || !validLock(info) {
+		_ = f.Close()
+		return nil, signing.ErrUnavailable
+	}
+	return &lockReference{file: f, mode: info.Mode().Perm()}, nil
+}
+
+// The live descriptor prevents inode reuse after unlink. These observations do
+// not bind provider opens to this file or defend against a writable vault owner.
+func (lock *lockReference) same(path string) bool {
+	held, err := lock.file.Stat()
+	if err != nil {
+		return false
+	}
 	current, err := os.Lstat(path)
-	return err == nil && validLock(current) && os.SameFile(original, current) && original.Mode().Perm() == current.Mode().Perm()
+	return err == nil && validLock(current) && validLock(held) && os.SameFile(held, current) && held.Mode().Perm() == lock.mode && current.Mode().Perm() == lock.mode
 }
 
 func main() {
@@ -137,23 +165,23 @@ func (c command) run(args []string, stdout, stderr io.Writer) int {
 	// filesystem operation here creates anything in the vault (§17.2, §17.4).
 	ctx, cancel := context.WithTimeout(context.Background(), o.timeout)
 	defer cancel()
-	// Point-in-time command check: the provider itself opens the lock without
-	// validating its type or permissions. Never open a symlink or special file
-	// here, and leave provider locking/validation behavior unchanged (§16.2).
+	// Keep the validated file alive until every command exit, including output
+	// failures. The provider's own opening and locking remain unchanged.
 	lockPath := filepath.Join(o.vault, "lock")
-	lock, err := os.Lstat(lockPath)
-	if err != nil || !validLock(lock) {
+	lock, err := holdLock(lockPath)
+	if err != nil {
 		return fail(stderr, exitUnavailable, "vault unavailable")
 	}
+	defer lock.file.Close()
 	p, err := signing.OpenFileProviderContext(ctx, o.vault)
 	if err != nil {
-		if !sameLock(lockPath, lock) {
+		if !lock.same(lockPath) {
 			return fail(stderr, exitChanged, "changed during inspection")
 		}
 		return providerFailure(stderr, err)
 	}
 	before, err := p.Snapshot(ctx)
-	if !sameLock(lockPath, lock) {
+	if !lock.same(lockPath) {
 		return fail(stderr, exitChanged, "changed during inspection")
 	}
 	if err != nil {
@@ -174,7 +202,7 @@ func (c command) run(args []string, stdout, stderr io.Writer) int {
 			}
 			after, err := p.Snapshot(ctx)
 			if err != nil {
-				if !sameLock(lockPath, lock) {
+				if !lock.same(lockPath) {
 					return fail(stderr, exitChanged, "changed during inspection")
 				}
 				return providerFailure(stderr, err)
@@ -207,7 +235,7 @@ func (c command) run(args []string, stdout, stderr io.Writer) int {
 	if c.beforeResult != nil {
 		c.beforeResult()
 	}
-	if !sameLock(lockPath, lock) {
+	if !lock.same(lockPath) {
 		return fail(stderr, exitChanged, "changed during inspection")
 	}
 	if ctx.Err() != nil {

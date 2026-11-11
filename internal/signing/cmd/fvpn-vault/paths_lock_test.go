@@ -241,6 +241,15 @@ func replaceLock(t *testing.T, dir, fault, outside string) {
 		must(t, os.Chmod(lock, 0400))
 		return
 	}
+	if fault == "recreate_same" || fault == "recreate_different" {
+		must(t, os.Remove(lock))
+		var content []byte // The initializer's original lock content is empty.
+		if fault == "recreate_different" {
+			content = []byte("TEST ONLY replacement content")
+		}
+		must(t, os.WriteFile(lock, content, 0600))
+		return
+	}
 	must(t, os.Rename(lock, filepath.Join(dir, "original-lock")))
 	switch fault {
 	case "symlink":
@@ -285,7 +294,7 @@ func TestSEC01_LockReplacementAtCheckpoints(t *testing.T) {
 		os.Exit(code)
 	}
 	for _, stage := range []string{"between_snapshots", "before_result"} {
-		for _, fault := range []string{"symlink", "fifo", "group_bits", "regular", "missing", "owner_bits"} {
+		for _, fault := range []string{"symlink", "fifo", "group_bits", "regular", "missing", "owner_bits", "recreate_same", "recreate_different"} {
 			t.Run(stage+"/"+fault, func(t *testing.T) {
 				for i := 0; i < 3; i++ {
 					if stage == "between_snapshots" && i != 1 {
@@ -322,7 +331,7 @@ func requireChanged(t *testing.T, got outcome) {
 	}
 }
 func TestSEC01_LockReplacementWhileWaiting(t *testing.T) {
-	for _, fault := range []string{"symlink", "fifo", "group_bits", "regular", "missing"} {
+	for _, fault := range []string{"symlink", "fifo", "group_bits", "regular", "missing", "recreate_same", "recreate_different"} {
 		t.Run(fault, func(t *testing.T) {
 			for i := 0; i < 3; i++ {
 				f := newVault(t, true)
@@ -335,7 +344,7 @@ func TestSEC01_LockReplacementWhileWaiting(t *testing.T) {
 				must(t, os.WriteFile(outside, []byte("TEST ONLY external lock"), 0600))
 				outputDir := t.TempDir()
 				// IN_OPEN establishes that the unmodified command passed its initial
-				// Lstat and opened the held inode. The event is bounded by a read deadline.
+				// validation and opened the held inode. The event is bounded by a read deadline.
 				fd, err := syscall.InotifyInit1(syscall.IN_CLOEXEC | syscall.IN_NONBLOCK)
 				must(t, err)
 				events := os.NewFile(uintptr(fd), "lock-open-events")

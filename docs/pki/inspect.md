@@ -74,10 +74,16 @@ The provider polls lock contention every 5 ms. The deadline bounds lock waits,
 not uninterruptible operating-system IO or output publication. No command retries
 a changed inspection. A timeout is distinct from an unavailable vault.
 
-Before opening the provider, the command uses `Lstat` to require an existing
-regular `lock` file with no group or other permission bits. A lock symlink,
-FIFO, directory or other file type is refused without opening it. The command
-retains that file's identity and permission bits, then checks them again after
+Before opening the provider, the command holds `lock` through a Linux
+`O_PATH | O_NOFOLLOW | O_CLOEXEC` descriptor and validates that held file's type
+and permission bits with `fstat`. It must be regular with no group or other bits.
+This neither follows a final symlink nor opens contents, blocks on a special
+file, takes a lock, or changes anything. Symlinks and special files are refused.
+The descriptor stays open until the command ends, preventing reuse of its inode
+if the lock is deleted. Checkpoints compare a fresh `fstat` of the held file
+against `Lstat` of the current path and the initially validated permission bits.
+A lock deleted and created again is therefore detected, even with identical
+content and mode. The command checks again after
 the provider is open and the first snapshot is taken, and immediately before
 writing a result document or invoking export publication. The final check follows
 all probes and the last snapshot, where applicable. A missing, nonregular,
