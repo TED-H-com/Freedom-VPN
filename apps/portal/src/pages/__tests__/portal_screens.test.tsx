@@ -353,7 +353,7 @@ describe('Portal Screens & Acceptance Tests (§18, §19 AT02/AT03/AT28/AT32)', (
     renderAt('/member', 'member_throttled');
     expect(await screen.findByTestId('member-service-page')).toBeInTheDocument();
     expect(await screen.findByTestId('member-fup-throttled-banner')).toHaveTextContent(
-      '本期大量使用，速度已依公平使用政策調整；下次重置為……',
+      '本期大量使用，速度已依公平使用政策調整；下次重置為',
     );
 
     // 2. Member Getting Started (no kill-switch disclosure + Android Private DNS note)

@@ -191,7 +191,29 @@ for (const [i, locale] of (['zh-TW', 'en'] as const).entries()) {
         i === 0 ? '下一次公平使用 (FUP) 重置時間' : 'Next Fair-Use (FUP) Reset Time',
       ).parentElement!;
       expect(
-        within(card).getByText(formatLocaleWithUtc(periodEnd, locale), { exact: true }),
+        within(card).getByText(formatLocaleWithUtc(periodEnd, locale), {
+          exact: true,
+          normalizer: (text) => text,
+        }),
+      ).toBeVisible();
+      expect(card).not.toHaveTextContent(overrideEnd);
+    });
+
+    it('AbsentAccountingResetDoesNotBorrowUsageReset', async () => {
+      const usage = buildMemberUsageForPersona('member_throttled');
+      usage.fair_use.resets_at = overrideEnd;
+      const me = buildMemberSelfForPersona('member_active');
+      me.fair_use_reset_at = null;
+      renderPage('/member/service', locale, usage, me);
+      const notice = await screen.findByTestId(noticeId('/member/service'));
+      expect(notice.textContent).toBe(
+        notices[0].dated[i]!.replace('{date}', formatLocaleWithUtc(overrideEnd, locale)),
+      );
+      const card = screen.getByText(
+        i === 0 ? '下一次公平使用 (FUP) 重置時間' : 'Next Fair-Use (FUP) Reset Time',
+      ).parentElement!;
+      expect(
+        within(card).getByText(i === 0 ? '無' : 'None', { exact: true }),
       ).toBeVisible();
       expect(card).not.toHaveTextContent(overrideEnd);
     });
@@ -262,6 +284,22 @@ for (const [i, locale] of (['zh-TW', 'en'] as const).entries()) {
   });
 
   describe(`TestAT03_EntitlementBilling_${locale}`, () => {
+    it('CheckoutReturnDoesNotReplaceEntitlementLabel', async () => {
+      const me = buildMemberSelfForPersona('member_pending_payment');
+      me.next_actions = ['complete_payment'];
+      renderPage('/member/billing?checkout=return', locale, undefined, me);
+      const badge = await screen.findByTestId('billing-entitlement-state-badge');
+      expect(badge.textContent).toBe(i === 0 ? '待付款' : 'Awaiting payment');
+      expect(badge).toHaveAttribute('data-state', 'pending_payment');
+      expect(screen.getByTestId('billing-entitlement-state').textContent).toBe(
+        badge.textContent,
+      );
+      expect(screen.getByTestId('billing-return-pending-badge').textContent).toBe(
+        i === 0 ? '確認中' : 'Verifying (確認中)',
+      );
+      expect(screen.getByTestId('checkout-return-pending-banner')).toBeVisible();
+    });
+
     for (const row of billingStates) {
       it(`TranslatedState_${row.state}_${row.actions[0] ?? 'default'}`, async () => {
         const me = buildMemberSelfForPersona('member_active');

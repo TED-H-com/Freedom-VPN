@@ -426,7 +426,15 @@ export const zhTW = {
   'member.service.nextResetLabel': '下一次公平使用 (FUP) 重置時間',
   'member.service.fupThrottledWithoutDate': '本期大量使用，速度已依公平使用政策調整。',
   'member.service.fupThrottledBanner':
-    '本期大量使用，速度已依公平使用政策調整；下次重置為…… {resetAt}',
+    '本期大量使用，速度已依公平使用政策調整；下次重置為 {resetAt}',
+  'member.service.fupOverrideBanner':
+    '您的速度已由管理員暫時調整；將於 {resetAt} 重新計算。',
+  'member.service.fupOverrideWithoutDate': '您的速度已由管理員暫時調整。',
+  'member.service.fupAdjustedBanner': '您的速度目前已調整；將於 {resetAt} 重新計算。',
+  'member.service.fupAdjustedWithoutDate': '您的速度目前已調整。',
+  'member.service.fupApplying': '速度設定正在套用到出口節點，部分節點可能尚未生效。',
+  'member.service.fupOverrideLabel': '管理員暫時調整',
+  'member.service.fupAdjustedLabel': '速度已調整',
 
   'member.gettingStarted.title': '開始使用與平台安裝指引 (§7.3, §18.4)',
   'member.gettingStarted.subtitle':

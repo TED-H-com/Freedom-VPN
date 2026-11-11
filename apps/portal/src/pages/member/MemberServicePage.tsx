@@ -8,6 +8,7 @@ import {
   type NextAction,
 } from '../../api';
 import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
+import { MemberFairUseNotice } from '../../components/common/MemberFairUseNotice';
 import { useSession } from '../../context/SessionContext';
 import { useI18n, type TranslationKey } from '../../i18n';
 import { formatLocaleWithUtc } from '../../lib/datetime';
@@ -76,8 +77,7 @@ export function MemberServicePage(): React.ReactElement {
   const isClosed = ent.state === 'closed';
   const actions = me.next_actions.length ? me.next_actions : [stateView.fallbackAction];
   const knownActions = actions.filter((action) => Object.hasOwn(nextSteps, action));
-  const isFupAdjusted = usage?.fair_use.state === 'adjusted';
-  const resetAt = me.fair_use_reset_at ?? usage?.fair_use.resets_at ?? '-';
+  const resetAt = me.fair_use_reset_at;
   const planName =
     ent.plan?.display_name[locale] ??
     ent.plan?.display_name['zh-TW'] ??
@@ -123,18 +123,10 @@ export function MemberServicePage(): React.ReactElement {
         </div>
       )}
 
-      {/* Exact required FUP throttling phrase (§11.6, §18.4) */}
-      {isFupAdjusted && (
-        <div
-          className="alert alert-warning"
-          role="status"
-          data-testid="member-fup-throttled-banner"
-        >
-          {resetAt !== '-'
-            ? t('member.service.fupThrottledBanner', { resetAt })
-            : t('member.service.fupThrottledWithoutDate')}
-        </div>
-      )}
+      <MemberFairUseNotice
+        fairUse={usage?.fair_use}
+        testId="member-fup-throttled-banner"
+      />
 
       {usageQuery.error && (
         <ApiErrorAlert error={usageQuery.error} testId="member-service-usage-error" />
@@ -201,7 +193,7 @@ export function MemberServicePage(): React.ReactElement {
         <div className="metric-card">
           <span className="stat-label">{t('member.service.nextResetLabel')}</span>
           <span className="metric-value mono" style={{ fontSize: '1.05rem' }}>
-            {resetAt !== '-' ? formatLocaleWithUtc(resetAt, locale) : t('common.none')}
+            {resetAt ? formatLocaleWithUtc(resetAt, locale) : t('common.none')}
           </span>
           <span className="metric-desc" data-testid="member-service-speed">
             {usage?.fair_use.tier_name
