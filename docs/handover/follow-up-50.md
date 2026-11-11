@@ -32,7 +32,7 @@ Both language versions of the [member guide](member-guide.md) §5.3 now describe
 shadow mode as normal member-visible status with null tier, rate and reason,
 matching [FairUseStatus](../../contracts/openapi.yaml) and the
 [portal documentation](../portal/README.md). An adjustment notice requires
-adjusted status; applying can be shown separately.
+adjusted status.
 
 The [Chinese](../DELIVERY.md) and [English](../DELIVERY.en.md) delivery guides
 now describe scoped revisions to living guides and point here for this revision.

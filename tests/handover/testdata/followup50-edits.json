@@ -93,13 +93,13 @@
     "path": "docs/handover/member-guide.md",
     "name": "shadow_mode_zh",
     "before": "- **觀測模式（`shadow` mode，`§11.1`、`§11.2`、`AT19`）**：若系統處於 `shadow` 模式，頁面會顯示預估級距（`would_apply_tier`），但節點資料面仍維持正常未降速設定（`throttled: false`）。",
-    "after": "- **觀測模式（`shadow` mode，`§11.1`、`§11.2`、`AT19`）**：若系統處於 `shadow` 模式，會員用量回應的 `FairUseStatus` 為 `state: normal`，級距、速率與原因皆為 `null`；入口網站不顯示預估調速級距，僅在 `state: adjusted` 時顯示調速提示。`applying` 為真時仍會另行提示設定正在套用。詳見 [API 契約](../../contracts/openapi.yaml) 與 [入口網站文件](../portal/README.md)。"
+    "after": "- **觀測模式（`shadow` mode，`§11.1`、`§11.2`、`AT19`）**：若系統處於 `shadow` 模式，會員用量回應的 `FairUseStatus` 為 `state: normal`，級距、速率與原因皆為 `null`；入口網站不顯示預估調速級距，僅在 `state: adjusted` 時顯示調速提示。詳見 [API 契約](../../contracts/openapi.yaml) 與 [入口網站文件](../portal/README.md)。"
   },
   {
     "path": "docs/handover/member-guide.md",
     "name": "shadow_mode_en",
     "before": "- **Shadow Mode (`§11.1`, `§11.2`, `AT19`)**: When `shadow` mode is active, the Portal displays your informational `would_apply_tier` while `throttled` remains `false`.",
-    "after": "- **Shadow Mode (`§11.1`, `§11.2`, `AT19`)**: In `shadow` mode, the member usage response's `FairUseStatus` returns `state: normal` with null tier, rate and reason. The Portal shows no estimated adjustment tier and displays an adjustment notice only for `state: adjusted`; `applying` can still show a separate application-in-progress notice. See the [API contract](../../contracts/openapi.yaml) and [portal documentation](../portal/README.md)."
+    "after": "- **Shadow Mode (`§11.1`, `§11.2`, `AT19`)**: In `shadow` mode, the member usage response's `FairUseStatus` returns `state: normal` with null tier, rate and reason. The Portal shows no estimated adjustment tier and displays an adjustment notice only for `state: adjusted`. See the [API contract](../../contracts/openapi.yaml) and [portal documentation](../portal/README.md)."
   },
   {
     "path": "docs/DELIVERY.en.md",

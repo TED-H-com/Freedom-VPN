@@ -18831,10 +18831,10 @@ func TestHandover_Followup50Claims(t *testing.T) {
 		Path, SHA256 string
 		Bytes        int
 	}{
-		{"docs/handover/follow-up-50.md", "c6ea652240b649a18c0618145af5f5fd38542a5a391331cdebfbf397ea16984d", 17672},
+		{"docs/handover/follow-up-50.md", "d9e42fcc1d614c90352b225552a747bbba63bb114ed8da24d90caeefe46b34c0", 17638},
 		{fixture + "followup50-main.json", "d81ba5f226a34d88c0b9df378880be461deb3175ff36e895b59603fdc2ecbc37", 14149},
 		{fixture + "followup50-snapshots.json", "e4eea7a90319381a23573867a50713df64db895c4b8ed1a53778ccb90abd8db8", 3738},
-		{fixture + "followup50-edits.json", "a987e3d2ff0166203a39cf439bc39f1729ddf64de6806ab363ce0961eadeb451", 23417},
+		{fixture + "followup50-edits.json", "1a1bb207fd3b194869fef786f7e28e04b838cf013073bd33bbf6e30ba2d7fd15", 23289},
 		{fixture + "followup50-prior-assertions.json", "df4b27f52014d5afb885becdd28d2db329daa2816fa9d7f84fd970df471b8c1f", 258},
 	} {
 		s := readOwnedDoc(t, root, p.Path)
@@ -18988,7 +18988,7 @@ func TestHandover_Followup50Claims(t *testing.T) {
 			t.Fatal("old member shadow-mode fields remain")
 		}
 		for _, start := range []string{"- **觀測模式", "- **Shadow Mode"} {
-			require(section(member, start, "\n"), "FairUseStatus", "state: normal", "state: adjusted", "applying", "../../contracts/openapi.yaml", "../portal/README.md")
+			require(section(member, start, "\n"), "FairUseStatus", "state: normal", "state: adjusted", "../../contracts/openapi.yaml", "../portal/README.md")
 		}
 	})
 	t.Run("followup49_assertions_preserved", func(t *testing.T) {
