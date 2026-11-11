@@ -63,8 +63,8 @@ export function MemberServicePage(): React.ReactElement {
 
   if (selfQuery.isLoading || !selfQuery.data) {
     return (
-      <div className="card" role="status">
-        Loading service status...
+      <div className="card" role="status" data-testid="member-service-loading">
+        {t('member.service.loading')}
       </div>
     );
   }
@@ -164,8 +164,15 @@ export function MemberServicePage(): React.ReactElement {
           <span className="metric-value" style={{ fontSize: '1.35rem' }}>
             {planName}
           </span>
-          <span className="metric-desc mono">
-            Devices: {me.limits.authorized_device_count} / {me.limits.device_limit}
+          <span className="metric-desc mono" data-testid="member-device-quota">
+            {me.limits.device_limit === null
+              ? t('member.devices.authorizedCount', {
+                  used: me.limits.authorized_device_count,
+                })
+              : t('member.devices.quotaSummary', {
+                  used: me.limits.authorized_device_count,
+                  limit: me.limits.device_limit,
+                })}
           </span>
         </div>
 
@@ -178,23 +185,27 @@ export function MemberServicePage(): React.ReactElement {
           >
             {ent.effective_service_end
               ? formatLocaleWithUtc(ent.effective_service_end, locale)
-              : 'None'}
+              : t('common.none')}
           </span>
           <span className="metric-desc mono">
             {t('member.service.paidThroughLabel')}:{' '}
-            {ent.paid_through ? formatLocaleWithUtc(ent.paid_through, locale) : 'None'}
+            <span data-testid="member-paid-through">
+              {ent.paid_through
+                ? formatLocaleWithUtc(ent.paid_through, locale)
+                : t('common.none')}
+            </span>
           </span>
         </div>
 
         <div className="metric-card">
           <span className="stat-label">{t('member.service.nextResetLabel')}</span>
           <span className="metric-value mono" style={{ fontSize: '1.05rem' }}>
-            {resetAt !== '-' ? formatLocaleWithUtc(resetAt, locale) : '-'}
+            {resetAt !== '-' ? formatLocaleWithUtc(resetAt, locale) : t('common.none')}
           </span>
-          <span className="metric-desc">
+          <span className="metric-desc" data-testid="member-service-speed">
             {usage?.fair_use.tier_name
               ? (usage.fair_use.tier_name[locale] ?? usage.fair_use.tier_name['zh-TW'])
-              : 'Normal speed'}
+              : t('member.service.normalSpeed')}
           </span>
         </div>
       </div>

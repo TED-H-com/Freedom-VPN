@@ -1,3 +1,4 @@
+import { memberScreenEvidenceDirectory } from './member-screen-evidence.mjs';
 import { publicationGateDiagnostics } from './publication-diagnostics.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -1433,31 +1434,52 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
 async function waitForMemberState(
   request: APIRequestContext,
   state: MemberSelf['entitlement']['state'],
+  validUntil?: string,
 ): Promise<MemberSelf> {
   const started = Date.now();
+  const activeDeadline =
+    state === 'active' && validUntil ? Date.parse(validUntil) : undefined;
+  const endedMessage = 'Grant ended before the active state was observed';
+  if (activeDeadline !== undefined && started >= activeDeadline) {
+    throw new Error(`${endedMessage} (valid_until=${validUntil})`);
+  }
   let me: MemberSelf | undefined;
-  await expect
-    .poll(
-      async () => {
-        const response = await request.get(`${BASE_URL}/api/v1/member/me`);
-        expect(response.ok()).toBeTruthy();
-        me = (await response.json()) as MemberSelf;
-        return me.entitlement.state;
-      },
-      { timeout: 10_000, intervals: [100] },
-    )
-    .toBe(state);
+  try {
+    await expect
+      .poll(
+        async () => {
+          const response = await request.get(`${BASE_URL}/api/v1/member/me`, {
+            timeout: 10_000,
+          });
+          expect(response.ok()).toBeTruthy();
+          me = (await response.json()) as MemberSelf;
+          return me.entitlement.state;
+        },
+        {
+          timeout:
+            activeDeadline === undefined
+              ? 10_000
+              : Math.min(10_000, activeDeadline - started),
+          intervals: [100],
+        },
+      )
+      .toBe(state);
+  } catch (error) {
+    if (activeDeadline !== undefined && Date.now() >= activeDeadline) {
+      throw new Error(`${endedMessage} (valid_until=${validUntil})`, { cause: error });
+    }
+    throw error;
+  }
   console.log(`[AT04 F4-04] ${state} server wait: ${Date.now() - started} ms`);
   return me!;
 }
 
-async function captureInactiveScreen(
+async function assertInactiveScreen(
   page: Page,
   me: MemberSelf,
   state: 'suspended' | 'expired',
+  evidenceDir: string | undefined,
 ) {
-  const evidenceDir = path.resolve(process.cwd(), '../../.agent/screens');
-  await fs.mkdir(evidenceDir, { recursive: true });
   for (const locale of ['zh-TW', 'en'] as const) {
     await page.getByTestId('locale-switcher').selectOption(locale);
     const zh = locale === 'zh-TW';
@@ -1472,6 +1494,34 @@ async function captureInactiveScreen(
         : 'Your entitlement currently does not allow exit access.',
     );
     await expect(page.getByTestId('member-account-closed-banner')).toHaveCount(0);
+    const service = page.getByTestId('member-service-page');
+    if (zh) {
+      await expect(service).not.toContainText(
+        /Devices:|None|Normal speed|Loading service status\.\.\./,
+      );
+    }
+    await expect(page.getByTestId('member-device-quota')).toHaveText(
+      me.limits.device_limit === null
+        ? zh
+          ? `已授權裝置：${me.limits.authorized_device_count} 台`
+          : `Authorized devices: ${me.limits.authorized_device_count}`
+        : zh
+          ? `已授權裝置名額使用量：${me.limits.authorized_device_count} / ${me.limits.device_limit} 台`
+          : `Authorized Device Quota: ${me.limits.authorized_device_count} / ${me.limits.device_limit} devices`,
+    );
+    if (me.entitlement.effective_service_end === null) {
+      await expect(page.getByTestId('member-effective-end')).toHaveText(
+        zh ? '無' : 'None',
+      );
+    }
+    if (me.entitlement.paid_through === null) {
+      await expect(page.getByTestId('member-paid-through')).toHaveText(
+        zh ? '無' : 'None',
+      );
+    }
+    await expect(page.getByTestId('member-service-speed')).toHaveText(
+      zh ? '正常速度' : 'Normal speed',
+    );
     if (state === 'suspended') {
       const reason = zh
         ? '管理員已暫停您的服務；付款或續費不會解除停權。'
@@ -1505,19 +1555,22 @@ async function captureInactiveScreen(
       await expect(next.getByRole('link')).toHaveAttribute('href', '/member/billing');
       await expect(page.getByTestId('member-suspended-notice')).toHaveCount(0);
     }
-    await fs.writeFile(
-      path.join(evidenceDir, `${state}-${locale}.txt`),
-      await page.getByTestId('member-service-page').innerText(),
-    );
-    for (const width of [1440, 768, 390]) {
-      await page.setViewportSize({ width, height: 900 });
-      await page.screenshot({
-        path: path.join(
-          evidenceDir,
-          `${state}-${locale}${width === 1440 ? '' : `-${width}`}.png`,
-        ),
-        fullPage: true,
-      });
+    if (evidenceDir) {
+      await fs.mkdir(evidenceDir, { recursive: true });
+      await fs.writeFile(
+        path.join(evidenceDir, `${state}-${locale}.txt`),
+        await page.getByTestId('member-service-page').innerText(),
+      );
+      for (const width of [1440, 768, 390]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.screenshot({
+          path: path.join(
+            evidenceDir,
+            `${state}-${locale}${width === 1440 ? '' : `-${width}`}.png`,
+          ),
+          fullPage: true,
+        });
+      }
     }
   }
 }
@@ -1526,6 +1579,7 @@ test('TestAT04_F404_SuspendedMemberScreenMatchesServer_Bilingual', async ({
   page,
   request,
 }) => {
+  const evidenceDir = memberScreenEvidenceDirectory(process.env.PORTAL_E2E_EVIDENCE_DIR);
   try {
     const fresh = await request.post(`${BASE_URL}/__e2e/reset-member-journey`);
     expect(fresh.ok()).toBeTruthy();
@@ -1546,7 +1600,7 @@ test('TestAT04_F404_SuspendedMemberScreenMatchesServer_Bilingual', async ({
     expect(me.next_actions).toEqual(['contact_support']);
     expect(me.entitlement.admin_suspended).toBe(true);
     await page.goto('/member/service');
-    await captureInactiveScreen(page, me, 'suspended');
+    await assertInactiveScreen(page, me, 'suspended', evidenceDir);
   } finally {
     const restored = await request.post(`${BASE_URL}/__e2e/restore-default-member`);
     expect(restored.ok()).toBeTruthy();
@@ -1557,6 +1611,7 @@ test('TestAT04_F404_ExpiredMemberScreenMatchesServer_Bilingual', async ({
   page,
   request,
 }) => {
+  const evidenceDir = memberScreenEvidenceDirectory(process.env.PORTAL_E2E_EVIDENCE_DIR);
   try {
     const fresh = await request.post(`${BASE_URL}/__e2e/reset-member-journey`);
     expect(fresh.ok()).toBeTruthy();
@@ -1567,7 +1622,15 @@ test('TestAT04_F404_ExpiredMemberScreenMatchesServer_Bilingual', async ({
     const grant = await request.post(`${BASE_URL}/__e2e/finite-member-grant`);
     expect(grant.status()).toBe(202);
     const { valid_until } = (await grant.json()) as { valid_until: string };
-    const active = await waitForMemberState(request, 'active');
+    const active = await waitForMemberState(request, 'active', valid_until);
+    const remainingMs = Date.parse(valid_until) - Date.now();
+    console.log(
+      `[AT04 F4-04] active observed with ${remainingMs} ms remaining until valid_until`,
+    );
+    expect(
+      remainingMs,
+      'Grant ended before the active state was observed',
+    ).toBeGreaterThan(0);
     expect(new Date(active.entitlement.effective_service_end!).getTime()).toBe(
       new Date(valid_until).getTime(),
     );
@@ -1583,7 +1646,7 @@ test('TestAT04_F404_ExpiredMemberScreenMatchesServer_Bilingual', async ({
       `[AT04 F4-04] expiry observed ${Date.now() - new Date(valid_until).getTime()} ms after real grant deadline`,
     );
     await page.goto('/member/service');
-    await captureInactiveScreen(page, me, 'expired');
+    await assertInactiveScreen(page, me, 'expired', evidenceDir);
   } finally {
     const restored = await request.post(`${BASE_URL}/__e2e/restore-default-member`);
     expect(restored.ok()).toBeTruthy();

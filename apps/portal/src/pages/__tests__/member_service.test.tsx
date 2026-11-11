@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { render, screen, within } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
 import { http, HttpResponse } from 'msw';
@@ -13,7 +13,7 @@ import {
 import { SessionProvider } from '../../context/SessionContext';
 import { I18nProvider, type Locale } from '../../i18n';
 import { formatLocaleWithUtc } from '../../lib/datetime';
-import { buildMemberSelfForPersona } from '../../mocks/data';
+import { buildMemberSelfForPersona, buildMemberUsageForPersona } from '../../mocks/data';
 import { setMockPersona } from '../../mocks/handlers';
 import { server } from '../../mocks/server';
 import { assertAccessible } from '../../test/setup';
@@ -156,9 +156,22 @@ function member(
   return me;
 }
 
-function renderMember(me: MemberSelf, locale: Locale, path = '/member/service') {
+function renderMember(
+  me: MemberSelf,
+  locale: Locale,
+  path = '/member/service',
+  selfReady?: Promise<void>,
+) {
   setMockPersona('member_active');
-  server.use(http.get('/api/v1/member/me', () => HttpResponse.json(me)));
+  const usage = buildMemberUsageForPersona('member_active');
+  usage.fair_use.tier_name = null; // Exercise the localized fallback, not fixture copy.
+  server.use(
+    http.get('/api/v1/member/me', async () => {
+      await selfReady;
+      return HttpResponse.json(me);
+    }),
+    http.get('/api/v1/member/usage', () => HttpResponse.json(usage)),
+  );
   return render(
     <QueryClientProvider
       client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
@@ -189,6 +202,23 @@ for (const locale of locales) {
       it(row.name, async () => {
         const { container } = renderMember(member(row.state, row.actions), locale);
         const badge = await screen.findByTestId('member-entitlement-state-badge');
+        const service = screen.getByTestId('member-service-page');
+        if (locale === 'zh-TW') {
+          expect(service).not.toHaveTextContent(
+            /Devices:|None|Normal speed|Loading service status\.\.\./,
+          );
+        }
+        expect(screen.getByTestId('member-device-quota').textContent).toBe(
+          locale === 'zh-TW'
+            ? '已授權裝置名額使用量：2 / 3 台'
+            : 'Authorized Device Quota: 2 / 3 devices',
+        );
+        expect(screen.getByTestId('member-service-speed').textContent).toBe(
+          locale === 'zh-TW' ? '正常速度' : 'Normal speed',
+        );
+        expect(screen.getByTestId('member-service-speed')).not.toHaveTextContent(
+          locale === 'zh-TW' ? 'Normal speed' : '正常速度',
+        );
         expect(badge).toHaveTextContent(row.labels[i]);
         expect(badge.textContent).toBe(row.labels[i]);
         expect(badge).not.toHaveTextContent(row.labels[j]);
@@ -247,6 +277,68 @@ for (const locale of locales) {
         );
       });
     }
+
+    it('NoDeviceLimitShowsCountAndConsistentAbsentDates', async () => {
+      const me = member('suspended', ['contact_support']);
+      me.limits.device_limit = null;
+      me.limits.authorized_device_count = 0;
+      me.entitlement.effective_service_end = null;
+      me.entitlement.paid_through = null;
+      renderMember(me, locale);
+      await screen.findByTestId('member-entitlement-state-badge');
+      const quota = screen.getByTestId('member-device-quota');
+      expect(quota.textContent).toBe(
+        locale === 'zh-TW' ? '已授權裝置：0 台' : 'Authorized devices: 0',
+      );
+      expect(quota).not.toHaveTextContent('/');
+      for (const id of ['member-effective-end', 'member-paid-through']) {
+        expect(screen.getByTestId(id).textContent).toBe(
+          locale === 'zh-TW' ? '無' : 'None',
+        );
+        expect(screen.getByTestId(id)).not.toHaveTextContent(
+          locale === 'zh-TW' ? 'None' : '無',
+        );
+      }
+      if (locale === 'zh-TW')
+        expect(screen.getByTestId('member-service-page')).not.toHaveTextContent(
+          /Devices:|None|Normal speed|Loading service status\.\.\./,
+        );
+    });
+
+    it('DeviceLimitUsesExistingTranslatedQuota', async () => {
+      const me = member('active', ['free_device_slot']);
+      me.limits.device_limit = 3;
+      me.limits.authorized_device_count = 3;
+      renderMember(me, locale);
+      await screen.findByTestId('member-entitlement-state-badge');
+      expect(screen.getByTestId('member-device-quota').textContent).toBe(
+        locale === 'zh-TW'
+          ? '已授權裝置名額使用量：3 / 3 台'
+          : 'Authorized Device Quota: 3 / 3 devices',
+      );
+    });
+
+    it('LoadingServiceStatusIsLocalized', async () => {
+      let release = () => {};
+      const ready = new Promise<void>((resolve) => {
+        release = resolve;
+      });
+      renderMember(member('active', []), locale, '/member/service', ready);
+      try {
+        const loading = await screen.findByTestId('member-service-loading');
+        expect(loading.textContent).toBe(
+          locale === 'zh-TW' ? '正在載入服務狀態…' : 'Loading service status...',
+        );
+        expect(loading).not.toHaveTextContent(
+          locale === 'zh-TW' ? 'Loading service status...' : '正在載入服務狀態…',
+        );
+      } finally {
+        await act(async () => {
+          release();
+        });
+      }
+      await screen.findByTestId('member-entitlement-state-badge');
+    });
 
     it('ContactSupportDoesNotMeanClosed_regression', async () => {
       renderMember(buildMemberSelfForPersona('member_suspended'), locale);

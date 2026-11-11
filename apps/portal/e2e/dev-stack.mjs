@@ -64,6 +64,9 @@ const PLAN_ID = 'b4fe029a-ecbf-4b1a-9ee7-de399791ae6e';
 const RELEASE_100_ID = 'cdb25ffa-5395-400c-ad3e-b32899f14bb8';
 const RELEASE_110_ID = RELEASE_VECTOR.envelope.signed.release_id; // 6d2797d0-b9a5-4724-96af-9b3039d351b1
 const HEARTBEAT_MS = 250;
+// TEST ONLY: five seconds gives slow runners margin to observe active before
+// real expiry. This is a test window, not a product minimum grant duration.
+const MEMBER_SCREEN_GRANT_WINDOW_MS = 5000;
 
 function canonicalizeJson(val) {
   if (val === null || typeof val !== 'object') {
@@ -3447,10 +3450,8 @@ async function main() {
                 reqUrl.pathname === '/__e2e/finite-member-grant'
               ) {
                 // TEST ONLY: real product command, no entitlement/projection writes.
-                // There is no minimum duration beyond a future deadline. One second
-                // exercises real expiry without clock changes or a long test sleep.
                 const now = new Date();
-                const until = new Date(now.getTime() + 1000);
+                const until = new Date(now.getTime() + MEMBER_SCREEN_GRANT_WINDOW_MS);
                 const operation = await grantMemberEntitlementViaApi(
                   controlBaseUrl,
                   adminAuth,

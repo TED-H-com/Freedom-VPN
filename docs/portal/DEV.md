@@ -17,6 +17,7 @@ All Vite and E2E environment variables are optional and have contract-compliant 
 | `VITE_AUTH_BASE_URL` | `/auth` | Base URL prefix for browser session routes (`GET /auth/session`, `/auth/login`, `POST /auth/logout` in `src/api/auth.ts`). |
 | `VITE_API_MOCK` | `0` in prod build (`VITE_API_MOCK=1` only in dev) | Set to `1` in non-production dev to enable browser MSW mocking; production builds strip MSW completely. |
 | `VITE_API_PROXY_TARGET` | `http://127.0.0.1:8080` | Target origin for Vite's dev proxy when `VITE_API_MOCK=0`. |
+| `PORTAL_E2E_EVIDENCE_DIR` | unset | Optional absolute directory for AT04/F4-04 screenshots and visible text. Unset/empty disables capture; relative paths fail before any evidence is written. CI does not set this variable. |
 | `PORTAL_E2E_BASE_URL` | `http://127.0.0.1:4173` | Target URL for Playwright end-to-end tests (`apps/portal/playwright.config.ts`). |
 
 ---
@@ -34,6 +35,24 @@ make -f mk/portal.mk portal-e2e
 ```
 
 On hosts where `/tmp` is tmpfs, set `TMPDIR` for the entire target (including Chromium) to a unique, short disk-backed directory beneath `$HOME/agent-work/tmp/`, and remove it with Python after the run. Long worktree paths can exceed Chromium's Unix socket path limit. Do not use `/dev/shm` or another tmpfs for test data.
+
+### Optional member screen evidence (AT04 / F4-04)
+
+All screen assertions run with or without evidence capture. Set
+`PORTAL_E2E_EVIDENCE_DIR` to an explicit absolute directory to save the four
+state/language text files and twelve screenshots (1440, 768 and 390px). The suite
+creates that directory if necessary. For a local hand-off, use the absolute path
+to your worktree's ignored `.agent/screens` directory. Unset or empty means no
+screen evidence files or screenshots are produced; CI leaves it unset. A relative
+value fails the two tests before they perform any product actions or file writes.
+No evidence destination is inferred from the current working directory.
+
+The real-expiry test uses a five-second grant window to leave observation margin
+on slow runners; this is not a product minimum. It polls every 100 ms, bounded by
+the grant end when awaiting active and by ten seconds when awaiting expiry. It
+logs the remaining lifetime when active is first observed and requires it to be
+positive. The per-test timeout remains 45 seconds, with no clock changes or fixed
+long sleep.
 
 ### Product-Driven Seeding (`apps/portal/e2e/dev-stack.mjs`, D-050 / D-057 / D-058)
 `dev-stack.mjs` drives member groups, node enrollments, exit publication, and fleet update batches through the real control-plane and worker APIs:

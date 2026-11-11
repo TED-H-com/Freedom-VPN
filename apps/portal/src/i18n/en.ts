@@ -415,6 +415,10 @@ export const en: Record<TranslationKey, string> = {
   'admin.audit.col.result': 'Result & Sanitized Diff',
 
   // Member Portal (§18.4)
+  'common.none': 'None',
+  'member.service.loading': 'Loading service status...',
+  'member.service.normalSpeed': 'Normal speed',
+  'member.devices.authorizedCount': 'Authorized devices: {used}',
   'member.service.state.pending_payment': 'Awaiting payment',
   'member.service.state.confirming': 'Confirmation in progress',
   'member.service.state.active': 'Active',

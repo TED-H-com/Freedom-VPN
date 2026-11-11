@@ -376,6 +376,10 @@ export const zhTW = {
   'admin.audit.col.result': '結果與去敏前後差異',
 
   // Member Portal (§18.4)
+  'common.none': '無',
+  'member.service.loading': '正在載入服務狀態…',
+  'member.service.normalSpeed': '正常速度',
+  'member.devices.authorizedCount': '已授權裝置：{used} 台',
   'member.service.state.pending_payment': '待付款',
   'member.service.state.confirming': '開通中',
   'member.service.state.active': '有效',

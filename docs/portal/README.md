@@ -115,8 +115,11 @@ states, both pending-payment variants, exact bilingual copy, links, unknown-stat
 denial and accessibility. The live tests in `e2e/portal.spec.ts` create fresh
 members through OIDC, suspend via the administrator page, and let a real finite
 administrator grant expire. They compare the rendered screen to the member API,
-switch languages through the UI, and save screenshots and visible text under
-`.agent/screens/` (ignored). Their `finally` blocks restore the default member
+switch languages through the UI, and optionally save screenshots and visible text
+when `PORTAL_E2E_EVIDENCE_DIR` is an absolute directory (see [DEV.md](DEV.md)).
+Unset/empty disables capture without skipping assertions; CI leaves it unset.
+The finite grant lasts five seconds to allow slow-runner observation margin, not
+to impose a product minimum. Their `finally` blocks restore the default member
 session. No clocks or entitlement rows are edited for these tests.
 
 The live suite uses local fakes for OIDC, NetBird and Stripe. It does not exercise
