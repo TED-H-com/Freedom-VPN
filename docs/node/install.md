@@ -16,8 +16,16 @@ install.sh \
   -- install --manifest /var/tmp/fvpn-release/manifest.json \
        --artifact /var/tmp/fvpn-release/artifact.tar.zst \
        --trust /var/tmp/fvpn-release/trust.json \
+       --trust-bundle /var/tmp/fvpn-release/node-trust.json \
+       --desired-trust /var/tmp/fvpn-release/node-trust.json \
        ...
 ```
+
+Here `node-trust.json` is the central `fvpn-vault export-trust` output, delivered
+through an already authenticated channel. Use an export containing the central
+desired-state public key as well as the lease and recovery keys. Supply it to both
+`--trust-bundle` and `--desired-trust`; the release verification root passed to
+`--trust` need not contain those central keys. See [Node trust files](#node-trust-files).
 
 The script allows `https` URLs, and `http` only to `127.0.0.1` or `localhost` for a lab. It refuses a path segment of `latest`, a query string, a fragment, and a redirect (`curl` is not given `--location`). It downloads the named manifest envelope and the archive, extracts `fvpn-node-install`, compares that file to the pinned SHA-256, runs `fvpn-node-install verify-archive`, and execs the binary with the operator's arguments. Signature checks stay in `packaging/release`. The script does not invent install flags: repeat the `--out` paths on the `install` command.
 
@@ -54,6 +62,53 @@ Order:
 `--desired-trust` is the node trust store for desired state. When it is omitted, the installer copies the release trust to `/etc/vpn-node/desired-trust.json`. That file loads as a node trust store. It verifies a desired state only when the desired state was signed by a key in that store.
 
 The empty netns `fvpn` is a name reservation. `node/enforce` programs table `inet fvpn` in the host network namespace, so the data-plane interfaces stay there.
+
+### Node trust files
+
+These are the installer-generated paths. If configuration has been customized,
+follow `trust_bundle` in `agent.json` and `release_trust` / `desired_trust` in
+`updater.json` to the actual files. All three use the node trust store format
+accepted by `envelope.ParseNodeTrustStoreJSON`. Keys have separate purposes;
+loading a release-only store does not authorize a desired-state signature.
+
+| Installed file | Installer input | Reader and when read | Required key purposes for that reader | Failed verification |
+|---|---|---|---|---|
+| `/etc/vpn-node/trust.json` | `--trust-bundle` | `fvpn-agent`, once when its engine starts (`trust_bundle`). The usage store receives the same in-memory trust. | `desired-state` for desired state/policy, `lease` for serving leases, `recovery` for usage checkpoints. | The agent rejects invalid desired state or leases; previously accepted authorization can remain in force until its validity checks fail. Without valid authorization, member forwarding stays off. An invalid recovery checkpoint is rejected without adopting it. |
+| `/etc/vpn-node/release-trust.json` | `--trust` | `fvpn-updater`, when each invocation builds its engine (`release_trust`). | `release` for release manifests, including seed and rollback verification. | The release fails verification (`KeyUntrusted` or `SignatureInvalid` for key/signature failures) and cannot be accepted as a verified candidate or rollback target. |
+| `/etc/vpn-node/desired-trust.json` | `--desired-trust`; if omitted, a byte-for-byte copy of `--trust` | `fvpn-updater`, when each invocation builds its engine (`desired_trust`); the loaded store verifies each desired-state read. | `desired-state`, including the central key signing the desired-state envelope. | `WorkFromEnvelope` returns permanent `KeyUntrusted` or `SignatureInvalid`; `GuardSource` calls `Gate.Block` to block member forwarding. A verified state with no update job (`ErrNoWork`) does not trigger this block. |
+
+Replacing a file is not proof that its reader adopted it. The agent does not
+reload trust on SIGHUP: that signal reloads resolver credentials only. Restart
+`fvpn-agent.service` after replacing its trust file. The updater is a oneshot
+started by `fvpn-updater.timer`; its next invocation reads both configured trust
+files. For prompt adoption, let an active invocation finish, then start
+`fvpn-updater.service` again. Restarting the timer is unnecessary, and replacing
+a file does not change the trust held by an already running updater.
+
+After a central change, export fresh trust with `fvpn-vault export-trust`,
+authenticate its delivery, and replace the following node files with that
+export, preserving the old public records, capped validity windows and
+revocations included in it:
+
+| Central change | Node files to replace | Process action |
+|---|---|---|
+| Rotate or revoke `desired-state` | `trust.json` and `desired-trust.json` | Restart the agent; run a fresh updater invocation. Both readers need the change. |
+| Rotate or revoke `lease` | `trust.json` | Restart the agent. |
+| Rotate or revoke `recovery` | `trust.json` | Restart the agent, which also rebuilds its usage store. |
+| Apply a release trust update (including release-root addition, retirement or revocation) | `release-trust.json` | Run a fresh updater invocation. Nodes consume the exported store, not the signed release trust update envelope. |
+| Rotate or revoke `ledger-epoch` | None | No node process action; this purpose is central-only and excluded from node exports. |
+
+Replace each complete file atomically. There is no required order between the
+separate files, but a desired-state rollout is incomplete until both readers
+have adopted the export. An updater still holding old desired trust can block
+when the restarted agent writes desired state signed by the new key.
+Central rotation selects the new signer immediately;
+old-key overlap does not make a node trust the new key. Revocations likewise
+take effect at a reader only after it adopts the changed store. Confirm actual
+verification on the node before continuing the [central rotation runbook](../pki/rotation.md).
+A successful signature check alone does not authorize forwarding or clear all
+updater blocks. An installer `upgrade` does not refresh these trust files, and
+an `already_current` install rerun is not a trust rollout mechanism.
 
 ### Authenticated updater reporting (F10-02, §13.6, §13.10.3)
 
