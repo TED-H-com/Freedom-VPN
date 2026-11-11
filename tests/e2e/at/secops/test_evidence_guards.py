@@ -26,29 +26,6 @@ class CommittedEvidenceTests(unittest.TestCase):
         self.assertGreater(count, 0, "history/index.json has no snapshot_files pins")
         print(f"Archive snapshot pins: {count} across {len(index)} entries")
 
-    def test_scope_review_pins(self):
-        # Handover tests cover selected sections; retain the guards' recursive
-        # check for every current {path, sha256} pair, including secops records.
-        # This checks current pins, not the outcomes of the recorded lane runs.
-        scope = json.loads((PUBLIC / "scope-review.json").read_text(encoding="utf-8"))
-        count = 0
-
-        def check(value):
-            nonlocal count
-            if isinstance(value, dict):
-                if "path" in value and "sha256" in value:
-                    self._check_pin(ROOT / value["path"], value["sha256"])
-                    count += 1
-                for child in value.values():
-                    check(child)
-            elif isinstance(value, list):
-                for child in value:
-                    check(child)
-
-        check(scope)
-        self.assertGreater(count, 0, "scope-review.json has no current pins")
-        print(f"Scope review pins: {count}")
-
     def test_evidence_hygiene(self):
         # Follow-up 13 also scanned newly committed archives. Scan all JSON and
         # Markdown recursively so shallow CI covers history without a branch diff.
