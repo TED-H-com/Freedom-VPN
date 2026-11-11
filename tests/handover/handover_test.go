@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"gopkg.in/yaml.v3"
 
@@ -70,6 +71,7 @@ var ownedDocs = []string{
 	"docs/handover/follow-up-47.md",
 	"docs/handover/follow-up-48.md",
 	"docs/handover/follow-up-49.md",
+	"docs/handover/follow-up-50.md",
 	"docs/ops/README.md",
 	"docs/reviews/README.md",
 	"docs/reviews/r3-d055-review.md",
@@ -18355,7 +18357,7 @@ func TestHandover_Followup49Claims(t *testing.T) {
 		if oc.ConfirmedBy != "Ted" || oc.RelayedBy != "orchestrator" || oc.ConfirmedAt != "2026-11-04 17:1x EST" || len(oc.Decisions) != 14 || oc.Count != 14 || oc.SubsTotal != 15 || oc.D158Subs != 2 || oc.PrevAuth != "orchestrator — provisional; the owner may overturn" || oc.ConfAuth != "orchestrator — confirmed by Ted, 2026-11-04 17:1x EST" || oc.SubstChanged || oc.Overturned != 0 {
 			t.Fatal("owner confirmation provenance")
 		}
-		before, after := readOwnedDoc(t, root, followup49PriorPath("docs/handover/README.md")), readOwnedDoc(t, root, "docs/handover/README.md")
+		before, after := readOwnedDoc(t, root, followup49PriorPath("docs/handover/README.md")), readOwnedDoc(t, root, followup50PriorPath("docs/handover/README.md"))
 		re := regexp.MustCompile(`(?m)^\| D-\d{3}(?: \(provisional, 2026-11-05\))? \|.*$`)
 		old, now := re.FindAllString(before, -1), re.FindAllString(after, -1)
 		var d, f struct{ Updated, Added map[string]string }
@@ -18640,7 +18642,7 @@ func TestHandover_Followup49Claims(t *testing.T) {
 			t.Fatal("r33 proof test totals")
 		}
 		before := readOwnedDoc(t, root, followup49PriorPath("docs/reviews/README.md"))
-		after := readOwnedDoc(t, root, "docs/reviews/README.md")
+		after := readOwnedDoc(t, root, followup50PriorPath("docs/reviews/README.md"))
 		start := "## r32 dispositions at the follow-up 48 cutoff"
 		if strings.TrimRight(strings.Split(after, start)[1][:strings.Index(strings.Split(after, start)[1], "## r33 dispositions")], "\n") != strings.TrimRight(strings.Split(before, start)[1], "\n") {
 			t.Fatal("r32 dispositions must stay exact")
@@ -18719,7 +18721,7 @@ func TestHandover_Followup49Claims(t *testing.T) {
 			if path == "README.md" {
 				entrypointPath = fixture + "consolidation/README-followup49.md.txt"
 			}
-			doc := readOwnedDoc(t, root, entrypointPath)
+			doc := readOwnedDoc(t, root, followup50InputPath(entrypointPath))
 			cutLabel, priorLabel := "Current cut", "**Previous cut"
 			if path != "README.md" {
 				// Current navigation precedes the archived cut. Validate only this
@@ -18787,11 +18789,230 @@ func TestHandover_Followup49Claims(t *testing.T) {
 				t.Fatalf("unrelated guidance changed %s", path)
 			}
 		}
-		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		op := readOwnedDoc(t, root, followup50PriorPath("docs/handover/operator-guide.md"))
 		for _, anchor := range []string{"f30-01", "d156-release-rule", "r28-h-1", "at02-closed-recovery", "tcp-reload-guard", "observation-records"} {
 			if strings.Count(op, "<a id=\""+anchor+"\"></a>") != 1 {
 				t.Fatal("operator anchor")
 			}
+		}
+	})
+}
+
+func followup50PriorPath(path string) string {
+	return "tests/handover/testdata/history/follow-up-50/prior-" + strings.ReplaceAll(path, "/", "_") + ".txt"
+}
+
+// Preserve the pre-cut inputs of follow-up 49, including its navigation checks.
+// Its older README and deployment-body snapshots still take precedence.
+func followup50InputPath(path string) string {
+	switch path {
+	case "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md":
+		return followup50PriorPath(path)
+	default:
+		return path
+	}
+}
+
+// TestHandover_Followup50Claims records merged work and bounded guide revisions;
+// it makes no new runtime acceptance claim for the recorded deliveries.
+func TestHandover_Followup50Claims(t *testing.T) {
+	root := repoRoot(t)
+	const fixture = "tests/handover/testdata/"
+	const cut = "fe9bb436654e21f469afe507344bb4fbe25996d2"
+	hash := func(s string) string { sum := sha256.Sum256([]byte(s)); return hex.EncodeToString(sum[:]) }
+	readJSON := func(path string, dst any) {
+		t.Helper()
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, path)), dst); err != nil {
+			t.Fatalf("decode %s: %v", path, err)
+		}
+	}
+	// Pin the complete cut and each manifest, not just selected prose tokens.
+	for _, p := range []struct {
+		Path, SHA256 string
+		Bytes        int
+	}{
+		{"docs/handover/follow-up-50.md", "c6ea652240b649a18c0618145af5f5fd38542a5a391331cdebfbf397ea16984d", 17672},
+		{fixture + "followup50-main.json", "d81ba5f226a34d88c0b9df378880be461deb3175ff36e895b59603fdc2ecbc37", 14149},
+		{fixture + "followup50-snapshots.json", "e4eea7a90319381a23573867a50713df64db895c4b8ed1a53778ccb90abd8db8", 3738},
+		{fixture + "followup50-edits.json", "a987e3d2ff0166203a39cf439bc39f1729ddf64de6806ab363ce0961eadeb451", 23417},
+		{fixture + "followup50-prior-assertions.json", "df4b27f52014d5afb885becdd28d2db329daa2816fa9d7f84fd970df471b8c1f", 258},
+	} {
+		s := readOwnedDoc(t, root, p.Path)
+		if len(s) != p.Bytes || hash(s) != p.SHA256 {
+			t.Fatalf("immutable input changed: %s (bytes=%d sha256=%s)", p.Path, len(s), hash(s))
+		}
+	}
+	t.Run("exact_37_merged_deliveries", func(t *testing.T) {
+		var m struct {
+			SourceCommit string `json:"source_commit"`
+			PreviousCut  string `json:"previous_cut"`
+			MergedPRs    []int  `json:"merged_prs"`
+			NotMerged    []int  `json:"not_merged"`
+			PRs          []struct {
+				Number        int
+				Title         string
+				MergeCommit   string `json:"merge_commit"`
+				PreMergeHead  string `json:"pre_merge_head"`
+				MergedAt      string `json:"merged_at"`
+				RoadmapCommit string `json:"roadmap_commit"`
+			}
+		}
+		readJSON(fixture+"followup50-main.json", &m)
+		want := []int{486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 520, 521, 522, 523}
+		if m.SourceCommit != cut || m.PreviousCut != "aaffdc7fe176c5e3edc521c8ca491bff28bd4a6f" || !slices.Equal(m.MergedPRs, want) || !slices.Equal(m.NotMerged, []int{519}) || len(m.PRs) != len(want) {
+			t.Fatal("cut inventory")
+		}
+		doc := readOwnedDoc(t, root, "docs/handover/follow-up-50.md")
+		rows := regexp.MustCompile(`(?m)^\| \[#(\d+)\]\(https://github\.com/TED-H-com/Freedom-VPN/pull/(\d+)\) \| ([^|]+) \| `+"`([0-9a-f]{40})`"+` \| ([^|]+) \|$`).FindAllStringSubmatch(doc, -1)
+		if len(rows) != len(want) {
+			t.Fatalf("merged PR rows = %d, want %d", len(rows), len(want))
+		}
+		seen := make(map[string]bool)
+		shaRE := regexp.MustCompile(`^[0-9a-f]{40}$`)
+		for i, p := range m.PRs {
+			if p.Number != want[i] || p.Title == "" || !shaRE.MatchString(p.MergeCommit) || !shaRE.MatchString(p.PreMergeHead) || !shaRE.MatchString(p.RoadmapCommit) {
+				t.Fatalf("PR provenance: %d", p.Number)
+			}
+			if _, err := time.Parse(time.RFC3339, p.MergedAt); err != nil || !strings.HasSuffix(p.MergedAt, "Z") {
+				t.Fatalf("merge time: %d", p.Number)
+			}
+			count := 0
+			for _, row := range rows {
+				if row[1] == fmt.Sprint(p.Number) {
+					count++
+					if row[2] != row[1] || row[3] != p.Title || row[4] != p.MergeCommit || strings.TrimSpace(row[5]) == "" || seen[row[1]] {
+						t.Fatalf("PR row disagrees with manifest: %d", p.Number)
+					}
+					seen[row[1]] = true
+				}
+			}
+			if count != 1 {
+				t.Fatalf("PR %d occurs in %d rows", p.Number, count)
+			}
+		}
+		if m.PRs[len(m.PRs)-1].MergeCommit != "73d3c4b00571c34e0ad6ca97d5d51b2421ad81d6" || m.PRs[len(m.PRs)-1].RoadmapCommit != cut || strings.Count(doc, "#519") != 1 || !strings.Contains(doc, "was closed without merging") || strings.Contains(doc, "```sql") {
+			t.Fatal("cutoff, excluded PR or SQL boundary")
+		}
+	})
+	paths := []string{"README.md", "README.zh-TW.md", "docs/DELIVERY.md", "docs/DELIVERY.en.md", "docs/handover/00-index.md", "docs/handover/README.md", "docs/handover/deploy.md", "docs/handover/member-guide.md", "docs/handover/operator-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md", "docs/reviews/README.md"}
+	var snapshots []struct {
+		Source, Snapshot, SHA256 string
+		SourceCommit             string `json:"source_commit"`
+		Bytes                    int
+	}
+	readJSON(fixture+"followup50-snapshots.json", &snapshots)
+	t.Run("frozen_pre_cut_provenance", func(t *testing.T) {
+		if len(snapshots) != len(paths) {
+			t.Fatal("pre-cut snapshot count")
+		}
+		for i, p := range snapshots {
+			if p.Source != paths[i] || p.SourceCommit != cut || p.Snapshot != followup50PriorPath(p.Source) {
+				t.Fatalf("pre-cut provenance: %s", p.Source)
+			}
+			s := readOwnedDoc(t, root, p.Snapshot)
+			if len(s) != p.Bytes || hash(s) != p.SHA256 {
+				t.Fatalf("frozen pre-cut copy changed: %s", p.Source)
+			}
+		}
+	})
+	t.Run("only_cut_lines_and_authorized_guide_revisions", func(t *testing.T) {
+		var edits []struct{ Path, Name, Before, After string }
+		readJSON(fixture+"followup50-edits.json", &edits)
+		if len(edits) != 19 {
+			t.Fatal("bounded edit count")
+		}
+		used := 0
+		for _, path := range paths {
+			want := readOwnedDoc(t, root, followup50PriorPath(path))
+			cutEdits := 0
+			for _, e := range edits {
+				if e.Path != path {
+					continue
+				}
+				used++
+				if e.Before == "" || e.After == "" || e.Before == e.After || strings.Count(want, e.Before) != 1 {
+					t.Fatalf("edit is not unique: %s/%s", path, e.Name)
+				}
+				if e.Name == "cut_lines" {
+					cutEdits++
+					if !strings.Contains(e.After, "follow-up-50.md") || !strings.Contains(e.After, "follow-up-49.md") || !strings.Contains(e.After, "fe9bb436") {
+						t.Fatalf("latest and earlier cut links: %s", path)
+					}
+				}
+				want = strings.Replace(want, e.Before, e.After, 1)
+			}
+			if cutEdits != 1 || readOwnedDoc(t, root, path) != want {
+				t.Errorf("unrelated guide or entrypoint bytes changed: %s", path)
+			}
+		}
+		if used != len(edits) {
+			t.Fatal("edit outside owned entrypoints")
+		}
+	})
+	t.Run("current_guide_instructions_and_links", func(t *testing.T) {
+		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		for _, old := range []string{"vault.Rotate(", "vault.TrustBundle(", "vault.Revoke(", "vault.UpdateReleaseTrust(", "signing.FileProvider.Rotate"} {
+			if strings.Contains(op, old) {
+				t.Fatalf("old Go-method instruction remains: %s", old)
+			}
+		}
+		section := func(s, start, end string) string {
+			t.Helper()
+			_, tail, ok := strings.Cut(s, start)
+			if !ok {
+				t.Fatal("missing section", start)
+			}
+			body, _, ok := strings.Cut(tail, end)
+			if !ok {
+				t.Fatal("missing section end", end)
+			}
+			return body
+		}
+		require := func(s string, tokens ...string) {
+			t.Helper()
+			for _, token := range tokens {
+				if !strings.Contains(s, token) {
+					t.Errorf("current guide instruction missing %q", token)
+				}
+			}
+		}
+		weekly := section(op, "### 1.2 Weekly Operator Tasks", "## 2.")
+		if strings.Contains(weekly, "state.json") {
+			t.Fatal("weekly checklist still reads vault state directly")
+		}
+		require(weekly, "fvpn-vault inspect", "../pki/inspect.md#metadata-inspection", "window_status")
+		require(section(op, "### 8.1 ", "### 8.2 "), "fvpn-vault inspect", "fvpn-vault-keys rotate", "fvpn-vault export-trust", "fvpn-vault-keys revoke", "`retired`", "signs immediately", "-expect-active-key none", "../pki/keys.md", "../pki/inspect.md", "../pki/rotation.md#central-signing-keys", "../node/install.md#node-trust-files")
+		require(section(op, "### 8.2 ", "### 8.3 "), "fvpn-release trust-update", "fvpn-release trust-verify", "fvpn-vault-keys apply-release-update", "separate updates at consecutive revisions", "../updates/release-process.md", "../pki/keys.md", "../pki/rotation.md#release-verification-trust", "../node/install.md#node-trust-files")
+		member := readOwnedDoc(t, root, "docs/handover/member-guide.md")
+		if strings.Contains(member, "would_apply_tier") || strings.Contains(member, "throttled") {
+			t.Fatal("old member shadow-mode fields remain")
+		}
+		for _, start := range []string{"- **觀測模式", "- **Shadow Mode"} {
+			require(section(member, start, "\n"), "FairUseStatus", "state: normal", "state: adjusted", "applying", "../../contracts/openapi.yaml", "../portal/README.md")
+		}
+	})
+	t.Run("followup49_assertions_preserved", func(t *testing.T) {
+		var p struct {
+			Source, Function, SHA256 string
+			SourceCommit             string `json:"source_commit"`
+			Bytes                    int
+		}
+		readJSON(fixture+"followup50-prior-assertions.json", &p)
+		if p.Source != "tests/handover/handover_test.go" || p.SourceCommit != cut || p.Function != "TestHandover_Followup49Claims" {
+			t.Fatal("prior assertion provenance")
+		}
+		source := readOwnedDoc(t, root, p.Source)
+		body := regexp.MustCompile(`(?s)func TestHandover_Followup49Claims\(.*?\n}`).FindString(source)
+		// Undo exactly four read-expression redirects. Every assertion, expected
+		// digest, navigation check and existing frozen read must remain identical.
+		body = strings.NewReplacer(
+			`readOwnedDoc(t, root, followup50PriorPath("docs/handover/README.md"))`, `readOwnedDoc(t, root, "docs/handover/README.md")`,
+			`readOwnedDoc(t, root, followup50PriorPath("docs/reviews/README.md"))`, `readOwnedDoc(t, root, "docs/reviews/README.md")`,
+			`readOwnedDoc(t, root, followup50InputPath(entrypointPath))`, `readOwnedDoc(t, root, entrypointPath)`,
+			`readOwnedDoc(t, root, followup50PriorPath("docs/handover/operator-guide.md"))`, `readOwnedDoc(t, root, "docs/handover/operator-guide.md")`,
+		).Replace(body)
+		if len(body) != p.Bytes || hash(body) != p.SHA256 {
+			t.Fatal("follow-up 49 assertions changed outside frozen-copy reads")
 		}
 	})
 }

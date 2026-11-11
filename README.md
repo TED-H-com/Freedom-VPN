@@ -146,8 +146,8 @@ and [acceptance records](docs/e2e/README.md) retain the engineering history.
 <details>
 <summary>Recorded engineering checkpoints</summary>
 
-**Latest archived checkpoint:** [follow-up 49](docs/handover/follow-up-49.md), #482–#485 at aaffdc7f.
-**Previous archived checkpoint:** [follow-up 48](docs/handover/follow-up-48.md), #478–#481 at b921c75f.
+**Latest archived checkpoint:** [follow-up 50](docs/handover/follow-up-50.md), #486–#518 and #520–#523 at fe9bb436.
+**Previous archived checkpoint:** [follow-up 49](docs/handover/follow-up-49.md), #482–#485 at aaffdc7f.
 
 </details>
 

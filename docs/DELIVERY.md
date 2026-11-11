@@ -28,21 +28,17 @@ Freedom VPN 以自架 NetBird 和官方 App 為基礎，提供會員、出口節
    [會員指南](handover/member-guide.md)；備份與故障回復依 [還原演練](handover/restore-drill.md)。
 4. **維護程式：**先讀 [工程規範](../AGENTS.md)、[API 契約](contracts/README.md) 與相關元件文件。
 
-## 交接指南中已過時的說明
+## 交接指南修訂
 
-[營運指南](handover/operator-guide.md) 與 [會員指南](handover/member-guide.md) 是封存的歷史交付切點，後續不再直接修改。若指南內容與下列文件不同，請以目前的文件與指令為準。
+[Follow-up 50](handover/follow-up-50.md) 修訂營運指南的每週金鑰檢查（§1.2）、中央金鑰輪替與撤銷（§8.1）、發行信任更新（§8.2），以及會員指南的觀測模式說明（§5.3，中英兩版）。這些位置現在直接連結目前的指令與行為說明。
 
-| 位置 | 指南原有說明 | 目前適用作法與文件 |
-|---|---|---|
-| [營運指南](handover/operator-guide.md) §8.1（第 1096–1104 行） | 呼叫 Go 方法 `vault.Rotate(ctx, purpose, validityDuration, overlapDuration)`、`vault.TrustBundle(ctx)` 與 `vault.Revoke(ctx, keyID)`，且舊金鑰狀態轉為 `retiring` | 使用 `fvpn-vault inspect`、`fvpn-vault export-trust`（[金鑰庫檢查與匯出](pki/inspect.md)）及 `fvpn-vault-keys rotate`、`fvpn-vault-keys revoke`（[中央金鑰指令](pki/keys.md)）；金鑰狀態為 `active`、`retired`、`revoked`，輪替與推展規則見 [金鑰輪替與還原](pki/rotation.md#central-signing-keys) |
-| [營運指南](handover/operator-guide.md) §8.2（第 1106–1110 行） | 以新舊發行金鑰同時簽署單一 `fvpn-release-trust-v1` 輪替封套，並以 `vault.UpdateReleaseTrust(ctx, rotationEnvelopeBytes, now)` 套用 | `fvpn-release trust-update` 每次恰指定 `-add`、`-retire` 或 `-revoke` 其中之一並以單一金鑰簽署；信任根交接依 [發行流程](updates/release-process.md) 所述，按連續版本號以獨立更新分步進行，中央套用步驟（`fvpn-vault-keys apply-release-update`）見 [輪替操作手冊](pki/rotation.md#release-verification-trust) |
-| [營運指南](handover/operator-guide.md) §1.2（第 259 行，每週工作） | 直接讀取 `/var/lib/fvpn/vault/state.json` 與節點信任檔，檢查接近 `not_after` 的啟用金鑰 | 執行 `fvpn-vault inspect` 檢視每把金鑰的 `state`、`not_before`、`not_after` 與 `window_status`（[金鑰庫檢查與匯出](pki/inspect.md#metadata-inspection)） |
-| [會員指南](handover/member-guide.md) §5.3（第 235、465 行） | 在 `shadow` 模式下，入口網站顯示 `would_apply_tier` 且 `throttled` 維持 `false` | 會員用量回應的 `FairUseStatus` 不含這兩個欄位；`shadow` 模式回傳 `state: normal`（級距、速率與原因為 `null`），且入口網站僅在 `state: adjusted` 時顯示調速提示（[API 契約](../contracts/openapi.yaml)、[入口網站文件](portal/README.md)） |
+現行指南可以接受限定範圍的修正。較早交付切點及其精確測試輸入持續封存；follow-up 50 保存修訂前副本，並檢查其餘指南內文的所有位元組保持不變。目前操作程序見 [金鑰庫檢查與匯出](pki/inspect.md)、[中央金鑰指令](pki/keys.md)、[金鑰輪替與還原](pki/rotation.md)、[發行流程](updates/release-process.md)、[節點信任檔](node/install.md#node-trust-files)、[API 契約](../contracts/openapi.yaml) 與 [入口網站文件](portal/README.md)。
 
 ## 驗證範圍與已知限制
 
-[合併紀錄](ROADMAP.md) 追蹤目前實作；[follow-up 49](handover/follow-up-49.md)
-保存 #482–#485 的歷史交付切點，後續成果以各項驗收紀錄為準。
+[合併紀錄](ROADMAP.md) 追蹤目前實作；[follow-up 50](handover/follow-up-50.md)
+保存 `fe9bb436` 的 #486–#518 與 #520–#523 交付切點；較早的
+[follow-up 49](handover/follow-up-49.md) 保留 #482–#485。後續成果以各項驗收紀錄為準。
 單元／整合測試、Linux 實驗環境、真實 App 裝置和正式部署各有不同的驗證範圍。
 本導覽不宣告正式發行，也不以文件整理替代尚未完成的驗收。
 
