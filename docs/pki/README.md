@@ -35,7 +35,8 @@ CA handles recheck the ledger on every signature, even if previously acquired.
 Nodes receive only `TrustBundle`, serialized in the `pkg/envelope` trust-store
 format. It excludes CA private material, encryption keys and central-only
 ledger-epoch keys. See [rotation and recovery](rotation.md) for the limits of a
-local file ledger and production requirements.
+local file ledger and production requirements. For conditional central-key
+rotation and revocation, see [`fvpn-vault-keys`](keys.md).
 
 ## CA and identity (§6.4, §14.4, §15.3)
 

@@ -93,15 +93,23 @@ the node has the updated revocation information.
 
 When a conditional call returns an outcome, stdout receives exactly one
 indented JSON document followed by a newline. These outcomes have empty
-stderr, including nonzero outcomes. Exit 0 means a newly applied mutation;
-exit 1 is the distinct successful no-change revocation result. Scripts must
-explicitly accept exit 1 for idempotent revocation.
+stderr, including nonzero outcomes. Exit 0 means a newly applied mutation or
+successful no-change revocation; `outcome: "already_revoked"` distinguishes the
+latter. The command never exits with 1.
+
+An exit status alone is not an outcome. Accept an outcome only together with
+its documented output: the stdout document with empty stderr, or, for outcomes
+without a document, the fixed stderr line and no stdout. Any other combination
+(for example status 2 from a Go runtime failure or a status set by a wrapper)
+must be handled like `unknown`: inspect before acting, never repeat blindly.
+For exit 9, the fixed output-failure line identifies the lost outcome class;
+stdout may contain a partial document, which is not a receipt.
 
 | Exit | `outcome` | Meaning and next action |
 |---|---|---|
 | `0` | `applied` (rotate) | New key active, ledger save completed. Preserve the result and perform the required trust rollout. Do not repeat the rotation. |
 | `0` | `revoked` (revoke) | Key revoked, ledger save completed. Distribute revocation urgently for node-held purposes. If the active key was revoked, the purpose has no signer until a fresh rotation. |
-| `1` | `already_revoked` (revoke only) | Successful no-op. Recorded revocation time is returned unchanged. Preserve current revocation records and confirm trust rollout as needed. |
+| `0` | `already_revoked` (revoke only) | Successful no-op. Recorded revocation time is returned unchanged. Preserve current revocation records and confirm trust rollout as needed. |
 | `5` | `precondition_refused` | Nothing changed. No vault contents are echoed. Run `fvpn-vault inspect` and decide on a new action; do not automatically refresh arguments. |
 | `6` | `not_applied` | Failure before ledger replacement was attempted. If `unreferenced_key_id` is present, a private file was created and left behind, possibly incomplete. Inspect before retrying; do not remove anything automatically. |
 | `7` | `durability_not_confirmed` | Applied/revoked state was observed in a fresh locked snapshot at the expected next revision, after a save error at/after rename. Preserve evidence and investigate storage durability. Do not rotate/revoke again. |
