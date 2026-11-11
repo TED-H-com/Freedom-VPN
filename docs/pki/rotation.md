@@ -14,8 +14,10 @@ recommendations.
    a fresh key and atomically switches the active reference. The previous key
    becomes retired immediately; it is retained for verification until the
    earlier of its original expiry and rotation time plus overlap.
-3. Export `TrustBundle` and deliver it through an already authenticated trust
-   channel. Never accept trust from the same unauthenticated response as an
+3. Run `fvpn-vault export-trust -vault EXISTING_VAULT -out NEW_FILE`
+   ([inspection and export](inspect.md)) and deliver the public bundle through
+   an already authenticated trust channel. Rotation and revocation still use
+   the Go APIs above/below; this command only exports existing trust. Never accept trust from the same unauthenticated response as an
    unknown artifact. A signing-key rotation and a node trust-bundle rollout
    need coordination: a node lacking the new key fails closed. This service
    does not claim that writing a bundle means all nodes have accepted it.
