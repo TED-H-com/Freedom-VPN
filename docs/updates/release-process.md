@@ -90,9 +90,11 @@ ASCII characters, starting with a letter or digit, then letters, digits, `.`,
 `_`, `:` or `-`. The producer refuses an unsignable `-key` ID or a new `-add`
 ID before signing. Existing opaque IDs remain valid targets for retirement
 and revocation. This signable-ID restriction is producer-only; `trust-verify`
-continues to report opaque record IDs accepted by the centre. The legacy
-`keygen` still accepts IDs such as `release B`, but the legacy `sign` rejects
-that ID when validating its manifest envelope. Choose a signable ID up front.
+continues to report opaque record IDs accepted by the centre. `keygen` refuses
+non-empty IDs such as `release B` before generating a key or touching either
+output path, with exit 1, no stdout and the stderr diagnostic
+`fvpn-release: -key-id cannot sign: must match ^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$`.
+An empty ID still gets `fvpn-release: keygen requires -key-id and -out`.
 
 First generate B on the build machine, then have the currently trusted A
 approve B. This example starts at centre release revision 0:

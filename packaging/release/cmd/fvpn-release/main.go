@@ -216,6 +216,9 @@ func cmdKeygen(args []string, stdout, stderr io.Writer) error {
 	if *keyID == "" || *out == "" {
 		return fmt.Errorf("keygen requires -key-id and -out")
 	}
+	if !trustSignerID.MatchString(*keyID) {
+		return fmt.Errorf("-key-id cannot sign: must match %s", trustSignerIDPattern)
+	}
 	key, err := release.GenerateKey(*keyID)
 	if err != nil {
 		return err

@@ -444,7 +444,8 @@ func TestCompiler_ReSignETag304AndIdentityMismatch(t *testing.T) {
 func TestCompiler_DBReaders_ReleaseNull_FUPShadowEnforce_DNSProfile_AndMissingPlanRate(t *testing.T) {
 	pool := dbtest.New(t)
 	ctx := context.Background()
-	now := time.Date(2026, 10, 28, 15, 0, 0, 0, time.UTC)
+	now := time.Now().UTC().Truncate(time.Hour)
+	period := DefaultAccountingPeriod(now)
 
 	grpID := uuid.New()
 	if _, err := pool.Exec(ctx, `INSERT INTO member_groups (id, code, name) VALUES ($1, 'grp-db', 'grp-db')`, grpID); err != nil {
@@ -561,7 +562,7 @@ func TestCompiler_DBReaders_ReleaseNull_FUPShadowEnforce_DNSProfile_AndMissingPl
 
 	// Payload includes a decoy resolver_ipv4 to verify resolver addresses come only from compiler config.
 	dnsRevID := insertActivePolicy(string(api.PolicyTypeDnsProfile), 9, `{"resolver_ipv4":["198.51.100.53"],"resolver_ipv6":[]}`)
-	fupEnforceRev := insertActivePolicy(string(api.PolicyTypeFairUse), 6, `{"mode":"enforce","effective_at":"2026-10-01T00:00:00Z"}`)
+	fupEnforceRev := insertActivePolicy(string(api.PolicyTypeFairUse), 6, fmt.Sprintf(`{"mode":"enforce","effective_at":%q}`, now.Add(-24*time.Hour).Format(time.RFC3339)))
 
 	// Before any published head exists in dns_publication_heads, DnsGeneration must be 0 even with an active dns_profile revision.
 	compiledBeforeDNSHead, err := compiler.Compile(ctx, nodeID)
@@ -597,7 +598,7 @@ func TestCompiler_DBReaders_ReleaseNull_FUPShadowEnforce_DNSProfile_AndMissingPl
 	// Also insert a future fair_use revision (effective_at > now) on a second definition for before-effective_at testing.
 	futureDefID := uuid.New()
 	futureRevID := uuid.New()
-	futurePayload := `{"mode":"enforce","effective_at":"2026-11-01T00:00:00Z"}`
+	futurePayload := fmt.Sprintf(`{"mode":"enforce","effective_at":%q}`, now.Add(72*time.Hour).Format(time.RFC3339))
 	futureSum := sha256.Sum256([]byte(futurePayload))
 	if _, err := pool.Exec(ctx, `INSERT INTO policy_definitions (id, type, code, generation) VALUES ($1, 'fair_use', $2, 5)`, futureDefID, "fup-future-"+futureDefID.String()[:8]); err != nil {
 		t.Fatalf("insert future fup def: %v", err)
@@ -664,7 +665,7 @@ func TestCompiler_DBReaders_ReleaseNull_FUPShadowEnforce_DNSProfile_AndMissingPl
 	memberEnforce := seedMemberWithBinding("enforce@example.com", planWithRate, "100.64.0.43")
 	memberMissingRate := seedMemberWithBinding("norate@example.com", planWithoutRate, "100.64.0.44")
 
-	// Seed fup_member_states for period 2026-10:
+	// Seed fup_member_states for the current UTC accounting period:
 	// - memberShadow: mode=shadow, would_apply_down_bps=1000, generation=4 -> must compile mode=shadow with null tier rate (min(100M, 60M) = 60M).
 	if _, err := pool.Exec(ctx, `
 		INSERT INTO fup_member_states (
@@ -672,14 +673,14 @@ func TestCompiler_DBReaders_ReleaseNull_FUPShadowEnforce_DNSProfile_AndMissingPl
 			mode, would_apply_tier_index, would_apply_down_bps, would_apply_up_bps,
 			would_apply_priority, would_apply_reason, generation, aggregate_as_of
 		) VALUES (
-			$1, '2026-10', '2026-10-01T00:00:00Z', '2026-11-01T00:00:00Z', $2,
+			$1, $2, $3, $4, $5,
 			'shadow', 2, 1000, 1000,
-			3, 'fair_use_tier', 4, $3
-		)`, memberShadow, fupEnforceRev, now); err != nil {
+			3, 'fair_use_tier', 4, $6
+		)`, memberShadow, period.PeriodId, period.PeriodStart, period.PeriodEnd, fupEnforceRev, now); err != nil {
 		t.Fatalf("insert fup shadow state: %v", err)
 	}
 
-	// - memberBeforeEffective: mode=enforce on futureRevID (effective_at = 2026-11-01 > now) -> must compile mode=shadow with null tier rate.
+	// - memberBeforeEffective: mode=enforce on futureRevID (effective_at > now) -> must compile mode=shadow with null tier rate.
 	if _, err := pool.Exec(ctx, `
 		INSERT INTO fup_member_states (
 			member_id, period_id, period_start, period_end, policy_revision_id,
@@ -688,12 +689,12 @@ func TestCompiler_DBReaders_ReleaseNull_FUPShadowEnforce_DNSProfile_AndMissingPl
 			enforced_state, enforced_tier_index, enforced_down_bps, enforced_up_bps,
 			enforced_priority, enforced_reason, generation, aggregate_as_of
 		) VALUES (
-			$1, '2026-10', '2026-10-01T00:00:00Z', '2026-11-01T00:00:00Z', $2,
+			$1, $2, $3, $4, $5,
 			'enforce', 1, 5000000, 2000000,
 			2, 'fair_use_tier',
 			'adjusted', 1, 5000000, 2000000,
-			2, 'fair_use_tier', 5, $3
-		)`, memberBeforeEffective, futureRevID, now); err != nil {
+			2, 'fair_use_tier', 5, $6
+		)`, memberBeforeEffective, period.PeriodId, period.PeriodStart, period.PeriodEnd, futureRevID, now); err != nil {
 		t.Fatalf("insert fup before-effective state: %v", err)
 	}
 
@@ -706,12 +707,12 @@ func TestCompiler_DBReaders_ReleaseNull_FUPShadowEnforce_DNSProfile_AndMissingPl
 			enforced_state, enforced_tier_index, enforced_down_bps, enforced_up_bps,
 			enforced_priority, enforced_reason, generation, aggregate_as_of
 		) VALUES (
-			$1, '2026-10', '2026-10-01T00:00:00Z', '2026-11-01T00:00:00Z', $2,
+			$1, $2, $3, $4, $5,
 			'enforce', 2, 15000000, 8000000,
 			4, 'fair_use_tier',
 			'adjusted', 2, 15000000, 8000000,
-			4, 'fair_use_tier', 7, $3
-		)`, memberEnforce, fupEnforceRev, now); err != nil {
+			4, 'fair_use_tier', 7, $6
+		)`, memberEnforce, period.PeriodId, period.PeriodStart, period.PeriodEnd, fupEnforceRev, now); err != nil {
 		t.Fatalf("insert fup enforce state: %v", err)
 	}
 
@@ -867,7 +868,8 @@ func nullableValue[T any](t *testing.T, n interface{ Get() (T, error) }) T {
 func TestCompiler_ThreeFUPTiersAndNodeCapacityMatchesFUPBuilder(t *testing.T) {
 	pool := dbtest.New(t)
 	ctx := context.Background()
-	now := time.Date(2026, 10, 29, 17, 0, 0, 0, time.UTC)
+	now := time.Now().UTC().Truncate(time.Hour)
+	period := DefaultAccountingPeriod(now)
 
 	grpID := uuid.New()
 	if _, err := pool.Exec(ctx, `INSERT INTO member_groups (id, code, name) VALUES ($1, 'grp-tiers', 'grp-tiers')`, grpID); err != nil {
@@ -889,7 +891,7 @@ func TestCompiler_ThreeFUPTiersAndNodeCapacityMatchesFUPBuilder(t *testing.T) {
 	// Activate an enforce-mode fair_use policy revision.
 	fupDefID := uuid.New()
 	fupRevID := uuid.New()
-	fupPayload := `{"mode":"enforce","effective_at":"2026-10-01T00:00:00Z"}`
+	fupPayload := fmt.Sprintf(`{"mode":"enforce","effective_at":%q}`, now.Add(-24*time.Hour).Format(time.RFC3339))
 	fupSum := sha256.Sum256([]byte(fupPayload))
 	if _, err := pool.Exec(ctx, `INSERT INTO policy_definitions (id, type, code, generation) VALUES ($1, 'fair_use', 'fup-tiers', 3)`, fupDefID); err != nil {
 		t.Fatalf("insert fair_use def: %v", err)
@@ -1022,13 +1024,13 @@ func TestCompiler_ThreeFUPTiersAndNodeCapacityMatchesFUPBuilder(t *testing.T) {
 				enforced_state, enforced_tier_index, enforced_down_bps, enforced_up_bps,
 				enforced_priority, enforced_reason, generation, aggregate_as_of
 			) VALUES (
-				$1, '2026-10', '2026-10-01T00:00:00Z', '2026-11-01T00:00:00Z', $2,
-				'enforce', $3, $4, $5,
-				$6, $7,
-				$8, $3, $4, $5,
-				$6, $7, $9, $10
+				$1, $2, $3, $4, $5,
+				'enforce', $6, $7, $8,
+				$9, $10,
+				$11, $6, $7, $8,
+				$9, $10, $12, $13
 			)`,
-			tc.memberID, fupRevID,
+			tc.memberID, period.PeriodId, period.PeriodStart, period.PeriodEnd, fupRevID,
 			tc.tierIndex, tc.tierDown, tc.tierUp,
 			tc.priority, string(tc.reason),
 			tc.state, tc.generation, now); err != nil {
@@ -1065,7 +1067,7 @@ func TestCompiler_ThreeFUPTiersAndNodeCapacityMatchesFUPBuilder(t *testing.T) {
 		rsn := tc.reason
 		eval := &fup.EvaluationResult{
 			MemberID:          tc.memberID,
-			PeriodID:          "2026-10",
+			PeriodID:          period.PeriodId,
 			Mode:              api.FairUsePayloadModeEnforce,
 			Generation:        nodes.ParseU64(tc.generation),
 			EnforcedTierIndex: tc.tierIndex,

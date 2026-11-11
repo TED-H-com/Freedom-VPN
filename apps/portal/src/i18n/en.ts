@@ -477,6 +477,17 @@ export const en: Record<TranslationKey, string> = {
     'High usage this period: speed has been adjusted under the Fair Use Policy.',
   'member.service.fupThrottledBanner':
     'High usage this period: speed has been adjusted under the Fair Use Policy; next reset is {resetAt}',
+  'member.service.fupOverrideBanner':
+    'An administrator has temporarily adjusted your speed; it will be recalculated at {resetAt}.',
+  'member.service.fupOverrideWithoutDate':
+    'An administrator has temporarily adjusted your speed.',
+  'member.service.fupAdjustedBanner':
+    'Your speed is currently adjusted; it will be recalculated at {resetAt}.',
+  'member.service.fupAdjustedWithoutDate': 'Your speed is currently adjusted.',
+  'member.service.fupApplying':
+    'Your speed setting is still being applied; some exit nodes may not have it yet.',
+  'member.service.fupOverrideLabel': 'Temporarily adjusted by an administrator',
+  'member.service.fupAdjustedLabel': 'Speed adjusted',
 
   'member.gettingStarted.title': 'Getting Started & Per-OS Setup Guide (§7.3, §18.4)',
   'member.gettingStarted.subtitle':
