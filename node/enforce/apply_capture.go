@@ -16,14 +16,16 @@ type ApplyCaptureForTest struct {
 	TimeoutReserve time.Duration `json:"timeout_reserve_ns,string"`
 }
 
-type applyCaptureKey struct{}
+type applyCaptureKeyType int
+
+const applyCaptureKey applyCaptureKeyType = 0
 
 func WithApplyCaptureForTest(ctx context.Context, capture *ApplyCaptureForTest) context.Context {
-	return context.WithValue(ctx, applyCaptureKey{}, capture)
+	return context.WithValue(ctx, applyCaptureKey, capture)
 }
 
 func captureRenderForTest(ctx context.Context, m Model) {
-	if capture, _ := ctx.Value(applyCaptureKey{}).(*ApplyCaptureForTest); capture != nil {
+	if capture, _ := ctx.Value(applyCaptureKey).(*ApplyCaptureForTest); capture != nil {
 		*capture = ApplyCaptureForTest{true, m, m.timeoutReserve}
 	}
 }

@@ -134,7 +134,7 @@ type lifecycleApplyExec struct {
 }
 
 func (e *lifecycleApplyExec) NftBatch(ctx context.Context, script string) error {
-	scope, ok := ctx.Value(commandScopeKey{}).(commandScope)
+	scope, ok := ctx.Value(commandScopeKey).(*commandScope)
 	if !ok {
 		return errors.New("missing test measurement scope")
 	}
@@ -150,7 +150,7 @@ func (e *lifecycleApplyExec) NftBatch(ctx context.Context, script string) error 
 	return e.fakeExec.NftBatch(ctx, script)
 }
 func (e *lifecycleApplyExec) Output(ctx context.Context, name string, args ...string) ([]byte, error) {
-	scope, ok := ctx.Value(commandScopeKey{}).(commandScope)
+	scope, ok := ctx.Value(commandScopeKey).(*commandScope)
 	if !ok {
 		return nil, errors.New("missing scope")
 	}

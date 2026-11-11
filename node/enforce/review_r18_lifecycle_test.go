@@ -22,7 +22,7 @@ func TestReviewR18_DisabledLifecycleDoesNotAllocate(t *testing.T) {
 		}
 	})
 	if allocs != 0 {
-		t.Fatalf("TODO(review): with the lifecycle and render-capture keys absent, beginCommandMeasurement, commandPhase and captureRenderForTest allocated %v times per call; D-138 said each site does one context lookup and nothing else", allocs)
+		t.Fatalf("disabled lifecycle allocated %v times per call, expected 0", allocs)
 	}
 }
 
@@ -51,7 +51,7 @@ func TestReviewR18_DisabledRunCommandMatchesRun(t *testing.T) {
 		}
 	})
 	if got-base > 1 {
-		t.Fatalf("TODO(review): disabled runCommand averaged %v allocs against %v for exec.Cmd.Run; the disabled branch is one context lookup then Run", got, base)
+		t.Fatalf("disabled runCommand averaged %v allocs against %v for exec.Cmd.Run", got, base)
 	}
 	before := readProcIO(t)
 	ctx := context.Background()
@@ -64,7 +64,7 @@ func TestReviewR18_DisabledRunCommandMatchesRun(t *testing.T) {
 	quiet := readProcIO(t)
 	// The counter read itself is the only expected syscr/syscw growth.
 	if after.syscr-before.syscr > quiet.syscr-after.syscr+2 || after.syscw-before.syscw > quiet.syscw-after.syscw+2 {
-		t.Fatalf("TODO(review): disabled call sites moved /proc/self/io by syscr=%d syscw=%d (control read moved syscr=%d syscw=%d)",
+		t.Fatalf("disabled call sites moved /proc/self/io by syscr=%d syscw=%d (control read moved syscr=%d syscw=%d)",
 			after.syscr-before.syscr, after.syscw-before.syscw, quiet.syscr-after.syscr, quiet.syscw-after.syscw)
 	}
 }

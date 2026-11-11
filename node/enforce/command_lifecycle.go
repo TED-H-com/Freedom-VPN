@@ -82,8 +82,13 @@ type CommandResources struct {
 	Cgroups                []CgroupCPU `json:"cgroups"`
 }
 
-type commandMeasurementKey struct{}
-type commandScopeKey struct{}
+type contextKey int
+
+const (
+	commandMeasurementKey contextKey = iota
+	commandScopeKey
+)
+
 type commandScope struct {
 	phase   string
 	records *[]CommandLifecycle
@@ -94,23 +99,23 @@ type commandScope struct {
 // The agent owner can pass this context only when its measurement gate is on;
 // its existing TimingEvidence producer then retains the additive records.
 func WithCommandLifecycleForTest(ctx context.Context) context.Context {
-	return context.WithValue(ctx, commandMeasurementKey{}, true)
+	return context.WithValue(ctx, commandMeasurementKey, true)
 }
 
 func beginCommandMeasurement(ctx context.Context, records *[]CommandLifecycle) context.Context {
-	if enabled, _ := ctx.Value(commandMeasurementKey{}).(bool); !enabled {
+	if enabled, _ := ctx.Value(commandMeasurementKey).(bool); !enabled {
 		return ctx
 	}
-	return context.WithValue(ctx, commandScopeKey{}, commandScope{"prepare", records})
+	return context.WithValue(ctx, commandScopeKey, &commandScope{"prepare", records})
 }
 
 func commandPhase(ctx context.Context, phase string) context.Context {
-	scope, ok := ctx.Value(commandScopeKey{}).(commandScope)
+	scope, ok := ctx.Value(commandScopeKey).(*commandScope)
 	if !ok {
 		return ctx
 	}
 	scope.phase = phase
-	return context.WithValue(ctx, commandScopeKey{}, scope)
+	return ctx
 }
 
 func lifecycleNow() LifecycleStamp {
@@ -152,7 +157,7 @@ func contextDeadline(ctx context.Context) LifecycleBracket {
 }
 
 func runCommand(ctx context.Context, cmd *exec.Cmd, name string) error {
-	scope, enabled := ctx.Value(commandScopeKey{}).(commandScope)
+	scope, enabled := ctx.Value(commandScopeKey).(*commandScope)
 	if !enabled {
 		return cmd.Run()
 	} // no samples, proc reads, allocations or goroutines
