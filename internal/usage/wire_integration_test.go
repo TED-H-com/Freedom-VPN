@@ -88,11 +88,12 @@ func newUsageHTTPStackWithPool(t *testing.T, pool *pgxpool.Pool) *usageHTTPStack
 	inc2 := uuid.New()
 
 	// Seed member, entitlement, device, device_binding, and two nodes.
+	now := time.Now().UTC().Truncate(time.Hour)
 	mustExec(t, pool, `INSERT INTO members(id, status) VALUES ($1, 'active')`, memberA)
 	mustExec(t, pool, `
 		INSERT INTO entitlements(member_id, revision, device_limit, valid_from, effective_service_end)
-		VALUES ($1, 1, 5, '2026-01-01T00:00:00Z', '2027-01-01T00:00:00Z')
-	`, memberA)
+		VALUES ($1, 1, 5, $2, $3)
+	`, memberA, now.Add(-24*time.Hour), now.Add(14*24*time.Hour))
 	mustExec(t, pool, `
 		INSERT INTO member_devices(id, member_id, deployment_id, peer_id, status)
 		VALUES ($1, $2, 'dep-http-1', 'peer-http-a', 'authorized')
