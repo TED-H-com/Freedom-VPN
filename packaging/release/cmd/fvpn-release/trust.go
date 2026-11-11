@@ -7,12 +7,20 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"regexp"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/packaging/release"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 )
+
+// Keep this copy aligned with the embedded Signature.key_id schema; the
+// contract assertion in TestUPD02_TrustR4SignatureIDSyntax detects drift.
+const trustSignerIDPattern = `^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$`
+
+var trustSignerID = regexp.MustCompile(trustSignerIDPattern)
 
 type trustUsageError struct{ message string }
 
@@ -49,11 +57,17 @@ func (v *singleTrustFlag) IsBoolFlag() bool {
 
 func parseTrustFlags(fs *flag.FlagSet, args []string) error {
 	fs.VisitAll(func(f *flag.Flag) { f.Value = &singleTrustFlag{Value: f.Value} })
-	if err := fs.Parse(args); err != nil {
+	// flag's diagnostics quote argument values, including private paths.
+	output := fs.Output()
+	fs.SetOutput(io.Discard)
+	err := fs.Parse(args)
+	fs.SetOutput(output)
+	if err != nil {
 		if errors.Is(err, flag.ErrHelp) {
+			fs.Usage()
 			return err
 		}
-		return trustUsage(err.Error())
+		return trustUsage("invalid flags: unknown, repeated or malformed flag")
 	}
 	if fs.NArg() != 0 {
 		return trustUsage("unexpected positional arguments")
@@ -62,6 +76,17 @@ func parseTrustFlags(fs *flag.FlagSet, args []string) error {
 }
 
 func trustTime(value, name string) (time.Time, error) {
+	// time.Parse accepts arbitrarily long fractions and silently truncates.
+	// Check both separators it accepts before parsing or consulting any file.
+	if start := strings.IndexAny(value, ".,"); start >= 0 {
+		end := start + 1
+		for end < len(value) && value[end] >= '0' && value[end] <= '9' {
+			end++
+		}
+		if end-start-1 > 9 {
+			return time.Time{}, trustUsage(name + " allows at most nine fractional digits")
+		}
+	}
 	at, err := time.Parse(time.RFC3339, value)
 	if err != nil || at.IsZero() {
 		return time.Time{}, trustUsage(name + " requires a nonzero RFC3339 time")
@@ -108,13 +133,14 @@ func trustFlags(name string, stderr io.Writer) *flag.FlagSet {
 	fs := flag.NewFlagSet(name, flag.ContinueOnError)
 	fs.SetOutput(stderr)
 	fs.Usage = func() {
-		fmt.Fprintf(stderr, "usage: fvpn-release %s [flags]\n", name)
+		output := fs.Output()
+		fmt.Fprintf(output, "usage: fvpn-release %s [flags]\n", name)
 		fs.PrintDefaults()
-		fmt.Fprintln(stderr, "Offline check only: the centre decides against its own ledger at apply time.")
-		fmt.Fprintln(stderr, "The public trust store omits the stored release revision, retirement states and revocation times.")
+		fmt.Fprintln(output, "Offline check only: the centre decides against its own ledger at apply time.")
+		fmt.Fprintln(output, "The public trust store omits the stored release revision, retirement states and revocation times.")
 		if name == "trust-update" {
-			fmt.Fprintln(stderr, "Exactly one operation: -add FILE | -retire KEY_ID -not-after TIME | -revoke KEY_ID.")
-			fmt.Fprintln(stderr, "-allow-no-usable-root permits deliberate emergency removal; recovery from loss of every root is not provided.")
+			fmt.Fprintln(output, "Exactly one operation: -add FILE | -retire KEY_ID -not-after TIME | -revoke KEY_ID.")
+			fmt.Fprintln(output, "-allow-no-usable-root permits deliberate emergency removal; recovery from loss of every root is not provided.")
 		}
 	}
 	return fs
@@ -138,7 +164,7 @@ func cmdTrustUpdate(args []string, stdout, stderr io.Writer) error {
 	if *keyPath == "" || *trustPath == "" || *revision == "" || *out == "" {
 		return trustUsage("trust-update requires -key, -trust, -revision and -out")
 	}
-	opt := release.TrustUpdateOptions{At: time.Now().UTC().Truncate(time.Second), AllowNoUsableRoot: *allow}
+	opt := release.TrustUpdateOptions{AllowNoUsableRoot: *allow}
 	var err error
 	if opt.Revision, err = trustRevision(*revision, "-revision", true); err != nil {
 		return err
@@ -168,40 +194,89 @@ func cmdTrustUpdate(args []string, stdout, stderr io.Writer) error {
 			return err
 		}
 	}
+	if !seen["at"] {
+		opt.At = time.Now().UTC().Truncate(time.Second)
+	}
+	// Check signer syntax first, after usage validation and before other reads.
+	key, err := release.LoadKey(*keyPath)
+	if err != nil {
+		var pathError *os.PathError
+		if errors.As(err, &pathError) {
+			return errors.New("-key cannot be read")
+		}
+		// Never reflect private key fields into diagnostics.
+		return errors.New("trust-update: cannot load release signing key")
+	}
+	if !trustSignerID.MatchString(key.KeyID) {
+		return errors.New("-key key_id cannot sign: must match " + trustSignerIDPattern)
+	}
 	opt.TargetKeyID = *retire
 	if seen["revoke"] {
 		opt.TargetKeyID = *revoke
 	}
 	if seen["add"] {
-		if opt.AddTrust, err = os.ReadFile(*add); err != nil {
+		if opt.AddTrust, err = readTrustInput(*add, "-add"); err != nil {
 			return err
+		}
+		// This projection adds only the producer's signable-ID restriction.
+		// BuildTrustUpdate still validates the complete one-key trust store.
+		var added struct {
+			Keys []struct {
+				ID string `json:"key_id"`
+			} `json:"keys"`
+		}
+		if json.Unmarshal(opt.AddTrust, &added) == nil && len(added.Keys) == 1 && !trustSignerID.MatchString(added.Keys[0].ID) {
+			return errors.New("-add key_id cannot sign: must match " + trustSignerIDPattern)
 		}
 	}
 	trust, err := readReleaseTrust(*trustPath)
 	if err != nil {
 		return err
 	}
-	key, err := release.LoadKey(*keyPath)
-	if err != nil {
-		// The existing loader may mention malformed field names or values.
-		// Never reflect any part of a private key file into CLI diagnostics.
-		return errors.New("trust-update: cannot load release signing key")
-	}
 	raw, result, err := release.BuildTrustUpdate(key, trust, opt)
 	if err != nil {
 		return err
 	}
-	if err := release.WriteNewTrustUpdate(*out, raw); err != nil {
-		return err
-	}
 	target, _ := json.Marshal(result.Update.Keys[0].ID)
-	fmt.Fprintf(stdout, "kind=%s\nrevision=%s\nsigner_key_id=%s\noperation=%s\ntarget_key_id=%s\nupdate_sha256=%s\n",
+	var output strings.Builder
+	fmt.Fprintf(&output, "kind=%s\nrevision=%s\nsigner_key_id=%s\noperation=%s\ntarget_key_id=%s\nupdate_sha256=%s\n",
 		result.Update.Kind, result.Update.Revision, key.KeyID, opt.Operation, target, result.UpdateSHA256)
+	if err := release.WriteNewTrustUpdate(*out, raw); err != nil {
+		return trustPublicationError(err)
+	}
+	return writeTrustResult(stdout, output.String(), "trust-update: result output failed; published update file remains")
+}
+
+func readTrustInput(path, flagName string) ([]byte, error) {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return nil, errors.New(flagName + " cannot be read")
+	}
+	return raw, nil
+}
+
+func trustPublicationError(err error) error {
+	if errors.Is(err, os.ErrExist) {
+		return errors.New("-out already exists")
+	}
+	var pathError *os.PathError
+	if errors.As(err, &pathError) && pathError.Op == "open" &&
+		(errors.Is(err, os.ErrNotExist) || errors.Is(err, os.ErrPermission) || errors.Is(err, syscall.ENOTDIR)) {
+		return errors.New("-out parent directory unavailable")
+	}
+	return errors.New("-out cannot be published")
+}
+
+func writeTrustResult(stdout io.Writer, output, failure string) error {
+	n, err := io.WriteString(stdout, output)
+	if err != nil || n != len(output) {
+		return errors.New(failure)
+	}
 	return nil
 }
 
 func readReleaseTrust(path string) (*release.ReleaseTrust, error) {
-	raw, err := os.ReadFile(path)
+	raw, err := readTrustInput(path, "-trust")
 	if err != nil {
 		return nil, err
 	}
@@ -220,7 +295,7 @@ func cmdTrustVerify(args []string, stdout, stderr io.Writer) error {
 	if *update == "" || *trustPath == "" {
 		return trustUsage("trust-verify requires -update and -trust")
 	}
-	at := time.Now().UTC().Truncate(time.Second)
+	var at time.Time
 	var current *decstr.U64
 	var err error
 	seen := map[string]bool{}
@@ -237,7 +312,10 @@ func cmdTrustVerify(args []string, stdout, stderr io.Writer) error {
 		}
 		current = &n
 	}
-	raw, err := os.ReadFile(*update)
+	if !seen["at"] {
+		at = time.Now().UTC().Truncate(time.Second)
+	}
+	raw, err := readTrustInput(*update, "-update")
 	if err != nil {
 		return err
 	}
@@ -261,6 +339,5 @@ func cmdTrustVerify(args []string, stdout, stderr io.Writer) error {
 		fmt.Fprintf(&output, "key_record=%s\n", line)
 	}
 	fmt.Fprintf(&output, "usable_root_after=%t\n", result.UsableRootAfter)
-	_, err = io.WriteString(stdout, output.String())
-	return err
+	return writeTrustResult(stdout, output.String(), "trust-verify: result output failed")
 }

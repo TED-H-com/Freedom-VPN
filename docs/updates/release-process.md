@@ -79,8 +79,18 @@ from the proposed update or treat offline success as an apply receipt.
 The following paths, dates, windows and revisions are **TEST ONLY** placeholders.
 The parent output directory must already exist. In production choose windows
 explicitly and obtain the actual current release revision from the centre;
-`-revision` must be that revision plus one, with no wrap at the uint64 maximum.
+`-revision` must be strictly greater than that revision; plus one is the ordinary
+choice. Revisions never wrap at the uint64 maximum.
 The exported public store itself does not carry that revision.
+
+Choose release signer IDs matching `^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$`: 1–128
+ASCII characters, starting with a letter or digit, then letters, digits, `.`,
+`_`, `:` or `-`. The producer refuses an unsignable `-key` ID or a new `-add`
+ID before signing. Existing opaque IDs remain valid targets for retirement
+and revocation. This signable-ID restriction is producer-only; `trust-verify`
+continues to report opaque record IDs accepted by the centre. The legacy
+`keygen` still accepts IDs such as `release B`, but the legacy `sign` rejects
+that ID when validating its manifest envelope. Choose a signable ID up front.
 
 First generate B on the build machine, then have the currently trusted A
 approve B. This example starts at centre release revision 0:
@@ -97,6 +107,55 @@ fvpn-release trust-update -key ./example-build/release-A.key.json \
 fvpn-release trust-verify -update ./example-build/add-B-r1.json \
   -trust ./example-build/centre-trust-r0.json -current-revision 0 \
   -at 2026-11-01T12:00:00Z
+```
+
+The following **TEST ONLY** blocks are stdout from a real run, except the
+explicitly labeled keygen stderr block. Each `update_sha256` is an example from
+runtime-generated keys and **varies between runs**; producer and verifier hashes
+match within the same run. These are offline command outputs, not centre apply
+receipts. The already pinned A in this run has the same 2026–2028 window as B.
+
+`keygen` stdout:
+
+<!-- trust-output:keygen -->
+
+```text
+key_id=release-B
+purpose=release
+```
+
+`keygen` stderr:
+
+<!-- trust-output:keygen-stderr -->
+
+```text
+fvpn-release: private key stays on the build machine; do not copy it to nodes
+```
+
+`trust-update -add` stdout:
+
+<!-- trust-output:add -->
+
+```text
+kind=fvpn-release-trust-v1
+revision=1
+signer_key_id=release-A
+operation=add
+target_key_id="release-B"
+update_sha256=95fecbaebef1bc3ac658e648ac042b44b14fe1745b05c4a80bd2eba5733600d1
+```
+
+`trust-verify` for the add file, before apply:
+
+<!-- trust-output:verify-add -->
+
+```text
+kind=fvpn-release-trust-v1
+revision=1
+signer_key_ids=release-A
+update_sha256=95fecbaebef1bc3ac658e648ac042b44b14fe1745b05c4a80bd2eba5733600d1
+key_record={"id":"release-B","new":true,"newly_revoked":false,"not_after":"2028-01-01T00:00:00Z","not_before":"2026-01-01T00:00:00Z","state":"active","window_narrowed":false}
+usable_root_after=true
 ```
 
 Take `add-B-r1.json` and its hash to the centre for apply. Bring back the
@@ -120,6 +179,32 @@ fvpn-release trust-verify -update ./example-build/retire-A-r2.json \
   -at 2026-11-01T12:00:00Z
 ```
 
+`trust-update -retire` stdout:
+
+<!-- trust-output:retire -->
+
+```text
+kind=fvpn-release-trust-v1
+revision=2
+signer_key_id=release-B
+operation=retire
+target_key_id="release-A"
+update_sha256=c7de0ffe1fcf8fcc5e260081ede29e5c137ebc9b15ce462090a05c13e153dacd
+```
+
+`trust-verify` for the retirement file, before apply:
+
+<!-- trust-output:verify-retire -->
+
+```text
+kind=fvpn-release-trust-v1
+revision=2
+signer_key_ids=release-B
+update_sha256=c7de0ffe1fcf8fcc5e260081ede29e5c137ebc9b15ce462090a05c13e153dacd
+key_record={"id":"release-A","new":false,"newly_revoked":false,"not_after":"2026-12-01T00:00:00Z","not_before":"2026-01-01T00:00:00Z","state":"retired","window_narrowed":true}
+usable_root_after=true
+```
+
 Carry that file and hash for apply and retrieve `centre-trust-r2.json`.
 Retirement retains verification inside the narrowed window; it is not
 revocation. If A must be revoked, B can authorize a separate update:
@@ -132,6 +217,32 @@ fvpn-release trust-update -key ./example-build/release-B.key.json \
 fvpn-release trust-verify -update ./example-build/revoke-A-r3.json \
   -trust ./example-build/centre-trust-r2.json -current-revision 2 \
   -at 2026-11-02T12:00:00Z
+```
+
+`trust-update -revoke` stdout:
+
+<!-- trust-output:revoke -->
+
+```text
+kind=fvpn-release-trust-v1
+revision=3
+signer_key_id=release-B
+operation=revoke
+target_key_id="release-A"
+update_sha256=6b6e5d33b31d16b71f6eac3b6de2fe298949ceedfb682192f5c32c8be703b5b3
+```
+
+`trust-verify` for the revocation file, before apply:
+
+<!-- trust-output:verify-revoke -->
+
+```text
+kind=fvpn-release-trust-v1
+revision=3
+signer_key_ids=release-B
+update_sha256=6b6e5d33b31d16b71f6eac3b6de2fe298949ceedfb682192f5c32c8be703b5b3
+key_record={"id":"release-A","new":false,"newly_revoked":true,"not_after":"2026-12-01T00:00:00Z","not_before":"2026-01-01T00:00:00Z","state":"revoked","window_narrowed":false}
+usable_root_after=true
 ```
 
 `trust-update` prints `kind`, `revision`, `signer_key_id`, `operation`,
@@ -152,7 +263,8 @@ key rejects the whole envelope even alongside a good signature.
 `-at` is the single instant used for signer validity, added-key expiry, the
 usable-root check and a new revocation's `revoked_at`. It defaults to current
 UTC truncated to whole seconds. Explicit RFC 3339 offsets are normalized to
-UTC; explicit fractional seconds are preserved. Windows are half-open:
+UTC. Both `-at` and `-not-after` accept at most nine fractional digits and
+preserve that precision; more than nine is a usage error before any file read. Windows are half-open:
 `not_before <= at < not_after`. A past `-at` proves only validity at that past
 instant, not validity when the centre receives the file.
 
@@ -167,7 +279,7 @@ this guard; it never bypasses schema, signer, key or transition checks.
 
 A passing offline check does not mean the centre has applied or will accept
 an update. The centre decides against its own ledger at apply time. In
-particular, the offline check cannot know:
+particular, the offline check cannot know or may decide differently:
 
 - The stored release revision unless the operator supplies `-current-revision`;
   even that value may be stale by apply time.
@@ -178,9 +290,57 @@ particular, the offline check cannot know:
 - Changes to the centre's trust, time or ledger after the export, or trust-store
   delivery and acceptance on nodes.
 
+The producer emits updates with one signature. Keep that single signature when
+transporting the file. Offline verification checks the complete exported node
+bundle: a second signature naming a known key of another purpose, such as a
+lease key, rejects the whole envelope. The centre checks release roots only
+and ignores that same non-release signature as unknown, so it can accept a file
+that this stricter offline check rejects. Do not remove other-purpose keys from
+the exported bundle to make the verdicts agree.
+
 Every new-command flag may occur once. Unknown flags, positional arguments,
 missing required flags, malformed revisions/times and incompatible operations
 exit 2. Invalid files, failed verification, unsafe transitions, the usable-root
-guard and write failures exit 1 with `fvpn-release: <error>` on stderr and no
-result on stdout. Success exits 0; `-h`/`--help` exits 0 and prints help to
+guard and write failures exit 1 with `fvpn-release: <error>` on stderr. Failures
+before result output produce no stdout results. An output failure may leave
+partial result lines, which must not be treated as a complete result. Success exits 0; `-h`/`--help` exits 0 and prints help to
 stderr. These conventions leave the existing subcommands unchanged.
+
+A result-output failure after `trust-update` publishes the file does not undo
+publication. The complete, validated file remains unchanged; run `trust-verify`
+with the same trust store and instant to verify it and recompute `update_sha256`.
+Do not retry with the same output path expecting it to be replaced. These are
+the fixed result-output diagnostics (each prefixed with `fvpn-release: `):
+
+```text
+trust-update: result output failed; published update file remains
+trust-verify: result output failed
+```
+
+Filesystem diagnostics from these two commands contain neither operator paths
+nor raw system error text. The complete fixed set is below (each also prefixed
+with `fvpn-release: `). An unreadable, missing or non-file input is a read
+failure. An inaccessible or absent staging parent is unavailable; failures
+while writing/staging or linking the final file use `cannot be published`.
+
+```text
+-key cannot be read
+-add cannot be read
+-trust cannot be read
+-update cannot be read
+-out already exists
+-out parent directory unavailable
+-out cannot be published
+```
+
+Malformed private key contents retain the fixed message
+`trust-update: cannot load release signing key`. Flag parsing uses
+`invalid flags: unknown, repeated or malformed flag`, without quoting argument
+values. The new precision and signer-ID diagnostics are:
+
+```text
+-at allows at most nine fractional digits
+-not-after allows at most nine fractional digits
+-key key_id cannot sign: must match ^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$
+-add key_id cannot sign: must match ^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$
+```

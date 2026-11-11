@@ -215,6 +215,7 @@ func (f *trustFixture) refuse(args []string, want int) {
 		f.t.Fatalf("refusal: exit %d want %d; stdout=%q stderr=%s", code, want, &out, &diagnostic)
 	}
 	f.noSeed(out.Bytes(), diagnostic.Bytes())
+	f.noPaths(out.String(), diagnostic.String())
 	if !reflect.DeepEqual(before, trustSnapshot(f.t, f.dir)) {
 		f.t.Fatal("refusal changed files or created an output")
 	}
@@ -395,5 +396,14 @@ func TestSEC01_TrustOutputProperties(t *testing.T) {
 	f.success(trustArgs("trust-update", flags))
 	if !bytes.Contains(readTestFile(t, flags["out"]), []byte(`"revoked_at":"2026-11-01T12:00:00.123456789Z"`)) {
 		t.Fatal("revocation time was not UTC or lost precision")
+	}
+}
+
+func (f *trustFixture) noPaths(values ...string) {
+	f.t.Helper()
+	for _, value := range values {
+		if strings.Contains(value, f.dir) {
+			f.t.Fatal("command output disclosed a test directory path")
+		}
 	}
 }
