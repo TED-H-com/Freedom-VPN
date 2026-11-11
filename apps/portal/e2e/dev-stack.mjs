@@ -3444,6 +3444,30 @@ async function main() {
 
               if (
                 req.method === 'POST' &&
+                reqUrl.pathname === '/__e2e/finite-member-grant'
+              ) {
+                // TEST ONLY: real product command, no entitlement/projection writes.
+                // There is no minimum duration beyond a future deadline. One second
+                // exercises real expiry without clock changes or a long test sleep.
+                const now = new Date();
+                const until = new Date(now.getTime() + 1000);
+                const operation = await grantMemberEntitlementViaApi(
+                  controlBaseUrl,
+                  adminAuth,
+                  caPem,
+                  roleSessions.member.session.member_id,
+                  seededPlan.revisionId,
+                  now,
+                  until,
+                  'TEST ONLY AT04 F4-04 finite service screen grant',
+                );
+                res.writeHead(202, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ operation, valid_until: until.toISOString() }));
+                return;
+              }
+
+              if (
+                req.method === 'POST' &&
                 reqUrl.pathname === '/__e2e/restore-default-member'
               ) {
                 roleSessions.member = memberAuth;

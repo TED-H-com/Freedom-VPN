@@ -191,6 +191,7 @@ export function buildPersonaSession(persona: MockPersona): AuthSession {
 
 export function buildMemberSelfForPersona(persona: MockPersona): MemberSelf {
   const base = clone(CONTRACT_EXAMPLES_USED_BY_MOCKS.MemberSelf);
+  base.next_actions = ['install_app', 'register_device'];
   switch (persona) {
     case 'member_pending_payment':
       base.entitlement.state = 'pending_payment';
@@ -207,17 +208,26 @@ export function buildMemberSelfForPersona(persona: MockPersona): MemberSelf {
       break;
     case 'member_grace':
       base.entitlement.state = 'grace';
+      base.entitlement.valid_from = '2026-10-28T00:00:00Z';
+      base.entitlement.paid_through = base.entitlement.valid_from;
       base.entitlement.grace_until = '2026-10-31T00:00:00Z';
       base.entitlement.effective_service_end = base.entitlement.grace_until;
       if (base.subscription) {
         base.subscription.provider_status = 'past_due';
+        base.subscription.paid_through = base.entitlement.paid_through;
       }
       base.next_actions = ['install_app', 'register_device'];
       break;
     case 'member_expired':
       base.entitlement.state = 'expired';
+      base.entitlement.valid_from = '2026-09-01T00:00:00Z';
       base.entitlement.effective_service_end = '2026-10-01T00:00:00Z';
+      base.entitlement.grace_until = base.entitlement.effective_service_end;
       base.entitlement.paid_through = '2026-09-28T00:00:00Z';
+      if (base.subscription) {
+        base.subscription.provider_status = 'past_due';
+        base.subscription.paid_through = base.entitlement.paid_through;
+      }
       base.next_actions = ['renew_subscription'];
       break;
     case 'member_suspended':

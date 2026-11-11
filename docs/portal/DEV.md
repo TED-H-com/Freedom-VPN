@@ -80,7 +80,7 @@ npm run dev
 
 - Opens on `http://localhost:5173`.
 - MSW intercepts `/auth/session`, `POST /auth/logout`, and `/api/v1/*` using fixtures imported from `contracts/examples/valid/*.json`.
-- A top-bar **Mock Persona Switcher (TEST ONLY)** allows switching between `admin`, `admin_no_mfa`, `anonymous`, and all member entitlement states (`member_active`, `member_throttled`, `member_pending_payment`, `member_cancel_at_period_end`, `member_grace`, `member_expired`, `member_suspended`), as well as simulating `401 SESSION_EXPIRED`.
+- A top-bar **Mock Persona Switcher (TEST ONLY)** allows switching between `admin`, `admin_no_mfa`, `anonymous`, and member entitlement personas (`member_active`, `member_throttled`, `member_pending_payment`, `member_cancel_at_period_end`, `member_grace`, `member_expired`, `member_suspended`), as well as simulating `401 SESSION_EXPIRED`.
 
 ---
 

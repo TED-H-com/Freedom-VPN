@@ -85,6 +85,45 @@ The live suite uses real control/worker binaries and an isolated database. Exist
 
 The existing mTLS observation reporter sends a usage block with two unacked events; the secondary node has no accepted usage block. Live assertions compute age from the returned central `observed_at` and `oldest_unacked_at`, rather than assuming report creation and receipt times match. Absent fields, delayed read-back, cursor reset and both 409/422 limit-copy cases are covered by unit tests. See [DESIGN.md](DESIGN.md) for the existing UI tokens and responsive conventions.
 
+### 9. Member service entitlement states (AT04 / F4-04)
+
+The member service screen uses the authoritative `entitlement.state` from
+`GET /api/v1/member/me` (§9.2, §18.4). Labels are localized; the badge retains
+`data-state` for support and tests. “Allows exit access” describes entitlement,
+not exit health or reachability. Unknown runtime states fail closed.
+
+| State | zh-TW label | English label | Allows exit access | Next step | Verification |
+|---|---|---|---|---|---|
+| `pending_payment` | 待付款 / 開通中 | Awaiting payment / Confirmation in progress | No | Complete payment on Billing; wait when `wait_for_payment_confirmation` is returned | DOM in both languages; live journey covers both variants |
+| `active` | 有效 | Active | Yes | Install app / check devices, or free a device slot | DOM in both languages; live journey |
+| `cancel_at_period_end` | 有效（期末取消） | Active (ends at period end) | Yes | Install app / check devices, or free a device slot | DOM only |
+| `grace` | 寬限期 | Grace period | Yes, until the grace deadline | Install app / check devices, or free a device slot | DOM only |
+| `past_due` | 付款逾期 | Payment overdue | No | Renew on Billing | DOM only |
+| `expired` | 到期 | Expired | No | Renew on Billing | DOM and live browser in both languages |
+| `suspended` | 停權 | Suspended | No | Contact support; payment/renewal does not lift suspension | DOM and live browser in both languages |
+| `closed` | 帳號已關閉 | Account closed | No | Contact support | DOM only |
+
+Next steps always follow the returned `next_actions`; the state supplies a
+fallback only when that list is empty. A serving entitlement without a serving
+exit group can receive `renew_subscription` instead of device actions. Only
+`closed` shows the closed-account banner. Expiry and grace deadlines use the
+existing locale + UTC date formatter; suspension never claims closure or device
+authorization revocation (§18.3).
+
+`TestAT04_F404_*` in `src/pages/__tests__/member_service.test.tsx` checks all eight
+states, both pending-payment variants, exact bilingual copy, links, unknown-state
+denial and accessibility. The live tests in `e2e/portal.spec.ts` create fresh
+members through OIDC, suspend via the administrator page, and let a real finite
+administrator grant expire. They compare the rendered screen to the member API,
+switch languages through the UI, and save screenshots and visible text under
+`.agent/screens/` (ignored). Their `finally` blocks restore the default member
+session. No clocks or entitlement rows are edited for these tests.
+
+The live suite uses local fakes for OIDC, NetBird and Stripe. It does not exercise
+the assembled Docker stack, real client apps, traffic withdrawal or a production
+deployment (§19.1). The members acceptance record retains its own **F4-04** entry
+until its owner reruns that acceptance; these portal checks do not close it.
+
 ## Verification Commands
 
 From `apps/portal`:

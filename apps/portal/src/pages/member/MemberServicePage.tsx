@@ -139,11 +139,11 @@ export function MemberServicePage(): React.ReactElement {
         <ApiErrorAlert error={usageQuery.error} testId="member-service-usage-error" />
       )}
 
-      <div className="stat-grid">
-        <div className="stat-card" data-testid="member-state-card">
+      <div className="metrics-grid">
+        <div className="metric-card" data-testid="member-state-card">
           <span className="stat-label">{t('member.service.stateLabel')}</span>
           <span
-            className="stat-value"
+            className="metric-value"
             style={{
               fontSize: '1.35rem',
               color: stateView.usable ? 'var(--success)' : 'var(--danger)',
@@ -151,28 +151,28 @@ export function MemberServicePage(): React.ReactElement {
           >
             {t(stateView.label)}
           </span>
-          <span className="stat-subtext" data-testid="member-service-usable-now">
+          <span className="metric-desc" data-testid="member-service-usable-now">
             {t(stateView.usable ? 'member.service.usable' : 'member.service.unusable')}
           </span>
-          <span className="stat-subtext" data-testid="member-state-reason">
+          <span className="metric-desc" data-testid="member-state-reason">
             {reasonText}
           </span>
         </div>
 
-        <div className="stat-card">
+        <div className="metric-card">
           <span className="stat-label">{t('member.service.planLabel')}</span>
-          <span className="stat-value" style={{ fontSize: '1.35rem' }}>
+          <span className="metric-value" style={{ fontSize: '1.35rem' }}>
             {planName}
           </span>
-          <span className="stat-subtext mono">
+          <span className="metric-desc mono">
             Devices: {me.limits.authorized_device_count} / {me.limits.device_limit}
           </span>
         </div>
 
-        <div className="stat-card">
+        <div className="metric-card">
           <span className="stat-label">{t('member.service.effectiveEndLabel')}</span>
           <span
-            className="stat-value mono"
+            className="metric-value mono"
             style={{ fontSize: '1.05rem' }}
             data-testid="member-effective-end"
           >
@@ -180,18 +180,18 @@ export function MemberServicePage(): React.ReactElement {
               ? formatLocaleWithUtc(ent.effective_service_end, locale)
               : 'None'}
           </span>
-          <span className="stat-subtext mono">
+          <span className="metric-desc mono">
             {t('member.service.paidThroughLabel')}:{' '}
             {ent.paid_through ? formatLocaleWithUtc(ent.paid_through, locale) : 'None'}
           </span>
         </div>
 
-        <div className="stat-card">
+        <div className="metric-card">
           <span className="stat-label">{t('member.service.nextResetLabel')}</span>
-          <span className="stat-value mono" style={{ fontSize: '1.05rem' }}>
+          <span className="metric-value mono" style={{ fontSize: '1.05rem' }}>
             {resetAt !== '-' ? formatLocaleWithUtc(resetAt, locale) : '-'}
           </span>
-          <span className="stat-subtext">
+          <span className="metric-desc">
             {usage?.fair_use.tier_name
               ? (usage.fair_use.tier_name[locale] ?? usage.fair_use.tier_name['zh-TW'])
               : 'Normal speed'}
