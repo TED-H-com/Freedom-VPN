@@ -134,6 +134,19 @@ for (const [i, locale] of (['zh-TW', 'en'] as const).entries()) {
                 /大量使用|High usage|公平使用政策|Fair Use Policy/,
               );
             }
+            if (path === '/member/usage' && row.reason === 'fair_use_tier') {
+              const speedCard = screen.getByTestId('usage-speed-status-card');
+              expect(
+                within(speedCard).getByText(
+                  i === 0 ? '公平使用調整中' : 'Fair-use adjusted',
+                  { exact: true },
+                ),
+              ).toBeVisible();
+              expect(speedCard).not.toHaveTextContent(
+                /管理員暫時調整|Temporarily adjusted by an administrator|速度已調整|Speed adjusted/,
+              );
+              expect(speedCard.querySelector('.badge')).toBeNull();
+            }
             rendered.push(notice.textContent!);
             if (!dated) await assertAccessible(view.container);
             view.unmount();
@@ -141,6 +154,45 @@ for (const [i, locale] of (['zh-TW', 'en'] as const).entries()) {
           expect(rendered[0]).toBe(rendered[1]);
         });
       }
+    }
+
+    for (const dated of [true, false]) {
+      it(`UnknownReason_${dated ? 'dated' : 'undated'}_BothPages`, async () => {
+        const usage = buildMemberUsageForPersona('member_throttled');
+        usage.fair_use.reason =
+          'reason_not_known_to_portal' as typeof usage.fair_use.reason;
+        usage.fair_use.resets_at = dated ? overrideEnd : null;
+        const expected = (dated ? notices[2].dated : notices[2].undated)[i]!.replace(
+          '{date}',
+          formatLocaleWithUtc(overrideEnd, locale),
+        );
+        const label = ['速度已調整', 'Speed adjusted'][i]!;
+        const rendered: string[] = [];
+        for (const path of paths) {
+          const view = renderPage(path, locale, usage);
+          const notice = await screen.findByTestId(noticeId(path));
+          expect(notice.textContent).toBe(expected);
+          expect(notice).toHaveAttribute('role', 'status');
+          expect(notice).not.toHaveTextContent(/……|\{date\}|\{resetAt\}/);
+          if (!dated) expect(notice).not.toHaveTextContent(/2026|—| -/);
+          expect(notice).not.toHaveTextContent(
+            /大量使用|High usage|公平使用政策|Fair Use Policy|管理員|administrator|暫時調整|temporarily adjusted/,
+          );
+          if (path === '/member/usage') {
+            const card = within(screen.getByTestId('usage-speed-status-card'));
+            const tier = card.getByText(
+              i === 0 ? '公平使用調整中' : 'Fair-use adjusted',
+              { exact: true },
+            );
+            const reasonLabel = card.getByText(label, { exact: true });
+            expect(tier.nextElementSibling).toBe(reasonLabel);
+            expect(reasonLabel).toBeVisible();
+          }
+          rendered.push(notice.textContent!);
+          view.unmount();
+        }
+        expect(rendered[0]).toBe(rendered[1]);
+      });
     }
 
     for (const reason of ['admin_override', null] as const) {
@@ -241,6 +293,18 @@ for (const [i, locale] of (['zh-TW', 'en'] as const).entries()) {
               if (state === 'normal')
                 expect(screen.queryByTestId(noticeId(path))).not.toBeInTheDocument();
               else expect(screen.getByTestId(noticeId(path))).toBeVisible();
+              if (path === '/member/usage' && state === 'normal') {
+                const speedCard = screen.getByTestId('usage-speed-status-card');
+                expect(
+                  within(speedCard).getByText(i === 0 ? '測試級距' : 'Test tier', {
+                    exact: true,
+                  }),
+                ).toBeVisible();
+                expect(speedCard).not.toHaveTextContent(
+                  /管理員暫時調整|Temporarily adjusted by an administrator|速度已調整|Speed adjusted/,
+                );
+                expect(speedCard.querySelector('.badge')).toBeNull();
+              }
               const applyingNotice = screen.queryByText(applyingText, { exact: true });
               if (applying) {
                 expect(applyingNotice).toBeVisible();

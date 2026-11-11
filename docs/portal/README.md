@@ -126,9 +126,9 @@ confirmation. Missing paid-through and effective-service-end dates use `無` /
 `src/pages/__tests__/member_fair_use.test.tsx` check exact bilingual text, date
 sources, tier-zero overrides, normal/applying combinations, all eight entitlement
 states and both pending-payment variants, and accessibility. Cases use per-test
-MSW response overrides; `member_throttled` remains the contract example. The live
-browser suite was not extended, and no real fair-use enforcement on nodes was
-exercised by this change.
+MSW response overrides; `member_throttled` remains the contract example. No live browser test exercises
+the fair-use notices or the usage card's badge; the existing live member journey checks the billing state's
+`data-state` and its zh-TW label at three points, and no real fair-use enforcement on nodes was exercised by this change.
 
 | State | zh-TW label | English label | Allows exit access | Next step | Verification |
 |---|---|---|---|---|---|
