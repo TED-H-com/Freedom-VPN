@@ -110,6 +110,13 @@ func (c command) run(args []string, stdout, stderr io.Writer) int {
 	// filesystem operation here creates anything in the vault (§17.2, §17.4).
 	ctx, cancel := context.WithTimeout(context.Background(), o.timeout)
 	defer cancel()
+	// Point-in-time command check: the provider itself opens the lock without
+	// validating its type or permissions. Never open a symlink or special file
+	// here, and leave provider locking/validation behavior unchanged (§16.2).
+	lock, err := os.Lstat(filepath.Join(o.vault, "lock"))
+	if err != nil || !lock.Mode().IsRegular() || lock.Mode().Perm()&0077 != 0 {
+		return fail(stderr, exitUnavailable, "vault unavailable")
+	}
 	p, err := signing.OpenFileProviderContext(ctx, o.vault)
 	if err != nil {
 		return providerFailure(stderr, err)

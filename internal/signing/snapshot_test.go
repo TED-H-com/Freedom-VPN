@@ -123,3 +123,29 @@ func TestSEC01_SnapshotCanceledContext(t *testing.T) {
 		t.Fatalf("Open: %v", err)
 	}
 }
+
+func TestSEC01_SnapshotExpiredContext(t *testing.T) {
+	p := vault(t)
+	before, err := os.ReadFile(filepath.Join(p.dir, "state.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(-time.Second))
+	defer cancel()
+	if !errors.Is(ctx.Err(), context.DeadlineExceeded) {
+		t.Fatal("test context is not already expired")
+	}
+	if _, err := OpenFileProviderContext(ctx, p.dir); !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("Open: %v", err)
+	}
+	if _, err := p.Snapshot(ctx); !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("Snapshot: %v", err)
+	}
+	after, err := os.ReadFile(filepath.Join(p.dir, "state.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(before) != string(after) {
+		t.Fatal("expired calls changed ledger")
+	}
+}

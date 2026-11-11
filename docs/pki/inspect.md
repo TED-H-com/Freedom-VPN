@@ -33,7 +33,7 @@ fvpn-vault export-trust -vault EXISTING_VAULT -out NEW_FILE [-lock-timeout DURAT
 
 | Flag | Meaning |
 |---|---|
-| `-vault` | Required existing vault directory. No default or environment fallback. The path is cleaned; a final symlink is refused. |
+| `-vault` | Required existing vault directory. No default or environment fallback. After path cleaning, only the final component must not be a symlink; ancestor symlinks are followed. |
 | `-check-keys` | Inspect only; default false. Exercise current active central keys. `-check-keys=false` explicitly selects metadata only. |
 | `-out` | Export only; required new file whose parent already exists. No overwrite or directory creation. |
 | `-lock-timeout` | Positive Go duration, default `5s`; fractional values such as `250ms` are allowed. |
@@ -41,6 +41,11 @@ fvpn-vault export-trust -vault EXISTING_VAULT -out NEW_FILE [-lock-timeout DURAT
 Repeated flags, unknown flags or subcommands, missing values, stray positional
 arguments and nonpositive/invalid durations are usage failures. Parsing finishes
 before accessing any vault or output path.
+
+Components above the final vault directory are resolved as the operating system
+resolves them. The operator is responsible for the path above the vault, including
+linked or mounted storage. `export-trust` compares resolved vault and destination
+locations, so an alias cannot place an export inside the vault or its descendants.
 
 These invocations are **TEST ONLY** examples with placeholder paths:
 
@@ -60,6 +65,13 @@ snapshots and all probes together; it is not restarted for each lock or purpose.
 The provider polls lock contention every 5 ms. The deadline bounds lock waits,
 not uninterruptible operating-system IO or output publication. No command retries
 a changed inspection. A timeout is distinct from an unavailable vault.
+
+Before opening the provider, the command uses `Lstat` to require an existing
+regular `lock` file with no group or other permission bits. A lock symlink,
+FIFO, directory or other file type is refused without opening it. This is a
+point-in-time check; it does not prevent replacement after the check. Running
+services use the provider directly, which does not perform this lock-file type
+and permission check. The provider's locking and validation remain unchanged.
 
 ## Metadata inspection
 
@@ -218,9 +230,13 @@ Stderr contains only fixed messages prefixed `fvpn-vault:`: the usage line,
 `cannot encode export receipt`, `public trust publication failed`, `output failed`,
 or `output failed; published file remains`. No raw OS/provider errors, operator
 paths, contents, key material or ciphertext are printed. Unavailable vaults
-include missing/wrong paths, missing lock/state, forbidden permissions and
-invalid ledgers. The command does not guess which condition caused a provider
-failure.
+include missing/wrong paths, missing lock/state, invalid lock types, forbidden
+permissions and invalid ledgers. No group or other permission bits are permitted
+on the vault directory, the lock or the state file. With `-check-keys`, the
+provider also checks the private key files' type and permissions as it reads
+them; a private-file failure is an inspected-and-failed use check, not evidence
+of a specific cause. Metadata inspection and export never read those files.
+The command does not guess which condition caused a provider failure.
 
 Exit 1 includes the completed JSON result and no stderr. Other failures emit no
 stdout, except that a stdout failure can leave a partial JSON document at the
