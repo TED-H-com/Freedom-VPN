@@ -166,11 +166,16 @@ with still-current expectations can succeed despite an orphan, leaving exactly
 one active ledger key; the orphan remains until manual review.
 
 A save error at the rename boundary is treated conservatively, including an
-error returned by rename itself. Only a read-back matching the attempted change's
-complete public record(s) and the expected next revision (plus `release_revision`
-for `apply-release-update`) yields exit 7. A later concurrent mutation or another
-revision can make the outcome unknown even if this command's change did occur.
-Read-back is not a retry and cannot prove power-loss durability.
+error returned by rename itself. For `rotate` and `revoke`, only a read-back
+matching the attempted key's complete public record and the expected next
+revision yields exit 7; for `apply-release-update`, exit 7 requires the
+expected next ledger revision, the expected `release_revision`, and exactly the
+`release` records this update leaves in the ledger (every record it states, as
+stated, and every other `release` record as it was stored). A different release
+update applied in between, including one at the same ledger and release
+revisions, or a later concurrent mutation or another revision gives `unknown`
+even if this command's change did occur. Read-back is not a retry and cannot
+prove power-loss durability.
 
 ## Result documents
 

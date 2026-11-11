@@ -722,6 +722,7 @@ type ReleaseUpdateResult struct {
 	OldReleaseRevision decstr.U64
 	NewReleaseRevision decstr.U64
 	Keys               []ReleaseKeyChange
+	Release            []KeyRecord
 	UsableRootIDs      []string
 }
 
@@ -1057,6 +1058,12 @@ func (p *FileProvider) UpdateReleaseTrustConditional(ctx context.Context, raw []
 			out = ReleaseUpdateResult{Outcome: ChangeNotApplied}
 			return nil
 		}
+		release := make([]KeyRecord, 0, len(s.Keys))
+		for _, k := range s.Keys {
+			if k.Purpose == Release {
+				release = append(release, cloneKeyRecord(k))
+			}
+		}
 		out = ReleaseUpdateResult{
 			Outcome:            p.saveChange(*s),
 			OldRevision:        oldRevision,
@@ -1064,6 +1071,7 @@ func (p *FileProvider) UpdateReleaseTrustConditional(ctx context.Context, raw []
 			OldReleaseRevision: oldReleaseRevision,
 			NewReleaseRevision: s.ReleaseRevision,
 			Keys:               changes,
+			Release:            release,
 			UsableRootIDs:      usableIDs,
 		}
 		return nil

@@ -1188,6 +1188,204 @@ func TestUPD02_CommandReleaseTrustPartialFailure(t *testing.T) {
 	})
 }
 
+func TestUPD02_CommandReleaseTrustAlteredReadBack(t *testing.T) {
+	for _, updateKind := range []string{"revision_only", "one_change_and_one_restated"} {
+		t.Run(updateKind, func(t *testing.T) {
+			for _, readCase := range []string{"state_update_leaves", "restated_record_differs", "extra_release_record", "missing_release_record"} {
+				t.Run(readCase, func(t *testing.T) {
+					f := setupRelease(t)
+					keepA := f.a.record("active", releaseTestStart, releaseTestEnd, nil)
+					addB := f.b.record("active", releaseTestStart, releaseTestEnd, nil)
+					extraC := f.c.record("active", releaseTestStart, releaseTestEnd, nil)
+
+					expectRev := "1"
+					wantOldRev, wantNewRev := decstr.U64(1), decstr.U64(2)
+					wantOldRelRev, wantNewRelRev := decstr.U64(0), decstr.U64(1)
+					if updateKind == "revision_only" {
+						invokeRelease(t, command{}, f.args(), exitOK, "applied")
+						expectRev = "2"
+						wantOldRev, wantNewRev = 2, 3
+						wantOldRelRev, wantNewRelRev = 1, 2
+					}
+					uRaw := signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
+						Kind:     release.ReleaseTrustUpdateKind,
+						Revision: wantNewRelRev,
+						Keys:     []signing.KeyRecord{keepA, addB},
+					})
+					uPath, uSum := f.writeUpdate(updateKind+"-"+readCase+".json", uRaw)
+
+					p := &releaseFaultProvider{changeProvider: f.p, uncertain: true}
+					wantCode, wantOutcome := exitUnknown, "unknown"
+					switch readCase {
+					case "state_update_leaves":
+						wantCode, wantOutcome = exitDurability, "durability_not_confirmed"
+					case "restated_record_differs":
+						p.alterSnapshot = func(s *signing.FileSnapshot) {
+							for i := range s.Keys {
+								if s.Keys[i].ID == f.a.id {
+									s.Keys[i].NotAfter = releaseTestNarrowEnd
+									return
+								}
+							}
+							t.Fatal("restated record not found in snapshot")
+						}
+					case "extra_release_record":
+						p.alterSnapshot = func(s *signing.FileSnapshot) {
+							s.Keys = append(s.Keys, extraC)
+						}
+					case "missing_release_record":
+						p.alterSnapshot = func(s *signing.FileSnapshot) {
+							filtered := make([]signing.KeyRecord, 0, len(s.Keys))
+							for _, k := range s.Keys {
+								if k.ID != f.a.id {
+									filtered = append(filtered, k)
+								}
+							}
+							s.Keys = filtered
+						}
+					}
+
+					var outBuf, errBuf bytes.Buffer
+					code := withProvider(p).run([]string{"apply-release-update", "-vault", f.dir, "-update", uPath, "-expect-revision", expectRev}, &outBuf, &errBuf)
+					d := assertReleaseOutput(t, code, outBuf.String(), errBuf.String(), wantCode, wantOutcome, "")
+					if p.calls != 1 || p.reads != 1 {
+						t.Fatalf("calls=%d reads=%d; want 1 and 1", p.calls, p.reads)
+					}
+					if d.UpdateSHA256 != uSum || d.Reason != "" || d.UnreferencedKeyID != "" || d.AttemptedKeyID != "" {
+						t.Fatalf("unexpected document fields: %+v", d)
+					}
+					if readCase == "state_update_leaves" {
+						if d.ReadBack != "matched" || d.Change == nil ||
+							d.Change.OldRevision != wantOldRev || d.Change.NewRevision != wantNewRev ||
+							d.Change.OldReleaseRevision != wantOldRelRev || d.Change.NewReleaseRevision != wantNewRelRev ||
+							d.Change.NodeTrust != "nodes_require_new_bundle" {
+							t.Fatalf("unexpected matched document: %+v", d)
+						}
+						if updateKind == "revision_only" {
+							if len(d.Change.Keys) != 0 || !bytes.Contains(outBuf.Bytes(), []byte(`"keys": []`)) {
+								t.Fatalf("expected empty keys for revision_only, got %+v\nraw:\n%s", d.Change.Keys, outBuf.String())
+							}
+						} else if len(d.Change.Keys) != 1 || d.Change.Keys[0].Previous != nil || d.Change.Keys[0].Key.ID != f.b.id {
+							t.Fatalf("expected one added key B, got %+v", d.Change.Keys)
+						}
+					} else if d.ReadBack != "different" || d.Change != nil {
+						t.Fatalf("unexpected unknown document: %+v", d)
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestUPD02_CommandReleaseTrustDifferentUpdateInBetween(t *testing.T) {
+	for _, updateKind := range []string{"revision_only", "one_listed_change"} {
+		t.Run(updateKind, func(t *testing.T) {
+			f := setupRelease(t)
+			ctx := context.Background()
+			keepA := f.a.record("active", releaseTestStart, releaseTestEnd, nil)
+			retireA := f.a.record("retired", releaseTestStart, releaseTestNarrowEnd, nil)
+			addB := f.b.record("active", releaseTestStart, releaseTestEnd, nil)
+
+			copyDir := filepath.Join(f.root, "vault-copy")
+			if err := os.Mkdir(copyDir, 0700); err != nil {
+				t.Fatal(err)
+			}
+			entries, err := os.ReadDir(f.dir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, e := range entries {
+				b, err := os.ReadFile(filepath.Join(f.dir, e.Name()))
+				if err != nil {
+					t.Fatal(err)
+				}
+				if err := os.WriteFile(filepath.Join(copyDir, e.Name()), b, 0600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			copyP, err := signing.OpenFileProvider(copyDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			var uRaw, vRaw []byte
+			if updateKind == "revision_only" {
+				uRaw = signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
+					Kind:     release.ReleaseTrustUpdateKind,
+					Revision: 1,
+					Keys:     []signing.KeyRecord{keepA},
+				})
+				vRaw = signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
+					Kind:     release.ReleaseTrustUpdateKind,
+					Revision: 1,
+					Keys:     []signing.KeyRecord{keepA, addB},
+				})
+			} else {
+				uRaw = signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
+					Kind:     release.ReleaseTrustUpdateKind,
+					Revision: 1,
+					Keys:     []signing.KeyRecord{keepA, addB},
+				})
+				vRaw = signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
+					Kind:     release.ReleaseTrustUpdateKind,
+					Revision: 1,
+					Keys:     []signing.KeyRecord{retireA, addB},
+				})
+			}
+
+			uRes, err := copyP.UpdateReleaseTrustConditional(ctx, uRaw, 1, false)
+			if err != nil || uRes.Outcome != signing.ChangeApplied {
+				t.Fatalf("apply U to copy: %+v err=%v", uRes, err)
+			}
+			uRes.Outcome = signing.ChangeUncertain
+
+			vRes, err := f.p.UpdateReleaseTrustConditional(ctx, vRaw, 1, false)
+			if err != nil || vRes.Outcome != signing.ChangeApplied {
+				t.Fatalf("apply V to vault: %+v err=%v", vRes, err)
+			}
+			vManifest := manifest(t, f.dir)
+			vEntries, err := os.ReadDir(f.dir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			vBytes := make(map[string][]byte, len(vEntries))
+			for _, e := range vEntries {
+				b, err := os.ReadFile(filepath.Join(f.dir, e.Name()))
+				if err != nil {
+					t.Fatal(err)
+				}
+				vBytes[e.Name()] = b
+			}
+
+			uPath, uSum := f.writeUpdate("u-"+updateKind+".json", uRaw)
+			p := &releaseFaultProvider{changeProvider: f.p, result: &uRes}
+			d := invokeRelease(t, withProvider(p), []string{"apply-release-update", "-vault", f.dir, "-update", uPath, "-expect-revision", "1"}, exitUnknown, "unknown")
+			if p.calls != 1 || p.reads != 1 {
+				t.Fatalf("calls=%d reads=%d; want 1 and 1", p.calls, p.reads)
+			}
+			if d.UpdateSHA256 != uSum || d.ReadBack != "different" || d.Change != nil ||
+				d.Reason != "" || d.UnreferencedKeyID != "" || d.AttemptedKeyID != "" {
+				t.Fatalf("unexpected document: %+v", d)
+			}
+
+			unchanged(t, f.dir, vManifest)
+			afterEntries, err := os.ReadDir(f.dir)
+			if err != nil || len(afterEntries) != len(vBytes) {
+				t.Fatalf("vault entries changed: %v err=%v", afterEntries, err)
+			}
+			for _, e := range afterEntries {
+				got, err := os.ReadFile(filepath.Join(f.dir, e.Name()))
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !bytes.Equal(got, vBytes[e.Name()]) {
+					t.Fatalf("file %s changed after command run", e.Name())
+				}
+			}
+		})
+	}
+}
+
 func TestUPD02_CommandReleaseTrustOutputFailure(t *testing.T) {
 	for _, short := range []bool{false, true} {
 		f := setupRelease(t)

@@ -228,20 +228,33 @@ func classifyRelease(o options, updateSHA256 string, r signing.ReleaseUpdateResu
 	}
 }
 func confirmsRelease(s signing.FileSnapshot, r signing.ReleaseUpdateResult) bool {
-	if r.OldRevision == decstr.Max || r.NewRevision != r.OldRevision+1 ||
+	if len(r.Release) == 0 || r.OldRevision == decstr.Max || r.NewRevision != r.OldRevision+1 ||
 		s.Revision != r.NewRevision || r.NewReleaseRevision <= r.OldReleaseRevision ||
 		s.ReleaseRevision != r.NewReleaseRevision {
 		return false
 	}
-	for _, change := range r.Keys {
+	releaseCount := 0
+	for _, k := range s.Keys {
+		if k.Purpose == signing.Release {
+			releaseCount++
+		}
+	}
+	if releaseCount != len(r.Release) {
+		return false
+	}
+	for _, want := range r.Release {
+		if want.Purpose != signing.Release {
+			return false
+		}
+		matches := 0
 		matched := false
 		for _, k := range s.Keys {
-			if k.ID == change.After.ID {
-				matched = reflect.DeepEqual(k, change.After)
-				break
+			if k.ID == want.ID {
+				matches++
+				matched = reflect.DeepEqual(k, want)
 			}
 		}
-		if !matched {
+		if matches != 1 || !matched {
 			return false
 		}
 	}
