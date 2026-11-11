@@ -16,7 +16,7 @@ Freedom VPN 以自架 NetBird 和官方 App 為基礎，提供會員、出口節
 | 管理會員與節點 | 會員資格、節點註冊與上架、撤權及非同步操作結果 | [營運指南](handover/operator-guide.md) |
 | 管理 VPN 流量 | NetBird 連線協調、出口隔離、用量計量、限速與 DNS 政策 | [產品規格](spec/PROJECT_SPEC.zh-TW.md) |
 | 維護服務 | 節點安裝、簽章更新、失敗回復、備份與還原 | [部署指南](handover/deploy.md)、[還原演練](handover/restore-drill.md) |
-| 管理中央簽章金鑰與發行信任 | 初始化金鑰庫（`fvpn-vault-init`）、檢查與匯出公開信任（`fvpn-vault inspect`、`fvpn-vault export-trust`）、輪替與撤銷中央金鑰（`fvpn-vault-keys rotate`、`fvpn-vault-keys revoke`），以及建立與驗證發行信任更新（`fvpn-release trust-update`、`fvpn-release trust-verify`）；更新依 [輪替操作手冊](pki/rotation.md#release-verification-trust) 所述於中央套用 | [金鑰庫初始化](pki/initialize.md)、[金鑰庫檢查與匯出](pki/inspect.md)、[中央金鑰指令](pki/keys.md)、[金鑰輪替與還原](pki/rotation.md)、[發行流程](updates/release-process.md) |
+| 管理中央簽章金鑰與發行信任 | 初始化金鑰庫（`fvpn-vault-init`）、檢查與匯出公開信任（`fvpn-vault inspect`、`fvpn-vault export-trust`）、輪替與撤銷中央金鑰（`fvpn-vault-keys rotate`、`fvpn-vault-keys revoke`），以及建立與驗證發行信任更新（`fvpn-release trust-update`、`fvpn-release trust-verify`）；更新依 [輪替操作手冊](pki/rotation.md#release-verification-trust) 所述於中央以 `fvpn-vault-keys apply-release-update` 套用 | [金鑰庫初始化](pki/initialize.md)、[金鑰庫檢查與匯出](pki/inspect.md)、[中央金鑰指令](pki/keys.md)、[金鑰輪替與還原](pki/rotation.md)、[發行流程](updates/release-process.md) |
 
 ## 從哪裡開始
 
@@ -35,7 +35,7 @@ Freedom VPN 以自架 NetBird 和官方 App 為基礎，提供會員、出口節
 | 位置 | 指南原有說明 | 目前適用作法與文件 |
 |---|---|---|
 | [營運指南](handover/operator-guide.md) §8.1（第 1096–1104 行） | 呼叫 Go 方法 `vault.Rotate(ctx, purpose, validityDuration, overlapDuration)`、`vault.TrustBundle(ctx)` 與 `vault.Revoke(ctx, keyID)`，且舊金鑰狀態轉為 `retiring` | 使用 `fvpn-vault inspect`、`fvpn-vault export-trust`（[金鑰庫檢查與匯出](pki/inspect.md)）及 `fvpn-vault-keys rotate`、`fvpn-vault-keys revoke`（[中央金鑰指令](pki/keys.md)）；金鑰狀態為 `active`、`retired`、`revoked`，輪替與推展規則見 [金鑰輪替與還原](pki/rotation.md#central-signing-keys) |
-| [營運指南](handover/operator-guide.md) §8.2（第 1106–1110 行） | 以新舊發行金鑰同時簽署單一 `fvpn-release-trust-v1` 輪替封套，並以 `vault.UpdateReleaseTrust(ctx, rotationEnvelopeBytes, now)` 套用 | `fvpn-release trust-update` 每次恰指定 `-add`、`-retire` 或 `-revoke` 其中之一並以單一金鑰簽署；信任根交接依 [發行流程](updates/release-process.md) 所述，按連續版本號以獨立更新分步進行，中央套用步驟見 [輪替操作手冊](pki/rotation.md#release-verification-trust) |
+| [營運指南](handover/operator-guide.md) §8.2（第 1106–1110 行） | 以新舊發行金鑰同時簽署單一 `fvpn-release-trust-v1` 輪替封套，並以 `vault.UpdateReleaseTrust(ctx, rotationEnvelopeBytes, now)` 套用 | `fvpn-release trust-update` 每次恰指定 `-add`、`-retire` 或 `-revoke` 其中之一並以單一金鑰簽署；信任根交接依 [發行流程](updates/release-process.md) 所述，按連續版本號以獨立更新分步進行，中央套用步驟（`fvpn-vault-keys apply-release-update`）見 [輪替操作手冊](pki/rotation.md#release-verification-trust) |
 | [營運指南](handover/operator-guide.md) §1.2（第 259 行，每週工作） | 直接讀取 `/var/lib/fvpn/vault/state.json` 與節點信任檔，檢查接近 `not_after` 的啟用金鑰 | 執行 `fvpn-vault inspect` 檢視每把金鑰的 `state`、`not_before`、`not_after` 與 `window_status`（[金鑰庫檢查與匯出](pki/inspect.md#metadata-inspection)） |
 | [會員指南](handover/member-guide.md) §5.3（第 235、465 行） | 在 `shadow` 模式下，入口網站顯示 `would_apply_tier` 且 `throttled` 維持 `false` | 會員用量回應的 `FairUseStatus` 不含這兩個欄位；`shadow` 模式回傳 `state: normal`（級距、速率與原因為 `null`），且入口網站僅在 `state: adjusted` 時顯示調速提示（[API 契約](../contracts/openapi.yaml)、[入口網站文件](portal/README.md)） |
 
