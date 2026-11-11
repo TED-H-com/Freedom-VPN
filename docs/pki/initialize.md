@@ -112,6 +112,10 @@ current authority. Choose runtime node certificate and renewal windows
 separately. Deliver `trust.json` through an already authenticated channel and
 verify actual node adoption. File creation is not runtime acceptance.
 
+For an existing vault, use [`fvpn-vault inspect` and `export-trust`](inspect.md)
+to inspect current metadata, optionally check key use, or publish a new public
+node trust file without changing the vault.
+
 ## Failure and interruption
 
 An existing destination is always refused, including repeat/concurrent attempts;
