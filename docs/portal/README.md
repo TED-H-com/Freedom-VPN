@@ -97,30 +97,40 @@ not exit health or reachability. Unknown runtime states fail closed.
 | `pending_payment` | 待付款 / 開通中 | Awaiting payment / Confirmation in progress | No | Complete payment on Billing; wait when `wait_for_payment_confirmation` is returned | DOM in both languages; live journey covers both variants |
 | `active` | 有效 | Active | Yes | Install app / check devices, or free a device slot | DOM in both languages; live journey |
 | `cancel_at_period_end` | 有效（期末取消） | Active (ends at period end) | Yes | Install app / check devices, or free a device slot | DOM only |
-| `grace` | 寬限期 | Grace period | Yes, until the grace deadline | Install app / check devices, or free a device slot | DOM only |
+| `grace` | 寬限期 | Grace period | Yes (effective service end can include contiguous grants) | Install app / check devices, or free a device slot | DOM only |
 | `past_due` | 付款逾期 | Payment overdue | No | Renew on Billing | DOM only |
 | `expired` | 到期 | Expired | No | Renew on Billing | DOM and live browser in both languages |
 | `suspended` | 停權 | Suspended | No | Contact support; payment/renewal does not lift suspension | DOM and live browser in both languages |
 | `closed` | 帳號已關閉 | Account closed | No | Contact support | DOM only |
 
 Next steps always follow the returned `next_actions`; the state supplies a
-fallback only when that list is empty. A serving entitlement without a serving
+fallback only when that list is empty. Unknown actions are ignored when a known
+action is present; an entirely unknown list shows a translated reload/contact-support
+notice instead of an invented instruction. A serving entitlement without a serving
 exit group can receive `renew_subscription` instead of device actions. Only
 `closed` shows the closed-account banner. Expiry and grace deadlines use the
 existing locale + UTC date formatter; suspension never claims closure or device
 authorization revocation (§18.3).
 
 `TestAT04_F404_*` in `src/pages/__tests__/member_service.test.tsx` checks all eight
-states, both pending-payment variants, exact bilingual copy, links, unknown-state
-denial and accessibility. The live tests in `e2e/portal.spec.ts` create fresh
+states, both pending-payment variants, exact bilingual copy for all seven next
+actions, exact destinations and navigation through the application routes, unknown
+actions/state handling and accessibility. Active reasons claim entitlement only,
+including grant-only, grant-with-past-due-subscription and paid-subscription cases
+on both Service and Billing. The live tests in `e2e/portal.spec.ts` create fresh
 members through OIDC, suspend via the administrator page, and let a real finite
 administrator grant expire. They compare the rendered screen to the member API,
 switch languages through the UI, and optionally save screenshots and visible text
 when `PORTAL_E2E_EVIDENCE_DIR` is an absolute directory (see [DEV.md](DEV.md)).
-Unset/empty disables capture without skipping assertions; CI leaves it unset.
+Unset/empty disables evidence capture without skipping assertions; CI leaves it
+unset. Playwright still writes its own `test-results` directory (the make target
+removes it before a run), including failure artifacts when applicable.
 The finite grant lasts five seconds to allow slow-runner observation margin, not
-to impose a product minimum. Their `finally` blocks restore the default member
-session. No clocks or entitlement rows are edited for these tests.
+to impose a product minimum. A fixture scoped to the two tests restores the default
+member session after success, failure or timeout using its own request context and
+15-second fixture budget; it verifies the restored member ID through the member API.
+A following test reads that API before doing anything else and checks the default
+member independently. The fixture also invalidates a reset still in flight. No clocks or entitlement rows are edited for these tests.
 
 The live suite uses local fakes for OIDC, NetBird and Stripe. It does not exercise
 the assembled Docker stack, real client apps, traffic withdrawal or a production

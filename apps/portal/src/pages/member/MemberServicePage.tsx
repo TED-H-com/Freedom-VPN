@@ -75,6 +75,7 @@ export function MemberServicePage(): React.ReactElement {
   const stateView = deriveMemberServiceState(me);
   const isClosed = ent.state === 'closed';
   const actions = me.next_actions.length ? me.next_actions : [stateView.fallbackAction];
+  const knownActions = actions.filter((action) => Object.hasOwn(nextSteps, action));
   const isFupAdjusted = usage?.fair_use.state === 'adjusted';
   const resetAt = me.fair_use_reset_at ?? usage?.fair_use.resets_at ?? '-';
   const planName =
@@ -216,9 +217,13 @@ export function MemberServicePage(): React.ReactElement {
         data-testid="member-service-next-steps"
       >
         <h2 id="member-next-step-title">{t('member.service.nextLabel')}</h2>
-        {actions.map((action) => {
+        {knownActions.length === 0 && (
+          <p data-testid="member-next-unavailable">
+            {t('member.service.nextUnavailable')}
+          </p>
+        )}
+        {knownActions.map((action) => {
           const step = nextSteps[action];
-          if (!step) return null;
           return (
             <p key={action} data-testid={`member-next-${action}`}>
               {step.to ? <Link to={step.to}>{t(step.label)}</Link> : t(step.label)}

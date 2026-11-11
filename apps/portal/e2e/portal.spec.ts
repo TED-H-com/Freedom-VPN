@@ -1,3 +1,4 @@
+import { MEMBER_SCREEN_BUDGET as budget } from './member-screen-budget.mjs';
 import { memberScreenEvidenceDirectory } from './member-screen-evidence.mjs';
 import { publicationGateDiagnostics } from './publication-diagnostics.mjs';
 import fs from 'node:fs/promises';
@@ -168,6 +169,9 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await expect(page.getByTestId('member-entitlement-state-badge')).toHaveAttribute(
       'data-state',
       'active',
+    );
+    await expect(page.getByTestId('member-state-reason')).toHaveText(
+      '您的服務資格有效。',
     );
 
     await page.goto('/member/exits');
@@ -1431,43 +1435,75 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
   });
 });
 
+// Only these two tests select temporary members. This fixture's teardown uses
+// its own context and timeout even if Playwright has closed the test fixtures.
+const inactiveTest = test.extend<{ restoreDefaultMember: void }>({
+  restoreDefaultMember: [
+    async ({ playwright }, use) => {
+      try {
+        await use();
+      } finally {
+        const cleanup = await playwright.request.newContext({
+          timeout: budget.teardownRequest,
+        });
+        try {
+          const metadata = await cleanup.get(`${BASE_URL}/__e2e/default-member`);
+          expect(metadata.ok()).toBeTruthy();
+          const { member_id: expected } = (await metadata.json()) as {
+            member_id: string;
+          };
+          const restored = await cleanup.post(`${BASE_URL}/__e2e/restore-default-member`);
+          expect(restored.ok()).toBeTruthy();
+          const response = await cleanup.get(`${BASE_URL}/api/v1/member/me`);
+          expect(response.ok()).toBeTruthy();
+          const { member_id: actual } = (await response.json()) as MemberSelf;
+          expect(
+            actual,
+            `Member restoration mismatch: expected default ${expected}, served ${actual}`,
+          ).toBe(expected);
+          console.log(`[AT04 F4-04] teardown verified default member ${actual}`);
+        } finally {
+          await cleanup.dispose();
+        }
+      }
+    },
+    { auto: true, timeout: budget.teardown },
+  ],
+});
+
 async function waitForMemberState(
   request: APIRequestContext,
   state: MemberSelf['entitlement']['state'],
   validUntil?: string,
 ): Promise<MemberSelf> {
   const started = Date.now();
-  const activeDeadline =
-    state === 'active' && validUntil ? Date.parse(validUntil) : undefined;
-  const endedMessage = 'Grant ended before the active state was observed';
-  if (activeDeadline !== undefined && started >= activeDeadline) {
-    throw new Error(`${endedMessage} (valid_until=${validUntil})`);
-  }
+  const deadline = validUntil
+    ? Date.parse(validUntil) + (state === 'expired' ? budget.expiryAllowance : 0)
+    : started + budget.pending;
+  const endedMessage = `Grant ended before the active state was observed (valid_until=${validUntil})`;
+  if (Date.now() >= deadline && state === 'active') throw new Error(endedMessage);
   let me: MemberSelf | undefined;
   try {
     await expect
       .poll(
         async () => {
           const response = await request.get(`${BASE_URL}/api/v1/member/me`, {
-            timeout: 10_000,
+            timeout: Math.max(1, Math.min(2000, deadline - Date.now())),
           });
           expect(response.ok()).toBeTruthy();
           me = (await response.json()) as MemberSelf;
           return me.entitlement.state;
         },
         {
-          timeout:
-            activeDeadline === undefined
-              ? 10_000
-              : Math.min(10_000, activeDeadline - started),
+          timeout: Math.max(1, deadline - Date.now()),
           intervals: [100],
+          message: `Awaiting ${state} by ${new Date(deadline).toISOString()}`,
         },
       )
       .toBe(state);
   } catch (error) {
-    if (activeDeadline !== undefined && Date.now() >= activeDeadline) {
-      throw new Error(`${endedMessage} (valid_until=${validUntil})`, { cause: error });
-    }
+    if (state === 'active' && Date.now() >= deadline)
+      throw new Error(endedMessage, { cause: error });
     throw error;
   }
   console.log(`[AT04 F4-04] ${state} server wait: ${Date.now() - started} ms`);
@@ -1482,15 +1518,22 @@ async function assertInactiveScreen(
 ) {
   // Compare mutable fields to the response actually rendered. In particular,
   // expiry recomputation can clear the device limit after the polling read.
-  const memberResponse = page.waitForResponse(
-    (response) =>
-      new URL(response.url()).pathname === '/api/v1/member/me' &&
-      response.request().method() === 'GET',
+  const displayedMe = await test.step(
+    'Read the service page',
+    async () => {
+      const memberResponse = page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/api/v1/member/me' &&
+          response.request().method() === 'GET',
+        { timeout: budget.navigation },
+      );
+      await page.goto('/member/service', { timeout: budget.navigation });
+      const response = await memberResponse;
+      expect(response.ok()).toBeTruthy();
+      return (await response.json()) as MemberSelf;
+    },
+    { timeout: budget.navigation },
   );
-  await page.goto('/member/service');
-  const response = await memberResponse;
-  expect(response.ok()).toBeTruthy();
-  const displayedMe = (await response.json()) as MemberSelf;
   expect(displayedMe.member_id).toBe(me.member_id);
   expect(displayedMe.entitlement.state).toBe(state);
   expect(displayedMe.entitlement.effective_service_end).toBe(
@@ -1498,107 +1541,121 @@ async function assertInactiveScreen(
   );
   expect(displayedMe.next_actions).toEqual(me.next_actions);
   for (const locale of ['zh-TW', 'en'] as const) {
-    await page.getByTestId('locale-switcher').selectOption(locale);
-    const zh = locale === 'zh-TW';
-    const badge = page.getByTestId('member-entitlement-state-badge');
-    await expect(badge).toHaveAttribute('data-state', state);
-    await expect(badge).toHaveText(
-      state === 'suspended' ? (zh ? '停權' : 'Suspended') : zh ? '到期' : 'Expired',
+    await test.step(
+      `Assert ${state} in ${locale}`,
+      async () => {
+        await page.getByTestId('locale-switcher').selectOption(locale);
+        const zh = locale === 'zh-TW';
+        const badge = page.getByTestId('member-entitlement-state-badge');
+        await expect(badge).toHaveAttribute('data-state', state);
+        await expect(badge).toHaveText(
+          state === 'suspended' ? (zh ? '停權' : 'Suspended') : zh ? '到期' : 'Expired',
+        );
+        await expect(page.getByTestId('member-service-usable-now')).toHaveText(
+          zh
+            ? '目前服務資格不允許使用出口。'
+            : 'Your entitlement currently does not allow exit access.',
+        );
+        await expect(page.getByTestId('member-account-closed-banner')).toHaveCount(0);
+        const service = page.getByTestId('member-service-page');
+        if (zh) {
+          await expect(service).not.toContainText(
+            /Devices:|None|Normal speed|Loading service status\.\.\./,
+          );
+        }
+        await expect(page.getByTestId('member-device-quota')).toHaveText(
+          displayedMe.limits.device_limit === null
+            ? zh
+              ? `已授權裝置：${displayedMe.limits.authorized_device_count} 台`
+              : `Authorized devices: ${displayedMe.limits.authorized_device_count}`
+            : zh
+              ? `已授權裝置名額使用量：${displayedMe.limits.authorized_device_count} / ${displayedMe.limits.device_limit} 台`
+              : `Authorized Device Quota: ${displayedMe.limits.authorized_device_count} / ${displayedMe.limits.device_limit} devices`,
+        );
+        if (me.entitlement.effective_service_end === null) {
+          await expect(page.getByTestId('member-effective-end')).toHaveText(
+            zh ? '無' : 'None',
+          );
+        }
+        if (me.entitlement.paid_through === null) {
+          await expect(page.getByTestId('member-paid-through')).toHaveText(
+            zh ? '無' : 'None',
+          );
+        }
+        await expect(page.getByTestId('member-service-speed')).toHaveText(
+          zh ? '正常速度' : 'Normal speed',
+        );
+        if (state === 'suspended') {
+          const reason = zh
+            ? '管理員已暫停您的服務；付款或續費不會解除停權。'
+            : 'An administrator has suspended your service; payment or renewal does not lift the suspension.';
+          await expect(page.getByTestId('member-state-reason')).toHaveText(reason);
+          await expect(page.getByTestId('member-suspended-notice')).toHaveText(reason);
+          await expect(page.getByTestId('member-next-contact_support')).toHaveText(
+            zh ? '請聯絡客服。' : 'Contact support.',
+          );
+          await expect(page.getByTestId('member-expired-notice')).toHaveCount(0);
+        } else {
+          // Format in the browser's timezone, just as the page does; compare to API truth.
+          const formattedEnd = await page.evaluate(
+            ({ end, locale }) => {
+              return `${new Intl.DateTimeFormat(locale, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date(end))} (${end})`;
+            },
+            { end: me.entitlement.effective_service_end!, locale },
+          );
+          await expect(page.getByTestId('member-effective-end')).toHaveText(formattedEnd);
+          const reason = zh
+            ? `服務期間已於 ${formattedEnd} 結束，無法再使用出口。`
+            : `Your service period ended at ${formattedEnd}; exit access is no longer available.`;
+          await expect(page.getByTestId('member-state-reason')).toHaveText(reason);
+          await expect(page.getByTestId('member-expired-notice')).toHaveText(reason);
+          const next = page.getByTestId('member-next-renew_subscription');
+          await expect(next).toHaveText(
+            zh
+              ? '前往付款與訂閱頁面續訂服務。'
+              : 'Go to Billing & Subscription to renew service.',
+          );
+          await expect(next.getByRole('link')).toHaveAttribute('href', '/member/billing');
+          await expect(page.getByTestId('member-suspended-notice')).toHaveCount(0);
+        }
+      },
+      { timeout: budget.renderPerLocale },
     );
-    await expect(page.getByTestId('member-service-usable-now')).toHaveText(
-      zh
-        ? '目前服務資格不允許使用出口。'
-        : 'Your entitlement currently does not allow exit access.',
-    );
-    await expect(page.getByTestId('member-account-closed-banner')).toHaveCount(0);
-    const service = page.getByTestId('member-service-page');
-    if (zh) {
-      await expect(service).not.toContainText(
-        /Devices:|None|Normal speed|Loading service status\.\.\./,
-      );
-    }
-    await expect(page.getByTestId('member-device-quota')).toHaveText(
-      displayedMe.limits.device_limit === null
-        ? zh
-          ? `已授權裝置：${displayedMe.limits.authorized_device_count} 台`
-          : `Authorized devices: ${displayedMe.limits.authorized_device_count}`
-        : zh
-          ? `已授權裝置名額使用量：${displayedMe.limits.authorized_device_count} / ${displayedMe.limits.device_limit} 台`
-          : `Authorized Device Quota: ${displayedMe.limits.authorized_device_count} / ${displayedMe.limits.device_limit} devices`,
-    );
-    if (me.entitlement.effective_service_end === null) {
-      await expect(page.getByTestId('member-effective-end')).toHaveText(
-        zh ? '無' : 'None',
-      );
-    }
-    if (me.entitlement.paid_through === null) {
-      await expect(page.getByTestId('member-paid-through')).toHaveText(
-        zh ? '無' : 'None',
-      );
-    }
-    await expect(page.getByTestId('member-service-speed')).toHaveText(
-      zh ? '正常速度' : 'Normal speed',
-    );
-    if (state === 'suspended') {
-      const reason = zh
-        ? '管理員已暫停您的服務；付款或續費不會解除停權。'
-        : 'An administrator has suspended your service; payment or renewal does not lift the suspension.';
-      await expect(page.getByTestId('member-state-reason')).toHaveText(reason);
-      await expect(page.getByTestId('member-suspended-notice')).toHaveText(reason);
-      await expect(page.getByTestId('member-next-contact_support')).toHaveText(
-        zh ? '請聯絡客服。' : 'Contact support.',
-      );
-      await expect(page.getByTestId('member-expired-notice')).toHaveCount(0);
-    } else {
-      // Format in the browser's timezone, just as the page does; compare to API truth.
-      const formattedEnd = await page.evaluate(
-        ({ end, locale }) => {
-          return `${new Intl.DateTimeFormat(locale, { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date(end))} (${end})`;
-        },
-        { end: me.entitlement.effective_service_end!, locale },
-      );
-      await expect(page.getByTestId('member-effective-end')).toHaveText(formattedEnd);
-      const reason = zh
-        ? `服務期間已於 ${formattedEnd} 結束，無法再使用出口。`
-        : `Your service period ended at ${formattedEnd}; exit access is no longer available.`;
-      await expect(page.getByTestId('member-state-reason')).toHaveText(reason);
-      await expect(page.getByTestId('member-expired-notice')).toHaveText(reason);
-      const next = page.getByTestId('member-next-renew_subscription');
-      await expect(next).toHaveText(
-        zh
-          ? '前往付款與訂閱頁面續訂服務。'
-          : 'Go to Billing & Subscription to renew service.',
-      );
-      await expect(next.getByRole('link')).toHaveAttribute('href', '/member/billing');
-      await expect(page.getByTestId('member-suspended-notice')).toHaveCount(0);
-    }
     if (evidenceDir) {
-      await fs.mkdir(evidenceDir, { recursive: true });
-      await fs.writeFile(
-        path.join(evidenceDir, `${state}-${locale}.txt`),
-        await page.getByTestId('member-service-page').innerText(),
+      await test.step(
+        `Capture ${state} in ${locale}`,
+        async () => {
+          await fs.mkdir(evidenceDir, { recursive: true });
+          await fs.writeFile(
+            path.join(evidenceDir, `${state}-${locale}.txt`),
+            await page.getByTestId('member-service-page').innerText(),
+          );
+          for (const width of [1440, 768, 390]) {
+            await page.setViewportSize({ width, height: 900 });
+            await page.screenshot({
+              path: path.join(
+                evidenceDir,
+                `${state}-${locale}${width === 1440 ? '' : `-${width}`}.png`,
+              ),
+              fullPage: true,
+            });
+          }
+        },
+        { timeout: budget.capturePerLocale },
       );
-      for (const width of [1440, 768, 390]) {
-        await page.setViewportSize({ width, height: 900 });
-        await page.screenshot({
-          path: path.join(
-            evidenceDir,
-            `${state}-${locale}${width === 1440 ? '' : `-${width}`}.png`,
-          ),
-          fullPage: true,
-        });
-      }
     }
   }
 }
 
-test('TestAT04_F404_SuspendedMemberScreenMatchesServer_Bilingual', async ({
-  page,
-  request,
-}) => {
-  const evidenceDir = memberScreenEvidenceDirectory(process.env.PORTAL_E2E_EVIDENCE_DIR);
-  try {
-    const fresh = await request.post(`${BASE_URL}/__e2e/reset-member-journey`);
+inactiveTest(
+  'TestAT04_F404_SuspendedMemberScreenMatchesServer_Bilingual',
+  async ({ page, request }) => {
+    const evidenceDir = memberScreenEvidenceDirectory(
+      process.env.PORTAL_E2E_EVIDENCE_DIR,
+    );
+    const fresh = await request.post(`${BASE_URL}/__e2e/reset-member-journey`, {
+      timeout: budget.newMember,
+    });
     expect(fresh.ok()).toBeTruthy();
     const { member_id } = (await fresh.json()) as { member_id: string };
     await page.goto(`/admin/members/${member_id}`);
@@ -1617,27 +1674,40 @@ test('TestAT04_F404_SuspendedMemberScreenMatchesServer_Bilingual', async ({
     expect(me.next_actions).toEqual(['contact_support']);
     expect(me.entitlement.admin_suspended).toBe(true);
     await assertInactiveScreen(page, me, 'suspended', evidenceDir);
-  } finally {
-    const restored = await request.post(`${BASE_URL}/__e2e/restore-default-member`);
-    expect(restored.ok()).toBeTruthy();
-  }
-});
+  },
+);
 
-test('TestAT04_F404_ExpiredMemberScreenMatchesServer_Bilingual', async ({
-  page,
-  request,
-}) => {
-  const evidenceDir = memberScreenEvidenceDirectory(process.env.PORTAL_E2E_EVIDENCE_DIR);
-  try {
-    const fresh = await request.post(`${BASE_URL}/__e2e/reset-member-journey`);
+inactiveTest(
+  'TestAT04_F404_ExpiredMemberScreenMatchesServer_Bilingual',
+  async ({ page, request }) => {
+    test.setTimeout(budget.expiryTest);
+    const evidenceDir = memberScreenEvidenceDirectory(
+      process.env.PORTAL_E2E_EVIDENCE_DIR,
+    );
+    const fresh = await request.post(`${BASE_URL}/__e2e/reset-member-journey`, {
+      timeout: budget.newMember,
+    });
     expect(fresh.ok()).toBeTruthy();
     const { member_id } = (await fresh.json()) as { member_id: string };
     expect((await waitForMemberState(request, 'pending_payment')).member_id).toBe(
       member_id,
     );
-    const grant = await request.post(`${BASE_URL}/__e2e/finite-member-grant`);
-    expect(grant.status()).toBe(202);
-    const { valid_until } = (await grant.json()) as { valid_until: string };
+    const grant = await request.post(`${BASE_URL}/__e2e/finite-member-grant`, {
+      timeout: budget.grant,
+    });
+    const receipt = (await grant.json()) as {
+      valid_until: string;
+      sent_at: string;
+      answered_at: string;
+      product_status: number | null;
+      product_error_code: string | null;
+    };
+    const { valid_until } = receipt;
+    const diagnosis =
+      Date.parse(receipt.answered_at) >= Date.parse(valid_until)
+        ? 'the grant window had already passed when the command was answered'
+        : 'the product refused a grant whose window was still open';
+    expect(grant.status(), `${diagnosis}: ${JSON.stringify(receipt)}`).toBe(202);
     const active = await waitForMemberState(request, 'active', valid_until);
     const remainingMs = Date.parse(valid_until) - Date.now();
     console.log(
@@ -1650,7 +1720,7 @@ test('TestAT04_F404_ExpiredMemberScreenMatchesServer_Bilingual', async ({
     expect(new Date(active.entitlement.effective_service_end!).getTime()).toBe(
       new Date(valid_until).getTime(),
     );
-    const me = await waitForMemberState(request, 'expired');
+    const me = await waitForMemberState(request, 'expired', valid_until);
     expect(me.member_id).toBe(member_id);
     expect(me.next_actions).toEqual(['renew_subscription']);
     expect(me.entitlement.effective_service_end).toBeTruthy();
@@ -1662,8 +1732,17 @@ test('TestAT04_F404_ExpiredMemberScreenMatchesServer_Bilingual', async ({
       `[AT04 F4-04] expiry observed ${Date.now() - new Date(valid_until).getTime()} ms after real grant deadline`,
     );
     await assertInactiveScreen(page, me, 'expired', evidenceDir);
-  } finally {
-    const restored = await request.post(`${BASE_URL}/__e2e/restore-default-member`);
-    expect(restored.ok()).toBeTruthy();
-  }
+  },
+);
+
+// This read must be the first action: it must not repair the state it verifies.
+test('TestAT04_F404_DefaultMemberRestoredAfterInactiveScreens', async ({ request }) => {
+  const response = await request.get(`${BASE_URL}/api/v1/member/me`);
+  expect(response.ok()).toBeTruthy();
+  const { member_id: actual } = (await response.json()) as MemberSelf;
+  const metadata = await request.get(`${BASE_URL}/__e2e/default-member`);
+  expect(metadata.ok()).toBeTruthy();
+  const { member_id: expected } = (await metadata.json()) as { member_id: string };
+  expect(actual, `Expected default member ${expected}, served ${actual}`).toBe(expected);
+  console.log(`[AT04 F4-04] following test first read verified default member ${actual}`);
 });

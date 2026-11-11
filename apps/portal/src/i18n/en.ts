@@ -433,12 +433,11 @@ export const en: Record<TranslationKey, string> = {
   'member.service.unusable': 'Your entitlement currently does not allow exit access.',
   'member.service.reason.pending_payment':
     'Payment has not been confirmed; service is not yet available.',
-  'member.service.reason.active':
-    'Your subscription is in order and your service entitlement is active.',
+  'member.service.reason.active': 'Your service entitlement is active.',
   'member.service.reason.cancel_at_period_end':
     'Cancellation is scheduled for period end; service continues until {end}.',
   'member.service.reason.grace':
-    'Renewal is pending; service continues until the grace deadline of {graceUntil}.',
+    'Renewal is pending; the grace deadline is {graceUntil}. Your service entitlement runs until {end}.',
   'member.service.reason.past_due': 'Payment is overdue and service is unavailable.',
   'member.service.reason.expired':
     'Your service period ended at {end}; exit access is no longer available.',
@@ -447,6 +446,8 @@ export const en: Record<TranslationKey, string> = {
   'member.service.reason.closed': 'Your account is closed and service is unavailable.',
   'member.service.reason.unknown':
     'Your entitlement could not be confirmed. Reload or contact support.',
+  'member.service.nextUnavailable':
+    'The next step cannot be shown. Reload the page or contact support.',
   'member.service.nextLabel': 'Next step',
   'member.service.next.complete_payment':
     'Go to Billing & Subscription to complete payment.',

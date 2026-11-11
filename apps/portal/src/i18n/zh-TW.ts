@@ -393,15 +393,17 @@ export const zhTW = {
   'member.service.usable': '目前服務資格允許使用出口。',
   'member.service.unusable': '目前服務資格不允許使用出口。',
   'member.service.reason.pending_payment': '尚未確認付款，服務尚未開通。',
-  'member.service.reason.active': '訂閱狀態正常，服務資格有效。',
+  'member.service.reason.active': '您的服務資格有效。',
   'member.service.reason.cancel_at_period_end':
     '已設定期末取消，服務可繼續使用至 {end}。',
-  'member.service.reason.grace': '續費待確認，服務可繼續使用至寬限期限 {graceUntil}。',
+  'member.service.reason.grace':
+    '續費待確認，寬限期限為 {graceUntil}；有效服務期限至 {end}。',
   'member.service.reason.past_due': '付款已逾期，目前無法使用服務。',
   'member.service.reason.expired': '服務期間已於 {end} 結束，無法再使用出口。',
   'member.service.reason.suspended': '管理員已暫停您的服務；付款或續費不會解除停權。',
   'member.service.reason.closed': '您的帳號已關閉，無法使用服務。',
   'member.service.reason.unknown': '目前無法確認服務資格，請重新載入或聯絡客服。',
+  'member.service.nextUnavailable': '目前無法顯示下一步，請重新載入頁面或聯絡客服。',
   'member.service.nextLabel': '下一步',
   'member.service.next.complete_payment': '前往付款與訂閱頁面完成付款。',
   'member.service.next.wait_for_payment_confirmation':

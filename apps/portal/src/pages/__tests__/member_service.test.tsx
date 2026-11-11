@@ -1,4 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import userEvent from '@testing-library/user-event';
 import { act, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
@@ -67,10 +68,7 @@ const cases: Array<{
     actions: ['install_app', 'register_device'],
     usable: true,
     labels: ['有效', 'Active'],
-    reasons: [
-      '訂閱狀態正常，服務資格有效。',
-      'Your subscription is in order and your service entitlement is active.',
-    ],
+    reasons: ['您的服務資格有效。', 'Your service entitlement is active.'],
   },
   {
     name: 'cancel_at_period_end',
@@ -90,8 +88,8 @@ const cases: Array<{
     usable: true,
     labels: ['寬限期', 'Grace period'],
     reasons: [
-      '續費待確認，服務可繼續使用至寬限期限 {graceUntil}。',
-      'Renewal is pending; service continues until the grace deadline of {graceUntil}.',
+      '續費待確認，寬限期限為 {graceUntil}；有效服務期限至 {end}。',
+      'Renewal is pending; the grace deadline is {graceUntil}. Your service entitlement runs until {end}.',
     ],
   },
   {
@@ -139,6 +137,65 @@ const cases: Array<{
     ],
   },
 ];
+
+const steps = {
+  complete_payment: {
+    text: [
+      '前往付款與訂閱頁面完成付款。',
+      'Go to Billing & Subscription to complete payment.',
+    ],
+    to: '/member/billing',
+    page: 'member-billing-page',
+  },
+  wait_for_payment_confirmation: {
+    text: [
+      '等待付款確認；確認前無法使用出口。',
+      'Wait for payment confirmation; exit access is unavailable until confirmed.',
+    ],
+  },
+  install_app: {
+    text: ['前往開始使用頁面安裝 App。', 'Go to Getting Started to install the app.'],
+    to: '/member/getting-started',
+    page: 'member-getting-started-page',
+  },
+  register_device: {
+    text: [
+      '前往我的裝置頁面查看裝置授權。',
+      'Go to My Devices to check device authorization.',
+    ],
+    to: '/member/devices',
+    page: 'member-devices-page',
+  },
+  free_device_slot: {
+    text: ['前往我的裝置頁面釋出裝置名額。', 'Go to My Devices to free a device slot.'],
+    to: '/member/devices',
+    page: 'member-devices-page',
+  },
+  renew_subscription: {
+    text: [
+      '前往付款與訂閱頁面續訂服務。',
+      'Go to Billing & Subscription to renew service.',
+    ],
+    to: '/member/billing',
+    page: 'member-billing-page',
+  },
+  contact_support: { text: ['請聯絡客服。', 'Contact support.'] },
+} satisfies Record<
+  MemberSelf['next_actions'][number],
+  { text: [string, string]; to?: string; page?: string }
+>;
+
+function assertStep(action: keyof typeof steps, locale: Locale) {
+  const step = steps[action];
+  const element = screen.getByTestId(`member-next-${action}`);
+  const index = locale === 'zh-TW' ? 0 : 1;
+  expect(element.textContent).toBe(step.text[index]);
+  expect(element).not.toHaveTextContent(step.text[1 - index]!);
+  if ('to' in step)
+    expect(within(element).getByRole('link')).toHaveAttribute('href', step.to);
+  else expect(within(element).queryByRole('link')).not.toBeInTheDocument();
+  return element;
+}
 
 function member(
   state: EntitlementState,
@@ -243,8 +300,7 @@ for (const locale of locales) {
           if (present) expect(screen.getByTestId(id)).toBeVisible();
           else expect(screen.queryByTestId(id)).not.toBeInTheDocument();
         }
-        for (const action of row.actions)
-          expect(screen.getByTestId(`member-next-${action}`)).toBeVisible();
+        for (const action of row.actions) assertStep(action, locale);
         if (row.state === 'expired' || row.state === 'suspended') {
           const notice = screen.getByTestId(`member-${row.state}-notice`);
           expect(notice.textContent).toBe(expectedReason(row, locale));
@@ -277,6 +333,104 @@ for (const locale of locales) {
         );
       });
     }
+
+    for (const action of Object.keys(steps) as Array<keyof typeof steps>) {
+      it(`NextActionExactCopyAndRealRoute_${action}`, async () => {
+        renderMember(member('active', [action]), locale);
+        await screen.findByTestId('member-entitlement-state-badge');
+        const element = assertStep(action, locale);
+        const step = steps[action];
+        if ('to' in step) {
+          await userEvent.click(within(element).getByRole('link'));
+          expect(await screen.findByTestId(step.page)).toBeVisible();
+          expect(screen.queryByTestId('member-service-page')).not.toBeInTheDocument();
+        }
+      });
+    }
+
+    for (const variant of [
+      'grant_without_subscription',
+      'grant_with_past_due_subscription',
+      'paid_subscription',
+    ] as const) {
+      for (const path of ['/member/service', '/member/billing']) {
+        it(`ActiveReasonOnlyClaimsEntitlement_${variant}_${path}`, async () => {
+          const me = buildMemberSelfForPersona('member_active');
+          if (variant === 'grant_without_subscription') {
+            me.subscription = null;
+            me.entitlement.paid_through = null;
+          }
+          if (variant === 'grant_with_past_due_subscription') {
+            me.subscription!.provider_status = 'past_due';
+            me.subscription!.paid_through = '2026-09-28T00:00:00Z';
+            me.entitlement.paid_through = me.subscription!.paid_through;
+          }
+          const expected = cases[2]!.reasons[i];
+          renderMember(me, locale, path);
+          const reason = await screen.findByText(expected, { exact: true });
+          expect(reason).toBeVisible();
+          expect(reason).not.toHaveTextContent(/訂閱|付款|subscription|payment|billing/i);
+          expect(
+            screen.queryByText(cases[2]!.reasons[j], { exact: true }),
+          ).not.toBeInTheDocument();
+          expect(
+            screen.queryByText(
+              /訂閱狀態正常|subscription is in order|billing is in order/i,
+            ),
+          ).not.toBeInTheDocument();
+        });
+      }
+    }
+
+    for (const unknown of ['future_action', '__proto__', 'constructor', 'toString']) {
+      it(`UnknownActionDoesNotInventFallback_${unknown}`, async () => {
+        const { container } = renderMember(
+          member('expired', [unknown as MemberSelf['next_actions'][number]]),
+          locale,
+        );
+        const unavailable = await screen.findByTestId('member-next-unavailable');
+        const texts = [
+          '目前無法顯示下一步，請重新載入頁面或聯絡客服。',
+          'The next step cannot be shown. Reload the page or contact support.',
+        ];
+        expect(unavailable.textContent).toBe(texts[i]);
+        expect(unavailable).not.toHaveTextContent(texts[j]!);
+        expect(
+          screen.queryByTestId('member-next-renew_subscription'),
+        ).not.toBeInTheDocument();
+        expect(
+          within(screen.getByTestId('member-service-next-steps')).queryByRole('link'),
+        ).not.toBeInTheDocument();
+        if (unknown === 'future_action') await assertAccessible(container);
+      });
+    }
+
+    it('MixedActionsShowOnlyKnownServerActions', async () => {
+      renderMember(
+        member('expired', [
+          'constructor',
+          'install_app',
+          'future_action',
+        ] as MemberSelf['next_actions']),
+        locale,
+      );
+      await screen.findByTestId('member-entitlement-state-badge');
+      assertStep('install_app', locale);
+      expect(screen.queryByTestId('member-next-unavailable')).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId('member-next-renew_subscription'),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.getByTestId('member-service-next-steps').querySelectorAll('p'),
+      ).toHaveLength(1);
+    });
+
+    it('EmptyActionsUseStateFallback', async () => {
+      renderMember(member('expired', []), locale);
+      await screen.findByTestId('member-entitlement-state-badge');
+      assertStep('renew_subscription', locale);
+      expect(screen.queryByTestId('member-next-unavailable')).not.toBeInTheDocument();
+    });
 
     it('NoDeviceLimitShowsCountAndConsistentAbsentDates', async () => {
       const me = member('suspended', ['contact_support']);
@@ -352,6 +506,26 @@ for (const locale of locales) {
       expect(screen.getByTestId('member-service-page')).not.toHaveTextContent(
         /所有裝置授權已撤銷|All device authorizations are revoked/,
       );
+    });
+
+    it('GraceNamesDeadlineAndExtendedEffectiveServiceEnd', async () => {
+      // §9.2 Compute extends the connected interval through a future grant.
+      const me = buildMemberSelfForPersona('member_grace');
+      me.entitlement.effective_service_end = '2026-11-04T00:00:00Z';
+      const deadline = formatLocaleWithUtc(me.entitlement.grace_until!, locale);
+      const effectiveEnd = formatLocaleWithUtc(
+        me.entitlement.effective_service_end,
+        locale,
+      );
+      const expected =
+        locale === 'zh-TW'
+          ? `續費待確認，寬限期限為 ${deadline}；有效服務期限至 ${effectiveEnd}。`
+          : `Renewal is pending; the grace deadline is ${deadline}. Your service entitlement runs until ${effectiveEnd}.`;
+      renderMember(me, locale);
+      expect((await screen.findByTestId('member-state-reason')).textContent).toBe(
+        expected,
+      );
+      expect(deriveMemberServiceReason(me, locale)).toBe(expected);
     });
 
     it('GraceIsUsable_regression', async () => {

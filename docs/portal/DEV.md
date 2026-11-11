@@ -47,12 +47,41 @@ screen evidence files or screenshots are produced; CI leaves it unset. A relativ
 value fails the two tests before they perform any product actions or file writes.
 No evidence destination is inferred from the current working directory.
 
+Playwright still writes its own `test-results` directory when evidence capture is
+unset, including failure artifacts when applicable. The make target removes that
+directory before a run; disabling evidence only disables the additional member
+screenshots and visible-text files.
+
 The real-expiry test uses a five-second grant window to leave observation margin
-on slow runners; this is not a product minimum. It polls every 100 ms, bounded by
-the grant end when awaiting active and by ten seconds when awaiting expiry. It
-logs the remaining lifetime when active is first observed and requires it to be
-positive. The per-test timeout remains 45 seconds, with no clock changes or fixed
-long sleep.
+on slow runners, not to define a minimum product duration. It logs the positive
+remaining time when active is observed. A refused grant reports `valid_until`,
+`sent_at`, `answered_at`, product status and error code, distinguishing a window
+already ended at response time from an open-window refusal. Neither case retries.
+An accepted grant that ends before active can be observed fails with that diagnosis.
+No clocks change, no entitlement rows are written, and polling uses 100ms intervals.
+
+The limits live in `e2e/member-screen-budget.mjs`; the expiry test alone has a
+90-second timeout. The suite default remains 45 seconds, one worker, zero retries.
+
+| Phase | Bound |
+|---|---|
+| Create/select new member through product OIDC/admin commands | 15 seconds |
+| Observe pending | 5 seconds |
+| Grant request | 10 seconds, including an 8-second upstream request limit |
+| Observe active | Remaining time until `valid_until` (at most 5 seconds) |
+| Observe expired | Deadline `valid_until + 5 seconds` propagation allowance (at most 10 seconds from active observation) |
+| Navigate/read member service | 5 seconds |
+| Render/assert zh-TW and English | 5 seconds each, 10 total |
+| Optional capture for both locales, including width variants | 5 seconds each, 10 total |
+| Restore/verify default member | Separate 15-second fixture budget, three requests at most 4 seconds each |
+
+The conservative body sum is 70 seconds; including teardown it is 85 seconds,
+below the expiry test's 90 seconds. Active and expiry bounds overlap in reality.
+The restore fixture has virtually no setup work and uses its own budget and fresh
+request context after test-owned contexts close. A generation guard prevents a
+late reset from replacing the restored selection. The subsequent default-member
+check proves normal-path restoration; forced timeout/assertion probes provide the
+failure-path evidence recorded in the agent hand-off, not in the committed suite.
 
 ### Product-Driven Seeding (`apps/portal/e2e/dev-stack.mjs`, D-050 / D-057 / D-058)
 `dev-stack.mjs` drives member groups, node enrollments, exit publication, and fleet update batches through the real control-plane and worker APIs:

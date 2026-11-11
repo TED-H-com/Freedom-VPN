@@ -195,6 +195,12 @@ export function buildMemberSelfForPersona(persona: MockPersona): MemberSelf {
   switch (persona) {
     case 'member_pending_payment':
       base.entitlement.state = 'pending_payment';
+      base.subscription = null;
+      base.entitlement.plan = null;
+      base.entitlement.device_limit = null;
+      base.entitlement.valid_from = null;
+      base.entitlement.grace_until = null;
+      base.limits.authorized_device_count = 0;
       base.entitlement.paid_through = null;
       base.entitlement.effective_service_end = null;
       base.next_actions = ['wait_for_payment_confirmation'];
@@ -220,7 +226,7 @@ export function buildMemberSelfForPersona(persona: MockPersona): MemberSelf {
       break;
     case 'member_expired':
       base.entitlement.state = 'expired';
-      base.entitlement.valid_from = '2026-09-01T00:00:00Z';
+      base.entitlement.valid_from = '2026-09-28T00:00:00Z';
       base.entitlement.effective_service_end = '2026-10-01T00:00:00Z';
       base.entitlement.grace_until = base.entitlement.effective_service_end;
       base.entitlement.paid_through = '2026-09-28T00:00:00Z';
@@ -237,6 +243,12 @@ export function buildMemberSelfForPersona(persona: MockPersona): MemberSelf {
       break;
     default:
       break;
+  }
+  // MemberSelf read (§18.4): inactive members have no serving groups.
+  base.limits.device_limit = base.entitlement.device_limit;
+  if (!['active', 'cancel_at_period_end', 'grace'].includes(base.entitlement.state)) {
+    base.limits.exit_count = 0;
+    base.fair_use_reset_at = null;
   }
   return base;
 }
