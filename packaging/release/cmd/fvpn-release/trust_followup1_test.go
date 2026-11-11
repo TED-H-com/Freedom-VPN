@@ -267,7 +267,19 @@ func TestUPD02_TrustR4SignatureIDSyntax(t *testing.T) {
 
 func TestUPD02_TrustR4OpaqueIDHandoverAndRemoval(t *testing.T) {
 	f := newTrustFixture(t)
-	f.success([]string{"keygen", "-key-id", "release B", "-out", f.path("opaque.key"), "-trust-out", f.path("opaque.trust"), "-not-before", trustStart, "-not-after", trustEnd})
+	// Legacy opaque key stands for one generated before keygen refused such IDs.
+	legacy, err := release.GenerateKey("release B")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := legacy.Save(f.path("opaque.key")); err != nil {
+		t.Fatal(err)
+	}
+	legacyTrust, err := legacy.TrustStore(trustDate(trustStart), trustDate(trustEnd))
+	if err != nil {
+		t.Fatal(err)
+	}
+	writeTrustTest(t, f.path("opaque.trust"), jsonTrustTest(t, legacyTrust))
 	opaque, err := release.LoadKey(f.path("opaque.key"))
 	if err != nil {
 		t.Fatal(err)
