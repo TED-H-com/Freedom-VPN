@@ -15,6 +15,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"syscall"
 	"time"
 
@@ -689,7 +690,41 @@ const (
 	ChangeAlreadyRevoked
 	ChangeNotApplied
 	ChangeUncertain
+	ChangeAlreadyApplied
+	ChangeRejected
 )
+
+// ReleaseRejectReason classifies why an update was rejected under the lock.
+type ReleaseRejectReason string
+
+const (
+	RejectSignature    ReleaseRejectReason = "signature"
+	RejectPayload      ReleaseRejectReason = "payload"
+	RejectRevision     ReleaseRejectReason = "revision"
+	RejectRecord       ReleaseRejectReason = "record"
+	RejectNoUsableRoot ReleaseRejectReason = "no_usable_root"
+)
+
+// ReleaseKeyChange holds one release record before and after an update.
+// Before is nil when the record was added or when the update was already applied.
+type ReleaseKeyChange struct {
+	Before *KeyRecord
+	After  KeyRecord
+}
+
+// ReleaseUpdateResult contains public facts only (§13.4, §16.2, §17.2).
+// Refused and rejected outcomes disclose no vault contents.
+type ReleaseUpdateResult struct {
+	Outcome            ChangeOutcome
+	RejectReason       ReleaseRejectReason
+	OldRevision        decstr.U64
+	NewRevision        decstr.U64
+	OldReleaseRevision decstr.U64
+	NewReleaseRevision decstr.U64
+	Keys               []ReleaseKeyChange
+	Release            []KeyRecord
+	UsableRootIDs      []string
+}
 
 // ChangeResult contains public facts only. On ChangeNotApplied/ChangeUncertain,
 // Key and Previous, when present, describe an attempted replacement, not a
@@ -866,4 +901,180 @@ func (p *FileProvider) saveChange(s ledger) ChangeOutcome {
 		return ChangeUncertain
 	}
 	return ChangeNotApplied
+}
+
+func cloneKeyRecord(k KeyRecord) KeyRecord {
+	k.Public = bytes.Clone(k.Public)
+	k.NotBefore = k.NotBefore.UTC()
+	k.NotAfter = k.NotAfter.UTC()
+	if k.RevokedAt != nil {
+		at := k.RevokedAt.UTC()
+		k.RevokedAt = &at
+	}
+	return k
+}
+
+func equalKeyRecord(a, b KeyRecord) bool {
+	if a.ID != b.ID || a.Purpose != b.Purpose || !bytes.Equal(a.Public, b.Public) ||
+		a.State != b.State || !a.NotBefore.Equal(b.NotBefore) || !a.NotAfter.Equal(b.NotAfter) ||
+		(a.RevokedAt == nil) != (b.RevokedAt == nil) {
+		return false
+	}
+	return a.RevokedAt == nil || a.RevokedAt.Equal(*b.RevokedAt)
+}
+
+func usableReleaseRootIDs(keys []KeyRecord, now time.Time) []string {
+	ids := []string{}
+	for _, k := range keys {
+		if k.Purpose == Release && k.State != "revoked" && !now.Before(k.NotBefore) && now.Before(k.NotAfter) {
+			ids = append(ids, k.ID)
+		}
+	}
+	slices.Sort(ids)
+	return ids
+}
+
+// UpdateReleaseTrustConditional applies one signed release trust update under
+// the cross-process lock (§13.4, §16.2, §17.2, §17.4). Decision order:
+//  1. Verify the envelope against the ledger's release records at one instant.
+//  2. If release_revision equals the update's revision and every record of the
+//     update is stored as stated, return ChangeAlreadyApplied regardless of expectedRevision.
+//  3. Require the ledger revision to equal expectedRevision (ChangeRefused otherwise).
+//  4. Enforce payload, revision, record and usable-root rules (ChangeRejected otherwise).
+//  5. Advance revisions and save. Context cancellation bounds only acquiring the lock.
+func (p *FileProvider) UpdateReleaseTrustConditional(ctx context.Context, raw []byte, expectedRevision decstr.U64, allowNoUsableRoot bool) (out ReleaseUpdateResult, err error) {
+	err = p.with(ctx, func(s *ledger) error {
+		now := p.now().UTC()
+		ts, e := bundle(s, true)
+		if e != nil {
+			return e
+		}
+		signed, _, e := envelope.Verify(raw, ts, envelope.PurposeRelease, now)
+		if e != nil {
+			out = ReleaseUpdateResult{Outcome: ChangeRejected, RejectReason: RejectSignature}
+			return nil
+		}
+		var u ReleaseUpdate
+		d := json.NewDecoder(bytes.NewReader(signed))
+		d.DisallowUnknownFields()
+		decodeErr := d.Decode(&u)
+		payloadOK := decodeErr == nil && u.Kind == "fvpn-release-trust-v1" && len(u.Keys) > 0
+		if payloadOK && u.Revision > 0 && s.ReleaseRevision == u.Revision {
+			seen := make(map[string]bool, len(u.Keys))
+			changes := make([]ReleaseKeyChange, 0, len(u.Keys))
+			alreadyApplied := true
+			for _, k := range u.Keys {
+				if k.Purpose != Release || seen[k.ID] {
+					alreadyApplied = false
+					break
+				}
+				seen[k.ID] = true
+				matched := false
+				for _, old := range s.Keys {
+					if old.ID == k.ID {
+						if equalKeyRecord(old, k) {
+							matched = true
+							changes = append(changes, ReleaseKeyChange{After: cloneKeyRecord(old)})
+						}
+						break
+					}
+				}
+				if !matched {
+					alreadyApplied = false
+					break
+				}
+			}
+			if alreadyApplied {
+				out = ReleaseUpdateResult{
+					Outcome:            ChangeAlreadyApplied,
+					OldRevision:        s.Revision,
+					NewRevision:        s.Revision,
+					OldReleaseRevision: s.ReleaseRevision,
+					NewReleaseRevision: s.ReleaseRevision,
+					Keys:               changes,
+					UsableRootIDs:      usableReleaseRootIDs(s.Keys, now),
+				}
+				return nil
+			}
+		}
+		if s.Revision != expectedRevision {
+			out = ReleaseUpdateResult{Outcome: ChangeRefused}
+			return nil
+		}
+		if !payloadOK {
+			out = ReleaseUpdateResult{Outcome: ChangeRejected, RejectReason: RejectPayload}
+			return nil
+		}
+		if u.Revision <= s.ReleaseRevision {
+			out = ReleaseUpdateResult{Outcome: ChangeRejected, RejectReason: RejectRevision}
+			return nil
+		}
+		seen := make(map[string]bool, len(u.Keys))
+		changes := make([]ReleaseKeyChange, 0, len(u.Keys))
+		for _, k := range u.Keys {
+			if k.Purpose != Release || seen[k.ID] {
+				out = ReleaseUpdateResult{Outcome: ChangeRejected, RejectReason: RejectRecord}
+				return nil
+			}
+			seen[k.ID] = true
+			k = cloneKeyRecord(k)
+			found := false
+			for i, old := range s.Keys {
+				if old.ID != k.ID {
+					continue
+				}
+				found = true
+				if old.Purpose != Release || !bytes.Equal(old.Public, k.Public) ||
+					k.NotBefore.Before(old.NotBefore) || k.NotAfter.After(old.NotAfter) ||
+					(old.State == "revoked" && (k.State != "revoked" || k.RevokedAt == nil || !k.RevokedAt.Equal(*old.RevokedAt))) ||
+					(old.State == "retired" && k.State == "active") {
+					out = ReleaseUpdateResult{Outcome: ChangeRejected, RejectReason: RejectRecord}
+					return nil
+				}
+				if !equalKeyRecord(old, k) {
+					before := cloneKeyRecord(old)
+					changes = append(changes, ReleaseKeyChange{Before: &before, After: cloneKeyRecord(k)})
+				}
+				s.Keys[i] = k
+				break
+			}
+			if !found {
+				s.Keys = append(s.Keys, k)
+				changes = append(changes, ReleaseKeyChange{Before: nil, After: cloneKeyRecord(k)})
+			}
+		}
+		if validateLedger(*s) != nil {
+			out = ReleaseUpdateResult{Outcome: ChangeRejected, RejectReason: RejectRecord}
+			return nil
+		}
+		usableIDs := usableReleaseRootIDs(s.Keys, now)
+		if len(usableIDs) == 0 && !allowNoUsableRoot {
+			out = ReleaseUpdateResult{Outcome: ChangeRejected, RejectReason: RejectNoUsableRoot}
+			return nil
+		}
+		oldRevision, oldReleaseRevision := s.Revision, s.ReleaseRevision
+		s.ReleaseRevision = u.Revision
+		if e = advance(s); e != nil {
+			out = ReleaseUpdateResult{Outcome: ChangeNotApplied}
+			return nil
+		}
+		release := make([]KeyRecord, 0, len(s.Keys))
+		for _, k := range s.Keys {
+			if k.Purpose == Release {
+				release = append(release, cloneKeyRecord(k))
+			}
+		}
+		out = ReleaseUpdateResult{
+			Outcome:            p.saveChange(*s),
+			OldRevision:        oldRevision,
+			NewRevision:        s.Revision,
+			OldReleaseRevision: oldReleaseRevision,
+			NewReleaseRevision: s.ReleaseRevision,
+			Keys:               changes,
+			Release:            release,
+			UsableRootIDs:      usableIDs,
+		}
+		return nil
+	}, p.checkConditionalLock)
+	return
 }

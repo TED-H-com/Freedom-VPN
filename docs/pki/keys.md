@@ -7,11 +7,12 @@ see the [rotation and restore procedure](rotation.md). Build with
 `bin/linux_amd64/fvpn-vault-keys` and `bin/linux_arm64/fvpn-vault-keys`.
 Run as the vault's service account on persistent storage.
 
-Exactly two subcommands are available:
+Exactly three subcommands are available:
 
 ```text
 fvpn-vault-keys rotate -vault EXISTING_VAULT -purpose PURPOSE -expect-revision N -expect-active-key KEY_ID|none -validity DURATION -overlap DURATION [-lock-timeout DURATION]
 fvpn-vault-keys revoke -vault EXISTING_VAULT -key-id KEY_ID -expect-purpose PURPOSE -expect-revision N [-revoke-active] [-lock-timeout DURATION]
+fvpn-vault-keys apply-release-update -vault EXISTING_VAULT -update FILE -expect-revision N [-allow-no-usable-root] [-lock-timeout DURATION]
 ```
 
 Obtain the expected ledger revision and active key ID from
@@ -34,15 +35,24 @@ any node has adopted new trust.
 | `-overlap` | Rotate only: required nonnegative Go duration. No default or recommended production value. |
 | `-key-id` | Revoke only: required lowercase canonical UUID. |
 | `-revoke-active` | Revoke only: explicit permission to revoke the active record. Default false; `-revoke-active=false` also means false. |
+| `-update` | Apply-release-update only: required regular file (at most `1 MiB` / `1048576` bytes, `canonjson.MaxBytes`) containing a signed release trust update envelope from `fvpn-release trust-update`. |
+| `-allow-no-usable-root` | Apply-release-update only: explicit permission to apply an update that leaves no release root usable at the decision instant. Default false; `-allow-no-usable-root=false` also means false. |
 | `-lock-timeout` | Optional positive Go duration; default `5s`. |
 
 Durations can be fractional (including nanoseconds), must fit Go's
 `time.Duration`, and use Go duration syntax; `0` is valid only for overlap.
 UUID syntax is checked, not UUID version bits. Missing, repeated or unknown
 flags, stray arguments, invalid values and forbidden purpose arguments are
-usage failures before any filesystem access. A key whose actual purpose is
-forbidden is refused under lock even if an allowed expected purpose was given.
-`node-ca`, `bootstrap-secret` and `release` cannot be changed with this tool.
+usage failures before any filesystem access. For `apply-release-update`, a
+missing, non-regular (for example a directory or FIFO), unreadable or oversized
+(`> 1 MiB`) `-update` file is also a usage failure before the vault is opened;
+once read, the file is validated against `contracts/schemas/trust/release-update-envelope.schema.json`
+(`packaging/release.ValidateTrustUpdateEnvelope`) before opening the vault, and
+a schema failure returns `outcome: "rejected"` (`reason: "schema"`, exit `10`)
+without opening the vault. A key whose actual purpose is forbidden in `rotate`
+or `revoke` is refused under lock even if an allowed expected purpose was given.
+`node-ca` and `bootstrap-secret` cannot be changed with this tool; `release`
+records are changed only through `apply-release-update`.
 
 A raw `-vault` value containing a complete `..` path element is a usage failure,
 before cleaning or access, including leading, trailing, repeated-separator and
@@ -80,22 +90,50 @@ revision, rotation with `-expect-active-key none` can create a fresh signer;
 it never reinstates the revoked key. Ledger revisions increment once per
 change and never wrap.
 
+`apply-release-update` validates the update file against the embedded schema
+before opening the vault, then checks under the vault lock, in order:
+
+1. The envelope signature verifies against the ledger's `release` records
+   (active, retired and revoked) for purpose `release` at one reading of the
+   provider's clock (`rejected` with `reason: "signature"` otherwise, before the
+   already-applied check: a copy of an applied update whose signature bytes are
+   altered, or a repeat of an applied update that revoked its own signer or
+   whose signer's `not_after` has passed since the first run, is rejected with
+   `reason: "signature"`, whereas a signer retired by the update still verifies
+   until its `not_after`).
+2. If the ledger's `release_revision` equals the update's `revision` and every
+   record in the update is already stored in the ledger identically, the call
+   returns `already_applied` without changing anything, regardless of
+   `-expect-revision` or `-allow-no-usable-root`.
+3. Otherwise, the ledger's `revision` must equal `-expect-revision`
+   (`precondition_refused` otherwise).
+4. Payload, revision (`update.revision > release_revision`) and per-record
+   transition rules must hold (purpose `release`, unique IDs and public keys,
+   `not_before < not_after`, immutable public bytes for existing IDs,
+   non-expanding validity windows, terminal revocation with immutable
+   `revoked_at`, no `retired` to `active` transition), and at least one release
+   root must remain usable at the decision instant unless `-allow-no-usable-root`
+   is set (`rejected` otherwise, with reason class `signature`, `payload`,
+   `revision`, `record` or `no_usable_root`).
+5. Every record in the update is applied, `release_revision` takes the update's
+   revision, the ledger `revision` increases by one, and the ledger is saved.
+
 Central services choose the current key on each new signing call. For
-desired-state, lease and recovery, nodes lacking the updated trust bundle
-reject signatures made with the new key. Export, authenticate delivery and
-confirm adoption manually as described in [rotation.md](rotation.md). Overlap
-covers documents signed by the previous key that nodes still hold; it does not
-teach nodes to trust the new key. Ledger-epoch keys are central-only and do not
-change the node bundle. Revocation takes effect on node verification only when
-the node has the updated revocation information.
+desired-state, lease, recovery and release, nodes lacking the updated trust
+bundle reject signatures made with the new key or continue accepting an unrevoked
+copy. Export, authenticate delivery and confirm adoption manually as described in
+[rotation.md](rotation.md). Overlap covers documents signed by the previous key
+that nodes still hold; it does not teach nodes to trust the new key. Ledger-epoch
+keys are central-only and do not change the node bundle. Revocation takes effect
+on node verification only when the node has the updated revocation information.
 
 ## Outcomes and next actions
 
 When a conditional call returns an outcome, stdout receives exactly one
 indented JSON document followed by a newline. These outcomes have empty
 stderr, including nonzero outcomes. Exit 0 means a newly applied mutation or
-successful no-change revocation; `outcome: "already_revoked"` distinguishes the
-latter. The command never exits with 1.
+successful no-change repetition (`outcome: "already_revoked"` or
+`"already_applied"`). The command never exits with 1.
 
 An exit status alone is not an outcome. Accept an outcome only together with
 its documented output: the stdout document with empty stderr, or, for outcomes
@@ -108,12 +146,15 @@ stdout may contain a partial document, which is not a receipt.
 | Exit | `outcome` | Meaning and next action |
 |---|---|---|
 | `0` | `applied` (rotate) | New key active, ledger save completed. Preserve the result and perform the required trust rollout. Do not repeat the rotation. |
+| `0` | `applied` (apply-release-update) | Release trust update applied, ledger save completed. Export the trust bundle (`fvpn-vault export-trust`), deliver it to nodes, and confirm adoption before the next step of a root handover. |
 | `0` | `revoked` (revoke) | Key revoked, ledger save completed. Distribute revocation urgently for node-held purposes. If the active key was revoked, the purpose has no signer until a fresh rotation. |
 | `0` | `already_revoked` (revoke only) | Successful no-op. Recorded revocation time is returned unchanged. Preserve current revocation records and confirm trust rollout as needed. |
-| `5` | `precondition_refused` | Nothing changed. No vault contents are echoed. Run `fvpn-vault inspect` and decide on a new action; do not automatically refresh arguments. |
+| `0` | `already_applied` (apply-release-update only) | Successful no-op when the envelope signature still verifies against the current ledger (including a signer retired by the update before its `not_after`) and the update's `release_revision` and all of its records are already stored identically. Preserve the document and confirm trust rollout as needed. |
+| `5` | `precondition_refused` | Nothing changed. No vault contents are echoed. Run `fvpn-vault inspect` (and for release updates check the update again with `fvpn-release trust-verify` against a fresh export) and decide on a new action; do not automatically refresh arguments. |
 | `6` | `not_applied` | Failure before ledger replacement was attempted. If `unreferenced_key_id` is present, a private file was created and left behind, possibly incomplete. Inspect before retrying; do not remove anything automatically. |
-| `7` | `durability_not_confirmed` | Applied/revoked state was observed in a fresh locked snapshot at the expected next revision, after a save error at/after rename. Preserve evidence and investigate storage durability. Do not rotate/revoke again. |
+| `7` | `durability_not_confirmed` | Applied/revoked state was observed in a fresh locked snapshot at the expected next revision, after a save error at/after rename. Preserve evidence and investigate storage durability. Do not rotate, revoke or re-apply blindly. |
 | `8` | `unknown` | Replacement may have occurred; read-back failed or showed something else. No state is inferred. Inspect the vault and reconcile concurrent activity manually. Do not repeat blindly. |
+| `10` | `rejected` (apply-release-update only) | Nothing changed. The update is not acceptable for this vault (`reason` is `schema`, `signature`, `payload`, `revision`, `record` or `no_usable_root`). `reason: "signature"` also occurs when repeating an already-applied update that revoked its own signer or whose signer's `not_after` has since passed (`fvpn-release trust-verify` against a fresh export rejects such an update too, or rejects any applied update when `-current-revision` is the applied `release_revision`); to check whether an update was already applied, run `fvpn-vault inspect` and compare `release_revision` and the stored `release` records with the update. Otherwise inspect the vault and check the update with `fvpn-release trust-verify` against a fresh trust export. |
 
 `not_applied` with an unreferenced file points to the
 [orphan-file procedure](rotation.md#central-signing-keys) and
@@ -125,48 +166,67 @@ with still-current expectations can succeed despite an orphan, leaving exactly
 one active ledger key; the orphan remains until manual review.
 
 A save error at the rename boundary is treated conservatively, including an
-error returned by rename itself. Only a read-back matching the attempted key's
-complete public record and the expected next revision yields exit 7. A later
-concurrent rotation/revocation or another revision can make the outcome unknown
+error returned by rename itself. For `rotate` and `revoke`, only a read-back
+matching the attempted key's complete public record and the expected next
+revision yields exit 7; for `apply-release-update`, exit 7 requires the
+expected next ledger revision, the expected `release_revision`, and exactly the
+`release` records this update leaves in the ledger (every record it states, as
+stated, and every other `release` record as it was stored). A different release
+update applied in between, including one at the same ledger and release
+revisions, or a later concurrent mutation or another revision gives `unknown`
 even if this command's change did occur. Read-back is not a retry and cannot
 prove power-loss durability.
 
 ## Result documents
 
-`kind` is `fvpn-file-vault-rotate-v1` or `fvpn-file-vault-revoke-v1`.
-All documents contain `kind`, `outcome` and a fixed `message`. They never contain
-vault paths, private material, private file contents or raw error strings.
-Revisions are JSON decimal strings; times are UTC RFC 3339 with `Z`, preserving
-fractional seconds. Windows are half-open.
+`kind` is `fvpn-file-vault-rotate-v1`, `fvpn-file-vault-revoke-v1` or
+`fvpn-file-vault-apply-release-update-v1`.
+All documents contain `kind`, `outcome` and a fixed `message`. An
+`apply-release-update` document includes `update_sha256` (the lowercase hex
+SHA-256 of the canonical envelope without trailing newline, matching
+`fvpn-release trust-update` and `trust-verify`) unless the update file is not
+JSON that canonicalizes (non-JSON, empty, a duplicated object key or trailing
+data), in which case `update_sha256` is absent and the document is `rejected`
+with `reason: "schema"`; it is present on every other `apply-release-update`
+document. `rejected` documents include `reason` (`schema`, `signature`,
+`payload`, `revision`, `record` or `no_usable_root`). Documents never contain vault paths, private material,
+private file contents or raw error strings. Revisions are JSON decimal strings;
+times are UTC RFC 3339 with `Z`, preserving fractional seconds. Windows are
+half-open.
 
-Applied, revoked, already-revoked and durability-not-confirmed documents have
-`change`:
+Applied, revoked, already-revoked, already-applied and durability-not-confirmed
+documents have `change`:
 
 | Field | Contents |
 |---|---|
-| `old_revision`, `new_revision` | Revisions before/after the change. For already-revoked, both are the current revision and are equal. |
-| `key` | New active key (rotate), or revoked key (revoke). |
-| `previous_key` | Rotate: previous key **after** retirement/window capping, or `null`. Revoke: record **before** revocation. Already-revoked: `null`; previous state is not inferred. |
-| `node_trust` | `nodes_require_new_bundle` for desired-state/lease/recovery; nodes need updated trust before accepting new-key signatures or enforcing new revocations. `node_bundle_unchanged` for ledger-epoch. |
-| `purpose_has_no_signer` | Present as `true` only when this command revoked an active key. Otherwise omitted; absence makes no assertion about available signers. |
+| `old_revision`, `new_revision` | Ledger revisions before/after the change. For `already_revoked` and `already_applied`, both are the current revision and are equal. |
+| `old_release_revision`, `new_release_revision` | `apply-release-update` only: release revisions before/after the change. For `already_applied`, both equal the stored `release_revision`. |
+| `key` | `rotate` / `revoke` only: new active key (rotate), or revoked key (revoke). |
+| `previous_key` | `rotate` / `revoke` only: Rotate: previous key **after** retirement/window capping, or `null`. Revoke: record **before** revocation. Already-revoked: `null`; previous state is not inferred. |
+| `keys` | `apply-release-update` only: array of `{key, previous_key}` in update order. For `applied` and `durability_not_confirmed`, every release record the update adds or changes, `previous_key` being the stored record before the change or `null` for an added record; records restated exactly as stored are not listed, and an update that only advances `release_revision` lists none (`[]`). For `already_applied`, each record of the update as stored, with `previous_key` `null` because nothing changed. |
+| `usable_root_key_ids` | `apply-release-update` only: sorted array of release root key IDs usable at the decision instant after the update (`[]` when none remain under `-allow-no-usable-root`). |
+| `node_trust` | `nodes_require_new_bundle` for desired-state, lease, recovery and release; nodes need updated trust before accepting new-key signatures or enforcing new revocations. `node_bundle_unchanged` for ledger-epoch. |
+| `purpose_has_no_signer` | `rotate` / `revoke` only: present as `true` only when this command revoked an active key. Otherwise omitted; absence makes no assertion about available signers. |
 
 Each public key object has `key_id`, `purpose`, `state`, `not_before`,
 `not_after`, `public_sha256`, and `revoked_at` when revoked. The fingerprint is
 lowercase SHA-256 of raw Ed25519 public bytes, matching inspect/initialize.
 No raw public key is needed in the result; use authenticated trust export for
-public key distribution. A refusal has no `change` or key identifiers.
+public key distribution. A refusal or rejection has no `change` or vault key
+identifiers.
 
 `not_applied` optionally has `unreferenced_key_id`, only if exclusive file
-creation succeeded. `unknown` has `attempted_key_id` and `read_back` of `failed`
-or `different`. The identifier names the attempted change, not confirmed state.
-`durability_not_confirmed` has `read_back: "matched"` and the change details.
-No document says a node has adopted the result.
+creation succeeded. `unknown` has `read_back` of `failed` or `different` (plus
+`attempted_key_id` for `rotate` and `revoke`). The identifier names the
+attempted change, not confirmed state. `durability_not_confirmed` has
+`read_back: "matched"` and the change details. No document says a node has
+adopted the result.
 
 ## Failures without a document
 
 | Exit | Fixed stderr message after `fvpn-vault-keys: ` | Next action |
 |---|---|---|
-| `2` | The usage line containing both command syntaxes above, separated by ` \| `. | Correct arguments; no paths were accessed. |
+| `2` | The usage line containing the three command syntaxes above, separated by ` \| `. | Correct arguments; the vault was not opened. |
 | `3` | `vault unavailable` | Inspect storage/permissions and current authority. Nothing is created or repaired. |
 | `4` | `vault lock deadline exceeded` | Resolve contention and inspect before deciding whether to retry. This invocation changed nothing. |
 | `9` | `result output failed: OUTCOME; run fvpn-vault inspect; do not repeat blindly` | Run `fvpn-vault inspect` next. The change is not undone. |
@@ -213,8 +273,12 @@ old vault must not resurrect authority (§17.2, §17.4).
 
 These commands do not prove real node adoption, runtime recovery, hardware
 key protection or crash/power-loss durability. They provide no staging or
-scheduled activation, no automatic overlap calculation, no CA/bootstrap-secret
-rollover and no release-root update path. Choose windows explicitly, account for
-retained signed documents, distribute trust over an authenticated channel and
-confirm actual node behavior by hand. See [key references outside the vault](rotation.md#key-references-outside-the-vault)
+scheduled activation, no automatic overlap calculation, and no CA/bootstrap-secret
+rollover. `apply-release-update` binds an update to the vault's current state
+only through `-expect-revision` (the signed update envelope itself does not bind
+previous trust state), does not export or distribute trust to nodes, and
+provides no recovery path if every release root is lost or revoked. Choose
+windows explicitly, account for retained signed documents, distribute trust over
+an authenticated channel and confirm actual node behavior by hand. See
+[key references outside the vault](rotation.md#key-references-outside-the-vault)
 for which records and configuration remain unchanged.

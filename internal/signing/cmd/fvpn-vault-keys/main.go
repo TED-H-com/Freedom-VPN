@@ -16,6 +16,8 @@ import (
 	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
+	"github.com/TED-H-com/Freedom-VPN/packaging/release"
+	"github.com/TED-H-com/Freedom-VPN/pkg/canonjson"
 	"github.com/TED-H-com/Freedom-VPN/pkg/decstr"
 	"github.com/google/uuid"
 	"golang.org/x/sys/unix"
@@ -25,6 +27,7 @@ const defaultLockTimeout = 5 * time.Second
 const (
 	exitOK             = 0
 	exitAlreadyRevoked = 0 // Idempotent success; outcome distinguishes it.
+	exitAlreadyApplied = 0 // Idempotent success; outcome distinguishes it.
 	// Exit 1 is deliberately unused. Keep all failure codes stable.
 	exitUsage       = 2
 	exitUnavailable = 3
@@ -34,15 +37,16 @@ const (
 	exitDurability  = 7
 	exitUnknown     = 8
 	exitOutput      = 9
+	exitRejected    = 10
 )
-const usage = "usage: fvpn-vault-keys rotate -vault EXISTING_VAULT -purpose PURPOSE -expect-revision N -expect-active-key KEY_ID|none -validity DURATION -overlap DURATION [-lock-timeout DURATION] | fvpn-vault-keys revoke -vault EXISTING_VAULT -key-id KEY_ID -expect-purpose PURPOSE -expect-revision N [-revoke-active] [-lock-timeout DURATION]"
+const usage = "usage: fvpn-vault-keys rotate -vault EXISTING_VAULT -purpose PURPOSE -expect-revision N -expect-active-key KEY_ID|none -validity DURATION -overlap DURATION [-lock-timeout DURATION] | fvpn-vault-keys revoke -vault EXISTING_VAULT -key-id KEY_ID -expect-purpose PURPOSE -expect-revision N [-revoke-active] [-lock-timeout DURATION] | fvpn-vault-keys apply-release-update -vault EXISTING_VAULT -update UPDATE_FILE -expect-revision N [-allow-no-usable-root] [-lock-timeout DURATION]"
 
 type options struct {
-	subcommand, vault, keyID, active string
-	purpose                          signing.Purpose
-	revision                         decstr.U64
-	validity, overlap, timeout       time.Duration
-	revokeActive                     bool
+	subcommand, vault, keyID, active, update string
+	purpose                                  signing.Purpose
+	revision                                 decstr.U64
+	validity, overlap, timeout               time.Duration
+	revokeActive, allowNoUsableRoot          bool
 }
 type onceFlag struct {
 	seen, boolean bool
@@ -66,7 +70,7 @@ func canonicalID(s string) bool {
 	return err == nil && id.String() == s
 }
 func parse(args []string) (o options, ok bool) {
-	if len(args) == 0 || (args[0] != "rotate" && args[0] != "revoke") {
+	if len(args) == 0 || (args[0] != "rotate" && args[0] != "revoke" && args[0] != "apply-release-update") {
 		return o, false
 	}
 	o.subcommand, o.timeout = args[0], defaultLockTimeout
@@ -84,15 +88,19 @@ func parse(args []string) (o options, ok bool) {
 	add("expect-revision", false, true, func(s string) (err error) { o.revision, err = decstr.Parse(s); return })
 	add("lock-timeout", false, false, func(s string) (err error) { o.timeout, err = time.ParseDuration(s); return })
 	purpose := func(s string) error { o.purpose = signing.Purpose(s); return nil }
-	if o.subcommand == "rotate" {
+	switch o.subcommand {
+	case "rotate":
 		add("purpose", false, true, purpose)
 		add("expect-active-key", false, true, func(s string) error { o.active = s; return nil })
 		add("validity", false, true, func(s string) (err error) { o.validity, err = time.ParseDuration(s); return })
 		add("overlap", false, true, func(s string) (err error) { o.overlap, err = time.ParseDuration(s); return })
-	} else {
+	case "revoke":
 		add("key-id", false, true, func(s string) error { o.keyID = s; return nil })
 		add("expect-purpose", false, true, purpose)
 		add("revoke-active", true, false, func(s string) (err error) { o.revokeActive, err = strconv.ParseBool(s); return })
+	case "apply-release-update":
+		add("update", false, true, func(s string) error { o.update = s; return nil })
+		add("allow-no-usable-root", true, false, func(s string) (err error) { o.allowNoUsableRoot, err = strconv.ParseBool(s); return })
 	}
 	if fs.Parse(args[1:]) != nil || fs.NArg() != 0 {
 		return o, false
@@ -102,21 +110,44 @@ func parse(args []string) (o options, ok bool) {
 			return o, false
 		}
 	}
-	if o.vault == "" || hasParentElement(o.vault) || !central(o.purpose) || o.timeout <= 0 {
+	if o.vault == "" || hasParentElement(o.vault) || o.timeout <= 0 {
 		return o, false
 	}
-	if o.subcommand == "rotate" {
-		if o.validity <= 0 || o.overlap < 0 || (o.active != "none" && !canonicalID(o.active)) {
+	switch o.subcommand {
+	case "rotate":
+		if !central(o.purpose) || o.validity <= 0 || o.overlap < 0 || (o.active != "none" && !canonicalID(o.active)) {
 			return o, false
 		}
 		if o.active == "none" {
 			o.active = ""
 		}
-	} else if !canonicalID(o.keyID) {
-		return o, false
+	case "revoke":
+		if !central(o.purpose) || !canonicalID(o.keyID) {
+			return o, false
+		}
+	case "apply-release-update":
+		if o.update == "" {
+			return o, false
+		}
 	}
 	o.vault = filepath.Clean(o.vault)
 	return o, true
+}
+func readUpdateFile(path string) ([]byte, bool) {
+	f, err := os.OpenFile(path, os.O_RDONLY|syscall.O_NONBLOCK, 0)
+	if err != nil {
+		return nil, false
+	}
+	defer f.Close()
+	info, err := f.Stat()
+	if err != nil || !info.Mode().IsRegular() || info.Size() > canonjson.MaxBytes {
+		return nil, false
+	}
+	raw, err := io.ReadAll(io.LimitReader(f, canonjson.MaxBytes+1))
+	if err != nil || len(raw) > canonjson.MaxBytes {
+		return nil, false
+	}
+	return raw, true
 }
 func hasParentElement(path string) bool {
 	for _, element := range strings.Split(path, string(filepath.Separator)) {
@@ -147,6 +178,7 @@ func holdLock(path string) (*os.File, error) {
 type changeProvider interface {
 	RotateConditional(context.Context, signing.Purpose, decstr.U64, string, time.Duration, time.Duration) (signing.ChangeResult, error)
 	RevokeConditional(context.Context, string, signing.Purpose, decstr.U64, bool) (signing.ChangeResult, error)
+	UpdateReleaseTrustConditional(context.Context, []byte, decstr.U64, bool) (signing.ReleaseUpdateResult, error)
 	Snapshot(context.Context) (signing.FileSnapshot, error)
 }
 
@@ -176,6 +208,23 @@ func (c command) run(args []string, stdout, stderr io.Writer) int {
 	if !ok {
 		return fail(stderr, exitUsage, usage)
 	}
+	var raw []byte
+	var updateSHA256 string
+	if o.subcommand == "apply-release-update" {
+		raw, ok = readUpdateFile(o.update)
+		if !ok {
+			return fail(stderr, exitUsage, usage)
+		}
+		updateSHA256, _ = release.EnvelopeSHA256(raw)
+		if err := release.ValidateTrustUpdateEnvelope(raw); err != nil {
+			d := base(o)
+			d.Outcome = "rejected"
+			d.Reason = "schema"
+			d.Message = "Release trust update rejected; nothing changed."
+			d.UpdateSHA256 = updateSHA256
+			return writeResult(stdout, stderr, d, exitRejected)
+		}
+	}
 	lock, err := holdLock(filepath.Join(o.vault, "lock"))
 	if err != nil {
 		return fail(stderr, exitUnavailable, "vault unavailable")
@@ -192,6 +241,26 @@ func (c command) run(args []string, stdout, stderr io.Writer) int {
 	p, err := open(ctx, o.vault)
 	if err != nil {
 		return providerFailure(stderr, err)
+	}
+	if o.subcommand == "apply-release-update" {
+		result, err := p.UpdateReleaseTrustConditional(ctx, raw, o.revision, o.allowNoUsableRoot)
+		if err != nil {
+			return providerFailure(stderr, err)
+		}
+		report, code := classifyRelease(o, updateSHA256, result)
+		if result.Outcome == signing.ChangeUncertain {
+			readCtx, readCancel := context.WithTimeout(context.Background(), o.timeout)
+			snapshot, readErr := p.Snapshot(readCtx)
+			readCancel()
+			if readErr != nil {
+				report.ReadBack = "failed"
+			} else if confirmsRelease(snapshot, result) {
+				report, code = confirmedRelease(o, updateSHA256, result, true)
+			} else {
+				report.ReadBack = "different"
+			}
+		}
+		return writeResult(stdout, stderr, report, code)
 	}
 	var result signing.ChangeResult
 	if o.subcommand == "rotate" {
