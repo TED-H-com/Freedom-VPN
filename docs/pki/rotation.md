@@ -6,35 +6,105 @@ recommendations.
 
 ## Central signing keys
 
-1. Keep the provider vault and its monotonic state ledger outside PostgreSQL
-   snapshot restore scope. Restrict the directory to the service account.
-   Store current revocation records in an independently recoverable place.
-2. Call `FileProvider.Rotate(ctx, purpose, validity, overlap)` for one of
-   `desired-state`, `lease`, `recovery` or `ledger-epoch`. The provider generates
-   a fresh key and atomically switches the active reference. The previous key
-   becomes retired immediately; it is retained for verification until the
-   earlier of its original expiry and rotation time plus overlap.
-3. Run `fvpn-vault export-trust -vault EXISTING_VAULT -out NEW_FILE`
-   ([inspection and export](inspect.md)) and deliver the public bundle through
-   an already authenticated trust channel. Rotation and revocation still use
-   the Go APIs above/below; this command only exports existing trust. Never accept trust from the same unauthenticated response as an
-   unknown artifact. A signing-key rotation and a node trust-bundle rollout
-   need coordination: a node lacking the new key fails closed. This service
-   does not claim that writing a bundle means all nodes have accepted it.
-4. Retain old public key records, including expiry and revocation. An old signer
-   object selects the current purpose key on each call; it cannot pin a retired
-   key. Restoring old private-key files does not override the current ledger.
-5. For compromise, call `Revoke(ctx, keyID)` and distribute the updated bundle
-   urgently. Revocation is terminal. Rotate to a fresh key if appropriate.
-   Reverify authorization; an old signature is not ongoing permission to serve
-   or install a release.
+1. Keep the vault and its monotonic ledger outside PostgreSQL snapshot restore
+   scope, restricted to the service account, with independently recoverable
+   revocations. Run `fvpn-vault inspect -vault EXISTING_VAULT` and obtain the
+   ledger revision and the purpose's active key ID (or confirm there is none).
+   Choose validity and overlap explicitly; neither has a default or a
+   recommended production value.
+2. Run `fvpn-vault-keys rotate -vault EXISTING_VAULT -purpose PURPOSE
+   -expect-revision N -expect-active-key KEY_ID|none -validity DURATION
+   -overlap DURATION` on one shell line, substituting the inspected values.
+   Allowed purposes are `desired-state`, `lease`, `recovery` and `ledger-epoch`.
+   Check the exit code and [result document](keys.md). The previous active key
+   retires immediately; its verification window is capped at the earlier of
+   its original expiry and rotation time plus overlap (with the existing
+   `not_before + 1ns` minimum for an otherwise empty window). An overlap must
+   cover documents signed by the previous key that nodes still hold; it cannot
+   extend the key's original expiry. Central services sign with the new key
+   immediately on their next signing call. Until a node holds the new bundle,
+   it rejects new desired state, leases or recovery authorizations signed by
+   that key. Rotation does not stage the new key for a later activation.
+3. For desired-state, lease or recovery, run
+   `fvpn-vault export-trust -vault EXISTING_VAULT -out NEW_FILE`
+   ([inspection and export](inspect.md)), then deliver that public bundle
+   through an already authenticated trust channel. Never accept trust from
+   the same unauthenticated response as an unknown artifact. Ledger-epoch is
+   central-only: its rotation does not change the node bundle.
+4. Confirm actual adoption and verification on the intended nodes. Writing or
+   delivering a bundle alone does not establish adoption. Retain old public
+   records, capped windows and revocations; account for retained documents
+   before retiring their verification window. Existing provider signer handles
+   select the current key on every signing call; stored envelopes can still
+   name an earlier key. Follow the reference inventory below.
+5. To revoke, inspect again, then run `fvpn-vault-keys revoke -vault
+   EXISTING_VAULT -key-id KEY_ID -expect-purpose PURPOSE -expect-revision N`
+   on one shell line. Add `-revoke-active` only when intentionally removing
+   the active signer; the purpose then has no signer until a fresh rotation
+   with inspected revision and `-expect-active-key none`. For compromise,
+   distribute the updated revocation bundle urgently and confirm adoption
+   (ledger-epoch has no node bundle change). Revocation is terminal; preserve
+   its original time. Reverify authorization: an old signature is not ongoing
+   permission to serve or install a release. See [all outcomes](keys.md) before
+   repeating any command, especially after lost output or uncertain durability.
 
 There is no transition from retired/revoked back to active and no snapshot
 import API. Revisions are unsigned decimal strings and never wrap. File writes
 are atomic and fsynced under a cross-process lock; a crash may leave an orphan
-private-key file, but an unreferenced file is never a signer. Remove orphaned
+private-key file, but an unreferenced file is never a signer. The command's
+`not_applied` outcome reports its key ID if it created such a file; the file
+can be incomplete and is never removed automatically. Remove orphaned
 files only after checking the current ledger under an operational maintenance
 window. Do not delete ledger tombstones as routine cleanup.
+
+## Key references outside the vault
+
+The production composition uses the FileProvider for all four purposes, with
+no central Ed25519 key-ID field in service configuration. No configuration edit
+or service restart is needed to select a rotated central signer. This is based
+on the production wiring below, not on the behavior of arbitrary injected
+signers. The commands do not update any of these references automatically.
+
+| Purpose | Production signing path and operator updates | Retained references |
+|---|---|---|
+| `desired-state` | `internal/nodes/httpwire/state.go` uses its purpose signer and `Runtime.Provider.SignEnvelope` for HTTP and worker compilation. No signer-ID setting changes; export/deliver/confirm the new node trust bundle. | `desired_state_envelopes.envelope` and node-persisted desired-state envelopes (agent store and updater journal) retain `signatures[].key_id`. A still-valid unchanged cached desired state can be served without a new signing call; rotation does not rewrite it. |
+| `lease` | The same runtime constructs `leases.Service` with a provider purpose signer. No signer-ID setting changes; export/deliver/confirm node trust. | `serving_leases.key_id`, stored lease signatures/envelopes and node-persisted lease envelopes keep the issuing key ID. |
+| `recovery` | `apps/control/wire_usage.go` and `apps/worker/jobs_usage.go` construct `usage.ProviderSigner`, which calls the provider per signature. No signer-ID setting changes; export/deliver/confirm node trust. | Signed usage checkpoints name their recovery key in `signatures[].key_id`. On a node, `ledger_epochs.checkpoint_json` in `node/internal/usagestore` stores that recovery-signed checkpoint; despite the table name, it is not signed with a ledger-epoch key. |
+| `ledger-epoch` | The same usage wiring selects the provider per signature. No signer-ID setting changes, and no node bundle changes. Retain current central public key/revocation records for any central verification of historical recovery records; update any separately managed verifier trust manually. | `usage_recovery_records.signing_key_id` and `signed_envelope.signatures[].key_id` retain the issuing ledger-epoch key. |
+
+`internal/config/usage.go`'s `SigningConfigFile`/`signing_config_file` is passed
+as the vault directory to `OpenFileProvider`, not as a key ID. Nodes configuration
+uses `provider_directory` for its vault. Ensure the inspected vault is the one
+used by the relevant service; the command does not establish this for you.
+
+The in-memory `desiredstate.SigningKey.KeyID` (`internal/desiredstate/interfaces.go`)
+and `usage.Ed25519Signer.KeyID` (`internal/usage/signer.go`) do pin their keys.
+Repository production composition does not construct those implementations;
+they are used by fixtures/injected consumers. A custom consumer that chooses
+them must arrange its own signer replacement; this command cannot rotate its
+in-memory private material. The four production paths above need no such code
+change.
+
+`policy_revisions.signing_key_ref` (`internal/policies/store.go`,
+`db/migrations/00002_nodes.sql`) is a configurable provenance reference with
+default `central-policy-key`, not necessarily a vault key ID and not the active
+signer selector. No change is required by the default wiring. If an operator
+configured it to mean a concrete key ID, update the external reference supplied
+for future policy revisions deliberately; preserve historical revision records.
+`releases.signing_key_ref` names release provenance and is outside central-key
+rotation.
+
+The vault's `keys[].id`, exported trust's `keys[].key_id` and the initializer's
+receipt also name keys. Vault state changes only through provider operations;
+export a new trust file, retain old public records and preserve the receipt as
+historical ceremony evidence rather than rewriting it. None of the stored
+signed envelopes should be relabeled with a new key ID: their signature bytes
+were made with the original key.
+
+`node_bootstrap_secrets.encryption_key_id` names the bootstrap encryption key,
+not a central Ed25519 signer. `Nodes.CAKeyID` / `ca_key_id` in
+`internal/config/nodes.go` names the node CA key. Neither is changed by these
+commands. Their rollovers still require the separate Go API procedures below.
 
 ## Release verification trust
 
