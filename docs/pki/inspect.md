@@ -4,8 +4,9 @@
 existing development/staging FileProvider. References: §13.4, §16.2, §17.2 and
 §17.4 item 1. It never initializes, repairs, rotates, revokes or pins keys, and
 never creates or rewrites files inside the vault. Use
-[initialization](initialize.md) for a new vault and [rotation and restore](rotation.md)
-for the separate Go API maintenance procedures.
+[initialization](initialize.md) for a new vault, [conditional central-key commands](keys.md)
+for rotation/revocation, and [rotation and restore](rotation.md) for the procedure
+and the separate CA, bootstrap-secret and release-trust Go APIs.
 
 FileProvider cannot detect rollback of its entire directory, host-root
 compromise or divergent copies. These commands do not change those limits.

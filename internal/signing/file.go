@@ -42,8 +42,9 @@ type ledger struct {
 }
 
 type FileProvider struct {
-	dir string
-	now func() time.Time
+	dir              string
+	now              func() time.Time
+	conditionalHooks conditionalHooks
 }
 
 // InitializeFileProvider explicitly creates a new, empty development vault.
@@ -112,7 +113,7 @@ func (p *FileProvider) Snapshot(ctx context.Context) (out FileSnapshot, err erro
 }
 
 // with uses a cross-process lock: cached provider handles never cache key state.
-func (p *FileProvider) with(ctx context.Context, fn func(*ledger) error) error {
+func (p *FileProvider) with(ctx context.Context, fn func(*ledger) error, lockedChecks ...func(*os.File) error) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
@@ -140,6 +141,11 @@ func (p *FileProvider) with(ctx context.Context, fn func(*ledger) error) error {
 		}
 	}
 	defer syscall.Flock(int(f.Fd()), syscall.LOCK_UN)
+	for _, check := range lockedChecks {
+		if err := check(f); err != nil {
+			return err
+		}
+	}
 	raw, err := p.read("state.json")
 	if err != nil {
 		return err
@@ -224,37 +230,61 @@ func (p *FileProvider) read(name string) ([]byte, error) {
 	return b, nil
 }
 func (p *FileProvider) save(s ledger) error {
+	_, err := p.saveTracked(s, conditionalHooks{})
+	return err
+}
+
+// saveTracked distinguishes failures before replacement from errors at/after
+// rename. Even a rename error is uncertain: do not infer filesystem state from
+// an error return. Every caller writes an owner-readable, private ledger.
+func (p *FileProvider) saveTracked(s ledger, hooks conditionalHooks) (bool, error) {
 	if err := validateLedger(s); err != nil {
-		return err
+		return false, err
 	}
 	b, err := json.Marshal(s)
 	if err != nil {
-		return err
+		return false, err
 	}
 	f, err := os.CreateTemp(p.dir, ".state-")
 	if err != nil {
-		return err
+		return false, err
 	}
 	defer os.Remove(f.Name())
-	if _, err = f.Write(b); err == nil {
+	// The replacement must remain readable by its owner even when the process
+	// umask removes owner bits. Failure here is strictly before replacement.
+	err = f.Chmod(0600)
+	if err == nil {
+		_, err = f.Write(b)
+	}
+	if err == nil {
 		err = f.Sync()
 	}
 	closeErr := f.Close()
 	if err != nil {
-		return err
+		return false, err
 	}
 	if closeErr != nil {
-		return closeErr
+		return false, closeErr
+	}
+	if hooks.beforeRename != nil {
+		if err = hooks.beforeRename(); err != nil {
+			return false, err
+		}
 	}
 	if err = os.Rename(f.Name(), filepath.Join(p.dir, "state.json")); err != nil {
-		return err
+		return true, err
+	}
+	if hooks.afterRename != nil {
+		if err = hooks.afterRename(); err != nil {
+			return true, err
+		}
 	}
 	d, err := os.Open(p.dir)
 	if err != nil {
-		return err
+		return true, err
 	}
 	defer d.Close()
-	return d.Sync()
+	return true, d.Sync()
 }
 
 // Rotate atomically retires the previous signer. Its verification window is
@@ -647,4 +677,193 @@ func (p *FileProvider) IdentityDenied(ctx context.Context, id string) (denied bo
 		return nil
 	})
 	return
+}
+
+// ChangeOutcome reports only what a conditional mutation knows. An error return
+// instead means no mutation ran (unavailable ledger, invalid lock or deadline).
+type ChangeOutcome uint8
+
+const (
+	ChangeRefused ChangeOutcome = iota + 1
+	ChangeApplied
+	ChangeAlreadyRevoked
+	ChangeNotApplied
+	ChangeUncertain
+)
+
+// ChangeResult contains public facts only. On ChangeNotApplied/ChangeUncertain,
+// Key and Previous, when present, describe an attempted replacement, not a
+// confirmed ledger. CreatedKeyID is
+// set only after exclusive key-file creation succeeds, including write failures.
+// Previous is the retired record after rotation, or the pre-revocation record.
+// A refused result discloses no vault contents.
+type ChangeResult struct {
+	Outcome      ChangeOutcome
+	OldRevision  decstr.U64
+	NewRevision  decstr.U64
+	Key          *KeyRecord
+	Previous     *KeyRecord
+	CreatedKeyID string
+}
+
+// LockValidationError means the file held locked was not the regular, private
+// entry named lock when checked. It is distinct from preconditions and deadlines.
+type LockValidationError struct{}
+
+func (*LockValidationError) Error() string { return "signing: invalid conditional lock" }
+
+// Per-handle, unexported fault seams; ordinary provider methods never use them.
+// Configure before a test starts calls, never concurrently with a call.
+type conditionalHooks struct {
+	locked       func()
+	beforeKey    func(string) error
+	beforeRename func() error
+	afterRename  func() error
+}
+
+func (p *FileProvider) checkConditionalLock(f *os.File) error {
+	if p.conditionalHooks.locked != nil {
+		p.conditionalHooks.locked()
+	}
+	held, err := f.Stat()
+	if err != nil {
+		return &LockValidationError{}
+	}
+	entry, err := os.Lstat(filepath.Join(p.dir, "lock"))
+	if err != nil || !held.Mode().IsRegular() || !entry.Mode().IsRegular() ||
+		held.Mode().Perm()&0077 != 0 || entry.Mode().Perm()&0077 != 0 || !os.SameFile(held, entry) {
+		return &LockValidationError{}
+	}
+	return nil
+}
+
+// RotateConditional switches only the four central Ed25519 purposes (§16.2).
+// expectedActive == "" explicitly expects no active record (expiry alone does
+// not remove an active record). All preconditions precede key generation inside
+// the lock. Context cancellation only bounds acquiring the lock, never the save.
+func (p *FileProvider) RotateConditional(ctx context.Context, purpose Purpose, expectedRevision decstr.U64, expectedActive string, validity, overlap time.Duration) (out ChangeResult, err error) {
+	err = p.with(ctx, func(s *ledger) error {
+		out.Outcome = ChangeRefused
+		if s.Revision != expectedRevision || !central(purpose) || validity <= 0 || overlap < 0 {
+			return nil
+		}
+		previous := -1
+		for i, k := range s.Keys {
+			if k.Purpose == purpose && k.State == "active" {
+				previous = i
+				break
+			}
+		}
+		if (previous < 0 && expectedActive != "") || (previous >= 0 && s.Keys[previous].ID != expectedActive) {
+			return nil
+		}
+		out.Outcome = ChangeNotApplied
+		out.OldRevision = s.Revision
+		// Exhaustion is a no-change failure, never revision wraparound (§17.2).
+		if e := advance(s); e != nil {
+			return nil
+		}
+		id, e := uuid.NewV7()
+		if e != nil {
+			return nil
+		}
+		pub, key, e := ed25519.GenerateKey(rand.Reader)
+		if e != nil {
+			return nil
+		}
+		raw, e := x509.MarshalPKCS8PrivateKey(key)
+		if e != nil {
+			return nil
+		}
+		if p.conditionalHooks.beforeKey != nil {
+			if e = p.conditionalHooks.beforeKey(id.String()); e != nil {
+				return nil
+			}
+		}
+		f, e := os.OpenFile(filepath.Join(p.dir, id.String()+".key"), os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0600)
+		if e != nil {
+			return nil
+		}
+		out.CreatedKeyID = id.String()
+		// Restore owner access even under a restrictive umask; never broaden
+		// group/other access. This applies only to the newly created file.
+		e = f.Chmod(0600)
+		if e == nil {
+			_, e = f.Write(raw)
+		}
+		if e == nil {
+			e = f.Sync()
+		}
+		closeErr := f.Close()
+		if e != nil || closeErr != nil {
+			return nil
+		}
+		now := p.now().UTC()
+		k := KeyRecord{ID: id.String(), Purpose: purpose, Public: pub, State: "active", NotBefore: now, NotAfter: now.Add(validity)}
+		if previous >= 0 {
+			old := &s.Keys[previous]
+			old.State = "retired"
+			if now.Add(overlap).Before(old.NotAfter) {
+				old.NotAfter = now.Add(overlap)
+			}
+			if !old.NotBefore.Before(old.NotAfter) {
+				old.NotAfter = old.NotBefore.Add(time.Nanosecond)
+			}
+			copy := *old
+			out.Previous = &copy
+		}
+		s.Keys = append(s.Keys, k)
+		out.Key, out.NewRevision = &k, s.Revision
+		out.Outcome = p.saveChange(*s)
+		return nil
+	}, p.checkConditionalLock)
+	return
+}
+
+// RevokeConditional preserves terminal revocation, including its timestamp
+// (§16.2, §17.4). Already-revoked wins over a stale revision, but never over a
+// missing key, wrong purpose or forbidden purpose. Active revocation is opt-in.
+func (p *FileProvider) RevokeConditional(ctx context.Context, id string, purpose Purpose, expectedRevision decstr.U64, revokeActive bool) (out ChangeResult, err error) {
+	err = p.with(ctx, func(s *ledger) error {
+		out.Outcome = ChangeRefused
+		for i := range s.Keys {
+			k := &s.Keys[i]
+			if k.ID != id {
+				continue
+			}
+			if k.Purpose != purpose || !central(purpose) {
+				return nil
+			}
+			if k.State == "revoked" {
+				out = ChangeResult{Outcome: ChangeAlreadyRevoked, OldRevision: s.Revision, NewRevision: s.Revision, Key: k}
+				return nil
+			}
+			if s.Revision != expectedRevision || (k.State == "active" && !revokeActive) {
+				return nil
+			}
+			out.Outcome, out.OldRevision = ChangeNotApplied, s.Revision
+			if e := advance(s); e != nil {
+				return nil
+			}
+			old := *k
+			now := p.now().UTC()
+			k.State, k.RevokedAt = "revoked", &now
+			out.Key, out.Previous, out.NewRevision = k, &old, s.Revision
+			out.Outcome = p.saveChange(*s)
+			return nil
+		}
+		return nil
+	}, p.checkConditionalLock)
+	return
+}
+
+func (p *FileProvider) saveChange(s ledger) ChangeOutcome {
+	replaceAttempted, err := p.saveTracked(s, p.conditionalHooks)
+	if err == nil {
+		return ChangeApplied
+	}
+	if replaceAttempted {
+		return ChangeUncertain
+	}
+	return ChangeNotApplied
 }

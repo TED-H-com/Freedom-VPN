@@ -8,6 +8,8 @@ supported. See [rotation and restore](rotation.md) before choosing its storage.
 
 The command does not deploy services, contact providers, enroll nodes, generate
 release private keys, rotate existing keys or resume partial initialization.
+For existing central Ed25519 keys, use the separate
+[conditional rotate and revoke commands](keys.md).
 All policy inputs are explicit. A successful receipt proves local key operations
 and generated artifacts; it does not prove target deployment or node adoption.
 
@@ -135,7 +137,10 @@ publication returns failure but reports that the completed receipt remains.
 
 This is not a transaction across all files or a power-loss durability guarantee.
 An interruption can leave partial provider state, orphan keys or temporary files;
-absence of a completion receipt requires inspection. A receipt records that the
+absence of a completion receipt requires inspection. A later conditional rotation
+can also report `not_applied` with an unreferenced key ID; follow the
+[manual orphan-file procedure](rotation.md#central-signing-keys), with no automatic
+deletion or retry. A receipt records that the
 ceremony completed at its timestamp, not that files remain unmodified or keys
 remain valid forever. Preserve the current authority/revocation state separately
 from PostgreSQL restore scope; follow the existing rotation/restore runbook for

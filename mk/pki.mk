@@ -16,6 +16,7 @@ pki-build:
 		mkdir -p bin/linux_$$arch; \
 		GOOS=linux GOARCH=$$arch go build -trimpath -o bin/linux_$$arch/fvpn-vault-init ./internal/signing/cmd/fvpn-vault-init; \
 		GOOS=linux GOARCH=$$arch go build -trimpath -o bin/linux_$$arch/fvpn-vault ./internal/signing/cmd/fvpn-vault; \
+		GOOS=linux GOARCH=$$arch go build -trimpath -o bin/linux_$$arch/fvpn-vault-keys ./internal/signing/cmd/fvpn-vault-keys; \
 	done
 pki-test:
 	@$(pki-with-disk-tmp) go test $(pki-packages)
