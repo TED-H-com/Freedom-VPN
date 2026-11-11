@@ -206,18 +206,19 @@ export function buildMemberSelfForPersona(persona: MockPersona): MemberSelf {
       }
       break;
     case 'member_grace':
-      base.entitlement.state = 'past_due';
+      base.entitlement.state = 'grace';
       base.entitlement.grace_until = '2026-10-31T00:00:00Z';
+      base.entitlement.effective_service_end = base.entitlement.grace_until;
       if (base.subscription) {
         base.subscription.provider_status = 'past_due';
       }
-      base.next_actions = ['renew_subscription'];
+      base.next_actions = ['install_app', 'register_device'];
       break;
     case 'member_expired':
       base.entitlement.state = 'expired';
       base.entitlement.effective_service_end = '2026-10-01T00:00:00Z';
       base.entitlement.paid_through = '2026-09-28T00:00:00Z';
-      base.next_actions = ['complete_payment'];
+      base.next_actions = ['renew_subscription'];
       break;
     case 'member_suspended':
       base.entitlement.state = 'suspended';

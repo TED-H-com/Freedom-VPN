@@ -415,6 +415,46 @@ export const en: Record<TranslationKey, string> = {
   'admin.audit.col.result': 'Result & Sanitized Diff',
 
   // Member Portal (§18.4)
+  'member.service.state.pending_payment': 'Awaiting payment',
+  'member.service.state.confirming': 'Confirmation in progress',
+  'member.service.state.active': 'Active',
+  'member.service.state.cancel_at_period_end': 'Active (ends at period end)',
+  'member.service.state.grace': 'Grace period',
+  'member.service.state.past_due': 'Payment overdue',
+  'member.service.state.expired': 'Expired',
+  'member.service.state.suspended': 'Suspended',
+  'member.service.state.closed': 'Account closed',
+  'member.service.state.unknown': 'Status unconfirmed',
+  'member.service.usable': 'Your entitlement currently allows exit access.',
+  'member.service.unusable': 'Your entitlement currently does not allow exit access.',
+  'member.service.reason.pending_payment':
+    'Payment has not been confirmed; service is not yet available.',
+  'member.service.reason.active':
+    'Your subscription is in order and your service entitlement is active.',
+  'member.service.reason.cancel_at_period_end':
+    'Cancellation is scheduled for period end; service continues until {end}.',
+  'member.service.reason.grace':
+    'Renewal is pending; service continues until the grace deadline of {graceUntil}.',
+  'member.service.reason.past_due': 'Payment is overdue and service is unavailable.',
+  'member.service.reason.expired':
+    'Your service period ended at {end}; exit access is no longer available.',
+  'member.service.reason.suspended':
+    'An administrator has suspended your service; payment or renewal does not lift the suspension.',
+  'member.service.reason.closed': 'Your account is closed and service is unavailable.',
+  'member.service.reason.unknown':
+    'Your entitlement could not be confirmed. Reload or contact support.',
+  'member.service.nextLabel': 'Next step',
+  'member.service.next.complete_payment':
+    'Go to Billing & Subscription to complete payment.',
+  'member.service.next.wait_for_payment_confirmation':
+    'Wait for payment confirmation; exit access is unavailable until confirmed.',
+  'member.service.next.install_app': 'Go to Getting Started to install the app.',
+  'member.service.next.register_device':
+    'Go to My Devices to check device authorization.',
+  'member.service.next.free_device_slot': 'Go to My Devices to free a device slot.',
+  'member.service.next.renew_subscription':
+    'Go to Billing & Subscription to renew service.',
+  'member.service.next.contact_support': 'Contact support.',
   'member.service.title': 'My Service (§18.4)',
   'member.service.stateLabel': 'Current Entitlement State',
   'member.service.reasonLabel': 'Status Reason & Details',
@@ -506,7 +546,7 @@ export const en: Record<TranslationKey, string> = {
 
   // Wave 3 Live Control Plane Additions
   'member.service.closedBanner':
-    'Your account and service entitlement are closed (account_status: closed). All device authorizations are revoked; billing and audit records are retained per policy.',
+    'Your account and service entitlement are closed. All device authorizations are revoked; billing and audit records are retained per policy.',
   'member.service.usageUnavailableNotice':
     'Latest usage rollup is currently unavailable (does not affect your service status view).',
   'member.billing.planSelectLabel': 'Select Subscription Plan (Plan ID)',

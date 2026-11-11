@@ -1,11 +1,43 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { apiClient, deriveMemberServiceReason } from '../../api';
+import {
+  apiClient,
+  deriveMemberServiceReason,
+  deriveMemberServiceState,
+  type NextAction,
+} from '../../api';
 import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { useSession } from '../../context/SessionContext';
-import { useI18n } from '../../i18n';
+import { useI18n, type TranslationKey } from '../../i18n';
 import { formatLocaleWithUtc } from '../../lib/datetime';
+
+const nextSteps: Record<NextAction, { label: TranslationKey; to?: string }> = {
+  complete_payment: {
+    label: 'member.service.next.complete_payment',
+    to: '/member/billing',
+  },
+  wait_for_payment_confirmation: {
+    label: 'member.service.next.wait_for_payment_confirmation',
+  },
+  install_app: {
+    label: 'member.service.next.install_app',
+    to: '/member/getting-started',
+  },
+  register_device: {
+    label: 'member.service.next.register_device',
+    to: '/member/devices',
+  },
+  free_device_slot: {
+    label: 'member.service.next.free_device_slot',
+    to: '/member/devices',
+  },
+  renew_subscription: {
+    label: 'member.service.next.renew_subscription',
+    to: '/member/billing',
+  },
+  contact_support: { label: 'member.service.next.contact_support' },
+};
 
 export function MemberServicePage(): React.ReactElement {
   const { t, locale } = useI18n();
@@ -40,11 +72,9 @@ export function MemberServicePage(): React.ReactElement {
   const me = selfQuery.data;
   const ent = me.entitlement;
   const usage = usageQuery.data;
-  const isActive =
-    ent.state === 'active' ||
-    ent.state === 'cancel_at_period_end' ||
-    ent.state === 'past_due';
-  const isClosed = ent.state === 'closed' || me.next_actions.includes('contact_support');
+  const stateView = deriveMemberServiceState(me);
+  const isClosed = ent.state === 'closed';
+  const actions = me.next_actions.length ? me.next_actions : [stateView.fallbackAction];
   const isFupAdjusted = usage?.fair_use.state === 'adjusted';
   const resetAt = me.fair_use_reset_at ?? usage?.fair_use.resets_at ?? '-';
   const planName =
@@ -64,18 +94,11 @@ export function MemberServicePage(): React.ReactElement {
           </p>
         </div>
         <span
-          className={`badge ${
-            ent.state === 'active'
-              ? 'badge-success'
-              : ent.state === 'suspended' ||
-                  ent.state === 'expired' ||
-                  ent.state === 'closed'
-                ? 'badge-danger'
-                : 'badge-warning'
-          }`}
+          className={`badge ${stateView.usable ? 'badge-success' : 'badge-danger'}`}
           data-testid="member-entitlement-state-badge"
+          data-state={ent.state}
         >
-          {ent.state}
+          {t(stateView.label)}
         </span>
       </div>
 
@@ -86,6 +109,16 @@ export function MemberServicePage(): React.ReactElement {
           data-testid="member-account-closed-banner"
         >
           {t('member.service.closedBanner')}
+        </div>
+      )}
+
+      {(ent.state === 'suspended' || ent.state === 'expired') && (
+        <div
+          className="alert alert-danger"
+          role="status"
+          data-testid={`member-${ent.state}-notice`}
+        >
+          {reasonText}
         </div>
       )}
 
@@ -113,10 +146,13 @@ export function MemberServicePage(): React.ReactElement {
             className="stat-value"
             style={{
               fontSize: '1.35rem',
-              color: isActive ? 'var(--color-success)' : 'var(--color-danger)',
+              color: stateView.usable ? 'var(--success)' : 'var(--danger)',
             }}
           >
-            {ent.state}
+            {t(stateView.label)}
+          </span>
+          <span className="stat-subtext" data-testid="member-service-usable-now">
+            {t(stateView.usable ? 'member.service.usable' : 'member.service.unusable')}
           </span>
           <span className="stat-subtext" data-testid="member-state-reason">
             {reasonText}
@@ -162,6 +198,23 @@ export function MemberServicePage(): React.ReactElement {
           </span>
         </div>
       </div>
+
+      <section
+        className="card"
+        aria-labelledby="member-next-step-title"
+        data-testid="member-service-next-steps"
+      >
+        <h2 id="member-next-step-title">{t('member.service.nextLabel')}</h2>
+        {actions.map((action) => {
+          const step = nextSteps[action];
+          if (!step) return null;
+          return (
+            <p key={action} data-testid={`member-next-${action}`}>
+              {step.to ? <Link to={step.to}>{t(step.label)}</Link> : t(step.label)}
+            </p>
+          );
+        })}
+      </section>
 
       <div className="card" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
         <Link to="/member/getting-started" className="btn btn-primary">

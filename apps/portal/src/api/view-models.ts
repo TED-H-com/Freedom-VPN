@@ -10,6 +10,7 @@
 
 import type {
   DomainRule,
+  EntitlementState,
   DomainRuleSetPayload,
   DnsProfilePayload,
   FairUsePayload,
@@ -18,6 +19,7 @@ import type {
   MemberListResponse,
   MemberSelf,
   MemberUsageResponse,
+  NextAction,
   NodeCheck,
   NodeDetail,
   NodeListResponse,
@@ -35,6 +37,9 @@ import type {
   UpdateResult,
   UpdateTarget,
 } from './types';
+import { en } from '../i18n/en';
+import { zhTW, type TranslationKey } from '../i18n/zh-TW';
+import { formatLocaleWithUtc } from '../lib/datetime';
 
 export function buildOperationStepViewModel(step: OperationStep): OperationStep & {
   diagnostic: string;
@@ -499,39 +504,100 @@ export function extractMinimumServingVersionLabel(
   return `${fleetServingIds.length} release(s)`;
 }
 
+interface MemberServiceStateView {
+  label: TranslationKey;
+  reason: TranslationKey;
+  usable: boolean;
+  fallbackAction: NextAction;
+}
+
+// §9.2, §18.4: the API state is authoritative, including its deadline check.
+// Record makes contract additions fail typecheck; the runtime guard fails closed.
+const memberServiceStates: Record<EntitlementState, MemberServiceStateView> = {
+  pending_payment: {
+    label: 'member.service.state.pending_payment',
+    reason: 'member.service.reason.pending_payment',
+    usable: false,
+    fallbackAction: 'complete_payment',
+  },
+  active: {
+    label: 'member.service.state.active',
+    reason: 'member.service.reason.active',
+    usable: true,
+    fallbackAction: 'install_app',
+  },
+  cancel_at_period_end: {
+    label: 'member.service.state.cancel_at_period_end',
+    reason: 'member.service.reason.cancel_at_period_end',
+    usable: true,
+    fallbackAction: 'install_app',
+  },
+  grace: {
+    label: 'member.service.state.grace',
+    reason: 'member.service.reason.grace',
+    usable: true,
+    fallbackAction: 'install_app',
+  },
+  past_due: {
+    label: 'member.service.state.past_due',
+    reason: 'member.service.reason.past_due',
+    usable: false,
+    fallbackAction: 'renew_subscription',
+  },
+  expired: {
+    label: 'member.service.state.expired',
+    reason: 'member.service.reason.expired',
+    usable: false,
+    fallbackAction: 'renew_subscription',
+  },
+  suspended: {
+    label: 'member.service.state.suspended',
+    reason: 'member.service.reason.suspended',
+    usable: false,
+    fallbackAction: 'contact_support',
+  },
+  closed: {
+    label: 'member.service.state.closed',
+    reason: 'member.service.reason.closed',
+    usable: false,
+    fallbackAction: 'contact_support',
+  },
+};
+
+export function deriveMemberServiceState(self: MemberSelf): MemberServiceStateView {
+  const state = self.entitlement.state;
+  if (!Object.prototype.hasOwnProperty.call(memberServiceStates, state)) {
+    return {
+      label: 'member.service.state.unknown',
+      reason: 'member.service.reason.unknown',
+      usable: false,
+      fallbackAction: 'contact_support',
+    };
+  }
+  const view = memberServiceStates[state];
+  if (
+    state === 'pending_payment' &&
+    self.next_actions.includes('wait_for_payment_confirmation')
+  ) {
+    return { ...view, label: 'member.service.state.confirming' };
+  }
+  return view;
+}
+
 export function deriveMemberServiceReason(
   self: MemberSelf,
   locale: 'zh-TW' | 'en',
 ): string {
-  const { entitlement, subscription } = self;
-  if (entitlement.admin_suspended || entitlement.state === 'suspended') {
-    return locale === 'zh-TW'
-      ? '管理員已人工暫停您的服務資格（優先於付款狀態，§9.2）'
-      : 'Service entitlement suspended by administrator (overrides billing status, §9.2)';
-  }
-  if (entitlement.state === 'pending_payment') {
-    return locale === 'zh-TW'
-      ? '等待支付供應商簽章 Webhook 與後端對帳確認'
-      : 'Waiting for signed payment provider webhook and backend reconciliation';
-  }
-  if (entitlement.state === 'cancel_at_period_end') {
-    return locale === 'zh-TW'
-      ? `已設定期末取消，服務可繼續使用至 ${entitlement.effective_service_end ?? '-'}`
-      : `Scheduled to cancel at period end; active until ${entitlement.effective_service_end ?? '-'}`;
-  }
-  if (entitlement.state === 'past_due') {
-    return locale === 'zh-TW'
-      ? `續扣待處理，寬限期至 ${entitlement.grace_until ?? '-'}`
-      : `Payment past due; grace period active until ${entitlement.grace_until ?? '-'}`;
-  }
-  if (entitlement.state === 'expired') {
-    return locale === 'zh-TW'
-      ? '服務期限與寬限期已屆滿，出口轉送權限已停止'
-      : 'Service period and grace window have expired; exit access is disabled';
-  }
-  return locale === 'zh-TW'
-    ? `付款狀態正常 (${subscription?.provider_status ?? 'active'})`
-    : `Subscription active (${subscription?.provider_status ?? 'active'})`;
+  const dict = locale === 'zh-TW' ? zhTW : en;
+  return dict[deriveMemberServiceState(self).reason]
+    .replaceAll(
+      '{end}',
+      formatLocaleWithUtc(self.entitlement.effective_service_end, locale),
+    )
+    .replaceAll(
+      '{graceUntil}',
+      formatLocaleWithUtc(self.entitlement.grace_until, locale),
+    );
 }
 
 export function deriveUsageQualitySummary(
