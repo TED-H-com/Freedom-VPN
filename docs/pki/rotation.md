@@ -145,9 +145,11 @@ handover:
    code and the JSON result document (`outcome`, `update_sha256`, `change.keys`
    and `change.usable_root_key_ids`).
 4. Run `fvpn-vault export-trust -vault EXISTING_VAULT -out NEW_TRUST_FILE` and
-   deliver the new node trust store (`trust.json`) to nodes through an already
-   authenticated channel. Nodes consume the exported trust store, never the
-   update envelope. Follow the
+   deliver the new node trust store to nodes through an already authenticated
+   channel, replacing `/etc/vpn-node/release-trust.json`, the updater's release
+   trust file, on each node (the agent's `trust.json` does not need to change
+   for a release trust update). Nodes consume the exported trust store, never
+   the update envelope. Follow the
    [node trust files and process actions](../node/install.md#node-trust-files).
 5. Confirm actual node adoption across the fleet before starting the second step
    of a root handover. Only after nodes trust the newly added root should you
