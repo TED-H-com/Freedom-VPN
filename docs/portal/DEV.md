@@ -17,6 +17,7 @@ All Vite and E2E environment variables are optional and have contract-compliant 
 | `VITE_AUTH_BASE_URL` | `/auth` | Base URL prefix for browser session routes (`GET /auth/session`, `/auth/login`, `POST /auth/logout` in `src/api/auth.ts`). |
 | `VITE_API_MOCK` | `0` in prod build (`VITE_API_MOCK=1` only in dev) | Set to `1` in non-production dev to enable browser MSW mocking; production builds strip MSW completely. |
 | `VITE_API_PROXY_TARGET` | `http://127.0.0.1:8080` | Target origin for Vite's dev proxy when `VITE_API_MOCK=0`. |
+| `PORTAL_E2E_EVIDENCE_DIR` | unset | Optional absolute directory for AT04/F4-04 screenshots and visible text. Unset/empty disables capture; relative paths fail before any evidence is written. CI does not set this variable. |
 | `PORTAL_E2E_BASE_URL` | `http://127.0.0.1:4173` | Target URL for Playwright end-to-end tests (`apps/portal/playwright.config.ts`). |
 
 ---
@@ -34,6 +35,55 @@ make -f mk/portal.mk portal-e2e
 ```
 
 On hosts where `/tmp` is tmpfs, set `TMPDIR` for the entire target (including Chromium) to a unique, short disk-backed directory beneath `$HOME/agent-work/tmp/`, and remove it with Python after the run. Long worktree paths can exceed Chromium's Unix socket path limit. Do not use `/dev/shm` or another tmpfs for test data.
+
+### Optional member screen evidence (AT04 / F4-04)
+
+All screen assertions run with or without evidence capture. Set
+`PORTAL_E2E_EVIDENCE_DIR` to an explicit absolute directory to save the four
+state/language text files and twelve screenshots (1440, 768 and 390px). The suite
+creates that directory if necessary. For a local hand-off, use the absolute path
+to your worktree's ignored `.agent/screens` directory. Unset or empty means no
+screen evidence files or screenshots are produced; CI leaves it unset. A relative
+value fails the two tests before they perform any product actions or file writes.
+No evidence destination is inferred from the current working directory.
+
+Playwright still writes its own `test-results` directory when evidence capture is
+unset, including failure artifacts when applicable. The make target removes
+`test-results` and `playwright-report` after the run, whether it passes or fails,
+and preserves the suite exit status. A direct `npm run e2e` leaves those outputs
+in place (ignored by git). Additional member screenshots and visible-text files
+are written only when `PORTAL_E2E_EVIDENCE_DIR` is set to an absolute directory.
+
+The real-expiry test uses a five-second grant window to leave observation margin
+on slow runners, not to define a minimum product duration. It logs the positive
+remaining time when active is observed. A refused grant reports `valid_until`,
+`sent_at`, `answered_at`, product status and error code, distinguishing a window
+already ended at response time from an open-window refusal. Neither case retries.
+An accepted grant that ends before active can be observed fails with that diagnosis.
+No clocks change, no entitlement rows are written, and polling uses 100ms intervals.
+
+The limits live in `e2e/member-screen-budget.mjs`; the expiry test alone has a
+90-second timeout. The suite default remains 45 seconds, one worker, zero retries.
+
+| Phase | Bound |
+|---|---|
+| Create/select new member through product OIDC/admin commands | 15 seconds |
+| Observe pending | 5 seconds |
+| Grant request | 10 seconds, including an 8-second upstream request limit |
+| Observe active | Remaining time until `valid_until` (at most 5 seconds) |
+| Observe expired | Deadline `valid_until + 5 seconds` propagation allowance (at most 10 seconds from active observation) |
+| Navigate/read member service | 5 seconds |
+| Render/assert zh-TW and English | 5 seconds each, 10 total |
+| Optional capture for both locales, including width variants | 5 seconds each, 10 total |
+| Restore/verify default member | Separate 15-second fixture budget, three requests at most 4 seconds each |
+
+The conservative body sum is 70 seconds; including teardown it is 85 seconds,
+below the expiry test's 90 seconds. Active and expiry bounds overlap in reality.
+The restore fixture has virtually no setup work and uses its own budget and fresh
+request context after test-owned contexts close. A generation guard prevents a
+late reset from replacing the restored selection. The subsequent default-member
+check proves normal-path restoration; forced timeout/assertion probes provide the
+failure-path evidence recorded in the agent hand-off, not in the committed suite.
 
 ### Product-Driven Seeding (`apps/portal/e2e/dev-stack.mjs`, D-050 / D-057 / D-058)
 `dev-stack.mjs` drives member groups, node enrollments, exit publication, and fleet update batches through the real control-plane and worker APIs:
@@ -80,7 +130,7 @@ npm run dev
 
 - Opens on `http://localhost:5173`.
 - MSW intercepts `/auth/session`, `POST /auth/logout`, and `/api/v1/*` using fixtures imported from `contracts/examples/valid/*.json`.
-- A top-bar **Mock Persona Switcher (TEST ONLY)** allows switching between `admin`, `admin_no_mfa`, `anonymous`, and all member entitlement states (`member_active`, `member_throttled`, `member_pending_payment`, `member_cancel_at_period_end`, `member_grace`, `member_expired`, `member_suspended`), as well as simulating `401 SESSION_EXPIRED`.
+- A top-bar **Mock Persona Switcher (TEST ONLY)** allows switching between `admin`, `admin_no_mfa`, `anonymous`, and member entitlement personas (`member_active`, `member_throttled`, `member_pending_payment`, `member_cancel_at_period_end`, `member_grace`, `member_expired`, `member_suspended`), as well as simulating `401 SESSION_EXPIRED`.
 
 ---
 

@@ -28,6 +28,10 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
+import {
+  MEMBER_SCREEN_GRANT_WINDOW_MS,
+  MEMBER_SCREEN_BUDGET,
+} from './member-screen-budget.mjs';
 import { createServingLeaseSession } from './serving-lease.mjs';
 import { createAppliedStateFixture } from './applied-state.mjs';
 import { publicationGateDiagnostics as pendingPublicationGates } from './publication-diagnostics.mjs';
@@ -1064,6 +1068,7 @@ async function httpsRequest(urlStr, options = {}) {
         ca: options.ca,
         cert: options.cert,
         key: options.key,
+        signal: options.signal,
         rejectUnauthorized: false,
       },
       (res) => {
@@ -1687,7 +1692,7 @@ async function patchMemberViaApi(controlBaseUrl, adminAuth, caPem, memberId, pat
   throw new Error(`PATCH /api/v1/admin/members/${memberId} exhausted ETag retries`);
 }
 
-async function grantMemberEntitlementViaApi(
+async function sendMemberGrantViaApi(
   controlBaseUrl,
   adminAuth,
   caPem,
@@ -1696,34 +1701,65 @@ async function grantMemberEntitlementViaApi(
   validFrom,
   validUntil,
   reason,
+  requestTimeout,
 ) {
-  const grantRes = await httpsRequest(
-    `${controlBaseUrl}/api/v1/admin/members/${memberId}/grants`,
-    {
-      method: 'POST',
-      headers: {
-        Cookie: adminAuth.sessionCookie,
-        'X-CSRF-Token': adminAuth.csrfToken,
-        Origin: 'https://portal.example.invalid',
-        'Idempotency-Key': crypto.randomUUID(),
-        'Content-Type': 'application/json',
+  const sentAt = new Date().toISOString();
+  let grantRes;
+  try {
+    grantRes = await httpsRequest(
+      `${controlBaseUrl}/api/v1/admin/members/${memberId}/grants`,
+      {
+        method: 'POST',
+        headers: {
+          Cookie: adminAuth.sessionCookie,
+          'X-CSRF-Token': adminAuth.csrfToken,
+          Origin: 'https://portal.example.invalid',
+          'Idempotency-Key': crypto.randomUUID(),
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          source: 'admin_grant',
+          plan_revision_id: planRevisionId,
+          valid_from: validFrom.toISOString(),
+          valid_until: validUntil.toISOString(),
+          reason,
+        }),
+        ca: caPem,
+        signal: requestTimeout ? AbortSignal.timeout(requestTimeout) : undefined,
       },
-      body: JSON.stringify({
-        source: 'admin_grant',
-        plan_revision_id: planRevisionId,
-        valid_from: validFrom.toISOString(),
-        valid_until: validUntil.toISOString(),
-        reason,
-      }),
-      ca: caPem,
-    },
-  );
-  if (grantRes.status !== 202) {
-    throw new Error(
-      `POST /api/v1/admin/members/${memberId}/grants failed (${grantRes.status}): ${grantRes.text}`,
     );
+  } catch {
+    return {
+      valid_until: validUntil.toISOString(),
+      sent_at: sentAt,
+      answered_at: new Date().toISOString(),
+      product_status: null,
+      product_error_code: null,
+    };
   }
-  return JSON.parse(grantRes.text);
+  const answeredAt = new Date().toISOString();
+  let body = {};
+  try {
+    body = JSON.parse(grantRes.text);
+  } catch {
+    // Even a non-JSON upstream failure retains the safe timing/status receipt.
+  }
+  return {
+    valid_until: validUntil.toISOString(),
+    sent_at: sentAt,
+    answered_at: answeredAt,
+    product_status: grantRes.status,
+    product_error_code: body.error?.code ?? null,
+    ...(grantRes.status === 202 ? { operation: body } : {}),
+  };
+}
+
+async function grantMemberEntitlementViaApi(...args) {
+  const receipt = await sendMemberGrantViaApi(...args);
+  if (receipt.product_status !== 202) {
+    throw new Error(`Member grant failed: ${JSON.stringify(receipt)}`);
+  }
+  return receipt.operation;
 }
 
 async function pollMemberEntitlementActive(pool, memberId, label) {
@@ -3384,6 +3420,7 @@ async function main() {
       member: memberAuth,
     };
     let currentInteractiveRole = 'member';
+    let memberSelectionGeneration = 0;
 
     const portalServer = http.createServer(async (req, res) => {
       try {
@@ -3400,6 +3437,7 @@ async function main() {
                 req.method === 'POST' &&
                 reqUrl.pathname === '/__e2e/reset-member-journey'
               ) {
+                const selectionGeneration = ++memberSelectionGeneration;
                 const sub = `oidc-sub-journey-${crypto.randomUUID()}`;
                 const journeyAuth = await performOidcLogin(
                   controlBaseUrl,
@@ -3430,6 +3468,16 @@ async function main() {
                   is_service_user: false,
                   is_blocked: false,
                 });
+                // A timed-out reset must not select its member after teardown.
+                if (selectionGeneration !== memberSelectionGeneration) {
+                  res.writeHead(409, { 'Content-Type': 'application/json' });
+                  res.end(
+                    JSON.stringify({
+                      error: 'Member selection was superseded by restoration.',
+                    }),
+                  );
+                  return;
+                }
                 roleSessions.member = journeyAuth;
                 currentInteractiveRole = 'member';
                 res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -3442,10 +3490,42 @@ async function main() {
                 return;
               }
 
+              if (req.method === 'GET' && reqUrl.pathname === '/__e2e/default-member') {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ member_id: defaultMemberId }));
+                return;
+              }
+
+              if (
+                req.method === 'POST' &&
+                reqUrl.pathname === '/__e2e/finite-member-grant'
+              ) {
+                // TEST ONLY: real product command, no entitlement/projection writes.
+                const now = new Date();
+                const until = new Date(now.getTime() + MEMBER_SCREEN_GRANT_WINDOW_MS);
+                const receipt = await sendMemberGrantViaApi(
+                  controlBaseUrl,
+                  adminAuth,
+                  caPem,
+                  roleSessions.member.session.member_id,
+                  seededPlan.revisionId,
+                  now,
+                  until,
+                  'TEST ONLY AT04 F4-04 finite service screen grant',
+                  MEMBER_SCREEN_BUDGET.grantUpstream,
+                );
+                res.writeHead(receipt.product_status ?? 502, {
+                  'Content-Type': 'application/json',
+                });
+                res.end(JSON.stringify(receipt));
+                return;
+              }
+
               if (
                 req.method === 'POST' &&
                 reqUrl.pathname === '/__e2e/restore-default-member'
               ) {
+                memberSelectionGeneration += 1;
                 roleSessions.member = memberAuth;
                 currentInteractiveRole = 'member';
                 res.writeHead(200, { 'Content-Type': 'application/json' });

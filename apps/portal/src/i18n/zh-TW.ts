@@ -376,6 +376,47 @@ export const zhTW = {
   'admin.audit.col.result': '結果與去敏前後差異',
 
   // Member Portal (§18.4)
+  'common.none': '無',
+  'member.service.loading': '正在載入服務狀態…',
+  'member.service.normalSpeed': '正常速度',
+  'member.devices.authorizedCount': '已授權裝置：{used} 台',
+  'member.service.state.pending_payment': '待付款',
+  'member.service.state.confirming': '開通中',
+  'member.service.state.active': '有效',
+  'member.service.state.cancel_at_period_end': '有效（期末取消）',
+  'member.service.state.grace': '寬限期',
+  'member.service.state.past_due': '付款逾期',
+  'member.service.state.expired': '到期',
+  'member.service.state.suspended': '停權',
+  'member.service.state.closed': '帳號已關閉',
+  'member.service.state.unknown': '狀態待確認',
+  'member.service.usable': '目前服務資格允許使用出口。',
+  'member.service.unusable': '目前服務資格不允許使用出口。',
+  'member.service.reason.pending_payment': '尚未確認付款，服務尚未開通。',
+  'member.service.reason.active': '您的服務資格有效。',
+  'member.service.reason.cancel_at_period_end':
+    '已設定期末取消，服務可繼續使用至 {end}。',
+  'member.service.reason.grace':
+    '續費待確認，寬限期限為 {graceUntil}；有效服務期限至 {end}。',
+  'member.service.reason.past_due': '付款已逾期，目前無法使用服務。',
+  'member.service.reason.expiredWithoutDates': '目前無有效的服務資格，無法使用出口。',
+  'member.service.reason.cancel_at_period_endWithoutDates':
+    '已設定期末取消，目前服務資格仍有效。',
+  'member.service.reason.graceWithoutDates': '續費待確認，目前仍可在寬限期內使用服務。',
+  'member.service.reason.expired': '服務期間已於 {end} 結束，無法再使用出口。',
+  'member.service.reason.suspended': '管理員已暫停您的服務；付款或續費不會解除停權。',
+  'member.service.reason.closed': '您的帳號已關閉，無法使用服務。',
+  'member.service.reason.unknown': '目前無法確認服務資格，請重新載入或聯絡客服。',
+  'member.service.nextUnavailable': '目前無法顯示下一步，請重新載入頁面或聯絡客服。',
+  'member.service.nextLabel': '下一步',
+  'member.service.next.complete_payment': '前往付款與訂閱頁面完成付款。',
+  'member.service.next.wait_for_payment_confirmation':
+    '等待付款確認；確認前無法使用出口。',
+  'member.service.next.install_app': '前往開始使用頁面安裝 App。',
+  'member.service.next.register_device': '前往我的裝置頁面查看裝置授權。',
+  'member.service.next.free_device_slot': '前往我的裝置頁面釋出裝置名額。',
+  'member.service.next.renew_subscription': '前往付款與訂閱頁面續訂服務。',
+  'member.service.next.contact_support': '請聯絡客服。',
   'member.service.title': '我的服務 (§18.4)',
   'member.service.stateLabel': '目前服務資格狀態',
   'member.service.reasonLabel': '狀態說明與原因',
@@ -383,6 +424,7 @@ export const zhTW = {
   'member.service.effectiveEndLabel': '有效服務到期日 (effective_service_end)',
   'member.service.paidThroughLabel': '已付費期間截止 (paid_through)',
   'member.service.nextResetLabel': '下一次公平使用 (FUP) 重置時間',
+  'member.service.fupThrottledWithoutDate': '本期大量使用，速度已依公平使用政策調整。',
   'member.service.fupThrottledBanner':
     '本期大量使用，速度已依公平使用政策調整；下次重置為…… {resetAt}',
 
@@ -463,7 +505,7 @@ export const zhTW = {
 
   // Wave 3 Live Control Plane Additions
   'member.service.closedBanner':
-    '您的帳號與服務資格已結清關閉 (account_status: closed)。所有裝置授權已撤銷，歷史帳務與稽核紀錄依保留政策封存。',
+    '您的帳號與服務資格已結清關閉。所有裝置授權已撤銷，歷史帳務與稽核紀錄依保留政策封存。',
   'member.service.usageUnavailableNotice':
     '目前無法載入最新彙總用量（將不會阻斷您的服務狀態檢視）。',
   'member.billing.planSelectLabel': '選擇訂閱方案 (Plan ID)',
