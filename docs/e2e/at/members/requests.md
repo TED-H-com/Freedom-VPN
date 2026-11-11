@@ -1,3 +1,21 @@
+# Portal delivery for F4-04 — 2026-11-11
+
+**Delivered:** [#512](https://github.com/TED-H-com/Freedom-VPN/pull/512), merge commit `f3bfb4a5c5ae5f1938a85d971dfe14caf8e3b4c9`, supplies rendered expired/suspended member service screens and live checks for F4-04. The [DOM regression tests](../../../../apps/portal/src/pages/__tests__/member_service.test.tsx) cover all eight entitlement states in zh-TW and English; [the portal guide](../../../portal/README.md) describes the checks and their limits.
+
+**Live checks** in [`apps/portal/e2e/portal.spec.ts`](../../../../apps/portal/e2e/portal.spec.ts):
+
+- `TestAT04_F404_SuspendedMemberScreenMatchesServer_Bilingual` creates a fresh member, suspends it through the administrator page, waits for the operation to report observed application and the member API to return `suspended` with `next_actions` `["contact_support"]`, then loads `/member/service` and compares the screen with the API in zh-TW and English.
+- `TestAT04_F404_ExpiredMemberScreenMatchesServer_Bilingual` creates a fresh member, gives it a finite administrator grant, observes `active`, waits for the real deadline until the member API returns `expired` with `["renew_subscription"]`, then loads the page and compares it in both languages.
+- `TestAT04_F404_DefaultMemberRestoredAfterInactiveScreens` reads the member API as its first action and checks that the default member is served again.
+
+**Run:** `make -f mk/portal.mk portal-e2e` runs the live suite against real control and worker processes, a test OIDC provider and local fakes for NetBird and Stripe.
+
+**CI receipt:** Portal CI [run 43014038790](https://github.com/TED-H-com/Freedom-VPN/actions/runs/43014038790), job “Verify Portal & Live E2E (Node 24 + Go 1.27.3)” on the merge commit above, concluded **success** (2026-11-11T11:41:39Z to 2026-11-11T11:44:53Z).
+
+**Limits:** suspension is reached through the administrator page, with no payment attempted afterward; expiry comes from an administrator grant ending, not a paid period. The page is loaded after the member API reports the state, so an already open page crossing the deadline is not observed. These checks cover no real identity provider, payment provider, client apps, devices, traffic withdrawal, assembled Docker stack or production deployment. This is not a members acceptance run.
+
+**Status:** F4-04's portal evidence is available. The members acceptance result does not change: AT04 stays as recorded until a members acceptance run consumes this evidence and fails closed if it is missing. Earlier sections keep their wording.
+
 # Follow-up 24 — 2026-11-04
 
 ### Requests to orchestrator
