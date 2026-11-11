@@ -306,7 +306,8 @@ before result output produce no stdout results. An output failure may leave
 partial result lines, which must not be treated as a complete result. Success exits 0; `-h`/`--help` exits 0 and prints help to
 stderr. These conventions leave the existing subcommands unchanged.
 
-A result-output failure after `trust-update` publishes the file does not undo
+A result-output failure, including a closed stdout pipe, exits 1 with the fixed
+diagnostic on stderr. After `trust-update` publishes the file, this does not undo
 publication. The complete, validated file remains unchanged; run `trust-verify`
 with the same trust store and instant to verify it and recompute `update_sha256`.
 Do not retry with the same output path expecting it to be replaced. These are
@@ -333,8 +334,12 @@ while writing/staging or linking the final file use `cannot be published`.
 -out cannot be published
 ```
 
-Malformed private key contents retain the fixed message
-`trust-update: cannot load release signing key`. Flag parsing uses
+A key file that cannot be loaded gets the fixed message
+`trust-update: cannot load release signing key`; a well-formed key file with an
+empty `key_id` is one such case. The separate `-key key_id cannot sign` message
+applies only to a key that loads successfully but whose ID cannot appear in a
+signature. The command uses the existing loader and does not parse private key
+files a second time to explain a failure. Flag parsing uses
 `invalid flags: unknown, repeated or malformed flag`, without quoting argument
 values. The new precision and signer-ID diagnostics are:
 

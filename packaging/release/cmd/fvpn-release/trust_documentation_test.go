@@ -2,19 +2,24 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
 	"testing"
+	"testing/synctest"
 
-	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/packaging/release"
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 )
 
 func TestUPD02_TrustR7DocumentationOutput(t *testing.T) {
+	// The virtual clock is deliberately outside the guide's 2026-2028 window.
+	// Explicit -at must determine results, whatever the host calendar date.
+	synctest.Test(t, testTrustDocumentationOutput)
+}
+
+func testTrustDocumentationOutput(t *testing.T) {
 	// TEST ONLY real command run with runtime-generated keys. The documented
 	// public hashes are one captured run; only those hashes vary between runs.
 	f := &trustFixture{t: t, dir: t.TempDir(), keys: map[string]release.SigningKey{}}
@@ -34,21 +39,23 @@ func TestUPD02_TrustR7DocumentationOutput(t *testing.T) {
 			outputs["keygen"], outputs["keygen-stderr"] = output.String(), diagnostic.String()
 		}
 	}
-	var err error
-	f.provider, err = signing.InitializeFileProvider(f.path("vault"))
-	if err != nil {
-		t.Fatal(err)
-	}
 	initial, err := envelope.ParseNodeTrustStoreJSON(readTestFile(t, f.path("release-A.trust.json")))
 	if err != nil {
 		t.Fatal(err)
 	}
 	root, _ := initial.Lookup("release-A")
-	if err := f.provider.PinReleaseRoot(context.Background(), root); err != nil {
+	added, err := envelope.ParseNodeTrustStoreJSON(readTestFile(t, f.path("release-B.trust.json")))
+	if err != nil {
 		t.Fatal(err)
 	}
+	newRoot, _ := added.Lookup("release-B")
+	// Public snapshots are explicit test inputs, not apply receipts. This
+	// documentation contract test must not consult the provider's wall clock.
+	// Real-provider add/retire/revoke remains independently covered by
+	// TestUPD02_TrustOperationsAndHandover (2000-2100 signer windows).
+	current := []envelope.TrustedKey{root}
 	for i, step := range []string{"add", "retire", "revoke"} {
-		bundle, err := f.provider.TrustBundle(context.Background())
+		bundle, err := envelope.NewNodeTrustStore(current...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -68,7 +75,14 @@ func TestUPD02_TrustR7DocumentationOutput(t *testing.T) {
 		}
 		outputs[step] = f.success(trustArgs("trust-update", flags))
 		outputs["verify-"+step] = f.success([]string{"trust-verify", "-update", updatePath, "-trust", trustPath, "-at", at, "-current-revision", fmt.Sprint(i)})
-		f.apply(readTestFile(t, updatePath))
+		switch step {
+		case "add":
+			current = append(current, newRoot)
+		case "retire":
+			current[0].NotAfter = trustDate("2026-12-01T00:00:00Z")
+		case "revoke":
+			current[0].Revoked = true
+		}
 	}
 	doc := string(readTestFile(t, "../../../../docs/updates/release-process.md"))
 	hash := regexp.MustCompile(`(?m)^update_sha256=[0-9a-f]{64}$`)

@@ -19,6 +19,7 @@ import (
 )
 
 func main() {
+	configureTrustOutputSignals(os.Args[1:])
 	os.Exit(run(os.Args[1:], os.Stdout, os.Stderr))
 }
 
