@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiClient, deriveUsageQualitySummary } from '../../api';
 import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
+import { MemberFairUseNotice } from '../../components/common/MemberFairUseNotice';
 import { useSession } from '../../context/SessionContext';
 import { useI18n } from '../../i18n';
 import { formatLocaleWithUtc } from '../../lib/datetime';
@@ -48,7 +49,7 @@ export function MemberUsagePage(): React.ReactElement {
   const qualitySummary = deriveUsageQualitySummary(u, locale);
   const tierLabel = u.fair_use.tier_name
     ? (u.fair_use.tier_name[locale] ?? u.fair_use.tier_name['zh-TW'])
-    : 'Normal speed';
+    : t('member.service.normalSpeed');
 
   return (
     <div data-testid="member-usage-page">
@@ -93,18 +94,7 @@ export function MemberUsagePage(): React.ReactElement {
         </div>
       )}
 
-      {/* Exact required FUP throttling phrase when throttled (§11.6, §18.4) */}
-      {u.fair_use.state !== 'normal' && (
-        <div
-          className="alert alert-warning"
-          role="status"
-          data-testid="usage-fup-throttled-banner"
-        >
-          {t('member.service.fupThrottledBanner', {
-            resetAt: u.fair_use.resets_at ?? '-',
-          })}
-        </div>
-      )}
+      <MemberFairUseNotice fairUse={u.fair_use} testId="usage-fup-throttled-banner" />
 
       <div className="stat-grid">
         <div className="stat-card" data-testid="usage-total-card">
@@ -145,19 +135,33 @@ export function MemberUsagePage(): React.ReactElement {
           >
             {tierLabel}
           </span>
+          {u.fair_use.state === 'adjusted' && u.fair_use.reason !== 'fair_use_tier' && (
+            <>
+              {' '}
+              <span className="badge badge-warning">
+                {t(
+                  u.fair_use.reason === 'admin_override'
+                    ? 'member.service.fupOverrideLabel'
+                    : 'member.service.fupAdjustedLabel',
+                )}
+              </span>{' '}
+            </>
+          )}
           <span className="stat-subtext mono">
             {t('member.usage.rateCapsLabel', {
               down: u.fair_use.rate
                 ? formatBpsMbps(String(u.fair_use.rate.down_bps))
-                : '-',
-              up: u.fair_use.rate ? formatBpsMbps(String(u.fair_use.rate.up_bps)) : '-',
+                : t('common.none'),
+              up: u.fair_use.rate
+                ? formatBpsMbps(String(u.fair_use.rate.up_bps))
+                : t('common.none'),
             })}
           </span>
           <span className="stat-subtext mono">
             {t('member.usage.nextResetLabel', {
               resetAt: u.fair_use.resets_at
                 ? formatLocaleWithUtc(u.fair_use.resets_at, locale)
-                : '-',
+                : t('common.none'),
             })}
           </span>
         </div>

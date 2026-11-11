@@ -3,6 +3,9 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 import { en, I18nProvider, LOCALE_STORAGE_KEY, useI18n, zhTW } from '../index';
+import { MemberFairUseNotice } from '../../components/common/MemberFairUseNotice';
+import { formatLocaleWithUtc } from '../../lib/datetime';
+import { buildMemberUsageForPersona } from '../../mocks/data';
 
 function TestConsumer(): React.ReactElement {
   const { locale, setLocale, t } = useI18n();
@@ -36,7 +39,16 @@ describe('src/i18n (§18 Locale Parity & Spec Phrases)', () => {
       '中央已撤銷路由；設備撤權尚未確認／受租約限制',
     );
     expect(zhTW['member.service.fupThrottledBanner']).toContain(
-      '本期大量使用，速度已依公平使用政策調整；下次重置為……',
+      '本期大量使用，速度已依公平使用政策調整；下次重置為',
+    );
+    const fairUse = buildMemberUsageForPersona('member_throttled').fair_use;
+    render(
+      <I18nProvider initialLocale="zh-TW">
+        <MemberFairUseNotice fairUse={fairUse} testId="fair-use-notice" />
+      </I18nProvider>,
+    );
+    expect(screen.getByTestId('fair-use-notice').textContent).toBe(
+      `本期大量使用，速度已依公平使用政策調整；下次重置為 ${formatLocaleWithUtc(fairUse.resets_at, 'zh-TW')}`,
     );
     expect(zhTW['node.summary.online_safety_failed_not_serving']).toBe(
       '在線，隔離檢查失敗，未提供服務',

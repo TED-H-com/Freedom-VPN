@@ -92,6 +92,44 @@ The member service screen uses the authoritative `entitlement.state` from
 `data-state` for support and tests. “Allows exit access” describes entitlement,
 not exit health or reachability. Unknown runtime states fail closed.
 
+Service and Usage share `MemberFairUseNotice` (§11.2, §11.6, §18.4). An adjustment
+notice appears only for `fair_use.state: adjusted`; its reason comes from the usage
+response, including administrator overrides at tier zero. `{date}` below is
+`fair_use.resets_at` formatted with `formatLocaleWithUtc` in the interface language.
+It never borrows `MemberSelf.fair_use_reset_at`: the separate Service reset card
+uses that accounting-period field alone, or `無` / `None` when it is absent.
+
+| Condition | zh-TW notice | English notice |
+|---|---|---|
+| `fair_use_tier`, dated | 本期大量使用，速度已依公平使用政策調整；下次重置為 {date} | High usage this period: speed has been adjusted under the Fair Use Policy; next reset is {date} |
+| `fair_use_tier`, undated | 本期大量使用，速度已依公平使用政策調整。 | High usage this period: speed has been adjusted under the Fair Use Policy. |
+| `admin_override`, dated | 您的速度已由管理員暫時調整；將於 {date} 重新計算。 | An administrator has temporarily adjusted your speed; it will be recalculated at {date}. |
+| `admin_override`, undated | 您的速度已由管理員暫時調整。 | An administrator has temporarily adjusted your speed. |
+| Null reason, dated | 您的速度目前已調整；將於 {date} 重新計算。 | Your speed is currently adjusted; it will be recalculated at {date}. |
+| Null reason, undated | 您的速度目前已調整。 | Your speed is currently adjusted. |
+| `applying: true`, adjusted or normal | 速度設定正在套用到出口節點，部分節點可能尚未生效。 | Your speed setting is still being applied; some exit nodes may not have it yet. |
+
+Applying is shown next to the adjustment notice, or alone for a normal policy.
+Recalculation does not promise normal speed after an override. On Usage, an
+adjusted non-tier reason accompanies the tier name: `管理員暫時調整` /
+`Temporarily adjusted by an administrator` for overrides, or `速度已調整` /
+`Speed adjusted` for a null reason. A missing tier name uses `正常速度` /
+`Normal speed`; absent rate caps and reset times use `無` / `None`.
+
+Billing uses `deriveMemberServiceState` for both its state badge and details row,
+matching the Service labels below, with the raw state retained in `data-state`.
+The separate checkout-confirmation indicator remains visible while awaiting
+confirmation. Missing paid-through and effective-service-end dates use `無` /
+`None`; present dates retain locale + UTC formatting (§9.2).
+
+`TestAT19_FUP03_MemberFairUse_*` and `TestAT03_EntitlementBilling_*` in
+`src/pages/__tests__/member_fair_use.test.tsx` check exact bilingual text, date
+sources, tier-zero overrides, normal/applying combinations, all eight entitlement
+states and both pending-payment variants, and accessibility. Cases use per-test
+MSW response overrides; `member_throttled` remains the contract example. No live browser test exercises
+the fair-use notices or the usage card's badge; the existing live member journey checks the billing state's
+`data-state` and its zh-TW label at three points, and no real fair-use enforcement on nodes was exercised by this change.
+
 | State | zh-TW label | English label | Allows exit access | Next step | Verification |
 |---|---|---|---|---|---|
 | `pending_payment` | 待付款 / 開通中 | Awaiting payment / Confirmation in progress | No | Complete payment on Billing; wait when `wait_for_payment_confirmation` is returned | DOM in both languages; live journey covers both variants |

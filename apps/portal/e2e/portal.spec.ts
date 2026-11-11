@@ -129,9 +129,11 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     await page.goto('/member/billing');
     await expect(page.getByTestId('member-billing-page')).toBeVisible();
     await expect(page.getByTestId('no-card-collection-notice')).toBeVisible();
-    await expect(page.getByTestId('billing-entitlement-state')).toHaveText(
+    await expect(page.getByTestId('billing-entitlement-state')).toHaveAttribute(
+      'data-state',
       'pending_payment',
     );
+    await expect(page.getByTestId('billing-entitlement-state')).toHaveText('待付款');
 
     await page.getByTestId('start-hosted-checkout-btn').click();
     await expect(page.getByTestId('hosted-redirect-banner')).toBeVisible();
@@ -147,9 +149,11 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
     );
     await expect(page.getByTestId('checkout-return-pending-banner')).toBeVisible();
     // Entitlement MUST remain pending_payment until signed webhook is verified (AT03)
-    await expect(page.getByTestId('billing-entitlement-state')).toHaveText(
+    await expect(page.getByTestId('billing-entitlement-state')).toHaveAttribute(
+      'data-state',
       'pending_payment',
     );
+    await expect(page.getByTestId('billing-entitlement-state')).toHaveText('開通中');
 
     await page.goto('/member/service');
     await expect(page.getByTestId('member-entitlement-state-badge')).toHaveAttribute(
@@ -182,7 +186,11 @@ test.describe('Freedom VPN Portal Live Control Plane E2E Suite (§18, AT01–AT0
 
     // 7. Verify billing portal session hand-off on /member/billing
     await page.goto('/member/billing');
-    await expect(page.getByTestId('billing-entitlement-state')).toHaveText('active');
+    await expect(page.getByTestId('billing-entitlement-state')).toHaveAttribute(
+      'data-state',
+      'active',
+    );
+    await expect(page.getByTestId('billing-entitlement-state')).toHaveText('有效');
     await page.getByTestId('open-billing-portal-btn').click();
     await expect(page.getByTestId('hosted-redirect-banner')).toBeVisible();
     await expect(page.getByTestId('hosted-redirect-url')).toContainText(

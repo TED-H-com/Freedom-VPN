@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { apiClient, deriveMemberServiceReason } from '../../api';
+import {
+  apiClient,
+  deriveMemberServiceReason,
+  deriveMemberServiceState,
+} from '../../api';
 import { ApiErrorAlert } from '../../components/common/ApiErrorAlert';
 import { useSession } from '../../context/SessionContext';
 import { useI18n } from '../../i18n';
@@ -59,6 +63,7 @@ export function MemberBillingPage(): React.ReactElement {
 
   const me = selfQuery.data;
   const ent = me.entitlement;
+  const stateView = deriveMemberServiceState(me);
   const isCheckoutReturn =
     isCheckoutReturnParam || me.next_actions.includes('wait_for_payment_confirmation');
   const showPendingConfirm =
@@ -97,22 +102,23 @@ export function MemberBillingPage(): React.ReactElement {
         <div>
           <h1>{t('member.billing.title')}</h1>
         </div>
-        {showPendingConfirm ? (
+        <div className="btn-row">
           <span
-            className="badge badge-warning"
-            data-testid="billing-return-pending-badge"
+            className={`badge ${stateView.usable ? 'badge-success' : 'badge-warning'}`}
+            data-testid="billing-entitlement-state-badge"
+            data-state={ent.state}
           >
-            {t('member.billing.returnPendingBadge')}
+            {t(stateView.label)}
           </span>
-        ) : (
-          <span
-            className={`badge ${
-              ent.state === 'active' ? 'badge-success' : 'badge-warning'
-            }`}
-          >
-            {ent.state}
-          </span>
-        )}
+          {showPendingConfirm && (
+            <span
+              className="badge badge-warning"
+              data-testid="billing-return-pending-badge"
+            >
+              {t('member.billing.returnPendingBadge')}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Mandatory No Card Collection Guarantee (§18.4) */}
@@ -162,12 +168,16 @@ export function MemberBillingPage(): React.ReactElement {
         <dl className="form-grid" style={{ marginBottom: '1rem' }}>
           <div>
             <dt style={{ fontWeight: 600 }}>{t('member.service.stateLabel')}</dt>
-            <dd data-testid="billing-entitlement-state">{ent.state}</dd>
+            <dd data-testid="billing-entitlement-state" data-state={ent.state}>
+              {t(stateView.label)}
+            </dd>
           </div>
           <div>
             <dt style={{ fontWeight: 600 }}>{t('member.service.paidThroughLabel')}</dt>
             <dd className="mono">
-              {ent.paid_through ? formatLocaleWithUtc(ent.paid_through, locale) : 'None'}
+              {ent.paid_through
+                ? formatLocaleWithUtc(ent.paid_through, locale)
+                : t('common.none')}
             </dd>
           </div>
           <div>
@@ -175,7 +185,7 @@ export function MemberBillingPage(): React.ReactElement {
             <dd className="mono">
               {ent.effective_service_end
                 ? formatLocaleWithUtc(ent.effective_service_end, locale)
-                : 'None'}
+                : t('common.none')}
             </dd>
           </div>
           <div>
