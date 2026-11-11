@@ -6,7 +6,7 @@ existing development/staging FileProvider. References: §13.4, §16.2, §17.2 an
 never creates or rewrites files inside the vault. Use
 [initialization](initialize.md) for a new vault, [conditional central-key commands](keys.md)
 for rotation/revocation, and [rotation and restore](rotation.md) for the procedure
-and the separate CA, bootstrap-secret and release-trust Go APIs.
+and the release trust update command (`fvpn-vault-keys apply-release-update`, described in `keys.md`) and the separate CA and bootstrap-secret Go APIs.
 
 FileProvider cannot detect rollback of its entire directory, host-root
 compromise or divergent copies. These commands do not change those limits.

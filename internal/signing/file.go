@@ -1030,9 +1030,11 @@ func (p *FileProvider) UpdateReleaseTrustConditional(ctx context.Context, raw []
 					out = ReleaseUpdateResult{Outcome: ChangeRejected, RejectReason: RejectRecord}
 					return nil
 				}
-				before := cloneKeyRecord(old)
+				if !equalKeyRecord(old, k) {
+					before := cloneKeyRecord(old)
+					changes = append(changes, ReleaseKeyChange{Before: &before, After: cloneKeyRecord(k)})
+				}
 				s.Keys[i] = k
-				changes = append(changes, ReleaseKeyChange{Before: &before, After: cloneKeyRecord(k)})
 				break
 			}
 			if !found {

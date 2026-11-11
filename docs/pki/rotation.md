@@ -155,7 +155,21 @@ Existing public keys cannot be substituted, validity windows cannot expand,
 revoked keys cannot be reinstated, retired keys cannot become active again, and
 omitted old keys remain recorded. A revoked or expired known signer invalidates
 the whole authorization envelope, even when another signature would otherwise
-pass.
+pass. Because signature verification runs before the `already_applied` check,
+repeating an applied update whose signer is still within `not_after` (including
+an update that retired its own signer and is repeated before that `not_after`)
+returns `already_applied` (exit `0`), whereas repeating an applied update that
+revoked its own signer or whose signer's `not_after` has passed is `rejected`
+with `reason: "signature"` (exit `10`), and `fvpn-release trust-verify` against
+a fresh export rejects it too (`KEY_UNTRUSTED` for the revoked or expired
+signer, or `update revision must exceed current revision` when
+`-current-revision` is set to the applied `release_revision`). After an output
+failure (exit `9`), a lost document or a rejection on a possible repeat, do not
+repeat blindly: run `fvpn-vault inspect -vault EXISTING_VAULT` and compare
+`release_revision` and the stored `release` records (`key_id`, `state`,
+`not_before`, `not_after`, `revoked_at` and `public_sha256`) with the update's
+`signed.revision` and `signed.keys` to recognise whether the update is already
+applied.
 
 What `fvpn-vault-keys apply-release-update` does **not** do:
 

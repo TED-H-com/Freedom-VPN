@@ -228,7 +228,7 @@ func classifyRelease(o options, updateSHA256 string, r signing.ReleaseUpdateResu
 	}
 }
 func confirmsRelease(s signing.FileSnapshot, r signing.ReleaseUpdateResult) bool {
-	if len(r.Keys) == 0 || r.OldRevision == decstr.Max || r.NewRevision != r.OldRevision+1 ||
+	if r.OldRevision == decstr.Max || r.NewRevision != r.OldRevision+1 ||
 		s.Revision != r.NewRevision || r.NewReleaseRevision <= r.OldReleaseRevision ||
 		s.ReleaseRevision != r.NewReleaseRevision {
 		return false

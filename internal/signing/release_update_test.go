@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/ed25519"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"os"
@@ -234,6 +235,101 @@ func TestUPD02_ReleaseTrustConditionalRepetitionAndPrecondition(t *testing.T) {
 		t.Fatalf("expected ChangeRefused after unrelated rotation, got %+v err=%v", r, err)
 	}
 	unchanged(t, f.p, before)
+}
+
+func TestUPD02_ReleaseTrustConditionalRepeatedSignerAndSignature(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("self_revoked_signer", func(t *testing.T) {
+		f := newReleaseTestFixture(t)
+		raw := f.signUpdate(1, "release-A", f.record("release-A", "revoked"))
+		r1, err := f.p.UpdateReleaseTrustConditional(ctx, raw, 1, true)
+		if err != nil || r1.Outcome != ChangeApplied {
+			t.Fatalf("initial self-revoke apply: %+v err=%v", r1, err)
+		}
+		before := manifest(t, f.p.dir)
+		want := ReleaseUpdateResult{Outcome: ChangeRejected, RejectReason: RejectSignature}
+		for _, expected := range []decstr.U64{1, 2} {
+			for _, allow := range []bool{false, true} {
+				r2, err := f.p.UpdateReleaseTrustConditional(ctx, raw, expected, allow)
+				if err != nil || !reflect.DeepEqual(r2, want) {
+					t.Fatalf("repeat(expected=%d, allow=%v): got %+v err=%v; want %+v", expected, allow, r2, err, want)
+				}
+				unchanged(t, f.p, before)
+			}
+		}
+	})
+
+	t.Run("expired_signer_on_repeat", func(t *testing.T) {
+		f := newReleaseTestFixture(t)
+		raw := f.signUpdate(1, "release-A", f.record("release-B", "active"))
+		r1, err := f.p.UpdateReleaseTrustConditional(ctx, raw, 1, false)
+		if err != nil || r1.Outcome != ChangeApplied {
+			t.Fatalf("initial apply: %+v err=%v", r1, err)
+		}
+		f.now = f.end
+		before := manifest(t, f.p.dir)
+		want := ReleaseUpdateResult{Outcome: ChangeRejected, RejectReason: RejectSignature}
+		for _, expected := range []decstr.U64{1, 2} {
+			r2, err := f.p.UpdateReleaseTrustConditional(ctx, raw, expected, false)
+			if err != nil || !reflect.DeepEqual(r2, want) {
+				t.Fatalf("repeat past not_after(expected=%d): got %+v err=%v; want %+v", expected, r2, err, want)
+			}
+			unchanged(t, f.p, before)
+		}
+	})
+
+	t.Run("self_retired_signer_before_not_after", func(t *testing.T) {
+		f := newReleaseTestFixture(t)
+		retireA := f.record("release-A", "retired")
+		retireA.NotAfter = f.now.Add(time.Hour)
+		raw := f.signUpdate(1, "release-A", retireA, f.record("release-B", "active"))
+		r1, err := f.p.UpdateReleaseTrustConditional(ctx, raw, 1, false)
+		if err != nil || r1.Outcome != ChangeApplied {
+			t.Fatalf("initial self-retire apply: %+v err=%v", r1, err)
+		}
+		f.now = f.now.Add(30 * time.Minute)
+		before := manifest(t, f.p.dir)
+		for _, expected := range []decstr.U64{1, 2} {
+			r2, err := f.p.UpdateReleaseTrustConditional(ctx, raw, expected, false)
+			if err != nil || r2.Outcome != ChangeAlreadyApplied || len(r2.Keys) != 2 || r2.Keys[0].Before != nil || r2.Keys[1].Before != nil {
+				t.Fatalf("repeat before not_after(expected=%d): got %+v err=%v", expected, r2, err)
+			}
+			unchanged(t, f.p, before)
+		}
+	})
+
+	t.Run("altered_signature_on_applied_payload", func(t *testing.T) {
+		f := newReleaseTestFixture(t)
+		raw := f.signUpdate(1, "release-A", f.record("release-B", "active"))
+		r1, err := f.p.UpdateReleaseTrustConditional(ctx, raw, 1, false)
+		if err != nil || r1.Outcome != ChangeApplied {
+			t.Fatalf("initial apply: %+v err=%v", r1, err)
+		}
+		var env envelope.Envelope
+		if err := json.Unmarshal(raw, &env); err != nil {
+			t.Fatal(err)
+		}
+		sig, err := base64.StdEncoding.DecodeString(env.Signatures[0].SignatureB64)
+		if err != nil {
+			t.Fatal(err)
+		}
+		sig[0] ^= 0xff
+		env.Signatures[0].SignatureB64 = base64.StdEncoding.EncodeToString(sig)
+		altered, err := env.MarshalCanonical()
+		if err != nil {
+			t.Fatal(err)
+		}
+		before := manifest(t, f.p.dir)
+		want := ReleaseUpdateResult{Outcome: ChangeRejected, RejectReason: RejectSignature}
+		for _, expected := range []decstr.U64{1, 2} {
+			r2, err := f.p.UpdateReleaseTrustConditional(ctx, altered, expected, false)
+			if err != nil || !reflect.DeepEqual(r2, want) {
+				t.Fatalf("altered signature(expected=%d): got %+v err=%v; want %+v", expected, r2, err, want)
+			}
+			unchanged(t, f.p, before)
+		}
+	})
 }
 
 func TestUPD02_ReleaseTrustConditionalRejections(t *testing.T) {
@@ -586,28 +682,82 @@ func TestUPD02_ReleaseTrustConditionalUsableRootGuard(t *testing.T) {
 }
 
 func TestUPD02_ReleaseTrustConditionalMultipleRecords(t *testing.T) {
-	f := newReleaseTestFixture(t)
 	ctx := context.Background()
 
-	retireA := f.record("release-A", "retired")
-	retireA.NotAfter = f.now.Add(time.Hour)
-	addB := f.record("release-B", "active")
-	raw := f.signUpdate(1, "release-A", retireA, addB)
+	t.Run("two_changed_records", func(t *testing.T) {
+		f := newReleaseTestFixture(t)
+		retireA := f.record("release-A", "retired")
+		retireA.NotAfter = f.now.Add(time.Hour)
+		addB := f.record("release-B", "active")
+		raw := f.signUpdate(1, "release-A", retireA, addB)
 
-	r, err := f.p.UpdateReleaseTrustConditional(ctx, raw, 1, false)
-	if err != nil || r.Outcome != ChangeApplied || len(r.Keys) != 2 {
-		t.Fatalf("two-record apply: got %+v err=%v", r, err)
-	}
-	if r.Keys[0].Before == nil || r.Keys[0].Before.State != "active" || r.Keys[0].After.ID != "release-A" || r.Keys[0].After.State != "retired" ||
-		r.Keys[1].Before != nil || r.Keys[1].After.ID != "release-B" || r.Keys[1].After.State != "active" {
-		t.Fatalf("unexpected key changes: %+v", r.Keys)
-	}
-	before := manifest(t, f.p.dir)
-	repeat, err := f.p.UpdateReleaseTrustConditional(ctx, raw, 1, false)
-	if err != nil || repeat.Outcome != ChangeAlreadyApplied || len(repeat.Keys) != 2 || repeat.Keys[0].Before != nil || repeat.Keys[1].Before != nil {
-		t.Fatalf("two-record repeat: got %+v err=%v", repeat, err)
-	}
-	unchanged(t, f.p, before)
+		r, err := f.p.UpdateReleaseTrustConditional(ctx, raw, 1, false)
+		if err != nil || r.Outcome != ChangeApplied || len(r.Keys) != 2 {
+			t.Fatalf("two-record apply: got %+v err=%v", r, err)
+		}
+		if r.Keys[0].Before == nil || r.Keys[0].Before.State != "active" || r.Keys[0].After.ID != "release-A" || r.Keys[0].After.State != "retired" ||
+			r.Keys[1].Before != nil || r.Keys[1].After.ID != "release-B" || r.Keys[1].After.State != "active" {
+			t.Fatalf("unexpected key changes: %+v", r.Keys)
+		}
+		before := manifest(t, f.p.dir)
+		repeat, err := f.p.UpdateReleaseTrustConditional(ctx, raw, 1, false)
+		if err != nil || repeat.Outcome != ChangeAlreadyApplied || len(repeat.Keys) != 2 || repeat.Keys[0].Before != nil || repeat.Keys[1].Before != nil {
+			t.Fatalf("two-record repeat: got %+v err=%v", repeat, err)
+		}
+		unchanged(t, f.p, before)
+	})
+
+	t.Run("restated_and_added_then_restated_and_changed_then_only_stored", func(t *testing.T) {
+		f := newReleaseTestFixture(t)
+		keepA := f.record("release-A", "active")
+		addB := f.record("release-B", "active")
+
+		// Two-record update: release-A restated as stored, release-B added.
+		u1 := f.signUpdate(1, "release-A", keepA, addB)
+		r1, err := f.p.UpdateReleaseTrustConditional(ctx, u1, 1, false)
+		if err != nil || r1.Outcome != ChangeApplied || len(r1.Keys) != 1 || r1.Keys[0].Before != nil || !equalKeyRecord(r1.Keys[0].After, addB) {
+			t.Fatalf("restated+added: got %+v err=%v", r1, err)
+		}
+		s1 := snap(t, f.p)
+		if len(s1.Keys) != 2 || !equalKeyRecord(s1.Keys[0], keepA) || !equalKeyRecord(s1.Keys[1], addB) {
+			t.Fatalf("restated+added snapshot: %+v", s1.Keys)
+		}
+		repeat1, err := f.p.UpdateReleaseTrustConditional(ctx, u1, 1, false)
+		if err != nil || repeat1.Outcome != ChangeAlreadyApplied || len(repeat1.Keys) != 2 || repeat1.Keys[0].Before != nil || repeat1.Keys[1].Before != nil {
+			t.Fatalf("restated+added repeat: got %+v err=%v", repeat1, err)
+		}
+
+		// Two-record update: release-B restated as stored, release-A retired.
+		retireA := f.record("release-A", "retired")
+		retireA.NotAfter = f.now.Add(time.Hour)
+		u2 := f.signUpdate(2, "release-B", addB, retireA)
+		r2, err := f.p.UpdateReleaseTrustConditional(ctx, u2, 2, false)
+		if err != nil || r2.Outcome != ChangeApplied || len(r2.Keys) != 1 || r2.Keys[0].Before == nil ||
+			!equalKeyRecord(*r2.Keys[0].Before, keepA) || !equalKeyRecord(r2.Keys[0].After, retireA) {
+			t.Fatalf("restated+changed: got %+v err=%v", r2, err)
+		}
+		s2 := snap(t, f.p)
+		if len(s2.Keys) != 2 || !equalKeyRecord(s2.Keys[0], retireA) || !equalKeyRecord(s2.Keys[1], addB) {
+			t.Fatalf("restated+changed snapshot: %+v", s2.Keys)
+		}
+
+		// Higher revision restating only stored records: applied with empty non-nil Keys.
+		u3 := f.signUpdate(3, "release-B", retireA, addB)
+		r3, err := f.p.UpdateReleaseTrustConditional(ctx, u3, 3, false)
+		if err != nil || r3.Outcome != ChangeApplied || r3.OldRevision != 3 || r3.NewRevision != 4 ||
+			r3.OldReleaseRevision != 2 || r3.NewReleaseRevision != 3 || r3.Keys == nil || len(r3.Keys) != 0 {
+			t.Fatalf("only stored records: got %+v err=%v", r3, err)
+		}
+		s3 := snap(t, f.p)
+		if s3.Revision != 4 || s3.ReleaseRevision != 3 || len(s3.Keys) != 2 ||
+			!equalKeyRecord(s3.Keys[0], retireA) || !equalKeyRecord(s3.Keys[1], addB) {
+			t.Fatalf("only stored records snapshot: %+v", s3)
+		}
+		repeat3, err := f.p.UpdateReleaseTrustConditional(ctx, u3, 3, false)
+		if err != nil || repeat3.Outcome != ChangeAlreadyApplied || len(repeat3.Keys) != 2 || repeat3.Keys[0].Before != nil || repeat3.Keys[1].Before != nil {
+			t.Fatalf("only stored records repeat: got %+v err=%v", repeat3, err)
+		}
+	})
 }
 
 func TestUPD02_ReleaseTrustConditionalConcurrency(t *testing.T) {
@@ -665,11 +815,16 @@ func TestUPD02_ReleaseTrustConditionalConcurrency(t *testing.T) {
 }
 
 func TestUPD02_ReleaseTrustConditionalPartialFailure(t *testing.T) {
-	for _, stage := range []string{"before rename", "revision max", "after rename"} {
+	for _, stage := range []string{"before rename", "revision max", "at rename", "after rename"} {
 		t.Run(stage, func(t *testing.T) {
 			f := newReleaseTestFixture(t)
 			ctx := context.Background()
-			expectedRev := decstr.U64(1)
+			if stage == "at rename" {
+				if _, err := f.p.Rotate(ctx, Lease, time.Hour, 0); err != nil {
+					t.Fatal(err)
+				}
+			}
+			expectedRev := snap(t, f.p).Revision
 			if stage == "revision max" {
 				rawState, err := os.ReadFile(filepath.Join(f.p.dir, "state.json"))
 				if err != nil {
@@ -686,10 +841,30 @@ func TestUPD02_ReleaseTrustConditionalPartialFailure(t *testing.T) {
 				expectedRev = decstr.Max
 			}
 			before := manifest(t, f.p.dir)
+			beforeBytes := map[string][]byte{}
+			entries, err := os.ReadDir(f.p.dir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, e := range entries {
+				b, err := os.ReadFile(filepath.Join(f.p.dir, e.Name()))
+				if err != nil {
+					t.Fatal(err)
+				}
+				beforeBytes[e.Name()] = b
+			}
 			injected := errors.New("TEST ONLY injected failure")
 			switch stage {
 			case "before rename":
 				f.p.conditionalHooks.beforeRename = func() error { return injected }
+			case "at rename":
+				f.p.conditionalHooks.beforeRename = func() error {
+					matches, err := filepath.Glob(filepath.Join(f.p.dir, ".state-*"))
+					if err != nil || len(matches) != 1 {
+						t.Fatalf("expected one temporary state file, got %v err=%v", matches, err)
+					}
+					return os.Remove(matches[0])
+				}
 			case "after rename":
 				f.p.conditionalHooks.afterRename = func() error { return injected }
 			}
@@ -698,12 +873,13 @@ func TestUPD02_ReleaseTrustConditionalPartialFailure(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if stage == "after rename" {
-				if r.Outcome != ChangeUncertain || r.NewRevision != 2 || r.NewReleaseRevision != 1 {
+			switch stage {
+			case "after rename":
+				if r.Outcome != ChangeUncertain || r.NewRevision != expectedRev+1 || r.NewReleaseRevision != 1 {
 					t.Fatalf("expected ChangeUncertain, got %+v", r)
 				}
 				s := snap(t, f.p)
-				if s.Revision != 2 || s.ReleaseRevision != 1 {
+				if s.Revision != expectedRev+1 || s.ReleaseRevision != 1 {
 					t.Fatalf("replacement missing in snapshot: %+v", s)
 				}
 				f.p.conditionalHooks = conditionalHooks{}
@@ -711,7 +887,39 @@ func TestUPD02_ReleaseTrustConditionalPartialFailure(t *testing.T) {
 				if err != nil || again.Outcome != ChangeAlreadyApplied {
 					t.Fatalf("expected ChangeAlreadyApplied after uncertain replacement, got %+v err=%v", again, err)
 				}
-			} else {
+			case "at rename":
+				if r.Outcome != ChangeUncertain || r.OldRevision != expectedRev || r.NewRevision != expectedRev+1 ||
+					r.OldReleaseRevision != 0 || r.NewReleaseRevision != 1 {
+					t.Fatalf("expected ChangeUncertain at rename, got %+v", r)
+				}
+				s := snap(t, f.p)
+				if s.Revision != expectedRev || s.ReleaseRevision != 0 {
+					t.Fatalf("snapshot changed on failed rename: %+v", s)
+				}
+				afterEntries, err := os.ReadDir(f.p.dir)
+				if err != nil || len(afterEntries) != len(beforeBytes) {
+					t.Fatalf("vault entries changed: %v err=%v", afterEntries, err)
+				}
+				for _, e := range afterEntries {
+					got, err := os.ReadFile(filepath.Join(f.p.dir, e.Name()))
+					if err != nil {
+						t.Fatal(err)
+					}
+					if !bytes.Equal(got, beforeBytes[e.Name()]) {
+						t.Fatalf("file %s changed on failed rename", e.Name())
+					}
+				}
+				after := manifest(t, f.p.dir)
+				after["."] = before["."]
+				if !reflect.DeepEqual(before, after) {
+					t.Fatal("ledger or key file metadata changed on failed rename")
+				}
+				f.p.conditionalHooks = conditionalHooks{}
+				again, err := f.p.UpdateReleaseTrustConditional(ctx, raw, expectedRev, false)
+				if err != nil || again.Outcome != ChangeApplied || snap(t, f.p).Revision != expectedRev+1 || snap(t, f.p).ReleaseRevision != 1 {
+					t.Fatalf("retry after rename failure: got %+v err=%v", again, err)
+				}
+			default:
 				if r.Outcome != ChangeNotApplied {
 					t.Fatalf("expected ChangeNotApplied, got %+v", r)
 				}
@@ -757,12 +965,26 @@ func TestUPD02_ReleaseTrustConditionalLockAndDeadline(t *testing.T) {
 	}
 
 	// Deadline expiring after lock acquisition does not cancel the save.
-	saveCtx, saveCancel := context.WithTimeout(ctx, 20*time.Millisecond)
-	defer saveCancel()
-	f.p.conditionalHooks.locked = func() { <-saveCtx.Done() }
-	r, err = f.p.UpdateReleaseTrustConditional(saveCtx, raw, 1, false)
-	if err != nil || r.Outcome != ChangeApplied || snap(t, f.p).Revision != 2 {
-		t.Fatalf("deadline canceled locked save: %+v err=%v", r, err)
+	for _, failSave := range []bool{false, true} {
+		target := f
+		if failSave {
+			target = newReleaseTestFixture(t)
+		}
+		saveCtx, saveCancel := context.WithTimeout(ctx, 20*time.Millisecond)
+		target.p.conditionalHooks.locked = func() { <-saveCtx.Done() }
+		if failSave {
+			target.p.conditionalHooks.afterRename = func() error { return errors.New("TEST ONLY after rename") }
+		}
+		targetRaw := target.signUpdate(1, "release-A", target.record("release-B", "active"))
+		r, err = target.p.UpdateReleaseTrustConditional(saveCtx, targetRaw, 1, false)
+		saveCancel()
+		want := ChangeApplied
+		if failSave {
+			want = ChangeUncertain
+		}
+		if err != nil || r.Outcome != want || snap(t, target.p).Revision != 2 {
+			t.Fatalf("failSave=%v: deadline canceled locked save: %+v err=%v", failSave, r, err)
+		}
 	}
 
 	// Lock validation failure when lock file is replaced while held.

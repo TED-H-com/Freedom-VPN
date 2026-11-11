@@ -532,6 +532,35 @@ func TestUPD02_CommandReleaseTrustRejected(t *testing.T) {
 		if d.Reason != "schema" || d.UpdateSHA256 != wrongKindSum || d.Change != nil {
 			t.Fatalf("wrong kind document = %+v", d)
 		}
+
+		validBytes, err := os.ReadFile(f.update)
+		if err != nil {
+			t.Fatal(err)
+		}
+		nonCanonicalCases := []struct {
+			name string
+			raw  []byte
+		}{
+			{name: "non-json", raw: []byte("not json\n")},
+			{name: "empty", raw: []byte{}},
+			{name: "duplicated object key", raw: []byte("{\"signed\":{},\"signed\":{},\"signatures\":[]}\n")},
+			{name: "trailing data", raw: append(append([]byte(nil), validBytes...), []byte("{}\n")...)},
+		}
+		for _, tc := range nonCanonicalCases {
+			t.Run(tc.name, func(t *testing.T) {
+				path, _ := f.writeUpdate(strings.ReplaceAll(tc.name, " ", "-")+".json", tc.raw)
+				var out, errBuf bytes.Buffer
+				code := neverOpen.run([]string{"apply-release-update", "-vault", filepath.Join(f.root, "nonexistent-vault"), "-update", path, "-expect-revision", "1"}, &out, &errBuf)
+				d := assertReleaseOutput(t, code, out.String(), errBuf.String(), exitRejected, "rejected", "")
+				unchanged(t, f.dir, before)
+				if d.Reason != "schema" || d.UpdateSHA256 != "" || d.Change != nil {
+					t.Fatalf("%s document = %+v", tc.name, d)
+				}
+				if bytes.Contains(out.Bytes(), []byte("update_sha256")) {
+					t.Fatalf("%s raw JSON unexpectedly contains update_sha256:\n%s", tc.name, out.String())
+				}
+			})
+		}
 	})
 
 	t.Run("provider rejections", func(t *testing.T) {
@@ -784,26 +813,142 @@ func TestUPD02_CommandReleaseTrustUsableRootGuard(t *testing.T) {
 }
 
 func TestUPD02_CommandReleaseTrustMultipleRecords(t *testing.T) {
-	f := setupRelease(t)
-	multiRaw := signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
-		Kind:     release.ReleaseTrustUpdateKind,
-		Revision: 1,
-		Keys: []signing.KeyRecord{
-			f.a.record("retired", releaseTestStart, releaseTestNarrowEnd, nil),
-			f.b.record("active", releaseTestStart, releaseTestEnd, nil),
-		},
+	t.Run("two_changed_records", func(t *testing.T) {
+		f := setupRelease(t)
+		multiRaw := signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
+			Kind:     release.ReleaseTrustUpdateKind,
+			Revision: 1,
+			Keys: []signing.KeyRecord{
+				f.a.record("retired", releaseTestStart, releaseTestNarrowEnd, nil),
+				f.b.record("active", releaseTestStart, releaseTestEnd, nil),
+			},
+		})
+		path, sum := f.writeUpdate("multi.json", multiRaw)
+		d := invokeRelease(t, command{}, []string{"apply-release-update", "-vault", f.dir, "-update", path, "-expect-revision", "1"}, exitOK, "applied")
+		if d.UpdateSHA256 != sum || d.Change == nil || len(d.Change.Keys) != 2 {
+			t.Fatalf("expected 2 changed records, got %+v", d)
+		}
+		if d.Change.Keys[0].Previous == nil || d.Change.Keys[0].Previous.State != "active" || d.Change.Keys[0].Key.ID != f.a.id || d.Change.Keys[0].Key.State != "retired" {
+			t.Fatalf("first changed record = %+v", d.Change.Keys[0])
+		}
+		if d.Change.Keys[1].Previous != nil || d.Change.Keys[1].Key.ID != f.b.id || d.Change.Keys[1].Key.State != "active" {
+			t.Fatalf("second changed record = %+v", d.Change.Keys[1])
+		}
 	})
-	path, sum := f.writeUpdate("multi.json", multiRaw)
-	d := invokeRelease(t, command{}, []string{"apply-release-update", "-vault", f.dir, "-update", path, "-expect-revision", "1"}, exitOK, "applied")
-	if d.UpdateSHA256 != sum || d.Change == nil || len(d.Change.Keys) != 2 {
-		t.Fatalf("expected 2 changed records, got %+v", d)
-	}
-	if d.Change.Keys[0].Previous == nil || d.Change.Keys[0].Previous.State != "active" || d.Change.Keys[0].Key.ID != f.a.id || d.Change.Keys[0].Key.State != "retired" {
-		t.Fatalf("first changed record = %+v", d.Change.Keys[0])
-	}
-	if d.Change.Keys[1].Previous != nil || d.Change.Keys[1].Key.ID != f.b.id || d.Change.Keys[1].Key.State != "active" {
-		t.Fatalf("second changed record = %+v", d.Change.Keys[1])
-	}
+
+	t.Run("unchanged_records_omitted_and_only_stored_records", func(t *testing.T) {
+		f := setupRelease(t)
+		keepA := f.a.record("active", releaseTestStart, releaseTestEnd, nil)
+		addB := f.b.record("active", releaseTestStart, releaseTestEnd, nil)
+
+		// 1. Two-record update: A restated as stored, B added.
+		u1Raw := signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
+			Kind:     release.ReleaseTrustUpdateKind,
+			Revision: 1,
+			Keys:     []signing.KeyRecord{keepA, addB},
+		})
+		u1Path, u1Sum := f.writeUpdate("restated-and-added.json", u1Raw)
+		d1 := invokeRelease(t, command{}, []string{"apply-release-update", "-vault", f.dir, "-update", u1Path, "-expect-revision", "1"}, exitOK, "applied")
+		if d1.UpdateSHA256 != u1Sum || d1.Change == nil || len(d1.Change.Keys) != 1 ||
+			d1.Change.Keys[0].Previous != nil || d1.Change.Keys[0].Key.ID != f.b.id || d1.Change.Keys[0].Key.State != "active" {
+			t.Fatalf("restated+added document = %+v", d1)
+		}
+		s1 := getSnapshot(t, f.p)
+		if len(s1.Keys) != 2 || !reflect.DeepEqual(s1.Keys[0], keepA) || !reflect.DeepEqual(s1.Keys[1], addB) {
+			t.Fatalf("restated+added snapshot = %+v", s1.Keys)
+		}
+		repeat1 := invokeRelease(t, command{}, []string{"apply-release-update", "-vault", f.dir, "-update", u1Path, "-expect-revision", "1"}, exitAlreadyApplied, "already_applied")
+		if repeat1.Change == nil || len(repeat1.Change.Keys) != 2 || repeat1.Change.Keys[0].Previous != nil || repeat1.Change.Keys[1].Previous != nil {
+			t.Fatalf("restated+added repeat = %+v", repeat1)
+		}
+
+		// 2. Two-record update: B restated as stored, A changed (retired).
+		retireA := f.a.record("retired", releaseTestStart, releaseTestNarrowEnd, nil)
+		u2Raw := signReleaseEnvelope(t, f.b, signing.ReleaseUpdate{
+			Kind:     release.ReleaseTrustUpdateKind,
+			Revision: 2,
+			Keys:     []signing.KeyRecord{addB, retireA},
+		})
+		u2Path, u2Sum := f.writeUpdate("restated-and-changed.json", u2Raw)
+		d2 := invokeRelease(t, command{}, []string{"apply-release-update", "-vault", f.dir, "-update", u2Path, "-expect-revision", "2"}, exitOK, "applied")
+		if d2.UpdateSHA256 != u2Sum || d2.Change == nil || len(d2.Change.Keys) != 1 ||
+			d2.Change.Keys[0].Previous == nil || d2.Change.Keys[0].Previous.State != "active" ||
+			d2.Change.Keys[0].Key.ID != f.a.id || d2.Change.Keys[0].Key.State != "retired" {
+			t.Fatalf("restated+changed document = %+v", d2)
+		}
+		s2 := getSnapshot(t, f.p)
+		if len(s2.Keys) != 2 || !reflect.DeepEqual(s2.Keys[0], retireA) || !reflect.DeepEqual(s2.Keys[1], addB) {
+			t.Fatalf("restated+changed snapshot = %+v", s2.Keys)
+		}
+
+		// 3. Higher revision restating only stored records: applied, keys is [].
+		u3Raw := signReleaseEnvelope(t, f.b, signing.ReleaseUpdate{
+			Kind:     release.ReleaseTrustUpdateKind,
+			Revision: 3,
+			Keys:     []signing.KeyRecord{retireA, addB},
+		})
+		u3Path, u3Sum := f.writeUpdate("only-stored.json", u3Raw)
+		var out3, err3 bytes.Buffer
+		code3 := (command{}).run([]string{"apply-release-update", "-vault", f.dir, "-update", u3Path, "-expect-revision", "3"}, &out3, &err3)
+		d3 := assertReleaseOutput(t, code3, out3.String(), err3.String(), exitOK, "applied", "")
+		if d3.UpdateSHA256 != u3Sum || d3.Change == nil || d3.Change.OldRevision != 3 || d3.Change.NewRevision != 4 ||
+			d3.Change.OldReleaseRevision != 2 || d3.Change.NewReleaseRevision != 3 || len(d3.Change.Keys) != 0 ||
+			!bytes.Contains(out3.Bytes(), []byte(`"keys": []`)) {
+			t.Fatalf("only-stored document = %+v\nraw:\n%s", d3, out3.String())
+		}
+		s3 := getSnapshot(t, f.p)
+		if s3.Revision != 4 || s3.ReleaseRevision != 3 || len(s3.Keys) != 2 ||
+			!reflect.DeepEqual(s3.Keys[0], retireA) || !reflect.DeepEqual(s3.Keys[1], addB) {
+			t.Fatalf("only-stored snapshot = %+v", s3)
+		}
+	})
+
+	t.Run("after_rename_read_back_confirms_changed_and_empty_keys", func(t *testing.T) {
+		f := setupRelease(t)
+		keepA := f.a.record("active", releaseTestStart, releaseTestEnd, nil)
+		addB := f.b.record("active", releaseTestStart, releaseTestEnd, nil)
+		retireA := f.a.record("retired", releaseTestStart, releaseTestNarrowEnd, nil)
+
+		u1Raw := signReleaseEnvelope(t, f.a, signing.ReleaseUpdate{
+			Kind:     release.ReleaseTrustUpdateKind,
+			Revision: 1,
+			Keys:     []signing.KeyRecord{keepA, addB},
+		})
+		u1Path, _ := f.writeUpdate("uncertain-restated-added.json", u1Raw)
+		p1 := &releaseFaultProvider{changeProvider: f.p, uncertain: true}
+		d1 := invokeRelease(t, withProvider(p1), []string{"apply-release-update", "-vault", f.dir, "-update", u1Path, "-expect-revision", "1"}, exitDurability, "durability_not_confirmed")
+		if d1.ReadBack != "matched" || d1.Change == nil || len(d1.Change.Keys) != 1 || d1.Change.Keys[0].Previous != nil || d1.Change.Keys[0].Key.ID != f.b.id {
+			t.Fatalf("uncertain restated+added = %+v", d1)
+		}
+
+		u2Raw := signReleaseEnvelope(t, f.b, signing.ReleaseUpdate{
+			Kind:     release.ReleaseTrustUpdateKind,
+			Revision: 2,
+			Keys:     []signing.KeyRecord{addB, retireA},
+		})
+		u2Path, _ := f.writeUpdate("uncertain-restated-changed.json", u2Raw)
+		p2 := &releaseFaultProvider{changeProvider: f.p, uncertain: true}
+		d2 := invokeRelease(t, withProvider(p2), []string{"apply-release-update", "-vault", f.dir, "-update", u2Path, "-expect-revision", "2"}, exitDurability, "durability_not_confirmed")
+		if d2.ReadBack != "matched" || d2.Change == nil || len(d2.Change.Keys) != 1 || d2.Change.Keys[0].Previous == nil || d2.Change.Keys[0].Key.ID != f.a.id {
+			t.Fatalf("uncertain restated+changed = %+v", d2)
+		}
+
+		u3Raw := signReleaseEnvelope(t, f.b, signing.ReleaseUpdate{
+			Kind:     release.ReleaseTrustUpdateKind,
+			Revision: 3,
+			Keys:     []signing.KeyRecord{retireA, addB},
+		})
+		u3Path, _ := f.writeUpdate("uncertain-only-stored.json", u3Raw)
+		p3 := &releaseFaultProvider{changeProvider: f.p, uncertain: true}
+		var out3, err3 bytes.Buffer
+		code3 := withProvider(p3).run([]string{"apply-release-update", "-vault", f.dir, "-update", u3Path, "-expect-revision", "3"}, &out3, &err3)
+		d3 := assertReleaseOutput(t, code3, out3.String(), err3.String(), exitDurability, "durability_not_confirmed", "")
+		if d3.ReadBack != "matched" || d3.Change == nil || d3.Change.OldRevision != 3 || d3.Change.NewRevision != 4 ||
+			d3.Change.OldReleaseRevision != 2 || d3.Change.NewReleaseRevision != 3 || len(d3.Change.Keys) != 0 ||
+			!bytes.Contains(out3.Bytes(), []byte(`"keys": []`)) {
+			t.Fatalf("uncertain only-stored = %+v\nraw:\n%s", d3, out3.String())
+		}
+	})
 }
 
 func TestUPD02_CommandReleaseTrustProcessConcurrency(t *testing.T) {
@@ -943,7 +1088,7 @@ func (p *releaseFaultProvider) Snapshot(ctx context.Context) (signing.FileSnapsh
 }
 
 // TestUPD02_ReleaseTrustConditionalPartialFailure and
-// TestUPD02_ReleaseTrustConditionalDeadline in internal/signing/release_update_test.go
+// TestUPD02_ReleaseTrustConditionalLockAndDeadline in internal/signing/release_update_test.go
 // run the real save-boundary and post-lock deadline sequences through provider seams.
 // This test exercises the command's handling of each typed result and read-back.
 func TestUPD02_CommandReleaseTrustPartialFailure(t *testing.T) {
