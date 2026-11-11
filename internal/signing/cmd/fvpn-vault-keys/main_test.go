@@ -399,13 +399,13 @@ func TestSEC01_CommandExitCodeTable(t *testing.T) {
 		"applied": exitOK, "revoked": exitOK, "already_revoked": exitAlreadyRevoked,
 		"usage": exitUsage, "unavailable": exitUnavailable, "deadline": exitTimeout,
 		"refused": exitRefused, "not_applied": exitNotApplied, "durability": exitDurability,
-		"unknown": exitUnknown, "output": exitOutput,
+		"unknown": exitUnknown, "output": exitOutput, "rejected": exitRejected,
 	}
 	want := map[string]int{
 		"applied": 0, "revoked": 0, "already_revoked": 0,
 		"usage": 2, "unavailable": 3, "deadline": 4,
 		"refused": 5, "not_applied": 6, "durability": 7,
-		"unknown": 8, "output": 9,
+		"unknown": 8, "output": 9, "rejected": 10,
 	}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("exit codes = %v; want %v", got, want)
