@@ -4,8 +4,8 @@
 
 **Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
 
-**Archived cut:** [follow-up 51](follow-up-51.md), #524–#526 at `66de6a24`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut:** [follow-up 50](follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; source-backed changes, verification boundaries and carried gaps.
+**Archived cut:** [follow-up 52](follow-up-52.md), #527 at `6972be03`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 51](follow-up-51.md), #524–#526 at `66de6a24`; source-backed changes, verification boundaries and carried gaps.
 
 Installer 7 reporting inputs are required: a validated HTTPS control origin
 (`--control-url`) and its readable server CA bundle (`--server-ca`). Generated
@@ -60,7 +60,7 @@ Freedom VPN v1 operates as a modular monolith in the central plane (`fvpn-contro
 | **`fvpn-worker`** | Co-located with `fvpn-control` or dedicated worker host sharing the signing vault | `127.0.0.1:9092/tcp` (Prometheus `/metrics` & `/healthz`, `/readyz`) | `198.51.100.20` / `198.51.100.21` |
 | **OIDC Identity Provider** | External managed OIDC or self-hosted IdP | `443/tcp` (HTTPS) | `https://id.example.com` |
 | **NetBird CE (`0.82.0`)** | Dedicated overlay coordination host | `443/tcp` (Management API `/api`, gRPC, Signal, Relay)<br>`3478/udp` (STUN/TURN) | `https://netbird.example.com` (`198.51.100.30`) |
-| **AdGuard Home (`v0.107.59`)** | At least 2 resolver instances reachable over the overlay (`§12.2`) | `53/udp`, `53/tcp` (Overlay DNS for `100.64.0.0/10`)<br>`8080/tcp` (Admin HTTP API, used by the host-local `fvpn-agent` resolver applier and operator administration) | `100.64.0.53`, `100.64.0.54` (IPv6: `2001:db8::53`, `2001:db8::54`) |
+| **AdGuard Home (`v0.107.59`)** | Two dedicated resolver instances reachable over the overlay are the specification's recommended starting point for resilience (`§12.2`); the code accepts one, which has no redundancy | `53/udp`, `53/tcp` (Overlay DNS for `100.64.0.0/10`)<br>`8080/tcp` (Admin HTTP API, used by the host-local `fvpn-agent` resolver applier and operator administration) | `100.64.0.53`, `100.64.0.54` (IPv6: `2001:db8::53`, `2001:db8::54`) |
 | **Release Origin** | Immutable HTTPS object storage / static origin (`§13.3`, `§16.2`) | `443/tcp` (HTTPS read-only to nodes) | `https://releases.example.com` (`203.0.113.10`) |
 | **Exit Nodes** | Ubuntu 24.04 LTS (`amd64` or `arm64`) | WireGuard UDP port (`51820/udp`), outbound HTTPS (`443/tcp`, `9443/tcp`) | Public egress `192.0.2.20`, Overlay `100.64.0.100` |
 
@@ -269,7 +269,7 @@ Keep `oidc_issuer` canonical and identical for control, worker, and NetBird iden
 
 ### 4.3 AdGuard Home Resolvers (`v0.107.59`) (`§12`, `docs/dns/BACKEND.md`, `docs/dns/PRIVACY.md`)
 
-1. Deploy at least **two** AdGuard Home instances (`v0.107.59`, image digest `sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02`) reachable on the overlay network (e.g., `100.64.0.53` and `100.64.0.54`).
+1. Deploy **two** AdGuard Home instances (`v0.107.59`, image digest `sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02`) reachable on the overlay network (e.g., `100.64.0.53` and `100.64.0.54`). Two dedicated resolvers are the specification's recommended starting point for resilience (`§12.2`). The code accepts one resolver; one has no redundancy.
    Carried gap: production AdGuard bootstrap, service installation and host-local/overlay listener wiring are not provided here. The agent only applies to its configured host-local targets; the settings below alone do not create those resolvers. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
 2. **Mandatory Privacy Hardening (`SEC02`, `§12.7`)**:
    Carried gap: the production service and listener provisioning needed to use this configuration is not supplied here; these settings alone do not start or wire the resolvers.
@@ -706,7 +706,7 @@ Build, sign, and verify the release manifest envelope (`manifest.envelope.json`)
 
 If publishing `install.sh`, follow the [verified-download pin requirements](../node/install.md#verified-download-182-pkg01).
 
-Upload `node-ubuntu2404-amd64.tar.zst`, `node-ubuntu2404-arm64.tar.zst`, `manifest.envelope.json`, `sbom.spdx.json`, `NOTICES.txt`, and `source.tar.zst` to `https://releases.example.com/<release_id>/`, then register the release with `fvpn-control` (`POST /api/v1/admin/releases`) and activate a `release_support` policy revision containing `<release_id>` in both `approved_release_ids` and `serving_release_ids` (`§13.4`).
+Upload `node-ubuntu2404-amd64.tar.zst`, `node-ubuntu2404-arm64.tar.zst`, `manifest.envelope.json`, `sbom.spdx.json`, `NOTICES.txt`, and `source.tar.zst` to `https://releases.example.com/<release_id>/`, then register the release with `fvpn-control` (`POST /api/v1/admin/releases`) and activate a `release_support` policy revision containing `<release_id>` in both `approved_release_ids` and `minimum_serving_version.serving_release_ids` (`§13.4`).
 
 ---
 
@@ -825,7 +825,7 @@ For enrollment, use `fvpn-node-install` and its [token intake procedure](../node
 
 What happens during `fvpn-agent enroll` (`§6.1`–`§6.3`, `ENR01`–`ENR04`, `D-055`, `docs/nodes/WIRING.md`):
 1. Generates an ECDSA P-256 private key inside `/var/lib/vpn-node/identity` (`0600`, never leaves the node) and submits a PKCS#10 CSR + `fvpn-enrollment-v1` proof to `POST /api/v1/agent/enroll`.
-2. Receives `node_id`, `incarnation_id`, and the signed mTLS client certificate.
+2. Receives `node_id`, `node_incarnation_id`, and the signed mTLS client certificate.
 3. Zero-overwrites, syncs, and unlinks the token file passed to the agent (`agent.NeutralizeToken`): either the operator's `--token-file` path, or the installer's mode-`0600` `.enroll-token-*` file under the system temporary directory when it prompts. There is no fixed enrollment-token path.
 4. Enrollment exits after token neutralization. The subsequent `fvpn-agent run` runtime calls `POST /api/v1/agent/bootstrap` over mTLS to fetch the one-time NetBird `setup_key` (subsequent calls return `410 BOOTSTRAP_CONSUMED`). Central (`node.provision.requested`) creates a single-use setup key whose `auto_groups` contain the shared staging group (`fvpn-unpublished-nodes`) and a dedicated empty per-enrollment correlation group (`fvpn-enroll-peer-<hash>`, `D-055`, `docs/nodes/WIRING.md`). During `node.peer.discover`, `fvpn-worker` (`DiscoverNodePeer`) correlates the unique non-ephemeral, userless peer in that correlation group without hostname, address, or timing inference, records `node:<node>:<incarnation>` in `external_bindings`, detaches and deletes the temporary correlation group with read-back, and commits `peer_readback`.
 

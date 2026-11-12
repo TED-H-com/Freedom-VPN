@@ -4,8 +4,8 @@
 
 **Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
 
-**Archived cut:** [follow-up 51](follow-up-51.md), #524–#526 at `66de6a24`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut:** [follow-up 50](follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; source-backed changes, verification boundaries and carried gaps.
+**Archived cut:** [follow-up 52](follow-up-52.md), #527 at `6972be03`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 51](follow-up-51.md), #524–#526 at `66de6a24`; source-backed changes, verification boundaries and carried gaps.
 
 **2026-10-31 服務通知（#351 截止）：** DNS 的 TTL 是快取最長有效時間，
 不保證期間內每次查詢答案相同；較早送出的上游請求若較晚完成，可能覆蓋較新的

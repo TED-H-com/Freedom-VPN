@@ -1,0 +1,73 @@
+[
+  {
+    "source": "tests/handover/handover_test.go",
+    "function": "TestHandover_DOC15AndFollowup6Claims",
+    "source_commit": "6972be03e4742a13c3e02e4c612ece37fd314fb8",
+    "bytes": 4175,
+    "sha256": "4facffde37a0c564e12ee9bebd815f74ddf2d8ee7fc12ffd1a399890c5e90c18",
+    "redirects": [
+      {
+        "before": "readOwnedDoc(t, root, \"docs/handover/calibration.md\")",
+        "after": "readOwnedDoc(t, root, followup52InputPath(\"docs/handover/calibration.md\"))",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "source": "tests/handover/handover_test.go",
+    "function": "TestHandover_Followup8Claims",
+    "source_commit": "6972be03e4742a13c3e02e4c612ece37fd314fb8",
+    "bytes": 8345,
+    "sha256": "f34201d8db400e391bec9c989d06897f3773e09fac133fe3c3bbd5c8a1d2a354",
+    "redirects": [
+      {
+        "before": "readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
+        "after": "readOwnedDoc(t, root, followup52InputPath(\"docs/handover/operator-guide.md\"))",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "source": "tests/handover/handover_test.go",
+    "function": "TestHandover_Followup10Claims",
+    "source_commit": "6972be03e4742a13c3e02e4c612ece37fd314fb8",
+    "bytes": 5604,
+    "sha256": "1ec4880172a68c084b8fded27df2120c106c24b578301bc097252476c36b936c",
+    "redirects": [
+      {
+        "before": "readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
+        "after": "readOwnedDoc(t, root, followup52InputPath(\"docs/handover/operator-guide.md\"))",
+        "count": 1
+      },
+      {
+        "before": "readOwnedDoc(t, root, \"docs/handover/calibration.md\")",
+        "after": "readOwnedDoc(t, root, followup52InputPath(\"docs/handover/calibration.md\"))",
+        "count": 1
+      }
+    ]
+  },
+  {
+    "source": "tests/handover/handover_test.go",
+    "function": "TestHandover_Followup51Claims",
+    "source_commit": "6972be03e4742a13c3e02e4c612ece37fd314fb8",
+    "bytes": 11233,
+    "sha256": "ad5bd24a0f16a91da679e2277be5fad2c1421e89267eac340916b0cd1d0c504b",
+    "redirects": [
+      {
+        "before": "readOwnedDoc(t, root, p.Path)",
+        "after": "readOwnedDoc(t, root, followup52InputPath(p.Path))",
+        "count": 1
+      },
+      {
+        "before": "readOwnedDoc(t, root, path)",
+        "after": "readOwnedDoc(t, root, followup52InputPath(path))",
+        "count": 3
+      },
+      {
+        "before": "readOwnedDoc(t, root, e.Path)",
+        "after": "readOwnedDoc(t, root, followup52InputPath(e.Path))",
+        "count": 1
+      }
+    ]
+  }
+]

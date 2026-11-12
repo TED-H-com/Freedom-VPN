@@ -4,8 +4,8 @@
 
 **Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
 
-**Archived cut:** [follow-up 51](follow-up-51.md), #524–#526 at `66de6a24`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut:** [follow-up 50](follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; source-backed changes, verification boundaries and carried gaps.
+**Archived cut:** [follow-up 52](follow-up-52.md), #527 at `6972be03`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 51](follow-up-51.md), #524–#526 at `66de6a24`; source-backed changes, verification boundaries and carried gaps.
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,
@@ -301,8 +301,6 @@ D-095 (#270), restore runbook Step 1: keep control and worker stopped, restore T
   curl -fsS https://vpn.example.com:8443/readyz
   ```
   Before starting the worker or opening public traffic, re-apply recorded post-snapshot node/device revocations, administrative suspensions and grant withdrawals using [backup Step 7.1](../ops/backups.md#step-7-reconcile-entitlements-revocations-publication-intents--fleet-updates-174-secops-05). Node revocation commits lifecycle/publication intent and certificate/incarnation revocations (and persists the local identity fence before commit); device revocation commits revoked status. Suspension and grant withdrawal commit their intent and recomputed entitlement in the accepting transaction. The worker's first reconciliation therefore reads those committed changes. An accepted operation still does not prove remote withdrawal.
-
-  Carried gap: restricted recovery startup is not implemented. Control alone still serves agent requests and may issue leases from restored authorization while newer intent is being re-applied; stopping the worker is not a global forwarding fence, and D-076 requires an earlier authorized observation plus a current withdrawal. The repository has no startup mode that completes usage replay, entitlement computation and policy synchronization before enabling the automatic worker as spec §17.4 step 5 requires. The order here reduces exposure but does not establish that fail-closed recovery boundary.
 
   Once the recorded withdrawal intents are committed, start `fvpn-worker.service` as in backup Step 7.2. Verify each accepted operation's terminal result and observed enforcement before opening public traffic; continue the checks below with that ordering.
 

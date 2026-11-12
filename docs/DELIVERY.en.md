@@ -40,6 +40,8 @@ mean every platform and failure scenario has passed acceptance.
 
 ## Handover guide revisions
 
+[Follow-up 52](handover/follow-up-52.md) corrects deployment, calibration, restore, operator and backup statements at `6972be03`: enrollment and release-policy fields, the two-resolver resilience recommendation (one is accepted without redundancy), fair-use and HTTP helper names, a repeated recovery-gap notice, node checks and token-file selection, enforcement names and reserved conntrack batches, updater space and attempt bounds, the member-usage read-back route, configuration defaults, and the linux/amd64 backup migrator. The dated restore record stays unchanged; the cut records the `UploadOnce` / `Uploader.Once` erratum. This cut adds no procedure or deployment evidence; carried gaps remain as follow-up 51 recorded them.
+
 [Follow-up 51](handover/follow-up-51.md) corrects deployment, calibration, restore-drill and backup statements at `66de6a24`. It records staging authority and grants, installer/DNS behavior, actual configuration and retention bounds, and bounded recovery/reconciliation. The second review adds control-before-worker recovery ordering with its remaining authorization exposure, grant withdrawal, explicit recovery credentials, repository-environment gaps, updater space accounting and credential-only SIGHUP reload. Class review passes looked for credential, reload, process, name, cleanup and gap-notice errors and corrected the cases recorded in the cut. A third review and scripted inventories add repository-environment and retention notices, the node response field, conntrack batch accounting and quoted Go names. These passes are review records, not proof that every statement or dependency has been found. Production procedures and product support absent from the repository remain carried work; no new deployment or acceptance evidence is claimed.
 
 [Follow-up 50](handover/follow-up-50.md) retains the earlier revisions to operator key inspection (§1.2), central rotation/revocation (§8.1), release trust updates (§8.2), and member shadow mode (§5.3, both languages).
@@ -49,9 +51,9 @@ Living guides can receive scoped corrections. Each cut freezes its pre-revision 
 ## Verification scope and known limits
 
 The [merge record](ROADMAP.md) tracks current implementation;
-[follow-up 51](handover/follow-up-51.md) preserves the #524–#526
-delivery checkpoint at `66de6a24`. The earlier [follow-up 50](handover/follow-up-50.md)
-retains #486–#518 and #520–#523. Later results have their own acceptance records.
+[follow-up 52](handover/follow-up-52.md) preserves the #527
+delivery checkpoint at `6972be03`. The earlier [follow-up 51](handover/follow-up-51.md)
+retains #524–#526. Later results have their own acceptance records.
 Unit and integration tests, Linux lab
 tests, actual app devices and production deployments each establish different
 evidence. This guide does not announce a production release or replace unfinished

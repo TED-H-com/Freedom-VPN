@@ -4,8 +4,8 @@
 
 **Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
 
-**Archived cut:** [follow-up 51](../handover/follow-up-51.md), #524–#526 at `66de6a24`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut:** [follow-up 50](../handover/follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; source-backed changes, verification boundaries and carried gaps.
+**Archived cut:** [follow-up 52](../handover/follow-up-52.md), #527 at `6972be03`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 51](../handover/follow-up-51.md), #524–#526 at `66de6a24`; source-backed changes, verification boundaries and carried gaps.
 
 ## Follow-up 49 acceptance snapshot (2026-11-05 EST)
 
