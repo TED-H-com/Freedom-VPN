@@ -4,8 +4,8 @@
 
 **Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
 
-**Archived cut:** [follow-up 49](follow-up-49.md), #482–#485 at `aaffdc7f`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut — [follow-up 48](follow-up-48.md) (2026-11-04 EST):** #478–#481 at b921c75f; 66 decisions, 138 findings. F24-01 closed and isolation's local scheduled-mode run bd73d7a4 passes (GitHub's 11-04 scheduled job 41836274140 stays failed, next run pending); assist.py retry and D-162 reach audited; F22-D146 answered under D-162 with 18 stored/enqueued/accepted records across 9 windows; r32 archived (0 findings).
+**Archived cut:** [follow-up 50](follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 49](follow-up-49.md), #482–#485 at `aaffdc7f`; source-backed changes, verification boundaries and carried gaps.
 
 **2026-10-31 服務通知（#351 截止）：** DNS 的 TTL 是快取最長有效時間，
 不保證期間內每次查詢答案相同；較早送出的上游請求若較晚完成，可能覆蓋較新的
@@ -232,7 +232,7 @@ Freedom VPN v1 設計採用官方 **NetBird 客戶端** 搭配 **Freedom VPN 會
     2. 出口節點之 Internet-only 隔離檢查、DNS 基線檢查或 `fvpn-watchdog` 心跳檢查失敗（`§8.2`、`§16.3`、`AT10`、`AT13`）；
     3. 出口節點本機計量路徑異常（`METER_PATH_INVALID`）、本機 SQLite 無法寫入，或未獲中央 ACK 之 usage outbox 達到容量/時間保護上限（建議預設 `72 小時` 或 `256 MB`，`§10.3`、`§10.7`、`§10.8`、`AT16`）；
     4. 出口節點正處於程式更新的切換與健康檢查窗口（`applying` / `checking`，`§13.2`、`§13.6`）。
-- **觀測模式（`shadow` mode，`§11.1`、`§11.2`、`AT19`）**：若系統處於 `shadow` 模式，頁面會顯示預估級距（`would_apply_tier`），但節點資料面仍維持正常未降速設定（`throttled: false`）。
+- **觀測模式（`shadow` mode，`§11.1`、`§11.2`、`AT19`）**：若系統處於 `shadow` 模式，會員用量回應的 `FairUseStatus` 為 `state: normal`，級距、速率與原因皆為 `null`；入口網站不顯示預估調速級距，僅在 `state: adjusted` 時顯示調速提示。詳見 [API 契約](../../contracts/openapi.yaml) 與 [入口網站文件](../portal/README.md)。
 
 ### 5.4 資料品質標記說明 (`§10.6`–`§10.9`, `§18.4`, `AT16`, `AT17`, `AT30`)
 - **`統計截至 (Aggregate as of)`**：中央帳本已完成投影彙總的資料時間點（`§10.6`）。
@@ -462,7 +462,7 @@ When a plan reduces your device allowance, central keeps the oldest authorizatio
     2. The exit node fails an isolation, DNS baseline, or `fvpn-watchdog` check (`§8.2`, `§16.3`, `AT10`, `AT13`);
     3. The node's local meter path fails (`METER_PATH_INVALID`), local SQLite storage becomes unwritable, or the unacknowledged usage outbox reaches its protection limit (`72 hours` or `256 MB` recommended default, `§10.3`, `§10.7`, `§10.8`, `AT16`);
     4. The node enters the disruptive switch/check window of a software update (`applying` / `checking`, `§13.2`, `§13.6`).
-- **Shadow Mode (`§11.1`, `§11.2`, `AT19`)**: When `shadow` mode is active, the Portal displays your informational `would_apply_tier` while `throttled` remains `false`.
+- **Shadow Mode (`§11.1`, `§11.2`, `AT19`)**: In `shadow` mode, the member usage response's `FairUseStatus` returns `state: normal` with null tier, rate and reason. The Portal shows no estimated adjustment tier and displays an adjustment notice only for `state: adjusted`. See the [API contract](../../contracts/openapi.yaml) and [portal documentation](../portal/README.md).
 
 ### 5.4 Quality Badges (`§10.6`–`§10.9`, `§18.4`, `AT16`, `AT17`, `AT30`)
 - **`Aggregate as of`**: UTC timestamp of the latest usage projection watermark committed in the central ledger (`§10.6`).

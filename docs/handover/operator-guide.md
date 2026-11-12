@@ -12,8 +12,8 @@ The admin view's “Retained verification result” is `NodeDetail.serving_read`
 
 欄位語意 / Field semantics: [API contract](../contracts/README.md#revision-15)。已記錄的隔離驗證與剩餘限制 / Recorded isolation evidence and remaining limits: [D164 acceptance](../e2e/at/isolation/d164-acceptance.md)。
 
-**Archived cut:** [follow-up 49](follow-up-49.md), #482–#485 at `aaffdc7f`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut — [follow-up 48](follow-up-48.md) (2026-11-04 EST):** #478–#481 at b921c75f; 66 decisions, 138 findings. F24-01 closed and isolation's local scheduled-mode run bd73d7a4 passes (GitHub's 11-04 scheduled job 41836274140 stays failed, next run pending); assist.py retry and D-162 reach audited; F22-D146 answered under D-162 with 18 stored/enqueued/accepted records across 9 windows; r32 archived (0 findings).
+**Archived cut:** [follow-up 50](follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 49](follow-up-49.md), #482–#485 at `aaffdc7f`; source-backed changes, verification boundaries and carried gaps.
 
 <a id="observation-records"></a>
 
@@ -256,7 +256,7 @@ All administrative browser sessions require OIDC authentication with MFA (`amr: 
      SELECT purge_retained('audit_events',         now() - interval '365 days', 'weekly scheduled retention purge');
      ```
 4. **Check Certificate & Signing Key Expiry Windows (`§6.4`, `§16.2`)**:
-   - Inspect `/var/lib/fvpn/vault/state.json` and `/etc/vpn-node/trust.json` to ensure no active signing key (`desired-state`, `lease`, `recovery`, `ledger-epoch`, `node-ca`, `release`) is within 14 days of `not_after`.
+   - Run `fvpn-vault inspect -vault EXISTING_VAULT` against the service's vault and review each key's `state`, `not_before`, `not_after` and `window_status` for active keys within 14 days of `not_after`; follow [metadata inspection](../pki/inspect.md#metadata-inspection). Metadata inspection does not check private-key usability; use the documented `-check-keys` option when that check is needed. Node trust adoption is a separate check in [Node trust files](../node/install.md#node-trust-files).
 
 ---
 
@@ -1095,19 +1095,19 @@ Current limiter calibration (#252, D-083 / D-078): browser `10/s`, burst `30` **
 
 ### 8.1 Rotating Central Ed25519 Signing Keys (`desired-state`, `lease`, `recovery`, `ledger-epoch`)
 
-Central signing keys in `/var/lib/fvpn/vault` use a **two-step overlap rotation** (`signing.FileProvider.Rotate`) so nodes never fail signature verification during rollout:
-1. **Generate & Overlap (`Rotate`)**:
-   Call `vault.Rotate(ctx, purpose, validityDuration, overlapDuration)` (where `overlapDuration >= 2 * desired_state_seconds`). The new key becomes `active` for signing, while the previous key moves to `retiring` and remains in `vault.TrustBundle(ctx)` until its overlap window expires.
-2. **Distribute Updated Trust Bundle to Nodes**:
-   Export `vault.TrustBundle(ctx)` to `/etc/vpn-node/trust.json` on nodes (or include in the next node release).
-3. **Emergency Compromise (`Revoke`)**:
-   If a central signing key is compromised, call `vault.Revoke(ctx, keyID)`, immediately distribute the updated `/etc/vpn-node/trust.json` (which marks `"revoked": true` for that `key_id`; `pkg/envelope` rejects any envelope carrying a signature from a known revoked key even if another valid signature is present), and re-issue desired state and leases.
+Use the [central key commands](../pki/keys.md) and [central signing-key rotation runbook](../pki/rotation.md#central-signing-keys) for the four purposes above. Choose validity and overlap explicitly; neither has a recommended production default.
+1. **Inspect and Rotate**:
+   Run `fvpn-vault inspect -vault EXISTING_VAULT` ([inspection and export](../pki/inspect.md)), then `fvpn-vault-keys rotate` with the inspected ledger revision, expected active key ID (or `none`), purpose, validity and overlap. Check the exit code and result document. The new key signs immediately; the previous key becomes `retired` with a capped verification window. Overlap does not make the new key known to nodes that have not adopted its trust bundle.
+2. **Export, Distribute and Confirm Trust**:
+   Run `fvpn-vault export-trust -vault EXISTING_VAULT -out NEW_FILE`, deliver the public bundle through an already authenticated channel, and confirm adoption using [Node trust files](../node/install.md#node-trust-files): desired-state changes need both `trust.json` and `desired-trust.json`, lease/recovery changes need `trust.json`, and ledger-epoch changes need no node file. Follow the documented agent restart and fresh updater invocation actions. Active, retired and revoked public records remain in the export; ledger-epoch, node-ca and bootstrap-secret are not exported. Delivery alone is not adoption.
+3. **Emergency Compromise**:
+   Inspect again and run `fvpn-vault-keys revoke` with the expected purpose and ledger revision. Revoking an active signer requires `-revoke-active` and leaves no signer until a fresh `fvpn-vault-keys rotate` with the newly inspected revision and `-expect-active-key none`. Urgently distribute and confirm the updated revocation bundle for node-verified purposes, then re-issue authorizations once a replacement signer is available. A known revoked signature causes `pkg/envelope` to reject the envelope even alongside another valid signature. Follow the [command outcomes](../pki/keys.md) after lost output or uncertain durability; do not retry blindly.
 
 ### 8.2 Rotating the Offline Release Signing Key (`fvpn-release` & `fvpn-release-trust-v1`)
 
 1. On the offline build machine, generate the new release signing key (`fvpn-release keygen -key-id release-prod-2027-01 ...`).
-2. Construct a `fvpn-release-trust-v1` rotation envelope containing both the retiring key and the new key, and sign it with **both** the retiring release key and the new release key (`docs/pki/rotation.md`).
-3. Apply the signed rotation envelope to the central vault via `vault.UpdateReleaseTrust(ctx, rotationEnvelopeBytes, now)` and distribute the updated `/etc/vpn-node/release-trust.json` to nodes before signing new releases solely with `release-prod-2027-01`.
+2. Follow the [release process](../updates/release-process.md): `fvpn-release trust-update` creates one `fvpn-release-trust-v1` update with exactly one of `-add`, `-retire` or `-revoke`, signed by one release key of the current trust that is not revoked and is within its validity window. A retired key still signs until its `not_after` ([central key commands](../pki/keys.md), [release process](../updates/release-process.md)). Add the new root first; a root handover uses separate updates at consecutive revisions, with the new root signing the later retirement or revocation of the old root.
+3. Follow the [release verification trust runbook](../pki/rotation.md#release-verification-trust): inspect the central vault, export its current trust, check the update with `fvpn-release trust-verify` against that export and release revision, then run `fvpn-vault-keys apply-release-update` with the inspected ledger revision ([command reference and outcomes](../pki/keys.md)). Export the resulting public trust and distribute it to `/etc/vpn-node/release-trust.json` using the [Node trust files](../node/install.md#node-trust-files) process actions. Nodes consume the export, not the update envelope. Confirm adoption of the added root before signing releases solely with it or proceeding to the second update; after lost output, inspect the vault to recognise an already-applied update rather than retrying blindly.
 
 ### 8.3 Rotating Stripe Webhook Secrets and Billing Vault Keys (`members.json`)
 

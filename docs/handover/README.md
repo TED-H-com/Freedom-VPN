@@ -1,5 +1,8 @@
 # Wave 4 Hand-Over Documentation (`docs/handover/`)
 
+**Archived cut:** [follow-up 50](follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; consolidated deliveries and guide revisions.
+**Earlier archived cut:** [follow-up 49](follow-up-49.md), #482–#485 at `aaffdc7f`; the registers below retain that cut's content.
+
 This directory contains the production deployment, backup/restore, parameter calibration, operator, and bilingual member guides for Freedom VPN v1 (`§16`–`§22`, Work Package `WP12`). Lab and acceptance evidence across the repository is recorded as dated JSON and Markdown pairs under `docs/e2e/runs/<utc-date>/<id>.json` and `<id>.md` sharing a `run_id` and `source_commit` (`docs/e2e/README.md`).
 
 ## Deliverables Index

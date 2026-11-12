@@ -22,6 +22,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"gopkg.in/yaml.v3"
 
@@ -70,6 +71,7 @@ var ownedDocs = []string{
 	"docs/handover/follow-up-47.md",
 	"docs/handover/follow-up-48.md",
 	"docs/handover/follow-up-49.md",
+	"docs/handover/follow-up-50.md",
 	"docs/ops/README.md",
 	"docs/reviews/README.md",
 	"docs/reviews/r3-d055-review.md",
@@ -18355,7 +18357,7 @@ func TestHandover_Followup49Claims(t *testing.T) {
 		if oc.ConfirmedBy != "Ted" || oc.RelayedBy != "orchestrator" || oc.ConfirmedAt != "2026-11-04 17:1x EST" || len(oc.Decisions) != 14 || oc.Count != 14 || oc.SubsTotal != 15 || oc.D158Subs != 2 || oc.PrevAuth != "orchestrator — provisional; the owner may overturn" || oc.ConfAuth != "orchestrator — confirmed by Ted, 2026-11-04 17:1x EST" || oc.SubstChanged || oc.Overturned != 0 {
 			t.Fatal("owner confirmation provenance")
 		}
-		before, after := readOwnedDoc(t, root, followup49PriorPath("docs/handover/README.md")), readOwnedDoc(t, root, "docs/handover/README.md")
+		before, after := readOwnedDoc(t, root, followup49PriorPath("docs/handover/README.md")), readOwnedDoc(t, root, followup50PriorPath("docs/handover/README.md"))
 		re := regexp.MustCompile(`(?m)^\| D-\d{3}(?: \(provisional, 2026-11-05\))? \|.*$`)
 		old, now := re.FindAllString(before, -1), re.FindAllString(after, -1)
 		var d, f struct{ Updated, Added map[string]string }
@@ -18640,7 +18642,7 @@ func TestHandover_Followup49Claims(t *testing.T) {
 			t.Fatal("r33 proof test totals")
 		}
 		before := readOwnedDoc(t, root, followup49PriorPath("docs/reviews/README.md"))
-		after := readOwnedDoc(t, root, "docs/reviews/README.md")
+		after := readOwnedDoc(t, root, followup50PriorPath("docs/reviews/README.md"))
 		start := "## r32 dispositions at the follow-up 48 cutoff"
 		if strings.TrimRight(strings.Split(after, start)[1][:strings.Index(strings.Split(after, start)[1], "## r33 dispositions")], "\n") != strings.TrimRight(strings.Split(before, start)[1], "\n") {
 			t.Fatal("r32 dispositions must stay exact")
@@ -18719,7 +18721,7 @@ func TestHandover_Followup49Claims(t *testing.T) {
 			if path == "README.md" {
 				entrypointPath = fixture + "consolidation/README-followup49.md.txt"
 			}
-			doc := readOwnedDoc(t, root, entrypointPath)
+			doc := readOwnedDoc(t, root, followup50InputPath(entrypointPath))
 			cutLabel, priorLabel := "Current cut", "**Previous cut"
 			if path != "README.md" {
 				// Current navigation precedes the archived cut. Validate only this
@@ -18787,11 +18789,469 @@ func TestHandover_Followup49Claims(t *testing.T) {
 				t.Fatalf("unrelated guidance changed %s", path)
 			}
 		}
-		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		op := readOwnedDoc(t, root, followup50PriorPath("docs/handover/operator-guide.md"))
 		for _, anchor := range []string{"f30-01", "d156-release-rule", "r28-h-1", "at02-closed-recovery", "tcp-reload-guard", "observation-records"} {
 			if strings.Count(op, "<a id=\""+anchor+"\"></a>") != 1 {
 				t.Fatal("operator anchor")
 			}
 		}
 	})
+}
+
+func followup50PriorPath(path string) string {
+	return "tests/handover/testdata/history/follow-up-50/prior-" + strings.ReplaceAll(path, "/", "_") + ".txt"
+}
+
+// Preserve the pre-cut inputs of follow-up 49, including its navigation checks.
+// Its older README and deployment-body snapshots still take precedence.
+func followup50InputPath(path string) string {
+	switch path {
+	case "docs/handover/00-index.md", "docs/handover/deploy.md", "docs/handover/operator-guide.md", "docs/handover/member-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md":
+		return followup50PriorPath(path)
+	default:
+		return path
+	}
+}
+
+// TestHandover_Followup50Claims records merged work and bounded guide revisions;
+// it makes no new runtime acceptance claim for the recorded deliveries.
+func TestHandover_Followup50Claims(t *testing.T) {
+	root := repoRoot(t)
+	const fixture = "tests/handover/testdata/"
+	const cut = "fe9bb436654e21f469afe507344bb4fbe25996d2"
+	hash := func(s string) string { sum := sha256.Sum256([]byte(s)); return hex.EncodeToString(sum[:]) }
+	readJSON := func(path string, dst any) {
+		t.Helper()
+		if err := json.Unmarshal([]byte(readOwnedDoc(t, root, path)), dst); err != nil {
+			t.Fatalf("decode %s: %v", path, err)
+		}
+	}
+	// Pin the complete cut and each manifest, not just selected prose tokens.
+	for _, p := range []struct {
+		Path, SHA256 string
+		Bytes        int
+	}{
+		{"docs/handover/follow-up-50.md", "2eace1b4f5ec00081ae0520d26cdb87be1df6e0449be6a5e4f210b7462e5f7a1", 17796},
+		{fixture + "followup50-main.json", "d81ba5f226a34d88c0b9df378880be461deb3175ff36e895b59603fdc2ecbc37", 14149},
+		{fixture + "followup50-snapshots.json", "e4eea7a90319381a23573867a50713df64db895c4b8ed1a53778ccb90abd8db8", 3738},
+		{fixture + "followup50-edits.json", "7a84a8a49e196354cbb35a1f3aa5ebb1108f30f412e8f91e3716f25e62289f43", 23471},
+		{fixture + "followup50-prior-assertions.json", "df4b27f52014d5afb885becdd28d2db329daa2816fa9d7f84fd970df471b8c1f", 258},
+	} {
+		s := readOwnedDoc(t, root, p.Path)
+		if len(s) != p.Bytes || hash(s) != p.SHA256 {
+			t.Errorf("immutable input changed: %s (bytes=%d sha256=%s)", p.Path, len(s), hash(s))
+		}
+	}
+	t.Run("exact_37_merged_deliveries", func(t *testing.T) {
+		var m struct {
+			SourceCommit string `json:"source_commit"`
+			PreviousCut  string `json:"previous_cut"`
+			MergedPRs    []int  `json:"merged_prs"`
+			NotMerged    []int  `json:"not_merged"`
+			PRs          []struct {
+				Number        int
+				Title         string
+				MergeCommit   string `json:"merge_commit"`
+				PreMergeHead  string `json:"pre_merge_head"`
+				MergedAt      string `json:"merged_at"`
+				RoadmapCommit string `json:"roadmap_commit"`
+			}
+		}
+		readJSON(fixture+"followup50-main.json", &m)
+		want := []int{486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 520, 521, 522, 523}
+		if m.SourceCommit != cut || m.PreviousCut != "aaffdc7fe176c5e3edc521c8ca491bff28bd4a6f" || !slices.Equal(m.MergedPRs, want) || !slices.Equal(m.NotMerged, []int{519}) || len(m.PRs) != len(want) {
+			t.Fatal("cut inventory")
+		}
+		doc := readOwnedDoc(t, root, "docs/handover/follow-up-50.md")
+		rows := regexp.MustCompile(`(?m)^\| \[#(\d+)\]\(https://github\.com/TED-H-com/Freedom-VPN/pull/(\d+)\) \| ([^|]+) \| `+"`([0-9a-f]{40})`"+` \| ([^|]+) \|$`).FindAllStringSubmatch(doc, -1)
+		if len(rows) != len(want) {
+			t.Fatalf("merged PR rows = %d, want %d", len(rows), len(want))
+		}
+		seen := make(map[string]bool)
+		shaRE := regexp.MustCompile(`^[0-9a-f]{40}$`)
+		for i, p := range m.PRs {
+			if p.Number != want[i] || p.Title == "" || !shaRE.MatchString(p.MergeCommit) || !shaRE.MatchString(p.PreMergeHead) || !shaRE.MatchString(p.RoadmapCommit) {
+				t.Fatalf("PR provenance: %d", p.Number)
+			}
+			if _, err := time.Parse(time.RFC3339, p.MergedAt); err != nil || !strings.HasSuffix(p.MergedAt, "Z") {
+				t.Fatalf("merge time: %d", p.Number)
+			}
+			count := 0
+			for _, row := range rows {
+				if row[1] == fmt.Sprint(p.Number) {
+					count++
+					if row[2] != row[1] || row[3] != p.Title || row[4] != p.MergeCommit || strings.TrimSpace(row[5]) == "" || seen[row[1]] {
+						t.Fatalf("PR row disagrees with manifest: %d", p.Number)
+					}
+					seen[row[1]] = true
+				}
+			}
+			if count != 1 {
+				t.Fatalf("PR %d occurs in %d rows", p.Number, count)
+			}
+		}
+		if m.PRs[len(m.PRs)-1].MergeCommit != "73d3c4b00571c34e0ad6ca97d5d51b2421ad81d6" || m.PRs[len(m.PRs)-1].RoadmapCommit != cut || strings.Count(doc, "#519") != 1 || !strings.Contains(doc, "was closed without merging") || strings.Contains(doc, "```sql") {
+			t.Fatal("cutoff, excluded PR or SQL boundary")
+		}
+	})
+	paths := []string{"README.md", "README.zh-TW.md", "docs/DELIVERY.md", "docs/DELIVERY.en.md", "docs/handover/00-index.md", "docs/handover/README.md", "docs/handover/deploy.md", "docs/handover/member-guide.md", "docs/handover/operator-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md", "docs/reviews/README.md"}
+	var snapshots []struct {
+		Source, Snapshot, SHA256 string
+		SourceCommit             string `json:"source_commit"`
+		Bytes                    int
+	}
+	readJSON(fixture+"followup50-snapshots.json", &snapshots)
+	t.Run("frozen_pre_cut_provenance", func(t *testing.T) {
+		if len(snapshots) != len(paths) {
+			t.Fatal("pre-cut snapshot count")
+		}
+		for i, p := range snapshots {
+			if p.Source != paths[i] || p.SourceCommit != cut || p.Snapshot != followup50PriorPath(p.Source) {
+				t.Fatalf("pre-cut provenance: %s", p.Source)
+			}
+			s := readOwnedDoc(t, root, p.Snapshot)
+			if len(s) != p.Bytes || hash(s) != p.SHA256 {
+				t.Fatalf("frozen pre-cut copy changed: %s", p.Source)
+			}
+		}
+	})
+	t.Run("only_cut_lines_and_authorized_guide_revisions", func(t *testing.T) {
+		var edits []struct{ Path, Name, Before, After string }
+		readJSON(fixture+"followup50-edits.json", &edits)
+		if len(edits) != 19 {
+			t.Fatal("bounded edit count")
+		}
+		used := 0
+		for _, path := range paths {
+			want := readOwnedDoc(t, root, followup50PriorPath(path))
+			cutEdits := 0
+			for _, e := range edits {
+				if e.Path != path {
+					continue
+				}
+				used++
+				if e.Before == "" || e.After == "" || e.Before == e.After || strings.Count(want, e.Before) != 1 {
+					t.Fatalf("edit is not unique: %s/%s", path, e.Name)
+				}
+				if e.Name == "cut_lines" {
+					cutEdits++
+					if !strings.Contains(e.After, "follow-up-50.md") || !strings.Contains(e.After, "follow-up-49.md") || !strings.Contains(e.After, "fe9bb436") {
+						t.Fatalf("latest and earlier cut links: %s", path)
+					}
+				}
+				want = strings.Replace(want, e.Before, e.After, 1)
+			}
+			if cutEdits != 1 || readOwnedDoc(t, root, path) != want {
+				t.Errorf("unrelated guide or entrypoint bytes changed: %s", path)
+			}
+		}
+		if used != len(edits) {
+			t.Fatal("edit outside owned entrypoints")
+		}
+	})
+	t.Run("current_guide_instructions_and_links", func(t *testing.T) {
+		op := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+		for _, old := range []string{"vault.Rotate(", "vault.TrustBundle(", "vault.Revoke(", "vault.UpdateReleaseTrust(", "signing.FileProvider.Rotate"} {
+			if strings.Contains(op, old) {
+				t.Fatalf("old Go-method instruction remains: %s", old)
+			}
+		}
+		section := func(s, start, end string) string {
+			t.Helper()
+			_, tail, ok := strings.Cut(s, start)
+			if !ok {
+				t.Fatal("missing section", start)
+			}
+			body, _, ok := strings.Cut(tail, end)
+			if !ok {
+				t.Fatal("missing section end", end)
+			}
+			return body
+		}
+		require := func(s string, tokens ...string) {
+			t.Helper()
+			for _, token := range tokens {
+				if !strings.Contains(s, token) {
+					t.Errorf("current guide instruction missing %q", token)
+				}
+			}
+		}
+		weekly := section(op, "### 1.2 Weekly Operator Tasks", "## 2.")
+		if strings.Contains(weekly, "state.json") {
+			t.Fatal("weekly checklist still reads vault state directly")
+		}
+		require(weekly, "fvpn-vault inspect", "../pki/inspect.md#metadata-inspection", "window_status")
+		section81 := section(op, "### 8.1 ", "### 8.2 ")
+		require(section81, "fvpn-vault inspect", "fvpn-vault-keys rotate", "fvpn-vault export-trust", "fvpn-vault-keys revoke", "`retired`", "signs immediately", "-expect-active-key none", "../pki/keys.md", "../pki/inspect.md", "../pki/rotation.md#central-signing-keys", "../node/install.md#node-trust-files")
+		release82 := section(op, "### 8.2 ", "### 8.3 ")
+		if strings.Contains(release82, "active release key") {
+			t.Errorf("§8.2 still requires an active release key")
+		}
+		require(release82, "fvpn-release trust-update", "fvpn-release trust-verify", "fvpn-vault-keys apply-release-update", "signed by one release key of the current trust that is not revoked and is within its validity window", "A retired key still signs until its `not_after`", "separate updates at consecutive revisions", "../updates/release-process.md", "../pki/keys.md", "../pki/rotation.md#release-verification-trust", "../node/install.md#node-trust-files")
+		member := readOwnedDoc(t, root, "docs/handover/member-guide.md")
+		if strings.Contains(member, "would_apply_tier") || strings.Contains(member, "throttled") {
+			t.Fatal("old member shadow-mode fields remain")
+		}
+		shadowZH := section(member, "- **觀測模式", "\n")
+		shadowEN := section(member, "- **Shadow Mode", "\n")
+		for _, s := range []string{shadowZH, shadowEN} {
+			require(s, "FairUseStatus", "state: normal", "state: adjusted", "../../contracts/openapi.yaml", "../portal/README.md")
+		}
+		linkRE := regexp.MustCompile(`\[([^\]]+)\]\(([^)\s]+)\)`)
+		anchorCache := make(map[string]map[string]bool)
+		linksResolved, fragmentsResolved := 0, 0
+		for _, src := range []struct {
+			doc, text string
+		}{
+			{"docs/handover/follow-up-50.md", readOwnedDoc(t, root, "docs/handover/follow-up-50.md")},
+			{"docs/handover/operator-guide.md", weekly},
+			{"docs/handover/operator-guide.md", section81},
+			{"docs/handover/operator-guide.md", release82},
+			{"docs/handover/member-guide.md", shadowZH},
+			{"docs/handover/member-guide.md", shadowEN},
+			{"docs/DELIVERY.en.md", section(readOwnedDoc(t, root, "docs/DELIVERY.en.md"), "## Handover guide revisions", "## Verification scope and known limits")},
+			{"docs/DELIVERY.md", section(readOwnedDoc(t, root, "docs/DELIVERY.md"), "## 交接指南修訂", "## 驗證範圍與已知限制")},
+		} {
+			for _, m := range linkRE.FindAllStringSubmatch(stripFencedCodeBlocks(src.text), -1) {
+				target := strings.TrimSpace(m[2])
+				if strings.HasPrefix(target, "http://") || strings.HasPrefix(target, "https://") {
+					continue
+				}
+				pathPart, frag, hasFrag := strings.Cut(target, "#")
+				targetRel := src.doc
+				if pathPart != "" {
+					targetRel = filepath.ToSlash(filepath.Clean(filepath.Join(filepath.Dir(src.doc), pathPart)))
+				}
+				info, err := os.Stat(filepath.Join(root, filepath.FromSlash(targetRel)))
+				if err != nil || info.IsDir() {
+					t.Errorf("%s: link %q: target file %s does not exist", src.doc, target, targetRel)
+					continue
+				}
+				linksResolved++
+				if !hasFrag {
+					continue
+				}
+				if frag == "" {
+					t.Errorf("%s: link %q: empty fragment", src.doc, target)
+					continue
+				}
+				anchors, ok := anchorCache[targetRel]
+				if !ok {
+					anchors = followup50MarkdownAnchors(readOwnedDoc(t, root, targetRel))
+					anchorCache[targetRel] = anchors
+				}
+				if !anchors[frag] {
+					t.Errorf("%s: link %q: missing anchor #%s in %s", src.doc, target, frag, targetRel)
+					continue
+				}
+				fragmentsResolved++
+			}
+		}
+		if linksResolved == 0 || fragmentsResolved == 0 {
+			t.Fatalf("resolved %d relative links and %d fragments; both must be positive", linksResolved, fragmentsResolved)
+		}
+		t.Logf("Resolved %d relative links and %d fragments", linksResolved, fragmentsResolved)
+	})
+	t.Run("anchor_helper_rules", func(t *testing.T) {
+		for _, tc := range []struct {
+			name, markdown string
+			want           []string
+		}{
+			{
+				name:     "four_backticks_contain_three",
+				markdown: "````text\n```\n## Metadata inspection\n````\n",
+				want:     []string{},
+			},
+			{
+				name:     "tilde_fence_contains_backtick_fence",
+				markdown: "~~~\n```\n## Hidden\n```\n~~~\n## Visible\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "closing_info_string_does_not_close",
+				markdown: "```\n```text\n## Hidden\n```\n## Visible\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "unclosed_fence",
+				markdown: "## Visible\n~~~\n## Hidden\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "duplicate_skips_existing_suffix",
+				markdown: "## Repeat\n## Repeat-1\n## Repeat\n",
+				want:     []string{"repeat", "repeat-1", "repeat-2"},
+			},
+			{
+				name:     "three_identical_headings",
+				markdown: "## Repeat\n## Repeat\n## Repeat\n",
+				want:     []string{"repeat", "repeat-1", "repeat-2"},
+			},
+			{
+				name:     "generated_suffix_is_reserved",
+				markdown: "## Repeat\n## Repeat\n## Repeat-1\n",
+				want:     []string{"repeat", "repeat-1", "repeat-1-1"},
+			},
+			{
+				name:     "duplicate_skips_multiple_taken_suffixes",
+				markdown: "## Repeat\n## Repeat-1\n## Repeat-2\n## Repeat\n## Repeat\n",
+				want:     []string{"repeat", "repeat-1", "repeat-2", "repeat-3", "repeat-4"},
+			},
+			{
+				name:     "indented_longer_closer_with_whitespace",
+				markdown: "   ````text\r\n## Hidden\r\n  ````` \t\r\n## Visible\r\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "four_spaces_or_tab_do_not_open",
+				markdown: "    ```\n\n## First\n\t~~~\n\n## Second\n",
+				want:     []string{"first", "second"},
+			},
+			{
+				name:     "four_spaces_or_tab_do_not_close",
+				markdown: "~~~\n    ~~~\n## Hidden\n\t~~~\n## Also hidden\n~~~\n## Visible\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "backtick_info_cannot_contain_backtick",
+				markdown: "```text`\n## Visible\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "tilde_info_can_contain_fence_characters",
+				markdown: "~~~text~~~`\n## Hidden\n~~~\n## Visible\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "empty_base_once",
+				markdown: "## !!!\n",
+				want:     []string{""},
+			},
+			{
+				name:     "empty_base_repeated",
+				markdown: "## !!!\n## ???\n## !!!\n",
+				want:     []string{"", "-1", "-2"},
+			},
+			{
+				name:     "empty_base_suffix_reserved",
+				markdown: "## !!!\n## -1\n## ???\n",
+				want:     []string{"", "-1", "-2"},
+			},
+			{
+				name:     "two_backticks_do_not_open",
+				markdown: "``\n## Visible\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "two_tildes_do_not_open",
+				markdown: "~~\n## Visible\n",
+				want:     []string{"visible"},
+			},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				var got []string
+				for anchor := range followup50MarkdownAnchors(tc.markdown) {
+					got = append(got, anchor)
+				}
+				slices.Sort(got)
+				if !slices.Equal(got, tc.want) {
+					t.Fatalf("anchors = %q, want %q", got, tc.want)
+				}
+			})
+		}
+	})
+	t.Run("followup49_assertions_preserved", func(t *testing.T) {
+		var p struct {
+			Source, Function, SHA256 string
+			SourceCommit             string `json:"source_commit"`
+			Bytes                    int
+		}
+		readJSON(fixture+"followup50-prior-assertions.json", &p)
+		if p.Source != "tests/handover/handover_test.go" || p.SourceCommit != cut || p.Function != "TestHandover_Followup49Claims" {
+			t.Fatal("prior assertion provenance")
+		}
+		source := readOwnedDoc(t, root, p.Source)
+		body := regexp.MustCompile(`(?s)func TestHandover_Followup49Claims\(.*?\n}`).FindString(source)
+		// Undo exactly four read-expression redirects. Every assertion, expected
+		// digest, navigation check and existing frozen read must remain identical.
+		body = strings.NewReplacer(
+			`readOwnedDoc(t, root, followup50PriorPath("docs/handover/README.md"))`, `readOwnedDoc(t, root, "docs/handover/README.md")`,
+			`readOwnedDoc(t, root, followup50PriorPath("docs/reviews/README.md"))`, `readOwnedDoc(t, root, "docs/reviews/README.md")`,
+			`readOwnedDoc(t, root, followup50InputPath(entrypointPath))`, `readOwnedDoc(t, root, entrypointPath)`,
+			`readOwnedDoc(t, root, followup50PriorPath("docs/handover/operator-guide.md"))`, `readOwnedDoc(t, root, "docs/handover/operator-guide.md")`,
+		).Replace(body)
+		if len(body) != p.Bytes || hash(body) != p.SHA256 {
+			t.Fatal("follow-up 49 assertions changed outside frozen-copy reads")
+		}
+	})
+}
+
+func followup50MarkdownAnchors(md string) map[string]bool {
+	anchors := make(map[string]bool)
+	seen := make(map[string]int)
+	headingRE := regexp.MustCompile(`^\s{0,3}#{1,6}[ \t]+(.+?)(?:[ \t]+#+[ \t]*)?$`)
+	fenceRE := regexp.MustCompile("^ {0,3}(`{3,}|~{3,})(.*)$")
+	htmlAnchorRE := regexp.MustCompile(`(?i)<[a-z][a-z0-9]*\b[^>]*\b(?:id|name)\s*=\s*(?:"([^"]+)"|'([^']+)')`)
+	var fence string
+	for _, line := range strings.Split(strings.ReplaceAll(md, "\r\n", "\n"), "\n") {
+		m := fenceRE.FindStringSubmatch(line)
+		if fence != "" {
+			if m != nil && m[1][0] == fence[0] && len(m[1]) >= len(fence) && strings.Trim(m[2], " \t") == "" {
+				fence = ""
+			}
+			continue
+		}
+		if m != nil && (m[1][0] != '`' || !strings.Contains(m[2], "`")) {
+			fence = m[1]
+			continue
+		}
+		for _, m := range htmlAnchorRE.FindAllStringSubmatch(line, -1) {
+			if id := m[1] + m[2]; id != "" {
+				anchors[id] = true
+			}
+		}
+		m = headingRE.FindStringSubmatch(line)
+		if m == nil {
+			continue
+		}
+		base := followup50HeadingAnchor(m[1])
+		anchor := base
+		for anchors[anchor] {
+			seen[base]++
+			anchor = fmt.Sprintf("%s-%d", base, seen[base])
+		}
+		anchors[anchor] = true
+	}
+	return anchors
+}
+
+func followup50HeadingAnchor(raw string) string {
+	linkRE := regexp.MustCompile(`\[([^\]]*)\]\([^)]*\)`)
+	tagRE := regexp.MustCompile(`<[^>]+>`)
+	codeRE := regexp.MustCompile("`+([^`]+)`+")
+	emphUnderscoreRE := regexp.MustCompile(`(?:^|([^\p{L}\p{Nd}]))_+([^\s_](?:.*?[^\s_])?)_+(?:$|([^\p{L}\p{Nd}]))`)
+	keepRE := regexp.MustCompile(`[^\p{L}\p{Nd} _-]+`)
+
+	s := tagRE.ReplaceAllString(raw, "")
+	for linkRE.MatchString(s) {
+		s = linkRE.ReplaceAllString(s, "$1")
+	}
+	stripEmph := func(chunk string) string {
+		chunk = strings.NewReplacer("*", "", "~", "").Replace(chunk)
+		for emphUnderscoreRE.MatchString(chunk) {
+			chunk = emphUnderscoreRE.ReplaceAllString(chunk, "$1$2$3")
+		}
+		return chunk
+	}
+	var rendered strings.Builder
+	last := 0
+	for _, m := range codeRE.FindAllStringSubmatchIndex(s, -1) {
+		rendered.WriteString(stripEmph(s[last:m[0]]))
+		rendered.WriteString(s[m[2]:m[3]])
+		last = m[1]
+	}
+	rendered.WriteString(stripEmph(s[last:]))
+	out := strings.ToLower(rendered.String())
+	out = keepRE.ReplaceAllString(out, "")
+	return strings.ReplaceAll(out, " ", "-")
 }

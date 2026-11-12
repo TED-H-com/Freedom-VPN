@@ -38,22 +38,18 @@ mean every platform and failure scenario has passed acceptance.
 4. **Maintain the code:** read the [engineering contract](../AGENTS.md),
    [API contracts](contracts/README.md) and relevant component documentation first.
 
-## Out-of-date statements in the handover guides
+## Handover guide revisions
 
-The [operator guide](handover/operator-guide.md) and [member guide](handover/member-guide.md) are archived delivery cuts that are not edited afterwards. Where they differ from the documents below, the current documents and commands apply.
+[Follow-up 50](handover/follow-up-50.md) revises the operator guide's weekly key inspection (§1.2), central key rotation and revocation (§8.1), and release trust updates (§8.2), plus the member guide's shadow-mode explanation (§5.3, both languages). Those places now link to the current commands and behaviour directly.
 
-| Where | What the guide says | What applies now |
-|---|---|---|
-| [Operator guide](handover/operator-guide.md) §8.1 (lines 1096–1104) | Call Go methods `vault.Rotate(ctx, purpose, validityDuration, overlapDuration)`, `vault.TrustBundle(ctx)` and `vault.Revoke(ctx, keyID)`, with the previous key moving to `retiring` | Use `fvpn-vault inspect` and `fvpn-vault export-trust` ([vault inspection and export](pki/inspect.md)), and `fvpn-vault-keys rotate` and `fvpn-vault-keys revoke` ([central key commands](pki/keys.md)); key states are `active`, `retired` and `revoked`, and rollout rules are in [rotation and restore](pki/rotation.md#central-signing-keys) |
-| [Operator guide](handover/operator-guide.md) §8.2 (lines 1106–1110) | Sign one `fvpn-release-trust-v1` rotation envelope with both the retiring and new release keys and apply it with `vault.UpdateReleaseTrust(ctx, rotationEnvelopeBytes, now)` | `fvpn-release trust-update` takes exactly one of `-add`, `-retire` or `-revoke` and signs with one key; a root handover uses separate updates at consecutive revisions as the [release process](updates/release-process.md) describes, and the central apply step (`fvpn-vault-keys apply-release-update`) is in the [rotation runbook](pki/rotation.md#release-verification-trust) |
-| [Operator guide](handover/operator-guide.md) §1.2 (line 259, weekly tasks) | Read `/var/lib/fvpn/vault/state.json` and node trust files directly for active keys near `not_after` | Run `fvpn-vault inspect` to report every key's `state`, `not_before`, `not_after` and `window_status` ([vault inspection and export](pki/inspect.md#metadata-inspection)) |
-| [Member guide](handover/member-guide.md) §5.3 (lines 235 and 465) | In `shadow` mode, the portal shows `would_apply_tier` while `throttled` stays `false` | The member usage response's `FairUseStatus` has neither field; `shadow` mode returns `state: normal` with null tier, rate and reason, and the portal shows an adjustment notice only for `state: adjusted` ([API contract](../contracts/openapi.yaml), [portal documentation](portal/README.md)) |
+The living guides can receive scoped corrections. Earlier delivery cuts and their exact test inputs remain frozen; follow-up 50 records the pre-revision copies and checks that all other guide-body bytes are preserved. For the current procedures, see [vault inspection and export](pki/inspect.md), [central key commands](pki/keys.md), [rotation and restore](pki/rotation.md), [release process](updates/release-process.md), [Node trust files](node/install.md#node-trust-files), the [API contract](../contracts/openapi.yaml) and [portal documentation](portal/README.md).
 
 ## Verification scope and known limits
 
 The [merge record](ROADMAP.md) tracks current implementation;
-[follow-up 49](handover/follow-up-49.md) preserves the historical #482–#485
-delivery checkpoint. Later results have their own acceptance records.
+[follow-up 50](handover/follow-up-50.md) preserves the #486–#518 and #520–#523
+delivery checkpoint at `fe9bb436`. The earlier [follow-up 49](handover/follow-up-49.md)
+retains #482–#485. Later results have their own acceptance records.
 Unit and integration tests, Linux lab
 tests, actual app devices and production deployments each establish different
 evidence. This guide does not announce a production release or replace unfinished
