@@ -200,21 +200,25 @@
     "path": "docs/handover/calibration.md",
     "name": "C06_walk",
     "before": "`checkJSONDocument` (skipped for webhooks)",
-    "after": "`walkJSONDocument` / `walkChecked` (skipped for webhooks)",
+    "after": "inline request middleware (`internal/httpapi/middleware.go`, skipped for webhooks)",
     "evidence": [
-      "internal/httpapi/jsondoc.go:43",
-      "internal/httpapi/jsondoc.go:47",
-      "internal/httpapi/middleware.go:644"
+      "internal/httpapi/middleware.go:644",
+      "internal/httpapi/middleware.go:658",
+      "internal/httpapi/middleware.go:663",
+      "internal/httpapi/middleware.go:669"
     ]
   },
   {
     "path": "docs/handover/calibration.md",
     "name": "C06_large",
-    "before": "`checkLargeJSONDocument` (`internal/httpapi/jsondoc.go`, `#169`, `#190`)",
-    "after": "`checkLargeJSON` (`internal/httpapi/middleware.go`, using `walkChecked` in `internal/httpapi/jsondoc.go`)",
+    "before": "`checkLargeJSONDocument` (`internal/httpapi/jsondoc.go`, `#169`, `#190`), a streaming walk enforcing",
+    "after": "`checkLargeJSON` (`internal/httpapi/middleware.go`), which runs `walkChecked` and, for a streamable request schema, the schema check in the same walk. The streaming walk enforces",
     "evidence": [
+      "internal/httpapi/middleware.go:669",
       "internal/httpapi/middleware.go:781",
-      "internal/httpapi/middleware.go:789"
+      "internal/httpapi/middleware.go:785",
+      "internal/httpapi/middleware.go:789",
+      "internal/httpapi/jsondoc.go:47"
     ]
   },
   {
@@ -448,6 +452,83 @@
       "docs/handover/follow-up-52.md:24",
       "docs/handover/follow-up-51.md:26",
       "docs/handover/follow-up-50.md:1"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "B19_no_carrying_exit",
+    "before": "(a member with no published carrying exits reports `applying: false` once any active `policy.activate` operation completes)",
+    "after": "(a member with no published carrying exit reports `applying: false` regardless of the state of a `policy.activate` operation)",
+    "evidence": [
+      "internal/fup/engine.go:882",
+      "internal/fup/engine.go:1539",
+      "internal/fup/engine.go:1631"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "B20_anonymous_class",
+    "before": "use a dedicated `anonClass` table",
+    "after": "use the dedicated `anonymousLim` table",
+    "evidence": [
+      "internal/httpapi/middleware.go:411",
+      "internal/httpapi/middleware.go:566",
+      "internal/httpapi/middleware.go:574",
+      "internal/httpapi/middleware.go:754"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "B20_anonymous_table",
+    "before": "(`ingress[anonymous]` and `anonClass`)",
+    "after": "(`ingress[anonymous]` and `anonymousLim`)",
+    "evidence": [
+      "internal/httpapi/middleware.go:411",
+      "internal/httpapi/middleware.go:412",
+      "internal/httpapi/middleware.go:574"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "B21_request_body_checks",
+    "before": "  2. **JSON well-formedness (`checkJSONDocument`, skipped for webhooks, `#161`, `#169`, `#190`):** Bodies up to `canonjson.MaxBytes` (`1 MiB`, the signed-document bound) pass `canonjson.Canonicalize` and a single streaming walk, and larger bodies in `(1 MiB, class cap]` (`SubmitUsageBatch` above `1 MiB` up to `8 MiB`) pass `checkLargeJSONDocument` (`internal/httpapi/jsondoc.go`, `#169`, `#190`), a streaming token/syntax walk enforcing the `canonjson` ruleset (valid UTF-8, no UTF-8 BOM, no unescaped ASCII control characters or NUL bytes, no lone UTF-16 surrogates, no duplicate object keys at any nesting level after unescaping, max depth `256`, integers within `±(2^53-1)` with no fraction, exponent, leading zero, or `-0`, and no trailing data); invalid JSON returns `400 MALFORMED_REQUEST` (`\"Invalid JSON document.\"`).",
+    "after": "  2. **JSON well-formedness (inline request middleware, skipped for webhooks, `#161`, `#169`, `#190`):** Bodies up to `canonjson.MaxBytes` (`1 MiB`, the signed-document bound) pass `canonjson.Canonicalize`. On the agent mTLS listener, an identity callback is set and those bodies also pass the single streaming walk `walkChecked` (`internal/httpapi/jsondoc.go`). Larger bodies in `(1 MiB, class cap]` (`SubmitUsageBatch` above `1 MiB` up to `8 MiB`) pass `checkLargeJSON` (`internal/httpapi/middleware.go`), which runs `walkChecked` and, for a streamable request schema, the schema check in the same walk. The streaming walk enforces the `canonjson` ruleset (valid UTF-8, no UTF-8 BOM, no unescaped ASCII control characters or NUL bytes, no lone UTF-16 surrogates, no duplicate object keys at any nesting level after unescaping, max depth `256`, integers within `±(2^53-1)` with no fraction, exponent, leading zero, or `-0`, and no trailing data); invalid JSON returns `400 MALFORMED_REQUEST` (`\"Invalid JSON document.\"`).",
+    "evidence": [
+      "internal/httpapi/middleware.go:644",
+      "internal/httpapi/middleware.go:651",
+      "internal/httpapi/middleware.go:658",
+      "internal/httpapi/middleware.go:663",
+      "internal/httpapi/middleware.go:669",
+      "internal/httpapi/middleware.go:781",
+      "internal/httpapi/middleware.go:785",
+      "internal/httpapi/jsondoc.go:47"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "B22_body_identity",
+    "before": "**Identity (`matchingIdentity` from the single streaming walk for agent mTLS",
+    "after": "**Identity (`identityFieldMatches` called by the identity callback of the single streaming walk for agent mTLS",
+    "evidence": [
+      "internal/httpapi/middleware.go:651",
+      "internal/httpapi/middleware.go:653",
+      "internal/httpapi/middleware.go:803"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "C06_small_body_mtls",
+    "before": "pass `canonjson.Canonicalize` and a single streaming walk, and larger bodies",
+    "after": "pass `canonjson.Canonicalize`. On the agent mTLS listener, an identity callback is set and those bodies also pass the single streaming walk `walkChecked` (`internal/httpapi/jsondoc.go`). Larger bodies",
+    "evidence": [
+      "internal/httpapi/middleware.go:644",
+      "internal/httpapi/middleware.go:651",
+      "internal/httpapi/middleware.go:658",
+      "internal/httpapi/middleware.go:663",
+      "internal/httpapi/middleware.go:669",
+      "internal/httpapi/middleware.go:781",
+      "internal/httpapi/middleware.go:785",
+      "internal/httpapi/jsondoc.go:47"
     ]
   }
 ]

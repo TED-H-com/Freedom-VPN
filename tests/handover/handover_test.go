@@ -879,7 +879,7 @@ func TestHandover_DOC15AndFollowup6Claims(t *testing.T) {
 		t.Error("docs/handover/member-guide.md en DOC15 paragraph must attribute earlier blocked records as historical")
 	}
 
-	operatorGuide := readOwnedDoc(t, root, "docs/handover/operator-guide.md")
+	operatorGuide := readOwnedDoc(t, root, followup52InputPath("docs/handover/operator-guide.md"))
 	for _, token := range []string{
 		"contract revision 8 (#164)",
 		"#164", "#165", "#166", "#167", "#168", "#169", "#170", "#171", "#172", "#174",
@@ -19602,7 +19602,7 @@ func restoreFollowup52Inputs(source string) string {
 		paths := []string{"docs/handover/calibration.md"}
 		if name == "TestHandover_Followup8Claims" {
 			paths = []string{"docs/handover/operator-guide.md"}
-		} else if name == "TestHandover_Followup10Claims" {
+		} else if name == "TestHandover_Followup10Claims" || name == "TestHandover_DOC15AndFollowup6Claims" {
 			paths = append(paths, "docs/handover/operator-guide.md")
 		}
 		for _, path := range paths {
@@ -19629,11 +19629,11 @@ func TestHandover_Followup52Claims(t *testing.T) {
 		Path, SHA256 string
 		Bytes        int
 	}{
-		{"docs/handover/follow-up-52.md", "9e14be88114fdccd94db37dcd5fe3ea03d1e8286b17b1c12d57076daec5fd57d", 6070},
+		{"docs/handover/follow-up-52.md", "edd637d2bf05d98d77ac15e4a9a57b7febfeb3bc6145191791dde7840c2a5be3", 6445},
 		{"tests/handover/testdata/followup52-main.json", "714db17f0ea0346c47debba55fb8d65e079dee1d8735bce5f5fb037be5112204", 598},
 		{"tests/handover/testdata/followup52-snapshots.json", "e4b88ad998436a49fa9cfec2135fe913891232c8067d956ced873471ff3afa91", 4368},
-		{"tests/handover/testdata/followup52-edits.json", "d7b71dc2e76bffb04cb472e080f95174187a0b744751db64bbf8f60ecd3fb7af", 47287},
-		{"tests/handover/testdata/followup52-prior-assertions.json", "b659156c9091663223ab16e16b793311dc396dae562999aa21b9878f08fde2f2", 2520},
+		{"tests/handover/testdata/followup52-edits.json", "e98237f23914dc164e43297a63453bd19a51e128f517b1eb4e8120f18a34a332", 52448},
+		{"tests/handover/testdata/followup52-prior-assertions.json", "4f762fd5e6f9e62c21c0b7ed3c83bba28838a17e6057ca6bbce246ba46cba398", 2736},
 	} {
 		s := readOwnedDoc(t, root, p.Path)
 		if len(s) != p.Bytes || hash(s) != p.SHA256 {
@@ -19707,7 +19707,7 @@ func TestHandover_Followup52Claims(t *testing.T) {
 	}
 	readJSON(fixture+"followup52-edits.json", &edits)
 	t.Run("only_cut_lines_and_authorized_guide_revisions", func(t *testing.T) {
-		if len(edits) != 43 {
+		if len(edits) != 49 {
 			t.Fatal("bounded edit count")
 		}
 		used := 0
