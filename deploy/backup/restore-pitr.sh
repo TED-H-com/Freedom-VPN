@@ -233,6 +233,15 @@ if [[ -n "$TARGET_DIR" ]]; then
 	exit 0
 fi
 
+# Restrict identifiers before using them in the isolated HBA/ident and DSN.
+# Double-quoted HBA names also make keywords such as "all" literal names.
+for DB_IDENTIFIER in "$DB_USER" "$DB_NAME"; do
+	if [[ ! "$DB_IDENTIFIER" =~ ^[a-zA-Z_][a-zA-Z0-9_-]{0,62}$ ]]; then
+		echo "restore-pitr.sh: invalid isolated --db-user or --db-name (expected 1-63 ASCII identifier characters)" >&2
+		exit 2
+	fi
+done
+
 # Isolated container mode: validate identifiers and enforce live-primary refusal guards.
 if [[ ! "$ISOLATED_CONTAINER" =~ ^[a-zA-Z0-9_.-]+$ ]]; then
 	echo "restore-pitr.sh: invalid isolated container name: $ISOLATED_CONTAINER" >&2
@@ -311,7 +320,6 @@ docker run -d \
 	-e PGBACKREST_REPO1_PATH=/var/lib/pgbackrest \
 	-e POSTGRES_USER="$DB_USER" \
 	-e POSTGRES_DB="$DB_NAME" \
-	-e POSTGRES_HOST_AUTH_METHOD=trust \
 	-v "${TARGET_VOLUME}:/var/lib/postgresql/data" \
 	-v "${REPO_VOLUME}:/var/lib/pgbackrest:ro" \
 	"$IMAGE" >/dev/null
@@ -332,6 +340,13 @@ for _ in $(seq 1 120); do
 	if [[ "$STATE" != "true" ]]; then
 		echo "restore-pitr.sh: isolated container '${ISOLATED_CONTAINER}' exited unexpectedly during recovery:" >&2
 		docker logs "$ISOLATED_CONTAINER" >&2 || true
+		exit 1
+	fi
+	# A later WAL parameter increase can pause hot standby indefinitely. Report
+	# the named resource immediately instead of waiting for promotion timeout.
+	RESOURCE_ERROR="$(docker logs "$ISOLATED_CONTAINER" 2>&1 | grep -E '(max_connections|max_worker_processes|max_wal_senders|max_prepared_transactions|max_locks_per_transaction) = [0-9]+ is a lower setting' || true)"
+	if [[ -n "$RESOURCE_ERROR" ]]; then
+		printf 'restore-pitr.sh: recovery resource mismatch: %s\n' "$RESOURCE_ERROR" >&2
 		exit 1
 	fi
 	if READY="$(docker exec --user postgres "$ISOLATED_CONTAINER" psql -U "$DB_USER" -d "$DB_NAME" -tAc "SELECT CASE WHEN NOT pg_is_in_recovery() THEN 'promoted' ELSE 'recovering' END;" 2>/dev/null | tr -d '[:space:]')" && [[ "$READY" == "promoted" ]]; then

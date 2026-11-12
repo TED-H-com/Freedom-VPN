@@ -5,6 +5,69 @@
 # the upstream docker-entrypoint.sh.
 set -euo pipefail
 
+# Sourceable for configuration tests; normal image startup continues below.
+prepare_isolated_restore() {
+	local config_dir="$1" data_dir="$2" db_user="$3" db_name="$4"
+	local control parameter field value minimum
+	for value in "$db_user" "$db_name"; do
+		if [[ ! "$value" =~ ^[a-zA-Z_][a-zA-Z0-9_-]{0,62}$ ]]; then
+			echo "fvpn-postgres-entrypoint: invalid isolated database/user name" >&2
+			return 2
+		fi
+	done
+
+	# This directory is in the disposable container, never the restored volume.
+	# No includes: neither the primary configuration nor its HBA/ident is read.
+	mkdir -p "$config_dir"
+	printf '# Isolated verifier only; recovery settings remain in postgresql.auto.conf.\n' >"$config_dir/postgresql.conf"
+	printf 'local "%s" "%s" peer map=fvpn_verifier\nhostnossl "%s" "%s" 127.0.0.1/32 trust\n' \
+		"$db_name" "$db_user" "$db_name" "$db_user" >"$config_dir/pg_hba.conf"
+	printf 'fvpn_verifier postgres "%s"\n' "$db_user" >"$config_dir/pg_ident.conf"
+
+	# Command-line settings outrank postgresql.auto.conf (which pgBackRest uses
+	# for restore_command and all target options). Keep that file untouched.
+	ISOLATED_ARGS=(
+		-c "config_file=$config_dir/postgresql.conf"
+		-c "hba_file=$config_dir/pg_hba.conf"
+		-c "ident_file=$config_dir/pg_ident.conf"
+		-c "data_directory=$data_dir"
+		-c listen_addresses=127.0.0.1 -c port=5432
+		-c unix_socket_directories=/var/run/postgresql
+		-c ssl=off -c archive_mode=off -c archive_command= -c archive_library=
+		-c archive_timeout=0 -c wal_level=replica -c hot_standby=on
+		-c external_pid_file= -c logging_collector=off -c log_destination=stderr -c lc_messages=C
+		# Host-specific libraries are unavailable in this verifier image. Do not
+		# load inherited background workers or connection-time libraries.
+		-c shared_preload_libraries= -c session_preload_libraries= -c local_preload_libraries=
+	)
+	control="$(LC_ALL=C pg_controldata "$data_dir")" || return
+	for parameter in max_connections max_worker_processes max_wal_senders max_prepared_transactions max_locks_per_transaction; do
+		field="$parameter"
+		case "$parameter" in
+		max_prepared_transactions) field=max_prepared_xacts ;;
+		max_locks_per_transaction) field=max_locks_per_xact ;;
+		esac
+		value="$(awk -F: -v key="$field setting" '$1 == key {gsub(/[[:space:]]/, "", $2); print $2}' <<<"$control")"
+		if [[ ! "$value" =~ ^(0|[1-9][0-9]{0,9})$ ]] || (( value > 2147483647 )); then
+			echo "fvpn-postgres-entrypoint: cannot determine recovery parameter $parameter from pg_controldata" >&2
+			return 1
+		fi
+		case "$parameter" in
+		max_connections) minimum=100 ;;
+		max_worker_processes) minimum=8 ;;
+		max_wal_senders) minimum=10 ;;
+		max_prepared_transactions) minimum=0 ;;
+		max_locks_per_transaction) minimum=64 ;;
+		esac
+		(( value >= minimum )) || value="$minimum"
+		ISOLATED_ARGS+=(-c "$parameter=$value")
+	done
+}
+
+if [[ "${BASH_SOURCE[0]}" != "$0" ]]; then
+	return 0
+fi
+
 STANZA="${FVPN_PGBACKREST_STANZA:-fvpn}"
 if [[ ! "$STANZA" =~ ^[a-zA-Z0-9_-]+$ ]]; then
 	echo "fvpn-postgres-entrypoint: invalid FVPN_PGBACKREST_STANZA" >&2
@@ -36,19 +99,8 @@ if [[ "$(id -u)" == "0" ]]; then
 fi
 
 ARCHIVING_CONF="/etc/postgresql/conf.d/50-fvpn-archiving.conf"
-if [[ -w /etc/postgresql/conf.d ]]; then
-	if [[ "$ISOLATED_RESTORE" == "1" ]]; then
-		cat >"$ARCHIVING_CONF" <<EOF
-# Isolated PITR verification instance (§17.2, AT30).
-# Archiving is disabled so promoted verification timelines never write to the backup repository.
-wal_level = replica
-archive_mode = off
-archive_timeout = 0
-archive_command = ''
-max_wal_senders = 5
-EOF
-	else
-		cat >"$ARCHIVING_CONF" <<EOF
+if [[ "$ISOLATED_RESTORE" != "1" ]] && [[ -w /etc/postgresql/conf.d ]]; then
+	cat >"$ARCHIVING_CONF" <<EOF
 # Freedom VPN PostgreSQL 17 WAL Archiving Configuration (§3.1, §15.4, §17.2)
 wal_level = replica
 archive_mode = on
@@ -56,7 +108,6 @@ archive_timeout = ${ARCHIVE_TIMEOUT}
 archive_command = 'pgbackrest --stanza=${STANZA} archive-push %p'
 max_wal_senders = 5
 EOF
-	fi
 	if [[ "$(id -u)" == "0" ]]; then
 		chown postgres:postgres "$ARCHIVING_CONF"
 		chmod 0644 "$ARCHIVING_CONF"
@@ -64,7 +115,7 @@ EOF
 fi
 
 # Ensure existing PGDATA postgresql.conf includes /etc/postgresql/conf.d.
-if [[ -f "${PGDATA_DIR}/postgresql.conf" ]] && [[ -w "${PGDATA_DIR}/postgresql.conf" ]]; then
+if [[ "$ISOLATED_RESTORE" != "1" ]] && [[ -f "${PGDATA_DIR}/postgresql.conf" ]] && [[ -w "${PGDATA_DIR}/postgresql.conf" ]]; then
 	if ! grep -qF "/etc/postgresql/conf.d" "${PGDATA_DIR}/postgresql.conf"; then
 		printf "\ninclude_dir = '/etc/postgresql/conf.d'\n" >>"${PGDATA_DIR}/postgresql.conf"
 	fi
@@ -110,6 +161,14 @@ EOF
 		chown postgres:postgres "$PGBACKREST_CONF"
 		chmod 0640 "$PGBACKREST_CONF"
 	fi
+fi
+
+if [[ "$ISOLATED_RESTORE" == "1" ]]; then
+	prepare_isolated_restore /etc/postgresql/fvpn-isolated "$PGDATA_DIR" "$PG_USER" "$PG_DB"
+	chown -R postgres:postgres /etc/postgresql/fvpn-isolated
+	chmod 0700 /etc/postgresql/fvpn-isolated
+	chmod 0600 /etc/postgresql/fvpn-isolated/*
+	set -- "$@" "${ISOLATED_ARGS[@]}"
 fi
 
 exec /usr/local/bin/docker-entrypoint.sh "$@"
