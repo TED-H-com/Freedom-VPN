@@ -19632,7 +19632,7 @@ func TestHandover_Followup52Claims(t *testing.T) {
 		{"docs/handover/follow-up-52.md", "9e14be88114fdccd94db37dcd5fe3ea03d1e8286b17b1c12d57076daec5fd57d", 6070},
 		{"tests/handover/testdata/followup52-main.json", "714db17f0ea0346c47debba55fb8d65e079dee1d8735bce5f5fb037be5112204", 598},
 		{"tests/handover/testdata/followup52-snapshots.json", "e4b88ad998436a49fa9cfec2135fe913891232c8067d956ced873471ff3afa91", 4368},
-		{"tests/handover/testdata/followup52-edits.json", "376f4ce47f466c302ab8f068adc79745e829af2cf18691455e92025503cee7b9", 47133},
+		{"tests/handover/testdata/followup52-edits.json", "d7b71dc2e76bffb04cb472e080f95174187a0b744751db64bbf8f60ecd3fb7af", 47287},
 		{"tests/handover/testdata/followup52-prior-assertions.json", "b659156c9091663223ab16e16b793311dc396dae562999aa21b9878f08fde2f2", 2520},
 	} {
 		s := readOwnedDoc(t, root, p.Path)

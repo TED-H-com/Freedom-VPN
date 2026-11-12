@@ -335,11 +335,12 @@
     "path": "docs/handover/operator-guide.md",
     "name": "B11",
     "before": "**twelve consecutive failed `conntrack -D` attempts** (`maxConntrackDeleteAttempts = 12`, persisted across restarts in `#193` and `#202`)",
-    "after": "**twelve durably reserved serving-Apply delete batches** (`maxConntrackDeleteAttempts = 12`; a crash or earlier Apply failure can consume a slot before deletion, and restart does not reset the count)",
+    "after": "**twelve durably reserved serving-Apply delete batches** leave deletes pending (`maxConntrackDeleteAttempts = 12`; a crash or earlier Apply failure can consume a slot before deletion, and restart does not reset the count)",
     "evidence": [
       "node/agent/revocation.go:26",
       "node/agent/revocation.go:248",
-      "node/agent/engine.go:1293"
+      "node/agent/engine.go:1293",
+      "node/agent/engine.go:1403"
     ]
   },
   {
@@ -350,18 +351,20 @@
     "evidence": [
       "node/agent/revocation.go:26",
       "node/agent/revocation.go:248",
-      "node/agent/engine.go:1293"
+      "node/agent/engine.go:1293",
+      "node/agent/engine.go:1403"
     ]
   },
   {
     "path": "docs/handover/operator-guide.md",
     "name": "B13",
     "before": "after twelve failed `conntrack -D` attempts or a missing `conntrack` binary",
-    "after": "after exhaustion of twelve durably reserved serving-Apply delete batches or a missing `conntrack` binary",
+    "after": "after exhaustion of twelve durably reserved serving-Apply delete batches with deletes still pending or a missing `conntrack` binary",
     "evidence": [
       "node/agent/revocation.go:26",
       "node/agent/revocation.go:248",
-      "node/agent/engine.go:1293"
+      "node/agent/engine.go:1293",
+      "node/agent/engine.go:1403"
     ]
   },
   {
