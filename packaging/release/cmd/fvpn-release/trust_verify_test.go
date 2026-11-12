@@ -83,7 +83,7 @@ func TestUPD02_TrustVerifierRefusalsAndCentreAgreement(t *testing.T) {
 		}},
 		{"later_end", func(f *trustFixture) []byte {
 			k := f.record("A")
-			k.NotAfter = trustDate("2101-01-01T00:00:00Z")
+			k.NotAfter = trustDate(f.end).Add(time.Hour)
 			return f.signed(f.update(k), "A")
 		}},
 		{"revoked_to_active", func(f *trustFixture) []byte {

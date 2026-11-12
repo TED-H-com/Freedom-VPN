@@ -145,7 +145,7 @@ func TestUPD02_TrustProducerRefusals(t *testing.T) {
 		}},
 		{"retire_end_expanded", 1, func(f *trustFixture, flags map[string]string) []byte {
 			delete(flags, "add")
-			flags["retire"], flags["not-after"] = "A", "2101-01-01T00:00:00Z"
+			flags["retire"], flags["not-after"] = "A", trustDate(f.end).Add(time.Hour).Format(time.RFC3339)
 			k := f.record("A")
 			k.State, k.NotAfter = "retired", trustDate(flags["not-after"])
 			return f.signed(f.update(k), "A")
