@@ -530,5 +530,361 @@
       "internal/httpapi/middleware.go:785",
       "internal/httpapi/jsondoc.go:47"
     ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_01_operator_ack",
+    "before": "  - **Offline or stale carrying exits:** An offline (`control_status != 'online'`), stale, or safety-failed (`safety_status != 'passed'`) carrying exit keeps `fair_use.applying` `true` — the signal to the operator is \"look at the node\", not \"look at the policy\" (a member with no published carrying exit reports `applying: false` regardless of the state of a `policy.activate` operation).",
+    "after": "  - **Carrying-exit acknowledgements and liveness:** In enforce mode with a positive member generation, an exit that has not acknowledged keeps `applying` `true`. An ACK requires the applied generation to reach the current envelope generation, the envelope's member rate-policy generation to reach the member generation, current node safety to be `passed`, an unfrozen current-incarnation mapping, and the latest stored observation to say `safety_status = 'passed'` and `control_status = 'online'`. The query checks neither that observation's age nor the node's current `control_status`. An acknowledged exit that later goes offline or stale stays counted as acknowledged while the other ACK conditions still hold; that liveness change alone does not make `applying` `true` again. `applying: false` does not show that every carrying exit is live now. Check the node's current `control_status`, `last_observed_at` and `last_seen_at` for liveness — \"look at the node\", not \"look at the policy\". A member with no published carrying exit reports `applying: false` regardless of the state of a `policy.activate` operation.",
+    "evidence": [
+      "internal/fup/engine.go:854",
+      "internal/fup/engine.go:882",
+      "internal/fup/engine.go:1539",
+      "internal/fup/engine.go:1563",
+      "internal/fup/engine.go:1578",
+      "internal/fup/engine.go:1611",
+      "internal/fup/engine.go:1631",
+      "internal/nodes/observations.go:294",
+      "internal/nodes/observations.go:1163",
+      "internal/nodes/observations.go:1174"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "F2_01_calibration_ack",
+    "before": "in the owning member's `GET /api/v1/member/usage` response, `fair_use.applying` stays `true` until every one of those published carrying exits has applied that compiled generation (`nodes.applied_config_generation >= envelope.config_generation` where the envelope's `member_rate_policies` entry has `generation >= fup_member_states.generation`) with a passed, online observation (`safety_status = 'passed'` and `control_status = 'online'`), then clears (an offline or stale carrying exit keeps `applying` `true` — \"look at the node\", not \"look at the policy\").",
+    "after": "in the owning member's `GET /api/v1/member/usage` response, `fair_use.applying` reflects carrying-exit ACKs. In enforce mode with a positive member generation, an exit that has not acknowledged keeps `applying` `true`. An ACK requires the applied generation to reach the current envelope generation, the envelope's member rate-policy generation to reach the member generation, current node safety to be `passed`, an unfrozen current-incarnation mapping, and the latest stored observation to say `safety_status = 'passed'` and `control_status = 'online'`. The query checks neither that observation's age nor the node's current `control_status`. An acknowledged exit that later goes offline or stale stays counted as acknowledged while the other ACK conditions still hold; that liveness change alone does not make `applying` `true` again. `applying: false` does not show that every carrying exit is live now. Check the node's current `control_status`, `last_observed_at` and `last_seen_at` for liveness — \"look at the node\", not \"look at the policy\".",
+    "evidence": [
+      "internal/fup/engine.go:854",
+      "internal/fup/engine.go:882",
+      "internal/fup/engine.go:1539",
+      "internal/fup/engine.go:1563",
+      "internal/fup/engine.go:1578",
+      "internal/fup/engine.go:1611",
+      "internal/fup/engine.go:1631",
+      "internal/nodes/observations.go:294",
+      "internal/nodes/observations.go:1163",
+      "internal/nodes/observations.go:1174"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "F2_01_calibration_rollout_ack",
+    "before": "and `fair_use.applying` stays `true` until every one of those published carrying exits has applied that compiled generation with a passed, online observation (`safety_status = 'passed'` and `control_status = 'online'`), then clears (an offline or stale carrying exit keeps `applying` `true` — \"look at the node\", not \"look at the policy\"; `plan`-only rate changes wait for the next compile).",
+    "after": "and `fair_use.applying` reflects the ACK conditions in §1.3. In enforce mode with a positive generation, an unacknowledged carrying exit keeps it `true`; an acknowledged exit going offline or stale does not make it `true` again while the other ACK conditions still hold. The query uses the latest stored observation without checking its age or the node's current `control_status`. `applying: false` does not establish current liveness: check current node status, `last_observed_at` and `last_seen_at` — \"look at the node\", not \"look at the policy\". The `plan`-only rate-change gap in §1.3 remains.",
+    "evidence": [
+      "internal/fup/engine.go:854",
+      "internal/fup/engine.go:882",
+      "internal/fup/engine.go:1539",
+      "internal/fup/engine.go:1563",
+      "internal/fup/engine.go:1578",
+      "internal/fup/engine.go:1611",
+      "internal/fup/engine.go:1631",
+      "internal/nodes/observations.go:294",
+      "internal/nodes/observations.go:1163",
+      "internal/nodes/observations.go:1174"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_02_publication_message",
+    "before": "the step's `observed.reason` (and admin step `message`) records one bounded cause alongside the fallback `member_forwarding_unconfirmed`:",
+    "after": "the stored step `reason` records one bounded cause; for admins, `PublicationGateMessage` exposes it in the public step `message` as `<error_message> (<cause>)`, such as `member_forwarding_unconfirmed (lease_unconfirmed)`:",
+    "evidence": [
+      "internal/operations/operations.go:92",
+      "internal/operations/operations.go:196",
+      "internal/operations/operations.go:211",
+      "internal/nodes/publication_evidence.go:35"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_02_revoke_outcomes",
+    "before": "     - **How to interpret `ISOLATION_POLICY_INVALID` on a serving vs. non-serving node, the 12-attempt fail-closed bound, revoke `nodes` step outcomes (`D-070`), and the exit-group + `90 s` freshness fence (`#164`, `#166`, `#193`, `#194`, `#202`, `#206`, `#217`):** When `plane.Apply` returns `res.Verified == true` alongside a conntrack delete failure (`enforce.IsConntrackDeleteFailure(err)`) and the durably reserved serving-Apply delete-batch count remains below 12 (`1..11`), the verified nftables ruleset has already removed the revoked bindings from `@allowed_v4` and drops their upload and download packets ahead of `ct state established,related accept`. Therefore, `fvpn-agent` (`#166`) **keeps the verified serving ruleset installed (`member_forwarding_enabled: true`, local heartbeat `serving`, and `internet_only`, `qos`, `source_binding`, and `meter_path` checks `passed`)**, persists the failed `(addr, device_id, member_id)` entries under `pending_revocations` in local SQLite `meta` (merged with any newly dropped addresses on later generations and retried on every apply tick until `conntrack -D` succeeds), and reports one `NodeError` in `ObservationReport.errors` with `code: ISOLATION_POLICY_INVALID`, `stage: \"apply\"`, and `message: \"conntrack delete pending; serving ruleset verified\"`. By contrast, after **twelve durably reserved serving-Apply delete batches** leave deletes pending (`maxConntrackDeleteAttempts = 12`; a crash or earlier Apply failure can consume a slot before deletion, and restart does not reset the count) or immediately when the `conntrack` binary is missing after preflight (`exec.LookPath(\"conntrack\")` error), `fvpn-agent` fails isolation closed and installs the baseline (`plane.ApplyBaseline`): operators see `member_forwarding_enabled=false`, `safety_status=failed`, `forwarding_block_reasons=[\"safety_check_failed\"]`, and `internet_only=failed` with `error_code: ISOLATION_POLICY_INVALID` (detail `\"Conntrack delete exceeded the retry bound.\"` or `\"Conntrack is not installed.\"`), or when another revision-8 enforcement verification code (`GENERATION_MISMATCH`, `HOOK_PRIORITY_MISMATCH`, `COUNTER_ORDER_INVALID`, `FLOWTABLE_BYPASS`, `DEVICE_CLASS_MISSING`, `QOS_CLASS_MISSING`, `MARK_SEMANTICS_VIOLATED`, `PROBE_UNBOUNDED`, `METER_PATH_INVALID`, `ISOLATION_BASELINE_MISSING`, `METER_EPOCH_CHANGE`) appears on a failed `source_binding`, `qos`, `lease`, `internet_only`, or `meter_path` check with `member_forwarding_enabled: false` (`safety_check_failed`), ruleset or QoS verification failed and the agent withdrew to the fail-closed baseline without acknowledging the generation or renewing the lease. On central (`SubmitObservation` in `internal/nodes/observations.go` and `ackRevokeOperationsTx` / `ObserveRevokedDeviceCutoffTx` in `internal/nodes/nodes.go`, `D-070`, `#194`, `#206`, `#217`), a device revoke operation's `\"nodes\"` step waits **only** on registered exits that **actually serve the member** (a shared exit group through the exit's publication `exit_group_ids`, the member's groups `member_group_ids`, or the member's active entitlement grants `entitlement_grants` / plan revision `plan_revisions`) and are **fresh** (`control_status = 'online'`, observed within `DefaultStaleTimeout = 90 s` on both `last_observed_at` and `last_seen_at`); **stale or ungrouped/unrelated nodes never hold a revoke** (`#217`, `r14` H-1; if no registered exit shares an exit group with the member or no carrying exit has a fresh online observation within `90 s`, the `\"nodes\"` step stays `\"pending\"` with `reason = \"awaiting_serving_exit_observation\"`), and across the fresh serving exits it records one of three bounded `observed.reason` outcomes:\n       1. **`conntrack_delete_pending`**: recorded (`status = \"running\"`, `observed.reason = \"conntrack_delete_pending\"`, with a `node.revoke_isolation_pending` audit) while the node still forwards under the 12-attempt retry bound (`member_forwarding_enabled = true`, `safety_status = \"passed\"`, all checks `passed`, and `{code: \"ISOLATION_POLICY_INVALID\", stage: \"apply\"}` in `errors`).\n       2. **`conntrack_delete_succeeded`**: recorded (`status = \"succeeded\"`, `observed.reason = \"conntrack_delete_succeeded\"`, `isolation_verified = true`, with a `node.revoke_isolation_resolved` audit) on a clean observation (`applied_config_generation >= desired_config_generation`, `safety_status = \"passed\"`, `provisioning_state = \"ready\"`, and no `ISOLATION_POLICY_INVALID` apply error).\n       3. **`node_failed_closed`**: recorded (`status = \"succeeded\"`, `observed.reason = \"node_failed_closed\"`, `isolation_verified = true`, with a `node.revoke_isolation_resolved` audit) when the node's real fail-closed shape arrives after exhaustion of twelve durably reserved serving-Apply delete batches with deletes still pending or a missing `conntrack` binary (`applied_config_generation >= desired_config_generation`, `member_forwarding_enabled = false`, `safety_status = \"failed\"`, `forwarding_block_reasons` contains `\"safety_check_failed\"`, check `internet_only` is `\"failed\"` with `error_code = \"ISOLATION_POLICY_INVALID\"`, and `{code: \"ISOLATION_POLICY_INVALID\", stage: \"apply\"}` is still in `errors`).\n       A second registered node of the exit group still reporting a pending `{code: \"ISOLATION_POLICY_INVALID\", stage: \"apply\"}` error while forwarding holds the `\"nodes\"` step in `running` (`conntrack_delete_pending`) until every fresh (`control_status = 'online'`, observed within `90 s`) registered node of the exit group has either succeeded (`conntrack_delete_succeeded`) or failed closed (`node_failed_closed`).",
+    "after": "     - **How to interpret `ISOLATION_POLICY_INVALID` on a serving vs. non-serving node, the 12-attempt fail-closed bound, revoke `nodes` step outcomes (`D-070`), and the exit-group + `90 s` freshness fence (`#164`, `#166`, `#193`, `#194`, `#202`, `#206`, `#217`):** When `plane.Apply` returns `res.Verified == true` alongside a conntrack delete failure (`enforce.IsConntrackDeleteFailure(err)`) and the durably reserved serving-Apply delete-batch count remains below 12 (`1..11`), the verified nftables ruleset has already removed the revoked bindings from `@allowed_v4` and drops their upload and download packets ahead of `ct state established,related accept`. Therefore, `fvpn-agent` (`#166`) **keeps the verified serving ruleset installed (`member_forwarding_enabled: true`, local heartbeat `serving`, and `internet_only`, `qos`, `source_binding`, and `meter_path` checks `passed`)**, persists the failed `(addr, device_id, member_id)` entries under `pending_revocations` in local SQLite `meta` (merged with any newly dropped addresses on later generations and retried on every apply tick until `conntrack -D` succeeds), and reports one `NodeError` in `ObservationReport.errors` with `code: ISOLATION_POLICY_INVALID`, `stage: \"apply\"`, and `message: \"conntrack delete pending; serving ruleset verified\"`. By contrast, after **twelve durably reserved serving-Apply delete batches** leave deletes pending (`maxConntrackDeleteAttempts = 12`; a crash or earlier Apply failure can consume a slot before deletion, and restart does not reset the count) or immediately when the `conntrack` binary is missing after preflight (`exec.LookPath(\"conntrack\")` error), `fvpn-agent` fails isolation closed and installs the baseline (`plane.ApplyBaseline`): operators see `member_forwarding_enabled=false`, `safety_status=failed`, `forwarding_block_reasons=[\"safety_check_failed\"]`, and `internet_only=failed` with `error_code: ISOLATION_POLICY_INVALID` (detail `\"Conntrack delete exceeded the retry bound.\"` or `\"Conntrack is not installed.\"`), or when another revision-8 enforcement verification code (`GENERATION_MISMATCH`, `HOOK_PRIORITY_MISMATCH`, `COUNTER_ORDER_INVALID`, `FLOWTABLE_BYPASS`, `DEVICE_CLASS_MISSING`, `QOS_CLASS_MISSING`, `MARK_SEMANTICS_VIOLATED`, `PROBE_UNBOUNDED`, `METER_PATH_INVALID`, `ISOLATION_BASELINE_MISSING`, `METER_EPOCH_CHANGE`) appears on a failed `source_binding`, `qos`, `lease`, `internet_only`, or `meter_path` check with `member_forwarding_enabled: false` (`safety_check_failed`), ruleset or QoS verification failed and the agent withdrew to the fail-closed baseline without acknowledging the generation or renewing the lease. On central, `advanceNodeOperationsOnObservation` in `internal/nodes/observations.go` considers operations on `member`, `entitlement_grant` and `member_device` resources in `pending`, `running`, `failed` or `partially_succeeded`, whose `nodes` step is `pending`, `running` or `failed`. The entitlement revision (or device resource version) must reach the operation's desired generation when specified, and a future-dated `member.grant` is excluded. An observation counts when the entitlement projection has no `exit_group_ids`, or the reporting node has an exit in those groups or the member's `member_group_ids`. Without a qualifying observation, this path leaves the step in its existing state and writes no reason. The stored step and audit events distinguish these outcomes:\n       1. **`conntrack_delete_pending`**: when the report acknowledges the desired node generation and has an `ISOLATION_POLICY_INVALID` apply error while forwarding or reporting passed safety, the step is stored as `pending`, with `error_code: ISOLATION_POLICY_INVALID`, `error_message: member_forwarding_unconfirmed` and `reason: conntrack_delete_pending`. The admin operation response exposes `status: \"pending\"`, that error code and `message: \"member_forwarding_unconfirmed\"`. The reason is available in `node.revoke_isolation_pending` at `changes.after.reason`; this audit is emitted only if the step's previous error code was not already `ISOLATION_POLICY_INVALID`. The observation audit also records `isolation_error_reason: conntrack_delete_pending`.\n       2. **`conntrack_delete_succeeded`**: a clean report acknowledges a positive generation at least as new as the desired node generation, has effective safety `passed`, reports provisioning `ready`, and has no `ISOLATION_POLICY_INVALID` apply error. If no other node holds completion as described below, a previously `failed` step first moves to `running`; the stored error code, error message and reason are removed, and the step becomes `succeeded`. When the previous error code was `ISOLATION_POLICY_INVALID`, `node.revoke_isolation_resolved` records `changes.after.resolution: \"conntrack_delete_succeeded\"`.\n       3. **`node_failed_closed`**: a non-clean report can complete the step when it meets `failedClosed` and either the step previously had `ISOLATION_POLICY_INVALID`, or the node has acknowledged the desired generation and `isRevokeMemberOperation` recognizes the operation. `failedClosed` accepts the isolation fail-closed shape checked by `isFailClosedIsolationApplyError` (including no `ISOLATION_BASELINE_MISSING` error), or disabled forwarding with no isolation apply error, an acknowledged desired generation and a passed `internet_only` check. Subject to the same other-node hold, success clears the stored diagnostics and emits `node.revoke_isolation_resolved` with `changes.after.resolution: \"node_failed_closed\"`. The public step fields are `name`, `status`, `required`, `error_code`, `message` and `observed_at`; the resolution is audit evidence.\n       Another node holds completion only when it is registered, has an exit in a related group, is currently `online`, has `last_observed_at` within `DefaultStaleTimeout = 90 s` of the reporting observation and `last_seen_at` within 90 s of now, is forwarding or has passed safety, and still reports `{code: \"ISOLATION_POLICY_INVALID\", stage: \"apply\"}`. Related groups include the entitlement projection and member groups; when the projection has no exit groups, the query also considers groups of non-revoked entitlement grants' plan revisions. This hold leaves the step's existing state unchanged. A fresh serving exit with no such error does not hold completion: one clean counting observation can complete the step even if that other exit has not applied its desired generation. Step success therefore does not prove generation acknowledgement by every serving exit.",
+    "evidence": [
+      "internal/nodes/observations.go:584",
+      "internal/nodes/observations.go:602",
+      "internal/nodes/observations.go:852",
+      "internal/nodes/observations.go:888",
+      "internal/nodes/observations.go:931",
+      "internal/nodes/observations.go:935",
+      "internal/nodes/observations.go:947",
+      "internal/nodes/observations.go:987",
+      "internal/nodes/observations.go:1006",
+      "internal/nodes/observations.go:1034",
+      "internal/nodes/observations.go:1063",
+      "internal/nodes/observations.go:1071",
+      "internal/nodes/observations.go:1089",
+      "internal/nodes/observations.go:361",
+      "internal/nodes/publication_evidence.go:154",
+      "internal/nodes/publication_evidence.go:170",
+      "internal/operations/operations.go:60",
+      "internal/operations/operations.go:196",
+      "pkg/api/api.gen.go:4538"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_03_incarnation_type",
+    "before": "Each `NodeIncarnationSummary` exposes `incarnation_id`, `node_id`,",
+    "after": "Each `NodeIncarnation` exposes `incarnation_id`,",
+    "evidence": [
+      "pkg/api/api.gen.go:4137",
+      "internal/nodes/incarnations.go:188"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_03_grant_error",
+    "before": "`apierr.CodeAwaitingMemberGrants` in `pkg/apierr/apierr.go`",
+    "after": "`apierr.AwaitingMemberGrants` in `pkg/apierr/codes.go`",
+    "evidence": [
+      "pkg/apierr/codes.go:104"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_03_snapshot_test",
+    "before": "(`TestENR05_UsageSnapshotConcurrentWithApplyACKIsNeverTorn`)",
+    "after": "(`TestSnapshotNotTornDuringACK` and `TestSnapshotFieldSetAndIdentical` in `node/internal/usagestore/snapshot_test.go`)",
+    "evidence": [
+      "node/internal/usagestore/snapshot_test.go:21",
+      "node/internal/usagestore/snapshot_test.go:162"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_03_renewal_cap",
+    "before": "`provisionalRenewalMaxInterval = 60 * time.Second`",
+    "after": "`provisionalRenewCap = 60 * time.Second`",
+    "evidence": [
+      "node/agent/sync.go:194"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_03_pending_revocations",
+    "before": "`mergeRevocations` (`#202`) retains only the addresses in `Failed` alongside any unattempted addresses so already-deleted flows are not re-deleted when a sibling address fails",
+    "after": "`pendingAfterFailure` retains queued identities only for addresses in `Failed` that still need revocation, excluding re-admitted bindings, so already-deleted flows are not re-deleted when a sibling address fails",
+    "evidence": [
+      "node/agent/revocation.go:78",
+      "node/agent/revocation.go:81",
+      "node/agent/revocation.go:94",
+      "node/agent/revocation.go:249"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_03_grace_query",
+    "before": "`SubmitObservation` (`staleGenerationGraceAvailableTx`) checks",
+    "after": "the inline query in `SubmitObservation` checks",
+    "evidence": [
+      "internal/nodes/observations.go:258"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_03_grace_audit",
+    "before": "(replacing the `#217` `staleGenerationGraceAvailableTx` audit read, while `stale_generation_grace: true` remains in the `node.observation_applied` audit event payload as informational metadata)",
+    "after": "(`stale_generation_grace: true` remains in the `node.observation_applied` audit event payload as informational metadata; the grace decision uses the domain column)",
+    "evidence": [
+      "internal/nodes/observations.go:258",
+      "internal/nodes/observations.go:331",
+      "internal/nodes/observations.go:356"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_03_discovery_freeze",
+    "before": "`internal/nodes/httpwire/runtime.go` `freezeIncarnationMapping`",
+    "after": "`recordDiscoveryFailure` in `apps/worker/jobs_nodes.go`",
+    "evidence": [
+      "apps/worker/jobs_nodes.go:494",
+      "apps/worker/jobs_nodes.go:507",
+      "internal/nodes/nodes.go:166"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_03_probe_verifier",
+    "before": "`#156`, `verifyProbeChains`, `verifyResolverSet`",
+    "after": "`#156`, `verifyProbe`, `verifyResolverSet`",
+    "evidence": [
+      "node/enforce/verify.go:205"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_03_discovery_decision",
+    "before": "tracked in `external_bindings` under `external_kind = 'discovery_decision'` keyed by `(deployment, 'discovery_decision', peer_id)` and cleared on convergence or `PeerGone`",
+    "after": "tracked by `noteDiscoveryDecision` in `external_bindings` using the deployment and discovery key; `relaxDiscoveryDecision` changes the stored decision hash to admitted when discovery accepts the identity",
+    "evidence": [
+      "internal/devices/audit.go:80",
+      "internal/devices/audit.go:106",
+      "internal/devices/netbird_adapter.go:250"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_03_authorization_call",
+    "before": "`allow=false`, `SyncPeer` is called with `Allow=false`",
+    "after": "`allow=false`, `Adapter.SetAuthorization` is called with that value and an empty group list",
+    "evidence": [
+      "internal/devices/worker.go:97",
+      "internal/devices/worker.go:107",
+      "internal/devices/worker.go:116"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_03_revoke_fence",
+    "before": "(`RevokeDevice` / `member.device_revoke`, or `PeerGone` deleting `member_devices`, which deletes the fence row in the same transaction)",
+    "after": "(`RevokeDevice` / `member.device_revoke`, through `deleteAuthorizationFence`)",
+    "evidence": [
+      "internal/devices/fence.go:187",
+      "internal/devices/service.go:379",
+      "internal/devices/service.go:417"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_03_schema_option",
+    "before": "`ExcludeRequestBody` (`openapi3filter.ExcludeRequestBody()`)",
+    "after": "the `ExcludeRequestBody` field of `openapi3filter.Options`",
+    "evidence": [
+      "internal/httpapi/middleware.go:679"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_04_concurrency",
+    "before": "`gates[class]`, `max_concurrent = 64`",
+    "after": "`gates[class]`, configurable `max_concurrent = 128` by default",
+    "evidence": [
+      "internal/config/config.go:49",
+      "internal/config/config.go:82"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_05_eviction",
+    "before": "mTLS certificate-before-insert, O(1) LRU eviction, and concurrency metric",
+    "after": "mTLS certificate-before-insert, bounded LRU eviction scanning, and concurrency metric",
+    "evidence": [
+      "internal/httpapi/middleware.go:313"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_06_operator_recompilation",
+    "before": "  - **What triggers desired-state recompilation on serving exits:** Activating a `fair_use` policy revision (`policy.activated` with `domain = \"fair_use\"`) and a member's Fair-Use tier change (`fup.member_generation_changed`, emitted by `usage.evaluate_fup` when `fup_member_states.generation` advances) both enqueue a `nodes.compile_desired_state` outbox event and invoke `Compiler.RecompileBatch` (`internal/desiredstate/compiler.go`), compiling a fresh signed desired-state envelope (`member_rate_policies` carrying `member_id`, `tier_key`, `down_kbps`, `up_kbps`, `generation`, and `reason`) for every **published** exit carrying an affected member (or every published exit on a `fair_use` policy activation).",
+    "after": "  - **What triggers desired-state recompilation on serving exits:** The `policy.activated` payload identifies the policy kind in `type`. A `fair_use` or `plan` activation first schedules and flushes a Fair-Use sweep of active members, limited by the configured batch size. The evaluation job is `fup.evaluate`; `Engine.persistEvaluation` enqueues `fup.member_generation_changed` when the member generation advances. For `policy.activated` with `type = \"fair_use\"` and for `fup.member_generation_changed`, the policies worker passes the claimed event directly through `recompilePolicyEvent` to `Compiler.RecompileBatch` when a compiler is available. The compiler selects published registered exits carrying the affected members, including current envelopes that already name them; a fair-use activation selects that scope for all members.",
+    "evidence": [
+      "internal/policies/store.go:1077",
+      "internal/fup/engine.go:1137",
+      "internal/fup/engine.go:1280",
+      "internal/fup/engine.go:1303",
+      "apps/worker/jobs_policies.go:175",
+      "apps/worker/jobs_policies.go:237",
+      "apps/worker/jobs_policies.go:273",
+      "apps/worker/jobs_policies.go:365",
+      "apps/worker/jobs_policies.go:375",
+      "internal/desiredstate/compiler.go:1004",
+      "internal/desiredstate/compiler.go:1020",
+      "internal/desiredstate/compiler.go:1219"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "F2_06_calibration_recompilation",
+    "before": "Under `#222`, both a `fair_use` policy activation (`policy.activated` with `domain = \"fair_use\"`) and a member's tier change (`fup.member_generation_changed`, emitted by `usage.evaluate_fup` when `fup_member_states.generation` advances) enqueue `nodes.compile_desired_state` and run `Compiler.RecompileBatch` on every published exit carrying an affected member;",
+    "after": "The `policy.activated` payload identifies the policy kind in `type`. A `fair_use` or `plan` activation first schedules and flushes a Fair-Use sweep of active members, limited by the configured batch size. The evaluation job is `fup.evaluate`; `Engine.persistEvaluation` enqueues `fup.member_generation_changed` when the member generation advances. For `policy.activated` with `type = \"fair_use\"` and for `fup.member_generation_changed`, the policies worker passes the claimed event directly through `recompilePolicyEvent` to `Compiler.RecompileBatch` when a compiler is available. The compiler selects published registered exits carrying the affected members, including current envelopes that already name them; a fair-use activation selects that scope for all members. In this flow,",
+    "evidence": [
+      "internal/policies/store.go:1077",
+      "internal/fup/engine.go:1137",
+      "internal/fup/engine.go:1280",
+      "internal/fup/engine.go:1303",
+      "apps/worker/jobs_policies.go:175",
+      "apps/worker/jobs_policies.go:237",
+      "apps/worker/jobs_policies.go:273",
+      "apps/worker/jobs_policies.go:365",
+      "apps/worker/jobs_policies.go:375",
+      "internal/desiredstate/compiler.go:1004",
+      "internal/desiredstate/compiler.go:1020",
+      "internal/desiredstate/compiler.go:1219"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_06_operator_plan_gap",
+    "before": "`plan`-only rate changes (`policy.activated` with `domain = \"plan\"`) wait for the next compile trigger on those exits (`#222`).",
+    "after": "`plan` activation (`policy.activated` with `type = \"plan\"`) runs the Fair-Use sweep but does not directly call the compiler. A generation change from that sweep can trigger recompilation; plan-only rate changes that produce no member-generation event still wait for another compile trigger on those exits (`#222`).",
+    "evidence": [
+      "internal/policies/store.go:1077",
+      "internal/fup/engine.go:1137",
+      "internal/fup/engine.go:1280",
+      "internal/fup/engine.go:1303",
+      "apps/worker/jobs_policies.go:175",
+      "apps/worker/jobs_policies.go:237",
+      "apps/worker/jobs_policies.go:273",
+      "apps/worker/jobs_policies.go:365",
+      "apps/worker/jobs_policies.go:375",
+      "internal/desiredstate/compiler.go:1004",
+      "internal/desiredstate/compiler.go:1020",
+      "internal/desiredstate/compiler.go:1219"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "F2_06_calibration_plan_gap",
+    "before": "`plan`-only rate changes (`policy.activated` with `domain = \"plan\"`) wait for the next compile (`#222`).",
+    "after": "`plan` activation (`policy.activated` with `type = \"plan\"`) runs the Fair-Use sweep but does not directly call the compiler. A generation-change event from the sweep can trigger recompilation; plan-only rate changes without that event wait for another compile trigger (`#222`).",
+    "evidence": [
+      "internal/policies/store.go:1077",
+      "internal/fup/engine.go:1137",
+      "internal/fup/engine.go:1280",
+      "internal/fup/engine.go:1303",
+      "apps/worker/jobs_policies.go:175",
+      "apps/worker/jobs_policies.go:237",
+      "apps/worker/jobs_policies.go:273",
+      "apps/worker/jobs_policies.go:365",
+      "apps/worker/jobs_policies.go:375",
+      "internal/desiredstate/compiler.go:1004",
+      "internal/desiredstate/compiler.go:1020",
+      "internal/desiredstate/compiler.go:1219"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "F2_07_rollback_health",
+    "before": "On the node (`#192`), a recovery entered at the `rollback` stage without stored health checks (`recoverFailed` when `tx.Stage == StageRollback` and `tx.HealthJSON == \"\"`) reports `stage: \"rollback\"` with a blank failed health profile (`blankHealth` — all five checks `\"failed\"` with detail `\"rollback failed before health checks completed\"`, never a passed health profile and never `stage: \"report\"` with `health: null`) so central accepts the failure and marks `needs_attention: true` instead of rejecting it with `422 VALIDATION_FAILED` (while a pre-health recovery such as `migrate` keeps its error stage and `health: null`).",
+    "after": "On the node, `toRecovery` adds `blankHealth` only when no health was passed in, the error stage is `api.UpdateStageRollback`, and `txnHasHealth` finds no stored transaction health. `blankHealth` sets `processes`, `internet_only`, `dns_policy` and `tunnel_probe` to `failed`; `identity_and_state` comes from `checkPersistent(view)` and can be `passed`. `api.UpdateHealth` contains these five statuses and has no detail field. An existing health profile is retained; a pre-health recovery such as `migrate` does not receive this rollback fallback.",
+    "evidence": [
+      "node/updater/apply.go:362",
+      "node/updater/apply.go:367",
+      "node/updater/apply.go:377",
+      "node/updater/attest.go:402",
+      "node/updater/health.go:75",
+      "pkg/api/api.gen.go:5430"
+    ]
+  },
+  {
+    "path": "docs/DELIVERY.en.md",
+    "name": "F2_delivery_en",
+    "before": "[Follow-up 52](handover/follow-up-52.md) corrects deployment, calibration, restore, operator and backup statements at `6972be03`: enrollment and release-policy fields, the two-resolver resilience recommendation (one is accepted without redundancy), fair-use and HTTP helper names, a repeated recovery-gap notice, node checks and token-file selection, enforcement names and reserved conntrack batches, updater space and attempt bounds, the member-usage read-back route, configuration defaults, and the linux/amd64 backup migrator. The dated restore record stays unchanged; the cut records the `UploadOnce` / `Uploader.Once` erratum. This cut adds no procedure or deployment evidence; carried gaps remain as follow-up 51 recorded them.",
+    "after": "[Follow-up 52](handover/follow-up-52.md) corrects deployment, calibration, restore, operator and backup statements at `6972be03`: enrollment and release-policy fields, the two-resolver resilience recommendation (one is accepted without redundancy), fair-use acknowledgement versus current liveness, the policy event pipeline, HTTP helper names, a repeated recovery-gap notice, node checks and token-file selection, enforcement names and reserved conntrack batches, revoke-step eligibility and public/audit diagnostics, updater space and attempt bounds and rollback health, the member-usage read-back route, configuration defaults and bounded LRU scanning, current incarnation/discovery/probe/schema names, and the linux/amd64 backup migrator. The dated restore record stays unchanged; the cut records the `UploadOnce` / `Uploader.Once` erratum. This cut adds no procedure or deployment evidence; carried gaps remain as follow-up 51 recorded them.",
+    "evidence": [
+      "docs/handover/follow-up-52.md:21"
+    ]
+  },
+  {
+    "path": "docs/DELIVERY.md",
+    "name": "F2_delivery_zh",
+    "before": "[Follow-up 52](handover/follow-up-52.md) 修正 `6972be03` 的部署、參數校準、還原、營運與備份敘述：註冊與發行政策欄位、兩台 resolver 的韌性建議（程式接受一台，但沒有備援）、公平使用與 HTTP 函式名稱、重複的復原缺口提示、節點檢查與權杖檔案選擇、執行層名稱與預留的 conntrack 批次、更新程式空間與次數界限、會員用量讀回路由、設定預設值，以及 linux/amd64 備份遷移工具。有日期的還原紀錄保持不變；切點另記 `UploadOnce` / `Uploader.Once` 勘誤。此切點不新增程序或部署證據；既有缺口維持 follow-up 51 的紀錄。",
+    "after": "[Follow-up 52](handover/follow-up-52.md) 修正 `6972be03` 的部署、參數校準、還原、營運與備份敘述：註冊與發行政策欄位、兩台 resolver 的韌性建議（程式接受一台，但沒有備援）、公平使用確認與目前存活狀態的區別、政策事件流程、HTTP 函式名稱、重複的復原缺口提示、節點檢查與權杖檔案選擇、執行層名稱與預留的 conntrack 批次、撤銷步驟的條件與公開回應／稽核診斷、更新程式空間與次數界限及回滾健康狀態、會員用量讀回路由、設定預設值與有界 LRU 掃描、目前的 incarnation／探索／探測／schema 名稱，以及 linux/amd64 備份遷移工具。有日期的還原紀錄保持不變；切點另記 `UploadOnce` / `Uploader.Once` 勘誤。此切點不新增程序或部署證據；既有缺口維持 follow-up 51 的紀錄。",
+    "evidence": [
+      "docs/handover/follow-up-52.md:21"
+    ]
   }
 ]
