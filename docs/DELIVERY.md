@@ -30,15 +30,17 @@ Freedom VPN 以自架 NetBird 和官方 App 為基礎，提供會員、出口節
 
 ## 交接指南修訂
 
-[Follow-up 50](handover/follow-up-50.md) 修訂營運指南的每週金鑰檢查（§1.2）、中央金鑰輪替與撤銷（§8.1）、發行信任更新（§8.2），以及會員指南的觀測模式說明（§5.3，中英兩版）。這些位置現在直接連結目前的指令與行為說明。
+[Follow-up 51](handover/follow-up-51.md) 修正 `66de6a24` 的部署、參數校準與還原演練說明：測試部署的金鑰庫初始化與檢查、使用安裝程式設定節點、API／設定名稱與界限、發行內容，以及分離的遷移／復原憑證。它連結既有程序，並將缺少的程序列為後續工作；不宣稱新增部署或驗收證據。
 
-現行指南可以接受限定範圍的修正。較早交付切點及其精確測試輸入持續封存；follow-up 50 保存修訂前副本，並檢查其餘指南內文的所有位元組保持不變。目前操作程序見 [金鑰庫檢查與匯出](pki/inspect.md)、[中央金鑰指令](pki/keys.md)、[金鑰輪替與還原](pki/rotation.md)、[發行流程](updates/release-process.md)、[節點信任檔](node/install.md#node-trust-files)、[API 契約](../contracts/openapi.yaml) 與 [入口網站文件](portal/README.md)。
+[Follow-up 50](handover/follow-up-50.md) 保留先前對營運指南金鑰檢查（§1.2）、中央輪替與撤銷（§8.1）、發行信任更新（§8.2），以及會員觀測模式（§5.3，中英兩版）的修訂紀錄。
+
+現行指南可以接受限定範圍的修正。各切點封存修訂前輸入並檢查其餘所有位元組；有日期的快照保留原有範圍。目前程序見 [金鑰庫初始化](pki/initialize.md)、[檢查與匯出](pki/inspect.md)、[中央金鑰指令](pki/keys.md)、[金鑰輪替與還原](pki/rotation.md)、[發行流程](updates/release-process.md)、[節點安裝](node/install.md)、[API 契約](../contracts/openapi.yaml) 與 [入口網站文件](portal/README.md)。
 
 ## 驗證範圍與已知限制
 
-[合併紀錄](ROADMAP.md) 追蹤目前實作；[follow-up 50](handover/follow-up-50.md)
-保存 `fe9bb436` 的 #486–#518 與 #520–#523 交付切點；較早的
-[follow-up 49](handover/follow-up-49.md) 保留 #482–#485。後續成果以各項驗收紀錄為準。
+[合併紀錄](ROADMAP.md) 追蹤目前實作；[follow-up 51](handover/follow-up-51.md)
+保存 `66de6a24` 的 #524–#526 交付切點；較早的
+[follow-up 50](handover/follow-up-50.md) 保留 #486–#518 與 #520–#523。後續成果以各項驗收紀錄為準。
 單元／整合測試、Linux 實驗環境、真實 App 裝置和正式部署各有不同的驗證範圍。
 本導覽不宣告正式發行，也不以文件整理替代尚未完成的驗收。
 

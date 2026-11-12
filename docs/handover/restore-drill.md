@@ -4,8 +4,8 @@
 
 **Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
 
-**Archived cut:** [follow-up 50](follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut:** [follow-up 49](follow-up-49.md), #482–#485 at `aaffdc7f`; source-backed changes, verification boundaries and carried gaps.
+**Archived cut:** [follow-up 51](follow-up-51.md), #524–#526 at `66de6a24`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 50](follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; source-backed changes, verification boundaries and carried gaps.
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,
@@ -223,7 +223,7 @@ Execute every step in order during a real disaster recovery event or scheduled q
   *(Note: Exit nodes continue forwarding traffic for existing members while their serving leases and member service deadlines remain valid (`86,400s` default max offline lease, `§16.3`), and buffer new usage events in local SQLite (`§10.5`, `§10.8`).)*
 
 - [ ] **1.2 Verify `/var/lib/fvpn/vault` Integrity (`§16.2`, `§17.2`)**:
-  Confirm that `/var/lib/fvpn/vault/state.json` and all key files are intact and were **not** rolled back with the database snapshot. Any key revocations or rotations recorded in `state.json` must remain in effect after DB restore.
+  Preserve the current authority outside the PostgreSQL restore. For a staging FileProvider, run `fvpn-vault inspect -vault /var/lib/fvpn/vault -check-keys` against the actual configured vault path and review the [key-use inspection](../pki/inspect.md#key-use-inspection) results. This checks current active central keys locally; it cannot prove that the whole directory was not rolled back. Preserve newer revocations and rotations using independent evidence and follow [rotation and restore](../pki/rotation.md); production custody and anti-rollback are not implemented by FileProvider.
 
 ### Phase 2: Restore PostgreSQL 17 and Freeze Usage Ingestion
 
@@ -248,26 +248,30 @@ D-095 (#270), restore runbook Step 1: keep control and worker stopped, restore T
 
 - [ ] **2.2 Verify Schema Migration Status (`fvpn-migrate status`)** `[Verified on dev/test stack]`:
   ```bash
-  FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate status
-  FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate up
-  FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate status
+  FVPN_DATABASE_URL="${RESTORED_MIGRATOR_DSN:?supply the restored candidate migrator DSN}" /usr/local/bin/fvpn-migrate status
+  FVPN_DATABASE_URL="${RESTORED_MIGRATOR_DSN:?supply the restored candidate migrator DSN}" /usr/local/bin/fvpn-migrate up
+  FVPN_DATABASE_URL="${RESTORED_MIGRATOR_DSN:?supply the restored candidate migrator DSN}" /usr/local/bin/fvpn-migrate status
   ```
-  The connection must point to the checked restored candidate. Confirm every file in the deployed release's `db/migrations/*.sql` is applied on that target and the final status reports no pending version, as described in §2.3.
+  Supply the separate `fvpn_migrator` operator credential for the checked restored candidate, as in [deployment database roles](deploy.md#32-least-privilege-database-roles-docsdbreadmemd); do not use either runtime DSN. Confirm every file in the deployed release's `db/migrations/*.sql` is applied on that target and the final status reports no pending version, as described in §2.3.
 
 - [ ] **2.3 Freeze Usage Ingestion Before Starting `fvpn-control` (`§17.3 Step 1`)** `[Verified on dev/test stack]`:
   ```bash
-  /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
+  FVPN_DATABASE_URL_FILE="${RESTORED_RECOVERY_DSN_FILE:?supply the restored candidate recovery DSN file}" \
+    /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
     freeze \
     --actor "${ADMIN_ACTOR_UUID}" \
     --reason "PITR restore from snapshot ${RESTORED_TO_UTC}"
   ```
+  `RESTORED_RECOVERY_DSN_FILE` names an operator-provisioned, service-readable mode-`0600` file containing the `fvpn_recovery` DSN for the checked restored candidate; use the same override for begin-recovery and complete-recovery below. `FVPN_DATABASE_URL_FILE` overrides the control-role default ([Central configuration](../control/README.md)).
+
   While `mode = 'frozen'`, `POST /api/v1/agent/usage-batches` returns `503 DEPENDENCY_UNAVAILABLE` (`retryable: true`) and never ACKs events against stale watermarks.
 
 ### Phase 3: Rotate `ledger_epoch` and Start Central Services (`§17.3 Steps 2–6`)
 
 - [ ] **3.1 Begin Ledger Recovery (`fvpn-usage-admin begin-recovery`)** `[Verified on dev/test stack]`:
   ```bash
-  /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
+  FVPN_DATABASE_URL_FILE="${RESTORED_RECOVERY_DSN_FILE:?supply the restored candidate recovery DSN file}" \
+    /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
     begin-recovery \
     --actor "${ADMIN_ACTOR_UUID}" \
     --reason "Restore from ${RESTORED_TO_UTC} snapshot" \
@@ -349,7 +353,8 @@ Portal follow-up 16 (#255) supplies `/admin/devices` with authorization-unconfir
 - [ ] **6.2 Complete Ledger Recovery (`fvpn-usage-admin complete-recovery`)** `[Verified on dev/test stack]`:
   Once all active nodes have adopted `new_ledger_epoch` and drained their replay queues, exit reconciling mode:
   ```bash
-  /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
+  FVPN_DATABASE_URL_FILE="${RESTORED_RECOVERY_DSN_FILE:?supply the restored candidate recovery DSN file}" \
+    /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
     complete-recovery \
     --actor "${ADMIN_ACTOR_UUID}"
   ```
