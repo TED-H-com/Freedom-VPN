@@ -256,11 +256,14 @@ if [[ -n "$PRIMARY_CONTAINER" ]] && [[ "$ISOLATED_CONTAINER" == "$PRIMARY_CONTAI
 	exit 2
 fi
 
-EXISTING_CONTAINER="$(docker ps -a --filter "name=^/${ISOLATED_CONTAINER}$" --format '{{.Names}}')"
-if [[ -n "$EXISTING_CONTAINER" ]]; then
-	echo "restore-pitr.sh: container '${ISOLATED_CONTAINER}' already exists; refusing to overwrite live or existing container" >&2
-	exit 2
-fi
+RESTORE_HELPER="${ISOLATED_CONTAINER}-init"
+for candidate in "$ISOLATED_CONTAINER" "$RESTORE_HELPER"; do
+	EXISTING_CONTAINER="$(docker ps -a --filter "name=^/${candidate}$" --format '{{.Names}}')"
+	if [[ -n "$EXISTING_CONTAINER" ]]; then
+		echo "restore-pitr.sh: container '${candidate}' already exists; refusing to overwrite live or existing container" >&2
+		exit 2
+	fi
+done
 
 VOLUME_IN_USE="$(docker ps -a --filter "volume=${TARGET_VOLUME}" --format '{{.Names}}')"
 if [[ -n "$VOLUME_IN_USE" ]]; then
@@ -268,19 +271,38 @@ if [[ -n "$VOLUME_IN_USE" ]]; then
 	exit 2
 fi
 
-docker volume create "$TARGET_VOLUME" >/dev/null
+# Snapshot volume ownership before registering cleanup. A pre-existing empty
+# volume may be used, but a failed attempt must never remove it or its contents.
+EXISTING_VOLUMES="$(docker volume ls --format '{{.Name}}')"
+CREATED_VOLUME=0
+cleanup_isolated_failure() {
+	local status=$?
+	if [[ "$status" -ne 0 ]]; then
+		docker rm -fv "$ISOLATED_CONTAINER" "$RESTORE_HELPER" >/dev/null 2>&1 || true
+		if [[ "$CREATED_VOLUME" == 1 ]]; then
+			docker volume rm -f "$TARGET_VOLUME" >/dev/null 2>&1 || true
+		fi
+	fi
+}
+trap cleanup_isolated_failure EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+if ! grep -Fxq -- "$TARGET_VOLUME" <<<"$EXISTING_VOLUMES"; then
+	docker volume create "$TARGET_VOLUME" >/dev/null
+	CREATED_VOLUME=1
+fi
 
-# Forward repository options, including credentials, as environment names only.
+# Both containers read a local POSIX copy. Forward only cipher inputs, by name;
+# remote repository credentials/options are neither needed nor exposed there.
 REPO_ENV=()
-while IFS= read -r key; do
-	REPO_ENV+=(-e "$key")
-done < <(compgen -e | LC_ALL=C sort | grep '^PGBACKREST_REPO1_' || true)
-# --repo-volume explicitly selects a local repository copy. Environment options
-# for its remote source stay available, but cannot redirect this restore.
+for key in PGBACKREST_REPO1_CIPHER_PASS PGBACKREST_REPO1_CIPHER_TYPE; do
+	if [[ -v "$key" ]]; then
+		REPO_ENV+=(-e "$key")
+	fi
+done
 REPO_ARGS=(--repo1-type=posix --repo1-path=/var/lib/pgbackrest)
 
 # Step 1: Run pgbackrest restore in a one-shot network-none container with the backup repo mounted read-only (:ro).
-RESTORE_HELPER="${ISOLATED_CONTAINER}-init"
 docker run --rm \
 	--name "$RESTORE_HELPER" \
 	--network none \
@@ -299,13 +321,16 @@ docker run --rm \
 		fi
 		chown postgres:postgres /var/lib/postgresql/data
 		chmod 0700 /var/lib/postgresql/data
-		exec runuser -u postgres -- pgbackrest \
+		runuser -u postgres -- pgbackrest \
 			--stanza="$stanza" \
 			--pg1-path=/var/lib/postgresql/data \
 			--no-delta \
 			--log-path=/tmp \
 			"$@" \
 			restore
+		# Source functions only; do not run the server entrypoint in this helper.
+		source /usr/local/bin/fvpn-postgres-entrypoint.sh
+		rewrite_isolated_recovery /var/lib/postgresql/data/postgresql.auto.conf
 	' _ "$STANZA" "${REPO_ARGS[@]}" "${PGBACKREST_TARGET_ARGS[@]}"
 
 # Step 2: Start the isolated PostgreSQL container with --network none and zero host ports.
@@ -316,8 +341,6 @@ docker run -d \
 	-e FVPN_PG_ISOLATED_RESTORE=1 \
 	-e FVPN_PGBACKREST_STANZA="$STANZA" \
 	"${REPO_ENV[@]}" \
-	-e PGBACKREST_REPO1_TYPE=posix \
-	-e PGBACKREST_REPO1_PATH=/var/lib/pgbackrest \
 	-e POSTGRES_USER="$DB_USER" \
 	-e POSTGRES_DB="$DB_NAME" \
 	-v "${TARGET_VOLUME}:/var/lib/postgresql/data" \
@@ -328,7 +351,6 @@ docker run -d \
 NET_MODE="$(docker inspect --format '{{.HostConfig.NetworkMode}}' "$ISOLATED_CONTAINER")"
 PORT_COUNT="$(docker inspect --format '{{len .NetworkSettings.Ports}}' "$ISOLATED_CONTAINER")"
 if [[ "$NET_MODE" != "none" ]] || [[ "$PORT_COUNT" != "0" ]]; then
-	docker rm -fv "$ISOLATED_CONTAINER" >/dev/null 2>&1 || true
 	echo "restore-pitr.sh: isolation invariant violated (NetworkMode=${NET_MODE}, Ports=${PORT_COUNT})" >&2
 	exit 1
 fi
