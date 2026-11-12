@@ -568,5 +568,111 @@
       "docs/handover/follow-up-51.md:3",
       "docs/handover/follow-up-50.md:18"
     ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "restore_followup10_fragment",
+    "before": "restore-drill.md#26-latest-measurement--at30-passed-265)",
+    "after": "restore-drill.md#26-historical-follow-up-10-measurement--at30-passed-265)",
+    "evidence": [
+      "docs/handover/restore-drill.md:185",
+      "tests/handover/handover_test.go:19229"
+    ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "restore_followup9_fragment",
+    "before": "restore-drill.md#26-latest-measurement--at30-passed-242)",
+    "after": "restore-drill.md#historical-follow-up-9-242)",
+    "evidence": [
+      "docs/handover/restore-drill.md:189",
+      "tests/handover/handover_test.go:19229"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "identity_continuity_fragment",
+    "before": "operator-guide.md#73-identity-continuity-client-rotation-and-duplicate-pre-check-d-052)",
+    "after": "operator-guide.md#73-identity-continuity-client-rotation-and-duplicate-pre-check-d-052-134-137-139-docscontrolauthmd-docsmembersreadmemd)",
+    "evidence": [
+      "docs/handover/operator-guide.md:1030",
+      "tests/handover/handover_test.go:19229"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "control_rate_limiters_fragment",
+    "before": "operator-guide.md#74-control-rate-limiters-and-dedicated-operation-classes-d-060-141-145-152-docscontrolreadmemd-docscontrolauthmd-internalconfigconfiggo)",
+    "after": "operator-guide.md#74-control-rate-limiters-and-dedicated-operation-classes-d-060-141-145-152-165-169-170-174-190-203-215-docscontrolreadmemd-docscontrolauthmd-internalconfigconfiggo-internalconfigproxiesgo-internalhttpapimiddlewarego-internalhttpapijsondocgo)",
+    "evidence": [
+      "docs/handover/operator-guide.md:1056",
+      "tests/handover/handover_test.go:19229"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "fleet_offline_lease_fragment",
+    "before": "operator-guide.md#36-configuring-the-fleet-offline-lease-ceiling-getput-apiv1adminfleet-config-d-065-176-179-145-163-at29-docsnodesreadmemd-docsnodeswiringmd-internalnodeshttpwirefleet_configgo)",
+    "after": "operator-guide.md#36-configuring-the-fleet-offline-lease-ceiling-getput-apiv1adminfleet-config-d-065-d-067-176-179-206-145-163-at29-docsnodesreadmemd-docsnodeswiringmd-internalnodeshttpwirefleet_configgo)",
+    "evidence": [
+      "docs/handover/operator-guide.md:613",
+      "tests/handover/handover_test.go:19229"
+    ]
+  },
+  {
+    "path": "docs/ops/README.md",
+    "name": "operator_changes_fragment",
+    "before": "../handover/operator-guide.md#operator-changes-at-362)",
+    "after": "../handover/operator-guide.md#operator-changes-at-369)",
+    "evidence": [
+      "docs/handover/operator-guide.md:37",
+      "tests/handover/handover_test.go:19229"
+    ]
+  },
+  {
+    "path": "docs/ops/README.md",
+    "name": "findings_register_fragment",
+    "before": "../handover/README.md#findings-register-at-the-follow-up-19-cutoff)",
+    "after": "../handover/README.md#findings-register-at-the-follow-up-49-cutoff)",
+    "evidence": [
+      "docs/handover/README.md:299",
+      "tests/handover/handover_test.go:19229"
+    ]
+  },
+  {
+    "path": "docs/reviews/README.md",
+    "name": "findings_register_fragment",
+    "before": "../handover/README.md#findings-register-at-the-follow-up-19-cutoff)",
+    "after": "../handover/README.md#findings-register-at-the-follow-up-49-cutoff)",
+    "evidence": [
+      "docs/handover/README.md:299",
+      "tests/handover/handover_test.go:19229"
+    ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "logical_restore_guard_scope",
+    "before": "    Append-only guards block `DELETE`/`TRUNCATE` on `audit_events`, `usage_events`, `usage_samples`, `usage_checkpoints`, and `usage_rollups` unless the session runs as schema owner (`fvpn_migrator`) with `SET LOCAL fvpn.restore = 'on'` inside the restore transaction `[production only]`:",
+    "after": "    `[production only]` — this logical restore path remains unverified. `guard_append_only()` guards `UPDATE`/`DELETE`/`TRUNCATE` on `audit_events`, `billing_records`, `usage_adjustments`, `usage_events`, `usage_samples`, `projection_receipts`, `usage_event_payloads`, `usage_ledger_gaps` and `fup_evaluations`; on `usage_rollups` it guards `DELETE`/`TRUNCATE`. `usage_checkpoints` instead has a separate `forbid_delete()` guard for `DELETE`/`TRUNCATE`.\n\n    No setting provides a general bypass of `guard_append_only()`, and it does not read `fvpn.restore`. Its sole exception returns `OLD` for a `DELETE` on `audit_events`, `usage_event_payloads` or `usage_rollups` when `current_user` owns `public.purge_retained(text,timestamptz,text)` and `fvpn.retention_purge` is `on`. Every other guarded operation raises, including every `TRUNCATE`. The authorized retention function manages that setting; see the [retention contract](../db/README.md#roles-grants-and-retention).\n\n    Other triggers use `owner_setting('fvpn.restore')`, which requires both the setting to be `on` and `current_user` to own `public.owner_setting(text)`. It allows historical replay by skipping the node-table snapshot lock, target-insert transaction/eligibility checks, and comparison with the current eligible node population; the stored batch `target_count` must still match its restored targets. It also skips node-lease current-incarnation/offline-deadline checks, member-lease transaction/eligibility/deadline checks, the operation guard on historical `INSERT` (not `UPDATE`), and the billing service-interval check on authorized `member_devices` inserts/updates and `serving_lease_members` inserts. It is not a general constraint or trigger disable switch.\n\n    The [database restore contract](../db/README.md#restore-of-historical-snapshots) describes the existing replay prerequisites. Validating the dump, target schema and dependency ordering for this example remains a [carried gap](follow-up-51.md#existing-procedures-linked-and-carried-gaps); the example command is retained without a new restore procedure:",
+    "evidence": [
+      "db/migrations/00004_guards.sql:19",
+      "db/migrations/00004_guards.sql:25",
+      "db/migrations/00004_guards.sql:96",
+      "db/migrations/00004_guards.sql:105",
+      "db/migrations/00004_guards.sql:118",
+      "db/migrations/00004_guards.sql:153",
+      "db/migrations/00004_guards.sql:163",
+      "db/migrations/00004_guards.sql:239",
+      "db/migrations/00004_guards.sql:304",
+      "db/migrations/00004_guards.sql:313",
+      "db/migrations/00005_evidence_and_deadlines.sql:5",
+      "db/migrations/00005_evidence_and_deadlines.sql:43",
+      "db/migrations/00006_purge_retained_audit_format.sql:6",
+      "db/migrations/00120_members_billing.sql:71",
+      "db/migrations/00130_usage_ledger.sql:155",
+      "db/migrations/00150_policies_and_fup.sql:163",
+      "docs/db/README.md:354",
+      "docs/db/README.md:443"
+    ]
   }
 ]

@@ -19288,10 +19288,10 @@ func TestHandover_Followup51Claims(t *testing.T) {
 		Path, SHA256 string
 		Bytes        int
 	}{
-		{"docs/handover/follow-up-51.md", "62acfb6bcbec8fc197b66f154de5404025e6fce29859dc89429afa885e3826f6", 8026},
+		{"docs/handover/follow-up-51.md", "0da339651a51a0c89353cfe2f463260b42f91fa3fcf20365d0f28e6ec6721365", 9062},
 		{"tests/handover/testdata/followup51-main.json", "cef31af65dfb8ec3c2606633069445439eadb44a3fd6941475afda82a9c5e6bf", 1376},
 		{"tests/handover/testdata/followup51-snapshots.json", "96ba3d630a14b9d8d462662de1dfe6574691dd8335481b1d6fd83fa65f023efb", 4062},
-		{"tests/handover/testdata/followup51-edits.json", "414458003c7e0eb1e9041fa7ba4a401e9c7373f147bee13cfc9289f143516b73", 43553},
+		{"tests/handover/testdata/followup51-edits.json", "c55a5cfe23802d5fd0674747b000046e55e713f01cf086a2b58c863d8d08267a", 50482},
 		{"tests/handover/testdata/followup51-prior-assertions.json", "1603b1a94788a1df20b05d4d47947bc510ff809cc202b412ea8d840e7e1ecd49", 1235},
 		{"tests/handover/testdata/followup51-historical.json", "b86c063a967e05106313dc6f542807da5afcc25283b8d406cd469c8b14d02c9b", 6157},
 	} {
@@ -19367,7 +19367,7 @@ func TestHandover_Followup51Claims(t *testing.T) {
 	}
 	readJSON(fixture+"followup51-edits.json", &edits)
 	t.Run("only_cut_lines_and_authorized_guide_revisions", func(t *testing.T) {
-		if len(edits) != 55 {
+		if len(edits) != 64 {
 			t.Fatal("bounded edit count")
 		}
 		used := 0
@@ -19436,11 +19436,8 @@ func TestHandover_Followup51Claims(t *testing.T) {
 		}
 		t.Logf("Preserved headings and %d historical passages", len(historical))
 	})
-	t.Run("relative_links_and_heading_anchors", func(t *testing.T) {
-		sources := []struct{ doc, text string }{{"docs/handover/follow-up-51.md", doc}}
-		for _, e := range edits {
-			sources = append(sources, struct{ doc, text string }{e.Path, e.After})
-		}
+	checkLinks := func(t *testing.T, sources []struct{ doc, text string }) {
+		t.Helper()
 		linkRE := regexp.MustCompile(`\[([^\]]+)\]\(([^)\s]+)\)`)
 		anchorCache := make(map[string]map[string]bool)
 		links, fragments := 0, 0
@@ -19456,12 +19453,16 @@ func TestHandover_Followup51Claims(t *testing.T) {
 					targetRel = filepath.ToSlash(filepath.Clean(filepath.Join(filepath.Dir(src.doc), pathPart)))
 				}
 				info, err := os.Stat(filepath.Join(root, filepath.FromSlash(targetRel)))
-				if err != nil || info.IsDir() {
-					t.Errorf("%s: link %q: target file %s does not exist", src.doc, target, targetRel)
+				if err != nil {
+					t.Errorf("%s: link %q: target %s does not exist", src.doc, target, targetRel)
 					continue
 				}
 				links++
 				if !hasFrag {
+					continue
+				}
+				if info.IsDir() {
+					t.Errorf("%s: link %q: cannot resolve a fragment in directory %s", src.doc, target, targetRel)
 					continue
 				}
 				anchors, ok := anchorCache[targetRel]
@@ -19480,6 +19481,21 @@ func TestHandover_Followup51Claims(t *testing.T) {
 			t.Fatal("no links or fragments resolved")
 		}
 		t.Logf("Resolved %d relative links and %d fragments", links, fragments)
+	}
+	t.Run("relative_links_and_heading_anchors", func(t *testing.T) {
+		sources := []struct{ doc, text string }{{"docs/handover/follow-up-51.md", doc}}
+		for _, e := range edits {
+			sources = append(sources, struct{ doc, text string }{e.Path, e.After})
+		}
+		checkLinks(t, sources)
+	})
+	t.Run("all_thirteen_live_sources_links", func(t *testing.T) {
+		var sources []struct{ doc, text string }
+		for _, path := range paths {
+			sources = append(sources, struct{ doc, text string }{path, readOwnedDoc(t, root, path)})
+		}
+		checkLinks(t, sources)
+		t.Logf("Checked all relative links in %d live cut sources", len(sources))
 	})
 	t.Run("followup50_assertions_preserved", func(t *testing.T) {
 		var p struct {

@@ -48,7 +48,19 @@ bounds against the [plan schema](../../contracts/schemas/policies/plan-payload.s
 [Central defaults and validation](../../internal/config/config.go).
 The [restore drill](restore-drill.md) uses local vault key-use inspection with
 the whole-directory rollback limitation and selects separate migrator and
-recovery credentials for the checked restored candidate.
+recovery credentials for the checked restored candidate. Its logical restore
+paragraph now distinguishes the append-only guards and authorized retention
+exception from the specific historical replay checks controlled by
+`fvpn.restore`; the example remains production-only and unverified, with
+its validation carried below. The [database restore contract](../db/README.md#restore-of-historical-snapshots)
+describes the existing prerequisites.
+
+Eight stale link fragments are corrected: the two historical restore
+measurements, identity continuity, control rate limiters, the fleet offline
+lease ceiling, the operator changes section, and the findings register
+links from operations and reviews. All relative links in the 13 live cut
+sources are checked against their paths and heading anchors; frozen copies
+and dated documents retain their bytes.
 
 The [Chinese](../DELIVERY.md#交接指南修訂) and
 [English](../DELIVERY.en.md#handover-guide-revisions) delivery guides retain
@@ -56,10 +68,11 @@ follow-up 50's revisions and record this cut's changes. All existing headings
 in the three revised documents remain unchanged. The
 [pre-cut provenance](../../tests/handover/testdata/followup51-snapshots.json) and
 [edit manifest](../../tests/handover/testdata/followup51-edits.json) preserve
-13 exact copies from the cutoff and permit exactly 55 replacements: 12 cut-line
-edits, 41 runbook/calibration/restore corrections and existing-procedure pointers,
-and two delivery-guide revision sections. Every other byte must match. Older
-claims retain their assertions; follow-up 50 reads these pre-cut copies.
+13 exact copies from the cutoff and permit exactly 64 replacements: 12 cut-line
+edits, 42 runbook/calibration/restore corrections and existing-procedure pointers,
+eight link-fragment fixes, and two delivery-guide revision sections. Every other
+byte must match. Older claims retain their assertions; follow-up 50 reads these
+pre-cut copies.
 
 ## Dated text retained
 
@@ -82,7 +95,7 @@ desired-state trust and updater configuration, and NetBird/unit/timer startup
 ([node installation](../node/install.md)). These pointers do not supply a new
 procedure or certify a complete production deployment.
 
-The remaining missing steps are carried forward, one entry per finding:
+The remaining missing steps and logical restore validation are carried forward:
 
 - Deployment §§1/7.1: production Portal static hosting and SPA routing.
 - Deployment §§1/9.3/9.4: complete endpoint routing compatible with the installer's one control origin and the public/agent listener split.
@@ -96,6 +109,7 @@ The remaining missing steps are carried forward, one entry per finding:
 - Deployment §7.2: central daemon reload, service enablement and startup.
 - Deployment §8.1: creation of the SBOM, notices and source evidence files before publication.
 - Deployment §9.1: real interface/address/route provisioning; the installer creates dummy links without addresses or routes.
+- Restore drill §2.1: validated logical-dump, target-schema and dependency-order selection for the retained example; the database restore contract gives prerequisites, but this logical path remains unverified.
 
 These are documentation and implementation gaps, not new acceptance results.
 The [delivery guide's verification limits](../DELIVERY.en.md#verification-scope-and-known-limits)
