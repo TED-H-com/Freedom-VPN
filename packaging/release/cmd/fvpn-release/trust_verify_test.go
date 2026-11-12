@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/TED-H-com/Freedom-VPN/internal/signing"
 	"github.com/TED-H-com/Freedom-VPN/packaging/release"
@@ -41,26 +42,26 @@ func TestUPD02_TrustVerifierRefusalsAndCentreAgreement(t *testing.T) {
 		{"unknown_signer", func(f *trustFixture) []byte { return f.signed(f.update(f.record("B")), "C") }},
 		{"revoked_signer", func(f *trustFixture) []byte {
 			k := f.record("A")
-			at := trustDate(trustAt)
+			at := trustDate(f.at)
 			k.State, k.RevokedAt = "revoked", &at
 			f.setRecords(k)
 			return f.signed(f.update(f.record("B")), "A")
 		}},
 		{"not_yet_valid_signer", func(f *trustFixture) []byte {
 			k := f.record("A")
-			k.NotBefore = trustDate(trustNarrowEnd)
+			k.NotBefore = trustDate(f.narrowEnd)
 			f.setRecords(k)
 			return f.signed(f.update(f.record("B")), "A")
 		}},
 		{"expired_signer", func(f *trustFixture) []byte {
 			k := f.record("A")
-			k.NotAfter = trustDate("2001-01-01T00:00:00Z")
+			k.NotAfter = trustDate(f.start).Add(24 * time.Hour)
 			f.setRecords(k)
 			return f.signed(f.update(f.record("B")), "A")
 		}},
 		{"known_revoked_second_signature", func(f *trustFixture) []byte {
 			k := f.record("B")
-			at := trustDate(trustAt)
+			at := trustDate(f.at)
 			k.State, k.RevokedAt = "revoked", &at
 			f.setRecords(k)
 			e, err := envelope.Sign(f.update(f.record("C")), f.keys["A"].Private(), "A")
@@ -82,12 +83,12 @@ func TestUPD02_TrustVerifierRefusalsAndCentreAgreement(t *testing.T) {
 		}},
 		{"later_end", func(f *trustFixture) []byte {
 			k := f.record("A")
-			k.NotAfter = trustDate("2101-01-01T00:00:00Z")
+			k.NotAfter = trustDate(f.end).Add(time.Hour)
 			return f.signed(f.update(k), "A")
 		}},
 		{"revoked_to_active", func(f *trustFixture) []byte {
 			k := f.record("B")
-			at := trustDate(trustAt)
+			at := trustDate(f.at)
 			k.State, k.RevokedAt = "revoked", &at
 			f.setRecords(k)
 			k.State, k.RevokedAt = "active", nil
@@ -95,7 +96,7 @@ func TestUPD02_TrustVerifierRefusalsAndCentreAgreement(t *testing.T) {
 		}},
 		{"revoked_to_retired", func(f *trustFixture) []byte {
 			k := f.record("B")
-			at := trustDate(trustAt)
+			at := trustDate(f.at)
 			k.State, k.RevokedAt = "revoked", &at
 			f.setRecords(k)
 			k.State, k.RevokedAt = "retired", nil
@@ -145,7 +146,7 @@ func TestUPD02_TrustVerifierRefusalsAndCentreAgreement(t *testing.T) {
 		}},
 		{"active_with_revocation_time", func(f *trustFixture) []byte {
 			k := f.record("B")
-			at := trustDate(trustAt)
+			at := trustDate(f.at)
 			k.RevokedAt = &at
 			return f.signed(f.update(k), "A")
 		}},
@@ -260,7 +261,7 @@ func TestUPD02_TrustLedgerOnlyDecisions(t *testing.T) {
 		t.Run(kind, func(t *testing.T) {
 			f := newTrustFixture(t)
 			k := f.record("B")
-			at := trustDate(trustAt)
+			at := trustDate(f.at)
 			switch kind {
 			case "retired_to_active":
 				k.State = "retired"
@@ -275,7 +276,7 @@ func TestUPD02_TrustLedgerOnlyDecisions(t *testing.T) {
 			case "retired_to_active":
 				u.Keys[0].State = "active"
 			case "changed_revoked_at":
-				changed := trustDate("2026-11-01T12:00:01Z")
+				changed := at.Add(time.Second)
 				u.Keys[0].RevokedAt = &changed
 			}
 			raw := f.signed(u, "A")
@@ -307,9 +308,9 @@ func TestUPD02_TrustSignerReportingAndBoundaries(t *testing.T) {
 	}
 	f.apply(raw)
 	// at == not_before passes; at == not_after fails (half-open window).
-	for _, at := range []string{trustStart, trustEnd} {
+	for _, at := range []string{f.start, f.end} {
 		args := []string{"trust-verify", "-update", f.path("update.json"), "-trust", f.path("current.trust"), "-at", at}
-		if at == trustStart {
+		if at == f.start {
 			f.success(args)
 		} else {
 			f.refuse(args, 1)
@@ -324,7 +325,7 @@ func TestUPD02_TrustSignerReportingAndBoundaries(t *testing.T) {
 		t.Fatal("manifest Sign signed trust update")
 	}
 	ts := f.export()
-	if _, _, err := release.Verify(raw, ts, trustDate(trustAt)); err == nil {
+	if _, _, err := release.Verify(raw, ts, trustDate(f.at)); err == nil {
 		t.Fatal("manifest Verify accepted trust update")
 	}
 }
@@ -391,7 +392,7 @@ func TestUPD02_TrustMixedBundleAndFutureAddition(t *testing.T) {
 	}
 	writeTrustTest(t, f.path("current.trust"), jsonTrustTest(t, ts))
 	flags := f.produceFlags()
-	changeAdd(f, func(d map[string]any) { addKey(d)["not_before"] = trustNarrowEnd })
+	changeAdd(f, func(d map[string]any) { addKey(d)["not_before"] = f.narrowEnd })
 	f.success(trustArgs("trust-update", flags))
 	f.success(f.verifyArgs())
 	f.apply(readTestFile(t, f.path("update.json")))
@@ -400,7 +401,7 @@ func TestUPD02_TrustMixedBundleAndFutureAddition(t *testing.T) {
 	}
 	// An unchanged end is a valid explicit retirement, and still usable.
 	delete(flags, "add")
-	flags["retire"], flags["not-after"] = "A", trustEnd
+	flags["retire"], flags["not-after"] = "A", f.end
 	f.success(trustArgs("trust-update", flags))
 	if out := f.success(f.verifyArgs()); !strings.Contains(out, `"window_narrowed":false`) || !strings.Contains(out, "usable_root_after=true\n") {
 		t.Fatal(out)

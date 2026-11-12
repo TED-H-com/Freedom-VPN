@@ -387,7 +387,7 @@ func TestNetbirdAptPin(t *testing.T) {
 func TestVerifyTamperAndLatest(t *testing.T) {
 	dir := t.TempDir()
 	fx := mustRelease(t, dir, "019a0000-0000-7000-8000-0000000000c1", "1")
-	now := time.Date(2026, 10, 30, 12, 0, 0, 0, time.UTC)
+	now := installerTestNow()
 	if _, err := VerifyArchive(fx.Manifest, fx.Artifact, fx.Trust, "amd64", now); err != nil {
 		t.Fatal(err)
 	}
@@ -434,7 +434,7 @@ func TestJournalRestoresAndLeavesSibling(t *testing.T) {
 }
 
 // Share the injected clock with request fixtures so their key windows cannot
-// expire with wall time. The release fixture also uses this historical window.
+// expire with wall time. Release fixtures and real updater engines share it.
 func installerTestNow() time.Time {
 	return time.Date(2026, 10, 30, 12, 0, 0, 0, time.UTC)
 }
@@ -567,9 +567,9 @@ func writeFakeIdentity(l Layout) error {
 func mustRelease(t *testing.T, dir, id, seq string) ReleaseFixture {
 	t.Helper()
 	script := []byte("#!/bin/sh\nexit 0\n")
-	fx, err := BuildReleaseFixture(filepath.Join(dir, "rel-"+seq+"-"+id[:8]), unitDir(t), id, seq, map[string][]byte{
+	fx, err := buildReleaseFixtureAt(filepath.Join(dir, "rel-"+seq+"-"+id[:8]), unitDir(t), id, seq, map[string][]byte{
 		"fvpn-agent": script, "fvpn-updater": script, "fvpn-watchdog": script, "fvpn-node-install": script,
-	})
+	}, installerTestNow())
 	if err != nil {
 		t.Fatal(err)
 	}

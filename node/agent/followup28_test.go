@@ -105,9 +105,13 @@ func TestAT13_ISOF603_ExactProducerReplay955To961(t *testing.T) {
 	for _, failRepair := range []bool{false, true} {
 		t.Run(map[bool]string{false: "same_lease_repair", true: "repair_fails_closed"}[failRepair], func(t *testing.T) {
 			r := newRig(t)
-			// Exact captured request anchor and 60s duration. No captured identity
-			// or signing material: fake control signs this test's own generation.
-			r.clock.Set(time.Date(2026, 10, 31, 15, 7, 17, 994901292, time.UTC), trace.Deadline-time.Minute)
+			// Preserve the captured monotonic anchor, wall-time deltas and 60s
+			// duration, rebasing onto this run's clock so the real uploader and
+			// shared fake-control keys agree. No captured signing material is used.
+			capturedStart := time.Date(2026, 10, 31, 15, 7, 17, 994901292, time.UTC)
+			start := r.clock.Wall()
+			replayWall := func(at time.Time) time.Time { return start.Add(at.Sub(capturedStart)) }
+			r.clock.Set(start, trace.Deadline-time.Minute)
 			alignControlClock(r)
 			r.srv.SetMaxOfflineSeconds(60)
 			r.srv.StickyLease(false)
@@ -126,7 +130,7 @@ func TestAT13_ISOF603_ExactProducerReplay955To961(t *testing.T) {
 			r.eng.cfg.TestMode = true
 			r.eng.cfg.TestTimingPath = filepath.Join(r.dir, "operations.jsonl")
 			for _, row := range trace.Rows {
-				r.clock.Set(row.Anchor.Wall, row.Anchor.MonoBefore)
+				r.clock.Set(replayWall(row.Anchor.Wall), row.Anchor.MonoBefore)
 				switch row.Sequence {
 				case 955:
 					r.eng.evaluate(t.Context())
@@ -203,7 +207,7 @@ func TestAT13_ISOF603_ExactProducerReplay955To961(t *testing.T) {
 			if !failed || !applied {
 				t.Fatal("missing successful Apply or failed producer read")
 			}
-			r.clock.Set(trace.Rows[len(trace.Rows)-1].Anchor.Wall.Add(trace.Deadline-r.clock.Mono()), trace.Deadline)
+			r.clock.Set(replayWall(trace.Rows[len(trace.Rows)-1].Anchor.Wall).Add(trace.Deadline-r.clock.Mono()), trace.Deadline)
 			r.eng.finishServingStep(t.Context())
 			if r.eng.serving {
 				t.Fatal("deadline extended")

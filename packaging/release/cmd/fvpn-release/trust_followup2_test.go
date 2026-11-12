@@ -89,7 +89,7 @@ func TestUPD02_TrustR8ClosedStdoutProcess(t *testing.T) {
 				t.Fatal("published file changed")
 			}
 			want, _, err := release.BuildTrustUpdate(f.keys["A"], mustCurrentTrust(t, f), release.TrustUpdateOptions{
-				Revision: 10, Operation: "add", AddTrust: readTestFile(t, f.path("B.trust")), At: trustDate(trustAt),
+				Revision: 10, Operation: "add", AddTrust: readTestFile(t, f.path("B.trust")), At: trustDate(f.at),
 			})
 			if err != nil {
 				t.Fatal(err)

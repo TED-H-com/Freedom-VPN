@@ -47,7 +47,7 @@ func TestUPD02_TrustR1ResultWriteFailures(t *testing.T) {
 				f := newTrustFixture(t)
 				flags := f.produceFlags()
 				want, _, err := release.BuildTrustUpdate(f.keys["A"], mustCurrentTrust(t, f), release.TrustUpdateOptions{
-					Revision: 10, Operation: "add", AddTrust: readTestFile(t, f.path("B.trust")), At: trustDate(trustAt),
+					Revision: 10, Operation: "add", AddTrust: readTestFile(t, f.path("B.trust")), At: trustDate(f.at),
 				})
 				if err != nil {
 					t.Fatal(err)
@@ -111,7 +111,7 @@ func TestSEC01_TrustR2FilesystemDiagnostics(t *testing.T) {
 					flags := f.produceFlags()
 					if command == "trust-verify" {
 						f.success(trustArgs("trust-update", flags))
-						flags = map[string]string{"update": f.path("update.json"), "trust": f.path("current.trust"), "at": trustAt}
+						flags = map[string]string{"update": f.path("update.json"), "trust": f.path("current.trust"), "at": f.at}
 					}
 					before := trustSnapshot(t, f.dir)
 					if failure == "missing" {
@@ -195,7 +195,7 @@ func TestSEC01_TrustR2FilesystemDiagnostics(t *testing.T) {
 func TestUPD02_TrustR3FractionPrecision(t *testing.T) {
 	for _, scenario := range []struct{ command, flag string }{{"trust-update", "at"}, {"trust-update", "not-after"}, {"trust-verify", "at"}} {
 		t.Run(scenario.command+"/"+scenario.flag, func(t *testing.T) {
-			f := newTrustFixture(t)
+			f := newTrustFixtureAt(t, trustDate("2026-11-01T12:00:00Z"))
 			flags := f.produceFlags()
 			delete(flags, "add")
 			flags["revoke"], flags["allow-no-usable-root"] = "A", "true"
@@ -275,7 +275,7 @@ func TestUPD02_TrustR4OpaqueIDHandoverAndRemoval(t *testing.T) {
 	if err := legacy.Save(f.path("opaque.key")); err != nil {
 		t.Fatal(err)
 	}
-	legacyTrust, err := legacy.TrustStore(trustDate(trustStart), trustDate(trustEnd))
+	legacyTrust, err := legacy.TrustStore(trustDate(f.start), trustDate(f.end))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -315,7 +315,7 @@ func TestUPD02_TrustR4OpaqueIDHandoverAndRemoval(t *testing.T) {
 	if err := opaque.Save(f.path("renamed.key")); err != nil {
 		t.Fatal(err)
 	}
-	ts, err := opaque.TrustStore(trustDate(trustStart), trustDate(trustEnd))
+	ts, err := opaque.TrustStore(trustDate(f.start), trustDate(f.end))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -327,7 +327,7 @@ func TestUPD02_TrustR4OpaqueIDHandoverAndRemoval(t *testing.T) {
 	f.apply(readTestFile(t, flags["out"]))
 	f.export()
 	delete(flags, "add")
-	flags["key"], flags["retire"], flags["not-after"], flags["revision"], flags["out"] = f.path("renamed.key"), "A", trustNarrowEnd, "2", f.path("retire.json")
+	flags["key"], flags["retire"], flags["not-after"], flags["revision"], flags["out"] = f.path("renamed.key"), "A", f.narrowEnd, "2", f.path("retire.json")
 	f.success(trustArgs("trust-update", flags))
 	f.apply(readTestFile(t, flags["out"]))
 	f.export()
@@ -361,14 +361,14 @@ func TestUPD02_TrustR4OpaqueIDHandoverAndRemoval(t *testing.T) {
 		delete(flags, "add")
 		flags[operation], flags["revision"], flags["out"] = "release B", []string{"11", "12"}[i], f.path(operation+"-opaque.json")
 		if operation == "retire" {
-			flags["not-after"] = trustNarrowEnd
+			flags["not-after"] = f.narrowEnd
 		}
 		f.success(trustArgs("trust-update", flags))
-		f.success([]string{"trust-verify", "-update", flags["out"], "-trust", flags["trust"], "-at", trustAt})
+		f.success([]string{"trust-verify", "-update", flags["out"], "-trust", flags["trust"], "-at", f.at})
 		f.apply(readTestFile(t, flags["out"]))
 		bundle := f.export()
 		got, ok := bundle.Lookup("release B")
-		if !ok || got.NotAfter != trustDate(trustNarrowEnd) || got.Revoked != (operation == "revoke") {
+		if !ok || got.NotAfter != trustDate(f.narrowEnd) || got.Revoked != (operation == "revoke") {
 			t.Fatal("opaque target transition not applied")
 		}
 	}

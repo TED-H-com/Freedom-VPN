@@ -22,14 +22,9 @@ import (
 	"github.com/TED-H-com/Freedom-VPN/pkg/envelope"
 )
 
-// TEST ONLY - NOT A SECRET. All private keys are generated per test, except
-// the explicitly public contracts golden vector. Broad windows also cover the
-// real provider's wall clock; CLI decisions always use the explicit test -at.
-const trustStart = "2000-01-01T00:00:00Z"
-const trustEnd = "2100-01-01T00:00:00Z"
-const trustAt = "2026-11-01T12:00:00Z"
-const trustNarrowEnd = "2090-01-01T00:00:00Z"
-
+// TEST ONLY - NOT A SECRET. Keys are generated per test, except the public
+// golden vector. The provider has no clock injection: fixture windows surround
+// each test's start, and the CLI uses that same reference time explicitly.
 func trustDate(s string) time.Time {
 	t, err := time.Parse(time.RFC3339, s)
 	if err != nil {
@@ -39,17 +34,31 @@ func trustDate(s string) time.Time {
 }
 
 type trustFixture struct {
-	t        *testing.T
-	dir      string
-	keys     map[string]release.SigningKey
-	provider *signing.FileProvider
+	start, end, at, narrowEnd string
+	t                         *testing.T
+	dir                       string
+	keys                      map[string]release.SigningKey
+	provider                  *signing.FileProvider
 }
 
 func newTrustFixture(t *testing.T) *trustFixture {
 	t.Helper()
-	f := &trustFixture{t: t, dir: t.TempDir(), keys: map[string]release.SigningKey{}}
+	return newTrustFixtureAt(t, time.Now().UTC().Truncate(time.Second))
+}
+
+// newTrustFixtureAt is for literal-format tests whose CLI always supplies -at
+// and never asks the provider to verify an update against its wall clock.
+func newTrustFixtureAt(t *testing.T, now time.Time) *trustFixture {
+	t.Helper()
+	f := &trustFixture{
+		t: t, dir: t.TempDir(), keys: map[string]release.SigningKey{},
+		start:     now.Add(-48 * time.Hour).Format(time.RFC3339),
+		end:       now.Add(48 * time.Hour).Format(time.RFC3339),
+		at:        now.Format(time.RFC3339),
+		narrowEnd: now.Add(24 * time.Hour).Format(time.RFC3339),
+	}
 	for _, id := range []string{"A", "B", "C"} {
-		f.success([]string{"keygen", "-key-id", id, "-out", f.path(id + ".key"), "-trust-out", f.path(id + ".trust"), "-not-before", trustStart, "-not-after", trustEnd})
+		f.success([]string{"keygen", "-key-id", id, "-out", f.path(id + ".key"), "-trust-out", f.path(id + ".trust"), "-not-before", f.start, "-not-after", f.end})
 		k, err := release.LoadKey(f.path(id + ".key"))
 		if err != nil {
 			t.Fatal(err)
@@ -70,7 +79,7 @@ func newTrustFixture(t *testing.T) *trustFixture {
 
 func (f *trustFixture) path(name string) string { return filepath.Join(f.dir, name) }
 func (f *trustFixture) trusted(id string) envelope.TrustedKey {
-	return envelope.TrustedKey{KeyID: id, PublicKey: f.keys[id].Public(), Purposes: []envelope.Purpose{envelope.PurposeRelease}, NotBefore: trustDate(trustStart), NotAfter: trustDate(trustEnd)}
+	return envelope.TrustedKey{KeyID: id, PublicKey: f.keys[id].Public(), Purposes: []envelope.Purpose{envelope.PurposeRelease}, NotBefore: trustDate(f.start), NotAfter: trustDate(f.end)}
 }
 func (f *trustFixture) record(id string) release.ReleaseTrustRecord {
 	k := f.trusted(id)
@@ -156,7 +165,7 @@ func (f *trustFixture) noSeed(values ...[]byte) {
 	}
 }
 func (f *trustFixture) produceFlags() map[string]string {
-	return map[string]string{"key": f.path("A.key"), "trust": f.path("current.trust"), "revision": "10", "out": f.path("update.json"), "add": f.path("B.trust"), "at": trustAt}
+	return map[string]string{"key": f.path("A.key"), "trust": f.path("current.trust"), "revision": "10", "out": f.path("update.json"), "add": f.path("B.trust"), "at": f.at}
 }
 func trustArgs(command string, flags map[string]string) []string {
 	names := make([]string, 0, len(flags))
@@ -171,7 +180,7 @@ func trustArgs(command string, flags map[string]string) []string {
 	return args
 }
 func (f *trustFixture) verifyArgs(extra ...string) []string {
-	return append([]string{"trust-verify", "-update", f.path("update.json"), "-trust", f.path("current.trust"), "-at", trustAt}, extra...)
+	return append([]string{"trust-verify", "-update", f.path("update.json"), "-trust", f.path("current.trust"), "-at", f.at}, extra...)
 }
 
 // Snapshot files, permissions and symlink destinations, without following links.
@@ -249,6 +258,15 @@ func TestUPD02_TrustGoldenVector(t *testing.T) {
 	}
 	root := f.trusted("golden")
 	root.KeyID = vector.KeyID
+	// The golden bytes and verification instant are immutable. This root must
+	// also authorize the provider at the run's clock; only its window widens.
+	vectorAt := trustDate(vector.VerifyAt)
+	if vectorAt.Before(root.NotBefore) {
+		root.NotBefore = vectorAt.Add(-time.Hour)
+	}
+	if !vectorAt.Before(root.NotAfter) {
+		root.NotAfter = vectorAt.Add(time.Hour)
+	}
 	f.provider, err = signing.InitializeFileProvider(f.path("golden-vault"))
 	if err != nil {
 		t.Fatal(err)
@@ -312,7 +330,7 @@ func TestUPD02_TrustOperationsAndHandover(t *testing.T) {
 		t.Fatal("unexpected trust bundle size")
 	}
 	delete(flags, "add")
-	flags["key"], flags["retire"], flags["not-after"], flags["revision"], flags["out"] = f.path("B.key"), "A", trustNarrowEnd, "2", f.path("retire.json")
+	flags["key"], flags["retire"], flags["not-after"], flags["revision"], flags["out"] = f.path("B.key"), "A", f.narrowEnd, "2", f.path("retire.json")
 	f.success(trustArgs("trust-update", flags))
 	retired := readTestFile(t, flags["out"])
 	writeTrustTest(t, f.path("update.json"), retired)
@@ -327,12 +345,12 @@ func TestUPD02_TrustOperationsAndHandover(t *testing.T) {
 	ts = f.export()
 	a, _ := ts.Lookup("A")
 	b, _ := ts.Lookup("B")
-	if a.NotAfter != trustDate(trustNarrowEnd) || a.Revoked || b.Revoked || b.NotAfter != trustDate(trustEnd) {
+	if a.NotAfter != trustDate(f.narrowEnd) || a.Revoked || b.Revoked || b.NotAfter != trustDate(f.end) {
 		t.Fatal("retirement bundle mismatch")
 	}
 	f.rejectCentre(step1)
 	// Retired release roots still verify within their narrowed window.
-	if _, _, err := envelope.Verify(f.signed(map[string]string{"test": "release-purpose"}, "A"), ts, envelope.PurposeRelease, trustDate(trustAt)); err != nil {
+	if _, _, err := envelope.Verify(f.signed(map[string]string{"test": "release-purpose"}, "A"), ts, envelope.PurposeRelease, trustDate(f.at)); err != nil {
 		t.Fatal(err)
 	}
 	delete(flags, "retire")
@@ -352,11 +370,11 @@ func TestUPD02_TrustOperationsAndHandover(t *testing.T) {
 	ts = f.export()
 	a, _ = ts.Lookup("A")
 	b, _ = ts.Lookup("B")
-	if !a.Revoked || b.Revoked || a.NotAfter != trustDate(trustNarrowEnd) || ts.Len() != 2 {
+	if !a.Revoked || b.Revoked || a.NotAfter != trustDate(f.narrowEnd) || ts.Len() != 2 {
 		t.Fatal("revocation bundle mismatch")
 	}
 	for _, id := range []string{"A", "B"} {
-		_, _, err := envelope.Verify(f.signed(map[string]string{"test": "release-purpose"}, id), ts, envelope.PurposeRelease, trustDate(trustAt))
+		_, _, err := envelope.Verify(f.signed(map[string]string{"test": "release-purpose"}, id), ts, envelope.PurposeRelease, trustDate(f.at))
 		if (err != nil) != (id == "A") {
 			t.Fatalf("final signer %s: %v", id, err)
 		}
@@ -368,7 +386,7 @@ func TestUPD02_TrustOperationsAndHandover(t *testing.T) {
 }
 
 func TestSEC01_TrustOutputProperties(t *testing.T) {
-	f := newTrustFixture(t)
+	f := newTrustFixtureAt(t, trustDate("2026-11-01T12:00:00Z"))
 	flags := f.produceFlags()
 	var first []byte
 	for _, mask := range []int{0, 0777} {

@@ -151,6 +151,15 @@ type Server struct {
 
 // Start listens on 127.0.0.1 and returns a server with TEST ONLY keys.
 func Start() (*Server, error) {
+	return StartWithClock(time.Now)
+}
+
+// StartWithClock shares the signature window and signed timestamps with a
+// controlled test clock. TLS uses the run's wall clock because clients verify
+// certificates through real transports. Start is for those wall-clock consumers
+// (including the agent's uploader) that cannot inject their verification clock.
+func StartWithClock(clock func() time.Time) (*Server, error) {
+	now := clock().UTC()
 	caKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		return nil, err
@@ -209,8 +218,10 @@ func Start() (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	nb := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	na := time.Date(2028, 1, 1, 0, 0, 0, 0, time.UTC)
+	// Two days in either direction cover the run and deliberate clock jumps
+	// in the agent tests (up to one day), without a calendar expiration date.
+	nb := now.Add(-48 * time.Hour)
+	na := now.Add(48 * time.Hour)
 	ts, err := envelope.NewNodeTrustStore(
 		envelope.TrustedKey{KeyID: "test-desired", PublicKey: desPub, Purposes: []envelope.Purpose{envelope.PurposeDesiredState}, NotBefore: nb, NotAfter: na},
 		envelope.TrustedKey{KeyID: "test-lease", PublicKey: leasePub, Purposes: []envelope.Purpose{envelope.PurposeLease}, NotBefore: nb, NotAfter: na},
@@ -227,6 +238,7 @@ func Start() (*Server, error) {
 	pool := x509.NewCertPool()
 	pool.AddCert(caCert)
 	s := &Server{
+		nowFn:  clock,
 		caCert: caCert, caKey: caKey, caPEM: caPEM, trust: trust,
 		desPriv: desPriv, leasePriv: leasePriv, recPriv: recPriv,
 		desID: "test-desired", leaseID: "test-lease", recID: "test-recovery",

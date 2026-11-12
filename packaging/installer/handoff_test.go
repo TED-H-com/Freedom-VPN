@@ -203,6 +203,7 @@ func TestD089_RealUpdaterConsumesWriterRecord(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer engine.Close()
+	engine.Now = env.Now
 	stage := func() *Result {
 		r, err := Upgrade(ctx, env, next.Manifest, next.Artifact, next.Trust)
 		if err != nil {

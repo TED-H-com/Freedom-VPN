@@ -317,6 +317,8 @@ func TestAT15_ContiguousAck(t *testing.T) {
 
 func TestEpochMismatchFetchesCheckpoint(t *testing.T) {
 	ctx := context.Background()
+	now := time.Date(2026, 10, 28, 18, 0, 0, 0, time.UTC)
+	clock := func() time.Time { return now }
 	pub, priv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		t.Fatal(err)
@@ -324,14 +326,13 @@ func TestEpochMismatchFetchesCheckpoint(t *testing.T) {
 	trust, err := envelope.NewNodeTrustStore(envelope.TrustedKey{
 		KeyID: "recovery-test", PublicKey: pub,
 		Purposes:  []envelope.Purpose{envelope.PurposeRecovery},
-		NotBefore: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC),
-		NotAfter:  time.Date(2100, 1, 1, 0, 0, 0, 0, time.UTC),
+		NotBefore: now.Add(-time.Hour),
+		NotAfter:  now.Add(24 * time.Hour),
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	now := time.Date(2026, 10, 28, 18, 0, 0, 0, time.UTC)
-	s := seed(t, 1, usagestore.Options{Trust: trust, Now: func() time.Time { return now }})
+	s := seed(t, 1, usagestore.Options{Trust: trust, Now: clock})
 	cp := api.UsageCheckpoint{
 		LedgerEpoch: epochA, IssuedAt: now,
 		HighestContiguousSeq: 0, MaxSeenSeq: 0,
@@ -367,7 +368,10 @@ func TestEpochMismatchFetchesCheckpoint(t *testing.T) {
 		},
 		getFn: func() (int, []byte, error) { return 200, next, nil },
 	}
-	u := newUp(t, s, tr, (&sleeper{}).Sleep)
+	u, err := New(Config{Store: s, Transport: tr, Sleep: (&sleeper{}).Sleep, Interval: time.Minute, Rand: func() float64 { return 0.5 }, Now: clock})
+	if err != nil {
+		t.Fatal(err)
+	}
 	if err := u.Once(ctx); err != nil {
 		t.Fatal(err)
 	}
