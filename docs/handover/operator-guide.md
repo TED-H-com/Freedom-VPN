@@ -206,7 +206,7 @@ All administrative browser sessions require OIDC authentication with MFA (`amr: 
      ORDER BY dead_lettered_at DESC, id;
      ```
 3. **Check Exit Node Health & Update Batch Attention Flags (`/admin/nodes`, `/admin/updates`)**:
-   - Investigate any node with `control_status != 'online'`, `safety_status != 'passed'`, `data_health = 'failed'`, any `observation.checks` entry (`internet_only`, `dns_policy`, `tunnel_probe`) with `status != 'passed'`, or any update target flagged `needs_attention = true` or `unconfirmed = true`.
+   - Investigate any node with `control_status != 'online'`, `safety_status != 'passed'`, `data_health = 'failed'`, any `checks` entry (`internet_only`, `dns_policy`, `tunnel_probe`) with `status != 'passed'`, or any update target flagged `needs_attention = true` or `unconfirmed = true`.
 4. **Check Audit Anomalies (`audit_anomalies_total`)**:
    - Verify that `fvpn-control` logs zero `WARN audit row omitted` events (`audit_anomalies_total = 0`).
 

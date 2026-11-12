@@ -28,10 +28,6 @@
     {
       "before": "readOwnedDoc(t, root, targetRel)",
       "after": "readOwnedDoc(t, root, followup51InputPath(targetRel))"
-    },
-    {
-      "before": "readOwnedDoc(t, root, p.Source)",
-      "after": "readOwnedDoc(t, root, followup51InputPath(p.Source))"
     }
   ]
 }

@@ -103,6 +103,9 @@ The six review passes looked for errors in credentials and roles, reload/restart
 behavior, process responsibilities, named symbols, automatic cleanup/reconciliation,
 and gap dependencies in the four guides. They corrected the recorded cases;
 they do not prove that every statement is correct or every dependency has a notice.
+The operator and member guides were not reviewed in this cut; the operator
+guide's node-detail field is corrected from `observation.checks` to `checks`
+because it repeats T3.
 Additional corrections identify the actual
 enforcement executor methods and binding identities, installer configuration
 replacement, optional bootstrap DNS, the validator's nonnegative FUP minimum,
@@ -135,12 +138,13 @@ follow-up 50's revisions and record this cut's changes. All existing headings
 in the three revised documents remain unchanged. The
 [pre-cut provenance](../../tests/handover/testdata/followup51-snapshots.json) and
 [edit manifest](../../tests/handover/testdata/followup51-edits.json) preserve
-14 exact copies from the cutoff and permit exactly 219 replacements: 12 cut-line
-edits, 191 guide corrections, gap notices and existing-procedure pointers,
+14 exact copies from the cutoff and permit exactly 220 replacements: 12 cut-line
+edits, 192 guide corrections, gap notices and existing-procedure pointers,
 eight link-fragment fixes, and eight delivery-guide revision edits. Every other
 byte must match. Older claims retain their assertions; follow-up 50 reads these
-pre-cut copies. An additional exact base copy of the claims-test source
-keeps older assertion-source audits fixed while their live read paths change.
+pre-cut copies. Follow-up 8 reads the pre-cut deployment guide because T4
+removed the phrase it pins. The earlier-claims checks reverse that one read
+expression and continue to read the live test source.
 
 ## Dated text retained
 

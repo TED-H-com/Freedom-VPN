@@ -13306,7 +13306,7 @@ func TestHandover_Followup41Claims(t *testing.T) {
 		if len(audit.Claims) != 34 || audit.Subtests != 14 || len(audit.Files) != 11 {
 			t.Fatal("source audit inventory")
 		}
-		s := restoreFollowup41Assertions(readOwnedDoc(t, root, followup51PriorPath("tests/handover/handover_test.go")))
+		s := restoreFollowup41Assertions(readOwnedDoc(t, root, "tests/handover/handover_test.go"))
 		functions := regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(s, -1)
 		checked := 0
 		for _, f := range functions {
@@ -13797,6 +13797,7 @@ const followup42ControlOutage = "<a id=\"r28-h-1\"></a>\n\n**Known behaviour at 
 
 // Reverse only follow-up 41 input redirects; historical assertions stay exact.
 func restoreFollowup42Assertions(source string) string {
+	source = restoreFollowup8DeploymentInput(source)
 	return strings.NewReplacer(
 		`after := readOwnedDoc(t, root, fixture+"history/follow-up-42/reviews-index41.md.txt")`, `after := readOwnedDoc(t, root, "docs/reviews/README.md")`,
 		`require(fixture+"history/follow-up-42/reviews-index41.md.txt",`, `require("docs/reviews/README.md",`,
@@ -13922,7 +13923,7 @@ func TestHandover_Followup42Claims(t *testing.T) {
 		if len(a.Claims) != 35 || a.Subtests != 14 {
 			t.Fatal("earlier claims inventory")
 		}
-		s := restoreFollowup42Assertions(readOwnedDoc(t, root, followup51PriorPath("tests/handover/handover_test.go")))
+		s := restoreFollowup42Assertions(readOwnedDoc(t, root, "tests/handover/handover_test.go"))
 		checked := 0
 		for _, f := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(s, -1) {
 			if want, ok := a.Claims[f[1]]; ok {
@@ -14299,6 +14300,7 @@ func followup43PriorPath(path string) string {
 
 // Reverse only this cut's input redirects when comparing the earlier function.
 func restoreFollowup43Assertions(source string) string {
+	source = restoreFollowup8DeploymentInput(source)
 	return strings.NewReplacer(
 		"const register = frozen + \"../follow-up-43/prior-docs_handover_README.md.txt\"", "const register = \"docs/handover/README.md\"",
 		"const reviews = frozen + \"../follow-up-43/prior-docs_reviews_README.md.txt\"", "const reviews = \"docs/reviews/README.md\"",
@@ -14486,7 +14488,7 @@ func TestHandover_Followup43Claims(t *testing.T) {
 			t.Fatal("prior inventory")
 		}
 		checked := 0
-		for _, m := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(readOwnedDoc(t, root, followup51PriorPath("tests/handover/handover_test.go")), -1) {
+		for _, m := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(readOwnedDoc(t, root, "tests/handover/handover_test.go"), -1) {
 			if want, ok := a.Claims[m[1]]; ok {
 				if hash(restoreFollowup43Assertions(m[0])) != want {
 					t.Fatalf("earlier assertions changed: %s", m[1])
@@ -14868,6 +14870,7 @@ func followup44InputPath(path string) string {
 
 // Reverse only follow-up 44's input redirects; assertions remain byte-identical.
 func restoreFollowup44Assertions(source string) string {
+	source = restoreFollowup8DeploymentInput(source)
 	return strings.NewReplacer(
 		"requireHandoverClaimTokens(t, root, followup44InputPath(path), tokens...)", "requireHandoverClaimTokens(t, root, path, tokens...)",
 		"readOwnedDoc(t, root, followup44PriorPath(register))", "readOwnedDoc(t, root, register)",
@@ -15055,7 +15058,7 @@ func TestHandover_Followup44Claims(t *testing.T) {
 			t.Fatal("prior claims inventory")
 		}
 		checked := 0
-		for _, m := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(readOwnedDoc(t, root, followup51PriorPath("tests/handover/handover_test.go")), -1) {
+		for _, m := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(readOwnedDoc(t, root, "tests/handover/handover_test.go"), -1) {
 			if want, ok := a.Claims[m[1]]; ok {
 				if hash(restoreFollowup44Assertions(m[0])) != want {
 					t.Fatalf("earlier assertions changed: %s", m[1])
@@ -15312,6 +15315,7 @@ func followup45InputPath(path string) string {
 
 // Reverse only the five input-expression redirects in follow-up 44.
 func restoreFollowup45Assertions(source string) string {
+	source = restoreFollowup8DeploymentInput(source)
 	return strings.NewReplacer(
 		"text := readOwnedDoc(t, root, followup45InputPath(path))", "text := readOwnedDoc(t, root, path)",
 		"readOwnedDoc(t, root, followup45PriorPath(register))", "readOwnedDoc(t, root, register)",
@@ -15516,7 +15520,7 @@ func TestHandover_Followup45Claims(t *testing.T) {
 			t.Fatal("prior claims inventory")
 		}
 		checked := 0
-		for _, m := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(readOwnedDoc(t, root, followup51PriorPath("tests/handover/handover_test.go")), -1) {
+		for _, m := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(readOwnedDoc(t, root, "tests/handover/handover_test.go"), -1) {
 			if want, ok := a.Claims[m[1]]; ok {
 				if hash(restoreFollowup45Assertions(m[0])) != want {
 					t.Fatalf("earlier assertion changed: %s", m[1])
@@ -15538,7 +15542,7 @@ func TestHandover_Followup45Claims(t *testing.T) {
 		readJSON(fixture+"history/follow-up-44/prior-claims.json", &prev)
 		var groups []any
 		readJSON(fixture+"followup44-claims.json", &groups)
-		oldFunction := regexp.MustCompile(`(?s)func TestHandover_Followup44Claims\(.*?\n}`).FindString(readOwnedDoc(t, root, followup51PriorPath("tests/handover/handover_test.go")))
+		oldFunction := regexp.MustCompile(`(?s)func TestHandover_Followup44Claims\(.*?\n}`).FindString(readOwnedDoc(t, root, "tests/handover/handover_test.go"))
 		if strings.Count(oldFunction, `t.Run("`)+len(groups) != 15 {
 			t.Fatal("#466 actual subtests")
 		}
@@ -15845,6 +15849,7 @@ func followup46InputPath(path string) string {
 
 // Reverse only four input-expression redirects in follow-up 45.
 func restoreFollowup46Assertions(source string) string {
+	source = restoreFollowup8DeploymentInput(source)
 	return strings.NewReplacer(
 		"s := readOwnedDoc(t, root, followup46InputPath(path))", "s := readOwnedDoc(t, root, path)",
 		"readOwnedDoc(t, root, followup46PriorPath(register))", "readOwnedDoc(t, root, register)",
@@ -16053,7 +16058,7 @@ func TestHandover_Followup46Claims(t *testing.T) {
 			t.Fatal("prior inventory")
 		}
 		checked := 0
-		for _, m := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(readOwnedDoc(t, root, followup51PriorPath("tests/handover/handover_test.go")), -1) {
+		for _, m := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(readOwnedDoc(t, root, "tests/handover/handover_test.go"), -1) {
 			if want, ok := p.Claims[m[1]]; ok {
 				if hash(restoreFollowup46Assertions(m[0])) != want {
 					t.Fatalf("earlier assertion changed: %s", m[1])
@@ -16074,7 +16079,7 @@ func TestHandover_Followup46Claims(t *testing.T) {
 		readJSON(fixture+"history/follow-up-45/product-source-audit.json", &code)
 		readJSON(fixture+"history/follow-up-45/prior-claims.json", &prev)
 		readJSON(fixture+"followup45-claims.json", &groups)
-		oldFunc := regexp.MustCompile(`(?s)func TestHandover_Followup45Claims\(.*?\n}`).FindString(readOwnedDoc(t, root, followup51PriorPath("tests/handover/handover_test.go")))
+		oldFunc := regexp.MustCompile(`(?s)func TestHandover_Followup45Claims\(.*?\n}`).FindString(readOwnedDoc(t, root, "tests/handover/handover_test.go"))
 		old := readOwnedDoc(t, root, followup46PriorPath(register))
 		if len(regexp.MustCompile(`(?m)^\tt\.Run\("`).FindAllString(oldFunc, -1))+len(groups) != 15 || len(snaps) != 27 || len(e.Proofs) != 13 || len(e.Artifacts) != 9 || len(main.Rows) != 5 || len(main.PRs) != 5 || len(code) != 17 || len(prev.Claims) != 38 || len(rows(old, "## Findings register at the follow-up 45 cutoff")) != 133 || len(regexp.MustCompile(`(?m)^\| D-\d{3} \|`).FindAllString(old, -1)) != 64 {
 			t.Fatal("#472 actual counts")
@@ -16372,6 +16377,7 @@ func followup47InputPath(path string) string {
 
 // Reverse only four input-expression redirects in follow-up 46.
 func restoreFollowup47Assertions(source string) string {
+	source = restoreFollowup8DeploymentInput(source)
 	return strings.NewReplacer(
 		"s := readOwnedDoc(t, root, followup47InputPath(path))", "s := readOwnedDoc(t, root, path)",
 		"readOwnedDoc(t, root, followup47PriorPath(register))", "readOwnedDoc(t, root, register)",
@@ -16556,7 +16562,7 @@ func TestHandover_Followup47Claims(t *testing.T) {
 			t.Fatal("prior functions")
 		}
 		checked := 0
-		source := readOwnedDoc(t, root, followup51PriorPath("tests/handover/handover_test.go"))
+		source := readOwnedDoc(t, root, "tests/handover/handover_test.go")
 		for _, m := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(source, -1) {
 			if want, ok := p.Claims[m[1]]; ok {
 				if hash(restoreFollowup47Assertions(m[0])) != want {
@@ -17077,6 +17083,7 @@ func followup48InputPath(path string) string {
 
 // Reverse only five input-expression redirects in follow-up 47.
 func restoreFollowup48Assertions(source string) string {
+	source = restoreFollowup8DeploymentInput(source)
 	return strings.NewReplacer(
 		"s := readOwnedDoc(t, root, followup48InputPath(path))", "s := readOwnedDoc(t, root, path)",
 		"before, after := readOwnedDoc(t, root, followup47PriorPath(\"docs/handover/README.md\")), readOwnedDoc(t, root, followup48PriorPath(\"docs/handover/README.md\"))", "before, after := readOwnedDoc(t, root, followup47PriorPath(\"docs/handover/README.md\")), readOwnedDoc(t, root, \"docs/handover/README.md\")",
@@ -17302,7 +17309,7 @@ func TestHandover_Followup48Claims(t *testing.T) {
 			t.Fatal("prior functions")
 		}
 		checked := 0
-		source := readOwnedDoc(t, root, followup51PriorPath("tests/handover/handover_test.go"))
+		source := readOwnedDoc(t, root, "tests/handover/handover_test.go")
 		for _, m := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(source, -1) {
 			if want, ok := p.Claims[m[1]]; ok {
 				if hash(restoreFollowup48Assertions(m[0])) != want {
@@ -18057,6 +18064,7 @@ func followup49InputPath(path string) string {
 
 // Reverse only three input-expression redirects in follow-up 48 and two in ContractsRevision15MigrationIntegrity.
 func restoreFollowup49Assertions(source string) string {
+	source = restoreFollowup8DeploymentInput(source)
 	return strings.NewReplacer(
 		"s := readOwnedDoc(t, root, followup49InputPath(contractsRevision15InputPath(path)))", "s := readOwnedDoc(t, root, contractsRevision15InputPath(path))",
 		"after := readOwnedDoc(t, root, followup49PriorPath(\"docs/reviews/README.md\"))", "after := readOwnedDoc(t, root, \"docs/reviews/README.md\")",
@@ -18307,7 +18315,7 @@ func TestHandover_Followup49Claims(t *testing.T) {
 			t.Fatal("prior functions metadata")
 		}
 		checked := 0
-		source := readOwnedDoc(t, root, followup51PriorPath("tests/handover/handover_test.go"))
+		source := readOwnedDoc(t, root, "tests/handover/handover_test.go")
 		for _, m := range regexp.MustCompile(`(?s)func (TestHandover_Followup\d+Claims)\(.*?\n}`).FindAllStringSubmatch(source, -1) {
 			if want, ok := p.Claims[m[1]]; ok {
 				if hash(restoreFollowup49Assertions(m[0])) != want {
@@ -19171,7 +19179,7 @@ func TestHandover_Followup50Claims(t *testing.T) {
 		if p.Source != "tests/handover/handover_test.go" || p.SourceCommit != cut || p.Function != "TestHandover_Followup49Claims" {
 			t.Fatal("prior assertion provenance")
 		}
-		source := readOwnedDoc(t, root, followup51InputPath(p.Source))
+		source := readOwnedDoc(t, root, p.Source)
 		body := regexp.MustCompile(`(?s)func TestHandover_Followup49Claims\(.*?\n}`).FindString(source)
 		// Undo exactly four read-expression redirects. Every assertion, expected
 		// digest, navigation check and existing frozen read must remain identical.
@@ -19261,10 +19269,28 @@ func followup51PriorPath(path string) string {
 	return "tests/handover/testdata/history/follow-up-51/prior-" + strings.ReplaceAll(path, "/", "_") + ".txt"
 }
 
+// Reverse only the deployment-guide read in TestHandover_Followup8Claims.
+func restoreFollowup8DeploymentInput(source string) string {
+	const header = "func " + "TestHandover_Followup8Claims(t *testing.T) {"
+	start := strings.Index(source, header)
+	if start < 0 {
+		return source
+	}
+	endRel := strings.Index(source[start:], "\n}")
+	if endRel < 0 {
+		return source
+	}
+	end := start + endRel + 2
+	f8 := strings.Replace(source[start:end],
+		`deployGuide := readOwnedDoc(t, root, followup51PriorPath("docs/handover/deploy.md"))`,
+		`deployGuide := readOwnedDoc(t, root, "docs/handover/deploy.md")`, 1)
+	return source[:start] + f8 + source[end:]
+}
+
 // Follow-up 50 keeps its original assertions against exact pre-cut inputs.
 func followup51InputPath(path string) string {
 	switch path {
-	case "tests/handover/handover_test.go", "README.md", "README.zh-TW.md", "docs/DELIVERY.md", "docs/DELIVERY.en.md", "docs/handover/00-index.md", "docs/handover/README.md", "docs/handover/deploy.md", "docs/handover/member-guide.md", "docs/handover/operator-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md", "docs/reviews/README.md", "docs/handover/calibration.md", "docs/ops/backups.md":
+	case "README.md", "README.zh-TW.md", "docs/DELIVERY.md", "docs/DELIVERY.en.md", "docs/handover/00-index.md", "docs/handover/README.md", "docs/handover/deploy.md", "docs/handover/member-guide.md", "docs/handover/operator-guide.md", "docs/handover/restore-drill.md", "docs/ops/README.md", "docs/reviews/README.md", "docs/handover/calibration.md", "docs/ops/backups.md":
 		return followup51PriorPath(path)
 	default:
 		return path
@@ -19288,12 +19314,11 @@ func TestHandover_Followup51Claims(t *testing.T) {
 		Path, SHA256 string
 		Bytes        int
 	}{
-		{"docs/handover/follow-up-51.md", "d63de0704dbb2544dd228a1a0c0cfe46cc3f16ec3099c329b0a498b76032f740", 18614},
+		{"docs/handover/follow-up-51.md", "2889bddab15e57483594a9a00b328b9c668016ce3ab0db98f5c008853e418746", 18843},
 		{"tests/handover/testdata/followup51-main.json", "cef31af65dfb8ec3c2606633069445439eadb44a3fd6941475afda82a9c5e6bf", 1376},
 		{"tests/handover/testdata/followup51-snapshots.json", "31ccb5df8935715e92f7f7db713f84e31dbbc0c0f5447bfd0e585b7e67f6fb19", 4368},
-		{"tests/handover/testdata/followup51-edits.json", "a0616646761b095363068b2f4576e0c0c8f6efb66a2a23780dbb104a0c3d6d49", 202120},
-		{"tests/handover/testdata/followup51-prior-assertions.json", "1eee6a466fd37829ac25cc96156c5e2390bd2cfeffc339f13d0d6c313b50309b", 1369},
-		{"tests/handover/testdata/followup51-review-assertions.json", "dca38c63367db62fd0c813561a057d137fefb171805d6976e0f195c94744fa34", 3973},
+		{"tests/handover/testdata/followup51-edits.json", "78b45970eb4b94ce314f59fb3915174c7e75f814d19198a4b054d62bc939d20a", 202530},
+		{"tests/handover/testdata/followup51-prior-assertions.json", "1603b1a94788a1df20b05d4d47947bc510ff809cc202b412ea8d840e7e1ecd49", 1235},
 		{"tests/handover/testdata/followup51-historical.json", "b86c063a967e05106313dc6f542807da5afcc25283b8d406cd469c8b14d02c9b", 6157},
 	} {
 		s := readOwnedDoc(t, root, p.Path)
@@ -19302,38 +19327,6 @@ func TestHandover_Followup51Claims(t *testing.T) {
 		}
 	}
 	doc := readOwnedDoc(t, root, "docs/handover/follow-up-51.md")
-	t.Run("review_frozen_assertions_and_read_paths", func(t *testing.T) {
-		var p struct {
-			Source, Snapshot, SHA256 string
-			SourceCommit             string `json:"source_commit"`
-			ReviewCommit             string `json:"review_commit"`
-			Bytes                    int
-			Functions                []struct {
-				Name, SHA256, Before, After string
-				Bytes, Count                int
-			}
-		}
-		readJSON(fixture+"followup51-review-assertions.json", &p)
-		if p.Source != "tests/handover/handover_test.go" || p.SourceCommit != cut || p.ReviewCommit != "907544f510cb7cf7a0861e682d73e1aaab2321cb" || p.Snapshot != followup51PriorPath(p.Source) || len(p.Functions) != 10 {
-			t.Fatal("review assertion provenance")
-		}
-		frozen := readOwnedDoc(t, root, p.Snapshot)
-		if len(frozen) != p.Bytes || hash(frozen) != p.SHA256 {
-			t.Fatal("review frozen assertion source provenance")
-		}
-		live := readOwnedDoc(t, root, p.Source)
-		for _, f := range p.Functions {
-			body := regexp.MustCompile(`(?s)func ` + regexp.QuoteMeta(f.Name) + `\(.*?\n}`).FindString(live)
-			if strings.Count(body, f.After) != f.Count || f.Count < 1 || f.Count > 2 || !strings.HasPrefix(f.Before, "readOwnedDoc(t, root, ") || !strings.Contains(f.After, "followup51PriorPath(") {
-				t.Fatalf("review frozen read redirect: %s", f.Name)
-			}
-			body = strings.ReplaceAll(body, f.After, f.Before)
-			if len(body) != f.Bytes || hash(body) != f.SHA256 {
-				t.Fatalf("review changed earlier assertion: %s", f.Name)
-			}
-		}
-		t.Logf("Verified one base assertion-source snapshot and %d earlier functions with 12 read-path redirects", len(p.Functions))
-	})
 	t.Run("exact_three_merged_deliveries", func(t *testing.T) {
 		var m struct {
 			SourceCommit string `json:"source_commit"`
@@ -19400,7 +19393,7 @@ func TestHandover_Followup51Claims(t *testing.T) {
 	}
 	readJSON(fixture+"followup51-edits.json", &edits)
 	t.Run("only_cut_lines_and_authorized_guide_revisions", func(t *testing.T) {
-		if len(edits) != 219 {
+		if len(edits) != 220 {
 			t.Fatal("bounded edit count")
 		}
 		used := 0
@@ -19551,7 +19544,7 @@ func TestHandover_Followup51Claims(t *testing.T) {
 			Redirects                []struct{ Before, After string }
 		}
 		readJSON(fixture+"followup51-prior-assertions.json", &p)
-		if p.Source != "tests/handover/handover_test.go" || p.SourceCommit != cut || p.Function != "TestHandover_Followup50Claims" || len(p.Redirects) != 7 {
+		if p.Source != "tests/handover/handover_test.go" || p.SourceCommit != cut || p.Function != "TestHandover_Followup50Claims" || len(p.Redirects) != 6 {
 			t.Fatal("prior assertion provenance")
 		}
 		body := regexp.MustCompile(`(?s)func TestHandover_Followup50Claims\(.*?\n}`).FindString(readOwnedDoc(t, root, p.Source))

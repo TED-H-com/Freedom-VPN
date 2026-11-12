@@ -2456,5 +2456,19 @@
       "deploy/backup/postgres/fvpn-archiving.conf:5",
       "docs/ops/backups.md:71"
     ]
+  },
+  {
+    "path": "docs/handover/operator-guide.md",
+    "name": "t3_operator_node_detail_checks",
+    "before": "`observation.checks`",
+    "after": "`checks`",
+    "evidence": [
+      "contracts/openapi.yaml:3790",
+      "contracts/openapi.yaml:3827",
+      "contracts/openapi.yaml:3944",
+      "contracts/openapi.yaml:3948",
+      "contracts/openapi.yaml:3952",
+      "internal/nodes/nodes.go:384"
+    ]
   }
 ]
