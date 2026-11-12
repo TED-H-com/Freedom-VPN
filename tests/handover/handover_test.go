@@ -19291,7 +19291,7 @@ func TestHandover_Followup51Claims(t *testing.T) {
 		{"docs/handover/follow-up-51.md", "62acfb6bcbec8fc197b66f154de5404025e6fce29859dc89429afa885e3826f6", 8026},
 		{"tests/handover/testdata/followup51-main.json", "cef31af65dfb8ec3c2606633069445439eadb44a3fd6941475afda82a9c5e6bf", 1376},
 		{"tests/handover/testdata/followup51-snapshots.json", "96ba3d630a14b9d8d462662de1dfe6574691dd8335481b1d6fd83fa65f023efb", 4062},
-		{"tests/handover/testdata/followup51-edits.json", "b6eed2de7a9fa4b430fa57ad789bdc147dc391238fb082d38f86976e9c2a5a46", 43470},
+		{"tests/handover/testdata/followup51-edits.json", "414458003c7e0eb1e9041fa7ba4a401e9c7373f147bee13cfc9289f143516b73", 43553},
 		{"tests/handover/testdata/followup51-prior-assertions.json", "1603b1a94788a1df20b05d4d47947bc510ff809cc202b412ea8d840e7e1ecd49", 1235},
 		{"tests/handover/testdata/followup51-historical.json", "b86c063a967e05106313dc6f542807da5afcc25283b8d406cd469c8b14d02c9b", 6157},
 	} {

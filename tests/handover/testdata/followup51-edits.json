@@ -167,12 +167,13 @@
   {
     "path": "docs/handover/deploy.md",
     "name": "mfa_callback",
-    "before": "`fvpn-control` rejects `/auth/login?role=admin` with `403 ADMIN_MFA_REQUIRED` if neither `mfa_amr` nor `mfa_acr` matches",
-    "after": "`/auth/login?role=admin` redirects to the IdP; the callback rejects an admin login with `403 FORBIDDEN` if neither `mfa_amr` nor `mfa_acr` matches (see [browser authentication](../control/AUTH.md))",
+    "before": "`fvpn-control` rejects `/auth/login?role=admin` with `403 ADMIN_MFA_REQUIRED` if neither `mfa_amr` nor `mfa_acr` matches, and requires",
+    "after": "`/auth/login?role=admin` redirects to the IdP; the callback rejects an admin login with `403 FORBIDDEN` if neither `mfa_amr` nor `mfa_acr` matches (see [browser authentication](../control/AUTH.md)). `fvpn-control` requires",
     "evidence": [
       "internal/auth/browser.go:224",
       "internal/auth/browser.go:246",
-      "internal/auth/browser.go:335"
+      "internal/auth/browser.go:335",
+      "internal/httpapi/middleware.go:605"
     ]
   },
   {
