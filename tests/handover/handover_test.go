@@ -19122,6 +19122,31 @@ func TestHandover_Followup50Claims(t *testing.T) {
 				markdown: "~~~text~~~`\n## Hidden\n~~~\n## Visible\n",
 				want:     []string{"visible"},
 			},
+			{
+				name:     "empty_base_once",
+				markdown: "## !!!\n",
+				want:     []string{""},
+			},
+			{
+				name:     "empty_base_repeated",
+				markdown: "## !!!\n## ???\n## !!!\n",
+				want:     []string{"", "-1", "-2"},
+			},
+			{
+				name:     "empty_base_suffix_reserved",
+				markdown: "## !!!\n## -1\n## ???\n",
+				want:     []string{"", "-1", "-2"},
+			},
+			{
+				name:     "two_backticks_do_not_open",
+				markdown: "``\n## Visible\n",
+				want:     []string{"visible"},
+			},
+			{
+				name:     "two_tildes_do_not_open",
+				markdown: "~~\n## Visible\n",
+				want:     []string{"visible"},
+			},
 		} {
 			t.Run(tc.name, func(t *testing.T) {
 				var got []string
@@ -19190,9 +19215,6 @@ func followup50MarkdownAnchors(md string) map[string]bool {
 			continue
 		}
 		base := followup50HeadingAnchor(m[1])
-		if base == "" {
-			continue
-		}
 		anchor := base
 		for anchors[anchor] {
 			seen[base]++
