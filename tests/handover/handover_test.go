@@ -18834,12 +18834,12 @@ func TestHandover_Followup50Claims(t *testing.T) {
 		{"docs/handover/follow-up-50.md", "2eace1b4f5ec00081ae0520d26cdb87be1df6e0449be6a5e4f210b7462e5f7a1", 17796},
 		{fixture + "followup50-main.json", "d81ba5f226a34d88c0b9df378880be461deb3175ff36e895b59603fdc2ecbc37", 14149},
 		{fixture + "followup50-snapshots.json", "e4eea7a90319381a23573867a50713df64db895c4b8ed1a53778ccb90abd8db8", 3738},
-		{fixture + "followup50-edits.json", "1a1bb207fd3b194869fef786f7e28e04b838cf013073bd33bbf6e30ba2d7fd15", 23289},
+		{fixture + "followup50-edits.json", "7a84a8a49e196354cbb35a1f3aa5ebb1108f30f412e8f91e3716f25e62289f43", 23471},
 		{fixture + "followup50-prior-assertions.json", "df4b27f52014d5afb885becdd28d2db329daa2816fa9d7f84fd970df471b8c1f", 258},
 	} {
 		s := readOwnedDoc(t, root, p.Path)
 		if len(s) != p.Bytes || hash(s) != p.SHA256 {
-			t.Fatalf("immutable input changed: %s (bytes=%d sha256=%s)", p.Path, len(s), hash(s))
+			t.Errorf("immutable input changed: %s (bytes=%d sha256=%s)", p.Path, len(s), hash(s))
 		}
 	}
 	t.Run("exact_37_merged_deliveries", func(t *testing.T) {
@@ -18981,15 +18981,76 @@ func TestHandover_Followup50Claims(t *testing.T) {
 			t.Fatal("weekly checklist still reads vault state directly")
 		}
 		require(weekly, "fvpn-vault inspect", "../pki/inspect.md#metadata-inspection", "window_status")
-		require(section(op, "### 8.1 ", "### 8.2 "), "fvpn-vault inspect", "fvpn-vault-keys rotate", "fvpn-vault export-trust", "fvpn-vault-keys revoke", "`retired`", "signs immediately", "-expect-active-key none", "../pki/keys.md", "../pki/inspect.md", "../pki/rotation.md#central-signing-keys", "../node/install.md#node-trust-files")
-		require(section(op, "### 8.2 ", "### 8.3 "), "fvpn-release trust-update", "fvpn-release trust-verify", "fvpn-vault-keys apply-release-update", "separate updates at consecutive revisions", "../updates/release-process.md", "../pki/keys.md", "../pki/rotation.md#release-verification-trust", "../node/install.md#node-trust-files")
+		section81 := section(op, "### 8.1 ", "### 8.2 ")
+		require(section81, "fvpn-vault inspect", "fvpn-vault-keys rotate", "fvpn-vault export-trust", "fvpn-vault-keys revoke", "`retired`", "signs immediately", "-expect-active-key none", "../pki/keys.md", "../pki/inspect.md", "../pki/rotation.md#central-signing-keys", "../node/install.md#node-trust-files")
+		release82 := section(op, "### 8.2 ", "### 8.3 ")
+		if strings.Contains(release82, "active release key") {
+			t.Errorf("§8.2 still requires an active release key")
+		}
+		require(release82, "fvpn-release trust-update", "fvpn-release trust-verify", "fvpn-vault-keys apply-release-update", "signed by one release key of the current trust that is not revoked and is within its validity window", "A retired key still signs until its `not_after`", "separate updates at consecutive revisions", "../updates/release-process.md", "../pki/keys.md", "../pki/rotation.md#release-verification-trust", "../node/install.md#node-trust-files")
 		member := readOwnedDoc(t, root, "docs/handover/member-guide.md")
 		if strings.Contains(member, "would_apply_tier") || strings.Contains(member, "throttled") {
 			t.Fatal("old member shadow-mode fields remain")
 		}
-		for _, start := range []string{"- **觀測模式", "- **Shadow Mode"} {
-			require(section(member, start, "\n"), "FairUseStatus", "state: normal", "state: adjusted", "../../contracts/openapi.yaml", "../portal/README.md")
+		shadowZH := section(member, "- **觀測模式", "\n")
+		shadowEN := section(member, "- **Shadow Mode", "\n")
+		for _, s := range []string{shadowZH, shadowEN} {
+			require(s, "FairUseStatus", "state: normal", "state: adjusted", "../../contracts/openapi.yaml", "../portal/README.md")
 		}
+		linkRE := regexp.MustCompile(`\[([^\]]+)\]\(([^)\s]+)\)`)
+		anchorCache := make(map[string]map[string]bool)
+		linksResolved, fragmentsResolved := 0, 0
+		for _, src := range []struct {
+			doc, text string
+		}{
+			{"docs/handover/follow-up-50.md", readOwnedDoc(t, root, "docs/handover/follow-up-50.md")},
+			{"docs/handover/operator-guide.md", weekly},
+			{"docs/handover/operator-guide.md", section81},
+			{"docs/handover/operator-guide.md", release82},
+			{"docs/handover/member-guide.md", shadowZH},
+			{"docs/handover/member-guide.md", shadowEN},
+			{"docs/DELIVERY.en.md", section(readOwnedDoc(t, root, "docs/DELIVERY.en.md"), "## Handover guide revisions", "## Verification scope and known limits")},
+			{"docs/DELIVERY.md", section(readOwnedDoc(t, root, "docs/DELIVERY.md"), "## 交接指南修訂", "## 驗證範圍與已知限制")},
+		} {
+			for _, m := range linkRE.FindAllStringSubmatch(stripFencedCodeBlocks(src.text), -1) {
+				target := strings.TrimSpace(m[2])
+				if strings.HasPrefix(target, "http://") || strings.HasPrefix(target, "https://") {
+					continue
+				}
+				pathPart, frag, hasFrag := strings.Cut(target, "#")
+				targetRel := src.doc
+				if pathPart != "" {
+					targetRel = filepath.ToSlash(filepath.Clean(filepath.Join(filepath.Dir(src.doc), pathPart)))
+				}
+				info, err := os.Stat(filepath.Join(root, filepath.FromSlash(targetRel)))
+				if err != nil || info.IsDir() {
+					t.Errorf("%s: link %q: target file %s does not exist", src.doc, target, targetRel)
+					continue
+				}
+				linksResolved++
+				if !hasFrag {
+					continue
+				}
+				if frag == "" {
+					t.Errorf("%s: link %q: empty fragment", src.doc, target)
+					continue
+				}
+				anchors, ok := anchorCache[targetRel]
+				if !ok {
+					anchors = followup50MarkdownAnchors(readOwnedDoc(t, root, targetRel))
+					anchorCache[targetRel] = anchors
+				}
+				if !anchors[frag] {
+					t.Errorf("%s: link %q: missing anchor #%s in %s", src.doc, target, frag, targetRel)
+					continue
+				}
+				fragmentsResolved++
+			}
+		}
+		if linksResolved == 0 || fragmentsResolved == 0 {
+			t.Fatalf("resolved %d relative links and %d fragments; both must be positive", linksResolved, fragmentsResolved)
+		}
+		t.Logf("Resolved %d relative links and %d fragments", linksResolved, fragmentsResolved)
 	})
 	t.Run("followup49_assertions_preserved", func(t *testing.T) {
 		var p struct {
@@ -19015,4 +19076,82 @@ func TestHandover_Followup50Claims(t *testing.T) {
 			t.Fatal("follow-up 49 assertions changed outside frozen-copy reads")
 		}
 	})
+}
+
+func followup50MarkdownAnchors(md string) map[string]bool {
+	anchors := make(map[string]bool)
+	seen := make(map[string]int)
+	headingRE := regexp.MustCompile(`^\s{0,3}#{1,6}[ \t]+(.+?)(?:[ \t]+#+[ \t]*)?$`)
+	fenceRE := regexp.MustCompile("^[ \t]{0,3}(```+|~~~+)")
+	htmlAnchorRE := regexp.MustCompile(`(?i)<[a-z][a-z0-9]*\b[^>]*\b(?:id|name)\s*=\s*(?:"([^"]+)"|'([^']+)')`)
+	var fence string
+	for _, line := range strings.Split(strings.ReplaceAll(md, "\r\n", "\n"), "\n") {
+		if m := fenceRE.FindStringSubmatch(line); m != nil {
+			marker := m[1][:3]
+			if fence == "" {
+				if !strings.Contains(line[len(m[0]):], marker) {
+					fence = marker
+				}
+				continue
+			}
+			if strings.HasPrefix(strings.TrimSpace(line), fence) {
+				fence = ""
+			}
+			continue
+		}
+		if fence != "" {
+			continue
+		}
+		for _, m := range htmlAnchorRE.FindAllStringSubmatch(line, -1) {
+			if id := m[1] + m[2]; id != "" {
+				anchors[id] = true
+			}
+		}
+		m := headingRE.FindStringSubmatch(line)
+		if m == nil {
+			continue
+		}
+		base := followup50HeadingAnchor(m[1])
+		if base == "" {
+			continue
+		}
+		anchor := base
+		if n := seen[base]; n > 0 {
+			anchor = fmt.Sprintf("%s-%d", base, n)
+		}
+		seen[base]++
+		anchors[anchor] = true
+	}
+	return anchors
+}
+
+func followup50HeadingAnchor(raw string) string {
+	linkRE := regexp.MustCompile(`\[([^\]]*)\]\([^)]*\)`)
+	tagRE := regexp.MustCompile(`<[^>]+>`)
+	codeRE := regexp.MustCompile("`+([^`]+)`+")
+	emphUnderscoreRE := regexp.MustCompile(`(?:^|([^\p{L}\p{Nd}]))_+([^\s_](?:.*?[^\s_])?)_+(?:$|([^\p{L}\p{Nd}]))`)
+	keepRE := regexp.MustCompile(`[^\p{L}\p{Nd} _-]+`)
+
+	s := tagRE.ReplaceAllString(raw, "")
+	for linkRE.MatchString(s) {
+		s = linkRE.ReplaceAllString(s, "$1")
+	}
+	stripEmph := func(chunk string) string {
+		chunk = strings.NewReplacer("*", "", "~", "").Replace(chunk)
+		for emphUnderscoreRE.MatchString(chunk) {
+			chunk = emphUnderscoreRE.ReplaceAllString(chunk, "$1$2$3")
+		}
+		return chunk
+	}
+	var rendered strings.Builder
+	last := 0
+	for _, m := range codeRE.FindAllStringSubmatchIndex(s, -1) {
+		rendered.WriteString(stripEmph(s[last:m[0]]))
+		rendered.WriteString(s[m[2]:m[3]])
+		last = m[1]
+	}
+	rendered.WriteString(stripEmph(s[last:]))
+	out := strings.ToLower(rendered.String())
+	out = keepRE.ReplaceAllString(out, "")
+	return strings.ReplaceAll(out, " ", "-")
 }
