@@ -13,7 +13,7 @@ This runbook specifies the production and lab backup architecture, continuous WA
 | **Central Database RPO Target** | **`<= 15 minutes`** (`900s`) | Requires healthy archiving and measured repository WAL age; configured with `archive_mode = on` and `archive_timeout = 300s` (`§16.5`, `§17.2`). |
 | **Usage Ledger Effective RPO** | **`0` bytes lost / `0` double-counted only when the restore point is inside the available node archive window** | Exit nodes keep ACKed payloads at least `72 hours` after local ACK (`DefaultArchiveRetain = 72 * time.Hour`; no node configuration override). Unacknowledged payloads are retained and resent, with new member forwarding blocked at oldest-event age `72 hours` or decimal `256 MB`, whichever comes first. The replay archive has its own `1000000000`-byte engineering budget, not a spec number. Outside the retained window, replay can be unavailable; shortening it requires updated parameters, recovery documents and risk notes ([usage storage](../node/usage-store.md#ack), `§10.8`, `§17.3`, `AT30`). |
 | **Central Service RTO Target** | **`<= 4 hours`** (`§16.5`/`§17.2`; unmeasured by this local drill) | Covers physical DB/WAL restore, migration check, checklist inspection, ledger freeze/epoch rotation, replay, and provider/NetBird reconciliation. |
-| **Signing Vault (`/var/lib/fvpn/staging-authority/vault`) RPO** | **`0` (Zero Rollback)** | Stored outside PostgreSQL and never included in database snapshots (`§16.2`, `§17.2`). |
+| **Signing Vault (`/var/lib/fvpn/staging-authority/vault`) RPO** | **Target: `0` (Zero Rollback)** | Stored outside PostgreSQL and never included in database snapshots (`§16.2`, `§17.2`). Carried gap: production custody and independent anti-rollback; FileProvider cannot detect whole-directory rollback. See [rotation/restore limits](../pki/rotation.md). |
 
 ---
 
@@ -32,6 +32,8 @@ max_wal_senders = 5
 ```
 
 - **Production**: `archive_timeout = 300s` (5 minutes) forces segment switches when WAL activity occurs; repository availability and archive-age monitoring are still required for the `<= 15 minutes` RPO target (`§17.2`).
+
+Carried gap: the PostgreSQL server/archiver must receive the repository passphrase and object-store credentials for encrypted `archive-push`. Only the three backup services load `/etc/fvpn/secrets/pgbackrest-repo.env`; their `EnvironmentFile` does not configure PostgreSQL. The repository has no production procedure to deliver this environment to PostgreSQL.
 - **Lab / CI Override (`TEST ONLY`)**: Containerized lab and drill environments may set `FVPN_PG_ARCHIVE_TIMEOUT=10s` on `deploy/backup/postgres/Dockerfile` to bound idle archive lag during automated tests.
 - **Isolated Verification Containers**: When `restore-pitr.sh` launches an isolated verification container (`--network none`), it sets `FVPN_PG_ISOLATED_RESTORE=1` and mounts the backup repository read-only (`:ro`). The entrypoint writes `archive_mode = off` inside the verification container so promotion to a new timeline never pushes WAL segments back to the primary repository.
 
@@ -46,7 +48,7 @@ Production installs Profile A from `deploy/backup/pgbackrest.conf.example` as `/
 ### 2.3 Least-Privilege Database Roles (`docs/handover/deploy.md §3.2`, `docs/db/README.md`)
 
 - `fvpn_backup`: Logical read-only role for backup verification and `pg_dump` exports (`GRANT pg_read_all_data TO fvpn_backup`); holds no mutation privileges on application tables and is not the physical backup account. Physical pgBackRest backups run as the local `postgres` OS/cluster account over the Unix domain socket (`/var/run/postgresql`).
-- `fvpn_migrator`: Schema owner used exclusively by `fvpn-migrate up` and `fvpn-migrate status`.
+- `fvpn_migrator`: Schema-owner operator credential for migration status/apply and the checked restored candidate's checklist in Steps 3–4; it is not a control/worker runtime credential.
 - `fvpn_recovery`: Controlled recovery role used by `fvpn-usage-admin` (`internal/usage/cmd/fvpn-usage-admin`) to freeze usage ingestion, rotate `ledger_epoch` (`usage_recovery_records`, `usage_ledger_epochs`, `usage_checkpoints`), and complete recovery (`§17.3`).
 
 ---
@@ -65,6 +67,8 @@ Install the systemd service and timer units from [`deploy/backup/systemd/`](../.
 | `fvpn-backup-verify.timer` / `.service` | Daily: `*-*-* 03:00:00 UTC` | Runs `deploy/backup/verify.sh` to restore the latest backup into an isolated `--network none` container, verify `fvpn-migrate status`, run `post-restore-checklist.sql`, and emit RPO/RTO metrics. |
 
 Enable the timers in production:
+
+Carried gap: first-host repository/stanza creation and the initial base-backup procedure are not supplied here. The configuration and timers alone do not establish a recoverable repository. See the [carried list](../handover/follow-up-51.md#existing-procedures-linked-and-carried-gaps).
 ```bash
 install -d -m 0755 /usr/local/lib/fvpn/backup
 install -m 0755 deploy/backup/backup.sh deploy/backup/restore-pitr.sh deploy/backup/verify.sh deploy/backup/repo-copy.py /usr/local/lib/fvpn/backup/
@@ -78,6 +82,8 @@ The host needs Python 3, pgBackRest 2.60.0, PostgreSQL client tools, Docker, the
 
 ### 3.2 Retention & Post-Restore Data Minimization (`§16.4`, `§17.2`)
 
+Carried gap: authorized audit-event and usage-rollup purge scheduling and coordination of JSON/database retention are not implemented as an operator procedure; service-log retention is also absent. See [calibration retention](../handover/calibration.md#16-data-retention-periods-105-154-164-173-21) before treating the purge references below as completed setup.
+
 - **Backup Retention (`pgbackrest.conf`)**:
   - `repo1-retention-full-type=time`
   - `repo1-retention-full=35` (35-day minimum recovery window; an older full is retained until another full covers the window).
@@ -89,6 +95,8 @@ The host needs Python 3, pgBackRest 2.60.0, PostgreSQL client tools, Docker, the
 ---
 
 ## 4. Encryption & Key Separation Contract (`§16.2`, `§17.2`)
+
+Carried gap: the repository environment must also reach PostgreSQL archiving and native restore processes, as noted in §§2.1 and 6.2; creating the secret file alone only supplies the backup services that explicitly load it.
 
 1. **Repository Encryption at Rest**:
    All pgBackRest base backups and WAL archives are encrypted client-side using `repo1-cipher-type=aes-256-cbc` before leaving the database host.
@@ -122,6 +130,8 @@ FROM pg_stat_archiver;
 - **Critical threshold (RPO breach risk)**: `archive_lag_seconds > 600` (10 minutes; approaches the 15-minute RPO bound).
 
 ### 5.2 Last Successful Base Backup Age (`pgbackrest info`)
+
+Carried gap: manual `backup.sh info` and `verify.sh` invocations also need the repository environment inherited by the calling process; only the installed backup services load the environment file automatically. The production process-environment procedure remains absent.
 
 Inspect the repository metadata JSON via `deploy/backup/backup.sh info`:
 ```bash
@@ -166,6 +176,8 @@ deploy/backup/restore-pitr.sh \
 
 ### 6.2 Restoring into a Clean Host Data Directory (Production Host Replacement)
 
+Carried gap: the native restore process running as the `postgres` OS account must inherit the repository passphrase and object-store credentials. `restore-pitr.sh` does not load `/etc/fvpn/secrets/pgbackrest-repo.env`; the backup services do not supply the environment to this invocation. The repository has no procedure for safely delivering it to this process; the command below alone cannot restore the encrypted production repository.
+
 On a replacement database host (or after stopping `postgresql.service` and moving the damaged data directory aside to `/var/lib/postgresql/17/main.damaged`):
 ```bash
 systemctl stop fvpn-control.service fvpn-worker.service postgresql.service
@@ -179,6 +191,8 @@ sudo -u postgres /usr/local/lib/fvpn/backup/restore-pitr.sh \
 ```
 
 ### 6.3 Automated Verification Script (`deploy/backup/verify.sh`)
+
+Carried gap: this manual verification invocation needs the inherited repository credentials described in §5.2. The production environment-delivery procedure is absent; a backup service environment is not inherited by a separate shell invocation.
 
 To run an end-to-end throwaway verification of the latest backup at any time:
 ```bash
@@ -204,17 +218,19 @@ Execute the following steps **strictly in order** after restoring PostgreSQL to 
    *(Exit nodes continue forwarding traffic for authorized members within their valid serving leases and buffer usage events in local SQLite, `§16.3`, `§17.1`.)*
 2. Verify that `/var/lib/fvpn/staging-authority/vault/state.json` and all key files in `/var/lib/fvpn/staging-authority/vault` are intact and untouched by the database restore (`§16.2`).
 
+Carried gap: production custody and independent anti-rollback remain unimplemented. Use the [staging inspection boundary](../pki/inspect.md#key-use-inspection); local key inspection cannot prove that the whole vault directory was not rolled back.
+
 ### Step 2: Execute Physical PITR Restore (`restore-pitr.sh`)
 
 Restore PostgreSQL to `RESTORED_TO_UTC` (or target LSN) using `deploy/backup/restore-pitr.sh` as shown in Section 6, start PostgreSQL on the restored data directory, and confirm `SELECT pg_is_in_recovery();` returns `f` (promoted).
 
 ### Step 3: Verify Schema Migration Status (`fvpn-migrate status`)
 
-Verify that the restored database schema matches the deployed central binaries (`docs/db/README.md`):
+Verify that the restored database schema matches the deployed central binaries (`docs/db/README.md`). Supply `RESTORED_MIGRATOR_DSN` as the separate `fvpn_migrator` operator credential for the checked restored candidate, as in [restore migration selection](../handover/restore-drill.md#phase-2-restore-postgresql-17-and-freeze-usage-ingestion). Provision `RESTORED_RECOVERY_DSN_FILE` as a service-readable mode-`0600` file containing that candidate's `fvpn_recovery` DSN; use it for all recovery CLI commands below. Neither credential is the control/worker runtime DSN. Check the target before applying migrations or recovery mutations:
 ```bash
-FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate status
-FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate up
-FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate status
+FVPN_DATABASE_URL="${RESTORED_MIGRATOR_DSN:?supply the restored candidate migrator DSN}" /usr/local/bin/fvpn-migrate status
+FVPN_DATABASE_URL="${RESTORED_MIGRATOR_DSN:?supply the restored candidate migrator DSN}" /usr/local/bin/fvpn-migrate up
+FVPN_DATABASE_URL="${RESTORED_MIGRATOR_DSN:?supply the restored candidate migrator DSN}" /usr/local/bin/fvpn-migrate status
 ```
 Use the migration binary built from the deployed release and confirm `current_database` identifies the restored target. Every file in that release's `db/migrations/*.sql` must be applied on the restored target, and the final `fvpn-migrate status` must report no pending version. [`deploy/backup/test/review_proof.sh`](../../deploy/backup/test/review_proof.sh), run by `make -f mk/backup.mk backup-review-proof`, derives the expected versions and count from that glob and checks status on its isolated PITR target.
 
@@ -222,7 +238,7 @@ Use the migration binary built from the deployed release and confirm `current_da
 
 Execute [`deploy/backup/post-restore-checklist.sql`](../../deploy/backup/post-restore-checklist.sql) against the restored database:
 ```bash
-psql "$(cat /etc/fvpn/secrets/database.url)" \
+psql "${RESTORED_MIGRATOR_DSN:?supply the restored candidate migrator DSN}" \
   -v ON_ERROR_STOP=1 \
   -v restore_point="${RESTORED_TO_UTC}" \
   -f /usr/local/lib/fvpn/backup/post-restore-checklist.sql
@@ -241,14 +257,16 @@ Using the existing recovery CLI (`./internal/usage/cmd/fvpn-usage-admin`, backed
 
 1. **Freeze usage ingestion** so `POST /api/v1/agent/usage-batches` returns `503 DEPENDENCY_UNAVAILABLE` (`retryable: true`) and cannot ACK batches against pre-recovery watermarks:
    ```bash
-   /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
+   FVPN_DATABASE_URL_FILE="${RESTORED_RECOVERY_DSN_FILE:?supply the restored candidate recovery DSN file}" \
+     /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
      freeze \
      --actor "${ADMIN_ACTOR_UUID}" \
      --reason "PITR restore to ${RESTORED_TO_UTC}"
    ```
 2. **Rotate `ledger_epoch` and enter `reconciling` mode**:
    ```bash
-   /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
+   FVPN_DATABASE_URL_FILE="${RESTORED_RECOVERY_DSN_FILE:?supply the restored candidate recovery DSN file}" \
+     /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
      begin-recovery \
      --actor "${ADMIN_ACTOR_UUID}" \
      --restored-to "${RESTORED_TO_UTC}" \
@@ -264,12 +282,14 @@ Using the existing recovery CLI (`./internal/usage/cmd/fvpn-usage-admin`, backed
 
 ### Step 6: Start `fvpn-control` & Trigger Node Archive Replay (`§17.3 Steps 4–9`)
 
+Carried gap: restricted recovery startup is absent. Control can issue leases from restored authorization before Step 7.1 re-applies newer intent. Keep the worker stopped through that step; D-076 is conditional, not a global recovery fence. There is no implemented mode that completes usage replay, entitlement computation and policy sync before the automatic worker starts (spec §17.4 step 5). See [restore step 3.2](../handover/restore-drill.md#phase-3-rotate-ledger_epoch-and-start-central-services-173-steps-26) for the exposure and ordering.
+
 1. Start `fvpn-control.service` so exit nodes can reach the agent mTLS listener (`:9443`):
    ```bash
    systemctl start fvpn-control.service
    ```
 2. When each online exit node uploads its next usage batch under the old `ledger_epoch`, `fvpn-control` responds with `409 LEDGER_EPOCH_MISMATCH` (`current_ledger_epoch` in error details).
-3. The node agent (`node/internal/usageupload`) automatically fetches `GET /api/v1/agent/usage-checkpoint`, verifies the Ed25519 `recovery` signature against `/etc/vpn-node/trust.json`, lowers its upload cursor to the restored `highest_contiguous_seq`, and replays retained events from its local SQLite archive (`node/internal/usagestore`).
+3. The node agent (`node/internal/usageupload`) automatically fetches `GET /api/v1/agent/usage-checkpoint`, verifies the Ed25519 `recovery` signature against the configured agent `trust_bundle` (the installer writes `/etc/vpn-node/trust.json`), lowers its upload cursor to the restored `highest_contiguous_seq`, and replays retained events from its local SQLite archive (`node/internal/usagestore`).
    - Events already present in the restored snapshot return `status: "duplicate"` and are never double-counted (`MTR03`).
    - Events committed after the restore point return `status: "accepted"`.
    - Any sequence range purged from the node's local archive because it exceeded the retention window is reported in `replay_unavailable`, inserting zero-byte tombstones and setting `gap = TRUE` on affected member rollups without inventing bytes (`§17.3 Step 9`).
@@ -280,15 +300,17 @@ Using the existing recovery CLI (`./internal/usage/cmd/fvpn-usage-admin`, backed
    - Before enabling background workers or opening public traffic, cross-check Section `[5/6]` of `post-restore-checklist.sql` against out-of-band operator audit logs.
    - Re-revoke any node incarnation with `POST /api/v1/admin/nodes/{node_id}/revoke`. Never restore a revoked node's service identity to retrieve historical usage (`§17.4`).
    - For a member device revoked after `RESTORED_TO_UTC`, the owning member uses `DELETE /api/v1/member/devices/{device_id}` (`operationId: revokeMemberDevice` in [`contracts/openapi.yaml` v1.2.0](../../contracts/openapi.yaml)). It requires the owner's member session, CSRF token, path parameter `device_id`, and `Idempotency-Key`; there is no request body. It is not an admin endpoint. Keep the member administratively suspended until the recorded revocation is enforced if the owner cannot complete it.
-   - Re-apply administrative suspension with `PATCH /api/v1/admin/members/{member_id}` (`operationId: updateMember` in the same contract), an admin session, CSRF token, current `If-Match` ETag, and a fresh `Idempotency-Key`. Send `{"admin_suspended": true, "suspension_reason": "Reapply recorded post-restore suspension"}`. These are the exact `MemberPatch` fields for suspension: `admin_suspended` is boolean and `suspension_reason` is required when true (1–500 characters). Keep a member suspended while any recorded post-restore manual grant revocation remains unresolved; the contract exposes grant creation but no grant-revocation endpoint.
-   - Both member-device revocation and suspension return `202` with an operation. Start the worker in Step 7.2 to apply queued changes, then verify terminal success and observed enforcement before opening public traffic; administrators can inspect `GET /api/v1/admin/operations/{operation_id}` (`operationId: getAdminOperation`).
+   - Re-apply administrative suspension with `PATCH /api/v1/admin/members/{member_id}` (`operationId: updateMember` in the same contract), an admin session, CSRF token, current `If-Match` ETag, and a fresh `Idempotency-Key`. Send `{"admin_suspended": true, "suspension_reason": "Reapply recorded post-restore suspension"}`. These are the exact `MemberPatch` fields for suspension: `admin_suspended` is boolean and `suspension_reason` is required when true (1–500 characters). Re-apply each recorded grant withdrawal with `POST /api/v1/admin/members/{member_id}/grants/{grant_id}/revoke`, following [explicit grant withdrawal](../members/README.md#explicit-grant-withdrawal-revision-14-at29): admin session, CSRF token, Origin, fresh UUID `Idempotency-Key` and `{"reason":"Reapply recorded post-restore grant withdrawal"}`; no grant ETag is required. The transaction commits `revoked_at`, `revocation_reason` and recomputed entitlement, then returns `202` with `member.grant_revoke`. Keep the member suspended while any recorded withdrawal remains unresolved; acceptance is not observed enforcement.
+   - Node/device revocation and grant withdrawal commit the intent before returning an accepted operation. Suspension commits the member change and recomputes entitlement; it returns `202` when a changed projection creates an operation, or `200` when no operation is needed. The worker reads these durable changes on its first reconciliation. Start it only in Step 7.2 after recorded withdrawal intents have been committed, then verify terminal operation results and observed enforcement before opening public traffic; use `GET /api/v1/admin/operations/{operation_id}` for every returned operation. A `200` or `202` receipt alone does not establish remote enforcement.
 2. **Start `fvpn-worker` and Reconcile Billing & Entitlements (`§9.3`, `§17.4 Step 2`)**:
    ```bash
    systemctl start fvpn-worker.service
    ```
-   - `billing.reconcile` queries the payment provider for current subscriptions, invoices, and refunds, repairing any webhooks missed during the RPO window without duplicating charges (`BILL01`) and without clearing `members.admin_suspended` (`ENT02`).
+   - `billing.reconcile` schedules synthetic inbox events for subscriptions already present in the restored database, including canceled ones. Processing those events reads current provider subscription, invoice and refund state and recomputes entitlement without clearing administrative suspension. It does not discover every subscription absent from the restored rows.
+   - Carried gap: inventory and reconstruction of provider subscriptions absent from the restore point; the known-subscription sweep is not proof that every missed provider event has been recovered.
 3. **Reconcile NetBird Overlay, Exit Publication Intents & DNS (`§5.2`, `§12.5`, `§17.4 Steps 3–4`)**:
-   - `node.reconcile` and `members.reconcile` read back observed NetBird peers, routes, and groups and converge them to central desired state, disabling any peer absent from restored `member_devices` or `node_incarnations` (fail-closed).
+   - `node.reconcile` handles generation holds, fleet database job state and bootstrap expiry. `members.reconcile` recomputes entitlements and syncs existing device rows with authorization read-back; D-076 fences qualifying unexplained withdrawals. The separate `devices.discover` sweep skips userless/ephemeral peers and may authorize an eligible unknown member peer. These jobs do not promise global orphan-peer deletion or published-route/policy drift cleanup; see the [restore reconciliation limits](../handover/restore-drill.md#phase-5-reconcile-netbird-overlay-node-pki-and-dns-state-52-64-122-174).
+   - Carried gap: inventory and revocation of peers authorized after the restore point, including peers absent from restored records. The sweeps are not proof that all such peers, routes or policies were withdrawn.
    - For any exit node listed in Section `[3/6]` of `post-restore-checklist.sql` whose post-restore publication intent cannot be confirmed, keep `publication_intent` in `unpublished` or `disabled` (fail-closed).
    - Verify `dns_publication_heads` and resolver convergence (`dns.publish`).
 4. **Reconcile Fleet Update Batches & Node Releases (`§13.8`, `§17.4 Step 3`)**:
@@ -298,12 +320,13 @@ Using the existing recovery CLI (`./internal/usage/cmd/fvpn-usage-admin`, backed
 
 1. Once all active nodes have adopted `new_ledger_epoch` and replayed their retained archives, exit reconciling mode:
    ```bash
-   /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
+   FVPN_DATABASE_URL_FILE="${RESTORED_RECOVERY_DSN_FILE:?supply the restored candidate recovery DSN file}" \
+     /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
      complete-recovery \
      --actor "${ADMIN_ACTOR_UUID}"
    ```
    This marks the `usage_recovery_records` row `completed`, clears `reconciliation_in_progress` on `usage_rollups` (preserving `gap = TRUE` where `replay_unavailable` occurred), and sets `usage_ledger_state.mode = 'normal'`.
-2. Re-run retention purges (`SELECT purge_retained(...)`) if any expired rows were reintroduced by the snapshot (`§16.4`).
+2. Carried gap: authorized audit/rollup purge execution and scheduling, plus JSON/database retention coordination, still need a procedure. The function supports only its documented targets and enforces database cutoff policy; the reference `SELECT purge_retained(...)` is not an executable purge instruction. Review [calibration retention](../handover/calibration.md#16-data-retention-periods-105-154-164-173-21) before minimizing rows reintroduced by the snapshot (`§16.4`).
 3. Run post-restore verification probes (`curl -fsS https://vpn.example.com:8443/readyz`, isolated test member login, DNS resolution, and usage query) and record the measured RPO and RTO.
 
 ---
@@ -316,7 +339,7 @@ The full physical backup, WAL switch, and isolated PITR restore drill is automat
 make -f mk/backup.mk backup-lint backup-test backup-drill
 ```
 
-What `backup-drill` proves on every run. Container, volume, network, and image-tag names come from `FVPN_BACKUP_DRILL_PREFIX` when that variable matches `fvpn-w4-ops-backups-<lowercase-run-id>`, otherwise from `fvpn-w4-ops-backups-` plus 8 lowercase hex digits (`docs/handover/restore-drill.md`). The test removes only that prefix.
+What `backup-drill` proves on every run. Container, volume, network, and image-tag names come from `FVPN_BACKUP_DRILL_PREFIX` when that variable matches `fvpn-w4-ops-backups-<lowercase-run-id>`. A non-empty invalid value fails the drill before it creates resources. Only an unset/empty value selects `fvpn-w4-ops-backups-` plus 8 lowercase hex digits (`docs/handover/restore-drill.md`). The test removes only that prefix.
 1. Builds `deploy/backup/postgres/Dockerfile` (`PostgreSQL 17` + `pgBackRest 2.60.0`) and starts primary container `<prefix>-primary` with `archive_mode=on` and repo volume `<prefix>-repo`.
 2. Applies all forward migrations via `fvpn-migrate up`.
 3. Creates drill-only table `_backup_drill` (never touching product tables, `D-050`) and commits Marker `A`.

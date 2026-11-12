@@ -1166,5 +1166,867 @@
     "evidence": [
       "docs/handover/follow-up-51.md:23"
     ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "s1_control_before_worker",
+    "before": "- [ ] **3.2 Start `fvpn-control` and `fvpn-worker`** `[production only]`:\n  ```bash\n  systemctl start fvpn-control.service fvpn-worker.service\n  curl -fsS https://vpn.example.com:8443/readyz\n  ```",
+    "after": "- [ ] **3.2 Start `fvpn-control` alone; keep `fvpn-worker` stopped** `[production only]`:\n  ```bash\n  systemctl start fvpn-control.service\n  curl -fsS https://vpn.example.com:8443/readyz\n  ```\n  Before starting the worker or opening public traffic, re-apply recorded post-snapshot node/device revocations, administrative suspensions and grant withdrawals using [backup Step 7.1](../ops/backups.md#step-7-reconcile-entitlements-revocations-publication-intents--fleet-updates-174-secops-05). Node revocation commits lifecycle/publication intent and certificate/incarnation revocations (and persists the local identity fence before commit); device revocation commits revoked status. Suspension and grant withdrawal commit their intent and recomputed entitlement in the accepting transaction. The worker's first reconciliation therefore reads those committed changes. An accepted operation still does not prove remote withdrawal.\n\n  Carried gap: restricted recovery startup is not implemented. Control alone still serves agent requests and may issue leases from restored authorization while newer intent is being re-applied; stopping the worker is not a global forwarding fence, and D-076 requires an earlier authorized observation plus a current withdrawal. The repository has no startup mode that completes usage replay, entitlement computation and policy synchronization before enabling the automatic worker as spec §17.4 step 5 requires. The order here reduces exposure but does not establish that fail-closed recovery boundary.\n\n  Once the recorded withdrawal intents are committed, start `fvpn-worker.service` as in backup Step 7.2. Verify each accepted operation's terminal result and observed enforcement before opening public traffic; continue the checks below with that ordering.",
+    "evidence": [
+      "internal/enrollment/revoke.go:89",
+      "internal/enrollment/revoke.go:100",
+      "internal/devices/service.go:390",
+      "internal/members/service.go:288",
+      "internal/members/service.go:295",
+      "internal/members/service.go:533",
+      "internal/members/service.go:539",
+      "internal/leases/leases.go:162",
+      "apps/worker/jobs_members.go:180",
+      "internal/devices/fence.go:94",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:1864",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:1872"
+    ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "s1_suspension_grant_order",
+    "before": "  Payment reconciliation (`internal/billing/service.go`, `internal/entitlement/store.go`) updates subscription periods but **never** clears an active administrative suspension (`members.admin_suspended = true`) or overwrites an active manual grant (`entitlement_grants`). Re-apply a post-snapshot suspension with `PATCH /api/v1/admin/members/{member_id}` (`operationId: updateMember`), an admin session, CSRF token, current `If-Match` ETag, and a fresh `Idempotency-Key`. The suspension body is `{\"admin_suspended\": true, \"suspension_reason\": \"Reapply recorded post-snapshot suspension\"}`; `suspension_reason` is required when suspending and must contain 1–500 characters. Re-issue a recorded manual grant with `POST /api/v1/admin/members/{member_id}/grants` (`operationId: createMemberGrant`), supplying its `source`, `valid_until`, and `reason` as defined in [`contracts/openapi.yaml`](../../contracts/openapi.yaml). Track returned operations through completion before treating external enforcement as restored.",
+    "after": "  Confirm that step 3.2 re-applied every recorded suspension and grant withdrawal before worker startup. Use [explicit grant withdrawal](../members/README.md#explicit-grant-withdrawal-revision-14-at29), including its required reason and accepted-operation read-back. A restored grant is not evidence that it remains authorized. Re-issue a recorded grant only after checking later withdrawals, using the finite grant fields in the [API contract](../../contracts/openapi.yaml). Track accepted operations and observed enforcement separately.",
+    "evidence": [
+      "internal/enrollment/revoke.go:89",
+      "internal/enrollment/revoke.go:100",
+      "internal/devices/service.go:390",
+      "internal/members/service.go:288",
+      "internal/members/service.go:295",
+      "internal/members/service.go:533",
+      "internal/members/service.go:539",
+      "internal/leases/leases.go:162",
+      "apps/worker/jobs_members.go:180",
+      "internal/devices/fence.go:94",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:1864",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:1872",
+      "docs/members/README.md:176"
+    ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "s1_node_revocation_order",
+    "before": "  Cross-check node revocation records against out-of-band operator logs. If any node was revoked or retired after `restored_to`, immediately invoke `POST /api/v1/admin/nodes/{node_id}/revoke` (or `DELETE /api/v1/admin/nodes/{node_id}`) so the node's mTLS certificate is revoked and its NetBird peer/route are removed.",
+    "after": "  Confirm that step 3.2 re-applied recorded node revocations/retirements before worker startup through `POST /api/v1/admin/nodes/{node_id}/revoke` or `DELETE /api/v1/admin/nodes/{node_id}` using the [operator revocation procedure](operator-guide.md). The accepting transaction commits withdrawal intent; the local identity fence is persisted before that commit. NetBird peer/route cleanup is asynchronous. Check operation completion and remote read-back before declaring withdrawal observed. Never re-enable a revoked identity to retrieve usage.",
+    "evidence": [
+      "internal/enrollment/revoke.go:89",
+      "internal/enrollment/revoke.go:100",
+      "internal/devices/service.go:390",
+      "internal/members/service.go:288",
+      "internal/members/service.go:295",
+      "internal/members/service.go:533",
+      "internal/members/service.go:539",
+      "internal/leases/leases.go:162",
+      "apps/worker/jobs_members.go:180",
+      "internal/devices/fence.go:94",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:1864",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:1872",
+      "docs/handover/operator-guide.md:579"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s3_grant_withdrawal",
+    "before": "Keep a member suspended while any recorded post-restore manual grant revocation remains unresolved; the contract exposes grant creation but no grant-revocation endpoint.",
+    "after": "Re-apply each recorded grant withdrawal with `POST /api/v1/admin/members/{member_id}/grants/{grant_id}/revoke`, following [explicit grant withdrawal](../members/README.md#explicit-grant-withdrawal-revision-14-at29): admin session, CSRF token, Origin, fresh UUID `Idempotency-Key` and `{\"reason\":\"Reapply recorded post-restore grant withdrawal\"}`; no grant ETag is required. The transaction commits `revoked_at`, `revocation_reason` and recomputed entitlement, then returns `202` with `member.grant_revoke`. Keep the member suspended while any recorded withdrawal remains unresolved; acceptance is not observed enforcement.",
+    "evidence": [
+      "contracts/openapi.yaml:879",
+      "contracts/openapi.yaml:893",
+      "internal/members/service.go:533",
+      "internal/members/service.go:539",
+      "docs/members/README.md:176"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s1_durable_intent_readback",
+    "before": "Both member-device revocation and suspension return `202` with an operation. Start the worker in Step 7.2 to apply queued changes, then verify terminal success and observed enforcement before opening public traffic; administrators can inspect `GET /api/v1/admin/operations/{operation_id}` (`operationId: getAdminOperation`).",
+    "after": "Node/device revocation and grant withdrawal commit the intent before returning an accepted operation. Suspension commits the member change and recomputes entitlement; it returns `202` when a changed projection creates an operation, or `200` when no operation is needed. The worker reads these durable changes on its first reconciliation. Start it only in Step 7.2 after recorded withdrawal intents have been committed, then verify terminal operation results and observed enforcement before opening public traffic; use `GET /api/v1/admin/operations/{operation_id}` for every returned operation. A `200` or `202` receipt alone does not establish remote enforcement.",
+    "evidence": [
+      "internal/enrollment/revoke.go:89",
+      "internal/enrollment/revoke.go:100",
+      "internal/devices/service.go:390",
+      "internal/members/service.go:288",
+      "internal/members/service.go:295",
+      "internal/members/service.go:533",
+      "internal/members/service.go:539",
+      "internal/leases/leases.go:162",
+      "apps/worker/jobs_members.go:180",
+      "internal/devices/fence.go:94",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:1864",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:1872",
+      "internal/members/service.go:292",
+      "internal/members/service.go:315"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s1_backup_recovery_exposure",
+    "before": "### Step 6: Start `fvpn-control` & Trigger Node Archive Replay (`§17.3 Steps 4–9`)",
+    "after": "### Step 6: Start `fvpn-control` & Trigger Node Archive Replay (`§17.3 Steps 4–9`)\n\nCarried gap: restricted recovery startup is absent. Control can issue leases from restored authorization before Step 7.1 re-applies newer intent. Keep the worker stopped through that step; D-076 is conditional, not a global recovery fence. There is no implemented mode that completes usage replay, entitlement computation and policy sync before the automatic worker starts (spec §17.4 step 5). See [restore step 3.2](../handover/restore-drill.md#phase-3-rotate-ledger_epoch-and-start-central-services-173-steps-26) for the exposure and ordering.",
+    "evidence": [
+      "internal/enrollment/revoke.go:89",
+      "internal/enrollment/revoke.go:100",
+      "internal/devices/service.go:390",
+      "internal/members/service.go:288",
+      "internal/members/service.go:295",
+      "internal/members/service.go:533",
+      "internal/members/service.go:539",
+      "internal/leases/leases.go:162",
+      "apps/worker/jobs_members.go:180",
+      "internal/devices/fence.go:94",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:1864",
+      "docs/spec/PROJECT_SPEC.zh-TW.md:1872"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s2_bounded_peer_reconciliation",
+    "before": "   - `node.reconcile` and `members.reconcile` read back observed NetBird peers, routes, and groups and converge them to central desired state, disabling any peer absent from restored `member_devices` or `node_incarnations` (fail-closed).",
+    "after": "   - `node.reconcile` handles generation holds, fleet database job state and bootstrap expiry. `members.reconcile` recomputes entitlements and syncs existing device rows with authorization read-back; D-076 fences qualifying unexplained withdrawals. The separate `devices.discover` sweep skips userless/ephemeral peers and may authorize an eligible unknown member peer. These jobs do not promise global orphan-peer deletion or published-route/policy drift cleanup; see the [restore reconciliation limits](../handover/restore-drill.md#phase-5-reconcile-netbird-overlay-node-pki-and-dns-state-52-64-122-174).\n   - Carried gap: inventory and revocation of peers authorized after the restore point, including peers absent from restored records. The sweeps are not proof that all such peers, routes or policies were withdrawn.",
+    "evidence": [
+      "apps/worker/jobs_nodes.go:270",
+      "internal/fleetupdate/progress.go:310",
+      "internal/devices/worker.go:260",
+      "internal/devices/netbird_adapter.go:236",
+      "internal/devices/netbird_adapter.go:258",
+      "internal/devices/fence.go:94"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s4_migrator_candidate",
+    "before": "FVPN_DATABASE_URL=\"$(cat /etc/fvpn/secrets/database.url)\" /usr/local/bin/fvpn-migrate status\nFVPN_DATABASE_URL=\"$(cat /etc/fvpn/secrets/database.url)\" /usr/local/bin/fvpn-migrate up\nFVPN_DATABASE_URL=\"$(cat /etc/fvpn/secrets/database.url)\" /usr/local/bin/fvpn-migrate status",
+    "after": "FVPN_DATABASE_URL=\"${RESTORED_MIGRATOR_DSN:?supply the restored candidate migrator DSN}\" /usr/local/bin/fvpn-migrate status\nFVPN_DATABASE_URL=\"${RESTORED_MIGRATOR_DSN:?supply the restored candidate migrator DSN}\" /usr/local/bin/fvpn-migrate up\nFVPN_DATABASE_URL=\"${RESTORED_MIGRATOR_DSN:?supply the restored candidate migrator DSN}\" /usr/local/bin/fvpn-migrate status",
+    "evidence": [
+      "internal/db/cmd/fvpn-migrate/main.go:22",
+      "docs/handover/restore-drill.md:257"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s4_checklist_candidate",
+    "before": "psql \"$(cat /etc/fvpn/secrets/database.url)\" \\",
+    "after": "psql \"${RESTORED_MIGRATOR_DSN:?supply the restored candidate migrator DSN}\" \\",
+    "evidence": [
+      "deploy/backup/post-restore-checklist.sql:1",
+      "docs/handover/restore-drill.md:257"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s4_candidate_credential_provision",
+    "before": "Verify that the restored database schema matches the deployed central binaries (`docs/db/README.md`):",
+    "after": "Verify that the restored database schema matches the deployed central binaries (`docs/db/README.md`). Supply `RESTORED_MIGRATOR_DSN` as the separate `fvpn_migrator` operator credential for the checked restored candidate, as in [restore migration selection](../handover/restore-drill.md#phase-2-restore-postgresql-17-and-freeze-usage-ingestion). Provision `RESTORED_RECOVERY_DSN_FILE` as a service-readable mode-`0600` file containing that candidate's `fvpn_recovery` DSN; use it for all recovery CLI commands below. Neither credential is the control/worker runtime DSN. Check the target before applying migrations or recovery mutations:",
+    "evidence": [
+      "docs/handover/deploy.md:161",
+      "docs/handover/restore-drill.md:270",
+      "internal/config/config.go:126",
+      "internal/usage/cmd/fvpn-usage-admin/main.go:57"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s4_recovery_freeze",
+    "before": "   /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \\\n     freeze \\",
+    "after": "   FVPN_DATABASE_URL_FILE=\"${RESTORED_RECOVERY_DSN_FILE:?supply the restored candidate recovery DSN file}\" \\\n     /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \\\n     freeze \\",
+    "evidence": [
+      "internal/usage/cmd/fvpn-usage-admin/main.go:41",
+      "internal/usage/cmd/fvpn-usage-admin/main.go:57",
+      "internal/config/config.go:126"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s4_recovery_begin",
+    "before": "   /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \\\n     begin-recovery \\",
+    "after": "   FVPN_DATABASE_URL_FILE=\"${RESTORED_RECOVERY_DSN_FILE:?supply the restored candidate recovery DSN file}\" \\\n     /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \\\n     begin-recovery \\",
+    "evidence": [
+      "internal/usage/cmd/fvpn-usage-admin/main.go:41",
+      "internal/usage/cmd/fvpn-usage-admin/main.go:57",
+      "internal/config/config.go:126"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s4_recovery_complete",
+    "before": "   /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \\\n     complete-recovery \\",
+    "after": "   FVPN_DATABASE_URL_FILE=\"${RESTORED_RECOVERY_DSN_FILE:?supply the restored candidate recovery DSN file}\" \\\n     /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \\\n     complete-recovery \\",
+    "evidence": [
+      "internal/usage/cmd/fvpn-usage-admin/main.go:41",
+      "internal/usage/cmd/fvpn-usage-admin/main.go:57",
+      "internal/config/config.go:126"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s5_archiver_environment",
+    "before": "- **Production**: `archive_timeout = 300s` (5 minutes) forces segment switches when WAL activity occurs; repository availability and archive-age monitoring are still required for the `<= 15 minutes` RPO target (`§17.2`).",
+    "after": "- **Production**: `archive_timeout = 300s` (5 minutes) forces segment switches when WAL activity occurs; repository availability and archive-age monitoring are still required for the `<= 15 minutes` RPO target (`§17.2`).\n\nCarried gap: the PostgreSQL server/archiver must receive the repository passphrase and object-store credentials for encrypted `archive-push`. Only the three backup services load `/etc/fvpn/secrets/pgbackrest-repo.env`; their `EnvironmentFile` does not configure PostgreSQL. The repository has no production procedure to deliver this environment to PostgreSQL.",
+    "evidence": [
+      "deploy/backup/pgbackrest.conf.example:30",
+      "deploy/backup/systemd/fvpn-backup-full.service:13",
+      "deploy/backup/systemd/fvpn-backup-diff.service:13",
+      "deploy/backup/systemd/fvpn-backup-verify.service:13",
+      "deploy/backup/restore-pitr.sh:30",
+      "deploy/backup/restore-pitr.sh:232"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s5_restore_environment",
+    "before": "### 6.2 Restoring into a Clean Host Data Directory (Production Host Replacement)",
+    "after": "### 6.2 Restoring into a Clean Host Data Directory (Production Host Replacement)\n\nCarried gap: the native restore process running as the `postgres` OS account must inherit the repository passphrase and object-store credentials. `restore-pitr.sh` does not load `/etc/fvpn/secrets/pgbackrest-repo.env`; the backup services do not supply the environment to this invocation. The repository has no procedure for safely delivering it to this process; the command below alone cannot restore the encrypted production repository.",
+    "evidence": [
+      "deploy/backup/pgbackrest.conf.example:30",
+      "deploy/backup/systemd/fvpn-backup-full.service:13",
+      "deploy/backup/systemd/fvpn-backup-diff.service:13",
+      "deploy/backup/systemd/fvpn-backup-verify.service:13",
+      "deploy/backup/restore-pitr.sh:30",
+      "deploy/backup/restore-pitr.sh:232"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s5_secret_file_boundary",
+    "before": "## 4. Encryption & Key Separation Contract (`§16.2`, `§17.2`)",
+    "after": "## 4. Encryption & Key Separation Contract (`§16.2`, `§17.2`)\n\nCarried gap: the repository environment must also reach PostgreSQL archiving and native restore processes, as noted in §§2.1 and 6.2; creating the secret file alone only supplies the backup services that explicitly load it.",
+    "evidence": [
+      "deploy/backup/pgbackrest.conf.example:30",
+      "deploy/backup/systemd/fvpn-backup-full.service:13",
+      "deploy/backup/systemd/fvpn-backup-diff.service:13",
+      "deploy/backup/systemd/fvpn-backup-verify.service:13",
+      "deploy/backup/restore-pitr.sh:30",
+      "deploy/backup/restore-pitr.sh:232"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "s7_updater_space_sum",
+    "before": "| **Updater Disk Free-Space Floor (`required_free_bytes` / `MinFreeBytes`)** | Release manifest `rollback.required_free_bytes` + `node/updater` (`512 MiB` floor) | `proposed` | Updater enforces `free_bytes >= artifact.size_bytes + artifact.installed_size_bytes + max(rollback.required_free_bytes, 536870912)` (`507 DISK_SPACE_LOW` on violation, `§13.4`). | `§13.4`, `§16.3` (`建議預設`: `512 MiB`) | `core team` |",
+    "after": "| **Updater Disk Free-Space Floor (`required_free_bytes`)** | Release manifest `rollback.required_free_bytes` + `node/updater` | Signed reserve; no compiled minimum | Updater checks releases-filesystem free bytes against `artifact.size_bytes + artifact.installed_size_bytes + rollback.required_free_bytes`, and staging-filesystem free bytes against `artifact.size_bytes`. Insufficient space returns `DISK_SPACE_LOW`; sum overflow also fails. There is no 512 MiB clamp. `536870912` bytes may be selected as the recommended signed reserve, but smaller signed values are allowed. `MinFreeBytes` is a separate usage-store option, not an updater setting. | `§13.4`, `§16.3` (`建議預設`: signed `512 MiB` reserve) | `core team` |",
+    "evidence": [
+      "node/updater/engine.go:596",
+      "node/updater/engine.go:1008",
+      "contracts/schemas/release-manifest-envelope.schema.json:233",
+      "node/internal/usagestore/store.go:24",
+      "node/internal/usagestore/store.go:38"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "s8_credentials_only_hup",
+    "before": "Reloaded on `SIGHUP` during `fvpn-agent run`.",
+    "after": "Only the credential file contents at the already loaded path are re-read on `SIGHUP` during `fvpn-agent run`; targets are rebuilt from the already loaded resolver list. Changing `dns.resolvers[]` or `dns.resolver_credentials_file` requires restarting `fvpn-agent.service`, then checking [node DNS evidence](deploy.md#91-node-host-prerequisites-directory-layout-and-configuration-agentsmd-4-nodeenforceapplygo-nodeenforceexecutorgo).",
+    "evidence": [
+      "node/agent/engine.go:620",
+      "node/agent/dnsconfig.go:208",
+      "node/agent/dnsconfig.go:213"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "s9_dns_publish_apply",
+    "before": "Injected into canonical `resolver_document` (`dns_resolver_documents`, `00180_dns_publish.sql`) and AdGuard Home by `fvpn-worker`.",
+    "after": "`fvpn-worker` publishes the canonical resolver document in `dns_resolver_documents`; `fvpn-agent` applies the referenced document to its configured local AdGuard Home targets. Without an applier, the agent reports `not_run`. Verify [node-reported DNS evidence](deploy.md#91-node-host-prerequisites-directory-layout-and-configuration-agentsmd-4-nodeenforceapplygo-nodeenforceexecutorgo); publication alone is not resolver application.",
+    "evidence": [
+      "apps/worker/jobs_dns.go:23",
+      "internal/dnspublish/store/store.go:50",
+      "node/agent/resolver.go:107"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s10_invalid_prefix_fails",
+    "before": "when that variable matches `fvpn-w4-ops-backups-<lowercase-run-id>`, otherwise from `fvpn-w4-ops-backups-` plus 8 lowercase hex digits",
+    "after": "when that variable matches `fvpn-w4-ops-backups-<lowercase-run-id>`. A non-empty invalid value fails the drill before it creates resources. Only an unset/empty value selects `fvpn-w4-ops-backups-` plus 8 lowercase hex digits",
+    "evidence": [
+      "tests/backup/drill_prefix.go:39",
+      "tests/backup/drill_prefix.go:49",
+      "tests/backup/drill_integration_test.go:92"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "w3_installer_rerender_boundary",
+    "before": "server CA while preserving unrelated settings and durable state.",
+    "after": "server CA by rendering the generated configuration again. Durable state is preserved, but manual agent settings such as `dns` are removed; repeat the post-install configuration and read-back in §9.1.",
+    "evidence": [
+      "packaging/installer/install.go:114",
+      "packaging/installer/install.go:205",
+      "packaging/installer/install.go:334"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "w3_adguard_admin_caller",
+    "before": "Admin HTTP API, restricted to `fvpn-worker` and `fvpn-agent`",
+    "after": "Admin HTTP API, used by the host-local `fvpn-agent` resolver applier and operator administration",
+    "evidence": [
+      "apps/worker/jobs_dns.go:23",
+      "node/agent/dnsconfig.go:213",
+      "node/agent/resolver.go:107"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "w3_worker_role_dns",
+    "before": "reconciles NetBird/Stripe/DNS (including threat-feed refreshes in `dns_feed_contents` and `dns_feed_refresh_state`)",
+    "after": "reconciles NetBird/Stripe, publishes DNS resolver documents and refreshes threat feeds in `dns_feed_contents` and `dns_feed_refresh_state`",
+    "evidence": [
+      "apps/worker/jobs_dns.go:23",
+      "apps/worker/jobs_dns.go:32"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "w5_retention_targets",
+    "before": "to delete expired raw payloads and logs while recording an audit row.",
+    "after": "for eligible `usage_event_payloads`, `audit_events` and `usage_rollups` while recording an audit row. It does not purge service logs.",
+    "evidence": [
+      "db/migrations/00006_purge_retained_audit_format.sql:14",
+      "db/migrations/00006_purge_retained_audit_format.sql:57"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "w3_shadow_api_reader",
+    "before": " and returning `state: \"normal\"` (`applying: false`, `rate: null`) to members (`docs/policies/README.md`).",
+    "after": "; the control API returns `state: \"normal\"` (`applying: false`, `rate: null`) to members through its usage reader (`docs/policies/README.md`).",
+    "evidence": [
+      "apps/control/wire_usage.go:260",
+      "internal/fup/engine.go:867",
+      "internal/usage/queries.go:169"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "w4_deploy_enforcement_identifiers",
+    "before": "- **`nft`** (`nftables` package): atomic `nft -f -` transactions and whole-ruleset `nft -j list ruleset` verification (`NftBatch`, `NftListJSON`, `node/enforce/verify_foreign.go`, [`docs/poc/G2-netlab.md`](../poc/G2-netlab.md), `#220`, `#241`, `D-079`). Under `#220` (`r14` M-3) and **`D-079` (`#241`)**, `VerifyServing` reads the entire host nftables ruleset: any foreign base chain outside `inet fvpn` on `prerouting`, `forward`, or `postrouting` in families `ip`, `ip6`, `inet`, or `bridge`, or on `ingress` or `egress` of `MemberIf` or `UplinkIf` (including a `netdev`/`inet` `ingress`/`egress` chain with no device), that can mangle/rewrite payloads, set `meta mark` or `ct mark` (`MARK_SEMANTICS_VIOLATED`), `notrack`, NAT, `queue`, `drop`, `reject` (or has chain policy `drop` or `reject`), offload via `flow`/`xt` or attach a foreign `flowtable` to `MemberIf`/`UplinkIf` (`FLOWTABLE_BYPASS`), or `jump`/`goto` into such a chain (or has no priority, an unknown hook, or an unresolvable jump target — `ISOLATION_POLICY_INVALID`), fails serving closed with `ISOLATION_POLICY_INVALID`, `MARK_SEMANTICS_VIOLATED`, or `FLOWTABLE_BYPASS` (detail includes `handle <n>`, while tolerating accept-only/match/counter/log foreign chains, `input`/`output` chains, family `arp`, and `ingress`/`egress` chains on other devices). Under **`D-079` (`#241`, `loopback_scoped` rule in `node/enforce/verify_foreign.go`)**, a foreign rule in an `ip`, `ip6`, or `inet` base chain on `prerouting`, `forward`, or `postrouting` whose first expressions are native `ip`/`ip6` `saddr` or `daddr` matches with `\"==\"` (`\"\"`) on a literal IP or prefix contained in `127.0.0.0/8` or `::1` and whose remaining expressions are only benign or NAT statements is classified as `loopback_scoped` (`VerifyResult.Loopback`, `table <t> family <f> hook <h> priority <p> chain <c> handle <n> statement <s>`) and tolerated without failing serving closed (`xt` matches and chain/table names prove nothing), whereas non-loopback NAT still fails closed as `FLOWTABLE_BYPASS` with `handle <n>`. Production exit nodes must not run Docker or any other NAT for non-loopback traffic; `loopback_scoped` in the read-back evidence is informational (`deploy/devstack` `#240` is an e2e test lab, not a production topology).",
+    "after": "- **`nft`** (`nftables` package): atomic `nft -f -` transactions and whole-ruleset `nft -j list ruleset` verification (`NftBatch`, `Executor.Output`, `node/enforce/verify_foreign.go`, [`docs/poc/G2-netlab.md`](../poc/G2-netlab.md), `#220`, `#241`, `D-079`). Under `#220` (`r14` M-3) and **`D-079` (`#241`)**, `VerifyServing` reads the entire host nftables ruleset: any foreign base chain outside `inet fvpn` on `prerouting`, `forward`, or `postrouting` in families `ip`, `ip6`, `inet`, or `bridge`, or on `ingress` or `egress` of `Datapath.MemberIngress` or `Datapath.Uplink` (including a `netdev`/`inet` `ingress`/`egress` chain with no device), that can mangle/rewrite payloads, set `meta mark` or `ct mark` (`MARK_SEMANTICS_VIOLATED`), `notrack`, NAT, `queue`, `drop`, `reject` (or has chain policy `drop` or `reject`), offload via `flow`/`xt` or attach a foreign `flowtable` to `Datapath.MemberIngress`/`Datapath.Uplink` (`FLOWTABLE_BYPASS`), or `jump`/`goto` into such a chain (or has no priority, an unknown hook, or an unresolvable jump target — `ISOLATION_POLICY_INVALID`), fails serving closed with `ISOLATION_POLICY_INVALID`, `MARK_SEMANTICS_VIOLATED`, or `FLOWTABLE_BYPASS` (detail includes `handle <n>`, while tolerating accept-only/match/counter/log foreign chains, `input`/`output` chains, family `arp`, and `ingress`/`egress` chains on other devices). Under **`D-079` (`#241`, `loopback_scoped` rule in `node/enforce/verify_foreign.go`)**, a foreign rule in an `ip`, `ip6`, or `inet` base chain on `prerouting`, `forward`, or `postrouting` whose first expressions are native `ip`/`ip6` `saddr` or `daddr` matches with `\"==\"` (`\"\"`) on a literal IP or prefix contained in `127.0.0.0/8` or `::1` and whose remaining expressions are only benign or NAT statements is classified as `loopback_scoped` (`VerifyResult.Loopback`, `table <t> family <f> hook <h> priority <p> chain <c> handle <n> statement <s>`) and tolerated without failing serving closed (`xt` matches and chain/table names prove nothing), whereas non-loopback NAT still fails closed as `FLOWTABLE_BYPASS` with `handle <n>`. Production exit nodes must not run Docker or any other NAT for non-loopback traffic; `loopback_scoped` in the read-back evidence is informational (`deploy/devstack` `#240` is an e2e test lab, not a production topology).",
+    "evidence": [
+      "node/enforce/executor.go:14",
+      "node/enforce/model.go:67",
+      "node/enforce/verify_foreign.go:183"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "w4_calibration_enforcement_identifiers",
+    "before": "| **Whole-Ruleset nftables Read-Back & Foreign-Chain Verification (`VerifyServing`, `#220`, `#241`, `r14` M-3, `D-079`)** | `node/enforce/verify_foreign.go`, `node/enforce/doc.go`, [`docs/poc/G2-netlab.md`](../poc/G2-netlab.md) | `proposed` (enforced) | `VerifyServing` reads `nft -j list ruleset` across the whole host ruleset. A base chain outside `inet fvpn` on `prerouting`, `forward`, or `postrouting` in families `ip`, `ip6`, `inet`, or `bridge`, or on `ingress` or `egress` of `MemberIf` or `UplinkIf` (including a `netdev`/`inet` `ingress`/`egress` chain with no device), that can rewrite payloads (`mangle`), set `meta mark` or `ct mark` (`MARK_SEMANTICS_VIOLATED`), `notrack`, NAT (`snat`, `dnat`, `masquerade`, `redirect`, `nat`), `queue`, `drop`, `reject` (or has chain policy `drop` or `reject`), offload via `flow`/`xt` or attach a foreign `flowtable` to `MemberIf`/`UplinkIf` (`FLOWTABLE_BYPASS`), or `jump`/`goto` into such a chain (or has no priority, an unknown hook, or an unresolvable jump target — `ISOLATION_POLICY_INVALID`), fails serving closed with `ISOLATION_POLICY_INVALID`, `MARK_SEMANTICS_VIOLATED`, or `FLOWTABLE_BYPASS` (detail: `table <t> family <f> hook <h> priority <p> chain <c> handle <n> statement <s>`). Under **`D-079` (`#241`, `loopback_scoped` rule)**, a foreign rule in an `ip`, `ip6`, or `inet` base chain on `prerouting`, `forward`, or `postrouting` whose first expressions are native `ip`/`ip6` `saddr` or `daddr` matches with `\"==\"` (`\"\"`) on a literal IP or prefix contained in `127.0.0.0/8` or `::1` and whose remaining expressions are only benign or NAT statements is classified as `loopback_scoped` (`VerifyResult.Loopback`, `table <t> family <f> hook <h> priority <p> chain <c> handle <n> statement <s>`) and tolerated without failing serving closed (`xt` matches and chain/table names prove nothing), whereas non-loopback NAT still fails closed as `FLOWTABLE_BYPASS` with `handle <n>`. Foreign chains that only match, count (`counter`), `log`, `accept`, or `continue` are tolerated at any priority, as are `input`/`output` chains, family `arp`, and `ingress`/`egress` chains on other devices. Production exit nodes must not run Docker or any other NAT for non-loopback traffic; `loopback_scoped` in the read-back evidence is informational (`deploy/devstack` `#240`, acceptance `29 pass / 0 blocked / 0 fail` run `4e3e9487-fe0f-4d88-a396-d5d5fa4a8e1d` and exports `16 pass / 0 blocked / 0 fail` run `0a687f3a-2351-4234-b43d-882109267967`, is an e2e test lab, not a production topology). | `§4.2`, `§10`, `§11`, `ISO01`, `D-079` (`必須`) | `core team` |",
+    "after": "| **Whole-Ruleset nftables Read-Back & Foreign-Chain Verification (`VerifyServing`, `#220`, `#241`, `r14` M-3, `D-079`)** | `node/enforce/verify_foreign.go`, `node/enforce/doc.go`, [`docs/poc/G2-netlab.md`](../poc/G2-netlab.md) | `proposed` (enforced) | `VerifyServing` reads `nft -j list ruleset` across the whole host ruleset. A base chain outside `inet fvpn` on `prerouting`, `forward`, or `postrouting` in families `ip`, `ip6`, `inet`, or `bridge`, or on `ingress` or `egress` of `Datapath.MemberIngress` or `Datapath.Uplink` (including a `netdev`/`inet` `ingress`/`egress` chain with no device), that can rewrite payloads (`mangle`), set `meta mark` or `ct mark` (`MARK_SEMANTICS_VIOLATED`), `notrack`, NAT (`snat`, `dnat`, `masquerade`, `redirect`, `nat`), `queue`, `drop`, `reject` (or has chain policy `drop` or `reject`), offload via `flow`/`xt` or attach a foreign `flowtable` to `Datapath.MemberIngress`/`Datapath.Uplink` (`FLOWTABLE_BYPASS`), or `jump`/`goto` into such a chain (or has no priority, an unknown hook, or an unresolvable jump target — `ISOLATION_POLICY_INVALID`), fails serving closed with `ISOLATION_POLICY_INVALID`, `MARK_SEMANTICS_VIOLATED`, or `FLOWTABLE_BYPASS` (detail: `table <t> family <f> hook <h> priority <p> chain <c> handle <n> statement <s>`). Under **`D-079` (`#241`, `loopback_scoped` rule)**, a foreign rule in an `ip`, `ip6`, or `inet` base chain on `prerouting`, `forward`, or `postrouting` whose first expressions are native `ip`/`ip6` `saddr` or `daddr` matches with `\"==\"` (`\"\"`) on a literal IP or prefix contained in `127.0.0.0/8` or `::1` and whose remaining expressions are only benign or NAT statements is classified as `loopback_scoped` (`VerifyResult.Loopback`, `table <t> family <f> hook <h> priority <p> chain <c> handle <n> statement <s>`) and tolerated without failing serving closed (`xt` matches and chain/table names prove nothing), whereas non-loopback NAT still fails closed as `FLOWTABLE_BYPASS` with `handle <n>`. Foreign chains that only match, count (`counter`), `log`, `accept`, or `continue` are tolerated at any priority, as are `input`/`output` chains, family `arp`, and `ingress`/`egress` chains on other devices. Production exit nodes must not run Docker or any other NAT for non-loopback traffic; `loopback_scoped` in the read-back evidence is informational (`deploy/devstack` `#240`, acceptance `29 pass / 0 blocked / 0 fail` run `4e3e9487-fe0f-4d88-a396-d5d5fa4a8e1d` and exports `16 pass / 0 blocked / 0 fail` run `0a687f3a-2351-4234-b43d-882109267967`, is an e2e test lab, not a production topology). | `§4.2`, `§10`, `§11`, `ISO01`, `D-079` (`必須`) | `core team` |",
+    "evidence": [
+      "node/enforce/executor.go:14",
+      "node/enforce/model.go:67",
+      "node/enforce/verify_foreign.go:183"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "w4_tc_executor_names",
+    "before": "(`TcBatch`, `TcShowQdisc`, `TcShowClasses`, `TcShowFilters`)",
+    "after": "(`TCBatch` for writes and `Executor.Output` for reads)",
+    "evidence": [
+      "node/enforce/executor.go:15",
+      "node/enforce/verify_tc.go:184"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "w4_conntrack_identity_names",
+    "before": "(`ConntrackDeleteSourceV4`, `ConntrackDeleteDestV4`) for every revoked member address (`prev.AllowedV4` minus the new `Bindings`, keyed by `(addr, device_id, member_id)` in `RevokedAddress` / `revocationKey`)",
+    "after": "through `Executor.Output` for addresses selected by the agent's `planRevokes`: previous or pending `(addr, device_id, member_id)` identities absent from current bindings, represented by `addrID`",
+    "evidence": [
+      "node/enforce/apply.go:463",
+      "node/agent/revocation.go:35",
+      "node/agent/revocation.go:46"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "w4_serving_verification_call",
+    "before": "After `VerifyServing` and `VerifyQoS` succeed in `enforce.Apply`",
+    "after": "After the combined nftables and tc read-back in `verifyServing` succeeds in `enforce.Apply`",
+    "evidence": [
+      "node/enforce/apply.go:240"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "w5_backup_billing_inventory",
+    "before": "   - `billing.reconcile` queries the payment provider for current subscriptions, invoices, and refunds, repairing any webhooks missed during the RPO window without duplicating charges (`BILL01`) and without clearing `members.admin_suspended` (`ENT02`).",
+    "after": "   - `billing.reconcile` schedules synthetic inbox events for subscriptions already present in the restored database, including canceled ones. Processing those events reads current provider subscription, invoice and refund state and recomputes entitlement without clearing administrative suspension. It does not discover every subscription absent from the restored rows.\n   - Carried gap: inventory and reconstruction of provider subscriptions absent from the restore point; the known-subscription sweep is not proof that every missed provider event has been recovered.",
+    "evidence": [
+      "internal/billing/worker.go:353",
+      "internal/billing/worker.go:360",
+      "internal/billing/worker.go:385",
+      "internal/billing/stripe.go:384",
+      "internal/billing/stripe.go:424",
+      "apps/worker/jobs_members.go:136"
+    ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "w5_restore_billing_inventory",
+    "before": "  `fvpn-worker` runs the `billing.reconcile` loop every `reconcile_seconds` (`900s` in production config). To trigger or verify reconciliation immediately:",
+    "after": "  After step 3.2's withdrawal-intent ordering, `fvpn-worker` runs `billing.reconcile` every `members.json:reconcile_seconds` (`900s` in the example). It schedules reconciliation for subscriptions already stored in the restored database, including canceled ones; processing reads current provider subscription, invoice and refund state.\n  Carried gap: inventory and reconstruction of provider subscriptions absent from the restored rows. This sweep does not establish complete recovery of missed provider events. For known provider events and stored subscriptions:",
+    "evidence": [
+      "internal/billing/worker.go:353",
+      "internal/billing/worker.go:360",
+      "internal/billing/worker.go:385",
+      "internal/billing/stripe.go:384",
+      "internal/billing/stripe.go:424",
+      "apps/worker/jobs_members.go:136"
+    ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "w5_restore_netbird_objective",
+    "before": "Reconciled from central desired state (`internal/netbird/reconcile.go`) after restore.",
+    "after": "Reconciliation of known resources follows central desired state; it is not global orphan cleanup. Carried gap: post-restore orphan inventory/revocation, as described in Phase 5.2.",
+    "evidence": [
+      "internal/netbird/operations.go:250",
+      "apps/worker/jobs_nodes.go:270",
+      "internal/devices/netbird_adapter.go:236"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "w1_checkpoint_trust_path",
+    "before": "verifies the Ed25519 `recovery` signature against `/etc/vpn-node/trust.json`",
+    "after": "verifies the Ed25519 `recovery` signature against the configured agent `trust_bundle` (the installer writes `/etc/vpn-node/trust.json`)",
+    "evidence": [
+      "node/agent/usage.go:273",
+      "docs/node/install.md:91",
+      "packaging/installer/layout.go:147"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_portal_routing_topology",
+    "before": "## 1. Architecture & Network Topology Overview (`§3`, `§16`, `§18.1`)",
+    "after": "## 1. Architecture & Network Topology Overview (`§3`, `§16`, `§18.1`)\n\nCarried gap: production Portal static hosting/SPA routing and endpoint routing between the public/agent listeners and the installer's single control origin have no complete procedure here. Resolve both before using these endpoint examples. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "apps/control/server.go:130",
+      "packaging/installer/config.go:188",
+      "docs/node/install.md:141"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_backup_first_host",
+    "before": "For repository configuration, credentials, backup scripts and scheduled units, see the [backup guide](../ops/backups.md).",
+    "after": "For repository configuration, credentials, backup scripts and scheduled units, see the [backup guide](../ops/backups.md).\n\nCarried gap: first-host pgBackRest provisioning, initial stanza/base backup, and delivery of repository credentials to PostgreSQL archiving are not completed by the fragment below. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "deploy/backup/pgbackrest.conf.example:30",
+      "deploy/backup/systemd/fvpn-backup-full.service:13",
+      "docs/ops/backups.md:24"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "w1_database_tls_inputs",
+    "before": "In `postgresql.conf` `[production only]`:",
+    "after": "In `postgresql.conf` `[production only]`:\n\nCarried gap: database TLS certificate/key installation and client CA distribution (including `/etc/fvpn/certs/db-ca.pem` in the migration DSN) have no production procedure in this repository. Provision and verify them before using these TLS examples. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "docs/handover/deploy.md:108",
+      "docs/handover/deploy.md:179",
+      "internal/db/cmd/fvpn-migrate/main.go:22"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_adguard_topology",
+    "before": "### 4.3 AdGuard Home Resolvers (`v0.107.59`) (`§12`, `docs/dns/BACKEND.md`, `docs/dns/PRIVACY.md`)",
+    "after": "### 4.3 AdGuard Home Resolvers (`v0.107.59`) (`§12`, `docs/dns/BACKEND.md`, `docs/dns/PRIVACY.md`)\n\nCarried gap: production AdGuard bootstrap, service installation and host-local/overlay listener wiring are not provided here. The agent only applies to its configured host-local targets; the settings below alone do not create those resolvers. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "node/agent/dnsconfig.go:42",
+      "docs/node/README.md:313",
+      "docs/dns/BACKEND.md:1"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "w1_oidc_secret_input",
+    "before": "### 4.1 OIDC Provider (`§9.1`, `§16.1`, `D-052`, `docs/control/AUTH.md`, `docs/members/README.md`, `docs/e2e/README.md`)",
+    "after": "### 4.1 OIDC Provider (`§9.1`, `§16.1`, `D-052`, `docs/control/AUTH.md`, `docs/members/README.md`, `docs/e2e/README.md`)\n\nCarried gap: the configured confidential-client secret at `/etc/fvpn/secrets/oidc.secret` must be supplied for control startup; the repository has no production secret-delivery procedure for this path. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "apps/control/cmd/fvpn-control/main.go:62",
+      "internal/config/config.go:197"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_production_custody",
+    "before": "### 5.3 Initializing the Central Vault and Pinning the Release Public Key",
+    "after": "### 5.3 Initializing the Central Vault and Pinning the Release Public Key\n\nCarried gap: production custody and independent anti-rollback are not implemented. The following ceremony is for staging FileProvider only. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "docs/pki/initialize.md:3",
+      "docs/pki/rotation.md:225"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_server_tls",
+    "before": "### 6.1 `/etc/fvpn/control.json`",
+    "after": "### 6.1 `/etc/fvpn/control.json`\n\nCarried gap: server TLS issuance, installation, renewal and trust-chain distribution are not provided. Supply the referenced `tls.crt`/`tls.key` and distribute authenticated server trust before startup; `agent-ca.pem` is the separate node-client CA output from §5.3. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "apps/control/server.go:141",
+      "docs/pki/initialize.md:111"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_payment_secrets",
+    "before": "### 6.2 `/etc/fvpn/members.json` (`members_config_file`)",
+    "after": "### 6.2 `/etc/fvpn/members.json` (`members_config_file`)\n\nCarried gap: production payment-provider/webhook setup and provisioning of the API key, webhook secrets and billing-vault key files below remain undocumented deployment work. The runtime reads these inputs; the example does not create them. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "internal/members/runtime/runtime.go:47",
+      "internal/members/runtime/runtime.go:60",
+      "internal/config/members.go:23"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_build_install_portal",
+    "before": "### 7.1 Building Central Binaries and Portal Assets",
+    "after": "### 7.1 Building Central Binaries and Portal Assets\n\nCarried gap: these commands build central binaries into `dist/`; installing them at the units' `/usr/local/bin/` paths and serving Portal assets with SPA routing remain undocumented production steps. A successful build alone does not install or expose either service. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "docs/handover/deploy.md:529",
+      "docs/handover/deploy.md:562",
+      "apps/portal/package.json:1"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_service_accounts_directories",
+    "before": "### 7.2 Starting `fvpn-control` and `fvpn-worker` under systemd",
+    "after": "### 7.2 Starting `fvpn-control` and `fvpn-worker` under systemd\n\nCarried gap: creation of the `fvpn` account/group and configuration/secret directories, with the access required below, remains deployment work. Binary installation from §7.1 must also be complete before the units can run. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "docs/handover/deploy.md:557",
+      "docs/pki/initialize.md:111"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_start_before_readiness",
+    "before": "Verify readiness `[Verified on dev/test stack]`:",
+    "after": "Carried gap: central daemon reload, unit enablement and startup are not supplied as a procedure here. Install the binaries and satisfy the account, directory, credential and routing prerequisites before starting services and attempting these readiness checks. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).\n\nVerify readiness `[Verified on dev/test stack]`:",
+    "evidence": [
+      "docs/handover/deploy.md:562",
+      "docs/handover/deploy.md:588",
+      "apps/control/server.go:141"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_release_evidence",
+    "before": "For the `build-input.json` fields, see the [release command inputs](../updates/release-process.md#commands).",
+    "after": "For the `build-input.json` fields, see the [release command inputs](../updates/release-process.md#commands).\n\nCarried gap: creation of `sbom.spdx.json`, `NOTICES.txt` and `source.tar.zst` remains undocumented. `build-manifest` consumes supplied evidence metadata and an SBOM file/hash; it does not produce those artifacts. Create and check that evidence before building the manifest or uploading the files below. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "packaging/release/manifest.go:91",
+      "docs/updates/release-process.md:39"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_node_network",
+    "before": "Use `fvpn-node-install` for verified release extraction, the `current` symlink, trust files and generated agent/updater configuration; follow [what install changes](../node/install.md#what-install-changes-63) and [Node trust files](../node/install.md#node-trust-files).",
+    "after": "Use `fvpn-node-install` for verified release extraction, the `current` symlink, trust files and generated agent/updater configuration; follow [what install changes](../node/install.md#what-install-changes-63) and [Node trust files](../node/install.md#node-trust-files).\n\nCarried gap: real interface, address and route provisioning has no complete procedure here. The installer creates dummy links without addresses or routes; its success does not establish a working member/uplink path. AdGuard service/listener provisioning from §4.3 must also be completed before DNS application. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "docs/node/install.md:62",
+      "packaging/installer/isolation.go:1"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_enrollment_origin",
+    "before": "### 9.3 Running `fvpn-agent enroll` on the Node",
+    "after": "### 9.3 Running `fvpn-agent enroll` on the Node\n\nCarried gap: the public/agent listener split still needs endpoint routing compatible with the installer's single authenticated control origin; do not treat the separate example hostnames as that routing procedure. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "packaging/installer/config.go:188",
+      "docs/node/install.md:141"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_publish_dependencies",
+    "before": "For unit installation and startup, use `fvpn-node-install` as described in [what install changes](../node/install.md#what-install-changes-63), including the pinned NetBird client, its connection unit and the updater timer; installable archives carry units under `lib/systemd`.",
+    "after": "For unit installation and startup, use `fvpn-node-install` as described in [what install changes](../node/install.md#what-install-changes-63), including the pinned NetBird client, its connection unit and the updater timer; installable archives carry units under `lib/systemd`.\n\nCarried gap: complete the real node network, resolver provisioning and single-origin endpoint routing before enrollment/publication verification; the installer does not supply those production procedures. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "docs/node/install.md:62",
+      "packaging/installer/config.go:188",
+      "node/agent/dnsconfig.go:42"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_grants_notice",
+    "before": "The repository has only partial grant illustrations, not a complete tested contract-conformant set; that set is carried work.",
+    "after": "Carried gap: the repository has only partial grant illustrations, not a complete tested contract-conformant production set.",
+    "evidence": [
+      "docs/handover/follow-up-51.md:119"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_dns_product_notice",
+    "before": "**Installer product gap:**",
+    "after": "Carried gap:",
+    "evidence": [
+      "docs/handover/follow-up-51.md:119"
+    ]
+  },
+  {
+    "path": "docs/handover/deploy.md",
+    "name": "s6_per_target_credentials_notice",
+    "before": "Per-target credentials are an unimplemented product gap.",
+    "after": "Carried gap: per-target credentials are unimplemented.",
+    "evidence": [
+      "docs/handover/follow-up-51.md:119"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "s6_raw_retention_notice",
+    "before": "Coordinating these independent settings is carried procedure work;",
+    "after": "Carried gap: coordinating these independent settings;",
+    "evidence": [
+      "docs/handover/follow-up-51.md:119"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "s6_rollup_schedule_notice",
+    "before": "Operator scheduling is a carried gap; the [retention contract]",
+    "after": "Carried gap: operator scheduling; the [retention contract]",
+    "evidence": [
+      "docs/handover/follow-up-51.md:119"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "s6_audit_schedule_notice",
+    "before": "Operator scheduling is a carried gap; see the [retention contract]",
+    "after": "Carried gap: operator scheduling; see the [retention contract]",
+    "evidence": [
+      "docs/handover/follow-up-51.md:119"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "s6_service_log_notice",
+    "before": "A journald/logrotate retention procedure is absent and carried forward.",
+    "after": "Carried gap: journald/logrotate retention setup has no procedure.",
+    "evidence": [
+      "docs/handover/follow-up-51.md:119"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "s6_fup_readback_notice",
+    "before": "**Carried verification gap:**",
+    "after": "Carried gap:",
+    "evidence": [
+      "docs/handover/follow-up-51.md:119"
+    ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "s6_orphan_inventory_notice",
+    "before": "**Carried procedure gap:**",
+    "after": "Carried gap:",
+    "evidence": [
+      "docs/handover/follow-up-51.md:119"
+    ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "s6_logical_restore_notice",
+    "before": "Validating the dump, target schema and dependency ordering for this example remains a [carried gap]",
+    "after": "Carried gap: validating the dump, target schema and dependency ordering for this example remains [carried work]",
+    "evidence": [
+      "docs/handover/follow-up-51.md:119"
+    ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "s6_restore_repository_environment",
+    "before": "### Phase 2: Restore PostgreSQL 17 and Freeze Usage Ingestion",
+    "after": "### Phase 2: Restore PostgreSQL 17 and Freeze Usage Ingestion\n\nCarried gap: native PITR below requires the PostgreSQL/restore repository environment described in [backup §6.2](../ops/backups.md#62-restoring-into-a-clean-host-data-directory-production-host-replacement); a production delivery procedure for that environment is absent.",
+    "evidence": [
+      "deploy/backup/pgbackrest.conf.example:30",
+      "deploy/backup/systemd/fvpn-backup-full.service:13",
+      "deploy/backup/systemd/fvpn-backup-diff.service:13",
+      "deploy/backup/systemd/fvpn-backup-verify.service:13",
+      "deploy/backup/restore-pitr.sh:30",
+      "deploy/backup/restore-pitr.sh:232"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s6_backup_stanza",
+    "before": "Enable the timers in production:",
+    "after": "Enable the timers in production:\n\nCarried gap: first-host repository/stanza creation and the initial base-backup procedure are not supplied here. The configuration and timers alone do not establish a recoverable repository. See the [carried list](../handover/follow-up-51.md#existing-procedures-linked-and-carried-gaps).",
+    "evidence": [
+      "deploy/backup/backup.sh:1",
+      "deploy/backup/pgbackrest.conf.example:1"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s6_backup_retention",
+    "before": "### 3.2 Retention & Post-Restore Data Minimization (`§16.4`, `§17.2`)",
+    "after": "### 3.2 Retention & Post-Restore Data Minimization (`§16.4`, `§17.2`)\n\nCarried gap: authorized audit-event and usage-rollup purge scheduling and coordination of JSON/database retention are not implemented as an operator procedure; service-log retention is also absent. See [calibration retention](../handover/calibration.md#16-data-retention-periods-105-154-164-173-21) before treating the purge references below as completed setup.",
+    "evidence": [
+      "internal/usage/projection.go:601",
+      "db/migrations/00006_purge_retained_audit_format.sql:14"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s6_backup_custody",
+    "before": "2. Verify that `/var/lib/fvpn/staging-authority/vault/state.json` and all key files in `/var/lib/fvpn/staging-authority/vault` are intact and untouched by the database restore (`§16.2`).",
+    "after": "2. Verify that `/var/lib/fvpn/staging-authority/vault/state.json` and all key files in `/var/lib/fvpn/staging-authority/vault` are intact and untouched by the database restore (`§16.2`).\n\nCarried gap: production custody and independent anti-rollback remain unimplemented. Use the [staging inspection boundary](../pki/inspect.md#key-use-inspection); local key inspection cannot prove that the whole vault directory was not rolled back.",
+    "evidence": [
+      "docs/pki/initialize.md:3",
+      "docs/pki/rotation.md:225"
+    ]
+  },
+  {
+    "path": "docs/handover/restore-drill.md",
+    "name": "s6_restore_custody",
+    "before": "### Phase 1: Isolate Central Services and Preserve Out-of-Band State",
+    "after": "### Phase 1: Isolate Central Services and Preserve Out-of-Band State\n\nCarried gap: production custody and independent anti-rollback remain unimplemented by FileProvider. Preserve independent authority evidence; the staging inspection below cannot prove whole-directory non-rollback.",
+    "evidence": [
+      "docs/pki/initialize.md:3",
+      "docs/pki/rotation.md:225"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "s6_calibration_dns_dependencies",
+    "before": "### 1.5 DNS List Sources, Upstream Resolvers, and Update Cadence (`§12`, `§21`, `D-054`, `D-056`, `D-058c`, `D-058d`, `D-061`)",
+    "after": "### 1.5 DNS List Sources, Upstream Resolvers, and Update Cadence (`§12`, `§21`, `D-054`, `D-056`, `D-058c`, `D-058d`, `D-061`)\n\nCarried gap: production resolver bootstrap/listener wiring, installer DNS input/preservation and per-target credentials remain absent. Follow [post-install DNS configuration and read-back](deploy.md#91-node-host-prerequisites-directory-layout-and-configuration-agentsmd-4-nodeenforceapplygo-nodeenforceexecutorgo); tuning these values alone does not complete those dependencies.",
+    "evidence": [
+      "node/agent/dnsconfig.go:208",
+      "packaging/installer/config.go:217",
+      "docs/node/README.md:351"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "w4_bootstrap_dns_optional",
+    "before": "Non-empty list of `IP:port` literals (`D-028`).",
+    "after": "`upstreams` requires a non-empty list of `IP:port` literals. `bootstrap_dns` may be empty; document normalization then copies the configured upstreams (`D-028`).",
+    "evidence": [
+      "internal/config/dns.go:25",
+      "internal/config/dns.go:38",
+      "internal/dnspublish/document.go:224"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "w4_minimum_rate_bounds",
+    "before": "Must be `> 0` (`§11.1`, `§11.5`–`§11.7`: configured HTB shaping floor so FUP tiering itself does not set `0 bps`; not a guaranteed delivered throughput floor, and mandatory fail-closed rules still stop forwarding on lease/safety/meter failure).",
+    "after": "Each direction accepts integer `0..9007199254740991`; every tier must be at least its configured minimum. The validator does not require a positive minimum. Choose production rates explicitly under `§11.1`, `§11.5`–`§11.7`; a configured shaping minimum is not guaranteed delivered throughput, and lease/safety/meter failure still stops forwarding.",
+    "evidence": [
+      "internal/policies/validate.go:215",
+      "internal/policies/validate.go:264",
+      "contracts/schemas/policies/fair-use-payload.schema.json:193"
+    ]
+  },
+  {
+    "path": "docs/handover/calibration.md",
+    "name": "w2_reserve_restart",
+    "before": "2. Set `host_reserve_bps` in `/etc/vpn-node/agent.json` to `max(10 Mbps, 2% of uplink capacity)` (e.g., `20000000` = `20 Mbps` on a `1 Gbps` node) so mTLS heartbeats, lease renewals, and usage batch uploads never starve under member congestion.",
+    "after": "2. Set `host_reserve_bps` in `/etc/vpn-node/agent.json` from measured host control-plane needs; it must be greater than zero. Restart `fvpn-agent.service` after changing the configuration. This is a shaping reserve, not a guarantee that all control traffic avoids congestion. Verify the node's post-restart serving checks using the [operator node procedure](operator-guide.md#32-updating-node-region-member-groups-or-capacity-patch-apiv1adminnodesnode_id).",
+    "evidence": [
+      "node/agent/config.go:177",
+      "node/agent/cmd/fvpn-agent/main.go:140",
+      "node/enforce/render_tc.go:35"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s5_manual_backup_environment",
+    "before": "### 5.2 Last Successful Base Backup Age (`pgbackrest info`)",
+    "after": "### 5.2 Last Successful Base Backup Age (`pgbackrest info`)\n\nCarried gap: manual `backup.sh info` and `verify.sh` invocations also need the repository environment inherited by the calling process; only the installed backup services load the environment file automatically. The production process-environment procedure remains absent.",
+    "evidence": [
+      "deploy/backup/pgbackrest.conf.example:30",
+      "deploy/backup/systemd/fvpn-backup-full.service:13",
+      "deploy/backup/systemd/fvpn-backup-diff.service:13",
+      "deploy/backup/systemd/fvpn-backup-verify.service:13",
+      "deploy/backup/restore-pitr.sh:30",
+      "deploy/backup/restore-pitr.sh:232"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s6_final_retention_notice",
+    "before": "2. Re-run retention purges (`SELECT purge_retained(...)`) if any expired rows were reintroduced by the snapshot (`§16.4`).",
+    "after": "2. Carried gap: authorized audit/rollup purge execution and scheduling, plus JSON/database retention coordination, still need a procedure. The function supports only its documented targets and enforces database cutoff policy; the reference `SELECT purge_retained(...)` is not an executable purge instruction. Review [calibration retention](../handover/calibration.md#16-data-retention-periods-105-154-164-173-21) before minimizing rows reintroduced by the snapshot (`§16.4`).",
+    "evidence": [
+      "db/migrations/00006_purge_retained_audit_format.sql:14",
+      "internal/usage/projection.go:601"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s6_verification_environment",
+    "before": "### 6.3 Automated Verification Script (`deploy/backup/verify.sh`)",
+    "after": "### 6.3 Automated Verification Script (`deploy/backup/verify.sh`)\n\nCarried gap: this manual verification invocation needs the inherited repository credentials described in §5.2. The production environment-delivery procedure is absent; a backup service environment is not inherited by a separate shell invocation.",
+    "evidence": [
+      "deploy/backup/pgbackrest.conf.example:30",
+      "deploy/backup/systemd/fvpn-backup-full.service:13",
+      "deploy/backup/systemd/fvpn-backup-diff.service:13",
+      "deploy/backup/systemd/fvpn-backup-verify.service:13",
+      "deploy/backup/restore-pitr.sh:30",
+      "deploy/backup/restore-pitr.sh:232"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "s6_backup_authority_target",
+    "before": "| **Signing Vault (`/var/lib/fvpn/staging-authority/vault`) RPO** | **`0` (Zero Rollback)** | Stored outside PostgreSQL and never included in database snapshots (`§16.2`, `§17.2`). |",
+    "after": "| **Signing Vault (`/var/lib/fvpn/staging-authority/vault`) RPO** | **Target: `0` (Zero Rollback)** | Stored outside PostgreSQL and never included in database snapshots (`§16.2`, `§17.2`). Carried gap: production custody and independent anti-rollback; FileProvider cannot detect whole-directory rollback. See [rotation/restore limits](../pki/rotation.md). |",
+    "evidence": [
+      "docs/pki/initialize.md:3",
+      "docs/pki/rotation.md:225"
+    ]
+  },
+  {
+    "path": "docs/ops/backups.md",
+    "name": "w1_migrator_role_scope",
+    "before": "Schema owner used exclusively by `fvpn-migrate up` and `fvpn-migrate status`.",
+    "after": "Schema-owner operator credential for migration status/apply and the checked restored candidate's checklist in Steps 3–4; it is not a control/worker runtime credential.",
+    "evidence": [
+      "internal/db/cmd/fvpn-migrate/main.go:22",
+      "deploy/backup/post-restore-checklist.sql:1",
+      "docs/handover/deploy.md:143"
+    ]
+  },
+  {
+    "path": "docs/DELIVERY.en.md",
+    "name": "delivery_second_review_en",
+    "before": "[Follow-up 51](handover/follow-up-51.md) corrects deployment, calibration, restore-drill and backup statements at `66de6a24`: staging vault initialization, inspection and service write access; broad staging grant limits; installer DNS configuration, shared resolver credentials and restart/read-back; API/configuration names and bounds; release contents and updater attempt limits; separate migration/recovery credentials and logical/physical backup accounts; actual retention/replay windows and purge gaps; FUP restart and remaining rate caps; and restore reconciliation limits. It also repairs stale guide links. Missing production procedures and product support remain carried work; no new deployment or acceptance evidence is claimed.",
+    "after": "[Follow-up 51](handover/follow-up-51.md) corrects deployment, calibration, restore-drill and backup statements at `66de6a24`. It records staging authority and grants, installer/DNS behavior, actual configuration and retention bounds, and bounded recovery/reconciliation. The second review adds control-before-worker recovery ordering with its remaining authorization exposure, grant withdrawal, explicit recovery credentials, repository-environment gaps, updater space accounting and credential-only SIGHUP reload. Class sweeps correct stale enforcement identifiers, process attribution and incomplete automatic-recovery claims, and place `Carried gap:` notices at dependent steps. Production procedures and product support absent from the repository remain carried work; no new deployment or acceptance evidence is claimed.",
+    "evidence": [
+      "docs/handover/follow-up-51.md:23"
+    ]
+  },
+  {
+    "path": "docs/DELIVERY.md",
+    "name": "delivery_second_review_zh",
+    "before": "[Follow-up 51](handover/follow-up-51.md) 修正 `66de6a24` 的部署、參數校準、還原演練與備份說明：測試部署金鑰庫的初始化、檢查與服務寫入權限；寬鬆測試授權的限制；安裝後 DNS 設定、共用解析器憑證及重啟／讀回；API／設定名稱與界限；發行內容與更新程式嘗試次數上限；分離的遷移／復原憑證及邏輯／實體備份帳號；實際保留／重播窗口與清理缺口；FUP 重啟與仍適用的速率上限；以及還原後對帳的限制。另修正過時的指南連結。缺少的正式環境程序與產品支援仍列為後續工作；不宣稱新增部署或驗收證據。",
+    "after": "[Follow-up 51](handover/follow-up-51.md) 修正 `66de6a24` 的部署、參數校準、還原演練與備份說明，記錄測試部署的金鑰庫與授權、安裝程式／DNS 行為、實際設定及保留界限，以及有明確限制的復原／對帳。第二次審查補上先啟動 control、重建撤銷意圖後才啟動 worker 的順序與仍存在的授權風險、grant 撤回、明確的復原憑證、備份儲存庫環境缺口、更新程式空間計算及僅重新讀取憑證內容的 SIGHUP 行為。分類檢查修正過時的 enforcement 識別字、程序職責與不完整的自動復原宣稱，並在依賴缺少程序的步驟加上 `Carried gap:` 提示。儲存庫未提供的正式環境程序與產品支援仍列為後續工作；不宣稱新增部署或驗收證據。",
+    "evidence": [
+      "docs/handover/follow-up-51.md:23"
+    ]
   }
 ]

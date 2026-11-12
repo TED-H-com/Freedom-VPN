@@ -13,7 +13,7 @@ Installer 7 reporting inputs are required: a validated HTTPS control origin
 server trust, and `mtls_cert` / `mtls_key` use the enrolled node identity.
 `allowed_artifact_origins` contains exactly the control origin. Invalid inputs
 fail before host changes; a same-release rerun repairs reporting fields and
-server CA while preserving unrelated settings and durable state.
+server CA by rendering the generated configuration again. Durable state is preserved, but manual agent settings such as `dns` are removed; repeat the post-install configuration and read-back in §9.1.
 `install --allow-loopback` is **TEST ONLY**, for an isolated HTTPS lab; leave it
 disabled in production. Updates 11 (#346) closes the distinct artifact-origin
 question by measurement: the list grants private / CGNAT exceptions only;
@@ -49,6 +49,8 @@ The labels `[Verified on dev/test stack]` and `[production only]` retain the sco
 
 ## 1. Architecture & Network Topology Overview (`§3`, `§16`, `§18.1`)
 
+Carried gap: production Portal static hosting/SPA routing and endpoint routing between the public/agent listeners and the installer's single control origin have no complete procedure here. Resolve both before using these endpoint examples. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
+
 Freedom VPN v1 operates as a modular monolith in the central plane (`fvpn-control` + `fvpn-worker` sharing PostgreSQL 17 and a signing vault) paired with stateless/state-split Ubuntu 24.04 LTS exit nodes (`fvpn-agent`, `fvpn-updater`, `fvpn-watchdog`) and self-hosted NetBird CE (`0.82.0`) and AdGuard Home (`v0.107.59`).
 
 | Component | Recommended Host / Placement | Exposed Endpoints / Ports | Documentation Example Address |
@@ -58,7 +60,7 @@ Freedom VPN v1 operates as a modular monolith in the central plane (`fvpn-contro
 | **`fvpn-worker`** | Co-located with `fvpn-control` or dedicated worker host sharing the signing vault | `127.0.0.1:9092/tcp` (Prometheus `/metrics` & `/healthz`, `/readyz`) | `198.51.100.20` / `198.51.100.21` |
 | **OIDC Identity Provider** | External managed OIDC or self-hosted IdP | `443/tcp` (HTTPS) | `https://id.example.com` |
 | **NetBird CE (`0.82.0`)** | Dedicated overlay coordination host | `443/tcp` (Management API `/api`, gRPC, Signal, Relay)<br>`3478/udp` (STUN/TURN) | `https://netbird.example.com` (`198.51.100.30`) |
-| **AdGuard Home (`v0.107.59`)** | At least 2 resolver instances reachable over the overlay (`§12.2`) | `53/udp`, `53/tcp` (Overlay DNS for `100.64.0.0/10`)<br>`8080/tcp` (Admin HTTP API, restricted to `fvpn-worker` and `fvpn-agent`) | `100.64.0.53`, `100.64.0.54` (IPv6: `2001:db8::53`, `2001:db8::54`) |
+| **AdGuard Home (`v0.107.59`)** | At least 2 resolver instances reachable over the overlay (`§12.2`) | `53/udp`, `53/tcp` (Overlay DNS for `100.64.0.0/10`)<br>`8080/tcp` (Admin HTTP API, used by the host-local `fvpn-agent` resolver applier and operator administration) | `100.64.0.53`, `100.64.0.54` (IPv6: `2001:db8::53`, `2001:db8::54`) |
 | **Release Origin** | Immutable HTTPS object storage / static origin (`§13.3`, `§16.2`) | `443/tcp` (HTTPS read-only to nodes) | `https://releases.example.com` (`203.0.113.10`) |
 | **Exit Nodes** | Ubuntu 24.04 LTS (`amd64` or `arm64`) | WireGuard UDP port (`51820/udp`), outbound HTTPS (`443/tcp`, `9443/tcp`) | Public egress `192.0.2.20`, Overlay `100.64.0.100` |
 
@@ -88,7 +90,7 @@ By engineering contract (`D-026`, `D-039`, `D-045`), no production binary compil
 | `tests/e2e/cmd/fvpn-e2e-prepare/main.go` | `test_mode`, `test_exempt_v4` in `agent.json` | `true` | Omit or set `false` (`test_exempt_v4` is rejected by `fvpn-agent` when `test_mode` is `false`) |
 | `tests/e2e/cmd/fvpn-e2e-prepare/main.go` | `-grace-seconds N` (`FVPN_E2E_GRACE_SECONDS`, `#182`, `SECOPS-04`) in `members.json` | `0..31622400` (default `0`, writes `grace_reason = "TEST ONLY finite grace override"` when `> 0`) | Lab-only prepare option (requires `E2E_RESET=1` or restarting both `fvpn-control` and `fvpn-worker`); set explicit business-approved `grace_seconds` and `grace_reason` in `/etc/fvpn/members.json` (`calibration.md`) |
 | `node/updater/host.go` | `allow_loopback`, `allowed_artifact_origins` in `updater.json` | `true` / lab RFC1918 exemptions | Keep `allow_loopback: false` outside isolated `TEST ONLY` loopback tests. Preserve the installer-generated exact control origin in `allowed_artifact_origins`, including for private/CGNAT update-result delivery. Use `[]` only when no artifact, manifest or result origin requires a private/CGNAT exception; an origin entry never permits loopback or every private address (`D-046`). |
-| `internal/dnspolicy/cmd/bootstrap/main.go` | AdGuard admin password | `"testonly-<hex>"` | One high-entropy username/password pair shared by every resolver target of an exit, supplied through `dns.resolver_credentials_file` under the [node credential rules](../node/README.md#configuration). The agent copies that same pair to every target; resolvers requiring different pairs cannot all authenticate. Per-target credentials are an unimplemented product gap. |
+| `internal/dnspolicy/cmd/bootstrap/main.go` | AdGuard admin password | `"testonly-<hex>"` | One high-entropy username/password pair shared by every resolver target of an exit, supplied through `dns.resolver_credentials_file` under the [node credential rules](../node/README.md#configuration). The agent copies that same pair to every target; resolvers requiring different pairs cannot all authenticate. Carried gap: per-target credentials are unimplemented. |
 | `contracts/vectors/*.json` | Ed25519 seed vectors | `"TEST ONLY - NOT A SECRET"` | Explicit [staging initialization](../pki/initialize.md) via `fvpn-vault-init`; separate offline `fvpn-release keygen` ([release process](../updates/release-process.md)). Production custody and anti-rollback are not implemented by FileProvider. |
 
 ---
@@ -101,7 +103,11 @@ Provision PostgreSQL 17 on a dedicated volume with TLS enabled and continuous WA
 
 For repository configuration, credentials, backup scripts and scheduled units, see the [backup guide](../ops/backups.md).
 
+Carried gap: first-host pgBackRest provisioning, initial stanza/base backup, and delivery of repository credentials to PostgreSQL archiving are not completed by the fragment below. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
+
 In `postgresql.conf` `[production only]`:
+
+Carried gap: database TLS certificate/key installation and client CA distribution (including `/etc/fvpn/certs/db-ca.pem` in the migration DSN) have no production procedure in this repository. Provision and verify them before using these TLS examples. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
 
 ```ini
 ssl = on
@@ -135,8 +141,8 @@ Never run `fvpn-control` or `fvpn-worker` as `postgres` superuser. The six accou
 |---|---|---|
 | `fvpn_migrator` | `fvpn-migrate up` | Schema owner; creates tables, functions, and base triggers (`db/migrations/*.sql`, one goose version per file). |
 | `fvpn_control` | `fvpn-control` | CRUD on operational tables; `INSERT` + `SELECT` on `audit_events` and `usage_events` (no `UPDATE`/`DELETE` on append-only tables, `F-02`–`F-04`). |
-| `fvpn_worker` | `fvpn-worker` | Claims `outbox_events`, reconciles NetBird/Stripe/DNS (including threat-feed refreshes in `dns_feed_contents` and `dns_feed_refresh_state`), updates `usage_rollups`. |
-| `fvpn_retention` | Retention job | Executes `SELECT purge_retained(...)` (`F-03`) to delete expired raw payloads and logs while recording an audit row. |
+| `fvpn_worker` | `fvpn-worker` | Claims `outbox_events`, reconciles NetBird/Stripe, publishes DNS resolver documents and refreshes threat feeds in `dns_feed_contents` and `dns_feed_refresh_state`, updates `usage_rollups`. |
+| `fvpn_retention` | Retention job | Executes `SELECT purge_retained(...)` (`F-03`) for eligible `usage_event_payloads`, `audit_events` and `usage_rollups` while recording an audit row. It does not purge service logs. |
 | `fvpn_recovery` | `fvpn-usage-admin` | Executes usage ledger freeze, epoch rotation (`usage_recovery_records`, `usage_ledger_epochs`), and adjustments. |
 | `fvpn_backup` | `pg_dump` / read-only verification | Logical read-only role (`pg_read_all_data`). Physical pgBackRest uses the local `postgres` OS/cluster account over the Unix socket; see [backup roles](../ops/backups.md#23-least-privilege-database-roles-docshandoverdeploymd-32-docsdbreadmemd). |
 
@@ -193,7 +199,7 @@ current_database="fvpn"
 <last file> applied
 ```
 
-After migrations complete, the following **broad staging grant block** keeps staging deployable; it is not a production least-privilege grant set. It grants all-table `SELECT`, `INSERT`, `UPDATE` and `DELETE` to control, worker and recovery, including runtime writes to `usage_checkpoints.ledger_epoch` and `usage_ledger_state.current_epoch`/`mode`. The [database privilege contract](../db/README.md#roles-grants-and-retention) reserves epoch changes for the separately controlled recovery role and forbids broad worker `UPDATE` on `usage_checkpoints`. The checkpoint and ledger-state triggers check data consistency, not the caller's recovery authority. The repository has only partial grant illustrations, not a complete tested contract-conformant set; that set is carried work. Production must not adopt this block as least privilege:
+After migrations complete, the following **broad staging grant block** keeps staging deployable; it is not a production least-privilege grant set. It grants all-table `SELECT`, `INSERT`, `UPDATE` and `DELETE` to control, worker and recovery, including runtime writes to `usage_checkpoints.ledger_epoch` and `usage_ledger_state.current_epoch`/`mode`. The [database privilege contract](../db/README.md#roles-grants-and-retention) reserves epoch changes for the separately controlled recovery role and forbids broad worker `UPDATE` on `usage_checkpoints`. The checkpoint and ledger-state triggers check data consistency, not the caller's recovery authority. Carried gap: the repository has only partial grant illustrations, not a complete tested contract-conformant production set. Production must not adopt this block as least privilege:
 
 ```sql
 -- [mechanical-check: cluster-role-ddl]
@@ -214,6 +220,8 @@ GRANT pg_read_all_data TO fvpn_backup;
 ## 4. External Dependencies Setup
 
 ### 4.1 OIDC Provider (`§9.1`, `§16.1`, `D-052`, `docs/control/AUTH.md`, `docs/members/README.md`, `docs/e2e/README.md`)
+
+Carried gap: the configured confidential-client secret at `/etc/fvpn/secrets/oidc.secret` must be supplied for control startup; the repository has no production secret-delivery procedure for this path. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
 
 1. Configure a single OIDC issuer (`https://id.example.com`) shared by the Portal (`fvpn-control` / `fvpn-worker`) and NetBird (`§2 [S36]`, `§7.3`, `§9.1`, `§15.2`, `D-052`):
    - **Portal Client (`oidc_client_id`)**: Confidential client using Authorization Code + PKCE (`S256`).
@@ -259,6 +267,8 @@ Keep `oidc_issuer` canonical and identical for control, worker, and NetBird iden
    - Delete or disable NetBird's built-in `Default` (`All-to-All`) access control policy immediately (`internal/netbird.Client.RemoveDefaultPolicy` / `BootstrapAccess`). Member-to-member traffic must be blocked at both the NetBird control plane and the exit-node `inet fvpn` nftables data plane.
 
 ### 4.3 AdGuard Home Resolvers (`v0.107.59`) (`§12`, `docs/dns/BACKEND.md`, `docs/dns/PRIVACY.md`)
+
+Carried gap: production AdGuard bootstrap, service installation and host-local/overlay listener wiring are not provided here. The agent only applies to its configured host-local targets; the settings below alone do not create those resolvers. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
 
 1. Deploy at least **two** AdGuard Home instances (`v0.107.59`, image digest `sha256:5d5e3aef39a8c8906a324f0c2da0a6123929e459b57c1e3f05e401dca5c7bf02`) reachable on the overlay network (e.g., `100.64.0.53` and `100.64.0.54`).
 2. **Mandatory Privacy Hardening (`SEC02`, `§12.7`)**:
@@ -315,6 +325,8 @@ fvpn-release: private key stays on the build machine; do not copy it to nodes
 
 ### 5.3 Initializing the Central Vault and Pinning the Release Public Key
 
+Carried gap: production custody and independent anti-rollback are not implemented. The following ceremony is for staging FileProvider only. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
+
 For explicitly configured **FileProvider staging** environments, follow the [local vault initialization guide](../pki/initialize.md#prepare-the-inputs): build the PKI tools, prepare an operator-owned persistent parent directory, choose explicit key/CA windows, and independently verify the offline release public root. Production custody and anti-rollback are not implemented; FileProvider cannot detect whole-directory rollback or support divergent replicas ([rotation and restore](../pki/rotation.md)).
 
 Run as the intended service account, using the prepared staging configuration and a destination that does not exist:
@@ -347,6 +359,8 @@ The initializer does not write the runtime JSON configurations or install servic
 With the §7.2 service configuration, both processes read `/etc/fvpn/control.json`. Control loads members, nodes, policies and usage; worker also loads DNS. Loaded domain configuration files reject unknown JSON fields, trailing data and missing files with a setting error; see [Central composition](../control/COMPOSITION.md).
 
 ### 6.1 `/etc/fvpn/control.json`
+
+Carried gap: server TLS issuance, installation, renewal and trust-chain distribution are not provided. Supply the referenced `tls.crt`/`tls.key` and distribute authenticated server trust before startup; `agent-ca.pem` is the separate node-client CA output from §5.3. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
 
 ```json
 {
@@ -405,6 +419,8 @@ With the §7.2 service configuration, both processes read `/etc/fvpn/control.jso
 ```
 
 ### 6.2 `/etc/fvpn/members.json` (`members_config_file`)
+
+Carried gap: production payment-provider/webhook setup and provisioning of the API key, webhook secrets and billing-vault key files below remain undocumented deployment work. The runtime reads these inputs; the example does not create them. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
 
 ```json
 {
@@ -524,6 +540,8 @@ With the §7.2 service configuration, both processes read `/etc/fvpn/control.jso
 
 ### 7.1 Building Central Binaries and Portal Assets
 
+Carried gap: these commands build central binaries into `dist/`; installing them at the units' `/usr/local/bin/` paths and serving Portal assets with SPA routing remain undocumented production steps. A successful build alone does not install or expose either service. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
+
 `[Verified on dev/test stack]`
 ```bash
 CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o dist/fvpn-control ./apps/control/cmd/fvpn-control
@@ -541,6 +559,8 @@ CGO_ENABLED=0 GOTOOLCHAIN=local GOOS=linux GOARCH=amd64 go build -trimpath -o di
 ```
 
 ### 7.2 Starting `fvpn-control` and `fvpn-worker` under systemd
+
+Carried gap: creation of the `fvpn` account/group and configuration/secret directories, with the access required below, remains deployment work. Binary installation from §7.1 must also be complete before the units can run. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
 
 For the FileProvider staging layout from §5.3, install the following units as the unprivileged `fvpn` service account. Complete initialization first: the vault directory and its `lock` file must already exist, and the service account must be able to traverse the parent and read the private files. systemd rejects a missing `ReadWritePaths` entry. Both processes open `vault/lock` read/write even for reads; worker needs only that writable file. Control also persists incarnation revocations through a temporary `.state-*` file and replacement of `state.json`, so it needs the vault directory writable. The generated CA, receipt and trust exports outside `vault/` need no runtime write allowance. This is the [staging authority layout](../pki/initialize.md#initialize-and-inspect); production custody remains unimplemented.
 `config.Load` reads JSON first, then applies `FVPN_<UPPERCASE_JSON_FIELD>`
@@ -598,6 +618,8 @@ ReadOnlyPaths=/etc/fvpn
 WantedBy=multi-user.target
 ```
 
+Carried gap: central daemon reload, unit enablement and startup are not supplied as a procedure here. Install the binaries and satisfy the account, directory, credential and routing prerequisites before starting services and attempting these readiness checks. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
+
 Verify readiness `[Verified on dev/test stack]`:
 ```bash
 curl -fsS https://vpn.example.com:8443/healthz
@@ -633,6 +655,8 @@ done
 
 For the `build-input.json` fields, see the [release command inputs](../updates/release-process.md#commands).
 
+Carried gap: creation of `sbom.spdx.json`, `NOTICES.txt` and `source.tar.zst` remains undocumented. `build-manifest` consumes supplied evidence metadata and an SBOM file/hash; it does not produce those artifacts. Create and check that evidence before building the manifest or uploading the files below. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
+
 Build, sign, and verify the release manifest envelope (`manifest.envelope.json`):
 
 `[Verified on dev/test stack]`
@@ -664,9 +688,9 @@ Upload `node-ubuntu2404-amd64.tar.zst`, `node-ubuntu2404-arm64.tar.zst`, `manife
 ### 9.1 Node Host Prerequisites, Directory Layout, and Configuration (`AGENTS.md §4`, `node/enforce/apply.go`, `node/enforce/executor.go`)
 
 On the Ubuntu 24.04 LTS exit node, install the user-space network executables invoked by `fvpn-agent`'s data-plane enforcement (`node/enforce/executor.go` `System`, `node/enforce/apply.go`):
-- **`nft`** (`nftables` package): atomic `nft -f -` transactions and whole-ruleset `nft -j list ruleset` verification (`NftBatch`, `NftListJSON`, `node/enforce/verify_foreign.go`, [`docs/poc/G2-netlab.md`](../poc/G2-netlab.md), `#220`, `#241`, `D-079`). Under `#220` (`r14` M-3) and **`D-079` (`#241`)**, `VerifyServing` reads the entire host nftables ruleset: any foreign base chain outside `inet fvpn` on `prerouting`, `forward`, or `postrouting` in families `ip`, `ip6`, `inet`, or `bridge`, or on `ingress` or `egress` of `MemberIf` or `UplinkIf` (including a `netdev`/`inet` `ingress`/`egress` chain with no device), that can mangle/rewrite payloads, set `meta mark` or `ct mark` (`MARK_SEMANTICS_VIOLATED`), `notrack`, NAT, `queue`, `drop`, `reject` (or has chain policy `drop` or `reject`), offload via `flow`/`xt` or attach a foreign `flowtable` to `MemberIf`/`UplinkIf` (`FLOWTABLE_BYPASS`), or `jump`/`goto` into such a chain (or has no priority, an unknown hook, or an unresolvable jump target — `ISOLATION_POLICY_INVALID`), fails serving closed with `ISOLATION_POLICY_INVALID`, `MARK_SEMANTICS_VIOLATED`, or `FLOWTABLE_BYPASS` (detail includes `handle <n>`, while tolerating accept-only/match/counter/log foreign chains, `input`/`output` chains, family `arp`, and `ingress`/`egress` chains on other devices). Under **`D-079` (`#241`, `loopback_scoped` rule in `node/enforce/verify_foreign.go`)**, a foreign rule in an `ip`, `ip6`, or `inet` base chain on `prerouting`, `forward`, or `postrouting` whose first expressions are native `ip`/`ip6` `saddr` or `daddr` matches with `"=="` (`""`) on a literal IP or prefix contained in `127.0.0.0/8` or `::1` and whose remaining expressions are only benign or NAT statements is classified as `loopback_scoped` (`VerifyResult.Loopback`, `table <t> family <f> hook <h> priority <p> chain <c> handle <n> statement <s>`) and tolerated without failing serving closed (`xt` matches and chain/table names prove nothing), whereas non-loopback NAT still fails closed as `FLOWTABLE_BYPASS` with `handle <n>`. Production exit nodes must not run Docker or any other NAT for non-loopback traffic; `loopback_scoped` in the read-back evidence is informational (`deploy/devstack` `#240` is an e2e test lab, not a production topology).
-- **`tc` and `ip`** (`iproute2` package): `tc -batch -` HTB/fq_codel shaping (`TcBatch`, `TcShowQdisc`, `TcShowClasses`, `TcShowFilters`) and `ip -j addr show dev <iface>` member-interface address read-back (`node/agent/memberpath.go`).
-- **`conntrack`** (`conntrack` package): `node/enforce/apply.go` `deleteConntrack` runs `conntrack -D -s <ip>` and `conntrack -D -d <ip>` (`ConntrackDeleteSourceV4`, `ConntrackDeleteDestV4`) for every revoked member address (`prev.AllowedV4` minus the new `Bindings`, keyed by `(addr, device_id, member_id)` in `RevokedAddress` / `revocationKey`), and both `tests/netlab/Dockerfile` and `deploy/devstack/Dockerfile.node` (`#153`, which also carries `tcpdump`) install `conntrack`. `SystemPlane.MissingExecutables()` (`node/agent/plane.go`, `#162`, `#166`) uses `enforce.Executor` directly to preflight `nft`, `tc`, and `ip` and calls `enforce.RequireConntrack(p.exec)` (`#156`, `#166`, `LookPath("conntrack")` -> `ISOLATION_POLICY_INVALID`, detail `"conntrack is not installed"`) at startup before installing the boot baseline: if any binary is missing, the agent keeps forwarding off with `safety_check_failed`, logs only the executable name, and reports `DEPENDENCY_UNAVAILABLE` at stage `preflight` plus failed `lease`, `qos`, and `source_binding` checks (`DEPENDENCY_UNAVAILABLE`). After `VerifyServing` and `VerifyQoS` succeed in `enforce.Apply` (`#156`, `#159`, `#172`, `#196`, `#197`, `#202`), `Apply` populates `verified.Counters` and `verified.Samples` (`Samples` skips unbound devices and zero metadata) before running the `m.Revoke` loop and attempts `deleteConntrack` for every address in `m.Revoke`. If any `conntrack -D` call fails, `enforce.Apply` leaves the verified serving ruleset and QoS installed (`ApplyResult.Verified = true`, because `ip saddr != @allowed_v4` and `ip daddr != @allowed_v4` precede `ct state established,related accept` and drop packets for removed bindings immediately) and returns a typed `*ConntrackDeleteError{Pending, Failed}` (`IsConntrackDeleteFailure`). In `fvpn-agent` (`#166`, `#193`, `#202`, `node/agent/revocation.go`, `node/agent/sync.go`, `node/internal/agentstore/store.go`, `docs/node/README.md`), when `plane.Apply` returns `res.Verified == true` with `enforce.IsConntrackDeleteFailure(err)` and consecutive failed attempts remain below 12 (`1..11`), the agent keeps the verified serving ruleset installed (`serving = true`), persists only the failed `(addr, device_id, member_id)` addresses (`Failed` plus any unattempted entries) under `pending_revocations` in local SQLite `meta` (merged with any newly revoked addresses on subsequent generations and retried on every apply tick until `conntrack -D` succeeds), keeps `internet_only`, `qos`, `source_binding`, and `meter` checks `passed` and the local watchdog heartbeat `serving`, and reports one `NodeError` (`code: ISOLATION_POLICY_INVALID`, `stage: "apply"`, `message: "conntrack delete pending; serving ruleset verified"` — one of the twelve revision-8 enforcement verification reasons in `contracts/openapi.yaml` `#164`). After **twelve consecutive failed `conntrack -D` attempts** (`maxConntrackDeleteAttempts = 12`, persisted across restarts in `#193` and `#202`) or if `conntrack` is missing after preflight, the agent fails isolation closed and installs the baseline (`member_forwarding_enabled=false`, `safety_status=failed`, `forwarding_block_reasons=["safety_check_failed"]`, `internet_only=failed` with `ISOLATION_POLICY_INVALID`). Any unverified apply error or non-conntrack failure also withdraws to the fail-closed baseline.
+- **`nft`** (`nftables` package): atomic `nft -f -` transactions and whole-ruleset `nft -j list ruleset` verification (`NftBatch`, `Executor.Output`, `node/enforce/verify_foreign.go`, [`docs/poc/G2-netlab.md`](../poc/G2-netlab.md), `#220`, `#241`, `D-079`). Under `#220` (`r14` M-3) and **`D-079` (`#241`)**, `VerifyServing` reads the entire host nftables ruleset: any foreign base chain outside `inet fvpn` on `prerouting`, `forward`, or `postrouting` in families `ip`, `ip6`, `inet`, or `bridge`, or on `ingress` or `egress` of `Datapath.MemberIngress` or `Datapath.Uplink` (including a `netdev`/`inet` `ingress`/`egress` chain with no device), that can mangle/rewrite payloads, set `meta mark` or `ct mark` (`MARK_SEMANTICS_VIOLATED`), `notrack`, NAT, `queue`, `drop`, `reject` (or has chain policy `drop` or `reject`), offload via `flow`/`xt` or attach a foreign `flowtable` to `Datapath.MemberIngress`/`Datapath.Uplink` (`FLOWTABLE_BYPASS`), or `jump`/`goto` into such a chain (or has no priority, an unknown hook, or an unresolvable jump target — `ISOLATION_POLICY_INVALID`), fails serving closed with `ISOLATION_POLICY_INVALID`, `MARK_SEMANTICS_VIOLATED`, or `FLOWTABLE_BYPASS` (detail includes `handle <n>`, while tolerating accept-only/match/counter/log foreign chains, `input`/`output` chains, family `arp`, and `ingress`/`egress` chains on other devices). Under **`D-079` (`#241`, `loopback_scoped` rule in `node/enforce/verify_foreign.go`)**, a foreign rule in an `ip`, `ip6`, or `inet` base chain on `prerouting`, `forward`, or `postrouting` whose first expressions are native `ip`/`ip6` `saddr` or `daddr` matches with `"=="` (`""`) on a literal IP or prefix contained in `127.0.0.0/8` or `::1` and whose remaining expressions are only benign or NAT statements is classified as `loopback_scoped` (`VerifyResult.Loopback`, `table <t> family <f> hook <h> priority <p> chain <c> handle <n> statement <s>`) and tolerated without failing serving closed (`xt` matches and chain/table names prove nothing), whereas non-loopback NAT still fails closed as `FLOWTABLE_BYPASS` with `handle <n>`. Production exit nodes must not run Docker or any other NAT for non-loopback traffic; `loopback_scoped` in the read-back evidence is informational (`deploy/devstack` `#240` is an e2e test lab, not a production topology).
+- **`tc` and `ip`** (`iproute2` package): `tc -batch -` HTB/fq_codel shaping (`TCBatch` for writes and `Executor.Output` for reads) and `ip -j addr show dev <iface>` member-interface address read-back (`node/agent/memberpath.go`).
+- **`conntrack`** (`conntrack` package): `node/enforce/apply.go` `deleteConntrack` runs `conntrack -D -s <ip>` and `conntrack -D -d <ip>` through `Executor.Output` for addresses selected by the agent's `planRevokes`: previous or pending `(addr, device_id, member_id)` identities absent from current bindings, represented by `addrID`, and both `tests/netlab/Dockerfile` and `deploy/devstack/Dockerfile.node` (`#153`, which also carries `tcpdump`) install `conntrack`. `SystemPlane.MissingExecutables()` (`node/agent/plane.go`, `#162`, `#166`) uses `enforce.Executor` directly to preflight `nft`, `tc`, and `ip` and calls `enforce.RequireConntrack(p.exec)` (`#156`, `#166`, `LookPath("conntrack")` -> `ISOLATION_POLICY_INVALID`, detail `"conntrack is not installed"`) at startup before installing the boot baseline: if any binary is missing, the agent keeps forwarding off with `safety_check_failed`, logs only the executable name, and reports `DEPENDENCY_UNAVAILABLE` at stage `preflight` plus failed `lease`, `qos`, and `source_binding` checks (`DEPENDENCY_UNAVAILABLE`). After the combined nftables and tc read-back in `verifyServing` succeeds in `enforce.Apply` (`#156`, `#159`, `#172`, `#196`, `#197`, `#202`), `Apply` populates `verified.Counters` and `verified.Samples` (`Samples` skips unbound devices and zero metadata) before running the `m.Revoke` loop and attempts `deleteConntrack` for every address in `m.Revoke`. If any `conntrack -D` call fails, `enforce.Apply` leaves the verified serving ruleset and QoS installed (`ApplyResult.Verified = true`, because `ip saddr != @allowed_v4` and `ip daddr != @allowed_v4` precede `ct state established,related accept` and drop packets for removed bindings immediately) and returns a typed `*ConntrackDeleteError{Pending, Failed}` (`IsConntrackDeleteFailure`). In `fvpn-agent` (`#166`, `#193`, `#202`, `node/agent/revocation.go`, `node/agent/sync.go`, `node/internal/agentstore/store.go`, `docs/node/README.md`), when `plane.Apply` returns `res.Verified == true` with `enforce.IsConntrackDeleteFailure(err)` and consecutive failed attempts remain below 12 (`1..11`), the agent keeps the verified serving ruleset installed (`serving = true`), persists only the failed `(addr, device_id, member_id)` addresses (`Failed` plus any unattempted entries) under `pending_revocations` in local SQLite `meta` (merged with any newly revoked addresses on subsequent generations and retried on every apply tick until `conntrack -D` succeeds), keeps `internet_only`, `qos`, `source_binding`, and `meter` checks `passed` and the local watchdog heartbeat `serving`, and reports one `NodeError` (`code: ISOLATION_POLICY_INVALID`, `stage: "apply"`, `message: "conntrack delete pending; serving ruleset verified"` — one of the twelve revision-8 enforcement verification reasons in `contracts/openapi.yaml` `#164`). After **twelve consecutive failed `conntrack -D` attempts** (`maxConntrackDeleteAttempts = 12`, persisted across restarts in `#193` and `#202`) or if `conntrack` is missing after preflight, the agent fails isolation closed and installs the baseline (`member_forwarding_enabled=false`, `safety_status=failed`, `forwarding_block_reasons=["safety_check_failed"]`, `internet_only=failed` with `ISOLATION_POLICY_INVALID`). Any unverified apply error or non-conntrack failure also withdraws to the fail-closed baseline.
 
 `[production only]`
 ```bash
@@ -683,13 +707,15 @@ install -d -m 0700 /var/lib/vpn-node/identity /var/lib/vpn-node/state /var/lib/v
 
 Use `fvpn-node-install` for verified release extraction, the `current` symlink, trust files and generated agent/updater configuration; follow [what install changes](../node/install.md#what-install-changes-63) and [Node trust files](../node/install.md#node-trust-files).
 
+Carried gap: real interface, address and route provisioning has no complete procedure here. The installer creates dummy links without addresses or routes; its success does not establish a working member/uplink path. AdGuard service/listener provisioning from §4.3 must also be completed before DNS application. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
+
 After install, add the `dns` object to `/etc/vpn-node/agent.json` using the [node configuration example](../node/README.md#config-example), including `dns.resolvers` and `dns.resolver_credentials_file`. The installer starts services but does not write `dns`; without it, a referenced resolver document fails closed with `not_run` / `DEPENDENCY_UNAVAILABLE`.
 
 Provide the referenced credentials JSON file with one username/password pair for all resolver targets, following the [node credential rules](../node/README.md#configuration): regular file, mode `0600`, uid/gid `0:0`, exactly one hard link, and no symlink. Restart `fvpn-agent.service` after changing the `dns` configuration (`systemctl restart fvpn-agent.service`); `SIGHUP` reloads only the credential file, not `agent.json`.
 
 Read back `dns_policy_evidence` in the admin node detail as described in [operator DNS evidence](operator-guide.md#51-how-threat-feeds-and-resolver-documents-are-published-and-delivered) and the [resolver outcome table](../node/README.md#config-example): for the referenced document, require matching document ID, digest and generation, outcome `applied`, and a passed `dns_policy` check. Missing evidence or successful document delivery alone does not prove apply.
 
-**Installer product gap:** the installer takes no DNS input. A successful re-run, even for the same release, replaces a hand-edited `agent.json` because the fast path requires exact equality with its rendering; the rewritten file drops `dns`. After any such re-run, repeat the configuration, restart and read-back steps above before treating DNS as applied.
+Carried gap: the installer takes no DNS input. A successful re-run, even for the same release, replaces a hand-edited `agent.json` because the fast path requires exact equality with its rendering; the rewritten file drops `dns`. After any such re-run, repeat the configuration, restart and read-back steps above before treating DNS as applied.
 
 The following `agent.json` fields illustrate configuration inputs; use the installer's generated configuration and [control endpoint guidance](../node/install.md#authenticated-updater-reporting-f10-02-136-13103) for the selected origin. The installer also generates `updater.json`; this example alone is not a manual installation procedure.
 
@@ -764,6 +790,8 @@ The response carries `Cache-Control: no-store` and returns the one-time `token` 
 
 ### 9.3 Running `fvpn-agent enroll` on the Node
 
+Carried gap: the public/agent listener split still needs endpoint routing compatible with the installer's single authenticated control origin; do not treat the separate example hostnames as that routing procedure. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
+
 For enrollment, use `fvpn-node-install` and its [token intake procedure](../node/install.md#token-intake-182-enr03): provide an existing regular mode-`0600` token file with `--token-file`, or use its interactive prompt. Follow [what install changes](../node/install.md#what-install-changes-63) for configuration and enrollment; the installer invokes `fvpn-agent enroll` with its generated agent configuration.
 
 What happens during `fvpn-agent enroll` (`§6.1`–`§6.3`, `ENR01`–`ENR04`, `D-055`, `docs/nodes/WIRING.md`):
@@ -777,6 +805,8 @@ What happens during `fvpn-agent enroll` (`§6.1`–`§6.3`, `ENR01`–`ENR04`, `
 For host provisioning and lifecycle commands, follow [`docs/node/install.md`](../node/install.md) (`#239`) and [operator guide §3.1](operator-guide.md#31-enrolling-a-new-node-or-reinstalling-an-existing-node-post-apiv1adminenrollments). That runbook covers verified install, `already_current` re-runs, `check`, staged `upgrade`, `remove`, `reenroll --token-file`, and `image-prepare` / `firstboot`. In particular, `/var/lib/vpn-node/update-staging/pending-release.json` is staging evidence, not confirmation that `current` moved; D-080 pending-file consumption is merged (#253), seed is merged (#269), and central installer-result acceptance is merged in fleet-update follow-up 10 (#273, D-089 / D-097), with keyed HTTP replay in #277. Installer mutations use journal-first rollback under `/var/lib/vpn-node/install/` and preserve `usage.db` on re-enrollment. AT07 still needs the assembled and hardware proofs listed in the operator guide.
 
 For unit installation and startup, use `fvpn-node-install` as described in [what install changes](../node/install.md#what-install-changes-63), including the pinned NetBird client, its connection unit and the updater timer; installable archives carry units under `lib/systemd`.
+
+Carried gap: complete the real node network, resolver provisioning and single-origin endpoint routing before enrollment/publication verification; the installer does not supply those production procedures. See the [carried list](follow-up-51.md#existing-procedures-linked-and-carried-gaps).
 
 Create or verify the target member group via `POST /api/v1/admin/groups` (`CreateAdminGroup`, `201 MemberGroup`, audited as `group.create` on `member_group:<id>`, `D-057`, `D-059`) or `GET /api/v1/admin/groups` (`ListAdminGroups`). Once the node reports healthy observations (`provisioning_state: "ready"`, `control_status: "online"`, `safety_status: "passed"`, `data_health: "healthy"`, and `observation.checks` entries `internet_only`, `dns_policy`, and `tunnel_probe` with `status: "passed"`) in `GET /api/v1/admin/nodes/{node_id}`, publish the exit node via `PUT /api/v1/admin/nodes/{node_id}/publication` (`SetNodePublication` -> `exits.SetPublicationTx`, `docs/nodes/WIRING.md`) supplying `publication_intent: "published"`, `group_ids: ["<group_uuid>"]`, `If-Match: "<etag>"`, and `Idempotency-Key` (or pre-attach `member_group_ids` via `PATCH /api/v1/admin/nodes/{node_id}` and omit `group_ids` to preserve existing membership). Wait for the returned `202 Accepted` operation (`node.publish`) to reach `status: "succeeded"` with `publication_observed: "active"` and NetBird route read-back evidence (`netbird_route_readback`) before announcing the exit to members.
 

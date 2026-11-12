@@ -83,15 +83,41 @@ implementation at the cutoff; they do not add a deployment or restore result.
 | X2 | Updater check/rollback constants bound transaction-step entries, not periodic retry intervals. Failed health begins rollback immediately; attestation timing constants cannot be changed by configuration. |
 | X3 | One credential pair serves every resolver target of an exit. Per-target credentials remain unimplemented. |
 
+The second review and six class sweeps also correct the following current
+instructions. These are source checks, not a live recovery drill.
+
+| Finding | Correction and boundary |
+|---|---|
+| S1 | Start control alone, commit recorded post-snapshot revocations, suspensions and grant withdrawals, then start the worker and verify observed enforcement before public traffic. Control can still issue leases from restored authorization during reapplication; restricted recovery startup remains absent. |
+| S2 | The backup guide now describes the same bounded node/member/discovery reconciliation as the restore drill and carries orphan inventory/revocation. |
+| S3 | Use the existing grant-withdrawal endpoint and operator procedure. Its accepted operation records durable withdrawal intent, not completed enforcement. |
+| S4 | Backup recovery commands select the checked candidate's separate migrator and recovery credentials explicitly, rather than an unprovisioned generic DSN file or the control-role default. |
+| S5 | PostgreSQL archiving and native/manual restore or verification need repository credentials in their process environment. The backup services' environment file does not configure those other invocations; production delivery of that environment remains a gap. |
+| S6 | Dependent steps now show local `Carried gap:` notices for absent procedures or product support, including build/install/start prerequisites, evidence creation, networking, routing, secrets, retention and recovery limits. |
+| S7 | Updater space accounting sums artifact size, installed size and the signed reserve; staging also needs artifact space. There is no enforced 512 MiB floor. |
+| S8 | SIGHUP reloads only resolver credential contents at the loaded path. Resolver targets or path changes require an agent restart. |
+| S9 | The worker publishes resolver documents; the agent applies them to its local configured resolver targets. Check node DNS evidence separately from publication. |
+| S10 | A non-empty invalid drill prefix fails. Only an unset/empty prefix gets a random suffix. |
+
+The sweeps cover credentials and roles, reload/restart behavior, process
+responsibilities, named symbols, automatic cleanup/reconciliation, and gap
+dependencies in the four guides. Additional corrections identify the actual
+enforcement executor methods and binding identities, installer configuration
+replacement, optional bootstrap DNS, the validator's nonnegative FUP minimum,
+and the restart needed after changing the host reserve. Billing reconciliation
+visits stored subscriptions; recovery of subscriptions absent from the snapshot
+requires a separate inventory. Database TLS inputs and the OIDC client secret
+also require explicit provisioning that this repository does not document.
+
 The [Chinese](../DELIVERY.md#交接指南修訂) and
 [English](../DELIVERY.en.md#handover-guide-revisions) delivery guides retain
 follow-up 50's revisions and record this cut's changes. All existing headings
 in the three revised documents remain unchanged. The
 [pre-cut provenance](../../tests/handover/testdata/followup51-snapshots.json) and
 [edit manifest](../../tests/handover/testdata/followup51-edits.json) preserve
-14 exact copies from the cutoff and permit exactly 102 replacements: 12 cut-line
-edits, 78 guide corrections and existing-procedure pointers,
-eight link-fragment fixes, and four delivery-guide revision edits. Every other
+14 exact copies from the cutoff and permit exactly 177 replacements: 12 cut-line
+edits, 151 guide corrections, gap notices and existing-procedure pointers,
+eight link-fragment fixes, and six delivery-guide revision edits. Every other
 byte must match. Older claims retain their assertions; follow-up 50 reads these
 pre-cut copies.
 
@@ -140,6 +166,11 @@ The remaining missing steps and logical restore validation are carried forward:
 - Calibration §1.6: scheduling authorized audit-event retention purges.
 - Calibration §1.6: scheduling authorized usage-rollup retention purges.
 - Deployment §§2/9.1: per-target resolver credentials; one pair currently serves all resolver targets of an exit.
+- Restore drill step 3.2 / backup Steps 6–8: restricted recovery startup completing usage replay, entitlement computation and policy synchronization before the automatic worker starts; current control-only startup can still serve restored authorization.
+- Deployment §3.1 / restore drill Phase 2 / backup §§2.1, 4, 5.2 and 6: production delivery of repository passphrase and object-store credentials to PostgreSQL archiving and native/manual restore or verification processes.
+- Restore drill step 4.1 / backup Step 7.2: inventory and reconstruction of provider subscriptions absent from restored database rows.
+- Deployment §3.1: database TLS certificate/key provisioning and client CA distribution before migration/runtime connections.
+- Deployment §4.1: production provisioning and delivery of the confidential OIDC client secret used by control startup.
 
 These are documentation and implementation gaps, not new acceptance results.
 The [delivery guide's verification limits](../DELIVERY.en.md#verification-scope-and-known-limits)
