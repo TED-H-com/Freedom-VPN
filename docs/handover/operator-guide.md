@@ -12,8 +12,8 @@ The admin view's “Retained verification result” is `NodeDetail.serving_read`
 
 欄位語意 / Field semantics: [API contract](../contracts/README.md#revision-15)。已記錄的隔離驗證與剩餘限制 / Recorded isolation evidence and remaining limits: [D164 acceptance](../e2e/at/isolation/d164-acceptance.md)。
 
-**Archived cut:** [follow-up 50](follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut:** [follow-up 49](follow-up-49.md), #482–#485 at `aaffdc7f`; source-backed changes, verification boundaries and carried gaps.
+**Archived cut:** [follow-up 51](follow-up-51.md), #524–#526 at `66de6a24`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 50](follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; source-backed changes, verification boundaries and carried gaps.
 
 <a id="observation-records"></a>
 
@@ -206,7 +206,7 @@ All administrative browser sessions require OIDC authentication with MFA (`amr: 
      ORDER BY dead_lettered_at DESC, id;
      ```
 3. **Check Exit Node Health & Update Batch Attention Flags (`/admin/nodes`, `/admin/updates`)**:
-   - Investigate any node with `control_status != 'online'`, `safety_status != 'passed'`, `data_health = 'failed'`, any `observation.checks` entry (`internet_only`, `dns_policy`, `tunnel_probe`) with `status != 'passed'`, or any update target flagged `needs_attention = true` or `unconfirmed = true`.
+   - Investigate any node with `control_status != 'online'`, `safety_status != 'passed'`, `data_health = 'failed'`, any `checks` entry (`internet_only`, `dns_policy`, `tunnel_probe`) with `status != 'passed'`, or any update target flagged `needs_attention = true` or `unconfirmed = true`.
 4. **Check Audit Anomalies (`audit_anomalies_total`)**:
    - Verify that `fvpn-control` logs zero `WARN audit row omitted` events (`audit_anomalies_total = 0`).
 
@@ -896,7 +896,7 @@ ORDER BY r.last_attempt_at DESC NULLS LAST;
 
 ## 6. Freezing, Recovering, and Adjusting the Usage Ledger (`§10.8`, `§10.9`, `§17.3`)
 
-The `fvpn-usage-admin` CLI operates directly against PostgreSQL and the central signing vault (`/var/lib/fvpn/vault`) and records an append-only `audit_events` row for every mutation.
+The `fvpn-usage-admin` CLI operates directly against PostgreSQL and the central signing vault (`/var/lib/fvpn/staging-authority/vault`) and records an append-only `audit_events` row for every mutation.
 
 ### 6.1 Freezing and Recovering the Usage Ledger (`freeze`, `begin-recovery`, `complete-recovery`)
 
@@ -1085,7 +1085,7 @@ Current limiter calibration (#252, D-083 / D-078): browser `10/s`, burst `30` **
   - **Security-ops follow-up 7, follow-up 8, and follow-up 9 case verdicts (`#203`, run `ab96acac-8713-485a-9c29-88f20110e2e5`; `#221`, run `0f5fb60d-f6a7-45c6-8ebe-175e0a480bd8`; `#242`, run `42396951-2d9a-49f4-95c3-45f33d9519d5`, [`docs/e2e/at/secops/summary.md`](../e2e/at/secops/summary.md), [`docs/e2e/at/secops/AT30.md`](../e2e/at/secops/AT30.md), [`docs/e2e/at/secops/restore-reconcile.md`](../e2e/at/secops/restore-reconcile.md), [`docs/e2e/at/secops/requests.md`](../e2e/at/secops/requests.md)):** In **security-ops follow-up 9 (`#242`, run `42396951-2d9a-49f4-95c3-45f33d9519d5`)**, **`AT30` is `passed` live** (`1 pass / 4 blocked / 0 fail` across `AT28`–`AT32`, closing `SECOPS-18`, `SECOPS-19`, and `SECOPS-05`), while `AT28`, `AT29`, `AT31`, and `AT32` remain **`blocked`** with passed subsets:
     - **`AT28`:** subset passed, case blocked on remaining items in [`docs/e2e/at/secops/AT28.md`](../e2e/at/secops/AT28.md) and `SECOPS-20` (trusted-proxy principal isolation, per-class rate limiters, `8 MiB` `SubmitUsageBatch` body boundary, and secret-scan checks passed; follow-up 8 `#221` also verified `#205` unmapped-peer discovery-denial audit deduplication across two worker cycles with `audit_events` count `= 1` on `fleet_config:00000000-0000-0000-0000-000000000001`).
     - **`AT29`:** subset passed, case blocked on `w3-devstack-e2e` `past_due` payment truth (`SECOPS-17`, closed in devstack follow-up 14 `#240`), established TCP/UDP member transports, and `needs operator run` guest clock rollback (`clock_settime`) — `D-065` fleet API (`GET`/`PUT /api/v1/admin/fleet-config` with `428`/`412`/idempotent replay/`fleet_config.update` audit and `max_offline_lease_seconds: 60`, restored to `86400`), finite grace (`FVPN_E2E_GRACE_SECONDS=90`), paid/grant/lease cutoff (`495/869` -> `0/0` bytes at expiry) and recovery (`0 -> 1320/2316` bytes), and watchdog/component clock checks passed in `deadlines.json`.
-    - **Historical live `AT30` (`#242`, run `42396951-2d9a-49f4-95c3-45f33d9519d5`, 2026-10-30 EDT): passed.** Isolated restore `7.17 s` with `6/6` checklist sections; `120.12 s` fail-safe negative without epoch rotation; retained replay `3/3` hashes with zero loss/duplicates/gaps; pre-replay DB RPO `90.301 s`, service RPO `0 s` / `0 B`, protocol RTO `112.35 s`, total outage RTO `121.88 s`. D-076 fenced the T0..T1 revoked device, an old idempotency replay kept the fence, fresh re-grant restored counted forwarding, and both the centrally revoked and newly enrolled negatives behaved correctly (SECOPS-18). During the hold, `node_observations.report_payload.usage` and `fvpn-agent usage snapshot` showed three unacked events / `2352` payload bytes, then zero after replay (SECOPS-19). The run predates the admin HTTP route and `NodeDetail.usage_outbox`; it exercised service-level re-authorization. See [restore drill §2.6](restore-drill.md#26-latest-measurement--at30-passed-242) and [`docs/e2e/at/secops/AT30.md`](../e2e/at/secops/AT30.md) for the evidence and the separate historical #221 values.
+    - **Historical live `AT30` (`#242`, run `42396951-2d9a-49f4-95c3-45f33d9519d5`, 2026-10-30 EDT): passed.** Isolated restore `7.17 s` with `6/6` checklist sections; `120.12 s` fail-safe negative without epoch rotation; retained replay `3/3` hashes with zero loss/duplicates/gaps; pre-replay DB RPO `90.301 s`, service RPO `0 s` / `0 B`, protocol RTO `112.35 s`, total outage RTO `121.88 s`. D-076 fenced the T0..T1 revoked device, an old idempotency replay kept the fence, fresh re-grant restored counted forwarding, and both the centrally revoked and newly enrolled negatives behaved correctly (SECOPS-18). During the hold, `node_observations.report_payload.usage` and `fvpn-agent usage snapshot` showed three unacked events / `2352` payload bytes, then zero after replay (SECOPS-19). The run predates the admin HTTP route and `NodeDetail.usage_outbox`; it exercised service-level re-authorization. See [restore drill §2.6](restore-drill.md#historical-follow-up-9-242) and [`docs/e2e/at/secops/AT30.md`](../e2e/at/secops/AT30.md) for the evidence and the separate historical #221 values.
     - **`AT31`:** subset passed, case blocked on forced-relay control and candidate hardware (`60/60` counted peers, `5,960/5,960` HTTP `200` device reads with `0` wrong-member responses, `82` node telemetry samples at `5 s` cadence with `0` errors, and two-exit traffic passed in `capacity.json` and `node-telemetry.json`).
     - **`AT32`:** subset passed, case blocked on bulk final per-stream attribution in `w3-devstack-e2e` follow-up 12 and physical origins/platforms (`SECOPS-16` ordinary log scan and protected artifact lifecycle under `D-066`, plus `scope-review.json`, passed).
 

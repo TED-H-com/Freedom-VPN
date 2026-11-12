@@ -4,8 +4,8 @@
 
 **Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
 
-**Archived cut:** [follow-up 50](../handover/follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut:** [follow-up 49](../handover/follow-up-49.md), #482–#485 at `aaffdc7f`; source-backed changes, verification boundaries and carried gaps.
+**Archived cut:** [follow-up 51](../handover/follow-up-51.md), #524–#526 at `66de6a24`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 50](../handover/follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; source-backed changes, verification boundaries and carried gaps.
 
 ## Follow-up 49 acceptance snapshot (2026-11-05 EST)
 
@@ -637,7 +637,7 @@ usage AT 7 were absent from main at start; their results are excluded.
 | Members 12 (#361) | 43 files archived; b98b78ee F11-02 closed by populated-grant rows, F11-03 blocked (89 Applies succeeded). New F12-01 stale-lease baseline bracket / nine losses, F12-02 timing-export cap, F12-03 negative-cache and F12-04 UDP SERVFAIL. Streamed reader not live-qualified; 12 requests. |
 | Devstack 22 (#362) | 63 files archived; native IPv6 F8-02 16,016 / 64,064 bytes, 15 oversized reverse losses, no PTB. Sender constraint passes by fragmentation. Five-SYN pattern reproduced with loopback-source handshake response, no type-4 data. Capture exports; 2 requests. |
 
-[Operator additions](../handover/operator-guide.md#operator-changes-at-362)
+[Operator additions](../handover/operator-guide.md#operator-changes-at-369)
 cover provisional D-136 stale-lease baseline semantics and D-137 AT09 scope.
 D-135 + D-136 require confirmation together; D-137's lower-tunnel-MTU / MSS
 hardening remains an owner option. Historical failures stay failed and
@@ -908,7 +908,7 @@ Counts are pass / blocked / fail. No new live run was performed by handover.
 | Netlab 20 (#336) | Members/isolation archive pin correction; 200/200 pins, 20 regression cases; no runtime acceptance promotion. |
 | Updates 10 (#337) | Installer extension 23/23; regular AT23 blocked on binary layout, AT24–AT27 blocked. Empty result_url remains F10-02. D-132 pins two fleet-update tests to immutable history. |
 
-Current open findings and owners are in the [findings register](../handover/README.md#findings-register-at-the-follow-up-19-cutoff).
+Current open findings and owners are in the [findings register](../handover/README.md#findings-register-at-the-follow-up-49-cutoff).
 ENR-07, F9-01 and the devstack 18 serving/seed failures are no longer open.
 ISO-F6-03 is a real product defect; physical arm64, OS reboot, power-loss,
 real platform routes/clients, full AT13 faults and AT29/AT31 resources remain open.

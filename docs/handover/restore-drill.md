@@ -4,8 +4,8 @@
 
 **Current delivery:** The [delivery guide](../DELIVERY.en.md) covers current capabilities, operating entrypoints and verification scope. The follow-up snapshots below retain their historical scope and outcomes.
 
-**Archived cut:** [follow-up 50](follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; source-backed changes, verification boundaries and carried gaps.
-**Earlier archived cut:** [follow-up 49](follow-up-49.md), #482–#485 at `aaffdc7f`; source-backed changes, verification boundaries and carried gaps.
+**Archived cut:** [follow-up 51](follow-up-51.md), #524–#526 at `66de6a24`; source-backed changes, verification boundaries and carried gaps.
+**Earlier archived cut:** [follow-up 50](follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; source-backed changes, verification boundaries and carried gaps.
 
 Historical follow-up 17 cutoff: [follow-up 17 operator evidence](follow-up-17.md). #313
 harness-proves the SECOPS-21 first-offer capture (2/0/0, delivery 4 > retained 3,
@@ -21,9 +21,9 @@ This document provides the repeatable backup, point-in-time restore (PITR), and 
 | Subsystem | RPO Target | RTO Target | Architectural Guarantee |
 |---|---|---|---|
 | **Central PostgreSQL 17** (Members, Entitlements, Nodes, Policies, Audit) | `≤ 15 minutes` | `≤ 4 hours` (service target; unmeasured here) | Continuous WAL archiving (`archive_timeout = 300s`) + daily base backups. |
-| **Usage Ledger (`usage_events`, `usage_checkpoints`, `usage_rollups`)** | **Effective RPO `0`** (within node 30-day archive)<br>`≤ 15 minutes` (if node archive also lost) | `≤ 4 hours` (service target; unmeasured here) (ingest resumes; reconciliation runs asynchronously) | Nodes retain ACKed events for `30 days` (`§10.5`). Rotating `ledger_epoch` forces nodes to verify a signed checkpoint and replay post-snapshot events without double-counting (`AT30`). |
-| **NetBird Management Store** | `≤ 15 minutes` | `≤ 4 hours` (service target; unmeasured here) | Reconciled from central desired state (`internal/netbird/reconcile.go`) after restore. |
-| **Signing Vault (`/var/lib/fvpn/vault`) & PKI Revocations** | **`0` (Zero Loss)** | Immediate | Stored outside PostgreSQL snapshots (`§16.2`, `§17.2`). Never overwritten by a database rollback. |
+| **Usage Ledger (`usage_events`, `usage_checkpoints`, `usage_rollups`)** | **Effective RPO `0` only within the available node archive window**; outside it, replay can be unavailable | `≤ 4 hours` (service target; unmeasured here) (ingest resumes; reconciliation runs asynchronously) | Nodes retain ACKed payloads at least `72 hours` after local ACK (`DefaultArchiveRetain`); no node configuration sets a longer window. The unacknowledged outbox blocks new member forwarding at `72 hours` oldest-event age or decimal `256 MB` payload, keeps those events and resends; the archive has a separate `1000000000`-byte engineering budget. A verified new `ledger_epoch` permits replay of retained post-snapshot events without double-counting. Shortening the window requires updated parameters, recovery documents and risk notes ([usage storage](../node/usage-store.md#ack), `§10.8`). |
+| **NetBird Management Store** | `≤ 15 minutes` | `≤ 4 hours` (service target; unmeasured here) | Reconciliation of known resources follows central desired state; it is not global orphan cleanup. Carried gap: post-restore orphan inventory/revocation, as described in Phase 5.2. |
+| **Signing Vault (`/var/lib/fvpn/staging-authority/vault`) & PKI Revocations** | **`0` (Zero Loss)** | Immediate | Stored outside PostgreSQL snapshots (`§16.2`, `§17.2`). Never overwritten by a database rollback. |
 
 ---
 
@@ -222,14 +222,18 @@ Execute every step in order during a real disaster recovery event or scheduled q
   ```
   *(Note: Exit nodes continue forwarding traffic for existing members while their serving leases and member service deadlines remain valid (`86,400s` default max offline lease, `§16.3`), and buffer new usage events in local SQLite (`§10.5`, `§10.8`).)*
 
-- [ ] **1.2 Verify `/var/lib/fvpn/vault` Integrity (`§16.2`, `§17.2`)**:
-  Confirm that `/var/lib/fvpn/vault/state.json` and all key files are intact and were **not** rolled back with the database snapshot. Any key revocations or rotations recorded in `state.json` must remain in effect after DB restore.
+- [ ] **1.2 Verify `/var/lib/fvpn/staging-authority/vault` Integrity (`§16.2`, `§17.2`)**:
+  Carried gap: production custody and independent anti-rollback remain unimplemented by FileProvider. Preserve independent authority evidence; the staging inspection below cannot prove whole-directory non-rollback.
+
+  Preserve the current authority outside the PostgreSQL restore. For a staging FileProvider, run `fvpn-vault inspect -vault /var/lib/fvpn/staging-authority/vault -check-keys` against the actual configured vault path and review the [key-use inspection](../pki/inspect.md#key-use-inspection) results. This checks current active central keys locally; it cannot prove that the whole directory was not rolled back. Preserve newer revocations and rotations using independent evidence and follow [rotation and restore](../pki/rotation.md); production custody and anti-rollback are not implemented by FileProvider.
 
 ### Phase 2: Restore PostgreSQL 17 and Freeze Usage Ingestion
 
 D-095 (#270), restore runbook Step 1: keep control and worker stopped, restore T0, then run freeze-ingest and verify success **before services start on the restored database**. Starting the worker before freezing leaves the original race open; see §2.6.
 
 - [ ] **2.1 Restore PostgreSQL 17 to the Target Point in Time (`restored_to`)**:
+  Carried gap: native PITR below requires the PostgreSQL/restore repository environment described in [backup §6.2](../ops/backups.md#62-restoring-into-a-clean-host-data-directory-production-host-replacement); a production delivery procedure for that environment is absent.
+
   - **Physical PITR (`pgBackRest`, recommended)** `[production only]`:
     ```bash
     # Run as the backup OS account with the documented repository environment.
@@ -241,33 +245,43 @@ D-095 (#270), restore runbook Step 1: keep control and worker stopped, restore T
     ```
     Start the candidate with an isolated configuration/socket and no public listener, or use `verify.sh --host-repo --primary-host` for a `--network none` copy. Check migrations and the read-only checklist against the candidate. Only after validating that copy, preserve the old cluster and explicitly switch the service configuration to the candidate; do not overwrite the old data. Steps 2.2 onward use the checked candidate's connection configuration.
   - **Logical Restore (`pg_restore`)** (`docs/db/README.md`, `F-02`–`F-04`):
-    Append-only guards block `DELETE`/`TRUNCATE` on `audit_events`, `usage_events`, `usage_samples`, `usage_checkpoints`, and `usage_rollups` unless the session runs as schema owner (`fvpn_migrator`) with `SET LOCAL fvpn.restore = 'on'` inside the restore transaction `[production only]`:
+    `[production only]` — this logical restore path remains unverified. `guard_append_only()` guards `UPDATE`/`DELETE`/`TRUNCATE` on `audit_events`, `billing_records`, `usage_adjustments`, `usage_events`, `usage_samples`, `projection_receipts`, `usage_event_payloads`, `usage_ledger_gaps` and `fup_evaluations`; on `usage_rollups` it guards `DELETE`/`TRUNCATE`. `usage_checkpoints` instead has a separate `forbid_delete()` guard for `DELETE`/`TRUNCATE`.
+
+    No setting provides a general bypass of `guard_append_only()`, and it does not read `fvpn.restore`. Its sole exception returns `OLD` for a `DELETE` on `audit_events`, `usage_event_payloads` or `usage_rollups` when `current_user` owns `public.purge_retained(text,timestamptz,text)` and `fvpn.retention_purge` is `on`. Every other guarded operation raises, including every `TRUNCATE`. The authorized retention function manages that setting; see the [retention contract](../db/README.md#roles-grants-and-retention).
+
+    Other triggers use `owner_setting('fvpn.restore')`, which requires both the setting to be `on` and `current_user` to own `public.owner_setting(text)`. It allows historical replay by skipping the node-table snapshot lock, target-insert transaction/eligibility checks, and comparison with the current eligible node population; the stored batch `target_count` must still match its restored targets. It also skips node-lease current-incarnation/offline-deadline checks, member-lease transaction/eligibility/deadline checks, the operation guard on historical `INSERT` (not `UPDATE`), and the billing service-interval check on authorized `member_devices` inserts/updates and `serving_lease_members` inserts. It is not a general constraint or trigger disable switch.
+
+    The [database restore contract](../db/README.md#restore-of-historical-snapshots) describes the existing replay prerequisites. Carried gap: validating the dump, target schema and dependency ordering for this example remains [carried work](follow-up-51.md#existing-procedures-linked-and-carried-gaps); the example command is retained without a new restore procedure:
     ```bash
     pg_restore --single-transaction -U fvpn_migrator -d fvpn /backups/fvpn-logical.dump
     ```
 
 - [ ] **2.2 Verify Schema Migration Status (`fvpn-migrate status`)** `[Verified on dev/test stack]`:
   ```bash
-  FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate status
-  FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate up
-  FVPN_DATABASE_URL="$(cat /etc/fvpn/secrets/database.url)" /usr/local/bin/fvpn-migrate status
+  FVPN_DATABASE_URL="${RESTORED_MIGRATOR_DSN:?supply the restored candidate migrator DSN}" /usr/local/bin/fvpn-migrate status
+  FVPN_DATABASE_URL="${RESTORED_MIGRATOR_DSN:?supply the restored candidate migrator DSN}" /usr/local/bin/fvpn-migrate up
+  FVPN_DATABASE_URL="${RESTORED_MIGRATOR_DSN:?supply the restored candidate migrator DSN}" /usr/local/bin/fvpn-migrate status
   ```
-  The connection must point to the checked restored candidate. Confirm every file in the deployed release's `db/migrations/*.sql` is applied on that target and the final status reports no pending version, as described in §2.3.
+  Supply the separate `fvpn_migrator` operator credential for the checked restored candidate, as in [deployment database roles](deploy.md#32-least-privilege-database-roles-docsdbreadmemd); do not use either runtime DSN. Confirm every file in the deployed release's `db/migrations/*.sql` is applied on that target and the final status reports no pending version, as described in §2.3.
 
 - [ ] **2.3 Freeze Usage Ingestion Before Starting `fvpn-control` (`§17.3 Step 1`)** `[Verified on dev/test stack]`:
   ```bash
-  /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
+  FVPN_DATABASE_URL_FILE="${RESTORED_RECOVERY_DSN_FILE:?supply the restored candidate recovery DSN file}" \
+    /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
     freeze \
     --actor "${ADMIN_ACTOR_UUID}" \
     --reason "PITR restore from snapshot ${RESTORED_TO_UTC}"
   ```
+  `RESTORED_RECOVERY_DSN_FILE` names an operator-provisioned, service-readable mode-`0600` file containing the `fvpn_recovery` DSN for the checked restored candidate; use the same override for begin-recovery and complete-recovery below. `FVPN_DATABASE_URL_FILE` overrides the control-role default ([Central configuration](../control/README.md)).
+
   While `mode = 'frozen'`, `POST /api/v1/agent/usage-batches` returns `503 DEPENDENCY_UNAVAILABLE` (`retryable: true`) and never ACKs events against stale watermarks.
 
 ### Phase 3: Rotate `ledger_epoch` and Start Central Services (`§17.3 Steps 2–6`)
 
 - [ ] **3.1 Begin Ledger Recovery (`fvpn-usage-admin begin-recovery`)** `[Verified on dev/test stack]`:
   ```bash
-  /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
+  FVPN_DATABASE_URL_FILE="${RESTORED_RECOVERY_DSN_FILE:?supply the restored candidate recovery DSN file}" \
+    /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
     begin-recovery \
     --actor "${ADMIN_ACTOR_UUID}" \
     --reason "Restore from ${RESTORED_TO_UTC} snapshot" \
@@ -279,18 +293,26 @@ D-095 (#270), restore runbook Step 1: keep control and worker stopped, restore T
   2. `mode` is `"reconciling"`.
   3. `signed_record` carries a valid `ed25519` signature from the central `ledger-epoch` key.
 
-- [ ] **3.2 Start `fvpn-control` and `fvpn-worker`** `[production only]`:
+- [ ] **3.2 Start `fvpn-control` alone; keep `fvpn-worker` stopped** `[production only]`:
+    Carried gap: restricted recovery startup is not implemented. Control alone still serves agent requests and may issue leases from restored authorization while newer intent is being re-applied; stopping the worker is not a global forwarding fence, and D-076 requires an earlier authorized observation plus a current withdrawal. The repository has no startup mode that completes usage replay, entitlement computation and policy synchronization before enabling the automatic worker as spec §17.4 step 5 requires. The order here reduces exposure but does not establish that fail-closed recovery boundary.
+
   ```bash
-  systemctl start fvpn-control.service fvpn-worker.service
+  systemctl start fvpn-control.service
   curl -fsS https://vpn.example.com:8443/readyz
   ```
+  Before starting the worker or opening public traffic, re-apply recorded post-snapshot node/device revocations, administrative suspensions and grant withdrawals using [backup Step 7.1](../ops/backups.md#step-7-reconcile-entitlements-revocations-publication-intents--fleet-updates-174-secops-05). Node revocation commits lifecycle/publication intent and certificate/incarnation revocations (and persists the local identity fence before commit); device revocation commits revoked status. Suspension and grant withdrawal commit their intent and recomputed entitlement in the accepting transaction. The worker's first reconciliation therefore reads those committed changes. An accepted operation still does not prove remote withdrawal.
+
+  Carried gap: restricted recovery startup is not implemented. Control alone still serves agent requests and may issue leases from restored authorization while newer intent is being re-applied; stopping the worker is not a global forwarding fence, and D-076 requires an earlier authorized observation plus a current withdrawal. The repository has no startup mode that completes usage replay, entitlement computation and policy synchronization before enabling the automatic worker as spec §17.4 step 5 requires. The order here reduces exposure but does not establish that fail-closed recovery boundary.
+
+  Once the recorded withdrawal intents are committed, start `fvpn-worker.service` as in backup Step 7.2. Verify each accepted operation's terminal result and observed enforcement before opening public traffic; continue the checks below with that ordering.
 
 ### Phase 4: Reconcile Payments and Member Entitlements (`§9.3`, `§17.4`)
 
 A point-in-time database restore may roll back webhook receipts (`inbox_events`), billing history (`billing_records`), or subscription state transitions that occurred between `restored_to` and the incident.
 
 - [ ] **4.1 Verify Automatic Billing Reconciliation (`billing.reconcile`)**:
-  `fvpn-worker` runs the `billing.reconcile` loop every `reconcile_seconds` (`900s` in production config). To trigger or verify reconciliation immediately:
+  After step 3.2's withdrawal-intent ordering, `fvpn-worker` runs `billing.reconcile` every `members.json:reconcile_seconds` (`900s` in the example). It schedules reconciliation for subscriptions already stored in the restored database, including canceled ones; processing reads current provider subscription, invoice and refund state.
+  Carried gap: inventory and reconstruction of provider subscriptions absent from the restored rows. This sweep does not establish complete recovery of missed provider events. For known provider events and stored subscriptions:
   1. Replay unacknowledged webhook events from the Stripe Dashboard (`Developers -> Webhooks -> Send/Resend`) covering `[restored_to - 1h, now]`. Webhook handling deduplicates by `(source, external_event_id)` in `inbox_events` and never creates duplicate charges (`BILL01`).
   2. Inspect `subscriptions`, `entitlements`, and `members` for any subscription updated during the RPO window:
      ```sql
@@ -299,19 +321,20 @@ A point-in-time database restore may roll back webhook receipts (`inbox_events`)
      ORDER BY updated_at DESC LIMIT 50;
      ```
 - [ ] **4.2 Re-apply Post-Snapshot Admin Suspensions or Manual Grants (`§9.2`, `§9.3`, `§17.4`)**:
-  Payment reconciliation (`internal/billing/service.go`, `internal/entitlement/store.go`) updates subscription periods but **never** clears an active administrative suspension (`members.admin_suspended = true`) or overwrites an active manual grant (`entitlement_grants`). Re-apply a post-snapshot suspension with `PATCH /api/v1/admin/members/{member_id}` (`operationId: updateMember`), an admin session, CSRF token, current `If-Match` ETag, and a fresh `Idempotency-Key`. The suspension body is `{"admin_suspended": true, "suspension_reason": "Reapply recorded post-snapshot suspension"}`; `suspension_reason` is required when suspending and must contain 1–500 characters. Re-issue a recorded manual grant with `POST /api/v1/admin/members/{member_id}/grants` (`operationId: createMemberGrant`), supplying its `source`, `valid_until`, and `reason` as defined in [`contracts/openapi.yaml`](../../contracts/openapi.yaml). Track returned operations through completion before treating external enforcement as restored.
+  Confirm that step 3.2 re-applied every recorded suspension and grant withdrawal before worker startup. Use [explicit grant withdrawal](../members/README.md#explicit-grant-withdrawal-revision-14-at29), including its required reason and accepted-operation read-back. A restored grant is not evidence that it remains authorized. Re-issue a recorded grant only after checking later withdrawals, using the finite grant fields in the [API contract](../../contracts/openapi.yaml). Track accepted operations and observed enforcement separately.
 
 ### Phase 5: Reconcile NetBird Overlay, Node PKI, and DNS State (`§5.2`, `§6.4`, `§12.2`, `§17.4`)
 
 Central PostgreSQL is the source of truth for desired state; NetBird and AdGuard Home are downstream enforcement targets (`§3`, `§15`).
 
 - [ ] **5.1 Re-revoke Any Post-Snapshot Node Incarnations (`§6.4`, `§17.2`)**:
-  Cross-check node revocation records against out-of-band operator logs. If any node was revoked or retired after `restored_to`, immediately invoke `POST /api/v1/admin/nodes/{node_id}/revoke` (or `DELETE /api/v1/admin/nodes/{node_id}`) so the node's mTLS certificate is revoked and its NetBird peer/route are removed.
+  Confirm that step 3.2 re-applied recorded node revocations/retirements before worker startup through `POST /api/v1/admin/nodes/{node_id}/revoke` or `DELETE /api/v1/admin/nodes/{node_id}` using the [operator revocation procedure](operator-guide.md). The accepting transaction commits withdrawal intent; the local identity fence is persisted before that commit. NetBird peer/route cleanup is asynchronous. Check operation completion and remote read-back before declaring withdrawal observed. Never re-enable a revoked identity to retrieve usage.
 - [ ] **5.2 Verify NetBird Node & Member Peer Reconciliation (`node.reconcile`, `members.reconcile`)**:
-  `fvpn-worker` continuously runs `node.reconcile` (every `nodes.json:reconcile_seconds`) and `members.reconcile` (every `members.json:device_sync_seconds`). It calls `netbird.Client.ReadObservedState` and converges:
-  - Any NetBird peer that was authorized in NetBird during the RPO window but is absent from restored `member_devices` or `node_incarnations` is disabled/deleted in NetBird (fail-closed).
-  - Under **`D-076` (`#227`, `SECOPS-18`, `db/migrations/00188_device_authorization_fences.sql`, [`docs/members/README.md`](../members/README.md#restored-authorization-does-not-re-grant-d-076))**, for the reverse direction—a device that was `authorized` at `T0` (`member_devices.status = 'authorized'` and `device_authorization_observations.observed_authorized = true`) and withdrawn in NetBird during `T0..T1` with no newer `member.device_revoke` operation or `device.revoke` audit in the restored database—`SyncDevice` fences the device in `device_authorization_fences` (columns `device_id`, `fenced_at`, `observed_group_ids`, joined to `member_devices` for `member_id`, `peer_id`, and `status`), keeps the peer withdrawn (`allow=false`), shows `pending` on `GET /api/v1/member/devices`, records the reason in one `device.authorization.external_withdrawal` audit event on `member_device:<device_id>` (`reason = "external_withdrawal_unconfirmed"`) and the worker log line `device authorization unconfirmed during ledger restore` (`device_id`, `member_id`, `peer_id`, `ledger_mode`) while `usage_ledger_state.mode` is `frozen` or `reconciling`, and increments `fvpn_device_restore_fence_decisions_total`. Never delete `device_authorization_fences` in the restore transaction; see step 6.3 after `complete-recovery`.
-  - Any published exit node whose NetBird route or policy drifted is re-converged.
+  The worker has separate node, member and discovery jobs; they do not implement a global orphan-peer or published-route/policy drift cleanup:
+  - `node.reconcile` runs on `nodes.json:reconcile_seconds`. It reconciles generation holds, updates fleet job state/attention, and expires bootstrap secrets in the database. Fleet reconciliation does not read or delete NetBird peers.
+  - `members.reconcile` runs on `members.json:device_sync_seconds`, recomputes member entitlements and calls `SyncMember` over the member's existing `member_devices` rows. `SyncDevice` applies the intended authorization and verifies it with peer read-back. Under [D-076](../members/README.md#restored-authorization-does-not-re-grant-d-076), an otherwise eligible authorized device with a previously authorized observation and an unexplained current withdrawal is fenced after confirming that withdrawal. Existing fences keep `allow=false`; fenced devices appear pending until explicit re-authorization. A new fence appends `device.authorization.external_withdrawal` with reason `external_withdrawal`. The warning `device authorization unconfirmed during ledger restore` and `fvpn_device_restore_fence_decisions_total` apply when ledger mode is `frozen` or `reconciling`; fencing itself is not restricted to those modes. Keep the fence through restore and follow step 6.3 after `complete-recovery`.
+  - The separate `devices.discover` sweep skips userless and ephemeral peers. An unknown peer with an eligible verified member identity can enter `ObserveAndAuthorize`; absence from the restored device table does not imply deletion.
+  - Carried gap: inventory and revocation of peers authorized after the restore point, including peers absent from restored records. No complete procedure for that inventory/revocation is supplied here; these sweeps must not be treated as proof that every such peer, route or policy has been withdrawn.
   List failed and in-flight operations with SQL; investigate failures and operations that remain pending or running:
   ```sql
   SELECT id, kind, status, resource_type, resource_id, error_code, created_at
@@ -321,6 +344,8 @@ Central PostgreSQL is the source of truth for desired state; NetBird and AdGuard
   ```
   For each returned ID, an authenticated administrator can retrieve details with `GET /api/v1/admin/operations/{operation_id}` (`operationId: getAdminOperation`). The contract has no operations-list endpoint. A `202` response to a mutation records acceptance; verify the operation's terminal result and observed state before declaring recovery complete.
 - [ ] **5.3 Verify AdGuard Home DNS Policy Convergence (`dns.publish`)**:
+  Carried gap: production AdGuard bootstrap and listener wiring remain prerequisites for the resolver convergence checked here; [deployment §4.3](deploy.md#43-adguard-home-resolvers-v010759-12-docsdnsbackendmd-docsdnsprivacymd) carries the missing procedure.
+
   Inspect published heads and their immutable resolver documents; confirm applied state separately by resolver read-back:
   ```sql
   SELECT h.definition_id, h.profile_revision_id, h.policy_generation,
@@ -349,7 +374,8 @@ Portal follow-up 16 (#255) supplies `/admin/devices` with authorization-unconfir
 - [ ] **6.2 Complete Ledger Recovery (`fvpn-usage-admin complete-recovery`)** `[Verified on dev/test stack]`:
   Once all active nodes have adopted `new_ledger_epoch` and drained their replay queues, exit reconciling mode:
   ```bash
-  /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
+  FVPN_DATABASE_URL_FILE="${RESTORED_RECOVERY_DSN_FILE:?supply the restored candidate recovery DSN file}" \
+    /usr/local/bin/fvpn-usage-admin --config /etc/fvpn/control.json \
     complete-recovery \
     --actor "${ADMIN_ACTOR_UUID}"
   ```

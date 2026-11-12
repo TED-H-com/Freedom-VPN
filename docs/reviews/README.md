@@ -1,7 +1,7 @@
 # Adversarial Security Reviews Archive (`r3`–`r17`)
 
-**Archived cut:** [follow-up 50](../handover/follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; consolidated deliveries and guide revisions.
-**Earlier archived cut:** [follow-up 49](../handover/follow-up-49.md), #482–#485 at `aaffdc7f`; the registers below retain that cut's content.
+**Archived cut:** [follow-up 51](../handover/follow-up-51.md), #524–#526 at `66de6a24`; consolidated deliveries and guide revisions.
+**Earlier archived cut:** [follow-up 50](../handover/follow-up-50.md), #486–#518 and #520–#523 at `fe9bb436`; the registers below retain that cut's content.
 
 - **Date:** 2026-10-29 to 2026-10-31 (closure status)
 - **Reviewing model:** `grok/grok-4.7`, `agy/gemini-4-argon-high`, `antigravity/gemini`, `antigravity/gemini-4-argon` (see per-review metadata below; `r5` and `r8` commits carried no `Agent:` trailer)
@@ -122,7 +122,7 @@ At #337, r17 and r16 remain exact historical archives. D-127 now has the
 updates 10 installer extension (23/23) with a labeled TEST ONLY HTTP rollback
 correction. Regular AT23–AT27 are blocked; physical rollback is not inferred.
 The [current handover](../handover/follow-up-19.md) and
-[findings register](../handover/README.md#findings-register-at-the-follow-up-19-cutoff)
+[findings register](../handover/README.md#findings-register-at-the-follow-up-49-cutoff)
 record ENR-07 / F9-01 closure and ISO-F6-03 OPEN. Agent-core 28 is in flight,
 not on main at #337. D-129–D-132 do not change the archived review verdicts.
 

@@ -1,0 +1,33 @@
+{
+  "source": "tests/handover/handover_test.go",
+  "source_commit": "66de6a24376237a2c674450bb9a24d41313ff1b5",
+  "function": "TestHandover_Followup50Claims",
+  "bytes": 15620,
+  "sha256": "fb6e63dab5cff4a1201f20ba78e62f311a7fee970900ea4f292dff7aad6701ee",
+  "redirects": [
+    {
+      "before": "readOwnedDoc(t, root, path)",
+      "after": "readOwnedDoc(t, root, followup51InputPath(path))"
+    },
+    {
+      "before": "readOwnedDoc(t, root, \"docs/handover/operator-guide.md\")",
+      "after": "readOwnedDoc(t, root, followup51InputPath(\"docs/handover/operator-guide.md\"))"
+    },
+    {
+      "before": "readOwnedDoc(t, root, \"docs/handover/member-guide.md\")",
+      "after": "readOwnedDoc(t, root, followup51InputPath(\"docs/handover/member-guide.md\"))"
+    },
+    {
+      "before": "readOwnedDoc(t, root, \"docs/DELIVERY.en.md\")",
+      "after": "readOwnedDoc(t, root, followup51InputPath(\"docs/DELIVERY.en.md\"))"
+    },
+    {
+      "before": "readOwnedDoc(t, root, \"docs/DELIVERY.md\")",
+      "after": "readOwnedDoc(t, root, followup51InputPath(\"docs/DELIVERY.md\"))"
+    },
+    {
+      "before": "readOwnedDoc(t, root, targetRel)",
+      "after": "readOwnedDoc(t, root, followup51InputPath(targetRel))"
+    }
+  ]
+}

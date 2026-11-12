@@ -40,16 +40,18 @@ mean every platform and failure scenario has passed acceptance.
 
 ## Handover guide revisions
 
-[Follow-up 50](handover/follow-up-50.md) revises the operator guide's weekly key inspection (§1.2), central key rotation and revocation (§8.1), and release trust updates (§8.2), plus the member guide's shadow-mode explanation (§5.3, both languages). Those places now link to the current commands and behaviour directly.
+[Follow-up 51](handover/follow-up-51.md) corrects deployment, calibration, restore-drill and backup statements at `66de6a24`. It records staging authority and grants, installer/DNS behavior, actual configuration and retention bounds, and bounded recovery/reconciliation. The second review adds control-before-worker recovery ordering with its remaining authorization exposure, grant withdrawal, explicit recovery credentials, repository-environment gaps, updater space accounting and credential-only SIGHUP reload. Class review passes looked for credential, reload, process, name, cleanup and gap-notice errors and corrected the cases recorded in the cut. A third review and scripted inventories add repository-environment and retention notices, the node response field, conntrack batch accounting and quoted Go names. These passes are review records, not proof that every statement or dependency has been found. Production procedures and product support absent from the repository remain carried work; no new deployment or acceptance evidence is claimed.
 
-The living guides can receive scoped corrections. Earlier delivery cuts and their exact test inputs remain frozen; follow-up 50 records the pre-revision copies and checks that all other guide-body bytes are preserved. For the current procedures, see [vault inspection and export](pki/inspect.md), [central key commands](pki/keys.md), [rotation and restore](pki/rotation.md), [release process](updates/release-process.md), [Node trust files](node/install.md#node-trust-files), the [API contract](../contracts/openapi.yaml) and [portal documentation](portal/README.md).
+[Follow-up 50](handover/follow-up-50.md) retains the earlier revisions to operator key inspection (§1.2), central rotation/revocation (§8.1), release trust updates (§8.2), and member shadow mode (§5.3, both languages).
+
+Living guides can receive scoped corrections. Each cut freezes its pre-revision inputs and checks every other byte; dated snapshots retain their scope. Current procedures are in [vault initialization](pki/initialize.md), [inspection and export](pki/inspect.md), [central key commands](pki/keys.md), [rotation and restore](pki/rotation.md), [release process](updates/release-process.md), [node installation](node/install.md), the [API contract](../contracts/openapi.yaml) and [portal documentation](portal/README.md).
 
 ## Verification scope and known limits
 
 The [merge record](ROADMAP.md) tracks current implementation;
-[follow-up 50](handover/follow-up-50.md) preserves the #486–#518 and #520–#523
-delivery checkpoint at `fe9bb436`. The earlier [follow-up 49](handover/follow-up-49.md)
-retains #482–#485. Later results have their own acceptance records.
+[follow-up 51](handover/follow-up-51.md) preserves the #524–#526
+delivery checkpoint at `66de6a24`. The earlier [follow-up 50](handover/follow-up-50.md)
+retains #486–#518 and #520–#523. Later results have their own acceptance records.
 Unit and integration tests, Linux lab
 tests, actual app devices and production deployments each establish different
 evidence. This guide does not announce a production release or replace unfinished
